@@ -1,0 +1,3 @@
+mkfontscale
+mkfontdir
+xset -display hydrus:0.0 +fp /home/afsr/005/eer_Tools/eer_SPI/Resources/Fonts

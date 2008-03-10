@@ -1,0 +1,9 @@
+#
+#Definitons des parametres de camera
+#
+#Date: Aout 2001
+#Auteur: J.P. Gauthier 
+#
+#Format:
+#   Nom , To , From , Lens , CFX , CFY, CFZ , CTX , CTY , CTZ , Lat , Lon
+#

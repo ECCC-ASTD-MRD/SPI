@@ -1,0 +1,55 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie de "Widget" Tk.
+# Fichier  : Macro.ctes
+# Version  : 1.2
+# Creation : Juillet 2005 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Interface de gestion de macros.
+#
+# Fonctions:
+#
+#
+# Remarques :
+#
+# Modification:
+#
+#   Nom         :
+#   Date        :
+#   Description :
+#
+#===============================================================================
+
+namespace eval Macro { } {
+   global   GDefs
+   variable Bubble
+   variable Data
+   variable Param
+
+   set Param(Title)   { "Gestion des macros" "Macro manager" }
+   set Param(Version) 1.2
+   set Param(Icon)    DOCRUN                                      ;#Icone
+   set Param(Geom)    { 200x400+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+   set Param(Paths)   {}                                          ;#Path des macros
+
+   set Data(Job)    ""                    ;#Texte de processus
+   set Data(Active) 0                     ;#Flag d'activation de l'outils
+   set Data(Canvas) ""                    ;#Canvas Actif
+   set Data(Frame)  ""                    ;#Frame actif
+   set Data(VP)     ""                    ;#Viewport actif
+   set Data(Tab)    ""                    ;#Tab actif
+
+   set Data(List)    {}                   ;#Liste des macros connues
+   set Data(Current) ""                   ;#Derniere macro activee
+   set Data(Edit)    ""                   ;#Macro en cours d'edition
+
+   set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
+   set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
+}
+

@@ -1,0 +1,126 @@
+Installation procedures
+-----------------------
+
+Documentation:
+- Application and librairie documentation can be found under the Doc directory in your eer_SPI installation path
+
+Compatibility:
+This package has been compiled with gcc 3.3 an tested on the following system:
+
+   - Debian (Sarge) 2.6.18.8-1
+
+Assumptions:
+- Installation and execution of the SPI software will be performed as a specific user and installed in the SPI directory of this user.
+- All commands will be relative to the user's home directory (ie all install and working paths will start with ~/).
+- The installation shell is sh compatible (can usually be obtained with the command $echo $SHELL)
+
+Note to shell newbies, all commands used in this installation document can be explained by their online manual. To
+access this manual, simply type:
+   man <program name>
+
+   1 System requirements:
+
+     Hardware:
+
+        Pentium IV 2Ghz
+        1G ram
+        16Mb Graphic card (NVIDIA por favor)
+        3G Disk space (For installation)
+
+     Software:
+
+        Xvfb       (For batch mode)
+        ImageMagik (For image output)
+
+        XServer configured with 24 or 32 bit depth
+
+   2 Installation:
+
+   A) Packages description
+
+      - Geographical database
+         (on 2 CDs)
+            DBGEO_R.zip (Raster data)
+            DBGeo_T.zip (Texture data)
+            DBGeo_V.zip (Vectorial data)
+
+         (or a single global file)
+            DBGeo.tgz
+
+         (or a single north american file)
+            northamericaDBGeo.tgz
+
+      - The SPI application (Application CD)
+         SPI-7.2.3.tgz
+
+   B) Decompressing the packages
+
+      - You will need to install the geographical database (DBGEO_?.zip) first by decompressing it
+        into it's final installation directory.
+
+        This will take up to 2.3 Gig for the global coverage
+
+          unzip DBGeo_R.zip -d [your geo_path]
+          unzip DBGeo_T.zip -d [your geo_path]
+          unzip DBGeo_V.zip -d [your geo_path]
+
+          or
+
+          tar -zxvf DBGeo.tgz -C [your geo_path]
+
+      - Then you may go on with the SPI package by untarring it to a temporary
+        directory since it will install itself somewhere else later.
+
+         tar -zxvf SPI-7.2.3.tgz -C [your temp_path]
+
+   C) Package installation
+
+       - Call the "Install" script with the installation path as the first parameter
+         This script will create a SPI directory and install itself there.
+         At the end the install script will ask you for the geographical database path
+         which you previously installed.
+
+         ./Install [your spi_path]
+
+            Enter the geographical database (GDB) path: [your geo_path]
+
+   D) Profile setup.
+
+      - If you want to run scripts, you will have to define an environment variable pointing to the path
+        where you installed SPI. Depending on the shell you are using, this might mean:
+
+        sh/ksh/bash
+
+           add this line to the .profile or .profile_usr
+
+           export SPI_PATH=[your spi_path]
+
+        csh
+
+           add this line to the .cshrc
+
+           setenv SPI_PATH [your spi_path]
+
+   E) Run SPI.
+
+      - You can now launch SPI by calling
+
+        [your  spi_path]/SPI
+
+        or
+
+        $SPI_PATH/SPI
+
+        The first time you run it a setup window will popup for you to
+        set default parameters.
+
+        In the "Options" tab you may wish to setup a default printer and language.
+
+        The other items should be fine as is. Just click Install and that's it
+
+**** In case of problem with the OpenGL librairies, you can try to do the installation
+     with the forcing parameter which will cause the librairies to be relinked and force
+     the software OpenGL implementation to take precedence.
+
+           ./Install [your spi_path] link
+
