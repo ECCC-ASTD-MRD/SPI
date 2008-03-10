@@ -1,0 +1,59 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : Kriger.txt
+# Version  : 1.0
+# Creation : Fevrier 2008
+#
+# Description:
+#    Outils permettant d'effecture un kriging sur des observations qui permet de
+#    definir la grille interactivement et les parametres de kriging
+#
+#    Description des divers textes et messages
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#===============================================================================
+
+namespace eval Kriger {
+   variable Lbl
+   variable Msg
+   variable Bubble
+
+   set Lbl(Grid)    { "Grille" "Grid" }
+   set Lbl(Krig)    { "Krigage" "Kriging" }
+   set Lbl(Result)  { "Resultats" "Results" }
+   set Lbl(Warning) { "Attention" "Warning" }
+   set Lbl(Yes)     { "Oui" "Yes" }
+   set Lbl(No)      { "Non" "No" }
+   set Lbl(Out)     { "Hors grille" "Out of grid" }
+   set Lbl(Data)    { "Données" "Data" }
+
+   #----- Messages
+
+   set Msg(Grid)      { "Calcul de la grille ..." "Calculating grid ..." }
+   set Msg(Krig)      { "Krigage en cours ..." "Kriging ..." }
+   set Msg(KrigSize)  { "Les dimensions de la grille sont grandes et le krigage pourrais être long. Voulez-vous continuer ?"
+                        "The grid size is large and the kriging could take long. Do you wish to continue anyway ?" }
+   set Msg(GridSize)  { "La grille est trop grande, veuillez changer la résolution ou la couverture."
+                        "The grid is to lagre, please change résolution or coverage." }
+   set Msg(GridExist) { "La grille de destination n'est pas définie."
+                        "The destination grid is not defined." }
+   set Msg(ObsExist)  { "Les données d'observations sont invalides."
+                        "Invalid observation data." }
+
+   #----- Bulles d'aides
+
+   set Bubble(Mode)    { "Sélection interactive de la grille de krigage" "Interactive kriging grid selection" }
+   set Bubble(Krig)    { "Lancer le calcul de krigage" "Launc kriging calculus" }
+   set Bubble(Save)    { "Sauvegarder le résultat du dernier krigage" "Save last kriging result" }
+   set Bubble(Del)     { "Supprimer/Réinitialiser la grille destination courante" "Delete/Reset current destination grid" }
+}

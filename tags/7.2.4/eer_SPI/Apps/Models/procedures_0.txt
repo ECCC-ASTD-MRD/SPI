@@ -1,0 +1,129 @@
+PROCÉDURE EN CAS D'ÉVÈNEMENTS VOLCANIQUES
+Dov Bensimon - Novembre 2006
+
+           APPELER DU RENFORT SI NÉCESSAIRE
+
+MONITORING
+
+  1. Boîte à outils (toujours ouverte)
+
+  2. Ongoing traffic (fv, wv, pireps, etc.,
+     en utilisant Bulletins Volcaniques
+     Reçus dans la boîte à outils)
+
+  3. Fax et contacts des observatoires
+     volcaniques
+
+     AVO
+       - sommaire pour l'Alaska les vendredis
+       - sommaire pour le Kamchatka les lundis
+       - bulletins spéciaux;
+     CVO
+       - bulletin seulement si activité
+
+  4. Information des autres VAAC et des MWO.
+
+SI UN ÉVÈNEMENT SE PRODUIT À L'INTÉRIEURE LA
+ZONE DE RESPONSABILITÉ DU VAAC MONTRÉAL
+
+  1. Émettre un message FV préventif pour les
+     cas surprise.
+     (exemple 4 dans la boîte à outils, un
+     message par évènement, transmis partout)
+
+  2. Contacter les MWO concernés
+     (Edmonton, Sondrestrom fjord).
+
+  3. Tenter de confirmer la véracité de
+     l'évènement
+     (VO, sat pix, cie aériennes,
+      consultation, etc).
+
+  4. Regarder les photos sats
+     (générer les GOES 4-5, regarder les
+     NOAA 4-5 sur site ftp, sites WEB en
+     signets).
+
+  5. Tourner le modèle de trajectoire.
+     (transmission par fax, au site ftp ou
+     circuit SATNET)
+
+  6. Tourner CANERM si la source est connue.
+     (option de transmission)
+
+  7. Émettre  un FV ou retransmettre un
+     FV étranger
+     (un message par évènement)
+
+  8. Coordonner avec les autres centres VAAC
+     voisins.
+
+SI UN ÉVÈNEMENT SE PRODUIT PRÈS DE LA ZONE DE
+RESPONSABILITÉ DU VAAC MONTRÉAL OU SI UN ÉVÈNEMENT
+EST ANTICIPÉ
+
+  1. Informer les MWO de la situation.
+     (Edmonton, Sondrestrom fjord)
+
+  2. Regarder les photos sats, générer les
+     photos 4-5, regarder les NOAA 4-5 sur
+     site ftp.
+
+  3. Tourner le modèle de trajectoire.
+
+  4. Tourner CANERM si la source est connue.
+
+  5. Retransmettre les messages FV étranger,
+     si nécessaire.
+
+CONTACTS LES PLUS FRÉQUENTS
+(9-1 pour l'Amérique du Nord, 9-011 ailleurs)
+
+MWO Edmonton........................
+Phone :                 780-951-8904
+FAX :                   780-951-8872
+
+Nav Canada..........................
+Phone :                 613-248-4087
+
+MWO Kangerlussuaq (Søndre Strømfjord)
+Phone :                   299-841022
+FAX :                     299-841193
+
+MWO Reykjavik.......................
+Phone :                  354 5600686
+
+VAAC  Anchorage.....................
+Supervisor :            907-266-5116
+Operational desk :      907-266-5110
+FAX :                   907-266-5188
+
+VAAC Washington.....................
+Operational desk :      301-763-8444
+FAX :                   301-763-8333
+
+VAAC London.........................
+Phone 1 :            44.1392.88.6095
+Phone 2 :            44.1392.44.7947
+Aviation desk :      44.1392.88.4918
+FAX :                44.1392.88.4549
+
+Alaska Volcanic Observatory (AVO)...
+Phone :                 907-786-7443
+FAX :                   907-786-7450
+
+Cascades Volcanic Observatory (CVO).
+Phone:                  206-696-7693
+FAX :                   206-696-7866
+
+Geological Survey Canada............
+Phone :                 604-666-3955
+FAX :                   604-666-1124
+
+Air Canada Dispatch.................
+Phone :                 905-676-2278
+FAX :                   905-676-4241
+
+United Airlines Met.................
+Phone :                 847-700-3099
+

@@ -1,0 +1,1 @@
+/usr/local/env/logout_ksh_usr

@@ -1,0 +1,225 @@
+Guide d'utilisation de la librairie Tk Viewport
+-------------------------------------------------------
+
+   Des exemples d'applications sont fournies sous le repertoire Demo dans le repertoire de la
+librairie. Ces exemples utilise toutes les fonctionnalitees de la
+lirairie de projection. Inspirer vous en.
+
+Inclusion de la librairie dans un script Tcl/Tk:
+---------------------------------------------
+
+-La premiere etape consiste a inclure la librairie dans le script
+ Tcl que vous desirez utiliser:
+
+   load ../libTkglCanvas-*.*.so  glCanvas
+   load ../libTkViewport-*.*.so  Tkviewport
+
+
+-Par la suite, pour en arriver a afficher une projection, il faut creer un canvas opengl et y
+ definir un viewport. C'est lui qui se charge d'afficher les projections:
+
+   glcanvas .map -width 800 -height 800
+
+   .map create viewport ...
+
+      -anchor        : Ancrage dans le canvas
+      -font          : Police utilisee pour le texte (Coordonnees)
+      -bg            : Couleur du backgorund
+      -x             : Position en x sur le canvas
+      -y             : Position en y sur le canvas
+      -width         : Largeur du viewport
+      -height        : Heuteur du viewport
+      -tags          : Tags associes
+      -command       : Nom de la commande qui servira aux transformations
+      -camera        : Camera a utiliser
+      -date          : Date pour l'illumination (Position du soleil)
+      -frame         : Numero de l'image a memoriser ou a rappeler
+      -projection    : Nom de la projection (voir ci-dessous)
+      -data          : Liste des donnees a superposer
+      -colorcoast    : Couleur des cotes
+      -colorlake     : Couleur des lacs
+      -colorriver    : couleur des rivieres
+      -colorpolit    : Couleur des bordures politiques
+      -coloradmin    : Couleur des bordures internes
+      -colorcity     : Couleur des villes
+      -colorroad     : Couleur des routes
+      -colorrail     : Couleur des rails
+      -colorutil     : Couleur des utilitaires
+      -colorcanal    : Couleur des canaux
+      -colorcoord    : Couleur des latlon
+      -resolution    : Resolution de l'affichage ([1..10] 1=Best)
+
+Creation de cameras:
+-------------------
+
+- Il est necessaire de cree au moins une camera. C'est cette dernier qui gere tout ce qui est afficher
+  a l'interieur du viewport.
+
+   projcam create "cam"
+
+      cam: Identificateur de la camera
+
+-Pour detruire une camera:
+
+   projcam destroy "cam"
+
+-Pour tester l'existance d'une camera
+
+   projcam is "cam"
+
+-Par la suite, vous pouvez la configurer selon les parametres que
+ vous desirez:
+
+   projcam configure "cam"
+
+      -to   x y z     : Position dans l'espace du point focal                      (Defaut {0 0 1})
+      -from x y z     : Position dans l'espace de la camera                        (Defaut {0 0 2})
+      -up   x y z     : Position dans l'espace du vecteur haut                     (Defaut {0 1 0})
+      -lens facteur   : Lentille de la camera en facteur d'agrandissment (Zoom)    (Defaut (1.0))
+      -show           : Affichage du "fly path" de la camera                       (Default False)
+
+      Il est tres rare que vous ayez besoin de manipuler les -to et -from de la camera directement. Cependant
+      pour le faire il faut comprendre le positionnement de l'espace tridimentionnel.
+
+      Le globe ou plan de la terre est localiser au centre de l'univers (Oh yeah pour Galilee) soit (0,0,0).
+
+         La dimension du globe est de rayon 1 (unitaire) (Orthographique)
+         La dimension du plan est de 2x1 (LonxLat)       (Cylindrique)
+
+         La surface de la terre directement en face de la camera est donc localiser au point (0 0 1) (-to par defaut)
+         La camera est placee par defaut a une distance de 1 rayon terrestre au point (0 0 2)        (-from par defaut)
+
+-Fonction des manipulation de la camera
+
+   projcam define "cam"
+
+      -circlefrom thetax thetay z : Deplacement du point focal autour de la camera (-from)
+
+      -circleto   thetax thetay z : Deplacement de la camera autour du point focal (-to)
+
+         thetax : Angle an degree de rotation autour de l'axe y
+         thetay : Angle en degree de rotation autour de l'axe x
+         z      : Distance du point (Rayon de rotation) en coordonnee spatiale (1 = Rayon de la terre)
+
+      -path { control point list } : Definition d'un "fly path" en specifiant les points de controle avec les trois vecteur to from et up
+      -fly idx                     : Positionner la camera a l'index idx du "fly path"
+
+
+Creation de projections:
+-----------------------
+
+-Il faut creer une projection a associe au viewport:
+
+   projection create "proj"
+
+     proj : Identificateur de la projection
+
+-Par la suite, vous pouvez modifier et configurer la vue selon les parametres que
+ vous desirez:
+
+   projection configure "proj"
+
+      -location  "Lat" "Lon"                 : Centrer la projection sur ces coordonnees (Projection Geographiques)
+      -gridpoint "i" "j"                     : Centrer la projection sur ces coordonnees (Projection Grille)
+      -gridsize                              : Specifer, recuperer la dimension de la grille (Projection Grille)
+      -mapres                                : Resolution de la geographie
+      -maptopo                               :
+      -mapbath                               :
+      -maptext                               :
+      -mapcoast                              : Largeur des segments (0= pas afficher)
+      -maplake                               : Largeur des segments (0= pas afficher)
+      -mapriver                              : Largeur des segments (0= pas afficher)
+      -mappolit                              : Largeur des segments (0= pas afficher)
+      -mapadmin                              : Largeur des segments (0= pas afficher)
+      -mapcity                               : Largeur des segments (0= pas afficher)
+      -maproad                               : Largeur des segments (0= pas afficher)
+      -maprail                               : Largeur des segments (0= pas afficher)
+      -maputil                               : Largeur des segments (0= pas afficher)
+      -mapcanal                              : Largeur des segments (0= pas afficher)
+      -mapcoord                              : Type de latlon
+      -scale     "Factor"                    : Facteur applique aux elevation
+      -type      "Projection"                : type de projection (orthographic | cylindric | mercator | grid)
+      -georef                                : Objet georeference a utiliser pour le type grid
+
+Fonctions de transformation:
+---------------------------
+
+-Certaines fonctions de transformation on ete creer afin de pouvoir travailler avec la
+ projection et aussi pour accelerer les traitements.
+
+   -Fonction de transformation des coordonness x y vers les coordonnes latlon:
+      Cette fonction permet de transformer les coordonnees d'un pixel en ses latlon
+      correspondant. Si le pixel ne se trouve pas sur le globe, la fonction retournera
+      la valeur 999 pour les deux coordonees.
+
+      -unproject "x" "y"
+
+         x: Entier
+         y: Entier
+
+         retour: Liste de coordonnees { lon lat }
+
+   -Fonction de transformation des coordonnees latlon vers les coordonnees x y:
+      Cette fonction permet de transformer les coordonnees d'un point sur le globe en
+      ses coordonnees x y correspondantes dans l'affichage de la vue. Si les coordonnees
+      latlon ne sont pas valides alors la fonction retournera une liste vide.
+
+      -project "lon" "lat" "elev"
+
+         lon : Float
+         lat : Float
+         elev: Float
+
+         retour: Liste de coordonnes { x y z } ou z represente le plan d'affichage.
+                 si z est < 0.0 alors le point est situe sur la face cachee du globe, sinon
+                 il est sur la face visible.
+
+   -Fonction de projection de ligne:
+      Cette fonction permet de "mapper" une ligne entre deux points en coordonnees latlon
+      sur le globe pour qu'elle suive la courbure du globe.
+
+      -projectline "lon0" "lat0" "elev0" "lon1" "lat1" "elev1" "segments"
+
+         lon0:  Float
+         lat0:  Float
+         elev0: Float
+         lon1:  Float
+         lat1:  Float
+         elev1: Float
+         segments: Entier (Nombre de segment de coupe de la ligne)
+
+         retour: Liste de coordonnees { { x y z } { x y z } ... }  ou z represente le plan
+                 d'affichage. si z est < 0.0 alors le point est situe sur la face cachee du globe,
+                 sinon il est sur la face visible. Le nombre de sous-listes { x y z } correspont au
+                 nomnbre de segments demandes
+
+         limitation: Vous ne pouvez "mapper" des lignes qui couvrent plus de 180 degre de lat ou lon.
+                     Si vous le faites la ligne retourne sera le plus court chemin entre les deux points,
+                     donc la ligne inverse.
+
+   -Fonction de calcul de distance:
+       Ces deux fonctions permettent de calculer une distance entre deux points en metres
+
+       -distxy "x1" "y1" "x2" "y2"
+
+         x1:  Entier
+         y1:  Entier
+         x2:  Entier
+         y2:  Entier
+
+         Calcul de la distance entre deux pixel
+
+      -distll
+
+         lat:  Float
+         lon:  Float
+         lat:  Float
+         lon:  Float
+         elev: Float
+
+         Calcul de la distance entre deux coordonnees a l'elevation specifie
+
+      -distpix
+
+         Retourne la distance entre deux pixels
+

@@ -1,0 +1,45 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : YourToolHere.ctes
+# Version  : 1.0
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Descriptions des variables internes du module
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#===============================================================================
+
+namespace eval YourToolHere {
+   variable Data
+   variable Param
+
+   set Param(Title)   { "Votre outils" "Your tool here" }
+   set Param(Version) 1.0
+   set Param(Geom)    { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Icon)    INTEROGATE
+   set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+
+   set Data(Active) 0        ;#Flag d'activation de l'outils
+   set Data(Canvas) ""       ;#Canvas Actif
+   set Data(Frame)  ""       ;#Frame actif
+   set Data(VP)     ""       ;#Viewport actif
+
+   set Data(Lat0)   0        ;#Coordonnees de la boite de selection
+   set Data(Lon0)   0
+   set Data(Lat1)   0
+   set Data(Lon1)   0
+}

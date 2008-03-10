@@ -1,0 +1,81 @@
+VIP00   :Testing Station               :Vienna              :48.240000:N: 16.420000:E:     0
+ARP01   :Buenos Aires                  :Argentina           :34.540000:S: 58.470000:W:     0
+RN002   :Salta                         :Argentina           :24.000000:S: 65.000000:W:     0
+ARP03   :San Carlos de Bariloche       :Argentina           :41.100000:S: 71.250000:W:     0
+AUP04   :Melbourne                     :Australia           :37.730000:S:145.100000:E:     0
+RN005   :Mawson                        :Australia           :67.600000:S: 62.500000:E:     0
+AUP06   :Townsville                    :Australia           :19.250000:S:146.770000:E:     0
+RN007   :MacQuarie Island              :Australia           :54.000000:S:159.000000:E:     0
+AUP08   :Cocos Islands                 :Australia           :12.200000:S: 96.800000:E:     0
+AUP09   :Darwin                        :Australia           :12.400000:S:130.900000:E:     0
+AUP10   :Perth                         :Australia           :31.950000:S:115.970000:E:     0
+BRP11   :Rio de Janeiro                :Brazil              :23.000000:S: 43.400000:W:     0
+RN012   :Recife                        :Brazil              : 8.000000:S: 35.000000:W:     0
+CMP13   :Douala                        :Cameroon            : 3.800000:N: 10.200000:E:     0
+RN014   :Vancouver                     :Canada              :49.250000:N:123.170000:W:     0
+CAP15   :Resolute                      :Canada              :74.700000:N: 94.900000:W:     0
+CAP16   :Yellowknife                   :Canada              :62.450000:N:114.480000:W:     0
+CAP17   :St Johns                      :Canada              :47.600000:N: 52.700000:W:     0
+CLP18   :Punta Arenas                  :Chile               :53.100000:S: 70.900000:W:     0
+CLP19   :Hanga Roa                     :Chile               :27.070000:S:108.350000:W:     0
+RN020   :Beijing                       :China               :39.750000:N:116.200000:E:     0
+RN021   :Lanzhou                       :China               :35.800000:N:103.300000:E:     0
+RN022   :Guangzhou                     :China               :23.000000:N:113.300000:E:     0
+CKP23   :Islands Rarotonga             :Cook                :21.200000:S:159.800000:W:     0
+RN024   :San Cristobal                 :Ecuador             :21.200000:N:159.800000:E:     0
+RN025   :Filtu                         :Ethiopia            : 5.500000:N: 42.700000:E:     0
+FJP26   :Nandi                         :Fiji                :17.760000:S:177.440000:E:     0
+FRP27   :Papeete                       :France              :17.580000:S:149.570000:W:     0
+FRP28   :Pointe-a-Pitre                :France              :17.000000:N: 62.000000:W:     0
+FRP29   :St Denis                      :France              :21.050000:S: 55.570000:E:     0
+FRP30   :Port-aux-Francais             :France              :49.350000:S: 70.260000:E:     0
+FRP31   :Cayenne                       :France              : 5.170000:N: 52.690000:W:     0
+RN032   :Dumont dUrville               :France              :66.000000:S:140.000000:E:     0
+DEP33   :Schauinsland Freiburg         :Germany             :47.900000:N:  7.900000:E:     0
+ISP34   :Reykjavik                     :Iceland             :64.100000:N: 21.800000:W:     0
+RN036   :Tehran                        :Iran                :35.000000:N: 52.000000:E:     0
+JPP37   :Okinawa                       :Japan               :27.910000:N:126.500000:E:     0
+JPP38   :Gunma                         :Japan               :36.310000:N:139.000000:E:     0
+KIP39   :Kiritimati                    :Kiribati            : 2.010000:N:157.400000:W:     0
+KWP40   :Kuwait City                   :Kuwait              :29.340000:N: 47.900000:E:     0
+RN041   :Misratah                      :Libya               :32.500000:N: 15.000000:E:     0
+RN042   :Kuala Lumpur                  :Malaysia            : 2.550000:N:101.470000:E:     0
+MRP43   :Nouakchott                    :Mauritania          :18.140000:N: 15.920000:W:     0
+RN044   :Baja California               :Mexico              :28.000000:N:113.000000:W:     0
+MNP45   :Ulan-Bator                    :Mongolia            :47.885800:N:106.334700:E:     0
+NZP46   :Chatham Island                :New Zealand         :43.800000:S:176.500000:W:     0
+NZP47   :Kaitaia                       :New Zealand         :35.100000:S:173.300000:E:     0
+RN048   :Bilma                         :Niger               :18.000000:N: 13.000000:E:     0
+NOP49   :Spitsbergen                   :Norway              :78.200000:N: 15.400000:E:     0
+PAP50   :Panama City                   :Panama              : 8.980000:N: 79.530000:W:     0
+PGP51   :New Hanover                   :Papua New Guinea    : 2.600000:S:150.800000:E:     0
+PHP52   :Quezon City                   :Philippines         :14.580000:N:121.370000:E:     0
+RN053   :Ponta Delgada                 :Portugal            :37.440000:N: 25.400000:W:     0
+RN054   :Kirov                         :Russian Federation  :58.590000:N: 49.680000:E:     0
+RN055   :Norilsk                       :Russian Federation  :69.400000:N: 88.060000:E:     0
+RN056   :Peleduy                       :Russian Federation  :59.630000:N:112.700000:E:     0
+RN057   :Bilibino                      :Russian Federation  :68.020000:N:166.400000:E:     0
+RN058   :Ussuriysk                     :Russian Federation  :43.700000:N:131.900000:E:     0
+RUP59   :Zalesovo                      :Russian Federation  :53.940000:N: 84.810000:E:     0
+RN060   :Petropavlovsk                 :Russian Federation  :53.000000:N:158.000000:E:     0
+RUP61   :Dubna                         :Russian Federation  :56.700000:N: 37.300000:E:     0
+RN062   :Marion Islands                :South Africa        :46.500000:S: 37.000000:E:     0
+SEP63   :Stockholm                     :Sweden              :59.230000:N: 17.570000:E:     0
+TZP64   :Dar es Salaam                 :Tanzania            : 6.780000:S: 39.200000:E:     0
+RN065   :Bangkok                       :Thailand            :13.750000:N:100.500000:E:     0
+GBP66   :Diego                         :United Kingdom      :13.750000:N:100.500000:E:     0
+GBP67   :St Helena                     :United Kingdom      :15.940000:S:  5.670000:W:     0
+GBP68   :Tristan Da Cunha              :United Kingdom      :37.000000:S: 12.330000:W:     0
+RN069   :Halley                        :United Kingdom      :76.000000:S: 28.000000:W:     0
+USP70   :Sacramento                    :United States       :38.700000:N:121.400000:W:     0
+USP71   :Sand Point                    :United States       :55.340000:N:160.490000:W:     0
+USP72   :Melbourne                     :United States       :28.250000:N: 80.600000:W:     0
+USP73   :Palmer Station                :United States       :64.770000:S: 64.050000:W:     0
+USP74   :Ashland                       :United States       :37.190000:N: 99.770000:W:     0
+USP75   :Charlottesville               :United States       :38.000000:N: 78.400000:W:     0
+USP76   :Salchaket                     :United States       :64.670000:N:147.090000:W:     0
+USP77   :Wake Island                   :United States       :19.290000:N:166.610000:E:     0
+RN078   :Midway Island                 :United States       :28.000000:N:177.000000:W:     0
+USP79   :Oahu                          :United States       :21.520000:N:157.990000:W:     0
+USP80   :Guam                          :United States       :13.570000:N:144.930000:E:     0
+RN0xx   :Ottawa                        :Canada              :45.374217:N: 75.684633:W:     0

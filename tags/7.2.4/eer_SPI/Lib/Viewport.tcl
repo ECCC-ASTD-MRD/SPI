@@ -1,0 +1,3068 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie d'objects visuel interactifs
+# Fichier  : Viewport.tcl
+# Version  : 5.0
+# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Ce package s'occupe de l'affichage et d ela manipulation
+#              de viewport geographiques
+#
+# Fonctions:
+#
+#    Viewport::Activate       { Frame { VP "" } }
+#    Viewport::Assign         { Frame VP Ids { Force 0 } }
+#    Viewport::Assigned       { Frame VP { Type fstdfield } }
+#    Viewport::AssignedTo     { Data { Page "" } { VP "" } { Box "" } }
+#    Viewport::UnAssign       { Frame VP Ids }
+#    Viewport::ConfigGet      { Frame VP }
+#    Viewport::ConfigPut      { Frame VP }
+#    Viewport::ConfigSet      { Frame }
+#    Viewport::Follow         { Frame VP X Y }
+#    Viewport::FollowerAdd    { Follower }
+#    Viewport::FollowerRemove { Follower }
+#    Viewport::FollowerInfo   { Frame VP }
+#    Viewport::FollowerSet    { Idx Id Value CoordX CoordY RefX RefY }
+#    Viewport::CheckCoord     { Lon }
+#    Viewport::CheckInside    { Lat0 Lon0 Lat1 Lon1 Lat Lon }
+#    Viewport::Create         { Frame X0 Y0 Width Height Active Full }
+#    Viewport::Destroy        { Frame { VP {} } }
+#    Viewport::Do             { Frame }
+#    Viewport::DrawArea       { Frame VP Coords Tags SingleTag Color Outline Stipple Smooth BD }
+#    Viewport::DrawLine       { Frame VP Coords Tags Color BD }
+#    Viewport::DrawRange      { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } }
+#    Viewport::ForceGrid      { Frame { Reset False } }
+#    Viewport::GoAlong        { Frame Speed Bearing Lat Lon }
+#    Viewport::GoARound       { Frame Speed Lat Lon }
+#    Viewport::GoTo           { Frame Lat Lon { Zoom 0 }}
+#    Viewport::LinkDo         { VP }
+#    Viewport::LinkSet        { }
+#    Viewport::Link           { }
+#    Viewport::UnLink         { }
+#    Viewport::ParamFrame     { Frame Apply }
+#    Viewport::ParamSet       { }
+#    Viewport::Reset          { Frame }
+#    Viewport::Resolution     { Frame Res }
+#    Viewport::Rotate         { Frame Lat Lon { Zoom 0 } }
+#    Viewport::RotateDo       { Frame VP X Y }
+#    Viewport::RotateDone     { Frame }
+#    Viewport::RotateInit     { Frame VP X Y }
+#    Viewport::Resize         { Frame VP X0 Y0 X1 Y1 Limit }
+#    Viewport::Setup          { Frame }
+#    Viewport::UnSetup        { Frame }
+#    Viewport::UpdateData     { Frame { VP { } } }
+#    Viewport::Write          { Frame File }
+#
+# Modifications :
+#
+#   Nom         :
+#   Date        :
+#   Description :
+#
+#===============================================================================
+
+package provide Viewport 5.0
+
+proc IdViewport { show } {
+
+   if { $show } {
+      puts "(INFO) Loading Standard CMC/CMOE Canvas Package Viewport Version 5.0"
+   }
+}
+
+namespace eval Viewport {
+   variable Data
+   variable Map
+   variable Resources
+   variable Lbl
+
+   set Data(VPNb)       0           ;#Compteur de viewport
+   set Data(VP)         ""          ;#Viewport courant
+   set Data(Seconds)    0           ;#Temps en seconde de la projection
+   set Data(Followers)  {}          ;#Liste des packages de suivit des coordonnees
+   set Data(FollowerNb) 0           ;#Nombre de suivit courant
+   set Data(Link)       {}          ;#Lien source
+   set Data(Data)       {}          ;#Liste des donnees
+
+   set Map(Sun)         0           ;#Affichage du Soleil
+   set Map(Res)         0           ;#Resolution geographique (0=Auto,2,4,8,16,32,64,128)
+   set Map(Mask)        0           ;#Masque (Tout=0,Terre=1,Mer=2)
+   set Map(Coast)       1           ;#Cotes
+   set Map(Lake)        1           ;#Lacs
+   set Map(River)       0           ;#Rivieres
+   set Map(Polit)       1           ;#Bordures politiques
+   set Map(Admin)       0           ;#Bordures politiques internes
+   set Map(City)        0           ;#Villes
+   set Map(Road)        0           ;#Routes
+   set Map(Rail)        0           ;#Chemin de fer
+   set Map(Util)        0           ;#Utilitaires
+   set Map(Canal)       0           ;#Canal/Aqueduc
+   set Map(Topo)        0           ;#Topographie
+   set Map(Bath)        0           ;#Bathymetrie
+   set Map(Text)        0           ;#Texture
+   set Map(Coord)       1           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
+   set Map(CoordNum)    2           ;#Numerotation des latlon
+   set Map(Elev)        1.0         ;#Facteur d'expansion des elevations
+   set Map(GeoRef)      ""          ;#Geo-reference courante (Mode Grid)
+   set Map(Grabbed)     False       ;#Etat de la vue
+   set Map(Delay)       500.0      ;#Temps de deplacement en millisecondes
+   set Map(Speed)       0.0         ;#Vitesse de deplacement en metres/millisecondes
+   set Map(Damping)     1.07        ;#Facteur de l'effet de ralentissement
+
+   set Map(TPolit)      1           ;#Identifications provinces
+   set Map(TCity)       1           ;#Identifications villes
+   set Map(Type)        orthographic;#Type de projection
+
+   set Map(ZAxis)       0
+   set Map(ZAxisZ)      0
+   set Map(ZAxisCoord)  { 0.0 0.0 }
+
+   set Map(Types)       { "azimuthal equidistant" "azimuthal equal-area" "orthographic" "cylindric" "mercator" "grid" } ;#Type de projection geographique
+
+   set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
+   set Map(CoordUnit)   DEG         ;#Type d'unite des coordonnees
+   set Map(CoordLink)   False       ;#Curseur commun
+   set Map(X)           0           ;#Pixel en X
+   set Map(Y)           0           ;#Pixel en Y
+   set Map(Lat)         41.0        ;#Latitude centrale de l'affichage
+   set Map(Lon)         -103.0      ;#Longitude centrale de l'affichage
+   set Map(AltCursor)   0           ;#Altitude du curseur de la souris
+   set Map(LatCursor)   0.0         ;#Latitude du curseur de la souris
+   set Map(LonCursor)   0.0         ;#Longitude du curseur de la souris
+   set Map(LatReset)    41.0        ;#Latitude initiale de remise a zero
+   set Map(LonReset)    -103.0      ;#Longitude initiale de remise a zero
+   set Map(LatRot)      0.0         ;#Coordonnees de rotation en latitude
+   set Map(LonRot)      0.0         ;#Coordonnees de rotation en longitude
+   set Map(Lat0)        0.0         ;#Coordonnees de rotation en latitude
+   set Map(Lon0)        0.0         ;#Coordonnees de rotation en longitude
+
+   set Map(GridI)       0.0         ;#Point de grille central en x de l'affichage
+   set Map(GridJ)       0.0         ;#Point de grille central en y de l'affichage
+   set Map(GridICursor) 0.0         ;#Coordonnees I du curseur de la souris
+   set Map(GridJCursor) 0.0         ;#Coordonnees J du curseur de la souris
+   set Map(GridIRot)    0.0         ;#Coordonnees de rotation en I
+   set Map(GridJRot)    0.0         ;#Coordonnees de rotation en J
+
+   #----- Descriptions des resources utilisees par le package
+
+   set Resources(Bkg)       white        ;#Couleur du font (background)
+   set Resources(FillCoast) ""           ;#Cotes (Polygones)
+   set Resources(FillLake)  ""           ;#Lacs (Polygones)
+   set Resources(Coast)     #000000      ;#Cotes
+   set Resources(Lake)      #0000ff      ;#Lacs
+   set Resources(River)     #0000ff      ;#Rivieres
+   set Resources(Polit)     #ff0000      ;#Bordures politiques
+   set Resources(Admin)     #ff0000      ;#Bordures politiques internes
+   set Resources(City)      #ffa500      ;#Villes
+   set Resources(Road)      #404040      ;#Routes
+   set Resources(Rail)      #ff1493      ;#Chemin de fer
+   set Resources(Util)      #ffff00      ;#Utilitaires
+   set Resources(Canal)     #00ffff      ;#Canal/Aqueduc
+   set Resources(Coord)     #000000      ;#Latlon
+   set Resources(Font)      ""           ;#Police
+
+   #----- Definitions des labels relatives a la projection
+
+   set Lbl(Background)     { "Fond"     "Background" }
+   set Lbl(Coast)          { "Côtes"    "Coast" }
+   set Lbl(Lake)           { "Lac"      "Lake" }
+   set Lbl(River)          { "Rivière"  "River" }
+   set Lbl(Polit)          { "Pays"     "State" }
+   set Lbl(Admin)          { "Province" "Province" }
+   set Lbl(City)           { "Ville"    "City" }
+   set Lbl(Road)           { "Route"    "Road" }
+   set Lbl(Rail)           { "Rail"     "Rail" }
+   set Lbl(Util)           { "Utilité"  "Utilities" }
+   set Lbl(Canal)          { "Canal"    "Channel" }
+   set Lbl(Coord)          { "LatLon"   "LatLon" }
+   set Lbl(Sun)            { "Soleil"   "Sun" }
+
+   set Lbl(None)           { "Auncun" "None" }
+   set Lbl(Name)           { "Nom"    "Name" }
+   set Lbl(Color)          { "Couleurs" "Colors" }
+   set Lbl(Vector)         { "Vectoriel" "Vectorial" }
+   set Lbl(Degrees)        { "Degrés" "Degrees" }
+   set Lbl(HighRes)        { "Haute résolution" "High resolution" }
+   set Lbl(Raster)         { "Matriciel" "Raster" }
+   set Lbl(Mask)           { "Masque"   "Mask" }
+   set Lbl(Topo)           { "Topographie" "Topography" }
+   set Lbl(Bath)           { "Bathymétrie" "Bathymetry" }
+   set Lbl(Land)           { "Terre/Mer" "Land/Sea" }
+   set Lbl(Numbered)       { "Numérotation" "Numbered" }
+   set Lbl(Geo)            { "Géographie" "Geographic" }
+   set Lbl(Proj)           { "Projection" "Projection" }
+   set Lbl(Factor)         { "Facteurs d'expansion" "Expension factors" }
+   set Lbl(Sea)            { "Mer" "Sea" }
+   set Lbl(Show)           { "Afficher" "Show" }
+   set Lbl(Text)           { "Texture" "Texture" }
+
+   set Lbl(Apply)          { "Appliquer" "Apply" }
+   set Lbl(Close)          { "Fermer" "Close" }
+   set Lbl(Extent)         { "Etendue" "Extent" }
+   set Lbl(Min)            { "Minimum" "Minimum" }
+   set Lbl(Max)            { "Maximum" "Maximum" }
+   set Lbl(Transform)      { "Transformation" "Transform" }
+   set Lbl(Translation)    { "Translation" "Translation" }
+   set Lbl(Rotation)       { "Rotation" "Rotation" }
+   set Lbl(Scaling)        { "Echelle" "Scaling" }
+   set Lbl(Ident)          { "Identification" "Identification" }
+   set Lbl(CoordLoc)       { "Local" "Local" }
+   set Lbl(CoordRef)       { "Référence" "Reference" }
+   set Lbl(Value)          { "Valeur" "Value" }
+   set Lbl(Viewport)       { "Vue" "Viewport" }
+
+   #----- Definitions des bulles d'aides
+
+   set Bubble(Lat)     { "Sélecteur/Indicateur de latitude/j" "Latitude/j Selector/Indicator" }
+   set Bubble(Lon)     { "Sélecteur/Indicateur de longitude/i" "Longitude/i Selector/Indicator" }
+   set Bubble(Reset)   { "Recentrage de la projection" "Recenter the projection" }
+   set Bubble(Proj)    { "Sélection du type de projection" "Select thr projection type" }
+   set Bubble(Topo)    { "Topographie" "Global Topography" }
+   set Bubble(Bath)    { "Bathymétrie" "Global Bathymetry" }
+   set Bubble(Texture) { "Texture apliquée a la topographie" "Textured applied to the topography" }
+   set Bubble(Elev)    { "Facteur multiplicatif appliqué aux élévations" "Mutlipicative factor applied to the elevations" }
+   set Bubble(Vector)  { "Paramètres d'affichage des données\nvectorielles (couleur et largeur)" "Vectorial data parameters (Color and line width)" }
+   set Bubble(Sun)     { "Illumination selon la position du soleil" "Light based on sun position" }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Activate>
+# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Mettre une viewport actif et desactiver le precedent
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#   <VP>     : Indentificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Activate { Frame { VP "" } } {
+   global GDefs
+   variable Data
+
+   #----- Si le viewport actif est le courant, out
+
+   if { $Frame=="" || [string range $VP 0 3]=="MINI" } {
+      return
+   }
+
+   #----- Desactiver le viewport precedent
+
+   Page::ActiveUnWrap $Frame $Data(VP)
+
+   #----- Si pas de viewport, selectionner celui defaut du frame
+
+   if { $VP!="" } {
+      set Data(VP$Frame) $VP
+   }
+
+   #----- Definir les objects courants
+
+   set Data(VP)                 $Data(VP$Frame)
+   set Data(Data)               $Data(Data$Frame)
+
+   #----- Activer le viewport courant
+
+   Page::ActiveWrap $Frame $Data(VP)
+
+   if { $Data(VP)!="" && [llength [$Frame.page.canvas find withtag $Data(VP)]] } {
+
+      #----- Recuperer et instaurer ses parametres
+
+      Viewport::ConfigGet $Frame $Data(VP)
+      Viewport::ConfigPut $Frame $Data(VP)
+
+      #----- Macro de la calculatrice
+
+      set FieldCalc::Data(Macro)   $Data(Macro$Data(VP))
+      set FieldCalc::Data(Formula) $Data(MacroName$Data(VP))
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Assign>
+# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Assigner une donnee a un viewport
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Ids>     : Identificateurs des donnees
+#  <Force>   : Forcer le reaffichage
+#
+# Retour:
+#  <ok>      : Ajout effectue
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Assign { Frame VP Ids { Force 0 } } {
+   variable Data
+
+   set idx 0
+
+   if { [info exists Viewport::Data(Active$VP)] } {
+      foreach id $Ids {
+         if { [set idx [lsearch -exact $Data(Data$VP) $id]]==-1 } {
+            lappend Data(Data$VP) $id
+
+            #----- Definir les tags aux emplacements
+
+            if { [fstdfield is $id] } {
+               fstdfield stats $id -tag "$Frame $VP -1"
+               FSTD::Register $id
+            } elseif { [observation is $id] } {
+               observation stats $id -tag "$Frame $VP -1"
+               Obs::Register $id
+            } elseif { [metobs is $id] } {
+               metobs stats $id -tag "$Frame $VP -1"
+               Obs::Register $id
+            } elseif { [trajectory is $id] } {
+               trajectory stats $id -tag "$Frame $VP -1"
+            }
+            set Force [expr $Force==-1?0:1]
+         }
+      }
+      if { $Force } {
+         Viewport::UpdateData $Frame $VP
+      }
+   }
+   if { $idx==-1 } {
+      return 1
+   } else {
+      return 0
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::AssignedTo>
+# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Determiner a qui est assigner la donnee
+#
+# Parametres :
+#  <Data>    : Identificateur de la donnee
+#  <Page>    : Retour de la page assignee
+#  <VP>      : Retour du Viewport assignee
+#  <Box>     : Retour de la boite de selection assignee
+#
+# Retour:
+#  <Assigned : Assignation active
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::AssignedTo { Id { Page "" } { VP "" } { Box "" } } {
+   variable Data
+
+   set yes 1
+
+   if { [fstdfield is $Id] } {
+      set tag [fstdfield stats $Id -tag]
+   } elseif { [observation is $Id] } {
+      set tag [observation stats $Id -tag]
+   } elseif { [metobs is $Id] } {
+      set tag [metobs stats $Id -tag]
+   } elseif { [trajectory is $Id] } {
+      set tag [trajectory stats $Id -tag]
+   } else {
+      set tag {}
+      set yes 0
+   }
+
+   if { $Page!="" } {
+      upvar $Page page
+      set page [lindex $tag 0]
+   }
+   if { $VP!="" } {
+      upvar $VP vp
+      set vp [lindex $tag 1]
+   }
+   if { $Box!="" } {
+      upvar $Box box
+      set box [lindex $tag 2]
+   }
+   return $yes
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Assigned>
+# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer la liste du type de donnees assignees a un viewport
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Types>   : Typesde donnees
+#
+# Retour:
+#  <List>    : Liste des identificateurs des donnees ("" = aucun)
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Assigned { Frame VP { Types fstdfield } } {
+
+   set list ""
+
+   if { [info exists Viewport::Data(Active$VP)] } {
+      foreach data [lindex [$Frame.page.canvas itemconfigure $VP -data] 4] {
+         foreach type $Types {
+            eval set is \[$type is \$data\]
+            if { $is } {
+               lappend list $data
+               break
+            }
+         }
+      }
+   }
+   return $list
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::UnAssign>
+# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Desassigner une donnee a un viewport
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Ids>     : Identificateurs des donnees
+#
+# Retour:
+#  <ok>      : Suppression effectue
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
+   variable Data
+
+   set ok 0
+
+   if { [info exists Viewport::Data(Active$VP)] } {
+
+      if { $Ids=="" } {
+         foreach id $Data(Data$VP) {
+            if { [fstdfield is $id] } {
+               FSTD::UnRegister $id
+            } elseif { [observation is $id] } {
+               Obs::UnRegister $id
+            } elseif { [metobs is $id] } {
+               Obs::UnRegister $id
+            }
+         }
+         set Data(Data$VP) ""
+         set ok 1
+      } else {
+         foreach id $Ids {
+            if { [set idx [lsearch -exact $Data(Data$VP) $id]]!=-1 } {
+               set  Data(Data$VP) [lreplace $Data(Data$VP) $idx $idx]
+               if { [fstdfield is $id] } {
+                  FSTD::UnRegister $id
+               } elseif { [observation is $id] } {
+                  Obs::UnRegister $id
+               } elseif { [metobs is $id] } {
+                  Obs::UnRegister $id
+               }
+               set ok 1
+            }
+         }
+      }
+   }
+
+   if { ($ok && $Force!=-1) || $Force==1 } {
+      Viewport::UpdateData $Frame $VP
+   }
+
+   return $ok
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ConfigGet>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer les parametres de configurations d'un viewport/projection
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ConfigGet { Frame VP } {
+   variable Map
+   variable Data
+   variable Resources
+
+   set sec                 [projection configure $Frame -date]
+   set Data(Seconds$Frame) [expr $sec-$Data(Seconds)]
+
+   set Map(GeoRef$Frame) [projection configure $Frame -georef]
+   set Map(Type)         [projection configure $Frame -type]
+   set Map(Type$Frame)   $Map(Type)
+
+   set Map(Data)        [projection configure $Frame -data]
+   set Map(Elev)        [projection configure $Frame -scale]
+   set loc              [projection configure $Frame -location]
+   set Map(Lat)         [lindex $loc 0]
+   set Map(Lon)         [lindex $loc 1]
+
+   set coo              [projection configure $Frame -mapcoord]
+   set Map(Coord)       [lindex $coo 0]
+   set Map(CoordDef)    [lindex $coo 1]
+   set Map(CoordNum)    [lindex $coo 2]
+
+   set Map(Sun)         [projection configure $Frame -sun]
+   set Map(Res)         [projection configure $Frame -mapres]
+   set Map(Mask)        [projection configure $Frame -mask]
+   set Map(Coast)       [projection configure $Frame -mapcoast]
+   set Map(Lake)        [projection configure $Frame -maplake]
+   set Map(River)       [projection configure $Frame -mapriver]
+   set Map(Admin)       [projection configure $Frame -mapadmin]
+   set Map(Road)        [projection configure $Frame -maproad]
+   set Map(Rail)        [projection configure $Frame -maprail]
+   set Map(Util)        [projection configure $Frame -maputil]
+   set Map(Canal)       [projection configure $Frame -mapcanal]
+   set Map(Topo)        [projection configure $Frame -maptopo]
+   set Map(Bath)        [projection configure $Frame -mapbath]
+   set Map(Text)        [projection configure $Frame -maptext]
+
+   set Map(TPolit)      [expr $Map(Polit)<0?-1:1]
+   set Map(TCity)       [expr $Map(City)<0?-1:1]
+
+   set Resources(Font)      [lindex [$Frame.page.canvas itemconf $VP -font] 4]
+   set Resources(Bkg)       [lindex [$Frame.page.canvas itemconf $VP -bg] 4]
+
+   set Resources(FillCoast) [lindex [$Frame.page.canvas itemconf $VP -colorfillcoast] 4]
+   set Resources(FillLake)  [lindex [$Frame.page.canvas itemconf $VP -colorfilllake] 4]
+   set Resources(Coast)     [lindex [$Frame.page.canvas itemconf $VP -colorcoast] 4]
+   set Resources(Lake)      [lindex [$Frame.page.canvas itemconf $VP -colorlake] 4]
+   set Resources(River)     [lindex [$Frame.page.canvas itemconf $VP -colorriver] 4]
+   set Resources(Polit)     [lindex [$Frame.page.canvas itemconf $VP -colorpolit] 4]
+   set Resources(Admin)     [lindex [$Frame.page.canvas itemconf $VP -coloradmin] 4]
+   set Resources(City)      [lindex [$Frame.page.canvas itemconf $VP -colorcity] 4]
+   set Resources(Road)      [lindex [$Frame.page.canvas itemconf $VP -colorroad] 4]
+   set Resources(Rail)      [lindex [$Frame.page.canvas itemconf $VP -colorrail] 4]
+   set Resources(Util)      [lindex [$Frame.page.canvas itemconf $VP -colorutil] 4]
+   set Resources(Canal)     [lindex [$Frame.page.canvas itemconf $VP -colorcanal] 4]
+   set Resources(Coord)     [lindex [$Frame.page.canvas itemconf $VP -colorcoord] 4]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ConfigPut>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Instaurer les paramtres dans l'interface de configuration
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ConfigPut { Frame VP } {
+   global   GDefs
+   variable Data
+   variable Map
+   variable Resources
+
+   $Data(Frame).layer.vp.col configure -fg $Resources(Bkg)
+
+   set lst "zeroth.xbm mask1.xbm mask2.xbm"
+   $Data(Frame).left.ras.mask.sel configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst [expr $Map(Mask)<0?0:$Map(Mask)]]
+
+   set lst "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm width6.xbm"
+   $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coast)]
+   $Data(Frame).layer.lake.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Lake)]
+   $Data(Frame).layer.river.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(River)]
+   $Data(Frame).layer.poli.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst [expr abs($Map(Polit))]]
+   $Data(Frame).layer.admin.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Admin)]
+   $Data(Frame).layer.city.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst [expr abs($Map(City))]]
+   $Data(Frame).layer.road.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Road)]
+   $Data(Frame).layer.rail.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Rail)]
+   $Data(Frame).layer.util.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Util)]
+   $Data(Frame).layer.canal.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Canal)]
+   $Data(Frame).layer.ll.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coord)]
+
+   ColorBox::ConfigNoColor $Data(Frame).layer.coast.col $Resources(Coast)
+   ColorBox::ConfigNoColor $Data(Frame).layer.lake.col $Resources(Lake)
+   ColorBox::ConfigNoColor $Data(Frame).layer.coast.fcol $Resources(FillCoast)
+   ColorBox::ConfigNoColor $Data(Frame).layer.lake.fcol $Resources(FillLake)
+   ColorBox::ConfigNoColor $Data(Frame).layer.river.col $Resources(River)
+   ColorBox::ConfigNoColor $Data(Frame).layer.poli.col $Resources(Polit)
+   ColorBox::ConfigNoColor $Data(Frame).layer.admin.col $Resources(Admin)
+   ColorBox::ConfigNoColor $Data(Frame).layer.city.col $Resources(City)
+   ColorBox::ConfigNoColor $Data(Frame).layer.road.col $Resources(Road)
+   ColorBox::ConfigNoColor $Data(Frame).layer.rail.col $Resources(Rail)
+   ColorBox::ConfigNoColor $Data(Frame).layer.util.col $Resources(Util)
+   ColorBox::ConfigNoColor $Data(Frame).layer.canal.col $Resources(Canal)
+   ColorBox::ConfigNoColor $Data(Frame).layer.ll.col $Resources(Coord)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ConfigSet>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Modifier les parametres de configurations d'un viewport/projection
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ConfigSet { Frame } {
+   variable Data
+   variable Map
+   variable Resources
+
+   set Map(Type$Frame)   $Map(Type)
+   set Map(GeoRef$Frame) $Map(GeoRef)
+
+   Viewport::ForceGrid $Frame
+
+   projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask)\
+      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit [expr $Map(Polit)*$Map(TPolit)] \
+      -mapadmin $Map(Admin) -mapcity [expr $Map(City)*$Map(TCity)] -maproad  $Map(Road)\
+      -maprail $Map(Rail)   -maputil $Map(Util) -mapcanal $Map(Canal) -maptopo $Map(Topo) -mapbath $Map(Bath)\
+      -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+      -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] \
+      -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
+
+   set ll [projection configure $Frame -location]
+   set Map(Lat) [lindex $ll 0]
+   set Map(Lon) [lindex $ll 1]
+
+   foreach vp [Page::Registered $Frame Viewport] {
+      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
+         -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
+         -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) \
+         -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord)
+   }
+
+   if { [info exists Miniport::Data(Mini$Frame)] } {
+      projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit [expr $Map(Polit)*$Map(TPolit)] \
+         -mapadmin $Map(Admin) -mapcity [expr $Map(City)*$Map(TCity)] -maproad  $Map(Road)\
+         -maprail $Map(Rail)   -maputil $Map(Util) -mapcanal $Map(Canal) -maptopo $Map(Topo) -mapbath $Map(Bath)\
+         -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+         -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
+
+     $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
+         -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
+         -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) \
+         -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord)
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Follow>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche les coordonneees lat-lon de la position du curseur.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <X>       : Coordonnne x du pointeur de la souris
+#  <Y>       : Coordonnne y du pointeur de la souris
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Follow { Frame VP X Y } {
+   variable Map
+   variable Data
+
+   set Page::Data(Value) ""
+   set Page::Data(Coord) ""
+
+   #----- Obtenir les coordonnees du curseur
+
+   set latlon [$VP -unproject $X $Y]
+
+   set Map(X) $X
+   set Map(Y) $Y
+   set Map(LatCursor)  [lindex $latlon 0]
+   set Map(LonCursor)  [lindex $latlon 1]
+   set Map(AltCursor)  [lindex $latlon 2]
+
+   if { $Map(Type$Frame)=="grid" } {
+      set ij [$VP -ungrid $X $Y]
+
+      set Map(GridICursor)   [lindex $ij 0]
+      set Map(GridJCursor)   [lindex $ij 1]
+   }
+
+   if { $Map(CoordUnit)=="DEG" } {
+      set dec 10
+   } else {
+      set dec 5
+   }
+   catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Map(CoordUnit) $dec] }
+
+   #----- Obtenir l'information des donnees
+
+   $Frame.page.canvas delete PTRDATAINFO COORDLINK
+
+   if { $Map(Speed)==0.0 } {
+      set data [$VP -pick $X $Y { observation metobs }]
+      set loc ""
+
+      if { [llength $data] } {
+         set obj [lindex $data 1]
+         switch [lindex $data 0] {
+            "observation" { set loc   [observation define $obj -ID [lindex $data 2]]
+                           set coord [observation define $obj -COORD [lindex $data 2]]
+                           append Page::Data(Value) "$obj:[observation define $obj -DATA [lindex $data 2]] "
+                        }
+            "metobs"      { set loc   [lindex [metobs define $obj -ID] [lindex $data 2]]
+                           set coord [metobs define $obj -COORD $loc]
+                           set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
+                           set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
+                           set vals  [metobs define $obj -ELEMENT $loc [lindex $item 2] [metobs define $obj -VALID]]
+                           append Page::Data(Value) "[lindex $item 2]:"
+                           foreach val $vals {
+                              append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
+                           }
+                        }
+         }
+         if  { $loc!="" } {
+            $Frame.page.canvas create text [expr $X+5] $Y -tags PTRDATAINFO -text $loc -font XFont12 -fill black -anchor sw
+         }
+         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Map(CoordUnit) 10] }
+         catch { set Viewport::Map(AltCursor) [lindex $coord 2] }
+      }
+   }
+   #----- Activation du pointeur commun
+
+   if { $Map(CoordLink) } {
+      foreach frame $Page::Data(Frames) {
+         $frame.page.canvas delete COORDLINK
+         foreach vp [Page::Registered $frame Viewport] {
+            if { [set xy [$vp -project $Map(LatCursor) $Map(LonCursor) 0.0]]!= "" && [lindex $xy 2]>0 } {
+               set x [lindex $xy 0]
+               set y [lindex $xy 1]
+               $frame.page.canvas create line $Data(X$vp) $y [expr $x-5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line [expr $Data(X$vp)+$Data(Width$vp)] $y [expr $x+5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $x $Data(Y$vp) $x [expr $y-5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $x [expr $Data(Y$vp)+$Data(Height$vp)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+            }
+         }
+         if { [info exists Miniport::Data(Mini$frame)] } {
+            if { [set xy [MINI$frame -project $Map(LatCursor) $Map(LonCursor) 0.0]]!= "" && [lindex $xy 2]>0 } {
+               set x [lindex $xy 0]
+               set y [lindex $xy 1]
+               $frame.page.canvas create line $Data(XMINI$frame) $y [expr $x-5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line [expr $Data(XMINI$frame)+$Data(WidthMINI$frame)] $y [expr $x+5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $x $Data(YMINI$frame) $x [expr $y-5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $x [expr $Data(YMINI$frame)+$Data(HeightMINI$frame)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+            }
+         }
+      }
+   }
+
+   #----- Activer les follower externes
+
+   if { [winfo exists .position] } {
+      Viewport::FollowerInfo $Frame $VP
+   } else {
+      foreach follower $Data(Followers) {
+         eval ${follower}::Follower  $Frame $Frame.page.canvas $VP $Map(LatCursor) $Map(LonCursor) $X $Y
+      }
+   }
+
+
+   #----- Verifier la validitee de la coordonnee
+
+   if { $Map(LatCursor)==-999.0 || $Map(LonCursor)==-999.0 } {
+      return 0
+   } else {
+      #----- Auto refresf du MiniPort
+
+      if { [info exists Miniport::Data(Mini$Frame)] && "$VP"!="MINI$Frame"} {
+         Miniport::Lens $Frame
+         Miniport::UpdateData $Frame $VP
+         Miniport::Coverage $Frame $VP
+      }
+      return 1
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::FollowerAdd>
+# Creation : Novembre 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajouter un package a la liste des follower
+#
+# Parametres  :
+#  <Follower> : Package
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::FollowerAdd { Follower } {
+   variable Data
+
+   lappend Data(Followers) $Follower
+   set Data(Followers) [lsort -unique -dictionary $Data(Followers)]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::FollowerRemove>
+# Creation : Novembre 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer un package de la liste des follower
+#
+# Parametres  :
+#  <Follower> : Package
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::FollowerRemove { Follower } {
+   variable Data
+
+   if { [set idx [lsearch -exact $Data(Followers) $Follower]]!=-1 } {
+      set Data(Followers) [lreplace $Data(Followers) $idx $idx]
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::FollowerInfo>
+# Creation : Janvier 2005 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche une fenetres d'information detaillee sur la position du curseur.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::FollowerInfo { Frame VP } {
+   global GDefs
+   variable Data
+   variable Map
+   variable Lbl
+
+   if { ![winfo exists .position] } {
+      toplevel .position
+
+      wm transient .position .
+
+      frame .position.head
+         label .position.head.ids  -text [lindex $Lbl(Ident) $GDefs(Lang)]        -width 15 -relief raised -bd 1 -justify left -anchor w
+         label .position.head.coox -text "[lindex $Lbl(CoordLoc) $GDefs(Lang)] X" -width 15 -relief raised -bd 1 -justify left -anchor w
+         label .position.head.cooy -text "[lindex $Lbl(CoordLoc) $GDefs(Lang)] Y" -width 15 -relief raised -bd 1 -justify left -anchor w
+         label .position.head.prjx -text "[lindex $Lbl(CoordRef) $GDefs(Lang)] X" -width 15 -relief raised -bd 1 -justify left -anchor w
+         label .position.head.prjy -text "[lindex $Lbl(CoordRef) $GDefs(Lang)] Y" -width 15 -relief raised -bd 1 -justify left -anchor w
+         label .position.head.val  -text [lindex $Lbl(Value) $GDefs(Lang)]        -width 15 -relief raised -bd 1 -justify left -anchor w
+         pack .position.head.ids .position.head.val .position.head.coox .position.head.cooy \
+            .position.head.prjx .position.head.prjy -side left -ipadx 2 -ipady 2 -fill x -expand true
+      pack .position.head -side top -fill x
+
+      frame .position.coord -relief raised -bd 1
+         label .position.coord.name -text "Projection"
+         label .position.coord.ll -textvariable Page::Data(Coord) -relief sunken -width 36 -bd 1 -bg $GDefs(ColorLight)
+         label .position.coord.height -relief sunken -width 5 -bd 1 -bg $GDefs(ColorLight)
+         pack .position.coord.name .position.coord.ll -side left
+         pack .position.coord.height -side left -fill x -expand true
+      pack .position.coord -side bottom -fill x
+   }
+
+   set i -1
+   foreach follower $Data(Followers) {
+      if { $Map(CoordLink) } {
+         set fs {}
+         foreach frame $Page::Data(Frames) {
+            foreach vp [Page::Registered $frame Viewport] {
+               foreach f [${follower}::Follower $frame $frame.page.canvas $vp $Map(LatCursor) $Map(LonCursor) 0 0] {
+                   Viewport::FollowerSet [incr i] [lindex $f 0] [lindex $f 3] [lindex [lindex $f 1] 0] [lindex [lindex $f 1] 1] [lindex [lindex $f 2] 0] [lindex [lindex $f 2] 1]
+               }
+            }
+         }
+      } else {
+         foreach f [${follower}::Follower $Frame $Frame.page.canvas $VP $Map(LatCursor) $Map(LonCursor) 0 0] {
+            Viewport::FollowerSet [incr i] [lindex $f 0] [lindex $f 3] [lindex [lindex $f 1] 0] [lindex [lindex $f 1] 1] [lindex [lindex $f 2] 0] [lindex [lindex $f 2] 1]
+         }
+      }
+   }
+
+   for { set n $Data(FollowerNb) } { $n>$i } { incr n -1 } {
+      destroy .position.info$n
+   }
+
+   set Data(FollowerNb) $i
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::FollowerSet>
+# Creation : Janvier 2005 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche une fenetres d'information detaillee sur la position du curseur.
+#
+# Parametres :
+#  <Idx>     : Index du suivit
+#  <Id>      : Identificateur du suivit
+#  <Value>   : Valeur
+#  <CoordX>  : Coordonnee en X
+#  <CoordY>  : Coordonnee en Y
+#  <RefX>    : Coordonnee en X dans le referentiel
+#  <RefY>    : Coordonnee en Y dans le referentiel
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::FollowerSet { Idx Id Value CoordX CoordY RefX RefY } {
+   global GDefs
+
+   if { ![winfo exists .position.info$Idx] } {
+      frame .position.info$Idx
+         label .position.info$Idx.ids  -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
+         label .position.info$Idx.val  -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
+         label .position.info$Idx.coox -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
+         label .position.info$Idx.cooy -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
+         label .position.info$Idx.prjx -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
+         label .position.info$Idx.prjy -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
+         pack .position.info$Idx.ids .position.info$Idx.val .position.info$Idx.coox .position.info$Idx.cooy \
+            .position.info$Idx.prjx .position.info$Idx.prjy -side left -ipadx 2 -ipady 2 -fill x -expand true
+      pack .position.info$Idx -side top -after .position.head -fill x
+   }
+
+   .position.info$Idx.ids  configure -text $Id
+   .position.info$Idx.val  configure -text $Value
+   .position.info$Idx.coox configure -text $CoordX
+   .position.info$Idx.cooy configure -text $CoordY
+   .position.info$Idx.prjx configure -text $RefX
+   .position.info$Idx.prjy configure -text $RefY
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::CheckCoord>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Verifie les limites des longitudes (180 et -180) et renvoie la bonne valeur.
+#
+# Parametres :
+#  <Lon>     : Longitude a verifier
+#
+# Retour:
+#  <Lon>     : Longitude ajustee
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::CheckCoord { Lon } {
+
+   return [expr $Lon<-180.0?$Lon+360.0:($Lon>180.0?$Lon-360.0:$Lon)]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::CheckInside>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Determiner l'inclusion d'une coordonnees a l'interieur d'une
+#            region definie comme telle:
+#
+#                 #--------------#(Lat1,Lon1)
+#                 |              |
+#                 |              |
+#                 |              |
+#                 |              |
+#      (Lat0,Lon0)#--------------#
+#
+#       avec Lon0 toujours plus petit que Lon1
+#
+#      -90<Lat<90 -180<Lon<180
+#
+# Parametres :
+#   <Lat0>   : Latitude minimale
+#   <Lon0>   : Longitude minimale
+#   <Lat1>   : Latitude maximale
+#   <Lon1>   : Longitude maximale
+#   <Lat>    : Latitude
+#   <Lon>    : Longitude
+#
+# Retour     :
+#    <in>    : Boolean
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::CheckInside { Lat0 Lon0 Lat1 Lon1 Lat Lon } {
+
+   if { $Lat0==$Lat1 || $Lon0==$Lon1 } {
+      return 1
+   }
+
+   if { [expr $Lon0*$Lon1]<0 } {
+      set delta [expr $Lon1-$Lon0]
+   } else {
+      set delta 0
+   }
+
+   if { $Lat>=$Lat0 && $Lat<=$Lat1 } {
+      if { $delta<=180 } {
+         if { $Lon>=$Lon0 && $Lon<=$Lon1 } {
+            return 1
+         }
+      } else {
+         if { ($Lon<=$Lon0 && $Lon>-180) || ($Lon>=$Lon1 && $Lon<180) } {
+            return 1
+         }
+      }
+   }
+   return 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Create>
+# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer un viewport ainsi que tout ses widgets
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#   <X0>     : Coordonee X du coin superieur gauche
+#   <Y0>     : Coordonee Y du coin superieur gauche
+#   <Width>  : Largeur du Viewport
+#   <Height> : Hauteur du Viewport
+#   <Active> : Fonction active (Deplacement,Agrandisement)
+#   <Full>   : Mode Full screen
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
+   global   GDefs
+   variable Data
+   variable Map
+   variable Resources
+
+   $Frame.page.canvas configure -cursor watch
+   update idletasks
+
+   if { $VP=="" } {
+      set vp VP[incr Data(VPNb)]
+   } else {
+      set vp $VP
+   }
+
+   if { [info exists Viewport::Data(Active$vp)] } {
+      return
+   }
+
+   set Page::Data(Frame)   $Frame
+   set Page::Data(Canvas)  $Frame.page.canvas
+
+   if { $Full } {
+      set X0       0
+      set Y0       0
+      set Width   [winfo width  $Page::Data(Canvas)]
+      set Height  [winfo height $Page::Data(Canvas)]
+   }
+
+   #----- Initialiser les variables du viewport
+
+   set Data(Full$vp)      $Full      ;#Mode FullCanvas
+   set Data(Active$vp)    $Active    ;#Mode Active (Manipulation in place)
+   set Data(X$vp)         $X0        ;#Offset en x
+   set Data(Y$vp)         $Y0        ;#Offset en y
+   set Data(Width$vp)     $Width     ;#Largeur de la projection
+   set Data(Height$vp)    $Height    ;#Hauteur de la projection
+   set Data(Data$vp)      ""         ;#Donnees associees
+   set Data(Frame$vp)     $Frame     ;#Frame
+   set Data(Macro$vp)     ""         ;#Calcul Macro
+   set Data(MacroName$vp) ""         ;#Calcul Macro
+   set Data(Link$vp)      ""         ;#Lien a un autre Viewport
+   set Data(Linked$vp)    ""         ;#Viewport liees
+
+   #----- Definir comme lien si non-existant
+
+   if { ![llength $Data(Link)] } {
+      set Data(Link) [list $Frame $vp]
+   }
+
+   set tag $Page::Data(Tag)$vp
+   set x1 [expr $Width+$X0]
+   set y1 [expr $Height+$Y0]
+
+   Viewport::ConfigSet $Frame
+
+   #----- Creer le viewport et son pourtour
+
+   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -fg black -font FONT$Frame -bg $Resources(Bkg) \
+      -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
+      -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
+      -colorroad $Resources(Road) -colorrail $Resources(Rail) \
+      -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord) \
+      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -backbuffer $OpenGL::Param(BBuf)
+
+   if { $Active } {
+      Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
+      scale $Frame.sc$vp -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
+         -from [expr log10(0.5)/log10(2)] -to [expr log10(131072)/log10(2)] \
+         -variable Page::Data(L$Frame) -command "ProjCam::Zoom $Frame $Frame \[expr pow(2,\$Page::Data(L$Frame))\]; catch"
+      bind $Frame.sc$vp <ButtonPress-1> "Viewport::Resolution $Frame [expr $OpenGL::Param(Res)==1?2:$OpenGL::Param(Res)]; ProjCam::Zoom $Frame $Frame \[expr pow(2,\$Page::Data(L$Frame))\] True"
+      bind $Frame.sc$vp <ButtonRelease-1> "Viewport::Resolution $Frame 1"
+
+      $Frame.page.canvas create window [expr $x1-150-35] $y1  -window $Frame.sc$vp -anchor sw -tags "SC$Page::Data(Tag)$vp NOPRINT" -width 151
+   }
+
+   Viewport::Activate $Frame $vp
+   $Frame.page.canvas bind $tag <Button-3> "Viewport::Activate $Frame $vp ; tk_popup .mapmenu %X %Y 0"
+
+   Page::ActiveFull Viewport $Frame $vp $Full
+   Page::Register $Frame Viewport $vp
+
+
+   update idletasks
+   $Frame.page.canvas configure -cursor left_ptr
+
+   return $vp
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Destroy>
+# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer un viewport ainsi que tout ses widgets
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#   <VP>     : Indentificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Destroy { Frame { VP {} } } {
+   variable Data
+
+   $Frame.page.canvas configure -cursor watch
+   update idletasks
+
+   if { ![llength $VP] } {
+      set VP [Page::Registered $Frame Viewport]
+   }
+
+   foreach vp $VP {
+
+      if { [Page::Registered $Frame Viewport $vp]!=-1 } {
+
+         #----- Cleanup le data associe
+         Viewport::UnAssign $Frame $vp
+
+         #----- Supprimer les widgets de controle
+         Page::ActiveUnWrapper Viewport $Frame $vp
+
+         #----- Supprimer le viewport et ses items
+         set tag $Page::Data(Tag)$vp
+         $Frame.page.canvas delete $vp $tag
+
+         #----- Supprimer les variables du viewport
+         unset Data(Full$vp)
+         unset Data(Active$vp)
+         unset Data(X$vp)
+         unset Data(Y$vp)
+         unset Data(Width$vp)
+         unset Data(Height$vp)
+         unset Data(Data$vp)
+         unset Data(Frame$vp)
+         unset Data(Macro$vp)
+         unset Data(MacroName$vp)
+
+         #----- Clear le lien source si c'est le vp courant
+         if { [lindex $Data(Link) 1]=="$vp" } {
+            set Data(Link) {}
+         }
+
+         set Data(VP$Frame) [Page::UnRegister $Frame Viewport $vp]
+
+         #----- Supprimer les items associees
+         ColorBar::DestroyAll $Frame $vp
+         DataBar::DestroyAll $Frame $vp
+      }
+   }
+
+   if { $Viewport::Data(VP$Frame)!="" && [info exist Viewport::Data(VP$Frame)] } {
+      Viewport::Activate $Frame $Data(VP$Frame)
+   }
+
+   update idletasks
+   $Frame.page.canvas configure -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Do>
+# Creation : Novembre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Alias pour ajuster tout les parametres pour les versions xbatch.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Do { Frame } {
+   variable Map
+   variable Data
+
+   set Map(Type$Frame)   $Map(Type)
+   set Map(GeoRef$Frame) $Map(GeoRef)
+
+   projection configure $Frame -type $Map(Type) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
+      -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) \
+      -mappolit $Map(Polit) -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road)\
+      -maprail $Map(Rail)   -maputil $Map(Util) -mapcanal $Map(Canal) -maptopo $Map(Topo) \
+      -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) -data $Data(Data$Frame)
+
+   projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
+
+   Page::Update  $Frame
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::DrawArea>
+# Creation : Juillet 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine une region sur la projection.
+#
+# Parametres   :
+#  <Frame>     : Identificateur de Page
+#  <VP>        : Identificateur du Viewport
+#  <Coords>    : Liste des coordonnnes
+#  <Tags>      : Identificateurs de la ligne
+#  <SingleTag> : Identificateur unique de la ligne
+#  <Color>     : Couleur
+#  <Outline>   : Couleur du pourtour
+#  <Stipple>   : Pattern de remplissage de la region
+#  <Smooth>    : Segments droit ou courbe
+#  <BD>        : Epaisseur de la ligne en pixel.
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::DrawArea { Frame VP Coords Tags SingleTag Color Outline Stipple Smooth BD } {
+   variable Data
+   variable Map
+
+   set a  [$VP -projectline TRUE $Coords]
+   set a0 [lindex $a 0]
+   set a1 [lindex $a 1]
+
+   $Frame.page.canvas delete $SingleTag
+
+   #----- Affiche la partie cachee ou gauche
+
+   if { $Map(Type$Frame)!="orthographic" && [llength $a1]>4 } {
+      eval $Frame.page.canvas create polygon $a1 -stipple \$Stipple -tags \$Tags \
+         -fill \$Color -outline \$Outline -smooth $Smooth -width \$BD
+   } elseif { [llength $a1]==4 } {
+      eval $Frame.page.canvas create line $a1 -tags \$Tags -fill $Outline -width \$BD
+   }
+
+   #----- Affiche la partie avant ou droite
+
+   if { [llength $a0]>4 } {
+      eval $Frame.page.canvas create polygon $a0 -stipple \$Stipple -tags \$Tags \
+        -fill \$Color -outline \$Outline -smooth $Smooth -width $BD
+   } elseif { [llength $a0]==4 } {
+      eval $Frame.page.canvas create line $a0 -tags \$Tags -fill \$Outline -width \$BD
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::DrawLine>
+# Creation : Juillet 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine une ligne sur la projection.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Coords>  : Coordonnne (lat lon elev)
+#  <Tags>    : Identificateur de la ligne
+#  <Color>   : Couleur.
+#  <BD>      : Epaisseur de la ligne en pixel.
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::DrawLine { Frame VP Coords Tags Color BD } {
+   variable Data
+   variable Map
+
+   #----- Verifier le type de projection pour les parametres et les couleurs
+
+   set l  [$VP -projectline COORD $Coords]
+   set l0 [lindex $l 0]
+   set l1 [lindex $l 1]
+
+   if { [llength $l0] > 2 } {
+      eval $Frame.page.canvas create line $l0 -fill $Color -width $BD -tags \$Tags
+   }
+
+   if { [llength $l1] > 2 && $Map(Type$Frame)!="orthographic" } {
+      eval $Frame.page.canvas create line  $l1 -fill $Color -width $BD -tags \$Tags
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::DrawRange>
+# Creation : Juin 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine une reginon de selection sur la projection.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Lat0>    : Coordonnne en latitude 0
+#  <Lon0>    : Coordonnne en longitude 0
+#  <Lat1>    : Coordonnne en latitude 0
+#  <Lon1>    : Coordonnne en longitude 0
+#  <Tag>     : Identificateur de la ligne
+#  <Color>   : Couleur.
+#  <Text>    : Texte d'identification
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::DrawRange { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } { Font XFont10 } } {
+
+   if { $Lat0!=-999.00 && $Lat1!=-999.00 } {
+      Viewport::DrawLine $Frame $VP "$Lat0 $Lon0 0 $Lat1 $Lon0 0 $Lat1 $Lon1 0 $Lat0 $Lon1 0 $Lat0 $Lon0 0" $Tag $Color 2
+
+      if { $Text!="" } {
+         if { [set vr [$VP -project $Lat0 $Lon1 0]]!= "" && [lindex $vr 2]>0 } {
+            $Frame.page.canvas create text [expr [lindex $vr 0]-2] [expr [lindex $vr 1]-2] -text $Text -anchor se -font $Font -fill $Color -tag $Tag
+         }
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ForceGrid>
+# Creation : Septembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Forcer la prise en charge des parametres de projections grilles.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ForceGrid { Frame { Reset False } } {
+   variable Map
+
+   if { $Map(Type$Frame)=="grid" } {
+      if { $Viewport::Map(GeoRef)=="" } {
+         if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
+            if { [set fld [lindex [Viewport::Assigned $Frame $vp fstdfield] 0]]!="" } {
+               if { [set georef [fstdfield define $fld -georef]]!="" } {
+                  projection configure $Frame -georef $georef
+               }
+            }
+         }
+      } else {
+         projection configure $Frame -georef $Map(GeoRef)
+      }
+      set ij [projection configure $Frame -gridpoint]
+
+      set Map(GridI) [lindex $ij 0]
+      set Map(GridJ) [lindex $ij 1]
+
+      if { $Reset } {
+         Viewport::Reset $Frame
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ParamProjGet>
+# Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer les parametres de projection.
+#
+# Parametres :
+#  <Ref>     : Identificateur de georeference
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ParamProjGet { Ref } {
+   variable Map
+
+   if { [georef is $Ref] } {
+      set Map(GridProj) [georef define $Ref -projection]
+      if { [llength [set extent [georef define $Ref -extent]]] } {
+         set Map(GridMinX) [lindex $extent 0]
+         set Map(GridMinY) [lindex $extent 1]
+         set Map(GridMaxX) [lindex $extent 2]
+         set Map(GridMaxY) [lindex $extent 3]
+      } else {
+         set Map(GridMinX) ""
+         set Map(GridMinY) ""
+         set Map(GridMaxX) ""
+         set Map(GridMaxY) ""
+      }
+
+      if { [llength [set transform [georef define $Ref -transform]]] } {
+         set Map(GridTrX) [lindex $extent 0]
+         set Map(GridRtX) [lindex $extent 2]
+         set Map(GridScX) [lindex $extent 1]
+         set Map(GridTrY) [lindex $extent 3]
+         set Map(GridRtY) [lindex $extent 4]
+         set Map(GridScY) [lindex $extent 5]
+      } else {
+         set Map(GridTrX) ""
+         set Map(GridRtX) ""
+         set Map(GridScX) ""
+         set Map(GridTrY) ""
+         set Map(GridRtY) ""
+         set Map(GridScY) ""
+      }
+   } else {
+      set Map(GridProj) ""
+      set Map(GridMinX) ""
+      set Map(GridMinY) ""
+      set Map(GridMaxX) ""
+      set Map(GridMaxY) ""
+      set Map(GridTrX) ""
+      set Map(GridRtX) ""
+      set Map(GridScX) ""
+      set Map(GridTrY) ""
+      set Map(GridRtY) ""
+      set Map(GridScY) ""
+    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ParamProj>
+# Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Definir les parametres de projection.
+#
+# Parametres :
+#  <Ref>     : Identificateur de georeference
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ParamProjSet { { Ref "" } } {
+   variable Map
+
+   if { [georef is $Ref] } {
+      eval set transform \[list $Map(GridTrX) $Map(GridScX) $Map(GridRtX) $Map(GridTrY) $Map(GridRtY) $Map(GridScY)\]
+      georef define $Ref -projection $Map(GridProj)
+      georef define $Ref -transform $transform
+      georef define $Ref -extent [list $Map(GridMinX) $Map(GridMinY) $Map(GridMaxX) $Map(GridMaxY)]
+   }
+   projection clean $Page::Data(Frame)
+   Page::Update $Page::Data(Frame)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ParamProj>
+# Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Definition des parametres de projection.
+#
+# Parametres :
+#  <Ref>     : Identificateur de georeference
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ParamProj { Ref } {
+   global GDefs
+   variable Lbl
+   variable Map
+
+   toplevel         .viewportproj -class Dialog
+   wm title         .viewportproj "[lindex $Lbl(Proj) $GDefs(Lang)]"
+   wm resizable     .viewportproj 1 1
+   wm protocol      .viewportproj WM_DELETE_WINDOW { }
+   wm geometry      .viewportproj =300x150+[expr [winfo rootx .]+10]+[expr [winfo rooty .]+10]
+
+   Viewport::ParamProjGet $Ref
+
+   TabFrame::Create .viewportproj.tab 1 ""
+   pack .viewportproj.tab -side top -fill both -expand true -padx 2 -pady 2
+
+   set tab [TabFrame::Add .viewportproj.tab 1 [lindex $Lbl(Proj) $GDefs(Lang)] True]
+
+   frame $tab.proj
+      frame $tab.proj.head
+         button $tab.proj.head.file -image OPEN -relief flat -bd 0 -overrelief raised \
+            -command "Mapper::ProjFile $tab.proj.val \[FileBox::Create . \"\" Load \[list \$FileBox::Type(PROJ) \$FileBox::Type(TXT)\]\]"
+         pack $tab.proj.head.file -side left -padx 2
+      pack $tab.proj.head -side top -fill x
+
+      text $tab.proj.val -bd 1 -bg $GDefs(ColorLight) -height 5 -width 25
+      pack $tab.proj.val -side right -fill both -expand true
+   pack $tab.proj -side top -fill both -expand true
+
+   set text  $tab.proj.val
+   $tab.proj.val insert 0.0 $Map(GridProj)
+
+   set tab [TabFrame::Add .viewportproj.tab 1 [lindex $Lbl(Extent) $GDefs(Lang)] True]
+   frame $tab.col
+      label  $tab.col.lbl0
+      label  $tab.col.min -text [lindex $Lbl(Min) $GDefs(Lang)] -width 11 -anchor w
+      label  $tab.col.max -text [lindex $Lbl(Max) $GDefs(Lang)] -width 11 -anchor w
+      pack   $tab.col.lbl0 $tab.col.min $tab.col.max -side top -fill x
+
+   frame $tab.colx
+      label  $tab.colx.x -text X
+      entry  $tab.colx.minx -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridMinX)
+      entry  $tab.colx.maxx -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridMaxX)
+      pack   $tab.colx.x $tab.colx.minx $tab.colx.maxx -side top -fill x -expand true
+
+   frame $tab.coly
+      label  $tab.coly.y -text Y
+      entry  $tab.coly.miny -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridMinY)
+      entry  $tab.coly.maxy -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridMaxY)
+      pack   $tab.coly.y $tab.coly.miny $tab.coly.maxy -side top -fill x
+   pack $tab.col -side left -fill x -padx 2 -pady 10 -anchor n
+   pack $tab.colx $tab.coly -side left -fill x -padx 2 -pady 10 -expand true  -anchor n
+
+   set tab [TabFrame::Add .viewportproj.tab 1 [lindex $Lbl(Transform) $GDefs(Lang)] True]
+   frame $tab.col
+      label  $tab.col.lbl0
+      label  $tab.col.tr -text [lindex $Lbl(Translation) $GDefs(Lang)] -width 11 -anchor w
+      label  $tab.col.sc -text [lindex $Lbl(Scaling) $GDefs(Lang)]     -width 11 -anchor w
+      label  $tab.col.rt -text [lindex $Lbl(Rotation) $GDefs(Lang)]    -width 11 -anchor w
+      pack   $tab.col.lbl0 $tab.col.tr $tab.col.sc $tab.col.rt -side top -fill x
+
+   frame $tab.colx
+      label  $tab.colx.x -text X
+      entry  $tab.colx.trx -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridTrX)
+      entry  $tab.colx.scx -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridScX)
+      entry  $tab.colx.rtx -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridRtX)
+      pack   $tab.colx.x $tab.colx.trx $tab.colx.scx $tab.colx.rtx -side top -fill x -expand true
+
+   frame $tab.coly
+      label  $tab.coly.y -text Y
+      entry  $tab.coly.try -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridTrY)
+      entry  $tab.coly.scy -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridScY)
+      entry  $tab.coly.rty -bg $GDefs(ColorLight) -width 12 -bd 1 -textvariable Viewport::Map(GridRtY)
+      pack   $tab.coly.y $tab.coly.try $tab.coly.scy $tab.coly.rty -side top -fill x
+   pack $tab.col -side left -fill x -padx 2 -pady 10 -anchor n
+   pack $tab.colx $tab.coly -side left -fill x -padx 2 -pady 10 -expand true -anchor n
+
+   frame .viewportproj.cmd
+      button .viewportproj.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "destroy .viewportproj"
+      button .viewportproj.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "Viewport::ParamProjSet $Ref"
+      pack .viewportproj.cmd.apply .viewportproj.cmd.close -side left -fill x -expand true
+   pack .viewportproj.cmd -side bottom -fill x  -padx 2 -pady 2
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ParamFrame>
+# Creation : Mars 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Definition des parametres des options.
+#
+# Parametres :
+#  <Frame>   : Identificateur du frame
+#  <Apply>   : Commande d'update de l'etat
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ParamFrame { Frame Apply } {
+   global GDefs
+   variable Data
+   variable Bubble
+   variable Lbl
+   variable Map
+   variable Resources
+
+   set Data(Frame) [TabFrame::Add $Frame 1 [lindex $Lbl(Geo) $GDefs(Lang)] False ""]
+
+   labelframe $Data(Frame).proj -text [lindex $Lbl(Proj) $GDefs(Lang)]
+      ComboBox::Create $Data(Frame).proj.type Viewport::Map(Type) noedit sorted nodouble -1 $Map(Types) 12 4 "set Viewport::Map(GeoRef) \"\"; Viewport::ParamSet ; $Apply configure -state normal"
+      button $Data(Frame).proj.def -image WORLD -relief flat -bd 0 -overrelief raised -command { Viewport::ParamProj $Viewport::Map(GeoRef) }
+      pack $Data(Frame).proj.def -side left -padx 2
+      pack $Data(Frame).proj.type -side left -fill x -padx 2 -expand true
+   pack $Data(Frame).proj -side top -fill x -padx 5 -pady 5
+
+   frame $Data(Frame).left
+
+   labelframe $Data(Frame).left.ras -text [lindex $Lbl(Raster) $GDefs(Lang)]
+      frame $Data(Frame).left.ras.topo
+         label $Data(Frame).left.ras.topo.lbl -text " [lindex $Lbl(Topo) $GDefs(Lang)]"
+         checkbutton $Data(Frame).left.ras.topo.sel -variable Viewport::Map(Topo) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+         pack $Data(Frame).left.ras.topo.sel -side left -ipadx 1
+         pack $Data(Frame).left.ras.topo.lbl -side left -fill y
+      frame $Data(Frame).left.ras.bath
+         label $Data(Frame).left.ras.bath.lbl -text " [lindex $Lbl(Bath) $GDefs(Lang)]"
+         checkbutton $Data(Frame).left.ras.bath.sel -variable Viewport::Map(Bath) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+         pack $Data(Frame).left.ras.bath.sel -side left -ipadx 1
+         pack $Data(Frame).left.ras.bath.lbl -side left -fill y
+      frame $Data(Frame).left.ras.text
+         label $Data(Frame).left.ras.text.lbl -text " [lindex $Lbl(Text) $GDefs(Lang)]"
+         checkbutton $Data(Frame).left.ras.text.sel -variable Viewport::Map(Text) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+         pack $Data(Frame).left.ras.text.sel -side left -ipadx 1
+         pack $Data(Frame).left.ras.text.lbl -side left -fill y
+      frame $Data(Frame).left.ras.mask
+         IcoMenu::Create $Data(Frame).left.ras.mask.sel $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm mask1.xbm mask2.xbm" "0 1 2" Viewport::Map(Mask) "$Apply configure -state normal" $Viewport::Map(Mask) -relief groove -bd 2
+         label $Data(Frame).left.ras.mask.lbl -text " [lindex $Lbl(Mask) $GDefs(Lang)]"
+         pack $Data(Frame).left.ras.mask.sel -side left -ipadx 1
+         pack $Data(Frame).left.ras.mask.lbl -side left -fill y
+      pack $Data(Frame).left.ras.topo $Data(Frame).left.ras.bath $Data(Frame).left.ras.text $Data(Frame).left.ras.mask -side top -fill x -padx 2
+
+   labelframe $Data(Frame).left.sun -text [lindex $Lbl(Sun) $GDefs(Lang)]
+      checkbutton $Data(Frame).left.sun.on -variable Viewport::Map(Sun) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
+         -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+      scale $Data(Frame).left.sun.time -orient horizontal -from 0 -to 86400 \
+         -showvalue false -variable Viewport::Data(Seconds) -relief flat \
+         -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -sliderlength 8  -bd 1 -resolution 60
+      pack  $Data(Frame).left.sun.on -side left -padx 2 -pady 2
+      pack $Data(Frame).left.sun.time -side left -fill x -expand true -padx 2 -pady 2
+
+   labelframe $Data(Frame).left.axis -text "Axis"
+      IcoMenu::Create $Data(Frame).left.axis.on $GDefs(Dir)/Resources/Bitmap \
+         "zeroth.xbm zaxis0.xbm zaxis1.xbm" "0 1 2" \
+         Viewport::Map(ZAxis) "$Apply configure -state normal" $Viewport::Map(ZAxis) -relief groove -bd 2
+      checkbutton $Data(Frame).left.axis.pick -variable Page::Data(ToolMode) -relief sunken -bd 1 -overrelief raised -offrelief flat \
+         -onvalue Viewport -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+      entry  $Data(Frame).left.axis.z -textvariable Viewport::Map(ZAxisZ) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 5
+      pack $Data(Frame).left.axis.on -side left -padx 2 -pady 2
+      pack $Data(Frame).left.axis.z -side left -fill x -expand true -padx 2 -pady 2
+      pack $Data(Frame).left.axis.pick -side left -padx 2 -pady 2
+
+   labelframe $Data(Frame).left.scale -text "Elevation"
+      scale $Data(Frame).left.scale.height -orient horizontal -from 1 -to 100\
+         -showvalue true -variable Viewport::Map(Elev) -relief flat \
+         -command "Viewport::ParamSet; $Apply configure -state normal; catch " -width 14 -sliderlength 8 -bd 1 -resolution 0.1
+      pack $Data(Frame).left.scale.height -side left -fill x -expand true -padx 2 -pady 2
+
+   pack $Data(Frame).left.ras -side top -fill x
+   pack $Data(Frame).left.sun -side top -fill x -pady 5
+   pack $Data(Frame).left.axis -side top -fill x
+   pack $Data(Frame).left.scale -side top -fill x -pady 5
+
+   labelframe $Data(Frame).layer -text [lindex $Lbl(Vector) $GDefs(Lang)]
+
+      frame $Data(Frame).layer.vp
+         button $Data(Frame).layer.vp.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
+            -command "FontBox::Create $Data(Frame).layer.vp.font \"$Apply configure -state normal; $Apply invoke\"  \$Viewport::Resources(Font)"
+         ColorBox::CreateSel $Data(Frame).layer.vp.col Viewport::Resources(Bkg) $Apply configure -state normal
+         label $Data(Frame).layer.vp.lbl -text [format "%-10s" [lindex $Lbl(Viewport) $GDefs(Lang)]]
+         pack $Data(Frame).layer.vp.col $Data(Frame).layer.vp.font -side left
+         pack $Data(Frame).layer.vp.lbl -side right
+
+      frame $Data(Frame).layer.coast
+         IcoMenu::Create $Data(Frame).layer.coast.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Coast) "$Apply configure -state normal" $Viewport::Map(Coast) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.coast.col Viewport::Resources(Coast) $Apply configure -state normal
+         ColorBox::CreateSel $Data(Frame).layer.coast.fcol Viewport::Resources(FillCoast) $Apply configure -state normal
+         label $Data(Frame).layer.coast.lbl -text [format "%-10s" [lindex $Lbl(Coast) $GDefs(Lang)]]
+         pack $Data(Frame).layer.coast.col $Data(Frame).layer.coast.sz $Data(Frame).layer.coast.fcol -side left
+         pack $Data(Frame).layer.coast.lbl -side right
+
+      frame $Data(Frame).layer.lake
+         IcoMenu::Create $Data(Frame).layer.lake.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Lake) "$Apply configure -state normal" $Viewport::Map(Lake) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.lake.col Viewport::Resources(Lake) $Apply configure -state normal
+         ColorBox::CreateSel $Data(Frame).layer.lake.fcol Viewport::Resources(FillLake) $Apply configure -state normal
+         label $Data(Frame).layer.lake.lbl -text [format "%-10s" [lindex $Lbl(Lake) $GDefs(Lang)]]
+         pack $Data(Frame).layer.lake.col $Data(Frame).layer.lake.sz $Data(Frame).layer.lake.fcol -side left
+         pack $Data(Frame).layer.lake.lbl -side right
+
+      frame $Data(Frame).layer.river
+         IcoMenu::Create $Data(Frame).layer.river.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(River) "$Apply configure -state normal" $Viewport::Map(River) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.river.col Viewport::Resources(River) $Apply configure -state normal
+         label $Data(Frame).layer.river.lbl -text [format "%-10s" [lindex $Lbl(River) $GDefs(Lang)]]
+         pack $Data(Frame).layer.river.col $Data(Frame).layer.river.sz -side left
+         pack $Data(Frame).layer.river.lbl -side right
+
+      frame $Data(Frame).layer.poli
+         IcoMenu::Create $Data(Frame).layer.poli.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Polit) "$Apply configure -state normal" $Viewport::Map(Polit) -relief groove -bd 2
+         $Data(Frame).layer.poli.sz.menu add separator
+         $Data(Frame).layer.poli.sz.menu add checkbutton -label [lindex $Lbl(Name) $GDefs(Lang)] -variable Viewport::Map(TPolit) -onvalue -1 -offvalue 1 \
+            -command "$Apply configure -state normal"
+         ColorBox::CreateSel $Data(Frame).layer.poli.col Viewport::Resources(Polit) $Apply configure -state normal
+         label $Data(Frame).layer.poli.lbl -text [format "%-10s" [lindex $Lbl(Polit) $GDefs(Lang)]]
+         pack $Data(Frame).layer.poli.col $Data(Frame).layer.poli.sz -side left
+         pack $Data(Frame).layer.poli.lbl -side right
+
+      frame $Data(Frame).layer.admin
+         IcoMenu::Create $Data(Frame).layer.admin.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Admin) "$Apply configure -state normal" $Viewport::Map(Admin) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.admin.col Viewport::Resources(Admin) $Apply configure -state normal
+         label $Data(Frame).layer.admin.lbl -text [format "%-10s" [lindex $Lbl(Admin) $GDefs(Lang)]]
+         pack $Data(Frame).layer.admin.col $Data(Frame).layer.admin.sz -side left
+         pack $Data(Frame).layer.admin.lbl -side right
+
+      frame $Data(Frame).layer.city
+         IcoMenu::Create $Data(Frame).layer.city.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(City) "$Apply configure -state normal" $Viewport::Map(City) -relief groove -bd 2
+         $Data(Frame).layer.city.sz.menu add separator
+         $Data(Frame).layer.city.sz.menu add checkbutton -label [lindex $Lbl(Name) $GDefs(Lang)] -variable Viewport::Map(TCity) -onvalue -1 -offvalue 1 \
+            -command "$Apply configure -state normal"
+         ColorBox::CreateSel $Data(Frame).layer.city.col Viewport::Resources(City) $Apply configure -state normal
+         label $Data(Frame).layer.city.lbl -text [format "%-10s" [lindex $Lbl(City) $GDefs(Lang)]]
+         pack $Data(Frame).layer.city.col $Data(Frame).layer.city.sz -side left
+         pack $Data(Frame).layer.city.lbl -side right
+
+      frame $Data(Frame).layer.road
+         IcoMenu::Create $Data(Frame).layer.road.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Road) "$Apply configure -state normal" $Viewport::Map(Road) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.road.col Viewport::Resources(Road) $Apply configure -state normal
+         label $Data(Frame).layer.road.lbl -text [format "%-10s" [lindex $Lbl(Road) $GDefs(Lang)]]
+         pack $Data(Frame).layer.road.col $Data(Frame).layer.road.sz -side left
+         pack $Data(Frame).layer.road.lbl -side right
+
+      frame $Data(Frame).layer.rail
+         IcoMenu::Create $Data(Frame).layer.rail.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Rail) "$Apply configure -state normal" $Viewport::Map(Rail) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.rail.col Viewport::Resources(Rail) $Apply configure -state normal
+         label $Data(Frame).layer.rail.lbl -text [format "%-10s" [lindex $Lbl(Rail) $GDefs(Lang)]]
+         pack $Data(Frame).layer.rail.col $Data(Frame).layer.rail.sz -side left
+         pack $Data(Frame).layer.rail.lbl -side right
+
+      frame $Data(Frame).layer.util
+         IcoMenu::Create $Data(Frame).layer.util.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Util) "$Apply configure -state normal" $Viewport::Map(Util) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.util.col Viewport::Resources(Util) $Apply configure -state normal
+         label $Data(Frame).layer.util.lbl -text [format "%-10s" [lindex $Lbl(Util) $GDefs(Lang)]]
+         pack $Data(Frame).layer.util.col $Data(Frame).layer.util.sz -side left
+         pack $Data(Frame).layer.util.lbl -side right
+
+      frame $Data(Frame).layer.canal
+         IcoMenu::Create $Data(Frame).layer.canal.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Canal) "$Apply configure -state normal" $Viewport::Map(Canal) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.canal.col Viewport::Resources(Canal) $Apply configure -state normal
+         label $Data(Frame).layer.canal.lbl -text [format "%-10s" [lindex $Lbl(Canal) $GDefs(Lang)]]
+         pack $Data(Frame).layer.canal.col $Data(Frame).layer.canal.sz -side left
+         pack $Data(Frame).layer.canal.lbl -side right
+
+      frame $Data(Frame).layer.ll
+         IcoMenu::Create $Data(Frame).layer.ll.sz $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Map(Coord) "$Apply configure -state normal" $Viewport::Map(Coord) -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).layer.ll.col Viewport::Resources(Coord) $Apply configure -state normal
+         label $Data(Frame).layer.ll.lbl -text [format "%-10s" [lindex $Lbl(Coord) $GDefs(Lang)]]
+         menubutton $Data(Frame).layer.ll.opt -bd 2 -relief groove -bitmap @$GDefs(Dir)/Resources/Bitmap/more.xbm \
+            -menu $Data(Frame).layer.ll.opt.menu
+         pack $Data(Frame).layer.ll.col $Data(Frame).layer.ll.sz $Data(Frame).layer.ll.opt -side left
+         pack $Data(Frame).layer.ll.lbl -side right
+
+      pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
+         $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.road $Data(Frame).layer.rail \
+         $Data(Frame).layer.util $Data(Frame).layer.canal $Data(Frame).layer.ll \
+         -side top -anchor sw -padx 2 -fill x
+
+   #----- LatLon
+
+   menu $Data(Frame).layer.ll.opt.menu -title [lindex $Lbl(Coord) $GDefs(Lang)]
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Sea) $GDefs(Lang)] -variable Viewport::Map(Coord) -value 0 -underline 0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Land) $GDefs(Lang)] -variable Viewport::Map(Coord) -value 1 -underline 0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add separator
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "  20 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 20.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "  10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 10.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   5 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 5.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   2 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 2.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   1 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 1.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.50 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.5 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.25 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.25 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.1 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.01 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.01 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add separator
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 0/1" -variable Viewport::Map(CoordNum) -value 0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/1" -variable Viewport::Map(CoordNum) -value 1 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/2" -variable Viewport::Map(CoordNum) -value 2 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/3" -variable Viewport::Map(CoordNum) -value 3 -command "$Apply configure -state normal"
+
+      pack $Data(Frame).left $Data(Frame).layer -side left -fill both -expand true -padx 5 -pady 5
+
+   Bubble::Create $Data(Frame).proj.type.list.select [lindex $Bubble(Proj)    $GDefs(Lang)]
+   Bubble::Create $Data(Frame).left.ras.topo         [lindex $Bubble(Topo)    $GDefs(Lang)]
+   Bubble::Create $Data(Frame).left.ras.sun          [lindex $Bubble(Sun)     $GDefs(Lang)]
+   Bubble::Create $Data(Frame).left.ras.bath         [lindex $Bubble(Bath)    $GDefs(Lang)]
+   Bubble::Create $Data(Frame).left.ras.text         [lindex $Bubble(Texture) $GDefs(Lang)]
+   Bubble::Create $Data(Frame).left.scale            [lindex $Bubble(Elev)    $GDefs(Lang)]
+   Bubble::Create $Data(Frame).layer                 [lindex $Bubble(Vector)  $GDefs(Lang)]
+   Bubble::Create $Data(Frame).left.sun              [lindex $Bubble(Sun)     $GDefs(Lang)]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Viewport::Draw...>
+# Creation : Fevrier 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonctions de manipulations de la selection sur la projection.
+#
+# Parametres :
+#   <Frame   : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#
+# Remarques :
+#    - Ces fonctions sont appele par le package Page au besoin.
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc Viewport::Draw     { Frame VP } {
+   variable Map
+
+   set Map(ZAxisCoord) [list $Map(LatCursor) $Map(LonCursor)]
+   Viewport::ConfigSet $Frame
+   Page::Update $Frame
+}
+
+proc Viewport::DrawDone { Frame VP } {
+}
+
+proc Viewport::DrawInit { Frame VP } {
+}
+
+proc Viewport::Move { Frame VP } {
+   Viewport::Draw $Frame $VP
+}
+
+proc Viewport::MoveDone { Frame VP } {
+}
+
+proc Viewport::MoveInit { Frame VP } {
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ParamSet>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Change les parameters de la projection.
+#
+# Parametres :
+#  <Clean>   : Reinitialisation des donneese
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::ParamSet { } {
+   variable Map
+
+   foreach field $FSTD::Data(List) {
+      fstdfield clean $field
+   }
+   foreach field $FSTD::Data(ListTool) {
+      fstdfield clean $field
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Reset>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Reinitialise les parametres de la projection avec les valeurs initiales.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Reset { Frame } {
+   variable Map
+   variable Data
+
+   #----- Verifier le type de projection pour les parametres
+
+   set Map(Grabbed) [clock click -milliseconds]
+   $Frame.page.canvas config -cursor watch
+
+   if { $Map(Type$Frame)=="grid" } {
+      set ninj [projection configure $Frame -gridsize]
+      set ext  [projection configure $Frame -gridextent]
+      set Map(GridI) [expr ([lindex $ninj 0]-1.0)*0.5+[lindex $ext 0]]
+      set Map(GridJ) [expr ([lindex $ninj 1]-1.0)*0.5+[lindex $ext 1]]
+      projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
+   } else {
+      set Map(Lat) $Map(LatReset)
+      set Map(Lon) $Map(LonReset)
+#      Viewport::GoTo $Page::Data(Frame) $Map(LatReset) $Map(LonReset) 1.0
+      projection configure $Frame -location $Map(Lat) $Map(Lon)
+   }
+
+   ProjCam::Reset $Frame
+   Page::Update $Frame
+
+   $Frame.page.canvas config -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Resolution>
+# Creation : Janvier 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la configurations en basse qualite d'image.
+#
+# Parametres   :
+#  <Frame>     : Identificateur de Page
+#  <Res>       : Resolution
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Resolution { Frame Res } {
+   variable Map
+   variable Data
+
+   if { $Res!=[glrender -resolution] } {
+
+      glrender -resolution $Res
+
+      if { $Res==1 } {
+         foreach vp [Page::Registered $Frame Viewport] {
+            $Frame.page.canvas itemconf $vp -update True
+         }
+
+         if { [info exists Miniport::Data(Mini$Frame)] } {
+            $Frame.page.canvas itemconf MINI$Frame -update True
+         }
+         update idletasks
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Rotate>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la rotation.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Lat>     : Latitude
+#  <Lon>     : Longitude
+#  <Zoom>    : Zoom
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } } {
+   variable Map
+   variable Data
+
+   upvar #0 ProjCam::Data${Frame}::Cam cam
+
+   if { $Lat!=-999 && $Lon!=-999 } {
+      set Map(Lat) $Lat
+      set Map(Lon) $Lon
+   }
+
+   if { $Map(Type$Frame)=="grid" } {
+      projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
+   } else {
+      projection configure $Frame -location $Map(Lat) $Map(Lon)
+   }
+
+   if { $Zoom } {
+      projcam configure $Frame -lens [set cam(Lens) $Zoom]
+   }
+   Page::Update $Frame
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::RotateDo>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la rotation relative a un point.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <X>       : Coordonne x du point actuel
+#  <Y>       : Coordonne y du point actuel
+
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::RotateDo { Frame VP X Y } {
+   variable Map
+   variable Data
+
+   upvar #0 ProjCam::Data${Frame}::Cam cam
+
+   set latlon [$VP -unproject $X $Y]
+   set lat [lindex $latlon 0]
+   set lon [lindex $latlon 1]
+
+   #----- Si le pointeur est sur le globe
+
+   if { $lat==-999.00 || $lon==-999.00 || $Map(LonRot)==-999.0 || $Map(LatRot)==-999.0 } {
+      return
+   }
+
+   if { $Map(Type$Frame)=="grid" } {
+      set ij [$VP -ungrid $X $Y]
+      set Map(GridI)  [expr $Map(GridI) + ($Map(GridIRot)-[lindex $ij 0])]
+      set Map(GridJ)  [expr $Map(GridJ) + ($Map(GridJRot)-[lindex $ij 1])]
+
+      projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
+   } else {
+      set Map(Lat0) $Map(Lat)
+      set Map(Lon0) $Map(Lon)
+
+      if { $Map(Type$Frame)=="orthographic" } {
+
+         #----- Verifier le cote en longitude du curseur pour calculer le sens de
+         #      l'increment en latitude
+
+         set lonside [expr abs([CheckCoord [expr $Map(Lon) - $Map(LonRot)]])]
+
+         #----- Si on est dans le deadzone ( 70 a 100 par rapport a la longitude
+         #      courante) on fait rien
+
+         if { $lonside > 110.0 } {
+            set Map(Lat) [expr $Map(Lat) - ($Map(LatRot) - $lat)]
+         } elseif { $lonside < 70.0 } {
+            set Map(Lat) [expr $Map(Lat) + ($Map(LatRot) - $lat)]
+         }
+      } else {
+         set Map(Lat) [expr $Map(Lat) + ($Map(LatRot) - $lat)]
+      }
+
+      #----- Calculer l'increment en longitude
+      set Map(Lon) [CheckCoord [expr $Map(Lon) + ($Map(LonRot) - $lon)]]
+      projection configure $Frame -location $Map(Lat) $Map(Lon)
+   }
+
+   set Map(Grabbed) [clock click -milliseconds]
+   set Cam(Name)  ""
+   set Data(Name) ""
+
+   #----- On update le tout
+
+   Page::Update $Frame
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::RotateDone>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Termine la rotation relative.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Sling>   : Effet slingshot
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::RotateDone { Frame { Sling False } } {
+   variable Map
+
+   set res 1
+
+   if { $Sling && $Map(Type$Frame)!="grid" } {
+      set dt [expr [clock click -milliseconds]-$Map(Grabbed)]
+      set dx [projection function $Frame -dist [list $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)] 0.0]
+
+      if { $dx>[expr 2*[$Viewport::Data(VP) -distpix]] && $dt>0 && $dt<250 } {
+         set dir [expr -[projection function $Frame -bearing $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)]]
+         set spd [expr int($dx/$dt)]
+         set res [Viewport::GoAlong $Frame $spd $dir $Map(Lat) $Map(Lon)]
+      }
+   }
+
+   if { $res } {
+      Viewport::Resolution $Frame 1
+   }
+   set Map(Grabbed) [clock click -milliseconds]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::RotateInit>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initie la rotation relative par le point selectionne.
+#
+# Parametres :
+#  <Frame >  : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <X>       : Coordonnne x du pointeur de la souris
+#  <Y>       : Coordonnne y du pointeur de la souris
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::RotateInit { Frame VP X Y } {
+   variable Map
+
+   set Map(Grabbed) [clock click -milliseconds]
+
+   set ll [projection configure $Frame -location]
+   set Map(Lat0) [set Map(Lat) [lindex $ll 0]]
+   set Map(Lon0) [set Map(Lon) [lindex $ll 1]]
+
+   if { $Map(Type$Frame)=="grid" } {
+      set Map(GridIRot) $Map(GridICursor)
+      set Map(GridJRot) $Map(GridJCursor)
+   } else {
+      set Map(LonRot) $Map(LonCursor)
+      set Map(LatRot) $Map(LatCursor)
+   }
+
+   if { $Map(LonRot)!=-999.0 && $Map(LatRot)!=-999.0 } {
+      Viewport::Resolution $Frame [expr $OpenGL::Param(Res)==1?2:$OpenGL::Param(Res)]
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::GoAlong>
+# Creation : Juillet 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Anime le deplacement le long d'une direction.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Speed>   : Vitesse initiale
+#  <Bearing> : Direction
+#  <Lat>     : Latitude d'origine
+#  <Lon>     : Longitude d'origine
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
+   variable Map
+
+   #----- Do only if we have the power to
+
+   if { $OpenGL::Param(Res)==1 && $Map(Type$Frame)!="grid" } {
+      set dx  0
+      set t2 [set t0  [clock click -milliseconds]]
+      set min [expr $Speed/10000.0]
+      set Map(Speed) $Speed
+
+      #----- While the speed is fast enough
+
+      while { $Map(Speed)>$min } {
+
+         #----- Damp the speed and calculate the displacement along the bearing
+
+         set Map(Speed) [expr $Map(Speed)/$Map(Damping)]
+         set t1 $t2
+         set t2 [clock click -milliseconds]
+         set dx [expr $dx+$Map(Speed)*($t2-$t1)]
+         set ll [projection function $Frame -circle $Lat $Lon $dx $Bearing]
+         set Map(Lat) [lindex $ll 0]
+         set Map(Lon) [lindex $ll 1]
+         projection configure $Frame -location $Map(Lat) $Map(Lon)
+         Page::Update $Frame
+
+         #----- check if we should continue
+
+         update
+         if { $Map(Grabbed)>$t0 } {
+            set Map(Speed) 0.0
+            return 0;
+         }
+      }
+      set Map(Speed) 0.0
+      Page::Update $Frame
+   }
+   return 1
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::GoAround>
+# Creation : Juillet 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Anime le deplacement autoir d'un point.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Speed>   : Vitesse initiale
+#  <Bearing> : Direction
+#  <Lat>     : Latitude d'origine
+#  <Lon>     : Longitude d'origine
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::GoAround { Frame Speed Lat Lon } {
+   variable Map
+
+   upvar #0 ProjCam::Data${Frame}::Cam  cam
+
+   #----- Do only if we have the power to
+
+   if { $OpenGL::Param(Res)==1 } {
+      set fg  $cam(CFX)
+      set dx  0
+      set t2 [set t0  [clock click -milliseconds]]
+      set min [expr abs($Speed/1000.0)]
+      set Map(Speed) $Speed
+
+      #----- Center on the localtion
+
+      set Map(Lat) $Lat
+      set Map(Lon) $Lon
+      projection configure $Frame -location $Map(Lat) $Map(Lon)
+
+      #----- While the speed is fast enough
+
+      while { [expr abs($Map(Speed))]>$min } {
+
+         #----- Damp the speed and calculate the displacement along the bearing
+
+         set Map(Speed) [expr $Map(Speed)/$Map(Damping)]
+         set t1 $t2
+         set t2 [clock click -milliseconds]
+         set dx [expr $dx+$Map(Speed)*($t2-$t1)]
+         set dg [expr ($dx/0.017453292519943295474371680598)/(3.141592653589793115997963468544*$cam(CFZ)*6378140/180.0)]
+
+         set cam(CFX) [Viewport::CheckCoord [expr $fg+($dg)]]
+         ProjCam::Do $Frame $Frame $Frame
+
+         #----- check if we should continue
+
+         update
+         if { $Map(Grabbed)>$t0 } {
+            set Map(Speed) 0.0
+            return 0;
+         }
+      }
+      set Map(Speed) 0.0
+      Page::Update $Frame
+   }
+   return 1
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::GoTo>
+# Creation : Juillet 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Anime le deplacement vers un point.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Lat>     : Latitude cible
+#  <Lon>     : Longitude cible
+#  <Zoom>    : Zoom cible
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
+   variable Map
+
+   upvar #0 ProjCam::Data${Frame}::Cam  cam
+
+   #----- if we zoom, insert the previous zoom in the zoom back list
+   if { $Zoom } {
+      if { $Zoom<0 } {
+         set Zoom [expr $cam(Lens)*abs($Zoom)]
+      }
+      if { $Zoom>$cam(Lens) } {
+         lappend cam(LLens) [list $cam(Lens) $Viewport::Map(Lat) $Viewport::Map(Lon)]
+      }
+   }
+
+   #----- Do only if we have the power to
+
+   if { $OpenGL::Param(Res)==1 } {
+
+      #----- If we are far enough
+
+     if { [set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0]]>10 || $Zoom } {
+
+         Viewport::Resolution $Frame 2
+
+         set dx    0.0
+         set dt    0.0
+         set dprr  1e32
+         set pdt   [set t0 [set Map(Grabbed) [clock click -milliseconds]]]
+         set dir   [expr -[projection function $Frame -bearing $Map(Lat) $Map(Lon) $Lat $Lon]]
+         set lat   $Map(Lat)
+         set lon   $Map(Lon)
+         set zoom  $cam(Lens)
+         set Map(Speed) [set speed [expr $dp/$Map(Delay)]]
+         set min   [expr $speed/1000.0]
+
+         #----- While we are not there yet
+
+         while { [set dx [expr $dx+$Map(Speed)*$dt]]<$dp } {
+
+            #----- Calculate new position
+
+            set ll [projection function $Frame -circle $lat $lon $dx $dir]
+            set Map(Lat)  [lindex $ll 0]
+            set Map(Lon)  [lindex $ll 1]
+
+            #----- Check of overshoot
+
+            if { [set dpr [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0]]>$dprr } {
+               break
+            }
+            set dprr $dpr
+
+            #----- Rotate to new position
+
+            if { $Zoom } {
+               projcam configure $Frame -lens [set cam(Lens) [expr $Zoom-(($Zoom-$zoom)*($dpr/$dp))]]
+            }
+            projection configure $Frame -location $Map(Lat) $Map(Lon)
+            Page::Update $Frame
+
+            #----- Get the time
+
+            set t [clock click -milliseconds]
+            if { [set dt [expr double($t-$pdt)]]>0 } {
+
+               #----- Damp the speed and calculate the displacement
+               set pdt $t
+               set Map(Speed) [expr $speed*(1.0-($dx/$dp))*2.0]
+               set Map(Speed) [expr $Map(Speed)<$min?$min:$Map(Speed)]
+            }
+
+            #----- check if we should continue
+
+            update
+            if { $Map(Grabbed)>$t0 } {
+               break;
+            }
+         }
+         if { $Map(Grabbed)<=$t0 } {
+            if { $Map(Type$Frame)=="grid" } {
+               set ij [projection function $Frame -gridcoord  $Lat $Lon]
+               set Map(GridI) [lindex $ij 0]
+               set Map(GridJ) [lindex $ij 1]
+            }
+            Viewport::Rotate $Frame $Lat $Lon $Zoom
+         }
+         set Map(Speed) 0.0
+         Viewport::Resolution $Frame 1
+         Page::Update $Frame
+      }
+   } else {
+      Viewport::Rotate $Frame $Lat $Lon $Zoom
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Resize>
+# Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Redimensionner la projection selon la grandeur de la fenetre.
+#
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Width>   : Nouvelle largeur
+#  <Height>  : Nouvelle hauteur
+#  <Limit>   : Seulement le frame
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
+   variable Data
+
+   Viewport::Activate $Frame $VP
+
+   if { $X0==-999 } {
+      set coo [$Frame.page.canvas coords $VP]
+      set X0  [lindex $coo 0]
+      set Y0  [lindex $coo 1]
+   }
+
+   if { [expr $X1-$X0]>25 && [expr $Y1-$Y0]>25 } {
+      set Data(X$VP)      $X0
+      set Data(Y$VP)      $Y0
+      set Data(Width$VP)  [expr $X1-$X0]
+      set Data(Height$VP) [expr $Y1-$Y0]
+
+      $Frame.page.canvas itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
+
+      if { $Data(Active$VP) } {
+         $Frame.page.canvas coords BS$Page::Data(Tag)$VP $X1 $Y1
+         $Frame.page.canvas coords BM$Page::Data(Tag)$VP [expr $X1-11] $Y1
+         $Frame.page.canvas coords BF$Page::Data(Tag)$VP [expr $X1-22] $Y1
+         $Frame.page.canvas coords BD$Page::Data(Tag)$VP $X1 $Y0
+         $Frame.page.canvas coords SC$Page::Data(Tag)$VP [expr $X1-150-35] $Y1
+      }
+   }
+
+   if { !$Limit } {
+      $Frame.page.canvas config -cursor watch
+      update idletasks
+
+      Page::Update $Frame
+
+      $Frame.page.canvas config -cursor left_ptr
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Setup>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la creation des objets relatifs a une meme page
+#
+# Parametres   :
+#  <Frame>     : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Setup { Frame } {
+   variable Data
+   variable Map
+   variable Resources
+
+   if { [projection is $Frame] } {
+      return
+   }
+
+   if { ![info exists Viewport::Data(Data$Frame)] } {
+      set Data(Data$Frame) {}              ;#Liste des donnees
+   }
+
+   set Data(VP$Frame)       ""             ;#Viewport courant dans un frame
+   set Map(Type$Frame)      $Map(Type)     ;#Type de projection
+   set Map(GeoRef$Frame)    $Map(GeoRef)   ;#Georef associee
+   set Data(Seconds$Frame)  [clock seconds]
+   set Data(Seconds$Frame)  0
+
+   #----- Creation des objects
+
+   ProjCam::Create $Frame
+
+   font create FONT$Frame -family courier -weight bold -size -10
+
+   if { $Resources(Font)!="" } {
+      font configure FONT$Frame -family [font configure $Resources(Font) -family] -weight [font configure $Resources(Font) -weight] \
+         -size [font configure $Resources(Font) -size]
+   }
+
+   projection create $Frame
+   projection configure $Frame -location $Map(Lat) $Map(Lon) -type $Map(Type$Frame) -georef $Map(GeoRef$Frame) \
+      -mapres $Map(Res) -mask -$Map(Mask) -scale $Map(Elev) \
+      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road)  -maprail $Map(Rail) \
+      -maputil $Map(Util)   -mapcanal $Map(Canal) -maptopo $Map(Topo) \
+      -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) \
+      -date $Data(Seconds$Frame)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::UnSetup>
+# Creation : Avril 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la suppression des objets relatifs a une meme page
+#
+# Parametres   :
+#  <Frame>     : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::UnSetup { Frame } {
+   variable Data
+   variable Map
+
+   if { ![projection is $Frame] } {
+      return
+   }
+
+   unset Data(VP$Frame)
+   unset Map(Type$Frame)
+   unset Map(GeoRef$Frame)
+   unset Data(Seconds$Frame)
+
+   #----- Suppression des objects
+
+   projection destroy $Frame
+   projcam destroy $Frame
+   font delete FONT$Frame
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::LinkSet>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser le viewport source pour les liens.
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::LinkSet { } {
+   variable Data
+
+   set Data(Link) [list $Page::Data(Frame) $Data(VP)]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Link>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lier le viewport courant avec le viewport source.
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::Link { } {
+   variable Data
+
+
+   set vp [lindex $Data(Link) 1]
+   lappend Data(Linked$vp) [list $Page::Data(Frame) $Data(VP)]
+   set Data(Link$Data(VP)) $Data(Link)
+
+   Viewport::UpdateData $Page::Data(Frame) $Data(VP)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::LinkDo>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affectuer la liason de donnees.
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::LinkDo { VP } {
+   variable Data
+
+   foreach link $Data(Linked$VP) {
+      set frame [lindex $link 0]
+      set vpdst [lindex $link 1]
+      if { [winfo exists $frame] && [llength [$frame.page.canvas find withtag $vpdst]] } {
+         $frame.page.canvas itemconf $vpdst -data $Animator::Play(Data)
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::UnLink>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : DeLier le viewport courant.
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::UnLink { } {
+   variable Data
+
+   if { [set vp [lindex $Data(Link$Data(VP)) 1]]!="" } {
+      set idx [lsearch -exact $Data(Linked$vp) [list $Page::Data(Frame) $Data(VP)]]
+      set Data(Linked$vp) [lreplace Data(Linked$vp) $idx $idx]
+   }
+   set Data(Link$Data(VP)) {}
+
+   Viewport::UpdateData $Page::Data(Frame) $Data(VP)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::UpdateData>
+# Creation : Janvier 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la mise a jours des donnees.
+#
+# Parametres   :
+#  <Frame>     : Identificateur de Page
+#  <VP>        : Liste des viewports a mette a jour
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Viewport::UpdateData { Frame { VP { } } } {
+   variable Data
+   variable Map
+
+   if { ![llength $VP] } {
+      set VP [Page::Registered $Frame Viewport]
+   }
+
+   #----- Faire un update de tous les viewports
+
+   foreach vp $VP {
+      if { [llength $Data(Link$vp)] } {
+         set frame [lindex $Data(Link$vp) 0]
+         set vpsrc [lindex $Data(Link$vp) 1]
+         if { [winfo exists $frame] && [llength [$frame.page.canvas find withtag $vpsrc]] } {
+            $Frame.page.canvas itemconf $vp -data [lindex [$frame.page.canvas itemconf $vpsrc -data] end]
+         } else {
+            $Frame.page.canvas itemconf $vp -data {}
+         }
+      } else {
+        $Frame.page.canvas itemconf $vp -data [FieldCalc::Macro $vp $vp $Data(Data$vp)]
+      }
+   }
+   Miniport::UpdateData $Frame $VP
+   update idletasks
+
+   #----- Dans le cas d'une projection "GRID", reevaluer
+
+   Viewport::ForceGrid $Frame
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <Viewport::Write>
+# Creation : Novembre 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Engeristrer les parametres des Viewport dans un fichier Layout
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <File>   : Identificateur de Fichier
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc Viewport::Write { Frame File } {
+   variable Data
+
+   set vps [Page::Registered $Frame Viewport]
+
+   if { [llength $vps] } {
+      set vp [lindex $vps 0]
+
+      puts $File "   #----- Affichage des Viewports"
+      puts $File ""
+
+      puts $File "   set Viewport::Map(Type)        \"[projection configure $Frame -type]\""
+      puts $File "   set Viewport::Map(Data)        \"[projection configure $Frame -data]\""
+      puts $File "   set Viewport::Map(Elev)        \"[projection configure $Frame -scale]\""
+
+      set coo [projection configure $Frame -mapcoord]
+      puts $File "   set Viewport::Map(Coord)       [lindex $coo 0]"
+      puts $File "   set Viewport::Map(CoordDef)    [lindex $coo 1]"
+      puts $File "   set Viewport::Map(CoordNum)    [lindex $coo 2]"
+      puts $File "   set Viewport::Map(Res)         [projection configure $Frame -mapres]"
+      puts $File "   set Viewport::Map(Mask)        [projection configure $Frame -mask]"
+      puts $File "   set Viewport::Map(Coast)       [projection configure $Frame -mapcoast]"
+      puts $File "   set Viewport::Map(Lake)        [projection configure $Frame -maplake]"
+      puts $File "   set Viewport::Map(River)       [projection configure $Frame -mapriver]"
+      puts $File "   set Viewport::Map(Admin)       [projection configure $Frame -mapadmin]"
+      puts $File "   set Viewport::Map(Road)        [projection configure $Frame -maproad]"
+      puts $File "   set Viewport::Map(Rail)        [projection configure $Frame -maprail]"
+      puts $File "   set Viewport::Map(Util)        [projection configure $Frame -maputil]"
+      puts $File "   set Viewport::Map(Canal)       [projection configure $Frame -mapcanal]"
+      puts $File "   set Viewport::Map(Topo)        [projection configure $Frame -maptopo]"
+      puts $File "   set Viewport::Map(Bath)        [projection configure $Frame -mapbath]"
+      puts $File "   set Viewport::Map(Text)        [projection configure $Frame -maptext]"
+      puts $File "   set Viewport::Map(TPolit)      [expr $Viewport::Map(Polit)<0?-1:1]"
+      puts $File "   set Viewport::Map(TCity)       [expr $Viewport::Map(City)<0?-1:1]"
+      puts $File "   set Viewport::Resources(Bkg)       \"[lindex [$Frame.page.canvas itemconf $vp -bg] 4]\""
+      puts $File "   set Viewport::Resources(FillCoast) \"[lindex [$Frame.page.canvas itemconf $vp -colorfillcoast] 4]\""
+      puts $File "   set Viewport::Resources(FillLake)  \"[lindex [$Frame.page.canvas itemconf $vp -colorfilllake] 4]\""
+      puts $File "   set Viewport::Resources(Coast)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcoast] 4]\""
+      puts $File "   set Viewport::Resources(Lake)      \"[lindex [$Frame.page.canvas itemconf $vp -colorlake] 4]\""
+      puts $File "   set Viewport::Resources(River)     \"[lindex [$Frame.page.canvas itemconf $vp -colorriver] 4]\""
+      puts $File "   set Viewport::Resources(Polit)     \"[lindex [$Frame.page.canvas itemconf $vp -colorpolit] 4]\""
+      puts $File "   set Viewport::Resources(Admin)     \"[lindex [$Frame.page.canvas itemconf $vp -coloradmin] 4]\""
+      puts $File "   set Viewport::Resources(City)      \"[lindex [$Frame.page.canvas itemconf $vp -colorcity] 4]\""
+      puts $File "   set Viewport::Resources(Road)      \"[lindex [$Frame.page.canvas itemconf $vp -colorroad] 4]\""
+      puts $File "   set Viewport::Resources(Rail)      \"[lindex [$Frame.page.canvas itemconf $vp -colorrail] 4]\""
+      puts $File "   set Viewport::Resources(Util)      \"[lindex [$Frame.page.canvas itemconf $vp -colorutil] 4]\""
+      puts $File "   set Viewport::Resources(Canal)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcanal] 4]\""
+      puts $File "   set Viewport::Resources(Coord)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcoord] 4]\""
+
+      set no 1
+      foreach vp $vps {
+         set Data(Alias$vp) Data(Viewport[format "%03i" $no])
+         puts $File "   set $Data(Alias$vp) \[Viewport::Create \$Frame $Data(X$vp) $Data(Y$vp) $Data(Width$vp) $Data(Height$vp) $Data(Active$vp) $Data(Full$vp)\]"
+         incr no
+      }
+      puts $File ""
+   }
+}

@@ -1,0 +1,59 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet    : Interface de selection d'especes d'isotopes.
+# Fichier   : SpecieSelector.ctes
+# Creation  : Fevrier 1998 - J.P. Gauthier  - CMC/CMOE
+#
+# Description:
+#
+#      Cette interface permet de selectionne une espece d'isotope
+#
+# Remarques :
+#   aucune
+#
+# Modification:
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#===============================================================================
+
+set GDefs(Version)    "v1.3"
+
+#----- Etablir les constantes pour la structure du fichier isotopes
+
+set ISO(FichierSrc) "$GDefs(Dir)/Data/Specie.src"
+
+set ISO(Name)       0
+set ISO(HalfLife)   1
+set ISO(DCF_CI_1)   2
+set ISO(DCF_CI_2)   3
+set ISO(DCF_CI_3)   4
+set ISO(DCF_CI_4)   5
+set ISO(DCF_CI_5)   6
+set ISO(DCF_CI_6)   7
+set ISO(DCF_CS)     8
+set ISO(DCF_CG)     9
+set ISO(Intensity)  10
+set ISO(Dry)        11
+set ISO(Wet)        12
+set ISO(DryDepVel)  13
+set ISO(Unit)       14
+
+set SORT(NomDeb)     0
+set SORT(NomFin)     6
+set SORT(IntDeb)     88
+set SORT(IntFin)     95
+set SORT(DvDeb)      8
+set SORT(DvFin)      14
+set SORT(TsecDeb)    106
+set SORT(TsecFin)    114
+set SORT(ThumDeb)    105
+set SORT(ThumFin)    46
+set SORT(UnitDeb)    115
+set SORT(UnitFin)    125

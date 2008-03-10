@@ -1,0 +1,35 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet    : Interface de selection d'especes d'isotopes.
+# Fichier   :  SpecieSelector.txt
+# Creation  : Fevrier 1998 - J.P. Gauthier  - CMC/CMOE
+#
+# Description: 
+#
+#      Cette interface permet de selectionne une espece d'isotope
+#
+# Remarques :
+#   aucune
+#
+# Modification: 
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#===============================================================================
+
+set Lbl(Butt-Nom)            { "Nom"                                "Name" }
+set Lbl(Butt-Intensite)      { "Intensité"                          "Intensity" }
+set Lbl(Butt-Demi_Vie)       { "Demi-vie\n(s)"                      "Half-life\n(s)" }
+set Lbl(Butt-Less_Sec)       { "Taux de\nlessivage\nsec\n(s -1)"    "Dry\nScavenging\nRate\n(s -1)" }
+set Lbl(Butt-Less_Hum)       { "Taux de\nlessivage\nhumide\n(s -1)" "Wet\nScavenging\nRate\n(s -1)" }
+set Lbl(Butt-DryDepVel)      { "Vitesse\nde dépôt\n(m/s)"           "Deposition\nVelocity\n(m/s)" }
+set Lbl(Butt-Unite)          { "Unité"                              "Unit" }
+set Lbl(Fermer)              { "Fermer"                             "Close" }
+
+set Txt_Titre(Selecteur_Isotopes)    { "Sélecteur d'isotopes" "Isotope selector" }
