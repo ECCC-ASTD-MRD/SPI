@@ -1,0 +1,123 @@
+#=============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadien
+# Dorval, Quebec
+#
+# Projet     : Boite a outils
+# Nom        : <Bull_Volc.txt>
+# Creation   : Janvier 1997 - S. Trudel - CMC/CMOE
+#
+# Description:
+#
+#        Definition des textes et labels de l'application.
+#
+# Remarques  :
+#     Aucune.
+#
+# Modifications :
+#
+#    Nom         :
+#    Date        :
+#    Description :
+#
+#    Nom         : J.P. Gauthier
+#    Date        : Octobre 2005
+#    Description : Transformation en Outils de SPI
+#
+#===========================================================================
+
+namespace eval Bulletin {
+   variable Lbl
+   variable Bubble
+   variable Msg
+
+
+   #----- Liste des definitions de labels.
+
+   set Lbl(Annuler)      { "Annuler" "Cancel" }
+   set Lbl(Chemin)       { "Chemin" "Path"}
+   set Lbl(Courant)      { "Courant" "Current" }
+   set Lbl(File)         { "Fichier" "File" }
+   set Lbl(Print)        { "Impression ..." "Print ..." }
+   set Lbl(Bulletin)     { "Bulletin" "Bulletin" }
+   set Lbl(Pour)         { " Pour " " For " }
+   set Lbl(Quit)         { "Quitter" "Quit" }
+   set Lbl(Recherche)    { "Rechercher..." "Search..." }
+   set Lbl(Selection)    { "Selection" "Selected" }
+   set Lbl(Tout)         { "Tout" "Everything" }
+   set Lbl(Global)       { "Global" "Global" }
+   set Lbl(Local)        { "Local" "Local" }
+   set Lbl(Search)       { "Recherche"  "Search" }
+   set Lbl(SearchEnd)    { "Recherche terminee" "Search done" }
+
+   #----- Liste des definitions des Textes.
+
+   set Msg(Courant)      { "Extraction des bulletins courants" \
+                           "Extracting current bulletins" }
+   set Msg(Fin)          { "La fin des bulletins a ete atteinte" \
+                           "We reached the end of the bulletins" }
+   set Msg(Recherche)    { "Recherche en cours:" "Searching:" }
+   set Msg(Cancel)       { "Recherche annulee" "Search cancelled" }
+   set Msg(Selection)    { "Une selection existe dans la fenetre des bulletins. Que voulez-vous imprimer ?" \
+                           "There is a selection in the text widget. What do you want to print ?" }
+
+   #----- Liste des definitions des bulles d'aides.
+
+   set Bubble(List) {
+   "Cette liste contient tous les bulletins
+   pour le mois selectionne."
+   "This list contains every bulletins for the current
+   selected month."
+   }
+
+   set Bubble(Msg) {
+   "Affichage des bulletins selectionnes dans la liste.
+   Les mots importants sont colore:
+
+      ASH, ASH UUA      : Blanc sur rouge
+      VOLCANO, VOLCANIC : Noir sur jaune
+      WV                : Noir sur orange
+      VAAC              : Blanc sur vert
+   "
+   "Display of the selected bulletins.
+   Important word are colored:
+
+      ASH, ASH UUA      : White over red
+      VOLCANO, VOLCANIC : Black over yellow
+      WV                : Black over orange
+      VAAC              : White over green
+   "
+   }
+
+   set Bubble(Current) {
+   "Extraction des bulletins
+   les plus recents"
+   "Extract the most recent
+   bulletins"
+   }
+
+   set Bubble(Date) {
+   "Ce champs indique pour quel mois les bulletins sont
+   affiches mais en plus, il sert a selectionner le mois
+   que l'on veut visionner. Appuyer dessus pour obtenir
+   une liste des mois disponibles et ainsi afficher les
+   bulletins de ce mois"
+   "Shows for which month you are viewing the bulletins and
+   acts as a month selector. If you press it you will be
+   given a list of the available month for you to select."
+   }
+
+   set Bubble(Bar) {
+   "Indicateur du travail en cours, que ce
+   soit pour l'extraction ou la recherche."
+   "Current job indicator, if any."
+   }
+
+   set Bubble(Off)       { "Ferme l'interface de recherche" "Shuts down the search interface" }
+   set Bubble(Backward)  { "Activation de la recherche\nvers le haut" "Searches the bulletins backwards" }
+   set Bubble(Forward)   { "Activation de la recherche\nvers le bas" "Searches the bulletins forwards" }
+   set Bubble(Stop)      { "Termine la recherche en cours" "Cancels the current search" }
+   set Bubble(Local)     { "Recherche dans le bulletin courant" "Searches in the current bulletin" }
+   set Bubble(Global)    { "Recherche dans tous les\nbulletins du mois courant" "Searches in the current\nmonth bulletins" }
+   set Bubble(Predicat)  { "Predicat de recherche\n(Expression reguliere)" "Search predicate\n(Regular expression)" }
+}

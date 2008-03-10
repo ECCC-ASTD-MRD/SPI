@@ -1,0 +1,741 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie de "Widget" Tk.
+# Fichier  : FrameDefs.tk
+# Version  : 1.5
+# Creation : Fevrier 2000 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Permet de creer divers type de frames.
+#
+#       TabFrame  :  Frame de type tabulateur superposes
+#
+# Fonctions:
+#
+#    TabFrame::Add         { Tab Level Title Color }
+#    TabFrame::Create      { Tab Level Command { Width -1 } { Height -1 } }
+#    TabFrame::Current     { Tab  }
+#    TabFrame::Delete      { Tab Level No }
+#    TabFrame::Destroy     { Tab }
+#    TabFrame::Disable     { Tab No }
+#    TabFrame::Edit        { Tab Level No }
+#    TabFrame::Enable      { Tab No Level }
+#    TabFrame::GetLabel    { Tab No }
+#    TabFrame::GetTabs     { Tab }
+#    TabFrame::Is          { Tab }
+#    TabFrame::Current     { Tab  }
+#    TabFrame::NbFrame     { Tab }
+#    TabFrame::Place       { Tab Level No Nb X Top }
+#    TabFrame::PlaceHidder { Tab No Top }
+#    TabFrame::Select      { Tab No Level }
+#
+# Remarques :
+#    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
+#
+# Modification:
+#
+#   Nom         : J.P. Gauthier
+#   Date        : Septembre 2000
+#   Description : -Ajout d'une fonction de "callback" de selection pour les onglets
+#
+#   Nom         : J.P. Gauthier
+#   Date        : Septembre 2000
+#   Description : -Suppresion des GroupFrame et PanFrame puisqu'il sont maintenant
+#                  implante dans tk-8.4
+#
+#                 -Ajout de mode haut ou bat pour les onglets
+#                 -Possibilite d'edition du libelle des onglets
+#
+#   Nom         : J.P. Gauthier
+#   Date        : Mars 2004
+#   Description : -Un seul "hidder" et simplification des bindings
+#===============================================================================
+
+package provide FrameDefs 1.5
+
+proc IdFrameDefs { Show } {
+
+   if { $Show } {
+      puts "(INFO) Loading Standard CMC/CMOE Widget Package FrameDefs Version 1.5"
+   }
+}
+
+namespace eval TabFrame {
+   global   GDefs
+   variable Data
+   variable Resources
+
+   #----- Definitions des differentes resources du widget
+
+   catch {
+      set Resources(BorderWidth) 1                      ;#
+      set Resources(Select)      $GDefs(ColorHighLight) ;#
+      set Resources(Background)  $GDefs(ColorFrame)     ;#
+      set Resources(Disabled)    $GDefs(ColorOff)       ;#
+      set Resources(Foreground)  black                  ;#
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Add>
+# Creation : Fevrier 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Ajout d'un onglet.
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <Level>  : Niveau sur lequel positionner le tab
+#   <Title>  : Titre du tabulateur
+#   <Edit>   : Titre du tabulateur editable
+#   <Color>  : Couleur du tabulateur et de son frame
+#
+# Retour     :
+#   <Path>   : Path complet du frame du tab
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Add { Tab Level Title Edit { Color "" } } {
+   variable Data
+   variable Resources
+
+   #----- Verifier si une couleur a ete specifie
+
+   eval set no \$Data(Nb$Tab)
+
+   #----- Creer les diverses parties du widget
+
+   entry $Tab.tab$no  -width [expr [string length $Title]+2] -relief raised -bd $Resources(BorderWidth) -fg $Resources(Foreground) \
+      -disabledforeground $Resources(Foreground) -disabledbackground $Resources(Background) -cursor left_ptr -justify center
+   $Tab.tab$no insert end "$Title"
+   $Tab.tab$no configure -state disabled
+
+   frame $Tab.frame$no -relief raised -bd $Resources(BorderWidth)
+
+   if { $Color!="" } {
+      $Tab.tab$no configure    -bg $Color -disabledbackground $Color
+      $Tab.frame$no configure  -bg $Color
+   }
+
+   set xloc 0
+   foreach i $Data(W$Level$Tab) {
+     incr xloc [winfo reqwidth $Tab.tab$i]
+   }
+
+   TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
+
+   bind $Tab.tab$no <ButtonPress-1>        "TabFrame::Select $Tab $no $Level"
+   bind $Tab.tab$no <Enter>                "$Tab.tab$no configure -fg $Resources(Select)"
+   bind $Tab.tab$no <Leave>                "$Tab.tab$no configure -fg $Resources(Foreground)"
+
+   if { $Edit } {
+      bind $Tab.tab$no <Double-ButtonPress-1> "$Tab.tab$no configure -state normal -relief sunken"
+      bind $Tab.tab$no <Any-KeyRelease>       "TabFrame::Edit $Tab $Level $no"
+      bind $Tab.tab$no <Return>               "$Tab.tab$no configure -state disabled -relief raised"
+   }
+
+   #----- Memoriser les informations de positionnement
+
+   incr Data(Nb$Tab)
+   lappend Data(W$Level$Tab) "$no"
+   set Data(Current$Tab) $no
+
+   return "$Tab.frame$no"
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Edit>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Edition du libeller d'un onglet.
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <Level>  : Niveau sur lequel positionner le tab
+#   <No>     : Titre du tabulateur
+#
+# Retour     :
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Edit { Tab Level No } {
+   variable Data
+
+   $Tab.tab$No  configure -width [expr [string length [$Tab.tab$No get]]+2]
+
+   set xloc 0
+
+   foreach no $Data(W$Level$Tab) {
+      TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
+      incr xloc [winfo reqwidth $Tab.tab$no]
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Create>
+# Creation : Fevrier 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Creer un frame conteneur d'onglets.
+#
+# Parametres    :
+#   <Tab>       : Identificateur du Tab maitre
+#   <Level>     : Nombre de niveaux
+#   <Command>   : "Callback" a appeler lors de la selection d'un onglet
+#   <Width>     : Largeur (default -1)
+#   <Height>    : Hauteur (default -1)
+#
+# Remarques :
+#   La commande "callback" doit prendre en arguments le path et le numero
+#   de l'onglet:
+#
+#        callback { Path No }
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Create { Tab Level Command { Top 1 } { Width -1 } { Height -1 } } {
+   variable Data
+
+   set Data(Nb$Tab)      0        ;# Nombre de tab
+   set Data(Level$Tab)   $Level   ;# Nombre de niveau du tab
+   set Data(Command$Tab) $Command ;# Callback de selection
+   set Data(Current$Tab) -1       ;# Onglet courant
+   set Data(Top$Tab)     $Top     ;# Position des onglets
+
+   for { set i 1 } { $i <= $Level } { incr i } {
+      set Data(W$i$Tab)     "" ;# Liste des tab pour un niveau
+   }
+
+   frame $Tab -width $Width -height $Height
+   frame $Tab.hidder
+
+   bind $Tab <Configure> "update idletasks; TabFrame::PlaceHidder $Tab \$TabFrame::Data(Current$Tab) \$TabFrame::Data(Top$Tab)"
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Is>
+# Creation : Octobre 2007 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Verifier si un fenetre est un onglet.
+#
+# Parametres    :
+#   <Tab>       : Identificateur du Tab
+#
+# Retour        :
+#   <Is>        : True ou False
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Is { Tab } {
+   return [info exists ::TabFrame::Data(Nb$Tab)]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Current>
+# Creation : Decembre 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Retourner le numero d 'onglet ayant le focus.
+#
+# Parametres    :
+#   <Tab>       : Identificateur du Tab maitre
+#
+# Retour        :
+#   <No>        : Numero de l'onglet
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Current { Tab  } {
+   variable Data
+
+   return $Data(Current$Tab)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::NbFrame>
+# Creation : Decembre 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Retourner le nombre d 'onglet.
+#
+# Parametres    :
+#   <Tab>       : Identificateur du Tab maitre
+#
+# Retour        :
+#   <No>        : Nombre d'onglet
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::NbFrame { Tab } {
+   variable Data
+
+   return $Data(Nb$Tab)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Delete>
+# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Suppression d'un onglet.
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <Level>  : Niveau sur lequel positionner le tab
+#   <No>     : Titre du tabulateur
+#
+# Retour     :
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Delete { Tab Level { No -1 } } {
+   variable Data
+
+   #----- Onglet courant ???
+
+   if { $No==-1 } {
+      set No $Data(Current$Tab)
+   }
+
+   #----- Parcourir les onglets
+
+   set xloc 0
+   set Data(Current$Tab) -1
+
+   foreach no $Data(W$Level$Tab) {
+
+      if { $no!=$No } {
+         TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
+         incr xloc [winfo reqwidth $Tab.tab$no]
+         set Data(Current$Tab) $no
+      } else {
+         destroy $Tab.tab$no $Tab.frame$no
+      }
+   }
+
+   #----- Supprimer de la liste des onglets
+
+   set idx [lsearch -exact $Data(W$Level$Tab) $No]
+   set Data(W$Level$Tab) [lreplace $Data(W$Level$Tab) $idx $idx]
+
+   return "$Tab.frame$No"
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Destroy>
+# Creation : Fevrier 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Destruction du widget des onglets.
+#
+# Parametres     :
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Destroy { Tab } {
+   variable Data
+
+   for { set i 1 } { $i <= $Data(Level$Tab) } { incr i } {
+      unset Data(W$i$Tab)
+   }
+   unset Data(Nb$Tab)
+   unset Data(Level$Tab)
+   unset Data(Command$Tab)
+   unset Data(Top$Tab)
+
+   destroy $Tab
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Disable>
+# Creation : Fevrier 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Desactivation d'un onglets.
+#
+# Parametres   :
+#   <TabNo>    : Frame du tab
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Disable { Tab No } {
+   variable Resources
+
+   bind $Tab.tab$No <ButtonPress-1> ""
+   bind $Tab.tab$No <Enter>         ""
+   bind $Tab.tab$No <Leave>         ""
+
+   $Tab.tab$No configure -fg $Resources(Disabled) -disabledforeground $Resources(Disabled)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Enable>
+# Creation : Fevrier 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Reactivation d'un onglets.
+#
+# Parametres     :
+#   <Tab>    : Frame Parent
+#   <No>     : Numero du tabulateur
+#   <Level>  : Niveaux du tab
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Enable { Tab No Level } {
+   variable Resources
+
+   bind $Tab.tab$No <ButtonPress-1> "TabFrame::Select $Tab $No $Level"
+   bind $Tab.tab$No <Enter>         "$Tab.tab$No configure -fg $Resources(Select)"
+   bind $Tab.tab$No <Leave>         "$Tab.tab$No configure -fg $Resources(Foreground)"
+
+   $Tab.tab$No configure -fg $Resources(Foreground) -disabledforeground $Resources(Foreground)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::GetTabs>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Recupere la liste des onglets
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#
+# Retour     :
+#   <List>   : Liste de onglets
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::GetTabs { Tab { Index -1 } } {
+   variable Data
+
+   set list {}
+   for { set i 1 } { $i<=$Data(Level$Tab) } { incr i } {
+      set list [concat $list $Data(W$i$Tab)]
+   }
+
+   if { $Index!=-1 } {
+      return [lindex $list $Index]
+   } else {
+      return $list
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::GetLabel>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Recupere le titre d'un onglets
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <No>     : Numero de l'onglet
+#
+# Retour     :
+#   <Label>  : Texte de l'onglet
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::GetLabel { Tab No } {
+
+   return [$Tab.tab$No get]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Label>
+# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Renomer un onglet
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <Level>  : Niveau sur lequel positionner le tab
+#   <No>     : Titre du tabulateur
+#
+# Retour     :
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Label { Tab Level No Label } {
+   variable Data
+
+   $Tab.tab$No configure -text " $Label "
+
+   #----- Parcourir les onglets
+
+   set xloc 0
+
+   foreach no $Data(W$Level$Tab) {
+
+      TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
+      incr xloc [winfo reqwidth $Tab.tab$no]
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Place>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Positionner un onglet
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <Level>  : Niveau sur lequel positionner le tab
+#   <No>     : Numero du tabulateur
+#   <X>      : Position en X
+#   <Top     : Position de l'onglet
+#
+# Retour     :
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Place { Tab Level No Nb X Top { Hid False } } {
+   variable Resources
+
+   set y [expr [winfo reqheight $Tab.tab$No] -1]
+
+   if { $X==-1 } {
+      set X [winfo x $Tab.tab$No]
+   }
+
+   if { $Top } {
+      place $Tab.tab$No -x $X -y [expr ($Level-1)* $y] -anchor nw
+      place $Tab.frame$No -x 0 -y [expr $Level*$y] -relwidth 1.0 -relheight 1.0 -height -[expr $Level*$y]
+   } else {
+      place $Tab.tab$No -x $X -rely 1.0 -y -[expr ($Level-1)*$y] -anchor sw
+      place $Tab.frame$No -x 0 -y 0 -relwidth 1.0 -relheight 1.0 -height -[expr $Level*$y]
+   }
+
+   update idletasks
+
+   raise $Tab.tab$No
+   raise $Tab.frame$No
+
+   if { $Hid } {
+      TabFrame::PlaceHidder $Tab $No $Top
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::PlaceHidder>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Positionner le "hidder" d'un onglet
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <No>     : Numero du tabulateur
+#   <Top     : Position de l'onglet
+#
+# Retour     :
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::PlaceHidder { Tab No Top } {
+   variable Resources
+
+   if { $No==-1 } {
+      return
+   }
+
+   if { $Top } {
+      place $Tab.hidder \
+         -x [expr [winfo x $Tab.tab$No] + $Resources(BorderWidth)] \
+         -y [expr [winfo y $Tab.frame$No] -$Resources(BorderWidth)] \
+         -width [expr [winfo reqwidth $Tab.tab$No] -2] \
+         -height [expr $Resources(BorderWidth)+1]
+   } else {
+     place $Tab.hidder \
+         -x [expr [winfo x $Tab.tab$No] + $Resources(BorderWidth)] \
+         -y [expr [winfo height $Tab.frame$No] - $Resources(BorderWidth)] \
+         -width [expr [winfo reqwidth $Tab.tab$No] -2] \
+         -height [expr 2*$Resources(BorderWidth)-1]
+   }
+
+   $Tab.hidder configure -bg [lindex [$Tab.frame$No configure -bg] 4]
+   raise $Tab.hidder
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Select>
+# Creation : Fevrier 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Selection d'un onglets.
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <No>     : Numero du tabulateur
+#   <Level>  : Niveaux du tab
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Select { Tab No Level } {
+   variable Resources
+   variable Data
+
+   if { ![winfo exists $Tab.frame$No] } {
+      return
+   }
+
+   #----- Deplacer les rangees d'onglets tabs selon l'ordre
+
+   set y  [expr [winfo reqheight $Tab.tab[lindex $Data(W1$Tab) 0]]-1]
+   set l 1
+
+   if { $Data(Level$Tab)>1 } {
+
+      #----- Pour tout les niveaux non vide, deplacer les onglets
+
+      for { set lvl 1 } { $lvl<=$Data(Level$Tab) } { incr lvl } {
+
+        if { $lvl!=$Level && [llength $Data(W$lvl$Tab)] } {
+            foreach tab $Data(W$lvl$Tab) {
+               TabFrame::Place $Tab $l $tab $Data(Level$Tab) -1 $Data(Top$Tab)
+            }
+            incr l
+         }
+      }
+
+      #----- Abbaiser la rangees d'onglets selectionnee
+
+      foreach tab $Data(W$Level$Tab) {
+         if { $tab!=$Tab } {
+           TabFrame::Place $Tab $l $tab $Data(Level$Tab) -1 $Data(Top$Tab)
+         }
+      }
+   }
+
+   #----- Placer le tab selectionne
+
+   TabFrame::Place $Tab $l $No $Data(Level$Tab) -1 $Data(Top$Tab) True
+
+   #----- effectuer le Callback de selection
+
+   set Data(Current$Tab) $No
+
+   if { $Data(Command$Tab) != "" } {
+      eval eval \$Data(Command$Tab) $Tab $No
+   }
+}

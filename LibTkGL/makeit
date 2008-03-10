@@ -1,0 +1,31 @@
+#!/bin/sh
+
+ARCH=`uname -s`
+
+echo ""
+echo "----- Architecture Found : $ARCH -----"
+echo ""
+
+echo ""
+echo "----- Making Utilities Files -----"
+echo ""
+cd Utils
+make
+
+echo ""
+echo "----- Making OpenGL Canvas Library  Object -----"
+echo ""
+cd ../TkglCanvas
+make install
+
+echo ""
+echo "----- Making EER Data Library Object -----"
+echo ""
+cd ../TclData
+make install
+
+echo ""
+echo "----- Making Tk Viewport Library Object -----"
+echo ""
+cd ../TkViewport
+make install

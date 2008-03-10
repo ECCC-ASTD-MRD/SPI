@@ -1,0 +1,60 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : MetInfo.txt
+# Version  : 1.2
+# Creation : Octobre 200
+#
+# Description:
+#    Permet l'obtention des observations meteorologiques.
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#===============================================================================
+
+namespace eval MetInfo {
+   variable Lbl
+   variable Msg
+   variable Bubble
+
+   #----- Titre de l'outils
+
+   set Export        { "MET Information - Export" "Exporter MET Information" }
+   set Dia           { "Completé" "Complete" }
+
+   #----- Definitions des labels
+
+   set Lbl(Generate) { "Exporter" "Export" }
+   set Lbl(Type)     { "Type" "Type" }
+   set Lbl(Station)  { "Station" "Station" }
+   set Lbl(Fichier)  { "Fichier" "File" }
+   set Lbl(Close)    { "Fermer" "Close" }
+   set Lbl(Convert)  { "Convert" "Convertir" }
+
+   set Msg(Station)  { "Recherche des stations..." "Searching stations..." }
+   set Msg(Msg)      { "Recherche des observations..." "Searching observations..." }
+   set Msg(Complete) { "Observations savegardées dans " "Observations saved in "}
+   set Msg(Empty)    { "Aucune observation de type "  "No observation of type "}
+   set Msg(SelectVide) { "Aucune selection" "No selection" }
+
+
+   set Bubble(Stat)    { "Nombre de station a l'interieur de la region selectionee"
+                         "Number of station within\nthe selected area" }
+   set Bubble(Station) { "Liste des stations situees a\nl'interieur de la region selectionee"
+                         "List of stations within\nthe selected area" }
+   set Bubble(Type)    { "Liste des types de observations disponibles" "Available observations types" }
+   set Bubble(File)    { "Liste fichiers de observations disponibles" "Available observations file list" }
+   set Bubble(List)    { "Observations correspondant a la\nselection pour la station choisie"
+                         "Observations found for the selected station" }
+   set Bubble(Msg)     { "Nombre de observations recuperer" "Number of found observations" }
+   set Bubble(Mode)    { "Entre dans le mode selection (MetInfo)\n   Bouton gauche: Selection d'une region\n   Bouton droit : Deplacement de la region\nLa selection demarre la recherche des stations\na l'interieur de la region et les affichent"
+                         "Enter selection mode (MetInfo)\n   Left button : Select an area\n   Right button: Move the selected area\nThe selection starts the search for\nincluded stations and displays them" }
+}

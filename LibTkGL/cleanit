@@ -1,0 +1,31 @@
+#!/bin/sh
+
+ARCH=`uname -s`
+
+echo ""
+echo "----- Architecture Found : $ARCH -----"
+echo ""
+
+echo ""
+echo "----- Cleaning Utilities Files -----"
+echo ""
+cd Utils
+make clean
+
+echo ""
+echo "----- Cleaning OpenGL Renderer Library  Object -----"
+echo ""
+cd ../TkglCanvas
+make clean
+
+echo ""
+echo "----- Cleaning EER Data Library Object -----"
+echo ""
+cd ../TclData
+make clean
+
+echo ""
+echo "----- MCleaning Tk Viewport Library Object -----"
+echo ""
+cd ../TkViewport
+make clean
