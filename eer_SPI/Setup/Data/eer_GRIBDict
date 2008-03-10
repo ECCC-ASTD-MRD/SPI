@@ -1,0 +1,184 @@
+#%SG_DICT_003
+#*****************************************************************************#
+#                                                                             #
+#                Parameter dictionary for grib encoder/decoder                #
+#			     Updated March 17 2000                            #
+#                                                                             #
+#*****************************************************************************#
+#
+# ( See standard file ip operators for what is new in dictionary version 3 )
+#
+# This dictionary is used by the grib encoder/decoder to do the translation
+# between the GRIB and the RPN standard file paramater description.
+#
+# Lines with a '#' in the first column (comment lines) and empty lines
+# are not treated
+#
+#
+# Each entry is composed of the folowing elements:
+#
+# Notes:
+#       All elements must be present and on the same line. Any thing
+#       following on the line is consider as comments
+#
+#       "--" is used as a "Not considered" flag.
+#       The entries wich use the "Not considered" flag have a lower matching
+#       priority.
+#
+#
+#
+# Grib file
+#   Center
+#      id   : Id of the center that produced the field (can be a value, less or equal to 255, or "--")
+#      sub  : Id of the sub-center that produced the field (can be a value, less or equal to 255, or "--")
+#   Parameter
+#      tbl  : Parameter table version (can be a value, less or equal to 255, or "--")
+#      id   : Parameter id in table (can be a value, less or equal to 255, or "--")
+#   Time range
+#      id   : Time range id as in table 5 of GRIB edition 1 definition (can be a value, less or equal to 255, or "--")
+#      Un   : Time range units
+#             Possible units are:
+#                s  : seconds
+#                m  : minutes
+#                h  : hours
+#                d  : days
+#                M  : months
+#                y  : years
+#                D  : decades
+#                n  : normal (30 years)
+#                c  : century
+#                -- : not specified. In that case the units are taken from the ip parameters time range operations.
+#                     If there is no ip time operations, the default is h (hours).
+#      P    : Time range value when time range uses only one (can be a value, less or equal to 32767, or "--")
+#      P1   : First  time range value (can be a value, less or equal to 255, or "--")
+#      P2   : Second time range value (can be a value, less or equal to 255, or "--")
+#   Level
+#      id   : Level id as in table 3 and 3a of GRIB edition 1 definition
+#      val  : Level value when level type uses only one (can be a value, less or equal to 32767, or "--")
+#      v1   : First  level value (can be a value, less or equal to 255, or "--")
+#      v2   : Second level value (can be a value, less or equal to 255, or "--")
+#
+# Standard file
+#    Identification
+#       name: Name of parameter
+#       ip1 : Operation for ip1
+#       ip2 : Operation for ip2
+#       ip3 : Operation for ip3
+#
+#       Possible operations are:
+#          <value> : Direct assignation
+#                    A value of 32767 in ip1 indicates an hybrid level
+#          LEQ     : Grib level value
+#          LEQ1    : First  grib level value
+#          LEQ2    : Second grib level value
+#
+#          PRH     : Grib level value from hPa to stdf pressure level
+#          PRH1    : First  grib level value hPa to stdf pressure level
+#          PRH2    : Second grib level value hpa to stdf pressure level
+#          PRK     : Grib level value from kPa to stdf pressure level
+#          PRK1    : First  grib level value kPa to stdf pressure level
+#          PRK2    : Second grib level value kpa to stdf pressure level
+#
+#          Z       : Grib level value from m to stdf Z level
+#          Z1      : First  grib level value from m to stdf Z level
+#          Z2      : Second grib level value from m to stdf Z level
+#          Zc      : Grib level value from cm to stdf Z level
+#          Zc1     : First  grib level value from cm to stdf Z level
+#          Zc2     : Second grib level value from cm to stdf Z level
+#          ZH      : Grib level value from hm to stdf Z level
+#          ZH1     : First  grib level value from hm to stdf Z level
+#          ZH2     : Second grib level value from hm to stdf Z level
+#
+#          SIGc    : Grib level value from 1/100 sigma to stdf sigma level
+#          SIGc1   : First  grib level value from 1/100 sigma to stdf sigma level
+#          SIGc2   : Second grib level value from 1/100 sigma to stdf sigma level
+#          SIGm    : Grib level value from 1/1000 sigma to stdf sigma level
+#          SIGm1   : First  grib level value from 1/1000 sigma to stdf sigma level
+#          SIGm2   : Second grib level value from 1/1000 sigma to stdf sigma level
+#          SIGu    : Grib level value from 1/10000 sigma to stdf sigma level
+#          SIGu1   : First  grib level value from 1/10000 sigma to stdf sigma level
+#          SIGu2   : Second grib level value from 1/10000 sigma to stdf sigma level
+#
+#          ETAc    : Grib level value from 1/100 ETA to stdf ETA level                 *******************************
+#          ETAc1   : First  grib level value from 1/100 ETA to stdf ETA level          * New in dictionary version 3 *
+#          ETAc2   : Second grib level value from 1/100 ETA to stdf ETA level          *                             *
+#          ETAm    : Grib level value from 1/1000 ETA to stdf ETA level                * These definitiona are the   *
+#          ETAm1   : First  grib level value from 1/1000 ETA to stdf ETA level         * only difference between     *
+#          ETAm2   : Second grib level value from 1/1000 ETA to stdf ETA level         * versions 2 and 3.           *
+#          ETAu    : Grib level value from 1/10000 ETA to stdf ETA level               *                             *
+#          ETAu1   : First  grib level value from 1/10000 ETA to stdf ETA level        *                             *
+#          ETAu2   : Second grib level value from 1/10000 ETA to stdf ETA level        *******************************
+#
+#          HYB     : Grib level value from hybrid to stdf hybrid
+#          HYB1    : First  grib level value from hybrid to stdf hybrid
+#          HYB2    : Secong grib level value from hybrid to stdf hybrid
+#
+#          TEQ     : Grib time range value
+#          TEQ1    : First  grib time range value
+#          TEQ2    : Second grib time range value
+#          Ts      : Grib time range value in seconds in the stdf
+#          Ts1     : First  grib time range value in seconds in the stdf
+#          Ts2     : Second grib time range value in seconds in the stdf
+#          Tm      : Grib time range value in minutes in the stdf
+#          Tm1     : First  grib time range value in minutes in the stdf
+#          Tm2     : Second grib time range value in minutes in the stdf
+#          Th      : Grib time range value in hours in the stdf
+#          Th1     : First  grib time range value in hours in the stdf
+#          Th2     : Second grib time range value in hours in the stdf
+#          Td      : Grib time range value in days in the stdf
+#          Td1     : First  grib time range value in days in the stdf
+#          Td2     : Second grib time range value in days in the stdf
+#          TM      : Grib time range value in months in the stdf
+#          TM1     : First  grib time range value in months in the stdf
+#          TM2     : Second grib time range value in months in the stdf
+#          Ty      : Grib time range value in years in the stdf
+#          Ty1     : First  grib time range value in years in the stdf
+#          Ty2     : Second grib time range value in years in the stdf
+#
+#          NOP     : No operation
+#
+#    Conversion
+#       When going from GRIB to RPN standard file.
+#
+#       pre_op : mathematical operation to do on data before
+#                applying factor, delta and post_op
+#       factor : data is multiplied by this factor
+#       delta  : delta is added to data
+#       post_op: mathematical operation to do on data after
+#                applying pre_op, factor and delta
+#
+#       Note:
+#             std_value = post_op( (pre_op(grb_value) + delta) * factor )
+#
+#
+#       Possible pre_op and post_op:
+#          NOP    : No operation. Data is left unchange. f(x) = x
+#          LOG    : Logarithm base 10                    f(x) = log(x)
+#          P10    : Power of 10                          f(x) = 10**(x)
+#
+
+#
+# ================================================================
+#
+#                   Dictionary for Emergency response models
+#
+# ================================================================
+#
+#                       Grib file                         |                   Standard file
+# -Center- -Param- -----Time range---- -------Level------ | ----Identification---- -----------Conversion-------------
+# Id  sub  tbl id   id Un P    P1  P2   id  val  v1  v2  | name ip1   ip2   ip3  pre-op factor delta post_op
+#
+  --  --     0  23  -- -- --    --  --   100 --    --  --    UU   NOP   NOP   NOP    NOP    1.9440124     0.0   NOP
+  --  --     0  246 -- -- --    --  --   100 --    --  --    DD   NOP   Th    NOP    NOP    1.0           0.0   NOP ? 6 Hours Dry deposition (Units/M2)
+  --  --     0  247 -- -- --    --  --   100 --    --  --    WD   NOP   Th    NOP    NOP    1.0           0.0   NOP ? 6 Hours Wet deposition (Units/M2) 
+  --  --     0  248 -- -- --    --  --   100 --    --  --    DI   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Dry deposition since beginning
+  --  --     0  249 -- -- --    --  --   100 --    --  --    WI   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Wet deposition since beginning
+  --  --     0  250 -- -- --    --  --   100 --    --  --    CV   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Air Concentration (Nq/M3)
+  --  --     0  251 -- -- --    --  --   100 --    --  --    IT   NOP   Th    NOP    NOP    1.0           0.0   NOP ? 24 Hour integrated concentrations (units-sec/M3)
+  --  --     0  252 -- -- --    --  --   100 --    --  --    MF   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Cummulated integrated concentrations (units/M3)
+  --  --     0  253 -- -- --    --  --   100 --    --  --    FM   NOP   Th    NOP    NOP    1.0           0.0   NOP ? 500m Average concentrations (Bq/M3)
+  --  --     0  254 -- -- --    --  --   100 --    --  --    AV   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Volcanic Cloud (ug/M3)
+  --  --     0  191 -- -- --    --  --   105 --    --  --    CC   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Cloudshine dosage (Sv)
+  --  --     0  192 -- -- --    --  --   105 --    --  --    CG   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Groundshine dosage (Sv)
+  --  --     0  193 -- -- --    --  --   105 --    --  --    CI   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Inhalation dosage (Sv)
+  --  --     0  194 -- -- --    --  --   105 --    --  --    CT   NOP   Th    NOP    NOP    1.0           0.0   NOP ? Total dosage (Sv)

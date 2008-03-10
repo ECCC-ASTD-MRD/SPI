@@ -1,0 +1,297 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie d'outils SPI.
+# Fichier  : Drawing.int
+# Version  : 4.0
+# Creation : Octobre 2005 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Permet d'afficher l'outils de dessin.
+#
+# Fonctions:
+#
+#
+# Remarques :
+#
+# Modification:
+#
+#   Nom         :
+#   Date        :
+#   Description :
+#
+#===============================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <Drawing::Window>
+# Creation : Novembre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Boite de dialogue de la fonction de dessin.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+# Modifications :
+#
+#    Nom         : -
+#    Date        : -
+#    Description : -
+#----------------------------------------------------------------------------
+
+proc Drawing::Window { } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Current
+   variable Resources
+   variable Data
+   variable Param
+
+   set Data(Active)  1
+   set Data(Canvas)  $Page::Data(Canvas)
+   set Data(Frame)   $Page::Data(Frame)
+
+   set Param(Window) .drawing
+
+   if { ![winfo exists .drawing] } {
+
+      if { $Param(Dock) } {
+         frame .drawing
+         SPI::Dock .drawing
+      } else {
+         toplevel         .drawing
+         wm title         .drawing "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+         eval wm geometry .drawing $Param(Geom)
+         wm resizable     .drawing 1 1
+         wm protocol      .drawing WM_DELETE_WINDOW { Drawing::Close }
+
+         if { $SPI::Param(Window) } { wm transient .drawing . }
+      }
+
+      TabFrame::Create .drawing.tab 1 ""
+      set Data(Tab) [TabFrame::Add .drawing.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+      pack .drawing.tab -side top -fill both -expand true
+
+      frame .drawing.dock -relief raised -bd 1
+         button .drawing.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Drawing }
+         button .drawing.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Drawing::Close
+         entry .drawing.dock.lat -textvariable Viewport::Map(LatCursor) -bg $GDefs(ColorLight) -width 9 -bd 1
+         entry .drawing.dock.lon -textvariable Viewport::Map(LonCursor) -bg $GDefs(ColorLight) -width 10 -bd 1
+         entry .drawing.dock.ele -textvariable Drawing::Current(Elev) -bg $GDefs(ColorLight) -width 6 -bd 1
+         button .drawing.dock.add -image SCHECK -relief flat -bd 0 -overrelief raised \
+            -command { Drawing::VertexAdd $Page::Data(Frame) $Viewport::Data(VP) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor) 0 }
+         pack .drawing.dock.sel .drawing.dock.del -side left
+         pack .drawing.dock.lat .drawing.dock.lon -side left -fill y
+         pack .drawing.dock.ele -side left -fill both -expand true
+         pack .drawing.dock.add -side left -fill y
+      pack .drawing.dock -side bottom -fill x
+
+      bind .drawing.dock.lat <Key-Return> { .drawing.dock.add invoke }
+      bind .drawing.dock.lon <Key-Return> { .drawing.dock.add invoke }
+      bind .drawing.dock.ele <Key-Return> { .drawing.dock.add invoke }
+
+      frame $Data(Tab).head
+         checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue Drawing -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { SPI::ToolMode $Page::Data(ToolMode) Draw True }
+         checkbutton $Data(Tab).head.georef -selectimage WORLD -image NOWORLD -bd 1 -relief sunken -bd 1 -overrelief raised -offrelief flat \
+            -variable Drawing::Data(GeoRef) -onvalue 1 -offvalue 0 -indicatoron false -command { Drawing::DrawMode $Page::Data(Frame) 1 }
+         menubutton $Data(Tab).head.file -image OPEN -relief flat -bd 1 -menu $Data(Tab).head.file.menu
+         checkbutton $Data(Tab).head.grid -selectimage SHEET -image SHEET -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Drawing::Data(Grid) -onvalue 1 -offvalue 0 -indicatoron false \
+            -command { }
+         checkbutton $Data(Tab).head.mark  -image EYE -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron false -variable Drawing::Current(3D) \
+            -command { Drawing::UpdateItems $Page::Data(Frame) }
+
+         frame $Data(Tab).head.idx
+            button $Data(Tab).head.idx.down -image UP -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) -1 }
+            button $Data(Tab).head.idx.up -image DOWN -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) 1 }
+            pack $Data(Tab).head.idx.down $Data(Tab).head.idx.up -side top -fill y -expand true -ipadx 3
+         button $Data(Tab).head.front -image FRONT -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) F }
+         button $Data(Tab).head.back -image BACK -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) B }
+         button $Data(Tab).head.del -image DELETE -bd 0 -relief flat -overrelief raised \
+            -command { Drawing::ItemDel $Page::Data(Frame) }
+         pack $Data(Tab).head.mode $Data(Tab).head.file $Data(Tab).head.georef $Data(Tab).head.grid $Data(Tab).head.mark -side left -fill x -anchor w -padx 2
+         pack $Data(Tab).head.del $Data(Tab).head.idx $Data(Tab).head.back $Data(Tab).head.front -side right -padx 2
+      pack $Data(Tab).head -side top -fill x
+
+      frame $Data(Tab).items
+         frame $Data(Tab).items.def -relief sunken -bd 1
+            foreach type $Data(Type) img $Data(Image) {
+               button $Data(Tab).items.def.$type -image $img -relief flat -bd 0 -overrelief raised  -command "Drawing::ItemAdd \$Page::Data(Frame) $type"
+               Bubble::Create $Data(Tab).items.def.$type [lindex $Bubble($type) $GDefs(Lang)]
+               pack $Data(Tab).items.def.$type -side top
+            }
+         pack $Data(Tab).items.def -side left -fill y -ipadx 2 -ipady 2
+
+         frame $Data(Tab).items.list
+            listbox $Data(Tab).items.list.box -width 20 -height 10 -bg white -selectbackground $GDefs(ColorHighLight) \
+               -yscrollcommand "$Data(Tab).items.list.scroll set" -bd 1 -exportselection false -selectmode single
+            scrollbar $Data(Tab).items.list.scroll -command "$Data(Tab).items.list.box yview" -bd 1 -width 10
+            pack $Data(Tab).items.list.box -side left -fill both -expand true
+            pack $Data(Tab).items.list.scroll -side left -fill y
+         pack $Data(Tab).items.list -side left -fill both -expand true
+      pack $Data(Tab).items -side top -fill both  -expand true
+
+      frame .drawing.params -relief raised -bd 1 -height 200
+      pack .drawing.params -side top -fill both
+
+      menu $Data(Tab).head.file.menu -tearoff 0 -bd 1
+         $Data(Tab).head.file.menu add command -label [lindex $Lbl(New) $GDefs(Lang)] \
+             -command { Drawing::Clear $Page::Data(Frame) }
+         $Data(Tab).head.file.menu add separator
+         $Data(Tab).head.file.menu add command -label [lindex $Lbl(Load) $GDefs(Lang)] \
+             -command { Drawing::FileLoad $Page::Data(Frame) [FileBox::Create .drawing "" Load [list $FileBox::Type(DWG)]] }
+         $Data(Tab).head.file.menu add command -label [lindex $Lbl(Save) $GDefs(Lang)] \
+            -command { Drawing::FileSave [FileBox::Create .drawing "" Save [list $FileBox::Type(DWG)]] }
+
+      #----- Widgets de parametres
+
+      frame .drawing.params.font
+         label .drawing.params.font.lbl -text [lindex $Lbl(Font) $GDefs(Lang)] -anchor w
+         button .drawing.params.font.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico -relief groove -bd 2 \
+            -command "FontBox::Create .drawing \"Drawing::SetFont \$Page::Data(Frame) \$Drawing::Current(Font)\" \$Drawing::Current(Font)"
+         pack .drawing.params.font.lbl -side left
+         pack .drawing.params.font.opt -side right
+
+      frame .drawing.params.line
+         label .drawing.params.line.lbl -text [lindex $Lbl(Line) $GDefs(Lang)] -anchor w
+         entry .drawing.params.line.opt -textvariable Drawing::Current(Text) -bg $GDefs(ColorLight) -width 1 -bd 1
+         pack .drawing.params.line.lbl -side left
+         pack .drawing.params.line.opt -side right -fill x -expand true
+
+      frame .drawing.params.text
+         labelframe .drawing.params.text.lbl -text "[lindex $Lbl(Text) $GDefs(Lang)]"
+         text  .drawing.params.text.lbl.opt -bg $GDefs(ColorLight) -width 1 -height 10 -bd 1
+         pack .drawing.params.text.lbl.opt -side top -fill both -expand true
+         pack .drawing.params.text.lbl -side top -fill both -expand true
+
+      frame .drawing.params.angle
+         label .drawing.params.angle.lbl -text [lindex $Lbl(Angle) $GDefs(Lang)] -anchor w
+         scale .drawing.params.angle.opt -from -90 -to 90 -resolution 10 -variable Drawing::Current(Angle) -showvalue false \
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command " Drawing::SetAngle $Page::Data(Frame) "
+         pack .drawing.params.angle.lbl -side left
+         pack .drawing.params.angle.opt -side right
+
+      frame .drawing.params.width
+         label .drawing.params.width.lbl -text [lindex $Lbl(Width) $GDefs(Lang)] -anchor w
+         IcoMenu::Create .drawing.params.width.opt $GDefs(Dir)/Resources/Bitmap $Resources(Width) "0 1 2 3 4 5" \
+            Drawing::Current(Width) "Drawing::SetWidth \$Page::Data(Frame) \$Drawing::Current(Width)" $Drawing::Current(Width) -relief flat -bd 1
+         pack .drawing.params.width.lbl -side left
+         pack .drawing.params.width.opt -side right
+
+      frame .drawing.params.arrow
+         label .drawing.params.arrow.lbl -text [lindex $Lbl(Arrow) $GDefs(Lang)] -anchor w
+         IcoMenu::Create .drawing.params.arrow.opt $GDefs(Dir)/Resources/Bitmap $Resources(Arrow) "none first last both" \
+            Drawing::Current(Arrow) "Drawing::SetArrow \$Page::Data(Frame) \$Drawing::Current(Arrow)" 0 -relief flat -bd 1
+         pack .drawing.params.arrow.lbl -side left
+         pack .drawing.params.arrow.opt -side right
+
+      frame .drawing.params.type
+         label .drawing.params.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -anchor w
+         IcoMenu::Create .drawing.params.type.opt $GDefs(Dir)/Resources/Bitmap $Resources(Line) "0 1" \
+            Drawing::Current(Line) "Drawing::SetLine \$Page::Data(Frame) \$Drawing::Current(Line)" 0 -relief flat -bd 1
+         pack .drawing.params.type.lbl -side left
+         pack .drawing.params.type.opt -side right
+
+      frame .drawing.params.pattern
+         label .drawing.params.pattern.lbl -text [lindex $Lbl(Pattern) $GDefs(Lang)] -anchor w
+         IcoMenu::CreateDef .drawing.params.pattern.opt $GDefs(Dir)/Resources/Bitmap \
+            { zeroth.xbm stipple1.xbm stipple2.xbm stipple3.xbm stipple4.xbm stipple5.xbm stipple6.xbm stipple7.xbm stipple8.xbm } \
+            { "" @$GDefs(Dir)/Resources/Bitmap/stipple1-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple2-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple3-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple4-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple5-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple7-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm } \
+            Drawing::Current(Pattern) "Drawing::SetPattern \$Page::Data(Frame) \$Drawing::Current(Pattern)" $Drawing::Current(Pattern) -relief groove -bd 2
+         pack .drawing.params.pattern.lbl -side left
+         pack .drawing.params.pattern.opt -side right
+
+      frame .drawing.params.bitmap
+         labelframe .drawing.params.bitmap.lbl -text "[lindex $Lbl(Bitmap) $GDefs(Lang)]"
+         IcoMenu::Create .drawing.params.bitmap.lbl.opt $GDefs(Dir)/Resources/Bitmap \
+            $Resources(Bitmap) "0 1 2 3 4 5 6 7 8 9 10" \
+            Drawing::Current(BitIdx) "Drawing::SetBitmap \$Page::Data(Frame) \$Drawing::Current(BitIdx)" $Drawing::Current(BitIdx) -relief flat -bd 1
+         pack .drawing.params.bitmap.lbl.opt -side top -fill both -expand true
+         pack .drawing.params.bitmap.lbl -side top -fill both -expand true
+
+      frame .drawing.params.image
+         labelframe .drawing.params.image.lbl -text "[lindex $Lbl(Image) $GDefs(Lang)]"
+         menubutton .drawing.params.image.lbl.opt -menu .drawing.params.image.lbl.opt.menu -image $Current(Image) -bd 1
+         pack .drawing.params.image.lbl.opt -side top -fill both -expand true
+         pack .drawing.params.image.lbl -side top -fill both -expand true
+
+      frame .drawing.params.coord
+         label .drawing.params.coord.lbl -text [lindex $Lbl(Coord) $GDefs(Lang)] -anchor w
+         checkbutton .drawing.params.coord.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/coord.ico -bd 1 -variable Drawing::Current(Coord) \
+         -command { Drawing::SetValu $Page::Data(Frame) } -indicatoron false -selectcolor $GDefs(ColorFrame)
+         pack .drawing.params.coord.lbl -side left
+         pack .drawing.params.coord.opt -side right
+
+      frame .drawing.params.grid
+         label .drawing.params.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -anchor w
+         checkbutton .drawing.params.grid.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/grid.ico -bd 1 -variable Drawing::Current(Grid) \
+            -command { Drawing::SetValu $Page::Data(Frame) } -indicatoron false -selectcolor $GDefs(ColorFrame)
+         pack .drawing.params.grid.lbl -side left
+         pack .drawing.params.grid.opt -side right
+
+      frame .drawing.params.date
+         label .drawing.params.date.lbl -text [lindex $Lbl(Date) $GDefs(Lang)] -anchor w
+         checkbutton .drawing.params.date.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/date.ico -bd 1 -variable Drawing::Current(Date) \
+            -command { Drawing::SetValu $Page::Data(Frame) } -indicatoron false -selectcolor $GDefs(ColorFrame)
+         pack .drawing.params.date.lbl -side left
+         pack .drawing.params.date.opt -side right
+
+      frame .drawing.params.color
+         label .drawing.params.color.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -anchor w
+         ColorBox::CreateSel .drawing.params.color.opt Drawing::Current(Color) Drawing::SetColor \$Page::Data(Frame)
+         pack .drawing.params.color.lbl -side left
+         pack .drawing.params.color.opt -side right
+
+      frame .drawing.params.out
+         label .drawing.params.out.lbl -text [lindex $Lbl(Outline) $GDefs(Lang)] -anchor w
+         ColorBox::CreateSel .drawing.params.out.opt  Drawing::Current(Outline) Drawing::SetOutline \$Page::Data(Frame)
+         pack .drawing.params.out.lbl -side left
+         pack .drawing.params.out.opt -side right
+
+      frame .drawing.params.nau
+         label .drawing.params.nau.lbl -text [lindex $Lbl(Nautical) $GDefs(Lang)] -anchor w
+         checkbutton .drawing.params.nau.opt -variable Drawing::Current(Nautic) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Drawing::SetNautic $Page::Data(Frame) }
+         pack .drawing.params.nau.lbl -side left
+         pack .drawing.params.nau.opt -side right
+
+      #----- Definir les "bindings"
+
+      bind $Data(Tab).items.list.box    <ButtonRelease-1> { Drawing::ItemSel $Page::Data(Frame) }
+      bind .drawing.params.line.opt     <Any-KeyRelease>  { Drawing::SetText $Page::Data(Frame) $Drawing::Current(Text) }
+      bind .drawing.params.text.lbl.opt <Any-KeyRelease>  { set Drawing::Current(Text) [.drawing.params.text.lbl.opt get 0.0 end];Drawing::SetText $Page::Data(Frame) $Drawing::Current(Text) }
+
+      #----- Creation des bulles d'aides
+
+      Bubble::Create .drawing.dock.sel       [lindex $Bubble(Dock) $GDefs(Lang)]
+      Bubble::Create .drawing.dock.del       [lindex $Bubble(Close) $GDefs(Lang)]
+      Bubble::Create .drawing.dock.lat       [lindex $Bubble(Lat) $GDefs(Lang)]
+      Bubble::Create .drawing.dock.lon       [lindex $Bubble(Lon) $GDefs(Lang)]
+      Bubble::Create .drawing.dock.ele       [lindex $Bubble(Ele) $GDefs(Lang)]
+      Bubble::Create .drawing.dock.add       [lindex $Bubble(Add) $GDefs(Lang)]
+
+      Bubble::Create $Data(Tab).head.file      [lindex $Bubble(File) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.mark      [lindex $Bubble(Mark) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.georef    [lindex $Bubble(GeoRef) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.mode      [lindex $Bubble(Mode) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.grid      [lindex $Bubble(Grid) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.del       [lindex $Bubble(Del) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.front     [lindex $Bubble(Front) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.back      [lindex $Bubble(Back) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.idx.up    [lindex $Bubble(Down) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.idx.down  [lindex $Bubble(Up) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).items.list.box [lindex $Bubble(List) $GDefs(Lang)]
+
+      Drawing::ImageSetup
+   }
+
+   Drawing::PageActivate $Page::Data(Frame)
+   raise .drawing
+}

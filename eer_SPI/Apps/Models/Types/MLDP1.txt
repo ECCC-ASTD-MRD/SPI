@@ -1,0 +1,427 @@
+#============================================================================
+# Environnement Canada - Service meteorologique du Canada
+# Centre meteorologique canadien
+# 2121 Route Trans-canadienne
+# Dorval, Quebec
+# H9P 1J3
+#
+# Projet     : Interface pour la gestion des experiences.
+# Fichier    : <MLDP1.txt>
+# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Description des textes et labels relatives au module MLDP1.
+#
+# Remarques  :
+#   Aucune.
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#============================================================================
+
+namespace eval MLDP1 {
+   variable Lbl
+   variable Msg
+   variable Error
+   variable Warning
+   variable Bubble
+
+   #----- Definitions des labels
+
+   set Lbl(Product)             { "Produits"  "Products" }
+   set Lbl(Result)              { "Résultats" "Results" }
+   set Lbl(Suppress)            { "Supprimer" "Delete" }
+
+   set Lbl(Model)               { "Modèle" "Model" }
+   set Lbl(Source)              { "Source" "Source" }
+   set Lbl(Start)               { "Temps de départ (UTC)" "Starting Time (UTC)" }
+   set Lbl(Date)                { "Date" "Date" }
+   set Lbl(Delta)               { "Delta (HR)" "Delta (HR)" }
+   set Lbl(Hour)                { "Heure " "Hour " }
+   set Lbl(At)                  { "A " "At " }
+   set Lbl(Integration)         { "Intégration" "Integration" }
+   set Lbl(SimDuration)         { "Durée de simulation    (h)  " "Simulation duration (h)  " }
+   set Lbl(OutputTimeStepMin)   { "Pas de temps de sortie (min)" "Output time step    (min)" }
+   set Lbl(ModelTimeStepMin)    { "Pas de temps du modèle (min)" "Model time step     (min)" }
+   set Lbl(OtherParameters)     { "Autres paramètres" "Other Parameters" }
+   set Lbl(Event)               { "Événement   "     "Event type " }
+   set Lbl(Virus)               { "Virus       "     "Virus type " }
+   set Lbl(Scale)               { "Grille      "     "Grid       " }
+   set Lbl(Meteo)               { "Météorologie"     "Meteorology" }
+   set Lbl(MeteoDelta)          { " Dt (h)"          " Dt (h)" }
+   set Lbl(VerticalLevels)      { "Niveaux  (m)"     "Levels  (m)" }
+   set Lbl(VarMesoscale)        { "Variance  (m²/s²)" "Variance (m²/s²)" }
+   set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
+   set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
+
+   set Lbl(Emission)            { "Émission" "Emission" }
+   set Lbl(Column)              { "Colonne d'émission" "Emission column" }
+   set Lbl(EmNumberParticles)   { "Nombre de particules     " "Number of particles      " }
+   set Lbl(EmDensity)           { "Densité           (µg/m³)" "Density           (µg/m³)" }
+   set Lbl(EmHeight)            { "Hauteur maximale      (m)" "Maximum height        (m)" }
+   set Lbl(EmMass)              { "Masse totale émise   (µg)" "Total mass released  (µg)" }
+   set Lbl(EmRadius)            { "Rayon de la colonne   (m)" "Column radius         (m)" }
+   set Lbl(EmSizeDist)          { "Distribution de la taille" "Size distribution        " }
+   set Lbl(EmVerticalDist)      { "Distribution verticale   " "Vertical distribution    " }
+
+   set Lbl(Scenario)            { "Scénario d'émission"  "Emission scenario" }
+   set Lbl(ScenarioName)        { "Nom du scénario     " "Scenario name         " }
+   set Lbl(Species)             { "Espèces" "Species" }
+   set Lbl(NbIntervals)         { "Nombre d'intervalles" "Number of intervals   " }
+   set Lbl(NbIsotopes)          { "Nombre d'isotopes   " "Number of isotopes    " }
+   set Lbl(TotalDuration)       { "Durée totale     (s)" "Total duration     (s)" }
+   set Lbl(EffectiveDuration)   { "Durée effective  (s)" "Effective duration (s)" }
+   set Lbl(Edit)                { "Éditer" "Edit" }
+
+   set Lbl(Add)                 { "Ajouter" "Add" }
+   set Lbl(Duration)            { "Durée (s)" "Duration (s)" }
+   set Lbl(Period)              { "Type de période" "Type of period" }
+   set Lbl(ReleaseRateAccident) { "Taux de relâchement des isotopes\n(unité/h)" "Isotopes release rates\n(unit/h)" }
+   set Lbl(ReleaseRateVirus)    { "Taux de relâchement\ndu virus (unité/h)" "Virus release rates\n(unit/h)" }
+   set Lbl(TotalQuantity)       { "Quantité totale\n(unité)" "Total quantity\n(unit)" }
+   set Lbl(Apply)               { "Appliquer" "Apply" }
+   set Lbl(Cancel)              { "Annuler" "Cancel" }
+   set Lbl(Close)               { "Fermer" "Close" }
+   set Lbl(Yes)                 { "Oui" "Yes" }
+   set Lbl(No)                  { "Non" "No " }
+   set Lbl(Warning)             { "Avertissement" "Warning" }
+
+   set Lbl(Params)              { "Paramètres" "Parameters" }
+   set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
+   set Lbl(Queue)               { "Type de queue  " "Queue type     " }
+   set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
+   set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
+   set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
+   set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
+   set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
+   set Lbl(Email)               { "   Adresse     " "   Address     " }
+   set Lbl(EmailAddress)        { "Courriel       " "E-mail         " }
+   set Lbl(Launch)              { "Lancement" "Launch" }
+   set Lbl(LaunchModel)         { "Lancer" "Launch" }
+   set Lbl(Overwrite)           { "Remplacer" "Overwrite" }
+
+   #----- Definitions des bulles d'aides
+
+   set Bubble(Source)                 { "Nom de la source." "Name of the source." }
+   set Bubble(SelectSource)           { "Sélectionner la source." "Select the source." }
+   set Bubble(StartTime)              { "Temps de départ (UTC) de la simulation." "Simulation starting time (UTC)." }
+   set Bubble(StartDate)              { "Date du début de la simulation." "Date of beginning of simulation." }
+   set Bubble(StartHour)              { "Heure et minutes de la date de simulation." "Hour and minutes of simulation date." }
+   set Bubble(SimIntegration)         { "Intégration du modèle." "Model integration." }
+   set Bubble(SimDuration)            { "Durée de la simulation (hr)." "Simulation duration (hr)." }
+   set Bubble(OutputTimeStepMin)      { "Pas de temps de sortie (min) des données." "Data output time step (min)." }
+   set Bubble(ModelTimeStepMin)       { "Pas de temps interne du modèle (min)." "Internal model time step (min)." }
+
+   set Bubble(OtherParameters)        { "Autres paramètres." "Other parameters." }
+   set Bubble(Event)                  { "Sélection du type d'événement (À titre informatif)." "Select the event type (As information label)." }
+   set Bubble(Virus)                  { "Sélection du type de virus." "Select the virus type." }
+   set Bubble(Scale)                  { "Résolution (km) de la grille\npolaire stéréographique." "Resolution (km) of the polar stereographic grid." }
+   set Bubble(Meteo)                  { "Type de modèle météorologique." "Type of meteorological model." }
+   set Bubble(MeteoDelta)             { "Interval de temps entre les fichiers\ndes données météorologiques (hr)." "Time interval between meteorological\ndata files (hr)." }
+   set Bubble(MoveGrid1)              { "Permettre de centrer automatiquement la grille\nsur la source sélectionnée sur la sphère terrestre." "Allow to center the the grid over the\nselected source on the earth's sphere." }
+   set Bubble(MoveGrid2)              { "Permettre de modifier l'emplacement de\nla grille sur la sphère terrestre." "Allow to modify the location of\nthe grid on the earth's sphere." }
+   set Bubble(ModifyPath)             { "Permettre de modifier les répertoires\ndes modèles météorologiques." "Allow to modify the meteorological\nmodels directories." }
+   set Bubble(VerticalLevels)         { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
+   set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modeling of mesoscale fluctuations." }
+   set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodeling of mesoscale fluctuations." }
+   set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
+
+   set Bubble(Column)                 { "Propriétés de la colonne d'émission." "Emission column properties." }
+   set Bubble(EmNumberParticles)      { "Nombre de particules relâchées." "Number of released particles." }
+   set Bubble(EmDensity)              { "Densité d'une particule (µg/m³)." "Particle density (µg/m³)." }
+   set Bubble(EmHeight)               { "Hauteur maximale du panache (m)." "Maximum plume height (m)." }
+   set Bubble(MassMode)               { "Sélectionner le mode pour le calcul de la masse totale relâchée (µg).\n\n - Formule empirique de Sparks et al. (1997): La masse totale relâchée ne peut pas être éditée;\n   elle dépend de la densité d'une particule, de la hauteur du panache et de la durée effective d'émission.\n - Édition: La masse totale relâchée peut être éditée." "Select the mode for total released mass calculation (µg).\n\n - Empirical formula of Sparks et al. (1997): Total mass released cannot be edited;\n   it is a function of particle density, plume height and effective emission duration.\n - Edit: Total mass released can be edited." }
+   set Bubble(Radius)                 { "Rayon de la colonne d'émission (m)." "Emission column radius (m)." }
+   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet de la vitesse de sédimentation." "Select the type of size distribution to model\nthe effect of particle settling velocity." }
+   set Bubble(EmVerticalDist)         { "Sélectionner le type de distribution verticale\npour modéliser le panache d'émission." "Select the type of vertical distribution\nto model the released plume." }
+
+   set Bubble(Scenario)               { "Scénario d'émission." "Release scenario." }
+   set Bubble(ScenarioName)           { "Nom du scénario d'émission." "Name of the emission scenario." }
+   set Bubble(ScenarioSelect)         { "Sélectionner le nom du scénario d'émission." "Select the name of the emission scenario." }
+   set Bubble(NbIntervals)            { "Nombre d'intervalles d'émission." "Number of release intervals." }
+   set Bubble(Isotopes)               { "Isotopes radioactifs." "Radioactive isotopes." }
+   set Bubble(NbIsotopes)             { "Nombre d'isotopes radioactifs." "Number of radioactive isotopes." }
+   set Bubble(AddIso)                 { "Ajouter un nouvel isotope radioactif." "Add a new radioactive isotope." }
+   set Bubble(DeleteIso)              { "Supprimer l'isotope radioactif sélectionné." "Delete the selected radioactive isotope." }
+   set Bubble(TotalDuration)          { "Durée totale d'émission (s) incluant les périodes\nde relâchement et les périodes d'accalmie." "Total emission duration (s) including the\nrelease periods and the lull periods." }
+   set Bubble(EffectiveDuration)      { "Durée effective d'émission (s) incluant seulement\nles périodes de relâchement." "Effective emission duration (s) including only the release periods." }
+   set Bubble(TotalDuration2)         { "Durée totale d'émission (s) incluant les périodes\nde relâchement (taux de relâchement positifs) et les\npériodes d'accalmie (taux de relâchement nuls)." "Total emission duration (s) including the\nrelease periods (release rates positive) and the\nlull periods (null release rates)." }
+   set Bubble(EffectiveDuration2)     { "Durée effective d'émission (s) incluant seulement\nles périodes où les taux de relâchement sont positifs." "Effective emission duration (s) including only the periods\nfor which the release rates are positive." }
+   set Bubble(DurationInter)          { "Durée de l'intervalle (s)." "Interval duration (s)." }
+   set Bubble(Period)                 { "Type de période d'émission (relâchement ou accalmie)." "Type of release period (release or lull)." }
+   set Bubble(ReleaseRate)            { "Taux de relâchement des isotopes (unité/h)." "Isotopes release rates (unit/h)." }
+   set Bubble(ReleaseRate2)           { "Taux de relâchement de l'isotope (unité/h)." "Isotope release rate (unit/h)." }
+   set Bubble(ReleaseRateVirus)       { "Taux de relâchement du virus (unité/h)." "Virus release rate (unit/h)." }
+   set Bubble(TotalQuantityAccident)  { "Quantité totale de matière relâchée des isotopes (unité)." "Isotopes total released quantity of matter (unit)." }
+   set Bubble(TotalQuantityVirus)     { "Quantité totale de matière relâchée du virus (unité)." "Virus total released quantity of matter (unit)." }
+   set Bubble(Cancel)                 { "Annuler les modifications apportées\nau scénario d'émission." "Cancel the modifications made\nto the release scenario." }
+   set Bubble(Apply)                  { "Appliquer les changements et sauvegarder le scénario d'émission." "Apply changes and save the emission scenario." }
+   set Bubble(EditScenario)           { "Éditer le scénario d'émission sélectionné." "Edit the selected release scenario." }
+   set Bubble(DeleteScenario)         { "Supprimer le scénario d'émission sélectionné." "Delete the selected release scenario." }
+
+   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et\nle modèle seront exécutés.\n\nnaos   : grappe dorsale opérationnelle du superordinateur IBM (avec préemption) ;\nmaia   : grappe dorsale développement du superordinateur IBM (sans préemption) ;\ncastor : grappe frontale opérationnelle ;\npollux : grappe frontale développement." \
+                                        "Host where meteorological preprocessing\nand model will be executed.\n\nnaos   : back-end operational cluster of IBM supercomputer (with preemption) ;\nmaia   : back-end development cluster of IBM supercomputer (without preemption) ;\ncastor : operational front-end cluster ;\npollux : development front-end cluster." }
+   set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
+   set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
+   set Bubble(NbMPItasks)             { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                                        "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(NbOMPthreads)           { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                                        "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(OMPthreadFact)          { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
+   set Bubble(IsEmailAddress)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
+   set Bubble(EmailAddress)           { "Adresse de courrier électronique." "E-mail address." }
+   set Bubble(LaunchModel)            { "Lancer le modèle MLDP1." "Launch MLDP1 model." }
+
+   #----- Definitions des messages
+
+   set Msg(Meteo)        { "Création des données météo en cours" "Creating meteorological data" }
+   set Msg(Exist)        { "Veuillez compléter le lancement de MLDP1 en cours avant de procéder à un autre." "Please complete the current MLDP1 launch before proceeding with another one." }
+   set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
+   set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" "Do you really wish to delete this simulation?" }
+   set Msg(Suppressing)  { "Suppression des données" "Suppressing data" }
+   set Msg(SuppressDone) { "Suppression terminée !" "Suppressing done !" }
+
+   #----- Definitions des erreurs
+
+   set Error(UnitSeconds)                       "s."
+   set Error(UnitMinutes)                       "min."
+   set Error(UnitHours)                         "h."
+   set Error(UnitMeters)                        "m."
+   set Error(UnitM2PS2)                         "m²/s²."
+   set Error(UnitHybEtaSig)                     "hyb|eta|sig."
+   set Error(UnitDensity)                       { "µg/m³." "µg/m³." }
+   set Error(UnitMass)                          { "µg." "µg." }
+   set Error(UnitRate)                          { "unité/h." "unit/h." }
+
+   set Error(EndDate)                           { "Erreur! Auncune date de fin n'a été sélectionnée" "Error! No simulation end date has been selected" }
+   set Error(SimDuration)                       { "Erreur! La durée de simulation (spécifiée en heures) doit être un nombre entier positif.\n\n\tDurée de simulation :" \
+                                                  "Error! The simulation duration  (specified in hours) must be a positive integer number.\n\n\tSimulation duration :" }
+   set Error(SimDurationOutRange)               { "Erreur! La valeur de la durée de simulation (spécifiée en heures) déborde la capacité mémoire d'un nombre entier.\n\n\tDurée de simulation :" \
+                                                  "Error! The simulation duration value (specified in hours) under/overflows the memory capacity of an integer number.\n\n\tSimulation duration :" }
+   set Error(SimDurationDelta)                  { "Erreur! La durée de simulation doit être inférieure ou égale à l'interval de temps entre les données des fichiers météorologiques.\n\n" \
+                                                  "Error! The simulation duration must be lower or equal to the time interval between meteorological data files.\n\n" }
+   set Error(SimDurationDelta2)                 { "\tDurée de simulation     :" "\tSimulation duration :" }
+   set Error(SimDurationDelta3)                 { "\tInterval de temps météo :" "\tMeteo time interval :" }
+   set Error(SimDurationOutputTimeStep)         { "Erreur! La durée de simulation doit être supérieure ou égale au pas de temps de sortie des données.\n\n" \
+                                                  "Error! The simulation duration must be greater or equal to the output time step.\n\n" }
+   set Error(SimDurationOutputTimeStep2)        { "\tDurée de simulation    :" "\tSimulation duration :" }
+   set Error(SimDurationOutputTimeStep3)        { "\tPas de temps de sortie :" "\tOutput time step    :" }
+   set Error(ModelTimeStepMin)                  { "Erreur! Le pas de temps interne du modèle (spécifié en minutes) doit être un nombre entier positif.\n\n\tPas de temps du modèle :" \
+                                                  "Error! The internal model time step (specified in minutes) must be a positive integer number.\n\n\tModel time step :" }
+   set Error(ModelTimeStepMinOutRange)          { "Erreur! La valeur du pas de temps interne du modèle (spécifié en minutes) déborde la capacité mémoire d'un nombre entier.\n\n\tPas de temps du modèle :" \
+                                                  "Error! The internal model time step value (specified in minutes) under/overflows the memory capacity of an integer number.\n\n\tModel time step :" }
+   set Error(OutputTimeStepMin)                 { "Erreur! Le pas de temps de sortie (spécifié en minutes) doit être un nombre entier positif.\n\n\tPas de temps de sortie :" \
+                                                  "Error! The output time step (specified in minutes) must be a positive integer number.\n\n\tOutput time step :" }
+   set Error(OutputTimeStepMinOutRange)         { "Erreur! La valeur du pas de temps de sortie (spécifié en minutes) déborde la capacité mémoire d'un nombre entier.\n\n\tPas de temps de sortie :" \
+                                                  "Error! The output time step value (specified in minutes) under/overflows the memory capacity of an integer number.\n\n\tOutput time step :" }
+   set Error(ModelTimeStep1hour)                { "Erreur! Le pas de temps interne du modèle (spécifié en minutes) doit être inférieur ou égal à une heure (60 minutes).\n\n\tPas de temps du modèle :" \
+                                                  "Error! The internal model time step (specified in minutes) must be lower or equal to an hour (60 minutes).\n\n\tModel time step :" }
+   set Error(ModelTimeStep1hourDiv)             { "Erreur! Le pas de temps interne du modèle (spécifié en minutes) doit être un diviseur entier d'une heure (60 minutes).\n\n\tPas de temps du modèle :" \
+                                                  "Error! The internal model time step (specified in minutes) must be an integer divisor of an hour (60 minutes).\n\n\tModel time step :" }
+   set Error(ModelTimeStepOutputTimeStep)       { "Erreur! Le pas de temps interne du modèle doit être inférieur ou égal au pas de temps de sortie.\n\n" \
+                                                  "Error! The internal model time step must be lower or equal to the output time step.\n\n" }
+   set Error(ModelTimeStepOutputTimeStep2)      { "\tPas de temps du modèle :" "\tModel time step  :" }
+   set Error(ModelTimeStepOutputTimeStep3)      { "\tPas de temps de sortie :" "\tOutput time step :" }
+   set Error(OutputTimeStepModelTimeStep)       { "Erreur! Le pas de temps de sortie doit être un multiple entier du pas de temps interne du modèle.\n\n" \
+                                                  "Error! The output time step must be an integer multiple of the internal model time step.\n\n" }
+   set Error(OutputTimeStepModelTimeStep2)      { "\tPas de temps de sortie :" "\tOutput time step :" }
+   set Error(OutputTimeStepModelTimeStep3)      { "\tPas de temps du modèle :" "\tModel time step  :" }
+
+   set Error(VerticalLevels1)                   { "Erreur! Le nombre de niveaux verticaux pour le calcul des concentrations à l'intérieur des couches doit être supérieur à 1 et inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n" "Error! The number of vertical levels for concentration calculations inside layers must be greater than 1 and less than (or equal to) maximum limit value declared in the program.\n\n" }
+   set Error(VerticalLevels2)                   { "\tNombre de niveaux verticaux :" "\tNumber of vertical levels :" }
+   set Error(VerticalLevels3)                   { "\tNombre maximum de niveaux   :" "\tMaximum number of levels  :" }
+   set Error(VerticalLevels4)                   { "\tNiveaux verticaux           :" "\tVertical levels           :" }
+   set Error(VerticalLevels5)                   { "Erreur! Les niveaux verticaux (spécifiés en mètres) doivent être des nombres réels supérieurs ou égal à 0.\n\n\tNiveau vertical :" "Error! The vertical levels (specified in meters) must be float numbers greater or equal to 0.\n\n\tVertical level :" }
+   set Error(VerticalLevels6)                   { "Erreur! Les niveaux verticaux (spécifiés en mètres) doivent être ordonnés en ordre croissants.\n\n\tNiveaux verticaux :" "Error! The vertical levels (specified in meters) must be sorted in increasing order.\n\n\tVertical levels :" }
+   set Error(VerticalLevelsRange)               { "Erreur! Une valeur dans la liste des niveaux verticaux déborde la capacité mémoire d'un nombre réel.\n\n\tNiveau vertical :" "Error! A value in the list of vertical levels under/overflows the memory capacity of a float number.\n\n\tVertical Level :" }
+   set Error(VarMesoscale)                      { "Erreur! La variance (spécifiée en m²/s²) doit être un nombre réel supérieur ou égal à 0.\n\n\tVariance :" \
+                                                  "Error! The variance (specified in m²/s²) must be a float number greater or equal to 0.\n\n\tVariance :" }
+   set Error(VarMesoscale2)                     { "Erreur! La variance (spécifiée en m²/s²) doit être inférieure ou égale à 10.0 m²/s².\n\n\tVariance :" \
+                                                  "Error! The variance (specified in m²/s²) must be lower or equal to 10.0 m²/s².\n\n\tVariance :" }
+   set Error(VarMesoscaleRange)                 { "Erreur! La valeur de la variance (spécifiée en m²/s²) déborde la capacité mémoire d'un nombre réel.\n\n\tVariance :" \
+                                                  "Error! The value of the variance (specified in m²/s²) under/overflows the memory capacity of a float number.\n\n\tVariance :" }
+   set Error(Timescale)                         { "Erreur! L'échelle de temps lagrangienne (spécifiée en s) doit être un nombre réel supérieur à 0.\n\n\tÉchelle de temps :" \
+                                                  "Error! The Lagrangian time scale (specified in s) must be a float number greater than 0.\n\n\tTime scale :" }
+   set Error(Timescale2)                        { "Erreur! L'échelle de temps lagrangienne (spécifiée en s) doit être inférieure ou égale à 21600 s.\n\n\tÉchelle de temps :" \
+                                                  "Error! The Lagrangian time scale (specified in s) must be lower or equal to 21600 s.\n\n\tTime scale :" }
+   set Error(TimescaleRange)                    { "Erreur! La valeur de l'échelle de temps lagrangienne (spécifiée en s) déborde la capacité mémoire d'un nombre réel.\n\n\tÉchelle de temps :" \
+                                                  "Error! The value of the Lagrangian time scale (specified in s) under/overflows the memory capacity of a float number.\n\n\tTime scale :" }
+   set Error(ReflectionLevel)                   { "Erreur! Le niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) doit être un nombre réel positif.\n\n\tNiveau de réflexion :" \
+                                                  "Error! The bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) must be a positive float number.\n\n\tReflection level :" }
+   set Error(ReflectionLevel2)                  { "Erreur! Le niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) doit être compris dans l'intervalle \[0.9900, 1.0000\].\n\n\tNiveau de réflexion :" \
+                                                  "Error! The bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) must fall within the range \[0.9900, 1.0000\].\n\n\tReflection level :" }
+   set Error(ReflectionLevelRange)              { "Erreur! La valeur du niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) déborde la capacité mémoire d'un nombre réel.\n\n\tNiveau de réflexion :" \
+                                                  "Error! The value of the bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) under/overflows the memory capacity of a float number.\n\n\tReflection level :" }
+
+   set Error(EmNumberParticles)                 { "Erreur! Le nombre de particules doit être un nombre entier positif et supérieur ou égal à 1000.\n\n\tNombre de particules :" \
+                                                  "Error! The number of particles must be a positive integer number greater or equal to 1000.\n\n\tNumber of particles :" }
+   set Error(EmNumberParticles2)                { "Erreur! Le nombre de particules doit être un nombre entier multiple de 1000.\n\n\tNombre de particules :" \
+                                                  "Error! The number of particles must be an integer multiple number of 1000.\n\n\tNumber of particles :" }
+   set Error(EmNumberParticles3)                { "Erreur! Le nombre de particules doit être inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n\tNombre de particules         :" \
+                                                  "Error! The number of particles must be less than (or equal to) maximum limit value declared in the program.\n\n\tNumber of particles         :" }
+   set Error(EmNumberParticles4)                { "\tNombre maximum de particules :" \
+                                                  "\tMaximum number of particles :" }
+   set Error(EmNumberParticlesOutRange)         { "Erreur! La valeur du nombre de particules déborde la capacité mémoire d'un nombre entier.\n\n\tNombre de particules :" \
+                                                  "Error! The value of the number of particules under/overflows the memory capacity of an integer number.\n\n\tNumber of particules :" }
+   set Error(EmDensity)                         { "Erreur! La densité d'une particule (spécifiée en µg/m³) doit être un nombre réel positif.\n\n\tDensité :" \
+                                                  "Error! The particle density (specified in µg/m³) must be a positive float number.\n\n\tDensity :" }
+   set Error(EmDensityOutRange)                 { "Erreur! La valeur de la densité (spécifiée en µg/m³) déborde la capacité mémoire d'un nombre réel.\n\n\tDensité :" \
+                                                  "Error! The particle density value (specified in µg/m³) under/overflows the memory capacity of a float number.\n\n\tDensity :" }
+   set Error(Height)                            { "Erreur! La hauteur maximale du panache (spécifiée en mètres) doit être un nombre réel positif.\n\n\tHauteur maximale :" \
+                                                  "Error! The maximum height of the plume (specified in meters) must be a positive float number.\n\n\tMaximum height :" }
+   set Error(Height2)                           { "Erreur! La hauteur maximale du panache (spécifiée en mètres) doit être inférieure ou égale à 30000 mètres.\n\n\tHauteur maximale :" \
+                                                  "Error! The maximum height of the plume (specified in meters) must be lower or equal to 30000 meters.\n\n\tMaximum height :" }
+   set Error(HeightRange)                       { "Erreur! La valeur de la hauteur maximale du panache (spécifiée en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tHauteur maximale :" \
+                                                  "Error! The value of the maximum height of the plume (specified in meters) under/overflows the memory capacity of a float number.\n\n\tMaximum height :" }
+   set Error(Mass)                              { "Erreur! La masse totale relâchée (spécifiée en µg) doit être un nombre réel positif.\n\n\tMasse totale relâchée :" \
+                                                  "Error! The total mass released (specified in µg) must be a positive float number.\n\n\tTotal mass released :" }
+   set Error(MassRange)                         { "Erreur! La valeur de la masse totale relâchée (spécifiée en µg) déborde la capacité mémoire d'un nombre réel.\n\n\tMasse totale relâchée :" \
+                                                  "Error! The total mass released value (specified in µg) under/overflows the memory capacity of a float number.\n\n\tTotal mass released :" }
+   set Error(Radius)                            { "Erreur! Le rayon de la colonne d'émission (spécifiée en mètres) doit être un nombre réel supérieur ou égal à 0.\n\n\tRayon de la colonne :" \
+                                                  "Error! The column radius (specified in meters) must be a float number greater or equal to 0.\n\n\tColumn radius :" }
+   set Error(RadiusRange)                       { "Erreur! La valeur du rayon de la colonne d'émission (spécifiée en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tRayon de la colonne :" \
+                                                  "Error! The column radius value (specified in meters) under/overflows the memory capacity of a float number.\n\n\tColumn radius :" }
+   set Error(EffectiveDuration)                 { "Erreur! La durée effective d'émission (spécifiée en secondes) doit être un nombre entier positif.\n\n\tDurée effective d'émission :" \
+                                                  "Error! The effective emission duration (specified in seconds) must be a positive integer number.\n\n\tEffective emission duration :" }
+   set Error(EffectiveDurationRange)            { "Erreur! La valeur de la durée effective d'émission (spécifiée en secondes) déborde la capacité mémoire d'un nombre entier.\n\n\tDurée effective d'émission :" \
+                                                  "Error! The effective emission duration value (specified in seconds) under/overflows the memory capacity of an integer number.\n\n\tEffective emission duration :" }
+   set Error(TotalDuration)                     { "Erreur! La durée total d'émission (spécifiée en secondes) doit être un nombre entier positif.\n\n\tDurée totale d'émission :" \
+                                                  "Error! The total emission duration (specified in seconds) must be a positive integer number.\n\n\tTotal emission duration :" }
+   set Error(TotalDurationRange)                { "Erreur! La valeur de la durée totale d'émission (spécifiée en secondes) déborde la capacité mémoire d'un nombre entier.\n\n\tDurée totale d'émission :" \
+                                                  "Error! The total emission duration value (specified in seconds) under/overflows the memory capacity of an integer number.\n\n\tTotal emission duration :" }
+   set Error(EffectiveDuration2)                { "Erreur! La durée effective d'émission (spécifiée en secondes) doit être inférieure ou égale à la durée totale d'émission (spécifiée en secondes, incluant les périodes d'accalmie).\n\n" \
+                                                  "Error! The effective emission duration (specified in seconds) must be lower or equal to the total emission duration (specified in seconds, including lull periods).\n\n" }
+   set Error(EffectiveDuration3)                { "\tDurée effective d'émission :" "\tEffective emission duration :" }
+   set Error(EffectiveDuration4)                { "\tDurée totale d'émission    :" "\tTotal emission duration     :" }
+   set Error(ModelTimeStep1)                    { "Erreur! Le pas de temps du modèle (converti en secondes) doit être inférieur ou égal à la durée totale d'émission (spécifiée en secondes).\n\n" \
+                                                  "Error! The model time step (converted in seconds) must be lower or equal to the total emission duration (specified in seconds).\n\n" }
+   set Error(ModelTimeStep2)                    { "\tPas de temps du modèle  :" "\tModel time step         :" }
+   set Error(ModelTimeStep3)                    { "\tDurée totale d'émission :" "\tTotal emission duration :" }
+   set Error(ModelTimeStep4)                    { "Erreur! Le pas de temps du modèle (converti en secondes) doit être inférieur ou égal à la durée effective d'émission (spécifiée en secondes).\n\n" \
+                                                  "Error! The model time step (converted in seconds) must be lower or equal to the effective emission duration (specified in seconds).\n\n" }
+   set Error(ModelTimeStep5)                    { "\tPas de temps du modèle     :" "\tModel time step             :" }
+   set Error(ModelTimeStep6)                    { "\tDurée effective d'émission :" "\tEffective emission duration :" }
+   set Error(ModelTimeStep7)                    { "Erreur! La durée totale d'émission (spécifiée en secondes) doit être un multiple entier du pas de temps du modèle (converti en secondes).\n\n" \
+                                                  "Error! The total emission duration (specified in seconds) must be an integer multiple of the model time step (converted in seconds).\n\n" }
+   set Error(ModelTimeStep8)                    { "\tDurée totale d'émission :" "\tTotal emission duration :" }
+   set Error(ModelTimeStep9)                    { "\tPas de temps du modèle  :" "\tModel time step         :" }
+   set Error(ModelTimeStep10)                   { "Erreur! La durée effective d'émission (spécifiée en secondes) doit être un multiple entier du pas de temps du modèle (converti en secondes).\n\n" \
+                                                  "Error! The effective emission duration (specified in seconds) must be an integer multiple of the model time step (converted in seconds).\n\n" }
+   set Error(ModelTimeStep11)                   { "\tDurée effective d'émission :" "\tEffective emission duration :" }
+   set Error(ModelTimeStep12)                   { "\tPas de temps du modèle     :" "\tModel time step             :" }
+   set Error(Duration)                          { "Erreur! Le scénario d'émission est invalide. La durée (spécifiée en secondes) doit être un nombre entier positif. Veuillez modifier cette durée.\n\n\tDurée :" \
+                                                  "Error! The release scenario is invalid. The duration (specified in seconds) must be a positive integer number. Please modify this duration.\n\n\tDuration :" }
+   set Error(Duration2)                         { "Erreur! Le scénario d'émission est invalide. La durée (spécifiée en secondes) doit être supérieure ou égale au pas de temps interne du modèle (spécifié en minutes). Veuillez modifier la durée de cette période d'émission ou la valeur du pas de temps interne du modèle.\n\n" \
+                                                  "Error! The release scenario is invalid. The duration (specified in seconds) must be greater or equal to the internal model time step (specified in minutes). Please modify this release period duration or the value of the internal model time step.\n\n" }
+   set Error(Duration3)                         { "Erreur! Le scénario d'émission est invalide. La durée (spécifiée en secondes) doit être un multiple entier du pas de temps interne du modèle (spécifié en minutes). Veuillez modifier la durée de cette période d'émission ou la valeur du pas de temps interne du modèle.\n\n" \
+                                                  "Error! The release scenario is invalid. The duration (specified in seconds) must be an integer multiple of the internal model time step (specified in minutes). Please modify this release period duration or the value of the internal model time step.\n\n" }
+   set Error(Duration4)                         { "\tDurée de la période d'émission :" "\tRelease period duration :" }
+   set Error(Duration5)                         { "\tPas de temps du modèle         :" "\tModel time step         :" }
+   set Error(DurationRange)                     { "Erreur! Le scénario d'émission est invalide. La valeur de la durée (spécifiée en secondes) déborde la capacité mémoire d'un nombre entier. Veuillez modifier cette durée.\n\n\tDurée :" \
+                                                  "Error! The release scenario is invalid. The duration value (specified in seconds) under/overflows the memory capacity of an integer number. Please modify this duration.\n\n\tDuration :" }
+   set Error(ReleaseRate)                       { "Erreur! Le scénario d'émission est invalide. Le taux de relâchement (spécifiée en unité/h) doit être un nombre réel supérieur ou égal à 0. Veuillez modifier ce taux de relâchement.\n\n\tTaux de relâchement :" \
+                                                  "Error! The release scenario is invalid. The release rate (specified in unit/h) must be a float number greater or equal to 0. Please modify this release rate.\n\n\tRelease rate :" }
+   set Error(ReleaseRateRange)                  { "Erreur! Le scénario d'émission est invalide. La valeur du taux de relâchement (spécifiée en unité/h) déborde la capacité mémoire d'un nombre réel. Veuillez modifier ce taux de relâchement.\n\n\tTaux de relâchement :" \
+                                                  "Error! The release scenario is invalid. The release rate value (specified in unit/h) under/overflows the memory capacity of a float number. Please modify this release rate.\n\n\tRelease rate :" }
+   set Error(Scenario)                          { "Erreur! Le scénario d'émission est invalide. Veuillez remplir les champs appropriés vides." \
+                                                  "Error! The release scenario is invalid. Please fill up the appropriate empty fields." }
+   set Error(ScenarioName)                      { "Erreur! Le scénario d'émission est invalide. Aucun nom de scénario n'est spécifié. Veuillez spécifier un nom de scénario valide." \
+                                                  "Error! The release scenario is invalid. No scenario name has been specified. Please specify a valid scenario name." }
+   set Error(ScenarioDirectory)                 { "Erreur! Aucun scénario d'émission n'existe." \
+                                                  "Error! No emission scenario exists." }
+   set Error(NbIsotopes)                        { "Erreur! Le scénario d'émission est invalide. Aucun isotope radioactif n'est spécifié. Veuillez sélectionner au moins un isotope." \
+                                                  "Error! The release scenario is invalid. No radionuclide has been specified. Please select at least one radionuclide." }
+   set Error(TotalQuantityAccident)             { "Erreur! Le scénario d'émission est invalide. La quantité totale de matière relâchée associée à cet isotope est nulle. Veuillez spécifier un taux de relâchement positif pour la durée de cette période d'émission ou supprimer cet isotope du tableau.\n\n" \
+                                                  "Error! The release scenario is invalid. The total released quantity of matter associated to this radionuclide is null. Please specify a positive release rate for this release period duration or delete this radionuclide from the table.\n\n" }
+   set Error(TotalQuantity2)                    { "\tNom de l'isotope :" "\tName of radionuclide :" }
+   set Error(TotalQuantity3)                    { "\tDurée d'émission :" "\tRelease duration     :" }
+   set Error(TotalQuantityVirus)                { "Erreur! Le scénario d'émission est invalide. La quantité totale de matière relâchée associée au virus est nulle. Veuillez spécifier un taux de relâchement positif pour la durée de cette période d'émission.\n\n" \
+                                                  "Error! The release scenario is invalid. The total released quantity of matter associated to this virus is null. Please specify a positive release rate for this release period duration.\n\n" }
+   set Error(LullPeriodStartAccident)           { "Erreur! Le scénario d'émission est invalide. Le scénario d'émission débute avec une période d'accalmie, i.e. qu'aucun isotope radioactif n'est relâché pendant la durée de cette période d'émission. Veuillez spécifier un taux de relâchement positif pour cette période d'émission.\n\n\tDurée d'émission :" \
+                                                  "Error! The release scenario is invalid. The release scenario starts with a lull period, which means that no radionuclide has been released during this release period duration. Please specify a positive release rate for this release period.\n\n\tRelease duration :" }
+   set Error(LullPeriodEndAccident)             { "Erreur! Le scénario d'émission est invalide. Le scénario d'émission se termine avec une période d'accalmie, i.e. qu'aucun isotope radioactif n'est relâché pendant la durée de cette période d'émission. Veuillez spécifier un taux de relâchement positif pour cette période d'émission.\n\n\tDurée d'émission :" \
+                                                  "Error! The release scenario is invalid. The release scenario ends with a lull period, which means that no radionuclide has been released during this release period duration. Please specify a positive release rate for this release period.\n\n\tRelease duration :" }
+   set Error(LullPeriodStartVirus)              { "Erreur! Le scénario d'émission est invalide. Le scénario d'émission débute avec une période d'accalmie, i.e. que le virus n'est pas relâché pendant la durée de cette période d'émission. Veuillez spécifier un taux de relâchement positif pour cette période d'émission.\n\n\tDurée d'émission :" \
+                                                  "Error! The release scenario is invalid. The release scenario starts with a lull period, which means that the virus has not been released during this release period duration. Please specify a positive release rate for this release period.\n\n\tRelease duration :" }
+   set Error(LullPeriodEndVirus)                { "Erreur! Le scénario d'émission est invalide. Le scénario d'émission se termine avec une période d'accalmie, i.e. que le virus n'est pas relâché pendant la durée de cette période d'émission. Veuillez spécifier un taux de relâchement positif pour cette période d'émission.\n\n\tDurée d'émission :" \
+                                                  "Error! The release scenario is invalid. The release scenario ends with a lull period, which means that the virus has not been released during this release period duration. Please specify a positive release rate for this release period.\n\n\tRelease duration :" }
+   set Error(LullPeriodStartVolcan)             { "Erreur! Le scénario d'émission est invalide. Le scénario d'émission débute avec une période d'accalmie, i.e. que le volcan ne relâche pas de cendres pendant la durée de cette période d'émission. Veuillez spécifier une période de relâchement pour cette durée d'émission.\n\n\tDurée d'émission :" \
+                                                  "Error! The release scenario is invalid. The release scenario starts with a lull period, which means that the volcano is not releasing ash during this release period duration. Please specify a release period for this duration.\n\n\tRelease duration :" }
+   set Error(LullPeriodEndVolcan)               { "Erreur! Le scénario d'émission est invalide. Le scénario d'émission se termine avec une période d'accalmie, i.e. que le volcan ne relâche pas de cendres pendant la durée de cette période d'émission. Veuillez spécifier une période de relâchement pour cette durée d'émission.\n\n\tDurée d'émission :" \
+                                                  "Error! The release scenario is invalid. The release scenario ends with a lull period, which means that the volcano is not releasing ash during this release period duration. Please specify a release period for this duration.\n\n\tRelease duration :" }
+   set Error(EffectiveSimDuration)              { "Erreur! La durée effective de simulation doit être supérieure ou égale au pas de temps de sortie des données. Veuillez modifier la durée de simulation ou le pas de temps de sortie.\n\n" \
+                                                  "Error! The effective simulation duration must be greater or equal to data output time step. Please modify the simulation duration or the output time step.\n\n" }
+   set Error(EffectiveSimDuration2)             { "\tDurée de simulation           :" "\tSimulation duration           :" }
+   set Error(EffectiveSimDuration3)             { "\tDurée effective de simulation :" "\tEffective simulation duration :" }
+   set Error(EffectiveSimDuration4)             { "\tPas de temps de sortie        :" "\tOutput time step              :" }
+
+   set Error(Intensity)                         { "L'intensité spécifiée n'est pas valide." "Invalid specified intensity." }
+   set Error(NbIso)                             { "Il n'y a aucun polluant selectionné." "No pollutant selected." }
+   set Error(Elev)                              { "L'élévation n'est pas valide et dépasse la limite de 30000 mètres." "Invalid elevation. It is over the 30000 meters limit." }
+   set Error(Previous)                          { "Les résultats d'une simulation précédente sont manquants. Les calculs de concentrations, dépôts et doses seront donc invalides." "Previous simulation results missing. The concentrations, deposition and dosage calculations will be wrong." }
+   set Error(MetFiles)                          { "Erreur! Le nombre de fichiers disponibles dans la base de données météorologique est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veillez modifier la date et/ou le temps d'émission de l'accident." \
+                                                  "Error! The number of available files in the meteorological database is not enough to run the model according to accident release date-time. Please modify the accident release date-time." }
+   set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
+   set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
+   set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
+   set Error(DateTimeMetFiles)                  { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veillez modifier la date et/ou le temps d'émission de l'accident." \
+                                                  "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
+
+   set Error(EmailAddress)                      { "Erreur! L'adresse électronique est invalide. Veillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+
+   set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
+                                    "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
+   set Warning(SimDuration2)      { "\tAncienne durée de simulation :" "\tOld simulation duration :" }
+   set Warning(SimDuration3)      { "\tNouvelle durée de simulation :" "\tNew simulation duration :" }
+   set Warning(SimDuration4)      { "Avertissement! La durée de simulation est supérieure à 48 hrs et le pas de temps de sortie des données est inférieur (ou égal) à 60 min. Ces paramètres d'entrée produiront des fichiers de résultats de grande taille.\n\nVoulez-vous modifier ces paramètres?" \
+                                    "Warning! The simulation duration is grerater than 48 hrs and the data output time step is lower than (or equal to) 60 min. These input parameters will generate large results file size.\n\nWould you like to modify these parameters?" }
+   set Warning(SimDuration5)      { "\tDurée de simulation    :" "\tSimulation duration :" }
+   set Warning(SimDuration6)      { "\tPas de temps de sortie :" "\tOutput time step    :" }
+   set Warning(SimDuration7)      { "Avertissement! La durée de simulation est supérieure à 48 hrs et l'intervalle de temps entrer les fichiers de données météorologiques est inférieur à 6 hrs. Ces paramètres d'entrée produiront beaucoup de fichiers de données météo pour nourrir le modèle de dispersion. Ceci nécessitera alors beaucoup d'espace disque.\n\nVoulez-vous modifier ces paramètres?" \
+                                    "Warning! The simulation duration is grerater than 48 hrs and the time interval between meteorological data files is lower than 6 hrs. These input parameters will generate many meteorological data files to feed the dispersion model. Thus, this will require large disk space.\n\nWould you like to modify these parameters?" }
+   set Warning(SimDuration8)      { "\tDurée de simulation     :" "\tSimulation duration :" }
+   set Warning(SimDuration9)      { "\tInterval de temps météo :" "\tMeteo time interval :" }
+
+   set Warning(VerticalLevels1)   { "Avertissement! Le premier niveau vertical dans la liste n'est pas égal à 0 m. Cette liste sera réinitialisée afin de considérer les particules dans la couche de surface non-résolue." \
+                                    "Warning! The first vertical level in the list is not equal to 0 m. This list will be re-initialized in order to take into account particles within the unresolved surface layer." }
+   set Warning(VerticalLevels2)   { "\tAnciens niveaux verticaux  :" "\tOld vertical levels :" }
+   set Warning(VerticalLevels3)   { "\tNouveaux niveaux verticaux :" "\tNew vertical levels :" }
+
+   set Warning(NbSrc1)            { "Avertissement! Le nombre de sources associées à cette expérience doit être inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n\tNombre de sources         :" \
+                                    "Warning! The number of sources associated to this experiment must be less than (or equal to) maximum limit value declared in the program.\n\n\tNumber of sources         :" }
+   set Warning(NbSrc2)            { "\tNombre maximum de sources :" "\tMaximum number of sources :" }
+   set Warning(NbSrc3)            { "\nSeules les" "\nOnly the first" }
+   set Warning(NbSrc4)            { "premières sources seront considérées dans la modélisation. Par conséquent, les autres seront ignorées." \
+                                    "sources will be considered in the modeling. Therefore, the others will be ignored." }
+   set Warning(Overwrite)         { "Avertissement! Ce scénario d'émission existe déjà. Voulez-vous vraiment le remplacer?\n\n\tNom du scénario :" \
+                                    "Warning! This emission scenario already exists. Do you realy wish to overwrite it?\n\n\tScenario Name :" }
+   set Warning(Save)              { "Avertissement! Voulez-vous sauvegarder ce scénario d'émission?\n\n\tNom du scénario :" \
+                                    "Warning! Do you wish to save this emission scenario?\n\n\tScenario Name :" }
+   set Warning(OverwriteDefault)  { "Avertissement! Il n'est pas permis de remplacer le scenario d'émission par défaut. Veuillez spécifier un nom de scénario différent." \
+                                    "Warning! Overwriting the default emission scenario is prohibited. Please specify a different scenario name." }
+   set Warning(DeleteScenario)    { "Avertissement! Voulez-vous supprimer ce scénario d'émission?\n\n\tNom du scénario :" \
+                                    "Warning! Do you wish to delete this emission scenario?\n\n\tScenario Name :" }
+   set Warning(DeleteDefault)     { "Avertissement! Il n'est pas permis de supprimer le scenario d'émission par défaut. Veuillez supprimer un scénario différent." \
+                                    "Warning! Deleting the default emission scenario is prohibited. Please delete a different scenario." }
+   set Warning(HalfLife)          { "Avertissement! L'isotope sélectionné a une demi-vie radioactive inférieure à 15 minutes. Cette simulation ne produira pas de résultats pertinents et intéressants. Par conséquent, veuillez sélectionner un isotope différent de" \
+                                    "Warning! The selected radionclide has a radioactive half-life less than 15 minutes. This simulation will not generate relevant and interesting results. Therefore, please select a radionuclide different than" }
+   set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle MLDP1 en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
+                                    "Warning! You are about to launch MLDP1 model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
+   set Warning(EmailAddress)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
+                                    "Warning! The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
+   set Warning(EmailAddress2)     { "\tNouveau courriel    :" "\tNew email     :" }
+   set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
+   set Warning(DiskSpace)         { "Avertissement! L'espace disque disponible associé au répertoire principal de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle MLDP1?" \
+                                    "Warning! The available disk space associated to the main experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute MLDP1 model?" }
+   set Warning(DiskSpace2)        { "\tRépertoire principal     " "\tMain directory       " }
+   set Warning(DiskSpace3)        { "\tSystème de fichier       " "\tFile system          " }
+   set Warning(DiskSpace4)        { "\tDisque monté sur         " "\tDisk mounted on      " }
+   set Warning(DiskSpace5)        { "\tEspace disque critique   " "\tCritical disk space  " }
+   set Warning(DiskSpace6)        { "\tEspace disque disponible " "\tAvailable disk space " }
+   set Warning(DiskSpace7)        { "\tEspace disque utilisé    " "\tUsed disk space      " }
+   set Warning(DiskSpace8)        { "\tEspace disque total      " "\tTotal disk space     " }
+
+}

@@ -1,0 +1,505 @@
+/*=============================================================================
+ * Environnement Canada
+ * Centre Meteorologique Canadian
+ * 2100 Trans-Canadienne
+ * Dorval, Quebec
+ *
+ * Projet    : Librairie Tcl de fichiers standards.
+ * Fichier   : Radar_Scan.c
+ * Creation  : Avril 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * Description: Utilisation des fichiers standards RPN dans des scripts Tcl et
+ *              dans les projections.
+ *
+ * Remarques :
+ *
+ * License   :
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation,
+ *    version 2.1 of the License.
+ *
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the
+ *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ *    Boston, MA 02111-1307, USA.
+ *
+ * Modification:
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *
+ *==============================================================================
+*/
+
+#ifdef LNK_URP
+
+#include "tclRADAR.h"
+#include "Projection.h"
+
+static int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]);
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Radar_ScanDefine>
+ * Creation : Avril 2006 J.P. Gauthier
+ *
+ * But      : Definition des donnees'observations
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur Tcl
+ *  <Name>    : Nom de la projection
+ *  <Objc>    : Nombre d'arguments
+ *  <Objv>    : Liste des arguments
+ *
+ * Retour     :
+ *  <TCL_...> : Code de retour standard TCL
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
+
+   Radar_Head *head=(Radar_Head*)Rad->Head;
+   Tcl_Obj    *obj;
+   TGeoRef    *ref;
+   int         i,idx,v=-1,date,time;
+   char        buf[64];
+   Coord       loc;
+
+   static CONST char *sopt[] = { "-TYPE","-SCAN","-AZIMUTHRESOLUTION","-BINRESOLUTION","-SITEID","-SITENAME","-LOCATION",\
+      "-SWEEPANGLE","-DATE","-PRODUCT","-NOISE","-FILTER","-ZCAL","-NYQUIST","-GEOREF",NULL };
+   enum                opt { TYPE,SCAN,AZRES,BNRES,SITEID,SITENAME,LOCATION,SWEEPANGLE,DATE,PRODUCT,NOISE,FILTER,ZCAL,NYQUIST,GEOREF };
+
+   for (i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return TCL_ERROR;
+      }
+
+      switch ((enum opt)idx) {
+         case GEOREF:
+            if (Objc==1) {
+               if (Rad->Ref)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Rad->Ref->Name,-1));
+            } else {
+               ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
+               if (!ref) {
+                  Tcl_AppendResult(Interp,"\n   Radar_ScanDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
+                  return TCL_ERROR;
+               }
+               if (ref!=Rad->Ref) {
+                  GeoRef_Destroy(Interp,Rad->Ref->Name);
+                  Rad->Ref=ref;
+                  GeoRef_Incr(Rad->Ref);
+                  Data_Clean(Rad,1,1,1);
+               }
+            }
+            break;
+
+         case TYPE:
+            if (Objc==1) {
+               switch(head->Data->radarType) {
+                  case IRIS   : Tcl_SetObjResult(Interp,Tcl_NewStringObj("IRIS",-1)); break;
+                  case RDP    : Tcl_SetObjResult(Interp,Tcl_NewStringObj("RDP",-1)); break;
+                  case NEXRAD : Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEXRAD",-1)); break;
+                  case MCGILL : Tcl_SetObjResult(Interp,Tcl_NewStringObj("MCGILL",-1)); break;
+                  case KINGRDR: Tcl_SetObjResult(Interp,Tcl_NewStringObj("KINGRDR",-1)); break;
+                  case KINGRDD: Tcl_SetObjResult(Interp,Tcl_NewStringObj("KINGRDD",-1)); break;
+               }
+            } else {
+            }
+            break;
+
+         case SCAN:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Radar_GetTypeString(head->Data->volScan[head->Scan]->dataType),-1));
+            } else {
+            }
+            break;
+
+         case AZRES:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(head->Data->azimuthResolutionDegree));
+            } else {
+            }
+            break;
+
+         case BNRES:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(head->Data->binResolutionKM));
+            } else {
+            }
+            break;
+
+         case DATE:
+            if (Objc==1) {
+               strcpy(buf,getDateTime(head->Data));
+               time=atoi(&buf[8])*100;
+               buf[8]='\0';
+               date=atoi(buf);
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(date,time)));
+            } else {
+            }
+            break;
+
+         case SITEID:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(getSiteId(head->Data),-1));
+            } else {
+            }
+            break;
+
+         case SITENAME:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(getSiteName(head->Data),-1));
+            } else {
+            }
+            break;
+
+         case PRODUCT:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(getMinorProductType(head->Data),-1));
+            } else {
+            }
+            break;
+
+         case NOISE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(getNoise(head->Data)));
+            } else {
+            }
+            break;
+
+         case FILTER:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(getClutterFilter(head->Data)));
+            } else {
+            }
+            break;
+
+         case ZCAL:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(getZCal(head->Data)));
+            } else {
+            }
+            break;
+
+         case NYQUIST:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(getVNyquist(head->Data)));
+            } else {
+            }
+            break;
+
+         case SWEEPANGLE:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(v=0;v<head->Data->volScan[head->Scan]->numSweeps;v++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(head->Data->volScan[head->Scan]->sweep[v]->elevationAngle));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+            }
+            break;
+
+         case LOCATION:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.elev));
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               if (Objc!=4) {
+                  Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid location, must be 3 \"",(char*)NULL);
+                  return TCL_ERROR;
+               }
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.lon);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.elev);
+
+               if (loc.lat!=Rad->Ref->Loc.lat || loc.lon!=Rad->Ref->Loc.lon  || loc.elev!=Rad->Ref->Loc.elev) {
+                  ref=Rad->Ref;
+                  Rad->Ref=GeoRef_RDRSetup(loc.lat,loc.lon,loc.elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->Levels);
+                  GeoRef_Destroy(Interp,ref->Name);
+                  Data_Clean(Rad,1,1,1);
+               }
+            }
+            break;
+      }
+   }
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Radar_Set>
+ * Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Determiner la validite d'un champ de par ses dimension ou en
+ *            creer un nouveau si necessaire.
+ *
+ * Parametres     :
+ *  <TData>       : Pointeur sur la donnee
+ *
+ * Retour:
+ *  <Field>       : Champs valide pour les parametres demandees
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+void Radar_Set(TData *Data){
+
+   if (Data->Head && Data->Free)
+      Data->Free(Data);
+
+   Data->Head=(Radar_Head*)malloc(sizeof(Radar_Head));
+
+   Data->Set=Radar_Set;
+   Data->Free=Radar_Free;
+   Data->Copy=Radar_HeadCopy;
+   Data->Grid=Radar_Grid;
+   Data->ReadCube=NULL;
+}
+
+void Radar_HeadCopy(void *To,void *From) {
+   memcpy(To,From,sizeof(Radar_Head));
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Radar_Free>
+ * Creation     : Avril 2006 J.P. Gauthier
+ *
+ * But          : Liberation de la memoire associe a une donnee.
+ *
+ * Parametres   :
+ *   <Rad>      : Radar
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ * Modification   :
+ *   Nom        :
+ *   Date       :
+ *   Description:
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void Radar_Free(TData *Rad) {
+
+   Radar_Head *head=(Radar_Head*)Rad->Head;
+
+   if (Rad && head)
+      free(head);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Radar_Read>
+ * Creation     : Avril 2006 J.P. Gauthier
+ *
+ * But          : Lire un scan de radar.
+ *
+ * Parametres   :
+ *  <Interp>    : Interpreteur Tcl
+ *  <Id>        : Identificateur du scan
+ *  <File>      : Identificateur du radar
+ *  <Scan>      : Index du scan dans le radar
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ * Modification   :
+ *   Nom        :
+ *   Date       :
+ *   Description:
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
+
+   Radar_File    *file;
+   Radar_Head    *head;
+   TData         *rad;
+   int            ni,nj,nk;
+
+   file=Radar_FileGet(Interp,File);
+   if (!file) {
+      Tcl_AppendResult(Interp,"\n   Radar_Read: Invalid radar file",(char*)NULL);
+      return TCL_ERROR;
+   }
+
+   if (Scan<0 || Scan>=file->Data.numScans) {
+      Tcl_AppendResult(Interp,"   Radar_Read: Invalid scan index",(char*)NULL);
+      return TCL_ERROR;
+   }
+
+   ni=360/file->Data.azimuthResolutionDegree+1;
+   nj=file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep;
+   nk=file->Data.volScan[0]->numSweeps;
+
+   rad=Data_Valid(Interp,Id,ni,nj,nk,1,TD_Float32);
+   Radar_Set(rad);
+   ((Radar_Head*)rad->Head)->Data=&file->Data;
+   ((Radar_Head*)rad->Head)->Scan=Scan;
+   rad->Ref=GeoRef_Copy(file->Ref);
+
+   rad->Spec->Desc=strdup(Radar_GetTypeString(file->Data.volScan[Scan]->dataType));
+
+   Radar_DataParse(rad);
+
+   return(TCL_OK);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Radar_DataParse>
+ * Creation     : Avril 2006 J.P. Gauthier
+ *
+ * But          : Parcourir les donnees d'un scan de radar et les inserer dans notre structure TData.
+ *
+ * Parametres   :
+ *  <Rad>       : Structure de donnees de radar scan
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ * Modification   :
+ *   Nom        :
+ *   Date       :
+ *   Description:
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int Radar_DataParse(TData *Rad) {
+
+   Radar_Head *head=(Radar_Head*)Rad->Head;
+   VOLUME     *vol;
+   RAY        *ray;
+   int         i,j,k,new,bin;
+   double      val;
+
+   vol=head->Data->volScan[head->Scan];
+
+   for (k=0;k<Rad->Def->NK;k++) {            /*Loop on the Sweeps*/
+      for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
+         for (i=0;i<Rad->Def->NI;i++) {           /*Loop on the Azimuths*/
+
+            if (i==Rad->Def->NI-1) {
+               Def_Get(Rad->Def,0,FIDX3D(Rad->Def,0,j,k),val);
+               Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
+            } else {
+               ray=vol->sweep[k]->rays[i];
+               bin=(ray->endRange-ray->startRange)/ray->numBins;
+               bin=j*head->Data->binResolutionKM;
+               bin=bin>ray->numBins?-1:bin;
+
+               val=((unsigned char*)ray->rangeBin)[bin];
+               val=N_DBZ(val);
+               Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
+            }
+         }
+      }
+   }
+
+   return(TCL_OK);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Radar_Grid>
+ * Creation     : Avril 2006 J.P. Gauthier
+ *
+ * But          : Extraire la grille a partir des rays,, sweeps et scan d'un radar.
+ *
+ * Parametres   :
+ *  <Rad>       : Structure de donnees de radar scan
+ *  <Proj>      : Projection
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ * Modification   :
+ *   Nom        :
+ *   Date       :
+ *   Description:
+ *---------------------------------------------------------------------------------------------------------------
+*/
+Vect3d* Radar_Grid(TData *Rad,void *Proj) {
+
+   Radar_Head *head=(Radar_Head*)Rad->Head;
+   VOLUME     *vol;
+   Coord      coord;
+   double     az,dt,th,sth,cth;
+   int        i,j,k,idxi,idxk,dk;
+
+   Rad->Ref->Pos=(Vect3d*)malloc(FSIZE3D(Rad->Def)*sizeof(Vect3d));
+   if (!Rad->Ref->Pos) {
+      fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+      return(NULL);
+   }
+   vol=head->Data->volScan[0];
+
+   if (Rad->Ref->Grid[0]=='V') {
+      for (j=0;j<Rad->Def->NJ;j++) {
+         for (i=0;i<Rad->Def->NI;i++) {
+            idxi=j*Rad->Def->NI+i;
+            coord.lat=Rad->Ref->Lat[i];
+            coord.lon=CLAMPLON(Rad->Ref->Lon[i]);
+            Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.lat,coord.lon,0,1);
+            coord.elev=Rad->Ref->Loc.elev+sin(DEG2RAD(Rad->Ref->Levels[j]))*dt;
+
+            if (Proj) {
+               ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Rad->Ref->Pos[idxi],1);
+            } else {
+               Vect_Init(Rad->Ref->Pos[idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.elev);
+            }
+         }
+      }
+   } else {
+      for (k=0;k<Rad->Def->NK;k++) {            /*Loop on the Sweeps*/
+         th=DEG2RAD(vol->sweep[k]->elevationAngle);
+         sth=sin(th);
+         cth=cos(th);
+         dk=k*Rad->Def->NI*Rad->Def->NJ;
+         for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
+            idxi=j*Rad->Def->NI;
+            for (i=0;i<Rad->Def->NI;i++,idxi++) {           /*Loop on the Azimuths*/
+
+               /*Figure out table plane indexes*/
+               idxk=dk+idxi;
+
+               if (i==Rad->Def->NI-1) {
+                  Vect_Assign(Rad->Ref->Pos[idxk],Rad->Ref->Pos[dk+j*Rad->Def->NI]);
+               } else {
+                  az=i*head->Data->azimuthResolutionDegree;
+                  dt=j*head->Data->binResolutionKM*1000;
+                  Rad->Ref->Pos[idxk][2]=Rad->Ref->Loc.elev+sth*dt;
+                  dt*=cth;
+                  Rad->Ref->Project(Rad->Ref,az,dt,&Rad->Ref->Pos[idxk][1],&Rad->Ref->Pos[idxk][0],0,1);
+               }
+            }
+         }
+      }
+      ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Rad->Ref->Pos,NULL,FSIZE3D(Rad->Def));
+   }
+
+   return(Rad->Ref->Pos);
+}
+
+#endif

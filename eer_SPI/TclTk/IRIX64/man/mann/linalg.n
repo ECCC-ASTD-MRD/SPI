@@ -1,0 +1,982 @@
+'\"
+'\" Generated from file './modules/math/linalg.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2004 Arjen Markus <arjenmarkus@users.sourceforge.net>
+'\" Copyright (c) 2004 Ed Hume <http://www.hume.com/contact.us.htm>
+'\"
+'\" -*- tcl -*- doctools manpage
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.2 2004/01/15 06:36:12 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "math::linearalgebra" n 1.0 math "Tcl Math Library"
+.BS
+.SH "NAME"
+math::linearalgebra \- Linear Algebra
+.SH "SYNOPSIS"
+package require \fBTcl  ?8.4?\fR
+.sp
+package require \fBmath::linearalgebra  ?1.0?\fR
+.sp
+\fB::math::linearalgebra::mkVector\fR \fIndim\fR \fIvalue\fR
+.sp
+\fB::math::linearalgebra::mkUnitVector\fR \fIndim\fR \fIndir\fR
+.sp
+\fB::math::linearalgebra::mkMatrix\fR \fInrows\fR \fIncols\fR \fIvalue\fR
+.sp
+\fB::math::linearalgebra::getrow\fR \fImatrix\fR \fIrow\fR
+.sp
+\fB::math::linearalgebra::setrow\fR \fImatrix\fR \fIrow\fR \fInewvalues\fR
+.sp
+\fB::math::linearalgebra::getcol\fR \fImatrix\fR \fIcol\fR
+.sp
+\fB::math::linearalgebra::setcol\fR \fImatrix\fR \fIcol\fR \fInewvalues\fR
+.sp
+\fB::math::linearalgebra::getelem\fR \fImatrix\fR \fIrow\fR \fIcol\fR
+.sp
+\fB::math::linearalgebra::setelem\fR \fImatrix\fR \fIrow\fR ?col? \fInewvalue\fR
+.sp
+\fB::math::linearalgebra::show\fR \fIobj\fR ?format? ?rowsep? ?colsep?
+.sp
+\fB::math::linearalgebra::dim\fR \fIobj\fR
+.sp
+\fB::math::linearalgebra::shape\fR \fIobj\fR
+.sp
+\fB::math::linearalgebra::conforming\fR \fItype\fR \fIobj1\fR \fIobj2\fR
+.sp
+\fB::math::linearalgebra::symmetric\fR \fImatrix\fR ?eps?
+.sp
+\fB::math::linearalgebra::norm\fR \fIvector\fR \fItype\fR
+.sp
+\fB::math::linearalgebra::normMatrix\fR \fImatrix\fR \fItype\fR
+.sp
+\fB::math::linearalgebra::dotproduct\fR \fIvect1\fR \fIvect2\fR
+.sp
+\fB::math::linearalgebra::unitLengthVector\fR \fIvector\fR
+.sp
+\fB::math::linearalgebra::normalizeStat\fR \fImv\fR
+.sp
+\fB::math::linearalgebra::axpy\fR \fIscale\fR \fImv1\fR \fImv2\fR
+.sp
+\fB::math::linearalgebra::add\fR \fImv1\fR \fImv2\fR
+.sp
+\fB::math::linearalgebra::sub\fR \fImv1\fR \fImv2\fR
+.sp
+\fB::math::linearalgebra::scale\fR \fIscale\fR \fImv\fR
+.sp
+\fB::math::linearalgebra::rotate\fR \fIc\fR \fIs\fR \fIvect1\fR \fIvect2\fR
+.sp
+\fB::math::linearalgebra::transpose\fR \fImatrix\fR
+.sp
+\fB::math::linearalgebra::matmul\fR \fImv1\fR \fImv2\fR
+.sp
+\fB::math::linearalgebra::angle\fR \fIvect1\fR \fIvect2\fR
+.sp
+\fB::math::linearalgebra::matmul\fR \fImv1\fR \fImv2\fR
+.sp
+\fB::math::linearalgebra::mkIdentity\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkDiagonal\fR \fIdiag\fR
+.sp
+\fB::math::linearalgebra::mkHilbert\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkDingdong\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkOnes\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkMoler\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkFrank\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkBorder\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkWilkinsonW+\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::mkWilkinsonW-\fR \fIsize\fR
+.sp
+\fB::math::linearalgebra::solveGauss\fR \fImatrix\fR \fIbvect\fR
+.sp
+\fB::math::linearalgebra::solveTriangular\fR \fImatrix\fR \fIbvect\fR
+.sp
+\fB::math::linearalgebra::solveGaussBand\fR \fImatrix\fR \fIbvect\fR
+.sp
+\fB::math::linearalgebra::solveTriangularBand\fR \fImatrix\fR \fIbvect\fR
+.sp
+\fB::math::linearalgebra::determineSVD\fR \fIA\fR \fIeps\fR
+.sp
+\fB::math::linearalgebra::eigenvectorsSVD\fR \fIA\fR \fIeps\fR
+.sp
+\fB::math::linearalgebra::orthonormalizeColumns\fR \fImatrix\fR
+.sp
+\fB::math::linearalgebra::orthonormalizeRows\fR \fImatrix\fR
+.sp
+\fB::math::linearalgebra::to_LA\fR \fImv\fR
+.sp
+\fB::math::linearalgebra::from_LA\fR \fImv\fR
+.sp
+.BE
+.SH "DESCRIPTION"
+.PP
+This package offers both low-level procedures and high-level algorithms
+to deal with linear algebra problems:
+.IP \(bu
+robust solution of linear equations or least squares problems
+.IP \(bu
+determining eigenvectors and eigenvalues of symmetric matrices
+.IP \(bu
+various decompositions of general matrices or matrices of a specific
+form
+.IP \(bu
+(limited) support for matrices in band storage, a common type of sparse
+matrices
+It arose as a re-implementation of Hume's LA package and the desire to
+offer low-level procedures as found in the well-known BLAS library.
+Matrices are implemented as lists of lists rather linear lists with
+reserved elements, as in the original LA package, as it was found that
+such an implementation is actually faster.
+.PP
+It is advisable, however, to use the procedures that are offered, such
+as \fIsetrow\fR and \fIgetrow\fR, rather than rely on this
+representation explicitly: that way it is to switch to a possibly even
+faster compiled implementation that supports the same API.
+.SH "PROCEDURES"
+The package defines the following public procedures (several exist as
+specialised procedures, see below):
+.PP
+\fIConstructing matrices and vectors\fR
+.TP
+\fB::math::linearalgebra::mkVector\fR \fIndim\fR \fIvalue\fR
+Create a vector with ndim elements, each with the value \fIvalue\fR.
+.RS
+.TP
+\fIndim\fR integer Dimension of the vector (number of components)
+.TP
+\fIvalue\fR double Uniform value to be used (default: 0.0)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkUnitVector\fR \fIndim\fR \fIndir\fR
+Create a unit vector in \fIndim\fR-dimensional space, along the
+\fIndir\fR-th direction.
+.RS
+.TP
+\fIndim\fR integer Dimension of the vector (number of components)
+.TP
+\fIndir\fR integer Direction (0, ..., ndim-1)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkMatrix\fR \fInrows\fR \fIncols\fR \fIvalue\fR
+Create a matrix with \fInrows\fR rows and \fIncols\fR columns. All
+elements have the value \fIvalue\fR.
+.RS
+.TP
+\fInrows\fR integer Number of rows
+.TP
+\fIncols\fR integer Number of columns
+.TP
+\fIvalue\fR double Uniform value to be used (default: 0.0)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::getrow\fR \fImatrix\fR \fIrow\fR
+Returns a single row of a matrix as a list
+.RS
+.TP
+\fImatrix\fR list Matrix in question
+.TP
+\fIrow\fR int Index of the row to return
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::setrow\fR \fImatrix\fR \fIrow\fR \fInewvalues\fR
+Set a single row of a matrix to new values (this list must have the same
+number of elements as the number of \fIcolumns\fR in the matrix)
+.RS
+.TP
+\fImatrix\fR list \fIname\fR of the matrix in question
+.TP
+\fIrow\fR int Index of the row to update
+.TP
+\fInewvalues\fR list List of new values for the row
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::getcol\fR \fImatrix\fR \fIcol\fR
+Returns a single column of a matrix as a list
+.RS
+.TP
+\fImatrix\fR list Matrix in question
+.TP
+\fIcol\fR int Index of the column to return
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::setcol\fR \fImatrix\fR \fIcol\fR \fInewvalues\fR
+Set a single column of a matrix to new values (this list must have
+the same number of elements as the number of \fIrows\fR in the matrix)
+.RS
+.TP
+\fImatrix\fR list \fIname\fR of the matrix in question
+.TP
+\fIcol\fR int Index of the column to update
+.TP
+\fInewvalues\fR list List of new values for the column
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::getelem\fR \fImatrix\fR \fIrow\fR \fIcol\fR
+Returns a single element of a matrix/vector
+.RS
+.TP
+\fImatrix\fR list Matrix or vector in question
+.TP
+\fIrow\fR int Row of the element
+.TP
+\fIcol\fR int Column of the element (not present for vectors)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::setelem\fR \fImatrix\fR \fIrow\fR ?col? \fInewvalue\fR
+Set a single element of a matrix (or vector) to a new value
+.RS
+.TP
+\fImatrix\fR list \fIname\fR of the matrix in question
+.TP
+\fIrow\fR int Row of the element
+.TP
+\fIcol\fR int Column of the element (not present for vectors)
+.RE
+.PP
+\fIQuerying matrices and vectors\fR
+.TP
+\fB::math::linearalgebra::show\fR \fIobj\fR ?format? ?rowsep? ?colsep?
+Return a string representing the vector or matrix, for easy printing.
+(There is currently no way to print fixed sets of columns)
+.RS
+.TP
+\fIobj\fR list Matrix or vector in question
+.TP
+\fIformat\fR string Format for printing the numbers (default: %6.4f)
+.TP
+\fIrowsep\fR string String to use for separating rows (default: newline)
+.TP
+\fIcolsep\fR string String to use for separating columns (default: space)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::dim\fR \fIobj\fR
+Returns the number of dimensions for the object (either 0 for a scalar,
+1 for a vector and 2 for a matrix)
+.RS
+.TP
+\fIobj\fR any Scalar, vector, or matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::shape\fR \fIobj\fR
+Returns the number of elements in each dimension for the object (either
+an empty list for a scalar, a single number for a vector and a list of
+the number of rows and columns for a matrix)
+.RS
+.TP
+\fIobj\fR any Scalar, vector, or matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::conforming\fR \fItype\fR \fIobj1\fR \fIobj2\fR
+Checks if two objects (vector or matrix) have conforming shapes, that is
+if they can be applied in an operation like addition or matrix
+multiplication.
+.RS
+.TP
+\fItype\fR string Type of check:
+.RS
+.IP \(bu
+"shape" - the two objects have the same shape (for all element-wise
+operations)
+.IP \(bu
+"rows" - the two objects have the same number of rows (for use as A and
+b in a system of linear equations \fIAx = b\fR
+.IP \(bu
+"matmul" - the first object has the same number of columns as the number
+of rows of the second object. Useful for matrix-matrix or matrix-vector
+multiplication.
+.RE
+.TP
+\fIobj1\fR list First vector or matrix (left operand)
+.TP
+\fIobj2\fR list Second vector or matrix (right operand)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::symmetric\fR \fImatrix\fR ?eps?
+Checks if the given (square) matrix is symmetric. The argument eps
+is the tolerance.
+.RS
+.TP
+\fImatrix\fR list Matrix to be inspected
+.TP
+\fIeps\fR float Tolerance for determining approximate equality
+(defaults to 1.0e-8)
+.RE
+.PP
+\fIBasic operations\fR
+.TP
+\fB::math::linearalgebra::norm\fR \fIvector\fR \fItype\fR
+Returns the norm of the given vector. The type argument can be: 1,
+2, inf or max, respectively the sum of absolute values, the ordinary
+Euclidean norm or the max norm.
+.RS
+.TP
+\fIvector\fR list Vector, list of coefficients
+.TP
+\fItype\fR string Type of norm (default: 2, the Euclidean norm)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::normMatrix\fR \fImatrix\fR \fItype\fR
+Returns the norm of the given matrix. The type argument can be: 1,
+2, inf or max, respectively the sum of absolute values, the ordinary
+Euclidean norm or the max norm.
+.RS
+.TP
+\fImatrix\fR list Matrix, list of row vectors
+.TP
+\fItype\fR string Type of norm (default: 2, the Euclidean norm)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::dotproduct\fR \fIvect1\fR \fIvect2\fR
+Determine the inproduct or dot product of two vectors. These must have
+the same shape (number of dimensions)
+.RS
+.TP
+\fIvect1\fR list First vector, list of coefficients
+.TP
+\fIvect2\fR list Second vector, list of coefficients
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::unitLengthVector\fR \fIvector\fR
+Return a vector in the same direction with length 1.
+.RS
+.TP
+\fIvector\fR list Vector to be normalized
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::normalizeStat\fR \fImv\fR
+Normalize the matrix or vector in a statistical sense: the mean of the
+elements of the columns of the result is zero and the standard deviation
+is 1.
+.RS
+.TP
+\fImv\fR list Vector or matrix to be normalized in the above sense
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::axpy\fR \fIscale\fR \fImv1\fR \fImv2\fR
+Return a vector or matrix that results from a "daxpy" operation, that
+is: compute a*x+y (a a scalar and x and y both vectors or matrices of
+the same shape) and return the result.
+.RS
+.TP
+\fIscale\fR double The scale factor for the first vector/matrix (a)
+.TP
+\fImv1\fR list First vector or matrix (x)
+.TP
+\fImv2\fR list Second vector or matrix (y)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::add\fR \fImv1\fR \fImv2\fR
+Return a vector or matrix that is the sum of the two arguments (x+y)
+.RS
+.TP
+\fImv1\fR list First vector or matrix (x)
+.TP
+\fImv2\fR list Second vector or matrix (y)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::sub\fR \fImv1\fR \fImv2\fR
+Return a vector or matrix that is the difference of the two arguments
+(x-y)
+.RS
+.TP
+\fImv1\fR list First vector or matrix (x)
+.TP
+\fImv2\fR list Second vector or matrix (y)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::scale\fR \fIscale\fR \fImv\fR
+Scale a vector or matrix and return the result, that is: compute a*x.
+.RS
+.TP
+\fIscale\fR double The scale factor for the vector/matrix (a)
+.TP
+\fImv\fR list Vector or matrix (x)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::rotate\fR \fIc\fR \fIs\fR \fIvect1\fR \fIvect2\fR
+Apply a planar rotation to two vectors and return the result as a list
+of two vectors: c*x-s*y and s*x+c*y. In algorithms you can often easily
+determine the cosine and sine of the angle, so it is more efficient to
+pass that information directly.
+.RS
+.TP
+\fIc\fR double The cosine of the angle
+.TP
+\fIs\fR double The sine of the angle
+.TP
+\fIvect1\fR list First vector (x)
+.TP
+\fIvect2\fR list Seocnd vector (x)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::transpose\fR \fImatrix\fR
+Transpose a matrix
+.RS
+.TP
+\fImatrix\fR list Matrix to be transposed
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::matmul\fR \fImv1\fR \fImv2\fR
+Multiply a vector/matrix with another vector/matrix. The result is
+a matrix, if both x and y are matrices or both are vectors, in
+which case the "outer product" is computed. If one is a vector and the
+other is a matrix, then the result is a vector.
+.RS
+.TP
+\fImv1\fR list First vector/matrix (x)
+.TP
+\fImv2\fR list Second vector/matrix (y)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::angle\fR \fIvect1\fR \fIvect2\fR
+Compute the angle between two vectors (in radians)
+.RS
+.TP
+\fIvect1\fR list First vector
+.TP
+\fIvect2\fR list Second vector
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::matmul\fR \fImv1\fR \fImv2\fR
+Multiply a vector/matrix with another vector/matrix. The result is
+a matrix, if both x and y are matrices or both are vectors, in
+which case the "outer product" is computed. If one is a vector and the
+other is a matrix, then the result is a vector.
+.RS
+.TP
+\fImv1\fR list First vector/matrix (x)
+.TP
+\fImv2\fR list Second vector/matrix (y)
+.RE
+.PP
+\fICommon matrices and test matrices\fR
+.TP
+\fB::math::linearalgebra::mkIdentity\fR \fIsize\fR
+Create an identity matrix of dimension \fIsize\fR.
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkDiagonal\fR \fIdiag\fR
+Create a diagonal matrix whose diagonal elements are the elements of the
+vector \fIdiag\fR.
+.RS
+.TP
+\fIdiag\fR list Vector whose elements are used for the diagonal
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkHilbert\fR \fIsize\fR
+Create a Hilbert matrix of dimension \fIsize\fR.
+Hilbert matrices are very ill-conditioned with respect to
+eigenvalue/eigenvector problems. Therefore they
+are good candidates for testing the accuracy
+of algorithms and implementations.
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkDingdong\fR \fIsize\fR
+Create a "dingdong" matrix of dimension \fIsize\fR.
+Dingdong matrices are imprecisely represented,
+but have the property of being very stable in
+such algorithms as Gauss elimination.
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkOnes\fR \fIsize\fR
+Create a square matrix of dimension \fIsize\fR whose entries are all 1.
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkMoler\fR \fIsize\fR
+Create a Moler matrix of size \fIsize\fR. (Moler matrices have
+a very simple Choleski decomposition. It has one small eigenvalue
+and it can easily upset elimination methods for systems of linear
+equations.)
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkFrank\fR \fIsize\fR
+Create a Frank matrix of size \fIsize\fR. (Frank matrices are
+fairly well-behaved matrices)
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkBorder\fR \fIsize\fR
+Create a bordered matrix of size \fIsize\fR. (Bordered matrices have
+a very low rank and can upset certain specialised algorithms.)
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkWilkinsonW+\fR \fIsize\fR
+Create a Wilkinson W+ of size \fIsize\fR. This kind of matrix
+has pairs of eigenvalues that are very close together. Usually
+the order (size) is odd.
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::mkWilkinsonW-\fR \fIsize\fR
+Create a Wilkinson W- of size \fIsize\fR. This kind of matrix
+has pairs of eigenvalues with opposite signs, when the order (size)
+is odd.
+.RS
+.TP
+\fIsize\fR integer Dimension of the matrix
+.RE
+.PP
+\fICommon algorithms\fR
+.TP
+\fB::math::linearalgebra::solveGauss\fR \fImatrix\fR \fIbvect\fR
+Solve a system of linear equations (Ax=b) using Gauss elimination.
+Returns the solution (x) as a vector or matrix of the same shape as
+bvect.
+.RS
+.TP
+\fImatrix\fR list Square matrix (matrix A)
+.TP
+\fIbvect\fR list Vector or matrix whose columns are the individual
+b-vectors
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::solveTriangular\fR \fImatrix\fR \fIbvect\fR
+Solve a system of linear equations (Ax=b) by backward substitution. The
+matrix is supposed to be upper-triangular.
+.RS
+.TP
+\fImatrix\fR list Upper-triangular matrix (matrix A)
+.TP
+\fIbvect\fR list Vector or matrix whose columns are the individual
+b-vectors
+.RE
+.TP
+\fB::math::linearalgebra::solveGaussBand\fR \fImatrix\fR \fIbvect\fR
+Solve a system of linear equations (Ax=b) using Gauss elimination,
+where the matrix is stored as a band matrix (\fIcf.\fR \fBSTORAGE\fR).
+Returns the solution (x) as a vector or matrix of the same shape as
+bvect.
+.RS
+.TP
+\fImatrix\fR list Square matrix (matrix A; in band form)
+.TP
+\fIbvect\fR list Vector or matrix whose columns are the individual
+b-vectors
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::solveTriangularBand\fR \fImatrix\fR \fIbvect\fR
+Solve a system of linear equations (Ax=b) by backward substitution. The
+matrix is supposed to be upper-triangular and stored in band form.
+.RS
+.TP
+\fImatrix\fR list Upper-triangular matrix (matrix A)
+.TP
+\fIbvect\fR list Vector or matrix whose columns are the individual
+b-vectors
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::determineSVD\fR \fIA\fR \fIeps\fR
+Determines the Singular Value Decomposition of a matrix: A = U S Vtrans.
+Returns a list with the matrix U, the vector of singular values S and
+the matrix V.
+.RS
+.TP
+\fIA\fR list Matrix to be decomposed
+.TP
+\fIeps\fR float Tolerance (defaults to 2.3e-16)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::eigenvectorsSVD\fR \fIA\fR \fIeps\fR
+Determines the eigenvectors and eigenvalues of a real
+\fIsymmetric\fR matrix, using SVD. Returns a list with the matrix of
+normalized eigenvectors and their eigenvalues.
+.RS
+.TP
+\fIA\fR list Matrix whose eigenvalues must be determined
+.TP
+\fIeps\fR float Tolerance (defaults to 2.3e-16)
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::orthonormalizeColumns\fR \fImatrix\fR
+Use the modified Gram-Schmidt method to orthogonalize and normalize
+the \fIcolumns\fR of the given matrix and return the result.
+.RS
+.TP
+\fImatrix\fR list Matrix whose columns must be orthonormalized
+.RE
+.sp
+.TP
+\fB::math::linearalgebra::orthonormalizeRows\fR \fImatrix\fR
+Use the modified Gram-Schmidt method to orthogonalize and normalize
+the \fIrows\fR of the given matrix and return the result.
+.RS
+.TP
+\fImatrix\fR list Matrix whose rows must be orthonormalized
+.RE
+.PP
+\fICompability with the LA package\fR
+.TP
+\fB::math::linearalgebra::to_LA\fR \fImv\fR
+Transforms a vector or matrix into the format used by the original LA
+package.
+.RS
+.TP
+\fImv\fR list Matrix or vector
+.RE
+.TP
+\fB::math::linearalgebra::from_LA\fR \fImv\fR
+Transforms a vector or matrix from the format used by the original LA
+package into the format used by the present implementation.
+.RS
+.TP
+\fImv\fR list Matrix or vector as used by the LA package
+.RE
+.SH "STORAGE"
+While most procedures assume that the matrices are given in full form,
+the procedures \fIsolveGaussBand\fR and \fIsolveTriangularBand\fR
+assume that the matrices are stored as \fIband matrices\fR. This
+common type of "sparse" matrices is related to ordinary matrices as
+follows:
+.IP \(bu
+"A" is a full-size matrix with N rows and M columns.
+.IP \(bu
+"B" is a band matrix, with m upper and lower diagonals and n rows.
+.IP \(bu
+"B" can be stored in an ordinary matrix of (2m+1) columns (one for
+each off-diagonal and the main diagonal) and n rows.
+.IP \(bu
+Element i,j (i = -m,...,m; j =1,...,n) of "B" corresponds to element
+k,j of "A" where k = M+i-1 and M is at least (!) n, the number of rows
+in "B".
+.IP \(bu
+To set element (i,j) of matrix "B" use:
+.nf
+
+    setelem B $j [expr {$N+$i-1}] $value
+
+.fi
+(There is no convenience procedure for this yet)
+.SH "REMARKS ON THE IMPLEMENTATION"
+There is a difference between the original LA package by Hume and the
+current implementation. Whereas the LA package uses a linear list, the
+current package uses lists of lists to represent matrices. It turns out
+that with this representation, the algorithms are faster and easier to
+implement.
+.PP
+The LA package was used as a model and in fact the implementation of,
+for instance, the SVD algorithm was taken from that package. The set of
+procedures was expanded using ideas from the well-known BLAS library and
+some algorithms were updated from the second edition of J.C. Nash's
+book, Compact Numerical Methods for Computers, (Adam Hilger, 1990) that
+inspired the LA package.
+.PP
+Two procedures are provided to make the transition between the two
+implementations easier: \fIto_LA\fR and \fIfrom_LA\fR. They are
+described above.
+.SH "TODO"
+Odds and ends: the following algorithms have not been implemented yet:
+.IP \(bu
+normalizeStat (!)
+.IP \(bu
+determineQR, cholesky
+.IP \(bu
+leastSquaresSVD, leastSquares
+.IP \(bu
+certainlyPositive, diagonallyDominant
+.SH "KEYWORDS"
+least squares, linear algebra, linear equations, math, matrices, vectors
+.SH "COPYRIGHT"
+.nf
+Copyright (c) 2004 Arjen Markus <arjenmarkus@users.sourceforge.net>
+Copyright (c) 2004 Ed Hume <http://www.hume.com/contact.us.htm>
+
+.fi

@@ -1,0 +1,1488 @@
+0100-01-: West Eifel Volc Field        :Germany             :50.170000:N:  6.850000:E:   600
+0100-02-: Chaine Des Puys              :France              :45.500000:N:  2.750000:E:  1464
+0100-03-: Olot Volc Field              :Spain               :42.170000:N:  2.530000:E:   893
+0101-001: Larderello                   :Italy               :43.250000:N: 10.870000:E:   500
+0101-003: Vulsini                      :Italy               :42.600000:N: 11.930000:E:   800
+0101-004: Albano, Monte                :Italy               :41.730000:N: 12.700000:E:   949
+0101-01=: Campi Flegrei                :Italy               :40.827000:N: 14.139000:E:   458
+0101-02=: Vesuvius                     :Italy               :40.821000:N: 14.426000:E:  1281
+0101-03=: Ischia                       :Italy               :40.730000:N: 13.898000:E:   789
+0101-04=: Stromboli                    :Italy               :38.789000:N: 15.213000:E:   926
+0101-041: Lipari                       :Italy               :38.480000:N: 14.950000:E:   602
+0101-05=: Vulcano                      :Italy               :38.404000:N: 14.962000:E:   500
+0101-06=: Etna                         :Italy               :37.734000:N: 15.004000:E:  3350
+0101-07=: Campi Flegrei Mar Sicilia    :Italy               :37.100000:N: 12.700000:E:    -8
+0101-071: Pantelleria                  :Italy               :36.770000:N: 12.020000:E:   836
+0102-02=: Methana                      :Greece              :37.615000:N: 23.336000:E:   760
+0102-03=: Milos                        :Greece              :36.699000:N: 24.439000:E:   751
+0102-04=: Santorini                    :Greece              :36.404000:N: 25.396000:E:   564
+0102-05=: Nisyros                      :Greece              :36.580000:N: 27.180000:E:   698
+0102-051: Yali                         :Greece              :36.630000:N: 27.100000:E:   176
+0103-00-: Kula                         :Turkey              :38.580000:N: 28.520000:E:   750
+0103-001: Karapinar Field              :Turkey              :37.670000:N: 33.650000:E:  1302
+0103-002: Hasan Dagi                   :Turkey              :38.130000:N: 34.170000:E:  3253
+0103-003: Gollu Dag                    :Turkey              :38.250000:N: 34.570000:E:  2143
+0103-004: Acigol-Nevsehir              :Turkey              :38.570000:N: 34.520000:E:  1689
+0103-01=: Erciyes Dagi                 :Turkey              :38.520000:N: 35.480000:E:  3916
+0103-011: Karacalidag                  :Turkey              :37.670000:N: 39.830000:E:  1957
+0103-02=: Nemrut Dagi                  :Turkey              :38.650000:N: 42.020000:E:  3050
+0103-021: Suphan Dagi                  :Turkey              :38.920000:N: 42.820000:E:  4434
+0103-022: Girekol                      :Turkey              :39.170000:N: 43.330000:E:     0
+0103-03=: Tenduruk Dagi                :Turkey              :39.330000:N: 43.830000:E:  3584
+0103-04-: Ararat, Mt.                  :Turkey              :39.700000:N: 44.280000:E:  5165
+0103-05-: Kars Plateau                 :Turkey              :40.750000:N: 42.900000:E:  3000
+0104-01-: Elbrus                       :Russia-SW           :43.330000:N: 42.450000:E:  5633
+0104-02-: Kasbek                       :Georgia             :42.700000:N: 44.500000:E:  5050
+0104-03-: Kabargin Oth Group           :Georgia             :42.550000:N: 44.000000:E:  3650
+0104-04-: Unnamed                      :Georgia             :42.450000:N: 44.250000:E:  3750
+0104-05-: Unnamed                      :Georgia             :41.550000:N: 43.600000:E:  3400
+0104-06-: Aragats                      :Armenia             :40.550000:N: 44.120000:E:  4090
+0104-07-: Agmagan-Karadag              :Armenia             :40.275000:N: 44.750000:E:  3560
+0104-08-: Dar-Alages                   :Armenia             :39.700000:N: 45.542000:E:  3329
+0201-01=: Teyr, Djebel                 :Red Sea             :15.700000:N: 41.742000:E:   244
+0201-02=: Zubayr, Jebel                :Red Sea             :15.080000:N: 42.170000:E:   191
+0201-03=: Jalua                        :Ethiopia            :15.042000:N: 39.820000:E:   713
+0201-04=: Alid                         :Ethiopia            :14.880000:N: 39.920000:E:   904
+0201-041: Dallol                       :Ethiopia            :14.242000:N: 40.300000:E:   -48
+0201-05=: Gada Ale                     :Ethiopia            :13.975000:N: 40.408000:E:   287
+0201-051: Catherine                    :Ethiopia            :13.920000:N: 40.420000:E:   100
+0201-06=: Alu                          :Ethiopia            :13.820000:N: 40.550000:E:   429
+0201-07=: Dalaffilla                   :Ethiopia            :13.792000:N: 40.550000:E:   613
+0201-071: Borale Ale                   :Ethiopia            :13.725000:N: 40.600000:E:   668
+0201-08=: Erta Ale                     :Ethiopia            :13.600000:N: 40.670000:E:   613
+0201-09=: Ale Bagu                     :Ethiopia            :13.520000:N: 40.630000:E:  1031
+0201-091: Hayli Gubbi                  :Ethiopia            :13.500000:N: 40.720000:E:   521
+0201-10=: Dubbi                        :Ethiopia            :13.580000:N: 41.808000:E:  1625
+0201-101: Nabro                        :Ethiopia            :13.370000:N: 41.700000:E:  2218
+0201-102: Mallahle                     :Ethiopia            :13.270000:N: 41.650000:E:  1875
+0201-103: Sorkale                      :Ethiopia            :13.180000:N: 41.725000:E:  1611
+0201-104: Asavyo                       :Ethiopia            :13.070000:N: 41.600000:E:  1200
+0201-105: Mat Ala                      :Ethiopia            :13.100000:N: 41.150000:E:   523
+0201-106: Tat Ali                      :Ethiopia            :13.280000:N: 41.070000:E:   700
+0201-107: Borawli                      :Ethiopia            :13.300000:N: 40.980000:E:   812
+0201-11=: Afdera                       :Ethiopia            :13.080000:N: 40.850000:E:  1295
+0201-111: Ma Alalta                    :Ethiopia            :13.020000:N: 40.200000:E:  1815
+0201-112: Alayta                       :Ethiopia            :12.880000:N: 40.570000:E:  1501
+0201-113: Dabbahu                      :Ethiopia            :12.600000:N: 40.480000:E:  1442
+0201-114: Dabbayra                     :Ethiopia            :12.380000:N: 40.070000:E:  1302
+0201-115: Hararo Manda                 :Ethiopia            :12.170000:N: 40.820000:E:   600
+0201-116: Groppo                       :Ethiopia            :11.730000:N: 40.250000:E:   930
+0201-12=: Kurub                        :Ethiopia            :11.880000:N: 41.208000:E:   625
+0201-121: Borawli Complex              :Ethiopia            :11.630000:N: 41.450000:E:   875
+0201-122: Manda-Inakir                 :Ethiopia            :12.380000:N: 42.200000:E:   600
+0201-123: Mousa Alli                   :Ethiopia            :12.470000:N: 42.400000:E:  2028
+0201-124: Gufa                         :Ethiopia            :12.550000:N: 42.530000:E:   600
+0201-125: Assab Volc Field             :Ethiopia            :12.950000:N: 42.430000:E:   987
+0201-126: Ardoukoba                    :Djibouti            :11.580000:N: 42.470000:E:   298
+0201-141: Dama Ali                     :Ethiopia            :11.280000:N: 41.630000:E:  1068
+0201-142: Asmara                       :Ethiopia            :11.270000:N: 41.520000:E:   500
+0201-15=: Gabillema                    :Ethiopia            :11.080000:N: 41.270000:E:  1459
+0201-151: Yangudi                      :Ethiopia            :10.580000:N: 41.042000:E:  1383
+0201-16=: Ayelu                        :Ethiopia            :10.082000:N: 40.702000:E:  2145
+0201-17=: Adwa                         :Ethiopia            :10.070000:N: 40.840000:E:  1733
+0201-171: Hertali                      :Ethiopia            : 9.780000:N: 40.330000:E:   900
+0201-172: Liado Hayk Field             :Ethiopia            : 9.570000:N: 40.280000:E:   878
+0201-18=: Dofen                        :Ethiopia            : 9.350000:N: 40.130000:E:  1151
+0201-19=: Fentale                      :Ethiopia            : 8.975000:N: 39.930000:E:  2007
+0201-191: Beru                         :Ethiopia            : 8.950000:N: 39.750000:E:  1100
+0201-20-: Kone                         :Ethiopia            : 8.800000:N: 39.692000:E:  1619
+0201-201: Unnamed                      :Ethiopia            : 8.700000:N: 39.630000:E:  1300
+0201-21-: Boset-Bericha                :Ethiopia            : 8.558000:N: 39.475000:E:  2447
+0201-22-: Bishoftu Field               :Ethiopia            : 8.780000:N: 38.980000:E:  1850
+0201-221: Unnamed                      :Ethiopia            : 8.620000:N: 38.950000:E:  1800
+0201-222: Sodore                       :Ethiopia            : 8.430000:N: 39.350000:E:  1765
+0201-23-: Gedamsa Caldera              :Ethiopia            : 8.350000:N: 39.180000:E:  1984
+0201-24-: Bora-Bericcio Complex        :Ethiopia            : 8.270000:N: 39.030000:E:  2285
+0201-25-: Tullu Moje                   :Ethiopia            : 8.158000:N: 39.130000:E:  2349
+0201-251: Unnamed                      :Ethiopia            : 8.070000:N: 39.070000:E:  1800
+0201-252: Unnamed                      :Ethiopia            : 7.950000:N: 38.930000:E:  1889
+0201-26-: Butajiri-Silti Field         :Ethiopia            : 8.050000:N: 38.350000:E:  2281
+0201-27-: Alutu                        :Ethiopia            : 7.770000:N: 38.780000:E:  2335
+0201-28-: Shala                        :Ethiopia            : 7.470000:N: 38.550000:E:  2075
+0201-29-: Corbetti Caldera             :Ethiopia            : 7.180000:N: 38.430000:E:  2320
+0201-291: Bilate River Field           :Ethiopia            : 7.070000:N: 38.100000:E:  1700
+0201-292: Tepi                         :Ethiopia            : 7.420000:N: 35.430000:E:  2728
+0201-293: Hobicha Caldera              :Ethiopia            : 6.780000:N: 37.830000:E:  1800
+0201-30-: Chiracha                     :Ethiopia            : 6.650000:N: 38.120000:E:  1650
+0201-31-: Tosa Sucha                   :Ethiopia            : 5.920000:N: 37.570000:E:  1650
+0201-311: Unnamed                      :Ethiopia            : 5.650000:N: 37.670000:E:  1200
+0201-32-: Korath Range                 :Ethiopia            : 5.100000:N: 35.880000:E:   912
+0201-33-: Mega Basalt Field            :Ethiopia            : 4.080000:N: 37.420000:E:  1067
+0202-001: North Island                 :Africa-E            : 4.070000:N: 36.050000:E:   520
+0202-01=: Central Island               :Africa-E            : 3.500000:N: 36.042000:E:   550
+0202-02=: South Island                 :Africa-E            : 2.630000:N: 36.600000:E:   700
+0202-021: Marsabit                     :Africa-E            : 2.320000:N: 37.970000:E:  1707
+0202-03=: Barrier, The                 :Africa-E            : 2.320000:N: 36.570000:E:  1032
+0202-04-: Namarunu                     :Africa-E            : 1.900000:N: 36.270000:E:   817
+0202-05-: Segererua Plateau            :Africa-E            : 1.570000:N: 37.900000:E:   699
+0202-051: Emuruangogolak               :Africa-E            : 1.500000:N: 36.330000:E:  1328
+0202-052: Silali                       :Africa-E            : 1.150000:N: 36.230000:E:  1528
+0202-053: Paka                         :Africa-E            : 0.920000:N: 36.180000:E:  1697
+0202-054: Korosi                       :Africa-E            : 0.770000:N: 36.120000:E:  1446
+0202-055: Ol Kokwe                     :Africa-E            : 0.630000:N: 36.080000:E:  1130
+0202-056: Nyambeni Hills               :Africa-E            : 0.230000:N: 37.870000:E:   750
+0202-06=: Menengai                     :Africa-E            : 0.200000:S: 36.070000:E:  2278
+0202-07=: Homa Mountain                :Africa-E            : 0.380000:S: 34.500000:E:  1751
+0202-071: Elmenteita Badlands          :Africa-E            : 0.520000:S: 36.270000:E:  2126
+0202-08=: Eburru, Ol Doinyo            :Africa-E            : 0.630000:S: 36.230000:E:  2856
+0202-09=: Olkaria                      :Africa-E            : 0.904000:S: 36.292000:E:  2434
+0202-10=: Longonot                     :Africa-E            : 0.920000:S: 36.450000:E:  2776
+0202-11=: Suswa                        :Africa-E            : 1.175000:S: 36.350000:E:  2356
+0202-12=: Lengai, Ol Doinyo            :Africa-E            : 2.751000:S: 35.902000:E:  2890
+0202-13=: Chyulu Hills                 :Africa-E            : 2.680000:S: 37.880000:E:  2188
+0202-15=: Kilimanjaro                  :Africa-E            : 3.070000:S: 37.350000:E:  5895
+0202-16=: Meru                         :Africa-E            : 3.250000:S: 36.750000:E:  4565
+0202-161: Igwisi Hills                 :Africa-E            : 4.870000:S: 31.920000:E:     0
+0202-162: Unnamed                      :Africa-E            : 8.630000:S: 33.570000:E:     0
+0202-163: Sw Usangu Basin              :Africa-E            : 8.750000:S: 33.800000:E:  2179
+0202-164: Ngozi                        :Africa-E            : 8.970000:S: 33.570000:E:  2622
+0202-165: Izumbwe-Mpoli                :Africa-E            : 8.930000:S: 33.400000:E:  1568
+0202-166: Rungwe                       :Africa-E            : 9.130000:S: 33.670000:E:  2961
+0202-17=: Kieyo                        :Africa-E            : 9.230000:S: 33.780000:E:  2175
+0203-001: Rusekere                     :Africa-C            : 0.730000:N: 30.380000:E:  1615
+0203-002: Fort Portal Field            :Africa-C            : 0.700000:N: 30.250000:E:  1524
+0203-003: Kyatwa Volc Field            :Africa-C            : 0.450000:N: 30.250000:E:  1430
+0203-004: Katwe-Kikorongo Field        :Africa-C            : 0.080000:S: 29.920000:E:  1067
+0203-005: Bunyaruguru Field            :Africa-C            : 0.200000:S: 30.080000:E:  1554
+0203-006: Katunga                      :Africa-C            : 0.470000:S: 30.180000:E:  1707
+0203-01=: May-Ya-Moto                  :Africa-C            : 0.930000:S: 29.330000:E:   950
+0203-02=: Nyamuragira                  :Africa-C            : 1.408000:S: 29.200000:E:  3058
+0203-03=: Nyiragongo                   :Africa-C            : 1.520000:S: 29.250000:E:  3469
+0203-04-: Karisimbi                    :Africa-C            : 1.500000:S: 29.450000:E:  4507
+0203-05-: Visoke                       :Africa-C            : 1.470000:S: 29.492000:E:  3711
+0203-06-: Muhavura                     :Africa-C            : 1.380000:S: 29.670000:E:  4127
+0203-07-: Bufumbira                    :Africa-C            : 1.230000:S: 29.720000:E:  2440
+0203-08-: Tshibinda                    :Africa-C            : 2.320000:S: 28.750000:E:  1460
+0204-001: Biu Plateau                  :Africa-W            :10.750000:N: 12.000000:E:     0
+0204-002: Ngaoundere Plateau           :Africa-W            : 7.250000:N: 13.670000:E:     0
+0204-003: Oku Volc Field               :Africa-W            : 6.250000:N: 10.500000:E:  3011
+0204-004: Manengouba                   :Africa-W            : 5.030000:N:  9.830000:E:  2411
+0204-01=: Cameroon, Mt.                :Africa-W            : 4.203000:N:  9.170000:E:  4095
+0204-02-: Santa Isabel                 :Africa-W            : 3.580000:N:  8.750000:E:  3007
+0204-03-: San Joaquin                  :Africa-W            : 3.350000:N:  8.630000:E:  2009
+0204-04-: San Carlos                   :Africa-W            : 3.350000:N:  8.520000:E:  2260
+0204-05-: Sao Tome                     :Africa-W            : 0.320000:N:  6.720000:E:  2024
+0205-00-: Haruj                        :Africa-N            :27.250000:N: 17.500000:E:  1200
+0205-001: Toh, Tarso                   :Africa-N            :21.330000:N: 16.330000:E:  2000
+0205-01=: Tousside, Tarso              :Africa-N            :21.030000:N: 16.450000:E:  3265
+0205-02=: Voon, Tarso                  :Africa-N            :20.920000:N: 17.280000:E:  3100
+0205-021: Koussi, Emi                  :Africa-N            :19.800000:N: 18.530000:E:  3415
+0205-03-: Marra, Jebel                 :Africa-N            :12.950000:N: 24.270000:E:  3042
+0205-04-: Kutum Volc Field             :Africa-N            :14.500000:N: 25.800000:E:     0
+0205-05-: Meidob Volc Field            :Africa-N            :15.130000:N: 26.170000:E:  1000
+0205-06-: Bayuda Volc Field            :Africa-N            :18.330000:N: 32.750000:E:     0
+0205-07-: Umm Marafieb, Jebel          :Africa-N            :18.200000:N: 33.800000:E:     0
+0300-01-: Sharat Kovakab               :Syria               :36.530000:N: 40.850000:E:   534
+0300-02-: Unnamed                      :Syria               :36.670000:N: 37.000000:E:     0
+0300-03-: Unnamed                      :Syria               :33.308000:N: 36.925000:E:   945
+0300-04-: Unnamed                      :Syria               :33.150000:N: 36.258000:E:  1197
+0300-05-: Es Safa                      :Syria               :33.080000:N: 37.150000:E:     0
+0300-06-: Unnamed                      :Syria               :32.658000:N: 36.425000:E:  1436
+0301-01=: Rahah, Harrat Ar             :Arabia-W            :27.800000:N: 36.170000:E:  1660
+0301-02=: Uwayrid, Harrat              :Arabia-W            :27.080000:N: 37.250000:E:  1900
+0301-04-: Lunayyir, Harrat             :Arabia-W            :25.170000:N: 37.750000:E:  1370
+0301-05=: Ithnayn, Harrat              :Arabia-W            :26.580000:N: 40.200000:E:  1625
+0301-06=: Khaybar, Harrat              :Arabia-W            :25.000000:N: 39.920000:E:  2093
+0301-07=: Rahat, Harrat                :Arabia-W            :23.080000:N: 39.780000:E:  1744
+0301-071: Kishb, Harrat                :Arabia-W            :22.800000:N: 41.380000:E:  1475
+0301-08-: Yar, Jabal                   :Arabia-W            :17.050000:N: 42.830000:E:   305
+0301-09-: Arhab, Harra Of              :Arabia-S            :15.630000:N: 44.080000:E:  3100
+0301-10-: Marha, Jabal El-             :Arabia-S            :15.280000:N: 44.220000:E:  2650
+0301-11-: Haylan, Jabal                :Arabia-S            :15.430000:N: 44.780000:E:  1550
+0301-12-: Dhamar, Harras Of            :Arabia-S            :14.570000:N: 44.670000:E:  3500
+0301-13-: Hamman Demt, Jabal           :Arabia-S            :14.050000:N: 44.750000:E:     0
+0301-15-: Unnamed                      :Arabia-S            :12.250000:N: 45.000000:E:     0
+0301-16-: Sawad, Harra Es-             :Arabia-S            :13.580000:N: 46.120000:E:  1737
+0301-17-: Bal Haf, Harra Of            :Arabia-S            :14.050000:N: 48.330000:E:   233
+0301-18-: Bir Borhut                   :Arabia-S            :15.550000:N: 50.630000:E:     0
+0302-01-: Damavand                     :Iran                :35.951000:N: 52.109000:E:  5670
+0302-02-: Qal'Eh Hasan Ali             :Iran                :29.400000:N: 57.570000:E:     0
+0302-03-: Bazman                       :Iran                :28.070000:N: 60.000000:E:  3490
+0302-04-: Unnamed                      :Iran                :28.170000:N: 60.670000:E:     0
+0302-05-: Taftan                       :Iran                :28.600000:N: 61.600000:E:  4050
+0302-06-: Dacht-I-Navar Group          :Afghanistan         :33.950000:N: 67.920000:E:  3800
+0302-07-: Vakak Group                  :Afghanistan         :34.250000:N: 67.970000:E:  3190
+0303-001: Grille, La                   :Indian O.-W         :11.470000:S: 43.330000:E:  1087
+0303-01=: Karthala                     :Indian O.-W         :11.750000:S: 43.380000:E:  2361
+0303-02=: Fournaise, Piton De La       :Indian O.-W         :21.229000:S: 55.713000:E:  2631
+0303-03-: Ambre-Bobaomby               :Madagascar          :12.480000:S: 49.100000:E:  1475
+0303-04-: Nosy-Be                      :Madagascar          :13.320000:S: 48.480000:E:   214
+0303-05-: Ankaizina Field              :Madagascar          :14.300000:S: 48.670000:E:  2878
+0303-06-: Itasy Volc Field             :Madagascar          :19.000000:S: 46.770000:E:  1800
+0303-07-: Ankaratra Field              :Madagascar          :19.400000:S: 47.200000:E:  2644
+0304-01=: Heard                        :Indian O.-S         :53.106000:S: 73.513000:E:  2745
+0304-02=: Kerguelen Islands            :Indian O.-S         :49.580000:S: 69.500000:E:  1840
+0304-03=: St. Paul                     :Indian O.-S         :38.720000:S: 77.530000:E:   268
+0304-04-: Amsterdam Island             :Indian O.-S         :37.830000:S: 77.520000:E:   881
+0304-05-: Possession, Ile De La        :Indian O.-S         :46.420000:S: 51.630000:E:   934
+0304-06-: Cochons, Ile Aux             :Indian O.-S         :46.100000:S: 50.230000:E:   775
+0304-07-: Prince Edward Island         :Indian O.-S         :46.630000:S: 37.950000:E:   672
+0304-08-: Marion Island                :Indian O.-S         :46.900000:S: 37.750000:E:  1230
+0305-01=: Unnamed                      :Indian O.-E         :11.750000:N: 80.750000:E:     0
+0401-01=: Kaikohe-Bay Of Islands       :New Zealand         :35.300000:S:173.900000:E:   388
+0401-011: Whangarei                    :New Zealand         :35.750000:S:174.270000:E:   397
+0401-02=: Auckland Field               :New Zealand         :36.900000:S:174.870000:E:   260
+0401-021: Mayor Island                 :New Zealand         :37.280000:S:176.250000:E:   355
+0401-03=: Egmont                       :New Zealand         :39.300000:S:174.070000:E:  2518
+0401-04=: White Island                 :New Zealand         :37.520000:S:177.180000:E:   321
+0401-05=: Okataina                     :New Zealand         :38.120000:S:176.500000:E:  1111
+0401-06-: Reporoa                      :New Zealand         :38.420000:S:176.330000:E:   592
+0401-061: Maroa                        :New Zealand         :38.420000:S:176.080000:E:  1156
+0401-07=: Taupo                        :New Zealand         :38.820000:S:176.000000:E:   760
+0401-08=: Tongariro                    :New Zealand         :39.130000:S:175.642000:E:  1978
+0401-10=: Ruapehu                      :New Zealand         :39.280000:S:175.570000:E:  2797
+0401-11-: Rumble I                     :New Zealand         :35.500000:S:178.875000:E: -1100
+0401-12-: Rumble II                    :New Zealand         :35.430000:S:178.650000:E:  -880
+0401-13-: Rumble III                   :New Zealand         :35.745000:S:178.478000:E:  -140
+0401-14-: Rumble IV                    :New Zealand         :36.220000:S:178.050000:E:  -450
+0401-15-: Rumble V                     :New Zealand         :36.139000:S:178.197000:E:  -700
+0402-01=: Curtis Island                :Kermadec Is         :30.542000:S:178.561000:W:   137
+0402-02=: Brimstone Island             :Kermadec Is         :30.230000:S:178.920000:W: -2000
+0402-021: Macauley Island              :Kermadec Is         :30.200000:S:178.470000:W:   238
+0402-03=: Raoul Island                 :Kermadec Is         :29.270000:S:177.920000:W:   516
+0402-04=: Unnamed                      :Kermadec Is         :29.180000:S:177.870000:W:  -560
+0402-05-: Monowai Seamount             :Kermadec Is         :25.888000:S:177.188000:W:  -100
+0403-01=: Unnamed                      :Tonga-SW Pacific    :21.380000:S:175.650000:W:  -500
+0403-03=: Unnamed                      :Tonga-SW Pacific    :20.850000:S:175.530000:W:   -13
+0403-04=: Unnamed                      :Tonga-SW Pacific    :20.570000:S:175.380000:W:     0
+0403-05=: Falcon Island                :Tonga-SW Pacific    :20.320000:S:175.420000:W:   145
+0403-06=: Tofua                        :Tonga-SW Pacific    :19.750000:S:175.070000:W:   512
+0403-07=: Metis Shoal                  :Tonga-SW Pacific    :19.180000:S:174.870000:W:    -4
+0403-08=: Home Reef                    :Tonga-SW Pacific    :18.992000:S:174.775000:W:    -2
+0403-09=: Late                         :Tonga-SW Pacific    :18.806000:S:174.650000:W:   518
+0403-10=: Fonualei                     :Tonga-SW Pacific    :18.020000:S:174.325000:W:   200
+0403-101: Curacoa                      :Tonga-SW Pacific    :15.620000:S:173.670000:W:   -33
+0403-11=: Niuafo'Ou                    :Tonga-SW Pacific    :15.600000:S:175.630000:W:   260
+0404-00-: Unnamed                      :Samoa-SW Pacific    :14.230000:S:169.070000:W:  -650
+0404-001: Ta'U                         :Samoa-SW Pacific    :14.230000:S:169.454000:W:   931
+0404-01=: Ofu-Olosega                  :Samoa-SW Pacific    :14.175000:S:169.618000:W:   639
+0404-02-: Tutuila                      :Samoa-SW Pacific    :14.295000:S:170.700000:W:   653
+0404-03-: Upolu                        :Samoa-SW Pacific    :13.935000:S:171.720000:W:  1100
+0404-04=: Savai'I                      :Samoa-SW Pacific    :13.612000:S:172.525000:W:  1858
+0404-05-: Wallis Islands               :SW Pacific          :13.300000:S:176.170000:W:   143
+0405-01-: Taveuni                      :Fiji Is-SW Pacific  :16.820000:S:179.970000:W:  1241
+0405-02-: Koro                         :Fiji Is-SW Pacific  :17.320000:S:179.400000:E:   522
+0500-01=: St. Andrew Strait            :Admiralty Is-SW Pac : 2.380000:S:147.350000:E:   270
+0500-02-: Baluan                       :Admiralty Is-SW Pac : 2.570000:S:147.280000:E:   254
+0500-03-: Unnamed                      :Admiralty Is-SW Pac : 3.030000:S:147.780000:E: -1300
+0501-001: Blup Blup                    :New Guinea-NE Of    : 3.508000:S:144.620000:E:   402
+0501-002: Kadovar                      :New Guinea-NE Of    : 3.620000:S:144.620000:E:   365
+0501-01=: Bam                          :New Guinea-NE Of    : 3.600000:S:144.850000:E:   685
+0501-011: Boisa                        :New Guinea-NE Of    : 3.994000:S:144.963000:E:   240
+0501-02=: Manam                        :New Guinea-NE Of    : 4.100000:S:145.061000:E:  1807
+0501-03=: Karkar                       :New Guinea-NE Of    : 4.649000:S:145.964000:E:  1839
+0501-04=: Unnamed                      :New Guinea-NE Of    : 4.311000:S:146.256000:E: -2000
+0501-041: Yomba                        :New Guinea-NE Of    : 4.920000:S:146.750000:E:     0
+0501-05=: Long Island                  :New Guinea-NE Of    : 5.358000:S:147.120000:E:  1280
+0501-06=: Umboi                        :New Guinea-NE Of    : 5.589000:S:147.875000:E:  1548
+0501-07=: Ritter Island                :New Guinea-NE Of    : 5.520000:S:148.121000:E:   140
+0501-08=: Sakar                        :New Guinea-NE Of    : 5.414000:S:148.094000:E:   992
+0502-001: Unnamed                      :New Britain-SW Pac  : 5.200000:S:148.570000:E:     0
+0502-01=: Langila                      :New Britain-SW Pac  : 5.525000:S:148.420000:E:  1330
+0502-021: Mundua                       :New Britain-SW Pac  : 4.630000:S:149.350000:E:   179
+0502-03=: Garove                       :New Britain-SW Pac  : 4.692000:S:149.500000:E:   368
+0502-04=: Dakataua                     :New Britain-SW Pac  : 5.056000:S:150.108000:E:   400
+0502-05=: Bola                         :New Britain-SW Pac  : 5.150000:S:150.030000:E:  1155
+0502-06=: Garua Harbour                :New Britain-SW Pac  : 5.269000:S:150.088000:E:   565
+0502-07=: Garbuna Group                :New Britain-SW Pac  : 5.450000:S:150.030000:E:   564
+0502-071: Lolo                         :New Britain-SW Pac  : 5.470000:S:150.500000:E:   805
+0502-08=: Pago                         :New Britain-SW Pac  : 5.580000:S:150.520000:E:   742
+0502-09=: Walo                         :New Britain-SW Pac  : 5.530000:S:150.900000:E:    15
+0502-10=: Hargy                        :New Britain-SW Pac  : 5.330000:S:151.100000:E:  1148
+0502-11=: Bamus                        :New Britain-SW Pac  : 5.200000:S:151.230000:E:  2248
+0502-12=: Ulawun                       :New Britain-SW Pac  : 5.050000:S:151.330000:E:  2334
+0502-13=: Lolobau                      :New Britain-SW Pac  : 4.920000:S:151.158000:E:   858
+0502-131: Unnamed                      :New Britain-SW Pac  : 4.750000:S:150.850000:E:     0
+0502-14=: Rabaul                       :New Britain-SW Pac  : 4.271000:S:152.203000:E:   688
+0503-00-: Doma Peaks                   :New Guinea          : 5.900000:S:143.150000:E:  3568
+0503-001: Crater Mountain              :New Guinea          : 6.580000:S:145.080000:E:  3233
+0503-002: Yelia                        :New Guinea          : 7.050000:S:145.858000:E:  3384
+0503-003: Koranga                      :New Guinea          : 7.330000:S:146.708000:E:     0
+0503-004: Madilogo                     :New Guinea          : 9.200000:S:147.570000:E:   850
+0503-01=: Lamington                    :New Guinea          : 8.950000:S:148.150000:E:  1680
+0503-011: Hydrographers Range          :New Guinea          : 9.000000:S:148.370000:E:  1915
+0503-02=: Musa River                   :New Guinea          : 9.308000:S:148.130000:E:   808
+0503-021: Managlase Plateau            :New Guinea          : 9.080000:S:148.330000:E:  1342
+0503-03=: Victory                      :New Guinea          : 9.200000:S:149.070000:E:  1925
+0503-031: Sessagara                    :New Guinea          : 9.480000:S:149.130000:E:   370
+0503-04=: Waiowa                       :New Guinea          : 9.570000:S:149.075000:E:   640
+0503-041: Goodenough                   :D'Entrecasteaux Is  : 9.480000:S:150.350000:E:   220
+0503-05=: Iamelele                     :D'Entrecasteaux Is  : 9.520000:S:150.530000:E:   200
+0503-06=: Dawson Strait Group          :D'Entrecasteaux Is  : 9.620000:S:150.880000:E:   500
+0504-01=: Lihir                        :New Ireland-SW Pac  : 3.125000:S:152.642000:E:   700
+0504-02=: Ambitle                      :New Ireland-SW Pac  : 4.080000:S:153.650000:E:   450
+0505-00-: Tore                         :Bougainville-SW Pac : 5.830000:S:154.930000:E:  2200
+0505-01=: Balbi                        :Bougainville-SW Pac : 5.830000:S:154.980000:E:  2715
+0505-011: Billy Mitchell               :Bougainville-SW Pac : 6.092000:S:155.225000:E:  1544
+0505-02=: Bagana                       :Bougainville-SW Pac : 6.140000:S:155.195000:E:  1750
+0505-021: Takuan Group                 :Bougainville-SW Pac : 6.442000:S:155.608000:E:  2210
+0505-03=: Loloru                       :Bougainville-SW Pac : 6.520000:S:155.620000:E:  1887
+0505-05=: Simbo                        :Solomon Is-SW Pac   : 8.292000:S:156.520000:E:   335
+0505-052: Kana Keoki                   :Solomon Is-SW Pac   : 8.750000:S:157.030000:E:  -700
+0505-053: Coleman Seamount             :Solomon Is-SW Pac   : 8.830000:S:157.170000:E:     0
+0505-06=: Kavachi                      :Solomon Is-SW Pac   : 9.020000:S:157.950000:E:   -20
+0505-061: Unnamed                      :Solomon Is-SW Pac   : 8.920000:S:158.030000:E:  -240
+0505-062: Gallego                      :Solomon Is-SW Pac   : 9.350000:S:159.730000:E:  1000
+0505-07=: Savo                         :Solomon Is-SW Pac   : 9.130000:S:159.820000:E:   510
+0506-01=: Tinakula                     :Santa Cruz Is-SW Pac:10.380000:S:165.800000:E:   851
+0507-001: Motlav                       :Vanuatu-SW Pacific  :13.670000:S:167.670000:E:   411
+0507-01=: Soretimeat                   :Vanuatu-SW Pacific  :13.800000:S:167.470000:E:   921
+0507-02=: Gaua                         :Vanuatu-SW Pacific  :14.270000:S:167.500000:E:   797
+0507-021: Mere Lava                    :Vanuatu-SW Pacific  :14.450000:S:168.050000:E:  1028
+0507-03=: Aoba                         :Vanuatu-SW Pacific  :15.400000:S:167.830000:E:  1496
+0507-04=: Ambrym                       :Vanuatu-SW Pacific  :16.250000:S:168.120000:E:  1334
+0507-05=: Lopevi                       :Vanuatu-SW Pacific  :16.507000:S:168.346000:E:  1413
+0507-06=: East Epi                     :Vanuatu-SW Pacific  :16.680000:S:168.370000:E:   -34
+0507-061: Kutali, Tavani               :Vanuatu-SW Pacific  :16.730000:S:168.280000:E:   833
+0507-062: Tavai Ruro                   :Vanuatu-SW Pacific  :16.800000:S:168.430000:E:   554
+0507-07=: Kuwae                        :Vanuatu-SW Pacific  :16.829000:S:168.536000:E:    -2
+0507-08-: Unnamed                      :Vanuatu-SW Pacific  :16.992000:S:168.592000:E:   216
+0507-081: North Vate                   :Vanuatu-SW Pacific  :17.450000:S:168.330000:E:   594
+0507-09=: Traitor'S Head               :Vanuatu-SW Pacific  :18.750000:S:169.230000:E:   837
+0507-10=: Yasur                        :Vanuatu-SW Pacific  :19.520000:S:169.425000:E:   361
+0507-11-: Aneityum                     :Vanuatu-SW Pacific  :20.200000:S:169.830000:E:   852
+0508-01=: Matthew Island               :SW Pacific          :22.330000:S:171.320000:E:   177
+0508-02=: Hunter Island                :SW Pacific          :22.400000:S:172.050000:E:   297
+0508-03-: Unnamed                      :SW Pacific          :25.780000:S:168.630000:E: -2400
+0509-01-: Newer Volcanics Prov         :Australia           :37.770000:S:142.500000:E:  1011
+0600-001: Narcondum                    :Andaman Is-Ind O    :13.430000:N: 94.250000:E:   710
+0600-01=: Barren Island                :Andaman Is-Ind O    :12.292000:N: 93.875000:E:   305
+0601-01=: Pulau Weh                    :Sumatra             : 5.880000:N: 95.330000:E:   584
+0601-02=: Seulawah Agam                :Sumatra             : 5.425000:N: 95.600000:E:  1726
+0601-03=: Peuet Sague                  :Sumatra             : 4.925000:N: 96.330000:E:  2780
+0601-04=: Geureudong, Bur Ni           :Sumatra             : 4.820000:N: 96.800000:E:  2590
+0601-05=: Telong, Bur Ni               :Sumatra             : 4.770000:N: 96.808000:E:  2624
+0601-06=: Gayolesten                   :Sumatra             : 3.870000:N: 97.600000:E:  1500
+0601-07=: Sibayak                      :Sumatra             : 3.208000:N: 98.470000:E:  2212
+0601-08=: Sinabung                     :Sumatra             : 3.170000:N: 98.392000:E:  2460
+0601-09=: Toba                         :Sumatra             : 2.580000:N: 98.830000:E:  2157
+0601-10=: Helatoba-Tarutung            :Sumatra             : 2.030000:N: 98.930000:E:  1100
+0601-11=: Bual Buali                   :Sumatra             : 1.570000:N: 99.250000:E:  1819
+0601-12=: Sorikmarapi                  :Sumatra             : 0.687000:N: 99.537000:E:  2145
+0601-13=: Talakmau                     :Sumatra             : 0.079000:N: 99.982000:E:  2912
+0601-14=: Marapi                       :Sumatra             : 0.380000:S:100.471000:E:  2891
+0601-15=: Tandikat                     :Sumatra             : 0.433000:S:100.317000:E:  2438
+0601-16=: Talang                       :Sumatra             : 0.978000:S:100.679000:E:  2896
+0601-17=: Kerinci                      :Sumatra             : 1.692000:S:101.270000:E:  3805
+0601-171: Hutapanjang                  :Sumatra             : 2.270000:S:101.600000:E:     0
+0601-18=: Sumbing                      :Sumatra             : 2.420000:S:101.730000:E:  2508
+0601-19=: Kunyit                       :Sumatra             : 2.592000:S:101.630000:E:  2151
+0601-191: Pendan                       :Sumatra             : 2.820000:S:102.020000:E:     0
+0601-20=: Belirang-Beriti              :Sumatra             : 2.820000:S:102.180000:E:  1958
+0601-21=: Lumutdaun, Bukit             :Sumatra             : 3.380000:S:102.370000:E:  2467
+0601-22=: Kaba                         :Sumatra             : 3.520000:S:102.620000:E:  1952
+0601-23=: Dempo                        :Sumatra             : 4.030000:S:103.130000:E:  3173
+0601-231: Patah                        :Sumatra             : 4.270000:S:103.300000:E:  2817
+0601-24=: Lumut Balai, Bukit           :Sumatra             : 4.220000:S:103.620000:E:  2055
+0601-25=: Besar, Gunung                :Sumatra             : 4.430000:S:103.670000:E:  1899
+0601-251: Ranau                        :Sumatra             : 4.830000:S:103.920000:E:  1881
+0601-26=: Sekincau Belirang            :Sumatra             : 5.120000:S:104.320000:E:  1719
+0601-27=: Suoh                         :Sumatra             : 5.250000:S:104.270000:E:  1000
+0601-28=: Hulubelu                     :Sumatra             : 5.350000:S:104.600000:E:  1040
+0601-29=: Rajabasa                     :Sumatra             : 5.780000:S:105.625000:E:  1281
+0602-00=: Krakatau                     :Indonesia           : 6.102000:S:105.423000:E:   813
+0603-01=: Danau Complex                :Java                : 6.200000:S:105.970000:E:  1778
+0603-02=: Karang                       :Java                : 6.270000:S:106.042000:E:  1778
+0603-03=: Kiaraberes-Gagak             :Java                : 6.730000:S:106.650000:E:  1511
+0603-04=: Perbakti                     :Java                : 6.750000:S:106.680000:E:  1699
+0603-05=: Salak                        :Java                : 6.720000:S:106.730000:E:  2211
+0603-06=: Gede                         :Java                : 6.780000:S:106.980000:E:  2958
+0603-07=: Patuha                       :Java                : 7.150000:S:107.370000:E:  2434
+0603-08=: Wayang-Windu                 :Java                : 7.208000:S:107.630000:E:  2182
+0603-09=: Tangkubanparahu              :Java                : 6.770000:S:107.600000:E:  2084
+0603-10=: Papandayan                   :Java                : 7.320000:S:107.730000:E:  2665
+0603-11=: Kawahmanuk                   :Java                : 7.230000:S:107.720000:E:  2608
+0603-12=: Kawahkamojang                :Java                : 7.125000:S:107.800000:E:  1730
+0603-13=: Guntur                       :Java                : 7.130000:S:107.830000:E:  2249
+0603-131: Tampomas                     :Java                : 6.770000:S:107.950000:E:  1684
+0603-14=: Galunggung                   :Java                : 7.250000:S:108.050000:E:  2168
+0603-15=: Talagabodas                  :Java                : 7.208000:S:108.070000:E:  1020
+0603-16=: Kawahkaraha                  :Java                : 7.170000:S:108.080000:E:  1155
+0603-17=: Cereme                       :Java                : 6.892000:S:108.400000:E:  3078
+0603-18=: Slamet                       :Java                : 7.242000:S:109.208000:E:  3432
+0603-20=: Dieng Volc Complex           :Java                : 7.200000:S:109.920000:E:  2565
+0603-21=: Sundoro                      :Java                : 7.300000:S:109.992000:E:  3151
+0603-22=: Sumbing                      :Java                : 7.380000:S:110.058000:E:  3371
+0603-23=: Ungaran                      :Java                : 7.180000:S:110.330000:E:  2050
+0603-231: Telomoyo                     :Java                : 7.370000:S:110.400000:E:  1894
+0603-24=: Merbabu                      :Java                : 7.450000:S:110.430000:E:  3145
+0603-25=: Merapi                       :Java                : 7.542000:S:110.442000:E:  2911
+0603-26=: Lawu                         :Java                : 7.625000:S:111.192000:E:  3265
+0603-27=: Wilis                        :Java                : 7.808000:S:111.758000:E:  2563
+0603-28=: Kelut                        :Java                : 7.930000:S:112.308000:E:  1731
+0603-281: Kawi-Butak                   :Java                : 7.920000:S:112.450000:E:  2651
+0603-29=: Arjuno-Welirang              :Java                : 7.725000:S:112.580000:E:  3339
+0603-291: Penanggungan                 :Java                : 7.620000:S:112.630000:E:  1653
+0603-292: Malang Plain                 :Java                : 8.020000:S:112.680000:E:   680
+0603-30=: Semeru                       :Java                : 8.108000:S:112.920000:E:  3676
+0603-31=: Tengger Caldera              :Java                : 7.942000:S:112.950000:E:  2329
+0603-32=: Lamongan                     :Java                : 8.000000:S:113.342000:E:  1651
+0603-321: Lurus                        :Java                : 7.700000:S:113.580000:E:   539
+0603-33=: Iyang-Argapura               :Java                : 7.970000:S:113.570000:E:  3088
+0603-34=: Raung                        :Java                : 8.125000:S:114.042000:E:  3332
+0603-35=: Ijen                         :Java                : 8.058000:S:114.242000:E:  2386
+0603-351: Baluran                      :Java                : 7.850000:S:114.370000:E:  1247
+0604-001: Bratan                       :Lesser Sunda Is     : 8.280000:S:115.130000:E:  2276
+0604-01=: Batur                        :Lesser Sunda Is     : 8.242000:S:115.375000:E:  1717
+0604-02=: Agung                        :Lesser Sunda Is     : 8.342000:S:115.508000:E:  3142
+0604-03=: Rinjani                      :Lesser Sunda Is     : 8.420000:S:116.470000:E:  3726
+0604-04=: Tambora                      :Lesser Sunda Is     : 8.250000:S:118.000000:E:  2850
+0604-05=: Sangeang Api                 :Lesser Sunda Is     : 8.180000:S:119.058000:E:  1949
+0604-051: Gilibanta                    :Lesser Sunda Is     : 8.520000:S:119.350000:E:     0
+0604-06=: Sano, Wai                    :Lesser Sunda Is     : 8.680000:S:120.025000:E:   903
+0604-07=: Poco Leok                    :Lesser Sunda Is     : 8.680000:S:120.480000:E:  1675
+0604-071: Ranakah, Gunung              :Lesser Sunda Is     : 8.620000:S:120.520000:E:  2100
+0604-08=: Inierie                      :Lesser Sunda Is     : 8.875000:S:120.950000:E:  2245
+0604-09=: Inielika                     :Lesser Sunda Is     : 8.730000:S:120.980000:E:  1559
+0604-10=: Ebulobo                      :Lesser Sunda Is     : 8.808000:S:121.180000:E:  2124
+0604-11=: Iya                          :Lesser Sunda Is     : 8.880000:S:121.630000:E:   637
+0604-12=: Sukaria Caldera              :Lesser Sunda Is     : 8.792000:S:121.770000:E:  1500
+0604-13=: Ndete Napu                   :Lesser Sunda Is     : 8.720000:S:121.780000:E:   750
+0604-14=: Kelimutu                     :Lesser Sunda Is     : 8.758000:S:121.830000:E:  1640
+0604-15=: Paluweh                      :Lesser Sunda Is     : 8.320000:S:121.708000:E:   875
+0604-16=: Egon                         :Lesser Sunda Is     : 8.670000:S:122.450000:E:  1703
+0604-17=: Ilimuda                      :Lesser Sunda Is     : 8.478000:S:122.671000:E:  1100
+0604-18=: Lewotobi                     :Lesser Sunda Is     : 8.530000:S:122.775000:E:  1703
+0604-20=: Lereboleng                   :Lesser Sunda Is     : 8.358000:S:122.842000:E:  1117
+0604-21=: Riang Kotang                 :Lesser Sunda Is     : 8.300000:S:122.892000:E:   200
+0604-22=: Iliboleng                    :Lesser Sunda Is     : 8.342000:S:123.258000:E:  1659
+0604-23=: Lewotolo                     :Lesser Sunda Is     : 8.272000:S:123.505000:E:  1423
+0604-24=: Ililabalekan                 :Lesser Sunda Is     : 8.530000:S:123.420000:E:  1018
+0604-25=: Iliwerung                    :Lesser Sunda Is     : 8.540000:S:123.590000:E:  1018
+0604-26=: Tara, Batu                   :Lesser Sunda Is     : 7.792000:S:123.579000:E:   748
+0604-27=: Sirung                       :Lesser Sunda Is     : 8.510000:S:124.148000:E:   862
+0604-28=: Yersey                       :Lesser Sunda Is     : 7.530000:S:123.950000:E: -3800
+0605-01=: Emperor Of China             :Banda Sea           : 6.620000:S:124.220000:E: -2850
+0605-02=: Nieuwerkerk                  :Banda Sea           : 6.600000:S:124.675000:E: -2285
+0605-03=: Gunungapi Wetar              :Banda Sea           : 6.642000:S:126.650000:E:   282
+0605-04=: Wurlali                      :Banda Sea           : 7.125000:S:128.675000:E:   868
+0605-05=: Teon                         :Banda Sea           : 6.920000:S:129.125000:E:   655
+0605-06=: Nila                         :Banda Sea           : 6.730000:S:129.500000:E:   781
+0605-07=: Serua                        :Banda Sea           : 6.300000:S:130.000000:E:   641
+0605-08=: Manuk                        :Banda Sea           : 5.530000:S:130.292000:E:   282
+0605-09=: Banda Api                    :Banda Sea           : 4.525000:S:129.871000:E:   640
+0606-01=: Colo Una Una                 :Sulawesi-Indonesia  : 0.170000:S:121.608000:E:   507
+0606-02=: Ambang                       :Sulawesi-Indonesia  : 0.750000:N:124.420000:E:  1795
+0606-03=: Soputan                      :Sulawesi-Indonesia  : 1.108000:N:124.725000:E:  1784
+0606-04=: Sempu                        :Sulawesi-Indonesia  : 1.142000:N:124.730000:E:  1549
+0606-07-: Tondano Caldera              :Sulawesi-Indonesia  : 1.230000:N:124.830000:E:  1202
+0606-10=: Lokon-Empung                 :Sulawesi-Indonesia  : 1.358000:N:124.792000:E:  1580
+0606-11=: Mahawu                       :Sulawesi-Indonesia  : 1.358000:N:124.858000:E:  1324
+0606-12=: Klabat                       :Sulawesi-Indonesia  : 1.470000:N:125.030000:E:  1995
+0606-13=: Tongkoko                     :Sulawesi-Indonesia  : 1.520000:N:125.200000:E:  1149
+0607-01=: Ruang                        :Sangihe Is-Indonesia: 2.280000:N:125.425000:E:   725
+0607-02=: Karangetang Api Siau         :Sangihe             : 2.780000:N:125.480000:E:  1784
+0607-03=: Banua Wuhu                   :Sangihe Is-Indonesia: 3.138000:N:125.491000:E:    -5
+0607-04=: Awu                          :Sangihe Is-Indonesia: 3.670000:N:125.500000:E:  1320
+0607-05=: Unnamed                      :Sangihe Is-Indonesia: 3.970000:N:124.170000:E: -5000
+0608-01=: Dukono                       :Halmahera-Indonesia : 1.700000:N:127.870000:E:  1087
+0608-03=: Ibu                          :Halmahera-Indonesia : 1.480000:N:127.630000:E:  1325
+0608-04=: Gamkonora                    :Halmahera-Indonesia : 1.375000:N:127.520000:E:  1635
+0608-05=: Todoko-Ranu                  :Halmahera-Indonesia : 1.300000:N:127.430000:E:   979
+0608-051: Jailolo                      :Halmahera-Indonesia : 1.170000:N:127.320000:E:  1130
+0608-06=: Gamalama                     :Halmahera-Indonesia : 0.800000:N:127.325000:E:  1715
+0608-061: Motir                        :Halmahera-Indonesia : 0.450000:N:127.400000:E:   690
+0608-07=: Makian                       :Halmahera-Indonesia : 0.320000:N:127.400000:E:  1357
+0610-01-: Bombalai                     :Borneo              : 4.400000:N:117.880000:E:   531
+0700-01=: Bud Dajo                     :Sulu Is-Philippines : 5.950000:N:121.070000:E:   440
+0701-01=: Balut                        :Mindanao-Philippines: 5.400000:N:125.375000:E:   852
+0701-02=: Matutum                      :Mindanao-Philippines: 6.370000:N:125.108000:E:  2293
+0701-03=: Apo                          :Mindanao-Philippines: 6.987000:N:125.273000:E:  2954
+0701-031: Leonard Range                :Mindanao-Philippines: 7.393000:N:126.397000:E:   800
+0701-032: Unnamed                      :Mindanao-Philippines: 7.443000:N:126.073000:E:  1300
+0701-04=: Makaturing                   :Mindanao-Philippines: 7.647000:N:124.320000:E:  1940
+0701-05=: Latukan                      :Mindanao-Philippines: 7.650000:N:124.470000:E:  2158
+0701-06=: Ragang                       :Mindanao-Philippines: 7.670000:N:124.500000:E:  2815
+0701-061: Kalatungan                   :Mindanao-Philippines: 7.950000:N:124.800000:E:  2824
+0701-07=: Calayo                       :Mindanao-Philippines: 7.877000:N:125.068000:E:   646
+0701-071: Malindang                    :Mindanao-Philippines: 8.220000:N:123.630000:E:  2435
+0701-072: Balatocan                    :Mindanao-Philippines: 8.800000:N:124.920000:E:  2300
+0701-08=: Hibok-Hibok                  :Mindanao-Philippines: 9.203000:N:124.673000:E:  1332
+0701-09-: Paco                         :Mindanao-Philippines: 9.593000:N:125.520000:E:   524
+0702-01=: Magaso                       :Philippines-C       : 9.258000:N:123.175000:E:  1904
+0702-02=: Canlaon                      :Philippines-C       :10.412000:N:123.132000:E:  2435
+0702-03=: Mandalagan                   :Philippines-C       :10.615000:N:123.220000:E:  1879
+0702-04=: Silay                        :Philippines-C       :10.770000:N:123.230000:E:  1535
+0702-05=: Cabalian                     :Philippines-C       :10.287000:N:125.220000:E:   945
+0702-07=: Mahagnoa                     :Philippines-C       :10.872000:N:124.853000:E:   800
+0702-08=: Biliran                      :Philippines-C       :11.523000:N:124.534000:E:  1187
+0703-01=: Bulusan                      :Luzon-Philippines   :12.770000:N:124.050000:E:  1565
+0703-02=: Pocdol Mountains             :Luzon-Philippines   :13.050000:N:123.958000:E:  1102
+0703-03=: Mayon                        :Luzon-Philippines   :13.257000:N:123.685000:E:  2462
+0703-031: Masaraga                     :Luzon-Philippines   :13.320000:N:123.600000:E:  1328
+0703-04=: Malinao                      :Luzon-Philippines   :13.422000:N:123.597000:E:  1548
+0703-041: Iriga                        :Luzon-Philippines   :13.457000:N:123.457000:E:  1196
+0703-042: Isarog                       :Luzon-Philippines   :13.658000:N:123.370000:E:  1966
+0703-043: Labo                         :Luzon-Philippines   :14.020000:N:122.792000:E:  1544
+0703-044: Malindig                     :Luzon-Philippines   :13.240000:N:122.018000:E:  1157
+0703-05=: Banahaw                      :Luzon-Philippines   :14.070000:N:121.480000:E:  2177
+0703-051: Laguna Volc Field            :Luzon-Philippines   :14.120000:N:121.300000:E:   654
+0703-06=: Maquiling                    :Luzon-Philippines   :14.130000:N:121.200000:E:  1090
+0703-07=: Taal                         :Luzon-Philippines   :14.002000:N:120.993000:E:   400
+0703-08=: Jalajala                     :Luzon-Philippines   :14.350000:N:121.330000:E:   743
+0703-081: Mariveles                    :Luzon-Philippines   :14.500000:N:120.500000:E:  1420
+0703-082: Natib                        :Luzon-Philippines   :14.705000:N:120.400000:E:  1287
+0703-083: Pinatubo                     :Luzon-Philippines   :15.130000:N:120.350000:E:  1450
+0703-084: Arayat                       :Luzon-Philippines   :15.200000:N:120.742000:E:  1026
+0703-085: Amorong                      :Luzon-Philippines   :15.828000:N:120.805000:E:   376
+0703-086: Santo Tomas                  :Luzon-Philippines   :16.330000:N:120.550000:E:  2260
+0703-087: Patoc                        :Luzon-Philippines   :17.147000:N:120.980000:E:  1865
+0703-088: Binuluan                     :Luzon-Philippines   :17.308000:N:121.093000:E:  2329
+0703-089: Ambalatungan Group           :Luzon-Philippines   :17.320000:N:121.100000:E:     0
+0703-09=: Cagua                        :Luzon-Philippines   :18.222000:N:122.123000:E:  1133
+0704-01=: Camiguin De Babuyanes        :Luzon Is-N Of       :18.830000:N:121.860000:E:   712
+0704-02=: Didicas                      :Luzon Is-N Of       :19.077000:N:122.202000:E:   244
+0704-03=: Babuyan Claro                :Luzon Is-N Of       :19.523000:N:121.940000:E:  1180
+0704-05=: Unnamed                      :Luzon Is-N Of       :20.330000:N:121.750000:E:   -24
+0704-06-: Iraya                        :Luzon Is-N Of       :20.469000:N:122.010000:E:  1009
+0705-01-: Leizhou Bandao               :SE Asia             :20.830000:N:109.780000:E:   259
+0705-02-: Cu-Lao Re Group              :SE Asia             :15.380000:N:109.120000:E:   181
+0705-03-: Toroeng Prong                :SE Asia             :14.930000:N:108.000000:E:   800
+0705-04-: Haut Dong Nai                :SE Asia             :11.600000:N:108.200000:E:  1000
+0705-05-: Bas Dong Nai                 :SE Asia             :10.800000:N:107.200000:E:   392
+0705-06-: Cendres, Ile Des             :SE Asia             :10.158000:N:109.014000:E:   -20
+0705-07-: Veteran                      :SE Asia             : 9.830000:N:109.050000:E:     0
+0705-08-: Popa                         :SE Asia             :20.870000:N: 95.230000:E:  1518
+0705-09-: Lower Chindwin               :SE Asia             :22.280000:N: 95.100000:E:   385
+0705-10-: Singu Plateau                :SE Asia             :22.700000:N: 95.980000:E:   507
+0705-11-: Tengchong                    :China-S             :25.320000:N: 98.470000:E:  2865
+0801-01=: Unnamed                      :Taiwan-E Of         :20.930000:N:134.750000:E: -6000
+0801-011: Unnamed                      :Taiwan-E Of         :19.170000:N:132.250000:E:   -10
+0801-02=: Unnamed                      :Taiwan-E Of         :21.830000:N:121.180000:E:  -115
+0801-03=: Unnamed                      :Taiwan-E Of         :24.000000:N:121.830000:E:     0
+0801-04=: Unnamed                      :Taiwan-N Of         :25.420000:N:122.330000:E:  -100
+0801-05=: Zengyu                       :Taiwan-N Of         :26.180000:N:122.458000:E:  -418
+0802-01=: Iriomote-Jima                :Ryukyu Is           :24.558000:N:124.000000:E:  -200
+0802-02=: Okinawa-Tori-Shima           :Ryukyu Is           :27.850000:N:128.250000:E:   217
+0802-021: Akuseki-Jima                 :Ryukyu Is           :29.450000:N:129.600000:E:   586
+0802-03=: Suwanose-Jima                :Ryukyu Is           :29.530000:N:129.720000:E:   799
+0802-04=: Nakano-Shima                 :Ryukyu Is           :29.850000:N:129.870000:E:   979
+0802-041: Kuchino-Shima                :Ryukyu Is           :29.970000:N:129.930000:E:   627
+0802-05=: Kuchinoerabu-Jima            :Ryukyu Is           :30.430000:N:130.220000:E:   649
+0802-06=: Kikai                        :Ryukyu Is           :30.780000:N:130.280000:E:   717
+0802-07=: Ibusuki Volc Field           :Kyushu-Japan        :31.220000:N:130.570000:E:   922
+0802-08=: Sakura-Jima                  :Kyushu-Japan        :31.580000:N:130.670000:E:  1117
+0802-081: Sumiyoshi-Ike                :Kyushu-Japan        :31.768000:N:130.594000:E:   100
+0802-09=: Kirishima                    :Kyushu-Japan        :31.930000:N:130.870000:E:  1700
+0802-10=: Unzen                        :Kyushu-Japan        :32.750000:N:130.300000:E:  1359
+0802-11=: Aso                          :Kyushu-Japan        :32.880000:N:131.100000:E:  1592
+0802-12=: Kuju Group                   :Kyushu-Japan        :33.080000:N:131.250000:E:  1788
+0802-13=: Tsurumi                      :Kyushu-Japan        :33.280000:N:131.430000:E:  1374
+0803-001: Abu                          :Honshu-Japan        :34.500000:N:131.600000:E:   571
+0803-002: Sanbe                        :Honshu-Japan        :35.130000:N:132.620000:E:  1126
+0803-003: Oki-Dogo                     :Honshu-Japan        :36.170000:N:133.330000:E:   151
+0803-004: Daisen                       :Honshu-Japan        :35.370000:N:133.550000:E:  1731
+0803-005: Kannabe                      :Honshu-Japan        :35.500000:N:134.680000:E:   460
+0803-01=: Izu-Tobu                     :Honshu-Japan        :34.920000:N:139.120000:E:  1406
+0803-02=: Hakone                       :Honshu-Japan        :35.220000:N:139.020000:E:  1438
+0803-03=: Fuji                         :Honshu-Japan        :35.350000:N:138.730000:E:  3776
+0803-031: Tateshina                    :Honshu-Japan        :36.100000:N:138.300000:E:  2530
+0803-04=: On-Take                      :Honshu-Japan        :35.900000:N:137.480000:E:  3063
+0803-05=: Haku-San                     :Honshu-Japan        :36.150000:N:136.780000:E:  2702
+0803-06=: Norikura                     :Honshu-Japan        :36.120000:N:137.550000:E:  3026
+0803-07=: Yake-Dake                    :Honshu-Japan        :36.220000:N:137.580000:E:  2455
+0803-08=: Tate-Yama                    :Honshu-Japan        :36.570000:N:137.600000:E:  2621
+0803-09=: Niigata-Yake-Yama            :Honshu-Japan        :36.920000:N:138.030000:E:  2400
+0803-10=: Myoko                        :Honshu-Japan        :36.880000:N:138.120000:E:  2446
+0803-101: Kurohime                     :Honshu-Japan        :36.800000:N:138.130000:E:  2053
+0803-102: Iizuna                       :Honshu-Japan        :36.730000:N:138.130000:E:  1917
+0803-11=: Asama                        :Honshu-Japan        :36.400000:N:138.530000:E:  2560
+0803-12=: Kusatsu-Shirane              :Honshu-Japan        :36.620000:N:138.550000:E:  2176
+0803-121: Shiga                        :Honshu-Japan        :36.700000:N:138.520000:E:  2036
+0803-122: Haruna                       :Honshu-Japan        :36.470000:N:138.880000:E:  1449
+0803-13=: Akagi                        :Honshu-Japan        :36.530000:N:139.180000:E:  1828
+0803-131: Hiuchi                       :Honshu-Japan        :36.950000:N:139.280000:E:  2346
+0803-14=: Nikko-Shirane                :Honshu-Japan        :36.800000:N:139.380000:E:  2578
+0803-141: Nantai                       :Honshu-Japan        :36.770000:N:139.500000:E:  2484
+0803-142: Omanago Group                :Honshu-Japan        :36.780000:N:139.500000:E:  2375
+0803-143: Takahara                     :Honshu-Japan        :36.900000:N:139.780000:E:  1795
+0803-15=: Nasu                         :Honshu-Japan        :37.120000:N:139.970000:E:  1917
+0803-151: Numazawa                     :Honshu-Japan        :37.430000:N:139.580000:E:  1100
+0803-16=: Bandai                       :Honshu-Japan        :37.600000:N:140.080000:E:  1819
+0803-17=: Adatara                      :Honshu-Japan        :37.620000:N:140.280000:E:  1718
+0803-18=: Azuma                        :Honshu-Japan        :37.730000:N:140.250000:E:  2024
+0803-19=: Zao                          :Honshu-Japan        :38.150000:N:140.450000:E:  1841
+0803-191: Hijiori                      :Honshu-Japan        :38.600000:N:140.180000:E:   516
+0803-20=: Narugo                       :Honshu-Japan        :38.730000:N:140.730000:E:   462
+0803-21=: Kurikoma                     :Honshu-Japan        :38.950000:N:140.780000:E:  1628
+0803-22=: Chokai                       :Honshu-Japan        :39.080000:N:140.030000:E:  2237
+0803-23=: Akita-Komaga-Take            :Japan               :39.750000:N:140.800000:E:  1637
+0803-24=: Iwate                        :Honshu-Japan        :39.850000:N:141.000000:E:  2041
+0803-25=: Hachimantai                  :Honshu-Japan        :39.950000:N:140.850000:E:  1614
+0803-26=: Akita-Yake-Yama              :Honshu-Japan        :39.970000:N:140.770000:E:  1366
+0803-261: Kanpu                        :Honshu-Japan        :39.930000:N:139.880000:E:   355
+0803-262: Megata                       :Honshu-Japan        :39.950000:N:139.730000:E:   291
+0803-27=: Iwaki                        :Honshu-Japan        :40.650000:N:140.300000:E:  1625
+0803-271: Towada                       :Honshu-Japan        :40.470000:N:140.920000:E:  1159
+0803-28=: Hakkoda Group                :Honshu-Japan        :40.650000:N:140.880000:E:  1585
+0803-29=: Osore-Yama                   :Honshu-Japan        :41.320000:N:141.080000:E:   879
+0803-30-: Mutsu-Hiuchi-Dake            :Honshu-Japan        :41.430000:N:141.070000:E:   781
+0804-01=: Oshima                       :Izu Is-Japan        :34.730000:N:139.380000:E:   758
+0804-011: To-Shima                     :Izu Is-Japan        :34.520000:N:139.280000:E:   508
+0804-02=: Nii-Jima                     :Izu Is-Japan        :34.370000:N:139.270000:E:   432
+0804-03=: Kozu-Shima                   :Izu Is-Japan        :34.220000:N:139.150000:E:   574
+0804-04=: Miyake-Jima                  :Izu Is-Japan        :34.080000:N:139.530000:E:   815
+0804-041: Kurose Hole                  :Izu Is-Japan        :33.400000:N:139.680000:E:  -107
+0804-05=: Hachijo-Jima                 :Izu Is-Japan        :33.130000:N:139.770000:E:   854
+0804-06=: Aoga-Shima                   :Izu Is-Japan        :32.450000:N:139.770000:E:   423
+0804-07=: Bayonnaise Rocks             :Izu Is-Japan        :31.920000:N:139.920000:E:    10
+0804-08=: Smith Rock                   :Izu Is-Japan        :31.320000:N:140.050000:E:   136
+0804-09=: Tori-Shima                   :Izu Is-Japan        :30.480000:N:140.320000:E:   403
+0804-091: Omachi Seamount              :Izu Is-Japan        :29.220000:N:140.800000:E: -1700
+0804-092: Nishino-Shima                :Volcano Is-Japan    :27.243000:N:140.877000:E:    52
+0804-093: Unnamed                      :Volcano Is-Japan    :26.130000:N:144.480000:E: -3200
+0804-10=: Kaitoku Seamount             :Volcano Is-Japan    :26.122000:N:141.102000:E:   -10
+0804-11=: Kita-Iwo-Jima                :Volcano Is-Japan    :25.430000:N:141.230000:E:   792
+0804-12=: Iwo-Jima                     :Volcano Is-Japan    :24.750000:N:141.330000:E:   161
+0804-12=: Ioto                         :Volcano Is-Japan    :24.750000:N:141.330000:E:   161
+0804-13=: Shin-Iwo-Jima                :Volcano Is-Japan    :24.280000:N:141.520000:E:   -14
+0804-131: Minami-Hiyoshi               :Volcano Is-Japan    :23.507000:N:141.905000:E:   -30
+0804-132: Nikko                        :Volcano Is-Japan    :23.075000:N:142.308000:E:  -391
+0804-133: Fukujin                      :Volcano Is-Japan    :21.925000:N:143.442000:E:  -217
+0804-134: Kasuga Seamount              :Volcano Is-Japan    :21.770000:N:143.720000:E:  -558
+0804-135: Unnamed                      :Mariana Is-C Pac    :21.000000:N:142.900000:E:     0
+0804-136: Unnamed                      :Mariana Is-C Pac    :20.300000:N:143.200000:E:     0
+0804-14=: Farallon De Pajaros          :Mariana Is-C Pac    :20.530000:N:144.900000:E:   360
+0804-141: Ahyi                         :Mariana Is-C Pac    :20.430000:N:145.030000:E:   -70
+0804-142: Supply Reef                  :Mariana Is-C Pac    :20.130000:N:145.100000:E:    -8
+0804-15=: Asuncion                     :Mariana Is-C Pac    :19.670000:N:145.400000:E:   857
+0804-16=: Agrigan                      :Mariana Is-C Pac    :18.770000:N:145.670000:E:   965
+0804-17=: Pagan                        :Mariana Is-C Pac    :18.130000:N:145.800000:E:   570
+0804-18=: Alamagan                     :Mariana Is-C Pac    :17.600000:N:145.830000:E:   744
+0804-19=: Guguan                       :Mariana Is-C Pac    :17.320000:N:145.850000:E:   287
+0804-191: Sarigan                      :Mariana Is-C Pac    :16.708000:N:145.780000:E:   538
+0804-20=: Anatahan                     :Mariana Is-C Pac    :16.350000:N:145.670000:E:   788
+0804-201: Ruby                         :Mariana Is-C Pac    :15.620000:N:145.570000:E:  -230
+0804-21=: Esmeralda Bank               :Mariana Is-C Pac    :15.000000:N:145.250000:E:   -43
+0805-01=: Oshima-Oshima                :Hokkaido-Japan      :41.500000:N:139.370000:E:   737
+0805-011: E-San                        :Hokkaido-Japan      :41.800000:N:141.170000:E:   618
+0805-02=: Komaga-Take                  :Hokkaido-Japan      :42.070000:N:140.680000:E:  1140
+0805-03=: Usu                          :Hokkaido-Japan      :42.530000:N:140.830000:E:   731
+0805-031: Iwaonupuri                   :Hokkaido-Japan      :42.880000:N:140.630000:E:  1154
+0805-032: Yotei                        :Hokkaido-Japan      :42.830000:N:140.820000:E:  1893
+0805-033: Shiribetsu                   :Hokkaido-Japan      :42.767000:N:140.916000:E:  1107
+0805-034: Kuttara                      :Hokkaido-Japan      :42.500000:N:141.180000:E:   581
+0805-04=: Shikotsu                     :Hokkaido-Japan      :42.700000:N:141.333000:E:  1320
+0805-041: Rishiri                      :Hokkaido-Japan      :45.180000:N:141.250000:E:  1719
+0805-05=: Tokachi                      :Hokkaido-Japan      :43.420000:N:142.680000:E:  2077
+0805-06=: Daisetsu                     :Hokkaido-Japan      :43.680000:N:142.880000:E:  2290
+0805-061: Nipesotsu-Upepesanke         :Japan               :43.450000:N:143.030000:E:  2013
+0805-062: Shikaribetsu Group           :Hokkaido-Japan      :43.280000:N:143.080000:E:  1430
+0805-07=: Akan                         :Hokkaido-Japan      :43.380000:N:144.020000:E:  1499
+0805-08=: Kutcharo                     :Hokkaido-Japan      :43.550000:N:144.430000:E:  1000
+0805-081: Mashu                        :Hokkaido-Japan      :43.570000:N:144.570000:E:   855
+0805-082: Rausu                        :Hokkaido-Japan      :44.073000:N:145.125000:E:  1660
+0805-09=: Shiretoko-Iwo-Zan            :Hokkaido            :44.130000:N:145.170000:E:  1563
+0900-01=: Golovnin                     :Kurile Is           :43.850000:N:145.530000:E:   541
+0900-02=: Mendeleev                    :Kurile Is           :43.980000:N:145.700000:E:   887
+0900-021: Smirnov                      :Kurile Is           :44.430000:N:146.130000:E:  1189
+0900-03=: Tiatia                       :Kurile Is           :44.358000:N:146.270000:E:  1819
+0900-04=: Berutarube                   :Kurile Is           :44.470000:N:146.930000:E:  1220
+0900-041: Lvinaya Past                 :Kurile Is           :44.620000:N:147.000000:E:   528
+0900-05=: Atsonupuri                   :Kurile Is           :44.804000:N:147.130000:E:  1205
+0900-06-: Bogatyr Ridge                :Kurile Is           :44.830000:N:147.370000:E:  1634
+0900-061: Unnamed                      :Kurile Is           :45.030000:N:147.208000:E:  -930
+0900-07=: Grozny Group                 :Kurile Is           :45.020000:N:147.870000:E:  1211
+0900-08=: Baransky                     :Kurile Is           :45.100000:N:148.020000:E:  1132
+0900-09=: Chirip                       :Kurile Is           :45.380000:N:147.920000:E:  1589
+0900-091: Golets-Tornyi Group          :Kurile Is           :45.250000:N:148.350000:E:   442
+0900-10=: Medvezhia                    :Kurile Is           :45.380000:N:148.830000:E:  1124
+0900-11-: Demon                        :Kurile Is           :45.500000:N:148.850000:E:  1205
+0900-111: Ivao Group                   :Kurile Is           :45.770000:N:149.680000:E:  1426
+0900-112: Rudakov                      :Kurile Is           :45.880000:N:149.830000:E:   542
+0900-113: Tri Sestry                   :Kurile Is           :45.930000:N:149.920000:E:   998
+0900-12=: Kolokol Group                :Kurile Is           :46.042000:N:150.050000:E:  1328
+0900-13-: Unnamed                      :Kurile Is           :46.100000:N:150.500000:E:  -100
+0900-15=: Chirpoi                      :Kurile Is           :46.525000:N:150.875000:E:   742
+0900-16-: Unnamed                      :Kurile Is           :46.470000:N:151.280000:E:  -502
+0900-17a: Milne                        :Kurile Is           :46.820000:N:151.780000:E:  1540
+0900-17b: Goriaschaia Sopka            :Kurile Is           :46.830000:N:151.750000:E:   891
+0900-18=: Zavaritzki Caldera           :Kurile Is           :46.925000:N:151.950000:E:   624
+0900-19=: Prevo Peak                   :Kurile Is           :47.020000:N:152.120000:E:  1360
+0900-191: Urataman                     :Kurile Is           :47.120000:N:152.230000:E:   678
+0900-20=: Ketoi                        :Kurile Is           :47.350000:N:152.475000:E:  1172
+0900-21=: Ushishur                     :Kurile Is           :47.520000:N:152.800000:E:   401
+0900-211: Srednii                      :Kurile Is           :47.600000:N:152.920000:E:    36
+0900-22=: Rasshua                      :Kurile Is           :47.770000:N:153.020000:E:   956
+0900-23=: Unnamed                      :Kurile Is           :48.080000:N:153.330000:E:  -150
+0900-24=: Sarychev Peak                :Kurile Is           :48.092000:N:153.200000:E:  1496
+0900-25=: Raikoke                      :Kurile Is           :48.292000:N:153.250000:E:   551
+0900-26=: Chirinkotan                  :Kurile Is           :48.980000:N:153.480000:E:   724
+0900-27=: Ekarma                       :Kurile Is           :48.958000:N:153.930000:E:  1170
+0900-29=: Sinarka                      :Kurile Is           :48.875000:N:154.175000:E:   934
+0900-30=: Harimkotan                   :Kurile Is           :49.120000:N:154.508000:E:  1145
+0900-31=: Tao-Rusyr Caldera            :Kurile Is           :49.350000:N:154.700000:E:  1325
+0900-32=: Nemo Peak                    :Kurile Is           :49.570000:N:154.808000:E:  1018
+0900-331: Shirinki                     :Kurile Is           :50.200000:N:154.980000:E:   761
+0900-34=: Fuss Peak                    :Kurile Is           :50.270000:N:155.250000:E:  1772
+0900-35=: Karpinsky Group              :Kurile Is           :50.130000:N:155.370000:E:  1345
+0900-351: Lomonosov Group              :Kurile Is           :50.250000:N:155.430000:E:  1681
+0900-36=: Chikurachki                  :Kurile Is           :50.325000:N:155.458000:E:  1816
+0900-37-: Vernadskii Ridge             :Kurile Is           :50.550000:N:155.970000:E:  1183
+0900-38=: Ebeko                        :Kurile Is           :50.680000:N:156.020000:E:  1156
+0900-39=: Alaid                        :Kurile Is           :50.858000:N:155.550000:E:  2339
+1000-001: Mashkovtsev                  :Kamchatka           :51.100000:N:156.720000:E:   503
+1000-01=: Kambalny                     :Kamchatka           :51.300000:N:156.870000:E:  2156
+1000-02=: Koshelev                     :Kamchatka           :51.357000:N:156.750000:E:  1812
+1000-021: Unnamed                      :Kamchatka           :51.600000:N:156.550000:E:   298
+1000-022: Pauzhetka                    :Kamchatka           :51.430000:N:156.930000:E:  1331
+1000-03=: Ilyinsky                     :Kamchatka           :51.490000:N:157.200000:E:  1578
+1000-04=: Zheltovsky                   :Kamchatka           :51.570000:N:157.323000:E:  1953
+1000-041: Kell                         :Kamchatka           :51.650000:N:157.350000:E:   900
+1000-042: Belen'Kaya                   :Kamchatka           :51.750000:N:157.270000:E:   892
+1000-05=: Ksudach                      :Kamchatka           :51.800000:N:157.530000:E:  1079
+1000-051: Ozernoy                      :Kamchatka           :51.880000:N:157.380000:E:   562
+1000-052: Plosky Volc Group            :Kamchatka           :52.020000:N:157.530000:E:   681
+1000-053: Khodutka                     :Kamchatka           :52.063000:N:157.703000:E:  2090
+1000-054: Piratkovsky                  :Kamchatka           :52.113000:N:157.849000:E:  1322
+1000-055: Olkoviy                      :Kamchatka           :52.077000:N:157.477000:E:   636
+1000-056: Ostanets                     :Kamchatka           :52.154000:N:157.322000:E:   719
+1000-057: Otdelniy                     :Kamchatka           :52.220000:N:157.428000:E:   791
+1000-058: Unnamed                      :Kamchatka           :52.330000:N:157.330000:E:   638
+1000-059: Tundroviy                    :Kamchatka           :52.250000:N:157.600000:E:   739
+1000-06=: Mutnovsky                    :Kamchatka           :52.453000:N:158.195000:E:  2322
+1000-061: Golaya                       :Kamchatka           :52.263000:N:157.787000:E:   858
+1000-062: Asacha                       :Kamchatka           :52.355000:N:157.827000:E:  1910
+1000-063: Visokiy                      :Kamchatka           :52.430000:N:157.930000:E:  1234
+1000-07=: Gorely                       :Kamchatka           :52.558000:N:158.030000:E:  1829
+1000-08=: Opala                        :Kamchatka           :52.543000:N:157.335000:E:  2475
+1000-081: Unnamed                      :Kamchatka           :52.570000:N:157.020000:E:   610
+1000-082: Tolmachev Dol                :Kamchatka           :52.630000:N:157.580000:E:  1021
+1000-083: Vilyuchik                    :Kamchatka           :52.680000:N:158.300000:E:  2173
+1000-084: Barkhatnaya Sopka            :Kamchatka           :52.823000:N:158.270000:E:   870
+1000-085: Unnamed                      :Kamchatka           :52.920000:N:158.520000:E:   450
+1000-086: Unnamed                      :Kamchatka           :52.880000:N:158.300000:E:   700
+1000-087: Bolshe-Bannaya               :Kamchatka           :52.900000:N:157.780000:E:  1200
+1000-09=: Koryaksky                    :Kamchatka           :53.320000:N:158.688000:E:  3456
+1000-10=: Avachinsky                   :Kamchatka           :53.255000:N:158.830000:E:  2741
+1000-101: Unnamed                      :Kamchatka           :53.630000:N:158.100000:E:   200
+1000-102: Veer                         :Kamchatka           :53.630000:N:158.420000:E:   350
+1000-11=: Dzenzursky                   :Kamchatka           :53.637000:N:158.922000:E:  2155
+1000-12=: Zhupanovsky                  :Kamchatka           :53.590000:N:159.147000:E:  2958
+1000-121: Zavaritsky                   :Kamchatka           :53.905000:N:158.385000:E:  1567
+1000-122: Bakenin                      :Kamchatka           :53.905000:N:158.070000:E:  2277
+1000-123: Akademia Nauk                :Kamchatka           :53.980000:N:159.450000:E:  1180
+1000-13=: Karymsky                     :Kamchatka           :54.050000:N:159.430000:E:  1486
+1000-14=: Maly Semiachik               :Kamchatka           :54.130000:N:159.670000:E:  1560
+1000-15=: Bolshoi Semiachik            :Kamchatka           :54.320000:N:160.020000:E:  1720
+1000-16-: Taunshits                    :Kamchatka           :54.530000:N:159.800000:E:  2353
+1000-17=: Uzon                         :Kamchatka           :54.500000:N:159.970000:E:  1617
+1000-18=: Kikhpinych                   :Kamchatka           :54.487000:N:160.253000:E:  1552
+1000-19=: Krasheninnikov               :Kamchatka           :54.593000:N:160.273000:E:  1856
+1000-20=: Kronotsky                    :Kamchatka           :54.753000:N:160.527000:E:  3528
+1000-21=: Gamchen                      :Kamchatka           :54.973000:N:160.702000:E:  2576
+1000-22=: Komarov                      :Kamchatka           :55.032000:N:160.720000:E:  2070
+1000-221: Kolkhozhny                   :Kamchatka           :55.070000:N:160.770000:E:  2161
+1000-23=: Kizimen                      :Kamchatka           :55.130000:N:160.320000:E:  2485
+1000-231: Iult                         :Kamchatka           :55.230000:N:160.587000:E:  1857
+1000-232: Unnamed                      :Kamchatka           :55.920000:N:161.750000:E:     0
+1000-24=: Tolbachik                    :Kamchatka           :55.830000:N:160.330000:E:  3682
+1000-241: Udina                        :Kamchatka           :55.755000:N:160.527000:E:  2923
+1000-242: Zimina                       :Kamchatka           :55.862000:N:160.603000:E:  3081
+1000-25=: Bezymianny                   :Kamchatka           :55.978000:N:160.587000:E:  2882
+1000-251: Kamen                        :Kamchatka           :56.020000:N:160.593000:E:  4585
+1000-26=: Kliuchevskoi                 :Kamchatka           :56.057000:N:160.638000:E:  4835
+1000-261: Ushkovsky                    :Kamchatka           :56.105000:N:160.470000:E:  3943
+1000-262: Zarechny                     :Kamchatka           :56.380000:N:160.830000:E:   760
+1000-263: Unnamed                      :Kamchatka           :56.530000:N:160.870000:E:   200
+1000-27=: Sheveluch                    :Kamchatka           :56.653000:N:161.360000:E:  3283
+1000-271: Piip                         :Kamchatka-E Of      :55.420000:N:167.330000:E:  -300
+1000-272: Hangar                       :Kamchatka           :54.750000:N:157.380000:E:  2000
+1000-28=: Ichinsky                     :Kamchatka           :55.680000:N:157.730000:E:  3621
+1000-29-: Maly Payalpan                :Kamchatka           :55.820000:N:157.980000:E:  1802
+1000-30-: Bolshoy Payalpan             :Kamchatka           :55.880000:N:157.780000:E:  1906
+1000-31-: Plosky                       :Kamchatka           :55.200000:N:158.470000:E:  1236
+1000-32-: Akhtang                      :Kamchatka           :55.430000:N:158.650000:E:  1956
+1000-33-: Kozyrevsky                   :Kamchatka           :55.580000:N:158.380000:E:  2016
+1000-34-: Romanovka                    :Kamchatka           :55.650000:N:158.800000:E:  1442
+1000-35-: Uksichan                     :Kamchatka           :56.080000:N:158.380000:E:  1692
+1000-36-: Bolshoy-Kekuknaysky          :Kamchatka           :56.470000:N:157.800000:E:  1401
+1000-37-: Kulkev                       :Kamchatka           :56.370000:N:158.370000:E:   915
+1000-38-: Geodesistoy                  :Kamchatka           :56.330000:N:158.670000:E:  1170
+1000-39-: Anaun                        :Kamchatka           :56.320000:N:158.830000:E:  1828
+1000-40-: Krainy                       :Kamchatka           :56.370000:N:159.030000:E:  1554
+1000-41-: Kekurny                      :Kamchatka           :56.400000:N:158.850000:E:  1377
+1000-42-: Eggella                      :Kamchatka           :56.570000:N:158.520000:E:  1046
+1000-43-: Unnamed                      :Kamchatka           :56.820000:N:158.950000:E:  1185
+1000-44-: Verkhovoy                    :Kamchatka           :56.520000:N:159.530000:E:  1400
+1000-45-: Alney-Chashakondzha          :Kamchatka           :56.700000:N:159.650000:E:  2598
+1000-46-: Cherny                       :Kamchatka           :56.820000:N:159.670000:E:  1778
+1000-47-: Pogranychny                  :Kamchatka           :56.850000:N:159.800000:E:  1427
+1000-48-: Zaozerny                     :Kamchatka           :56.880000:N:159.950000:E:  1349
+1000-49-: Bliznets                     :Kamchatka           :56.970000:N:159.780000:E:  1244
+1000-50-: Kebeney                      :Kamchatka           :57.100000:N:159.930000:E:  1527
+1000-51-: Fedotych                     :Kamchatka           :57.130000:N:160.400000:E:   965
+1000-52-: Sedankinsky                  :Kamchatka           :57.230000:N:160.080000:E:  1241
+1000-53-: Gorny Institute              :Kamchatka           :57.330000:N:160.200000:E:  2125
+1000-54-: Leutongey                    :Kamchatka           :57.300000:N:159.830000:E:  1333
+1000-55-: Tuzovsky                     :Kamchatka           :57.320000:N:159.970000:E:  1533
+1000-56-: Titila                       :Kamchatka           :57.400000:N:160.100000:E:  1559
+1000-57-: Mezhdusopochny               :Kamchatka           :57.430000:N:160.200000:E:  1641
+1000-58-: Shishel                      :Kamchatka           :57.450000:N:160.370000:E:  2525
+1000-59-: Elovsky                      :Kamchatka           :57.530000:N:160.530000:E:  1381
+1000-60-: Alngey                       :Kamchatka           :57.700000:N:160.400000:E:  1853
+1000-61-: Uka                          :Kamchatka           :57.700000:N:160.580000:E:  1643
+1000-62-: Kaileney                     :Kamchatka           :57.800000:N:160.670000:E:  1582
+1000-63-: Plosky                       :Kamchatka           :57.830000:N:160.250000:E:  1255
+1000-64-: Bely                         :Kamchatka           :57.880000:N:160.530000:E:  2080
+1000-65-: Atlasova                     :Kamchatka           :57.970000:N:160.650000:E:  1764
+1000-66-: Snezhniy                     :Kamchatka           :58.020000:N:160.750000:E:  2169
+1000-67-: Iktunup                      :Kamchatka           :58.080000:N:160.770000:E:  2300
+1000-68-: Ostry                        :Kamchatka           :58.180000:N:160.820000:E:  2552
+1000-69-: Snegovoy                     :Kamchatka           :58.200000:N:160.970000:E:  2169
+1000-70-: Severny                      :Kamchatka           :58.280000:N:160.870000:E:  1936
+1000-71-: Iettunup                     :Kamchatka           :58.400000:N:161.080000:E:  1340
+1000-72-: Voyampolsky                  :Kamchatka           :58.370000:N:160.620000:E:  1225
+1001-01-: Aluchin Group                :Russia-NE           :66.120000:N:165.630000:E:  1000
+1001-02-: Anjuisky                     :Russia-NE           :67.170000:N:165.200000:E:  1050
+1001-03-: Balagan-Tas                  :Russia-NE           :66.430000:N:143.730000:E:   993
+1002-01-: Southern Sikhote-Alin        :Russia-SE           :44.500000:N:135.500000:E:     0
+1002-02-: Ne Udokan Plateau            :Russia-SE           :56.330000:N:118.070000:E:  2180
+1002-03-: Udokan Volc Field            :Russia-SE           :56.180000:N:117.470000:E:  1980
+1002-04-: Dgida Basin                  :Russia-SE           :50.520000:N:103.250000:E:  1500
+1002-05-: Tunkin Depression            :Russia-SE           :51.500000:N:102.500000:E:  1200
+1002-06-: Oka Volc Field               :Russia-SE           :52.700000:N: 98.980000:E:  2077
+1002-07-: Ulug-Arginsky                :Russia-SE           :52.330000:N: 98.000000:E:  1800
+1003-01-: Taryatu-Chulutu              :Mongolia            :48.170000:N: 99.700000:E:  2400
+1003-02-: Khanuy Gol                   :Mongolia            :48.670000:N:102.750000:E:  1886
+1003-03-: Bus-Obo                      :Mongolia            :47.120000:N:109.080000:E:  1162
+1003-04-: Dariganga Volc Field         :Mongolia            :45.330000:N:114.000000:E:  1778
+1003-05-: Middle Gobi                  :Mongolia            :45.280000:N:106.700000:E:  1120
+1004-01-: Turfan                       :China-W             :42.900000:N: 89.250000:E:     0
+1004-02-: Tianshan Volc Group          :China-W             :42.500000:N: 86.500000:E:     0
+1004-03-: Kunlun Volc Group            :China-W             :35.520000:N: 80.200000:E:  5808
+1004-04-: Unnamed                      :China-W             :35.850000:N: 91.700000:E:  5400
+1005-01-: Datong                       :China-E             :40.000000:N:113.280000:E:  1882
+1005-02-: Honggeertu                   :China-E             :41.470000:N:113.000000:E:  1700
+1005-03-: Keluo Group                  :China-E             :49.370000:N:125.920000:E:   670
+1005-04-: Wudalianchi                  :China-E             :48.720000:N:126.120000:E:   597
+1005-05-: Jingpohu                     :China-E             :44.080000:N:128.830000:E:   500
+1005-06-: Longgang Group               :China-E             :42.330000:N:126.500000:E:  1000
+1005-07-: Baitoushan                   :China-E             :41.980000:N:128.080000:E:  2744
+1006-01-: Xianjindao                   :Korea               :41.330000:N:128.000000:E:     0
+1006-02-: Ch'Uga-Ryong                 :Korea               :38.330000:N:127.330000:E:   452
+1006-03-: Ulreung                      :Korea               :37.500000:N:130.870000:E:   984
+1006-04-: Halla                        :Korea               :33.370000:N:126.530000:E:  1950
+1101-01-: Buldir                       :Aleutian Is         :52.370000:N:175.980000:E:   656
+1101-02-: Kiska                        :Aleutian Is         :52.100000:N:177.600000:E:  1220
+1101-03-: Segula                       :Aleutian Is         :52.020000:N:178.130000:E:  1153
+1101-04-: Davidof                      :Aleutian Is         :51.970000:N:178.330000:E:   328
+1101-05-: Little Sitkin                :Aleutian Is         :51.950000:N:178.530000:E:  1188
+1101-06-: Semisopochnoi                :Aleutian Is         :51.950000:N:179.620000:E:  1221
+1101-07-: Gareloi                      :Aleutian Is         :51.780000:N:178.800000:W:  1573
+1101-08-: Tanaga                       :Aleutian Is         :51.880000:N:178.130000:W:  1806
+1101-09-: Takawangha                   :Aleutian Is         :51.870000:N:178.020000:W:  1449
+1101-10-: Bobrof                       :Aleutian Is         :51.900000:N:177.430000:W:   738
+1101-11-: Kanaga                       :Aleutian Is         :51.920000:N:177.170000:W:  1307
+1101-111: Moffett                      :Aleutian Is         :51.930000:N:176.750000:W:  1196
+1101-112: Adagdak                      :Aleutian Is         :51.980000:N:176.600000:W:   645
+1101-12-: Great Sitkin                 :Aleutian Is         :52.080000:N:176.130000:W:  1740
+1101-13-: Kasatochi                    :Aleutian Is         :52.180000:N:175.500000:W:   314
+1101-14-: Koniuji                      :Aleutian Is         :52.220000:N:175.130000:W:   272
+1101-15-: Sergief                      :Aleutian Is         :52.030000:N:174.930000:W:   560
+1101-16-: Atka                         :Aleutian Is         :52.380000:N:174.150000:W:  1533
+1101-18-: Seguam                       :Aleutian Is         :52.320000:N:172.520000:W:  1054
+1101-19-: Amukta                       :Aleutian Is         :52.500000:N:171.250000:W:  1066
+1101-20-: Chagulak                     :Aleutian Is         :52.570000:N:171.130000:W:  1142
+1101-21-: Yunaska                      :Aleutian Is         :52.630000:N:170.630000:W:   550
+1101-22-: Herbert                      :Aleutian Is         :52.750000:N:170.120000:W:  1290
+1101-23-: Carlisle                     :Aleutian Is         :52.900000:N:170.050000:W:  1620
+1101-24-: Cleveland                    :Aleutian Is         :52.820000:N:169.950000:W:  1730
+1101-25-: Uliaga                       :Aleutian Is         :53.070000:N:169.770000:W:   888
+1101-26-: Kagamil                      :Aleutian Is         :52.970000:N:169.720000:W:   893
+1101-27-: Vsevidof                     :Aleutian Is         :53.130000:N:168.680000:W:  2149
+1101-28-: Recheschnoi                  :Aleutian Is         :53.150000:N:168.550000:W:  1984
+1101-29-: Okmok                        :Aleutian Is         :53.420000:N:168.130000:W:  1073
+1101-30-: Bogoslof                     :Aleutian Is         :53.930000:N:168.030000:W:   101
+1101-31-: Makushin                     :Aleutian Is         :53.900000:N:166.930000:W:  2036
+1101-311: Table Top-Wide Bay           :Aleutian Is         :53.980000:N:166.670000:W:   800
+1101-32-: Akutan                       :Aleutian Is         :54.130000:N:165.970000:W:  1303
+1101-34-: Westdahl                     :Aleutian Is         :54.520000:N:164.650000:W:  1654
+1101-35-: Fisher                       :Aleutian Is         :54.670000:N:164.350000:W:  1094
+1101-36-: Shishaldin                   :Aleutian Is         :54.750000:N:163.970000:W:  2857
+1101-37-: Isanotski                    :Aleutian Is         :54.750000:N:163.730000:W:  2446
+1101-38-: Roundtop                     :Aleutian Is         :54.800000:N:163.600000:W:  1871
+1101-39-: Amak                         :Aleutian Is         :55.420000:N:163.150000:W:   513
+1102-01-: Frosty                       :Alaska Peninsula    :55.070000:N:162.820000:W:  1920
+1102-011: Dutton                       :Alaska Peninsula    :55.180000:N:162.270000:W:  1473
+1102-02-: Emmons Lake                  :Alaska Peninsula    :55.330000:N:162.070000:W:  1465
+1102-03-: Pavlof                       :Alaska Peninsula    :55.420000:N:161.900000:W:  2519
+1102-04-: Pavlof Sister                :Alaska Peninsula    :55.450000:N:161.870000:W:  2142
+1102-05-: Dana                         :Alaska Peninsula    :55.620000:N:161.220000:W:  1354
+1102-051: Unnamed                      :Alaska Peninsula    :55.930000:N:160.000000:W:  1555
+1102-06-: Kupreanof                    :Alaska Peninsula    :56.020000:N:159.800000:W:  1895
+1102-07-: Veniaminof                   :Alaska Peninsula    :56.170000:N:159.380000:W:  2507
+1102-08-: Black Peak                   :Alaska Peninsula    :56.530000:N:158.800000:W:  1032
+1102-09-: Aniakchak                    :Alaska Peninsula    :56.880000:N:158.170000:W:  1341
+1102-10-: Yantarni                     :Alaska Peninsula    :57.020000:N:157.180000:W:  1336
+1102-11-: Chiginagak                   :Alaska Peninsula    :57.130000:N:157.000000:W:  2075
+1102-12-: Kialagvik                    :Alaska Peninsula    :57.380000:N:156.750000:W:  1575
+1102-131: Unnamed                      :Alaska Peninsula    :57.870000:N:155.420000:W:   300
+1102-13a: Ugashik-Peulik               :Alaska Peninsula    :57.750000:N:156.370000:W:  1474
+1102-13b: Ukinrek Maars                :Alaska Peninsula    :57.830000:N:156.520000:W:    91
+1102-14-: Martin                       :Alaska Peninsula    :58.170000:N:155.350000:W:  1860
+1102-15-: Mageik                       :Alaska Peninsula    :58.200000:N:155.250000:W:  2165
+1102-16-: Trident                      :Alaska Peninsula    :58.230000:N:155.080000:W:  1864
+1102-17-: Katmai                       :Alaska Peninsula    :58.270000:N:154.980000:W:  2047
+1102-18-: Novarupta                    :Alaska Peninsula    :58.270000:N:155.160000:W:   841
+1102-19-: Griggs                       :Alaska Peninsula    :58.350000:N:155.100000:W:  2317
+1102-20-: Snowy                        :Alaska Peninsula    :58.330000:N:154.680000:W:  2161
+1102-21-: Denison                      :Alaska Peninsula    :58.420000:N:154.450000:W:  2318
+1102-22-: Steller                      :Alaska Peninsula    :58.430000:N:154.400000:W:  2272
+1102-23-: Kukak                        :Alaska Peninsula    :58.470000:N:154.350000:W:  2040
+1102-24-: Devils Desk                  :Alaska Peninsula    :58.480000:N:154.300000:W:  1954
+1102-25-: Kaguyak                      :Alaska Peninsula    :58.620000:N:154.050000:W:   901
+1102-26-: Fourpeaked                   :Alaska Peninsula    :58.770000:N:153.680000:W:  2104
+1102-27-: Douglas                      :Alaska Peninsula    :58.870000:N:153.550000:W:  2140
+1103-01-: Augustine                    :Alaska-SW           :59.370000:N:153.420000:W:  1252
+1103-02-: Iliamna                      :Alaska-SW           :60.030000:N:153.080000:W:  3053
+1103-03-: Redoubt                      :Alaska-SW           :60.480000:N:152.750000:W:  3108
+1103-04-: Spurr                        :Alaska-SW           :61.300000:N:152.250000:W:  3374
+1103-05-: Hayes                        :Alaska-SW           :61.620000:N:152.480000:W:  2788
+1104-01-: Espenberg                    :Alaska-W            :66.350000:N:164.330000:W:   243
+1104-02-: Imuruk Lake                  :Alaska-W            :65.600000:N:163.920000:W:   610
+1104-03-: Kookooligit Mountains        :Alaska-W            :63.600000:N:170.430000:W:   673
+1104-04-: St. Michael                  :Alaska-W            :63.450000:N:162.120000:W:   715
+1104-05-: Ingakslugwat Hills           :Alaska-W            :61.430000:N:164.470000:W:   190
+1104-06-: Nunivak Island               :Alaska-W            :60.020000:N:166.330000:W:   511
+1104-07-: St. Paul Island              :Alaska-W            :57.180000:N:170.300000:W:   203
+1105-001: Buzzard Creek                :Alaska-E            :64.070000:N:148.420000:W:   830
+1105-01-: Sanford                      :Alaska-E            :62.220000:N:144.130000:W:  4949
+1105-02-: Wrangell                     :Alaska-E            :62.000000:N:144.020000:W:  4317
+1105-021: Gordon                       :Alaska-E            :62.130000:N:143.080000:W:  2755
+1105-03-: Bona-Churchill               :Alaska-E            :61.380000:N:141.750000:W:  5005
+1105-04-: Edgecumbe                    :Alaska-SE           :57.050000:N:135.750000:W:   976
+1105-05-: Duncan Canal                 :Alaska-SE           :56.500000:N:133.100000:W:    15
+1105-06-: Tlevak Strait-Suemez Is.     :Alaska-SE           :55.250000:N:133.300000:W:    50
+1105-07-: Revillagigedo Island         :Alaska-SE           :55.320000:N:131.050000:W:   500
+1200-01-: Fort Selkirk                 :Canada              :62.930000:N:137.380000:W:  1239
+1200-02-: Alligator Lake               :Canada              :60.420000:N:135.420000:W:  2217
+1200-03-: Ruby Mountain                :Canada              :59.680000:N:133.320000:W:  1523
+1200-04-: Heart Peaks                  :Canada              :58.600000:N:131.970000:W:  2012
+1200-05-: Level Mountain               :Canada              :58.420000:N:131.350000:W:  2190
+1200-06-: Edziza                       :Canada              :57.720000:N:130.630000:W:  2786
+1200-07-: Spectrum Range               :Canada              :57.430000:N:130.680000:W:  2430
+1200-08-: Hoodoo Mountain              :Canada              :56.780000:N:131.280000:W:  1820
+1200-09-: Iskut-Unuk River Cones       :Canada              :56.580000:N:130.550000:W:  1880
+1200-10-: Tseax River Cone             :Canada              :55.120000:N:128.900000:W:   609
+1200-11-: Crow Lagoon                  :Canada              :54.700000:N:130.230000:W:   335
+1200-12-: Milbanke Sound Group         :Canada              :52.500000:N:128.730000:W:   335
+1200-13-: Satah Mountain               :Canada              :52.470000:N:124.700000:W:  1921
+1200-14-: Nazko                        :Canada              :52.900000:N:123.730000:W:  1230
+1200-15-: Wells Gray-Clearwater        :Canada              :52.330000:N:120.570000:W:  2015
+1200-16-: Silverthrone                 :Canada              :51.430000:N:126.300000:W:  3160
+1200-17-: Bridge River Cones           :Canada              :50.800000:N:123.400000:W:  2500
+1200-18-: Meager                       :Canada              :50.630000:N:123.500000:W:  2680
+1200-19-: Garibaldi Lake               :Canada              :49.920000:N:123.030000:W:  2316
+1200-20-: Garibaldi, Mt.               :Canada              :49.850000:N:123.000000:W:  2678
+1201-01=: Baker                        :US-Washington       :48.786000:N:121.820000:W:  3285
+1201-02-: Glacier Peak                 :US-Washington       :48.112000:N:121.113000:W:  3213
+1201-03-: Rainier                      :US-Washington       :46.870000:N:121.758000:W:  4392
+1201-04-: Adams                        :US-Washington       :46.206000:N:121.490000:W:  3742
+1201-05-: St. Helens                   :US-Washington       :46.200000:N:122.180000:W:  2549
+1201-06-: West Crater                  :US-Washington       :45.880000:N:122.080000:W:   914
+1201-07-: Indian Heaven                :US-Washington       :45.930000:N:121.820000:W:  1513
+1202-01-: Hood                         :US-Oregon           :45.374000:N:121.694000:W:  3426
+1202-02-: Jefferson                    :US-Oregon           :44.692000:N:121.800000:W:  3199
+1202-03-: Blue Lake Crater             :US-Oregon           :44.420000:N:121.770000:W:  1230
+1202-04-: Sand Mountain Field          :US-Oregon           :44.380000:N:121.930000:W:  1664
+1202-05-: Washington                   :US-Oregon           :44.332000:N:121.837000:W:  2376
+1202-06-: Belknap                      :US-Oregon           :44.285000:N:121.841000:W:  2095
+1202-07-: North Sister Field           :US-Oregon           :44.170000:N:121.770000:W:  3074
+1202-08-: South Sister                 :US-Oregon           :44.100000:N:121.770000:W:  3157
+1202-09-: Bachelor                     :US-Oregon           :43.979000:N:121.688000:W:  2763
+1202-10-: Davis Lake                   :US-Oregon           :43.570000:N:121.820000:W:  2163
+1202-11-: Newberry Volcano             :US-Oregon           :43.722000:N:121.229000:W:  2434
+1202-12-: Devils Garden                :US-Oregon           :43.512000:N:120.861000:W:  1698
+1202-13-: Squaw Ridge Field            :US-Oregon           :43.472000:N:120.754000:W:  1711
+1202-14-: Four Craters Lava Field      :US-Oregon           :43.361000:N:120.669000:W:  1501
+1202-15-: Cinnamon Butte               :US-Oregon           :43.241000:N:122.108000:W:  1956
+1202-16-: Crater Lake                  :US-Oregon           :42.930000:N:122.120000:W:  2487
+1202-161: Imagination Peak             :US-Oregon           :42.552000:N:122.201000:W:  1986
+1202-17-: Diamond Craters              :US-Oregon           :43.100000:N:118.750000:W:  1435
+1202-18-: Saddle Butte                 :US-Oregon           :43.000000:N:117.800000:W:  1700
+1202-19-: Jordan Craters               :US-Oregon           :43.030000:N:117.420000:W:  1473
+1202-20-: Jackies Butte                :US-Oregon           :43.606000:N:117.589000:W:  1420
+1203-01-: Shasta                       :US-California       :41.420000:N:122.200000:W:  4317
+1203-02-: Medicine Lake                :US-California       :41.580000:N:121.570000:W:  2412
+1203-03-: Brushy Butte                 :US-California       :41.178000:N:121.443000:W:  1174
+1203-04-: Big Cave                     :US-California       :40.955000:N:121.365000:W:  1259
+1203-05-: Twin Buttes                  :US-California       :40.780000:N:121.600000:W:  1631
+1203-06-: Tumble Buttes                :US-California       :40.680000:N:121.550000:W:  2191
+1203-07-: Potato Butte                 :US-California       :40.630000:N:121.430000:W:  1532
+1203-08-: Lassen Volc Center           :US-California       :40.492000:N:121.508000:W:  3187
+1203-09-: Eagle Lake Field             :US-California       :40.630000:N:120.830000:W:  1652
+1203-10-: Clear Lake                   :US-California       :38.970000:N:122.770000:W:  1439
+1203-11-: Mono Lake Volc Field         :US-California       :38.000000:N:119.030000:W:  2121
+1203-12-: Mono Craters                 :US-California       :37.880000:N:119.000000:W:  2796
+1203-13-: Inyo Craters                 :US-California       :37.692000:N:119.020000:W:  2629
+1203-15-: Red Cones                    :US-California       :37.580000:N:119.050000:W:  2748
+1203-16-: Ubehebe Craters              :US-California       :37.020000:N:117.450000:W:   752
+1203-17-: Golden Trout Creek           :US-California       :36.358000:N:118.320000:W:  2886
+1203-19-: Lavic Lake                   :US-California       :34.750000:N:116.625000:W:  1495
+1203-20-: Amboy                        :US-California       :34.550000:N:115.780000:W:   288
+1204-01-: Shoshone Lava Field          :US-Idaho            :43.070000:N:114.430000:W:  1525
+1204-02-: Craters Of The Moon          :US-Idaho            :43.420000:N:113.500000:W:  2005
+1204-03-: Wapi Lava Field              :US-Idaho            :42.880000:N:113.220000:W:  1604
+1204-04-: Hell'S Half Acre             :US-Idaho            :43.500000:N:112.450000:W:  1631
+1205-01-: Yellowstone                  :US-Wyoming          :44.430000:N:110.670000:W:  2805
+1206-02-: Lunar Crater Field           :US-Nevada           :38.480000:N:115.970000:W:  2255
+1206-03-: Crater Flat                  :US-Nevada           :36.770000:N:116.550000:W:  1128
+1207-01-: Santa Clara                  :US-Utah             :37.257000:N:113.625000:W:  1465
+1207-02-: Kolob                        :US-Utah             :37.330000:N:113.120000:W:  2727
+1207-03-: Bald Knoll                   :US-Utah             :37.328000:N:112.408000:W:  2135
+1207-04-: Markagunt Plateau            :US-Utah             :37.580000:N:112.670000:W:  2840
+1207-05-: Black Rock Desert            :US-Utah             :38.970000:N:112.500000:W:  1800
+1208-01-: Dotsero                      :US-Colorado         :39.650000:N:107.030000:W:  2250
+1209-01-: Uinkaret Field               :US-Arizona          :36.380000:N:113.130000:W:  1555
+1209-02-: Sunset Crater                :US-Arizona          :35.370000:N:111.500000:W:  2447
+1210-01-: Carrizozo                    :US-New Mexico       :33.780000:N:105.930000:W:  1731
+1210-02-: Zuni-Bandera                 :US-New Mexico       :34.800000:N:108.000000:W:  2550
+1210-04-: Raton-Clayton                :US-New Mexico       :36.420000:N:104.080000:W:  3350
+1301-01-: Unnamed                      :Pacific-NE          :46.520000:N:129.580000:W: -2400
+1301-02-: Unnamed                      :Pacific-NE          :45.030000:N:130.200000:W: -2300
+1301-03-: Unnamed                      :Pacific-NE          :31.750000:N:124.250000:W: -2533
+1302-00-: Loihi Seamount               :Hawaiian Is         :18.920000:N:155.270000:W:  -980
+1302-01-: Kilauea                      :Hawaiian Is         :19.425000:N:155.292000:W:  1222
+1302-02=: Mauna Loa                    :Hawaiian Is         :19.475000:N:155.608000:W:  4170
+1302-03-: Mauna Kea                    :Hawaiian Is         :19.820000:N:155.470000:W:  4206
+1302-04-: Hualalai                     :Hawaiian Is         :19.692000:N:155.870000:W:  2523
+1302-05-: Kahoolawe                    :Hawaiian Is         :20.570000:N:156.570000:W:   450
+1302-06-: Haleakala                    :Hawaiian Is         :20.708000:N:156.250000:W:  3055
+1302-07-: Koolau                       :Hawaiian Is         :21.370000:N:157.800000:W:   941
+1302-08-: Unnamed                      :Hawaiian Is         :21.750000:N:158.750000:W: -3000
+1302-09-: Unnamed                      :Hawaiian Is         :23.580000:N:163.830000:W: -4000
+1303-01-: Unnamed                      :Pacific-E           : 9.820000:N:104.300000:W: -2500
+1303-02-: Galapagos Rift               :Pacific-E           : 0.792000:N: 86.150000:W: -2500
+1303-03-: Teahitia                     :Society Is-C Pac    :17.570000:S:148.850000:W: -1600
+1303-04-: Rocard                       :Society Is-C Pac    :17.642000:S:148.600000:W: -2100
+1303-05-: Moua Pihaa                   :Society Is-C Pac    :18.320000:S:148.670000:W:  -180
+1303-06-: Mehetia                      :Society Is-C Pac    :17.870000:S:148.070000:W:   435
+1303-07-: Macdonald                    :Austral Is-C Pac    :28.980000:S:140.250000:W:   -50
+1303-08-: Easter Island                :Pacific-C           :27.120000:S:109.450000:W:   530
+1304-01-: Antipodes Island             :Pacific-S           :49.680000:S:178.770000:E:   402
+1304-02-: Unnamed                      :Pacific-S           :53.900000:S:140.300000:W: -1000
+1304-03-: Unnamed                      :Pacific-S           :55.970000:S:143.170000:W:     0
+1401-00-: Prieto, Cerro                :Mexico              :32.418000:N:115.305000:W:   410
+1401-001: Pinacate Peaks               :Mexico              :31.773000:N:113.498000:W:  1200
+1401-002: San Quintin Volc Field       :Mexico              :30.468000:N:115.996000:W:   267
+1401-003: San Luis Gonzaga, Isla       :Mexico              :29.814000:N:114.384000:W:   160
+1401-004: Jaraquay Volc Field          :Mexico              :29.330000:N:114.500000:W:   960
+1401-005: Coronado                     :Mexico              :29.080000:N:113.513000:W:   460
+1401-006: Guadelupe                    :Mexico              :29.070000:N:118.280000:W:  1100
+1401-007: San Borja Volc Field         :Mexico              :28.500000:N:113.750000:W:     0
+1401-008: Unnamed                      :Mexico              :28.000000:N:115.000000:W:     0
+1401-01=: Tres Virgenes                :Mexico              :27.470000:N:112.591000:W:  1940
+1401-011: Tortuga, Isla                :Mexico              :27.392000:N:111.858000:W:   310
+1401-02=: Barcena                      :Mexico-Is           :19.300000:N:110.820000:W:   332
+1401-021: Socorro                      :Mexico-Is           :18.780000:N:110.950000:W:  1050
+1401-022: Durango Volc Field           :Mexico              :24.150000:N:104.450000:W:  2075
+1401-023: Sanganguey                   :Mexico              :21.450000:N:104.730000:W:  2353
+1401-024: Tepetiltic, Volcan           :Mexico              :21.270000:N:104.700000:W:  2020
+1401-03=: Ceboruco, Volcan             :Mexico              :21.125000:N:104.500000:W:  2164
+1401-031: Mascota Volc Field           :Mexico              :20.620000:N:104.830000:W:  2540
+1401-04=: Colima Volc Complex          :Mexico              :19.514000:N:103.620000:W:  4100
+1401-06=: Michoacan-Guanajuato         :Mexico              :19.480000:N:102.250000:W:  3170
+1401-061: Jocotitlan                   :Mexico              :19.724000:N: 99.757000:W:  3950
+1401-07-: Holotepec                    :Mexico              :19.080000:N: 99.480000:W:  3000
+1401-08=: Chichinautzin                :Mexico              :19.080000:N: 99.130000:W:  3930
+1401-081: Tenayo Group                 :Mexico              :19.170000:N: 98.820000:W:  3080
+1401-082: Santa Catarina Range         :Mexico              :19.320000:N: 99.000000:W:  2734
+1401-083: Gordo, Cerro                 :Mexico              :19.750000:N: 98.808000:W:  3046
+1401-084: Pitos, Sierra De Las         :Mexico              :19.923000:N: 98.747000:W:  3000
+1401-085: Papayo                       :Mexico              :19.308000:N: 98.700000:W:  3600
+1401-086: Iztaccihuatl                 :Mexico              :19.179000:N: 98.642000:W:  5230
+1401-09=: Popocatepetl                 :Mexico              :19.023000:N: 98.622000:W:  5465
+1401-091: Malinche, La                 :Mexico              :19.230000:N: 98.030000:W:  4420
+1401-10=: Orizaba, Pico De             :Mexico              :19.030000:N: 97.268000:W:  5610
+1401-11=: San Martin, Volcan De        :Mexico              :18.572000:N: 95.169000:W:  1650
+1401-12=: Chichon, El                  :Mexico              :17.360000:N: 93.228000:W:  1060
+1401-13=: Tacana                       :Mexico              :15.130000:N: 92.113000:W:  4110
+1402-02=: Tajumulco                    :Guatemala           :15.034000:N: 91.903000:W:  4220
+1402-03=: Santa Maria                  :Guatemala           :14.756000:N: 91.552000:W:  3772
+1402-04=: Almolonga                    :Guatemala           :14.820000:N: 91.480000:W:  3197
+1402-06=: Atitlan                      :Guatemala           :14.583000:N: 91.186000:W:  3535
+1402-07=: Toliman                      :Guatemala           :14.613000:N: 91.189000:W:  3158
+1402-08=: Acatenango                   :Guatemala           :14.501000:N: 90.876000:W:  3976
+1402-09=: Fuego                        :Guatemala           :14.473000:N: 90.880000:W:  3763
+1402-10=: Agua                         :Guatemala           :14.465000:N: 90.743000:W:  3760
+1402-11=: Pacaya                       :Guatemala           :14.381000:N: 90.601000:W:  2552
+1402-111: Cuilapa-Barbarena            :Guatemala           :14.330000:N: 90.400000:W:  1454
+1402-12=: Tecuamburro                  :Guatemala           :14.156000:N: 90.407000:W:  1845
+1402-13-: Moyuta                       :Guatemala           :14.030000:N: 90.100000:W:  1662
+1402-14-: Flores, Volcan De            :Guatemala           :14.300000:N: 90.000000:W:  1600
+1402-15-: Chingo Volc Field            :Guatemala           :14.120000:N: 89.730000:W:  1775
+1402-16-: Santiago, Cerro              :Guatemala           :14.330000:N: 89.870000:W:  1192
+1402-17-: Suchitan Volc Field          :Guatemala           :14.400000:N: 89.780000:W:  2042
+1402-18-: Ixtepeque, Volcan            :Guatemala           :14.420000:N: 89.680000:W:  1292
+1402-19-: Ipala Volc Field             :Guatemala           :14.550000:N: 89.630000:W:  1650
+1402-20-: Chiquimula Field             :Guatemala           :14.830000:N: 89.550000:W:  1192
+1402-21-: Quezaltepeque                :Guatemala           :14.650000:N: 89.350000:W:  1200
+1403-01=: Verde, Laguna                :El Salvador         :13.891000:N: 89.786000:W:  1829
+1403-011: Singuil, Cerro               :El Salvador         :14.050000:N: 89.630000:W:   958
+1403-012: San Diego                    :El Salvador         :14.270000:N: 89.470000:W:   860
+1403-02=: Santa Ana                    :El Salvador         :13.853000:N: 89.630000:W:  2365
+1403-03=: Izalco                       :El Salvador         :13.813000:N: 89.633000:W:  1950
+1403-041: Coatepeque Caldera           :El Salvador         :13.870000:N: 89.550000:W:   746
+1403-05=: San Salvador                 :El Salvador         :13.736000:N: 89.286000:W:  1893
+1403-051: Guazapa                      :El Salvador         :13.900000:N: 89.120000:W:  1438
+1403-06=: Ilopango                     :El Salvador         :13.672000:N: 89.053000:W:   450
+1403-07=: San Vicente                  :El Salvador         :13.623000:N: 88.852000:W:  2000
+1403-071: Apastepeque Field            :El Salvador         :13.720000:N: 88.770000:W:   700
+1403-072: Taburete                     :El Salvador         :13.450000:N: 88.530000:W:  1172
+1403-08=: Tecapa                       :El Salvador         :13.497000:N: 88.503000:W:  1592
+1403-081: Usulutan                     :El Salvador         :13.420000:N: 88.470000:W:  1450
+1403-09=: Chinameca                    :El Salvador         :13.480000:N: 88.320000:W:  1228
+1403-10=: San Miguel                   :El Salvador         :13.431000:N: 88.272000:W:  2130
+1403-11=: Conchagua                    :El Salvador         :13.277000:N: 87.853000:W:  1250
+1403-12=: Conchaguita                  :El Salvador         :13.220000:N: 87.765000:W:   550
+1403-13-: Tigre, Isla El               :Honduras            :13.270000:N: 87.630000:W:   760
+1403-14-: Zacate Grande, Isla          :Honduras            :13.330000:N: 87.630000:W:   600
+1403-15-: Yojoa, Lake                  :Honduras            :14.980000:N: 87.980000:W:  1090
+1403-16-: Utila Island                 :Honduras            :16.100000:N: 86.900000:W:    90
+1404-01=: Cosiguina                    :Nicaragua           :12.980000:N: 87.570000:W:   859
+1404-02=: San Cristobal                :Nicaragua           :12.702000:N: 87.004000:W:  1745
+1404-04=: Telica                       :Nicaragua           :12.603000:N: 86.845000:W:  1010
+1404-06-: Rota                         :Nicaragua           :12.550000:N: 86.750000:W:   836
+1404-07=: Negro, Cerro                 :Nicaragua           :12.506000:N: 86.702000:W:   675
+1404-08=: Pilas, Las                   :Nicaragua           :12.495000:N: 86.688000:W:  1050
+1404-09=: Momotombo                    :Nicaragua           :12.423000:N: 86.540000:W:  1258
+1404-091: Apoyeque                     :Nicaragua           :12.242000:N: 86.342000:W:   420
+1404-092: Nejapa-Ticomo                :Nicaragua           :12.120000:N: 86.320000:W:   220
+1404-10=: Masaya                       :Nicaragua           :11.984000:N: 86.161000:W:   635
+1404-101: Apoyo                        :Nicaragua           :11.920000:N: 86.030000:W:   468
+1404-11=: Mombacho                     :Nicaragua           :11.826000:N: 85.968000:W:  1345
+1404-111: Zapatera Island              :Nicaragua           :11.730000:N: 85.820000:W:   625
+1404-12=: Concepcion                   :Nicaragua           :11.538000:N: 85.623000:W:  1610
+1404-13-: Madera, La                   :Nicaragua           :11.446000:N: 85.515000:W:  1394
+1404-14-: Blue, Volcan                 :Nicaragua           :12.680000:N: 83.920000:W:   150
+1405-01=: Orosi                        :Costa Rica          :10.980000:N: 85.473000:W:  1659
+1405-02=: Rincon De La Vieja           :Costa Rica          :10.830000:N: 85.324000:W:  1916
+1405-03=: Miravalles                   :Costa Rica          :10.748000:N: 85.153000:W:  2028
+1405-031: Tenorio Group                :Costa Rica          :10.673000:N: 85.015000:W:  1916
+1405-032: Anunciacion, Cerro           :Costa Rica          :10.472000:N: 85.070000:W:   402
+1405-033: Arenal                       :Costa Rica          :10.463000:N: 84.703000:W:  1657
+1405-034: Poco Sol, Laguna             :Costa Rica          :10.320000:N: 84.660000:W:   789
+1405-035: Aguas Zarcas Group           :Costa Rica          :10.420000:N: 84.310000:W:   621
+1405-036: Platanar, Cerro              :Costa Rica          :10.300000:N: 84.366000:W:  2183
+1405-04=: Poas                         :Costa Rica          :10.200000:N: 84.233000:W:  2708
+1405-05=: Barva                        :Costa Rica          :10.135000:N: 84.100000:W:  2906
+1405-06=: Irazu                        :Costa Rica          : 9.979000:N: 83.853000:W:  3432
+1405-07=: Turrialba                    :Costa Rica          :10.030000:N: 83.770000:W:  3340
+1406-01-: Baru                         :Panama              : 8.800000:N: 82.558000:W:  3477
+1406-02-: Yeguada, La                  :Panama              : 8.523000:N: 80.910000:W:  1297
+1501-011: Bravo, Cerro                 :Colombia            : 5.092000:N: 75.300000:W:  4000
+1501-02=: Ruiz                         :Colombia            : 4.895000:N: 75.323000:W:  5321
+1501-021: Santa Isabel                 :Colombia            : 4.820000:N: 75.370000:W:  4950
+1501-03=: Tolima                       :Colombia            : 4.670000:N: 75.330000:W:  5200
+1501-04=: Machin, Cerro                :Colombia            : 4.480000:N: 75.400000:W:  2650
+1501-05=: Huila                        :Colombia            : 2.920000:N: 76.050000:W:  5365
+1501-06=: Purace                       :Colombia            : 2.320000:N: 76.400000:W:  4650
+1501-061: Sotara                       :Colombia            : 2.120000:N: 76.580000:W:  4400
+1501-062: Petacas                      :Colombia            : 1.570000:N: 76.780000:W:  4054
+1501-07=: Dona Juana                   :Colombia            : 1.470000:N: 76.920000:W:  4150
+1501-08=: Galeras                      :Colombia            : 1.220000:N: 77.370000:W:  4276
+1501-09=: Azufral, Volcan              :Colombia            : 1.080000:N: 77.680000:W:  4070
+1501-10=: Cumbal                       :Colombia            : 0.980000:N: 77.880000:W:  4764
+1501-11=: Negro De Mayasquer, Cerro    :Colombia            : 0.828000:N: 77.964000:W:  4445
+1502-001: Soche                        :Ecuador             : 0.552000:N: 77.580000:W:  3955
+1502-002: Cuicocha                     :Ecuador             : 0.308000:N: 78.364000:W:  3246
+1502-003: Mojanda                      :Ecuador             : 0.130000:N: 78.270000:W:  4294
+1502-004: Cayambe                      :Ecuador             : 0.029000:N: 77.986000:W:  5790
+1502-01=: Reventador                   :Ecuador             : 0.078000:S: 77.656000:W:  3562
+1502-011: Pululagua                    :Ecuador             : 0.038000:N: 78.463000:W:  3356
+1502-02=: Guagua Pichincha             :Ecuador             : 0.171000:S: 78.598000:W:  4784
+1502-021: Atacazo                      :Ecuador             : 0.353000:S: 78.617000:W:  4463
+1502-022: Chacana                      :Ecuador             : 0.375000:S: 78.250000:W:  4643
+1502-03=: Antisana                     :Ecuador             : 0.481000:S: 78.141000:W:  5753
+1502-031: Pan De Azucar                :Ecuador             : 0.430000:S: 77.720000:W:  3482
+1502-04=: Sumaco                       :Ecuador             : 0.538000:S: 77.626000:W:  3990
+1502-041: Iliniza                      :Ecuador             : 0.659000:S: 78.714000:W:  5248
+1502-05=: Cotopaxi                     :Ecuador             : 0.677000:S: 78.436000:W:  5911
+1502-06=: Quilotoa                     :Ecuador             : 0.850000:S: 78.900000:W:  3914
+1502-08=: Tungurahua                   :Ecuador             : 1.467000:S: 78.442000:W:  5023
+1502-081: Tulabug                      :Ecuador             : 1.780000:S: 78.613000:W:  3336
+1502-09=: Sangay                       :Ecuador             : 2.030000:S: 78.330000:W:  5230
+1503-01=: Fernandina                   :Galapagos           : 0.370000:S: 91.550000:W:  1495
+1503-011: Ecuador, Volcan              :Galapagos           : 0.020000:S: 91.546000:W:   790
+1503-02=: Wolf, Volcan                 :Galapagos           : 0.020000:N: 91.350000:W:  1710
+1503-03=: Darwin, Volcan               :Galapagos           : 0.180000:S: 91.280000:W:  1330
+1503-04=: Alcedo, Volcan               :Galapagos           : 0.430000:S: 91.120000:W:  1130
+1503-05=: Negra, Sierra                :Galapagos           : 0.830000:S: 91.170000:W:  1490
+1503-06=: Azul, Cerro                  :Galapagos           : 0.900000:S: 91.420000:W:  1690
+1503-07=: Pinta                        :Galapagos           : 0.580000:N: 90.750000:W:   780
+1503-08=: Marchena                     :Galapagos           : 0.330000:N: 90.470000:W:   343
+1503-081: Genovesa                     :Galapagos           : 0.320000:N: 89.958000:W:    64
+1503-09=: Santiago                     :Galapagos           : 0.220000:S: 90.770000:W:   920
+1503-091: Santa Cruz                   :Galapagos           : 0.620000:S: 90.330000:W:   864
+1503-10=: Floreana                     :Galapagos           : 1.300000:S: 90.450000:W:   640
+1503-12-: San Cristobal                :Galapagos           : 0.880000:S: 89.500000:W:   759
+1504-00-: Firura, Nevados              :Peru                :15.230000:S: 72.630000:W:  5498
+1504-001: Coropuna                     :Peru                :15.520000:S: 72.650000:W:  6377
+1504-002: Andahua Valley               :Peru                :15.420000:S: 72.330000:W:  4713
+1504-003: Sabancaya                    :Peru                :15.780000:S: 71.850000:W:  5967
+1504-004: Quimsachata                  :Peru                :14.370000:S: 71.170000:W:  3923
+1504-005: Chachani, Nevado             :Peru                :16.191000:S: 71.530000:W:  6057
+1504-01=: Misti, El                    :Peru                :16.294000:S: 71.409000:W:  5822
+1504-02=: Ubinas                       :Peru                :16.355000:S: 70.903000:W:  5672
+1504-03=: Huaynaputina                 :Peru                :16.608000:S: 70.850000:W:  4850
+1504-031: Ticsani                      :Peru                :16.755000:S: 70.595000:W:  5408
+1504-04=: Tutupaca                     :Peru                :17.025000:S: 70.358000:W:  5815
+1504-05-: Yucamane                     :Peru                :17.180000:S: 70.200000:W:  5550
+1504-06-: Casiri, Nevados              :Peru                :17.470000:S: 69.820000:W:  5650
+1505-01=: Tacora                       :Chile-N             :17.720000:S: 69.770000:W:  5980
+1505-011: Lexone                       :Chile-N             :17.870000:S: 69.480000:W:  5340
+1505-012: Patilla Pata                 :Bolivia             :18.050000:S: 69.030000:W:  5300
+1505-013: Anallajsi, Nevado            :Bolivia             :17.920000:S: 68.920000:W:  5750
+1505-014: Macizo De Larancagua         :Bolivia             :18.250000:S: 68.530000:W:  5520
+1505-015: Macizo De Pacuni             :Bolivia             :18.320000:S: 68.800000:W:  5400
+1505-016: Parinacota                   :Chile-N             :18.170000:S: 69.150000:W:  6348
+1505-017: Acotango                     :Chile-N             :18.370000:S: 69.050000:W:  6052
+1505-02=: Guallatiri                   :Chile-N             :18.420000:S: 69.170000:W:  6071
+1505-021: Colluma, Cerro               :Bolivia             :18.500000:S: 68.070000:W:  3876
+1505-022: Sacabaya, Volcan De          :Bolivia             :18.620000:S: 68.750000:W:  4215
+1505-023: Arintica, Volcan             :Chile-N             :18.730000:S: 69.050000:W:  5597
+1505-024: Tata Sabaya                  :Bolivia             :19.130000:S: 68.530000:W:  5430
+1505-03=: Isluga                       :Chile-N             :19.150000:S: 68.830000:W:  5050
+1505-032: Pina, Cerro                  :Chile-N             :19.492000:S: 68.650000:W:  4037
+1505-033: Nuevo Mundo                  :Bolivia             :19.780000:S: 66.480000:W:  5438
+1505-04=: Irruputuncu                  :Chile-N             :20.730000:S: 68.550000:W:  5163
+1505-041: Unnamed                      :Chile-N             :20.830000:S: 68.630000:W:  4200
+1505-042: Pampa Luxsar                 :Bolivia             :20.850000:S: 68.200000:W:  5543
+1505-05=: Olca-Paruma                  :Chile-N             :20.930000:S: 68.480000:W:  5407
+1505-051: Aucanquilcha, Cerro          :Chile-N             :21.220000:S: 68.470000:W:  6176
+1505-052: San Agustin, Cerro           :Bolivia             :21.250000:S: 67.750000:W:  4980
+1505-06=: Ollague                      :Chile-N             :21.300000:S: 68.180000:W:  5868
+1505-061: Yumia, Cerro                 :Bolivia             :21.500000:S: 67.500000:W:  4050
+1505-062: Escala                       :Bolivia             :21.600000:S: 66.880000:W:  4000
+1505-063: Santa Isabel, Cerro          :Bolivia             :21.670000:S: 66.500000:W:  5100
+1505-064: Moiro, Cerro                 :Bolivia             :21.680000:S: 67.470000:W:  4250
+1505-065: Azufre, Cerro Del            :Chile-N             :21.780000:S: 68.230000:W:  5486
+1505-07=: San Pedro                    :Chile-N             :21.880000:S: 68.400000:W:  6145
+1505-071: Chascon, Cerro               :Bolivia             :21.880000:S: 67.900000:W:  5125
+1505-072: Chao                         :Chile-N             :22.120000:S: 68.150000:W:  5100
+1505-073: Toconce, Cerro               :Chile-N             :22.200000:S: 68.100000:W:  5435
+1505-074: Quetena                      :Bolivia             :22.250000:S: 67.420000:W:  5730
+1505-075: Uturuncu                     :Bolivia             :22.270000:S: 67.220000:W:  6008
+1505-081: Tocorpuri, Cerros De         :Chile-N             :22.430000:S: 67.900000:W:  5808
+1505-09=: Putana                       :Chile-N             :22.570000:S: 67.870000:W:  5890
+1505-091: Sairecabur                   :Chile-N             :22.730000:S: 67.880000:W:  5971
+1505-092: Licancabur                   :Chile-N             :22.830000:S: 67.880000:W:  5916
+1505-093: Guayaques                    :Chile-N             :22.880000:S: 67.580000:W:  5598
+1505-094: Purico Complex               :Chile-N             :23.000000:S: 67.750000:W:  5703
+1505-095: Colachi                      :Chile-N             :23.230000:S: 67.650000:W:  5631
+1505-096: Acamarchi                    :Chile-N             :23.300000:S: 67.620000:W:  6046
+1505-097: Overo, Cerro                 :Chile-N             :23.350000:S: 67.670000:W:  4555
+1505-10=: Lascar                       :Chile-N             :23.370000:S: 67.730000:W:  5592
+1505-101: Chiliques                    :Chile-N             :23.580000:S: 67.700000:W:  5778
+1505-102: Cordon De Puntas Negras      :Chile-N             :23.750000:S: 67.530000:W:  5852
+1505-103: Cordon Chalviri              :Chile-N             :23.850000:S: 67.620000:W:  5623
+1505-104: Tujle, Cerro                 :Chile-N             :23.830000:S: 67.950000:W:  3550
+1505-105: Pular                        :Chile-N             :24.180000:S: 68.050000:W:  6233
+1505-106: Negrillar, El                :Chile-N             :24.180000:S: 68.250000:W:  3500
+1505-107: Aracar                       :Argentina           :24.270000:S: 67.770000:W:  6082
+1505-108: Socompa                      :Chile-N             :24.400000:S: 68.250000:W:  6051
+1505-109: Negrillar, La                :Chile-N             :24.280000:S: 68.600000:W:  4109
+1505-11=: Llullaillaco                 :Chile-N             :24.720000:S: 68.530000:W:  6739
+1505-111: Tuzgle, Cerro                :Argentina           :24.050000:S: 66.480000:W:  5550
+1505-112: Escorial, Cerro              :Chile-N             :25.080000:S: 68.370000:W:  5447
+1505-12=: Lastarria                    :Chile-N             :25.170000:S: 68.500000:W:  5697
+1505-121: Cordon Del Azufre            :Chile-N             :25.330000:S: 68.520000:W:  5463
+1505-122: Bayo, Cerro                  :Chile-N             :25.420000:S: 68.580000:W:  5401
+1505-123: Antofalla, Volcan            :Argentina           :25.530000:S: 68.000000:W:  6100
+1505-124: Antofagasta De La Sierra     :Argentina           :26.080000:S: 67.500000:W:  4000
+1505-125: Nevada, Sierra               :Chile               :26.480000:S: 68.580000:W:  6127
+1505-126: Condor, Cerro El             :Argentina           :26.620000:S: 68.350000:W:  6532
+1505-127: Peinado                      :Argentina           :26.620000:S: 68.150000:W:  5740
+1505-128: Robledo                      :Argentina           :26.770000:S: 67.720000:W:  4400
+1505-129: Falso Azufre                 :Chile-N             :26.800000:S: 68.370000:W:  5890
+1505-13=: Ojos Del Salado, Nevados     :Chile-N             :27.120000:S: 68.530000:W:  6887
+1505-131: Tipas                        :Argentina           :27.200000:S: 68.550000:W:  6660
+1505-14-: Copiapo                      :Chile-N             :27.300000:S: 69.130000:W:  6052
+1506-01=: San Felix                    :Chile-Is            :26.270000:S: 80.120000:W:   183
+1506-02=: Robinson Crusoe              :Chile-Is            :33.658000:S: 78.850000:W:   922
+1506-04=: Unnamed                      :Chile-Is            :33.620000:S: 76.830000:W:  -642
+1507-01=: Tupungatito                  :Chile-C             :33.400000:S: 69.800000:W:  6000
+1507-02=: San Jose                     :Chile-C             :33.782000:S: 69.897000:W:  5856
+1507-021: Maipo                        :Chile-C             :34.161000:S: 69.833000:W:  5264
+1507-022: Palomo                       :Chile-C             :34.608000:S: 70.295000:W:  4860
+1507-03=: Tinguiririca                 :Chile-C             :34.814000:S: 70.352000:W:  4280
+1507-04=: Planchon-Peteroa             :Chile-C             :35.240000:S: 70.570000:W:  4107
+1507-041: Mondaca                      :Chile-C             :35.464000:S: 70.800000:W:  2048
+1507-042: Calabozos                    :Chile-C             :35.558000:S: 70.496000:W:  3508
+1507-05=: Descabezado Grande           :Chile-C             :35.580000:S: 70.750000:W:  3953
+1507-06=: Azul, Cerro Quizapu          :Chile-C             :35.653000:S: 70.761000:W:  3788
+1507-061: Hornitos, Los                :Chile-C             :35.725000:S: 70.808000:W:  2000
+1507-062: Maule, Laguna Del            :Chile-C             :36.020000:S: 70.580000:W:  3092
+1507-063: San Pedro-Pellado            :Chile-C             :35.989000:S: 70.849000:W:  3621
+1507-064: Longavi, Nevado De           :Chile-C             :36.193000:S: 71.161000:W:  3242
+1507-065: Blanca, Loma                 :Chile-C             :36.286000:S: 71.009000:W:  2268
+1507-066: Resago, Volcan               :Chile-C             :36.450000:S: 70.920000:W:  1550
+1507-067: Payun Matru, Cerro           :Argentina           :36.420000:S: 69.200000:W:  3691
+1507-068: Domuyo, Volcan               :Argentina           :36.630000:S: 70.420000:W:  4709
+1507-07=: Chillan, Nevados De          :Chile-C             :36.863000:S: 71.377000:W:  3212
+1507-071: Tromen                       :Argentina           :37.142000:S: 70.030000:W:  3978
+1507-072: Puesto Cortaderas            :Argentina           :37.550000:S: 69.620000:W:   970
+1507-08=: Antuco                       :Chile-C             :37.406000:S: 71.349000:W:  2979
+1507-09=: Copahue                      :Chile-C             :37.850000:S: 71.170000:W:  2965
+1507-091: Callaqui                     :Chile-C             :37.920000:S: 71.450000:W:  3164
+1507-092: Tolguaca                     :Chile-C             :38.310000:S: 71.645000:W:  2806
+1507-10=: Lonquimay                    :Chile-C             :38.377000:S: 71.580000:W:  2865
+1507-101: Chapulul, Cerro              :Chile-C             :38.370000:S: 71.080000:W:  2143
+1507-11=: Llaima                       :Chile-C             :38.692000:S: 71.729000:W:  3125
+1507-111: Sollipulli                   :Chile-C             :38.970000:S: 71.520000:W:  2282
+1507-112: Caburgua                     :Chile-C             :39.200000:S: 71.830000:W:   995
+1507-113: Redondo, Cerro               :Chile-C             :39.270000:S: 71.700000:W:  1496
+1507-114: Huelemolle                   :Chile-C             :39.300000:S: 71.820000:W:   810
+1507-12=: Villarrica                   :Chile-C             :39.420000:S: 71.930000:W:  2847
+1507-121: Quetrupillan                 :Chile-C             :39.500000:S: 71.700000:W:  2360
+1507-122: Lanin                        :Chile-C             :39.633000:S: 71.500000:W:  3747
+1507-123: Huanquihue Group             :Argentina           :39.870000:S: 71.550000:W:  1300
+1507-13=: Mocho-Choshuenco             :Chile-C             :39.928000:S: 72.027000:W:  2422
+1507-14=: Carran-Los Venados           :Chile-C             :40.350000:S: 72.070000:W:  1114
+1507-141: Cordon Caulle                :Chile-C             :40.520000:S: 72.200000:W:  1798
+1507-15=: Puyehue                      :Chile-C             :40.590000:S: 72.117000:W:  2236
+1507-151: Mencheca                     :Chile-C             :40.534000:S: 72.038000:W:  1840
+1507-152: Pantoja, Cerro               :Chile-C             :40.770000:S: 71.950000:W:  2112
+1507-153: Antillanca Group             :Chile-C             :40.771000:S: 72.153000:W:  1990
+1507-16-: Puntiguido-Cordon Cenizos    :Chile-C             :40.969000:S: 72.264000:W:  2493
+1508-01=: Osorno                       :Chile-S             :41.100000:S: 72.493000:W:  2652
+1508-02=: Calbuco                      :Chile-S             :41.326000:S: 72.614000:W:  2003
+1508-021: Cayute-La Vigueria           :Chile-S             :41.250000:S: 72.270000:W:   506
+1508-022: Yate, Mt.                    :Chile-S             :41.755000:S: 72.396000:W:  2187
+1508-023: Hornopiren, Volcan           :Chile-S             :41.874000:S: 72.431000:W:  1572
+1508-024: Volcanico, Cerro             :Argentina           :42.070000:S: 71.650000:W:     0
+1508-03=: Huequi                       :Chile-S             :42.377000:S: 72.578000:W:  1318
+1508-04=: Minchinmavida                :Chile-S             :42.780000:S: 72.430000:W:  2404
+1508-041: Chaiten                      :Chile-S             :42.833000:S: 72.646000:W:   962
+1508-05=: Corcovado                    :Chile-S             :43.180000:S: 72.800000:W:  2300
+1508-051: Yanteles, Cerro              :Chile-S             :43.420000:S: 72.830000:W:  2050
+1508-052: Palena Volc Group            :Chile-S             :43.680000:S: 72.500000:W:     0
+1508-053: Melimoyu                     :Chile-S             :44.080000:S: 72.880000:W:  2400
+1508-054: Puyuhuapi                    :Chile-S             :44.300000:S: 72.530000:W:   255
+1508-055: Mentolat                     :Chile-S             :44.670000:S: 73.080000:W:  1660
+1508-056: Maca                         :Chile-S             :45.100000:S: 73.200000:W:  3078
+1508-057: Hudson, Cerro                :Chile-S             :45.900000:S: 72.970000:W:  1905
+1508-06=: Lautaro                      :Chile-S             :49.020000:S: 73.550000:W:  3380
+1508-061: Viedma, Volcan               :Argentina           :49.358000:S: 73.280000:W:  1300
+1508-062: Aguilera                     :Chile-S             :50.170000:S: 73.830000:W:     0
+1508-063: Reclus                       :Chile-S             :50.980000:S: 73.700000:W:     0
+1508-07=: Burney, Monte                :Chile-S             :52.330000:S: 73.400000:W:  1758
+1508-08-: Palei-Aike Volc Field        :Chile-S             :52.000000:S: 70.000000:W:   250
+1508-09-: Cook, Isla                   :Chile-S             :54.950000:S: 70.270000:W:   150
+1600-01=: Saba                         :W Indies            :17.630000:N: 63.230000:W:   887
+1600-02=: Quill, The                   :W Indies            :17.480000:N: 62.950000:W:   601
+1600-03=: Liamuiga                     :W Indies            :17.370000:N: 62.800000:W:  1156
+1600-04=: Nevis Peak                   :W Indies            :17.150000:N: 62.580000:W:   985
+1600-05=: Soufriere Hills              :W Indies            :16.720000:N: 62.180000:W:   915
+1600-06=: Soufriere Guadeloupe         :W Indies            :16.050000:N: 61.670000:W:  1467
+1600-08=: Diable, Morne Au             :W Indies            :15.620000:N: 61.450000:W:   861
+1600-09=: Diablotins, Morne            :W Indies            :15.500000:N: 61.420000:W:  1430
+1600-10=: Micotrin                     :W Indies            :15.330000:N: 61.330000:W:  1387
+1600-11=: Patates, Morne               :W Indies            :15.220000:N: 61.370000:W:   960
+1600-12=: Pelee                        :W Indies            :14.820000:N: 61.170000:W:  1397
+1600-14=: Qualibou                     :W Indies            :13.830000:N: 61.050000:W:   777
+1600-15=: Soufriere St. Vincent        :W Indies            :13.330000:N: 61.180000:W:  1220
+1600-16=: Kick-'Em-Jenny               :W Indies            :12.300000:N: 61.630000:W:  -160
+1600-17=: St. Catherine                :W Indies            :12.150000:N: 61.670000:W:   840
+1700-01=: Snaefellsjokull              :Iceland-W           :64.800000:N: 23.780000:W:  1448
+1700-02=: Lysuholl                     :Iceland-W           :64.870000:N: 23.250000:W:   540
+1700-03=: Ljosufjoll                   :Iceland-W           :64.870000:N: 22.230000:W:   988
+1701-01=: Reykjaneshryggur             :Iceland-SW          :63.670000:N: 23.330000:W:    80
+1701-02=: Reykjanes                    :Iceland-SW          :63.880000:N: 22.500000:W:   230
+1701-03=: Krisuvik                     :Iceland-SW          :63.930000:N: 22.100000:W:   379
+1701-04=: Brennisteinsfjoll            :Iceland-SW          :63.920000:N: 21.830000:W:   626
+1701-05=: Hengill                      :Iceland-SW          :64.180000:N: 21.330000:W:   803
+1701-06=: Grimsnes                     :Iceland-SW          :64.030000:N: 20.870000:W:   214
+1701-07=: Prestahnukur                 :Iceland-SW          :64.600000:N: 20.580000:W:  1390
+1701-08=: Langjokull                   :Iceland-SW          :64.750000:N: 19.980000:W:  1360
+1701-09=: Hofsjokull                   :Iceland-SW          :64.780000:N: 18.920000:W:  1782
+1701-10=: Kerlingarfjoll               :Iceland-SW          :64.630000:N: 19.320000:W:  1488
+1702-01=: Vestmannaeyjar               :Iceland-S           :63.430000:N: 20.280000:W:   279
+1702-02=: Eyjafjoll                    :Iceland-S           :63.630000:N: 19.620000:W:  1666
+1702-03=: Katla                        :Iceland-S           :63.630000:N: 19.050000:W:  1512
+1702-04=: Tindfjallajokull             :Iceland-S           :63.780000:N: 19.570000:W:  1463
+1702-05=: Torfajokull                  :Iceland-S           :63.920000:N: 19.170000:W:  1259
+1702-06=: Vatnafjoll                   :Iceland-S           :63.920000:N: 19.670000:W:  1235
+1702-07=: Hekla                        :Iceland-S           :63.980000:N: 19.700000:W:  1491
+1703-01=: Grimsvotn                    :Iceland-NE          :64.420000:N: 17.330000:W:  1725
+1703-02=: Loki-Fogrufjoll              :Iceland-NE          :64.480000:N: 17.800000:W:  1570
+1703-03=: Bardarbunga                  :Iceland-NE          :64.630000:N: 17.530000:W:  2000
+1703-04=: Tungnafellsjokull            :Iceland-NE          :64.730000:N: 17.920000:W:  1535
+1703-05=: Kverkfjoll                   :Iceland-NE          :64.650000:N: 16.720000:W:  1920
+1703-06=: Askja                        :Iceland-NE          :65.030000:N: 16.750000:W:  1516
+1703-07=: Fremrinamur                  :Iceland-NE          :65.430000:N: 16.650000:W:   939
+1703-08=: Krafla                       :Iceland-NE          :65.730000:N: 16.780000:W:   650
+1703-09=: Theistareykjarbunga          :Iceland             :65.880000:N: 16.830000:W:   564
+1703-10=: Tjornes Fracture Zone        :Iceland-N Of        :66.300000:N: 17.100000:W:     0
+1704-01=: Oraefajokull                 :Iceland-SE          :64.000000:N: 16.650000:W:  2119
+1704-02=: Esjufjoll                    :Iceland-SE          :64.270000:N: 16.650000:W:  1760
+1705-01=: Kolbeinsey Ridge             :Iceland-N Of        :66.670000:N: 18.500000:W:     0
+1706-01=: Jan Mayen                    :Atl-N-Jan Mayen     :71.080000:N:  8.170000:W:  2277
+1707-01-: Unnamed                      :Arctic Ocean        :88.270000:N: 65.600000:W: -1500
+1801-02=: Unnamed                      :Atlantic-N          :49.000000:N: 34.500000:W: -1650
+1801-03=: Unnamed                      :Atlantic-N          :39.950000:N: 25.830000:W: -2835
+1801-04=: Unnamed                      :Atlantic-N          :38.750000:N: 38.080000:W: -4200
+1802-001: Flores                       :Azores              :39.400000:N: 31.170000:W:   915
+1802-01=: Fayal                        :Azores              :38.600000:N: 28.730000:W:  1043
+1802-02=: Pico                         :Azores              :38.470000:N: 28.400000:W:  2351
+1802-03=: San Jorge                    :Azores              :38.650000:N: 28.080000:W:  1053
+1802-04=: Graciosa                     :Azores              :39.020000:N: 27.970000:W:   402
+1802-05=: Terceira                     :Azores              :38.730000:N: 27.320000:W:  1023
+1802-07=: Don Joao De Castro Bank      :Azores              :38.230000:N: 26.630000:W:   -14
+1802-08=: Sete Cidades                 :Azores              :37.870000:N: 25.780000:W:   856
+1802-081: Unnamed                      :Azores              :37.780000:N: 25.670000:W:   350
+1802-09=: Agua De Pau                  :Azores              :37.770000:N: 25.470000:W:   947
+1802-10=: Furnas                       :Azores              :37.770000:N: 25.320000:W:   805
+1802-11=: Monaco Bank                  :Azores              :37.600000:N: 25.880000:W:  -197
+1803-01-: La Palma                     :Canary Is           :28.580000:N: 17.830000:W:  2426
+1803-02-: Hierro                       :Canary Is           :27.730000:N: 18.030000:W:  1500
+1803-03-: Tenerife                     :Canary Is           :28.271000:N: 16.641000:W:  3715
+1803-04-: Gran Canaria                 :Canary Is           :28.000000:N: 15.580000:W:  1950
+1803-05-: Fuerteventura                :Canary Is           :28.358000:N: 14.020000:W:   529
+1803-06-: Lanzarote                    :Canary Is           :29.030000:N: 13.630000:W:   670
+1804-01=: Fogo                         :Cape Verde Is       :14.950000:N: 24.350000:W:  2829
+1804-02-: Brava                        :Cape Verde Is       :14.850000:N: 24.720000:W:   900
+1804-03-: Santo Antao                  :Cape Verde Is       :17.070000:N: 25.170000:W:  1979
+1804-04-: San Vicente                  :Cape Verde Is       :16.850000:N: 24.970000:W:   697
+1805-01=: Unnamed                      :Atlantic-C          : 7.000000:N: 21.830000:W: -1415
+1805-02=: Unnamed                      :Atlantic-C          : 4.200000:N: 21.450000:W: -2900
+1805-03=: Unnamed                      :Atlantic-C          : 0.580000:S: 15.830000:W: -1528
+1805-04=: Unnamed                      :Atlantic-C          : 3.500000:S: 24.500000:W: -5300
+1805-05-: Ascension                    :Atlantic-S          : 7.950000:S: 14.370000:W:   858
+1805-051: Trindade                     :Atlantic-S          :20.514000:S: 29.331000:W:   600
+1806-01=: Tristan Da Cunha             :Atlantic-S          :37.092000:S: 12.280000:W:  2060
+1806-02-: Bouvet                       :Atlantic-S          :54.420000:S:  3.350000:E:   780
+1806-03-: Thompson Island              :Atlantic-S          :53.930000:S:  5.500000:E:     0
+1900-01=: Buckle Island                :Antarctica          :66.800000:S:163.250000:E:  1239
+1900-011: Young Island                 :Antarctica          :66.420000:S:162.450000:E:  1340
+1900-012: Sturge Island                :Antarctica          :67.400000:S:164.830000:E:  1167
+1900-013: Pleiades, The                :Antarctica          :72.670000:S:165.500000:E:  3040
+1900-014: Unnamed                      :Antarctica          :73.450000:S:164.580000:E:  2987
+1900-015: Melbourne                    :Antarctica          :74.350000:S:164.700000:E:  2732
+1900-016: Unnamed                      :Antarctica          :76.830000:S:163.000000:E:  -500
+1900-02=: Erebus                       :Antarctica          :77.530000:S:167.170000:E:  3794
+1900-021: Royal Society Range          :Antarctica          :78.250000:S:163.600000:E:  3000
+1900-022: Berlin                       :Antarctica          :76.050000:S:136.000000:W:  3478
+1900-023: Andrus                       :Antarctica          :75.800000:S:132.330000:W:  2978
+1900-024: Waesche                      :Antarctica          :77.170000:S:126.880000:W:  3292
+1900-025: Siple                        :Antarctica          :73.430000:S:126.670000:W:  3110
+1900-026: Toney Mountain               :Antarctica          :75.800000:S:115.830000:W:  3595
+1900-027: Takahe                       :Antarctica          :76.280000:S:112.080000:W:  3460
+1900-028: Hudson Mountains             :Antarctica          :74.330000:S: 99.420000:W:   749
+1900-029: Peter I Island               :Antarctica          :68.850000:S: 90.580000:W:  1640
+1900-03=: Deception Island             :Antarctica          :62.970000:S: 60.650000:W:   576
+1900-031: Penguin Island               :Antarctica          :62.100000:S: 57.930000:W:   180
+1900-04=: Bridgeman Island             :Antarctica          :62.050000:S: 56.750000:W:   240
+1900-041: Paulet                       :Antarctica          :63.580000:S: 55.770000:W:   353
+1900-05=: Seal Nunataks Group          :Antarctica          :65.030000:S: 60.050000:W:   368
+1900-051: Unnamed                      :Antarctica          :56.250000:S: 72.170000:W:     0
+1900-07=: Thule Islands                :Antarctica          :59.450000:S: 27.370000:W:  1075
+1900-08=: Bristol Island               :Antarctica          :59.030000:S: 26.580000:W:  1100
+1900-09=: Michael                      :Antarctica          :57.780000:S: 26.450000:W:   990
+1900-10=: Candlemas Island             :Antarctica          :57.080000:S: 26.720000:W:   550
+1900-11=: Hodson                       :Antarctica          :56.700000:S: 27.150000:W:  1005
+1900-12=: Leskov Island                :Antarctica          :56.670000:S: 28.130000:W:   190
+1900-13=: Zavodovski                   :Antarctica          :56.300000:S: 27.570000:W:   551
+1900-14-: Protector Shoal              :Antarctica          :55.920000:S: 28.080000:W:   -27
+0000-00-: Source Test                  :Nowhere             :40.000000:S: 80.000000:E:     0

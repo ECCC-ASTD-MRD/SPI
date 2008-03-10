@@ -1,0 +1,1435 @@
+/*==============================================================================
+ * Environnement Canada
+ * Centre Meteorologique Canadian
+ * 2100 Trans-Canadienne
+ * Dorval, Quebec
+ *
+ * Projet    : Projection orthographique de la carte vectorielle.
+ * Fichier   : tkCanvColormap.c
+ * Creation  : Fevrier 2002
+ *
+ * Description: Affichage et manipulation de palette.
+ *
+ * Remarques :
+ *
+ * License      :
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation,
+ *    version 2.1 of the License.
+ *
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the
+ *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ *    Boston, MA 02111-1307, USA.
+ *
+ * Modification:
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *==============================================================================
+ */
+
+#include "tkCanvColorbar.h"
+
+#include "tclFSTD.h"
+#include "tclObs.h"
+#include "tclOGR.h"
+#include "tclGDAL.h"
+
+extern void   Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
+extern TIcon IconList[];
+
+extern TData*     Data_Get(char *Name);
+extern TDataSpec* DataSpec_Get(char *Name);
+extern TObs*      Obs_Get(char *Name);
+extern OGR_Layer* OGR_LayerGet(char *Name);
+
+static int   Colorbar_DataParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
+static char *Colorbar_DataPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
+
+static Tk_CustomOption DataOption = { (Tk_OptionParseProc*)Colorbar_DataParseProc,Colorbar_DataPrintProc,(ClientData)NULL };
+static Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
+
+/*Information used for parsing configuration specs:*/
+
+static Tk_ConfigSpec ColorbarSpecs[] = {
+   { TK_CONFIG_ANCHOR, "-anchor",(char *)NULL,(char *)NULL,
+        "center",Tk_Offset(ColorbarItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_FONT, "-font",(char*)NULL,(char*)NULL,
+        "Helvetica -12",Tk_Offset(ColorbarItem,Font),0 },
+   { TK_CONFIG_DOUBLE,"-x",(char *)NULL,(char *)NULL,
+        "0",Tk_Offset(ColorbarItem,x),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_DOUBLE,"-y",(char *)NULL,(char *)NULL,
+        "0",Tk_Offset(ColorbarItem,y),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS,"-width",(char *)NULL,(char *)NULL,
+        "0",Tk_Offset(ColorbarItem,Width),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS,"-height",(char *)NULL,(char *)NULL,
+        "0",Tk_Offset(ColorbarItem,Height),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_COLOR,"-bg","-background",(char *)NULL,
+        "white",Tk_Offset(ColorbarItem,BGColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR,"-fg","-foreground",(char *)NULL,
+        "black",Tk_Offset(ColorbarItem,FGColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM,"-data",(char *)NULL,(char *)NULL,
+        (char *)NULL,0,TK_CONFIG_NULL_OK,&DataOption },
+   { TK_CONFIG_CUSTOM,"-tags",(char *)NULL,(char *)NULL,
+        (char *)NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
+   { TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,
+        "100", Tk_Offset(ColorbarItem,Alpha), TK_CONFIG_DONT_SET_DEFAULT},
+   { TK_CONFIG_BOOLEAN, "-id", (char *) NULL, (char *) NULL,
+        "1", Tk_Offset(ColorbarItem,Id), TK_CONFIG_DONT_SET_DEFAULT},
+   { TK_CONFIG_INT, "-barsplit", (char *) NULL, (char *) NULL,
+        "0", Tk_Offset(ColorbarItem,BarSplit), TK_CONFIG_DONT_SET_DEFAULT},
+   { TK_CONFIG_INT, "-barwidth", (char *) NULL, (char *) NULL,
+        "0", Tk_Offset(ColorbarItem,BarWidth), TK_CONFIG_DONT_SET_DEFAULT},
+   { TK_CONFIG_INT, "-barborder", (char *) NULL, (char *) NULL,
+        "0", Tk_Offset(ColorbarItem,BarBorder), TK_CONFIG_DONT_SET_DEFAULT},
+   { TK_CONFIG_STRING,"-orient",(char*)NULL,(char *)NULL,
+        (char *)NULL,Tk_Offset(ColorbarItem,Orient),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_END,(char *)NULL,(char *)NULL,(char *)NULL,(char *)NULL,0,0 }
+};
+
+/*
+ * The structures below defines the pixmap item type in terms of
+ * procedures that can be invoked by generic item code.
+ */
+
+Tk_ItemType tkColorbarType = {
+   "colorbar",          /* name */
+   sizeof(ColorbarItem),      /* itemSize */
+   ColorbarCreate,         /* createProc */
+   ColorbarSpecs,            /* configSpecs */
+   ColorbarConfigure,         /* configureProc */
+   ColorbarCoords,         /* coordProc */
+   ColorbarDelete,         /* deleteProc */
+   ColorbarDisplay,        /* displayProc */
+   0,             /* alwaysRedraw */
+   ColorbarToPoint,        /* pointProc */
+   ColorbarToArea,         /* areaProc */
+   ColorbarToPostscript,      /* postscriptProc */
+   ColorbarScale,       /* scaleProc */
+   ColorbarTranslate,         /* translateProc */
+   (Tk_ItemIndexProc *)NULL,     /* indexProc */
+   (Tk_ItemCursorProc *)NULL,    /* icursorProc */
+   (Tk_ItemSelectionProc *)NULL, /* selectionProc */
+   (Tk_ItemInsertProc *)NULL,    /* insertProc */
+   (Tk_ItemDCharsProc *)NULL,    /* dTextProc */
+   (Tk_ItemType *)NULL             /* nextPtr */
+};
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Tkcolorbar_Init>
+ * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Cette procedure effectue les initialisations specifiques aux divers
+ *            package.
+ *
+ * Parametres  :
+ *  <Interp>   : Interpreteur Tcl/Tk
+ *
+ * Retour      :
+ *  <TCL...>   : Code de retour TCL
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+int Tkcolorbar_Init(Tcl_Interp *Interp) {
+
+   Tk_glCreateItemType(&tkColorbarType);
+
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorBarCreate>
+ * Creation : Fevrier 2002
+` *
+ * But      : Creer un item ColorBar et l'initialiser.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreter for error reporting
+ *  <Canvas>  : Canvas to hold new item
+ *  <Item>    : Record to hold new item
+ *  <Argc>    : Number of arguments in argv
+ *  <Argv>    : Arguments describing rectangle
+ *
+ * Retour:
+ *  <TCL_..>  : Code de reussite TCL.
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
+
+   ColorbarItem *cb=(ColorbarItem *)Item;
+
+    /*Initialize item's record.*/
+
+   cb->canvas     = Canvas;
+   cb->anchor     = TK_ANCHOR_CENTER;
+   cb->Font       = NULL;
+   cb->BGColor    = NULL;
+   cb->FGColor    = NULL;
+   cb->Width      = 0;
+   cb->Height     = 0;
+   cb->x          = 0;
+   cb->y          = 0;
+   cb->Data       = NULL;
+   cb->DataStr    = NULL;
+   cb->NbData     = 0;
+   cb->Alpha      = 100;
+   cb->Id         = 1;
+   cb->Orient     = NULL;
+   cb->BarSplit   = 0;
+   cb->BarWidth   = 15;
+   cb->BarBorder  = 0;
+
+   /*Process the arguments to fill in the item record*/
+
+   if (ColorbarConfigure(Interp,Canvas,Item,Argc,Argv,0) != TCL_OK){
+      ColorbarDelete(Canvas,Item,Tk_Display(Tk_CanvasTkwin(Canvas)));
+      return TCL_ERROR;
+   }
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorBarCoords>
+ * Creation : Fevrier 2002
+ *
+ * But      : This procedure is invoked to process the "coords" widget
+ *       command on pixmap items.  See the user documentation for
+ *       details on what it does
+ *
+ * Parametres :
+ *  <Interp>  : Interpreter for error reporting
+ *  <Canvas>  : Canvas containing item
+ *  <Item>    : Item whose coordinates are to be read or modified
+ *  <Argc>    : Number of coordinates supplied in argv
+ *  <Argv>    : Array of coordinates: x1, y1, x2, y2, ...
+ *
+ * Retour:
+ *  <TCL_..>  : Code de reussite TCL.
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+int ColorbarCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
+
+   ColorbarItem *cb=(ColorbarItem *)Item;
+   char x[TCL_DOUBLE_SPACE],y[TCL_DOUBLE_SPACE];
+
+   if (Argc == 0) {
+      Tcl_PrintDouble(Interp,cb->x,x);
+      Tcl_PrintDouble(Interp,cb->y,y);
+      Tcl_AppendResult(Interp,x," ",y,(char *)NULL);
+   } else if (Argc == 2) {
+      if ((Tk_CanvasGetCoordFromObj(Interp,Canvas,Argv[0],&cb->x) != TCL_OK) ||
+          (Tk_CanvasGetCoordFromObj(Interp,Canvas,Argv[1],&cb->y) != TCL_OK)) {
+          return(TCL_ERROR);
+      }
+      ColorbarBBox(Canvas,cb);
+   } else {
+      sprintf(Interp->result,"ColorbarCoords: wrong # coordinates,  expected 0 or 2, got %d",Argc);
+      return TCL_ERROR;
+   }
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarConfigure>
+ * Creation : Fevrier 2002
+ *
+ * But      : This procedure is invoked to configure various aspects
+ *       of a pixmap item, such as its anchor position.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreter for error reporting
+ *  <Canvas>  : Canvas containing item
+ *  <Item>    : Viewport item to reconfigure
+ *  <Argc>    : Number of elements in argv
+ *  <Argv>    : Arguments describing things to configure
+ *  <Flags>   : Flags to pass to Tk_ConfigureWidget
+ *
+ * Retour:
+ *  <TCL_..>  : Code de reussite TCL.
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+int ColorbarConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+
+   if (Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canvas),ColorbarSpecs,Argc,(CONST84 char**)Argv,(char*)cb,Flags) != TCL_OK) {
+      return TCL_ERROR;
+   }
+
+   cb->Alpha=cb->Alpha<0?0:cb->Alpha>100?100:cb->Alpha;
+
+   ColorbarBBox(Canvas,cb);
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarDelete>
+ * Creation : Fevrier 2002
+ *
+ * But      : Cette procedure effectue le nettoyage memoire des structures du
+ *            viewport.
+ *
+ * Parametres :
+ *  <Canvas>  : Info about overall canvas widget
+ *  <Item>    : Item that is being deleted
+ *  <Disp>    : Display containing window for canvas
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+void ColorbarDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+
+   Tk_FreeFont(cb->Font);
+   Tk_FreeColor(cb->BGColor);
+   Tk_FreeColor(cb->FGColor);
+
+   if (cb->DataStr) free(cb->DataStr);
+   if (cb->Data)    Tcl_Free((char*)cb->Data);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarBBox>
+ * Creation : Fevrier 2002
+ *
+ * But      : This procedure is invoked to compute the bounding box of
+ *       all the pixels that may be drawn as part of a pixmap item.
+ *       This procedure is where the child pixmap's placement is
+ *       computed
+ *
+ * Parametres :
+ *  <Canvas>  : Canvas that contains item
+ *  <CB      : Item whose bbox is to be recomputed
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
+
+   int x, y;
+
+   x = CB->x + 0.5;
+   y = CB->y + 0.5;
+
+   if (CB->Width==0 || CB->Height==0) {
+      CB->header.x1 = CB->header.x2 = x;
+      CB->header.y1 = CB->header.y2 = y;
+      return;
+   }
+
+   /*Compute location and size of pixmap, using anchor information.*/
+
+   switch (CB->anchor) {
+      case TK_ANCHOR_N:
+         x -= CB->Width/2;
+         break;
+      case TK_ANCHOR_NE:
+         x -= CB->Width;
+         break;
+      case TK_ANCHOR_E:
+         x -= CB->Width;
+         y -= CB->Height/2;
+         break;
+      case TK_ANCHOR_SE:
+         x -= CB->Width;
+         y -= CB->Height;
+         break;
+      case TK_ANCHOR_S:
+         x -= CB->Width/2;
+         y -= CB->Height;
+         break;
+      case TK_ANCHOR_SW:
+         y -= CB->Height;
+         break;
+      case TK_ANCHOR_W:
+         y -= CB->Height/2;
+         break;
+      case TK_ANCHOR_NW:
+         break;
+      case TK_ANCHOR_CENTER:
+         x -= CB->Width/2;
+         y -= CB->Height/2;
+         break;
+   }
+
+   /*Store the information in the item header.*/
+
+   CB->header.x1 = x ;
+   CB->header.y1 = y ;
+   CB->header.x2 = x + CB->Width;
+   CB->header.y2 = y + CB->Height;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarDisplay>
+ * Creation : ???
+ *
+ * But      : This procedure is invoked to draw a pixmap item in a given
+ *       drawable.
+ *
+ * Parametres :
+ *  <Canvas>  : Canvas that contains item
+ *  <Item>    : Item to be displayed
+ *  <Disp>    : Display on which to draw item
+ *  <Draw>    : Pixmap or window in which to draw item
+ *  <X>       : Describes region of canvas that must be redisplayed (not used)
+ *  <Y>       : Describes region of canvas that must be redisplayed (not used)
+ *  <Width>   : Describes region of canvas that must be redisplayed (not used)
+ *  <Height>  : Describes region of canvas that must be redisplayed (not used)
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,int X,int Y,int Width,int Height){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+   TDataSpec    *spec=NULL;
+   TData        *fld=NULL;
+   TObs         *obs=NULL;
+   OGR_Layer    *layer=NULL;
+   GDAL_Band    *band=NULL;
+
+   int          y0=0,y1,y2,yh=0,i,inc=0;
+
+   glShadeModel(GL_FLAT);
+   glDisable(GL_CULL_FACE);
+   glEnable(GL_SCISSOR_TEST);
+
+   if (cb->NbData) {
+      inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
+      y1=cb->header.y1;
+   }
+
+   glPushMatrix();
+   glTranslated(-((TkCanvas *)Canvas)->xOrigin,-((TkCanvas *)Canvas)->yOrigin,0.0);
+
+   for (i=0;i<cb->NbData;i++) {
+
+      y2=y1+inc-1;
+
+//      glScissor(cb->header.x1,Height-y2,cb->header.x2-cb->header.x1+1,y2-y1+1);
+
+      trScissor(GLRender->TRCon,cb->header.x1-((TkCanvas*)Canvas)->xOrigin-1,Height-(y2-((TkCanvas*)Canvas)->yOrigin)-1,cb->header.x2-cb->header.x1+2,y2-y1+2);
+
+      /*Effectuer le rendue de la colorbar*/
+      if (cb->Alpha<100) {
+         glEnable(GL_BLEND);
+      }
+
+      /*Pourtour*/
+      if (cb->BGColor) {
+         glLineWidth(1.0);
+         glPolygonMode(GL_FRONT,GL_FILL);
+         glColor4us(cb->BGColor->red,cb->BGColor->green,cb->BGColor->blue,cb->Alpha*655);
+         glBegin(GL_QUADS);
+            glVertex2i(cb->header.x1,y1);
+            glVertex2i(cb->header.x1,y2);
+            glVertex2i(cb->header.x2,y2);
+            glVertex2i(cb->header.x2,y1);
+         glEnd();
+
+         glPolygonMode(GL_FRONT,GL_LINE);
+         glColor4us(cb->FGColor->red,cb->FGColor->green,cb->FGColor->blue,cb->Alpha*655);
+         glBegin(GL_QUADS);
+            glVertex2i(cb->header.x1,y1);
+            glVertex2i(cb->header.x1,y2);
+            glVertex2i(cb->header.x2,y2);
+            glVertex2i(cb->header.x2,y1);
+         glEnd();
+         glDisable(GL_BLEND);
+      }
+
+      if (fld=Data_Get(cb->Data[i])) {
+         Data_PreInit(fld);
+         spec=fld->Spec;
+      } else if (obs=Obs_Get(cb->Data[i])) {
+         Obs_PreInit(obs);
+         spec=obs->Spec;
+      } else if (layer=OGR_LayerGet(cb->Data[i])) {
+         OGR_LayerPreInit(layer);
+         spec=layer->Spec;
+      } else if (band=GDAL_BandGet(cb->Data[i])) {
+         spec=band->Spec;
+      } else {
+         spec=DataSpec_Get(cb->Data[i]);
+      }
+
+      if (!spec)
+         continue;
+
+      if (spec->Font) {
+         Tk_GetFontMetrics(spec->Font,&cb->tkm);
+         glFontUse(Disp,spec->Font);
+      }
+
+      yh=Colorbar_RenderId(NULL,cb,spec,y1);
+      yh+=Colorbar_RenderContour(NULL,cb,spec,y1+yh);
+
+      if (spec->RenderVector && spec->RenderVector<3) {
+         Colorbar_RenderVector(NULL,cb,spec,y2);
+         y0=105;
+      } else {
+         y0=0;
+      }
+
+      if (spec->RenderTexture || spec->RenderParticle || spec->MapAll) {
+         Colorbar_RenderTexture(NULL,cb,spec,y1+yh,y2-y0);
+      }
+
+      y1=y2+5;
+   }
+
+   glPopMatrix();
+   glDisable(GL_SCISSOR_TEST);
+   glDisable(GL_BLEND);
+   glEnable(GL_CULL_FACE);
+   glShadeModel(GL_SMOOTH);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_RenderContour>
+ * Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage de l'entete.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Specification des donnees
+ *  <Y1>      : Coordonne Y
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
+
+   char buf[128];
+   int  dx=0,dy=0;
+
+   if (Spec->Outline) {
+      if (Interp) {
+         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Spec->RenderContour-1);
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
+         Tk_CanvasPsColor(Interp,CB->canvas,Spec->Outline);
+      } else {
+         glLineWidth(Spec->RenderContour);
+         glColor3us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue);
+      }
+   }
+
+   if (Spec->Icon) {
+      if (Interp) {
+         glFeedbackInit(IconList[Spec->Icon].Nb*40,GL_2D);
+      }
+
+      glPushMatrix();
+      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+      glLineWidth(Spec->RenderContour);
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(2,GL_DOUBLE,0,IconList[Spec->Icon].Co);
+      glTranslated(CB->header.x2-13,Y1+8,0.0);
+      glScalef(7.0,-7.0,1.0);
+      glDrawArrays(IconList[Spec->Icon].Type,0,IconList[Spec->Icon].Nb);
+      glDisableClientState(GL_VERTEX_ARRAY);
+      glPopMatrix();
+      dx+=20;
+      dy=14+Spec->RenderContour;
+
+      if (Interp) {
+         glFeedbackProcess(Interp,GL_2D);
+      }
+   }
+
+   if (Spec->RenderContour) {
+
+      if (Interp) {
+         glPostscriptDash(Interp,&Spec->Dash,Spec->RenderContour);
+      } else {
+         glDash(&Spec->Dash);
+      }
+
+      if (Interp) {
+         sprintf(buf,"%i %i moveto %i %i lineto stroke\n",CB->header.x1+5,(int)Tk_CanvasPsY(CB->canvas,Y1+8),CB->header.x2-5-dx,(int)Tk_CanvasPsY(CB->canvas,Y1+8));
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
+         glPostscriptDash(Interp,NULL,Spec->RenderContour);
+      } else {
+         glBegin(GL_LINES);
+            glVertex2i(CB->header.x1+5,Y1+8);
+            glVertex2i(CB->header.x2-5-dx,Y1+8);
+         glEnd();
+         glDisable(GL_LINE_STIPPLE);
+      }
+      dy=14+Spec->RenderContour;
+   }
+
+   return(dy);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_RenderId>
+ * Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage de l'entete.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Specification des donnees
+ *  <Y1>      : Coordonne Y
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
+
+   char buf[256];
+   int y;
+
+   if (CB->Id && Spec->Font && Spec->Outline) {
+      y=CB->tkm.linespace;
+      if (Interp) {
+         glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+      } else {
+         Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,Spec->Desc,Spec);
+      }
+
+      if (Spec->ValDelta!=0.0) {
+         sprintf(buf,"+ %1.2e",Spec->ValDelta);
+
+         y+=CB->tkm.linespace+2;
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+         } else {
+            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,buf,Spec);
+         }
+      }
+
+      if (Spec->ValFactor!=1.0) {
+         sprintf(buf,"x %1.2e",Spec->ValFactor);
+
+         y+=CB->tkm.linespace+2;
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+         } else {
+            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,buf,Spec);
+         }
+      }
+
+      if (Spec->Unit && Spec->Unit[0]!='\0') {
+         y+=CB->tkm.linespace+2;
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,Spec->Unit,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+         } else {
+            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,Spec->Unit,Spec);
+         }
+      }
+
+      return(y+5);
+   } else {
+      return(0);
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_RenderText>
+ * Creation : Avril 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage du texte.
+ *
+ * Parametres :
+ *  <X>       : Coordonnee en X
+ *  <Y>       : Coordonnee en Y
+ *  <Text>    : Chaine
+ *  <Color>   : Couleur
+ *  <Font>    : Police
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,char *Text,TDataSpec *Spec) {
+
+   if (Spec->Outline && Text && Spec->Font) {
+      glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,CB->Alpha*655);
+      glDrawString(X-Tk_TextWidth(Spec->Font,Text,strlen(Text)),Y,0,Text,strlen(Text),0,1);
+  }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_RenderTexture>
+ * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage de la colorbar des valeurs.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Specification des donnees
+ *  <Y1>      : Coordonne Y
+ *  <Y2>      : Coordonne Y
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1,int Y2){
+
+   int    idx,i,py0,py1;
+   double y=0,incr,txt=0,value,height;
+   char   buf[128];
+
+   if (!Spec->Map)
+      return;
+
+   glPolygonMode(GL_FRONT,GL_FILL);
+   height=Y2-Y1-10;
+
+   /* Dans la cas ou on a des intervalles */
+   if (Spec->InterNb>0) {
+
+      y=Y2-5;
+      incr=height/(double)Spec->InterNb;
+
+      /*Rendu de l'echelle*/
+
+      for (i=0;i<Spec->InterNb;i++) {
+
+         VAL2COL(idx,Spec,Spec->Inter[i]);
+
+         /*Afficher la couleur*/
+         if (Interp) {
+            CMap_PostscriptColor(Interp,Spec->Map,idx);
+            py0=Tk_CanvasPsY(CB->canvas,y);
+            py1=Tk_CanvasPsY(CB->canvas,y-incr+CB->BarSplit-1);
+
+            sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",
+               CB->header.x2-(CB->BarWidth+5),py0,CB->header.x2-5,py0,CB->header.x2-5,py1,CB->header.x2-(CB->BarWidth+5),py1);
+            Tcl_AppendResult(Interp,buf," fill\n",(char*)NULL);
+
+            if (CB->BarBorder) {
+               Tk_CanvasPsColor(Interp,CB->canvas,CB->FGColor);
+                  sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",
+                  CB->header.x2-(CB->BarWidth+5),py0,CB->header.x2-5,py0,CB->header.x2-5,py1,CB->header.x2-(CB->BarWidth+5),py1);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+               sprintf(buf," %i setlinewidth 1 setlinecap 1 setlinejoin\nstroke\n",CB->BarBorder);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+            }
+         } else {
+            if (Spec->Map->Alpha) {
+               glEnable(GL_BLEND);
+            }
+            glPolygonMode(GL_FRONT,GL_FILL);
+            glColor4ubv(Spec->Map->Color[idx]);
+            glLineWidth(1.0);
+            glBegin(GL_QUADS);
+               glVertex2f(CB->header.x2-(CB->BarWidth+5),y);
+               glVertex2f(CB->header.x2-5,y);
+               glVertex2f(CB->header.x2-5,y-incr+CB->BarSplit);
+               glVertex2f(CB->header.x2-(CB->BarWidth+5),y-incr+CB->BarSplit);
+            glEnd();
+            glDisable(GL_BLEND);
+
+            if (CB->BarBorder) {
+               glPolygonMode(GL_FRONT,GL_LINE);
+               glLineWidth(CB->BarBorder);
+               glColor4us(CB->FGColor->red,CB->FGColor->green,CB->FGColor->blue,CB->Alpha*655);
+               glBegin(GL_QUADS);
+                  glVertex2f(CB->header.x2-(CB->BarWidth+5),y);
+                  glVertex2f(CB->header.x2-5,y);
+                  glVertex2f(CB->header.x2-5,y-incr+CB->BarSplit);
+                  glVertex2f(CB->header.x2-(CB->BarWidth+5),y-incr+CB->BarSplit);
+               glEnd();
+            }
+         }
+          y-=incr;
+      }
+
+      /*Rendu des valeurs l'echelle*/
+      for (i=0,y=Y2-5;i<Spec->InterNb;i++,y-=incr) {
+
+         DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Inter[i]),buf);
+
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-(CB->BarWidth+10),Tk_CanvasPsY(CB->canvas,y),0,Spec->Outline,-1.0,1.0,1.0);
+         } else {
+            Colorbar_RenderText(CB,CB->header.x2-(CB->BarWidth+10),y,buf,Spec);
+         }
+      }
+
+   /* Dans le cas ou le champs est continue */
+
+   } else {
+      if (Spec->Map->Alpha) {
+         glEnable(GL_BLEND);
+      }
+      incr=height/(double)Spec->Map->NbPixels;
+
+      /*Rendu de l'echelle*/
+      glBegin(GL_QUAD_STRIP);
+
+         y=Y2-5;
+         glColor4ubv(Spec->Map->Color[0]);
+         glVertex2f(CB->header.x2-(CB->BarWidth+5),y);
+         glVertex2f(CB->header.x2-5,y);
+
+         y-=incr;
+
+         for (idx=0;idx<Spec->Map->NbPixels;idx++,y-=incr) {
+
+            glColor4ubv(Spec->Map->Color[idx]);
+
+            /*Afficher la couleur*/
+
+            if (Interp) {
+               CMap_PostscriptColor(Interp,Spec->Map,idx);
+               py0=Tk_CanvasPsY(CB->canvas,y+incr);
+               py1=Tk_CanvasPsY(CB->canvas,Y2-5-height);
+
+               sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",
+                  CB->header.x2-(CB->BarWidth+5),py0,CB->header.x2-5,py0,CB->header.x2-5,py1,CB->header.x2-(CB->BarWidth+5),py1);
+               Tcl_AppendResult(Interp,buf," fill\n",(char*)NULL);
+            } else {
+               glVertex2f(CB->header.x2-(CB->BarWidth+5),y);
+               glVertex2f(CB->header.x2-5,y);
+            }
+      }
+      glEnd();
+      glDisable(GL_BLEND);
+
+      if (CB->BarBorder) {
+         if (Interp) {
+            py0=Tk_CanvasPsY(CB->canvas,Y2-5);
+            py1=Tk_CanvasPsY(CB->canvas,y+incr);
+            Tk_CanvasPsColor(Interp,CB->canvas,CB->FGColor);
+               sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",
+               CB->header.x2-(CB->BarWidth+5),py0,CB->header.x2-5,py0,CB->header.x2-5,py1,CB->header.x2-(CB->BarWidth+5),py1);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
+            sprintf(buf," %i setlinewidth 1 setlinecap 1 setlinejoin\nstroke\n",CB->BarBorder);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
+         } else {
+            glPolygonMode(GL_FRONT,GL_LINE);
+            glLineWidth(CB->BarBorder);
+            glColor4us(CB->FGColor->red,CB->FGColor->green,CB->FGColor->blue,CB->Alpha*655);
+            glBegin(GL_QUADS);
+               glVertex2f(CB->header.x2-(CB->BarWidth+5),Y2-5);
+               glVertex2f(CB->header.x2-5,Y2-5);
+               glVertex2f(CB->header.x2-5,y+incr);
+               glVertex2f(CB->header.x2-(CB->BarWidth+5),y+incr);
+            glEnd();
+         }
+      }
+
+      /*Rendu des valeurs l'echelle*/
+      DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Min),buf);
+      if (Interp) {
+         glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-(CB->BarWidth+10),Tk_CanvasPsY(CB->canvas,Y2-5),0,Spec->Outline,-1.0,1.0,1.0);
+      } else {
+         Colorbar_RenderText(CB,CB->header.x2-(CB->BarWidth+10),Y2-5,buf,Spec);
+      }
+
+      if (Spec->Min!=Spec->Max) {
+         DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Max),buf);
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-(CB->BarWidth+10),Tk_CanvasPsY(CB->canvas,Y1+10),0,Spec->Outline,-1.0,1.0,1.0);
+         } else {
+            Colorbar_RenderText(CB,CB->header.x2-(CB->BarWidth+10),Y1+10,buf,Spec);
+         }
+         y=5;
+
+         for (idx=0;idx<Spec->Map->NbPixels;idx++,y+=incr) {
+
+            txt+=incr;
+            if (y<5+CB->tkm.linespace || y>height-CB->tkm.linespace) {
+               continue;
+            }
+            COL2VAL(idx,Spec,value);
+
+            if (txt>=CB->tkm.linespace) {
+
+               DataSpec_Format(Spec,VAL2SPEC(Spec,value),buf);
+
+               if (Interp) {
+                  glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-(CB->BarWidth+10),Tk_CanvasPsY(CB->canvas,Y2-y),0,Spec->Outline,-1.0,1.0,1.0);
+               } else {
+                  Colorbar_RenderText(CB,CB->header.x2-(CB->BarWidth+10),Y2-y,buf,Spec);
+               }
+               txt=0;
+            }
+         }
+      }
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_RenderVector>
+ * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage de la colorbar des valeurs.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Data specification
+ *  <Y2>      : Coordonne Y
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y2){
+
+   int    size,o0,o1,od;
+   char   buf[64];
+   double inter[5];
+
+   if (!Spec->Outline)
+      return;
+
+   if (Spec->RenderVector==BARBULE) {
+      inter[0]=5;
+      inter[1]=10;
+      inter[2]=25;
+      inter[3]=50;
+      inter[4]=100;
+   } else {
+      o0=floor(log10(Spec->Min));
+      o1=floor(log10(Spec->Max));
+
+      if (o0<0 && o1>0) o0=0;
+      if (o0==o1)       o1++;
+
+      od=o1-o0;
+
+      inter[0]=pow(10.0,o0);
+      inter[1]=pow(10.0,o0+(od/2)+0.397940008672038);
+      inter[2]=pow(10.0,o0+(od/2)+0.698970004336019);
+      inter[3]=pow(10.0,o0+(od/2)+0.8750612633917);
+      inter[4]=pow(10.0,o1);
+   }
+
+   if (Interp) {
+      Tcl_AppendResult(Interp,"1 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
+      glPostscriptRectangle(Interp,CB->canvas,CB->header.x1+5,Tk_CanvasPsY(CB->canvas,Y2-105),
+         CB->header.x2-5,Tk_CanvasPsY(CB->canvas,Y2-5),Spec->Outline,0);
+      DataSpec_Format(Spec,inter[0],buf);
+      glPostscriptText(Interp,CB->canvas,buf,CB->header.x1+10,Tk_CanvasPsY(CB->canvas,Y2-10),0,Spec->Outline,0.0,1.0,0.0);
+      DataSpec_Format(Spec,inter[1],buf);
+      glPostscriptText(Interp,CB->canvas,buf,CB->header.x1+10,Tk_CanvasPsY(CB->canvas,Y2-30),0,Spec->Outline,0.0,1.0,0.0);
+      DataSpec_Format(Spec,inter[2],buf);
+      glPostscriptText(Interp,CB->canvas,buf,CB->header.x1+10,Tk_CanvasPsY(CB->canvas,Y2-50),0,Spec->Outline,0.0,1.0,0.0);
+      DataSpec_Format(Spec,inter[3],buf);
+      glPostscriptText(Interp,CB->canvas,buf,CB->header.x1+10,Tk_CanvasPsY(CB->canvas,Y2-70),0,Spec->Outline,0.0,1.0,0.0);
+      DataSpec_Format(Spec,inter[4],buf);
+      glPostscriptText(Interp,CB->canvas,buf,CB->header.x1+10,Tk_CanvasPsY(CB->canvas,Y2-90),0,Spec->Outline,0.0,1.0,0.0);
+   } else {
+      glLineWidth(1.0);
+      glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,CB->Alpha*655);
+      glPolygonMode(GL_FRONT,GL_LINE);
+      glBegin(GL_POLYGON);
+         glVertex2i(CB->header.x1+5,Y2-105);
+         glVertex2i(CB->header.x1+5,Y2-5);
+         glVertex2i(CB->header.x2-5,Y2-5);
+         glVertex2i(CB->header.x2-5,Y2-105);
+      glEnd();
+
+      DataSpec_Format(Spec,inter[0],buf);
+      glDrawString(CB->header.x1+10,Y2-10,0,buf,strlen(buf),0,1);
+      DataSpec_Format(Spec,inter[1],buf);
+      glDrawString(CB->header.x1+10,Y2-30,0,buf,strlen(buf),0,1);
+      DataSpec_Format(Spec,inter[2],buf);
+      glDrawString(CB->header.x1+10,Y2-50,0,buf,strlen(buf),0,1);
+      DataSpec_Format(Spec,inter[3],buf);
+      glDrawString(CB->header.x1+10,Y2-70,0,buf,strlen(buf),0,1);
+      DataSpec_Format(Spec,inter[4],buf);
+      glDrawString(CB->header.x1+10,Y2-90,0,buf,strlen(buf),0,1);
+   }
+
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
+   glPolygonMode(GL_FRONT,GL_FILL);
+
+   if (Interp)
+      glFeedbackInit(200,GL_2D);
+
+   size=VECTORSIZE(Spec,inter[0]);
+   Data_RenderBarbule(Spec->RenderVector,0,0.0,CB->header.x2-10.0,Y2-13.0,0.0,inter[0],270.0,size,NULL);
+   size=VECTORSIZE(Spec,inter[1]);
+   Data_RenderBarbule(Spec->RenderVector,0,0.0,CB->header.x2-10.0,Y2-33.0,0.0,inter[1],270.0,size,NULL);
+   size=VECTORSIZE(Spec,inter[2]);
+   Data_RenderBarbule(Spec->RenderVector,0,0.0,CB->header.x2-10.0,Y2-53.0,0.0,inter[2],270.0,size,NULL);
+   size=VECTORSIZE(Spec,inter[3]);
+   Data_RenderBarbule(Spec->RenderVector,0,0.0,CB->header.x2-10.0,Y2-73.0,0.0,inter[3],270.0,size,NULL);
+   size=VECTORSIZE(Spec,inter[4]);
+   Data_RenderBarbule(Spec->RenderVector,0,0.0,CB->header.x2-10.0,Y2-93.0,0.0,inter[4],270.0,size,NULL);
+
+   if (Interp)
+      glFeedbackProcess(Interp,GL_2D);
+
+   glPopMatrix();
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarToPoint>
+ * Creation : Fevrier 2002
+ *
+ * But      : Computes the distance from a given point to a given
+ *       rectangle, in canvas units.
+ *
+ * Parametres :
+ *  <Canvas>   : Canvas that contains item
+ *  <Item>     : Item to check against point
+ *  <CoordPtr> : Pointer to x and y coordinates
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         : J.P. Gauthier
+ *   Date        : Janvier 1999
+ *   Description : -Mauvais retour dans les cas de 0.0
+ *
+ *----------------------------------------------------------------------------
+*/
+double ColorbarToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+
+   double xDiff,yDiff;
+
+   /*Point is outside rectangle*/
+
+   if (CoordPtr[0] < cb->header.x1) {
+      xDiff = cb->header.x1 - CoordPtr[0];
+   } else if (CoordPtr[0] > cb->header.x2) {
+      xDiff = CoordPtr[0] - cb->header.x2;
+   } else {
+      xDiff = 0;
+   }
+
+   if (CoordPtr[1] < cb->header.y1) {
+      yDiff = cb->header.y1 - CoordPtr[1];
+   } else if (CoordPtr[1] > cb->header.y2) {
+      yDiff = CoordPtr[1] - cb->header.y2;
+   } else {
+      yDiff = 0;
+   }
+
+   if (xDiff==0.0 && yDiff==0.0) {
+      return 0.0;
+   } else {
+      return hypot(xDiff,yDiff);
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarToArea>
+ * Creation : Fevrier 2002
+ *
+ * But      : This procedure is called to determine whether an item
+ *       lies entirely inside, entirely outside, or overlapping
+ *       a given rectangle.
+ *
+ * Parametres :
+ *  <Canvas>   : Canvas that contains item
+ *  <Item>     : Item to check against point
+ *  <RectPtr>  : Pointer to array of four coordinates (x1, y1, x2, y2) describing rectangular
+ *               areaPointer to x and y coordinates
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+int ColorbarToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+
+   if ((RectPtr[2] <= cb->header.x1) ||
+       (RectPtr[0] >= cb->header.x2) ||
+       (RectPtr[3] <= cb->header.y1) ||
+       (RectPtr[1] >= cb->header.y2)) {
+      return -1;
+   }
+   if ((RectPtr[0] <= cb->header.x1) &&
+       (RectPtr[1] <= cb->header.y1) &&
+       (RectPtr[2] >= cb->header.x2) &&
+       (RectPtr[3] >= cb->header.y2)) {
+      return 1;
+   }
+   return 0;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarScale>
+ * Creation : Fevrier 2002
+ *
+ * But      : This procedure is invoked to rescale a pixmap item in a
+ *       canvas.  It is one of the standard item procedures for
+ *       pixmap items, and is invoked by the generic canvas code.
+ *
+ * Parametres :
+ *  <Canvas>  : Canvas containing rectangle
+ *  <Item>    : Rectangle to be scaled
+ *  <OriginX> : Origin about which to scale item
+ *  <OriginY> : Origin about which to scale item
+ *  <ScaleX>  : Amount to scale in X direction
+ *  <ScaleY>  : Amount to scale in Y direction
+ *
+ * Retour:
+ *
+ * Remarques :
+ * The item referred to by itemPtr is rescaled so that the
+ * following transformation is applied to all point coordinates:
+ *    x' = originX + scaleX*(x-originX)
+ *    y' = originY + scaleY*(y-originY)
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+void ColorbarScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double OriginY,double ScaleX,double ScaleY){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+
+   cb->x = OriginX + ScaleX*(cb->x - OriginX);
+   cb->y = OriginY + ScaleY*(cb->y - OriginY);
+   ColorbarBBox(Canvas,cb);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorbarTranslate>
+ * Creation : Fevrier 2002
+ *
+ * But      : This procedure is called to move an item by a given amount.
+ *
+ * Parametres :
+ *  <Canvas>  : Canvas containing item
+ *  <Item>    : Item that is being moved
+ *  <DeltaX>  : Amount by which item is to be moved
+ *  <DeltaY>  : Amount by which item is to be moved
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+void ColorbarTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+
+   cb->x += DeltaX;
+   cb->y += DeltaY;
+   ColorbarBBox(Canvas,cb);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ColorBarToPostscript
+ * Creation : Fevrier 2002
+ *
+ * But      : Generer le code Postscript pour un item Viewport.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur Tcl
+ *  <Canvas>  : Item canvas
+ *  <Item>    : Item pour lquel on genere le Postscript
+ *  <Prepass> : Prepass pour recuperer les polices
+ *
+ * Retour:
+ *  <TCL_..>  : Code de retour Tcl.
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *   Nom         :
+ *   Date        :
+ *   Description :
+ *----------------------------------------------------------------------------
+*/
+int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass){
+
+   ColorbarItem *cb=(ColorbarItem*)Item;
+   TDataSpec    *spec=NULL;
+   TData        *fld=NULL;
+   TObs         *obs=NULL;
+   OGR_Layer    *layer=NULL;
+
+   double coords[8];
+   int    yh=0,y0=0,y1,y2,i,inc;
+
+   if (Tk_CanvasPsFont(Interp,Canvas,cb->Font)!=TCL_OK) {
+      return TCL_ERROR;
+   }
+
+   if (Prepass) {
+      return TCL_OK;
+   }
+
+   glDisable(GL_CULL_FACE);
+
+   if (cb->NbData) {
+      inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
+      y1=cb->header.y1;
+   }
+
+   for (i=0;i<cb->NbData;i++) {
+
+      y2=y1+inc;
+
+      Tcl_AppendResult(Interp,"% Postscript de la colorbar\n1 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
+
+      /*Coordonnee du viewport*/
+      coords[0]=cb->header.x1 ; coords[1]=y1;
+      coords[2]=cb->header.x2 ; coords[3]=y1;
+      coords[4]=cb->header.x2 ; coords[5]=y2;
+      coords[6]=cb->header.x1 ; coords[7]=y2;
+
+      /*Creer le background*/
+      if (cb->BGColor) {
+         Tk_CanvasPsColor(Interp,Canvas,cb->BGColor);
+         Tk_CanvasPsPath(Interp,Canvas,coords,4);
+         Tcl_AppendResult(Interp,"closepath fill\n",(char*)NULL);
+      }
+
+      Tcl_AppendResult(Interp,"gsave\n",(char*)NULL);
+      Tk_CanvasPsPath(Interp,Canvas,coords,4);
+      Tcl_AppendResult(Interp,"closepath clip newpath\n",(char*)NULL);
+
+      if (fld=Data_Get(cb->Data[i])) {
+         spec=fld->Spec;
+      } else if (obs=Obs_Get(cb->Data[i])) {
+         spec=obs->Spec;
+      } else if (layer=OGR_LayerGet(cb->Data[i])) {
+         spec=layer->Spec;
+      } else {
+         spec=DataSpec_Get(cb->Data[i]);
+      }
+
+      if (!spec)
+         continue;
+
+      if (spec->Font) {
+         Tk_CanvasPsFont(Interp,Canvas,spec->Font);
+         yh=Colorbar_RenderId(Interp,cb,spec,y1);
+      }
+
+      yh+=Colorbar_RenderContour(Interp,cb,spec,y1+yh);
+
+      if (spec->RenderVector && spec->RenderVector<3) {
+         Colorbar_RenderVector(Interp,cb,spec,y2);
+         y0=105;
+      } else {
+         y0=0;
+      }
+
+
+      if (spec->RenderTexture || spec->RenderParticle || spec->MapAll) {
+         Colorbar_RenderTexture(Interp,cb,spec,y1+yh,y2-y0);
+      }
+      y1=y2+5;
+
+      Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
+      /*Creer le pourtour*/
+      if (cb->FGColor) {
+         Tk_CanvasPsColor(Interp,Canvas,cb->FGColor);
+         Tk_CanvasPsPath(Interp,Canvas,coords,4);
+         Tcl_AppendResult(Interp,"closepath stroke\n",(char*)NULL);
+      }
+   }
+
+   glEnable(GL_CULL_FACE);
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_DataParseProc>
+ * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Cette procedure sert a extraire la valeur de la vue.
+ *
+ * Parametres    :
+ *  <Data>       : Non utilise
+ *  <Interp>     : Interpreteur Tcl de l'application
+ *  <TkWin>      : Identificateur de la fenetre
+ *  <Value>      : Valeur de l'option
+ *  <WidgRec>    : Pointeur sur l'enregistrement
+ *  <Offset>     : Offset a l'interieur de l'item (Non utilise)
+ *
+ * Retour        :
+ *  <TCL_...>    : Code de retour Tcl
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+
+   ColorbarItem *cb=(ColorbarItem*)WidgRec;
+
+   if (cb->Data) {
+      free(cb->DataStr);
+      Tcl_Free((char*)cb->Data);
+      cb->Data=NULL;
+      cb->NbData=0;
+   }
+
+   cb->DataStr=strdup(Value);
+   Tcl_SplitList(Interp,Value,&cb->NbData,&cb->Data);
+
+   return TCL_OK;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_DataPrintProc>
+ * Creation :
+ *
+ * But      : Cette procedure sert a extraire la valeur de la vue.
+ *
+ * Parametres    :
+ *  <Data>       : Non utilise
+ *  <TkWin>      : Identificateur de la fenetre
+ *  <WidgRec>    : Pointeur sur l'enregistrement
+ *  <Offset>     : Offset a l'interieur de l'item (Non utilise)
+ *  <FreeProcPtr>: Pointeur sur la procedure de liberation
+ *
+ * Retour        :
+ *  <TCL_...>    : Code de retour Tcl
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+static char *Colorbar_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+
+   ColorbarItem *cb=(ColorbarItem*)WidgRec;
+
+   return cb->DataStr;
+}
