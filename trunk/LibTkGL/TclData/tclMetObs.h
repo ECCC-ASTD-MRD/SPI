@@ -55,7 +55,7 @@
 typedef struct TBUFRTable {
    unsigned int No;
    char         Desc[64];
-   char         Unit[32];
+   char         Unit[16];
 } TBUFRTable;
 
 typedef struct TMetModelItem {
