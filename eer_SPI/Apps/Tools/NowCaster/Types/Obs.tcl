@@ -1061,7 +1061,7 @@ proc NowCaster::Obs::Info { Obs Id } {
    variable Lbl
 
    if { [metobs is $Obs] } {
-      set text [Text::Create .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs" "" 60 20]
+      set text [Text::Create .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs" "" 80 20]
       $text delete 0.0 end
 
       if { ![winfo exists .nowcasterinfo.cmd] } {
@@ -1081,8 +1081,9 @@ proc NowCaster::Obs::Info { Obs Id } {
          foreach date [metobs define $Obs -DATE $Id] {
             $text insert end "\n[clock format $date  -format "%Y%m%d %H:%M" -gmt true]\n"
             foreach report [metobs define $Obs -REPORT $Id $date] {
-               foreach elem [metreport define $report -ELEMENT] {
-                  $text insert end "[format %-43s $elem]: [metreport define $report -ELEMENT $elem]\n"
+               $text insert end "---------------------------------------------------------------\n"
+               foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
+                  $text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
                }
                $text insert end "\n"
 #               metreport free $report
@@ -1093,7 +1094,7 @@ proc NowCaster::Obs::Info { Obs Id } {
          set elems [metobs define $Obs -ELEMENT $Id]
 
          foreach elem $elems {
-            $text insert end  "\n$elem\n"
+            $text insert end  "\n[format %06i [metobs table -code $elem]] $elem ([metobs table -unit $elem])\n"
             foreach date [metobs define $Obs -DATE $Id] {
                $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] [metobs define $Obs -ELEMENT $Id $elem $date]\n"
             }

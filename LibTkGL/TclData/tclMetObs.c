@@ -273,8 +273,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    long       code;
    FILE      *fid;
    char      buf[256];
-   static CONST char *sopt[] = { "-read","-code","-desc","-insert",NULL };
-   enum                opt { READ,CODE,DESC,INSERT };
+   static CONST char *sopt[] = { "-read","-code","-desc","-unit","-insert",NULL };
+   enum                opt { READ,CODE,DESC,UNIT,INSERT };
 
    for (i=0;i<Objc;i++) {
 
@@ -324,9 +324,9 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
-         case CODE:
-            if(Objc<2) {
-               Tcl_WrongNumArgs(Interp,1,Objv,"code [value] [units]");
+         case DESC:
+            if(Objc<2 || Objc>4) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"code [desc] [units]");
                return(TCL_ERROR);
             }
             Tcl_GetLongFromObj(Interp,Objv[++i],&code);
@@ -346,27 +346,46 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
-         case DESC:
-            if(Objc<2) {
-               Tcl_WrongNumArgs(Interp,1,Objv,"desc [value]");
+         case CODE:
+            if(Objc<2 || Objc>4) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"desc [code] [unit]");
                return(TCL_ERROR);
             }
             if ((code=MetObs_BURPFindTableDesc(Tcl_GetString(Objv[++i])))==-1) {
-               Tcl_AppendResult(Interp,"\n   MetObs_Table: Could not find description",(char*)NULL);
+               Tcl_AppendResult(Interp,"\n   MetObs_Table: Could not find element",(char*)NULL);
                return(TCL_ERROR);
             }
 
             if (Objc>2) {
                Tcl_GetLongFromObj(Interp,Objv[++i],&code);
                BUFRTable[code].No=code;
+               if (Objc>3)
+                  strcpy(BUFRTable[code].Unit,Tcl_GetString(Objv[++i]));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(BUFRTable[code].No));
             }
             break;
 
+         case UNIT:
+            if(Objc<2 || Objc>3) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"code|desc [unit]");
+               return(TCL_ERROR);
+            }
+            if ((code=MetObs_BURPFindTableCodeOrDesc(Interp,Objv[++i]))==-1) {
+               Tcl_AppendResult(Interp,"\n   MetObs_Table: Could not find element",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            if (Objc>2) {
+               strncpy(BUFRTable[code].Unit,Tcl_GetString(Objv[++i]),12);
+            } else {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(BUFRTable[code].Unit,-1));
+            }
+            break;
+
          case INSERT:
             if(Objc<4) {
-               Tcl_WrongNumArgs(Interp,1,Objv,"code value units");
+               Tcl_WrongNumArgs(Interp,1,Objv,"code desc unit");
                return(TCL_ERROR);
             }
             Tcl_GetLongFromObj(Interp,Objv[++i],&code);
@@ -2794,8 +2813,8 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    float        *valf;
    double        val;
 
-   static CONST char *sopt[] = { "-ELEMENT",NULL };
-   enum                opt { ELEMENT };
+   static CONST char *sopt[] = { "-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
+   enum                opt { ELEMENT,DESC,UNIT,CODE,VALUE };
 
    data=MetReport_Get(Name);
    if (!data) {
@@ -2810,6 +2829,71 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
       }
 
       switch ((enum opt)idx) {
+         case DESC:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(e=0;e<data->Ne;e++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(BUFRTable[data->Code[e]].Desc,-1));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&ne);
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(BUFRTable[data->Code[ne]].Desc,-1));
+            }
+            break;
+
+         case UNIT:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(e=0;e<data->Ne;e++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(BUFRTable[data->Code[e]].Unit,-1));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&ne);
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(BUFRTable[data->Code[ne]].Unit,-1));
+            }
+            break;
+
+         case CODE:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(e=0;e<data->Ne;e++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(BUFRTable[data->Code[e]].No));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&ne);
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(BUFRTable[data->Code[ne]].No));
+            }
+            break;
+
+         case VALUE:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(e=0;e<data->Ne;e++) {
+                  sub=Tcl_NewListObj(0,NULL);
+                  for(v=0;v<data->Nv;v++) {
+                     for(t=0;t<data->Nt;t++) {
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                     }
+                  }
+                  Tcl_ListObjAppendElement(Interp,obj,sub);
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&ne);
+               sub=Tcl_NewListObj(0,NULL);
+               for(v=0;v<data->Nv;v++) {
+                  for(t=0;t<data->Nt;t++) {
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,ne,v,t)));
+                  }
+               }
+               Tcl_SetObjResult(Interp,sub);
+            }
+
+            break;
+
          case ELEMENT:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -2876,7 +2960,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                      }
                   } else {
                      valf=(float*)malloc(data->Ne*data->Nv*data->Nt*sizeof(float));
-                 }
+                  }
 
                   for(v=0;v<data->Nv;v++) {
                      Tcl_ListObjIndex(Interp,Objv[i],v,&obj);
