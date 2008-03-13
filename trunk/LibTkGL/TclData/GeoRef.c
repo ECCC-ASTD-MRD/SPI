@@ -1077,10 +1077,10 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1) {
    }
 
    /*Pacth temporaire du au lagrangien qui doivent avoir des GeoRef differents*/
-   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[0]=='#' || Ref0->Grid[0]=='X')
+   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#' || Ref0->Grid[0]=='X')
       return(0);
 
-   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[0]=='#' || Ref1->Grid[0]=='X')
+   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#' || Ref1->Grid[0]=='X')
       return(0);
 
    if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)
@@ -1135,6 +1135,13 @@ TGeoRef *GeoRef_Reference(TGeoRef *Ref) {
    ref->UnProject=Ref->UnProject;
    ref->Value=Ref->Value;
    ref->Distance=Ref->Distance;
+
+   ref->Loc.lat=Ref->Loc.lat;
+   ref->Loc.lon=Ref->Loc.lon;
+   ref->Loc.elev=Ref->Loc.elev;
+   ref->R=Ref->R;
+   ref->ResR=Ref->ResR;
+   ref->ResA=Ref->ResA;
 
    GeoRef_Put(NULL,NULL,ref);
    return(ref);
@@ -1306,6 +1313,8 @@ TGeoRef* GeoRef_New() {
    ref->Loc.lon=-999;
    ref->Loc.elev=-999;
    ref->R=0;
+   ref->CTH=0;
+   ref->STH=0;
    ref->ResR=0;
    ref->ResA=0;
 

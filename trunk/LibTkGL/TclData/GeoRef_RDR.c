@@ -93,30 +93,25 @@ double GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Dist,double Sweep,float *Length,float *ThetaXY){
+int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,float *Length,float *ThetaXY){
 
-   float    x,y,z;
    int      valid=0,mem,ix,iy;
 
    *Length=Def->NoData;
 
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
-   if (C<Def->NC && Dist<=Ref->R) {
-
-      x=Azimuth/Ref->ResA;
-      y=Dist/Ref->ResR;
-      z=Sweep;
+   if (C<Def->NC && Bin<=Ref->R) {
 
       mem=Def->NI*Def->NJ*(int)Sweep;
 
-      ix=ROUND(x);
-      iy=ROUND(y);
+      ix=ROUND(Azimuth);
+      iy=ROUND(Bin);
 
-      if (Def->Type<=9 || Mode=='N' || (x==ix && y==iy)) {
+      if (Def->Type<=9 || Mode=='N' || (Azimuth==ix && Bin==iy)) {
          mem+=iy*Def->NI+ix;
          Def_Get(Def,C,mem,*Length);
       } else {
-         *Length=VertexValN(Ref,Def,C,x,y,z);
+         *Length=VertexValN(Ref,Def,C,Azimuth,Bin,Sweep);
       }
       valid=1;
    }
@@ -161,13 +156,22 @@ int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 
    loc0.lat=DEG2RAD(Ref->Loc.lat);
    loc0.lon=DEG2RAD(Ref->Loc.lon);
-   x=DEG2RAD(X);
-   d=M2RAD(Y);
 
-   *Lat=asin(sin(loc0.lat)*cos(d)+cos(loc0.lat)*sin(d)*cos(x));
-   *Lon=fmod(loc0.lon+(atan2(sin(x)*sin(d)*cos(loc0.lat),cos(d)-sin(loc0.lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
-   *Lat=RAD2DEG(*Lat);
-   *Lon=RAD2DEG(*Lon);
+   X*=Ref->ResA;
+   Y*=Ref->ResR;
+
+   x=DEG2RAD(X);
+   d=M2RAD(Y*Ref->CTH);
+
+   if (Transform) {
+      *Lat=asin(sin(loc0.lat)*cos(d)+cos(loc0.lat)*sin(d)*cos(x));
+      *Lon=fmod(loc0.lon+(atan2(sin(x)*sin(d)*cos(loc0.lat),cos(d)-sin(loc0.lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
+      *Lat=RAD2DEG(*Lat);
+      *Lon=RAD2DEG(*Lon);
+   } else {
+      *Lat=d;
+      *Lon=x;
+   }
 
    return(1);
 }
@@ -209,12 +213,21 @@ int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
 
    d=fabs(DIST(0.0,loc0.lat,loc0.lon,Lat,Lon));
    x=-RAD2DEG(COURSE(loc0.lat,loc0.lon,Lat,Lon));
-   *X=x<0?x+360:x;
-   *Y=d;
+   *X=x<0.0?x+360.0:x;
+   *Y=d/Ref->CTH;
 
-   if (d>Ref->R)
+   if (Transform) {
+      *X/=Ref->ResA;
+      *Y/=Ref->ResR;
+   }
+
+   if (*Y>Ref->Y1) {
+      if (!Extrap) {
+         *X=-1.0;
+         *Y=-1.0;
+      }
       return(0);
-
+   }
    return(1);
 }
 
@@ -228,7 +241,7 @@ int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
  *    <Lat>     : Latitude du centre
  *    <Lon>     : Longitude du centre
  *    <Height>  : Altitude du centre
- *    <Radius>  : Rayon
+ *    <NBin>    : Nombre de bin
  *    <ResR>    : Resolution en distance
  *    <ResA>    : Resolution en azimuth
  *
@@ -242,7 +255,7 @@ int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
  *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
-TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,double Radius,double ResR,double ResA,int NTheta,float *Theta) {
+TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta) {
 
    TGeoRef *ref;
 
@@ -252,11 +265,13 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,double Radius,doubl
    ref->Loc.lat=Lat;
    ref->Loc.lon=Lon;
    ref->Loc.elev=Height;
-   ref->R=Radius;
+   ref->R=R;
    ref->ResR=ResR;
    ref->ResA=ResA;
 
-   ref->LevelType=LVL_THETA;
+   GeoRef_Size(ref,0,0,0,360/ResA,R-1,NTheta-1,0);
+
+   ref->LevelType=LVL_ANGLE;
    ref->LevelNb=NTheta;
    ref->Levels=(float*)calloc(ref->LevelNb+1,sizeof(float));
    if (Theta)

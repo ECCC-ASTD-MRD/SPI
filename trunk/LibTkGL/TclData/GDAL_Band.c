@@ -1482,7 +1482,7 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,int NbOptions,
 */
 int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int          i,c,w,h,idx,*histo,ex=0;
+   int          i,c,w,h,idx,*histo,ex=0,tr=1;
    double       lat,lon,x0,y0,dval,min,max;
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
@@ -1675,15 +1675,8 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case PROJECT:
-            obj=Tcl_NewListObj(0,NULL);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&x0);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&y0);
-            band->Ref->Project(band->Ref,x0,y0,&lat,&lon,1,0);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lat));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lon));
-            Tcl_SetObjResult(Interp,obj);
-            break;
-
+            tr=0;
+            ex=1;
          case GRIDPOINT:
             obj=Tcl_NewListObj(0,NULL);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&x0);
@@ -1691,22 +1684,15 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==4) {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
             }
-            band->Ref->Project(band->Ref,x0,y0,&lat,&lon,ex,1);
+            band->Ref->Project(band->Ref,x0,y0,&lat,&lon,ex,tr);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lon));
             Tcl_SetObjResult(Interp,obj);
             break;
 
          case UNPROJECT:
-            obj=Tcl_NewListObj(0,NULL);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon);
-            band->Ref->UnProject(band->Ref,&x0,&y0,lat,lon,1,0);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x0));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y0));
-            Tcl_SetObjResult(Interp,obj);
-            break;
-
+            tr=0;
+            ex=1;
          case COORDPOINT:
             obj=Tcl_NewListObj(0,NULL);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat);
@@ -1714,7 +1700,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==4) {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
             }
-            band->Ref->UnProject(band->Ref,&x0,&y0,lat,lon,ex,1);
+            band->Ref->UnProject(band->Ref,&x0,&y0,lat,lon,ex,tr);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x0));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y0));
             Tcl_SetObjResult(Interp,obj);

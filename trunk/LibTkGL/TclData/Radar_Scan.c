@@ -445,7 +445,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
    Coord      coord;
-   double     az,dt,th,sth,cth;
+   double     az,dt,th,cth,sth;
    int        i,j,k,idxi,idxk,dk;
 
    Rad->Ref->Pos=(Vect3d*)malloc(FSIZE3D(Rad->Def)*sizeof(Vect3d));
@@ -457,25 +457,28 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
 
    if (Rad->Ref->Grid[0]=='V') {
       for (j=0;j<Rad->Def->NJ;j++) {
+         idxi=j*Rad->Def->NI;
+         th=DEG2RAD(Rad->Ref->Levels[j]);
+         Rad->Ref->CTH=cos(th);
+         Rad->Ref->STH=sin(th);
          for (i=0;i<Rad->Def->NI;i++) {
-            idxi=j*Rad->Def->NI+i;
             coord.lat=Rad->Ref->Lat[i];
             coord.lon=CLAMPLON(Rad->Ref->Lon[i]);
-            Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.lat,coord.lon,0,1);
-            coord.elev=Rad->Ref->Loc.elev+sin(DEG2RAD(Rad->Ref->Levels[j]))*dt;
-
+            Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.lat,coord.lon,1,0);
+            coord.elev=Rad->Ref->Loc.elev+Rad->Ref->STH*dt;
             if (Proj) {
                ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Rad->Ref->Pos[idxi],1);
             } else {
                Vect_Init(Rad->Ref->Pos[idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.elev);
             }
+            idxi++;
          }
       }
    } else {
       for (k=0;k<Rad->Def->NK;k++) {            /*Loop on the Sweeps*/
          th=DEG2RAD(vol->sweep[k]->elevationAngle);
-         sth=sin(th);
-         cth=cos(th);
+         Rad->Ref->CTH=cos(th);
+         Rad->Ref->STH=sin(th);
          dk=k*Rad->Def->NI*Rad->Def->NJ;
          for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
             idxi=j*Rad->Def->NI;
@@ -487,11 +490,9 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
                if (i==Rad->Def->NI-1) {
                   Vect_Assign(Rad->Ref->Pos[idxk],Rad->Ref->Pos[dk+j*Rad->Def->NI]);
                } else {
-                  az=i*head->Data->azimuthResolutionDegree;
                   dt=j*head->Data->binResolutionKM*1000;
-                  Rad->Ref->Pos[idxk][2]=Rad->Ref->Loc.elev+sth*dt;
-                  dt*=cth;
-                  Rad->Ref->Project(Rad->Ref,az,dt,&Rad->Ref->Pos[idxk][1],&Rad->Ref->Pos[idxk][0],0,1);
+                  Rad->Ref->Pos[idxk][2]=Rad->Ref->Loc.elev+Rad->Ref->STH*dt;
+                  Rad->Ref->Project(Rad->Ref,i,j,&Rad->Ref->Pos[idxk][1],&Rad->Ref->Pos[idxk][0],0,1);
                }
             }
          }
@@ -499,6 +500,9 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
       ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Rad->Ref->Pos,NULL,FSIZE3D(Rad->Def));
    }
 
+   th=DEG2RAD(vol->sweep[Rad->Def->Level]->elevationAngle);
+   Rad->Ref->CTH=cos(th);
+   Rad->Ref->STH=sin(th);
    return(Rad->Ref->Pos);
 }
 
