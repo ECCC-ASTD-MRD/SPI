@@ -29,6 +29,8 @@
 namespace eval NowCaster::Obs { } {
    variable Data
    variable Lbl
+   variable Error
+   variable Msg
    variable Bubble
    variable Param
 
@@ -78,6 +80,9 @@ namespace eval NowCaster::Obs { } {
                      "A model by this name already exists, do you we to replace it ?" }
    set Msg(Del)    { "Voulez-vous vraiment supprimer de modèle ?"
                      "do you really want to suppress this model ?" }
+
+   set Error(File) { "Fichier d'observation invalide."
+                     "Invalid observation file." }
 
    set Bubble(Find)       { "Rechercher un station et centrer la vue sur celle-ci" "Find a station and locate the viewport on it" }
    set Bubble(Mode)       { "Activer le mode de sélection des observations\n\nBouton gauche: Sélection\nBouton centre: Déplacer une localisation" "Activate observation selection mode\n\nLeft button  : Select location\nMiddle button: Move location" }
@@ -401,10 +406,13 @@ proc NowCaster::Obs::Read { Obs Files } {
       proc NowCasterObsReader { Obs Files { Thread 0 } } {
 
          foreach file $Files {
-            metobs read $Obs $file
-            file stat $file valid
-            if { $Thread!="0" } {
-               thread::send $Thread [list NowCaster::Obs::ReadProcess $Obs]
+            if { [catch { metobs read $Obs $file }] } {
+               thread::send $Thread "Dialog::CreateError .nowcaster \"\[lindex \$NowCaster::Obs::Error(File) \$GDefs(Lang)\]\n\n$file\" \$GDefs(Lang)"
+            } else {
+               file stat $file valid
+               if { $Thread!="0" } {
+                  thread::send $Thread [list NowCaster::Obs::ReadProcess $Obs]
+               }
             }
          }
          thread::release

@@ -71,6 +71,7 @@
 #define LVL_THETA   6
 #define LVL_ETA     7
 #define LVL_GALCHEN 8
+#define LVL_ANGLE   9
 
 #define GRID_NONE     0x0
 #define GRID_REGULAR  0x1
@@ -166,7 +167,8 @@ typedef struct TGeoRef {
    int    LevelType,LevelNb;                              /*Type de niveaux*/
 
    Coord  Loc;                                            /*(Radar) Localisation du centre de reference*/
-   double R;                                              /*(Radar) Rayon autour du centre de reference*/
+   double CTH,STH;                                        /*(Radar) sin and cos of sweep angle*/
+   int    R;                                              /*(Radar) Rayon autour du centre de reference en bin*/
    double ResR,ResA;                                      /*(Radar) Resolutions en distance et azimuth*/
 
    float        *Lat,*Lon,*Hgt;                           /*Coordonnees des points de grilles (Spherical)*/
@@ -216,7 +218,7 @@ void     GeoRef_Clear(TGeoRef *Ref,int New);
 TGeoRef* GeoRef_Find(TGeoRef *Ref);
 void     GeoRef_Qualify(TGeoRef *Ref);
 
-TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,double Radius,double ResR,double ResA,int NTheta,float *Theta);
+TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta);
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
 TGeoRef* GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRGeometryH Geometry);

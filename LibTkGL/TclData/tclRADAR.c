@@ -463,7 +463,7 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
 
    file->Ref=GeoRef_RDRSetup(getLatitude(&file->Data),getLongitude(&file->Data),getGroundHeight(&file->Data)+getHornHeight(&file->Data),
-       file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep*file->Data.binResolutionKM*1000,file->Data.binResolutionKM*1000,
+       file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep,file->Data.binResolutionKM*1000,
        file->Data.azimuthResolutionDegree,file->Data.volScan[0]->numSweeps,th);
 
    obj=Tcl_NewListObj(0,NULL);

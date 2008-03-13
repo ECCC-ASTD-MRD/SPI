@@ -572,6 +572,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 
       if { [fstdfield is $field] && [fstdfield define $field -GRTYP]!="V" } {
          set ij [fstdfield stats $field -coordpoint $Lat $Lon]
+         set pij [fstdfield stats $field -unproject $Lat $Lon]
          set value [fstdfield stats $field -coordvalue $Lat $Lon]
          set spd [lindex $value 0]
          set dir [lindex $value 1]
@@ -581,7 +582,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
          } else {
             set value [FSTD::FieldFormat $field $spd]
          }
-         lappend list [list [fstdfield configure $field -desc] $ij $ij $value]
+         lappend list [list [fstdfield configure $field -desc] $ij $pij $value]
          append Page::Data(Value) "[fstdfield configure $field -desc]:$value "
       }
    }

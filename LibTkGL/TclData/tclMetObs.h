@@ -41,6 +41,7 @@
 #define _tclMetObs_h
 
 #include "tclData.h"
+#include "bufr_api.h"
 
 #define MetObs_GetData(MD,E,V,T) (MD->Data[(T*MD->Nv+V)*MD->Ne+E])
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
@@ -50,7 +51,6 @@
 #define MET_STATENEW 0x0
 #define MET_STATESCO 0x1
 #define MET_STATEHCO 0x2
-
 
 typedef struct TBUFRTable {
    unsigned int No;
@@ -151,8 +151,8 @@ TMetElemData **TMetElem_Add(TMetLoc *Loc,time_t Time);
 TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,int Exact);
 void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);
-float         TMetElem_Value(TMetElemData *Data,int Code,int Nv,int Nt);
-float         TMetElem_Height(TMetElemData *Data,int Code,int Nv,int Nt);
+float         TMetElem_Value(TMetElemData *Data,int Code,int Ne,int Nv,int Nt);
+float         TMetElem_Height(TMetElemData *Data,int Code,int Ne,int Nv,int Nt);
 
 void          TMetElemData_Free(TMetElemData *Data);
 

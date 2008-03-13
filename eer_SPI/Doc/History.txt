@@ -1,3 +1,41 @@
+Version 7.2.4 (Mars 2008)
+- Ajout de la fonction zoom en utilisant le roulette de la souris.
+- Ajout de fonctions de continuations de mouvement (spin) avec les manipulations de viewport.
+- Changement du mode de manipulatio de SPI pour être plus standard avec d'autres applications/globe virtuel tel goolgle earth et nasa worldwind.
+  Le bouton gauche de la souris sert maintenant aux rotations/translation et on appuie sur la roulette pour faire des boites de zoom.
+- Mise en thread de la gestion des données géographiques de bases (GDB).
+- Ajout des régions de couverture radar nord-americains.
+- Correction d'un problème avec l'affichage des données radar en iso-surfaces et d'un problème d'interpolation des valeurs.
+- Correction du remplissage/achurage dans les primitives de dessin.
+- Le compas est maintenant interactif, on peut prendre une des icones de direction (N,S,E,W) et faire tourner la vue associée
+- Ajout d'options de création des objets graphique (vue, graphiques, ...) pour les créér dans la page courantes, une nouvelle page ou une nouvelle fenêtre.
+- Possibilité d'afficher les données d'observations pour une stations par élément ou par rapport.
+- Changement de la méthode de rendue des graphs pour utiliser les shaders.
+- Correction d'un problème avec la dernière image d'une animation en mode boucle.
+- Gestion des valeurs de bordure de tuile de données raster géographiques pour les interpolations.
+- Correction d'un problème d'inversion des intervals quand le minimum specifié est plus grand que le maximum.
+- Correction d'un problème avec la fonction ifelse des calculs avec des valeurs entière.
+- Ajout de la lecture des format OpenFlight et 3DS.
+- Utilisation de la librairie librmn_009.
+- Utilisation de la date dans le nom des fichiers lors de la sauvegarde des images d'animations en mode temporel.
+- On peut maintenant selectionner une seule icone dasn la liste des experiences.
+- Ajout des secondes dans les specifications de coordonnees de localisationes dan les experiences.
+- Utilisation de la valeur nodata pour restreindre les limites d'affichage et de l'histogramme des données raster.
+- L'interpolation CONSERVATIVE peut maintenant etre faites sur plusieurs fichiers comme les modes AVERAGING et autres.
+- Ajout des fonctions de calculs de longueur de cellule et d'orientation des cellules d'une grille RPN.
+- Ajout de la fonction de create de grille tordues GEM.
+- Nouvel outils de krigage, horizontal et vertical
+- Affichage des observations sous forme de trajectoire de vol d'avions
+- Ajout de méthode d'interpolation dans des données vectorielles (CONSERVATIVE,NORMALIZED_CONSERVATIVE,INCLUDED,WITHIN)
+- Plusieurs optimisations dans les fonctions de calculs et d'interplolation
+- Changement majeur dans l'outils de données géographiques. Améliorations de la boite de recherche de données et ajout du WMS.
+- Ajustement de l'illumination globale en 3D.
+- Ajout de normales lorsque des données sont drapées sur de la topographie, donc illumination des reliefs.
+- Ajout d'une échelle 3D dans la verticale pour toutes les projections.
+- Format de coupe verticale en fichier standards.
+- Interpolation / Rasterisation de grille Y
+- Ajout d'un parametres de delta au facteur de conversion des champs et observations (({data}+Delta)*Facteur).
+
 Version 7.2.3 (Mai 2007)
 -Utilisation de Pixel/Fragment shader pour le rendu de plusieurs types de donnees
 -Correction d'un bug dans les limites min-max des champs autour de 0

@@ -527,11 +527,6 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
             Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1);
 
-            if (Field[f]->Ref->Grid[0]=='R') {
-               i/=Field[f]->Ref->ResA;
-               j/=Field[f]->Ref->ResR;
-            }
-
             /*Vectorial data needs to be referenced along the cut*/
             if (cut->Def->Data[1]) {
                if (i0==-1.0) {
@@ -1569,7 +1564,7 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
 int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj *obj,*sub;
-   int      n,i,j,ni,nj,index,idx,b,f;
+   int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex;
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv;
    float    val,val1,levels[1024];
@@ -1578,10 +1573,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    extern Vect3d GDB_VBuf[];
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN" };
-   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-gridvalue","-coordvalue",
+   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
+   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
       GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX };
 
    if (!Field ) {
@@ -1591,6 +1586,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    /*Calculer les statistiques si elle ne le sont pas deja*/
    if (!Field->Stat)
       Data_GetStat(Field);
+
+   ex=Field->Spec->ExtrapDegree[0]!='N'?1:0;
 
    for(i=0;i<Objc;i++) {
 
@@ -1765,6 +1762,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_SetObjResult(Interp,obj);
             break;
 
+         case PROJECT:
+            tr=0;
+            ex=1;
          case GRIDPOINT:
             if (!Field->Ref) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
@@ -1781,7 +1781,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                dlat=Field->Ref->Lat[index];
                dlon=Field->Ref->Lon[index];
             } else {
-               Field->Ref->Project(Field->Ref,dx,dy,&dlat,&dlon,Field->Spec->ExtrapDegree[0]!='N'?1:0,1);
+               Field->Ref->Project(Field->Ref,dx,dy,&dlat,&dlon,ex,tr);
             }
             obj=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
@@ -1864,6 +1864,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_SetObjResult(Interp,obj);
             break;
 
+         case UNPROJECT:
+           tr=0;
+           ex=1;
          case COORDPOINT:
             if (!Field->Ref) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
@@ -1871,7 +1874,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon);
-            Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,Field->Spec->ExtrapDegree[0]!='N'?1:0,1);
+            Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,ex,tr);
             obj=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dx));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dy));
@@ -2069,7 +2072,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->Level));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&n);
+               if (n<0 || n>Field->Ref->LevelNb) {
+                  Tcl_AppendResult(Interp,"Data_Stat: Invalid level index",(char*)NULL);
+                  return(TCL_ERROR);
+               }
                if (n!=Field->Def->Level) {
+                  if (Field->Ref->LevelType==LVL_ANGLE) {
+                     Field->Ref->CTH=cos(DEG2RAD(Field->Ref->Levels[n]));
+                     Field->Ref->STH=sin(DEG2RAD(Field->Ref->Levels[n]));
+                  }
                   Field->Def->Level=n;
                   Data_Clean(Field,0,0,1);
                }
@@ -2157,6 +2168,7 @@ double Data_Level2Meter(int Type,double Level) {
       case LVL_HYBRID  : return (SIGMA2METER(Level)); break;
       case LVL_THETA   : return (SIGMA2METER(Level)); break;
       case LVL_GALCHEN : return (Level); break;
+      case LVL_ANGLE   : return (Level); break;
    }
 
    return(0.0);
