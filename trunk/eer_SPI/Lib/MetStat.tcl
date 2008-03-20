@@ -493,14 +493,20 @@ proc MetStat::RECRCLoad { File } {
 
    while { ![eof $file] } {
 
+      set first [string range $line 0 0]
+      if { $first=="#" || $first=="*" } {
+         gets $file line
+         continue
+      }
+
       #----- Check for "vecteur" directive
-      if { [string first "VECTEUR" [string toupper $line]]!=-1 && [string range $line 0 0]!="#"} {
+      if { [string first "VECTEUR" [string toupper $line]]!=-1 } {
           fstdfield vector [string map { vecteur "" VECTEUR "" "(" "" ")" "" "'" \" "," " " } $line]
           gets $file line
       }
 
       #----- Check for "defvar" directive
-      if { [string first "DEFVAR" [string toupper $line]]!=-1 && [string range $line 0 0]!="#"} {
+      if { [string first "DEFVAR" [string toupper $line]]!=-1 } {
 
          set cmd $line
          gets $file line
@@ -508,8 +514,9 @@ proc MetStat::RECRCLoad { File } {
          while { [string first "DEFVAR" [string toupper $line]]==-1 && [string first "END" [string toupper $line]]==-1 && [string first "GRILLE" [string toupper $line]]==-1 && ![eof $file] } {
 
             #----- Concatener toutes les lignes en une commande
+            set first [string range $line 0 0]
 
-            if { [string range $line 0 0]!="#" } {
+            if { $first!="#" && $first!="*" } {
                set cmd "$cmd[string trim $line]"
             }
             gets $file line

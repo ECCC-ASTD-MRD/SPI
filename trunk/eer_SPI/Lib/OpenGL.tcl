@@ -208,7 +208,7 @@ proc OpenGL::Update { } {
    set stat [glrender -stat]
 
    if { !$Param(Res) } {
-      set OpenGL::Param(Res) [expr [glrender -direct]?1:10]
+      set OpenGL::Param(Res)  [expr [glrender -direct]?1:10]
    }
 
    #----- si les informations resources sont affichees

@@ -2653,6 +2653,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
       }
    } else {
       Viewport::Rotate $Frame $Lat $Lon $Zoom
+      Viewport::Resolution $Frame 1
    }
 }
 

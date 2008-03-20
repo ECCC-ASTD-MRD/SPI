@@ -232,7 +232,7 @@ proc SPI::Params { } {
       Page::ParamFrame       .params.tab .params.command.apply
       OpenGL::ParamFrame     .params.tab .params.command.apply
 
-      TabFrame::Select .params.tab 0 1
+      TabFrame::Select .params.tab 0
    } else {
       if { ![winfo ismapped .params] } {
          .params.command.apply configure -state disabled

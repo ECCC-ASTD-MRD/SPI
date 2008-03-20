@@ -824,7 +824,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             }
 
 
-            if ((pos=MetObs_Grid(field0->Ref,metobs,time,Tcl_GetString(Objv[5]),&npos,n))) {
+            if ((pos=MetObs_Grid(Interp,field0->Ref,metobs,time,Objv[5],&npos,n))) {
                ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
                free(pos);
             } else {

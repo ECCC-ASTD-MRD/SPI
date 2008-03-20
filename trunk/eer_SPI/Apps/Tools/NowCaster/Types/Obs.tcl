@@ -132,7 +132,7 @@ proc NowCaster::Obs::Window { Frame } {
       checkbutton $Frame.head.mode -variable Page::Data(ToolMode) -onvalue NowCaster::Obs -offvalue SPI \
          -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
          -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-      button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 2 2 }
+      button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 2 }
       menubutton $Frame.head.add -image PLUS -bd 0 -relief flat -menu $Frame.head.add.list
       button $Frame.head.del -image DELETE -bd 1 -relief flat -overrelief raised \
          -command "catch { NowCaster::Obs::Delete \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
@@ -177,7 +177,7 @@ proc NowCaster::Obs::Window { Frame } {
          ComboBox::Create $Frame.model.name.model NowCaster::Obs::Data(ModelName) edit sorted nodouble -1 $NowCaster::Obs::Data(Models) 2 6 \
             "NowCaster::Obs::ModelSelect \$NowCaster::Obs::Data(ModelName)"
          button $Frame.model.name.new  -image PINNEW  -relief flat -bd 0 -overrelief raised \
-            -command { NowCaster::Obs::ModelSelect \$NowCaster::Obs::Data(ModelName) { { 0 0 UNKNOWN } } }
+            -command { NowCaster::Obs::ModelSelect \$NowCaster::Obs::Data(ModelName) { { 0 0 0 } } }
          button $Frame.model.name.save  -image PINSAVE  -relief flat -bd 0 -overrelief raised \
             -command { NowCaster::Obs::ModelAdd $NowCaster::Obs::Data(ModelName) [NowCaster::Obs::ModelParse] }
          button $Frame.model.name.del    -image PINDEL   -relief flat -bd 0 -overrelief raised \
@@ -368,7 +368,6 @@ proc NowCaster::Obs::ReadProcess { Obs } {
 
    #----- Define default model
    set Data(Elems$Obs) [metobs define $Obs -ELEMENT]
-
    if { ![llength $Data(Model$Obs)] } {
       set Data(Model$Obs) [list [list 0 0 [lindex $Data(Elems$Obs) 0]]]
       NowCaster::Obs::ObsSelect $Obs
@@ -940,6 +939,19 @@ proc NowCaster::Obs::ModelLoad { } {
             lappend Data(Models) $name
             set Data(Models$name) [lindex $line 1]
             set Data(Param$name) [lindex $line 2]
+
+            #----- Convert description to code
+            set m 0
+            foreach item $Data(Models$name)  {
+               set code0 [lindex $item 2]
+               set code1 [lindex $item 3]
+               lset Data(Models$name) $m 2 [set code0 [lindex [metobs table -desc $code0] 0]]
+               if { $code1!="" } {
+                  lset Data(Models$name) $m 3 [lindex [metobs table -desc $code1] 0]
+               }
+               lset Data(Param$name) $m 2 $code0
+               incr m
+            }
          }
       }
       close $f
@@ -978,16 +990,27 @@ proc NowCaster::Obs::ModelSave { } {
    set f [open $GDefs(DirEER)/eer_ObsModel w]
    foreach model $Data(Models) {
       set mparam {}
+      set msave $Data(Models$model)
+
+      #----- Convert code to description
+      set m 0
       foreach item $Data(Models$model) {
-         set var [lindex $item 2]
-         Obs::ParamGet $var
-         lappend mparam "dataspec configure \"$var\" -factor $Obs::Param(Factor) -value $Obs::Param(Order) $Obs::Param(Mantisse) -size $Obs::Param(Size)\
+         set var0 [lindex $item 2]
+         set var1 [lindex $item 3]
+         lset msave $m 2 [set var0 [metobs table -code $var0]]
+         if { $var1!="" } {
+            lset msave $m 3 [set var1 [metobs table -code $var1]]
+         }
+
+         Obs::ParamGet [lindex $item 2]
+         lappend mparam "dataspec configure $var0 -factor $Obs::Param(Factor) -value $Obs::Param(Order) $Obs::Param(Mantisse) -size $Obs::Param(Size)\
             -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\" -unit \"$Obs::Param(Unit)\" -rendercontour $Obs::Param(Contour)\
             -rendervector $Obs::Param(Vector) -rendertexture $Obs::Param(Texture) -rendervolume $Obs::Param(Volume)\
             -rendercoord $Obs::Param(Coord) -rendervalue $Obs::Param(Value) -renderlabel $Obs::Param(Label)\
-            -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Intervals)\" -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)" \
+            -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Intervals)\" -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)"
+         incr m
       }
-      puts $f "\"$model\" { $Data(Models$model) } { $mparam }"
+      puts $f "\"$model\" { $msave } { $mparam }"
    }
    close $f
 

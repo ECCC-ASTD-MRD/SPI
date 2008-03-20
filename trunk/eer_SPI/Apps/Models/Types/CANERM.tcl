@@ -897,14 +897,14 @@ proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
          if { $Sim(IsoNb)==0 } {
             Debug::TraceProc "CANERM: Not enough pollutants"
             Dialog::CreateError .canermnew [lindex $Error(NbIso) $GDefs(Lang)] $GDefs(Lang)
-            TabFrame::Select $Tab 0 1
+            TabFrame::Select $Tab 0
             return
          }
 
          if { $Sim(EmHeight)>30000 } {
             Debug::TraceProc "CANERM: Height over 30000 meters"
             Dialog::CreateError .canermnew [lindex $Error(Height) $GDefs(Lang)] $GDefs(Lang)
-            TabFrame::Select $Tab 0 1
+            TabFrame::Select $Tab 0
             return
          }
 
@@ -958,7 +958,7 @@ proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
       set CANERM::Sim(Duration) "??? Hrs"
       $Tab config -cursor left_ptr
    } else {
-      TabFrame::Select $Tab 0 1
+      TabFrame::Select $Tab 0
       $Tab config -cursor left_ptr
       return
    }

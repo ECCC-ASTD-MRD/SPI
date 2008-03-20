@@ -766,7 +766,7 @@ proc Watch::Params { Frame } {
       pack .watchparams.command -side top -fill x -padx 5 -pady 5
 
       bind $Data(Tab2).species.intensity.entry <Leave> "Watch::IsoModif"
-      TabFrame::Select .watchparams.sims 0 1
+      TabFrame::Select .watchparams.sims 0
    }
 
    ParamsInit

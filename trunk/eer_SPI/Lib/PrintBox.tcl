@@ -437,7 +437,7 @@ proc PrintBox::Create { Frame Mode args } {
 
    PrintBox::SelectOutputType $Mode
    PrintBox::SetDevice
-   TabFrame::Select .printbox.tab 0 1
+   TabFrame::Select .printbox.tab 0
 
    raise .printbox
 }

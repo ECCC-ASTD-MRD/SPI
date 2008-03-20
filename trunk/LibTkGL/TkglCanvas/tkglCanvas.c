@@ -1866,6 +1866,7 @@ glCanvasWidgetCmd(clientData, interp, argc, argv)
           }
           break;
        }
+       GLRender->XExpose=GLRender->XExpose>=0?1:GLRender->XExpose;
        glCanvasSetOrigin(canvasPtr, newX, canvasPtr->yOrigin);
    }
    break;
@@ -1910,6 +1911,7 @@ glCanvasWidgetCmd(clientData, interp, argc, argv)
           }
           break;
        }
+       GLRender->XExpose=GLRender->XExpose>=0?1:GLRender->XExpose;
        glCanvasSetOrigin(canvasPtr, canvasPtr->xOrigin, newY);
    }
    break;
@@ -2427,6 +2429,7 @@ static void DisplayglCanvas(ClientData clientData) {
    GLRender->RenderTime=glGetProcInfo(&GLRender->MemRes);
 
    DisplayglCanvasItems(clientData,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
+   GLRender->XExpose=GLRender->XExpose>=0?0:GLRender->XExpose;
 
    /* Swap the buffers to display the TkglItems */
 #ifdef WIN32
@@ -2491,25 +2494,21 @@ static void glCanvasEventProc(clientData, eventPtr)
     TkCanvas *canvasPtr = (TkCanvas *) clientData;
 
     if (eventPtr->type == Expose) {
-   int x, y;
-
-   x = eventPtr->xexpose.x + canvasPtr->xOrigin;
-   y = eventPtr->xexpose.y + canvasPtr->yOrigin;
-   Tk_glCanvasEventuallyRedraw((Tk_Canvas) canvasPtr, x, y,
-      x + eventPtr->xexpose.width,
-      y + eventPtr->xexpose.height);
-   if ((eventPtr->xexpose.x < canvasPtr->inset)
-      || (eventPtr->xexpose.y < canvasPtr->inset)
-      || ((eventPtr->xexpose.x + eventPtr->xexpose.width)
-          > (Tk_Width(canvasPtr->tkwin) - canvasPtr->inset))
-      || ((eventPtr->xexpose.y + eventPtr->xexpose.height)
-          > (Tk_Height(canvasPtr->tkwin) - canvasPtr->inset))) {
-       canvasPtr->flags |= REDRAW_BORDERS;
-   }
+       int x, y;
+       GLRender->XExpose=GLRender->XExpose>=0?1:GLRender->XExpose;
+       x = eventPtr->xexpose.x + canvasPtr->xOrigin;
+       y = eventPtr->xexpose.y + canvasPtr->yOrigin;
+       Tk_glCanvasEventuallyRedraw((Tk_Canvas) canvasPtr, x, y, x + eventPtr->xexpose.width, y + eventPtr->xexpose.height);
+       if ((eventPtr->xexpose.x < canvasPtr->inset)
+          || (eventPtr->xexpose.y < canvasPtr->inset)
+          || ((eventPtr->xexpose.x + eventPtr->xexpose.width) > (Tk_Width(canvasPtr->tkwin) - canvasPtr->inset))
+          || ((eventPtr->xexpose.y + eventPtr->xexpose.height) > (Tk_Height(canvasPtr->tkwin) - canvasPtr->inset))) {
+          canvasPtr->flags |= REDRAW_BORDERS;
+       }
     } else if (eventPtr->type == DestroyNotify) {
-   DestroyglCanvas((char *) canvasPtr);
+       DestroyglCanvas((char *) canvasPtr);
     } else if (eventPtr->type == ConfigureNotify) {
-   canvasPtr->flags |= UPDATE_SCROLLBARS;
+      canvasPtr->flags |= UPDATE_SCROLLBARS;
 
    /*
     * The call below is needed in order to recenter the canvas if

@@ -1509,7 +1509,8 @@ proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
       $Canvas create window $X1 $Y1 -window $Canvas.bs$Tag -anchor se -tags "BS$Tag NOPRINT"
    }
 
-   bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag \[winfo rootx $Canvas\] \[winfo rooty $Canvas\]"
+#   bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag \[winfo rootx $Canvas\] \[winfo rooty $Canvas\]"
+   bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag %X %Y"
    bind $Canvas.bs$Tag <ButtonRelease-1> "Shape::UnSet $Canvas $Tag"
    bind $Canvas.bs$Tag <B1-Motion>       "Shape::Scale $Canvas $Tag %X %Y $Command"
 }
@@ -1540,13 +1541,16 @@ proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
 proc Shape::Move { Canvas Tags X Y } {
    variable Data
 
-   set X [Page::Snap $X]
-   set Y [Page::Snap $Y]
+   set X [$Canvas canvasx $X $Page::Data(Snap)]
+   set Y [$Canvas canvasy $Y $Page::Data(Snap)]
+
+   set dx [expr $X-$Data(X0)]
+   set dy [expr $Y-$Data(Y0)]
 
    foreach tag $Tags {
-      $Canvas move $tag   [expr $X-$Data(X0)] [expr $Y-$Data(Y0)]
-      $Canvas move BS$tag [expr $X-$Data(X0)] [expr $Y-$Data(Y0)]
-      $Canvas move BF$tag [expr $X-$Data(X0)] [expr $Y-$Data(Y0)]
+      $Canvas move $tag   $dx $dy
+      $Canvas move BS$tag $dx $dy
+      $Canvas move BF$tag $dx $dy
    }
 
    set Data(X0) $X
@@ -1587,15 +1591,12 @@ proc Shape::Scale { Canvas Tag X Y args } {
       return
    }
 
-   set X [Page::Snap $X]
-   set Y [Page::Snap $Y]
+   set X [$Canvas canvasx [expr $X-$x] $Page::Data(Snap)]
+   set Y [$Canvas canvasy [expr $Y-$y] $Page::Data(Snap)]
 
-   set x [expr $X-$Data(X0)]
-   set y [expr $Y-$Data(Y0)]
-
-   if { [eval $args $x $y] } {
-      $Canvas coords BS$Tag $x $y
-      $Canvas coords BF$Tag [expr $x-11] $y
+   if { [eval $args $X $Y] } {
+      $Canvas coords BS$Tag $X $Y
+      $Canvas coords BF$Tag [expr $X-11] $Y
    }
 }
 
@@ -1625,8 +1626,10 @@ proc Shape::Scale { Canvas Tag X Y args } {
 proc Shape::Set { Canvas Tag X Y } {
    variable Data
 
-   set Data(X0) [Page::Snap $X]
-   set Data(Y0) [Page::Snap $Y]
+   set Data(X0) [$Canvas canvasx $X $Page::Data(Snap)]
+   set Data(Y0) [$Canvas canvasy $Y $Page::Data(Snap)]
+
+   glrender -xexpose -1
 
    if { $Data(Blend) } {
       catch { set Data(Alpha)    [lindex [$Canvas itemconfigure ${Tag} -transparency] end] }
@@ -1658,6 +1661,8 @@ proc Shape::Set { Canvas Tag X Y } {
 
 proc Shape::UnSet { Canvas Tag } {
    variable Data
+
+   glrender -xexpose 1
 
    if { $Data(Blend) } {
       catch { $Canvas itemconfigure ${Tag} -transparency $Data(Alpha) }

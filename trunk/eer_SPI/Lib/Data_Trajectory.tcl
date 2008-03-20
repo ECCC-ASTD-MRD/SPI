@@ -638,6 +638,8 @@ proc Trajectory::ParamFrame { Frame Apply } {
          -command "Trajectory::ParamTypeSet [lindex $Lbl(Level)    $GDefs(Lang)] LEVEL $Apply"
       $Data(Frame).left.traj.type.lst add command -label [lindex $Lbl(Single)   $GDefs(Lang)] \
          -command "Trajectory::ParamTypeSet [lindex $Lbl(Single)   $GDefs(Lang)] SAME $Apply"
+
+   IcoMenu::Set $Data(Frame).left.show.int.sel $Trajectory::Param(Interval)
 }
 
 #----------------------------------------------------------------------------

@@ -727,7 +727,7 @@ proc FieldCalc::Window { { Parent .} } {
 
    wm resizable .fieldcalc True False
 
-   TabFrame::Select .fieldcalc.func 0 1
+   TabFrame::Select .fieldcalc.func 0
 
    focus $Data(Edit)
    $Data(Edit) icursor 0

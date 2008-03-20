@@ -431,7 +431,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
 
 #ifdef LNK_FSTD
    /*Verifier la validite de la grille*/
-   if (!Field->Ref)
+   if (!Field->Ref || Field->Ref->Type==GRID_NONE)
       return(NULL);
 
    if (Field->Ref->Pos)
@@ -2090,7 +2090,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
 
    FSTD_FieldSet(field);
-   GeoRef_Qualify(field->Ref);
+
+   if (grtyp[0]!='X' || (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H')){
+      GeoRef_Qualify(field->Ref);
+   }
    field->Spec->Desc=strdup(h.NOMVAR);
    field->Def->Type=FSTD_Type[h.DATYP];
    memcpy(field->Head,&h,sizeof(FSTD_Head));

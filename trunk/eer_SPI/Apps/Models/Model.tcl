@@ -224,7 +224,7 @@ proc Model::Window { { Show "" } } {
 
    Model::Check $Data(Delay)
 
-   TabFrame::Select .model.tab 1 1
+   TabFrame::Select .model.tab 1
 
    return .model
 }

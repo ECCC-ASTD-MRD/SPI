@@ -153,7 +153,7 @@ proc NowCaster::Window { } {
       }
    }
 
-   TabFrame::Select .nowcaster.tab 0 1
+   TabFrame::Select .nowcaster.tab 0
 
    Bubble::Create .nowcaster.time.clock      [lindex $Bubble(Now) $GDefs(Lang)]
    Bubble::Create .nowcaster.time.clock.down [lindex $Bubble(Opt) $GDefs(Lang)]

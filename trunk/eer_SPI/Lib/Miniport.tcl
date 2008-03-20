@@ -171,12 +171,12 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
 
    #----- bindings de deplacement
 
-   bind $Frame.bm$wtag <ButtonPress-1>      "Page::SnapRef %X %Y"
+   bind $Frame.bm$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
    bind $Frame.bm$wtag <B1-Motion>          "Page::ActiveMove Viewport $Frame MINI$Frame %X %Y"
 
    #----- bindings de scaling
 
-   bind $Frame.bs$wtag <ButtonPress-1>      "Page::SnapRef \[winfo rootx $Frame.page.canvas\] \[winfo rooty $Frame.page.canvas\]"
+   bind $Frame.bs$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
    bind $Frame.bs$wtag <B1-Motion>          "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 1"
    bind $Frame.bs$wtag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 0"
 
