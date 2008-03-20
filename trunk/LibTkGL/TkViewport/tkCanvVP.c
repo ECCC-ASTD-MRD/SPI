@@ -1130,15 +1130,9 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
             /*Effectuer le rendue des champs*/
             if (vp->Frame==0 || alloc) {
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Start Projection\n");
-#endif
-              Projection_Render(NULL,vp,proj,GL_ALL);
+               Projection_Render(NULL,vp,proj,GL_ALL);
                ProjCam_Project(vp->Cam,proj);
 
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Start Raster\n");
-#endif
                /*Rendue des donnees raster*/
                for (i=0;i<vp->NbData;i++) {
                   fld=Data_Get(vp->Data[i]);
@@ -1146,9 +1140,6 @@ fprintf(stderr,"(AQBUG) Start Raster\n");
                      Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
                   }
                }
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Start Vector\n");
-#endif
 
                /*Rendue des donnees vectoriellle*/
                for (i=0;i<vp->NbData;i++) {
@@ -1165,9 +1156,7 @@ fprintf(stderr,"(AQBUG) Start Vector\n");
                      Traj_Render(NULL,traj,vp,proj,GL_RENDER);
                   }
                }
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Done Render\n");
-#endif
+
                if (!GLRender->TRCon && vp->Frames[vp->Frame]) {
                   glReadBuffer(GL_BACK);
                   glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
@@ -1186,9 +1175,6 @@ fprintf(stderr,"(AQBUG) Done Render\n");
       }
    }
 
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Done Render Loop\n");
-#endif
    /*Pourtour*/
    if (vp->FGColor && vp->BDWidth) {
       glLineWidth(vp->BDWidth);
@@ -1220,10 +1206,6 @@ fprintf(stderr,"(AQBUG) Done Render Loop\n");
 
    vp->Update =0;
    vp->Realloc=0;
-
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Exiting Render\n");
-#endif
 }
 
 /*----------------------------------------------------------------------------

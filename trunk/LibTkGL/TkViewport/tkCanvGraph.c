@@ -857,7 +857,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
          glEnd();
       }
 
-     /*Process items*/
+      /*Process items*/
       if (gr->xg[1]>gr->xg[0] && gr->yg[0]>gr->yg[1]) {
          a=0;
          for(i=0;i<gr->NItem;i++) {
