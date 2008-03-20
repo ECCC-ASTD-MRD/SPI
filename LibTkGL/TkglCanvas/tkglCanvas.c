@@ -2318,9 +2318,6 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
    canvasPtr->xOrigin=0;
    canvasPtr->yOrigin=0;
 
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Beginning tiling\n");
-#endif
    /* Render the tiles */
    do {
       trBeginTile(GLRender->TRCon);
@@ -2334,18 +2331,12 @@ fprintf(stderr,"(AQBUG) Beginning tiling\n");
 
       res=trBuffer(Interp,Img,GL_BACK,X,Y,Width,Height,GLRender->TRCon);
    } while (trEndTile(GLRender->TRCon));
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Done tiling\n");
-#endif
    canvasPtr->xOrigin=x;
    canvasPtr->yOrigin=y;
 
    trDelete(GLRender->TRCon);
    GLRender->TRCon=NULL;
    glXFreePBuffer();
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Exit tiling\n");
-#endif
 
   return(res);
 }
@@ -2410,6 +2401,9 @@ static void DisplayglCanvasItems(ClientData clientData,int X,int Y,int Width,int
 fprintf(stderr,"(AQBUG) Rendering item %p\n",itemPtr);
 #endif
       (*itemPtr->typePtr->displayProc)((Tk_Canvas) canvasPtr,itemPtr,canvasPtr->display,Tk_WindowId(tkwin),X,Y,Width,Height);
+#ifdef AQBUG
+fprintf(stderr,"(AQBUG) Done Rendering item %p\n",itemPtr);
+#endif
    }
 }
 

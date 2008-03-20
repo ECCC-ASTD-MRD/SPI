@@ -431,9 +431,6 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    Tk_PhotoHandle     handle;
    int                i,ix,iy,dx,dy;
 
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Start trBuffer\n");
-#endif
    /* Calculer le sdepassement si il y a */
    ix=TR->CurrentColumn*TR->TileWidthNB-X;
    dx=ix<0?-ix:0;
@@ -474,9 +471,6 @@ fprintf(stderr,"(AQBUG) Start trBuffer\n");
    } else {
       return TCL_ERROR;
    }
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Done trBuffer\n");
-#endif
    return TCL_OK;
 }
 
@@ -2255,9 +2249,6 @@ int glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
       pattr[1]=*Width;
       pattr[3]=*Height;
 
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Getting PBuffer\n");
-#endif
       for (n=0;n<GLRender->GLConfigNb;n++) {
          if ((GLRender->GLPBuf=glXCreatePbuffer(GLRender->XDisplay,GLRender->GLConfig[n],pattr)))
             break;
@@ -2271,9 +2262,6 @@ fprintf(stderr,"(AQBUG) Getting PBuffer\n");
          fprintf(stderr,"(ERROR) glXGetPBuffer: Unable to allocate PBuffer\n");
          return(0);
       }
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Got PBuffer\n");
-#endif
    }
 
    if (!glXMakeContextCurrent(GLRender->XDisplay,GLRender->GLPBuf,GLRender->GLPBuf,GLRender->GLCon)) {
@@ -2283,9 +2271,6 @@ fprintf(stderr,"(AQBUG) Got PBuffer\n");
    }
 
    glDefineParams();
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Out PBuffer\n");
-#endif
    return(1);
 }
 

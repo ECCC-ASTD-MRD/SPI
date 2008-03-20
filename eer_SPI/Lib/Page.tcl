@@ -266,7 +266,7 @@ proc Page::ActiveTag { Type Frame Id X Y { Args {} } } {
    Page::SnapRef $Frame $X $Y
 }
 
-proc Page::ActiveUnTag { Type Frame Id } } {
+proc Page::ActiveUnTag { Type Frame Id } {
 
    glrender -xexpose 1 -resolution 1
    catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 }
