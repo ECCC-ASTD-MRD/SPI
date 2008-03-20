@@ -781,7 +781,7 @@ proc SPI::LayoutSaveItems { Frame File } {
 
    #----- Colorbar
 
-   set SPI::Data(ShowColorBar$Frame)   [DataBar::Active $Frame]
+   set SPI::Data(ShowColorBar$Frame)   [ColorBar::Active $Frame]
    if { $SPI::Data(ShowColorBar$Frame) } {
       puts $File ""
       ColorBar::Write $Frame $File
@@ -2285,9 +2285,9 @@ proc SPI::ProjectSaveLayout { File Frame Cam Size } {
       puts $File "   set ProjCam::Data(Params\$Frame) \"[ProjCam::Mem $Frame _____]\""
       puts $File "   ProjCam::Select \$Frame \$Frame  \$Frame"
       eval set list \${ProjCam::Data${Frame}::Cam(LLens)}
-      puts $File "   set ProjCam::Data\$\{Frame\}::Cam(LLens) \{ $list \}"
+      puts $File "   set ProjCam::Data\$\{Frame\}::Cam(LLens) \{ $list \}\n"
    }
-   puts $File "   Page::UpdateItems \$Frame\n"
+   puts $File "   Page::UpdateItems \$Frame"
    puts $File "   Page::ModeSelect \$Page::Data(Mode) \$Frame\n"
 }
 
@@ -2341,6 +2341,12 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       puts $f "\nwm geom . \$SPI::Param(Geom)"
       puts $f "\nSPI::WindowLayout \$SPI::Param(PaneSide) \$SPI::Param(Panes)"
 
+      if { [winfo exists .params] } {
+         puts $f "\nSPI::Params"
+         puts $f "wm geometry .params [wm geom .params]"
+         puts $f "TabFrame::Select .params.tab [TabFrame::Current .params.tab]"
+      }
+
       if { $Layout } {
          foreach pane [.pan.side panes] {
              puts $f "set Frame $pane"
@@ -2348,13 +2354,14 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
          }
       }
 
-      puts $f "#----- SPI's frame\n"
+      puts $f "\n#----- SPI's frame\n"
       foreach tab [TabFrame::GetTabs .mdi] {
          puts $f "set Frame \[SPI::PageNew False \"[TabFrame::GetLabel .mdi $tab]\"\]\n"
          if { $Layout } {
             SPI::ProjectSaveLayout $f .mdi.frame$tab.frame $Cam True
          }
       }
+      puts $f "TabFrame::Select .mdi [TabFrame::Current .mdi]"
 
       foreach win [winfo children .] {
          if { [string equal ".page" [string range $win 0 4]] } {
@@ -2596,7 +2603,7 @@ SPI::WindowLayout $SPI::Param(PaneSide) $SPI::Param(Panes)
 foreach page $SPI::Param(Pages) {
    set frame [SPI::PageNew False $page]
 }
-TabFrame::Select .mdi 0 1
+TabFrame::Select .mdi 0
 
 SPI::Splash "Setting up tools"
 

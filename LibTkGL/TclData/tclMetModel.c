@@ -30,7 +30,7 @@
  * Modification :
  *
  *   Nom        :
- *   Date       :
+  *   Date       :
  *   Description:
  *
  *=========================================================
@@ -97,10 +97,11 @@ int TclMetModel_Init(Tcl_Interp *Interp) {
 */
 static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   TMetModel  *mdl;
-   TDataSpec  *spec;
+   TMetModel   *mdl;
+   TDataSpec   *spec;
+   EntryTableB *eb;
 
-   int         idx,j,code;
+   int         idx,j;
    static CONST char *sopt[] = { "create","free","configure","define","is","all","wipe",NULL };
    enum               opt { CREATE,FREE,CONFIGURE,DEFINE,IS,ALL,WIPE };
 
@@ -144,12 +145,12 @@ static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return TCL_ERROR;
          }
 
-         if ((code=MetObs_BURPFindTableCodeOrDesc(Interp,Objv[3]))==-1) {
-            Tcl_AppendResult(Interp,"\n   MetModel_Define: Wrong element",(char*)NULL);
+         if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,Objv[3]))) {
+            Tcl_AppendResult(Interp,"\n   MetModel_Cmd: Wrong element",(char*)NULL);
             return(TCL_ERROR);
          }
          for(j=0;j<mdl->NItem;j++) {
-            if (mdl->Items[j].Code[0]==code) {
+            if (mdl->Items[j].Code[0]==eb->descriptor) {
                if (strcmp(Tcl_GetString(Objv[4]),"-dataspec")==0) {
                   if (Objc==5) {
                      if (mdl->Items[j].Spec) {
@@ -238,10 +239,10 @@ static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj  *obj,*sub;
-   TMetModel *mdl;
-
-   int       i,j,n,d,k,idx,code;
+   Tcl_Obj     *obj,*sub;
+   TMetModel   *mdl;
+   EntryTableB *eb;
+   int       i,j,n,d,k,idx;
 
    static CONST char *sopt[] = { "-items","-spacing","-flat","-topography",NULL };
    enum                opt { ITEMS,SPACING,FLAT,TOPOGRAPHY };
@@ -266,9 +267,9 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
                   sub=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(mdl->Items[j].X));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(mdl->Items[j].Y));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewStringObj(MetObs_BURPGetTableDesc(mdl->Items[j].Code[0]),-1));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(mdl->Items[j].Code[0]));
                   if (mdl->Items[j].Code[1]) {
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewStringObj(MetObs_BURPGetTableDesc(mdl->Items[j].Code[1]),-1));
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(mdl->Items[j].Code[1]));
                   }
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                }
@@ -301,17 +302,17 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
                         Tcl_GetIntFromObj(Interp,obj,&mdl->Items[mdl->NItem].Y);
                         Tcl_ListObjIndex(Interp,sub,2,&obj);
 
-                        if ((code=MetObs_BURPFindTableCodeOrDesc(Interp,obj))==-1) {
+                        if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,obj))) {
                            Tcl_AppendResult(Interp,"\n   MetModel_Define: Wrong element",(char*)NULL);
                            return(TCL_ERROR);
                         }
-                        mdl->Items[mdl->NItem].Code[0]=code;
+                        mdl->Items[mdl->NItem].Code[0]=eb->descriptor;
                         if (d==4) {
                            Tcl_ListObjIndex(Interp,sub,3,&obj);
-                           if ((code=MetObs_BURPFindTableCodeOrDesc(Interp,obj))==-1) {
+                           if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,obj))) {
                               mdl->Items[mdl->NItem].Code[1]=0;
                            } else {
-                              mdl->Items[mdl->NItem].Code[1]=code;
+                              mdl->Items[mdl->NItem].Code[1]=eb->descriptor;
                            }
                         } else {
                            mdl->Items[mdl->NItem].Code[1]=0;

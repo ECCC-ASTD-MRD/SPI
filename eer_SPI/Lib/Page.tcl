@@ -60,6 +60,8 @@
 #    Page::ActiveFull      { Type Frame Id Full }
 #    Page::ActiveMove      { Type Frame Id X Y }
 #    Page::ActiveScale     { Type Frame Id X Y U }
+#    Page::ActiveTag       { Type Frame Id X Y { Args {} } }
+#    Page::ActiveUnTag     { Type Frame Id } }
 #    Page::ActiveUnWrap    { Frame Object }
 #    Page::ActiveUnWrapper { Type Frame Id }
 #    Page::ActiveWrap      { Frame Object }
@@ -88,9 +90,8 @@
 #    Page::Update          { Frame { VP True } }
 #    Page::UpdateCommand   { Frame }
 #    Page::UpdateItems     { Frame }
-#    Page::Snap            { X }
 #    Page::SnapGrid        { Frame }
-#    Page::SnapRef         { X Y }
+#    Page::SnapRef         { Frame X Y }
 #
 #    VertexAdd    { Frame VP X Y }
 #    VertexDelete { Frame VP }
@@ -239,23 +240,37 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
 
    #----- bindings de deplacement
 
-   if { [llength $Args] } {
-      bind $Frame.bm$tag <ButtonPress-1>   "Page::Activate $Frame; catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }; ${Type}::Activate $Frame $Id $Args; Page::SnapRef %X %Y"
-   } else {
-      bind $Frame.bm$tag <ButtonPress-1>   "Page::Activate $Frame; catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }; ${Type}::Activate $Frame $Id; Page::SnapRef %X %Y"
-   }
+   bind $Frame.bm$tag <ButtonPress-1>   "Page::ActiveTag $Type $Frame $Id %X %Y $Args"
    bind $Frame.bm$tag <B1-Motion>       "Page::ActiveMove $Type $Frame $Id %X %Y"
-   bind $Frame.bm$tag <ButtonRelease-1> "catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 };Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)"
+   bind $Frame.bm$tag <ButtonRelease-1> "Page::ActiveUnTag $Type $Frame $Id"
 
    #----- bindings de scaling
 
+   bind $Frame.bs$tag <ButtonPress-1>   "Page::ActiveTag $Type $Frame $Id %X %Y $Args"
+   bind $Frame.bs$tag <B1-Motion>       "Page::ActiveScale $Type $Frame $Id %X %Y 1"
+   bind $Frame.bs$tag <ButtonRelease-1> "Page::ActiveUnTag $Type $Frame $Id; Page::ActiveScale ${Type} $Frame $Id %X %Y 0"
+}
+
+proc Page::ActiveTag { Type Frame Id X Y { Args {} } } {
+
+   glrender -xexpose -1 -resolution 2
+
+   Page::Activate $Frame
    if { [llength $Args] } {
-      bind $Frame.bs$tag <ButtonPress-1>   "catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }; glrender -resolution 2; ${Type}::Activate $Frame $Id $Args; Page::SnapRef \[winfo rootx $Frame.page.canvas\] \[winfo rooty $Frame.page.canvas\]"
+      ${Type}::Activate $Frame $Id $Args
    } else {
-      bind $Frame.bs$tag <ButtonPress-1>   "catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }; glrender -resolution 2; ${Type}::Activate $Frame $Id; Page::SnapRef \[winfo rootx $Frame.page.canvas\] \[winfo rooty $Frame.page.canvas\]"
+      ${Type}::Activate $Frame $Id
    }
-   bind $Frame.bs$tag <B1-Motion>       "Page::Activate $Frame; Page::ActiveScale ${Type} $Frame $Id %X %Y 1"
-   bind $Frame.bs$tag <ButtonRelease-1> "catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 }; glrender -resolution 1; Page::ActiveScale ${Type} $Frame $Id %X %Y 0 ; Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)"
+   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }
+
+   Page::SnapRef $Frame $X $Y
+}
+
+proc Page::ActiveUnTag { Type Frame Id } } {
+
+   glrender -xexpose 1 -resolution 1
+   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 }
+   eval Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)
 }
 
 proc Page::ActiveUnWrapper { Type Frame Id } {
@@ -310,8 +325,8 @@ proc Page::ActiveMove { Type Frame Id X Y } {
 
    set tag $Page::Data(Tag)$Id
 
-   set X [Page::Snap $X]
-   set Y [Page::Snap $Y]
+   set X [$Frame.page.canvas canvasx $X $Page::Data(Snap)]
+   set Y [$Frame.page.canvas canvasy $Y $Page::Data(Snap)]
 
    set dx [expr $X-$Page::Data(X)]
    set dy [expr $Y-$Page::Data(Y)]
@@ -368,11 +383,11 @@ proc Page::ActiveScale { Type Frame Id X Y U } {
       return
    }
 
-   set X [Page::Snap $X]
-   set Y [Page::Snap $Y]
+   set X [$Frame.page.canvas canvasx [expr $X-$x] $Page::Data(Snap)]
+   set Y [$Frame.page.canvas canvasy [expr $Y-$y] $Page::Data(Snap)]
 
    set ${Type}::Data(Full$Id) 0
-   eval ${Type}::Resize $Frame $Id -999 -999 [expr $X-$Page::Data(X)] [expr $Y-$Page::Data(Y)] $U
+   eval ${Type}::Resize $Frame $Id -999 -999 $X $Y $U
 }
 
 #----------------------------------------------------------------------------
@@ -1517,39 +1532,13 @@ proc Page::UpdateItems { Frame } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Page::Snap>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer le "snap to grid"
-#
-# Parametres :
-#  <X>       : Coorconnee X du coin inferieur droit
-#
-# Retour:
-#
-# Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#----------------------------------------------------------------------------
-
-proc Page::Snap { X } {
-   variable Data
-
-   return [expr $X-(int($X)%$Data(Snap))]
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <Page::SnapGrid>
 # Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Affichage de la grille de "snap"
 #
 # Parametres :
-#  <Canvas>  : Identificateur du canvas
+#  <Frame>   : Identificateur de Page
 #
 # Retour:
 #
@@ -1589,6 +1578,7 @@ proc Page::SnapGrid { Frame } {
 #            et redimenssionement d'un viewport
 #
 # Parametres :
+#   <Frame>  : Identificateur de Page
 #   <X>      : Coordonnee en X du deplacement
 #   <Y>      : Coordonnee en Y du deplacement
 #
@@ -1603,10 +1593,10 @@ proc Page::SnapGrid { Frame } {
 #    Description : -
 #----------------------------------------------------------------------------
 
-proc Page::SnapRef { X Y } {
+proc Page::SnapRef { Frame X Y } {
    variable Data
 
-   set Data(X) [Page::Snap $X]
-   set Data(Y) [Page::Snap $Y]
+   set Data(X) [$Frame.page.canvas canvasx $X $Page::Data(Snap)]
+   set Data(Y) [$Frame.page.canvas canvasy $Y $Page::Data(Snap)]
 }
 

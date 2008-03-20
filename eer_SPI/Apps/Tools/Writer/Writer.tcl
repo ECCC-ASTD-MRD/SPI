@@ -127,7 +127,7 @@ proc Writer::PadClose { Save } {
 
       TabFrame::Delete .writer.pad 1 [string index $Data(Pad) end]
       set Data(Pad) ""
-      TabFrame::Select .writer.pad [TabFrame::Current .writer.pad] 1
+      TabFrame::Select .writer.pad [TabFrame::Current .writer.pad]
    }
 }
 
@@ -197,7 +197,7 @@ proc Writer::PadNew { Type Mode Layout File } {
    }
 
    Writer::${Type}::ToolBar $Data(Pad).head
-   TabFrame::Select .writer.pad [TabFrame::Current .writer.pad] 1
+   TabFrame::Select .writer.pad [TabFrame::Current .writer.pad]
 }
 
 #----------------------------------------------------------------------------

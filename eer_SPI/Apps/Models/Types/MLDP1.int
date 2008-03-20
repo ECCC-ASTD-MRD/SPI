@@ -422,7 +422,7 @@ proc MLDP1::New { Parent } {
    button .mldp1new.close -text "[lindex $Lbl(Close) $GDefs(Lang)]" -bd 1 -command { destroy .mldp1new ; MLDP1::ModeLeave }
    pack .mldp1new.close -side right -padx 5 -pady 5
 
-   TabFrame::Select .mldp1new.opt 0 3
+   TabFrame::Select .mldp1new.opt 0
 }
 
 #----------------------------------------------------------------------------

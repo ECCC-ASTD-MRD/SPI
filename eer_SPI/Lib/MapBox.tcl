@@ -758,7 +758,7 @@ proc MapBox::Create { Parent Apply Map args } {
    }
 
    MapBox::Select ""
-   TabFrame::Select .mapbox.tab 0 1
+   TabFrame::Select .mapbox.tab 0
 }
 
 #-------------------------------------------------------------------------------

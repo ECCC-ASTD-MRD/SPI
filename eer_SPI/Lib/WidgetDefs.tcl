@@ -25,6 +25,8 @@
 #    EntryMenu::Create       { W Edit Label Side Width Color AColor Var List Cmd }
 #
 #    IcoMenu::Create         { Frame Path Icons Values Var Command Def args }
+#    IcoMenu::CreateDef      { Frame Path Icons Values Var Command Def args }
+#    IcoMenu::Set            { Frame Value }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +

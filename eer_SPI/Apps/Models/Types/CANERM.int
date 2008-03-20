@@ -621,7 +621,7 @@ proc CANERM::SimCont { Parent } {
    pack .canermcont.close -side right -padx 5 -pady 5
 
    CANERM::SetQueue $t.s.q.queue
-   TabFrame::Select .canermcont.opt 0 1
+   TabFrame::Select .canermcont.opt 0
 }
 
 #-------------------------------------------------------------------------------
@@ -852,7 +852,7 @@ proc CANERM::New { Parent } {
    pack .canermnew.close -side right -padx 5 -pady 5
 
    CANERM::SetQueue $t.s.q.queue
-   TabFrame::Select .canermnew.opt 0 1
+   TabFrame::Select .canermnew.opt 0
 }
 
 #----------------------------------------------------------------------------

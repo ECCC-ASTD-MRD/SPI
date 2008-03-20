@@ -1111,6 +1111,10 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          vp->Update=1;
       }
 
+      if (GLRender->XExpose>0) {
+         vp->Update=1;
+      }
+
       if (vp->Update || !vp->BackBuffer) {
 
          ViewportSet(vp,proj);

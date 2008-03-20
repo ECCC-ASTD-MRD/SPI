@@ -119,6 +119,7 @@ typedef struct GLParams  {
    Display      *XDisplay;
    Screen       *XScreen;
    int           XScreenNo;
+   int           XExpose;
 
    /*Parametres OpenGL*/
 
@@ -173,7 +174,7 @@ typedef struct T_glFont {
   GLuint         list;
 } T_glFont;
 
-GLParams *GLRender;  /* Structure globale des parametres OpenGL */
+extern GLParams *GLRender;  /* Structure globale des parametres OpenGL */
 
 void  DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,int Size);
 int   DashConvert(char *l,CONST char *p,int n,double width);

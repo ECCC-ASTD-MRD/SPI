@@ -336,7 +336,7 @@ proc Animator::Window { { Parent .} } {
    Bubble::Create .anim.info.lbl         [lindex $Bubble(State) $GDefs(Lang)]
    Bubble::Create .$Data(Tab1).type      [lindex $Bubble(Type) $GDefs(Lang)]
 
-   TabFrame::Select .anim.tab 0 1
+   TabFrame::Select .anim.tab 0
 }
 
 #----------------------------------------------------------------------------

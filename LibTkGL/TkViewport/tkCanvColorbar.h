@@ -64,6 +64,7 @@ typedef struct ColorbarItem  {
    int            BarSplit;        /*Separer les couleurs*/
    int            BarWidth;        /*Largeur de la barre de couleur*/
    int            BarBorder;       /*Largeur de la bordure de la couleur*/
+   Tk_Justify     BarSide;         /*Side on which to put the bar*/
 } ColorbarItem;
 
 int    ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
@@ -74,7 +75,7 @@ int    Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spe
 int    Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1);
 void   Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CM,TDataSpec *Spec,int Y1,int Y2);
 void   Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CM,TDataSpec *Spec,int Y2);
-void   Colorbar_RenderText(ColorbarItem *CB,int X,int Y,char *Text,TDataSpec *Spec);
+void   Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text,TDataSpec *Spec);
 int    ColorbarCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
 int    ColorbarToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
 double ColorbarToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr);

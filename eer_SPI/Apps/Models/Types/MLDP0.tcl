@@ -3213,7 +3213,7 @@ proc MLDP0::SimLaunchInit { Tab No } {
    if { $No != 0 && $Sim(TabPrevNo) == 0 } {
       #----- Validate output and model time steps.
       if { ![MLDP0::ValidateNbSrc] || ![MLDP0::ValidateTimeSteps] || ![MLDP0::ValidateSimulationDuration] || ![MLDP0::ValidateOtherParams] } {
-         TabFrame::Select $Tab 0 1
+         TabFrame::Select $Tab 0
          return 0
       }
    }
@@ -3221,7 +3221,7 @@ proc MLDP0::SimLaunchInit { Tab No } {
    if { $No != 1 && $Sim(TabPrevNo) == 1 } {
       #----- Validate emission column parameters.
       if { ![MLDP0::ValidateEmissionColumn] } {
-         TabFrame::Select $Tab 1 1
+         TabFrame::Select $Tab 1
          return 0
       }
    }
@@ -3234,7 +3234,7 @@ proc MLDP0::SimLaunchInit { Tab No } {
       #----- Validate emission scenario if not validated yet.
       if { !$Sim(IsScenarioValid) } {
          if { ![MLDP0::ValidateDurationsVsModelTimeStep] } {
-            TabFrame::Select $Tab 1 1
+            TabFrame::Select $Tab 1
             return 0
          }
       }
@@ -3250,7 +3250,7 @@ proc MLDP0::SimLaunchInit { Tab No } {
 
       #----- Get meteorological data according to met database, time interval between files, release accident date-time.
       if { ![MLDP0::GetMetData] } {
-         TabFrame::Select $Tab 0 1
+         TabFrame::Select $Tab 0
       }
 
    }

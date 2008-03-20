@@ -68,9 +68,6 @@ namespace eval Obs {
       -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -mark 0 -intervalmode NONE 0
 
-   set Param(Table)         /home/binops/afsi/sio/datafiles/constants/table_b_bufr_e
-   catch { metobs table -read $Param(Table) }
-
    #----- Variables des structures de donnees
 
    set Data(Frame)       ""                                     ;#Frame contenant les definitions de parameters

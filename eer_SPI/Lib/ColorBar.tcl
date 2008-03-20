@@ -52,6 +52,8 @@ namespace eval ColorBar {
    set Lbl(BarThin)   { "Barre mince" "Thin bar" }
    set Lbl(BarMedium) { "Barre moyenne" "Medium bar" }
    set Lbl(BarWide)   { "Barre large" "Wide bar" }
+   set Lbl(BarLeft)   { "Barre à gauche" "Bar to the left" }
+   set Lbl(BarRight)  { "Barre à droite" "Bar to the right" }
 }
 
 #------------------------------------------------------------------------------
@@ -156,10 +158,11 @@ proc ColorBar::Create { Frame VP No Id Field } {
          set Data(BarSplit$tag)  0
          set Data(BarBorder$tag) 0
          set Data(BarWidth$tag)  15
+         set Data(BarSide$tag)   right
       }
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
-         -data $Field -tags "$Page::Data(Tag) $tag" -anchor nw -barsplit $Data(BarSplit$tag) \
+         -data $Field -tags "$Page::Data(Tag) $tag" -anchor nw -barsplit $Data(BarSplit$tag) -barside $Data(BarSide$tag) \
          -barborder $Data(BarBorder$tag) -barwidth $Data(BarWidth$tag) -bg $Data(BarBG$tag) -transparency $Data(BarAlpha$tag)
 
       menubutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
@@ -167,19 +170,25 @@ proc ColorBar::Create { Frame VP No Id Field } {
       menu $Frame.bf$tag.menu -bg $GDefs(ColorFrame)
          $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(BarFrame) $GDefs(Lang)] -variable ColorBar::Data(BarBG$tag) -onvalue white -offvalue "" \
             -command "$Frame.page.canvas itemconfigure $tag -bg \$ColorBar::Data(BarBG$tag); Page::Update $Frame"
-          $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(BarAlpha$tag) -onvalue 50 -offvalue 100 \
+         $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(BarAlpha$tag) -onvalue 50 -offvalue 100 \
             -command "$Frame.page.canvas itemconfigure $tag -transparency \$ColorBar::Data(BarAlpha$tag); Page::Update $Frame"
-        $Frame.bf$tag.menu add separator
+         $Frame.bf$tag.menu add separator
          $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(BarSplit) $GDefs(Lang)] -variable ColorBar::Data(BarSplit$tag) -onvalue 5 -offvalue 0 \
             -command "$Frame.page.canvas itemconfigure $tag -barsplit \$ColorBar::Data(BarSplit$tag); Page::Update $Frame"
          $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(BarBorder) $GDefs(Lang)] -variable ColorBar::Data(BarBorder$tag) -onvalue 1 -offvalue 0 \
             -command "$Frame.page.canvas itemconfigure $tag -barborder \$ColorBar::Data(BarBorder$tag); Page::Update $Frame"
+         $Frame.bf$tag.menu add separator
          $Frame.bf$tag.menu add radiobutton -label [lindex $Lbl(BarThin) $GDefs(Lang)] -variable ColorBar::Data(BarWidth$tag) -value 15 \
             -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(BarWidth$tag); Page::Update $Frame"
          $Frame.bf$tag.menu add radiobutton -label [lindex $Lbl(BarMedium) $GDefs(Lang)] -variable ColorBar::Data(BarWidth$tag) -value 30 \
             -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(BarWidth$tag); Page::Update $Frame"
          $Frame.bf$tag.menu add radiobutton -label [lindex $Lbl(BarWide) $GDefs(Lang)] -variable ColorBar::Data(BarWidth$tag) -value 50 \
             -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(BarWidth$tag); Page::Update $Frame"
+         $Frame.bf$tag.menu add separator
+         $Frame.bf$tag.menu add radiobutton -label [lindex $Lbl(BarLeft) $GDefs(Lang)] -variable ColorBar::Data(BarSide$tag) -value left \
+            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(BarSide$tag); Page::Update $Frame"
+         $Frame.bf$tag.menu add radiobutton -label [lindex $Lbl(BarRight) $GDefs(Lang)] -variable ColorBar::Data(BarSide$tag) -value right \
+            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(BarSide$tag); Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-11] [expr $y+$h-1] -window $Frame.bf$tag -anchor se -tags "BF$tag NOPRINT"
 
       Shape::BindMove  $Frame.page.canvas $tag ColorBar::Move $Frame.page.canvas $VP$No $tag

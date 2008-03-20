@@ -1863,7 +1863,7 @@ proc FieldParams::Window { { Field "" } } {
       raise        .fieldboxparams
    }
 
-   TabFrame::Select .fieldboxparams.tab 0 0
+   TabFrame::Select .fieldboxparams.tab 0
 
    FieldParams::GetInfo $Field
    FieldParams::GetMatrix $Field

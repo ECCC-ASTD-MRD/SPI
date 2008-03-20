@@ -6,7 +6,7 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : FrameDefs.tk
-# Version  : 1.5
+# Version  : 1.6
 # Creation : Fevrier 2000 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -23,15 +23,16 @@
 #    TabFrame::Destroy     { Tab }
 #    TabFrame::Disable     { Tab No }
 #    TabFrame::Edit        { Tab Level No }
-#    TabFrame::Enable      { Tab No Level }
+#    TabFrame::Enable      { Tab No }
 #    TabFrame::GetLabel    { Tab No }
+#    TabFrame::GetLevel    { Tab No }
 #    TabFrame::GetTabs     { Tab }
 #    TabFrame::Is          { Tab }
 #    TabFrame::Current     { Tab  }
 #    TabFrame::NbFrame     { Tab }
 #    TabFrame::Place       { Tab Level No Nb X Top }
 #    TabFrame::PlaceHidder { Tab No Top }
-#    TabFrame::Select      { Tab No Level }
+#    TabFrame::Select      { Tab No }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
@@ -55,12 +56,12 @@
 #   Description : -Un seul "hidder" et simplification des bindings
 #===============================================================================
 
-package provide FrameDefs 1.5
+package provide FrameDefs 1.6
 
 proc IdFrameDefs { Show } {
 
    if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package FrameDefs Version 1.5"
+      puts "(INFO) Loading Standard CMC/CMOE Widget Package FrameDefs Version 1.6"
    }
 }
 
@@ -135,7 +136,7 @@ proc TabFrame::Add { Tab Level Title Edit { Color "" } } {
 
    TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
 
-   bind $Tab.tab$no <ButtonPress-1>        "TabFrame::Select $Tab $no $Level"
+   bind $Tab.tab$no <ButtonPress-1>        "TabFrame::Select $Tab $no"
    bind $Tab.tab$no <Enter>                "$Tab.tab$no configure -fg $Resources(Select)"
    bind $Tab.tab$no <Leave>                "$Tab.tab$no configure -fg $Resources(Foreground)"
 
@@ -444,7 +445,6 @@ proc TabFrame::Disable { Tab No } {
 # Parametres     :
 #   <Tab>    : Frame Parent
 #   <No>     : Numero du tabulateur
-#   <Level>  : Niveaux du tab
 #
 # Remarques :
 #
@@ -456,10 +456,10 @@ proc TabFrame::Disable { Tab No } {
 #
 #-------------------------------------------------------------------------------
 
-proc TabFrame::Enable { Tab No Level } {
+proc TabFrame::Enable { Tab No } {
    variable Resources
 
-   bind $Tab.tab$No <ButtonPress-1> "TabFrame::Select $Tab $No $Level"
+   bind $Tab.tab$No <ButtonPress-1> "TabFrame::Select $Tab $No"
    bind $Tab.tab$No <Enter>         "$Tab.tab$No configure -fg $Resources(Select)"
    bind $Tab.tab$No <Leave>         "$Tab.tab$No configure -fg $Resources(Foreground)"
 
@@ -531,6 +531,40 @@ proc TabFrame::GetLabel { Tab No } {
    return [$Tab.tab$No get]
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::GetLevel>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Recupere le niveau d'un onglet
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#   <No>     : Numero de l'onglet
+#
+# Retour     :
+#   <evel>   : Niveau de l'onglet
+#
+# Remarques :
+#
+# Modifications :
+#
+#   Nom         : -
+#   Date        : -
+#   Description : -
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::GetLevel { Tab No } {
+   variable Data
+
+   set i 0
+   for { set i 1 } { $i<=$Data(Level$Tab) } { incr i } {
+      if { [lsearch -integer $Data(W$i$Tab) $No]!=-1 } {
+         break
+      }
+   }
+   return $i
+}
 #-------------------------------------------------------------------------------
 # Nom      : <TabFrame::Label>
 # Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE -
@@ -679,7 +713,6 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 # Parametres :
 #   <Tab>    : Frame Parent
 #   <No>     : Numero du tabulateur
-#   <Level>  : Niveaux du tab
 #
 # Remarques :
 #
@@ -691,7 +724,7 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 #
 #-------------------------------------------------------------------------------
 
-proc TabFrame::Select { Tab No Level } {
+proc TabFrame::Select { Tab No } {
    variable Resources
    variable Data
 
@@ -703,6 +736,7 @@ proc TabFrame::Select { Tab No Level } {
 
    set y  [expr [winfo reqheight $Tab.tab[lindex $Data(W1$Tab) 0]]-1]
    set l 1
+   set level [TabFrame::GetLevel $Tab $No]
 
    if { $Data(Level$Tab)>1 } {
 
@@ -710,7 +744,7 @@ proc TabFrame::Select { Tab No Level } {
 
       for { set lvl 1 } { $lvl<=$Data(Level$Tab) } { incr lvl } {
 
-        if { $lvl!=$Level && [llength $Data(W$lvl$Tab)] } {
+        if { $lvl!=$level && [llength $Data(W$lvl$Tab)] } {
             foreach tab $Data(W$lvl$Tab) {
                TabFrame::Place $Tab $l $tab $Data(Level$Tab) -1 $Data(Top$Tab)
             }
@@ -720,7 +754,7 @@ proc TabFrame::Select { Tab No Level } {
 
       #----- Abbaiser la rangees d'onglets selectionnee
 
-      foreach tab $Data(W$Level$Tab) {
+      foreach tab $Data(W$level$Tab) {
          if { $tab!=$Tab } {
            TabFrame::Place $Tab $l $tab $Data(Level$Tab) -1 $Data(Top$Tab)
          }

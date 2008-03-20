@@ -230,8 +230,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int      idx;
    Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-stat","-xbatch","-debug","-direct","-shaderavailable","-info",NULL };
-   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,STAT,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO };
+   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-stat","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info",NULL };
+   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,STAT,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO };
 
    Tcl_ResetResult(Interp);
 
@@ -342,6 +342,14 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->XBatch));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&GLRender->XBatch);
+            }
+            break;
+
+         case XEXPOSE:
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->XExpose));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&GLRender->XExpose);
             }
             break;
 
@@ -2022,6 +2030,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->XBatch          = 0;
    GLRender->XPix            = None;
    GLRender->XMode           = GLX_RGBA;
+   GLRender->XExpose         = 0;
    GLRender->GLDebug         = 0;
    GLRender->GLCon           = NULL;
    GLRender->GLPCon          = NULL;

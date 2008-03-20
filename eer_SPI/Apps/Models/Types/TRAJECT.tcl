@@ -106,7 +106,7 @@ proc TRAJECT::ConfigDate { } {
 proc TRAJECT::InitNew { } {
    variable Sim
 
-   TabFrame::Select .trajectnew.opt 0 1
+   TabFrame::Select .trajectnew.opt 0
 
    set Sim(BasePath)          [Exp::Path]
    set Sim(Meteo)             glb
@@ -298,7 +298,7 @@ proc TRAJECT::SimInitLaunch { Path No } {
    if { [llength $Sim(Data)] <=1 } {
       Dialog::CreateError . "[lindex $Msg(Files) $GDefs(Lang)]" $GDefs(Lang)
       .trajectnew config -cursor left_ptr
-      TabFrame::Select .trajectnew.opt 0 1
+      TabFrame::Select .trajectnew.opt 0
       return
    }
 
@@ -314,7 +314,7 @@ proc TRAJECT::SimInitLaunch { Path No } {
       Dialog::CreateError . "[lindex $Msg(Dates) $GDefs(Lang)]\
          [lindex [lindex $Sim(Data) 0] 1] - [lindex [lindex $Sim(Data) end] 1]" $GDefs(Lang)
       .trajectnew config -cursor left_ptr
-      TabFrame::Select .trajectnew.opt 0 1
+      TabFrame::Select .trajectnew.opt 0
       return
    }
 

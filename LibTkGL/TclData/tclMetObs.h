@@ -73,10 +73,10 @@ typedef struct TMetModel {
 
 typedef struct TMetElemData {
 
-   int     Nv,Nt,Ne;        /*Data dimensions*/
-   int     St;              /*Data state descriptor*/
-   float  *Data;            /*Donnees temporelles et spatiales*/
-   int    *Code;            /*Codes de la donnee*/
+   int           Nv,Nt,Ne;        /*Data dimensions*/
+   int           St;              /*Data state descriptor*/
+   float        *Data;            /*Donnees temporelles et spatiales*/
+   EntryTableB **Code;            /*Codes de la donnee*/
 } TMetElemData;
 
 typedef struct TMetElem {
@@ -124,7 +124,7 @@ typedef struct TMetObs {
 int      TclMetObs_Init(Tcl_Interp *Interp);
 
 TMetObs *MetObs_Get(char *Name);
-Vect3d  *MetObs_Grid(TGeoRef *Ref,TMetObs *Obs,long Time,char *Elem,int *NObs,int Extrap);
+Vect3d  *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_Obj *Elem,int *NObs,int Extrap);
 int      MetObs_Copy(Tcl_Interp *Interp,TMetObs *Obs,char *Name);
 int      MetObs_Extract(Tcl_Interp *Interp,TMetObs *Obs,TData *Field);
 void     MetObs_Free(TMetObs *Obs);
@@ -136,16 +136,14 @@ void     MetObs_LocFree(TMetLoc *Loc);
 int      MetObs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token);
 int      MetObs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token);
 void     MetObs_Wipe();
-int      MetObs_BURPFindTableCode(unsigned int Code);
-int      MetObs_BURPFindTableDesc(char *Desc);
-int      MetObs_BURPFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code);
-char*    MetObs_BURPGetTableDesc(int Idx);
-char*    MetObs_BURPGetTableUnit(int Idx);
+EntryTableB *MetObs_BUFRFindTableCode(unsigned int Code);
+EntryTableB *MetObs_BUFRFindTableDesc(char *Desc);
+EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code);
 
 TMetLoc *TMetLoc_Find(TMetObs *Obs,char *Id,int Type);
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev);
 
-TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,int *Codes);
+TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data);
 TMetElemData **TMetElem_Add(TMetLoc *Loc,time_t Time);
 TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,int Exact);

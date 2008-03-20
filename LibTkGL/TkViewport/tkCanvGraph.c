@@ -727,7 +727,11 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
    }
    glShadeModel(GL_SMOOTH);
 
-  /*Si refresh a partir du backbuffer*/
+   if (GLRender->XExpose>0) {
+      gr->Update=1;
+   }
+
+   /*Si refresh a partir du backbuffer*/
    if (!gr->Update && gr->Frame && !GLRender->TRCon) {
       trRasterPos2i(gr->header.x1-((TkCanvas*)Canvas)->xOrigin,-(gr->header.y2-((TkCanvas*)Canvas)->yOrigin));
       glDrawPixels(gr->Width,gr->Height,GL_RGBA,GL_UNSIGNED_BYTE,gr->Frame);

@@ -315,7 +315,7 @@ proc MLCD::New { Parent } {
    pack $frame.auto.data.met -side top
    Bubble::Create $frame.auto.data.met.model "[lindex $Bubble(ObsMetModel) $GDefs(Lang)]"
    Bubble::Create $frame.auto.data.met.path  "[lindex $Bubble(ObsMetPath) $GDefs(Lang)]"
-   
+
    pack $frame.auto.data -side left
 
    #----- Retrieve meteorological data.
@@ -359,7 +359,7 @@ proc MLCD::New { Parent } {
          Bubble::Create $frame.edit.obstime.data.lb1 "[lindex $Bubble(ObsNo) $GDefs(Lang)]"
          Bubble::Create $frame.edit.obstime.data.no "[lindex $Bubble(ObsNo) $GDefs(Lang)]"
          set Data(ObsNoSpinBox) $frame.edit.obstime.data.no
-         
+
          #----- Observation Date [UTC].
          Calendar::Create $frame.edit.obstime.data.date "" MLCD::Sim(ObsTimeDateSec) 22 "MLCD::SetObsDate \$MLCD::Sim(ObsTimeDateSec)"
          Bubble::Create $frame.edit.obstime.data.date "[lindex $Bubble(ObsDate) $GDefs(Lang)]"
@@ -494,7 +494,7 @@ proc MLCD::New { Parent } {
 
    pack $frame.edit -side top -padx 5 -fill x
 
-   TabFrame::Select .mlcdnew.params 0 1
+   TabFrame::Select .mlcdnew.params 0
 
    #----- 'Launch' and 'Cancel' buttons.
    frame .mlcdnew.com
@@ -506,7 +506,7 @@ proc MLCD::New { Parent } {
    Bubble::Create .mlcdnew.com.launch "[lindex $Bubble(Launch) $GDefs(Lang)]"
    Bubble::Create .mlcdnew.com.cancel "[lindex $Bubble(Cancel) $GDefs(Lang)]"
 
-   TabFrame::Select .mlcdnew.opt 0 1
+   TabFrame::Select .mlcdnew.opt 0
 }
 
 #----------------------------------------------------------------------------

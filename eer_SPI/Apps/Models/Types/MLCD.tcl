@@ -271,7 +271,7 @@ proc MLCD::ComputeNbValidWindProfiles { } {
    #----- Verify that number of wind profile is not zero.
    if { $Sim(ObsValidNb) == 0 } {
       Dialog::CreateError .mlcdnew "[lindex $Error(ObsNbValidWindProfiles) $GDefs(Lang)]" $GDefs(Lang) 600
-      TabFrame::Select $Data(TabFrameName) 2 1 ; #----- Select 'Meteo' tab.
+      TabFrame::Select $Data(TabFrameName) 2 ; #----- Select 'Meteo' tab.
       focus $Data(FrameWindProfile).l0.z
       return 0
    }
@@ -314,15 +314,15 @@ proc MLCD::ExtractMetData { } {
       set time  [lindex $Sim(ObsTime)  $i] ; #----- Observation date-time.
       set stamp [lindex $Sim(ObsStamp) $i] ; #----- Observation date-time stamp.
       set file  [lindex $Sim(ObsFile)  $i] ; #----- Observation filename.
-      
+
       set    text "\n\nExtracting local parameters and wind profile from :"
       append text "\n  - observation number : [expr $i + 1]/$Sim(ObsNb)"
       append text "\n  - date-time (stamp)  : $time ($stamp)"
       append text "\n  - standard file      : $file"
       append text "\n"
-      
+
       puts stdout $text
-      
+
       #----- Open standard file.
       fstdfile open UNITFILE read $file
 
@@ -331,26 +331,26 @@ proc MLCD::ExtractMetData { } {
 
       #----- Verify if wind profile data has been found.
       if { $WindProfile == "" } {
-         
+
          Debug::TraceProc "MLCD: Warning, unavailable wind profile."
-         
+
          set info  [MLCD::GetInfoDateTime $time]
          set year  [lindex $info 0]
          set month [lindex $info 1]
          set day   [lindex $info 2]
          set hour  [lindex $info 3]
          set min   [lindex $info 4]
-         
+
          set ObsNo [expr $i + 1]
          set msg "Observation \#$ObsNo : ${year}-${month}-${day} ${hour}:${min} UTC"
-         
+
          set answer [Dialog::CreateDefault .mlcdnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(WindProfData) $GDefs(Lang)]$msg[lindex $Warning(WindProfData2) $GDefs(Lang)]" warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-         
+
          if { $answer == 1 } { #---- Answer = "No"
             fstdfile close UNITFILE ; #----- Close standard file.
             return 0
          }
-         
+
       }
 
       #----- Update Obukhov Length.
@@ -361,21 +361,21 @@ proc MLCD::ExtractMetData { } {
       set RoughnessLength $DefaultValue
       set MissingField    0
       set OffGrid         0
-      
+
       set z0 [fstdfield find UNITFILE $stamp "" 1195 -1 -1 "" Z0]
       if { [llength $z0] } {
          fstdfield read TMP UNITFILE $z0
-         
+
          set RoughnessLength [fstdfield stats TMP -coordvalue $Sim(Lat) $Sim(Lon)]
          if { $RoughnessLength == "-" } {
             #----- Use default value since off grid localisation.
             set OffGrid 1 ; #----- Off grid localisation. Using default value.
             set RoughnessLength $DefaultValue
-         }   
+         }
       } else {
          set MissingField 1 ; #----- Missing field. Using default value.
       }
-      
+
       set RoughnessLength [format "%.7f" $RoughnessLength]
       if { $MissingField } {
          Debug::TraceProc "MLCD: Warning, missing field 'Z0'. Using default value for roughness length : $RoughnessLength \[m\]."
@@ -383,17 +383,17 @@ proc MLCD::ExtractMetData { } {
       if { $OffGrid } {
          Debug::TraceProc "MLCD: Warning, off grid localisation. Using default value for roughness length : $RoughnessLength \[m\]."
       }
-      
+
       #----- Update Precipitation Rate.
       set DefaultValue [lindex [lindex $Sim(LocalParameters) $i] 2] ; #----- Default value for precipitation rate [mm/h].
       set PrecipRate   $DefaultValue
       set MissingField 0
       set OffGrid      0
-      
+
       set rt [fstdfield find UNITFILE $stamp "" -1 -1 -1 "" RT]
       if { [llength $rt] } {
          fstdfield read TMP UNITFILE $rt
-         
+
          set PrecipRate [fstdfield stats TMP -coordvalue $Sim(Lat) $Sim(Lon)]
          if { $PrecipRate == "-" } {
             #----- Use default value since off grid localisation.
@@ -406,7 +406,7 @@ proc MLCD::ExtractMetData { } {
       } else {
          set MissingField 1 ; #----- Missing field. Using default value.
       }
-      
+
       set PrecipRate [format "%.7f" $PrecipRate]
       if { $MissingField } {
          Debug::TraceProc "MLCD: Warning, missing field 'RT'. Using default value for precipitation rate : $PrecipRate \[mm/h\]."
@@ -414,7 +414,7 @@ proc MLCD::ExtractMetData { } {
       if { $OffGrid } {
          Debug::TraceProc "MLCD: Warning, off grid localisation. Using default value for precipitation rate : $PrecipRate \[mm/h\]."
       }
-      
+
       #----- Set local parameters list.
       set Parameters [list $RoughnessLength $ObukhovLength $PrecipRate]
 
@@ -430,7 +430,7 @@ proc MLCD::ExtractMetData { } {
          set d [format "%15s" [format "%.7f" [lindex $prof 2]]]
          append text "\n[format "%2s" $level] $h $v $d"
       }
-      
+
       append Sim(ObsList) $text
 
       if { $WindProfile != "" } {
@@ -502,9 +502,9 @@ proc MLCD::ExtractMetData { } {
 
 #   puts stderr "Sim(LocalParameters) : $Sim(LocalParameters)"
 #   puts stderr "Sim(WindProfile)     : $Sim(WindProfile)"
-   
+
 }
-   
+
 #-------------------------------------------------------------------------------
 # Nom      : <MLCD::FindMetData>
 # Creation : 18 June 2007 - A. Malo - CMC/CMOE
@@ -542,37 +542,37 @@ proc MLCD::FindMetData { } {
    } else {
       set Mixed 1  ; #----- Take into account the latest run.
    }
-   
+
    #----- Get list of available meteorological files according to release date-time.
    set Sim(MetData) [MetData::File $Sim(AccStamp) $Sim(DBaseDiag) $Sim(DBaseProg) F $Mixed $Sim(ProgMeteoTimeStep)]
-   
+
    #----- Number of available meteo files.
    set Sim(NbMetFiles) [llength $Sim(MetData)]
-   
+
    #----- Verify that number of meteo data files is greater than 1.
    if { $Sim(NbMetFiles) <= 1 } {
       puts stderr "\n*** Error! Not enough available meteorological data files in database according to emission date-time."
       puts stderr "    Emission date-time (stamp) : $Sim(AccDateTime) ($Sim(AccStamp))"
-      
+
       set StartingTime "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay) $Sim(AccHour):$Sim(AccMin) UTC"
       set PossibleTime [MLCD::FindRangeMetDateTime]
       set text "[lindex $Error(MetData) $GDefs(Lang)]\n\n\t[lindex $Error(MetData2) $GDefs(Lang)] $StartingTime"
-      
+
       if { $PossibleTime != "" } {
          append text "\n\t[lindex $Error(MetData3) $GDefs(Lang)] $PossibleTime"
       }
-      
+
       Dialog::CreateError .mlcdnew $text $GDefs(Lang) 900
-      
+
       #----- Select first observation.
       MLCD::SelectObs 1
-      
+
       #----- Select 'Model' tab.
-      TabFrame::Select $Data(TabFrameName) 0 1
-      
+      TabFrame::Select $Data(TabFrameName) 0
+
       return 0 ; #----- Error!
    }
-   
+
    #----- Get first available met file.
    set list       [lindex $Sim(MetData) 0]
    set firststamp [lindex $list 0]             ; #----- Date-time stamp for first met file.
@@ -586,12 +586,12 @@ proc MLCD::FindMetData { } {
    set list       [split $lastfile "_"]
    set run        [lindex $list 0]             ; #----- Latest run.
    set extension  [lindex $list 1]             ; #----- Hours of latest run.
-   
+
    #----- Compute simulation duration according to last available met data file.
    set SimDurHr  [fstdstamp diff $laststamp $Sim(AccStamp)] ; #----- [hr].
    set SimDurMin [expr round(double($SimDurHr) * 60.0)]     ; #----- [min].
    set SimDurSec [expr int($SimDurMin*60)]                  ; #----- [s].
-   
+
    if { $SimDurHr <= 0 } {
       set message "Error! Not enough available meteorological data files in database according to emission date-time."
       puts stderr "\n*** $message"
@@ -600,52 +600,52 @@ proc MLCD::FindMetData { } {
       puts stderr "    - Last date-time (stamp)       : $lastdate ($laststamp)"
       return 0
    }
-   
+
    if { $Sim(Duration) >= $SimDurSec } {
-      
+
       #----- Here, simulation duration defined within interface is greater than (or equal to) simulation duration
       #----- computed according to available met files. Thus, simulation duration will be re-initialized.
       set OldSimDurMin  $Sim(DurMin)
       set Sim(Duration) $SimDurSec
       set Sim(DurMin)   $SimDurMin
-      
+
       #----- Initialize old simulation duration.
       set Sim(OldDurMin) $Sim(DurMin)
-      
+
       Dialog::CreateDefault .mlcdnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration) $GDefs(Lang)]\n\n\t[lindex $Warning(SimDuration2) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)\n\t[lindex $Warning(SimDuration3) $GDefs(Lang)] $OldSimDurMin $Error(UnitMinutes)" warning 0 "OK"
-      
+
       puts stdout "\n*** Warning: Re-initializing simulation duration according to available met files in database."
       puts stdout "             New simulation duration \[min\] : $Sim(DurMin)"
       puts stdout "             Old simulation duration \[min\] : $OldSimDurMin"
-      
+
       #----- Redefine emission duration since simulation duration has changed.
       MLCD::SetEmissionDuration
-      
+
    } else {
-      
+
       #----- Here, simulation duration defined within interface is less than simulation duration
       #----- computed according to available met files.
-      
+
       #----- Compute new ending simulation date-time [s] according to release date-time and simulation duration.
       #----- Ending simulation date-time [s] := starting release date-time [s] + simulation duration [s].
       set end [expr $Sim(Second) + $Sim(Duration)]
-      
+
       #----- Convert new ending simulation date-time from [s] to human readable format.
       set year  [clock format $end -format "%Y" -gmt true] ; #----- YYYY.
       set month [clock format $end -format "%m" -gmt true] ; #----- MM.
       set day   [clock format $end -format "%d" -gmt true] ; #----- DD.
       set hour  [clock format $end -format "%H" -gmt true] ; #----- HH.
       set min   [clock format $end -format "%M" -gmt true] ; #----- mm.
-      
+
       #----- Convert new ending simulation date-time from human readable format to CMC date-time stamp.
       set laststamp [GetDateTimeStamp "${year}${month}${day}${hour}${min}"]
-      
+
       #----- Build temporary list of met stamps.
       set MeteoStamp {}
       foreach data $Sim(MetData) {
          lappend MeteoStamp [lindex $data 0]
       }
-      
+
       #----- Search list of met stamps for which ending simulation date-time
       #----- falls between two following met stamps.
       for { set i 0 } { $i <= [expr [llength $MeteoStamp] - 2] } { incr i } {
@@ -657,15 +657,15 @@ proc MLCD::FindMetData { } {
             break
          }
       }
-      
+
       #----- Redefine list of available meteorological data files.
       set Sim(MetData) [lrange $Sim(MetData) 0 $idx]
-      
+
    }
-   
+
    #----- Redefine number of available meteo files.
    set Sim(NbMetFiles) [llength $Sim(MetData)]
-   
+
    #----- First and last available met files.
    set list [lindex $Sim(MetData) 0]
    set firststamp [lindex $list 0]
@@ -673,24 +673,24 @@ proc MLCD::FindMetData { } {
    set list [lindex $Sim(MetData) end]
    set laststamp [lindex $list 0]
    set lasttime  [lindex $list 1]
-   
+
    #----- Count number of diagnostics and prognostics met files.
    set nbtrials 0
    set nbprogs  0
    foreach data $Sim(MetData) {
-      
+
       set filename [lindex $data 2]
-      
+
       if { [string match "*\/trial\/*" $filename] } {
          incr nbtrials
       } elseif { [string match "*\/prog\/*" $filename] } {
          incr nbprogs
       }
-      
+
    }
    set Sim(NbMetDiagFiles) $nbtrials
    set Sim(NbMetProgFiles) $nbprogs
-   
+
    #----- Print info regarding meteorological files.
    set text    "\nEmission date-time (stamp)      : $Sim(AccDateTime)00 ($Sim(AccStamp))"
    append text "\nFirst met date-time (stamp)     : $firsttime ($firststamp)"
@@ -704,11 +704,11 @@ proc MLCD::FindMetData { } {
    foreach file $Sim(MetData) {
       append text "\n$file"
    }
-   
+
    puts stdout $text
-   
+
    set Sim(MetList) $text
-   
+
    return 1
 }
 
@@ -733,7 +733,7 @@ proc MLCD::FindMetData { } {
 #-------------------------------------------------------------------------------
 proc MLCD::FindRangeMetDateTime { } {
    variable Sim
-   
+
    if { $Sim(DBaseDiag) != $Sim(DBaseProg) } {
       #----- Search within prognostic/diagnostic databases.
       set progs  [glob -nocomplain $Sim(DBaseProg)/*_???]
@@ -743,21 +743,21 @@ proc MLCD::FindRangeMetDateTime { } {
       set progs  [glob -nocomplain $Sim(DBaseProg)/*_???]
       set trials $progs
    }
-   
+
    #----- Sort files.
    set trials [lsort -dictionary -increasing $trials]
    set progs  [lsort -dictionary -increasing $progs]
-   
+
    if { [llength $progs] == 0 || [llength $trials] == 0 } {
       return ""
    }
-   
+
    set first [lindex $trials 0]
    set last  [lindex $progs end]
-   
+
    set first [MLCD::GetValidDateTime $first]
    set last  [MLCD::GetValidDateTime $last]
-   
+
    return "$first @ $last"
 
 }
@@ -785,7 +785,7 @@ proc MLCD::FindRangeMetDateTime { } {
 proc MLCD::GetCurrentObservationTime { } {
 
    variable Sim
-   
+
    #----- Get current observation time according to (selected) observation index.
    set time  [lindex $Sim(ObsTime) $Sim(ObsIdx)]
 
@@ -834,32 +834,32 @@ proc MLCD::GetCurrentObservationTime { } {
 #
 #-------------------------------------------------------------------------------
 proc MLCD::GetDateTimeStamp { DateTime } {
-   
+
    if { [string length $DateTime] < 8 } {
       return ""
    }
-   
+
    set year  [string range $DateTime 0 3]
    set month [string range $DateTime 4 5]
    set day   [string range $DateTime 6 7]
    set hour  [string range $DateTime 8 9]
    set min   [string range $DateTime 10 11]
    set sec   [string range $DateTime 12 13]
-   
+
    if { $hour == "" } {
       set hour "00"
    }
-   
+
    if { $min == "" } {
       set min "00"
    }
-   
+
    if { $sec == "" } {
       set sec "00"
    }
-   
+
    return [fstdstamp fromdate ${year}${month}${day} ${hour}${min}${sec}00]
-   
+
 }
 
 #-------------------------------------------------------------------------------
@@ -928,31 +928,31 @@ proc MLCD::GetInfoDateTime { DateTime } {
 #
 #-------------------------------------------------------------------------------
 proc MLCD::GetValidDateTime { filename } {
-   
+
    set list [split [file tail $filename] _]
    set date [lindex $list 0]
    set fcst [string trimleft [lindex $list 1] 0]
-   if { $fcst == "" } { 
+   if { $fcst == "" } {
       set fcst 0
    }
-   
+
    set year  [string range $date 0 3]
    set month [string range $date 4 5]
    set day   [string range $date 6 7]
    set hour  [string range $date 8 9]
    set sec   [clock scan "$year$month$day $hour:00" -gmt true]
    set sec   [expr $sec + $fcst*3600]
-   
+
    set year  [clock format $sec -format "%Y" -gmt true]
    set month [clock format $sec -format "%m" -gmt true]
    set day   [clock format $sec -format "%d" -gmt true]
    set hour  [clock format $sec -format "%H" -gmt true]
    set min   [clock format $sec -format "%M" -gmt true]
-   
+
    set datetime "${year}-${month}-${day} ${hour}:${min} UTC"
-   
+
    return $datetime
-   
+
 }
 
 #-------------------------------------------------------------------------------
@@ -1080,7 +1080,7 @@ proc MLCD::InitMeteoData { { Flag 1 } } {
    set Sim(OldSecond)      $Sim(Second)
    set Sim(OldAccStamp)    $Sim(AccStamp)
    set Sim(OldAccDateTime) $Sim(AccDateTime)
-   
+
    #----- Initialize old simulation duration.
    set Sim(OldDurMin) $Sim(DurMin)
 
@@ -1165,13 +1165,13 @@ proc MLCD::InitNew { } {
    set Sim(Second)      [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)" -gmt true]
    set Sim(AccStamp)    [GetDateTimeStamp "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)"]
    set Sim(AccDateTime) "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)"
-   
+
    #----- Update emission starting time.
    MLCD::UpdateEmissionStartingTime
-   
+
    #----- Prognostics meteorological time step [hr].
    set Sim(ProgMeteoTimeStep) 1
-   
+
    #----- Initialize general and concentrations parameters.
    set Sim(Mode)           0        ; #----- Forward mode: 0; Backward mode: 1.
    set Sim(IsSigma)        1        ; #----- Mesoscale velocity fluctuations is on.
@@ -1203,7 +1203,7 @@ proc MLCD::InitNew { } {
    #----- Set meteorological data directories according to meteorological model.
    MLCD::SetMetDataDir $Sim(ObsMetModel)
 
-   #----- Initialize 
+   #----- Initialize
    set Sim(MetList) ""
    set Sim(ObsList) ""
 
@@ -1241,13 +1241,13 @@ proc MLCD::InitObservationTimes { } {
 
    #----- Initialize observation time according to nearest lower accident hour.
    set Sim(ObsTime) "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)00"
-   
+
    #----- Define maximum number of observation according to
    #----- release date-time and 48-hr simulation duration.
    set sec0 [lindex [MLCD::GetInfoDateTime $Sim(ObsTime)] 5]
    set sec  [lindex [MLCD::GetInfoDateTime $Sim(AccDateTime)] 5]
    set sec1 [expr $sec + 48*3600]
-   
+
    set year  [clock format $sec1 -format "%Y" -gmt true]
    set month [clock format $sec1 -format "%m" -gmt true]
    set day   [clock format $sec1 -format "%d" -gmt true]
@@ -1255,16 +1255,16 @@ proc MLCD::InitObservationTimes { } {
    set min   [clock format $sec1 -format "%M" -gmt true]
    set min   [string trimleft $min 0]
    if { $min == "" } { set min 0 }
-   
+
    set sec1 [expr $sec1 - $min*60]
    set sec1 [expr $sec1 + int(ceil(double($min)/60.0)) * 60 * 60]
    set sec  [expr $sec1 - $sec0]
-   
+
    set Sim(ObsMaxNb)     [expr int(double($sec)/3600.0) + 1]
    set Sim(ObsNb)        $Sim(ObsMaxNb)
-   
+
 #   puts stdout "\nMaximum number of observations : $Sim(ObsMaxNb)"
-   
+
    #----- Initialize observation times according to 1-hour time interval between following observations.
    for { set i 1 } { $i < $Sim(ObsMaxNb) } { incr i } {
 
@@ -1291,7 +1291,7 @@ proc MLCD::InitObservationTimes { } {
    }
 
 #   puts stdout "Sim(ObsTime): $Sim(ObsTime)"
-   
+
    #----- Get current observation time according to (selected) observation index.
    MLCD::GetCurrentObservationTime
 
@@ -1604,9 +1604,9 @@ proc MLCD::RefreshMaxNbObsSpinBox { } {
 
    variable Sim
    variable Data
-   
+
    $Data(ObsNoSpinBox) configure -to $Sim(ObsMaxNb)
-   
+
 }
 
 #---------------------------------------------------------------------------
@@ -1681,11 +1681,11 @@ proc MLCD::SelectObs { No } {
    if { $Sim(ObsNo) != $No } {
       set Sim(ObsNo) $No
    }
-   
+
 #    puts stdout "\nSim(ObsPrevIdx) : $Sim(ObsPrevIdx)"
 #    puts stdout "Sim(ObsIdx)     : $Sim(ObsIdx)"
 #    puts stdout "Sim(ObsNo)      : $Sim(ObsNo)"
-   
+
    #----- Set previous observation.
    MLCD::SetPreviousObs $Sim(ObsPrevIdx)
 
@@ -1726,18 +1726,18 @@ proc MLCD::SetEmissionDuration { { Flag 1 } } {
    variable Error
 
    if { $Sim(EmDurationMin) > $Sim(DurMin) } {
-      
+
       set OldEmDurMin        $Sim(EmDurationMin)
       set Sim(EmDurationMin) $Sim(DurMin)
-      
+
       if { $Flag } {
          Dialog::CreateDefault .mlcdnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(EmDuration) $GDefs(Lang)]\n\n\t[lindex $Warning(EmDuration2) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)\n\t[lindex $Warning(EmDuration3) $GDefs(Lang)] $OldEmDurMin $Error(UnitMinutes)" warning 0 "OK"
       }
-      
+
       puts stdout "\n*** Warning: Release duration is greater than simulation duration. Thus, release duration is reinitialized (equal to simulation duration)."
       puts stdout "             New release duration \[min\] : $Sim(EmDurationMin)"
       puts stdout "             Old release duration \[min\] : $OldEmDurMin"
-      
+
    }
 
 }
@@ -1771,31 +1771,31 @@ proc MLCD::SetMetData { Model } {
    variable Error
    variable Warning
    variable Lbl
-   
+
    #----- Select first observation.
    MLCD::SelectObs 1
 
    .mlcdnew config -cursor watch
    update idletasks
-   
+
    #----- Find available meteorological data files.
    if { ![MLCD::FindMetData] } {
       .mlcdnew config -cursor left_ptr
       return 0
    }
-   
+
    #----- Set observation times according to available met data files.
    MLCD::SetObservationTimes
-   
+
    #----- Initialize local parameters.
    MLCD::InitLocalParameters
-   
+
    #----- Initialize wind profile.
    MLCD::InitWindProfile
-   
+
    #----- Extract meteorological data: local parameters and wind profile.
    MLCD::ExtractMetData
-   
+
    #----- Update interface.
    MLCD::UpdateObsInterface $Sim(ObsIdx)
 
@@ -1892,32 +1892,32 @@ proc MLCD::SetObservationTimes { } {
    #----- Set number of observations and maximum number of observations.
    set Sim(ObsNb)    $Sim(NbMetFiles)
    set Sim(ObsMaxNb) $Sim(ObsNb)
-   
+
    #----- Refresh maximum number of observations within spibox.
    MLCD::RefreshMaxNbObsSpinBox
-   
+
    #----- Set observation times, stamps, files.
    set Sim(ObsTime)  {}
    set Sim(ObsStamp) {}
    set Sim(ObsFile)  {}
-   
+
    foreach data $Sim(MetData) {
-      
+
       set metdatetime [string range [lindex $data 1] 0 11]
       set metstamp    [lindex $data 0]
       set metfile     [lindex $data 2]
       lappend Sim(ObsTime)  "$metdatetime"
       lappend Sim(ObsStamp) "$metstamp"
       lappend Sim(ObsFile)  "$metfile"
-      
+
    }
-   
+
    if { $Sim(ObsNb) < $Sim(ObsMaxNb) } {
-      
+
       for { set i $Sim(ObsNb) } { $i < $Sim(ObsMaxNb) } { incr i } {
-         
+
          set PrevTime [lindex $Sim(ObsTime) [expr $i-1]]
-         
+
          set PrevTime [MLCD::GetInfoDateTime $PrevTime]
          set year     [lindex $PrevTime 0]
          set month    [lindex $PrevTime 1]
@@ -1925,39 +1925,39 @@ proc MLCD::SetObservationTimes { } {
          set hour     [lindex $PrevTime 3]
          set min      [lindex $PrevTime 4]
          set sec      [lindex $PrevTime 5]
-         
+
          #----- Increment observation time.
          set sec   [expr $sec + 3600]
-         
+
          set year  [clock format $sec -format "%Y" -gmt true]
          set month [clock format $sec -format "%m" -gmt true]
          set day   [clock format $sec -format "%d" -gmt true]
          set hour  [clock format $sec -format "%H" -gmt true]
          set min   [clock format $sec -format "%M" -gmt true]
          lappend Sim(ObsTime) "$year$month$day$hour$min"
-         
+
       }
-      
+
    }
-   
+
    #----- Print info regarding observations.
    set text    "\nNumber of observations          : $Sim(ObsNb)"
    append text "\nMaximum number of observations  : $Sim(ObsMaxNb)"
    append text "\n\nList of observations :"
-   
+
    for { set i 0 } { $i < $Sim(ObsNb) } { incr i } {
       set j [expr $i + 1]
       set stamp [lindex $Sim(ObsStamp) $i]
       set time  [lindex $Sim(ObsTime)  $i]
       set file  [lindex $Sim(ObsFile)  $i]
-      
+
       append text "\n[format "%2s" $j] $stamp $time $file"
    }
-   
+
    puts stdout $text
-   
+
    set Sim(ObsList) $text
-   
+
    #----- Get current observation time according to (selected) observation index.
    MLCD::GetCurrentObservationTime
 
@@ -2456,7 +2456,7 @@ proc MLCD::SimLaunchNew { } {
       if { $Sim(IsConc) } {
 
          #----- Concentrations are computed.
-         
+
          if { $Sim(GridType) == 2 || $Sim(GridType) == 3 || $Sim(GridType) == 4 } {
 
             #----- - Cylindrical Equidistant (Lat-Lon) time-fixed grid at constant spatial resolution.
@@ -3113,21 +3113,21 @@ proc MLCD::ValidateInterface { Tab No } {
 
    if { $No != 0 && $Sim(TabPrevNo) == 0 } {
       if { ![MLCD::ValidateModelTab] } {
-         TabFrame::Select $Tab 0 1 ; #----- Select 'Model' tab.
+         TabFrame::Select $Tab 0 ; #----- Select 'Model' tab.
          return 0
       }
    }
 
    if { $No != 1 && $Sim(TabPrevNo) == 1 } {
       if { ![MLCD::ValidateEmissionTab] } {
-         TabFrame::Select $Tab 1 1 ; #----- Select 'Emission' tab.
+         TabFrame::Select $Tab 1 ; #----- Select 'Emission' tab.
          return 0
       }
    }
 
    if { $No != 2 && $Sim(TabPrevNo) == 2 } {
       if { ![MLCD::ValidateMeteoTab] } {
-         TabFrame::Select $Tab 2 1 ; #----- Select 'Meteo' tab.
+         TabFrame::Select $Tab 2 ; #----- Select 'Meteo' tab.
          return 0
       }
    }
@@ -3566,7 +3566,7 @@ proc MLCD::ValidateObsDateTime { } {
          Dialog::CreateError .mlcdnew "[lindex $Error(ObsTimes) $GDefs(Lang)]\t$time0\n\t$time1" $GDefs(Lang) 600
 
          #----- Select 'Meteo' tab.
-         TabFrame::Select $Data(TabFrameName) 2 1
+         TabFrame::Select $Data(TabFrameName) 2
 
          #----- Select next observation according to date-time stamps comparison.
          MLCD::SelectObs [expr $NextIdx + 1]
@@ -3574,7 +3574,7 @@ proc MLCD::ValidateObsDateTime { } {
       }
 
    }
-   
+
    #----- Validate release date-time according to valid observation date-times.
    set FirstIdx      [lindex $Sim(ObsValidIdx) 0]
    set LastIdx       [lindex $Sim(ObsValidIdx) [expr $Sim(ObsValidNb) - 1]]
@@ -3582,18 +3582,18 @@ proc MLCD::ValidateObsDateTime { } {
    set LastObsTime   [lindex $Sim(ObsTime) $LastIdx]
    set FirstObsStamp [lindex [MLCD::GetInfoDateTime $FirstObsTime] 6]
    set LastObsStamp  [lindex [MLCD::GetInfoDateTime $LastObsTime] 6]
-   
+
    if { $Sim(ObsValidNb) > 1 } { #----- Multiple valid observations.
-      
+
       if { $Sim(AccStamp) < $FirstObsStamp || $Sim(AccStamp) >= $LastObsStamp } {
-         
+
          puts stdout ""
          Debug::TraceProc "MLCD: Error! Inconsistency between emission starting time and observation times."
          puts stdout ""
          puts stdout "Emission date-time  (stamp)         : $Sim(AccDateTime) ($Sim(AccStamp))"
          puts stdout "First observation date-time (stamp) : $FirstObsTime ($FirstObsStamp)"
          puts stdout "Last observation date-time (stamp)  : $LastObsTime ($LastObsStamp)"
-         
+
          set time  [MLCD::GetInfoDateTime $Sim(AccDateTime)]
          set year  [lindex $time 0]
          set month [lindex $time 1]
@@ -3601,7 +3601,7 @@ proc MLCD::ValidateObsDateTime { } {
          set hour  [lindex $time 3]
          set min   [lindex $time 4]
          set acc   "Accident        : ${year}-${month}-${day} ${hour}:${min} UTC"
-         
+
          set time  [MLCD::GetInfoDateTime $FirstObsTime]
          set year  [lindex $time 0]
          set month [lindex $time 1]
@@ -3609,7 +3609,7 @@ proc MLCD::ValidateObsDateTime { } {
          set hour  [lindex $time 3]
          set min   [lindex $time 4]
          set obs0  "Observation \# [expr $FirstIdx + 1] : ${year}-${month}-${day} ${hour}:${min} UTC"
-         
+
          set time  [MLCD::GetInfoDateTime $LastObsTime]
          set year  [lindex $time 0]
          set month [lindex $time 1]
@@ -3617,29 +3617,29 @@ proc MLCD::ValidateObsDateTime { } {
          set hour  [lindex $time 3]
          set min   [lindex $time 4]
          set obs1  "Observation \# [expr $LastIdx + 1] : ${year}-${month}-${day} ${hour}:${min} UTC"
-         
+
          Dialog::CreateError .mlcdnew "[lindex $Error(ObsTimes2) $GDefs(Lang)]\t$acc\n\t$obs0\n\t$obs1" $GDefs(Lang) 500
-         
+
          #----- Select 'Meteo' tab.
-         TabFrame::Select $Data(TabFrameName) 2 1
-         
+         TabFrame::Select $Data(TabFrameName) 2
+
          #----- Select first observation.
          MLCD::SelectObs 1
-         
+
          return 0
-         
+
       }
-      
+
    } elseif { $Sim(ObsValidNb) == 1 } { #----- One single valid observation.
-      
+
       if { $Sim(AccStamp) < $FirstObsStamp } {
-         
+
          puts stdout ""
          Debug::TraceProc "MLCD: Error! Inconsistency between emission starting time and observation time."
          puts stdout ""
          puts stdout "Emission date-time  (stamp)         : $Sim(AccDateTime) ($Sim(AccStamp))"
          puts stdout "First observation date-time (stamp) : $FirstObsTime ($FirstObsStamp)"
-         
+
          set time  [MLCD::GetInfoDateTime $Sim(AccDateTime)]
          set year  [lindex $time 0]
          set month [lindex $time 1]
@@ -3647,7 +3647,7 @@ proc MLCD::ValidateObsDateTime { } {
          set hour  [lindex $time 3]
          set min   [lindex $time 4]
          set acc   "Accident        : ${year}-${month}-${day} ${hour}:${min} UTC"
-         
+
          set time  [MLCD::GetInfoDateTime $FirstObsTime]
          set year  [lindex $time 0]
          set month [lindex $time 1]
@@ -3655,21 +3655,21 @@ proc MLCD::ValidateObsDateTime { } {
          set hour  [lindex $time 3]
          set min   [lindex $time 4]
          set obs0  "Observation \# [expr $FirstIdx + 1] : ${year}-${month}-${day} ${hour}:${min} UTC"
-         
+
          Dialog::CreateError .mlcdnew "[lindex $Error(ObsTimes2) $GDefs(Lang)]\t$acc\n\t$obs0" $GDefs(Lang) 500
-         
+
          #----- Select 'Meteo' tab.
-         TabFrame::Select $Data(TabFrameName) 2 1
-         
+         TabFrame::Select $Data(TabFrameName) 2
+
          #----- Select first observation.
          MLCD::SelectObs 1
-         
+
          return 0
-         
+
       }
-      
+
    }
-   
+
    return 1
 
 }
