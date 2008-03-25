@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : NowCaster.tcl
-# Version  : 1.0
 # Creation : Avril 2006 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Outils de now-casting.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -50,10 +40,6 @@ foreach type [glob $GDefs(Dir)/Apps/Tools/NowCaster/Types/*.tcl] {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Close { } {
@@ -85,10 +71,6 @@ proc NowCaster::Close { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Cast { { Sec 0 } } {
@@ -130,10 +112,6 @@ proc NowCaster::Cast { { Sec 0 } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Now { } {
@@ -178,10 +156,6 @@ proc NowCaster::Now { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::SetTimeScale { Sec0 { Sec1 0 } } {
@@ -215,10 +189,6 @@ proc NowCaster::SetTimeScale { Sec0 { Sec1 0 } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Play { } {
@@ -253,10 +223,6 @@ proc NowCaster::Play { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::UpdateTypes { } {
@@ -282,12 +248,6 @@ proc NowCaster::UpdateTypes { } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

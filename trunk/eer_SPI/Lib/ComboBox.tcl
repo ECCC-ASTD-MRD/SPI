@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : ComboBox.tk
-# Version  : 3.0 ($Revision: 1.2 $)
 # Creation : Mai 1998 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -37,63 +36,6 @@
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
 #
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Fevier 1999
-#   Description : Ajout d'une commande toute simple pour ajouter une liste d'items
-#                 plutot qu'un seul item a la fois (AddList)
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mars 1999
-#   Description : Reorganisation de l'interface du widget
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mars 1999
-#   Description : -On peut maintenant inserer des chaines avec "$", il ne seront pas
-#                  evaluees a la selection
-#                 -Parametres du nombre maximum accepte maintenant -1 pour ne pas
-#                  faire de verification sur le nombre
-#                 -Ajout d'un parametre de hauteur sur la creation du ComboBox
-#                 -Definitions des icone plus tot afin de permettre a l'usager
-#                  de les redefinir avant la creation du ComboBox si il le desire
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 1999
-#   Description : -Uniformisation des variables internes.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Decembre 1999
-#   Description : -Utilisation de fenetre sans frame plutot que de menu.
-#                 -La liste deroulante est maintenant redimensionnable par l'usager
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mars 2000
-#   Description : -Deplacement de la liste deroulante si hors de l'ecran
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2000
-#   Description : -Ajout d'une fonction de redimensionnement de la liste deroulante
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 2000
-#   Description : -Fermeture de la liste deroullante avant l'execution de la commande
-#                  post-traitement plutot que l'inverse.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : -Reformattage de l'interface.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2001
-#   Description : -Activation du binding "return" meme si la valeur n'es pas dans la liste.
-#                 -Redimensionnement automatique et suppression de la fonction ComboBox::SetSize
-#                 -Meilleur gestion de la localisation de la liste
-#                 -Grab global applique lors de l'ouverture de la liste et relachement
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Fevrier 2007
-#   Description : -Ajout des fonctions Enable/Disable
 #===============================================================================
 
 package provide ComboBox 3.1
@@ -138,12 +80,6 @@ namespace eval ComboBox {
 #  <index> : Index ou l'item a ete inserer dans la liste (-1 si pas inserer)
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2001
-#   Description : Redimentionnement de la liste automatique
 #
 #-------------------------------------------------------------------------------
 
@@ -209,12 +145,6 @@ proc ComboBox::Add { W Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::AddList { W List } {
@@ -236,12 +166,6 @@ proc ComboBox::AddList { W List } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -275,12 +199,6 @@ proc ComboBox::Close { W } {
 # Remarques : C'est presque comme la commande "... index end" sauf que dans le cas
 #             de 0 elle retourne "none"
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Count { W } {
@@ -299,13 +217,9 @@ proc ComboBox::Count { W } {
 # Parametres :
 #   <W>      : Nom du widget ComboBox
 #
+# Retour   :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -324,13 +238,9 @@ proc ComboBox::Disable { W } {
 # Parametres :
 #   <W>      : Nom du widget ComboBox
 #
+# Retour   :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -362,13 +272,9 @@ proc ComboBox::Enable { W } {
 #   <Height> : Hauteur de la liste
 #   <args>   : Postcommande a effectue apres selection dans la liste
 #
+# Retour   :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -483,12 +389,6 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Del { W Item } {
@@ -524,12 +424,6 @@ proc ComboBox::Del { W Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::DelAll { W { Current True } } {
@@ -561,12 +455,6 @@ proc ComboBox::DelAll { W { Current True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Destroy { W } {
@@ -592,12 +480,6 @@ proc ComboBox::Destroy { W } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -632,12 +514,6 @@ proc ComboBox::Exec { W Pos } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Index { W Search Item } {
@@ -661,12 +537,6 @@ proc ComboBox::Index { W Search Item } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -700,12 +570,6 @@ proc ComboBox::Invoke { W } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::List { W } {
@@ -727,12 +591,6 @@ proc ComboBox::List { W } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -759,12 +617,6 @@ proc ComboBox::Open { W } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -842,12 +694,6 @@ proc ComboBox::Place { W } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Resize { W Y } {
@@ -882,12 +728,6 @@ proc ComboBox::Resize { W Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Select { W } {
@@ -919,12 +759,6 @@ proc ComboBox::Select { W } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -967,12 +801,6 @@ proc ComboBox::SelectNext { W Incr } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Set { W Pos } {
@@ -1001,12 +829,6 @@ proc ComboBox::Set { W Pos } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Avril 2000
-#   Description : Gestion du cas ou l'item n'est pas dans la liste
 #
 #-------------------------------------------------------------------------------
 

@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Time.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -36,12 +35,6 @@
 #    Graph::Time::Update       { Frame { GR {} } }
 #    Graph::Time::UpdateItems  { Frame { GR { } } }
 #    Graph::Time::Data         { GR { Data { } } { Files { } } }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -73,11 +66,6 @@ namespace eval Graph::Time { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full } {
@@ -173,10 +161,6 @@ proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::Coord { Frame GR X Y } {
@@ -208,12 +192,6 @@ proc Graph::Time::Coord { Frame GR X Y } {
 # Parametres :
 #   <GR>     : Identificateur du Graph
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::Clean { GR } {
@@ -242,11 +220,6 @@ proc Graph::Time::Clean { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Time::Destroy { Frame GR } {
@@ -291,11 +264,6 @@ proc Graph::Time::Destroy { Frame GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Time::DrawInit { Frame VP } {
@@ -337,10 +305,6 @@ proc Graph::Time::MoveDone { Frame VP } { }
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::Graph { GR } {
@@ -493,11 +457,6 @@ proc Graph::Time::Graph { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Time::Init { Frame } {
@@ -550,11 +509,6 @@ proc Graph::Time::Init { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Time::Params { Parent GR } {
@@ -625,12 +579,6 @@ proc Graph::Time::Params { Parent GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::ItemAdd { GR Item } {
@@ -664,12 +612,6 @@ proc Graph::Time::ItemAdd { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -707,12 +649,6 @@ proc Graph::Time::ItemDefault { GR Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::ItemDel { GR Item } {
@@ -743,12 +679,6 @@ proc Graph::Time::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -800,12 +730,6 @@ proc Graph::Time::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::ItemUnDefine { GR Pos } {
@@ -835,12 +759,6 @@ proc Graph::Time::ItemUnDefine { GR Pos } {
 #   <Data>   : Donnees a extraire
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -908,12 +826,6 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::Update { Frame { GR {} } } {
@@ -965,12 +877,6 @@ proc Graph::Time::Update { Frame { GR {} } } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::UpdateItems { Frame { GR { } } } {
@@ -1016,10 +922,6 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::Data { GR { Data { } } { Files { } } } {

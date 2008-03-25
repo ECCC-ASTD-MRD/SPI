@@ -12,13 +12,6 @@
 #              celles-ci pour le module CANERM.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -34,11 +27,6 @@
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::GraphVertInit { Parent } {
@@ -106,10 +94,6 @@ proc CANERM::GraphVertInit { Parent } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::GraphVertRefresh { Canvas args } {
@@ -179,11 +163,6 @@ proc CANERM::GraphVertRefresh { Canvas args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::GraphTimeInit { Parent } {
@@ -249,10 +228,6 @@ proc CANERM::GraphTimeInit { Parent } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::GraphTimeRefresh { Canvas args } {
@@ -313,15 +288,9 @@ proc CANERM::GraphTimeRefresh { Canvas args } {
 #    <Layout> : Layout (produit)
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::CallProduct { Frame Type Layout } {
@@ -350,15 +319,9 @@ proc CANERM::CallProduct { Frame Type Layout } {
 #    <Y>        : ...
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::PopUp { X Y } {
@@ -457,16 +420,9 @@ proc CANERM::PopUp { X Y } {
 #   <Parent> : Identificateur de la fenetre parent.
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimSusp { Parent } {
@@ -511,16 +467,9 @@ proc CANERM::SimSusp { Parent } {
 #   <Parent> : Identificateur de la fenetre parent.
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimCont { Parent } {
@@ -634,16 +583,9 @@ proc CANERM::SimCont { Parent } {
 #   <Parent> : Identificateur de la fenetre parent.
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::New { Parent } {
@@ -865,15 +807,9 @@ proc CANERM::New { Parent } {
 #    <Widget>   : Widget a modifier
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::SetQueue { Widget } {

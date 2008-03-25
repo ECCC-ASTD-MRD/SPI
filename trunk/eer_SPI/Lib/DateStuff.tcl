@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions pour les trajectoires
 # Fichier   : DateStuff.tcl
-# Version   : 1.0 ($Revision: 1.1.1.1 $)
 # Creation  : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions de fonctions relative aux manipulations de dates.
@@ -97,12 +96,6 @@ namespace eval DateStuff {
 # Remarques :
 #    aucune
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc DateStuff::CompareDDMMMYYYY { Date1 Date2 } {
@@ -158,12 +151,6 @@ proc DateStuff::CompareDDMMMYYYY { Date1 Date2 } {
 # Remarques :
 #    aucune
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc DateStuff::CompareMMM_YYYY { Date1 Date2 } {
@@ -214,12 +201,6 @@ proc DateStuff::CompareMMM_YYYY { Date1 Date2 } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc DateStuff::CheckYear { Year } {
@@ -243,12 +224,6 @@ proc DateStuff::CheckYear { Year } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc DateStuff::StringDay { No Lang } {
@@ -268,12 +243,6 @@ proc DateStuff::StringDay { No Lang } {
 #  <Lang>    : Langue dans laquelle on veut le mois (0-Francais 1-Anglais).
 #
 # Remarques :
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -295,12 +264,6 @@ proc DateStuff::StringMonth { No Lang } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -336,12 +299,6 @@ proc DateStuff::MonthLength { Month Year } {
 #  <Zone>    : Zone (Defaut=Z)
 #
 # Remarques :
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 

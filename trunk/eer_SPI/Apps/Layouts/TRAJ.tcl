@@ -11,12 +11,6 @@
 # Description:
 #    Modeles de carte au format trajectoire
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval TRAJ {
@@ -82,11 +76,6 @@ namespace eval TRAJ {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::Layout { Frame } {
@@ -123,11 +112,6 @@ proc TRAJ::Layout { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::LayoutUpdate { Frame } {
@@ -199,11 +183,6 @@ proc TRAJ::LayoutUpdate { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::LayoutClear { Frame } {
@@ -234,11 +213,6 @@ proc TRAJ::LayoutClear { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::PrintWidget { Frame } {
@@ -267,11 +241,6 @@ proc TRAJ::PrintWidget { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::LayoutToolBar { Frame } {
@@ -322,11 +291,6 @@ proc TRAJ::LayoutToolBar { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::RSMCJoin { Frame } {
@@ -381,11 +345,6 @@ proc TRAJ::RSMCJoin { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJ::SATNET { Frame Mode } {

@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : ListboxBubble.tk
-# Version  : 1.2 ($Revision: 1.3 $)
 # Creation : Mai 1999 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -29,19 +28,6 @@
 #     se faire de deux maniere, par une commande prenant en argument l'index et
 #     retournant l'information ou par une liste d'information specifique.
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 1999
-#   Description : Uniformisation des variables internes.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Novembre 1999
-#   Description : Ajout d'une fonction de destruction.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2002
-#   Description : -Utilisation de toplevel plutot que de menu.
 #===============================================================================
 
 package provide ListboxBubble 1.2
@@ -85,11 +71,7 @@ namespace eval ListboxBubble {
 # Retour:
 #
 # Remarques :
-# Modifications :
 #
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::Activate { } {
@@ -127,11 +109,6 @@ proc ListboxBubble::Activate { } {
 #    -Si le mode est 0 (Commande) alors la commande utilise doit prendre en argument
 #     un entier qui est l'index de l'item du listbox sous le curseur de la souris.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::Create { Widget Mode args } {
@@ -179,11 +156,7 @@ proc ListboxBubble::Create { Widget Mode args } {
 # Retour:
 #
 # Remarques :
-# Modifications :
 #
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::Destroy { Widget } {
@@ -220,11 +193,6 @@ proc ListboxBubble::Destroy { Widget } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::Show { Widget WidgetY X Y } {
@@ -253,11 +221,6 @@ proc ListboxBubble::Show { Widget WidgetY X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::GetInfo { Widget WidgetY } {
@@ -323,11 +286,6 @@ proc ListboxBubble::GetInfo { Widget WidgetY } {
 #   -Il est de la responsabilite de l'utilisateur de s'assurer que le mode
 #    de fonctionnement correspond avec la methode de recuperation de l'information
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::SetCommand { Widget Command } {
@@ -355,11 +313,6 @@ proc ListboxBubble::SetCommand { Widget Command } {
 #   -Il est de la responsabilite de l'utilisateur de s'assurer que le mode
 #    de fonctionnement correspond avec le commande ou la liste d'info
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::SetMode { Widget Mode } {
@@ -386,11 +339,6 @@ proc ListboxBubble::SetMode { Widget Mode } {
 #   -Il est de la responsabilite de l'utilisateur de s'assurer que le mode
 #    de fonctionnement correspond avec la methode de recuperation de l'information
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ListboxBubble::SetInfo { Widget List } {

@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : FieldCalc.tk
-# Version  : 2.1
 # Creation : Juillet 2001 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -39,12 +38,6 @@
 #   FieldCalc::WidgetTrigo    { Frame }
 #
 # Remarques :
-#
-# Modification:
-#
-#   Nom         : Jean-Philippe Gauthier
-#   Date        : Aout 2004
-#   Description : Formalisation des macro et sauvegarde des fonctions
 #
 #===============================================================================
 
@@ -491,11 +484,6 @@ namespace eval FieldCalc {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Calculate { } {
@@ -535,11 +523,6 @@ proc FieldCalc::Calculate { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Close { } {
@@ -569,11 +552,6 @@ proc FieldCalc::Close { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::ConvertFactor { } {
@@ -599,11 +577,6 @@ proc FieldCalc::ConvertFactor { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::ConvertList { Frame } {
@@ -635,11 +608,6 @@ proc FieldCalc::ConvertList { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Window { { Parent .} } {
@@ -751,11 +719,6 @@ proc FieldCalc::Window { { Parent .} } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaDel { } {
@@ -800,11 +763,6 @@ proc FieldCalc::FormulaDel { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaLoad { } {
@@ -845,11 +803,6 @@ proc FieldCalc::FormulaLoad { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaSave { } {
@@ -912,11 +865,6 @@ proc FieldCalc::FormulaSave { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaSet { { Formula False } } {
@@ -946,11 +894,6 @@ proc FieldCalc::FormulaSet { { Formula False } } {
 #   -Si une selection existe, elle est remplacer par le chiffre sinon
 #    on insere le chiffre a la position du curseur.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::InsertDigit { Digit } {
@@ -979,11 +922,6 @@ proc FieldCalc::InsertDigit { Digit } {
 #   -Si une selection existe, on applique la fonction a la selection sinon
 #    on insere la fonctiona la position du curseur.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::InsertFunc { Func Argc Trigo } {
@@ -1042,11 +980,6 @@ proc FieldCalc::InsertFunc { Func Argc Trigo } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::InsertOperator { Op } {
@@ -1075,11 +1008,6 @@ proc FieldCalc::InsertOperator { Op } {
 #   -Si il y a trop de champs, ils seront pas inclus dans la macro mais retourne
 #    dans la liste resultante
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Macro { VP Id Fields } {
@@ -1177,11 +1105,6 @@ proc FieldCalc::Macro { VP Id Fields } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Paste { File Field } {
@@ -1211,11 +1134,6 @@ proc FieldCalc::Paste { File Field } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Save { File } {
@@ -1242,11 +1160,6 @@ proc FieldCalc::Save { File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::Select { } {
@@ -1283,11 +1196,6 @@ proc FieldCalc::Select { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetCond { Frame } {
@@ -1338,11 +1246,6 @@ proc FieldCalc::WidgetCond { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetConst { Frame } {
@@ -1410,11 +1313,6 @@ proc FieldCalc::WidgetConst { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetConv { Frame } {
@@ -1458,11 +1356,6 @@ proc FieldCalc::WidgetConv { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetMath { Frame } {
@@ -1520,11 +1413,6 @@ proc FieldCalc::WidgetMath { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetMem { Frame } {
@@ -1567,11 +1455,6 @@ proc FieldCalc::WidgetMem { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetOps { Frame } {
@@ -1665,11 +1548,6 @@ proc FieldCalc::WidgetOps { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetStat { Frame } {
@@ -1709,14 +1587,6 @@ proc FieldCalc::WidgetStat { Frame } {
       pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 $Frame.sunk.l4 $Frame.sunk.l5 $Frame.sunk.l6 -side left  -fill y
    pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
 
-#   set Bubble(StatSERRA)
-#   set Bubble(StatSERRB)
-#   set Bubble(StatLMNE)
-#   set Bubble(StatLMNB)
-#   set Bubble(StatMFB)
-#   set Bubble(StatMFE)
-#   set Bubble(StatNRMSE)
-
    Bubble::Create $Frame.sunk.l1.smin  [lindex $Bubble(StatSMIN)  $GDefs(Lang)]
    Bubble::Create $Frame.sunk.l1.smax  [lindex $Bubble(StatSMAX)  $GDefs(Lang)]
    Bubble::Create $Frame.sunk.l1.savg  [lindex $Bubble(StatSAVG)  $GDefs(Lang)]
@@ -1749,11 +1619,6 @@ proc FieldCalc::WidgetStat { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetTrigo { Frame } {

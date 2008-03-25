@@ -11,15 +11,7 @@
 # Description:
 #    Fonctions de manipualtions des Watchs.
 #
-# Fonctions:
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -107,14 +99,9 @@ namespace eval Watch {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -134,14 +121,9 @@ proc Watch::AllClose { } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -172,11 +154,6 @@ proc Watch::AllOpen { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Watch::Create { Frame } {
@@ -223,14 +200,9 @@ proc Watch::Create { Frame } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -337,14 +309,9 @@ proc Watch::CreateTree { } {
 #   <IVar>   : Variable
 #   <Pool>   : Informations a decoder
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -400,14 +367,9 @@ proc Watch::Extract { IVar Pool } {
 #
 # Parametres      :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -447,14 +409,9 @@ proc Watch::IsoDispatch { } {
 #
 # Parametres  :
 #
+# Retour :
+#
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -485,14 +442,9 @@ proc Watch::IsoDelete { } {
 #
 # Parametres  :
 #
+# Retour :
+#
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -523,14 +475,9 @@ proc Watch::IsoModif { } {
 #
 # Parametres  :
 #
+# Retour :
+#
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -556,14 +503,9 @@ proc Watch::IsoSelect { } {
 #
 # Parametres      :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -591,14 +533,9 @@ proc Watch::IsoStart { } {
 #
 # Parametres:
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -650,15 +587,10 @@ proc Watch::New { } {
 #
 # Parametres :
 #   <Frame>  : Identificateur du frame
-
+#
+# Retour :
+#
 # Remarques :
-#   Aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -791,16 +723,10 @@ proc Watch::Params { Frame } {
 # But      : Initialisation des parametres de simulation.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -889,15 +815,9 @@ proc Watch::ParamsInit { } {
 #    <Y>        : ...
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Watch::PopUp { X Y } {
@@ -930,15 +850,9 @@ proc Watch::PopUp { X Y } {
 #    <Y>        : ...
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Watch::PopUpSim { X Y Mode args } {
@@ -982,14 +896,9 @@ proc Watch::PopUpSim { X Y Mode args } {
 # Parametres :
 #   <No>     : Numero de la branche.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1016,16 +925,9 @@ proc Watch::SelectBranch { No } {
 #   <Tag>    : Tag associe
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Watch::SelectSim { Tag } {
@@ -1044,14 +946,9 @@ proc Watch::SelectSim { Tag } {
 #
 # Parametres  :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1099,16 +996,9 @@ proc Watch::Suppress { } {
 # Parametres :
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Watch::Read { } {
@@ -1138,14 +1028,9 @@ proc Watch::Read { } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1176,14 +1061,9 @@ proc Watch::SwitchElev { } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

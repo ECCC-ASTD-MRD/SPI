@@ -6,7 +6,6 @@
 #
 # Projet    : Interface de selection de fichier de destination ou de lecture.
 # Fichier   : FileBox.tk
-# Version   : 3.1
 # Creation  : Juillet 1998 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Permet avec une interface de selectionne un fichier pour
@@ -31,30 +30,6 @@
 # Remarques :
 #   Aucune
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 1999
-#   Description : Retour au precedent path apres des reouvertures
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2000
-#   Description : -Suppression de la boite des path pour l'utilisation d'un ComboBox.
-#                 -Ajout d'un menu contextuel dont il reste a inclure des fonctionnalites.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2000
-#   Description : -Restriction de l'effet de la cle "Enter" pour le mode Path.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Novembre 2002
-#   Description : -Separation du path et du filename
-#                 -Support pour les fichiers incluants des espaces (Windows)
-#                 -Menu contextuel de manipulation des fichiers
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 2004
-#   Description : -Ajout d'une fonction de calcul de profondeur
 #===============================================================================
 
 package provide FileBox 3.1
@@ -180,12 +155,6 @@ namespace eval FileBox {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Avril 2000
-#    Description : Retrait de tout les fork de ls et etc...
 #
 #----------------------------------------------------------------------------
 
@@ -319,12 +288,6 @@ proc FileBox::GetContent { Path } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::GetType { } {
@@ -346,12 +309,6 @@ proc FileBox::GetType { } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -383,12 +340,6 @@ proc FileBox::SetPattern { } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -602,12 +553,6 @@ proc FileBox::Scroll { Incr } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::DeepLen { Path { Total 1 } } {
@@ -633,12 +578,6 @@ proc FileBox::DeepLen { Path { Total 1 } } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -679,12 +618,6 @@ proc FileBox::Delete { } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::FormatSize { Val } {
@@ -722,12 +655,6 @@ proc FileBox::FormatSize { Val } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::MemAdd { } {
@@ -758,12 +685,6 @@ proc FileBox::MemAdd { } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::MemDel { } {
@@ -787,12 +708,6 @@ proc FileBox::MemDel { } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -829,12 +744,6 @@ proc FileBox::MemLoad { } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::MemSave { } {
@@ -862,12 +771,6 @@ proc FileBox::MemSave { } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -913,12 +816,6 @@ proc FileBox::New { } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc FileBox::Popup { X Y YL } {
@@ -943,12 +840,6 @@ proc FileBox::Popup { X Y YL } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -1043,12 +934,6 @@ proc FileBox::Select { Mode Ok } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 

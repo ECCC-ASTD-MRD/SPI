@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet    : Librairie de definitions pour les domaines des projections
-# Fichier   : ProjCam.tk
-# Version   : 2.1
+# Fichier   : ProjCam.tcl
 # Creation  : Septembre 2000 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions des structures et fonctions relatives aux
@@ -40,12 +39,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -134,11 +127,6 @@ namespace eval ProjCam {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
@@ -275,11 +263,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Create { Cam } {
@@ -325,11 +308,6 @@ proc ProjCam::Create { Cam } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Delete { Combo } {
@@ -371,11 +349,6 @@ proc ProjCam::Delete { Combo } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #----------------------------------------------------------------------------
 
 proc ProjCam::Do { Cam Frame VP args } {
@@ -408,11 +381,6 @@ proc ProjCam::Do { Cam Frame VP args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Fly { Cam Frame } {
@@ -465,11 +433,6 @@ proc ProjCam::ToDo { Cam Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Mem { Cam Name } {
@@ -494,11 +457,6 @@ proc ProjCam::Mem { Cam Name } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Read { } {
@@ -545,11 +503,6 @@ proc ProjCam::Read { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Set { Name To From Up Lens CFX CFY CFZ CTX CTY CTZ Lat Lon } {
@@ -577,11 +530,6 @@ proc ProjCam::Set { Name To From Up Lens CFX CFY CFZ CTX CTY CTZ Lat Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Reset { Cam { All True } } {
@@ -625,11 +573,6 @@ proc ProjCam::Reset { Cam { All True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Save { Combo } {
@@ -694,11 +637,6 @@ proc ProjCam::Save { Combo } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Select { Cam Frame Name } {
@@ -773,10 +711,6 @@ proc ProjCam::Select { Cam Frame Name } {
 # Remarques :
 #
 # Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #----------------------------------------------------------------------------
 
 proc ProjCam::XYInit { Cam Frame VP X Y } {
@@ -807,11 +741,6 @@ proc ProjCam::XYInit { Cam Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #----------------------------------------------------------------------------
 
 proc ProjCam::XYDo { Cam Frame VP X Y } {
@@ -844,11 +773,6 @@ proc ProjCam::XYDo { Cam Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::XYDone { Cam Frame  { Sling False } } {
@@ -891,11 +815,6 @@ proc ProjCam::XYDone { Cam Frame  { Sling False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZInit { Cam Frame VP X Y } {
@@ -925,11 +844,6 @@ proc ProjCam::ZInit { Cam Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZDo { Cam Frame VP X Y } {
@@ -959,11 +873,6 @@ proc ProjCam::ZDo { Cam Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZDone { Cam Frame } {
@@ -990,11 +899,6 @@ proc ProjCam::ZDone { Cam Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZoomBox { Canvas X0 Y0 X1 Y1 Width Height } {
@@ -1051,11 +955,6 @@ proc ProjCam::ZoomBox { Canvas X0 Y0 X1 Y1 Width Height } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZoomInit { Frame VP X Y } {
@@ -1085,11 +984,6 @@ proc ProjCam::ZoomInit { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::Zoom { Cam Frame Lens { Store False } } {
@@ -1130,11 +1024,6 @@ proc ProjCam::Zoom { Cam Frame Lens { Store False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZoomIn { Cam Frame VP { Factor 0 } } {
@@ -1210,11 +1099,6 @@ proc ProjCam::ZoomIn { Cam Frame VP { Factor 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
@@ -1281,12 +1165,6 @@ proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

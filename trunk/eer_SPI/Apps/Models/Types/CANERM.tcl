@@ -11,13 +11,6 @@
 # Description: Description des procedures relatives au module CANERM.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -37,16 +30,9 @@ source $GDefs(Dir)/Apps/Models/Types/CANERM.int
 #   <Combo>  : Identificateur du ComboBox
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::CheckIntensity { Combo } {
@@ -79,12 +65,6 @@ proc CANERM::CheckIntensity { Combo } {
 # Remarques :
 #   - La procedure boucle sur toutes les simulations precedentes en remontant l'arbre
 #
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::File { Info Path Type Back } {
@@ -159,13 +139,7 @@ proc CANERM::File { Info Path Type Back } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::GridDef { } {
@@ -192,13 +166,9 @@ proc CANERM::GridDef { } {
 #   <Frame>  : Identificateur de Page
 #   <VP>     : Identificateur du Viewport
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -229,13 +199,7 @@ proc CANERM::DrawInit { Frame VP } { }
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::ModeLeave { } {
@@ -271,13 +235,7 @@ proc CANERM::ModeLeave { } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::Launch { Path Script Class Host } {
@@ -314,19 +272,11 @@ proc CANERM::Launch { Path Script Class Host } {
 #              directories.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::SetMetDataDir { MetModel } {
@@ -345,16 +295,9 @@ proc CANERM::SetMetDataDir { MetModel } {
 #    <Path>  : Path du repertoire "tmp" de la simulation ou creer le "ersinp".
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimCreateErsinp { Path } {
@@ -426,16 +369,9 @@ proc CANERM::SimCreateErsinp { Path } {
 #    <Path>  : Path de la simulation
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #------------------------------------------------------------------------------
 
 proc CANERM::SimCreateMeteo { Path } {
@@ -470,13 +406,7 @@ proc CANERM::SimCreateMeteo { Path } {
 #   <Bool>   : True ou False.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimGetData { } {
@@ -528,13 +458,7 @@ proc CANERM::SimGetData { } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::SimInitCont { } {
@@ -575,13 +499,7 @@ proc CANERM::SimInitCont { } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::SimInitNew { } {
@@ -676,16 +594,9 @@ proc CANERM::SimInitNew { } {
 #    <GoGoGo> : Go for launch (Houston, we have a go)
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimLaunch { Path GoGoGo } {
@@ -767,16 +678,9 @@ proc CANERM::SimLaunch { Path GoGoGo } {
 #   <Launch> : Lancement ???
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimLaunchCheck { Idx New Launch } {
@@ -871,16 +775,9 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
 #   <No>     : Numero de l'onglet
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
@@ -973,16 +870,9 @@ proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
 # Parametres :
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::SimLaunchSuspended { } {
@@ -1041,16 +931,9 @@ proc CANERM::SimLaunchSuspended { } {
 #   <Path>   : Path de la simulation
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimPrevious { Path } {
@@ -1098,19 +981,11 @@ proc CANERM::SimPrevious { Path } {
 # But        : Permet de creer le nom des fichiers resultats et du fichier 'restart'.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc CANERM::SimResultName { } {
@@ -1137,16 +1012,9 @@ proc CANERM::SimResultName { } {
 #    <Type>  : Type de fichier (standard ou post)
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::Result { Type } {
@@ -1171,14 +1039,9 @@ proc CANERM::Result { Type } {
 #   <Confirm> : Confirmation de la suppression
 #   <Info>    : Identificateur de la simulation
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1232,13 +1095,7 @@ proc CANERM::SimSuppress { Confirm Info } {
 #   <NoSim>  : Numero de l'experience percedente
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::SimSuppressResults { Path Info } {
@@ -1284,14 +1141,9 @@ proc CANERM::SimSuppressResults { Path Info } {
 # Parametres :
 #   <Frame>  : Identificateur du frame
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1337,14 +1189,9 @@ proc CANERM::SpeciesDelete { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur du frame
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1396,14 +1243,9 @@ proc CANERM::SpeciesFormat { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur du frame
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1438,13 +1280,7 @@ proc CANERM::SpeciesStart { Frame } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CANERM::PoolInfo { Info } {

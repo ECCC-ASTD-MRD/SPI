@@ -6,18 +6,11 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : Writer.txt
-# Version  : 1.1
 # Creation : Mai 2000
 #
 # Description:
 #    Permet d'ecrire des messages (FVCN, AACN, ...) en utilisant SPI pour faire
 #    de l'entree de parametres
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

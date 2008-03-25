@@ -11,12 +11,6 @@
 # Description:
 #    Modeles de carte au format METF
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval METF {
@@ -67,10 +61,6 @@ namespace eval METF {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc  METF::DrawScale { Frame } {
@@ -109,10 +99,6 @@ proc  METF::DrawScale { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc METF::LoadFields { Frame } {
@@ -177,10 +163,6 @@ proc METF::LoadFields { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc METF::DataInit { Frame } {
@@ -268,11 +250,6 @@ proc METF::DataInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::Layout { Frame } {
@@ -315,11 +292,6 @@ proc METF::Layout { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::LayoutClear { Frame } {
@@ -358,11 +330,6 @@ proc METF::LayoutClear { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::LayoutToolBar { Frame } {
@@ -390,11 +357,6 @@ proc METF::LayoutToolBar { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::LayoutInit { Frame } {
@@ -452,11 +414,6 @@ proc METF::LayoutInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::LayoutUpdate { Frame } {
@@ -489,11 +446,6 @@ proc METF::LayoutUpdate { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::PrintWidget { Frame } {
@@ -593,11 +545,6 @@ proc METF::PrintWidget { Frame } {
 #   parametres du PrintBox lui-meme et du "Widget PlugIn" PrintBox::PlugInCommand
 #   definit ci-haut.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::PrintCommand { Frame } {
@@ -679,11 +626,6 @@ proc METF::PrintCommand { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc METF::UpdateItems { Frame } {

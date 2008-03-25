@@ -2397,13 +2397,7 @@ static void DisplayglCanvasItems(ClientData clientData,int X,int Y,int Width,int
    for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL; itemPtr = itemPtr->nextPtr) {
       if (itemPtr->state == TK_STATE_HIDDEN || (itemPtr->state == TK_STATE_NULL && canvasPtr->canvas_state == TK_STATE_HIDDEN))
          continue;
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Rendering item %p\n",itemPtr);
-#endif
       (*itemPtr->typePtr->displayProc)((Tk_Canvas) canvasPtr,itemPtr,canvasPtr->display,Tk_WindowId(tkwin),X,Y,Width,Height);
-#ifdef AQBUG
-fprintf(stderr,"(AQBUG) Done Rendering item %p\n",itemPtr);
-#endif
    }
 }
 

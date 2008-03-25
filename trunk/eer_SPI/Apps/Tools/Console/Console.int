@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'outils SPI.
 # Fichier  : Console.int
-# Version  : 1.1
 # Creation : Janvier 2006 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -16,12 +15,6 @@
 #
 #
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -37,11 +30,6 @@
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Console::Window { } {

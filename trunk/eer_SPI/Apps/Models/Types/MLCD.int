@@ -12,13 +12,6 @@
 #              celles-ci pour le module MLCD.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -29,16 +22,11 @@
 # But      : Creation d'une nouvelle simulation MLCD.
 #
 # Parametres :
-#    Aucun.
+#   <Parent> : Fenetre parent
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -520,15 +508,9 @@ proc MLCD::New { Parent } {
 #    <Y>        : ...
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLCD::PopUp { X Y } {

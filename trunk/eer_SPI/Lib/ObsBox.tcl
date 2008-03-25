@@ -1,4 +1,3 @@
-
 #===============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
@@ -7,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : OsbBox.tcl
-# Version  : 1.2
 # Creation : Fevrier 2003 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -41,11 +39,6 @@
 #
 # Remarques :
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2003
-#   Description : Ajout du scroll avec les fleches
 #===============================================================================
 
 package provide ObsBox 1.2
@@ -110,11 +103,6 @@ namespace eval ObsBox {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ObsBox::Clear { } {
@@ -142,11 +130,6 @@ proc ObsBox::Clear { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ObsBox::Create { Parent Title { Geom "" } } {
@@ -299,11 +282,6 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ObsBox::Exist { No } {
@@ -327,10 +305,6 @@ proc ObsBox::Exist { No } {
 #       -1 : On ferme tout les fichiers
 #        n : On ferme le fichier correspondant a cet index
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::FileClose { No } {
@@ -410,10 +384,6 @@ proc ObsBox::FileClose { No } {
 # Remarque :
 #     - Si No < 0 l'ouverture se fera dans la derniere boite
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::FileOpen { No File } {
@@ -483,10 +453,6 @@ proc ObsBox::FileOpen { No File } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::Get { } {
@@ -509,10 +475,6 @@ proc ObsBox::Get { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::GetContent { { Id "" } } {
@@ -560,10 +522,6 @@ proc ObsBox::GetContent { { Id "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::GetFile { args } {
@@ -613,10 +571,6 @@ proc ObsBox::GetFile { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::GetSelected { args } {
@@ -667,10 +621,6 @@ proc ObsBox::GetSelected { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::FileSelect { No File } {
@@ -696,12 +646,6 @@ proc ObsBox::FileSelect { No File } {
 #
 # Remarques :
 #    -Cette commande est appelee par le package ListboxBubble.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -729,11 +673,6 @@ proc ObsBox::InfoCommand { No Index } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ObsBox::Init { No } {
@@ -773,10 +712,6 @@ proc ObsBox::Init { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::Insert { No } {
@@ -858,10 +793,6 @@ proc ObsBox::Insert { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::Close { No } {
@@ -910,10 +841,6 @@ proc ObsBox::Close { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -ObsBox::Close $no
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::CloseAll { } {
@@ -935,12 +862,6 @@ proc ObsBox::CloseAll { } {
 #  <Y>       : Coordonnee y du curseur
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -964,12 +885,6 @@ proc ObsBox::PasteClick { No Y } {
 #  <Y>       : Coordonnee y du curseur
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -999,11 +914,6 @@ proc ObsBox::PasteDeClick { No Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ObsBox::Raise { } {
@@ -1028,10 +938,6 @@ proc ObsBox::Raise { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::Restrict { No args } {
@@ -1099,10 +1005,6 @@ proc ObsBox::Restrict { No args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::RestrictClear { No } {
@@ -1128,10 +1030,6 @@ proc ObsBox::RestrictClear { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc ObsBox::RestrictSet { No Var Value } {
@@ -1156,11 +1054,6 @@ proc ObsBox::RestrictSet { No Var Value } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ObsBox::Scroll { No Incr } {
@@ -1193,12 +1086,6 @@ proc ObsBox::Scroll { No Incr } {
 # Parametres :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

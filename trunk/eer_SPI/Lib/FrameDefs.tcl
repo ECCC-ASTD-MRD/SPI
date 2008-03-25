@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : FrameDefs.tk
-# Version  : 1.6
 # Creation : Fevrier 2000 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -37,23 +36,6 @@
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : -Ajout d'une fonction de "callback" de selection pour les onglets
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : -Suppresion des GroupFrame et PanFrame puisqu'il sont maintenant
-#                  implante dans tk-8.4
-#
-#                 -Ajout de mode haut ou bat pour les onglets
-#                 -Possibilite d'edition du libelle des onglets
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mars 2004
-#   Description : -Un seul "hidder" et simplification des bindings
 #===============================================================================
 
 package provide FrameDefs 1.6
@@ -98,12 +80,6 @@ namespace eval TabFrame {
 #   <Path>   : Path complet du frame du tab
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -170,12 +146,6 @@ proc TabFrame::Add { Tab Level Title Edit { Color "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Edit { Tab Level No } {
@@ -209,12 +179,6 @@ proc TabFrame::Edit { Tab Level No } {
 #   de l'onglet:
 #
 #        callback { Path No }
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -251,12 +215,6 @@ proc TabFrame::Create { Tab Level Command { Top 1 } { Width -1 } { Height -1 } }
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Is { Tab } {
@@ -276,12 +234,6 @@ proc TabFrame::Is { Tab } {
 #   <No>        : Numero de l'onglet
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -305,12 +257,6 @@ proc TabFrame::Current { Tab  } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc TabFrame::NbFrame { Tab } {
@@ -333,12 +279,6 @@ proc TabFrame::NbFrame { Tab } {
 # Retour     :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -383,13 +323,9 @@ proc TabFrame::Delete { Tab Level { No -1 } } {
 #
 # Parametres     :
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -416,13 +352,9 @@ proc TabFrame::Destroy { Tab } {
 # Parametres   :
 #   <TabNo>    : Frame du tab
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -446,13 +378,9 @@ proc TabFrame::Disable { Tab No } {
 #   <Tab>    : Frame Parent
 #   <No>     : Numero du tabulateur
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -479,12 +407,6 @@ proc TabFrame::Enable { Tab No } {
 #   <List>   : Liste de onglets
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -518,12 +440,6 @@ proc TabFrame::GetTabs { Tab { Index -1 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc TabFrame::GetLabel { Tab No } {
@@ -542,15 +458,9 @@ proc TabFrame::GetLabel { Tab No } {
 #   <No>     : Numero de l'onglet
 #
 # Retour     :
-#   <evel>   : Niveau de l'onglet
+#   <Level>  : Niveau de l'onglet
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -579,12 +489,6 @@ proc TabFrame::GetLevel { Tab No } {
 # Retour     :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -620,12 +524,6 @@ proc TabFrame::Label { Tab Level No Label } {
 # Retour     :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -671,12 +569,6 @@ proc TabFrame::Place { Tab Level No Nb X Top { Hid False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc TabFrame::PlaceHidder { Tab No Top } {
@@ -714,13 +606,9 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 #   <Tab>    : Frame Parent
 #   <No>     : Numero du tabulateur
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

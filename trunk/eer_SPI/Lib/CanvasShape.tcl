@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de fonctions pour dessiner des formes dans un canvas
 # Fichier   : CanvasShape.tcl
-# Version   : 1.3 ($Revision: 1.7 $)
 # Creation  : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions de diverses fonction s afin de dessiner des
@@ -76,12 +75,6 @@
 # Remarques :
 #   -Tous les points sont passer sous forme de liste { X Y }
 #
-# Modification:
-#
-#   Nom         : Jean-Philippe Gauthier
-#   Date        : Mai 2006
-#   Description : L'ajustement de l'horloge se fait maintenant en secondes
-#
 #===============================================================================
 
 package provide CanvasShape 1.3
@@ -119,11 +112,6 @@ namespace eval CVCompass { }
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVCompass::Create { Frame X Y } {
@@ -183,11 +171,6 @@ proc CVCompass::Create { Frame X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVCompass::Rotate { Frame X Y Theta } {
@@ -216,11 +199,6 @@ proc CVCompass::Rotate { Frame X Y Theta } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVCompass::Destroy { Frame } {
@@ -245,11 +223,6 @@ proc CVCompass::Destroy { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVCompass::Update { Frame Bearing Angle Distance { Speed 0 } } {
@@ -321,12 +294,6 @@ proc CVCompass::Update { Frame Bearing Angle Distance { Speed 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc CVCompass::Write { Frame File } {
@@ -353,11 +320,6 @@ namespace eval CVText { }
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Init { Canvas } {
@@ -401,11 +363,6 @@ proc CVText::Init { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Focus { Canvas X Y } {
@@ -435,11 +392,6 @@ proc CVText::Focus { Canvas X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Copy { Canvas } {
@@ -469,11 +421,6 @@ proc CVText::Copy { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::BackSpace { Canvas } {
@@ -502,11 +449,6 @@ proc CVText::BackSpace { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Delete { Canvas } {
@@ -536,11 +478,6 @@ proc CVText::Delete { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Drag { Canvas X Y } {
@@ -562,11 +499,6 @@ proc CVText::Drag { Canvas X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Erase { Canvas } {
@@ -588,11 +520,6 @@ proc CVText::Erase { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Hit { Canvas X Y { select 1 } } {
@@ -618,11 +545,6 @@ proc CVText::Hit { Canvas X Y { select 1 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Insert { Canvas Char } {
@@ -643,11 +565,6 @@ proc CVText::Insert { Canvas Char } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Move { Canvas Incr } {
@@ -670,11 +587,6 @@ proc CVText::Move { Canvas Incr } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::MoveEnd { Canvas Pos } {
@@ -698,11 +610,6 @@ proc CVText::MoveEnd { Canvas Pos } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Paste { Canvas { X {} } { Y {} } } {
@@ -743,11 +650,6 @@ proc CVText::Paste { Canvas { X {} } { Y {} } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVText::Select { Canvas } {
@@ -771,11 +673,6 @@ proc CVText::Select { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 namespace eval CVClock { }
 
@@ -830,11 +727,6 @@ proc CVClock::Create { Frame X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVClock::Update { Frame Data } {
@@ -866,11 +758,6 @@ proc CVClock::Update { Frame Data } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVClock::Destroy { Frame } {
@@ -892,11 +779,6 @@ proc CVClock::Destroy { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVClock::Exist { Frame } {
@@ -918,11 +800,6 @@ proc CVClock::Exist { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVClock::Time { Frame Sec Total } {
@@ -1001,12 +878,6 @@ proc CVClock::Time { Frame Sec Total } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc CVClock::Write { Frame File } {
@@ -1034,12 +905,8 @@ proc CVClock::Write { Frame File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
+
 namespace eval CVGeoLegend { }
 
 proc CVGeoLegend::Create { Frame X Y List } {
@@ -1085,11 +952,6 @@ proc CVGeoLegend::Create { Frame X Y List } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVGeoLegend::Update { Frame List } {
@@ -1117,11 +979,6 @@ proc CVGeoLegend::Update { Frame List } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVGeoLegend::Destroy { Frame } {
@@ -1140,12 +997,6 @@ proc CVGeoLegend::Destroy { Frame } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1174,11 +1025,6 @@ proc CVGeoLegend::Write { Frame File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 namespace eval CVScale { } { }
 
@@ -1240,11 +1086,6 @@ proc CVScale::Create { Frame X Y Size } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVScale::Destroy { Frame } {
@@ -1266,11 +1107,6 @@ proc CVScale::Destroy { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVScale::Set { Frame } {
@@ -1293,12 +1129,6 @@ proc CVScale::Set { Frame } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1325,11 +1155,6 @@ proc CVScale::Write { Frame File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CVScale::Update { Frame VP } {
@@ -1453,11 +1278,6 @@ namespace eval Shape {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::BindMove { Canvas Tags args } {
@@ -1493,11 +1313,6 @@ proc Shape::BindMove { Canvas Tags args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
@@ -1531,11 +1346,6 @@ proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::Move { Canvas Tags X Y } {
@@ -1574,11 +1384,6 @@ proc Shape::Move { Canvas Tags X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::Scale { Canvas Tag X Y args } {
@@ -1616,11 +1421,6 @@ proc Shape::Scale { Canvas Tag X Y args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::Set { Canvas Tag X Y } {
@@ -1652,11 +1452,6 @@ proc Shape::Set { Canvas Tag X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::UnSet { Canvas Tag } {
@@ -1685,11 +1480,6 @@ proc Shape::UnSet { Canvas Tag } {
 # Remarques :
 #    - On detruit les "bindings", l'item de canvas et le widget
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::UnBindScale { Canvas Tag } {
@@ -1716,11 +1506,6 @@ proc Shape::UnBindScale { Canvas Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawVBar { Canvas Pixel Tags Color Size Fill } {
@@ -1755,11 +1540,6 @@ proc Shape::DrawVBar { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawHBar { Canvas Pixel Tags Color Size Fill } {
@@ -1794,11 +1574,6 @@ proc Shape::DrawHBar { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawCircle { Canvas Pixel Tags Color Size Fill } {
@@ -1833,11 +1608,6 @@ proc Shape::DrawCircle { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawLosange { Canvas Pixel Tags Color Size Fill } {
@@ -1874,11 +1644,6 @@ proc Shape::DrawLosange { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawSable { Canvas Pixel Tags Color Size Fill } {
@@ -1918,11 +1683,6 @@ proc Shape::DrawSable { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawSquare { Canvas Pixel Tags Color Size Fill } {
@@ -1957,11 +1717,6 @@ proc Shape::DrawSquare { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawTriangle { Canvas Pixel Tags Color Size Fill } {
@@ -1997,11 +1752,6 @@ proc Shape::DrawTriangle { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawX { Canvas Pixel Tags Color Size Fill } {
@@ -2033,11 +1783,6 @@ proc Shape::DrawX { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawStar { Canvas Pixel Tags Color Size Fill } {
@@ -2076,11 +1821,6 @@ proc Shape::DrawStar { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::Draw+ { Canvas Pixel Tags Color Size Fill } {
@@ -2113,11 +1853,6 @@ proc Shape::Draw+ { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawStringTest { Canvas X Y Factor Tags Color } {
@@ -2149,11 +1884,6 @@ proc Shape::DrawStringTest { Canvas X Y Factor Tags Color } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawIcoMETF { Canvas Pixel Tags Color Size Fill } {
@@ -2194,11 +1924,6 @@ proc Shape::DrawIcoMETF { Canvas Pixel Tags Color Size Fill } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Shape::DrawIcoVAAC { Canvas Pixel Tags Color Size Fill } {

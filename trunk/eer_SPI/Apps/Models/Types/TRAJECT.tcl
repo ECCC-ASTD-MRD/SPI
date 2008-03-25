@@ -10,12 +10,6 @@
 #
 # But       : Description des procedures relatives au module TRAJECTOIRE.
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 #----- Fichiers complementaires
@@ -32,14 +26,9 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.int
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -58,14 +47,9 @@ proc TRAJECT::Close { } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -90,16 +74,10 @@ proc TRAJECT::ConfigDate { } {
 # But      : Initialisation des parametres de la trajectoire.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -168,13 +146,7 @@ proc TRAJECT::InitNew { } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::PoolInfo { Pool } {
@@ -194,16 +166,9 @@ proc TRAJECT::PoolInfo { Pool } {
 # Parametres :
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::Result { } {
@@ -222,19 +187,11 @@ proc TRAJECT::Result { } {
 #              directories.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::SetMetDataDir { MetModel } {
@@ -254,14 +211,9 @@ proc TRAJECT::SetMetDataDir { MetModel } {
 #   <Path>   : Identificateur de la fenetre d'onglet
 #   <No>     : Numero de l'onglet selectionne
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -346,16 +298,10 @@ proc TRAJECT::SimInitLaunch { Path No } {
 # But      : Executer les scripts permettant de lancer le modele.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -540,14 +486,9 @@ proc TRAJECT::SimLaunchNew { } {
 #   <Confirm> : Confirmation de la suppression
 #   <Pool>    : Identificateur de la simulation
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -596,14 +537,9 @@ proc TRAJECT::SimSuppress { Confirm Pool } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

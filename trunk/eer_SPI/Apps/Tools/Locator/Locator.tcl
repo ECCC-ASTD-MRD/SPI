@@ -16,14 +16,6 @@
 # Remarques :
 #      format des fichiers : [format "%-8s:%-29s:%-20s:%6.3f:%1s:%7.3f:%1s:%8s" ...]
 #
-#   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 #----- Inclusion de librairie
@@ -53,15 +45,9 @@ proc Locator::LineInsert { Info } {
 # Parametres  :
 #   <Info>    : Information sur la localisation
 #
-# Remarques :
-#
 # Retour    :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -107,13 +93,6 @@ proc Locator::RangeCheck { Info } {
 #   Aucune.
 #
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -147,13 +126,6 @@ proc Locator::Close { } {
 #  <File>    : Nom du device pour imprimer .
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -210,13 +182,6 @@ proc Locator::Export { File } {
 #  <Line>    : Ligne d'information
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications  :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -265,13 +230,6 @@ proc Locator::Format { Line } {
 #  <Mode>    : Mode d'insertion
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications  :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -308,13 +266,6 @@ proc Locator::Get { Type { Mode 0 } } {
 #   <Update> : Update de l'usager
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -428,13 +379,6 @@ proc Locator::Insert { Type Mode Update } {
 #   <Type>   : Type de source.
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -468,13 +412,6 @@ proc Locator::Load { Type } {
 #  <Widget>  : Nom du widget a imprimer .
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -517,13 +454,6 @@ proc Locator::PrintCommand { Widget } {
 #   <Locate> : Ratation sur la localisation
 #
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -559,13 +489,6 @@ proc Locator::Select { List Y { Locate False } } {
 #   <Type>   : Type de source
 #
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -601,12 +524,6 @@ proc Locator::Sort { Type } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -715,11 +632,6 @@ proc Locator::MoveDone { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Locator::UpdateItems { Frame } {
@@ -747,12 +659,6 @@ proc Locator::UpdateItems { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

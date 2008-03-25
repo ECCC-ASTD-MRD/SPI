@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions pour les trajectoires
 # Fichier   : Data_Trajectory.tk
-# Version   : 3.1 ($Revision: 1.7 $)
 # Creation  : Janvier 1999 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions d'une structure de donnees et de procedures
@@ -40,39 +39,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2000
-#   Description : -Verification de la validite du fichier
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Aout 2000
-#   Description : -Lecture du format ARL
-#                 -Ajout de la variable Ident qui identifie la provenance de la
-#                  trajectoire (CMC,ARL,...)
-#                 -Fonctions supplementaires pour gerer les differencess entre
-#                  les diverses provenances
-#                 -Stockage des dates en secondes systemes afin de permettere une compatibilitee
-#                  complete a l'exterieur du package
-#                 -Suppression de la gestion ds anciens fichiers (Non Y2K)
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : -Adaptation pour la version 3.0 GL des projections
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 2001
-#   Description : -Utilisation de la fonction "fstdstamp todate" plutot que "r.date"
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juin 2002
-#   Description : -Ajout de fonctions d'exportations
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Fevrier 2003
-#   Description : -Conversion de la partie lecture de trajectoire en librairie C
 #
 #===============================================================================
 
@@ -177,11 +143,6 @@ namespace eval Trajectory {
 #        des polyline pour le chemin des particules
 #        des points pour les positions des particules
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Export { Id Path } {
@@ -262,11 +223,6 @@ DATA
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::GetColor { Id No } {
@@ -306,11 +262,6 @@ proc Trajectory::GetColor { Id No } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::GetRes { } {
@@ -338,11 +289,6 @@ proc Trajectory::GetRes { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::GetShape { Id No } {
@@ -386,11 +332,6 @@ proc Trajectory::GetShape { Id No } {
 #      et on effecture un zoom sur les coins de cette boite moins
 #      un pourcentage afin d'encardrer largement
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Locate { Id Offset } {
@@ -463,11 +404,6 @@ proc Trajectory::Locate { Id Offset } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParamApply { { List { } } } {
@@ -501,11 +437,6 @@ proc Trajectory::ParamApply { { List { } } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParamSet {  { Apply "" } } {
@@ -534,11 +465,6 @@ proc Trajectory::ParamSet {  { Apply "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParamFrame { Frame Apply } {
@@ -654,11 +580,6 @@ proc Trajectory::ParamFrame { Frame Apply } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParamType { } {
@@ -686,11 +607,6 @@ proc Trajectory::ParamType { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParamTypeSet { String Type Apply } {
@@ -726,11 +642,6 @@ proc Trajectory::ParamTypeSet { String Type Apply } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParticleInfoEnable { Canvas Id } {
@@ -760,11 +671,6 @@ proc Trajectory::ParticleInfoEnable { Canvas Id } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParticleId { Canvas Id Particle X Y } {
@@ -813,11 +719,6 @@ proc Trajectory::ParticleId { Canvas Id Particle X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::ParticleUnId { Canvas Id Particle } {
@@ -849,11 +750,6 @@ proc Trajectory::ParticleUnId { Canvas Id Particle } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Project { Frame Id { Force 0 } } {
@@ -957,11 +853,6 @@ proc Trajectory::Project { Frame Id { Force 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Graph { Frame BG FG X0 Y0 X1 Y1 TrajId } {
@@ -1086,11 +977,6 @@ proc Trajectory::Graph { Frame BG FG X0 Y0 X1 Y1 TrajId } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::GraphPlot { Frame FG TrajId } {
@@ -1251,11 +1137,6 @@ proc Trajectory::GraphScale { Frame BG FG TrajId X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Height { Frame BG FG X0 Y0 X1 Y1 TrajId } {
@@ -1387,11 +1268,6 @@ proc Trajectory::HeightScale { Frame BG FG TrajId X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Legend { Frame BG FG X0 Y0 X1 Y1 TrajId } {
@@ -1581,11 +1457,6 @@ proc Trajectory::LegendScale { Frame BG FG TrajId X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::Update { } {
@@ -1626,11 +1497,6 @@ proc Trajectory::Update { } {
 # Remarques :
 #   Cette procedure est appele par la librairie de projection Page et Viewport
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Trajectory::UpdateItems { Frame } {

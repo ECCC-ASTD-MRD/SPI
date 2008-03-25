@@ -13,13 +13,6 @@
 #              celles-ci pour le module MLDP0.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -33,16 +26,9 @@
 #   <Parent> : Identificateur de la fenetre parent.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::New { Parent } {
@@ -425,19 +411,11 @@ proc MLDP0::New { Parent } {
 #              on which mode is selected for mass calculation.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::EnableDisableMass { } {
@@ -475,16 +453,9 @@ proc MLDP0::EnableDisableMass { } {
 #   <Parent> : Parent window.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenario { Parent } {
@@ -509,16 +480,9 @@ proc MLDP0::NewScenario { Parent } {
 #   <Parent> : Parent window.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenarioAccident { Parent } {
@@ -665,19 +629,11 @@ proc MLDP0::NewScenarioAccident { Parent } {
 # But        : Initialize variables for new accident type release scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenarioAccidentInit { } {
@@ -737,16 +693,9 @@ proc MLDP0::NewScenarioAccidentInit { } {
 #   <Parent> : Parent window.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenarioVirus { Parent } {
@@ -869,19 +818,11 @@ proc MLDP0::NewScenarioVirus { Parent } {
 # But        : Initialize variables for new virus type release scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenarioVirusInit { } {
@@ -929,16 +870,9 @@ proc MLDP0::NewScenarioVirusInit { } {
 #   <Parent> : Parent window.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenarioVolcan { Parent } {
@@ -1045,19 +979,11 @@ proc MLDP0::NewScenarioVolcan { Parent } {
 # But        : Initialize variables for new volcano type release scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::NewScenarioVolcanInit { } {
@@ -1116,15 +1042,9 @@ proc MLDP0::NewScenarioVolcanInit { } {
 #    <Layout> : Layout (produit)
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CallProduct { Frame Type Layout } {
@@ -1150,16 +1070,9 @@ proc MLDP0::CallProduct { Frame Type Layout } {
 #    <Y>        : ...
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::PopUp { X Y } {
@@ -1238,19 +1151,11 @@ proc MLDP0::PopUp { X Y } {
 # But        : Update email option interface.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateEmail { } {
@@ -1280,19 +1185,11 @@ proc MLDP0::UpdateEmail { } {
 #              total released quantities for each isotope.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateEmissionDurationsTotalQuantityAccident { } {
@@ -1378,19 +1275,11 @@ proc MLDP0::UpdateEmissionDurationsTotalQuantityAccident { } {
 #              total released quantity.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateEmissionDurationsTotalQuantityVirus { } {
@@ -1443,19 +1332,11 @@ proc MLDP0::UpdateEmissionDurationsTotalQuantityVirus { } {
 # But        : Update (total and effective) emission durations.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateEmissionDurationsVolcano { } {
@@ -1504,19 +1385,11 @@ proc MLDP0::UpdateEmissionDurationsVolcano { } {
 # But        : Update emission starting time.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateEmissionStartingTime { } {
@@ -1551,13 +1424,7 @@ proc MLDP0::UpdateEmissionStartingTime { } {
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDurations { Parent } {
@@ -1591,13 +1458,7 @@ proc MLDP0::ValidateDurations { Parent } {
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDurationValue { Duration Parent { Idx -1 } } {
@@ -1670,19 +1531,12 @@ proc MLDP0::ValidateDurationValue { Duration Parent { Idx -1 } } {
 #              fields in interface (Number of intervals > 0).
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDurationsRatesAccident { } {
@@ -1758,19 +1612,12 @@ proc MLDP0::ValidateDurationsRatesAccident { } {
 #              fields in interface (Number of intervals > 0).
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDurationsRatesVirus { } {
@@ -1834,19 +1681,12 @@ proc MLDP0::ValidateDurationsRatesVirus { } {
 #              empty fields in interface (Number of intervals > 0).
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDurationsReleasesVolcano { } {
@@ -1917,19 +1757,12 @@ proc MLDP0::ValidateDurationsReleasesVolcano { } {
 #              internal model time step.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDurationsVsModelTimeStep { } {
@@ -1956,19 +1789,12 @@ proc MLDP0::ValidateDurationsVsModelTimeStep { } {
 #              the release scenario for specific source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriods { } {
@@ -2018,19 +1844,12 @@ proc MLDP0::ValidateLullPeriods { } {
 #              for accident source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriodsEndAccident { } {
@@ -2069,19 +1888,12 @@ proc MLDP0::ValidateLullPeriodsEndAccident { } {
 #              for virus source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriodsEndVirus { } {
@@ -2118,19 +1930,12 @@ proc MLDP0::ValidateLullPeriodsEndVirus { } {
 #              for volcano source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriodsEndVolcan { } {
@@ -2166,19 +1971,12 @@ proc MLDP0::ValidateLullPeriodsEndVolcan { } {
 #              scenario for accident source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriodsStartAccident { } {
@@ -2216,19 +2014,12 @@ proc MLDP0::ValidateLullPeriodsStartAccident { } {
 #              scenario for virus source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriodsStartVirus { } {
@@ -2264,19 +2055,12 @@ proc MLDP0::ValidateLullPeriodsStartVirus { } {
 #              scenario for volcano source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateLullPeriodsStartVolcan { } {
@@ -2312,19 +2096,12 @@ proc MLDP0::ValidateLullPeriodsStartVolcan { } {
 # But        : Validate name of release scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateNameScenario { } {
@@ -2350,19 +2127,12 @@ proc MLDP0::ValidateNameScenario { } {
 # But        : Validate number of isotopes.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateNbIsotopes { } {
@@ -2400,19 +2170,12 @@ proc MLDP0::ValidateNbIsotopes { } {
 #              for accident source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateReleaseRatesAccident { } {
@@ -2445,19 +2208,12 @@ proc MLDP0::ValidateReleaseRatesAccident { } {
 #              for virus source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateReleaseRatesVirus { } {
@@ -2495,13 +2251,7 @@ proc MLDP0::ValidateReleaseRatesVirus { } {
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateReleaseRateValue { Interval { Isotope -1 } } {
@@ -2535,19 +2285,12 @@ proc MLDP0::ValidateReleaseRateValue { Interval { Isotope -1 } } {
 # But        : Validate release scenario for specific source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateScenario { } {
@@ -2590,19 +2333,12 @@ proc MLDP0::ValidateScenario { } {
 # But        : Validate release scenario for accident source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateScenarioAccident { } {
@@ -2655,19 +2391,12 @@ proc MLDP0::ValidateScenarioAccident { } {
 # But        : Validate release scenario for virus source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateScenarioVirus { } {
@@ -2715,19 +2444,12 @@ proc MLDP0::ValidateScenarioVirus { } {
 # But        : Validate release scenario for volcano source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateScenarioVolcan { } {
@@ -2766,19 +2488,12 @@ proc MLDP0::ValidateScenarioVolcan { } {
 #              between meteorological data files.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateSimulationDuration { } {
@@ -2851,19 +2566,12 @@ proc MLDP0::ValidateSimulationDuration { } {
 # But        : Validate output and model time steps.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateTimeSteps { } {
@@ -2943,19 +2651,12 @@ proc MLDP0::ValidateTimeSteps { } {
 # But        : Validate total released quantity for accident source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateTotalReleasedQuantityAccident { } {
@@ -2991,19 +2692,12 @@ proc MLDP0::ValidateTotalReleasedQuantityAccident { } {
 # But        : Validate total released quantity for virus source type.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateTotalReleasedQuantityVirus { } {

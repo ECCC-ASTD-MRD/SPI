@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet   : Librairie de "Widget" Tk.
-# Fichier  : SelectBox.tk
-# Version  : 1.0 ($Revision: 1.3 $)
+# Fichier  : SelectBox.tcl
 # Creation : Juin 1999 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -24,13 +23,6 @@
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
-#
 #
 #===============================================================================
 
@@ -76,12 +68,6 @@ namespace eval SelectBox {
 #   <args>   : Postcommande a effectue apres selection dans la liste
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -151,12 +137,6 @@ proc SelectBox::Create { W Label IVar List Width Height args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc SelectBox::Clear { W Update } {
@@ -190,12 +170,6 @@ proc SelectBox::Clear { W Update } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -240,12 +214,6 @@ proc SelectBox::Destroy { W } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -307,12 +275,6 @@ proc SelectBox::Exec { W } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc SelectBox::Get { W } {
@@ -335,12 +297,6 @@ proc SelectBox::Get { W } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

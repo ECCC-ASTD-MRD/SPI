@@ -13,27 +13,6 @@
 #        presence de cendres volcaniques.
 #
 # Remarques  :
-#     Aucune.
-#
-# Modifications :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Septembre 1998
-#    Description : Ajout d'une recherche de mots cle par l'utilisateur
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Decembre 1998
-#    Description : -Changement au courant pour n'en avoir qu'un seul qui s'affiche.
-#                  -Le courant effectue maintenant un "refresh" de la liste de tous les bulletins.
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Fevrier 1999
-#    Description : -Agrandissment de la police d'impression.
-#                  -Possibilite d'imprimer une selection plutot que l'ensemble du texte.
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Octobre 2005
-#    Description : Transformation en Outils de SPI
 #
 #===========================================================================
 
@@ -56,13 +35,7 @@ source $GDefs(Dir)/Apps/Tools/Bulletin/Bulletin.int
 #  <Sleep2>  : Delai avant d'effectuer la deuxieme commande (ms)
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #--------------------------------------------------------------------------------
 
 proc Bulletin::CommandToggle { Cmd1 Sleep1 Cmd2 Sleep2 } {
@@ -82,14 +55,6 @@ proc Bulletin::CommandToggle { Cmd1 Sleep1 Cmd2 Sleep2 } {
 # Parametres :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : S. Trudel
-#    Date        : Septembre 1997
-#    Description : eliminer le zero devant le mois pour eviter les problemes
-#                  avec la base octale ( ex. 08 ).
 #
 #----------------------------------------------------------------------------
 
@@ -172,13 +137,6 @@ proc Bulletin::DatesMenu { } {
 #    <Nom>   : Nom du fichier de bulletin.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -228,13 +186,6 @@ proc Bulletin::InsertArchives { Nom } {
 # Parametres :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -268,13 +219,6 @@ proc Bulletin::InsertBull { } {
 #  <Widget>  : Nom du widget a imprimer .
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -327,17 +271,7 @@ proc Bulletin::PrintCommand { Widget } {
 # Parametres :
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Decembre 1998
-#    Description : -Correction de la supression des archives quand le courant etait
-#                   demande.
-#                  -Un seul item courant est maintenant inserer dans la liste meme
-#                   si on le demande plusieurs fois. Il est numerote avec l'heure
-#                   pour pouvoir se reperer.
 #----------------------------------------------------------------------------
 
 proc Bulletin::ReadCurrent { } {
@@ -403,13 +337,6 @@ proc Bulletin::ReadCurrent { } {
 #    <Bind>     : indique que l'appel se fait a partir du <bind>.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Septembre 1998
-#    Description : Ajout de l'initialisation des index de recherches
 #
 #----------------------------------------------------------------------------
 
@@ -481,12 +408,6 @@ proc Bulletin::SelectBull { Parent Position Bind } {
 #      de fin.
 #    - En recherche arriere (backwards), on decrement l'index de fin vers l'index
 #      de debut. (Ou l'index de debut est l'index de fin et vice-versa)
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -577,13 +498,6 @@ proc Bulletin::SearchNext { TextWidget Direct } {
 # Parametres :
 
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -612,13 +526,7 @@ proc Bulletin::Close { } {
 #  <Tag>     : Tag to apply to each instance of a matching string.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #--------------------------------------------------------------------------------
 
 proc Bulletin::TextSearch { W String Tag } {
@@ -649,12 +557,6 @@ proc Bulletin::TextSearch { W String Tag } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

@@ -5,19 +5,12 @@
 # Dorval, Quebec
 #
 # Projet   : Package d'interface pour SPI
-# Fichier  : Messenger.tcl
-# Version  : 1.1
+# Fichier  : Writer.tcl
 # Creation : Mai 2000
 #
 # Description:
 #    Permet d'ecrire des messages (FVCN, AACN, ...) en utilisant SPI pour faire
 #    de l'entree de parametres
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -44,12 +37,6 @@ foreach format [glob $GDefs(Dir)/Apps/Tools/Writer/Types/*.tcl] {
 #
 # Remarques :
 #    -On doit redefinir les fonctions de range des projections
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -83,11 +70,6 @@ proc Writer::Close { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::PadClose { Save } {
@@ -147,11 +129,6 @@ proc Writer::PadClose { Save } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::PadNew { Type Mode Layout File } {
@@ -214,11 +191,6 @@ proc Writer::PadNew { Type Mode Layout File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::PadName { Pad Name } {
@@ -240,11 +212,6 @@ proc Writer::PadName { Pad Name } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::PadSwitch { Tab No } {
@@ -276,11 +243,6 @@ proc Writer::PadSwitch { Tab No } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::Send { { Backup 0 } } {
@@ -320,11 +282,6 @@ proc Writer::Send { { Backup 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::TextExtract { Type Len Text args } {
@@ -401,12 +358,6 @@ proc Writer::TextExtract { Type Len Text args } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::BlocFormat { Header Text { Width 21 } } {
@@ -432,11 +383,6 @@ proc Writer::BlocFormat { Header Text { Width 21 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::TextExpand { Text Len { Max 0 } } {
@@ -476,12 +422,6 @@ proc Writer::TextExpand { Text Len { Max 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Writer::ToolMode { args } {
@@ -516,11 +456,6 @@ proc Writer::ToolMode { args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::UpdateItems { Frame } {
@@ -542,12 +477,6 @@ proc Writer::UpdateItems { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

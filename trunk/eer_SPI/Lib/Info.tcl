@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de fonctions Tcl relatives aux enregistrements info
 # Fichier  : Info.tcl
-# Version  : 1.0 ($Revision: 1.0 $)
 # Creation : Avril 2003 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -28,11 +27,6 @@
 #
 # Remarques :
 #
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #===============================================================================
 
 package provide Info 1.0
@@ -186,11 +180,6 @@ namespace eval Info {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Code { Var Items { Token "" } } {
@@ -227,11 +216,6 @@ proc Info::Code { Var Items { Token "" } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Decode { Var Items Info } {
@@ -280,11 +264,6 @@ proc Info::Decode { Var Items Info } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Delete { Path Info } {
@@ -313,11 +292,6 @@ proc Info::Delete { Path Info } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Find { Path Items args } {
@@ -366,11 +340,6 @@ proc Info::Find { Path Items args } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Format { Info } {
@@ -407,11 +376,6 @@ proc Info::Format { Info } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::List { Path } {
@@ -448,11 +412,6 @@ proc Info::List { Path } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Path { Items Info } {
@@ -477,11 +436,6 @@ proc Info::Path { Items Info } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Read { Id } {
@@ -528,11 +482,6 @@ proc Info::Read { Id } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Request { Path } {
@@ -574,11 +523,6 @@ proc Info::Request { Path } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Set { Path Info } {
@@ -608,11 +552,6 @@ proc Info::Set { Path Info } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Info::Strip { Info Token } {

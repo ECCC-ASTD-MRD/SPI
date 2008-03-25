@@ -6,7 +6,6 @@
 #
 # Projet   : Widget de selection de couleur.
 # Fichier  : ColorBar.tcl
-# Version  : 1.1 ($Revision: 1.2 $)
 # Creation : Mars 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -22,12 +21,6 @@
 #    ColorBar::Update     { Frame { State -1 } }
 #    ColorBar::UpdateVP   { Frame VP List }
 #    proc ColorBar::Write { Frame File }
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Fevrier 2003
-#   Description : Ajout du type observations dans les capacites des colorbars
 #
 #===============================================================================
 
@@ -65,14 +58,10 @@ namespace eval ColorBar {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
-# Remarques  :
+# Retour:
 #   <Active> : Active ou non
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques  :
 #
 #-------------------------------------------------------------------------------
 
@@ -101,13 +90,9 @@ proc ColorBar::Id { VP Id } {
 #   <VP>     : Identificateur du Viewport
 #   <Field>  : Champs associe
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -210,13 +195,9 @@ proc ColorBar::Create { Frame VP No Id Field } {
 #   <VP>     : Identificateur du Viewport
 #   <No>     : Numero de champs
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -249,13 +230,9 @@ proc ColorBar::Destroy { Frame VP No } {
 #   <Frame>  : Identificateur de Page
 #   <VP>     : Identificateur du Viewport
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -284,13 +261,9 @@ proc ColorBar::DestroyAll { Frame { VP "" } } {
 #   <Tag0>   : Identificateur de la colorbar (VP)
 #   <Tag1>   : Identificateur de la colorbar (Field)
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -318,13 +291,9 @@ proc ColorBar::Move { Canvas Tag0 Tag1 } {
 #   <X>      : Dimension en X
 #   <Y>      : Dimension en Y
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -355,13 +324,9 @@ proc ColorBar::Scale { Canvas Tag0 Tag1 X Y } {
 #   <Frame>  : Identificateur de Page
 #   <State>  : Etat d'activation de la colorbar
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -447,13 +412,9 @@ proc ColorBar::Update { Frame { State -1 } } {
 #   <VP>     : Identificateur du Viewport
 #   <List>   : Liste des donnees
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -485,13 +446,9 @@ proc ColorBar::UpdateVP { Frame VP List } {
 #   <Frame>  : Identificateur de Page
 #   <File>   : Identificateur de Fichier
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

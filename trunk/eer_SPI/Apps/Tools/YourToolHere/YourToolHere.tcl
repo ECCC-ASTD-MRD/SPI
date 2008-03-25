@@ -6,7 +6,6 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : YourToolHere.tcl
-# Version  : 1.0
 # Creation : Juin 2003
 #
 # Description:
@@ -25,12 +24,6 @@
 #
 #       SPI::ToolDef ../YourToolHere.tcl
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 #----- Lire les sources d'execution
@@ -47,11 +40,9 @@ source $GDefs(Dir)/Apps/Tools/YourToolHere/YourToolHere.int
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -89,11 +80,6 @@ proc YourToolHere::Close { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc YourToolHere::DrawInit { Frame VP } {
@@ -199,17 +185,10 @@ proc YourToolHere::MoveDone { Frame VP } {
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc YourToolHere::Update { Frame } {
    variable Data
-
 }
 
 #-------------------------------------------------------------------------------
@@ -225,12 +204,6 @@ proc YourToolHere::Update { Frame } {
 #
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -258,12 +231,6 @@ proc YourToolHere::UpdateItems { Frame } {
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc YourToolHere::PageActivate { Frame } {
@@ -281,12 +248,6 @@ proc YourToolHere::PageActivate { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

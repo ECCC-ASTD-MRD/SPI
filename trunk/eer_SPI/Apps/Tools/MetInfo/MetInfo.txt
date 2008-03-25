@@ -6,17 +6,10 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : MetInfo.txt
-# Version  : 1.2
 # Creation : Octobre 200
 #
 # Description:
 #    Permet l'obtention des observations meteorologiques.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

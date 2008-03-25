@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Mapper.int
-# Version  : 2.0
 # Creation : Juillet 2004 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Permet d'afficher un selecteur de donnees geographiques.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -37,11 +27,6 @@
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::Window { } {
@@ -339,12 +324,6 @@ proc Mapper::Toggler { Var1 Var2 Op } {
 #
 # Parametres :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsClose { } {
@@ -368,12 +347,6 @@ proc Mapper::ParamsClose { } {
 # But      : Selectionner la fenetre de parametres selon le type de donnees
 #
 # Parametres :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -425,10 +398,6 @@ proc Mapper::Params { { Display False } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsGDAL { Object Tab } {
@@ -1135,10 +1104,6 @@ proc Mapper::Curve { Canvas Map Bands } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsOGR { Object Tab } {
@@ -1462,10 +1427,6 @@ proc Mapper::SelectOGRClear { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::FeatureOGR { Object Index Locate } {
@@ -1585,10 +1546,6 @@ proc Mapper::TableOGR { Object { Force False } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsModel { Object Tab } {

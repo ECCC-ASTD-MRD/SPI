@@ -11,13 +11,6 @@
 # Description: Interface d'exportation de donnees.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -110,11 +103,6 @@ namespace eval Export::Vector {
 # Remarques :
 #    - On exporte seulement les champs rasters selon les parametres
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Export::Raster::Export { Path Format } {
@@ -194,11 +182,6 @@ proc Export::Raster::Is { Format } {
 # Remarques :
 #    - On exporte seulement les champs rasters selon les parametres
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Export::Vector::Export { Path Format } {
@@ -229,6 +212,21 @@ proc Export::Vector::Is { Format } {
    return [lsearch -exact $Data(Formats) $Format]
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Export::Vector::Option>
+# Creation : Novembre 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Exporter les donnees en format vectoriel
+#
+# Parametres :
+#  <Frame>   : Identificateur du frame parent
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc Export::Vector::Option { Frame } {
 
 }
@@ -246,11 +244,6 @@ proc Export::Vector::Option { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Export::Raster::Option { Frame } {
@@ -302,10 +295,6 @@ proc Export::Raster::Option { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Export::Close { } {
@@ -331,13 +320,6 @@ proc Export::Close { } {
 # Parametres :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -434,11 +416,6 @@ proc Export::Do { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Export::UpdateItems { Frame } {
@@ -465,11 +442,6 @@ proc Export::UpdateItems { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Export::DrawInit  { Frame VP } {

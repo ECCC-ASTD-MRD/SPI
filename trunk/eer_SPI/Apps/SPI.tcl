@@ -12,13 +12,6 @@
 #              autres types de donnees.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -76,13 +69,7 @@ SPI::Splash "Sourcing packages"
 #   <Idx>    : Index apres les arguments traites.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc ArgsParse { Argv Argc No Multi Cmd } {
@@ -126,13 +113,7 @@ proc ArgsParse { Argv Argc No Multi Cmd } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CommandLine { } {
@@ -254,14 +235,9 @@ puts "(INFO) System: Available Layouts\n   $SPI::Param(Layouts)"
 #   <Frame>  : Identificateur de Page
 #   <Force>  : Force la reactivation
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -346,14 +322,10 @@ proc Page::Activate { Frame { Force 0 } } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -394,17 +366,13 @@ proc Page::UpdateCommand { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #    - La description de l'icone est une liste selon le format suivant:
 #
 #        { lat lon elev icone color group tag id }
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -491,11 +459,6 @@ proc Page::UpdateItems { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::Layout { Frame } {
@@ -518,13 +481,9 @@ proc SPI::Layout { Frame } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -568,13 +527,9 @@ proc SPI::LayoutDelete { } {
 #  <Frame>   : Identificateur de Page
 #  <Layout>  : Identificateur du Layout
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -661,13 +616,9 @@ proc SPI::LayoutLoad { Frame Layout } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -754,13 +705,9 @@ proc SPI::LayoutSave { Frame } {
 #   <Frame>  : Identificateur de Page
 #   <File>   : Fiechier dans lequel sauvegarder le tout
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -873,13 +820,9 @@ proc SPI::LayoutSaveItems { Frame File } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -907,13 +850,9 @@ proc SPI::LayoutUpdate { Frame } {
 #   <Lat>    : Latitude
 #   <Lon>    : Longitude
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -939,14 +878,9 @@ proc SPI::Locate { Lat Lon } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -980,14 +914,9 @@ proc SPI::DrawClock { Frame } {
 #   <DX>     : Delta X
 #   <DY>     : Delta Y
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1026,14 +955,9 @@ proc SPI::DrawBitmap { Frame Bitmap X Y Anchor Color N DX DY } {
 #   <DX>     : Delta X
 #   <DY>     : Delta Y
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1064,14 +988,9 @@ proc SPI::DrawImage { Frame Image X Y Anchor N DX DY } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1098,14 +1017,9 @@ proc SPI::DrawCompass { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1139,14 +1053,9 @@ proc SPI::DrawGeoLegend { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1172,14 +1081,9 @@ proc SPI::DrawScale { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1208,14 +1112,9 @@ proc SPI::DrawTrajGraph { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1244,14 +1143,9 @@ proc SPI::DrawTrajHeight { Frame } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1280,14 +1174,9 @@ proc SPI::DrawTrajLegend { Frame } {
 # Parametres :
 #   <Script> : Script a executer
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1335,17 +1224,11 @@ proc SPI::Execute { Script } {
 #   <Icos>   : Descriptions des icones (liste)
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
 #    -Le format pour une icone est:
 #      { "descriptif" lat lon elev }
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::IcoAdd { Frame Group Color Icos } {
@@ -1379,16 +1262,10 @@ proc SPI::IcoAdd { Frame Group Color Icos } {
 #   <args>   : Liste des noms de groupe d'icones
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
 #    -si args est vide, on efface toutes les icones
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::IcoClear { args } {
@@ -1414,17 +1291,11 @@ proc SPI::IcoClear { args } {
 #   <Group>  : Nom du groupe d'icones
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
 #    -Le format pour une icone est:
 #      { "descriptif" lat lon elev }
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::IcoDel { Group } {
@@ -1460,13 +1331,9 @@ proc SPI::IcoDel { Group } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1539,16 +1406,9 @@ proc SPI::IcoDraw { Frame args } {
 #   <Files>  : Fichiers de description d'icones
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::IcoOpen { Files } {
@@ -1615,14 +1475,10 @@ proc SPI::IcoOpen { Files } {
 #
 # Parametres :
 #   <All>    : detruire toute les pages
+#
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1696,14 +1552,9 @@ proc SPI::PageDel { { Page "" } { All False } } {
 #   Label    : Identification de la page
 #   Geom     : Geometrie de la fenetre
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1784,14 +1635,9 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1812,14 +1658,9 @@ proc SPI::PageSetup { Frame No } {
 #
 # Parametres      :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1896,16 +1737,9 @@ proc SPI::PipeGet { } {
 #    <Command>   : Commande
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::FileOpen { Box Type Title Extension Files } {
@@ -1949,11 +1783,6 @@ proc SPI::FileOpen { Box Type Title Extension Files } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::ToolMode { Tool Mode { Off False } } {
@@ -1993,16 +1822,9 @@ proc SPI::ToolMode { Tool Mode { Off False } } {
 #   <Info>    : Information associee
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::Progress { Percent { Info "" } { Var "" } } {
@@ -2032,16 +1854,9 @@ proc SPI::Progress { Percent { Info "" } { Var "" } } {
 #   <Code>   : code de sortie (Defaut: 0 = Ok)
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::Quit { { Code 0 } } {
@@ -2084,14 +1899,9 @@ proc SPI::Quit { { Code 0 } } {
 #    <Type>  : Type d'objects
 #    <Sub>   : Sous type d'objects
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -2128,14 +1938,9 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -2193,14 +1998,9 @@ proc SPI::ProjectWindow { } {
 #   <File>   : Path complet du fichier de projet
 #   <Force>  : Don't ask
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -2264,14 +2064,9 @@ proc SPI::ProjectRead { File { Force False } } {
 #   <Cam>    : Sauvegarder la camera ?
 #   <Size>  : Sauvegarder les dimensions ?
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -2305,14 +2100,9 @@ proc SPI::ProjectSaveLayout { File Frame Cam Size } {
 #   <Data>   : Sauvegarder des donnees ?
 #   <Params> : Sauvegarder des parametres ?
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -2513,14 +2303,9 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
 #
 # Parametres      :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

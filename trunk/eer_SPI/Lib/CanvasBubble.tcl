@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : CanvasBubble.tk
-# Version  : 1.2 ($Revision: 1.4 $)
 # Creation : Mai 1999 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -24,12 +23,6 @@
 #    -La methode de recuperation de l'information sur un item de Canvas peut
 #     se faire de deux maniere, par une commande prenant en argument l'index et
 #     retournant l'information ou par une liste d'information specifique.
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -74,11 +67,7 @@ namespace eval CanvasBubble {
 # Retour:
 #
 # Remarques :
-# Modifications :
 #
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CanvasBubble::Activate { Canvas } {
@@ -110,11 +99,6 @@ proc CanvasBubble::Activate { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CanvasBubble::Create { Canvas Tag Text } {
@@ -168,11 +152,6 @@ proc CanvasBubble::Create { Canvas Tag Text } {
 #   -si args est vide , toutes les bulles du canvas specifie seront detruites
 #    sinon sulement celle des tags specifie
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CanvasBubble::Destroy { Canvas args } {
@@ -211,11 +190,6 @@ proc CanvasBubble::Destroy { Canvas args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc CanvasBubble::Show { Canvas Tag X Y } {

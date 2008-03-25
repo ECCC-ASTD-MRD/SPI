@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de gestion des traces
 # Fichier   : Debug.tcl
-# Version   : 1.1 ($Revision: 1.3 $)
 # Creation  : Mars 1999 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions de diverses fonctions pour la gestion des traces.
@@ -24,12 +23,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -69,15 +62,9 @@ namespace eval Debug {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc Close { } {
+proc Debug::Close { } {
    variable Defs
 
    set spent [expr [clock seconds] - $Defs(Seconds)]
@@ -88,7 +75,7 @@ proc Close { } {
    } else {
       puts $Defs(Output) "$time Debug::Close for $Defs(Apps) (Time spent $spent seconds)"
    }
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::Create>
@@ -101,15 +88,9 @@ proc Close { } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc Create { } {
+proc Debug::Create { } {
    global GDefs
    variable Lbl
    variable Defs
@@ -154,8 +135,7 @@ proc Create { } {
          -command "set Debug::Defs(Interface) False ; destroy .debug"
       pack .debug.commands.close -side left -fill x -expand true
    pack .debug.commands -side top -fill x
-
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::Init>
@@ -171,14 +151,8 @@ proc Create { } {
 # Remarques :
 #    -Si le niveau de trace est -1 alors on utilise la variable globale GDefs(Debug).
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
 proc Init { Level Output Apps } {
    global env
    global GDefs
@@ -218,7 +192,7 @@ proc Init { Level Output Apps } {
         puts $Defs(Output) "   DISPLAY : $env(DISPLAY)"
      }
    }
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::StackPrint>
@@ -231,15 +205,9 @@ proc Init { Level Output Apps } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc StackPrint { } {
+proc Debug::StackPrint { } {
    variable Defs
 
    #----- Recupere le niveau actuel de la pile d'execution (stack)
@@ -273,7 +241,7 @@ proc StackPrint { } {
          puts $Defs(Output) "      stacklevel $stacklevel:  $stackproc \{ $stackargs \} \"$stackparams\""
       }
    }
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::TraceOutputProc>
@@ -289,15 +257,9 @@ proc StackPrint { } {
 #   -Si le niveau de trace (args) n'est pas specifie, alors on suppose le niveau
 #    par defaut de l'initialisation.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc TraceOutputProc { Level } {
+proc Debug::TraceOutputProc { Level } {
    variable Defs
 
    if { !$Defs(Active) } {
@@ -342,7 +304,7 @@ proc TraceOutputProc { Level } {
    }
 
    return "$trace"
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::TraceOutputVar>
@@ -358,15 +320,9 @@ proc TraceOutputProc { Level } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc TraceOutputVar { Name1 Name2 Mode } {
+proc Debug::TraceOutputVar { Name1 Name2 Mode } {
    variable Defs
    global $Name1
 
@@ -383,7 +339,7 @@ proc TraceOutputVar { Name1 Name2 Mode } {
    }
 
    puts $Defs(Output) "[Debug::TraceOutputProc $Defs(Level)] -Variable $trace"
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::TraceProc>
@@ -399,15 +355,9 @@ proc TraceOutputVar { Name1 Name2 Mode } {
 #   -Si le niveau de trace (args) n'est pas specifie, alors on suppose le niveau
 #    par defaut de l'initialisation.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc TraceProc { Trace args } {
+proc Debug::TraceProc { Trace args } {
    variable Defs
 
    if { !$Defs(Active) } {
@@ -429,7 +379,7 @@ proc TraceProc { Trace args } {
    } else {
       puts $Defs(Output) "[Debug::TraceOutputProc $level] -$Trace"
    }
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::TraceVar>
@@ -444,19 +394,13 @@ proc TraceProc { Trace args } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc TraceVar { Var Mode } {
+proc Debug::TraceVar { Var Mode } {
    global $Var
 
    trace variable $Var $Mode { Debug::TraceOutputVar }
-}}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Debug::UnTraceVar>
@@ -471,17 +415,11 @@ proc TraceVar { Var Mode } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
-namespace eval Debug {
-proc UnTraceVar { Var Mode } {
+proc Debug::UnTraceVar { Var Mode } {
    global $Var
    variable Defs
 
    trace vdelete $Var $Mode Debug::TraceOutputVar
-}}
+}

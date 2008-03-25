@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions pour l'animations des projections
 # Fichier   : Animator.tcl
-# Version   : 4.0
 # Creation  : Mai 1999 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions des procedures et fonctions pour animer les projections
@@ -33,22 +32,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2000
-#   Description : -Adaptation pour la version OpenGL
-#                 -Ajout d'un lien avec les parametres des champs. La modification des
-#                  parametres des champs pendant l'animation prend effet immediatement
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2002
-#   Description : -Animation selon IP1 IP2 IP3 ETICKET en plus de temporellement.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2007
-#   Description : Transfert des fonctions de flyby dans l'animateur.
 #
 #===============================================================================
 
@@ -180,11 +163,6 @@ proc Animator::Close { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::Window { { Parent .} } {
@@ -351,11 +329,6 @@ proc Animator::Window { { Parent .} } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::EmptyPlayList { } {
@@ -419,11 +392,6 @@ proc Animator::EmptyPlayList { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::GetPlayList { } {
@@ -474,11 +442,6 @@ proc Animator::GetPlayList { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::Limits { } {
@@ -511,11 +474,6 @@ proc Animator::Limits { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::GetPlayListField { } {
@@ -622,11 +580,6 @@ proc Animator::GetPlayListField { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::GetPlayListObs { } {
@@ -677,11 +630,6 @@ proc Animator::GetPlayListObs { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::GetPlayListTraj { } {
@@ -733,11 +681,6 @@ proc Animator::GetPlayListTraj { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::Step { Incr } {
@@ -773,11 +716,6 @@ proc Animator::Step { Incr } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::StepTo { Idx } {
@@ -808,11 +746,6 @@ proc Animator::StepTo { Idx } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::Play { } {
@@ -990,11 +923,6 @@ proc Animator::Play { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::PlayFile { } {
@@ -1030,11 +958,6 @@ proc Animator::PlayFile { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::Range { Side args } {
@@ -1081,11 +1004,6 @@ proc Animator::Range { Side args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::FlyPath { Cam Type } {
@@ -1190,11 +1108,6 @@ proc Animator::FlyPath { Cam Type } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::FlyPointAdd { List } {
@@ -1228,13 +1141,7 @@ proc Animator::FlyPointAdd { List } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
-
 
 proc Animator::FlyPointDel { List } {
    variable Fly
@@ -1264,11 +1171,6 @@ proc Animator::FlyPointDel { List } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::FlyPointSelect { List } {
@@ -1291,11 +1193,6 @@ proc Animator::FlyPointSelect { List } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Animator::FlyPointSet { List } {
@@ -1309,4 +1206,3 @@ proc Animator::FlyPointSet { List } {
    }
    Animator::FlyPath $Page::Data(Frame) DEFAULT
 }
-

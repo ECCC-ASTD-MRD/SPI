@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Viewport.tcl
-# Version  : 5.0
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et d ela manipulation
@@ -56,12 +55,6 @@
 #    Viewport::UnSetup        { Frame }
 #    Viewport::UpdateData     { Frame { VP { } } }
 #    Viewport::Write          { Frame File }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -244,11 +237,6 @@ namespace eval Viewport {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Activate { Frame { VP "" } } {
@@ -311,11 +299,6 @@ proc Viewport::Activate { Frame { VP "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Assign { Frame VP Ids { Force 0 } } {
@@ -373,11 +356,6 @@ proc Viewport::Assign { Frame VP Ids { Force 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::AssignedTo { Id { Page "" } { VP "" } { Box "" } } {
@@ -429,11 +407,6 @@ proc Viewport::AssignedTo { Id { Page "" } { VP "" } { Box "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Assigned { Frame VP { Types fstdfield } } {
@@ -470,11 +443,6 @@ proc Viewport::Assigned { Frame VP { Types fstdfield } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
@@ -534,11 +502,6 @@ proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ConfigGet { Frame VP } {
@@ -614,11 +577,6 @@ proc Viewport::ConfigGet { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ConfigPut { Frame VP } {
@@ -673,11 +631,6 @@ proc Viewport::ConfigPut { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ConfigSet { Frame } {
@@ -741,11 +694,6 @@ proc Viewport::ConfigSet { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Follow { Frame VP X Y } {
@@ -880,11 +828,6 @@ proc Viewport::Follow { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::FollowerAdd { Follower } {
@@ -907,11 +850,6 @@ proc Viewport::FollowerAdd { Follower } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::FollowerRemove { Follower } {
@@ -936,11 +874,6 @@ proc Viewport::FollowerRemove { Follower } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::FollowerInfo { Frame VP } {
@@ -1018,11 +951,6 @@ proc Viewport::FollowerInfo { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::FollowerSet { Idx Id Value CoordX CoordY RefX RefY } {
@@ -1063,11 +991,6 @@ proc Viewport::FollowerSet { Idx Id Value CoordX CoordY RefX RefY } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::CheckCoord { Lon } {
@@ -1106,11 +1029,6 @@ proc Viewport::CheckCoord { Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::CheckInside { Lat0 Lon0 Lat1 Lon1 Lat Lon } {
@@ -1158,11 +1076,6 @@ proc Viewport::CheckInside { Lat0 Lon0 Lat1 Lon1 Lat Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
@@ -1268,11 +1181,6 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Destroy { Frame { VP {} } } {
@@ -1345,11 +1253,6 @@ proc Viewport::Destroy { Frame { VP {} } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Do { Frame } {
@@ -1392,11 +1295,6 @@ proc Viewport::Do { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::DrawArea { Frame VP Coords Tags SingleTag Color Outline Stipple Smooth BD } {
@@ -1446,11 +1344,6 @@ proc Viewport::DrawArea { Frame VP Coords Tags SingleTag Color Outline Stipple S
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::DrawLine { Frame VP Coords Tags Color BD } {
@@ -1492,11 +1385,6 @@ proc Viewport::DrawLine { Frame VP Coords Tags Color BD } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::DrawRange { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } { Font XFont10 } } {
@@ -1525,11 +1413,6 @@ proc Viewport::DrawRange { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } { 
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ForceGrid { Frame { Reset False } } {
@@ -1571,11 +1454,6 @@ proc Viewport::ForceGrid { Frame { Reset False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ParamProjGet { Ref } {
@@ -1638,11 +1516,6 @@ proc Viewport::ParamProjGet { Ref } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ParamProjSet { { Ref "" } } {
@@ -1671,11 +1544,6 @@ proc Viewport::ParamProjSet { { Ref "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ParamProj { Ref } {
@@ -1776,11 +1644,6 @@ proc Viewport::ParamProj { Ref } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ParamFrame { Frame Apply } {
@@ -2030,12 +1893,6 @@ proc Viewport::ParamFrame { Frame Apply } {
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Viewport::Draw     { Frame VP } {
@@ -2075,11 +1932,6 @@ proc Viewport::MoveInit { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::ParamSet { } {
@@ -2106,11 +1958,6 @@ proc Viewport::ParamSet { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Reset { Frame } {
@@ -2155,11 +2002,6 @@ proc Viewport::Reset { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Resolution { Frame Res } {
@@ -2199,11 +2041,6 @@ proc Viewport::Resolution { Frame Res } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } } {
@@ -2245,11 +2082,6 @@ proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::RotateDo { Frame VP X Y } {
@@ -2325,11 +2157,6 @@ proc Viewport::RotateDo { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::RotateDone { Frame { Sling False } } {
@@ -2370,11 +2197,6 @@ proc Viewport::RotateDone { Frame { Sling False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::RotateInit { Frame VP X Y } {
@@ -2416,11 +2238,6 @@ proc Viewport::RotateInit { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
@@ -2481,11 +2298,6 @@ proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::GoAround { Frame Speed Lat Lon } {
@@ -2553,11 +2365,6 @@ proc Viewport::GoAround { Frame Speed Lat Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
@@ -2675,11 +2482,6 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
@@ -2733,11 +2535,6 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Setup { Frame } {
@@ -2793,11 +2590,6 @@ proc Viewport::Setup { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::UnSetup { Frame } {
@@ -2832,11 +2624,6 @@ proc Viewport::UnSetup { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::LinkSet { } {
@@ -2857,11 +2644,6 @@ proc Viewport::LinkSet { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::Link { } {
@@ -2887,11 +2669,6 @@ proc Viewport::Link { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::LinkDo { VP } {
@@ -2918,11 +2695,6 @@ proc Viewport::LinkDo { VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::UnLink { } {
@@ -2951,11 +2723,6 @@ proc Viewport::UnLink { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Viewport::UpdateData { Frame { VP { } } } {
@@ -3000,12 +2767,6 @@ proc Viewport::UpdateData { Frame { VP { } } } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

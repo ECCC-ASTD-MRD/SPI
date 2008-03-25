@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Macro.txt
-# Version  : 1.2
 # Creation : Juillet 2005 - J.P.Gauthier - CMC/CMOE
-##
+#
 # Description:
 #    Interface de gestion de macros.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 

@@ -6,23 +6,13 @@
 #
 # Projet   : Outils de "NowCasting" pour SPI.
 # Fichier  : Radar.tcl
-# Version  : 1.0
 # Creation : Avril 2006 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Fonctions de manipulations des donnees radar pour l'outils
 #    de NowCasting de SPI.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -89,6 +79,21 @@ namespace eval NowCaster::Radar { } {
    set Bubble(Add)    { "Ajouter un radar" "Add a radar" }
    set Bubble(Del)    { "Supprimer le radar courant" "Delete current radar" }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <NowCaster::Radar::Window>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche l'interface de manipulation des donnees radar.
+#
+# Parametres :
+#  <Frame>   : Frame de l'interface
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc NowCaster::Radar::Window { Frame } {
    global GDefs
@@ -251,10 +256,6 @@ proc NowCaster::Radar::Window { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Cast { Sec } {
@@ -275,10 +276,6 @@ proc NowCaster::Radar::Cast { Sec } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Available { Site } {
@@ -297,6 +294,23 @@ proc NowCaster::Radar::Available { Site } {
    }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Radar::Nearest>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recherche la date (en secondes) la plu proche de la date specifie.
+#
+# Parametres :
+#   <Sec>    : Date en secondes
+#   <Site>   : Site radar
+#
+# Retour    :
+#   <sec>   : Date trouve en secondes (0 si aucune)
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
 proc NowCaster::Radar::Nearest { Sec { Site "" } } {
    variable Data
 
@@ -308,6 +322,22 @@ proc NowCaster::Radar::Nearest { Sec { Site "" } } {
    }
    return $sec
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Radar::Now>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialisation de l'evenement de rafraichissement des donnees.
+#
+# Parametres :
+#   <Sec>    : Date en secondes (0 -> utilise la date globale)
+#   <Check>  :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Now { Sec { Check False } } {
    global GDefs
@@ -374,10 +404,6 @@ proc NowCaster::Radar::Now { Sec { Check False } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::PageUpdate { Scan } {
@@ -403,10 +429,6 @@ proc NowCaster::Radar::PageUpdate { Scan } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Update { { Site {} } } {
@@ -427,10 +449,6 @@ proc NowCaster::Radar::Update { { Site {} } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Add { Path } {
@@ -487,10 +505,6 @@ proc NowCaster::Radar::Add { Path } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Delete { Site } {
@@ -533,10 +547,6 @@ proc NowCaster::Radar::Delete { Site } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Read { Site Sec { Scan 0 } } {
@@ -595,10 +605,6 @@ proc NowCaster::Radar::Read { Site Sec { Scan 0 } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Range { } {
@@ -637,10 +643,6 @@ proc NowCaster::Radar::Range { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Areas { } {
@@ -664,10 +666,6 @@ proc NowCaster::Radar::Areas { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Sweep { Site { Sweep 0 } } {
@@ -701,10 +699,6 @@ proc NowCaster::Radar::Sweep { Site { Sweep 0 } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Locate { Site Lat Lon Ele } {
@@ -734,10 +728,6 @@ proc NowCaster::Radar::Locate { Site Lat Lon Ele } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::ButtonSelect { List } {
@@ -765,10 +755,6 @@ proc NowCaster::Radar::ButtonSelect { List } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Radar::Select { Site Sec } {
@@ -816,12 +802,6 @@ proc NowCaster::Radar::Select { Site Sec } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

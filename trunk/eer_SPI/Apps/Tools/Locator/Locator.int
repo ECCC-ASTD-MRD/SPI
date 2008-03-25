@@ -14,13 +14,6 @@
 #       Volcan, Nucleaire ou CTBT grace a une interface.
 #
 # Remarques :
-#   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -33,13 +26,6 @@
 # Parametres :
 #
 # Remarques :
-#   Aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -94,13 +80,6 @@ proc Locator::Window { args } {
 # Parametres :
 #
 # Remarques :
-#   Aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

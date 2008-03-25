@@ -6,7 +6,6 @@
 #
 # Projet   : Widget de librairie.
 # Fichier  : InfoFrame.tk
-# Version  : 1.0 ($Revision: 1.3 $)
 # Creation : Octobre 2000 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -18,12 +17,6 @@
 #   InfoFrame::Incr      { Frame Value args }
 #   InfoFrame::Msg        { Frame Msg }
 #   InfoFrame::Set100    { Frame Value }
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -76,11 +69,6 @@ namespace eval InfoFrame {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc InfoFrame::Create { Frame Msg Size args } {
@@ -133,11 +121,6 @@ proc InfoFrame::Create { Frame Msg Size args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc InfoFrame::Incr { Frame Value args } {
@@ -178,7 +161,7 @@ proc InfoFrame::Incr { Frame Value args } {
 # Creation : Fevrier 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Changer le message d'information.
-#Data
+#
 # Parametres :
 #  <Frame>   : Frame d'information
 #  <Msg>     : Texte d'information
@@ -187,11 +170,6 @@ proc InfoFrame::Incr { Frame Value args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc InfoFrame::Msg { Frame Msg } {
@@ -238,11 +216,6 @@ proc InfoFrame::Msg { Frame Msg } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc InfoFrame::Set100 { Frame Value } {

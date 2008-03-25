@@ -12,13 +12,6 @@
 # Description: Description des constantes relatives au module MLDP1.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -27,17 +20,17 @@ namespace eval MLDP1 {
    variable Sim
    variable Data
    variable Tmp
-   
+
    set Data(Frame)     ""
    set Data(VP)        ""
-   
+
    #----- Definition des constantes generale aux simulations
-   
+
    set Sim(DBaseDiag)     ""                          ; #----- Directory path of diagnostics met files.
    set Sim(DBaseProg)     ""                          ; #----- Directory path of prognostics met files.
    set Sim(Path)          ""                          ; #----- Simulation directory.
    set Sim(CriticalDiskSpace)   5.0                   ; #----- Critical disk space value [Gbytes].
-   
+
    set Sim(ListEvent)           { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" } ; #----- List of type of events.
    set Sim(ListScale)           { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
    set Sim(ListMeteoModel)      { reg }                                      ; #----- List of meteorological models.
@@ -63,7 +56,7 @@ namespace eval MLDP1 {
    set Sim(NotAvailable)        { "N/D" "N/A" }                              ; # Not available.
    set Sim(ListOptOnOff)        { { "Option désactivée" "Option activée" } \
                                   { "Option disabled" "Option enabled" } } ; #----- List of flags relative to option enabled/disabled.
-   
+
    #----- List of vertical levels [m].
    set Sim(OrigListVerticalLevels)  { "0 200 400 600 2000 4000" \
                                       "0 500 1000 1500 2000 3000 4000 5000" \
@@ -91,7 +84,7 @@ namespace eval MLDP1 {
    set Sim(DtMin)                0.1                           ; #----- Diffusion time step minimum value [s].
    set Sim(IsIncludeSUV)         ".FALSE."                     ; #----- Flag indicating if including horizontal wind speed variances in diffusion calculations.
    set Sim(RunningTimeCPU)       10800                         ; #----- CPU running time for the job to end [s].
-   
+
    set Sim(MaxNbSrc)             20                            ; #----- Maximum number of sources.
    set Sim(MaxNbVerticalLevels)  11                            ; #----- Maximum number of vertical levels.
    set Sim(EmMaxNumberParticles) 500000                        ; #----- Maximum number of particles.
@@ -99,7 +92,7 @@ namespace eval MLDP1 {
    set Sim(EmMaxInterval)        10                            ; #----- Maximum number of emission intervals.
    set Sim(EmDir)                "$GDefs(DirEER)/eer_Scenario" ; #----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-5                        ; #----- Small value.
-   
+
    #----- Set variables for pool info.
 
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration EffectiveDurationMin OutputTimeStepMin ModelTimeStepMin \

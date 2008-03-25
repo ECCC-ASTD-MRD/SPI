@@ -12,13 +12,6 @@
 # Description: Description des textes et labels relatives au module MLDP0.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 

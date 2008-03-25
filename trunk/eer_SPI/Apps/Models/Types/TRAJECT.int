@@ -12,13 +12,6 @@
 #              celles-ci pour le module TRAJECTOIRE.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -29,16 +22,10 @@
 # But      : Creation d'une nouvelle simulation TRAJECTOIRE.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -199,15 +186,9 @@ proc TRAJECT::New { Parent } {
 #    <Val>      : Position actuelle
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::LevelPack { Frame Val } {
@@ -235,15 +216,9 @@ proc TRAJECT::LevelPack { Frame Val } {
 #    <Layout> : Layout (produit)
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::CallProduct { Frame Type Layout } {
@@ -272,15 +247,9 @@ proc TRAJECT::CallProduct { Frame Type Layout } {
 #    <Y>        : ...
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::PopUp { X Y } {
@@ -317,15 +286,9 @@ proc TRAJECT::PopUp { X Y } {
 #    <Widget>   : Widget a modifier
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TRAJECT::SetQueue { Widget } {

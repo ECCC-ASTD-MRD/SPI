@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : VectorBox.tcl
-# Version  : 1.0
 # Creation : Decembre 2006 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -25,11 +24,6 @@
 #
 # Remarques :
 #
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #===============================================================================
 
 package provide VectorBox 1.0
@@ -89,11 +83,6 @@ namespace eval VectorBox {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VectorBox::Create { Parent Apply } {
@@ -205,11 +194,6 @@ proc VectorBox::Create { Parent Apply } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VectorBox::Lock { Axis From To } {
@@ -230,12 +214,6 @@ proc VectorBox::Lock { Axis From To } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

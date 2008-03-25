@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'outils SPI.
 # Fichier  : Console.tcl
-# Version  : 1.1
 # Creation : Janvier 2006 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -16,12 +15,6 @@
 #
 #
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -43,11 +36,6 @@ source $GDefs(Dir)/Apps/Tools/Console/Console.int
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Console::Close { } {
@@ -71,11 +59,6 @@ proc Console::Close { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Console::History { Text Index } {
@@ -108,11 +91,6 @@ proc Console::History { Text Index } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Console::Eval { Text Keep } {
@@ -152,11 +130,6 @@ proc Console::Eval { Text Keep } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Console::Write { File } {
@@ -176,12 +149,6 @@ proc Console::Write { File } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

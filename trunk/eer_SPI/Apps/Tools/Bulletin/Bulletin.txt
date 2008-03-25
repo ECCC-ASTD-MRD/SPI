@@ -12,17 +12,6 @@
 #        Definition des textes et labels de l'application.
 #
 # Remarques  :
-#     Aucune.
-#
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Octobre 2005
-#    Description : Transformation en Outils de SPI
 #
 #===========================================================================
 

@@ -6,7 +6,6 @@
 #
 # Projet   : Widget de selection de couleur.
 # Fichier  : ColorBox.tk
-# Version  : 2.0 ($Revision: 1.4 $)
 # Creation : Mars 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -16,12 +15,9 @@
 #   ColorBox::CreateSel  { Widget Var args }
 #   ColorBox::Create     { Parent args }
 #   ColorBox::Update     { X Y }
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
+#   ColorBox::UpdateA    { args }
+#   ColorBox::UpdateRGB  { Image args }
+#   ColorBox::UpdateHSV  { args }
 #
 #===============================================================================
 
@@ -107,13 +103,9 @@ proc ColorBox::ConfigNoColor { Widget Color } {
 #   <Var>    : Variable a assigner la couleur
 #   <args>   : Commande a executer apres la selection de la couleur
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -144,14 +136,10 @@ proc ColorBox::CreateSel { Widget Var args } {
 #   <Parent> : Path du parent
 #   <args>   : Couleur initiale
 #
+# Retour:
+#
 # Remarques :
 #   -La methode utilisee differe selon la profondeur disponible
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -342,20 +330,54 @@ proc ColorBox::Create { Parent args } {
 }
 
 #------------------------------------------------------------------------------
+# Nom      : <ColorBox::Update>
+# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Mettre a jour les parametres selon les coordonnees du curseur
+#
+# Parametres :
+#   <X>      : Coordonnee X du curseur
+#   <Y>      : Coordonnee X du curseur
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc ColorBox::Update { X Y } {
+   variable Data
+   variable Resources
+
+   if { !$Data(State) } {
+      return
+   }
+
+   if { $X<120 && $Y<120 && $X>0 && $Y>0} {
+      eval set Data(Current) \[string toupper \[format \"#%02x%02x%02x\" [hsv get $X $Y]\]\]
+   }
+
+   set Data(V) [expr int($X/120.0*100.0)]
+   set Data(S) [expr int($Y/120.0*100.0)]
+
+   .colbox.opt.sel.cv.hsv coords HSV_SBAR 0 $Y 120 $Y
+   .colbox.opt.sel.cv.hsv coords HSV_VBAR $X 0 $X 120
+
+   ColorBox::UpdateRGB 0
+}
+
+#------------------------------------------------------------------------------
 # Nom      : <ColorBox::UpdateA>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE -
 #
 # But     : Mettre a jour les parametres Alpha
 #
 # Parametres :
+#   <args>   : Argument du scrollbar (inutilise)
+#
+# Retour:
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -377,14 +399,12 @@ proc ColorBox::UpdateA { args } {
 # But     : Mettre a jour les parametres RGB a partir des HSV
 #
 # Parametres :
+#   <Image>  : Image de la palette
+#   <args>   : Argument du scrollbar (inutilise)
+#
+# Retour:
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -425,14 +445,11 @@ proc ColorBox::UpdateRGB { Image args } {
 # But     : Mettre a jour les parametres HSV a partir des RGB
 #
 # Parametres :
+#   <args>   : Argument du scrollbar (inutilise)
+#
+# Retour:
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -475,43 +492,4 @@ proc ColorBox::UpdateHSV { args } {
       set Data(Current) [string toupper [format "#%02x%02x%02x" $Data(R) $Data(G) $Data(B)]]
      .colbox.opt.sel.hex configure -bg $Data(Current)
    }
-}
-
-#------------------------------------------------------------------------------
-# Nom      : <ColorBox::Update>
-# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE -
-#
-# But     : Mettre a jour les parametres selon les coordonnees du curseur
-#
-# Parametres :
-#
-# Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
-#-------------------------------------------------------------------------------
-
-proc ColorBox::Update { X Y } {
-   variable Data
-   variable Resources
-
-   if { !$Data(State) } {
-      return
-   }
-
-   if { $X<120 && $Y<120 && $X>0 && $Y>0} {
-      eval set Data(Current) \[string toupper \[format \"#%02x%02x%02x\" [hsv get $X $Y]\]\]
-   }
-
-   set Data(V) [expr int($X/120.0*100.0)]
-   set Data(S) [expr int($Y/120.0*100.0)]
-
-   .colbox.opt.sel.cv.hsv coords HSV_SBAR 0 $Y 120 $Y
-   .colbox.opt.sel.cv.hsv coords HSV_VBAR $X 0 $X 120
-
-   ColorBox::UpdateRGB 0
 }

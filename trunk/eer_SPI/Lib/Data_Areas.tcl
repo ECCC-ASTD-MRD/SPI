@@ -6,22 +6,21 @@
 #
 # Projet    : Librairie de definitions pour les les projections
 # Fichier   : Data_Areas.tcl
-# Version   : 4.0 ($Revision: 1.5 $)
 # Creation  : Decembre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions d'une structure de donnees et de procedures
 #              relatives aux regions affichables sur les projections
 #
 # Fonctions:
+#    Areas::CreateWidget  { Parent }
+#    Areas::Init          { }
+#    Areas::Read          { File Fill Line { Field "" } }
+#    Areas::Display       { Type }
+#    Areas::DisplayToggle { Type No }
+#    Areas::DisplayId     { Type { Display "" } }
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -62,11 +61,6 @@ namespace eval Areas {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Areas::CreateWidget { Parent } {
@@ -103,23 +97,17 @@ proc Areas::CreateWidget { Parent } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Areas::Read>
+# Nom      : <Areas::Init>
 # Creation : Aout 2003 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Lire les donnees des regions
+# But      : Initialiser les liste de regions
 #
 # Parametres :
-#   <File>   : Nom de fichier
 #
 # Retour:
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Areas::Init { } {
@@ -132,6 +120,24 @@ proc Areas::Init { } {
    Areas::Read $GDefs(Dir)/Data/TimeZone.shp #AAAA00 #FFFF00 TZ
    Areas::Read $GDefs(Dir)/Data/RADAR.shp    #AAAAAA #FFFFFF ID
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Areas::Read>
+# Creation : Aout 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lire les donnees des regions
+#
+# Parametres :
+#   <File>   : Nom de fichier
+#   <Fill>   : Couleur de remplissage
+#   <Line>   : Couleur du contour
+#   <Field>  : Champs a afficher
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Areas::Read { File Fill Line { Field "" } } {
    global GDefs
@@ -166,11 +172,6 @@ proc Areas::Read { File Fill Line { Field "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Areas::Display { Type } {
@@ -216,11 +217,6 @@ proc Areas::Display { Type } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Areas::DisplayToggle { Type No } {
@@ -250,6 +246,22 @@ proc Areas::DisplayToggle { Type No } {
    projection configure $Page::Data(Frame) -data $Viewport::Data(Data$Page::Data(Frame))
    Page::Update $Page::Data(Frame)
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Areas::DisplayId>
+# Creation : Aout 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche ou supprime l'identificateur de la region.
+#
+# Parametres :
+#  <Type>    : Identificateur de la liste de regions
+#  <Display> : Affichage ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Areas::DisplayId { Type { Display "" } } {
    global GDefs

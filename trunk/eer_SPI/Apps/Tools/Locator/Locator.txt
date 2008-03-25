@@ -14,13 +14,6 @@
 #       Volcan, Nucleaire ou CTBT grace a une interface.
 #
 # Remarques :
-#   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
