@@ -13,12 +13,6 @@
 *
 * Remarques :
 *
-* Modification:
-*
-*   Nom         :
-*   Date        :
-*   Description :
-*
 *==============================================================================
 */
 #include "tclGRIB.h"
@@ -45,11 +39,6 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -107,11 +96,6 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -220,11 +204,6 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
@@ -255,11 +234,6 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 GRIB_File* GRIB_FileGet(char *Id){
@@ -310,11 +284,6 @@ int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
@@ -395,11 +364,6 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int TclGRIB_Init(Tcl_Interp *Interp) {

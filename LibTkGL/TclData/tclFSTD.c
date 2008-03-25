@@ -29,35 +29,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Novembre 1998
- *   Description : -Ajout d'une fonction permettant de retourner la couleur
- *                  pour une certaine valeur.
- *                 -Ajout d'une fonction qui retourne la valeur d'un champ pour
- *                  un point quelconque en latlon
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Mars 1999
- *   Description : -Ajout de plusieurs fonctions mathematique et optimisation de la
- *                  vitesse de celles-ci.
- *                 -Changement de l'ordre des operations lors de la lecture d'un
- *                  champs afin d'accelere le tout si on n'a pas besions des statistiques.
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Juin 1999
- *   Description : -Ajout des rendues de champs vectoriels.
- *                 -Retour a un seul processeur grace a de l'optimisation.
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Septembre 1999
- *   Description : -Ajout des rendues de champs lagrangiens.
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Mai 2001
- *   Description : -Optimisations pour les traitements en batch.
- *
  *==============================================================================
 */
 
@@ -120,11 +91,6 @@ TFSTDVector *FSTD_VectorTableCheck(char *Var,int *Idx) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -286,11 +252,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1049,11 +1010,6 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1135,11 +1091,6 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
@@ -1173,11 +1124,6 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FileGetId() {
@@ -1214,11 +1160,6 @@ int FSTD_FileGetId() {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
@@ -1267,11 +1208,6 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 FSTD_File* FSTD_FileGet(Tcl_Interp *Interp,char *Id){
@@ -1302,11 +1238,6 @@ FSTD_File* FSTD_FileGet(Tcl_Interp *Interp,char *Id){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
@@ -1382,11 +1313,6 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
@@ -1433,11 +1359,6 @@ int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1612,11 +1533,6 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int TclFSTD_Init(Tcl_Interp *Interp) {

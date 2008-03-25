@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -57,11 +51,6 @@
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void VertexGradient(TGeoRef *Ref,TDataDef *Def,Vect3d Nr) {
@@ -95,11 +84,6 @@ void VertexGradient(TGeoRef *Ref,TDataDef *Def,Vect3d Nr) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void VertexInterp(Vect3d Pi,Vect3d P0,Vect3d P1,double V0,double V1,double Level) {
@@ -147,11 +131,6 @@ void VertexInterp(Vect3d Pi,Vect3d P0,Vect3d P1,double V0,double V1,double Level
  *     que le quad n'a plus besion d'etre divise (difference de couleur entre les vertex
  *     minime)
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -253,11 +232,6 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,int Base){
@@ -319,11 +293,6 @@ void VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
@@ -413,11 +382,6 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 float VertexVal(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z) {
@@ -517,11 +481,6 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 float VertexValN(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {

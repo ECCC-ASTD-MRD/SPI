@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -65,11 +59,6 @@ int TD2GDAL[]={ 0,0,1,1,2,3,4,5,0,0,6,7 };
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int TclGDAL_Init(Tcl_Interp *Interp) {
@@ -104,10 +93,6 @@ int TclGDAL_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -708,10 +693,6 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -771,10 +752,6 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
@@ -868,10 +845,6 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
  *    3) Deallocation dynamique de la structure
  *    4) Retrait de l'entree de la table GeotiffTable
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
@@ -913,10 +886,6 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
  *   2) Obtention du pointeur sur la structure GDAL_Band desiree
  *   3) Retour de cette structure
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 GDAL_Band* GDAL_BandGet(char *Name) {
@@ -940,11 +909,6 @@ GDAL_Band* GDAL_BandGet(char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1174,11 +1138,6 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
@@ -1214,11 +1173,6 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id){
@@ -1272,11 +1226,6 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver) {
@@ -1386,11 +1335,6 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver)
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDAL_Wipe() {

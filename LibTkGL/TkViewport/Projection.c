@@ -28,32 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Avril 1998
- *   Description : Modification en rapport avec la projection orthographique.
- *                 Modification pour selectionner la resolution lors de la
- *                 creation de la vue.
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Novembre 1998
- *   Description : Modification en rapport avec la suppression du module udScene.
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Janvier 1999
- *   Description : Remise en fonction de la fonction cvtpos (Project) pour permettre
- *                 de mettre en commun plus de code entre les projections
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Fevrier 2000
- *   Description : Ce module gere maintenant tout les appels et "callback" des projections
- *                 puisque les definitions de type de projection ne contiennent plus que
- *                 les fonctions de transformations.
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Aout 2000
- *   Description : Fonction de conversion de latlon en distance.
  *==============================================================================
  */
 
@@ -97,11 +71,6 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -240,11 +209,6 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -426,11 +390,6 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Projection_Clip(Projection *Proj) {
@@ -459,11 +418,6 @@ void Projection_Clip(Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Projection_UnClip(Projection *Proj) {
@@ -490,11 +444,6 @@ void Projection_UnClip(Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
@@ -587,11 +536,6 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
  */
 
@@ -647,11 +591,6 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1080,11 +1019,6 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Projection_Create(Tcl_Interp *Interp,char *Name){
@@ -1149,11 +1083,6 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Fevrier 2000
- *    Description : Modification en profondeur des pointeurs de fonctions du type de projection
  *----------------------------------------------------------------------------
 */
 void Projection_CreateType(char *Name,int Def,
@@ -1194,11 +1123,6 @@ void Projection_CreateType(char *Name,int Def,
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
@@ -1238,11 +1162,6 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Projection* Projection_Get(char *Name) {
@@ -1263,11 +1182,6 @@ Projection* Projection_Get(char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 ProjectionType* Projection_GetType(char *Type) {
@@ -1288,11 +1202,6 @@ ProjectionType* Projection_GetType(char *Type) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Projection_Init(Tcl_Interp *Interp){
@@ -1344,11 +1253,6 @@ int Projection_Init(Tcl_Interp *Interp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
@@ -1490,11 +1394,6 @@ int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Projection_Pixel(Projection *Proj,ViewportItem *VP,Coord Co,Vect3d Pix) {
@@ -1532,11 +1431,6 @@ int Projection_Pixel(Projection *Proj,ViewportItem *VP,Coord Co,Vect3d Pix) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int Mode) {
@@ -1644,11 +1538,6 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
@@ -1803,16 +1692,6 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P.Gauthier
- *    Date        : Fevrier 1998
- *    Description : Ajout d'une verification a la sortie car il y a des cas ou
- *                  le segment n'est pas rejeter et est clipper en dehors
- *
- *    Nom         : J.P.Gauthier
- *    Date        : Septembre 2000
- *    Description : Utilisation de vecteur en entree
  *----------------------------------------------------------------------------
 */
 int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,int X0,int Y0,int X1,int Y1) {
@@ -1874,11 +1753,6 @@ int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,int X0,int Y0,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int LiangBarsky_LineClipT(double Denom,double Num,double *Te,double *Tl){
@@ -1926,11 +1800,6 @@ int LiangBarsky_LineClipT(double Denom,double Num,double *Te,double *Tl){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double X0,double Y0,double X1,double Y1){

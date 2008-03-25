@@ -1355,7 +1355,6 @@ proc Trajectory::Legend { Frame BG FG X0 Y0 X1 Y1 TrajId } {
       }
    }
 
-   set inter "Intervalle / Interval"
    set parcel [trajectory define $t -PARCEL 0]
    set name   [trajectory define $t -ID]
    set date   [clock format [trajectory define $t -DATE] -format "%Y%m%d %H%M" -gmt True]

@@ -29,12 +29,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         :
- *   Date        :
- *   Description :
- *
  *==============================================================================
 */
 
@@ -79,11 +73,6 @@ CONST char* Radar_GetTypeString(DATA_TYPE Type) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int TclRadar_Init(Tcl_Interp *Interp) {
@@ -114,11 +103,6 @@ int TclRadar_Init(Tcl_Interp *Interp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Radar_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -188,11 +172,6 @@ static int Radar_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -365,11 +344,6 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Radar_File* Radar_FileGet(Tcl_Interp *Interp,char *Id){
@@ -403,11 +377,6 @@ Radar_File* Radar_FileGet(Tcl_Interp *Interp,char *Id){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
@@ -491,11 +460,6 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Radar_FileClose(Tcl_Interp *Interp,char *Id){
@@ -526,11 +490,6 @@ int Radar_FileClose(Tcl_Interp *Interp,char *Id){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Radar_FileParse(RADAR_DATA *Data) {

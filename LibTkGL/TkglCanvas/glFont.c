@@ -19,11 +19,6 @@
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void glDrawStringBG(int X,int Y,int Theta,int Width,int Height,int DeltaX,int DeltaY) {
@@ -95,11 +90,6 @@ void glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static void glXFontFill(Display *dpy,Window win,Pixmap pix,GC gc,unsigned int width,unsigned int height,int x0,int y0,unsigned int c,GLubyte *bitmap) {
@@ -181,11 +171,6 @@ static XCharStruct *isvalid(XFontStruct * fs, unsigned int which) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void glXFontFree(T_glFont *glfont) {
@@ -211,11 +196,6 @@ void glXFontFree(T_glFont *glfont) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void glXFontTexture(Font font,int first,int count,int listbase,int *tex) {

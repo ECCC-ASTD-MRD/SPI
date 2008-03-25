@@ -29,12 +29,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         :
- *   Date        :
- *   Description :
- *
  *==============================================================================
 */
 
@@ -62,11 +56,6 @@ static int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
@@ -258,11 +247,6 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Radar_Set(TData *Data){
@@ -296,10 +280,6 @@ void Radar_HeadCopy(void *To,void *From) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Radar_Free(TData *Rad) {
@@ -326,10 +306,6 @@ void Radar_Free(TData *Rad) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
@@ -380,10 +356,6 @@ int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Radar_DataParse(TData *Rad) {
@@ -434,10 +406,6 @@ int Radar_DataParse(TData *Rad) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Vect3d* Radar_Grid(TData *Rad,void *Proj) {

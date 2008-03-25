@@ -29,12 +29,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : J.P.Gauthier
- *   Date        : Septembre 2000
- *   Description : Ajout d'une partie qui gere les projections Mercator
- *
  *==============================================================================
  */
 
@@ -78,11 +72,6 @@ int           Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vec
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
@@ -263,11 +252,6 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Cylin_Init(Tcl_Interp *Interp){
@@ -311,11 +295,6 @@ int Cylin_Init(Tcl_Interp *Interp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
@@ -354,11 +333,6 @@ int Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *    -l'algorithme procede segment par segment et les evalues pour la longueur,
  *     la visibilitee et le clipping
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode) {
@@ -454,11 +428,6 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -543,17 +512,6 @@ void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,ch
  *    -La liste de coordonnees definissant la region doit etre fermee, les premieres et dernieres
  *     coordonnees pareilles
  *
- * Modifications :
- *
- *    Nom         : J.P.Gauthier
- *    Date        : Fevrier 1998
- *    Description : Les segments sont maintenant "clipper" a l'interieur du
- *                  viewport.
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Avril 2000
- *    Description : Simplification de l'algorithme et mise en commmun d'une partie
- *                  avec la fonction de ligne dans SegLine
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Cylin_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo){
@@ -643,11 +601,6 @@ Tcl_Obj* Cylin_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
  *    -Retourne une liste de coordonnees si tout est
  *     correct, sinon, retourne une liste vide a Tcl.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any){
@@ -700,11 +653,6 @@ Tcl_Obj* Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
  *    -Si il n'y a pas  de segmentation, seulement la premiere paire de point sera
  *     definie.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pix00,Vect3d Pix01,Vect3d Pix10,Vect3d Pix11) {
@@ -769,11 +717,6 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 unsigned long Cylin_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
@@ -820,11 +763,6 @@ unsigned long Cylin_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
@@ -864,11 +802,6 @@ int Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
@@ -967,11 +900,6 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
@@ -1008,11 +936,6 @@ int Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 unsigned long Merca_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
@@ -1058,11 +981,6 @@ unsigned long Merca_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {

@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -63,11 +57,6 @@ int QSort_OGR(const void *A,const void *B);
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -534,11 +523,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -853,11 +837,6 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj *Op,regex_t *Exp) {
@@ -965,11 +944,6 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
@@ -1065,11 +1039,6 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_LayerLimit(OGR_Layer *Layer) {
@@ -1107,11 +1076,6 @@ void OGR_LayerLimit(OGR_Layer *Layer) {
  *
  * Remarques  :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
@@ -1239,11 +1203,6 @@ double OGR_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
  *
  * Remarques  :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
@@ -1272,11 +1231,6 @@ void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
  *
  * Remarques  :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
@@ -1321,11 +1275,6 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
  *
  * Remarques  :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
@@ -1378,10 +1327,6 @@ void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void OGR_LayerClean(OGR_Layer *Layer) {
@@ -1408,10 +1353,6 @@ void OGR_LayerClean(OGR_Layer *Layer) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
@@ -1486,10 +1427,6 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
  *     Cette fonction permet d'ecrire un layer dans un nouveau fichier, sans avoir a creer le fichier
  *     avant, donc effectivement de copier des layers
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
@@ -1553,10 +1490,6 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom) {
@@ -1642,10 +1575,6 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg) {
@@ -1707,10 +1636,6 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
@@ -1882,10 +1807,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
@@ -1923,10 +1844,6 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
@@ -2099,11 +2016,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_LayerPreInit(OGR_Layer *Layer) {
@@ -2134,10 +2046,6 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 

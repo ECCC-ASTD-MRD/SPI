@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -68,10 +62,6 @@ extern TIcon IconList[];
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int TclTraj_Init(Tcl_Interp *Interp) {
@@ -100,10 +90,6 @@ int TclTraj_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -246,11 +232,6 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -420,11 +401,6 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Traj_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -480,10 +456,6 @@ static int Traj_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -519,10 +491,6 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int Traj_Destroy(Tcl_Interp *Interp,char *Name) {
@@ -549,10 +517,6 @@ static int Traj_Destroy(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Traj_Free(TTraj *Traj) {
@@ -576,10 +540,6 @@ void Traj_Free(TTraj *Traj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TTraj* Traj_Get(char *Name) {
@@ -602,10 +562,6 @@ TTraj* Traj_Get(char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj) {
@@ -654,10 +610,6 @@ int Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
@@ -795,10 +747,6 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
@@ -927,10 +875,6 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -1074,11 +1018,6 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Traj_Wipe() {

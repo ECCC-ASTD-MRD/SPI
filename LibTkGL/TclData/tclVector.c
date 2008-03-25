@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -60,10 +54,6 @@ static int Vector_Stat(Tcl_Interp *Interp,TVector *Vec,int Objc,Tcl_Obj *CONST O
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclVector_Init(Tcl_Interp *Interp) {
@@ -94,10 +84,6 @@ int TclVector_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -404,11 +390,6 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Vector_Spec(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -457,11 +438,6 @@ static int Vector_Spec(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -531,10 +507,6 @@ static int Vector_Stat(Tcl_Interp *Interp,TVector *Vec,int Objc,Tcl_Obj *CONST O
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
@@ -606,10 +578,6 @@ int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
@@ -674,10 +642,6 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
  *
  * Remarques    : On initialise la representation si elle n'existe pas
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 struct TDataDef* Vector_GetDef(TVector *Vec) {
@@ -726,10 +690,6 @@ struct TDataDef* Vector_GetDef(TVector *Vec) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TVector* Vector_Get(char *Name) {
@@ -750,10 +710,6 @@ TVector* Vector_Get(char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_Destroy(Tcl_Interp *Interp,char *Name) {
@@ -794,10 +750,6 @@ int Vector_Destroy(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Vector_Free(TVector *Vec) {
@@ -829,10 +781,6 @@ void Vector_Free(TVector *Vec) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub) {
@@ -887,10 +835,6 @@ Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len) {
@@ -948,10 +892,6 @@ int Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_Sort(Tcl_Interp *Interp,TVector *Vec) {
@@ -988,10 +928,6 @@ int Vector_Sort(Tcl_Interp *Interp,TVector *Vec) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Vector_Clear(Tcl_Interp *Interp,TVector *Vec) {
@@ -1026,10 +962,6 @@ void Vector_Clear(Tcl_Interp *Interp,TVector *Vec) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem) {
@@ -1086,10 +1018,6 @@ int Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
@@ -1153,10 +1081,6 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
@@ -1214,11 +1138,6 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Vector_Wipe() {

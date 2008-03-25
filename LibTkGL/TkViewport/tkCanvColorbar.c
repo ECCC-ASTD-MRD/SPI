@@ -28,11 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *==============================================================================
  */
 
@@ -140,11 +135,6 @@ Tk_ItemType tkColorbarType = {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Tkcolorbar_Init(Tcl_Interp *Interp) {
@@ -172,11 +162,6 @@ int Tkcolorbar_Init(Tcl_Interp *Interp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
@@ -234,11 +219,6 @@ int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int ColorbarCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
@@ -283,11 +263,6 @@ int ColorbarCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 int ColorbarConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags){
@@ -320,11 +295,6 @@ int ColorbarConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ColorbarDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
@@ -356,11 +326,6 @@ void ColorbarDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
@@ -440,11 +405,6 @@ void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,int X,int Y,int Width,int Height){
@@ -569,11 +529,6 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
@@ -657,11 +612,6 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
@@ -732,11 +682,6 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text,TDataSpec *Spec) {
@@ -768,11 +713,6 @@ void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1,int Y2){
@@ -991,11 +931,6 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y2){
@@ -1123,12 +1058,6 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Janvier 1999
- *   Description : -Mauvais retour dans les cas de 0.0
- *
  *----------------------------------------------------------------------------
 */
 double ColorbarToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
@@ -1180,11 +1109,6 @@ double ColorbarToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 int ColorbarToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
@@ -1230,11 +1154,6 @@ int ColorbarToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
  *    x' = originX + scaleX*(x-originX)
  *    y' = originY + scaleY*(y-originY)
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ColorbarScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double OriginY,double ScaleX,double ScaleY){
@@ -1262,11 +1181,6 @@ void ColorbarScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double OriginY,
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ColorbarTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY){
@@ -1295,11 +1209,6 @@ void ColorbarTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double Delta
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass){
@@ -1416,11 +1325,6 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
@@ -1458,11 +1362,6 @@ static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window T
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static char *Colorbar_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){

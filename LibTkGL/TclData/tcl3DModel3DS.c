@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 
@@ -54,10 +48,6 @@
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Model_Load3DS(T3DModel *M,char *Path) {
@@ -111,10 +101,6 @@ int Model3DS_GetString(FILE *File,char *Buf) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkRead(FILE *File,T3DSChunk *Chunk) {
@@ -143,10 +129,6 @@ void Model3DS_ChunkRead(FILE *File,T3DSChunk *Chunk) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkReadColor(FILE *File,float *Color,T3DSChunk *Chunk) {
@@ -187,10 +169,6 @@ void Model3DS_ChunkReadColor(FILE *File,float *Color,T3DSChunk *Chunk) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkReadVertexIndices(FILE *File,T3DObject *Obj,T3DSChunk *PreviousChunk) {
@@ -243,10 +221,6 @@ void Model3DS_ChunkReadVertexIndices(FILE *File,T3DObject *Obj,T3DSChunk *Previo
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkReadVertices(FILE *File,T3DObject *Obj,T3DSChunk *PreviousChunk) {
@@ -295,10 +269,6 @@ void Model3DS_ChunkReadVertices(FILE *File,T3DObject *Obj,T3DSChunk *PreviousChu
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkReadUVCoordinates(FILE *File,T3DObject *Obj,T3DSChunk *PreviousChunk) {
@@ -341,10 +311,6 @@ void Model3DS_ChunkReadUVCoordinates(FILE *File,T3DObject *Obj,T3DSChunk *Previo
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkReadObjectMaterial(FILE *File,T3DModel *Model,T3DObject *Obj,T3DSChunk *PreviousChunk) {
@@ -399,10 +365,6 @@ void Model3DS_ChunkReadObjectMaterial(FILE *File,T3DModel *Model,T3DObject *Obj,
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChunk) {
@@ -553,10 +515,6 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkProcessNextObject(FILE *File,T3DModel *Model,T3DObject *Obj,T3DSChunk *PreviousChunk) {
@@ -647,10 +605,6 @@ void Model3DS_ChunkProcessNextObject(FILE *File,T3DModel *Model,T3DObject *Obj,T
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model3DS_ChunkProcessNextMaterial(FILE *File,T3DModel *Model,T3DSChunk *PreviousChunk) {

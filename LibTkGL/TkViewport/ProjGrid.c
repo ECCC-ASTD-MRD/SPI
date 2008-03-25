@@ -29,12 +29,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:Proj->Geo->Params.
- *
- *   Nom         :
- *   Date        :
- *   Description :
- *
  *==============================================================================
 */
 
@@ -76,11 +70,6 @@ Tcl_Obj*      Grid_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *P
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
@@ -276,11 +265,6 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Grid_Init(Tcl_Interp *Interp){
@@ -314,11 +298,6 @@ int Grid_Init(Tcl_Interp *Interp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
@@ -360,11 +339,6 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *    -l'algorithme procede segment par segment et les evalues pour la longueur,
  *     la visibilitee et le clipping
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
@@ -408,11 +382,6 @@ void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1) {
@@ -493,17 +462,6 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
  *    -La liste de coordonnees definissant la region doit etre fermee, les premieres et dernieres
  *     coordonnees pareilles
  *
- * Modifications :
- *
- *    Nom         : J.P.Gauthier
- *    Date        : Fevrier 1998
- *    Description : Les segments sont maintenant "clipper" a l'interieur du
- *                  viewport.
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Avril 2000
- *    Description : Simplification de l'algorithme et mise en commmun d'une partie
- *                  avec la fonction de ligne dans SegLine
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Grid_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo){
@@ -591,11 +549,6 @@ Tcl_Obj* Grid_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,C
  *    -Retourne une liste de coordonnees si tout est
  *     correct, sinon, retourne une liste vide a Tcl.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist){
@@ -679,11 +632,6 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
  *    -Retourne une liste de coordonnees si tout est
  *     correct, sinon, retourne une liste vide a Tcl.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Grid_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any){
@@ -736,11 +684,6 @@ Tcl_Obj* Grid_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
  *    -Si il n'y a pas  de segmentation, seulement la premiere paire de point sera
  *     definie.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Grid_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pix00,Vect3d Pix01,Vect3d Pix10,Vect3d Pix11) {
@@ -779,11 +722,6 @@ int Grid_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pi
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
@@ -834,11 +772,6 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 unsigned long Grid_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
@@ -931,11 +864,6 @@ unsigned long Grid_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb)
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {

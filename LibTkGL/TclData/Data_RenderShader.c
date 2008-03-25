@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -60,11 +54,6 @@ static int GL_Type[]={ GL_BITMAP,GL_BITMAP,GL_UNSIGNED_BYTE,GL_BYTE,GL_UNSIGNED_
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : Jean-Philippe Gauthier
- *    Date        : Fevrier 2003
- *    Description : Ajout de l'affichage des grilles 'Y'
  *----------------------------------------------------------------------------
 */
 int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
@@ -247,11 +236,6 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){

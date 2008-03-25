@@ -29,12 +29,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 
@@ -80,10 +74,6 @@ TIcon IconList[]={
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclDataSpec_Init(Tcl_Interp *Interp) {
@@ -112,10 +102,6 @@ int TclDataSpec_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
@@ -228,11 +214,6 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST Objv[]){
@@ -965,11 +946,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void DataSpec_Clean(TDataSpec *Spec,int Map,int Pos,int Seg) {
@@ -992,10 +968,6 @@ void DataSpec_Clean(TDataSpec *Spec,int Map,int Pos,int Seg) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
@@ -1042,10 +1014,6 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TDataSpec* DataSpec_Get(char *Name) {
@@ -1066,10 +1034,6 @@ TDataSpec* DataSpec_Get(char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int DataSpec_FreeHash(Tcl_Interp *Interp,char *Name) {
@@ -1106,11 +1070,6 @@ int DataSpec_FreeHash(Tcl_Interp *Interp,char *Name) {
  *    Si la detsination existe deja, la copie se fait et les valeurs de la destination
  *    sont ecrasee sans bronchement
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
@@ -1253,11 +1212,6 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TDataSpec *DataSpec_New(){
@@ -1341,11 +1295,6 @@ TDataSpec *DataSpec_New(){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int DataSpec_Free(TDataSpec *Spec){
@@ -1387,11 +1336,6 @@ int DataSpec_Free(TDataSpec *Spec){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void DataSpec_Define(TDataSpec *Spec){
@@ -1578,11 +1522,6 @@ void DataSpec_Intervals(TDataSpec *Spec,double Min,double Max) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
@@ -1652,11 +1591,6 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void DataSpec_Wipe() {
@@ -1690,11 +1624,6 @@ void DataSpec_Wipe() {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -1720,11 +1649,6 @@ void Icon_Free(TIcon *Icon) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 

@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -76,11 +70,6 @@ static int  glInfo(Tcl_Interp *Interp,char *Argv);
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 double glGetProcInfo(double *Mem){
@@ -109,11 +98,6 @@ double glGetProcInfo(double *Mem){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int glInfo(Tcl_Interp *Interp,char *Argv){
@@ -174,11 +158,6 @@ static int glInfo(Tcl_Interp *Interp,char *Argv){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 GLboolean glCheckExtension(char *ExtName) {
@@ -217,11 +196,6 @@ GLboolean glCheckExtension(char *ExtName) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
@@ -366,32 +340,21 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <trBuffer>
+ * Nom      : <trRasterPos2i>
  * Creation : Novembre 2003 J.P. Gauthier - CMC/CMOE
  *
- * But      : Recuperer la tuile buffer OpenGL et le retourner a Tk dans une
- *            image TK.
+ * But      : Effectuer les transformations necessaire pour changer la position
+ *            raster d'OpenGL selon les tuiles
+ *
  *
  * Parametres :
- *  <Interp>     : Interpreteur TCL
- *  <Img>        : Identificateur de l'image TK
- *  <Buffer>     : Buffer a lire (GL_FRONT|GL_BACK);
  *  <X>          : Coordonne x du coin superieur gauche
  *  <Y>          : Coordonne y du coin superieur gauche
- *  <Width>      : Coordonne x du coin inferieur droit
- *  <Height>     : Hauteur du buffer originale
- *  <TR>         : Contexte TR (Tile renderer)
  *
  * Retour:
- *  <TCL_...>    : Code de reussite Tcl
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void trRasterPos2i(int X,int Y) {
@@ -425,6 +388,30 @@ void trRasterPos2i(int X,int Y) {
    }
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <trBuffer>
+ * Creation : Novembre 2003 J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Recuperer la tuile buffer OpenGL et le retourner a Tk dans une
+ *            image TK.
+ *
+ * Parametres :
+ *  <Interp>     : Interpreteur TCL
+ *  <Img>        : Identificateur de l'image TK
+ *  <Buffer>     : Buffer a lire (GL_FRONT|GL_BACK);
+ *  <X>          : Coordonne x du coin superieur gauche
+ *  <Y>          : Coordonne y du coin superieur gauche
+ *  <Width>      : Coordonne x du coin inferieur droit
+ *  <Height>     : Hauteur du buffer originale
+ *  <TR>         : Contexte TR (Tile renderer)
+ *
+ * Retour:
+ *  <TCL_...>    : Code de reussite Tcl
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
 int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR){
 
    Tk_PhotoImageBlock data;
@@ -496,11 +483,6 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,int Height){
@@ -557,11 +539,6 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void glHashTableInit() {
@@ -585,11 +562,6 @@ void glHashTableInit() {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int glFontUse(Display *Disp,Tk_Font FontId) {
@@ -689,11 +661,6 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glBitmapFree(T_glBitmap *Bitmap) {
@@ -715,11 +682,6 @@ void glBitmapFree(T_glBitmap *Bitmap) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
@@ -760,11 +722,6 @@ int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *V
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 char *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
@@ -792,11 +749,6 @@ char *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,int Size){
@@ -844,11 +796,6 @@ void DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Height) {
@@ -897,11 +844,6 @@ int glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Heigh
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glPostscriptStipple(Tcl_Interp *Interp,T_glBitmap *Bitmap) {
@@ -929,11 +871,6 @@ int glPostscriptStipple(Tcl_Interp *Interp,T_glBitmap *Bitmap) {
  *    StartAngle is relative to the 3 O'Clock position
  *    EndAngle is relative to the StartAngle
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glGenCircle(float Start,float Extent) {
@@ -964,12 +901,6 @@ void glGenCircle(float Start,float Extent) {
  *    EndAngle is relative to the StartAngle
  *    Styles : PIESLICE_STYLE, CHORD_STYLE, ARC_STYLE
  *
- *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style) {
@@ -1025,11 +956,6 @@ void glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style) {
  *    StartAngle is relative to the 3 O'Clock position
  *    EndAngle is relative to the StartAngle
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glDrawCircle(int Inter,GLint Mode) {
@@ -1054,11 +980,6 @@ void glDrawCircle(int Inter,GLint Mode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glDrawArrow(GLint Mode) {
@@ -1085,11 +1006,6 @@ void glDrawArrow(GLint Mode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int DashConvert(char *l,CONST char *p,int n,double width) {
@@ -1300,11 +1216,6 @@ void glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glPickInit(double WinX,double WinY,double DX,double DY){
@@ -1337,11 +1248,6 @@ void glPickInit(double WinX,double WinY,double DX,double DY){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glPickProcess(){
@@ -1386,11 +1292,6 @@ int glPickProcess(){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 GLfloat* glFeedbackInit(int Size,int GLMode) {
@@ -1427,11 +1328,6 @@ GLfloat* glFeedbackInit(int Size,int GLMode) {
  *      debut de la ligne passe inappercu. C'est pour ca qu'on fait une verification sur le "move"
  *      pour etre sur que le "moveto" du postscript a ete effectue avant de faire le "lineto".
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glFeedbackProcess(Tcl_Interp *Interp,int GLMode) {
@@ -1548,11 +1444,6 @@ int glFeedbackProcess(Tcl_Interp *Interp,int GLMode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height){
@@ -1692,11 +1583,6 @@ void trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,in
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int X2,int Y2,XColor *Color,int Fill){
@@ -1736,11 +1622,6 @@ void glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int Y1,int Angle,XColor *Color,float XOff,float YOff,float Justify){
@@ -1794,11 +1675,6 @@ void glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Thet
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glTextureFit(int Size,float Tolerance) {
@@ -1838,11 +1714,6 @@ int glTextureFit(int Size,float Tolerance) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void glXShutDown() {
@@ -1892,11 +1763,6 @@ void glXShutDown() {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int glDefineParams(){
@@ -2002,11 +1868,6 @@ int glDefineParams(){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void glInit(Tcl_Interp *Interp) {
@@ -2070,11 +1931,6 @@ void glInit(Tcl_Interp *Interp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Novembre 2003
- *    Description : Passage a GLX 1.4 (Linux)
  *----------------------------------------------------------------------------
 */
 #ifdef WIN32
@@ -2233,11 +2089,6 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
@@ -2286,11 +2137,6 @@ int glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glXFreePBuffer() {
@@ -2319,11 +2165,6 @@ int glXFreePBuffer() {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glXGetPixmap(Tk_Window TkWin,int *Width,int *Height) {
@@ -2375,11 +2216,6 @@ int glXGetPixmap(Tk_Window TkWin,int *Width,int *Height) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int glXFreePixmap() {

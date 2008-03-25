@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 
@@ -62,10 +56,6 @@ int        Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Tcldata_Init(Tcl_Interp *Interp) {
@@ -167,11 +157,6 @@ int Tcldata_Init(Tcl_Interp *Interp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_FreeHash(Tcl_Interp *Interp,char *Name) {
@@ -201,11 +186,6 @@ int Data_FreeHash(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TData* Data_Get(char *Name) {
@@ -228,11 +208,6 @@ TData* Data_Get(char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
@@ -266,11 +241,6 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 void Data_GetStat(TData *Field){
@@ -461,11 +431,6 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC) {
@@ -589,11 +554,6 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_PreInit(TData *Data) {
@@ -632,11 +592,6 @@ void Data_PreInit(TData *Data) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TData_Type Type){
@@ -734,10 +689,6 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
@@ -803,11 +754,6 @@ int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoR
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_Wipe() {
@@ -843,10 +789,6 @@ void Data_Wipe() {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
@@ -916,11 +858,6 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
@@ -975,11 +912,6 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List){
@@ -1050,11 +982,6 @@ int Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
@@ -1121,11 +1048,6 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
@@ -1180,11 +1102,6 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_DefFree(TDataDef *Def){
@@ -1221,11 +1138,6 @@ void Data_DefFree(TDataDef *Def){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TDataDef *Data_DefCopy(TDataDef *Def){
@@ -1320,11 +1232,6 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_DefTile(TDataDef *DefTo,TDataDef *DefTile,int X0, int Y0) {
@@ -1378,11 +1285,6 @@ int Data_DefTile(TDataDef *DefTo,TDataDef *DefTile,int X0, int Y0) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
@@ -1461,11 +1363,6 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
  * Remarques :
  *     -base sur l'algorithme de Michel Grenier
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
@@ -1553,11 +1450,6 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -2144,11 +2036,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 double Data_Level2Meter(int Type,double Level) {
@@ -2229,11 +2116,6 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type){
@@ -2275,11 +2157,6 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type){
  *   La matrice en question est une serie de listes imbriquees comprenant NJ listes
  *   de NI elements.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
@@ -2327,11 +2204,6 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
  *   -La valeur sera interpolee selon les parametres du champs et peut
  *    donc affecter plus d'un point
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_ValSet(TData *Field,float I,float J,float Val) {
@@ -2387,10 +2259,6 @@ int Data_ValSet(TData *Field,float I,float J,float Val) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_Obj* Data_Val2Obj(TDataDef *Def,double Val) {
@@ -2441,11 +2309,6 @@ Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_Within(TData *Field,float Val) {
@@ -2474,11 +2337,6 @@ int Data_Within(TData *Field,float Val) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_WithinNb(TData *Field) {

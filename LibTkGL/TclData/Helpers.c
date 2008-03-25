@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 
@@ -77,11 +71,6 @@ int System_ByteOrder(void) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS) {
@@ -123,11 +112,6 @@ time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS) {
@@ -157,11 +141,6 @@ time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int System_Julian2Stamp(int Year,int Day,int Time) {
@@ -208,11 +187,6 @@ int System_Julian2Stamp(int Year,int Day,int Time) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void System_StampDecode(int Stamp,int *YYYY,int *MM,int *DD,int *H,int *M,int *S) {
@@ -247,11 +221,6 @@ void System_StampDecode(int Stamp,int *YYYY,int *MM,int *DD,int *H,int *M,int *S
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int System_Seconds2Stamp(long Sec) {
@@ -282,11 +251,6 @@ int System_Seconds2Stamp(long Sec) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 long System_Stamp2Seconds(int Stamp) {
@@ -328,11 +292,6 @@ long System_Stamp2Seconds(int Stamp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 double InterpCubic(double X0,double X1,double X2, double X3,double F) {
@@ -365,11 +324,6 @@ double InterpCubic(double X0,double X1,double X2, double X3,double F) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 double InterpHermite(double X0,double X1,double X2, double X3,double F,double T,double B) {
@@ -406,11 +360,6 @@ double InterpHermite(double X0,double X1,double X2, double X3,double F,double T,
 
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int QSort_Double(const void *A,const void *B){

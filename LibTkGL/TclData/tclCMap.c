@@ -28,21 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Juillet 2000
- *   Description : -Revision complete du package pour permettre la gestion de palette
- *                  mutliple.
- *                 -De plus, l'allocation de la palette dans X n'est plus fait ici
- *                  mais par GLRender. Ce package ne fait que gerer la manipulation des
- *                  couleurs
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Novembre 2002
- *   Description : -Suppression de la compatibilite 8 bit ce qui ne requiert plus l'interaction
- *                  avec GLRender
- *
  *==============================================================================
  */
 
@@ -73,11 +58,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int TclCMap_Init(Tcl_Interp *Interp){
@@ -106,11 +86,6 @@ int TclCMap_Init(Tcl_Interp *Interp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 CMap_Rec* CMap_Get(char *Name) {
@@ -132,11 +107,6 @@ CMap_Rec* CMap_Get(char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 CMap_Rec* CMap_New(char* Name,int Nb) {
@@ -204,11 +174,6 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map) {
@@ -231,11 +196,6 @@ int CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_Create(Tcl_Interp *Interp,char *Name){
@@ -280,11 +240,6 @@ int CMap_Create(Tcl_Interp *Interp,char *Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_Copy(Tcl_Interp *Interp,char *To,char *From) {
@@ -330,11 +285,6 @@ int CMap_Copy(Tcl_Interp *Interp,char *To,char *From) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -466,11 +416,6 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int CMap_Free(char *Name) {
@@ -501,11 +446,6 @@ int CMap_Free(char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST Objv[]){
@@ -831,11 +771,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST Objv[]){
@@ -989,11 +924,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1081,11 +1011,6 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_ColorList(Tcl_Interp *Interp,CMap_Rec *CMap,int Comp,int Mode) {
@@ -1143,11 +1068,6 @@ int CMap_ColorList(Tcl_Interp *Interp,CMap_Rec *CMap,int Comp,int Mode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
@@ -1183,11 +1103,6 @@ int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
@@ -1272,11 +1187,6 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
  *    On lit toutes les couleurs du fichier mais on insere seulement un nombre
  *    dans la palette, tout depent du nombre de cellules allouee
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
@@ -1356,11 +1266,6 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
@@ -1413,11 +1318,6 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void CMap_ControlDefine(CMap_Rec *CMap) {
@@ -1482,11 +1382,6 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void CMap_RatioDefine(CMap_Rec *CMap){
@@ -1551,11 +1446,6 @@ void CMap_RatioDefine(CMap_Rec *CMap){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 void CMap_CurveDefine(CMap_Rec *CMap){
@@ -1633,11 +1523,6 @@ void CMap_CurveDefine(CMap_Rec *CMap){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_SelImage(Tcl_Interp *Interp,char Mode,char *Img,double Val){
@@ -1738,11 +1623,6 @@ int CMap_SelImage(Tcl_Interp *Interp,char Mode,char *Img,double Val){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
  */
 void CMap_RGB2HSV(double R,double G,double B,double *H,double *S,double *V){
@@ -1800,11 +1680,6 @@ void CMap_RGB2HSV(double R,double G,double B,double *H,double *S,double *V){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
  */
 void CMap_HSV2RGB(double *R,double *G,double *B,double H,double S,double V){
@@ -1861,11 +1736,6 @@ void CMap_HSV2RGB(double *R,double *G,double *B,double H,double S,double V){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int CMap_PostscriptColor(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){

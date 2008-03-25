@@ -28,11 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Octobre 2000
- *   Description : -Readaptation complete pour OpenGL.
  *==============================================================================
  */
 
@@ -177,11 +172,6 @@ Tk_ItemType tkViewportType = {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Tkviewport_Init(Tcl_Interp *Interp) {
@@ -236,11 +226,6 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Janvier 1999
- *    Description : Ajout de parametres a initialiser lors de la creation.
  *----------------------------------------------------------------------------
 */
 static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
@@ -334,11 +319,6 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -683,11 +663,6 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
@@ -732,12 +707,6 @@ static int ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Novembre 1998
- *   Description : -Changement du redraw pour eviter d'allouer un GC
- *                 -Ajustement du parametre Realloc pour les changements de proprietes
  *----------------------------------------------------------------------------
 */
 static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags){
@@ -815,11 +784,6 @@ static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
@@ -894,11 +858,6 @@ static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP){
@@ -973,11 +932,6 @@ static void ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ViewportClean(ViewportItem *VP,int Data,int Buff){
@@ -1018,11 +972,6 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ViewportRefresh(ViewportItem *VP) {
@@ -1070,11 +1019,6 @@ int ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,int X,int Y,int Width,int Height){
@@ -1227,11 +1171,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,int Height,int Tile,int Clear,int PS){
@@ -1317,11 +1256,6 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ViewportClear(ViewportItem *VP,int Page) {
@@ -1387,11 +1321,6 @@ void ViewportSet(ViewportItem *VP,Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void ViewportUnset(ViewportItem *VP) {
@@ -1418,12 +1347,6 @@ void ViewportUnset(ViewportItem *VP) {
  * Retour:
  *
  * Remarques :
- *
- * Modifications :
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Janvier 1999
- *   Description : -Mauvais retour dans les cas de 0.0
  *
  *----------------------------------------------------------------------------
 */
@@ -1476,11 +1399,6 @@ static double ViewportToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static int ViewportToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
@@ -1526,11 +1444,6 @@ static int ViewportToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
  *    x' = originX + scaleX*(x-originX)
  *    y' = originY + scaleY*(y-originY)
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void ViewportScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double OriginY,double ScaleX,double ScaleY){
@@ -1564,11 +1477,6 @@ static void ViewportScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double O
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void ViewportTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY){
@@ -1597,11 +1505,6 @@ static void ViewportTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,doubl
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass){
@@ -1768,11 +1671,6 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int VP_CamParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
@@ -1812,11 +1710,6 @@ static int VP_CamParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,ch
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
@@ -1845,11 +1738,6 @@ static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int VP_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
@@ -1887,11 +1775,6 @@ static int VP_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,c
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static char *VP_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
@@ -1920,11 +1803,6 @@ static char *VP_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int VP_ProjParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
@@ -1963,11 +1841,6 @@ static int VP_ProjParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,c
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static char *VP_ProjPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){

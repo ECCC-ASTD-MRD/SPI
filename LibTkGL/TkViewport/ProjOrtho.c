@@ -30,12 +30,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         :
- *   Date        :
- *   Description :
- *
  *==============================================================================
  */
 
@@ -83,16 +77,6 @@ Tcl_Obj*      Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *
  *    -La liste de coordonnees definissant la region doit etre fermee, les premieres et dernieres
  *     coordonnees pareilles
  *
- * Modifications :
- *
- *    Nom         : J.P.Gauthier
- *    Date        : Fevrier 1998
- *    Description : Les segments sont maintenant "clipper" a l'interieur du
- *                  viewport.
- *
- *    Nom         : J.P.Gauthier
- *    Date        : Septembre 2000
- *    Description : Utilications de vecteurs et d'OpenGL.
  *----------------------------------------------------------------------------
 */
 double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,ViewportItem *VP){
@@ -184,11 +168,6 @@ double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,Vie
  * Remarques :
  *    -On creer les latlons en utilisant une sphere segmentee selon les degrees des latlons.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
@@ -413,11 +392,6 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Ortho_Init(Tcl_Interp *Interp){
@@ -451,11 +425,6 @@ int Ortho_Init(Tcl_Interp *Interp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Ortho_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
@@ -489,11 +458,6 @@ int Ortho_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1) {
@@ -561,11 +525,6 @@ void Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,ch
  *    -La liste de coordonnees definissant la region doit etre fermee, les premieres et dernieres
  *     coordonnees pareilles
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo){
@@ -693,11 +652,6 @@ Tcl_Obj* Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
  *    -Retourne une liste de coordonnees si tout est
  *     correct, sinon, retourne une liste vide a Tcl.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* Ortho_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any){
@@ -737,12 +691,6 @@ Tcl_Obj* Ortho_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
  * Retour:
  *
  * Remarques :
- *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *
  *----------------------------------------------------------------------------
 */
@@ -802,11 +750,6 @@ unsigned long Ortho_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
  * Remarques :
  *    - Retourne la valeur 999 si hors du globe
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 

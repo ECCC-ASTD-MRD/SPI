@@ -169,9 +169,9 @@ namespace eval SPI {
    set Msg(CamSave)        { "Voulez-vous inclure les paramètres de camera dans de modèle de page ?" "Do you want to include the camera parameters in this page layout ?" }
    set Msg(LayoutErase)    { "Etes-vous certain de vouloir supprimer ce modèle de page ?" "Do you really want to delete this page layout ?" }
    set Msg(LayoutOver)     { "Ce modèle de page existe deja. Voulez-vous le remplacer ?" "This page layout exists. Do you want to overwrite it ?" }
-   set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModelisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnees Geographiques   : Michel Grenier\n\nPackage et installation : Stéphane Gaudreault\n                          Hugo Landry\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          Réal D'Amours" }
-   set Msg(Id)             { "Développé au Centre Meteorologique Canadien\npar le groupe des urgences (CMOE)\n"
-                             "Developped at the Canadian Meteorological Center\nby the emergency division (CMOE)\n" }
+   set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModelisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnees Geographiques   : Michel Grenier\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          Réal D'Amours" }
+   set Msg(Id)             { "Développé au Centre Meteorologique Canadien\npar le groupe des urgences (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n"
+                             "Developped at the Canadian Meteorological Center\nby the emergency division (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n" }
    set Msg(Adress)         { "2121 Voie de service nord\nRoute transcanadienne\nMontreal, Quebec\nH9P 1J3\n"
                              "2121 North service road\nHighway 40\nMontreal, Quebec\nH9P 1J3\n" }
    set Msg(Mail)           { "Liste de distribution: spi-users@cmc.ec.gc.ca\n" "Mailing list: spi-users@cmc.ec.gc.ca" }

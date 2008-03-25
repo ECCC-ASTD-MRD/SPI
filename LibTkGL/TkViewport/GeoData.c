@@ -29,12 +29,6 @@
 *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 *    Boston, MA 02111-1307, USA.
 *
-* Modification:
-*
-*
-*   Nom         :
-*   Date        :
-*   Description :
 *==============================================================================
 */
 
@@ -87,10 +81,6 @@ GLint Texture_Read(char *File);
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TCL_DECLARE_MUTEX(MUTEX_GDB);
@@ -294,11 +284,6 @@ int GDB_ThreadQueueAdd(Tcl_ThreadId Id,Projection *Proj,GDB_Tile *Tile,GDB_DataG
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDB_Init(GDB_Data *GDB) {
@@ -401,11 +386,6 @@ int GDB_Init(GDB_Data *GDB) {
  * Remarques :
  *   -Cette procedure est appeler en "callback" par GDB en retour d'une requete
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon1,float *LatLon) {
@@ -446,11 +426,6 @@ void GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_GeoFree(GDB_Geo *Geo) {
@@ -479,11 +454,6 @@ void GDB_GeoFree(GDB_Geo *Geo) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
@@ -519,11 +489,6 @@ void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDB_GetMap(GDB_Data *GDB,double Lat,double Lon) {
@@ -576,11 +541,6 @@ int GDB_GetMap(GDB_Data *GDB,double Lat,double Lon) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TileClear(Projection *Proj,GDB_Tile *Tile,XColor *Color,GLuint MaskIn) {
@@ -619,11 +579,6 @@ void GDB_TileClear(Projection *Proj,GDB_Tile *Tile,XColor *Color,GLuint MaskIn) 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TileFreeAll(GDB_Data *GDB,int Type) {
@@ -653,11 +608,6 @@ void GDB_TileFreeAll(GDB_Data *GDB,int Type) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TileFree(GDB_Tile *Tile,int Force) {
@@ -769,11 +719,6 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
@@ -840,11 +785,6 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 unsigned int GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
@@ -910,12 +850,6 @@ unsigned int GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
  *   -On recupere les donnees en latlon et on les projete immediatement dans
  *    le referentiel de la projection courante.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *----------------------------------------------------------------------------
 */
 
 int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
@@ -1015,11 +949,6 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Juillet 2002
- *    Description : Nb=-1 Si la tuile n'est pas incluse dans la projection courante
  *----------------------------------------------------------------------------
 */
 void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *Proj) {
@@ -1056,11 +985,6 @@ void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *P
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
@@ -1139,11 +1063,6 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Data *GDB) {
@@ -1275,11 +1194,6 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
  * Remarques :
  *   -Si Interp n'est pas NULL, on produit du postscript
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XColor *Color,int Low) {
@@ -1343,11 +1257,6 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
  * Remarques :
  *   -Si Interp n'est pas NULL, on produit du postscript
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -1417,11 +1326,6 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,
  *   -Les map on une bordure de 1 pour calculer les normales correctement aux limites des
  *    tuiles donc, il faut modifier les indexes pour etre localise correctement
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta) {
@@ -1683,11 +1587,6 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Juillet 2002
- *    Description : Restriction des tuiles non incluse dans la projection courante
  *----------------------------------------------------------------------------
 */
 
@@ -1938,11 +1837,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDB_TileResolution(GDB_Data *GDB,double Dist) {
@@ -2015,11 +1909,6 @@ int GDB_TileResolution(GDB_Data *GDB,double Dist) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TxtFree(GDB_Txt *Txt) {
@@ -2050,11 +1939,6 @@ void GDB_TxtFree(GDB_Txt *Txt) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TxtGet(int Type,float Lat,float Lon,char *Txt) {
@@ -2088,11 +1972,6 @@ void GDB_TxtGet(int Type,float Lat,float Lon,char *Txt) {
  * Remarques :
  *   -Si Interp n'est pas NULL, on produit du postscript
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color) {
@@ -2165,10 +2044,6 @@ void GDB_StarRender(Tcl_Interp *Interp,Projection *Proj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 GLint Texture_Read(char *File) {

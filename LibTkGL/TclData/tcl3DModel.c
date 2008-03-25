@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -63,10 +57,6 @@ static Tcl_HashTable ModelTable;
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -214,11 +204,6 @@ static int Model_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -332,11 +317,6 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -411,11 +391,6 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -516,11 +491,6 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -652,10 +622,6 @@ static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Model_Create(Tcl_Interp *Interp,char *Name) {
@@ -734,10 +700,6 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
@@ -779,10 +741,6 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int Model_Destroy(Tcl_Interp *Interp,char *Name) {
@@ -809,10 +767,6 @@ static int Model_Destroy(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model_Clean(T3DModel *M) {
@@ -840,10 +794,6 @@ void Model_Clean(T3DModel *M) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Model_Free(T3DModel *M) {
@@ -897,10 +847,6 @@ void Model_ObjFree(T3DObject *Obj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Model_Init(Tcl_Interp *Interp) {
@@ -923,11 +869,6 @@ int Model_Init(Tcl_Interp *Interp) {
  * Retour       : Une structure Model ou un pointeur NULL si rien trouve.
  *
  * Remarques    :
- *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 T3DModel* Model_Get(char *Name) {
@@ -948,10 +889,6 @@ T3DModel* Model_Get(char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Model_LoadMDL(T3DModel *M,char *Path) {
@@ -1130,10 +1067,6 @@ void Model_NormalCompute(T3DModel *M) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {

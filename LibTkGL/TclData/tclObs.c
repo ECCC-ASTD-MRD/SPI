@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        : J.p. Gauthier
- *   Date       : Decembre 2004
- *   Description: Fonction d'ecriture ajoutee
- *
  *=========================================================
  */
 
@@ -72,10 +66,6 @@ extern TIcon IconList[];
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclObs_Init(Tcl_Interp *Interp) {
@@ -104,10 +94,6 @@ int TclObs_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -304,11 +290,6 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -639,10 +620,6 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
@@ -710,10 +687,6 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
@@ -773,10 +746,6 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -860,10 +829,6 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
@@ -1005,10 +970,6 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
@@ -1143,10 +1104,6 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -1193,10 +1150,6 @@ static int Obs_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int Obs_FreeHash(Tcl_Interp *Interp,char *Name) {
@@ -1223,10 +1176,6 @@ static int Obs_FreeHash(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Obs_Free(TObs *Obs) {
@@ -1252,10 +1201,6 @@ void Obs_Free(TObs *Obs) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TObs* Obs_Get(char *Name) {
@@ -1278,10 +1223,6 @@ TObs* Obs_Get(char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
@@ -1404,10 +1345,6 @@ int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
@@ -1646,10 +1583,6 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Obs_LocFind(TLoc *Loc,char *Value,char **Array) {
@@ -1683,10 +1616,6 @@ int Obs_LocFind(TLoc *Loc,char *Value,char **Array) {
  * Remarques :
  *    -On libere seulement quand le compteur de reference est a zero.
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -1738,11 +1667,6 @@ int Obs_LocFree(TLoc *Loc){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 void Obs_GetStat(TObs *Obs){
@@ -1785,11 +1709,6 @@ void Obs_GetStat(TObs *Obs){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Obs_PreInit(TObs *Obs) {
@@ -1822,11 +1741,6 @@ void Obs_PreInit(TObs *Obs) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode) {
@@ -2113,11 +2027,6 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
@@ -2246,11 +2155,6 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
@@ -2307,11 +2211,6 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -2467,11 +2366,6 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Obs_Wipe() {

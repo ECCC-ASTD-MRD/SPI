@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 #include "tclData.h"
@@ -55,10 +49,6 @@
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 double GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
@@ -87,10 +77,6 @@ double GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,float *Length,float *ThetaXY){
@@ -137,10 +123,6 @@ int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,do
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
@@ -195,10 +177,6 @@ int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
@@ -249,10 +227,6 @@ int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta) {
