@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 #include "tclData.h"
@@ -60,10 +54,6 @@ void GeoRefEZ_UnLock(void) { Tcl_MutexUnlock(&MUTEX_FSTDEZ); }
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
@@ -108,10 +98,6 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY){
@@ -214,10 +200,6 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
@@ -280,10 +262,6 @@ void GeoRef_Expand(TGeoRef *Ref) {
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
@@ -325,6 +303,31 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
    return(1);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_RPNSetup>
+ * Creation     : Avril 2005 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Definir le referetiel de type RPN
+ *
+ * Parametres   :
+ *    <NI>      : Dimension en X
+ *    <NJ>      : Dimension en Y
+ *    <NK>      : Diemnsion en Z
+ *    <Type>    : Type de niveaux
+ *    <Levels>  : Liste des niveaux
+ *    <GRTYP>   : Type de grille
+ *    <IG1>     : Descripteur IG1
+ *    <IG2>     : Descripteur IG2
+ *    <IG3>     : Descripteur IG3
+ *    <IG4>     : Descripteur IG4
+ *    <FID>     : Identificateur du fichier
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
 
    TGeoRef *ref;

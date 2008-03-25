@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -60,11 +54,6 @@ static int      OGR_ArraySize=0;
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -310,11 +299,6 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -623,11 +607,6 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
  * Remarques  : On doit proceder recursivement car la geometrie peut etre
  *              un container pour d'autres geometrie
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 OGRwkbGeometryType OGR_GeometryNameToType(char *Name) {
@@ -775,11 +754,6 @@ int OGR_GeometrySet(Tcl_Interp *Interp,OGRGeometryH Geom,Tcl_Obj *Desc) {
  * Remarques  : On doit proceder recursivement car la geometrie peut etre
  *              un container pour d'autres geometrie
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
@@ -828,11 +802,6 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
  *
  * Remarques  :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
@@ -950,11 +919,6 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
  *   - On projete tout les points/rings dans le tableau global qui est redimensionne
  *     si necessaire.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned long Size) {
@@ -1037,11 +1001,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
  *
  * Remarques  :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_GeometryRender(Projection *Proj,ViewportItem *VP,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {

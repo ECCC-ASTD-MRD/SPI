@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 
@@ -82,10 +76,6 @@ int GeoRef_Init(Tcl_Interp *Interp) {
  *
  * Remarques    :
  *
- * Modification  :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1,int Y1) {
@@ -153,10 +143,6 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
  *
  * Remarques    :
  *
- * Modification  :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoScan_Clear(TGeoScan *Scan) {
@@ -184,10 +170,6 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  * Remarques    :
  *
- * Modification  :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3) {
@@ -215,10 +197,6 @@ double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3) {
  *
  * Remarques    :
  *
- * Modification  :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoFunc_RadialPointOn(Coord C1,Coord C2,Coord C3,Coord *CR) {
@@ -250,10 +228,6 @@ int GeoFunc_RadialPointOn(Coord C1,Coord C2,Coord C3,Coord *CR) {
  *
  * Remarques    :
  *
- * Modification  :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C3) {
@@ -315,10 +289,6 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
@@ -563,10 +533,6 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -807,10 +773,6 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref) {
@@ -849,10 +811,6 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TGeoRef* GeoRef_Get(char *Name) {
@@ -873,10 +831,6 @@ TGeoRef* GeoRef_Get(char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_Destroy(Tcl_Interp *Interp,char *Name) {
@@ -916,10 +870,6 @@ int GeoRef_Destroy(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int Z0,int X1,int Y1,int Z1,int BD) {
@@ -946,10 +896,6 @@ void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int Z0,int X1,int Y1,int Z1,int BD) 
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_Free(TGeoRef *Ref) {
@@ -985,10 +931,6 @@ int GeoRef_Free(TGeoRef *Ref) {
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoRef_Clear(TGeoRef *Ref,int New) {
@@ -1344,10 +1286,6 @@ TGeoRef* GeoRef_New() {
  *
  * Remarques   :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1,int Border) {

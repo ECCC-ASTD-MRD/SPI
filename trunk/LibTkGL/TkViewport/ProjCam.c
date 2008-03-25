@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         :
- *   Date        :
- *   Description :
- *
  *==============================================================================
  */
 
@@ -73,11 +67,6 @@ void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size);
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 ProjCam* ProjCam_Get(char* Name){
@@ -101,11 +90,6 @@ ProjCam* ProjCam_Get(char* Name){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Avril 1998
- *    Description : Ajout du parametre resolution lors de la creation de la vue
  *----------------------------------------------------------------------------
 */
 static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -199,11 +183,6 @@ static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -309,11 +288,6 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int ProjCam_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -394,11 +368,6 @@ static int ProjCam_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -450,11 +419,6 @@ static int ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Avril 1998
- *    Description : Ajout du parametre resolution lors de la creation de la projection
  *----------------------------------------------------------------------------
 */
 static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
@@ -500,11 +464,6 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
  * Remarques :
  *    -C'est ici que l'on construit la base othonormee de la camera
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_ParamsInit(ProjCam *Cam) {
@@ -545,11 +504,6 @@ void ProjCam_ParamsInit(ProjCam *Cam) {
  *    -Pour calculer le vecteur Up, il faut creer un deuxieme vecteur de
  *     rotation et multiplier vectoriellement les deux.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta) {
@@ -607,11 +561,6 @@ void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta)
  *    -Pour calculer le vecteur Up, il faut creer un deuxieme vecteur de
  *     rotation et multiplier vectoriellement les deux.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta) {
@@ -650,11 +599,6 @@ void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -756,11 +700,6 @@ int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,int Objc,Tcl_Obj *CONST Objv[])
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_Fly(ProjCam *Cam) {
@@ -806,11 +745,6 @@ void ProjCam_Fly(ProjCam *Cam) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_Place(ProjCam *Cam) {
@@ -831,11 +765,6 @@ void ProjCam_Place(ProjCam *Cam) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
@@ -924,11 +853,6 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size) {
@@ -974,11 +898,6 @@ void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int ProjCam_Destroy(Tcl_Interp *Interp, char *Name) {
@@ -1009,11 +928,6 @@ static int ProjCam_Destroy(Tcl_Interp *Interp, char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int ProjCam_Init(Tcl_Interp *Interp){

@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -84,10 +78,6 @@ extern TIcon IconList[];
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclMetObs_Init(Tcl_Interp *Interp) {
@@ -123,10 +113,6 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -263,11 +249,6 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -409,11 +390,6 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -905,10 +881,6 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
@@ -953,10 +925,6 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int MetObs_FreeHash(Tcl_Interp *Interp,char *Name) {
@@ -982,10 +950,6 @@ static int MetObs_FreeHash(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void MetObs_Free(TMetObs *Obs) {
@@ -1020,10 +984,6 @@ void MetObs_Free(TMetObs *Obs) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TMetObs* MetObs_Get(char *Name) {
@@ -1048,10 +1008,6 @@ TMetObs* MetObs_Get(char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Vect3d *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_Obj *Desc,int *NObs,int Extrap) {
@@ -1122,10 +1078,6 @@ Vect3d *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_O
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int MetObs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
@@ -1803,10 +1755,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
@@ -1997,10 +1945,6 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void MetObs_LocFree(TMetLoc *Loc){
@@ -2040,11 +1984,6 @@ void MetObs_LocFree(TMetLoc *Loc){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 void MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item){
@@ -2108,11 +2047,6 @@ void MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 
@@ -2494,11 +2428,6 @@ int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Val
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Aout 2000
- *    Description : Ajout du calcul des statistiques pour des champs vectoriels
  *----------------------------------------------------------------------------
 */
 void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportItem *VP,Projection *Proj,int Line,int DX,int DY) {
@@ -2548,11 +2477,6 @@ void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportI
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int MetObs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -2615,11 +2539,6 @@ static int MetObs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void MetObs_Wipe() {
@@ -2665,10 +2584,6 @@ void MetObs_Wipe() {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -2758,11 +2673,6 @@ static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -2966,10 +2876,6 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TMetElemData* MetReport_Get(char *Name) {
@@ -2990,10 +2896,6 @@ TMetElemData* MetReport_Get(char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_Obj* MetReport_Put(Tcl_Interp *Interp,char *Name,TMetElemData *Report) {
@@ -3032,10 +2934,6 @@ Tcl_Obj* MetReport_Put(Tcl_Interp *Interp,char *Name,TMetElemData *Report) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int MetReport_Destroy(Tcl_Interp *Interp,char *Name) {

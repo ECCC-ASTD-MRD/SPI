@@ -12,12 +12,6 @@
 *
 * Remarques :
 *
-* Modification:
-*
-*   Nom         : -
-*   Date        : -
-*   Description : -
-*
 *==============================================================================
 */
 
@@ -37,11 +31,6 @@
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GRIB_FieldSet(TData *Data){
@@ -78,13 +67,9 @@ void GRIB_HeadCopy(void *To,void *From) {
  *
  * Retour:
  *  <Vect3d*>   : Pointeur sur les positions (NULL si invalide)
+ *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Vect3d* GRIB_Grid(TData *Field,void *Proj) {
@@ -172,11 +157,6 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GRIB_FieldFree(TData *Data){
@@ -208,11 +188,6 @@ void GRIB_FieldFree(TData *Data){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : -
- *    Date        : -
- *    Description : -
  *----------------------------------------------------------------------------
 */
 int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {

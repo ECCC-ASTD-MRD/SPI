@@ -28,11 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *==============================================================================
  */
 
@@ -160,11 +155,6 @@ Tk_ItemType tkGraphType = {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Tkgraph_Init(Tcl_Interp *Interp) {
@@ -196,11 +186,6 @@ int Tkgraph_Init(Tcl_Interp *Interp) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
@@ -273,11 +258,6 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -350,11 +330,6 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
@@ -399,11 +374,6 @@ static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static int GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags){
@@ -454,11 +424,6 @@ static int GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void GraphDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
@@ -503,11 +468,6 @@ static void GraphDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
@@ -597,11 +557,6 @@ static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z) {
@@ -704,11 +659,6 @@ int Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,int X,int Y,int Width,int Height){
@@ -997,11 +947,6 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int PS){
@@ -1061,12 +1006,6 @@ void GraphUnSet(GraphItem *GR){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Janvier 1999
- *   Description : -Mauvais retour dans les cas de 0.0
- *
  *----------------------------------------------------------------------------
 */
 static double GraphToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
@@ -1118,11 +1057,6 @@ static double GraphToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static int GraphToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
@@ -1168,11 +1102,6 @@ static int GraphToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
  *    x' = originX + scaleX*(x-originX)
  *    y' = originY + scaleY*(y-originY)
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void GraphScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double OriginY,double ScaleX,double ScaleY){
@@ -1200,11 +1129,6 @@ static void GraphScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double Orig
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static void GraphTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY){
@@ -1233,11 +1157,6 @@ static void GraphTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double D
  *
  * Remarques :
  *
- * Modifications :
- *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
 */
 static int GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass){
@@ -1411,11 +1330,6 @@ static int GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int Graph_ItemParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
@@ -1460,11 +1374,6 @@ static int Graph_ItemParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWi
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static char *Graph_ItemPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){

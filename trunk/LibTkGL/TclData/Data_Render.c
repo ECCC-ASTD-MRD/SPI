@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -68,18 +62,10 @@ int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
  *  <NbInter> : Nombre d'intervalle
  *  <Inter>   : Liste des intervals
  *
- * Modifications :
+ * Retour:
  *
- *   Nom         : J.P. Gauthier
- *   Date        : Janvier 2005
- *   Description : Utilisation de liste plutot que de tableau
+ * Remarques :
  *
- * Modifications :
- *
- *   Nom         : J.P. Gauthier
- *   Date        : Juin 2005
- *   Description : On boucle maintenant sur le contour de la grille vers l'interieur
- *                 plutot que ligne par ligne
  *----------------------------------------------------------------------------
 */
 int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
@@ -161,11 +147,6 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
@@ -314,11 +295,6 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj){
@@ -425,11 +401,6 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
@@ -546,11 +517,6 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
@@ -725,11 +691,6 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
@@ -787,11 +748,6 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,int Y,char *Id,char* Val){
@@ -833,11 +789,6 @@ void Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : Jean-Philippe Gauthier
- *    Date        : Fevrier 2003
- *    Description : Ajout de l'affichage des grilles 'Y'
  *----------------------------------------------------------------------------
 */
 int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
@@ -888,11 +839,6 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
@@ -1209,11 +1155,6 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
@@ -1402,11 +1343,6 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
  * Remarques :
  *     -base sur l'algorithme de Michel Grenier
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj,int Tile){
@@ -1536,11 +1472,6 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -1748,11 +1679,6 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
@@ -1883,11 +1809,6 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){

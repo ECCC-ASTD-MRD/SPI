@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -69,11 +63,6 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *File,double Factor,char *Mode,char *Type,int I0,int J0,int I1,int J1){
@@ -193,11 +182,6 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int HIRLAM_WriteData(TData *Field,FILE *FID,float *Data,double Factor,char *Mode,int I0,int J0,int I1,int J1) {
@@ -244,11 +228,6 @@ int HIRLAM_WriteData(TData *Field,FILE *FID,float *Data,double Factor,char *Mode
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int HIRLAM_WriteHead(FILE *FID,char *Desc,char *Info,double Factor) {
@@ -286,11 +265,6 @@ int HIRLAM_WriteHead(FILE *FID,char *Desc,char *Info,double Factor) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I1,int J1){

@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -68,10 +62,6 @@ extern int TD2GDAL[];
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int NIdx,int X0,int Y0,int X1,int Y1,int BD,int Full) {
@@ -246,6 +236,24 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    return(TCL_OK);
 }
 
+/*----------------------------------------------------------------------------------------------------------
+ * Nom          : <GDAL_Rasterize>
+ * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Rasteriser des donnees vectorielles dans une bande ou champs
+ *
+ * Parametres   :
+ *   <Def>      : Definition des donnees raster
+ *   <Ref>      : Referentiel des donnnes raster
+ *   <Geom>     : Donnees vectorielle a rasteriser
+ *   <Value>    : Valuer a assigner
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
    int    i,j,g,ind1,ind2;
@@ -478,10 +486,6 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,double *Total,int X0,int Y0,int X1,int Y1) {
@@ -598,11 +602,6 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
@@ -763,10 +762,6 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,char Mode,char Type,int Final,char *Field,double Value) {
@@ -899,10 +894,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
@@ -1059,11 +1050,6 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TData_Interp Mode,int Final){
@@ -1207,15 +1193,6 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                                                       }
                                                       t++;
                                                    }
-   /*
-                                                   while((val=Table[t++])!=ToDef->NoData) {
-                                                      if (vx==val && (t-1)<ToDef->NK) {
-                                                         if (Mode!=TD_COUNT) acc[idxt]+=1.0;
-                                                         fld[(t-1)*nij+idxt]++;
-                                                         break;
-                                                      }
-                                                   }
-   */
                                                 } else {
                                                    if (Mode!=TD_COUNT) acc[idxt]+=1.0;
                                                    if (vx!=FromDef->NoData)
@@ -1270,11 +1247,6 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
@@ -1359,10 +1331,6 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,int NbOptions,char **Options) {
@@ -1473,11 +1441,6 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,int NbOptions,
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1795,6 +1758,25 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    return TCL_OK;
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <GDAL_BandDefine>
+ * Creation : Avril 2004 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la configuration des parametres.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Field>       : Pointeur sur le champs
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
 int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    int         i,j,idx,nidx,nlst,approx=1;
@@ -2099,11 +2081,6 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GDAL_BandGetStat(GDAL_Band *Band) {
@@ -2186,10 +2163,6 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {

@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification :
- *
- *    Nom         :
- *    Date        :
- *    Description :
- *
  *=========================================================
  */
 
@@ -76,10 +70,6 @@ void GeoTex_UnLock(void) { Tcl_MutexUnlock(&MUTEX_GEOTEX); }
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
@@ -112,10 +102,6 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoTex_Clear(TGeoTex *Tex,TGeoTexTile *Tile) {
@@ -154,10 +140,6 @@ void GeoTex_Clear(TGeoTex *Tex,TGeoTexTile *Tile) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoTex_ClearTile(TGeoTexTile *Tile) {
@@ -194,10 +176,6 @@ void GeoTex_ClearTile(TGeoTexTile *Tile) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoTex_ClearRes(TGeoTexTile *Tile,int Res) {
@@ -231,10 +209,6 @@ void GeoTex_ClearRes(TGeoTexTile *Tile,int Res) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoTex_ClearCoord(TGeoTex *Tex,TGeoTexTile *Tile) {
@@ -273,10 +247,6 @@ void GeoTex_ClearCoord(TGeoTex *Tex,TGeoTexTile *Tile) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
@@ -378,10 +348,6 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
@@ -447,10 +413,6 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
@@ -610,10 +572,6 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoTex_Qualify(GDAL_Band *Band) {
@@ -682,10 +640,6 @@ void GeoTex_Qualify(GDAL_Band *Band) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
@@ -733,10 +687,6 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0) {
@@ -782,10 +732,6 @@ TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportItem *VP,int Resolution,int X0,int Y0,int Nb) {
@@ -889,10 +835,6 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
@@ -960,10 +902,6 @@ int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportItem *VP) {
@@ -1087,10 +1025,6 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
@@ -1169,10 +1103,6 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
  *
  * Remarques    :
  *
- * Modification :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
@@ -1208,7 +1138,26 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
    return(obj);
 }
 
-
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoTex_ValueGet>
+ * Creation     : Janvier 2007 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Recuperer les valeurs de la geotexture pou Tcl.
+ *
+ * Parametres   :
+ *   <Def>      : Definition de la donnnee
+ *   <Tex>      : GeoTexture
+ *   <C>        : Composante
+ *   <X>        : Coordonnee X
+ *   <Y>        : Coordonnee Y
+ *   <Z>        : Coordonnee Z
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 double GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z) {
 
    int          t,x,y,rx,ry,px,py;

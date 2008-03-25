@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -180,11 +174,8 @@ void LUBackSub(double *Matrix,int N,int *Perm,double *Vect) {
  *  <valeur>  : Valeur du point
  *  <Error>   : Erreur de variance
  *
- * Modifications :
+ * Remarques :
  *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
  */
 double FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error) {
@@ -264,11 +255,8 @@ double FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Err
  *
  * Retour     :
  *
- * Modifications :
+ * Remarques :
  *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
  */
 int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode) {
@@ -397,11 +385,6 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *   1st PASS - Calculating the length of a contour line (if Line NULL)
  *   2nd PASS - Stocking the position of the contour line
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
  */
 unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,int *QX,int *QY,double *X,double *Y) {
@@ -617,11 +600,6 @@ int FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PM
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect3d *Vr,int Do) {
@@ -803,11 +781,6 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect
  *   Maximum number of position is determinated by the max. number of iteration and
  *   the position of the particle itself.
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim) {
@@ -1018,11 +991,8 @@ int FFStreamPatch(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,flo
  * Retour     :
  *  <Res>     : Nombre de pixel par cellule
  *
- * Modifications :
+ * Remarques :
  *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
  */
 float FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1) {
@@ -1057,11 +1027,8 @@ float FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1) {
  * Retour     :
  *  <Dim>     : Dimensions maximales dans chaque axes
  *
- * Modifications :
+ * Remarques :
  *
- *   Nom         :
- *   Date        :
- *   Description :
  *----------------------------------------------------------------------------
  */
 int FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim) {

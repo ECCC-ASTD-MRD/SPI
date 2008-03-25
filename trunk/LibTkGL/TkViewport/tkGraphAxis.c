@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -68,10 +62,6 @@ void GraphAxis_Wipe();
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclGraphAxis_Init(Tcl_Interp *Interp) {
@@ -98,10 +88,6 @@ int TclGraphAxis_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -181,11 +167,6 @@ static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -506,10 +487,6 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -574,10 +551,6 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TGraphAxis* GraphAxis_Get(char *Name) {
@@ -598,10 +571,6 @@ TGraphAxis* GraphAxis_Get(char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int GraphAxis_Free(Tcl_Interp *Interp,char *Name) {
@@ -630,10 +599,6 @@ static int GraphAxis_Free(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphAxis_Clear(TGraphAxis *Axis) {
@@ -677,11 +642,6 @@ void GraphAxis_Clear(TGraphAxis *Axis) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GraphAxis_Wipe() {
@@ -715,10 +675,6 @@ void GraphAxis_Wipe() {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
@@ -785,10 +741,6 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,int *Width,int *Height) {
@@ -889,10 +841,6 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *DX,int *DY) {
@@ -957,10 +905,6 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *DX,int 
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
@@ -1024,10 +968,6 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side) {
@@ -1350,10 +1290,6 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side) {

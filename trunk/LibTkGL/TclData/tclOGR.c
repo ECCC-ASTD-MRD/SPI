@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -68,11 +62,6 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int TclOGR_Init(Tcl_Interp *Interp) {
@@ -105,10 +94,6 @@ int TclOGR_Init(Tcl_Interp *Interp) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 OGRGeometryH* OGR_GeometryGet(char *Name) {
@@ -139,10 +124,6 @@ OGRGeometryH* OGR_GeometryGet(char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 Tcl_Obj* OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geometry) {
@@ -179,10 +160,6 @@ Tcl_Obj* OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geometry) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name) {
@@ -211,10 +188,6 @@ int OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
@@ -342,10 +315,6 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -673,10 +642,6 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
@@ -741,10 +706,6 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref){
@@ -782,10 +743,6 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerDestroy(Tcl_Interp *Interp,char *Name) {
@@ -813,10 +770,6 @@ int OGR_LayerDestroy(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void OGR_LayerFree(OGR_Layer *Layer) {
@@ -860,10 +813,6 @@ void OGR_LayerFree(OGR_Layer *Layer) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 OGR_Layer* OGR_LayerGet(char *Name) {
@@ -887,11 +836,6 @@ OGR_Layer* OGR_LayerGet(char *Name) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
@@ -984,11 +928,6 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
@@ -1020,11 +959,6 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 OGR_File* OGR_FileGet(Tcl_Interp *Interp,char *Id){
@@ -1079,11 +1013,6 @@ int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver) {
@@ -1183,11 +1112,6 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver) 
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void OGR_Wipe() {

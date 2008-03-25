@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
- *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -85,10 +79,6 @@ int  GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclGraphItem_Init(Tcl_Interp *Interp) {
@@ -115,10 +105,6 @@ int TclGraphItem_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -196,11 +182,6 @@ static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 
@@ -626,10 +607,6 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -697,10 +674,6 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TGraphItem* GraphItem_Get(char *Name) {
@@ -721,10 +694,6 @@ TGraphItem* GraphItem_Get(char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int GraphItem_Free(Tcl_Interp *Interp,char *Name) {
@@ -751,10 +720,6 @@ static int GraphItem_Free(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_Clear(TGraphItem *Item) {
@@ -803,11 +768,6 @@ void GraphItem_Clear(TGraphItem *Item) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GraphItem_Wipe() {
@@ -845,10 +805,6 @@ void GraphItem_Wipe() {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1) {
@@ -928,10 +884,6 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -1053,10 +1005,6 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
@@ -1260,10 +1208,6 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int N) {
@@ -1306,10 +1250,6 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
@@ -1714,10 +1654,6 @@ int GraphItem_FitGauss(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGrap
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1){
@@ -1866,10 +1802,6 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1){
@@ -1995,10 +1927,6 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut){
@@ -2116,11 +2044,6 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
@@ -2256,11 +2179,6 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
@@ -2335,10 +2253,6 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_Dim(Tk_Canvas Canvas,TGraphItem *Item,GraphItem *Graph,int *Width,int *Height) {
@@ -2380,10 +2294,6 @@ void GraphItem_Dim(Tk_Canvas Canvas,TGraphItem *Item,GraphItem *Graph,int *Width
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1) {
@@ -2517,10 +2427,6 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1) {
@@ -2615,10 +2521,6 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 
@@ -2733,10 +2635,6 @@ void GraphItem_PostscriptMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
@@ -2937,10 +2835,6 @@ void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
@@ -3265,10 +3159,6 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1) {

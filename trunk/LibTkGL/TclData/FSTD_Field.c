@@ -28,12 +28,6 @@
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *    Boston, MA 02111-1307, USA.
  *
- * Modification:
- *
- *   Nom         : -
- *   Date        : -
- *   Description : -
- *
  *==============================================================================
  */
 
@@ -65,11 +59,6 @@ static int FSTD_Type[]={ 1,10,6,2,7,10,10 };
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void FSTD_FieldSet(TData *Data){
@@ -148,11 +137,6 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
@@ -196,11 +180,6 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldReadMesh(TData *Field) {
@@ -287,11 +266,6 @@ int FSTD_FieldReadMesh(TData *Field) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
@@ -375,6 +349,22 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
    return(1);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_DataMap>
+ * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Precalcul des index dans la palette de couleur.
+ *
+ * Parametres   :
+ *  <Field>     : Champs de donnees
+ *  <Idx>       : Utiliser les index
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
 void FSTD_DataMap(TData *Field,int Idx) {
 
    int    i;
@@ -412,13 +402,9 @@ void FSTD_DataMap(TData *Field,int Idx) {
  *
  * Retour:
  *  <Vect3d*>   : Pointeur sur les positions (NULL si invalide)
+ *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 Vect3d* FSTD_Grid(TData *Field,void *Proj) {
@@ -615,11 +601,6 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
  */
 int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom,TData *PField0,TData *PField1,double Top) {
@@ -807,11 +788,6 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
@@ -860,11 +836,6 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode){
@@ -1011,11 +982,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Field0,TData *Field1){
@@ -1112,11 +1078,6 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
@@ -1588,11 +1549,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void FSTD_FieldFree(TData *Field){
@@ -1623,11 +1579,6 @@ void FSTD_FieldFree(TData *Field){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Type){
@@ -1671,11 +1622,6 @@ TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int T
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar){
@@ -1726,11 +1672,6 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Mai 2001
- *    Description : Verification de l'existence du champs au prealable
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
@@ -1795,11 +1736,6 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File){
@@ -1883,11 +1819,6 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         : J.P. Gauthier
- *    Date        : Mai 2001
- *    Description : Verification de l'existence du champs au prealable
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar){
@@ -2123,11 +2054,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
  *   -On trie les niveaux en ordre croissant pour s'aasurer de la consistance
  *    au cas ou ls ne serait pas dans le bon ordre dans le fichier
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
@@ -2294,11 +2220,6 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress){
@@ -2388,11 +2309,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 double FSTD_IP2Meter(int IP) {
@@ -2428,11 +2344,6 @@ double FSTD_IP2Meter(int IP) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 double FSTD_IP2Level(int IP,int *Type) {
@@ -2464,11 +2375,6 @@ double FSTD_IP2Level(int IP,int *Type) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 int FSTD_Level2IP(float Level,int Type) {
@@ -2514,11 +2420,6 @@ int FSTD_Level2IP(float Level,int Type) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 /*

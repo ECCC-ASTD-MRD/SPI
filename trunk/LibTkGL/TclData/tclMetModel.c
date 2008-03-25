@@ -27,12 +27,6 @@
  *    License along with this library; if not, write to the
  *    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  *
- * Modification :
- *
- *   Nom        :
-  *   Date       :
- *   Description:
- *
  *=========================================================
  */
 
@@ -57,10 +51,6 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
  */
 int TclMetModel_Init(Tcl_Interp *Interp) {
@@ -89,10 +79,6 @@ int TclMetModel_Init(Tcl_Interp *Interp) {
  *
  * Remarques     :
  *
- * Modification    :
- *   Nom         :
- *   Date        :
- *   Description :
  *---------------------------------------------------------------------------------------------------------------
 */
 static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
@@ -230,11 +216,6 @@ static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
@@ -372,10 +353,6 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int MetModel_Create(Tcl_Interp *Interp,char *Name) {
@@ -410,10 +387,6 @@ int MetModel_Create(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques    :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 TMetModel* MetModel_Get(char *Name) {
@@ -434,10 +407,6 @@ TMetModel* MetModel_Get(char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int MetModel_FreeHash(Tcl_Interp *Interp,char *Name) {
@@ -470,10 +439,6 @@ int MetModel_FreeHash(Tcl_Interp *Interp,char *Name) {
  *
  * Remarques :
  *
- * Modification   :
- *   Nom        :
- *   Date       :
- *   Description:
  *---------------------------------------------------------------------------------------------------------------
 */
 int MetModel_Free(TMetModel *Model) {
@@ -510,11 +475,6 @@ int MetModel_Free(TMetModel *Model) {
  *
  * Remarques :
  *
- * Modifications :
- *
- *    Nom         :
- *    Date        :
- *    Description :
  *----------------------------------------------------------------------------
 */
 void MetModel_Wipe() {
