@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Mapper.tcl
-# Version  : 2.0
 # Creation : Juin 2002 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Permet d'afficher un selecteur de champs de fichier geotiff.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -47,10 +37,6 @@ source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare.tcl
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::Close { } {
@@ -127,10 +113,6 @@ proc Mapper::Close { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::Follower  { Frame Canvas VP Lat Lon X Y } {
@@ -164,10 +146,6 @@ proc Mapper::Follower  { Frame Canvas VP Lat Lon X Y } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::Scroll { Side } {
@@ -213,10 +191,6 @@ proc Mapper::Scroll { Side } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::Del { } {
@@ -260,10 +234,6 @@ proc Mapper::Del { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::SetGeoRef { } {
@@ -301,11 +271,7 @@ proc Mapper::SetGeoRef { } {
 #
 # Parametres :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarque :
 #
 #-------------------------------------------------------------------------------
 
@@ -343,11 +309,7 @@ proc Mapper::Locate { } {
 #
 # Parametres :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarque :
 #
 #-------------------------------------------------------------------------------
 
@@ -440,10 +402,6 @@ proc Mapper::GetColor { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::Read { Files } {
@@ -614,10 +572,6 @@ proc Mapper::ReadLayer { File { SQL "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsGDALGet { Object } {
@@ -664,10 +618,6 @@ proc Mapper::ParamsGDALGet { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsGDALSet { Object } {
@@ -724,10 +674,6 @@ proc Mapper::ParamsGDALSet { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsModelGet { Object } {
@@ -776,10 +722,6 @@ proc Mapper::ParamsModelGet { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsModelSet { Object } {
@@ -829,10 +771,6 @@ proc Mapper::ParamsModelSet { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsOGRGet { Object } {
@@ -907,10 +845,6 @@ proc Mapper::ParamsOGRGet { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ParamsOGRSet { Object } {
@@ -980,10 +914,6 @@ proc Mapper::ParamsOGRSet { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::ProjFile { Widget File } {
@@ -1014,12 +944,6 @@ proc Mapper::ProjFile { Widget File } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1140,11 +1064,6 @@ proc Mapper::MoveDone { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::UpdateData { Frame args } {
@@ -1182,11 +1101,6 @@ proc Mapper::UpdateData { Frame args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::UpdateItems { Frame } {
@@ -1250,12 +1164,6 @@ proc Mapper::UpdateItems { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

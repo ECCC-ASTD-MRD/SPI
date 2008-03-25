@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Macro.int
-# Version  : 1.2
 # Creation : Juillet 2005 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Interface de gestion de macros.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -37,11 +27,6 @@
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Macro::Window { } {

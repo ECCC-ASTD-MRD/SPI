@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : FieldBox.tcl
-# Version  : 2.2
 # Creation : Juin 1999 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -48,34 +47,6 @@
 #
 # Remarques :
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Decembre 1999
-#   Description : Il est maintenant possible d'ouvrir plusieurs boites FieldBox
-#                 qui sont toutes independante mais affuche sur la meme projection
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2000
-#   Description : Ajout de fonctions pour recuperer tous les champs de toutes les boites
-#                 et tous les champs selectionnees de toutes les boites.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juin 2000
-#   Description : Ajout d'un menu contextuels de fonctions pour les champs selectionnees
-#                 dont la conversion grib.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Aout 2001
-#   Description : Transfert de la lecture des champs dans le namespace des FieldBox.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2003
-#   Description : Ajout du scroll avec les fleches
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Decembre 2005
-#   Description : Ajout d'une fenetre de parametres des champs
 #===============================================================================
 
 package provide FieldBox 2.2
@@ -154,11 +125,6 @@ namespace eval FieldBox {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::Clear { } {
@@ -191,11 +157,6 @@ proc FieldBox::Clear { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::Create { Parent Title { Geom "" } } {
@@ -362,11 +323,6 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::FieldCopy { File } {
@@ -404,11 +360,6 @@ proc FieldBox::FieldCopy { File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::Exist { No } {
@@ -432,10 +383,6 @@ proc FieldBox::Exist { No } {
 #       -1 : On ferme tout les fichiers
 #        n : On ferme le fichier correspondant a cet index
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::FileClose { No } {
@@ -520,10 +467,6 @@ proc FieldBox::FileClose { No } {
 # Remarque :
 #     - Si No < 0 l'ouverture se fera dans la derniere boite
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::FileOpen { No File } {
@@ -623,10 +566,6 @@ proc FieldBox::FileOpen { No File } {
 # Remarque :
 #     - Si No < 0 l'ouverture se fera dans la derniere boite
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::FileReOpen { No } {
@@ -713,10 +652,6 @@ proc FieldBox::FileReOpen { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::Get { } {
@@ -739,10 +674,6 @@ proc FieldBox::Get { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::GetContent { { Id "" } } {
@@ -796,10 +727,6 @@ proc FieldBox::GetContent { { Id "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::GetFID { { Id "" } } {
@@ -838,10 +765,6 @@ proc FieldBox::GetFID { { Id "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::GetFile { args } {
@@ -891,10 +814,6 @@ proc FieldBox::GetFile { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::GetSelected { args } {
@@ -945,10 +864,6 @@ proc FieldBox::GetSelected { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::FileSelect { No File FID } {
@@ -975,12 +890,6 @@ proc FieldBox::FileSelect { No File FID } {
 #
 # Remarques :
 #    -Cette commande est appelee par le package ListboxBubble.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1036,11 +945,6 @@ proc FieldBox::InfoCommand { No Index } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::Init { No } {
@@ -1086,10 +990,6 @@ proc FieldBox::Init { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::Insert { No } {
@@ -1187,10 +1087,6 @@ proc FieldBox::Insert { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::Close { No } {
@@ -1243,10 +1139,6 @@ proc FieldBox::Close { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::CloseAll { } {
@@ -1269,11 +1161,6 @@ proc FieldBox::CloseAll { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::Raise { } {
@@ -1298,10 +1185,6 @@ proc FieldBox::Raise { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::Restrict { No args } {
@@ -1407,10 +1290,6 @@ proc FieldBox::Restrict { No args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::RestrictClear { No } {
@@ -1439,10 +1318,6 @@ proc FieldBox::RestrictClear { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FieldBox::RestrictSet { No Var Value } {
@@ -1464,12 +1339,6 @@ proc FieldBox::RestrictSet { No Var Value } {
 #  <Y>       : Coordonnee y du curseur
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1493,12 +1362,6 @@ proc FieldBox::PasteClick { No Y } {
 #  <Y>       : Coordonnee y du curseur
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1530,11 +1393,6 @@ proc FieldBox::PasteDeClick { No Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldBox::Scroll { No Incr } {
@@ -1567,12 +1425,6 @@ proc FieldBox::Scroll { No Incr } {
 # Parametres :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1690,12 +1542,6 @@ proc FieldBox::Select { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc FieldBox::Show { Field } {
@@ -1723,11 +1569,6 @@ proc FieldBox::Show { Field } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 namespace eval FieldParams {
@@ -1895,11 +1736,6 @@ proc FieldParams::Follower { Page Canvas VP Lat Lon X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldParams::GetInfo { { Field "" } } {
@@ -1936,11 +1772,6 @@ proc FieldParams::GetInfo { { Field "" } } {
 # Remarques :
 #     - Si il n'y as pas de champs specifie, on utilise la selection de la boite de champs
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldParams::GetMatrix { { Field "" } } {
@@ -1999,11 +1830,6 @@ proc FieldParams::GetMatrix { { Field "" } } {
 # Remarques :
 #     - Si il n'y as pas de champs specifie, on utilise la selection de la boite de champs
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldParams::SetInfo { { Field "" } } {
@@ -2030,11 +1856,6 @@ proc FieldParams::SetInfo { { Field "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldParams::Write { File Field  } {
@@ -2064,11 +1885,6 @@ proc FieldParams::Write { File Field  } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FieldParams::SetMatrix { I J Value } {

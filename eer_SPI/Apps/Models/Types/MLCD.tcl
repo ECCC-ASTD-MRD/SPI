@@ -13,13 +13,6 @@
 #              celles-ci pour le module MLCD.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -36,16 +29,10 @@ source $GDefs(Dir)/Apps/Models/Types/MLCD.int
 # But      : Ask user if initializing meteo data or not.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::AskIfInitMeteoData { } {
@@ -155,16 +142,10 @@ proc MLCD::AskIfInitMeteoData { } {
 # But      : Verify if emission starting time has been modified (1) or not (0).
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::CheckIfEmissionStartingTimeModified { } {
@@ -190,16 +171,10 @@ proc MLCD::CheckIfEmissionStartingTimeModified { } {
 # But      : Verify if simulation duration has been modified (1) or not (0).
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::CheckIfSimulationDurationModified { } {
@@ -225,16 +200,10 @@ proc MLCD::CheckIfSimulationDurationModified { } {
 # But      : Compute number of valid wind profiles.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ComputeNbValidWindProfiles { } {
@@ -289,16 +258,10 @@ proc MLCD::ComputeNbValidWindProfiles { } {
 #              - Wind profile.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ExtractMetData { } {
@@ -516,16 +479,10 @@ proc MLCD::ExtractMetData { } {
 #              - simulation duration.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::FindMetData { } {
@@ -719,16 +676,10 @@ proc MLCD::FindMetData { } {
 # But      : Find the oldest/latest meteorological date-time files.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::FindRangeMetDateTime { } {
@@ -770,16 +721,10 @@ proc MLCD::FindRangeMetDateTime { } {
 #            observation index.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::GetCurrentObservationTime { } {
@@ -823,14 +768,10 @@ proc MLCD::GetCurrentObservationTime { } {
 # Parametres :
 #    <datetime> : Date-time in human readable format "YYYYMMDDHHmmSS"
 #
+# Retour :
+#
 # Remarques :
 #    DateTime must be at least 8-characters long; HHmmSS is optional.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::GetDateTimeStamp { DateTime } {
@@ -871,6 +812,8 @@ proc MLCD::GetDateTimeStamp { DateTime } {
 # Parametres :
 #    <DateTime> : Date-Time in human readable format "YYYYMMDDHHmm"
 #
+# Retour :
+#
 # Remarques :
 #    - YYYY : Year
 #    - MM   : Month
@@ -885,12 +828,6 @@ proc MLCD::GetDateTimeStamp { DateTime } {
 #      5. Minutes,
 #      6. Integer Clock Value (in seconds) representing this date-time,
 #      7. CMC date-time stamp associated to this date-time.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::GetInfoDateTime { DateTime } {
@@ -917,14 +854,9 @@ proc MLCD::GetInfoDateTime { DateTime } {
 # Parametres :
 #    <filename> : Filename.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::GetValidDateTime { filename } {
@@ -965,16 +897,10 @@ proc MLCD::GetValidDateTime { filename } {
 #            - Type of meteorological model;
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::InitAutomationParams { } {
@@ -1006,16 +932,10 @@ proc MLCD::InitAutomationParams { } {
 # But      : Initialize local parameters.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::InitLocalParameters { } {
@@ -1057,14 +977,9 @@ proc MLCD::InitLocalParameters { } {
 #    <Flag> : Flag indicating if it is needed to update edition observation
 #             interface (1: default value) or not (0).
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::InitMeteoData { { Flag 1 } } {
@@ -1104,29 +1019,10 @@ proc MLCD::InitMeteoData { { Flag 1 } } {
 # But      : Initialisation des parametres.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE.
-#    Date        : - 19 November 2003.
-#    Description : - Set number of observations;
-#                  - Set number of vertical levels in wind profile;
-#                  - Set time interval between two following observations (min);
-#                  - Set type of meteorological model;
-#                  - Set current observation label;
-#                  - Set current observation index;
-#                  - Set previous observation index;
-#                  - Initialize observation times;
-#                  - Initialize local parameters;
-#                  - Initialize wind profile;
-#                  - Modify the simulation duration from 60 min (1 hr) to
-#                    360 min (6 hrs).
-#                  - Modify the output time step from 5 min to 60 min (1 hr).
-#                  - Set model time step to 10 min.
 #
 #-------------------------------------------------------------------------------
 proc MLCD::InitNew { } {
@@ -1219,16 +1115,10 @@ proc MLCD::InitNew { } {
 # But      : Initialize observation times.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::InitObservationTimes { } {
@@ -1304,16 +1194,10 @@ proc MLCD::InitObservationTimes { } {
 # But      : Initialize wind profile.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::InitWindProfile { } {
@@ -1355,14 +1239,9 @@ proc MLCD::InitWindProfile { } {
 # Parametres :
 #     <args> : List of arguments.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::Max { args } {
@@ -1398,16 +1277,10 @@ proc MLCD::Max { args } {
 #            or not (0).
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::MeteoParametersModified { } {
@@ -1480,14 +1353,9 @@ proc MLCD::MeteoParametersModified { } {
 # Parametres :
 #     <args> : List of arguments.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::Min { args } {
@@ -1530,11 +1398,6 @@ proc MLCD::Min { args } {
 #    The Obukhov length is computed according to Shir & Shieh formula:
 #    Journal of Applied Meteorology, 1974, Vol. 13, No. 2, pp. 189-190.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 proc MLCD::ObukhovFunc { Sc Z0 } {
 
@@ -1561,16 +1424,8 @@ proc MLCD::ObukhovFunc { Sc Z0 } {
 #   <Info>   : Ligne non modifiee du fichier pool
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 proc MLCD::PoolInfo { Info } {
 
@@ -1588,16 +1443,10 @@ proc MLCD::PoolInfo { Info } {
 #            within editing interface.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::RefreshMaxNbObsSpinBox { } {
@@ -1618,16 +1467,9 @@ proc MLCD::RefreshMaxNbObsSpinBox { } {
 # Parametres :
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 proc MLCD::Result { } {
    variable Sim
@@ -1645,15 +1487,9 @@ proc MLCD::Result { } {
 # Parametres :
 #       <No> : Selected Observation Number.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE.
-#    Date        : - 14 January 2004.
-#    Description : - Add a check for validation of observation number.
-#                  - Set current observation number if different.
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SelectObs { No } {
@@ -1707,14 +1543,9 @@ proc MLCD::SelectObs { No } {
 #    <Flag> : Flag indicating if displaying pop-up warning message to user
 #             (1: default value) or not (0).
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetEmissionDuration { { Flag 1 } } {
@@ -1754,14 +1585,9 @@ proc MLCD::SetEmissionDuration { { Flag 1 } } {
 # Parametres :
 #    <Model> : Type of meteorological model.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetMetData { Model } {
@@ -1811,19 +1637,11 @@ proc MLCD::SetMetData { Model } {
 #              directories.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 proc MLCD::SetMetDataDir { MetModel } {
    variable Sim
@@ -1841,14 +1659,9 @@ proc MLCD::SetMetDataDir { MetModel } {
 # Parametres :
 #  <Seconds> : Time to be set.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetObsDate { Seconds } {
@@ -1872,16 +1685,10 @@ proc MLCD::SetObsDate { Seconds } {
 # But      : Set observation times according to available met data files.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetObservationTimes { } {
@@ -1972,14 +1779,10 @@ proc MLCD::SetObservationTimes { } {
 # Parametres :
 # <AtmStability> : Atmospheric stability criterion value.
 #
+# Retour :
+#
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetObukhovLength { AtmStability } {
@@ -2001,16 +1804,10 @@ proc MLCD::SetObukhovLength { AtmStability } {
 # But      : Set variables for pool info.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetPoolInfo { } {
@@ -2056,14 +1853,9 @@ proc MLCD::SetPoolInfo { } {
 # Parametres :
 #   <PrecipRate> : Precipitation rate value [mm/h].
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetPrecipitationRate { PrecipRate } {
@@ -2087,14 +1879,9 @@ proc MLCD::SetPrecipitationRate { PrecipRate } {
 # Parametres :
 #      <Idx> : Index of observation time to set.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetPreviousObs { Idx } {
@@ -2142,16 +1929,10 @@ proc MLCD::SetPreviousObs { Idx } {
 # But      : Set release date-time.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetReleaseDateTime { } {
@@ -2180,14 +1961,9 @@ proc MLCD::SetReleaseDateTime { } {
 # Parametres :
 #  <RoughLength> : Roughness length value [m].
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetRoughnessLength { RoughLength } {
@@ -2210,14 +1986,9 @@ proc MLCD::SetRoughnessLength { RoughLength } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SetSrc { } {
@@ -2237,19 +2008,12 @@ proc MLCD::SetSrc { } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE.
-#    Date        : - 17 November 2003.
-#    Description : - Modify the way the wind profile is stored in file.
-#                  - Save last observation.
-#                  - Add some validations:
-#                    1. Compute number of valid wind profiles;
-#                    2. Validate observation date-times.
 #-------------------------------------------------------------------------------
+
 proc MLCD::SimInitLaunch { } {
    global GDefs
    variable Sim
@@ -2406,18 +2170,13 @@ proc MLCD::SimInitLaunch { } {
 # But      : Executer les scripts permettant de lancer le modele.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE.
-#    Date        : - 19 November 2003.
-#    Description : - Launch MLCD model with new keys and parameters.
 #
 #-------------------------------------------------------------------------------
+
 proc MLCD::SimLaunchNew { } {
    global GDefs
    variable Sim
@@ -2494,19 +2253,6 @@ proc MLCD::SimLaunchNew { } {
       set NbLines [expr $NbOutputTimeSteps * ($NbLinesConc + $NbLinesPos + $NbLinesOther) + \
                         ($NbLinesConcFirst + $NbLinesPosFirst + $NbLinesOtherFirst) + \
                         2 * ($NbModelTimeSteps - $NbOutputTimeStepsTrue) + $NbLinesBegin + $NbLinesEnd]
-
-#       puts stdout "NbOutputTimeSteps     : $NbOutputTimeSteps"
-#       puts stdout "NbLinesConc           : $NbLinesConc"
-#       puts stdout "NbLinesPos            : $NbLinesPos"
-#       puts stdout "NbLinesOther          : $NbLinesOther"
-#       puts stdout "NbLinesConcFirst      : $NbLinesConcFirst"
-#       puts stdout "NbLinesPosFirst       : $NbLinesPosFirst"
-#       puts stdout "NbLinesOtherFirst     : $NbLinesOtherFirst"
-#       puts stdout "NbModelTimeSteps      : $NbModelTimeSteps"
-#       puts stdout "NbOutputTimeStepsTrue : $NbOutputTimeStepsTrue"
-#       puts stdout "NbLinesBegin          : $NbLinesBegin"
-#       puts stdout "NbLinesEnd            : $NbLinesEnd"
-#       puts stdout "NbLines               : $NbLines"
 
       set len [expr [string length $Sim(Path)] + 10]
 
@@ -2593,16 +2339,12 @@ proc MLCD::SimLaunchNew { } {
 #   <Confirm> : Confirmation de la suppression
 #   <Pool>    : Identificateur de la simulation
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
+
 proc MLCD::SimSuppress { Confirm Pool } {
    global GDefs
    variable Msg
@@ -2648,14 +2390,9 @@ proc MLCD::SimSuppress { Confirm Pool } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SpeciesFormat { } {
@@ -2715,14 +2452,9 @@ proc MLCD::SpeciesFormat { } {
 #
 # Parametres :
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::SpeciesStart { } {
@@ -2754,19 +2486,11 @@ proc MLCD::SpeciesStart { } {
 #              model time step.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 proc MLCD::UpdateEmissionStartingTime { } {
    variable Sim
@@ -2809,14 +2533,9 @@ proc MLCD::UpdateEmissionStartingTime { } {
 # Parametres :
 #      <Idx> : Index of observation time to update.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::UpdateObsInterface { Idx } {
@@ -2881,16 +2600,10 @@ proc MLCD::UpdateObsInterface { Idx } {
 #            - Local Parameters,
 #            - Wind Profile.
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateCurrentObservation { } {
@@ -2925,16 +2638,10 @@ proc MLCD::ValidateCurrentObservation { } {
 #            - Radius of column.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateEmissionTab { } {
@@ -2943,7 +2650,6 @@ proc MLCD::ValidateEmissionTab { } {
    variable Data
    variable Error
 
-#   puts stderr "-->> Validate emission tab parameters"
 
    #----- Verify that the number of particles is an integer positive value.
    set idx ""
@@ -3086,14 +2792,9 @@ proc MLCD::ValidateEmissionTab { } {
 #      <Tab> : Tab.
 #       <No> : No of tab.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateInterface { Tab No } {
@@ -3101,15 +2802,6 @@ proc MLCD::ValidateInterface { Tab No } {
    variable Data
 
    set Data(TabFrameName) $Tab
-
-#    puts stdout "\n---------------------------------"
-#    puts stdout "Tab.    : $Tab"
-#    puts stdout "No.     : $No"
-#    puts stdout "Prev No.: $Sim(TabPrevNo)"
-
-#    if { $No == 2 && $Sim(TabPrevNo) != 2 } {
-#       puts stdout "METEO TAB."
-#    }
 
    if { $No != 0 && $Sim(TabPrevNo) == 0 } {
       if { ![MLCD::ValidateModelTab] } {
@@ -3147,16 +2839,10 @@ proc MLCD::ValidateInterface { Tab No } {
 #            - Precipitation Rate.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateLocalParameters { } {
@@ -3220,14 +2906,9 @@ proc MLCD::ValidateLocalParameters { } {
 #              2. Compute number of valid wind profiles.
 #              3. Validate observation date-times.
 #
+# Retour :
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateMeteoTab { { Check 0 } } {
@@ -3274,16 +2955,10 @@ proc MLCD::ValidateMeteoTab { { Check 0 } } {
 #            - Model time step.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateModelTab { } {
@@ -3516,16 +3191,10 @@ proc MLCD::ValidateModelTab { } {
 # But      : Validate observation date-times.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateObsDateTime { } {
@@ -3681,16 +3350,10 @@ proc MLCD::ValidateObsDateTime { } {
 # But      : Validate current wind profile.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc MLCD::ValidateWindProfile { } {

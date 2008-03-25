@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -56,12 +55,6 @@
 #    Graph::ZoomReset          { Type GR }
 #    Graph::ZoomBox            { Canvas X1 Y1 }
 #    Graph::ZoomInit           { Canvas X0 Y0 }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -280,11 +273,6 @@ source $GDefs(Dir)/Lib/Graph_Stat.tcl
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Activate { Frame GR Type } {
@@ -340,11 +328,6 @@ proc Graph::Activate { Frame GR Type } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::DeActivate { GR Type } {
@@ -373,11 +356,6 @@ proc Graph::DeActivate { GR Type } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Labels { Type GR Title UnitX UnitY } {
@@ -407,11 +385,6 @@ proc Graph::Labels { Type GR Title UnitX UnitY } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
@@ -470,11 +443,6 @@ proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Resolution { Frame Type Res } {
@@ -495,12 +463,6 @@ proc Graph::Resolution { Frame Type Res } {
 # But      : Configure les parametres globaux des graphs.
 #
 # Parametres :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -542,12 +504,6 @@ proc Graph::UnIdle { GR Type } {
 #
 # Parametres :
 #   <Frame>  : Identificateur de Page
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -607,12 +563,6 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
 #   -Cette procedure repond a un "trace" sur une variable a l'interieur de SPI
 #    afin de recuperer l'information necessaire automatiquement (SPI::Src(Read))
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::LocTool { GR Type Array Index Op } {
@@ -636,12 +586,6 @@ proc Graph::LocTool { GR Type Array Index Op } {
 #   <Zoom>   : Activation du mode Zoom
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -687,12 +631,6 @@ proc Graph::Mode { Type GR { Zoom False } } {
 # Parametres :
 #   <Type>   : Type de graph
 #   <GR>     : Identificateur du Graph
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -848,12 +786,6 @@ proc Graph::DataSheet { Type GR } {
 #   <Type>   : Type de graph
 #   <GR>     : Identificateur du Graph
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::ParamsOff { Frame Type GR } {
@@ -887,12 +819,6 @@ proc Graph::ParamsOff { Frame Type GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::ParamsScaleUniform { Type GR { Update True }  } {
@@ -918,12 +844,6 @@ proc Graph::ParamsScaleUniform { Type GR { Update True }  } {
 # Parametres :
 #   <Type>   : Type de graph
 #   <GR>     : Identificateur du Graph
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1340,11 +1260,6 @@ proc Graph::ParamsGraph { Parent } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::ParamsObs { Parent Type GR } {
@@ -1388,11 +1303,6 @@ proc Graph::ParamsObs { Parent Type GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::ParamsObsSelect { Type GR Desc } {
@@ -1419,11 +1329,6 @@ proc Graph::ParamsObsSelect { Type GR Desc } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::ParamsObsSearch { Type GR } {
@@ -1459,10 +1364,6 @@ proc Graph::ParamsObsSearch { Type GR } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::RangeDraw { Type GR Place Id Y } {
@@ -1511,12 +1412,6 @@ proc Graph::RangeDraw { Type GR Place Id Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Translate { Frame Type GR X Y } {
@@ -1560,12 +1455,6 @@ proc Graph::Translate { Frame Type GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::TranslateDone { Frame Type GR } {
@@ -1587,12 +1476,6 @@ proc Graph::TranslateDone { Frame Type GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::TranslateInit { Frame Type GR X Y } {
@@ -1613,12 +1496,6 @@ proc Graph::TranslateInit { Frame Type GR X Y } {
 #
 # Parametres :
 #   <Frame>  : Identificateur de Page
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1642,12 +1519,6 @@ proc Graph::Update { Frame } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Viewport au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1677,10 +1548,6 @@ proc Graph::UpdateItems { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::TimeScan { Sec Mode { From 0 } } {
@@ -1709,10 +1576,6 @@ proc Graph::TimeScan { Sec Mode { From 0 } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::ValOrder { Val } {
@@ -1740,10 +1603,6 @@ proc Graph::ValOrder { Val } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::ValIncr { Min Max Nb { Type LINEAR } } {
@@ -1774,10 +1633,6 @@ proc Graph::ValIncr { Min Max Nb { Type LINEAR } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::ValFormat { Order Val } {
@@ -1805,12 +1660,6 @@ proc Graph::ValFormat { Order Val } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1846,12 +1695,6 @@ proc Graph::Write { Frame File } {
 #   <GR>     : Identificateur du Graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1911,12 +1754,6 @@ proc Graph::Zoom { Type GR } {
 
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::ZoomReset { Type GR } {
@@ -1944,12 +1781,6 @@ proc Graph::ZoomReset { Type GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::ZoomBox { Canvas X1 Y1 } {
@@ -1973,12 +1804,6 @@ proc Graph::ZoomBox { Canvas X1 Y1 } {
 #   <Y0>     : Coordonnee Y initiale
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

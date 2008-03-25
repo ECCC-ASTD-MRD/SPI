@@ -6,18 +6,10 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : SatData.ctes
-# Version  : 1.2
 # Creation : Octobre 2000
 #
 # Description:
 #    Permet l'obtention de donnees satellitaires
-#
-# Modifications :
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Novembre 2005
-#   Description : Changement pour le nouveau convertiseur des GOES
-#                 'sat.hdfrawcnvrt.pl'.
 #
 #===============================================================================
 

@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Miniport.tcl
-# Version  : 4.0
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation
@@ -21,12 +20,6 @@
 #    Miniport::UpdateData { Frame VP }
 #    Miniport::Destroy    { Frame }
 #    Miniport::Write      { Frame File }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -74,11 +67,6 @@ namespace eval Miniport { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
@@ -203,11 +191,6 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Miniport::Coverage { Frame { VP "" } } {
@@ -276,11 +259,6 @@ proc Miniport::Coverage { Frame { VP "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Miniport::Lens { Frame } {
@@ -314,11 +292,6 @@ proc Miniport::Lens { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Miniport::Lock { Frame } {
@@ -343,11 +316,6 @@ proc Miniport::Lock { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Miniport::UpdateData { Frame { VP "" } } {
@@ -383,11 +351,6 @@ proc Miniport::UpdateData { Frame { VP "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Miniport::Destroy { Frame } {
@@ -437,12 +400,6 @@ proc Miniport::Destroy { Frame } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

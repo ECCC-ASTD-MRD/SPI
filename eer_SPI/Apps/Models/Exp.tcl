@@ -11,15 +11,7 @@
 # Description:
 #    Fonctions de manipualtions des Experiences.
 #
-# Fonctions:
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -111,14 +103,9 @@ namespace eval Exp {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -138,14 +125,9 @@ proc Exp::AllClose { } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -176,11 +158,6 @@ proc Exp::AllOpen { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::Create { Frame } {
@@ -300,12 +277,6 @@ proc Exp::Procedure { Text  } {
 # Remarques :
 #    Cet algorithme est recursif afin de creer les sous-branches.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List } {
@@ -373,14 +344,9 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -472,14 +438,9 @@ proc Exp::CreateTree { } {
 #   <Length> : Longueur du travail (Nombre de ligne de sortie)
 #   <args>   : Fichier de sortie de la trace
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -522,14 +483,9 @@ proc Exp::Launch { Job Id Length args } {
 # Parametres :
 #   <Id>     : Information du pool
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -584,14 +540,9 @@ proc Exp::Kill { Id } {
 #   <Id>     : Information du pool
 #   <Length> : Longeur du travail (Nombre de ligne de sortie)
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -694,14 +645,9 @@ proc Exp::LaunchUpdate { Id Read } {
 #
 # Parametres:
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : S. Trudel - CMC/CMOE
-#    Date        : Mai 2002
-#    Description : Ajout de fichiers *_04.[ps|gif] pour les scenarios 4 et 8.
 #
 #-------------------------------------------------------------------------------
 
@@ -855,13 +801,7 @@ proc Exp::New { } {
 #   <Valid>  : True ou False.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::Params { Parent Model Info } {
@@ -918,14 +858,9 @@ proc Exp::Params { Parent Model Info } {
 #
 # Parametres:
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -948,15 +883,9 @@ proc Exp::Path { } {
 #    <Y>        : ...
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::PopUp { X Y } {
@@ -1013,17 +942,6 @@ proc Exp::PopUp { X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : S. Trudel - CMC/CMOE
-#    Date        : Mai 2002
-#    Description : Ajout de fichiers *_04.ps pour les scenarios 4 et 8.
-#
-#    Nom         : S. Trudel - CMC/CMOE
-#    Date        : Decembre 2005
-#    Description : Ne pas ajouter le fichier *_04.ps dans les scenarios
-#                  autres que 4 et 8 dans le fichier rsmc_fax.ps.
-#
 #----------------------------------------------------------------------------
 
 proc Exp::ProductRSMCFax { } {
@@ -1069,11 +987,6 @@ proc Exp::ProductRSMCFax { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::ProductRSMCJointData { } {
@@ -1147,11 +1060,6 @@ proc Exp::ProductRSMCJointData { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::ProductRSMCJointStatement { File } {
@@ -1193,16 +1101,9 @@ proc Exp::ProductRSMCJointStatement { File } {
 # Parametres :
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::Read { } {
@@ -1235,16 +1136,9 @@ proc Exp::Read { } {
 #   <Path>   : Path a ajouter
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::ReadPath { Path } {
@@ -1278,16 +1172,9 @@ proc Exp::ReadPath { Path } {
 #   <Pool>   : Descripteur de la simulation
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::Select { Pool } {
@@ -1314,14 +1201,9 @@ proc Exp::Select { Pool } {
 # Parametres :
 #   <No>     : Numero de la branche.
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1347,14 +1229,9 @@ proc Exp::SelectBranch { No } {
 # Parametres :
 #   <Tag>    : Descripteur de la simulation.
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1382,16 +1259,9 @@ proc Exp::SelectBranchSim { Tag } {
 #   <Pool>   : Descripteur de la simulation
 #
 # Retour:
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Exp::SelectSim { Pool } {
@@ -1417,14 +1287,9 @@ proc Exp::SelectSim { Pool } {
 #
 # Parametres:
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1440,14 +1305,9 @@ proc Exp::Store { } {
 #
 # Parametres:
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

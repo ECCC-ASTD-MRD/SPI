@@ -11,12 +11,6 @@
 # Description:
 #    Information sur l'experiences
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval INFO {
@@ -93,11 +87,6 @@ namespace eval INFO {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::Layout { Frame } {
@@ -129,11 +118,6 @@ proc INFO::Layout { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::LayoutClear { Frame } {
@@ -157,11 +141,6 @@ proc INFO::LayoutClear { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::LayoutToolBar { Frame } {
@@ -194,11 +173,6 @@ proc INFO::LayoutToolBar { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::LayoutInit { Frame } {
@@ -271,11 +245,6 @@ proc INFO::LayoutInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::PageInit { Frame } {
@@ -334,11 +303,6 @@ proc INFO::PageInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::Product { Frame } {
@@ -388,11 +352,6 @@ proc INFO::Product { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::Detail { Frame } {
@@ -492,10 +451,6 @@ proc INFO::Detail { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc INFO::LayoutUpdate { Frame } {
@@ -562,11 +517,6 @@ proc INFO::LayoutUpdate { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::RSMCJoin { Frame } {
@@ -609,11 +559,6 @@ proc INFO::RSMCJoin { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc INFO::UpdateItems { Frame } {

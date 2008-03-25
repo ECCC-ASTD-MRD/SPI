@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Section.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -35,12 +34,6 @@
 #    Graph::Section::VertexFollow { Frame VP X Y Scan }
 #    Graph::Section::Sample       { GR VP Coord { Res 0 } }
 #    Graph::Section::FieldShow    { GR }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -72,11 +65,6 @@ namespace eval Graph::Section { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True } } {
@@ -177,10 +165,6 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Section::Coord { Frame GR X Y } {
@@ -227,11 +211,6 @@ proc Graph::Section::Coord { Frame GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::Destroy { Frame GR } {
@@ -274,10 +253,6 @@ proc Graph::Section::Destroy { Frame GR } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Section::Graph { GR { Pos False } } {
@@ -387,11 +362,6 @@ proc Graph::Section::Graph { GR { Pos False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::Init { Frame } {
@@ -439,12 +409,6 @@ proc Graph::Section::Init { Frame } {
 #   <GR>     : Identificateur du Graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -503,12 +467,6 @@ proc Graph::Section::Params { Parent GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Section::ItemAdd { GR Item } {
@@ -539,12 +497,6 @@ proc Graph::Section::ItemAdd { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -579,12 +531,6 @@ proc Graph::Section::ItemDefault { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -623,12 +569,6 @@ proc Graph::Section::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -681,12 +621,6 @@ proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Section::ItemUnDefine { GR Pos } {
@@ -716,12 +650,6 @@ proc Graph::Section::ItemUnDefine { GR Pos } {
 #   <Data>   : Donnees a extraire
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -756,12 +684,6 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -820,12 +742,6 @@ proc Graph::Section::Update { Frame { GR {} } } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Section::UpdateItems { Frame { GR { } } } {
@@ -864,12 +780,6 @@ proc Graph::Section::UpdateItems { Frame { GR { } } } {
 # Parametres :
 #   <GR>     : Identificateur du Graph
 #   <Data>   : Donnees a utilise
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -918,11 +828,6 @@ proc Graph::Section::Data { GR Data } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::Resolution { } {
@@ -965,11 +870,6 @@ proc Graph::Section::Resolution { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::VertexAdd { Frame VP X Y } {
@@ -1020,11 +920,6 @@ proc Graph::Section::VertexAdd { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::VertexDelete { Frame VP } {
@@ -1057,11 +952,6 @@ proc Graph::Section::VertexDelete { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
@@ -1131,12 +1021,6 @@ proc Graph::Section::Sample  { GR VP Coord { Res 0 } } {
 #
 # Parametres :
 #   <GR>     : Identificateur du Graph
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

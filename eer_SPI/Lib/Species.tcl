@@ -14,11 +14,6 @@
 #
 # Fonctions:
 #
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Avril 2004
-#   Description : Repackaging en package plutot que process
 #===============================================================================
 
 package provide Species 2.0

@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Mapper_GeoLocator.tcl
-# Version  : 1.0
 # Creation : Fevrier 2007 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Fcontions de geolocalisation par point de controle.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -87,10 +77,6 @@ proc Mapper::GeoLocator::Activate { Object } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::GeoLocator::Follower  { Frame Canvas VP Lat Lon X Y } {
@@ -136,10 +122,6 @@ proc Mapper::GeoLocator::Follower  { Frame Canvas VP Lat Lon X Y } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::GeoLocator::CoordAdd { } {
@@ -169,10 +151,6 @@ proc Mapper::GeoLocator::CoordAdd { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::GeoLocator::CoordDel { } {
@@ -203,10 +181,6 @@ proc Mapper::GeoLocator::CoordDel { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::GeoLocator::CoordView { } {
@@ -233,10 +207,6 @@ proc Mapper::GeoLocator::CoordView { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::GeoLocator::CoordSet { } {
@@ -270,12 +240,6 @@ proc Mapper::GeoLocator::CoordSet { } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

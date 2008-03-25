@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Scatter.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de
@@ -39,12 +38,6 @@
 #    Graph::Scatter::ItemDataField { Item Coords Data0 Data1 }
 #    Graph::Scatter::ItemDataObs   { Item Coords Data0 Data1 }
 #
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
-#
 #===============================================================================
 
 namespace eval Graph::Scatter { } {
@@ -72,11 +65,6 @@ namespace eval Graph::Scatter { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
@@ -171,10 +159,6 @@ proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::Coord { Frame GR X Y } {
@@ -210,11 +194,6 @@ proc Graph::Scatter::Coord { Frame GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Scatter::Destroy { Frame GR } {
@@ -255,11 +234,6 @@ proc Graph::Scatter::Destroy { Frame GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Scatter::DrawInit { Frame VP } {
@@ -383,10 +357,6 @@ proc Graph::Scatter::MoveDone { Frame VP } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::Graph { GR } {
@@ -506,11 +476,6 @@ proc Graph::Scatter::Graph { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Scatter::Init { Frame } {
@@ -565,12 +530,6 @@ proc Graph::Scatter::Init { Frame } {
 #   <GR>     : Identificateur du Graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -660,12 +619,6 @@ proc Graph::Scatter::Stats { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemAdd { GR Item } {
@@ -700,12 +653,6 @@ proc Graph::Scatter::ItemAdd { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -743,12 +690,6 @@ proc Graph::Scatter::ItemDefault { GR Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemDel { GR Item } {
@@ -778,12 +719,6 @@ proc Graph::Scatter::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -837,12 +772,6 @@ proc Graph::Scatter::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemUnDefine { GR Pos } {
@@ -872,12 +801,6 @@ proc Graph::Scatter::ItemUnDefine { GR Pos } {
 #   <Data>   : Donnees a extraire
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -916,12 +839,6 @@ proc Graph::Scatter::ItemData { GR Pos Item Data } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -975,10 +892,6 @@ proc Graph::Scatter::Update { Frame { GR {} } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::Data { GR { Data { } } { Files { } } } {
@@ -1006,12 +919,6 @@ proc Graph::Scatter::Data { GR { Data { } } { Files { } } } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1057,10 +964,6 @@ proc Graph::Scatter::UpdateItems { Frame { GR { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
@@ -1103,10 +1006,6 @@ proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {

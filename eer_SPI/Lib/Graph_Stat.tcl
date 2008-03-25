@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Stat.tcl
-# Version  : 2.0
 # Creation : Juillet 2005 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de
@@ -20,12 +19,6 @@
 #    Graph::Stat::Init    { Frame }
 #    Graph::Stat::Params  { Parent GR }
 #    Graph::Stat::Update  { Frame { GR {} } }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -54,11 +47,6 @@ namespace eval Graph::Stat { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
@@ -130,11 +118,6 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Stat::Destroy { Frame GR } {
@@ -165,10 +148,6 @@ proc Graph::Stat::Destroy { Frame GR } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Stat::Graph { GR { Items {} } } {
@@ -242,11 +221,6 @@ proc Graph::Stat::Graph { GR { Items {} } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Stat::Init { Frame } {
@@ -281,12 +255,6 @@ proc Graph::Stat::Init { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Stat::Params { Parent GR } {
@@ -316,12 +284,6 @@ proc Graph::Stat::Params { Parent GR } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

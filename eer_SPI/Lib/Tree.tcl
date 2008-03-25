@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions pour les domaines des projections
 # Fichier   : Tree.tcl
-# Version   : 1.0
 # Creation  : Janvier 2004 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Structure de donnees Arbre
@@ -15,12 +14,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

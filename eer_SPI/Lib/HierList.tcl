@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet   : Librairie de "Widget" Tk.
-# Fichier  : HierList.tk
-# Version  : 1.0 ($Revision: 0.1 $)
+# Fichier  : HierList.tcl
 # Creation : Février 2003 - Stéphane Gaudreault - CMC/CMOE
 #
 # Description:
@@ -17,12 +16,6 @@
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
 #    -Supporte les callback lors de la selection d'un élément
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -71,11 +64,6 @@ namespace eval HierList {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : - S. Gaudreault
-#   Date: - avril 2003
-#   Description : - correction d'un bug de la bar de défillement
 #--------------------------------------------------------------------------------
 
 proc HierList::Collapse { tag nextY } {
@@ -169,11 +157,6 @@ proc HierList::Collapse { tag nextY } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::Create { Frame } {
@@ -206,11 +189,6 @@ proc HierList::Create { Frame } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::Destroy { window } {
@@ -230,11 +208,6 @@ proc HierList::Destroy { window } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::Display { List CallBack1 isLeaf } {
@@ -317,11 +290,6 @@ proc HierList::Display { List CallBack1 isLeaf } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : - S. Gaudreault
-#   Date: - avril 2003
-#   Description : - correction d'un bug de la bar de défillement
 #--------------------------------------------------------------------------------
 
 proc HierList::Expand { parentpath sousListe tag nextY } {
@@ -423,11 +391,6 @@ proc HierList::Expand { parentpath sousListe tag nextY } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::Highlight { pathlist { color "red" } } {
@@ -477,11 +440,6 @@ proc HierList::Highlight { pathlist { color "red" } } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::HighLight1 {  x y selectedItemTag  } {
@@ -516,11 +474,6 @@ proc HierList::HighLight1 {  x y selectedItemTag  } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::HighLightRect {  x y selectedItemTag  } {
@@ -560,11 +513,6 @@ proc HierList::HighLightRect {  x y selectedItemTag  } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::GetSelection { } {
@@ -592,11 +540,6 @@ proc HierList::GetSelection { } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::Select { path elem tag y } {
@@ -639,11 +582,6 @@ proc HierList::Select { path elem tag y } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#   Nom : -
-#   Date: -
-#   Description : -
 #--------------------------------------------------------------------------------
 
 proc HierList::SelectionType { } {

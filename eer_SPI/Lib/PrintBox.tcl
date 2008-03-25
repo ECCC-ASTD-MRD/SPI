@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet   : Widget de librairie.
-# Fichier  : PrintBox.tk
-# Version  : 3.2
+# Fichier  : PrintBox.tcl
 # Creation : Juillet 1998 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -28,26 +27,6 @@
 #
 # Modifications :
 #
-#   Nom         : J.P. Gauthier
-#   Date        : Fevrier 1999
-#   Description : Generalisation de l'interface
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juin 1999
-#   Description : Utilisation de "convert" plutot que les filtres "pnm..."
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juin 1999
-#   Description : Ajout du parametre de DPI pour les impressions "image"
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : Refonte complete de l'interface
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 2001
-#   Description : Patch pour retirer le "showpage" lors de conversion avec convert
-#                 DPI a 75 par defaut
 #===============================================================================
 
 package provide PrintBox 3.2
@@ -189,11 +168,6 @@ namespace eval PrintBox {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::FontMap { } {
@@ -227,11 +201,6 @@ proc PrintBox::FontMap { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::PrintTXT { File } {
@@ -273,11 +242,6 @@ proc PrintBox::PrintTXT { File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::PrintCommand { Frame } {
@@ -315,11 +279,6 @@ proc PrintBox::PrintCommand { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Create { Frame Mode args } {
@@ -460,11 +419,6 @@ proc PrintBox::SetDevice { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Destroy { } {
@@ -495,11 +449,6 @@ proc PrintBox::Destroy { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Do { Frame } {
@@ -522,11 +471,6 @@ proc PrintBox::Do { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::FilePathDefine { Path { Type "" } } {
@@ -561,11 +505,6 @@ proc PrintBox::FilePathDefine { Path { Type "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Image { Frame Format File } {
@@ -593,11 +532,6 @@ proc PrintBox::Image { Frame Format File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Postscript { Frame File X Y Width Height { Angle portrait } { Format "" } } {
@@ -655,11 +589,6 @@ proc PrintBox::Postscript { Frame File X Y Width Height { Angle portrait } { For
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
@@ -766,11 +695,6 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::ReadWEBPath { } {
@@ -813,11 +737,6 @@ proc PrintBox::ReadWEBPath { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::Save { Frame X Y Width Height File } {
@@ -841,11 +760,6 @@ proc PrintBox::Save { Frame X Y Width Height File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc PrintBox::SelectOutputType { Type } {

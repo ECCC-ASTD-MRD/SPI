@@ -6,29 +6,24 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Dialog.tk
-# Version  : 2.1
 # Creation : Octobre 1998 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Permet d'afficher diverses boite de dialogue standard.
 #
 # Fonctions:
-#    Dialog::CreateDefault { Master Loc Width Title Text Bitmap Default args }
-#    Dialog::CreateInfo    { Master Text }
-#    Dialog::CreateError   { Master Text Lang }
-#    Dialog::CreateMessage { Master Text }
-#    Dialog::CreateText    { Id Title File Width Height }
-#    Text::Create          { Id Title File Width Height }
-#    Text::Save            { Text File }
+#    Dialog::CreateDefault      { Master Loc Width Title Text Bitmap Default args }
+#    Dialog::CreateInfo         { Master Text }
+#    Dialog::CreateError        { Master Text Lang }
+#    Dialog::CreateErrorListing { Master Text List Lang }
+#    Dialog::CreateMessage      { Master Text }
+#    Dialog::CreateText         { Id Title File Width Height }
+#    Text::Create               { Id Title File Width Height }
+#    Text::Save                 { Text File }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Decembre 2005
-#   Description : Cleanup et amelioration de la fenetre de texte
 #===============================================================================
 
 package provide Dialog 2.1
@@ -61,12 +56,6 @@ namespace eval Dialog { }
 #   <button> : Numero du bouton selectionne
 #
 # Remarques : La boite retourne l'index du boutton presse.
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #-------------------------------------------------------------------------------
 
@@ -148,12 +137,6 @@ proc  Dialog::CreateDefault { Master Width Title Text Bitmap Default args } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
@@ -193,6 +176,24 @@ proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
       grab .error
    }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::CreateErrorListing>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Afficher un message d'erreur avec un liste deroulante pour l'info.
+#
+# Parametres :
+#    <Master> : Fenetre toplevel auquel l'aide est reliee.
+#    <Text>   : Texte a afficher.
+#    <List>   : Text a ajouter a la liste deroulante
+#    <Lang>   : Langue ( 0 Francais 1 Anglais ) .
+#    <Aspect> : Aspect de la boite (default=1000).
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
 
 proc Dialog::CreateErrorListing { Master Text List Lang } {
    global GDefs
@@ -257,12 +258,6 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
@@ -315,12 +310,6 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Dialog::CreateMessage { Master Text { Aspect 1000 } } {
@@ -365,11 +354,6 @@ proc Dialog::CreateMessage { Master Text { Aspect 1000 } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Decembre 2005
-#   Description : Amelioration de la fenetre de texte
 #----------------------------------------------------------------------------
 
 namespace eval Text { } {
@@ -512,12 +496,6 @@ proc Text::Search { Widget String Tag args } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 

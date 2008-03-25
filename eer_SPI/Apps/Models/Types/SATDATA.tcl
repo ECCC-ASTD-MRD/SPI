@@ -10,12 +10,6 @@
 #
 # But       : Description des procedures relatives au module TRAJECTOIRE.
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval SATDATA {
@@ -42,13 +36,7 @@ namespace eval SATDATA {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SATDATA::PoolInfo { Line } {
@@ -67,23 +55,17 @@ proc SATDATA::PoolInfo { Line } {
 # But      : Creation d'une nouvelle serie de donnees satellitaires.
 #
 # Parametres :
-#    Aucun.
+#
+# Retour:
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
 proc SATDATA::New { Parent } {
    global GDefs
 
-   SatData::Window 
+   SatData::Window
    set ::SatData::Data(ResultFile) $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData
    set ::SPI::Src(Type) $Exp::Data(Type)
    set ::SPI::Src(No)   ""
@@ -108,13 +90,7 @@ proc SATDATA::New { Parent } {
 # Retour:
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SATDATA::PoolPrint { Line Langue } {
@@ -127,19 +103,14 @@ proc SATDATA::PoolPrint { Line Langue } {
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Afficher le popup contextuel des simulations.
-#  
+#
 # Parametres :
 #    <X>        : ...
 #    <Y>        : ...
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -149,7 +120,7 @@ proc SATDATA::PopUp { X Y } {
 
    if { ![winfo exists .satdatapopup] } {
       menu .satdatapopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .satdatapopup add command -label "SATDATA"  -command "" -background yellow -activebackground yellow 
+         .satdatapopup add command -label "SATDATA"  -command "" -background yellow -activebackground yellow
          .satdatapopup add command -label [lindex $Lbl(Result) $GDefs(Lang)] \
             -command { SPI::FileOpen NEW FieldBox "$Exp::Data(Name) (SATDATA)" "" $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData }
          .satdatapopup add separator
@@ -164,18 +135,12 @@ proc SATDATA::PopUp { X Y } {
 # Creation : Octobre 2000 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Effacer les donnees satellitaires de l'experience selectionnee.
-#  
+#
 # Parametres :
-#    Aucun.
+#
+# Retour:
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

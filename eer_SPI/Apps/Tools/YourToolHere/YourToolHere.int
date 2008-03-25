@@ -6,7 +6,6 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : YourToolHere.ctes
-# Version  : 1.0
 # Creation : Juin 2003
 #
 # Description:
@@ -14,12 +13,6 @@
 #    a l'interface SPI
 #
 #    Description des interfaces
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -35,11 +28,6 @@
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc YourToolHere::Window { } {

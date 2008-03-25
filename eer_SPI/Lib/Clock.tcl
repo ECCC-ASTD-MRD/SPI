@@ -6,7 +6,6 @@
 #
 # Projet    : Interface de selection de date.
 # Fichier   : Clock.tk
-# Version   : 1.0 ($Revision: 1.2 $)
 # Creation  : Mars 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Permet grace a une interface de slelectionner l'heure.
@@ -15,12 +14,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -60,12 +53,6 @@ namespace eval Clock {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -142,12 +129,6 @@ proc Clock::Create { Frame Label Var args } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
-#
 #----------------------------------------------------------------------------
 
 proc Clock::Incr { Widget Inc Fill } {
@@ -204,12 +185,6 @@ proc Clock::Incr { Widget Inc Fill } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 

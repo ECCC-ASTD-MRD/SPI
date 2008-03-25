@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Frequence.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -39,12 +38,6 @@
 #    Graph::Frequence::Data          { GR Data }
 #    Graph::Frequence::FitData       { GR }
 #
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
-#
 #===============================================================================
 
 namespace eval Graph::Frequence { } {
@@ -74,11 +67,6 @@ namespace eval Graph::Frequence { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Frequence::Create { Frame X0 Y0 Width Height Active Full } {
@@ -173,10 +161,6 @@ proc Graph::Frequence::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::Coord { Frame GR X Y } {
@@ -212,11 +196,6 @@ proc Graph::Frequence::Coord { Frame GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Frequence::Destroy { Frame GR } {
@@ -253,11 +232,6 @@ proc Graph::Frequence::Destroy { Frame GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Frequence::DrawInit { Frame VP } {
@@ -379,10 +353,6 @@ proc Graph::Frequence::MoveDone { Frame VP } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::Graph { GR } {
@@ -467,11 +437,6 @@ proc Graph::Frequence::Graph { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Frequence::Init { Frame } {
@@ -522,12 +487,6 @@ proc Graph::Frequence::Init { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::Params { Parent GR } {
@@ -561,12 +520,6 @@ proc Graph::Frequence::Params { Parent GR } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -602,12 +555,6 @@ proc Graph::Frequence::ItemAdd { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -645,12 +592,6 @@ proc Graph::Frequence::ItemDefault { GR Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::ItemDel { GR Item } {
@@ -680,12 +621,6 @@ proc Graph::Frequence::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -739,12 +674,6 @@ proc Graph::Frequence::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::ItemUnDefine { GR Pos } {
@@ -774,12 +703,6 @@ proc Graph::Frequence::ItemUnDefine { GR Pos } {
 #   <Data>   : Donnees a extraire
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -821,10 +744,6 @@ proc Graph::Frequence::ItemData { GR Pos Item Data } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::ItemDataField {  GR Item Coords Data } {
@@ -872,10 +791,6 @@ proc Graph::Frequence::ItemDataField {  GR Item Coords Data } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::ItemDataObs { GR Item Coords Data } {
@@ -925,12 +840,6 @@ proc Graph::Frequence::ItemDataObs { GR Item Coords Data } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::Update { Frame { GR {} } } {
@@ -976,12 +885,6 @@ proc Graph::Frequence::Update { Frame { GR {} } } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1038,10 +941,6 @@ proc Graph::Frequence::UpdateItems { Frame { GR { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::Data { GR Data } {
@@ -1072,10 +971,6 @@ proc Graph::Frequence::Data { GR Data } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Frequence::FitData { GR } {

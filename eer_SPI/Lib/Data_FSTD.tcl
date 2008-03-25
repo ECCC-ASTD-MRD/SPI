@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de fonctions pour fichier standards.
 # Fichier  : Data_FSTD.tcl
-# Version  : 3.4
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe des taches relatives a la configuration des
@@ -29,25 +28,6 @@
 #   FSTD::Params      { Id Map args }
 #   FSTD::ParamUpdate { { Fields { } } }
 #   FSTD::VarMode     { Mode }
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 1999
-#   Description : Ajout d'options et de rafinement un peu partout
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Aout 1999
-#   Description : -La selection des niveaux est memorisee pour chaque champ.
-#                 -Ajout des niveaux de XREC (.recrc)
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mars 2000
-#   Description : -Refonte de l'interface de manipulation des parametres pour chaque champ.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2000
-#   Description : -Nouvelle version de la librairie dynamique.
 #
 #===============================================================================
 
@@ -216,10 +196,6 @@ namespace eval FSTD {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FSTD::Data { Field } {
@@ -254,11 +230,6 @@ proc FSTD::Data { Field } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::ParamFrame { Frame Apply } {
@@ -501,11 +472,6 @@ proc FSTD::ParamFrame { Frame Apply } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::FieldFormat { Field Val } {
@@ -554,11 +520,6 @@ proc FSTD::FieldFormat { Field Val } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
@@ -602,10 +563,6 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FSTD::ParamGet { { Spec "" } } {
@@ -692,11 +649,6 @@ proc FSTD::ParamGet { { Spec "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::ParamSet { { Spec "" } } {
@@ -758,10 +710,6 @@ proc FSTD::ParamSet { { Spec "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FSTD::ParamPut { } {
@@ -822,10 +770,6 @@ proc FSTD::ParamPut { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FSTD::ParamInit { Field { Spec "" } } {
@@ -888,11 +832,6 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::Register { FieldId { Update True } } {
@@ -935,10 +874,6 @@ proc FSTD::UnRegister { FieldId { Update True } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc FSTD::Params { Id Map args } {
@@ -973,11 +908,6 @@ proc FSTD::Params { Id Map args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::ParamUpdate { { Fields { } } } {
@@ -1060,11 +990,6 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 #         ETI  : Parametres par ETIKET
 #         DATEO: Parametres par DATEO
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc FSTD::VarMode { Mode } {

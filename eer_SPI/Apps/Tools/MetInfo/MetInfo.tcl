@@ -6,23 +6,10 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : MetInfo.tcl
-# Version  : 1.2
 # Creation : Octobre 2000
 #
 # Description:
 #    Permet l'obtention de messages meteorologiques
-#
-# Modifications :
-#   Nom         : - S. Gaudreault
-#   Date        : - mars 2003
-#   Description : - Possibilité d'exporter des fichier au format scipuff
-#
-#   Nom         : - S. Gaudreault
-#   Date        : - 26 mars 2003
-#   Description : - remplacé %% par % dans l'entete
-#                 - il ne devrait plus y avoir de probleme d'alignement maintenant.
-#                 - s'assurer que les fichiers temporaires sont effacés
-#                   afin d'éviter que la sortie ne soit concaténée a un fichier existant.
 #
 #===============================================================================
 
@@ -42,12 +29,6 @@ source $GDefs(Dir)/Apps/Tools/MetInfo/MetInfo.int
 #
 # Remarques :
 #    -On doit redefinir les fonctions de range des projections
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -74,12 +55,6 @@ proc MetInfo::Close { } {
 # Parametres :
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -134,11 +109,6 @@ proc MetInfo::FileGet { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetInfo::ExportFileGet { } {
@@ -170,14 +140,6 @@ proc MetInfo::ExportFileGet { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : - S. Gaudreault
-#    Date        : - 27 mars 2003
-#    Description : - Affiche une boite de dialogue a la fin pour indiquer
-#                    dans quel fichier se trouve la sortie.
-#                  - Dans le cas des surfaces, on a juste besoin de trier
-#                    la date.
 #----------------------------------------------------------------------------
 
 proc MetInfo::ExportFile { outFile } {
@@ -341,12 +303,6 @@ proc MetInfo::ExportFile { outFile } {
 #    -METAR: Station avec id de quatre lettre seulement
 #    -SA   : Statio navec id de trois lettre ou trois derniere des quatres lettres
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc MetInfo::MsgGet { } {
@@ -446,12 +402,6 @@ proc MetInfo::MsgGet { } {
 #   -Cette procedure repond a un "trace" sur une variable a l'interieur de SPI
 #    afin de recuperer l'information necessaire automatiquement (SPI::Src(Info))
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc MetInfo::Source { Array Index Op } {
@@ -487,12 +437,6 @@ proc MetInfo::Source { Array Index Op } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc MetInfo::UpdateItems { Frame } {
@@ -520,12 +464,6 @@ proc MetInfo::UpdateItems { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

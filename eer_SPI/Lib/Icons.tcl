@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions pour les domaines des projections
 # Fichier   : Icons.tk
-# Version   : 1.0
 # Creation  : Novembre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Icon loader pour tout les autres packages et aplications
@@ -15,12 +14,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

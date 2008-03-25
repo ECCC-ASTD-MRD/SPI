@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de projection.
 # Fichier  : OpenGL.tk
-# Version  : 1.1
 # Creation : MOctobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -18,11 +17,6 @@
 #    OpenGL::ParamFrame { Frame }
 #    OpenGL::Update     { }
 #
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #===============================================================================
 
 package provide OpenGL 1.1
@@ -97,11 +91,6 @@ namespace eval OpenGL {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc OpenGL::ParamFrame { Frame Apply } {
@@ -194,11 +183,6 @@ proc OpenGL::ParamFrame { Frame Apply } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc OpenGL::Update { } {

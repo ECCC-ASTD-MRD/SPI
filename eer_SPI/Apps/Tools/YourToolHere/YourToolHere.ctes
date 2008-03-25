@@ -6,7 +6,6 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : YourToolHere.ctes
-# Version  : 1.0
 # Creation : Juin 2003
 #
 # Description:
@@ -14,12 +13,6 @@
 #    a l'interface SPI
 #
 #    Descriptions des variables internes du module
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : WidgetDefs.tk
-# Version  : 1.0 ($Revision: 1.4 $)
 # Creation : Novembre 2000 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -30,12 +29,6 @@
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -73,12 +66,6 @@ namespace eval Option { }
 #   <Cmd>    : Liste de commande a executer apres l'assignement. ( "" pour aucune)
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 1998
-#   Description : Ajout de colonne multiple dans le menu lorsqu'il y a plus de 10 items
 #
 #-------------------------------------------------------------------------------
 
@@ -136,13 +123,6 @@ proc EntryMenu::Create { W Edit Label Side Width Color AColor Var List Cmd } {
 #    <args>   : 2ieme liste associee
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -191,13 +171,6 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
 #    <ListVal> : Liste des valeurs associees
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -247,13 +220,6 @@ proc Option::Set { Frame List { ListVal {} } } {
 #    <args>   : Parametres du widget entry (couleur, largeur ...)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -283,13 +249,6 @@ proc EntryVar::Create { W Var Type Format Command args } {
 #    <args>   : Parametres suplementaire du trace
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -393,13 +352,6 @@ proc EntryVar::Trace { Type Var Format args } {
 #    <retour>: Oui (1) ou Non (0)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -425,13 +377,6 @@ proc EntryVar::IsBinary { Val } {
 #    <retour>: Oui (1) ou Non (0)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -458,13 +403,6 @@ proc EntryVar::IsDecimal { Val } {
 #    <retour>: Oui (1) ou Non (0)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -490,13 +428,6 @@ proc EntryVar::IsDot { Val } {
 #    <retour>: Oui (1) ou Non (0)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -526,13 +457,6 @@ proc EntryVar::IsHexadecimal { Val } {
 #    <retour>: Oui (1) ou Non (0)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -558,13 +482,6 @@ proc EntryVar::IsSign { Val Pos } {
 #    <retour>: Oui (1) ou Non (0)
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -597,13 +514,6 @@ proc EntryVar::IsOctal { Val } {
 # retour     :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

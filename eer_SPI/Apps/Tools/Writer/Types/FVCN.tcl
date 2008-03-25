@@ -11,12 +11,6 @@
 # Description:
 #    Redaction de message FVCN
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval Writer::FVCN {
@@ -82,12 +76,6 @@ namespace eval Writer::FVCN {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::New { Pad Mode } {
@@ -128,12 +116,6 @@ proc Writer::FVCN::New { Pad Mode } {
 #    <Pad>   : Identificateur du pad
 #
 # Remarques :
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -308,12 +290,6 @@ proc Writer::FVCN::GraphUpdate { Pad } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Open { Pad File } {
@@ -363,12 +339,6 @@ proc Writer::FVCN::Open { Pad File } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -La
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Correct { Pad } {
@@ -416,12 +386,6 @@ proc Writer::FVCN::Correct { Pad } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -481,13 +445,6 @@ proc Writer::FVCN::Update { Pad } {
 #   <File>   : Fichier temporaire
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -554,13 +511,6 @@ proc Writer::FVCN::Format { Pad Mode } {
 #    <Lon>   : Longitude
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -598,13 +548,6 @@ proc Writer::FVCN::FormatCoord { Lat Lon } {
 #    <Name>  : Nom de la source.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -659,12 +602,6 @@ proc Writer::FVCN::GetAdvisory { Pad Name } {
 #         - on en trouve une qui est disponible.
 #         sinon
 #            - on ne peut traiter cette nouvelle source.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -763,12 +700,6 @@ proc Writer::FVCN::GetNo { Name } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Info { Pad Text } {
@@ -807,11 +738,6 @@ proc Writer::FVCN::Info { Pad Text } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Clear { Pad } {
@@ -843,11 +769,6 @@ proc Writer::FVCN::Clear { Pad } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::LayoutInit { Pad } {
@@ -968,11 +889,6 @@ proc Writer::FVCN::LayoutInit { Pad } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::AshUpdate { Pad Hour } {
@@ -1057,11 +973,6 @@ proc Writer::FVCN::AshUpdate { Pad Hour } {
 #   parametres du PrintBox lui-meme et du "Widget PlugIn" PrintBox::PlugInCommand
 #   definit ci-haut.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::PrintCommand { Canvas } {
@@ -1091,12 +1002,6 @@ proc Writer::FVCN::PrintCommand { Canvas } {
 #    <FV>    : Id du FV.
 #
 # Remarques :
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -1129,12 +1034,6 @@ proc Writer::FVCN::SetNext { Pad Text No FV } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::SetRem { Pad Text No FV } {
@@ -1166,11 +1065,6 @@ proc Writer::FVCN::SetRem { Pad Text No FV } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::PageInit { Pad } {
@@ -1309,12 +1203,6 @@ proc Writer::FVCN::PageInit { Pad } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Read { Pad File Mode } {
@@ -1384,13 +1272,6 @@ proc Writer::FVCN::Read { Pad File Mode } {
 #   <Backup> : Methode de backup
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1445,11 +1326,6 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
 #   -Cette procedure repond a un "trace" sur une variable a l'interieur de SPI
 #    afin de recuperer l'information necessaire automatiquement (SPI::Src(Info))
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Source { Array Index Op } {
@@ -1470,11 +1346,6 @@ proc Writer::FVCN::Source { Array Index Op } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::ToolBar { Pad } {
@@ -1515,13 +1386,6 @@ proc Writer::FVCN::ToolBar { Pad } {
 #   <MS>     : Milisecondes de refresh
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -1564,11 +1428,6 @@ proc Writer::FVCN::UpdateTime { Pad MS } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::VertexAdd { Frame VP X Y } {
@@ -1636,11 +1495,6 @@ proc Writer::FVCN::VertexAdd { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::VertexDelete { Frame VP } {
@@ -1692,11 +1546,6 @@ proc Writer::FVCN::VertexDelete { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
@@ -1757,12 +1606,6 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
 #      qui est retournee par le selecteur est encoder comme suit :
 #      tout les blancs ont ete substituer par des underscores (_).
 #
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
-#
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
@@ -1821,11 +1664,6 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
@@ -1896,12 +1734,6 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 #      simplement changer de delimitateur.
 #      On peut simplement illiminer les lignes des textes qui
 #      contiennent des points (.).
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 

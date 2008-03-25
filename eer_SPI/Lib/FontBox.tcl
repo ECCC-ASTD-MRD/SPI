@@ -6,7 +6,6 @@
 #
 # Projet   : Widget de selection de couleur.
 # Fichier  : FontBox.tk
-# Version  : 1.0 ($Revision: 1.4 $)
 # Creation : Mars 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -72,12 +71,6 @@ namespace eval FontBox {
 #   <args>   : Police initiale
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -160,12 +153,6 @@ proc FontBox::Create { Parent Apply args } {
 #   <Show>   : Afficher les modiffications
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

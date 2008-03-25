@@ -6,16 +6,9 @@
 #
 # Projet   : Boite a Outils.
 # Fichier  : HFManager.int
-# Version  : 1.1
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Permettre de gerer des fichiers sur diverses machines.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -77,13 +70,6 @@ proc HFManager::Window { } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -136,13 +122,6 @@ proc HFManager::CreatePopup { Id } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -218,13 +197,6 @@ proc HFManager::CreateHost { Id } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

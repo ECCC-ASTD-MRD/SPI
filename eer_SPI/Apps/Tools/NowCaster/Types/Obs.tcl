@@ -6,23 +6,13 @@
 #
 # Projet   : Outils de "NowCasting" pour SPI.
 # Fichier  : Obs.tcl
-# Version  : 1.0
 # Creation : Avril 2006 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Fonctions de manipulations des observations meteorologiques pour l'outils
 #    de NowCasting de SPI.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -106,17 +96,13 @@ namespace eval NowCaster::Obs { } {
 #
 # But      : Affiche l'interface de manipulation des observations.
 #
-# Parametres   :
+# Parametres :
+#  <Frame>   : Frame de l'interface
 #
 # Retour:
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc NowCaster::Obs::Window { Frame } {
@@ -288,10 +274,6 @@ proc NowCaster::Obs::Window { Frame } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Cast { Sec } {
@@ -309,15 +291,13 @@ proc NowCaster::Obs::Cast { Sec } {
 # But      : Initialisation de l'evenement de rafraichissement des donnees.
 #
 # Parametres :
+#   <Sec>    : Date en secondes (0 -> utilise la date globale)
+#   <Check>  :
 #
 # Retour    :
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Now { Sec { Check False } } {
@@ -355,10 +335,6 @@ proc NowCaster::Obs::Now { Sec { Check False } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ReadProcess { Obs } {
@@ -509,10 +485,6 @@ proc NowCaster::Obs::ExportSCIPUFF { Obs File Type } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Add { Path } {
@@ -571,10 +543,6 @@ proc NowCaster::Obs::Add { Path } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Delete { Obs } {
@@ -612,10 +580,6 @@ proc NowCaster::Obs::Delete { Obs } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::PageUpdate { Obs } {
@@ -640,10 +604,6 @@ proc NowCaster::Obs::PageUpdate { Obs } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Update { { Obs {} } } {
@@ -683,10 +643,6 @@ proc NowCaster::Obs::Update { { Obs {} } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ObsSelect { Obs } {
@@ -728,10 +684,6 @@ proc NowCaster::Obs::ObsSelect { Obs } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelApply { } {
@@ -768,10 +720,6 @@ proc NowCaster::Obs::ModelApply { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelSelect { Model { List { } } } {
@@ -843,10 +791,6 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelDel { Model } {
@@ -879,10 +823,6 @@ proc NowCaster::Obs::ModelDel { Model } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelAdd { Model Params } {
@@ -918,10 +858,6 @@ proc NowCaster::Obs::ModelAdd { Model Params } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelLoad { } {
@@ -973,10 +909,6 @@ proc NowCaster::Obs::ModelLoad { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelSave { } {
@@ -1030,10 +962,6 @@ proc NowCaster::Obs::ModelSave { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelParse { } {
@@ -1072,10 +1000,6 @@ proc NowCaster::Obs::ModelParse { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Info { Obs Id } {
@@ -1140,10 +1064,6 @@ proc NowCaster::Obs::Info { Obs Id } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Find { Obs { Id "" } } {
@@ -1175,12 +1095,6 @@ proc NowCaster::Obs::Find { Obs { Id "" } } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

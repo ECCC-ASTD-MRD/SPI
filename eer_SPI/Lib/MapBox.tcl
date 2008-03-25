@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de fonctions pour fichier standards.
 # Fichier  : MapBox.tk
-# Version  : 3.0
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe des taches relatives a la configuration des
@@ -30,12 +29,6 @@
 #   MapBox::Save             { Widget }
 #   MapBox::Select           { Map }
 #   MapBox::Update           { }
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -173,10 +166,6 @@ namespace eval MapBox {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ConfigMM { args } {
@@ -200,10 +189,6 @@ proc MapBox::ConfigMM { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ConfigCurve { Curve } {
@@ -228,10 +213,6 @@ proc MapBox::ConfigCurve { Curve } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ConfigRGBA { args } {
@@ -255,10 +236,6 @@ proc MapBox::ConfigRGBA { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlAdd { Canvas X } {
@@ -290,10 +267,6 @@ proc MapBox::ControlAdd { Canvas X } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlBind { Canvas X Idx Color } {
@@ -329,10 +302,6 @@ proc MapBox::ControlBind { Canvas X Idx Color } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlColor { Canvas Id } {
@@ -366,10 +335,6 @@ proc MapBox::ControlColor { Canvas Id } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlDel { Canvas Id } {
@@ -394,10 +359,6 @@ proc MapBox::ControlDel { Canvas Id } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlInit { Canvas } {
@@ -445,10 +406,6 @@ proc MapBox::ControlInit { Canvas } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlMove { Canvas Id X } {
@@ -489,10 +446,6 @@ proc MapBox::ControlMove { Canvas Id X } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlPopup { Canvas X Y XI Id } {
@@ -539,10 +492,6 @@ proc MapBox::ControlPopup { Canvas X Y XI Id } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlSet { Id X } {
@@ -566,10 +515,6 @@ proc MapBox::ControlSet { Id X } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::ControlValue { Canvas X } {
@@ -603,10 +548,6 @@ proc MapBox::ControlValue { Canvas X } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::Create { Parent Apply Map args } {
@@ -773,10 +714,6 @@ proc MapBox::Create { Parent Apply Map args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::Delete { Widget } {
@@ -813,10 +750,6 @@ proc MapBox::Delete { Widget } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::List { Widget } {
@@ -847,10 +780,6 @@ proc MapBox::List { Widget } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::Save { Widget } {
@@ -889,10 +818,6 @@ proc MapBox::Save { Widget } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::Select { Map } {
@@ -933,10 +858,6 @@ proc MapBox::Select { Map } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MapBox::Update { } {

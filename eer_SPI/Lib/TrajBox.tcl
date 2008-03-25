@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : TrajBox.tcl
-# Version  : 1.2
 # Creation : Decembre 2000 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -38,11 +37,6 @@
 #
 # Remarques :
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2003
-#   Description : Ajout du scroll avec les fleches
 #===============================================================================
 
 package provide TrajBox 1.2
@@ -107,11 +101,6 @@ namespace eval TrajBox {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TrajBox::Clear { } {
@@ -139,11 +128,6 @@ proc TrajBox::Clear { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TrajBox::Create { Parent Title { Geom "" } } {
@@ -293,11 +277,6 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TrajBox::Exist { No } {
@@ -321,10 +300,6 @@ proc TrajBox::Exist { No } {
 #       -1 : On ferme tout les fichiers
 #        n : On ferme le fichier correspondant a cet index
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::FileClose { No } {
@@ -403,10 +378,6 @@ proc TrajBox::FileClose { No } {
 # Remarque :
 #     - Si No < 0 l'ouverture se fera dans la derniere boite
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::FileOpen { No File } {
@@ -476,10 +447,6 @@ proc TrajBox::FileOpen { No File } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::Get { } {
@@ -502,10 +469,6 @@ proc TrajBox::Get { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::GetContent { { Id "" } } {
@@ -553,10 +516,6 @@ proc TrajBox::GetContent { { Id "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::GetFile { args } {
@@ -606,10 +565,6 @@ proc TrajBox::GetFile { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::GetSelected { args } {
@@ -660,10 +615,6 @@ proc TrajBox::GetSelected { args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::FileSelect { No File } {
@@ -689,12 +640,6 @@ proc TrajBox::FileSelect { No File } {
 #
 # Remarques :
 #    -Cette commande est appelee par le package ListboxBubble.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -722,11 +667,6 @@ proc TrajBox::InfoCommand { No Index } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TrajBox::Init { No } {
@@ -766,10 +706,6 @@ proc TrajBox::Init { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::Insert { No } {
@@ -860,10 +796,6 @@ proc TrajBox::Insert { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::Close { No } {
@@ -912,10 +844,6 @@ proc TrajBox::Close { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::CloseAll { } {
@@ -938,11 +866,6 @@ proc TrajBox::CloseAll { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TrajBox::Raise { } {
@@ -967,10 +890,6 @@ proc TrajBox::Raise { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::Restrict { No args } {
@@ -1045,10 +964,6 @@ proc TrajBox::Restrict { No args } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::RestrictClear { No } {
@@ -1073,10 +988,6 @@ proc TrajBox::RestrictClear { No } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc TrajBox::RestrictSet { No Var Value } {
@@ -1101,11 +1012,6 @@ proc TrajBox::RestrictSet { No Var Value } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc TrajBox::Scroll { No Incr } {
@@ -1138,12 +1044,6 @@ proc TrajBox::Scroll { No Incr } {
 # Parametres :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

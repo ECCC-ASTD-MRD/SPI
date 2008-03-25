@@ -12,15 +12,7 @@
 # Description:
 #    Permet d'afficher une arborescence d'experiences.
 #
-# Fonctions:
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -131,13 +123,6 @@ namespace eval Model {
 # Parametres :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -165,11 +150,6 @@ proc Model::DrawCurrent { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::Window { { Show "" } } {
@@ -241,11 +221,6 @@ proc Model::Window { { Show "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::Dock { } {
@@ -271,13 +246,6 @@ proc Model::Dock { } {
 #   <MS>     : Nombre de millisecondes d'interval.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -321,11 +289,6 @@ proc Model::Check { MS } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::Destroy { } {
@@ -362,13 +325,7 @@ proc Model::Destroy { } {
 #   <Valid>  : True ou False.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::GetMetPath { Parent DiagVar ProgVar } {
@@ -419,17 +376,11 @@ proc Model::GetMetPath { Parent DiagVar ProgVar } {
 #   <Parent> : Identificateur de la fenetre parent.
 #
 # Retour :
-#    Aucun.
 #
 # Remarques :
 #    -On utilise les variables interne de SPI SPI::Src(*) pour recuperer directement
 #     les informations provenant du selecteur de source et du dictionnaire.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Model::New { Parent Command Label Single } {
@@ -564,7 +515,6 @@ proc Model::New { Parent Command Label Single } {
 # Parametres :
 #
 # Retour :
-#    Aucun.
 #
 # Remarques :
 #    -On remet en mode zoom
@@ -572,11 +522,6 @@ proc Model::New { Parent Command Label Single } {
 #    -On supprime la trace des sources
 #    -On detruit la fenetre
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Model::NewClose { } {
@@ -600,15 +545,9 @@ proc Model::NewClose { } {
 #    <>      : Parametres de renvoie des trace
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::Source { Array Index Op } {
@@ -636,15 +575,9 @@ proc Model::Source { Array Index Op } {
 #    <Val>      : Position actuelle
 #
 # Retour :
-#   Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::Scroll { Val } {
@@ -678,16 +611,9 @@ proc Model::Scroll { Val } {
 # Parametres :
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Model::SwitchCoord { } {
@@ -732,11 +658,6 @@ proc Model::SwitchCoord { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::TypeSelect { Frame No { Icon "" } } {
@@ -787,11 +708,6 @@ proc Model::TypeSelect { Frame No { Icon "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Model::DrawInit { Frame VP } {

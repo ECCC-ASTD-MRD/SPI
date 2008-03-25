@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions de filtres de conversions
 # Fichier   : Convert.tcl
-# Version   : 1.0 ($Revision: 1.3 $)
 # Creation  : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions de diverses fonctions de conversions.
@@ -24,12 +23,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -114,11 +107,6 @@ namespace eval Convert { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Convert::FormatCoord { Lat Lon Type { Prec 3 } } {
@@ -182,11 +170,6 @@ proc Convert::FormatCoord { Lat Lon Type { Prec 3 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Convert::FormatDist { Dist { Prec 2 } { Nautical False } } {
@@ -250,11 +233,6 @@ proc Convert::FormatDist { Dist { Prec 2 } { Nautical False } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Convert::FormatGrid { I J { Prec 4 } } {
@@ -284,11 +262,6 @@ proc Convert::FormatGrid { I J { Prec 4 } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
 proc Convert::Decimal2Minute { Value { Prec 3 } { List False } } {
@@ -332,11 +305,6 @@ proc Convert::Decimal2Minute { Value { Prec 3 } { List False } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
 proc Convert::Minute2Decimal { Value } {
@@ -382,11 +350,6 @@ proc Convert::Minute2Decimal { Value } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
 proc Convert::Meter2Millibar { Value } {
@@ -418,11 +381,6 @@ proc Convert::Meter2Millibar { Value } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
 proc Convert::Millibar2Meter { Value } {
@@ -458,11 +416,6 @@ proc Convert::Millibar2Meter { Value } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
 proc Convert::ModuloVal { Val Mod Sens } {
@@ -499,11 +452,6 @@ proc Convert::ModuloVal { Val Mod Sens } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #-------------------------------------------------------------------------------
 
 proc Convert::Set2Digit { Nb } {

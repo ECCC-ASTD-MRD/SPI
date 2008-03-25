@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Bubble.tk
-# Version  : 2.2 ($Revision: 1.3 $)
 # Creation : Mai 1998 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
@@ -165,12 +164,6 @@ namespace eval Bubble {
 #     aux widgets. Les structures et variables restent en memoire.
 #    -L'inverse pour l'activation
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Bubble::Activate { { State -1 } } {
@@ -231,12 +224,6 @@ proc Bubble::Activate { { State -1 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Bubble::Create { Widget Hlp } {
@@ -291,12 +278,6 @@ proc Bubble::Create { Widget Hlp } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Bubble::Enter { Widget X Y { Delay True } } {
@@ -327,12 +308,6 @@ proc Bubble::Enter { Widget X Y { Delay True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Bubble::Leave { Widget } {
@@ -359,12 +334,6 @@ proc Bubble::Leave { Widget } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Bubble::Follow { Widget X Y } {
@@ -390,12 +359,6 @@ proc Bubble::Follow { Widget X Y } {
 #    <Y>      : Coordonnee y ou afficher la bulle
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

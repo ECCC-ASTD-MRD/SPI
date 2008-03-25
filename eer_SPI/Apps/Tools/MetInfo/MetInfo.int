@@ -6,17 +6,10 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : MetInfo.int
-# Version  : 1.2
 # Creation : Octobre 200
 #
 # Description:
 #    Permet l'obtention de messages meteorologiques
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -32,11 +25,6 @@
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetInfo::Window { } {
@@ -81,11 +69,6 @@ proc MetInfo::Window { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetInfo::WinDef { } {
@@ -153,11 +136,6 @@ proc MetInfo::WinDef { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetInfo::Export { } {
@@ -241,11 +219,6 @@ proc MetInfo::Export { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetInfo::SaveAs { } {

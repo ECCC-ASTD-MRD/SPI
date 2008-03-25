@@ -13,13 +13,6 @@
 # Description: Description des procedures relatives au module MLDP0.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -37,19 +30,12 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP0.int
 #              than critical value.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CheckAvailableDiskSpace { } {
@@ -172,19 +158,11 @@ proc MLDP0::CheckAvailableDiskSpace { } {
 #              changed.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CheckFileSize { } {
@@ -219,19 +197,11 @@ proc MLDP0::CheckFileSize { } {
 #              formula of Sparks et al. (1997).
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ComputeMass { } {
@@ -266,19 +236,11 @@ proc MLDP0::ComputeMass { } {
 # But        : Create directories on host.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateDirectories { } {
@@ -324,19 +286,11 @@ proc MLDP0::CreateDirectories { } {
 # But        : Create input file for launching script.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateLaunchInputFile { } {
@@ -398,19 +352,11 @@ proc MLDP0::CreateLaunchInputFile { } {
 #                - Input file containing grid parameters.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateMeteoInputFiles { } {
@@ -461,25 +407,11 @@ proc MLDP0::CreateMeteoInputFiles { } {
 # But        : Create MLDP0 model input file.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 20 June 2006.
-#    Description : - Modify model input file for compatibility with
-#                    MLDP0-1.8.0.
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 30 August 2007.
-#    Description : - Modify model input file for compatibility with
-#                    MLDP0-1.9.7.
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateModelInputFile { } {
@@ -701,7 +633,6 @@ proc MLDP0::CreateModelInputFile { } {
    Debug::TraceProc "MLDP0: Model input file has been created successfully."
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -714,7 +645,6 @@ proc MLDP0::CreateModelInputFile { } {
 #                - encoding pool information.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <>       : Flag indicating if procedure has terminated
@@ -724,11 +654,6 @@ proc MLDP0::CreateModelInputFile { } {
 #   - If Flag = 1 : procedure succeeded.
 #   - If Flag = 0 : procedure failed.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateScriptsLaunchJob { } {
@@ -834,7 +759,6 @@ proc MLDP0::CreateScriptsLaunchJob { } {
    }
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -844,7 +768,6 @@ proc MLDP0::CreateScriptsLaunchJob { } {
 # But        : Create ksh script for launching pool info encoding.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <>       : Flag indicating if procedure has terminated
@@ -854,11 +777,6 @@ proc MLDP0::CreateScriptsLaunchJob { } {
 #   - If Flag = 1 : procedure succeeded.
 #   - If Flag = 0 : procedure failed.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateScriptLaunchEncode { } {
@@ -905,7 +823,6 @@ proc MLDP0::CreateScriptLaunchEncode { } {
    Debug::TraceProc "MLDP0: Script for encoding pool information has been created successfully."
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -915,7 +832,6 @@ proc MLDP0::CreateScriptLaunchEncode { } {
 # But        : Create ksh script for launching meteorological preprocessing.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <>       : Flag indicating if procedure has terminated
@@ -925,11 +841,6 @@ proc MLDP0::CreateScriptLaunchEncode { } {
 #   - If Flag = 1 : procedure succeeded.
 #   - If Flag = 0 : procedure failed.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateScriptLaunchMeteo { } {
@@ -982,7 +893,6 @@ proc MLDP0::CreateScriptLaunchMeteo { } {
    }
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -993,7 +903,6 @@ proc MLDP0::CreateScriptLaunchMeteo { } {
 #              transport/dispersion model.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <>       : Flag indicating if procedure has terminated
@@ -1003,11 +912,6 @@ proc MLDP0::CreateScriptLaunchMeteo { } {
 #   - If Flag = 1 : procedure succeeded.
 #   - If Flag = 0 : procedure failed.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateScriptLaunchModel { } {
@@ -1070,7 +974,6 @@ proc MLDP0::CreateScriptLaunchModel { } {
    }
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -1080,19 +983,11 @@ proc MLDP0::CreateScriptLaunchModel { } {
 # But        : Define directorie and files.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::DefineDirFiles { } {
@@ -1230,7 +1125,6 @@ proc MLDP0::DefineDirFiles { } {
 
    puts stdout $Sim(InfoLaunch)
    puts stdout $Sim(InfoVar)
-
 }
 
 #----------------------------------------------------------------------------
@@ -1240,7 +1134,6 @@ proc MLDP0::DefineDirFiles { } {
 # But        : Delete directories on remote host.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <>       : Flag indicating if procedure has terminated
@@ -1250,11 +1143,6 @@ proc MLDP0::DefineDirFiles { } {
 #   - If Flag = 1 : procedure succeeded.
 #   - If Flag = 0 : procedure failed.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::DeleteDirectories { } {
@@ -1281,7 +1169,6 @@ proc MLDP0::DeleteDirectories { } {
    Debug::TraceProc "MLDP0: Simulation directories have been removed successfully."
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -1291,19 +1178,11 @@ proc MLDP0::DeleteDirectories { } {
 # But        : Delete emission scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::EmissionDelete { } {
@@ -1357,20 +1236,13 @@ proc MLDP0::EmissionDelete { } {
 # But        : Read emission scenario files.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #  <Idx>     : Flag indicating if reading of emission scenario file
 #              has been read successfully (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::EmissionRead { } {
@@ -1453,19 +1325,11 @@ proc MLDP0::EmissionRead { } {
 # But        : Select a release scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::EmissionSelect { } {
@@ -1489,20 +1353,13 @@ proc MLDP0::EmissionSelect { } {
 # But        : Update modifications associated to the release scenario.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #  <Idx>     : Flag indicating if modifications have been applied
 #              successfully (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::EmissionUpdate { } {
@@ -1607,19 +1464,11 @@ proc MLDP0::EmissionUpdate { } {
 # But        : Write emission scenario to ascii file.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::EmissionWrite { } {
@@ -1649,7 +1498,6 @@ proc MLDP0::EmissionWrite { } {
    }
 
    close $file
-
 }
 
 #---------------------------------------------------------------------------
@@ -1665,13 +1513,6 @@ proc MLDP0::EmissionWrite { } {
 #   <time>    : Expanded time.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #---------------------------------------------------------------------------
 proc MLDP0::ExpandTime { Seconds } {
@@ -1721,19 +1562,12 @@ proc MLDP0::ExpandTime { Seconds } {
 #              meteorological data files and simulation duration.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #  <Bool>    : True ou False.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ExtractMetFiles { } {
@@ -1923,7 +1757,6 @@ proc MLDP0::ExtractMetFiles { } {
    Debug::TraceProc "MLDP0: Meteorological data files have been extracted successfully."
 
    return True
-
 }
 
 #----------------------------------------------------------------------------
@@ -1946,11 +1779,6 @@ proc MLDP0::ExtractMetFiles { } {
 #   - La procedure boucle sur toutes les simulations precedentes
 #     en remontant l'arbre.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::File { Info Path Type Back } {
@@ -1981,19 +1809,12 @@ proc MLDP0::File { Info Path Type Back } {
 # But        : Format date-time.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #  <Date-Time>   : Date-Time in the format YYYY-MM-DD HH:mm:SS UTC.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::FormatDateTime { DateTime } {
@@ -2006,7 +1827,6 @@ proc MLDP0::FormatDateTime { DateTime } {
    set sec   [string range $DateTime 12 13]
 
    return "${year}-${month}-${day} ${hour}:${min}:${sec} UTC"
-
 }
 
 #----------------------------------------------------------------------------
@@ -2016,24 +1836,12 @@ proc MLDP0::FormatDateTime { DateTime } {
 # But        : Creation de la liste des fichiers standards pour la meteo.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #  <Bool>    : True ou False.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 19 June 2006.
-#    Description : - Modify accidental date in order that MetData::File will
-#                    get valid met data files for Meso-Global model.
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 24 August 2007.
-#    Description : - Extract relevant met data according to simulation duration.
 #----------------------------------------------------------------------------
 
 proc MLDP0::GetMetData { } {
@@ -2083,20 +1891,11 @@ proc MLDP0::GetMetData { } {
 # But        : Debuter le mode MLDP0.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 23 August 2007.
-#    Description : - Add grid resolution [m] to grid scale to form a list
-#                    of two parameters in MetData::GridDefinePS.
 #----------------------------------------------------------------------------
 
 proc MLDP0::GridDef { } {
@@ -2129,13 +1928,7 @@ proc MLDP0::GridDef { } {
 #   <Size>   : New size [KBytes|MBytes|GBytes|TBytes].
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::KBytes2Human { Size } {
@@ -2172,7 +1965,6 @@ proc MLDP0::KBytes2Human { Size } {
    set size [format "%.1f" $size]
 
    return "$size $unit"
-
 }
 
 #----------------------------------------------------------------------------
@@ -2182,19 +1974,11 @@ proc MLDP0::KBytes2Human { Size } {
 # But        : Launch entire job (meteorological preprocessing and model).
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::LaunchJob { } {
@@ -2232,7 +2016,6 @@ proc MLDP0::LaunchJob { } {
    }
 
    . config -cursor left_ptr
-
 }
 
 #----------------------------------------------------------------------------
@@ -2242,19 +2025,11 @@ proc MLDP0::LaunchJob { } {
 # But        : Terminer le mode MLDP0.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ModeLeave { } {
@@ -2287,16 +2062,9 @@ proc MLDP0::ModeLeave { } {
 #   <VP>     : Identificateur du Viewport
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::Move { Frame VP } {
@@ -2325,16 +2093,9 @@ proc MLDP0::DrawInit { Canvas VP } { }
 #   <Info>   : Ligne non modifiee du fichier pool
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::PoolInfo { Info } {
@@ -2352,19 +2113,11 @@ proc MLDP0::PoolInfo { Info } {
 # But        : Reload launching parameters.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ReloadLaunchParams { } {
@@ -2391,9 +2144,7 @@ proc MLDP0::ReloadLaunchParams { } {
 
       #----- Set meteorological database directories according to meteorological model.
       MLDP0::SetMetDataDir
-
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -2403,19 +2154,11 @@ proc MLDP0::ReloadLaunchParams { } {
 # But        : Reload met data.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ReloadMetData { } {
@@ -2444,11 +2187,8 @@ proc MLDP0::ReloadMetData { } {
       if { ![MLDP0::GetMetData] } {
          return False
       }
-
    }
-
    return True
-
 }
 
 #----------------------------------------------------------------------------
@@ -2461,16 +2201,9 @@ proc MLDP0::ReloadMetData { } {
 #    <Type>  : Type de fichier (standard ou post)
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::Result { Type } {
@@ -2492,19 +2225,11 @@ proc MLDP0::Result { Type } {
 # But        : Set accident release date (year, month and day).
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetAccidentDate { } {
@@ -2513,7 +2238,6 @@ proc MLDP0::SetAccidentDate { } {
    set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt true] ; #----- Year of accident date.
    set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt true] ; #----- Month of accident date.
    set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true] ; #----- Day of accident date.
-
 }
 
 #----------------------------------------------------------------------------
@@ -2528,19 +2252,11 @@ proc MLDP0::SetAccidentDate { } {
 #                  to submit job.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetArchVariables { } {
@@ -2581,7 +2297,6 @@ proc MLDP0::SetArchVariables { } {
          set Sim(IsUsingSoumet) 1
       }
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -2591,19 +2306,11 @@ proc MLDP0::SetArchVariables { } {
 # But        : Set grid scale name and grid scale resolution.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetGridScaleRes { } {
@@ -2624,7 +2331,6 @@ proc MLDP0::SetGridScaleRes { } {
          set Sim(GridRes)  [string trimleft  [lindex $string 1] "("] ; #----- Grid scale resolution [km].
          set Sim(GridSize) [string trimright [lindex $string 3] ")"] ; #----- Grid size NIxNJ.
       }
-
    }
 
    set idx [string first "x" $Sim(GridSize)]
@@ -2635,11 +2341,6 @@ proc MLDP0::SetGridScaleRes { } {
 
    set Sim(GridResolution) $Sim(GridRes)        ; #----- Grid resolution [km].
    set Sim(GridRes) [expr $Sim(GridRes) * 1000] ; #----- Convert grid resolution from [km] to [m].
-
-#    puts stdout "\nSim(Scale)          : $Sim(Scale)"
-#    puts stdout "Sim(GridResolution) : $Sim(GridResolution) km"
-#    puts stdout "Sim(GridSize)       : $Sim(GridSize)"
-
 }
 
 #----------------------------------------------------------------------------
@@ -2652,16 +2353,9 @@ proc MLDP0::SetGridScaleRes { } {
 #    <Flag>  : Flag indicating if updating list of hosts in interface.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetHosts { Flag } {
@@ -2703,7 +2397,6 @@ proc MLDP0::SetHosts { Flag } {
    if { $Flag } {
       MLDP0::UpdateListHosts
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -2714,19 +2407,11 @@ proc MLDP0::SetHosts { Flag } {
 #              directories.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetMetDataDir { } {
@@ -2747,9 +2432,7 @@ proc MLDP0::SetMetDataDir { } {
          set Sim(DBaseDiag) "/users/dor/afse/eer/projets/MLDP/dbase/data/dbase/prog/regeta"
          set Sim(DBaseProg) "/users/dor/afse/eer/projets/MLDP/dbase/data/dbase/prog/regeta"
       }
-
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -2764,16 +2447,9 @@ proc MLDP0::SetMetDataDir { } {
 #              meteorological preporcesing in interface.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetNbCPUsMeteo { Flag } {
@@ -2805,7 +2481,6 @@ proc MLDP0::SetNbCPUsMeteo { Flag } {
    if { $Flag } {
       MLDP0::UpdateListNbCPUsMeteo
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -2818,16 +2493,9 @@ proc MLDP0::SetNbCPUsMeteo { Flag } {
 #    <Flag>  : Flag indicating if updating list of queues in interface.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetQueues { Flag } {
@@ -2856,7 +2524,6 @@ proc MLDP0::SetQueues { Flag } {
    if { $Flag } {
       MLDP0::UpdateListQueues
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -2866,21 +2533,11 @@ proc MLDP0::SetQueues { Flag } {
 # But        : Initialiser les coordonnees de la source.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 21 June 2006.
-#    Description : - Initialize coordinates (lat, lon) of center of grid
-#                    according to selected source. These coordinates will
-#                    be used to define the polar stereographic grid.
 #----------------------------------------------------------------------------
 
 proc MLDP0::SetSrc { } {
@@ -2903,19 +2560,11 @@ proc MLDP0::SetSrc { } {
 #              nouvelle simulation.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 22 March 2004.
-#    Description : - Define variables for virus source type.
 #----------------------------------------------------------------------------
 
 proc MLDP0::SimInitNew { } {
@@ -3079,7 +2728,6 @@ proc MLDP0::SimInitNew { } {
    #----- Initialize coordinates of center of grid according to selected source and
    #----- define polar stereographic grid.
    MLDP0::SetSrc
-
 }
 
 #----------------------------------------------------------------------------
@@ -3090,19 +2738,11 @@ proc MLDP0::SimInitNew { } {
 #              la simulation.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SimLaunchCheck { } {
@@ -3169,9 +2809,7 @@ proc MLDP0::SimLaunchCheck { } {
 
       #----- Relire les experiences
       Model::Check 0
-
    }
-
 }
 
 #----------------------------------------------------------------------------
@@ -3186,27 +2824,14 @@ proc MLDP0::SimLaunchCheck { } {
 #   <No>     : Numero de l'onglet
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 29 August 2007.
-#    Description : - Validate simulation duration.
-#                  - Set species information for pool of simulation.
 #----------------------------------------------------------------------------
 
 proc MLDP0::SimLaunchInit { Tab No } {
    global   GDefs
    variable Sim
-
-#    puts stdout ""
-#    puts stdout "Tab            : $Tab"
-#    puts stdout "No             : $No"
-#    puts stdout "Sim(TabPrevNo) : $Sim(TabPrevNo)"
 
    .mldp0new config -cursor watch
 
@@ -3260,8 +2885,6 @@ proc MLDP0::SimLaunchInit { Tab No } {
 
    #----- Set previous tab no.
    set Sim(TabPrevNo) $No
-#   puts stdout "Sim(TabPrevNo) : $Sim(TabPrevNo)"
-
 }
 
 #----------------------------------------------------------------------------
@@ -3275,16 +2898,9 @@ proc MLDP0::SimLaunchInit { Tab No } {
 #   <Info>    : Identificateur de la simulation
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SimSuppress { Confirm Info } {
@@ -3334,13 +2950,7 @@ proc MLDP0::SimSuppress { Confirm Info } {
 #   <NoSim>  : Numero de l'experience percedente
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SimSuppressResults { Path Info } {
@@ -3386,16 +2996,9 @@ proc MLDP0::SimSuppressResults { Path Info } {
 #    <Idx>   : Index dans la liste a supprimer
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SpeciesDelete { Idx } {
@@ -3443,19 +3046,11 @@ proc MLDP0::SpeciesDelete { Idx } {
 #              d'especes.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SpeciesFormat { } {
@@ -3504,11 +3099,8 @@ proc MLDP0::SpeciesFormat { } {
                puts stderr "         This isotope will be ignored."
                puts stderr "         Half-life: $halflife s."
             }
-
          }
-
       }
-
    }
 }
 
@@ -3519,19 +3111,11 @@ proc MLDP0::SpeciesFormat { } {
 # But        : Lance le selecteur d'especes.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::SpeciesStart { } {
@@ -3562,19 +3146,11 @@ proc MLDP0::SpeciesStart { } {
 # But        : Update list of available hosts in interface.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateListHosts { } {
@@ -3582,7 +3158,6 @@ proc MLDP0::UpdateListHosts { } {
 
    #----- Update list of available hosts.
    Option::Set $Sim(HostFrm) $Sim(Hosts)
-
 }
 
 #----------------------------------------------------------------------------
@@ -3593,19 +3168,11 @@ proc MLDP0::UpdateListHosts { } {
 #              preprocessing.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateListNbCPUsMeteo { } {
@@ -3613,7 +3180,6 @@ proc MLDP0::UpdateListNbCPUsMeteo { } {
 
    #----- Update list of available number of CPUs for meteorological preprocessing.
    Option::Set $Sim(NbCPUsMeteoFrm) $Sim(ListNbCPUsMeteo)
-
 }
 
 #----------------------------------------------------------------------------
@@ -3623,19 +3189,11 @@ proc MLDP0::UpdateListNbCPUsMeteo { } {
 # But        : Update list of available queues in interface.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateListQueues { } {
@@ -3653,7 +3211,6 @@ proc MLDP0::UpdateListQueues { } {
 
    #----- Update list of available queues.
    Option::Set $Sim(QueueFrm) $Sim(Queues)
-
 }
 
 #----------------------------------------------------------------------------
@@ -3664,19 +3221,11 @@ proc MLDP0::UpdateListQueues { } {
 #              current list of levels if reflection level was modified.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
-#    Aucun.
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::UpdateListVerticalLevels { } {
@@ -3709,9 +3258,6 @@ proc MLDP0::UpdateListVerticalLevels { } {
    set Sim(VerticalLevels)      [lreplace $Sim(VerticalLevels) 0 0 $firstlevel] ; #----- Update vertical levels.
    set Sim(PrevReflectionLevel) $Sim(ReflectionLevel)                           ; #----- Reset previous reflection level.
 
-#   puts stdout "Sim(ListVerticalLevels) : $Sim(ListVerticalLevels)"
-#   puts stdout "Sim(VerticalLevels)     : $Sim(VerticalLevels)"
-
    unset NewListVerticalLevels
 }
 
@@ -3722,19 +3268,12 @@ proc MLDP0::UpdateListVerticalLevels { } {
 # But        : Validate density.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateDensity { } {
@@ -3792,11 +3331,6 @@ proc MLDP0::ValidateDensity { } {
 #                                                             Third
 #                                                             Output
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateEffectiveSimDuration { MetData } {
@@ -3845,19 +3379,12 @@ proc MLDP0::ValidateEffectiveSimDuration { MetData } {
 # But        : Validate email address.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateEmail { } {
@@ -3916,7 +3443,6 @@ proc MLDP0::ValidateEmail { } {
    }
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -3926,7 +3452,6 @@ proc MLDP0::ValidateEmail { } {
 # But        : Validate emission column parameters.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
@@ -3938,11 +3463,6 @@ proc MLDP0::ValidateEmail { } {
 #    - Maximum plume height.
 #    - Column radius.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateEmissionColumn { } {
@@ -4000,19 +3520,12 @@ proc MLDP0::ValidateEmissionColumn { } {
 # But        : Validate total mass released.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateMass { } {
@@ -4043,7 +3556,6 @@ proc MLDP0::ValidateMass { } {
 #              calculation for volcano eruption.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
@@ -4054,11 +3566,6 @@ proc MLDP0::ValidateMass { } {
 #    - Maximum plume height.
 #    - Emission durations according to model time step.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateMassInputParams { } {
@@ -4096,19 +3603,12 @@ proc MLDP0::ValidateMassInputParams { } {
 # But        : Validate number of sources.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateNbSrc { } {
@@ -4134,20 +3634,12 @@ proc MLDP0::ValidateNbSrc { } {
 # But        : Validate number of particles.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 7 July 2006.
-#    Description : - Add extra validation to ensure that number of particles
-#                    is less than (or equal to) maximum number of particles.
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateNumberParticles { } {
@@ -4195,19 +3687,12 @@ proc MLDP0::ValidateNumberParticles { } {
 #              - Bottom reflection level of particles in the atmosphere [hyb|eta|sig].
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 16 November 2007.
-#    Description : - Validate Lagrangian time scale [s].
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateOtherParams { } {
@@ -4252,19 +3737,12 @@ proc MLDP0::ValidateOtherParams { } {
 # But        : Validate maximum plume height.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidatePlumeHeight { } {
@@ -4301,19 +3779,12 @@ proc MLDP0::ValidatePlumeHeight { } {
 # But        : Validate type of submitting queue/class.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateQueue { } {
@@ -4335,7 +3806,6 @@ proc MLDP0::ValidateQueue { } {
    }
 
    return 1
-
 }
 
 #----------------------------------------------------------------------------
@@ -4345,19 +3815,12 @@ proc MLDP0::ValidateQueue { } {
 # But        : Validate radius.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateRadius { } {
@@ -4387,19 +3850,12 @@ proc MLDP0::ValidateRadius { } {
 #              in the atmosphere.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateReflectionLevel { } {
@@ -4437,19 +3893,12 @@ proc MLDP0::ValidateReflectionLevel { } {
 #              mesoscale fluctuations.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateTimescale { } {
@@ -4487,19 +3936,12 @@ proc MLDP0::ValidateTimescale { } {
 #              mesoscale fluctuations.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateVarianceMesoscale { } {
@@ -4536,21 +3978,12 @@ proc MLDP0::ValidateVarianceMesoscale { } {
 # But        : Validate vertical levels (m) for concentration calculations.
 #
 # Parametres :
-#    Aucun.
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
 #
 # Remarques  :
-#    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : - A. Malo - CMC/CMOE
-#    Date        : - 7 July 2006.
-#    Description : - Add extra validation to ensure that number of vertical
-#                    levels is less than (or equal to) maximum number of
-#                    vertical levels.
 #----------------------------------------------------------------------------
 
 proc MLDP0::ValidateVerticalLevels { } {
@@ -4589,7 +4022,6 @@ proc MLDP0::ValidateVerticalLevels { } {
             return 0
          }
       }
-
    }
 
    return 1

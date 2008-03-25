@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Mapper_Cutter.tcl
-# Version  : 1.0
 # Creation : Fevrier 2007 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Fontions de decoupe dans une donnee raster.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -43,11 +33,6 @@ namespace eval Mapper::Cutter { }
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::Cutter::VertexAdd { Frame VP X Y } {
@@ -101,11 +86,6 @@ proc Mapper::Cutter::VertexAdd { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::Cutter::VertexDelete { Frame VP } {
@@ -144,11 +124,6 @@ proc Mapper::Cutter::VertexDelete { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::Cutter::VertexFollow { Frame VP X Y Scan } {

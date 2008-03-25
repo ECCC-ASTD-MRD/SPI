@@ -6,7 +6,6 @@
 #
 # Projet   : Widget de librairie.
 # Fichier  : Drawing.tcl
-# Version  : 4.0
 # Creation : Novembre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -70,33 +69,6 @@
 #   Drawing::VertexFollow { Frame VP X Y Scan }
 #   Drawing::Write        { Frame File }
 #
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : -Fonction de sauvegarde et lecture des dessin
-#                 -Ajout de primitives (Distance, Bitmap ...)
-#                 -Correction d'un leger bug pour le premier segment des polygone
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 2001
-#   Description : -Ajout du FontBox et du ColorBox
-#                 -Creation multiple pour toute les primitives
-#                 -Ajout de la primitive de pointage
-#                 -Ajout du mode statique (non georeference)
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2002
-#   Description : -Ajout de la couleur des contours
-#                 -Ajout du deplacement des primitives statiques
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 2003
-#   Description : -Ajout de la primitive image
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2005
-#   Description : -Transformation de librairie a Outils
 #===============================================================================
 
 #----- Lire les sources d'execution
@@ -139,11 +111,6 @@ proc Drawing::PageActivate { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::ImageSetup { } {
@@ -204,11 +171,6 @@ proc Drawing::ImageSetup { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::ImageAdd { File } {
@@ -242,11 +204,6 @@ proc Drawing::ImageAdd { File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::Clear { Frame } {
@@ -279,11 +236,6 @@ proc Drawing::Clear { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::Close { } {
@@ -315,11 +267,6 @@ proc Drawing::Close { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::Insert { } {
@@ -354,11 +301,6 @@ proc Drawing::Insert { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawMode { Frame Clear } {
@@ -417,11 +359,6 @@ proc Drawing::DrawMode { Frame Clear } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::Draw { Frame Params } {
@@ -496,11 +433,6 @@ proc Drawing::Draw { Frame Params } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::Draw3D { Frame VP Vertex Lat Lon Color Tags } {
@@ -530,11 +462,6 @@ proc Drawing::Draw3D { Frame VP Vertex Lat Lon Color Tags } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawBitm { Frame VP Vertex Color Bitmap Tag } {
@@ -582,11 +509,6 @@ proc Drawing::DrawBitm { Frame VP Vertex Color Bitmap Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawImag { Frame VP Vertex Image Tag } {
@@ -635,11 +557,6 @@ proc Drawing::DrawImag { Frame VP Vertex Image Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawHead { Frame VP Vertex Color Width Font Tag } {
@@ -708,11 +625,6 @@ proc Drawing::DrawHead { Frame VP Vertex Color Width Font Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawDist { Frame VP Vertex Color Width Font Mode Tag } {
@@ -772,11 +684,6 @@ proc Drawing::DrawDist { Frame VP Vertex Color Width Font Mode Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
@@ -829,11 +736,6 @@ proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
@@ -888,11 +790,6 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
@@ -996,11 +893,6 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Outline Tag } {
@@ -1056,11 +948,6 @@ proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Outline Tag } 
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Outline Tag } {
@@ -1119,11 +1006,6 @@ proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Outline Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawText { Frame VP Vertex Color Text Font Angle Tag } {
@@ -1169,11 +1051,6 @@ proc Drawing::DrawText { Frame VP Vertex Color Text Font Angle Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawValu { Frame VP Vertex Color Date Font Grid Coord Tag } {
@@ -1270,11 +1147,6 @@ proc Drawing::DrawValu { Frame VP Vertex Color Date Font Grid Coord Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawStream { Frame VP Vertex Color Width Step Res Tag } {
@@ -1321,11 +1193,6 @@ proc Drawing::DrawStream { Frame VP Vertex Color Width Step Res Tag } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::DrawVert { Frame VP Vertex Color Text Font Tag } {
@@ -1373,11 +1240,6 @@ proc Drawing::DrawVert { Frame VP Vertex Color Text Font Tag } {
 #
 # Remarques :
 #
-# Modifications :Date
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::FileSave { File } {
@@ -1454,11 +1316,6 @@ proc Drawing::FileSave { File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::FileLoad { Frame File } {
@@ -1534,11 +1391,6 @@ proc Drawing::FileLoad { Frame File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitBitm { } {
@@ -1565,11 +1417,6 @@ proc Drawing::InitBitm { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitImag { } {
@@ -1594,11 +1441,6 @@ proc Drawing::InitImag { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitDist { } {
@@ -1628,11 +1470,6 @@ proc Drawing::InitDist { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitHead { } {
@@ -1662,11 +1499,6 @@ proc Drawing::InitHead { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitFont { Font } {
@@ -1698,11 +1530,6 @@ proc Drawing::InitFont { Font } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitLine { } {
@@ -1732,11 +1559,6 @@ proc Drawing::InitLine { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitPoly { } {
@@ -1767,11 +1589,6 @@ proc Drawing::InitPoly { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitRect { } {
@@ -1803,11 +1620,6 @@ proc Drawing::InitRect { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitStrk { } {
@@ -1833,11 +1645,6 @@ proc Drawing::InitStrk { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitText { } {
@@ -1869,11 +1676,6 @@ proc Drawing::InitText { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitValu { } {
@@ -1903,11 +1705,6 @@ proc Drawing::InitValu { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitStream { } {
@@ -1935,11 +1732,6 @@ proc Drawing::InitStream { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::InitVert { } {
@@ -1969,11 +1761,6 @@ proc Drawing::InitVert { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::ItemAdd { Frame Type } {
@@ -2032,11 +1819,6 @@ proc Drawing::ItemAdd { Frame Type } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::ItemDel { Frame } {
@@ -2075,11 +1857,6 @@ proc Drawing::ItemDel { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::ItemIndex { Frame Dir } {
@@ -2132,11 +1909,6 @@ proc Drawing::ItemIndex { Frame Dir } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::ItemSel { Frame } {
@@ -2228,11 +2000,6 @@ proc Drawing::ItemSel { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetIndex { Frame Index Value } {
@@ -2258,11 +2025,6 @@ proc Drawing::SetIndex { Frame Index Value } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetArrow { Frame Arrow } {
@@ -2289,11 +2051,6 @@ proc Drawing::SetArrow { Frame Arrow } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetBitmap { Frame Bitmap } {
@@ -2324,11 +2081,6 @@ proc Drawing::SetBitmap { Frame Bitmap } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetImage { Frame Image } {
@@ -2356,11 +2108,6 @@ proc Drawing::SetImage { Frame Image } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetColor { Frame } {
@@ -2387,11 +2134,6 @@ proc Drawing::SetColor { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetOutline { Frame } {
@@ -2416,11 +2158,6 @@ proc Drawing::SetOutline { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetValu { Frame } {
@@ -2448,11 +2185,6 @@ proc Drawing::SetValu { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetLine { Frame Line } {
@@ -2478,11 +2210,6 @@ proc Drawing::SetLine { Frame Line } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetNautic { Frame } {
@@ -2507,11 +2234,6 @@ proc Drawing::SetNautic { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetPattern { Frame Pattern } {
@@ -2540,11 +2262,6 @@ proc Drawing::SetPattern { Frame Pattern } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetFont { Frame Font } {
@@ -2570,11 +2287,6 @@ proc Drawing::SetFont { Frame Font } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetAngle { Frame Angle } {
@@ -2601,11 +2313,6 @@ proc Drawing::SetAngle { Frame Angle } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetText { Frame Text } {
@@ -2630,11 +2337,6 @@ proc Drawing::SetText { Frame Text } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::SetWidth { Frame Width } {
@@ -2659,11 +2361,6 @@ proc Drawing::SetWidth { Frame Width } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::UpdateItems { Frame } {
@@ -2693,11 +2390,6 @@ proc Drawing::UpdateItems { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::VertexAdd { Frame VP X Y args } {
@@ -2762,11 +2454,6 @@ proc Drawing::VertexAdd { Frame VP X Y args } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::VertexDelete { Frame VP } {
@@ -2838,11 +2525,6 @@ proc Drawing::VertexDelete { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::VertexFollow { Frame VP X Y Scan } {
@@ -2938,11 +2620,6 @@ proc Drawing::VertexFollow { Frame VP X Y Scan } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Drawing::VertexSet { Frame Tag No } {
@@ -2996,12 +2673,6 @@ proc Drawing::VertexSet { Frame Tag No } {
 #     - Cette fonction sert a reassigner les viewports apres une lecture de
 #       layout sauvegardee
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Drawing::Parse { } {
@@ -3026,12 +2697,6 @@ proc Drawing::Parse { } {
 #   <File>   : Identificateur de Fichier
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -3094,12 +2759,6 @@ proc Drawing::Write { Frame File } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

@@ -6,7 +6,6 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : Kriger.txt
-# Version  : 1.0
 # Creation : Fevrier 2008
 #
 # Description:
@@ -14,12 +13,6 @@
 #    definir la grille interactivement et les parametres de kriging
 #
 #    Description des divers textes et messages
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

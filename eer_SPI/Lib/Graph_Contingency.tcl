@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Contingency.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -44,12 +43,6 @@
 #    Graph::Contingency::Select         { GR  I J }
 #    Graph::Contingency::Stat           { GR }
 #    Graph::Contingency::Uniform        { GR { Update True } }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -89,11 +82,6 @@ namespace eval Graph::Contingency { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
@@ -167,10 +155,6 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Coord { Frame GR X Y } {
@@ -190,11 +174,6 @@ proc Graph::Contingency::Coord { Frame GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Contingency::Destroy { Frame GR } {
@@ -231,11 +210,6 @@ proc Graph::Contingency::Destroy { Frame GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Contingency::DrawInit { Frame VP } {
@@ -359,10 +333,6 @@ proc Graph::Contingency::MoveDone { Frame VP } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Graph { GR } {
@@ -414,11 +384,6 @@ proc Graph::Contingency::Graph { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Contingency::Init { Frame } {
@@ -469,11 +434,6 @@ proc Graph::Contingency::Init { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Contingency::Page { GR } {
@@ -549,12 +509,6 @@ proc Graph::Contingency::Page { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Params { Parent GR } {
@@ -602,12 +556,6 @@ proc Graph::Contingency::Params { Parent GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemAdd { GR Item } {
@@ -635,12 +583,6 @@ proc Graph::Contingency::ItemAdd { GR Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemDel { GR Item } {
@@ -667,12 +609,6 @@ proc Graph::Contingency::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -726,12 +662,6 @@ proc Graph::Contingency::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemUnDefine { GR Pos } {
@@ -761,12 +691,6 @@ proc Graph::Contingency::ItemUnDefine { GR Pos } {
 #   <Data>   : Donnees a extraire
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -841,10 +765,6 @@ proc Graph::Contingency::ItemData { GR Pos Item Data } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
@@ -936,10 +856,6 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemDataField { GR Data0 Data1 } {
@@ -1054,12 +970,6 @@ proc Graph::Contingency::ItemDataVector { GR Data0 Data1 } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Update { Frame { GR {} } } {
@@ -1106,12 +1016,6 @@ proc Graph::Contingency::Update { Frame { GR {} } } {
 #
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -1164,10 +1068,6 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Data { GR { Data { } } } {
@@ -1200,10 +1100,6 @@ proc Graph::Contingency::Data { GR { Data { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::DrawData { GR } {
@@ -1275,10 +1171,6 @@ proc Graph::Contingency::DrawData { GR } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::DrawScale { GR } {
@@ -1333,10 +1225,6 @@ proc Graph::Contingency::DrawScale { GR } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::DrawStat { GR } {
@@ -1430,11 +1318,6 @@ proc Graph::Contingency::DrawStat { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Contingency::Select { GR  I J } {
@@ -1462,10 +1345,6 @@ proc Graph::Contingency::Select { GR  I J } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Stat { GR } {
@@ -1542,12 +1421,6 @@ proc Graph::Contingency::Stat { GR } {
 #   <Update> : Mettre a jour le graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

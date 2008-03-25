@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de definitions pour les donnees de pointages
 # Fichier   : Data_Obs.tcl
-# Version   : 3.4
 # Creation  : Novembre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions d'une structure de donnees et de procedures
@@ -26,16 +25,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2000
-#   Description : Modification pour compatibilite avec la version 3.0 GL des projections
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Avril 2006
-#   Description : Modification pour gerer les modeles depointage et les objets dataspec
 #
 #===============================================================================
 
@@ -187,10 +176,6 @@ namespace eval Obs {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Obs::ParamFrame { Frame Apply } {
@@ -418,10 +403,6 @@ proc Obs::ParamFrame { Frame Apply } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Obs::ParamGet { { Spec "" } } {
@@ -493,10 +474,6 @@ proc Obs::ParamGet { { Spec "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Obs::ParamSet { { Spec "" } } {
@@ -554,10 +531,6 @@ proc Obs::ParamSet { { Spec "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Obs::ParamPut { } {
@@ -605,10 +578,6 @@ proc Obs::ParamPut { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Obs::ParamInit { Obs { Spec "" } } {
@@ -657,11 +626,6 @@ proc Obs::ParamInit { Obs { Spec "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Obs::ParamUpdate { { Obs {} } } {
@@ -718,21 +682,16 @@ proc Obs::ParamUpdate { { Obs {} } } {
 # Nom      : <Obs::Register>
 # Creation : Janvier 2006 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Enregistrer l'obs dans la liste des pbservations connus et configurable
+# But      : Enregistrer l'obs dans la liste des observations connus et configurable
 #
-# Parametres  :
-#   <FieldId> : Identificateur de champs
-#   <Update>  : Mise a jour des parametres
+# Parametres :
+#   <ObsId>  : Identificateur de champs
+#   <Update> : Mise a jour des parametres
 #
 # Retour:
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Obs::Register { ObsId { Update True } } {
@@ -748,6 +707,22 @@ proc Obs::Register { ObsId { Update True } } {
 
    return $idx
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Obs::UnRegister>
+# Creation : Janvier 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer l'obs de la liste des observations connus et configurable
+#
+# Parametres :
+#   <ObsId>  : Identificateur de champs
+#   <Update> : Mise a jour des parametres
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Obs::UnRegister { ObsId { Update True } } {
    variable Data

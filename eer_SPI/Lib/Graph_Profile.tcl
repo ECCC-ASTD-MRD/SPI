@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Profile.tcl
-# Version  : 2.0
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # ription: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -35,12 +34,6 @@
 #    Graph::Profile::Update       { Frame { GR {} } }
 #    Graph::Profile::UpdateItems  { Frame { GR  { } } }
 #    Graph::Profile::Data         { GR Data }
-#
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -72,11 +65,6 @@ namespace eval Graph::Profile { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
@@ -171,10 +159,6 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::Coord { Frame GR X Y } {
@@ -209,11 +193,6 @@ proc Graph::Profile::Coord { Frame GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Profile::Destroy { Frame GR } {
@@ -253,11 +232,6 @@ proc Graph::Profile::Destroy { Frame GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Profile::DrawInit { Frame VP } {
@@ -297,10 +271,6 @@ proc Graph::Profile::MoveDone { Frame VP } { }
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::Graph { GR } {
@@ -414,11 +384,6 @@ proc Graph::Profile::Graph { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Profile::Init { Frame } {
@@ -463,12 +428,6 @@ proc Graph::Profile::Init { Frame } {
 #   <GR>     : Identificateur du Graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -521,12 +480,6 @@ proc Graph::Profile::Params { Parent GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::ItemAdd { GR Item } {
@@ -560,12 +513,6 @@ proc Graph::Profile::ItemAdd { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -603,12 +550,6 @@ proc Graph::Profile::ItemDefault { GR Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::ItemDel { GR Item } {
@@ -638,12 +579,6 @@ proc Graph::Profile::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -694,12 +629,6 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::ItemUnDefine { GR Pos } {
@@ -729,12 +658,6 @@ proc Graph::Profile::ItemUnDefine { GR Pos } {
 #   <Data>   : Donnees a extraire
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -787,12 +710,6 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::Update { Frame { GR {} } } {
@@ -843,12 +760,6 @@ proc Graph::Profile::Update { Frame { GR {} } } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
@@ -892,10 +803,6 @@ proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::Data { GR Data } {

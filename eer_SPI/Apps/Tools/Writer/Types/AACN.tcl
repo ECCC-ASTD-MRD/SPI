@@ -11,12 +11,6 @@
 # Description:
 #    Redaction de message AACN
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval Writer::AACN {
@@ -42,12 +36,6 @@ namespace eval Writer::AACN {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::New { Pad Mode } {
@@ -72,12 +60,6 @@ proc Writer::AACN::New { Pad Mode } {
 #    <Pad>   : Descripteur du Pad
 #
 # Remarques :
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -112,12 +94,6 @@ proc Writer::AACN::Init { Pad } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::Open { Pad File } {
@@ -151,12 +127,6 @@ proc Writer::AACN::Open { Pad File } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -La
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -197,12 +167,6 @@ proc Writer::AACN::Correct { Pad } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::Update { Pad } {
@@ -225,12 +189,6 @@ proc Writer::AACN::Update { Pad } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 
@@ -272,12 +230,6 @@ proc Writer::AACN::Format { Pad } {
 # Remarques :
 #    Aucune.
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::FormatCoord { Lat Lon } {
@@ -318,11 +270,6 @@ proc Writer::AACN::FormatCoord { Lat Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::Clear { Pad } {
@@ -346,11 +293,6 @@ proc Writer::AACN::Clear { Pad } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::LayoutInit { Pad } {
@@ -394,11 +336,6 @@ proc Writer::AACN::LayoutInit { Pad } {
 #   parametres du PrintBox lui-meme et du "Widget PlugIn" PrintBox::PlugInCommand
 #   definit ci-haut.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::PrintCommand { Canvas } {
@@ -424,11 +361,6 @@ proc Writer::AACN::PrintCommand { Canvas } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::PageInit { Pad } {
@@ -473,12 +405,6 @@ proc Writer::AACN::PageInit { Pad } {
 #
 # Remarques :
 #
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::Read { Pad File} {
@@ -510,12 +436,6 @@ proc Writer::AACN::Read { Pad File} {
 #
 # Remarques :
 #   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -564,11 +484,6 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
 #   -Cette procedure repond a un "trace" sur une variable a l'interieur de SPI
 #    afin de recuperer l'information necessaire automatiquement (SPI::Src(Info))
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::Source { Array Index Op } {
@@ -589,12 +504,6 @@ proc Writer::AACN::Source { Array Index Op } {
 #    - le nom et la sous-region du volcan contenu dans la ligne
 #      qui est retournee par le selecteur est encoder comme suit :
 #      tout les blancs ont ete substituer par des underscores (_).
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -625,11 +534,6 @@ proc Writer::AACN::Site { No Name Lat Lon Elev Area } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::UpdateItems { Frame { VP "" } { Pad "" } } {
@@ -649,11 +553,6 @@ proc Writer::AACN::UpdateItems { Frame { VP "" } { Pad "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::ToolBar { Pad } {
@@ -699,12 +598,6 @@ proc Writer::AACN::ToolBar { Pad } {
 #      simplement changer de delimitateur.
 #      On peut simplement illiminer les lignes des textes qui
 #      contiennent des points (.).
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #----------------------------------------------------------------------------
 

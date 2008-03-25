@@ -6,17 +6,10 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : MetInfo.ctes
-# Version  : 1.1
 # Creation : Octobre 200
 #
 # Description:
 #    Permet l'obtention de messages meteorologiques
-#
-# Modifications :
-#
-#   Nom         : S. Gaudreault
-#   Date        : Mars 2003
-#   Description : Changement de répertoire pour les fichiers de données.
 #
 #===============================================================================
 

@@ -6,7 +6,6 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : SatData.tcl
-# Version  : 1.2
 # Creation : Octobre 2000
 #
 # Description:
@@ -21,12 +20,6 @@
 #        GOES 9 / GOES 10 / GOES 11 :  135 W  +/- 83 degres
 #        METEOSAT                   :    0
 #        GMS                        :  140 E
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -46,12 +39,6 @@ source $GDefs(Dir)/Apps/Tools/SatData/SatData.int
 #
 # Remarques :
 #    -On doit redefinir les fonctions de range des projections
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -108,19 +95,6 @@ proc SatData::Close { } {
 # Remarques :
 #   Aucune.
 #
-# Modifications :
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Dec. 1997
-#   Description : Ajout de l'appel de la commande 'editfst' pour contrer un
-#                 p'tit bug dans 'hdf2raw' ( ecrasement d'enregistrements
-#                 pour un meme canal/satellite avec des dates differentes )
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Novembre 2005
-#   Description : Changement pour le nouveau convertiseur des GOES
-#                 'sat.hdfrawcnvrt.pl'.
-#
 #-------------------------------------------------------------------------------
 
 proc SatData::DataExtract { InFile } {
@@ -163,13 +137,6 @@ proc SatData::DataExtract { InFile } {
 # Parametres :
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -292,20 +259,6 @@ ENDPGSM" }
 #     GRILLE de pgsm pour une projection LAT/LON pour l'instant.
 #     Voici la reference :
 #
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 1998
-#   Description : Changement vers la projection orthographique
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Aout 1999
-#   Description : Ajout de directives pour EDIFTST
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Novembre 2005
-#   Description : Changement pour le nouveau convertiseur des GOES.
-#
 #-------------------------------------------------------------------------------
 
 proc SatData::Directive { }  {
@@ -354,11 +307,6 @@ proc SatData::Directive { }  {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SatData::DomainDelete { Combo } {
@@ -400,11 +348,6 @@ proc SatData::DomainDelete { Combo } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SatData::DomainRead { } {
@@ -441,11 +384,6 @@ proc SatData::DomainRead { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SatData::DomainSave { Combo } {
@@ -489,11 +427,6 @@ proc SatData::DomainSave { Combo } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SatData::DomainShow { } {
@@ -544,11 +477,6 @@ proc SatData::DomainShow { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SatData::DrawCoords { Canvas } {
@@ -571,13 +499,6 @@ proc SatData::DrawCoords { Canvas } {
 # Parametres :
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -608,13 +529,6 @@ proc SatData::GetFiles { } {
 # Parametres :
 #
 # Remarques :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -648,12 +562,6 @@ proc SatData::GetUserFiles { Path } {
 # Remarques :
 #   -Cette procedure repond a un "trace" sur une variable a l'interieur de SPI
 #    afin de recuperer l'information necessaire automatiquement (SPI::Src(Info))
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -707,14 +615,7 @@ proc SatData::Source { Array Index Op } {
 # Parametres :
 #
 # Remarques :
-#   Aucune.
 #
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 1998
-#   Description : Changement vers la projection orthographique
-#                 Redimmensionnement du domaine
 #-------------------------------------------------------------------------------
 
 proc SatData::ResApply { } {
@@ -777,12 +678,6 @@ proc SatData::ResApply { } {
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc SatData::Move { Frame VP } {
@@ -830,12 +725,6 @@ proc SatData::Move { Frame VP } {
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc SatData::MoveDone { Frame VP } {
@@ -853,12 +742,6 @@ proc SatData::MoveDone { Frame VP } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -882,12 +765,6 @@ proc SatData::MoveInit { Frame VP } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -938,12 +815,6 @@ proc SatData::Draw { Frame VP } {
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc SatData::DrawDone { Frame VP } {
@@ -983,12 +854,6 @@ proc SatData::DrawDone { Frame VP } {
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc SatData::DrawInit  { Frame VP } {
@@ -1014,11 +879,6 @@ proc SatData::DrawInit  { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SatData::UpdateItems { Frame } {
@@ -1062,12 +922,6 @@ proc SatData::UpdateItems { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

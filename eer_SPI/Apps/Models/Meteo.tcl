@@ -11,15 +11,7 @@
 # Description:
 #    Fonctions de manipualtions des Experiences.
 #
-# Fonctions:
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -46,11 +38,6 @@ namespace eval Meteo {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Meteo::Create { Frame } {

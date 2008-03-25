@@ -6,7 +6,6 @@
 #
 # Projet   : Librairie d'objects visuel interactifs
 # Fichier  : Graph_Compare.tcl
-# Version  : 1.0
 # Creation : Novembre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
@@ -36,12 +35,6 @@
 #    Graph::Compare::UpdateItems  { Frame { GR  { } } }
 #    Graph::Compare::Data         { GR Data }
 #
-# Modifications :
-#
-#   Nom         :
-#   Date        :
-#   Description :
-#
 #===============================================================================
 
 namespace eval Graph::Compare { } {
@@ -69,11 +62,6 @@ namespace eval Graph::Compare { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Compare::Create { Frame X0 Y0 Width Height Active Full } {
@@ -168,10 +156,6 @@ proc Graph::Compare::Create { Frame X0 Y0 Width Height Active Full } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::Coord { Frame GR X Y } {
@@ -205,11 +189,6 @@ proc Graph::Compare::Coord { Frame GR X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Compare::Destroy { Frame GR } {
@@ -246,11 +225,6 @@ proc Graph::Compare::Destroy { Frame GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Compare::DrawInit { Frame VP } {
@@ -292,10 +266,6 @@ proc Graph::Compare::MoveDone { Frame VP } { }
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::Graph { GR } {
@@ -383,11 +353,6 @@ proc Graph::Compare::Graph { GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Graph::Compare::Init { Frame } {
@@ -434,12 +399,6 @@ proc Graph::Compare::Init { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::Params { Parent GR } {
@@ -483,12 +442,6 @@ proc Graph::Compare::Params { Parent GR } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::ItemAdd { GR Item } {
@@ -522,12 +475,6 @@ proc Graph::Compare::ItemAdd { GR Item } {
 #   <Item>   : Identificateur de l'item positionnel a ajouter
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -565,12 +512,6 @@ proc Graph::Compare::ItemDefault { GR Item } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::ItemDel { GR Item } {
@@ -600,12 +541,6 @@ proc Graph::Compare::ItemDel { GR Item } {
 #   <Update> : Mise a jour du graph
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -661,12 +596,6 @@ proc Graph::Compare::ItemDefine { GR Pos Coords { Update True } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::ItemUnDefine { GR Pos } {
@@ -698,12 +627,6 @@ proc Graph::Compare::ItemUnDefine { GR Pos } {
 #   <Coords> : Coordonnees
 #
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -773,12 +696,6 @@ proc Graph::Compare::ItemData { GR Pos Item Data } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::Update { Frame { GR {} } } {
@@ -828,12 +745,6 @@ proc Graph::Compare::Update { Frame { GR {} } } {
 # Remarques :
 #    - Cette fonctions est appele par le package Page au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::UpdateItems { Frame { GR  { } } } {
@@ -873,10 +784,6 @@ proc Graph::Compare::UpdateItems { Frame { GR  { } } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::Data { GR Data } {

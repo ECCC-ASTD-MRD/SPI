@@ -11,12 +11,6 @@
 # Description:
 #    Modeles de carte au format RSMC
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval RSMC {
@@ -106,10 +100,6 @@ namespace eval RSMC {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc RSMC::DrawScale { Frame } {
@@ -153,11 +143,6 @@ proc RSMC::DrawScale { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::Layout { Frame } {
@@ -218,11 +203,6 @@ proc RSMC::Layout { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::LayoutClear { Frame } {
@@ -244,11 +224,6 @@ proc RSMC::LayoutClear { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::LayoutToolBar { Frame } {
@@ -279,11 +254,6 @@ proc RSMC::LayoutToolBar { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::LayoutInit { Frame } {
@@ -352,11 +322,6 @@ proc RSMC::LayoutInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::LayoutUpdate { Frame } {
@@ -547,11 +512,6 @@ proc RSMC::LayoutUpdate { Frame } {
 #   parametres du PrintBox lui-meme et du "Widget PlugIn" PrintBox::PlugInCommand
 #   definit ci-haut.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::PrintCommand { Frame } {
@@ -674,11 +634,6 @@ proc RSMC::PrintCommand { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::PrintWidget { Frame } {
@@ -788,11 +743,6 @@ proc RSMC::PrintWidget { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::JoinTransfert { Frame } {
@@ -883,11 +833,6 @@ proc RSMC::JoinTransfert { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc RSMC::UpdateItems { Frame } {

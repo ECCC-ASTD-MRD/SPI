@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Tools" Tk.
 # Fichier  : Mapper_WKT.tcl
-# Version  : 1.0
 # Creation : Mars 2007 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Fontions de manipulation de georeference au format WKT.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -60,12 +50,6 @@ namespace eval Mapper::WKT {
 #  <List>  :  Nouvelle chaine WKT
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -251,6 +235,21 @@ proc Mapper::WKT::Param { Proj } {
    }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::WKT::ParamProj>
+# Creation : Fevrier 2007 - Maxime Samuel - CMC/CMOE
+#
+# But      : Installer les parametres de projection dans l'interface
+#
+# Parametres :
+#   <Frame>  : Frame de l'interface
+#
+# Retour   :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
 proc Mapper::WKT::ParamProj { { Frame "" } } {
    global GDefs
    variable Data
@@ -332,12 +331,6 @@ proc Mapper::WKT::ParamProj { { Frame "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Mapper::WKT::Item { List Value Index } {
@@ -365,12 +358,6 @@ proc Mapper::WKT::Item { List Value Index } {
 #  <List>  : Le nom de la variable liste des éléments créés
 #
 # Remarques : Utilisé pour les listes des combobox
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -400,12 +387,6 @@ proc Mapper::WKT::List { List Result Index } {
 #  <NewWKTList> : La liste WKT avec les nouvelles valeurs de l'interface
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -528,12 +509,6 @@ proc Mapper::WKT::BuildList { WKTList {Index 0}} {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Mapper::WKT::ToList { WKT } {
@@ -553,12 +528,6 @@ proc Mapper::WKT::ToList { WKT } {
 #  <String> : Chaîne WKT créé à partir de la liste
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -594,12 +563,6 @@ proc Mapper::WKT::FromList     { Liste } {
 #  <EPSG> : Entier EPSG. Retourne -1 si non trouvé.
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -637,12 +600,6 @@ proc Mapper::WKT::GetEPSG { Liste } {
 #    - Data(UNITn) sert a "fourre" le systeme puisque il y a 2 UNIT et on dans ce cas
 #         on veur le deuxieme recursivement
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Mapper::WKT::Find {Liste Element {NextSublist "none"} {Prefix {}} } {
@@ -678,6 +635,20 @@ proc Mapper::WKT::Find {Liste Element {NextSublist "none"} {Prefix {}} } {
    return {}
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::WKT::Init>
+# Creation : Mars 2007 - Maxime Samuel - CMC/CMOE
+#
+# But      : Initialise les variables de l'interface WKT.
+#
+# Parametres :
+#   <Proj>   : Chaine WKT de la projection.
+#
+# Retour   :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
 proc Mapper::WKT::Init  { Proj } {
    variable Data
 
@@ -755,12 +726,6 @@ proc Mapper::WKT::Init  { Proj } {
 # Retour   :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

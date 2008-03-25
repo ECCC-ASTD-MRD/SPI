@@ -6,7 +6,6 @@
 #
 # Projet    : Librairie de fonctions statistiques relatives aux fichiers meteorologiques
 # Fichier   : MetStat.tcl
-# Version   : 1.0 ($Revision: 1.4 $)
 # Creation  : Janvier 2002 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions de fonctions statistiques relatives aux fichiers meteorologiques.
@@ -26,12 +25,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -128,10 +121,6 @@ namespace eval MetStat { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::Level { Mode Min Max Nb } {
@@ -164,10 +153,6 @@ proc MetStat::Level { Mode Min Max Nb } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::LevelLinear { Min Max Mode Nb } {
@@ -200,10 +185,6 @@ proc MetStat::LevelLinear { Min Max Mode Nb } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::LevelLog { Min Max } {
@@ -249,10 +230,6 @@ proc MetStat::LevelLog { Min Max } {
 #     - Si le min =0 et que le max est <=1, on met 5 niveaux puisque l'on ne peut
 #       connaitre la limite d'arret de la boucle
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::LevelLogList { Min Max Mult } {
@@ -298,10 +275,6 @@ proc MetStat::LevelLogList { Min Max Mult } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::LevelMod { Min Max Delta } {
@@ -341,10 +314,6 @@ proc MetStat::LevelMod { Min Max Delta } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::LevelRSMC { Min Max } {
@@ -386,10 +355,6 @@ proc MetStat::LevelRSMC { Min Max } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::RECRCAdd { Var Desc Unit Factor Level Inter } {
@@ -421,10 +386,6 @@ proc MetStat::RECRCAdd { Var Desc Unit Factor Level Inter } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::RECRCEval { Cmd } {
@@ -473,10 +434,6 @@ proc MetStat::RECRCEval { Cmd } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetStat::RECRCLoad { File } {

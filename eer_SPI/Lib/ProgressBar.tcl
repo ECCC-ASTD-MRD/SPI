@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet   : Librairie de "Widget" Tk.
-# Fichier  : ProgressBar.tk
-# Version  : 1.2 ($Revision: 1.4 $)
+# Fichier  : ProgressBar.tcl
 # Creation : Janvier 2003 - Stephane Gaudreault - CMC/CMOE
 # Base sur : progressbar.tcl v1.3 00/04/28 (c) 2000 Alexander Schoepe
 # License  : GPL

@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet    : Librairie de fonctions relatives aux fichiers meteorologiques
-# Fichier   : MetFunc.tcl
-# Version   : 1.0 ($Revision: 1.5 $)
+# Fichier   : MetData.tcl
 # Creation  : Novembre 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Definitions de fonctions relatives aux fichiers meteorologiques.
@@ -28,12 +27,6 @@
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -68,11 +61,6 @@ namespace eval MetData { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::TextCode { Text } {
@@ -111,11 +99,6 @@ proc MetData::TextCode { Text } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::TextDecode { Field } {
@@ -145,11 +128,6 @@ proc MetData::TextDecode { Field } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::Duration { List Idx0 Idx1 } {
@@ -180,11 +158,6 @@ proc MetData::Duration { List Idx0 Idx1 } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::GetLatestStamp { Path } {
@@ -209,11 +182,6 @@ proc MetData::GetLatestStamp { Path } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::StampModulo { Stamp Sec } {
@@ -240,11 +208,6 @@ proc MetData::StampModulo { Stamp Sec } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
@@ -416,11 +379,6 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::Find { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
@@ -458,11 +416,6 @@ proc MetData::Find { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::FindAll { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
@@ -494,10 +447,6 @@ proc MetData::FindAll { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetData::FormatDATEV { Field } {
@@ -529,12 +478,6 @@ proc MetData::FormatDATEV { Field } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -579,12 +522,6 @@ proc MetData::GridDefineUTM { Lat0 Lon0 Lat1 Lon1 Res { Field "" } } {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -659,12 +596,6 @@ proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
 #
 # Remarques :
 #    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -745,10 +676,6 @@ proc MetData::GridDefinePS { Scale NI NJ Lat Lon { Field "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc MetData::ListIP2 { Index Var { Stamp 0 } } {
@@ -789,11 +716,6 @@ proc MetData::ListIP2 { Index Var { Stamp 0 } } {
 # Remarques :
 #    Aucune.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::Path { Level Model DiagVar ProgVar } {
@@ -873,11 +795,6 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::Profile { Stamp Var File Lat Lon } {
@@ -949,11 +866,6 @@ proc MetData::Profile { Stamp Var File Lat Lon } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc MetData::Obukhov { Stamp File Lat Lon } {

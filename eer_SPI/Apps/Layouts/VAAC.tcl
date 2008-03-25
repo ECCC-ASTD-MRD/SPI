@@ -11,12 +11,6 @@
 # Description:
 #    Modeles de carte au format VAAC
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 namespace eval VAAC {
@@ -101,10 +95,6 @@ namespace eval VAAC {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc VAAC::DrawScale { Frame } {
@@ -171,11 +161,6 @@ proc VAAC::DrawScale { Frame } {
 #    - Le champs utilise est "AV" en MAJUSCULE.
 #    - Les heures correspondent a IP2
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::LoadFields { Frame { Hours {} } } {
@@ -254,10 +239,6 @@ proc VAAC::LoadFields { Frame { Hours {} } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc VAAC::DataInit { Frame } {
@@ -384,11 +365,6 @@ proc VAAC::DataInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::Layout { Frame } {
@@ -433,11 +409,6 @@ proc VAAC::Layout { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::LayoutClear { Frame } {
@@ -474,11 +445,6 @@ proc VAAC::LayoutClear { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::LayoutToolBar { Frame } {
@@ -520,11 +486,6 @@ proc VAAC::LayoutToolBar { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::LayoutInit { Frame } {
@@ -607,11 +568,6 @@ proc VAAC::LayoutInit { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::LayoutUpdate { Frame } {
@@ -720,11 +676,6 @@ proc VAAC::LayoutUpdate { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::Transmit { Frame } {
@@ -841,15 +792,9 @@ proc VAAC::Transmit { Frame } {
 #    <Hour1>   : Herue de la carte
 #
 # Retour :
-#    Aucun.
 #
 # Remarques :
-#    Aucune.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc VAAC::TransmitNumber { SimHour Hour1 } {
@@ -889,11 +834,6 @@ proc VAAC::TransmitNumber { SimHour Hour1 } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::TransmitSelect { Frame } {
@@ -973,11 +913,6 @@ proc VAAC::TransmitSelect { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::PrintWidget { Frame } {
@@ -1073,11 +1008,6 @@ proc VAAC::PrintWidget { Frame } {
 #   parametres du PrintBox lui-meme et du "Widget PlugIn" PrintBox::PlugInCommand
 #   definit ci-haut.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::PrintCommand { Frame } {
@@ -1157,11 +1087,6 @@ proc VAAC::PrintCommand { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc VAAC::UpdateItems { Frame } {

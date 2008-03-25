@@ -6,16 +6,9 @@
 #
 # Projet   : Boite a Outils.
 # Fichier  : HFManager.tcl
-# Version  : 1.1
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Permettre de gerer des fichiers sur diverses machines.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -36,12 +29,6 @@ source $GDefs(Dir)/Apps/Tools/HFManager/HFManager.txt
 # Retour    :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -67,12 +54,6 @@ proc HFManager::Close { } {
 #   <Files> : Liste des fichiers avec leur path complet
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -117,12 +98,6 @@ proc HFManager::FileGet { Id } {
 #   -Du a la limitation du nombre de caractere de rsh, on doit effectuer les commandes
 #    sur un fichier a la fois afin d'etre sur de ne pas depasser la limite
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc HFManager::FileDo { Prefix Post Files } {
@@ -145,12 +120,6 @@ proc HFManager::FileDo { Prefix Post Files } {
 # Retour    :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -334,13 +303,6 @@ proc HFManager::FileCommand { Id Command } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -390,13 +352,6 @@ proc HFManager::FilePopup { Id X Y } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -428,12 +383,6 @@ proc HFManager::HostClose { Id } {
 # Retour    :
 #
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -507,13 +456,6 @@ proc HFManager::HostFiles { Id } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -552,13 +494,6 @@ proc HFManager::HostOpen { } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -622,13 +557,6 @@ proc HFManager::HostPath { Id Y } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -662,13 +590,6 @@ proc HFManager::HostPathDel { Id } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -701,13 +622,6 @@ proc HFManager::HostPathSave { Id } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -763,13 +677,6 @@ proc HFManager::HostRead { } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -834,12 +741,6 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc HFManager::AsProject { File } {
@@ -872,13 +773,6 @@ proc HFManager::AsProject { File } {
 # Retour    :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

@@ -6,18 +6,11 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : Kriger.tcl
-# Version  : 1.0
 # Creation : Fevrier 2008
 #
 # Description:
 #    Outils permettant d'effecture un kriging sur des observations qui permet de
 #    definir la grille interactivement et les parametres de kriging
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -35,11 +28,9 @@ source $GDefs(Dir)/Apps/Tools/Kriger/Kriger.int
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -78,11 +69,9 @@ proc Kriger::Close { } {
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -146,11 +135,9 @@ proc Kriger::Process { } {
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -178,11 +165,9 @@ proc Kriger::GridType { } {
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -307,11 +292,9 @@ proc Kriger::Grid { Coords } {
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -362,11 +345,6 @@ proc Kriger::Read { File } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Kriger::VertexAdd { Frame VP X Y } {
@@ -406,11 +384,6 @@ proc Kriger::VertexAdd { Frame VP X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Kriger::VertexDelete { Frame VP } {
@@ -445,11 +418,6 @@ proc Kriger::VertexDelete { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Kriger::VertexFollow { Frame VP X Y Scan } {
@@ -486,12 +454,6 @@ proc Kriger::VertexFollow { Frame VP X Y Scan } {
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Kriger::Update { Frame } {
@@ -514,12 +476,6 @@ proc Kriger::Update { Frame } {
 #
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -545,12 +501,6 @@ proc Kriger::UpdateItems { Frame } {
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #-------------------------------------------------------------------------------
 
 proc Kriger::PageActivate { Frame } {
@@ -568,12 +518,6 @@ proc Kriger::PageActivate { Frame } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

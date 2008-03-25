@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Tools" Tk.
 # Fichier  : Mapper_DepotWare.tcl
-# Version  : 1.0
 # Creation : Novembre 2007 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Fontions de manipulation et de gestion des depots de donnees georeference.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -104,10 +94,6 @@ proc Mapper::DepotWare::CacheClean { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Params { { Save 1 } } {
@@ -192,10 +178,6 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Add { Name Type Path } {
@@ -238,10 +220,6 @@ proc Mapper::DepotWare::Add { Name Type Path } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Del { Branch } {
@@ -292,10 +270,6 @@ proc Mapper::DepotWare::Del { Branch } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Tree { Canvas } {
@@ -329,10 +303,6 @@ proc Mapper::DepotWare::Tree { Canvas } {
 # Remarque :
 #   -Cette procedure est recursive et est applique a chaque branche de l'arbre
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::TreeBranch { Canvas Branch Tag  X Y } {
@@ -408,10 +378,6 @@ proc Mapper::DepotWare::TreeBranch { Canvas Branch Tag  X Y } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
@@ -483,10 +449,6 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Create { } {
@@ -525,10 +487,6 @@ proc Mapper::DepotWare::Create { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Select { Canvas Branch { Open "" } } {
@@ -644,10 +602,6 @@ proc Mapper::DepotWare::Select { Canvas Branch { Open "" } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::AddWMS { Branch Layer } {
@@ -681,10 +635,6 @@ proc Mapper::DepotWare::AddWMS { Branch Layer } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::AddGDAL { Branch File } {
@@ -734,10 +684,6 @@ proc Mapper::DepotWare::AddGDAL { Branch File } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::AddOGR { Branch File } {
@@ -786,10 +732,6 @@ proc Mapper::DepotWare::AddOGR { Branch File } {
 # Remarque :
 #   - Certaines couches cont imbriquees alors cette procedure est recursive
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::WMSParseLayer { URL Node { First True } } {
@@ -841,10 +783,6 @@ proc Mapper::DepotWare::WMSParseLayer { URL Node { First True } } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::WMSParseStyle { Node } {
@@ -866,10 +804,6 @@ proc Mapper::DepotWare::WMSParseStyle { Node } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::WMSParseDimension { Node } {
@@ -889,10 +823,6 @@ proc Mapper::DepotWare::WMSParseDimension { Node } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::WMSParseGeographic { Node } {
@@ -919,10 +849,6 @@ proc Mapper::DepotWare::WMSParseGeographic { Node } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::WMSParseBoundingBox { Node } {
@@ -967,10 +893,6 @@ proc Mapper::DepotWare::WMSParseLatLonBoundingBox { Node } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::WMSBuildXMLDef { Layer } {
@@ -1037,11 +959,6 @@ proc Mapper::DepotWare::WMSBuildXMLDef { Layer } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Reset { } {
@@ -1074,11 +991,6 @@ proc Mapper::DepotWare::Reset { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Check { Branch } {
@@ -1144,12 +1056,6 @@ proc Mapper::DepotWare::Check { Branch } {
 #
 # Remarques :
 #    - Ces fonctions sont appele par le package Page au besoin.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 proc Mapper::DepotWare::DrawInit  { Frame VP } {

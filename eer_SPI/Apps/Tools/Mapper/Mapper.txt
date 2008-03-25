@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Mapper.txt
-# Version  : 2.0
 # Creation : Juin 2002 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Permet d'afficher un selecteur de champs de fichier geotiff.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 

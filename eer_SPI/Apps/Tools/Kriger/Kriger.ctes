@@ -6,7 +6,6 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : Kriger.ctes
-# Version  : 1.0
 # Creation : Fevrier 2008
 #
 # Description:
@@ -14,12 +13,6 @@
 #    definir la grille interactivement et les parametres de kriging
 #
 #    Descriptions des variables internes du module
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 

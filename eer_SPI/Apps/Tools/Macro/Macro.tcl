@@ -6,22 +6,12 @@
 #
 # Projet   : Librairie de "Widget" Tk.
 # Fichier  : Macro.tcl
-# Version  : 1.2
 # Creation : Juillet 2005 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
 #    Interface de gestion de macros.
 #
-# Fonctions:
-#
-#
 # Remarques :
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -44,10 +34,6 @@ source $GDefs(Dir)/Apps/Tools/Macro/Macro.int
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Cursor { Cursor } {
@@ -72,10 +58,6 @@ proc Macro::Cursor { Cursor } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Close { } {
@@ -120,10 +102,6 @@ proc Macro::Close { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Error { Error } {
@@ -150,10 +128,6 @@ proc Macro::Error { Error } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Doing { Msg } {
@@ -178,10 +152,6 @@ proc Macro::Doing { Msg } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Info { Info } {
@@ -206,10 +176,6 @@ proc Macro::Info { Info } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Id { } {
@@ -232,10 +198,6 @@ proc Macro::Id { } {
 # Remarque :
 #    Chaques macro est teste pour une certaine validite
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Load { Paths } {
@@ -286,10 +248,6 @@ proc Macro::Load { Paths } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Check { Macro } {
@@ -335,10 +293,6 @@ proc Macro::Check { Macro } {
 # Remarque :
 #    Chaques macro est teste pour une certaine validite
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Define { Macros } {
@@ -371,10 +325,6 @@ proc Macro::Define { Macros } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::UnDefine { Macros } {
@@ -404,10 +354,6 @@ proc Macro::UnDefine { Macros } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Execute { Macro } {
@@ -478,10 +424,6 @@ proc Macro::Execute { Macro } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Reset { } {
@@ -513,10 +455,6 @@ proc Macro::Reset { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Save { Macro } {
@@ -561,10 +499,6 @@ proc Macro::Save { Macro } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::New { Path } {
@@ -598,10 +532,6 @@ proc Macro::New { Path } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Select { Macro } {
@@ -642,10 +572,6 @@ proc Macro::Select { Macro } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Current { } {
@@ -671,10 +597,6 @@ proc Macro::Current { } {
 #
 # Remarque :
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc Macro::Bubble { Index } {
@@ -699,12 +621,6 @@ proc Macro::Bubble { Index } {
 # Remarques :
 #    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
 #      afin de re-instaurer l'outils dans son etat actuel.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

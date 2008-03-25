@@ -15,16 +15,6 @@
 # Remarques  :
 #     Aucune.
 #
-# Modifications :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Septembre 1998
-#    Description : Ajout d'une recherche de mots cle par l'utilisateur
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Octobre 2005
-#    Description : Transformation en Outils de SPI
-#
 #===========================================================================
 
 #----------------------------------------------------------------------------
@@ -38,11 +28,6 @@
 # Remarques :
 #    - par defaut, on affiche le dernier bulletin.
 #
-# Modifications  :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Octobre 2005
-#    Description : Transformation en Outils de SPI
 #----------------------------------------------------------------------------
 
 proc Bulletin::Window { } {

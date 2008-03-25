@@ -6,7 +6,6 @@
 #
 # Projet    : Interface de selection de date.
 # Fichier   : Calendar.tk
-# Version   : 1.0 ($Revision: 1.3 $)
 # Creation  : Mars 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Permet grace a une interface de type calendrier de selectionner
@@ -20,18 +19,13 @@
 #     Calendar::Invoke      { Frame Second }
 #     Calendar::Update      { Frame  }
 #     Calendar::Select      { Frame { Day "" } }
+#     Calendar::Set         { Frame Sec args }
 #     Calendar::UnSelect    { Day }
 #     Calendar::CheckFeb    { Year }
 #     Calendar::MonthLength { Year Month }
 #
 # Remarques :
 #   Aucune
-#
-# Modification:
-#
-#   Nom         :
-#   Date        :
-#   Description :
 #
 #===============================================================================
 
@@ -66,6 +60,22 @@ namespace eval Calendar {
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Calendar::Set>
+# Creation : Mars 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Ajuster la date du calendrier.
+#
+# Parametres  :
+#   <Frame>   : Identificateur du Frame.
+#   <Sec>     : Seconde a appliquer au calendrier
+#
+# Retour      :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc Calendar::Set { Frame Sec args } {
    global GDefs
    variable Data
@@ -89,13 +99,6 @@ proc Calendar::Set { Frame Sec args } {
 # Retour      :
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -127,6 +130,22 @@ proc Calendar::Create { Frame Label Var Width { Cmd "" } } {
 
    trace variable $Var w "Calendar::Set $Frame \$$Var"
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Calendar::Invoke>
+# Creation : Mars 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Active l'affichage de l'interface de calendrier.
+#
+# Parametres  :
+#   <Frame>   : Identificateur du Frame.
+#   <Second>  : Seconde a appliquer au calendrier
+#
+# Retour      :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Calendar::Invoke { Frame Second } {
    global GDefs
@@ -203,13 +222,6 @@ proc Calendar::Invoke { Frame Second } {
 #   <Frame>   : Identificateur du Frame.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -235,13 +247,6 @@ proc Calendar::Decrease { Frame } {
 #   <Frame>   : Identificateur du Frame.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -267,13 +272,6 @@ proc Calendar::Increase { Frame } {
 #   <Frame>   : Identificateur du Frame.
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -322,13 +320,6 @@ proc Calendar::Update { Frame  } {
 #   <Day>    : Journee
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -360,13 +351,6 @@ proc Calendar::Select { Frame { Day "" } } {
 #   <Day>    : Journee
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -389,13 +373,6 @@ proc Calendar::UnSelect { Day } {
 #   <Jour>   : Nombre de jour du mois
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 
@@ -422,12 +399,6 @@ proc Calendar::CheckFeb { Year } {
 #   <Jour>   : Nombre de jour du mois
 #
 # Remarques  :
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
 #
 #----------------------------------------------------------------------------
 

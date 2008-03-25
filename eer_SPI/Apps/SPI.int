@@ -12,13 +12,6 @@
 #              autres types de donnees.
 #
 # Remarques  :
-#   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #============================================================================
 
@@ -29,15 +22,11 @@
 # But      : Splash screen
 #
 # Parametres :
+#    <Msg>   : Message a afficher
+#
+# Retour:
 #
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -76,14 +65,9 @@ proc SPI::Splash { { Msg "" } } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -130,11 +114,6 @@ proc SPI::About { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::Dock { Frame } {
@@ -150,11 +129,9 @@ proc SPI::Dock { Frame } {
 #
 # Parametres :
 #
-# Modifications :
+# Retour:
 #
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Remarques :
 #
 #-------------------------------------------------------------------------------
 
@@ -192,11 +169,6 @@ proc SPI::DockTool { Tool { Command "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc SPI::Params { } {
@@ -259,10 +231,6 @@ proc SPI::Params { } {
 #    - Cette fonction effectue l'appel a la fonction "ParamApply" de tout
 #      les "PlugIns" actifs.
 #
-# Modifications  :
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #-------------------------------------------------------------------------------
 
 proc SPI::ParamsApply { } {
@@ -295,14 +263,9 @@ proc SPI::ParamsApply { } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -373,13 +336,9 @@ proc SPI::Window { } {
 #   <Side>   : Positionnement des fenetre secondaires (right, top)
 #   <Sizes>  : Liste des dimensions
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -524,13 +483,9 @@ proc SPI::WindowLayout { Side { Sizes {} } } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -688,14 +643,9 @@ proc SPI::WindowMenu { } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -827,14 +777,9 @@ proc SPI::ToolBar { Frame } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -893,14 +838,9 @@ proc SPI::ContextMenuProj { } {
 #
 # Parametres :
 #
+# Retour:
+#
 # Remarques :
-#    Aucune.
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #
 #-------------------------------------------------------------------------------
 

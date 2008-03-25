@@ -6,7 +6,6 @@
 #
 # Projet   : Widget de selection de couleur.
 # Fichier  : DataBar.tcl
-# Version  : 1.1
 # Creation : Mars 2001 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -23,12 +22,6 @@
 #    DataBar::Update     { Frame { State -1 } }
 #    DataBar::UpdateVP   { Frame VP List }
 #    DataBar::Write      { Frame File }
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -61,14 +54,10 @@ namespace eval DataBar {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #
+# Retour     :
+#
 # Remarques  :
 #   <Active> : Active ou non
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -97,13 +86,9 @@ proc DataBar::Active { Frame } {
 #   <Height> : Hauteur du Viewport
 #   <Title>  : Titre
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -311,13 +296,9 @@ proc DataBar::IdTraj { Traj } {
 #   <VP>     : Identificateur du Viewport
 #   <No>     : Numero de champs
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -348,13 +329,9 @@ proc DataBar::Destroy { Frame VP } {
 #   <Frame>  : Identificateur de Page
 #   <VP>     : Identificateur du viewport
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -383,13 +360,9 @@ proc DataBar::DestroyAll { Frame { VP "" } } {
 #   <Tag0>   : Identificateur de la colorbar (VP)
 #   <Tag1>   : Identificateur de la colorbar (Field)
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -413,13 +386,9 @@ proc DataBar::Move { Frame VP Tag0 Tag1 } {
 #   <X>      : Dimension en X
 #   <Y>      : Dimension en Y
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -454,13 +423,9 @@ proc DataBar::Scale { Frame VP Tag0 Tag1 X Y } {
 #   <Frame>  : Identificateur de Page
 #   <State>  : Etat d'activation de la colorbar
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -517,13 +482,9 @@ proc DataBar::Update { Frame { State -1 } } {
 #   <Frame>  : Identificateur de Page
 #   <VP>     : Identificateur du viewport
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 
@@ -559,13 +520,9 @@ proc DataBar::UpdateVP { Frame VP } {
 #   <Frame>  : Identificateur de Page
 #   <File>   : Identificateur de Fichier
 #
+# Retour     :
+#
 # Remarques :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
 

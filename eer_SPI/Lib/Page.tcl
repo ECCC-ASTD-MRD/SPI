@@ -5,8 +5,7 @@
 # Dorval, Quebec
 #
 # Projet   : Librairie de projection.
-# Fichier  : Page.tk
-# Version  : 4.0 ($Revision: 1.10 $)
+# Fichier  : Page.tcl
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
 # Description:
@@ -67,6 +66,9 @@
 #    Page::ActiveWrap      { Frame Object }
 #    Page::ActiveWrapper   { Type Frame Id X0 Y0 X1 Y1 }
 #
+#    Page::Assign          { Frame Ids { Force 0 } }
+#    Page::UnAssign        { Frame { Ids "" } { Force 0 } }
+
 #    Page::Canvas          { Frame }
 #    Page::CanvasHeight    { Frame }
 #    Page::CanvasWidth     { Frame }
@@ -110,25 +112,6 @@
 #       - .     <Key-F2>
 #       - .     <Key-F9>
 #       - .     <Key-Print>
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Novembre 1999
-#   Description : -Ajout d'un module de gestion des legendes
-#                 -Ajout d'une fonction permettant d'effectuer tout les changement
-#                  de parametres pour les versions "xbatch"
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Decembre 1999
-#   Description : -Ajout du parametrage des couleurs du viewport
-#                 -Reformattage des variables internes du package
-#                 -Ajustement de l'emplacement de fenetres a l'affichage
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 2003
-#   Description : -Refonte complete du canvas
-#                 -multiplicite des canvas
 #===============================================================================
 
 package provide Page 5.0
@@ -211,6 +194,87 @@ proc lsearchsub { List Pattern Idx } {
 proc Page::Activate { Frame { Force 0 } } {
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveTag>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Selectionner un objet pour manipulation (deplacement/scaling)
+#
+# Parametres :
+#   <Type>   : Type d'object (namespace)
+#   <Frame>  : Indentificateur de Page
+#   <Id>     : Indentificateur de l'object
+#   <X>      : Coordonnee en X du deplacement
+#   <Y>      : Coordonnee en Y du deplacement
+#   <Args>   : Commande speciales
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::ActiveTag { Type Frame Id X Y { Args {} } } {
+
+   glrender -xexpose -1 -resolution 2
+
+   Page::Activate $Frame
+   if { [llength $Args] } {
+      ${Type}::Activate $Frame $Id $Args
+   } else {
+      ${Type}::Activate $Frame $Id
+   }
+   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }
+
+   Page::SnapRef $Frame $X $Y
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveUnTag>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : De-selectionner un objet pour manipulation (deplacement/scaling)
+#
+# Parametres :
+#   <Type>   : Type d'object (namespace)
+#   <Frame>  : Indentificateur de Page
+#   <Id>     : Indentificateur de l'object
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::ActiveUnTag { Type Frame Id } {
+
+   glrender -xexpose 1 -resolution 1
+   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 }
+   eval Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveWrapper>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajoute les boutons de manipulation des objets de pages
+#
+# Parametres :
+#   <Type>   : Type d'object (namespace)
+#   <Frame>  : Indentificateur de Page
+#   <Id>     : Indentificateur de l'object
+#   <X0>     : Coordonnee en X inferieure
+#   <Y0>     : Coordonnee en Y inferieure
+#   <X1>     : Coordonnee en X superieure
+#   <Y1>     : Coordonnee en Y superieure
+#   <Args>   : Commande speciales
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
    global GDefs
    variable Data
@@ -251,27 +315,22 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
    bind $Frame.bs$tag <ButtonRelease-1> "Page::ActiveUnTag $Type $Frame $Id; Page::ActiveScale ${Type} $Frame $Id %X %Y 0"
 }
 
-proc Page::ActiveTag { Type Frame Id X Y { Args {} } } {
-
-   glrender -xexpose -1 -resolution 2
-
-   Page::Activate $Frame
-   if { [llength $Args] } {
-      ${Type}::Activate $Frame $Id $Args
-   } else {
-      ${Type}::Activate $Frame $Id
-   }
-   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }
-
-   Page::SnapRef $Frame $X $Y
-}
-
-proc Page::ActiveUnTag { Type Frame Id } {
-
-   glrender -xexpose 1 -resolution 1
-   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 }
-   eval Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)
-}
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveWrapper>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprime les boutons de manipulation des objets de pages
+#
+# Parametres :
+#   <Type>   : Type d'object (namespace)
+#   <Frame>  : Indentificateur de Page
+#   <Id>     : Indentificateur de l'object
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Page::ActiveUnWrapper { Type Frame Id } {
    variable Data
@@ -285,6 +344,67 @@ proc Page::ActiveUnWrapper { Type Frame Id } {
 
    if { $full } {
       bind $Frame.page.canvas <Configure> ""
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveWrap>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Active les boutons de manipulation des objets de pages
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#   <Object> : Indentificateur de l'object
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::ActiveWrap { Frame Object } {
+   variable Data
+
+   if { $Object!="" } {
+      set tag $Data(Tag)$Object
+
+      catch {
+         $Frame.bs$tag configure -fg red
+         $Frame.bm$tag configure -fg red
+         $Frame.bf$tag configure -fg red
+         $Frame.bd$tag configure -fg red
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveUnWrap>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Desactive les boutons de manipulation des objets de pages
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#   <Object> : Indentificateur de l'object
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::ActiveUnWrap { Frame Object } {
+   global   GDefs
+   variable Data
+
+   set tag $Data(Tag)$Object
+
+   catch {
+      $Frame.bs$tag configure -fg black
+      $Frame.bm$tag configure -fg black
+      $Frame.bf$tag configure -fg black
+      $Frame.bd$tag configure -fg black
    }
 }
 
@@ -305,11 +425,6 @@ proc Page::ActiveUnWrapper { Type Frame Id } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ActiveMove { Type Frame Id X Y } {
@@ -349,7 +464,7 @@ proc Page::ActiveMove { Type Frame Id X Y } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Page::Active::Scale>
+# Nom      : <Page::ActiveScale>
 # Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Redimenssionement d'un viewport
@@ -366,11 +481,6 @@ proc Page::ActiveMove { Type Frame Id X Y } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ActiveScale { Type Frame Id X Y U } {
@@ -405,11 +515,6 @@ proc Page::ActiveScale { Type Frame Id X Y U } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ActiveFull { Type Frame Id Full } {
@@ -423,33 +528,94 @@ proc Page::ActiveFull { Type Frame Id Full } {
    }
 }
 
-proc Page::ActiveUnWrap { Frame Object } {
-   global   GDefs
+#----------------------------------------------------------------------------
+# Nom      : <Page::Assign>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Assigner une donnee a une page (projection)
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Ids>     : Identificateurs des donnees
+#  <Force>   : Forcer le reaffichage
+#
+# Retour:
+#  <ok>      : Ajout effectue
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::Assign { Frame Ids { Force 0 } } {
    variable Data
 
-   set tag $Data(Tag)$Object
+   set idx 0
 
-   catch {
-      $Frame.bs$tag configure -fg black
-      $Frame.bm$tag configure -fg black
-      $Frame.bf$tag configure -fg black
-      $Frame.bd$tag configure -fg black
+   if { [info exists Viewport::Data(Data$Frame)] } {
+      foreach id $Ids {
+         if { [set idx [lsearch -exact $Viewport::Data(Data$Frame) $id]]==-1 } {
+            lappend Viewport::Data(Data$Frame) $id
+
+            #----- Definir les tags aux emplacements
+
+            if { [ogrlayer is $id] } {
+            } elseif { [gdalband  is $id] } {
+            }
+            set Force [expr $Force==-1?0:1]
+         }
+      }
+      if { $Force } {
+         Page::Update $Frame
+      }
+   }
+   if { $idx==-1 } {
+      return 1
+   } else {
+      return 0
    }
 }
 
-proc Page::ActiveWrap { Frame Object } {
+#----------------------------------------------------------------------------
+# Nom      : <Page::UnAssign>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Desassigner une donnee a une page (projection)
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <Ids>     : Identificateurs des donnees
+#
+# Retour:
+#  <ok>      : Suppression effectue
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::UnAssign { Frame { Ids "" } { Force 0 } } {
    variable Data
 
-   if { $Object!="" } {
-      set tag $Data(Tag)$Object
+   set ok 0
 
-      catch {
-         $Frame.bs$tag configure -fg red
-         $Frame.bm$tag configure -fg red
-         $Frame.bf$tag configure -fg red
-         $Frame.bd$tag configure -fg red
+   if { [info exists Viewport::Data(Data$Frame)] } {
+      if { $Ids=="" } {
+         set Viewport::Data(Data$Frame) {}
+         set ok 1
+      } else {
+         foreach id $Ids {
+            if { [set idx [lsearch -exact $Viewport::Data(Data$Frame) $id]]!=-1 } {
+               set Viewport::Data(Data$Frame) [lreplace $Viewport::Data(Data$Frame) $idx $idx]
+               set ok 1
+            }
+         }
       }
    }
+
+   if { ($ok && $Force!=-1) || $Force==1 } {
+      Page::Update $Frame
+   }
+
+   return $ok
 }
 
 #----------------------------------------------------------------------------
@@ -465,11 +631,6 @@ proc Page::ActiveWrap { Frame Object } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::CanvasWidth { Frame } {
@@ -495,11 +656,6 @@ proc Page::CanvasWidth { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::CanvasHeight { Frame } {
@@ -525,11 +681,6 @@ proc Page::CanvasHeight { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Canvas { Frame } {
@@ -553,11 +704,6 @@ proc Page::Canvas { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Create { Frame Width Height } {
@@ -622,11 +768,6 @@ proc Page::Create { Frame Width Height } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Destroy { Frame } {
@@ -676,11 +817,6 @@ proc Page::Destroy { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeCam { Frame VP } {
@@ -721,11 +857,6 @@ proc Page::ModeCam { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeFly { Frame VP } {
@@ -777,11 +908,6 @@ proc Page::ModeFly { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeData { Frame VP } {
@@ -820,11 +946,6 @@ proc Page::ModeData { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeDraw { Frame VP } {
@@ -861,11 +982,6 @@ proc Page::ModeDraw { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeSelect { Mode { Frames {} } } {
@@ -939,11 +1055,6 @@ proc Page::ModeSelect { Mode { Frames {} } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeNone { Frame VP } {
@@ -988,11 +1099,6 @@ proc Page::ModeNone { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ModeZoom { Frame VP } {
@@ -1030,11 +1136,6 @@ proc Page::ModeZoom { Frame VP } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ParamApply { } {
@@ -1056,11 +1157,6 @@ proc Page::ParamApply { } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ParamFrame { Frame Apply } {
@@ -1106,11 +1202,6 @@ proc Page::ParamFrame { Frame Apply } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Register { Frame Type Id } {
@@ -1134,11 +1225,6 @@ proc Page::Register { Frame Type Id } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Registered { Frame { Type "" } { Id "" } } {
@@ -1213,11 +1299,6 @@ proc Page::Registered { Frame { Type "" } { Id "" } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::UnRegister { Frame Type Id } {
@@ -1246,11 +1327,6 @@ proc Page::UnRegister { Frame Type Id } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Resize { Frame } {
@@ -1293,11 +1369,6 @@ proc Page::Resize { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Scale { Frame { Incr 0 } } {
@@ -1335,11 +1406,6 @@ proc Page::Scale { Frame { Incr 0 } } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::ScaleSet { Frame } {
@@ -1377,11 +1443,6 @@ proc Page::ScaleSet { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Size { Frame Width Height } {
@@ -1434,11 +1495,6 @@ proc Page::Size { Frame Width Height } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::Update { { Frame "" } { VP True } } {
@@ -1496,11 +1552,6 @@ proc Page::Update { { Frame "" } { VP True } } {
 # Remarques :
 #    A redefinir par l'usager
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::UpdateCommand { Frame } {
@@ -1520,15 +1571,9 @@ proc Page::UpdateCommand { Frame } {
 # Remarques :
 #    A redefinir par l'usager
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::UpdateItems { Frame } {
-
 }
 
 #----------------------------------------------------------------------------
@@ -1544,11 +1589,6 @@ proc Page::UpdateItems { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::SnapGrid { Frame } {
@@ -1586,11 +1626,6 @@ proc Page::SnapGrid { Frame } {
 #
 # Remarques :
 #
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
 #----------------------------------------------------------------------------
 
 proc Page::SnapRef { Frame X Y } {
