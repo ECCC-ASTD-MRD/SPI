@@ -153,7 +153,7 @@ proc Debug::Create { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Init { Level Output Apps } {
+proc Debug::Init { Level Output Apps } {
    global env
    global GDefs
    variable Defs

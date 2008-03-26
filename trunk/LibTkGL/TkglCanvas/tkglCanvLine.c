@@ -804,7 +804,7 @@ static void glDisplayLine(Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Dra
       }
    }
 
-   if (!color || linePtr->numPoints<1 || linePtr->coordPtr==NULL) {
+   if (!color || linewidth==0.0 || linePtr->numPoints<1 || linePtr->coordPtr==NULL || linePtr->alpha==0.0) {
       return;
    }
 
