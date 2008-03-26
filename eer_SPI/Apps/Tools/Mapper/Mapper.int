@@ -106,7 +106,7 @@ proc Mapper::Window { } {
          button $Data(Tab1).head.zoom -image MODEZOOM -bd 0 -relief flat -overrelief raised -command "Mapper::Zoom"
          checkbutton $Data(Tab1).head.ref -variable Mapper::Data(GeoRef) -offvalue "" -command "Mapper::SetGeoRef" \
             -image RESET -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
-         pack $Data(Tab1).head.mode $Data(Tab1).head.open $Data(Tab1).head.db $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
+         pack $Data(Tab1).head.mode $Data(Tab1).head.open  $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
 
          frame $Data(Tab1).head.idx
             button $Data(Tab1).head.idx.down -image UP -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll -1"
