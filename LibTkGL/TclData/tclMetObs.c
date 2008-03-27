@@ -136,7 +136,7 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    switch ((enum opt)idx) {
       case CREATE:
-         if(Objc<3) {
+         if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id [files]");
             return(TCL_ERROR);
          }
@@ -280,8 +280,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==1) {
             } else {
                switch(table) {
-                  case 'B': bufr_load_m_tableB(BUFRTable->master.tableB,Tcl_GetString(Objv[++i]));
-                  case 'D': bufr_load_m_tableD(BUFRTable->master.tableD,Tcl_GetString(Objv[++i]));
+                  case 'B': bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[++i]));
+                  case 'D': bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[++i]));
                }
             }
             break;
@@ -1396,6 +1396,10 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 */
 int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
+   Tcl_Obj       *obj=NULL;
+   TMetLoc       *loc=NULL;
+   TMetElemData  *data=NULL;
+
    FILE          *fpBufr;
    BUFR_Tables   *tbls;
    BUFR_Message  *msg;
@@ -1409,21 +1413,16 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    int            yyyy,mm,dd,hh,mn,ss;
    time_t         time=0;
 
-   Tcl_Obj       *obj;
-   TMetLoc       *loc;
-   TMetElemData  *data=NULL;
+   obj=Tcl_NewStringObj("",0);
+   yyyy=1970;mm=1;dd=1;hh=mn=ss=0;
 
    if (!(fpBufr=fopen(File,"r"))) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBUFR :  Unable to open file ",File,(char*)NULL);
       return(TCL_ERROR);
    }
 
-   yyyy=1970,mm=1;dd=1;hh=mn=ss=0;
-   obj=Tcl_NewStringObj("",0);
-
    while ((bufr_read_message(fpBufr,&msg))>0) {
 
-fprintf(stderr,"----222sdfhkjdsfjkdsf\n");
       /*Decode message*/
       dts=bufr_decode_message(msg,BUFRTable);
       bufr_free_message(msg);

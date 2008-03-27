@@ -124,6 +124,7 @@ int      MetObs_Extract(Tcl_Interp *Interp,TMetObs *Obs,TData *Field);
 void     MetObs_Free(TMetObs *Obs);
 void     MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item);
 int      MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs);
+int      MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadASCII(Tcl_Interp* Interp,char* File,TMetObs *Obs);
 int      MetObs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title);
 void     MetObs_LocFree(TMetLoc *Loc);

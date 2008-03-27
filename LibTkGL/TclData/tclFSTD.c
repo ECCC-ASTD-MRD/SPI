@@ -108,8 +108,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    float  xg1,xg2,xg3,xg4;
    int    ig1,ig2,ig3,ig4;
 
-   static CONST char *sopt[] = { "xyfll","convip","cxgaig","cigaxg","mscale","zgrid","zfilter",NULL };
-   enum                opt { XYFLL,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER };
+   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zgrid","zfilter",NULL };
+   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER };
 
    Tcl_ResetResult(Interp);
 
@@ -138,6 +138,25 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y));
+         Tcl_SetObjResult(Interp,obj);
+#endif
+         break;
+
+      case LLFXY:
+         if(Objc!=7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"x y dd60 dgrw nhem");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&tmp);x=tmp;
+         Tcl_GetDoubleFromObj(Interp,Objv[3],&tmp);y=tmp;
+         Tcl_GetDoubleFromObj(Interp,Objv[4],&tmp);dd60=tmp;
+         Tcl_GetDoubleFromObj(Interp,Objv[5],&tmp);dgrw=tmp;
+         Tcl_GetIntFromObj(Interp,Objv[6],&n);
+#ifdef LNK_FSTD
+         f77name(llfxy)(&dlat,&dlon,&x,&y,&dd60,&dgrw,&n);
+         obj=Tcl_NewListObj(0,NULL);
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
          Tcl_SetObjResult(Interp,obj);
 #endif
          break;

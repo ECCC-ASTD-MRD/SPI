@@ -361,7 +361,7 @@ proc NowCaster::Obs::Read { Obs Files } {
    variable Msg
    variable Data
 
-   set NowCaster::Data(Job)  [lindex $Msg(Read) $GDefs(Lang)]
+   set NowCaster::Data(Job) [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
 
    #----- Create the Obs object
@@ -386,6 +386,7 @@ proc NowCaster::Obs::Read { Obs Files } {
       proc NowCasterObsReader { Obs Files { Thread 0 } } {
 
          foreach file $Files {
+            thread::send $Thread "set NowCaster::Data(Job) \"\[lindex \$NowCaster::Obs::Msg(Read) \$GDefs(Lang)\] $file\""
             if { [catch { metobs read $Obs $file }] } {
                thread::send $Thread "Dialog::CreateError .nowcaster \"\[lindex \$NowCaster::Obs::Error(File) \$GDefs(Lang)\]\n\n$file\" \$GDefs(Lang)"
             } else {
@@ -395,6 +396,7 @@ proc NowCaster::Obs::Read { Obs Files } {
                }
             }
          }
+         thread::send $Thread "set NowCaster::Data(Job) \"\""
          thread::release
       }
       thread::wait
@@ -403,8 +405,6 @@ proc NowCaster::Obs::Read { Obs Files } {
    #----- Start the thread
 
    thread::send -async $id [list NowCasterObsReader $Obs $Files [thread::id]]
-
-   set NowCaster::Data(Job)  ""
 }
 
 proc NowCaster::Obs::ExportSCIPUFF { Obs File Type } {
