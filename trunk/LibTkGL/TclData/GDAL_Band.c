@@ -2167,7 +2167,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
 */
 int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
-   int         n;
+   int         n,id;
    GLuint      tx;
    GLhandleARB prog;
    TGeoTexTile *tile;
@@ -2193,7 +2193,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
    /*Read in data in another thread*/
    if (!Band->Tex.ThreadId && !VP->Secondary)
-      Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS);
+      Tcl_CreateThread(&id,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS);
 
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);

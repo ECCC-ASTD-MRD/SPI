@@ -80,6 +80,8 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
    if (proj) {
       proj->Loading+=5;
 
+      band->Tex.ThreadId=1;
+
       GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->Params->VP,band->Tex.ResN,0,0,5);
 
       proj->Loading=0;
