@@ -71,8 +71,8 @@ namespace eval NowCaster::Obs { } {
    set Msg(Del)    { "Voulez-vous vraiment supprimer de modèle ?"
                      "do you really want to suppress this model ?" }
 
-   set Error(File) { "Fichier d'observation invalide."
-                     "Invalid observation file." }
+   set Error(File)  { "Fichier d'observation invalide." "Invalid observation file." }
+   set Error(Elems) { "Il n'y a aucun element dans ce fichier." "No element foun in this file." }
 
    set Bubble(Find)       { "Rechercher un station et centrer la vue sur celle-ci" "Find a station and locate the viewport on it" }
    set Bubble(Mode)       { "Activer le mode de sélection des observations\n\nBouton gauche: Sélection\nBouton centre: Déplacer une localisation" "Activate observation selection mode\n\nLeft button  : Select location\nMiddle button: Move location" }
@@ -338,17 +338,22 @@ proc NowCaster::Obs::Now { Sec { Check False } } {
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ReadProcess { Obs } {
+   global GDefs
    variable Data
+   variable Error
 
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) $Obs
 
    #----- Define default model
-   set Data(Elems$Obs) [metobs define $Obs -ELEMENT]
-   if { ![llength $Data(Model$Obs)] } {
-      set Data(Model$Obs) [list [list 0 0 [lindex $Data(Elems$Obs) 0]]]
-      NowCaster::Obs::ObsSelect $Obs
+   if { ![llength [set Data(Elems$Obs) [metobs define $Obs -ELEMENT]]] } {
+      Dialog::CreateError .nowcaster [lindex $Error(Elems) $GDefs(Lang)] $GDefs(Lang)
+   } else {
+      if { ![llength $Data(Model$Obs)] } {
+         set Data(Model$Obs) [list [list 0 0 [lindex $Data(Elems$Obs) 0]]]
+         NowCaster::Obs::ObsSelect $Obs
+      }
+      NowCaster::SetTimeScale [metobs define $Obs -DATE0] [metobs define $Obs -DATE1]
    }
-   NowCaster::SetTimeScale [metobs define $Obs -DATE0] [metobs define $Obs -DATE1]
 }
 
 proc NowCaster::Obs::Read { Obs Files } {
