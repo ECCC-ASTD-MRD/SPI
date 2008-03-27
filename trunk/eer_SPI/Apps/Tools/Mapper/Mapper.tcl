@@ -413,7 +413,7 @@ proc Mapper::Read { Files } {
       return
    }
 
-   $Page::Data(Canvas) configure -cursor watch
+   $Data(Canvas) configure -cursor watch
    if { [winfo exists .mapper] } {
       .mapper configure -cursor watch
    }
@@ -426,7 +426,7 @@ proc Mapper::Read { Files } {
       Mapper::UpdateData $Page::Data(Frame)
    }
 
-   $Page::Data(Canvas) configure -cursor left_ptr
+   $Data(Canvas) configure -cursor left_ptr
    if { [winfo exists .mapper] } {
       .mapper configure -cursor left_ptr
    }

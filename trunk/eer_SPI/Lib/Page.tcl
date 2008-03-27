@@ -1501,12 +1501,18 @@ proc Page::Update { { Frame "" } { VP True } } {
    variable Data
 
    #----- Est-ce que la page est valide
-   if { [lsearch -exact $Data(Frames) $Frame]<0 } {
+   if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
       return
    }
 
    if { $Frame=="" } {
       set Frame $Page::Data(Frame)
+   }
+
+   #----- Est-ce que la page existe encore
+   if { ![winfo exists $Frame] } {
+      set Data(Frame) [lreplace $Data(Frames) $idx $idx]
+      return
    }
 
    #----- Get the log2 lens
