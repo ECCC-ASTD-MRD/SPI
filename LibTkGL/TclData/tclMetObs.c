@@ -86,7 +86,6 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
       Tcl_InitHashTable(&MetObsTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&MetRepTable,TCL_STRING_KEYS);
 
-      bufr_begin_api();
       /*Load CMC Table B and D, includes local descriptors*/
       BUFRTable=bufr_create_tables();
       bufr_load_cmc_tables(BUFRTable);
@@ -1340,6 +1339,24 @@ TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemDa
    return(Data);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <MetObs_Load>
+ * Creation     : Mars 2008 J.P. Gauthier
+ *
+ * But          : Chargement d'un fichier d'observations.
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <File>     : Le nom du fichier
+ *   <Obs>      : Observation
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *   - Cette fonction essaie tout les formats connus possibles
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    int type,res;
@@ -1360,6 +1377,23 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    return(res);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <MetObs_LoadBUFR>
+ * Creation     : Mars 2008 J.P. Gauthier
+ *
+ * But          : Chargement d'un fichier d'observations en format BUFR.
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <File>     : Le nom du fichier
+ *   <Obs>      : Observation
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    FILE          *fpBufr;
@@ -1389,6 +1423,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    while ((bufr_read_message(fpBufr,&msg))>0) {
 
+fprintf(stderr,"----222sdfhkjdsfjkdsf\n");
       /*Decode message*/
       dts=bufr_decode_message(msg,BUFRTable);
       bufr_free_message(msg);
@@ -1550,6 +1585,23 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    return(TCL_OK);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <MetObs_LoadBURP>
+ * Creation     : Avril 2007 J.P. Gauthier
+ *
+ * But          : Chargement d'un fichier d'observations en format BURP.
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <File>     : Le nom du fichier
+ *   <Obs>      : Observation
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    int       err,sz,handle,code=TCL_OK;
@@ -1743,11 +1795,10 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
  * Nom          : <MetObs_LoadASCII>
  * Creation     : Avril 2006 J.P. Gauthier
  *
- * But          : Chargement d'un fichier d'observations.
+ * But          : Chargement d'un fichier d'observations en format ASCII
  *
  * Parametres   :
  *   <Interp>   : L'interpreteur Tcl
- *   <Name>     : Nom de l'observation dans la table
  *   <File>     : Le nom du fichier
  *   <Obs>      : Observation
  *
