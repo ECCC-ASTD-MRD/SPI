@@ -235,7 +235,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
          set lens [expr double($h/$dy)*$lens]
       }
       lappend cam(LLens) [list $cam(Lens) $Viewport::Map(Lat) $Viewport::Map(Lon)]
-      set cam(Name)  ""
       set Data(Name) ""
 
       #----- Appliquer le recul
@@ -275,7 +274,6 @@ proc ProjCam::Create { Cam } {
    namespace eval Data$Cam {
       variable Cam
 
-      set Cam(Name)   ""
       set Cam(To)     $ProjCam::Param(To)
       set Cam(From)   $ProjCam::Param(From)
       set Cam(Up)     $ProjCam::Param(Up)
@@ -361,7 +359,6 @@ proc ProjCam::Do { Cam Frame VP args } {
    set cam(From) [projcam configure $Cam -from]
    set cam(Up)   [projcam configure $Cam -up]
 
-   set cam(Name)  ""
    set Data(Name) ""
 
    Page::Update $Frame
@@ -415,7 +412,6 @@ proc ProjCam::ToDo { Cam Frame VP X Y } {
 #   set cam(To) [projcam configure $Cam -to]
 #   set cam(Up) [projcam configure $Cam -up]
 
-   set cam(Name)  ""
    set Data(Name) ""
 }
 
@@ -552,7 +548,6 @@ proc ProjCam::Reset { Cam { All True } } {
    set cam(CFY)    0
    set cam(CFZ)    1
 
-   set cam(Name)    ""
    set Data(Name)   ""
 
    projcam configure $Cam -lens $cam(Lens) -from $cam(From) -to $cam(To) -up $cam(Up)
@@ -645,6 +640,8 @@ proc ProjCam::Select { Cam Frame Name } {
 
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
+   set Map(Grabbed) [clock click -milliseconds]
+
    #----- Obtenir les parametres de la vue selectionnee
 
    if { [array get Data Params$Name]!="" } {
@@ -654,43 +651,17 @@ proc ProjCam::Select { Cam Frame Name } {
       return
    }
 
-   $Frame.page.canvas config -cursor watch
+   #----- Repositionner la camera
 
-   #----- Modifier les parametres des projections en consequences
+   Viewport::GoTo $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
 
-   set cam(Name) $Name
-   set cam(To)   [lindex $params 0]
-   set cam(From) [lindex $params 1]
-   set cam(Up)   [lindex $params 2]
-   set cam(Lens) [lindex $params 3]
    set cam(CFX)  [lindex $params 4]
    set cam(CFY)  [lindex $params 5]
    set cam(CFZ)  [lindex $params 6]
    set cam(CTX)  [lindex $params 7]
    set cam(CTY)  [lindex $params 8]
    set cam(CTZ)  [lindex $params 9]
-
-   set Viewport::Map(Lat) [lindex $params 10]
-   set Viewport::Map(Lon) [lindex $params 11]
-
-   #----- Ajuster l'historique de zoom
-
-   lappend cam(LLens) $Param(Lens)
-
-   #----- Repositionner la camera
-
-   eval projcam configure $Cam -lens $cam(Lens) -from $cam(From) -to $cam(To) -up $cam(Up)
-   projection configure $Frame -location $Viewport::Map(Lat) $Viewport::Map(Lon)
-
-   #----- Dans le cas de projection grille
-
-   set ij [projection configure $Frame -gridpoint]
-   set Viewport::Map(GridI) [lindex $ij 0]
-   set Viewport::Map(GridJ) [lindex $ij 1]
-
-   Page::Update $Frame
-
-   $Frame.page.canvas config -cursor left_ptr
+   set Data(Name) $Name
 }
 
 #----------------------------------------------------------------------------
@@ -996,7 +967,6 @@ proc ProjCam::Zoom { Cam Frame Lens { Store False } } {
       lappend cam(LLens) [list $cam(Lens) $Viewport::Map(Lat) $Viewport::Map(Lon)]
    }
    set cam(Lens) $Lens
-   set cam(Name)  ""
    set Data(Name) ""
 
    projcam configure $Frame -lens $Lens
@@ -1067,7 +1037,6 @@ proc ProjCam::ZoomIn { Cam Frame VP { Factor 0 } } {
    $Frame.page.canvas config -cursor watch
    update idletasks
 
-   set cam(Name)  ""
    set Data(Name) ""
 
    projcam configure $Cam -to 0 0 1
@@ -1135,7 +1104,6 @@ proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
       set lon $Viewport::Map(Lon)
    }
 
-   set cam(Name)  ""
    set Data(Name) ""
 
    #----- Dans le cas grid et zoom null, on recentre
