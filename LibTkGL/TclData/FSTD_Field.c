@@ -848,11 +848,11 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 #ifdef LNK_FSTD
    if (!FieldFrom || !FieldFrom->Ref) {
       Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Origin field not valid",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
    if (!FieldTo || !FieldTo->Ref) {
       Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Destination field not valid",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Verifier la dimension verticale*/
@@ -871,11 +871,13 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       if (!FieldTo->Def->Data[1]) {
          FieldTo->Def->Data[1]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
       }
+      FieldTo->Def->NC=2;
    } else{
       if (FieldTo->Def->Data[1]) {
          free(FieldTo->Def->Data[1]);
          FieldTo->Def->Data[1]=NULL;
       }
+      FieldTo->Def->NC=1;
    }
 
    if (FieldFrom->Def->Type!=TD_Float32) {
@@ -913,7 +915,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate:  EZSCINT internal error, could not define gridset",(char*)NULL);
          GeoRefEZ_UnLock();
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       for(k=0;k<FieldFrom->Def->NK;k++) {
@@ -935,7 +937,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
          GeoRefEZ_UnLock();
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
   } else {
       for(i=0;i<FieldTo->Def->NI;i++) {
@@ -961,7 +963,12 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    }
    GeoRefEZ_UnLock();
 #endif
-   return TCL_OK;
+   /*In case of vectorial field, we have to recalculate the module*/
+   if (FieldTo->Def->NC>1) {
+      Data_GetStat(FieldTo);
+   }
+
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
