@@ -74,7 +74,6 @@ namespace eval OpenGL {
    set Lbl(Slow)        { "Lent" "Slow" }
    set Lbl(Delay)       { "Délai" "Delay" }
    set Lbl(Damping)     { "Amortissement" "Damping" }
-
 }
 
 #----------------------------------------------------------------------------

@@ -37,7 +37,7 @@
 #    Viewport::ForceGrid      { Frame { Reset False } }
 #    Viewport::GoAlong        { Frame Speed Bearing Lat Lon }
 #    Viewport::GoARound       { Frame Speed Lat Lon }
-#    Viewport::GoTo           { Frame Lat Lon { Zoom 0 }}
+#    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 #    Viewport::LinkDo         { VP }
 #    Viewport::LinkSet        { }
 #    Viewport::Link           { }
@@ -46,7 +46,7 @@
 #    Viewport::ParamSet       { }
 #    Viewport::Reset          { Frame }
 #    Viewport::Resolution     { Frame Res }
-#    Viewport::Rotate         { Frame Lat Lon { Zoom 0 } }
+#    Viewport::Rotate         { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 #    Viewport::RotateDo       { Frame VP X Y }
 #    Viewport::RotateDone     { Frame }
 #    Viewport::RotateInit     { Frame VP X Y }
@@ -103,7 +103,7 @@ namespace eval Viewport {
    set Map(Elev)        1.0         ;#Facteur d'expansion des elevations
    set Map(GeoRef)      ""          ;#Geo-reference courante (Mode Grid)
    set Map(Grabbed)     False       ;#Etat de la vue
-   set Map(Delay)       500.0      ;#Temps de deplacement en millisecondes
+   set Map(Delay)       1200.0      ;#Temps de deplacement en millisecondes
    set Map(Speed)       0.0         ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07        ;#Facteur de l'effet de ralentissement
 
@@ -1967,25 +1967,18 @@ proc Viewport::Reset { Frame } {
    #----- Verifier le type de projection pour les parametres
 
    set Map(Grabbed) [clock click -milliseconds]
-   $Frame.page.canvas config -cursor watch
 
    if { $Map(Type$Frame)=="grid" } {
       set ninj [projection configure $Frame -gridsize]
       set ext  [projection configure $Frame -gridextent]
       set Map(GridI) [expr ([lindex $ninj 0]-1.0)*0.5+[lindex $ext 0]]
       set Map(GridJ) [expr ([lindex $ninj 1]-1.0)*0.5+[lindex $ext 1]]
-      projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
-   } else {
-      set Map(Lat) $Map(LatReset)
-      set Map(Lon) $Map(LonReset)
-#      Viewport::GoTo $Page::Data(Frame) $Map(LatReset) $Map(LonReset) 1.0
-      projection configure $Frame -location $Map(Lat) $Map(Lon)
+      set ll [projection function $Frame -coordgrid $Map(GridI) $Map(GridJ)]
+      set Map(LatReset) [lindex $ll 0]
+      set Map(LonReset) [lindex $ll 1]
    }
 
-   ProjCam::Reset $Frame
-   Page::Update $Frame
-
-   $Frame.page.canvas config -cursor left_ptr
+   Viewport::GoTo $Page::Data(Frame) $Map(LatReset) $Map(LonReset) 1.0 { 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 }
 }
 
 #----------------------------------------------------------------------------
@@ -2036,6 +2029,9 @@ proc Viewport::Resolution { Frame Res } {
 #  <Lat>     : Latitude
 #  <Lon>     : Longitude
 #  <Zoom>    : Zoom
+#  <From>    : Vecteur position de la camera
+#  <To>      : Vecteur point focal de la camera
+#  <Up>      : Vecteur direction haut de la camera
 #
 # Retour:
 #
@@ -2043,7 +2039,7 @@ proc Viewport::Resolution { Frame Res } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } } {
+proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } { To {} } { Up {} } } {
    variable Map
    variable Data
 
@@ -2062,6 +2058,15 @@ proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } } {
 
    if { $Zoom } {
       projcam configure $Frame -lens [set cam(Lens) $Zoom]
+   }
+   if { [llength $From] } {
+      eval projcam configure $Frame -from [set cam(From) $From]
+   }
+   if { [llength $To] } {
+      eval projcam configure $Frame -to [set cam(To) $To]
+   }
+   if { [llength $Up] } {
+      eval projcam configure $Frame -up [set cam(up) $Up]
    }
    Page::Update $Frame
 }
@@ -2135,8 +2140,7 @@ proc Viewport::RotateDo { Frame VP X Y } {
    }
 
    set Map(Grabbed) [clock click -milliseconds]
-   set Cam(Name)  ""
-   set Data(Name) ""
+   set ProjCam::Data(Name)  ""
 
    #----- On update le tout
 
@@ -2243,6 +2247,8 @@ proc Viewport::RotateInit { Frame VP X Y } {
 proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
    variable Map
 
+   set ProjCam::Data(Name)  ""
+
    #----- Do only if we have the power to
 
    if { $OpenGL::Param(Res)==1 && $Map(Type$Frame)!="grid" } {
@@ -2305,6 +2311,8 @@ proc Viewport::GoAround { Frame Speed Lat Lon } {
 
    upvar #0 ProjCam::Data${Frame}::Cam  cam
 
+   set ProjCam::Data(Name)  ""
+
    #----- Do only if we have the power to
 
    if { $OpenGL::Param(Res)==1 } {
@@ -2360,6 +2368,9 @@ proc Viewport::GoAround { Frame Speed Lat Lon } {
 #  <Lat>     : Latitude cible
 #  <Lon>     : Longitude cible
 #  <Zoom>    : Zoom cible
+#  <From>    : Vecteur position de la camera
+#  <To>      : Vecteur point focal de la camera
+#  <Up>      : Vecteur direction haut de la camera
 #
 # Retour:
 #
@@ -2367,10 +2378,12 @@ proc Viewport::GoAround { Frame Speed Lat Lon } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
+proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } } {
    variable Map
 
    upvar #0 ProjCam::Data${Frame}::Cam  cam
+
+   set ProjCam::Data(Name)  ""
 
    #----- if we zoom, insert the previous zoom in the zoom back list
    if { $Zoom } {
@@ -2382,13 +2395,37 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
       }
    }
 
+   if { [set F [llength $From]] } {
+      set Fx [lindex $From 0]
+      set Fy [lindex $From 1]
+      set Fz [lindex $From 2]
+   } else {
+      set From $cam(From)
+   }
+
+   if { [set T [llength $To]] } {
+      set Tx [lindex $To 0]
+      set Ty [lindex $To 1]
+      set Tz [lindex $To 2]
+   } else {
+      set To $cam(To)
+   }
+
+   if { [set U [llength $Up]] } {
+      set Ux [lindex $Up 0]
+      set Uy [lindex $Up 1]
+      set Uz [lindex $Up 2]
+   } else {
+      set Up $cam(Up)
+   }
+
    #----- Do only if we have the power to
 
    if { $OpenGL::Param(Res)==1 } {
 
       #----- If we are far enough
 
-     if { [set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0]]>10 || $Zoom } {
+     if { [set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0]]>10 || $Zoom || $F || $T || $U } {
 
          Viewport::Resolution $Frame 2
 
@@ -2402,6 +2439,18 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
          set zoom  $cam(Lens)
          set Map(Speed) [set speed [expr $dp/$Map(Delay)]]
          set min   [expr $speed/1000.0]
+
+         set fx [lindex $cam(From) 0]
+         set fy [lindex $cam(From) 1]
+         set fz [lindex $cam(From) 2]
+
+         set tx [lindex $cam(To) 0]
+         set ty [lindex $cam(To) 1]
+         set tz [lindex $cam(To) 2]
+
+         set ux [lindex $cam(Up) 0]
+         set uy [lindex $cam(Up) 1]
+         set uz [lindex $cam(Up) 2]
 
          #----- While we are not there yet
 
@@ -2419,12 +2468,28 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
                break
             }
             set dprr $dpr
+            set dprdp [expr $dpr/$dp]
 
-            #----- Rotate to new position
-
+            #----- Zoom to new incremental zoom
             if { $Zoom } {
-               projcam configure $Frame -lens [set cam(Lens) [expr $Zoom-(($Zoom-$zoom)*($dpr/$dp))]]
+               projcam configure $Frame -lens [set cam(Lens) [expr $Zoom-(($Zoom-$zoom)*$dprdp)]]
             }
+
+            #----- Move camera to new incremental position
+            if { $F } {
+               set cam(From) [list [expr $Fx-(($Fx-$fx)*$dprdp)] [expr $Fy-(($Fy-$fy)*$dprdp)] [expr $Fz-(($Fz-$fz)*$dprdp)]]
+               eval projcam configure $Frame -from $cam(From)
+            }
+            if { $T } {
+               set cam(To) [list [expr $Tx-(($Tx-$tx)*$dprdp)] [expr $Ty-(($Ty-$ty)*$dprdp)] [expr $Tz-(($Tz-$tz)*$dprdp)]]
+               eval projcam configure $Frame -to $cam(To)
+            }
+            if { $U } {
+               set cam(Up) [list [expr $Ux-(($Ux-$ux)*$dprdp)] [expr $Uy-(($Uy-$uy)*$dprdp)] [expr $Uz-(($Uz-$uz)*$dprdp)]]
+               eval projcam configure $Frame -up $cam(Up)
+            }
+
+            #----- Rotate to new incremental position
             projection configure $Frame -location $Map(Lat) $Map(Lon)
             Page::Update $Frame
 
@@ -2446,20 +2511,29 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } } {
                break;
             }
          }
+
+         #----- Got to final destination
          if { $Map(Grabbed)<=$t0 } {
             if { $Map(Type$Frame)=="grid" } {
                set ij [projection function $Frame -gridcoord  $Lat $Lon]
                set Map(GridI) [lindex $ij 0]
                set Map(GridJ) [lindex $ij 1]
             }
-            Viewport::Rotate $Frame $Lat $Lon $Zoom
+
+            if { $F || $T || $U } {
+               set cam(CFX)    0
+               set cam(CFY)    0
+               set cam(CFZ)    1
+               projcam define  $Frame -circlefrom $cam(CFX) $cam(CFY) $cam(CFZ)
+            }
+            Viewport::Rotate $Frame $Lat $Lon $Zoom $From $To $Up
          }
          set Map(Speed) 0.0
          Viewport::Resolution $Frame 1
          Page::Update $Frame
       }
    } else {
-      Viewport::Rotate $Frame $Lat $Lon $Zoom
+      Viewport::Rotate $Frame $Lat $Lon $Zoom $From $To $Up
       Viewport::Resolution $Frame 1
    }
 }
@@ -2784,6 +2858,8 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Map(Type)        \"[projection configure $Frame -type]\""
       puts $File "   set Viewport::Map(Data)        \"[projection configure $Frame -data]\""
       puts $File "   set Viewport::Map(Elev)        \"[projection configure $Frame -scale]\""
+      puts $File "   set Viewport::Map(Delay)       $Viewport::Map(Delay)"
+      puts $File "   set Viewport::Map(Damping)     $Viewport::Map(Damping)"
 
       set coo [projection configure $Frame -mapcoord]
       puts $File "   set Viewport::Map(Coord)       [lindex $coo 0]"
