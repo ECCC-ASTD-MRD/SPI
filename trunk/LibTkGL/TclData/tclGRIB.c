@@ -322,7 +322,7 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
       lval2=lval2==100?LVL_PRES:(lval2==1?LVL_MAGL:(lval2==105?LVL_MAGL:(lval2==105?LVL_MASL:LVL_UNDEF)));
 
       lev=FSTD_Level2IP(lval,lval2);
-      valid=System_DateTime2Seconds(date,time*100);
+      valid=System_DateTime2Seconds(date,time*100,1);
       err=grib_get_long(handle,"GRIBEditionNumber",&lval);
       sprintf(buf,"%s %i VAR TV %ld 0 0 GRIB%i %ld %ld %ld %ld 0",Id,offset,lev,lval,valid,valid,ni,nj);
       Tcl_AppendElement(Interp,buf);

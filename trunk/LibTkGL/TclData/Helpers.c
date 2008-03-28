@@ -65,6 +65,7 @@ int System_ByteOrder(void) {
  * Parametres  :
  *  <YYYYMMDD> : Date
  *  <HHMMSS>   : Heure
+ *  <GMT>      : GMT (GMT ou local)
  *
  * Retour:
  *  <Sec>      : Secondes
@@ -73,7 +74,7 @@ int System_ByteOrder(void) {
  *
  *----------------------------------------------------------------------------
 */
-time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS) {
+time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS,int GMT) {
 
    struct tm date;
 
@@ -93,7 +94,11 @@ time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS) {
    date.tm_isdst=0;                   /*Flag de l'heure avancee*/
 
    /* Force GMT and set back to original TZ after*/
-   return(mktime(&date)-timezone);
+   if (GMT) {
+      return(mktime(&date)-timezone);
+   } else {
+      return(mktime(&date));
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -106,6 +111,7 @@ time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS) {
  *  <Sec>      : Secondes
  *  <YYYYMMDD> : Date
  *  <HHMMSS>   : Heure
+ *  <GMT>      : GMT (GMT ou local)
  *
  * Retour:
  *  <Sec>      : Secondes
@@ -114,11 +120,16 @@ time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS) {
  *
  *----------------------------------------------------------------------------
 */
-time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS) {
+time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS,int GMT) {
 
    struct tm *tsec;
 
-   tsec=gmtime(&Sec);
+   if (GMT) {
+      tsec=gmtime(&Sec);
+   } else {
+      tsec=localtime(&Sec);
+   }
+
    *YYYYMMDD=(tsec->tm_year+1900)*10000+(tsec->tm_mon+1)*100+tsec->tm_mday;
    *HHMMSS=tsec->tm_hour*10000+tsec->tm_min*100+tsec->tm_sec;
 

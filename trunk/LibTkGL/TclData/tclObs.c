@@ -592,10 +592,10 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
 
          case DATE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(obs->Date,obs->Time)));
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(obs->Date,obs->Time,1)));
             } else {
                Tcl_GetLongFromObj(Interp,Objv[++i],&sec);
-               System_Seconds2DateTime(sec,&obs->Date,&obs->Time);
+               System_Seconds2DateTime(sec,&obs->Date,&obs->Time,1);
             }
             break;
       }

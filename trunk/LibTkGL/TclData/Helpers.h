@@ -84,8 +84,8 @@ int   strrindex(char *Str);
 
 int    System_IsBigEndian(void);
 int    System_ByteOrder(void);
-time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS);
-time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS);
+time_t System_DateTime2Seconds(int YYYYMMDD,int HHMMSS,int GMT);
+time_t System_Seconds2DateTime(time_t Sec,int *YYYYMMDD,int *HHMMSS,int GMT);
 int    System_Julian2Stamp(int Year,int Day,int Time);
 long   System_Stamp2Seconds(int Stamp);
 int    System_Seconds2Stamp(long Sec);
