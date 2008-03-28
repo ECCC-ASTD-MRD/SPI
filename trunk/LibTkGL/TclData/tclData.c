@@ -274,7 +274,10 @@ void Data_GetStat(TData *Field){
             }
          }
       }
+   } else {
+      Field->Def->Mode=Field->Def->Data[0];
    }
+
 
    /*Initialiser la structure*/
    if (!Field->Stat)
