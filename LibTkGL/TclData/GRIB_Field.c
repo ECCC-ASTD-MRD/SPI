@@ -228,7 +228,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    /*Figue out valid time*/
    grib_get_long(head.Handle,"date",&date);
    grib_get_long(head.Handle,"time",&time);
-   head.Valid=System_DateTime2Seconds(date,time*100);
+   head.Valid=System_DateTime2Seconds(date,time*100,1);
 
    /*Get message info*/
    err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);

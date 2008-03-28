@@ -654,13 +654,13 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       fgets(buf,512,Stream);sscanf(buf,"%i",&head.NPr);
       fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i",&year,&month,&day,&hour);
 
-      head.Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000);
+      head.Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000,1);
 
       /*Check for AP date availability*/
       fgets(buf,512,Stream);
       if (strlen(buf)<20) {
          sscanf(buf,"%i",&head.AP);
-         head.AP=System_DateTime2Seconds(head.AP/100,fmod(head.AP,100)*10000);
+         head.AP=System_DateTime2Seconds(head.AP/100,fmod(head.AP,100)*10000,1);
          ap=1;
       } else {
          head.AP=0;
@@ -718,7 +718,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
             if (System_IsStamp(traj->Pr[j].Date)) {
                traj->Pr[j].Date=System_Stamp2Seconds(traj->Pr[j].Date);
             } else {
-               traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/100,fmod(traj->Pr[j].Date,100)*10000);
+               traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/100,fmod(traj->Pr[j].Date,100)*10000,1);
             }
          }
          /*Store pointer if asked to*/
@@ -805,7 +805,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       traj[i]->Back=mdl;
       traj[i]->AP=0;
       traj[i]->Lapse=0;
-      traj[i]->Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000);
+      traj[i]->Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000,1);
       traj[i]->NPr--;
       traj[i]->Pr=NULL;
       traj[i]->Tag=NULL;
@@ -841,7 +841,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          &nb,&mdl,&year,&month,&day,&hour,&mdl,&mdl,&s,&lat,&lon,&h,&s);
       nb--;
       year=year>50?year+1900:year+2000;
-      traj[nb]->Pr[j[nb]].Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000);
+      traj[nb]->Pr[j[nb]].Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000,1);
       traj[nb]->Pr[j[nb]].Co.lat=lat;
       traj[nb]->Pr[j[nb]].Co.lon=lon;
       traj[nb]->Pr[j[nb]].Sig=0.0;

@@ -138,7 +138,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
                time=atoi(&buf[8])*100;
                buf[8]='\0';
                date=atoi(buf);
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(date,time)));
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(date,time,1)));
             } else {
             }
             break;

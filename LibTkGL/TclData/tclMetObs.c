@@ -1570,7 +1570,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 //               loc->Grid[1]=dy;
             }
 
-            time=System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss);
+            time=System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1);
             Obs->Time0=(Obs->Time0<time && Obs->Time0!=0)?Obs->Time0:time;
             Obs->Time1=Obs->Time1>time?Obs->Time1:time;
             TMetElem_InsertCopy(loc,0,time,data);
@@ -1695,7 +1695,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          loc->Grid[0]=dx;
          loc->Grid[1]=dy;
       }
-      if ((time=System_DateTime2Seconds(yymmdd,hhmm*100))<0)
+      if ((time=System_DateTime2Seconds(yymmdd,hhmm*100,1))<0)
          continue;
 
       Obs->Time0=(Obs->Time0<time && Obs->Time0!=0)?Obs->Time0:time;
@@ -1868,7 +1868,7 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          hd=0;sec=0;
          sscanf((char*)(strrchr(gtok[n],(int)'.'))+1,"%8d%02d%02d%02d",&date,&time,&hd,&sec);
          time=time*10000+hd*100+sec;
-         gtime[n]=System_DateTime2Seconds(date,time);
+         gtime[n]=System_DateTime2Seconds(date,time,1);
 
 
       } else if (strcmp(gtok[n],"ID")!=0 && strcmp(gtok[n],"NO")!=0 && strcmp(gtok[n],"LAT")!=0 && strcmp(gtok[n],"LON")!=0 && strcmp(gtok[n],"ELEV")!=0 && strcmp(gtok[n],"ELEVTYPE")!=0 && strcmp(gtok[n],"SIZE")!=0) {
