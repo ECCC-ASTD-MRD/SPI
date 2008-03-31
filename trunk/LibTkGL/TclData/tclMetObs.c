@@ -257,8 +257,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj   *obj;
    int        i,idx,no=1;
    long       code;
-   FILE      *fid;
-   char      buf[256],table;
+   char       table;
+
    static CONST char *sopt[] = { "-read","-code","-desc","-unit","-insert",NULL };
    enum                opt { READ,CODE,DESC,UNIT,INSERT };
 
@@ -1359,9 +1359,9 @@ TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemDa
 */
 int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
-   int type,res;
+   int res;
 
-   switch (type=f77name(wkoffit)(File)) {
+   switch ((f77name(wkoffit)(File))) {
       case 6 : res=MetObs_LoadBURP(Interp,File,Obs); break;
 //      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs); break;
       case 31: res=MetObs_LoadASCII(Interp,File,Obs); break;
@@ -1611,14 +1611,12 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    Tcl_Obj      *obj;
    TMetLoc      *loc;
-   TMetElem     *elem;
    TMetElemData *data;
 
    int      e,sz1=0,sz2=0;
 
    int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0;
-   int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp,n,k;
-   int      c;
+   int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp;
    char     stnid[10];
    int     *elems=NULL,*tblval=NULL;
    float   *tblvalf=NULL;
@@ -2174,9 +2172,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             /*Loop on the model items*/
             for(i=0;i<Obs->Model->NItem;i++) {
 
-#ifdef AQBUG
-fprintf(stderr,"(AQ_DEBUG) Looping on model Items (%i)\n",i);
-#endif
                if (!(spec=Obs->Model->Items[i].Spec)) {
                   continue;
                }
@@ -2299,11 +2294,6 @@ fprintf(stderr,"(AQ_DEBUG) Looping on model Items (%i)\n",i);
                                     sprintf(buf,"%s (%s)",loc->Id,loc->No);
                                  } else {
                                     sprintf(buf,"%s",loc->Id);
-#ifdef AQBUG
-fprintf(stderr,"(AQ_DEBUG) Drawing info ---\n");
-fprintf(stderr,"(AQ_DEBUG) Drawing info (%s)\n",buf);
-fprintf(stderr,"(AQ_DEBUG) Drawing info ---\n");
-#endif
                                  }
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
                               }
@@ -2349,11 +2339,6 @@ fprintf(stderr,"(AQ_DEBUG) Drawing info ---\n");
                                  }
                               }
                               DataSpec_Format(spec,VAL2SPEC(spec,val),buf);
-#ifdef AQBUG
-fprintf(stderr,"(AQ_DEBUG) Drawing value ---\n");
-fprintf(stderr,"(AQ_DEBUG) Drawing value (%s)\n",buf);
-fprintf(stderr,"(AQ_DEBUG) Drawing value ---\n");
-#endif
                               MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                            }
 
@@ -2391,16 +2376,12 @@ fprintf(stderr,"(AQ_DEBUG) Drawing value ---\n");
    glDisable(GL_DEPTH_TEST);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_DEPTH_TEST);
-#ifdef AQBUG
-fprintf(stderr,"(AQ_DEBUG) Done rendering\n");
-#endif
    return(n);
 }
 
 int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Value,ViewportItem *VP,Projection *Proj) {
 
-   int    i,idx=-1;
-   double sz;
+   int    idx=-1;
    char   buf[256];
 
    if (!Spec->Icon) {
@@ -2423,7 +2404,7 @@ int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Val
                  glColor4ub(Spec->Map->Color[idx][0],Spec->Map->Color[idx][1],Spec->Map->Color[idx][2],Spec->Map->Color[idx][3]*Alpha);
                }
             } else {
-               return;
+               return(1);
             }
          } else {
             if (Spec->Outline) {
@@ -2434,7 +2415,7 @@ int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Val
                   glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,Alpha*65535);
                }
             } else {
-               return;
+               return(1);
             }
          }
       }
@@ -2532,7 +2513,7 @@ void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportI
 static int MetObs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    TMetObs *met;
-   int      i,idx,n;
+   int      i,idx;
    double   val;
 
    static CONST char *sopt[] = { "-tag","-nodata",NULL };
@@ -2639,10 +2620,9 @@ void MetObs_Wipe() {
 
 static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   TMetObs      *obs;
    TMetElemData *data;
 
-   int         idx,c,n;
+   int         idx,n;
    static CONST char *sopt[] = { "create","free","define","stats","is","all",NULL };
    enum               opt { CREATE,FREE,DEFINE,STATS,IS,ALL };
 
@@ -2727,7 +2707,7 @@ static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj      *obj,*sub,*subsub;
+   Tcl_Obj      *obj,*sub;
    TMetElemData *data;
    EntryTableB  *eb;
    int           ne,e,v,t,nv,nt,i,j,idx;

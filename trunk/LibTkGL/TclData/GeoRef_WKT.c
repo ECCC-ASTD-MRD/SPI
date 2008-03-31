@@ -106,7 +106,6 @@ double GeoRef_WKTDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY){
 
    double  x,y;
-   void   *p0,*p1;
    int     valid=0,mem,ix,iy;
 
   *Length=Def->NoData;

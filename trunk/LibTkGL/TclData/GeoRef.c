@@ -34,7 +34,6 @@
 #include "GeoRef.h"
 
 TCL_DECLARE_MUTEX(MUTEX_GEOREF)
-TCL_DECLARE_MUTEX(MUTEX_FSTDEZ)
 
 static long GeoRefNo=0;
 static int  GeoRefInit=0;
@@ -146,13 +145,13 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
  *---------------------------------------------------------------------------------------------------------------
 */
 void GeoScan_Clear(TGeoScan *Scan) {
-   TGeoScan scan;
 
    if (Scan->X) free(Scan->X);
    if (Scan->Y) free(Scan->Y);
    if (Scan->V) free(Scan->V);
 
-   Scan->X=Scan->Y=Scan->V=NULL;
+   Scan->X=Scan->Y=NULL;
+   Scan->V=NULL;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -241,18 +240,18 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
    sinc2.lat=sin(C2.lat);sinc2.lon=sin(C2.lon);
    cosc2.lat=cos(C2.lat);cosc2.lon=cos(C2.lon);
 
-   dst12=2*asin(sqrt(pow((sin((C1.lat-C2.lat)/2)),2) + cos(C1.lat)*cos(C2.lat)*pow(sin((C1.lon-C2.lon)/2),2)));
+   dst12=2*asin(sqrt(pow((sin((C1.lat-C2.lat)/2)),2) + cosc1.lat*cosc2.lat*pow(sin((C1.lon-C2.lon)/2),2)));
 
    if (sin(C2.lon-C1.lon)<0) {
-      crs12=acos((sin(C2.lat)-sin(C1.lat)*cos(dst12))/(sin(dst12)*cos(C1.lat)));
+      crs12=acos((sinc2.lat-sinc1.lat*cos(dst12))/(sin(dst12)*cosc1.lat));
    } else {
-      crs12=2.0*M_PI-acos((sin(C2.lat)-sin(C1.lat)*cos(dst12))/(sin(dst12)*cos(C1.lat)));
+      crs12=2.0*M_PI-acos((sinc2.lat-sinc1.lat*cos(dst12))/(sin(dst12)*cosc1.lat));
    }
 
    if (sin(C1.lon-C2.lon)<0) {
-      crs21=acos((sin(C1.lat)-sin(C2.lat)*cos(dst12))/(sin(dst12)*cos(C2.lat)));
+      crs21=acos((sinc1.lat-sinc2.lat*cos(dst12))/(sin(dst12)*cosc2.lat));
    } else {
-      crs21=M_2PI-acos((sin(C1.lat)-sin(C2.lat)*cos(dst12))/(sin(dst12)*cos(C2.lat)));
+      crs21=M_2PI-acos((sinc1.lat-sinc2.lat*cos(dst12))/(sin(dst12)*cosc2.lat));
    }
 
    ang1=fmod(CRS13-crs12+M_PI,M_2PI)-M_PI;
@@ -266,7 +265,7 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
       ang2=fabs(ang2);
       ang3=acos(-cos(ang1)*cos(ang2)+sin(ang1)*sin(ang2)*cos(dst12));
       dst13=asin(sin(ang2)*sin(dst12)/sin(ang3));
-      C3->lat=asin(sin(C1.lat)*cos(dst13)+cos(C1.lat)*sin(dst13)*cos(CRS13));
+      C3->lat=asin(sinc1.lat*cos(dst13)+cosc1.lat*sin(dst13)*cos(CRS13));
       C3->lon=fmod(C1.lon-asin(sin(CRS13)*sin(dst13)/cos(C3->lat))+M_PI,M_2PI)-M_PI;
    }
 
@@ -295,9 +294,9 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    double      x,y,lat0,lon0,lat1,lon1;
    int         idx,in=0,x0,y0,x1,y1,n;
-   char       *buf;
    TGeoRef    *ref0,*ref1;
    Tcl_Obj    *lst;
+   char       *buf;
 
    static CONST char *sopt[] = { "create","copy","free","define","project","unproject","limit","within","intersect","is","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,DEFINE,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ALL,WIPE };
@@ -1328,7 +1327,7 @@ int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1
 
    if (!in) {
       x0=y0=1e32;
-      x1=y1-1e32;
+      x1=y1=-1e32;
 
       /*Project Ref0 Border within Ref1 and get limits*/
       for(x=Ref0->X0,y=Ref0->Y0;x<=Ref0->X1;x++) {
@@ -1406,14 +1405,14 @@ int GeoRef_Limits(TGeoRef *Ref,double *Lat0,double *Lon0,double *Lat1,double *Lo
          *Lat0=FMIN(*Lat0,Ref->Lat[x]); *Lon0=FMIN(*Lon0,Ref->Lon[x]);
          *Lat1=FMAX(*Lat1,Ref->Lat[x]);  *Lon1=FMAX(*Lon1,Ref->Lon[x]);
       }
-      return;
+      return(1);
    }
 
    /*If destination is global*/
    if (Ref->Type&GRID_WRAP) {
       *Lat0=-90.0;  *Lat1=90.0;
       *Lon0=-180.0; *Lon1=180.0;
-      return;
+      return(1);
    }
 
    /*Project Ref0 Border within Ref1 and get limits*/
@@ -1448,11 +1447,12 @@ int GeoRef_Limits(TGeoRef *Ref,double *Lat0,double *Lon0,double *Lat1,double *Lo
    if (Ref->UnProject(Ref,&di,&dj,-90.0,0.0,0,1) && dj>Ref->Y0+2 && dj<Ref->Y1-2 && di>Ref->X0+2 && di<Ref->X1-2) {
       *Lat0=-90.0;
    }
+   return(1);
 }
 
 int GeoRef_Within(TGeoRef *Ref0,TGeoRef *Ref1) {
 
-   double lat,lon,di,dj,in=0;
+   double lat,lon,di,dj;
    int    x,y;
 
    /*Project Ref0 Border within Ref1 and get limits*/

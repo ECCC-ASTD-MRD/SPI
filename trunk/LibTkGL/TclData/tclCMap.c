@@ -1450,7 +1450,7 @@ void CMap_RatioDefine(CMap_Rec *CMap){
 */
 void CMap_CurveDefine(CMap_Rec *CMap){
 
-   float  j,n2;
+   float  n2;
    int    i,it,c;
 
    if (!CMap) {

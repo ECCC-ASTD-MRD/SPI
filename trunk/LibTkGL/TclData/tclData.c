@@ -245,7 +245,6 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
 */
 void Data_GetStat(TData *Field){
 
-   Coord         co;
    double        val,mode;
    int           i,j,k,d,imin=0,jmin=0,imax=0,jmax=0,kmin=0,kmax=0;
    unsigned long idxk,idx,n=0;
@@ -1239,19 +1238,20 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
 */
 int Data_DefTile(TDataDef *DefTo,TDataDef *DefTile,int X0, int Y0) {
 
-   int    x,y,dx,dy,x0,y0,x1,y1,bd,c;
+   int    x,y,dx,dy,x0,y0,x1,y1,c;
    unsigned long idxf,idxd;
    double val;
 
    x0=X0<0?-X0:0;
    y0=Y0<0?-Y0:0;
 
+   x1=DefTile->NI+X0>DefTo->NI?DefTo->NI:DefTile->NI;
+   y1=DefTile->NJ+Y0>DefTo->NJ?DefTo->NJ:DefTile->NJ;
+
    if (x0>DefTo->NI || x1<0 || y0>DefTo->NJ || y1<0) {
       return(0);
    }
 
-   x1=DefTile->NI+X0>DefTo->NI?DefTo->NI:DefTile->NI;
-   y1=DefTile->NJ+Y0>DefTo->NJ?DefTo->NJ:DefTile->NJ;
    dy=Y0;
    for (y=y0;y<=y1;y++) {
       dx=X0;
@@ -2266,7 +2266,7 @@ int Data_ValSet(TData *Field,float I,float J,float Val) {
 */
 Tcl_Obj* Data_Val2Obj(TDataDef *Def,double Val) {
 
-   Tcl_Obj *obj;
+   Tcl_Obj *obj=NULL;
 
    switch(Def->Type) {
       case TD_UByte:
@@ -2278,6 +2278,7 @@ Tcl_Obj* Data_Val2Obj(TDataDef *Def,double Val) {
       case TD_Float32:
       case TD_Float64: obj=Tcl_NewDoubleObj(Val);
    }
+   return(obj);
 }
 
 Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y) {

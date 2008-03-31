@@ -102,7 +102,7 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 */
 int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY){
 
-   float    x,y,dx,dy,d=1e32;
+   float    x,y,dx,d=1e32;
    void     *p0,*p1;
    int      valid=0,mem,ix,iy,n;
 

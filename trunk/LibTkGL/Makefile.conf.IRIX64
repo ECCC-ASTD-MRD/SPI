@@ -15,7 +15,6 @@ TCLTK_VER = 8.4.12
 X_INCLUDE   = -I/usr/contrib/X11R6/include -I/usr/include/X11R6
 PROTO       = -DFUNCPROTO=7 -DNARROWPROTO
 DEFINES     = -DSYSV -DSVR4 -D_IRIX64_ -DLNK_FSTD -DLNK_GDALOGR -DTCL_THREADS
-DEFINES     = -DSYSV -DSVR4 -D_IRIX64_ -DLNK_FSTD -DLNK_GDALOGR -DTCL_THREADS
 
 CDEBUGFLAGS =
 CCOPTIONS   = -O3
@@ -45,6 +44,9 @@ PROJ_PATH = $(LIB_PATH)/proj-4.4.9
 # ECMWF GRIB librairie
 GRIB_PATH = $(LIB_PATH)/grib_api-0.9.31
 
+# BUFR libecbufr path
+BUFR_PATH=  $(LIB_PATH)/libecbufr-0.1
+
 # Geographical database localisation
 GDB_PATH = /software/cmc/gdb-1.0
 
@@ -57,4 +59,4 @@ FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
 # global includes
 INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include \
    -I$(GDB_PATH)/include -I$(GL_PATH)/include -I$(PROJ_PATH)/include -I$(GDAL_PATH)/include \
-   -I$(URP_PATH)/include -I$(GRIB_PATH)/include -I$(FLT_PATH)/include -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD
+   -I$(URP_PATH)/include -I$(GRIB_PATH)/include -I$(BUFR_PATH)/include -I$(FLT_PATH)/include -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD

@@ -275,7 +275,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int    id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,i,j,k,compress=0;
+   int    id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,i,k,compress=0;
    int    i0=-1,j0=-1,i1=-1,j1=-1,npos,ok;
    long   time;
    double tmpd,*table;
@@ -1115,7 +1115,6 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
 
    FSTD_File     *file;
-   Tcl_HashEntry *entry;
 
    if ((file=(FSTD_File*)Tcl_HashDel(&FSTD_FileTable,Id))) {
       file->Open=file->Open<0?1:file->Open;

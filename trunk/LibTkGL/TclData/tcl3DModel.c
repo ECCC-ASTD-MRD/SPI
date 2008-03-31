@@ -705,7 +705,6 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
 int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
 
    T3DModel *mdl;
-   FILE     *file;
    int       c=1;
 
    mdl=Model_Get(Name);
@@ -1071,7 +1070,7 @@ void Model_NormalCompute(T3DModel *M) {
 */
 int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
 
-   Vect3d vr,ex[4],lim,min,max;
+   Vect3d ex[4],lim,min,max;
 
    if (!M->Ref) {
       return(1);
@@ -1115,7 +1114,7 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
 
 int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
-   int        i,j,w,h,o,idx;
+   int        i,j,o,idx;
    Vect3d     vr;
    Vect3f     vrf;
    T3DObject *obj;
