@@ -80,12 +80,12 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
    if (proj) {
       proj->Loading+=5;
 
-      band->Tex.ThreadId=1;
+      band->Tex.ThreadId=(Tcl_ThreadId)0x1;
 
       GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->Params->VP,band->Tex.ResN,0,0,5);
 
       proj->Loading=0;
-      band->Tex.ThreadId=0;
+      band->Tex.ThreadId=(Tcl_ThreadId)0x0;
       Tcl_ExitThread(0);
    }
 }
@@ -354,7 +354,7 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
 */
 int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
-   unsigned int x0,y0,x1,y1,r,rw,rh;
+   unsigned int x0,y0,x1,y1,r;
 
    r=Tile->Res*Band->Spec->TexSize;
 
@@ -646,7 +646,7 @@ void GeoTex_Qualify(GDAL_Band *Band) {
 */
 int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
 
-   int    c,r,rw,rh,nx,ny;
+   int    c;
 
    if (Band->Tex.Res==0 || Tile->Res==0) {
       return(0);
@@ -665,8 +665,6 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
          Tile->Nx,Tile->Ny,TD2GDAL[Band->Def->Type],Band->Def->NC>1?Band->Def->NC*TData_Size[Band->Def->Type]:0,0))==CE_Failure) {
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to read tile data from band %i\n",c);
       }
-//      GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx,Tile->Dy,rw,rh,Band->Def->Data[c]+(Tile->Dy*Band->Def->NI+Tile->Dx)*TData_Size[Band->Def->Type],
-//         wr,hr,TD2GDAL[Band->Def->Type],0,Band->Def->NI*TData_Size[Band->Def->Type]);
    }
 
    Tile->Flag=GEOTEX_DATA;

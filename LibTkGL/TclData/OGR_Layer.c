@@ -1123,6 +1123,7 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
          }
          break;
 
+#ifdef GDAL126
       case OFTTime:
          OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
          time=hour*3600+min*60+sec;
@@ -1140,7 +1141,7 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
          time=System_DateTime2Seconds(year*10000+month*100+day,hour*10000+min*100+sec,tz==100?1:0);
          Tcl_SetLongObj(obj,time);
          break;
-
+#endif
       case OFTWideString:
       case OFTWideStringList:
       case OFTBinary:
@@ -1269,6 +1270,7 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
          sprintf(Buf,"%s",OGR_F_GetFieldAsString(Feature,Index));
          break;
 
+#ifdef GDAL126
       case OFTTime:
          OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
          sprintf(Buf,"%02i:%02i:%02i",hour,min,sec);
@@ -1283,6 +1285,7 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
          OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
          sprintf(Buf,"%i-%02i-%02i %02i:%02i:%02i",year,month,day,hour,min,sec);
          break;
+#endif
 
       case OFTIntegerList:
       case OFTRealList:
@@ -1339,16 +1342,16 @@ void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
    } else if (strcmp(Type,"WideStringList")==0) {
       field=OGR_Fld_Create(Field,OFTWideStringList);
       if (Width) OGR_Fld_SetWidth(field,Width);
+#ifdef GDAL126
    } else if (strcmp(Type,"Time")==0) {
       field=OGR_Fld_Create(Field,OFTTime);
    } else if (strcmp(Type,"Date")==0) {
       field=OGR_Fld_Create(Field,OFTDate);
    } else if (strcmp(Type,"DateTime")==0) {
       field=OGR_Fld_Create(Field,OFTDateTime);
+#endif
    } else if (strcmp(Type,"Binary")==0) {
       field=OGR_Fld_Create(Field,OFTBinary);
-   } else {
-
    }
 //   OGR_Fld_SetJustify (OGRFieldDefnH, OGRJustification)
 
@@ -2496,9 +2499,11 @@ int QSort_OGR(const void *A,const void *B){
          }
          break;
 
+#ifdef GDAL126
       case OFTTime:
       case OFTDate:
       case OFTDateTime:
+#endif
       case OFTString:
          fas=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)A],QSort_OGRField);
          fbs=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)B],QSort_OGRField);

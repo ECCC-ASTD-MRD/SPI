@@ -74,7 +74,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALDataType    type;
    int             c;
    double          tra[6],inv[6];
-   int             i,sz,nx,ny,rx,ry;
+   int             i,nx,ny,rx,ry;
    CONST char     *prj;
 
 
@@ -174,8 +174,6 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALGetRasterNoDataValue(hband,&i);
    if (i)
       band->Def->NoData=GDALGetRasterNoDataValue(hband,&i);
-
-   sz=GDALGetDataTypeSize(type)>>3;
 
    for(i=0;i<NIdx;i++) {
       file=GDAL_FileGet(NULL,FileId[i]);

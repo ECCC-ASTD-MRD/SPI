@@ -49,6 +49,7 @@ static int Obs_FreeHash(Tcl_Interp *Interp,char *Name);
 
 int  Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj);
 void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj);
+void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj);
 void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj);
 
 extern TIcon IconList[];
@@ -585,7 +586,9 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                obs->Loc->Info=realloc(obs->Loc->Info,obs->Loc->Nb*sizeof(char*));
                obs->Loc->Coord=realloc(obs->Loc->Coord,obs->Loc->Nb*sizeof(Coord));
                for(;k<obs->Loc->Nb;k++) {
-                  obs->Loc->Id[k]=obs->Loc->Head[k]=obs->Loc->Info[k]=NULL;
+                  obs->Loc->Id[k]=NULL;
+                  obs->Loc->Head[k]=NULL;
+                  obs->Loc->Info[k]=NULL;
                }
             }
             break;
@@ -1768,7 +1771,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    return(1);
 }
 
-int Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
+void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
 
    Vect3d pix[2];
    Coord  co;

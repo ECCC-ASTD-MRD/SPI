@@ -185,8 +185,7 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
 int FSTD_FieldReadMesh(TData *Field) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
-   int        key,ni,nj,nk,i;
-   Coord      co;
+   int        key,ni,nj,nk;
 
 #ifdef LNK_FSTD
    if (!head->FID || !Field->Ref || !(Field->Ref->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
@@ -991,7 +990,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Field0,TData *Field1){
+int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Field0,TData *Field1) {
 
    int   i,n,idx=0;
    double delay,dt,v0,v1,vr;
@@ -1835,10 +1834,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    FSTD_Head   h;
    TFSTDVector *uvw;
    int         ok,ni,nj,nk,i,type,idx;
-   float       tmpf,lvl;
+   float       lvl;
    char        nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
    double      nhour;
-   char       *val;
 
 #ifdef LNK_FSTD
 
@@ -2069,7 +2067,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
    TFSTDVector *uvw;
    TGeoRef     *ref;
    int          idxs[512],tmp[512],i,k,k2,idx,ok,idump,ni,nj,nk,type;
-   char         cdump[16],nv[5];
+   char         cdump[16];
    void        *p;
    float        levels[512];
 
@@ -2523,7 +2521,6 @@ int FSTD_ZGrid(Tcl_Interp *Interp,Tcl_Obj *Tic,Tcl_Obj *Tac,Tcl_Obj *Set) {
    Tcl_Obj *obj;
    double   dval;
    TData   *field[2];
-   char    *buf[64];
 
    char Grd_typ_S[2]="GU",Grd_proj_S[2]="L\0";
    int Grd_ni=0,Grd_nj=0,Grd_nila=0,Grd_njla=0,Grd_iref=0,Grd_jref=0,Grd_roule=0,Grd_uniform_L=0;

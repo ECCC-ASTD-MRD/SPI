@@ -646,8 +646,7 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
 */
 struct TDataDef* Vector_GetDef(TVector *Vec) {
 
-   Tcl_Obj *obj;
-   int      i,n=0;
+   int i;
 
    if (!Vec->Def) {
       Vec->Def=(struct TDataDef*)malloc(sizeof(struct TDataDef));

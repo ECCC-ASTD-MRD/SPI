@@ -59,7 +59,6 @@ static float      GCOL[4]={ 0.0,0.0,0.0,0.0 };
 int Model_LoadFLT(T3DModel *M,char *Path) {
 
    FltFile *flt;
-   int      n;
 
    if (!(flt=fltOpen(Path))) {
       return(0);
@@ -395,6 +394,6 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    for (i=0;i<Node->numChildren;i++)
       ModelFLT_NodeProcess(M,Node->child[i],FLT);
 
-   return;
+   return(1);
 }
 

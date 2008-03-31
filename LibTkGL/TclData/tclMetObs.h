@@ -36,6 +36,8 @@
 
 #include "tclData.h"
 #include "bufr_api.h"
+#include "bufr_array.h"
+#include "bufr_local.h"
 
 #define MetObs_GetData(MD,E,V,T) (MD->Data[(T*MD->Nv+V)*MD->Ne+E])
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
@@ -123,6 +125,7 @@ int      MetObs_Copy(Tcl_Interp *Interp,TMetObs *Obs,char *Name);
 int      MetObs_Extract(Tcl_Interp *Interp,TMetObs *Obs,TData *Field);
 void     MetObs_Free(TMetObs *Obs);
 void     MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item);
+int      MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadASCII(Tcl_Interp* Interp,char* File,TMetObs *Obs);

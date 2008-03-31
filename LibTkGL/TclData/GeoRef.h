@@ -211,6 +211,7 @@ int      GeoRef_Free(TGeoRef *Ref);
 void     GeoRef_Clear(TGeoRef *Ref,int New);
 TGeoRef* GeoRef_Find(TGeoRef *Ref);
 void     GeoRef_Qualify(TGeoRef *Ref);
+int      GeoRef_Limits(TGeoRef *Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
 
 TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta);
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
