@@ -977,18 +977,22 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
 void ViewportRefresh(ViewportItem *VP) {
 
    extern void Tk_glCanvasEventuallyRedraw(Tk_Canvas canvas,int x1,int y1,int x2,int y2);
-   int i;
+   int i,d=0;
 
    /*Check into viewport table for join projection*/
    for (i=0;i<VPMAX;i++){
+      if (ViewportTable[i]==VP) d++;
+
       if (ViewportTable[i] && ViewportTable[i]->canvas==VP->canvas && strcmp(ViewportTable[i]->Projection,VP->Projection)==0) {
          ViewportTable[i]->Update=1;
       }
    }
 
+   if (d) {
    VP->Update=1;
    if (VP->canvas)
       Tk_glCanvasEventuallyRedraw(VP->canvas,1,1,2,2);
+   }
 }
 
 int ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask) {
