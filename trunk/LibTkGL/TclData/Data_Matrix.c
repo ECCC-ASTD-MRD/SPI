@@ -646,13 +646,8 @@ TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iter
 /*   if (Iterate && ((Func!=((TFunc3*)ifelse) && !(m=Calc_Compat(GInterp,A,B,3))) || !(m=Calc_Compat(GInterp,B,C,3))))
       return(NULL);
 */
-//   m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3),3);
 
-   if (Func==((TFunc3*)ifelse)) {
-      m=Calc_Compat(GInterp,B,C,3);
-   } else {
-      m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3),3);
-   }
+   m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3),3);
 
    if (Iterate && !m)
       return(NULL);
