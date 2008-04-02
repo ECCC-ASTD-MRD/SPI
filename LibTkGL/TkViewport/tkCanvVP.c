@@ -976,15 +976,9 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
  *
  *----------------------------------------------------------------------------
 */
-void ViewportRefreshCanvas(ClientData clientData) {
-   extern void Tk_glCanvasEventuallyRedraw(Tk_Canvas canvas,int x1,int y1,int x2,int y2);
-   Tk_glCanvasEventuallyRedraw((Tk_Canvas)clientData,1,1,2,2);
-}
-
 void ViewportRefresh(ClientData clientData,int Delay) {
 
    ViewportItem *vp=(ViewportItem*)clientData;
-   Tcl_TimerToken tok;
 
    int i,d=0;
 
@@ -1001,12 +995,18 @@ void ViewportRefresh(ClientData clientData,int Delay) {
       vp->Update=1;
       if (Delay<2000) {
          if (!vp->Timer) {
-           vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefreshCanvas,vp->canvas);
+           vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
          }
       } else {
-         ViewportRefreshCanvas(vp->canvas);
+         ViewportRefresh_Canvas(vp->canvas);
       }
    }
+}
+
+void ViewportRefresh_Canvas(ClientData clientData) {
+   extern void Tk_glCanvasEventuallyRedraw(Tk_Canvas canvas,int x1,int y1,int x2,int y2);
+
+   Tk_glCanvasEventuallyRedraw((Tk_Canvas)clientData,1,1,2,2);
 }
 
 int ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask) {
