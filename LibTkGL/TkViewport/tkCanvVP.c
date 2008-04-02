@@ -274,6 +274,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
 
    vp->Loading     = 0;
    vp->ThreadId    = Tcl_GetCurrentThread();
+   vp->Timer       = NULL;
 
    for (i=0;i<NBFRAMEMAX;i++){
       vp->Frames[i]=NULL;
@@ -967,6 +968,7 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
  *
  * Parametres :
  *   <VP>     : Viewport
+ *   <Delay>  : Temps en millisecondes avant le refresh
  *
  * Retour:
  *
@@ -974,24 +976,36 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
  *
  *----------------------------------------------------------------------------
 */
-void ViewportRefresh(ViewportItem *VP) {
-
+void ViewportRefreshCanvas(ClientData clientData) {
    extern void Tk_glCanvasEventuallyRedraw(Tk_Canvas canvas,int x1,int y1,int x2,int y2);
+   Tk_glCanvasEventuallyRedraw((Tk_Canvas)clientData,1,1,2,2);
+}
+
+void ViewportRefresh(ClientData clientData,int Delay) {
+
+   ViewportItem *vp=(ViewportItem*)clientData;
+   Tcl_TimerToken tok;
+
    int i,d=0;
 
    /*Check into viewport table for join projection*/
    for (i=0;i<VPMAX;i++){
-      if (ViewportTable[i]==VP) d++;
+      if (ViewportTable[i]==vp) d++;
 
-      if (ViewportTable[i] && ViewportTable[i]->canvas==VP->canvas && strcmp(ViewportTable[i]->Projection,VP->Projection)==0) {
+      if (ViewportTable[i] && ViewportTable[i]->canvas==vp->canvas && strcmp(ViewportTable[i]->Projection,vp->Projection)==0) {
          ViewportTable[i]->Update=1;
       }
    }
 
-   if (d) {
-   VP->Update=1;
-   if (VP->canvas)
-      Tk_glCanvasEventuallyRedraw(VP->canvas,1,1,2,2);
+   if (d && vp->canvas) {
+      vp->Update=1;
+      if (Delay<2000) {
+         if (!vp->Timer) {
+           vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefreshCanvas,vp->canvas);
+         }
+      } else {
+         ViewportRefreshCanvas(vp->canvas);
+      }
    }
 }
 
@@ -999,7 +1013,7 @@ int ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask) {
 
    ThreadEvent *ev=(ThreadEvent*)Event;
 
-   ViewportRefresh((ViewportItem*)ev->ptr);
+   ViewportRefresh((ViewportItem*)ev->ptr,0);
 }
 
 /*----------------------------------------------------------------------------
@@ -1039,6 +1053,10 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    TMetObs      *met;
 
    load=vp->Loading;
+
+   Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
+   if (GLRender->Delay<2000)
+      ViewportRefresh(vp,GLRender->Delay);
 
    extern int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
    extern int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);

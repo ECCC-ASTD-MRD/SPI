@@ -2634,6 +2634,7 @@ Tk_glCanvasEventuallyRedraw(canvas, x1, y1, x2, y2)
    canvasPtr->redrawY2 = y2;
    canvasPtr->flags |= BBOX_NOT_EMPTY;
     }
+
     if (!(canvasPtr->flags & REDRAW_PENDING)) {
    Tcl_DoWhenIdle(DisplayglCanvas, (ClientData) canvasPtr);
    canvasPtr->flags |= REDRAW_PENDING;

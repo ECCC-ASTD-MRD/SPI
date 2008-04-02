@@ -149,6 +149,7 @@ typedef struct GLParams  {
    GLUtesselator *GLTess;       /*Tessalation object */
    GLUquadric    *GLQuad;       /*Quadric object*/
 
+   int            Delay;            /*Delai des frames*/
    GLboolean      Ext[32];          /*Liste des extensions*/
    GLboolean      Set;              /*Liste des extensions*/
    GLhandleARB    Prog[SHADER_MAX]; /*Liste des shaders*/

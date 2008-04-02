@@ -1245,6 +1245,7 @@ TDataSpec *DataSpec_New(){
    spec->InterO=0;
    spec->InterM=0;
    spec->Interp=GL_NEAREST;
+   spec->TexStep=0.0;
    spec->TexSample=8;
    spec->TexSize=256;
    spec->Alpha=100;

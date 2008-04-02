@@ -88,7 +88,9 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
 
       /*Load CMC Table B and D, includes local descriptors*/
       BUFRTable=bufr_create_tables();
-      bufr_load_cmc_tables(BUFRTable);
+      if (bufr_load_cmc_tables(BUFRTable)<=0) {
+         printf("(WARNING) TclMetObs_Init: Unable to load default CMC BUFR tables\n");
+      }
    }
    Tcl_CreateObjCommand(Interp,"metobs",MetObs_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"metreport",MetReport_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
@@ -259,8 +261,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    long       code;
    char       table;
 
-   static CONST char *sopt[] = { "-read","-code","-desc","-unit","-insert",NULL };
-   enum                opt { READ,CODE,DESC,UNIT,INSERT };
+   static CONST char *sopt[] = { "-readmaster","-readlocal","-code","-desc","-unit","-insert",NULL };
+   enum                opt { READMASTER,READLOCAL,CODE,DESC,UNIT,INSERT };
 
    /*Figure out which table we are talking about*/
    table=Tcl_GetString(Objv[0])[0];
@@ -276,12 +278,22 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
-         case READ:
+         case READMASTER:
             if (Objc==1) {
             } else {
                switch(table) {
-                  case 'B': bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[++i]));
-                  case 'D': bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[++i]));
+                  case 'B': bufr_load_m_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'D': bufr_load_m_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+               }
+            }
+            break;
+
+         case READLOCAL:
+            if (Objc==1) {
+            } else {
+               switch(table) {
+                  case 'B': bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'D': bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
                }
             }
             break;

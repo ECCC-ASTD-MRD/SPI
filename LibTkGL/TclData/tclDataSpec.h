@@ -120,6 +120,7 @@ typedef struct TDataSpec {
    int         Light;               /*Illumination*/
    int         Sample;              /*Distance de sampling des valeurs*/
    int         TexSample,TexSize;   /*Parametres des textures*/
+   double      TexStep;
    double      Step;                /*Step de calcul*/
    int         Width;               /*Largeur*/
    int         Icon;                /*Icone*/

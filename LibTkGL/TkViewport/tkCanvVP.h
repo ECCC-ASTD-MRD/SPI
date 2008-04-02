@@ -60,7 +60,8 @@ typedef struct ViewportItem  {
    Tk_Item header;                /*Generic stuff that's the same for all types*/
    Tk_Canvas canvas;              /*Pointeur sur le canvas contenant le viewport*/
    Tk_Anchor anchor;              /*Where to anchor pixmap relative to (x,y)*/
-   Tk_Font tkfont;                /* Font for drawing text. */
+   Tk_Font tkfont;                /*Font for drawing text*/
+   Tcl_TimerToken Timer;          /*Tcl refresh timer event*/
    double x,y;                    /*Coordinates of positioning point for pixmap*/
    int Width,Height;              /*Dimensions du viewport*/
    int BDWidth;                   /*Largeur de la bordure*/
@@ -110,7 +111,7 @@ typedef struct ThreadEvent {
 } ThreadEvent;
 
 void ViewportClean(ViewportItem *VP,int Data,int Buff);
-void ViewportRefresh(ViewportItem *VP);
+void ViewportRefresh(ClientData clientData,int Delay);
 int  ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask);
 
 static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);

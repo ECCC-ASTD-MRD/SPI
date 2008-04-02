@@ -125,6 +125,7 @@ Tcl_Obj*           OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Ge
 
 int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All);
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
+int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
 int          GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);

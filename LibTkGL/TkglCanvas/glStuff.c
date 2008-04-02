@@ -204,8 +204,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int      idx;
    Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-stat","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info",NULL };
-   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,STAT,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO };
+   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-stat","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay",NULL };
+   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,STAT,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY };
 
    Tcl_ResetResult(Interp);
 
@@ -324,6 +324,14 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->XExpose));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&GLRender->XExpose);
+            }
+            break;
+
+         case DELAY:
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->Delay));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&GLRender->Delay);
             }
             break;
 
@@ -1909,6 +1917,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->GLQuad          = gluNewQuadric();
    GLRender->TRCon           = NULL;
    GLRender->Set             = 1;
+   GLRender->Delay           = 2000;
 
    gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
    gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glVertex3dv);

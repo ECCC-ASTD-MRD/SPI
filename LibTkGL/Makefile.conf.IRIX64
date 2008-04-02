@@ -51,7 +51,7 @@ BUFR_PATH=  $(LIB_PATH)/libecbufr-0.1
 GDB_PATH = /software/cmc/gdb-1.0
 
 # URP librairie
-URP_PATH = /home/afsr/005/Code/URP
+URP_PATH = /home/afsr/005/Projects/Code/URP
 
 # flt librairie
 FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
