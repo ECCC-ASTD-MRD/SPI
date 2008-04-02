@@ -112,6 +112,7 @@ typedef struct ThreadEvent {
 
 void ViewportClean(ViewportItem *VP,int Data,int Buff);
 void ViewportRefresh(ClientData clientData,int Delay);
+void ViewportRefresh_Canvas(ClientData clientData);
 int  ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask);
 
 static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
