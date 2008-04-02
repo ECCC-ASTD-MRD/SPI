@@ -863,6 +863,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,StreamMap);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
    glEnable(GL_TEXTURE_1D);
 
@@ -871,6 +872,15 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       for(len=0;len<STREAMLEN;len++) {
          Field->Map[len]=(float)len/STREAMLEN*32;
       }
+
+   }
+
+   glMatrixMode(GL_TEXTURE);
+   glPushMatrix();
+   if (GLRender->Delay<2000) {
+      Field->Spec->TexStep+=0.01;
+      Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
+      glTranslatef(-Field->Spec->TexStep,0.0,0.0);
    }
 
    glEnable(GL_STENCIL_TEST);
@@ -923,6 +933,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       }
    }
 
+   glPopMatrix();
    glClear(GL_STENCIL_BUFFER_BIT);
    glStencilMask(0xf);
    glStencilFunc(GL_EQUAL,0x0,0xf);
@@ -1009,6 +1020,9 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             if (!map) {
                glPushMatrix();
                glScalef((float)(len<<1)/(b+f),1.0,1.0);
+               Field->Spec->TexStep+=0.000025;
+               Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
+               glTranslatef(-Field->Spec->TexStep,0.0,0.0);
             }
             Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
             if (!map) {
@@ -1035,6 +1049,11 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                   if (!map) {
                      glPushMatrix();
                      glScalef((float)(len<<1)/f,1.0,1.0);
+                     if (GLRender->Delay<2000) {
+                        Field->Spec->TexStep+=0.000025;
+                        Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
+                        glTranslatef(-Field->Spec->TexStep,0.0,0.0);
+                     }
                   }
                   Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,Field->Map,GL_LINE_STRIP,f,NULL,NULL);
                   if (!map) {

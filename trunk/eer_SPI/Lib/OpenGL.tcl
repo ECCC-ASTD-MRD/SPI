@@ -43,6 +43,7 @@ namespace eval OpenGL {
 
    #----- Parametres OpenGL
 
+   set Param(Delay)       2000
    set Param(Res)         0
    set Param(BBuf)        1
    set Param(Debug)       0
@@ -74,6 +75,7 @@ namespace eval OpenGL {
    set Lbl(Slow)        { "Lent" "Slow" }
    set Lbl(Delay)       { "Délai" "Delay" }
    set Lbl(Damping)     { "Amortissement" "Damping" }
+   set Lbl(Dynamic)     { "Dynamique" "Dynamics" }
 }
 
 #----------------------------------------------------------------------------
@@ -142,11 +144,11 @@ proc OpenGL::ParamFrame { Frame Apply } {
             -indicatoron false -command "glrender -zbuffer \$OpenGL::Param(ZBuf); $Apply configure -state normal" -onvalue 1 -offvalue 0 -bd 1
          checkbutton $frame.params.def.res -text [lindex $Lbl(Low) $GDefs(Lang)] -variable OpenGL::Param(Res) \
             -indicatoron false -onvalue 10 -offvalue 1 -bd 1
-         pack $frame.params.def.debug $frame.params.def.alias $frame.params.def.bbuf $frame.params.def.zbuf $frame.params.def.res -side top -fill x
+         pack $frame.params.def.debug $frame.params.def.alias $frame.params.def.zbuf $frame.params.def.res -side top -fill x
       pack $frame.params.def -side top -fill x
    pack  $frame.params -padx 5 -pady 2 -side top -fill x
 
-   labelframe $frame.move -text [lindex $Lbl(Movement) $GDefs(Lang)]
+   labelframe $frame.move -text [lindex $Lbl(Dynamic) $GDefs(Lang)]
       frame $frame.move.lbl
          label $frame.move.lbl.lbl -text "" -width 15 -anchor w
          label $frame.move.lbl.fast -text [lindex $Lbl(Fast) $GDefs(Lang)] -anchor w
@@ -154,19 +156,25 @@ proc OpenGL::ParamFrame { Frame Apply } {
          pack $frame.move.lbl.lbl -side left
          pack $frame.move.lbl.fast $frame.move.lbl.slow  -side left -fill x -expand True
 
-      frame $frame.move.delay
-         label $frame.move.delay.lbl -text [lindex $Lbl(Delay) $GDefs(Lang)] -width 15 -anchor w
-         scale $frame.move.delay.sc -orient horizontal -from 10 -to 5000 -showvalue False -variable Viewport::Map(Delay) -relief flat \
+      frame $frame.move.disp
+         label $frame.move.disp.lbl -text [lindex $Lbl(Movement) $GDefs(Lang)] -width 15 -anchor w
+         scale $frame.move.disp.sc -orient horizontal -from 10 -to 5000 -showvalue False -variable Viewport::Map(Delay) -relief flat \
             -sliderlength 8  -bd 1 -resolution 10
-         pack $frame.move.delay.lbl -side left
-         pack $frame.move.delay.sc -side left -fill x -expand True
+         pack $frame.move.disp.lbl -side left
+         pack $frame.move.disp.sc -side left -fill x -expand True
       frame $frame.move.damp
          label $frame.move.damp.lbl -text [lindex $Lbl(Damping) $GDefs(Lang)] -width 15 -anchor w
          scale $frame.move.damp.sc -orient horizontal -from 1.001 -to 1.2 -showvalue False -variable Viewport::Map(Damping) -relief flat \
             -sliderlength 8  -bd 1 -resolution 0.001
          pack $frame.move.damp.lbl -side left
          pack $frame.move.damp.sc -side left -fill x -expand True
-      pack $frame.move.lbl $frame.move.delay $frame.move.damp -side top -fill x
+      frame $frame.move.delay
+         label $frame.move.delay.lbl -text [lindex $Lbl(Delay) $GDefs(Lang)] -width 15 -anchor w
+         scale $frame.move.delay.sc -orient horizontal -from 0 -to 2000 -showvalue False -variable OpenGL::Param(Delay) -relief flat \
+            -sliderlength 8  -bd 1 -resolution 10 -command "glrender -delay \$OpenGL::Param(Delay); $Apply configure -state normal; catch"
+         pack $frame.move.delay.lbl -side left
+         pack $frame.move.delay.sc -side left -fill x -expand True
+      pack $frame.move.lbl $frame.move.disp $frame.move.damp $frame.move.delay -side top -fill x
    pack $frame.move -side top -padx 5 -pady 2 -fill x
 }
 

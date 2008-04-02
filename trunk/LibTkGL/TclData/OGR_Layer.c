@@ -232,7 +232,8 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid Field",(char*)NULL);
                   return TCL_ERROR;
                } else {
-                  OGR_F_SetFieldString(layer->Feature[f],j,Tcl_GetString(Objv[++i]));
+                  field=OGR_FD_GetFieldDefn(layer->Def,j);
+                  return(OGR_SetTypeObj(Interp,Objv[++i],field,layer->Feature[f],j));
                }
             }
             break;
@@ -1148,6 +1149,63 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
          break;
    }
    return(obj);
+}
+
+int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
+
+   int          n,nb,year,month,day,hour,min,sec,tz,dt,tm;
+   time_t       time;
+   char         **clist;
+   const int    *ilist;
+   const double *dlist;
+   Tcl_Obj       *obj;
+
+   obj=Tcl_NewObj();
+
+   switch (OGR_Fld_GetType(Field)) {
+      case OFTInteger:
+         OGR_F_SetFieldString(Feature,Index,Tcl_GetString(Obj));
+         break;
+
+      case OFTIntegerList:
+         break;
+
+      case OFTReal:
+         OGR_F_SetFieldString(Feature,Index,Tcl_GetString(Obj));
+         break;
+
+      case OFTRealList:
+         break;
+
+      case OFTString:
+         OGR_F_SetFieldString(Feature,Index,Tcl_GetString(Obj));
+         break;
+
+      case OFTStringList:
+         break;
+
+#ifdef GDAL126
+      case OFTTime:
+      case OFTDate:
+      case OFTDateTime:
+         Tcl_GetLongFromObj(Interp,Obj,&time);
+         tz=100;
+         time=System_Seconds2DateTime(time,&dt,&tm,tz==100?1:0);
+         year=dt/10000;
+         month=(dt-year*10000)/100;
+         day=dt-year*10000-month*100;
+         hour=tm/10000;
+         min=(tm-hour*10000)/100;
+         sec=tm-hour*10000-min*100;
+         OGR_F_SetFieldDateTime(Feature,Index,year,month,day,hour,min,sec,tz);
+         break;
+#endif
+      case OFTWideString:
+      case OFTWideStringList:
+      case OFTBinary:
+         break;
+   }
+   return(TCL_OK);
 }
 
 double OGR_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {

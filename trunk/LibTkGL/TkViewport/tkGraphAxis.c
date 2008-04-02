@@ -33,6 +33,8 @@
 #include "tkGraphAxis.h"
 #include "tkglCanvText.h"
 
+#include <stdio.h>
+
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -974,7 +976,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
 
    int    i,o,dx,dy,th,w=0,width,height;
    double inter,i0,i1,it,mk,x,y,yp,xp=0;
-   char   buf[32];
+   char   buf[64];
    XColor *color;
    Tk_Font font;
    Tk_FontMetrics tkm;
@@ -1091,8 +1093,11 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          if (Axis->Label) {
             text=Tk_ComputeTextLayout(font,Axis->Label[i],Tcl_NumUtfChars(Axis->Label[i],strlen(Axis->Label[i])),0,TK_JUSTIFY_CENTER,0,&width,&height);
          } else {
+fprintf(stderr,"(AQBUG) Print value %f\n",Axis->Inter[i]);
             GraphAxis_Print(Axis,buf,Axis->Inter[i],0);
+fprintf(stderr,"(AQBUG) Print buffer %s\n",buf);
             text=Tk_ComputeTextLayout(font,buf,strlen(buf),0,TK_JUSTIFY_CENTER,0,&width,&height);
+fprintf(stderr,"(AQBUG) Print layout %p\n",text);
          }
 
          if (Side&HORIZONTAL) {

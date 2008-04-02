@@ -54,7 +54,7 @@ BUFR_PATH=  $(LIB_PATH)/libecbufr-0.1
 GDB_PATH = /data/cmcfi/DBGeo/
 
 # URP librairie
-URP_PATH = /home/afsr/005/Code/URP
+URP_PATH = /home/afsr/005/Projects/Code/URP
 
 # flt librairie
 FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
