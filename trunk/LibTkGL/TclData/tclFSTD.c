@@ -1207,7 +1207,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
    Tcl_SetHashValue(entry,file);
 
-  return(FSTD_FieldList(Interp,file));
+   return(FSTD_FieldList(Interp,file));
 }
 
 /*----------------------------------------------------------------------------

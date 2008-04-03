@@ -843,7 +843,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   double i,j,width;
+   double i,j,width,dt;
    int    b,f,len,pi,pj,dz;
    float  step;
    Vect3d pix;
@@ -876,12 +876,10 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    glMatrixMode(GL_TEXTURE);
-   glPushMatrix();
    if (GLRender->Delay<2000) {
       Field->Spec->TexStep+=0.01;
       Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
-      glTranslatef(-Field->Spec->TexStep,0.0,0.0);
-   }
+  }
 
    glEnable(GL_STENCIL_TEST);
    glStencilMask(0x2);
@@ -896,6 +894,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    pi=pj=-1;
    len=512;
    dz=Field->Spec->Sample*10;
+   dt=0.0;
 
    width=Field->Spec->RenderTexture?Field->Spec->Size*0.2:Field->Spec->Size*0.1;
 
@@ -920,6 +919,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             f=FFStreamLine(Field->Ref,Field->Def,VP,&GDB_VBuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,0);
 
             /* If we have at least some part of it */
+            glPushMatrix();
+            glTranslatef(-Field->Spec->TexStep-(dt+=0.15),0.0,0.0);
             if (b+f>2) {
                glLineWidth(width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
@@ -929,11 +930,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
                Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
             }
+            glPopMatrix();
          }
       }
    }
 
-   glPopMatrix();
    glClear(GL_STENCIL_BUFFER_BIT);
    glStencilMask(0xf);
    glStencilFunc(GL_EQUAL,0x0,0xf);

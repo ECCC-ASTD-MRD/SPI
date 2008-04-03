@@ -1052,16 +1052,17 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    TObs         *obs;
    TMetObs      *met;
 
-   load=vp->Loading;
-
-   Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
-   if (GLRender->Delay<2000)
-      ViewportRefresh(vp,GLRender->Delay);
-
    extern int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
    extern int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
    extern int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj,GLuint GLMode);
    extern int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode);
+
+   load=vp->Loading;
+
+   /*Take care of automated refresh handler*/
+   Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
+   if (GLRender->Delay<2000)
+      ViewportRefresh(vp,GLRender->Delay);
 
    if (proj=Projection_Get(vp->Projection)) {
       load+=proj->Loading;
