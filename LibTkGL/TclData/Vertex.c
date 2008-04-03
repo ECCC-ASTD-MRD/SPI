@@ -485,9 +485,9 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z) {
 */
 float VertexValN(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
 
-   int i,j,k,idxi,idxj,idxj1,idxk=0,idxk1;
+   int   i,j,k,idxi[4],idxj,idxj1,idxk=0,idxk1;
    float val0,val1,val2,val3,cube[2][4];
-   int    idx0,idx1,idx2,idx3;
+   int   idx0,idx1,idx2,idx3;
 
    if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
       return(0.0f);
@@ -527,17 +527,20 @@ float VertexValN(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) 
          idxk1=FSIZE2D(Def)*(k+1);
       }
 
-      idxi=idx0+idxk1;  Def_Get(Def,Idx,idxi,cube[1][0]);
-      idxi=idx1+idxk1;  Def_Get(Def,Idx,idxi,cube[1][1]);
-      idxi=idx3+idxk1;  Def_Get(Def,Idx,idxi,cube[1][3]);
-      idxi=idx2+idxk1;  Def_Get(Def,Idx,idxi,cube[1][2]);
+      idxi[0]=idx0+idxk1;
+      idxi[1]=idx1+idxk1;
+      idxi[3]=idx3+idxk1;
+      idxi[2]=idx2+idxk1;
+      Def_GetQuad(Def,Idx,idxi,cube[1]);
    }
 
    /* Get the grid points value */
-   idxi=idx0+idxk;  Def_Get(Def,Idx,idxi,cube[0][0]);
-   idxi=idx1+idxk;  Def_Get(Def,Idx,idxi,cube[0][1]);
-   idxi=idx3+idxk;  Def_Get(Def,Idx,idxi,cube[0][3]);
-   idxi=idx2+idxk;  Def_Get(Def,Idx,idxi,cube[0][2]);
+
+   idxi[0]=idx0+idxk;
+   idxi[1]=idx1+idxk;
+   idxi[3]=idx3+idxk;
+   idxi[2]=idx2+idxk;
+   Def_GetQuad(Def,Idx,idxi,cube[0]);
 
    /*3D Interpolation case*/
    if (Z>0) {
