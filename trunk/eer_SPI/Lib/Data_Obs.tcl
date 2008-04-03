@@ -57,6 +57,16 @@ namespace eval Obs {
       -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -mark 0 -intervalmode NONE 0
 
+   #----- Lecture des tables BUFR
+
+   if { $GDefs(Lang)==0 } {
+      metobs table -readmaster B $GDefs(Dir)/Data/table_b_bufr_f
+      metobs table -readmaster D $GDefs(Dir)/Data/table_d_bufr_f
+   } else {
+      metobs table -readmaster B $GDefs(Dir)/Data/table_b_bufr_e
+      metobs table -readmaster D $GDefs(Dir)/Data/table_d_bufr_e
+   }
+
    #----- Variables des structures de donnees
 
    set Data(Frame)       ""                                     ;#Frame contenant les definitions de parameters

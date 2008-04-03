@@ -911,6 +911,7 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *DX,int 
 */
 void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
 
+//fprintf(stderr,"(AQBUG) About to print %p %p %f\n",Axis,String,Value);
    if (Axis->Numbered) {
       if (Axis->Type=='O') {
          if (Value>0.0) {
@@ -925,9 +926,11 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
             snprintf(String,32,"%.0f",Value);
          } else {
 */
+//fprintf(stderr,"(AQBUG) Print value 1\n");
          if (!DOrder && Axis->Incr!=0.0 && (Axis->Incr-ROUND(Axis->Incr))==0.0) {
             snprintf(String,32,"%.0f",Value);
          } else {
+//fprintf(stderr,"(AQBUG) Print value 2 %i\n",Axis->Order+DOrder);
             switch(Axis->Order+DOrder) {
                case   3: snprintf(String,32,"%.2f",Value);break;
                case   2: snprintf(String,32,"%.2f",Value);break;
@@ -942,11 +945,13 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
                case  -7: snprintf(String,32,"%.6e",Value);break;
                default : snprintf(String,32,"%.2e",Value);
             }
+//fprintf(stderr,"(AQBUG) Print value 3 %s\n",String);
          }
       }
    } else {
       String[0]='\0';
    }
+//fprintf(stderr,"(AQBUG) Print value 4\n");
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -976,7 +981,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
 
    int    i,o,dx,dy,th,w=0,width,height;
    double inter,i0,i1,it,mk,x,y,yp,xp=0;
-   char   buf[64];
+   char   buf[32];
    XColor *color;
    Tk_Font font;
    Tk_FontMetrics tkm;
@@ -1093,11 +1098,11 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          if (Axis->Label) {
             text=Tk_ComputeTextLayout(font,Axis->Label[i],Tcl_NumUtfChars(Axis->Label[i],strlen(Axis->Label[i])),0,TK_JUSTIFY_CENTER,0,&width,&height);
          } else {
-fprintf(stderr,"(AQBUG) Print value %f\n",Axis->Inter[i]);
+//fprintf(stderr,"(AQBUG) Print value %f\n",Axis->Inter[i]);
             GraphAxis_Print(Axis,buf,Axis->Inter[i],0);
-fprintf(stderr,"(AQBUG) Print buffer %s\n",buf);
+//fprintf(stderr,"(AQBUG) Print buffer %s\n",buf);
             text=Tk_ComputeTextLayout(font,buf,strlen(buf),0,TK_JUSTIFY_CENTER,0,&width,&height);
-fprintf(stderr,"(AQBUG) Print layout %p\n",text);
+//fprintf(stderr,"(AQBUG) Print layout %p\n",text);
          }
 
          if (Side&HORIZONTAL) {

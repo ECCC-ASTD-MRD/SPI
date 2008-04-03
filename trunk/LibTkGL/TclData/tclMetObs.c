@@ -88,9 +88,11 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
 
       /*Load CMC Table B and D, includes local descriptors*/
       BUFRTable=bufr_create_tables();
+/*
       if (bufr_load_cmc_tables(BUFRTable)<=0) {
          printf("(WARNING) TclMetObs_Init: Unable to load default CMC BUFR tables\n");
       }
+*/
    }
    Tcl_CreateObjCommand(Interp,"metobs",MetObs_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"metreport",MetReport_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
@@ -257,7 +259,7 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    EntryTableB *eb;
 
    Tcl_Obj   *obj;
-   int        i,idx,no=1;
+   int        i,idx,no=1,res;
    long       code;
    char       table;
 
@@ -265,13 +267,13 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    enum                opt { READMASTER,READLOCAL,CODE,DESC,UNIT,INSERT };
 
    /*Figure out which table we are talking about*/
-   table=Tcl_GetString(Objv[0])[0];
+   table=Tcl_GetString(Objv[1])[0];
    if (table!='B' || table!='C' || table!='D') {
       table='B';
       no=0;
    }
 
-   for (i=no;i<Objc;i++) {
+   for (i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
          return(TCL_ERROR);
@@ -281,9 +283,14 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
          case READMASTER:
             if (Objc==1) {
             } else {
+               i+=no+1;
                switch(table) {
-                  case 'B': bufr_load_m_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
-                  case 'D': bufr_load_m_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'B': res=bufr_load_m_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'D': res=bufr_load_m_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+               }
+               if (res<0) {
+                  Tcl_AppendResult(Interp,"\n   MetObs_Table: Unable to load master table ",Tcl_GetString(Objv[i]),(char*)NULL);
+                  return(TCL_ERROR);
                }
             }
             break;
@@ -291,9 +298,14 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
          case READLOCAL:
             if (Objc==1) {
             } else {
+               i+=no+1;
                switch(table) {
-                  case 'B': bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
-                  case 'D': bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'B': res=bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'D': res=bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+               }
+               if (res<0) {
+                  Tcl_AppendResult(Interp,"\n   MetObs_Table: Unable to load local table ",Tcl_GetString(Objv[i]),(char*)NULL);
+                  return(TCL_ERROR);
                }
             }
             break;
