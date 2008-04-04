@@ -48,6 +48,7 @@ namespace eval OpenGL {
    set Param(BBuf)        1
    set Param(Debug)       0
    set Param(Alias)       0
+   set Param(ZBuf)        0
    set Param(Info)        ""
    set Param(Infos)       "GLX_VERSION GLX_VENDOR GLX_EXTENSIONS
                            GL_VERSION GL_VENDOR GL_EXTENSIONS GL_RENDERER
