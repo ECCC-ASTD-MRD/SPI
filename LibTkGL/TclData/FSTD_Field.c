@@ -1434,6 +1434,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      Field->Ref->Levels=(float*)realloc(Field->Ref->Levels,Field->Def->NJ*sizeof(float));
                   }
                   Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->LevelType:LVL_UNDEF),(ref?ref->Levels:NULL),grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
+                  GeoRef_Qualify(Field->Ref);
                }
                if (ref)
                   GeoRef_Destroy(Interp,ref->Name);
