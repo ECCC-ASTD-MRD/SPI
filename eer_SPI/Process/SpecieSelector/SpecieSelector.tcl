@@ -33,7 +33,7 @@ exec $DIR../../wish "$0" "$@"
 set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-2] -] end]
 set GDefs(Dir)     [file dirname [info script]]/../../
 
-source $env(HOME)/.eer_ToolDefs/.eer_Defs-$GDefs(Version)
+source $env(HOME)/.eer_ToolDefs/.eer_Defs-[regsub \[:alpha:\]+ $GDefs(Version) ""]
 
 #----- Inclusion de fichiers complementaires
 
