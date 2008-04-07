@@ -268,7 +268,7 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    /*Figure out which table we are talking about*/
    table=Tcl_GetString(Objv[1])[0];
-   if (table!='B' || table!='C' || table!='D') {
+   if (table!='B' && table!='C' && table!='D') {
       table='B';
       no=0;
    }
@@ -285,12 +285,12 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                i+=no+1;
                switch(table) {
-                  case 'B': res=bufr_load_m_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
-                  case 'D': res=bufr_load_m_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'B': res=bufr_load_m_tableB(BUFRTable,Tcl_GetString(Objv[i]));break;
+                  case 'D': res=bufr_load_m_tableD(BUFRTable,Tcl_GetString(Objv[i]));break;
                }
                if (res<0) {
                   Tcl_AppendResult(Interp,"\n   MetObs_Table: Unable to load master table ",Tcl_GetString(Objv[i]),(char*)NULL);
-                  return(TCL_ERROR);
+                 return(TCL_ERROR);
                }
             }
             break;
@@ -300,8 +300,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                i+=no+1;
                switch(table) {
-                  case 'B': res=bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[++i]));break;
-                  case 'D': res=bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[++i]));break;
+                  case 'B': res=bufr_load_l_tableB(BUFRTable,Tcl_GetString(Objv[i]));break;
+                  case 'D': res=bufr_load_l_tableD(BUFRTable,Tcl_GetString(Objv[i]));break;
                }
                if (res<0) {
                   Tcl_AppendResult(Interp,"\n   MetObs_Table: Unable to load local table ",Tcl_GetString(Objv[i]),(char*)NULL);

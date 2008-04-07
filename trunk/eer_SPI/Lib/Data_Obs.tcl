@@ -60,7 +60,7 @@ namespace eval Obs {
    #----- Lecture des tables BUFR
 
    if { $GDefs(Lang)==0 } {
-      metobs table -readmaster B $GDefs(Dir)/Data/table_b_bufr_f
+      eval metobs table -readmaster B $GDefs(Dir)/Data/table_b_bufr_f
       metobs table -readmaster D $GDefs(Dir)/Data/table_d_bufr_f
    } else {
       metobs table -readmaster B $GDefs(Dir)/Data/table_b_bufr_e
