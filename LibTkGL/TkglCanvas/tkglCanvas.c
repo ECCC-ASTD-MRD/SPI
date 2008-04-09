@@ -2415,7 +2415,6 @@ static void DisplayglCanvas(ClientData clientData) {
       goto done;
 
    GLRender->RenderTime=glGetProcInfo(&GLRender->MemRes);
-
    DisplayglCanvasItems(clientData,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
    GLRender->XExpose=GLRender->XExpose>=0?0:GLRender->XExpose;
 

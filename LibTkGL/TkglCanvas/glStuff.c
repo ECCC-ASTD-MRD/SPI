@@ -1899,7 +1899,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->GLPCon          = NULL;
    GLRender->GLVis           = NULL;
    GLRender->GLAlias         = 0;
-   GLRender->GLFSAA          = 0;
+   GLRender->GLFSAA          = 1;
    GLRender->GLDirect        = True;
    GLRender->GLDither        = 0;
    GLRender->GLShade         = 1;
@@ -1917,6 +1917,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->GLQuad          = gluNewQuadric();
    GLRender->TRCon           = NULL;
    GLRender->Set             = 1;
+   GLRender->Soft            = NULL;
    GLRender->Delay           = 2000;
 
    gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
@@ -2007,28 +2008,37 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
    int glmin,glmaj,gl,n=0;
+   int *attrTrue;
 
-/*
-   int attrTrue[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
+   int attrHard[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
               GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,
               GLX_DEPTH_SIZE,1, GLX_STENCIL_SIZE,1, GLX_SAMPLE_BUFFERS_ARB,False, GLX_SAMPLES_ARB,0, None };
-*/
-   int attrTrue[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
+
+   int attrSoft[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
               GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,
               GLX_DEPTH_SIZE,1, GLX_STENCIL_SIZE,1, None };
+
    int attrMin[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE,GLX_WINDOW_BIT,None };
 
-/*
-   if (GLRender->GLFSAA && GLRender->Ext[ARB_multisample]) {
-      attrTrue[19]=True;
-      attrTrue[21]=GLRender->GLFSAA;
-   }
-*/
 
-   /* Setup some useful pointers */
+   /*Setup some useful pointers*/
    GLRender->XDisplay = Tk_Display(TkWin);        /* Get the XDisplay of the main window */
    GLRender->XScreen  = Tk_Screen(TkWin);         /* Get the XID of the application */
    GLRender->XScreenNo= Tk_ScreenNumber(TkWin);   /* Get the screen number */
+
+   /*Check for software mesa implementation*/
+   GLRender->Soft=strstr(glXGetClientString(GLRender->XDisplay,GLX_VENDOR),"Brian");
+
+   /*Check for full scene anti-aliasing (MESA breaks the stencil buffer when enabling FSAA)*/
+   if (GLRender->Soft) {
+      attrTrue=attrSoft;
+   } else {
+      attrTrue=attrHard;
+      if (GLRender->Ext[ARB_multisample]) {
+         attrTrue[19]=True;
+         attrTrue[21]=4;
+      }
+   }
 
    /* GLX Version */
    gl=glXQueryVersion(GLRender->XDisplay,&glmaj,&glmin);

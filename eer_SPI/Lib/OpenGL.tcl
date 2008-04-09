@@ -48,6 +48,7 @@ namespace eval OpenGL {
    set Param(BBuf)        1
    set Param(Debug)       0
    set Param(Alias)       0
+   set Param(FSAA)        4
    set Param(ZBuf)        0
    set Param(Info)        ""
    set Param(Infos)       "GLX_VERSION GLX_VENDOR GLX_EXTENSIONS
@@ -58,8 +59,8 @@ namespace eval OpenGL {
    #----- Parametres de statistiques
 
    set Stat(RenderTime) -1   ;#Temps du rendue en secondes
-   set Stat(FPS)        0    ;#Image par secondes
-   set Stat(MemUsage)   0    ;#Espace en memoire residente requis
+   set Stat(FPS)         0    ;#Image par secondes
+   set Stat(MemUsage)    0    ;#Espace en memoire residente requis
 
    set Lbl(Info)        { "Information" "Information" }
    set Lbl(Resources)   { "Ressources" "Resources" }

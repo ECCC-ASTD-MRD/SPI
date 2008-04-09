@@ -1058,7 +1058,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    extern int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode);
 
    load=vp->Loading;
-
    /*Take care of automated refresh handler*/
    Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
    if (GLRender->Delay<2000)
