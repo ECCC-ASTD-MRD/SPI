@@ -732,7 +732,12 @@ proc Graph::Profile::Update { Frame { GR {} } } {
          #----- Recuperer les donnees
 
          if { [Page::Registered All Viewport $data(VP)]!=-1 } {
-            Graph::Profile::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) {fstdfield observation}]
+            if { [info exist Animator::Play(Data$data(VP))] } {
+               Graph::Profile::Data $gr $Animator::Play(Data$data(VP))
+            } else {
+               Graph::Profile::Data $gr $Viewport::Data(Data$data(VP))
+               set list $Viewport::Data(Data$data(VP))
+            }
          }
          #----- Update des items
 
