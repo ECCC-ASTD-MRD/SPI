@@ -2032,11 +2032,12 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
    /*Check for full scene anti-aliasing (MESA breaks the stencil buffer when enabling FSAA)*/
    if (GLRender->Soft) {
       attrTrue=attrSoft;
+      fprintf(stderr,"(INFO) glXCanvasInit: Running with MESA software implementation\n");
    } else {
       attrTrue=attrHard;
       if (GLRender->Ext[ARB_multisample]) {
          attrTrue[19]=True;
-         attrTrue[21]=4;
+         attrTrue[21]=GLRender->GLFSAA;
       }
    }
 
