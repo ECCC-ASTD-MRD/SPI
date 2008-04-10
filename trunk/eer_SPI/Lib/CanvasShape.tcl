@@ -674,18 +674,38 @@ proc CVText::Select { Canvas } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
-namespace eval CVClock { }
-
-proc CVClock::Create { Frame X Y } {
-   global GDefs
+namespace eval CVClock {
    variable Data
 
    set Data(Size) 23
    set Data(TimeWidth) 30
    set Data(DateWidth) 120
+   set Data(TZ) 0
 
    set Data(Time) True
    set Data(Date) True
+   set Data(Zone) 0
+
+   set Data(Zones) {
+      { "UTC Coordinated Universal Time" 0 }
+      { "PDT Pacific Daylight Time" -7 }
+      { "PST Pacific Standard Time" -8 }
+      { "MDT Mountain Daylight Time" -6 }
+      { "MST Mountain Standard Time" -7 }
+      { "CDT Central Daylight Time" -5 }
+      { "CST Central Standard Time" -6 }
+      { "EDT Eastern Daylight Time" -4 }
+      { "EST Eastern Standard Time" -5 }
+      { "ADT Atlantic Daylight Time" -3 }
+      { "AST Atlantic Standard Time" -4 }
+      { "NDT Newfoundland Daylight Time" -2.5 }
+      { "NST Newfoundland Standard Time" -3.5 }
+   }
+}
+
+proc CVClock::Create { Frame X Y } {
+   global GDefs
+   variable Data
 
    set x0 [expr $X-27]
    set y0 [expr $Y-27]
@@ -709,6 +729,25 @@ proc CVClock::Create { Frame X Y } {
 
    $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKMINUTE"
    $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKHOUR"
+
+   set Data(Sec$Frame)  0
+   set Data(Zone$Frame) 0
+
+   if { ![winfo exists $canvas.cvclock] } {
+      menubutton $canvas.cvclock -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
+         -relief raised -menu $canvas.cvclock.menu
+      menu $canvas.cvclock.menu -tearoff 0 -bg $GDefs(ColorFrame)
+      set z -1
+      foreach zone $Data(Zones) {
+         if { $z==0 } {
+            $canvas.cvclock.menu add separator
+         }
+         $canvas.cvclock.menu add radiobutton -label [lindex $zone 0] -variable CVClock::Data(Zone$Frame) -value [incr z] \
+            -command "CVClock::Time $Frame \$CVClock::Data(Sec$Frame) -1"
+      }
+   }
+
+   $canvas create window [expr $X-43] [expr $Y+50] -window $canvas.cvclock -anchor se -tags "CVCLOCK NOPRINT"
 
    Shape::BindMove $canvas CVCLOCK
 }
@@ -812,7 +851,7 @@ proc CVClock::Time { Frame Sec Total } {
       return
    }
 
-   #----- Positionnes lq quartier total
+   #----- Positionnes le quartier total
 
    if { $Total>-1 } {
       if { $Total>=100 } {
@@ -824,6 +863,11 @@ proc CVClock::Time { Frame Sec Total } {
    }
 
    if { $Sec!="-1" } {
+
+      #----- Ajustement pour le timezone
+
+      set Data(Sec$Frame) $Sec
+      set Sec [expr int($Sec+[lindex [lindex $Data(Zones) $Data(Zone$Frame)] 1]*3600)]
 
       set hour [clock format $Sec -format "%k" -gmt true]
       set min  [clock format $Sec -format "%M" -gmt true]
@@ -860,7 +904,7 @@ proc CVClock::Time { Frame Sec Total } {
       $canvas coords CVCLOCKMINUTE $x0 $y0  $x $y
 
       $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -gmt true]
-      $canvas itemconf CVCLOCKTIME -text "${hour}:${min}Z"
+      $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex [lindex $Data(Zones) $Data(Zone$Frame)] 0] 0]"
    }
 
    $canvas raise CVCLOCK
