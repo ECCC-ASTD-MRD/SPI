@@ -2276,9 +2276,9 @@ proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
          #----- check if we should continue
 
          update
-         if { $Map(Grabbed)>$t0 } {
+         if { ![projection is $Frame] || $Map(Grabbed)>$t0 } {
             set Map(Speed) 0.0
-            return 0;
+            return 0
          }
       }
       set Map(Speed) 0.0
@@ -2346,7 +2346,7 @@ proc Viewport::GoAround { Frame Speed Lat Lon } {
          #----- check if we should continue
 
          update
-         if { $Map(Grabbed)>$t0 } {
+         if {  ![projection is $Frame] || $Map(Grabbed)>$t0 } {
             set Map(Speed) 0.0
             return 0;
          }
@@ -2507,7 +2507,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
             #----- check if we should continue
 
             update
-            if { $Map(Grabbed)>$t0 } {
+            if {  ![projection is $Frame] || $Map(Grabbed)>$t0 } {
                break;
             }
          }
