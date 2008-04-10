@@ -726,6 +726,8 @@ proc Page::Create { Frame Width Height } {
    set Data(Data$Frame)    {}
    set Data(L$Frame)       1
 
+   glrender -fsaa $OpenGL::Param(FSAA)
+
    #----- Creation de la fenetre de projection
 
    frame $Frame -relief sunken -bd 1
