@@ -296,7 +296,7 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
    $Frame.page.canvas create window $X1 $Y1           -window $Frame.bs$tag -anchor se -tags "BS$tag NOPRINT"
    $Frame.page.canvas create window [expr $X1-11] $Y1 -window $Frame.bm$tag -anchor se -tags "BM$tag NOPRINT"
    $Frame.page.canvas create window [expr $X1-22] $Y1 -window $Frame.bf$tag -anchor se -tags "BF$tag NOPRINT"
-   $Frame.page.canvas create window $X1 $Y0                    -window $Frame.bd$tag -anchor ne -tags "BD$tag NOPRINT"
+   $Frame.page.canvas create window $X1 $Y0           -window $Frame.bd$tag -anchor ne -tags "BD$tag NOPRINT"
 
    #----- bindings de fullscreen
 
@@ -459,6 +459,10 @@ proc Page::ActiveMove { Type Frame Id X Y } {
    set ${Type}::Data(Full$Id) 0
    eval set ${Type}::Data(X$Id) [expr \$${Type}::Data(X$Id)+$dx]
    eval set ${Type}::Data(Y$Id) [expr \$${Type}::Data(Y$Id)+$dy]
+
+   if { $Type=="Viewport" } {
+      Viewport::MoveDepend $Frame $Id $dx $dy
+   }
 
    Page::Update $Frame False
 }

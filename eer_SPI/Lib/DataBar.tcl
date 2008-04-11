@@ -109,6 +109,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    set Data(Active$Frame) 1
    set Data($VP)          [list $x0 $y0 $x1 $y1]
+   set Data(BarFull$VP)   1
 
    if { ![info exists Data(List$Frame)] } {
       set Data(List$Frame) {}
@@ -123,8 +124,9 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    DataBar::Draw $Frame $VP $x0 $y0 $x1 $y1
 
-   Shape::BindMove  $Frame.page.canvas DB$VP DataBar::Move $Frame $VP DB$VP FRDB$VP
-   Shape::BindScale $Frame.page.canvas DB$VP $x1 $y1 "DataBar::Scale $Frame $VP DB$VP FRDB$VP"
+   Shape::BindMove  $Frame.page.canvas DB$VP DataBar::Move $Frame $VP DB$VP
+   Shape::BindScale $Frame.page.canvas DB$VP $x1 $y1 "DataBar::Scale $Frame $VP DB$VP"
+   Shape::BindFull  $Frame.page.canvas DB$VP [expr $x1-11] $y1 DataBar::Data(BarFull$VP) "DataBar::Full $Frame DB$VP $VP"
 }
 
 proc DataBar::SetTitle { Frame VP Title } {
@@ -148,8 +150,8 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP" -fill white -outline black
    $Frame.page.canvas create line [expr $X0+20] [expr $Y0+20] [expr $X0+20] $Y1 -tags "$Page::Data(Tag) DB$VP" -fill #CCCCCC
 
-   $Frame.page.canvas create image [expr $X0+2] [expr $Y0+1] -image DATABARLOGO -anchor nw -tags "$Page::Data(Tag) DB$VP FRDB$VP"
-   $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "$Page::Data(Tag) DB$VP FRDB$VP TXTDB$VP CVTEXT"
+   $Frame.page.canvas create image [expr $X0+2] [expr $Y0+1] -image DATABARLOGO -anchor nw -tags "$Page::Data(Tag) DB$VP"
+   $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "$Page::Data(Tag) DB$VP TXTDB$VP CVTEXT"
 
    set y [expr $Y0+21]
    set x [expr $X0+25]
@@ -194,7 +196,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
 
       $Frame.page.canvas create text $x $y -text $lbl -tags "$Page::Data(Tag) DB$VP" -anchor sw -font $font -fill $col
       $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "$Page::Data(Tag) DB$VP" -anchor s -font $font
-      $Frame.page.canvas create line $X0 $y $X1 $y -tags "$Page::Data(Tag) DB$VP FRDB$VP" -fill #CCCCCC
+      $Frame.page.canvas create line $X0 $y $X1 $y -tags "$Page::Data(Tag) DB$VP" -fill #CCCCCC
    }
 
    #----- Memo quelle est la formule ???
@@ -349,6 +351,46 @@ proc DataBar::DestroyAll { Frame { VP "" } } {
 }
 
 #------------------------------------------------------------------------------
+# Nom      : <DataBar::Full>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Enregistrer le changement de position/dimension de la colorbar
+#
+# Parametres :
+#   <Canvas> : Path du canvas
+#   <Tag>    : Identificateur de la colorbar
+#   <VP>     : Identificateur du viewport associe
+#   <Pix>    : Delta en translation
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc DataBar::Full { Frame Tag VP { Pix 0 } } {
+   variable Data
+
+   set co [$Frame.page.canvas coords $Tag]
+   set yc [lindex $co 1]
+   set hc [expr [lindex $co 3]- [lindex $co 1]]
+
+   set yv [$Frame.page.canvas itemcget $VP -y]
+   set xv [$Frame.page.canvas itemcget $VP -x]
+   set hv [$Frame.page.canvas itemcget $VP -height]
+   set wv [$Frame.page.canvas itemcget $VP -width]
+
+   if { $yc>[expr $yv+$hv*0.5] } {
+      set yc [expr $yc-$Pix]
+   }
+
+   set Data($VP) [list $xv $yc [expr $xv+$wv] [expr $yc+$hc]]
+   eval DataBar::Draw $Frame $VP $Data($VP)
+
+   return [list [expr $xv+$wv] [expr $yc+$hc]]
+}
+
+#------------------------------------------------------------------------------
 # Nom      : <DataBar::Move>
 # Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE -
 #
@@ -357,8 +399,7 @@ proc DataBar::DestroyAll { Frame { VP "" } } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #   <VP>     : Identificateur du Viewport
-#   <Tag0>   : Identificateur de la colorbar (VP)
-#   <Tag1>   : Identificateur de la colorbar (Field)
+#   <Tag>    : Identificateur de la barre
 #
 # Retour     :
 #
@@ -366,10 +407,11 @@ proc DataBar::DestroyAll { Frame { VP "" } } {
 #
 #-------------------------------------------------------------------------------
 
-proc DataBar::Move { Frame VP Tag0 Tag1 } {
+proc DataBar::Move { Frame VP Tag } {
    variable Data
 
-   set Data($VP) [$Frame.page.canvas coords $Tag1]
+   set Data(BarFull$VP) False
+   set Data($VP) [$Frame.page.canvas coords FR$Tag]
 }
 
 #------------------------------------------------------------------------------
@@ -381,8 +423,7 @@ proc DataBar::Move { Frame VP Tag0 Tag1 } {
 # Parametres :
 #   <Frame>  : Identificateur de Page
 #   <VP>     : Identificateur du Viewport
-#   <Tag0>   : Identificateur de la colorbar (VP)
-#   <Tag1>   : Identificateur de la colorbar (Field)
+#   <Tag>    : Identificateur de la barre
 #   <X>      : Dimension en X
 #   <Y>      : Dimension en Y
 #
@@ -392,7 +433,7 @@ proc DataBar::Move { Frame VP Tag0 Tag1 } {
 #
 #-------------------------------------------------------------------------------
 
-proc DataBar::Scale { Frame VP Tag0 Tag1 X Y } {
+proc DataBar::Scale { Frame VP Tag X Y } {
    variable Data
 
    set x0 [lindex $Data($VP) 0]
@@ -404,8 +445,9 @@ proc DataBar::Scale { Frame VP Tag0 Tag1 X Y } {
       set dx [expr (double($X)-$x0)/(double($x1)-$x0)]
       set dy [expr (double($Y)-$y0)/(double($y1)-$y0)]
 
-      $Frame.page.canvas scale $Tag0 $x0 $y0 $dx $dy
-      set Data($VP) [$Frame.page.canvas coords $Tag1]
+      $Frame.page.canvas scale $Tag $x0 $y0 $dx $dy
+      set Data($VP) [$Frame.page.canvas coords FR$Tag]
+      set Data(BarFull$VP) False
       eval DataBar::Draw $Frame $VP $Data($VP)
       return True
    } else {
