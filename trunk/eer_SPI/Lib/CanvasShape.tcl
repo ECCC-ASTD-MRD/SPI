@@ -1117,6 +1117,8 @@ proc CVScale::Create { Frame X Y Size } {
    $canvas create window [expr $x0-3] [expr $y0-1] -window $canvas.cvscale -anchor se -tags "CVSCALE NOPRINT"
 
    Shape::BindMove $canvas CVSCALE
+
+   CVScale::Update $Frame $Viewport::Data(VP)
 }
 
 #----------------------------------------------------------------------------
