@@ -332,8 +332,8 @@ void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
 
    int x, y;
 
-   x = CB->x + 0.5;
-   y = CB->y + 0.5;
+   x=(int)(CB->x+((CB->x>=0)?0.5:- 0.5));
+   y=(int)(CB->y+((CB->y>=0)?0.5:- 0.5));
 
    if (CB->Width==0 || CB->Height==0) {
       CB->header.x1 = CB->header.x2 = x;
@@ -381,7 +381,7 @@ void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
    CB->header.x1 = x ;
    CB->header.y1 = y ;
    CB->header.x2 = x + CB->Width;
-   CB->header.y2 = y + CB->Height;
+   CB->header.y2 = y + CB->Height+1;
 }
 
 /*----------------------------------------------------------------------------

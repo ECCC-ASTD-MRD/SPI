@@ -50,10 +50,12 @@
 #    CVText::Paste         { Canvas { X {} } { Y {} } }
 #    CVText::Select        { Canvas }
 #
+#    Shape::BindFull       { Canvas Tag X1 Y1 Var Command }
 #    Shape::BindMove       { Canvas Tags args }
 #    Shape::BindScale      { Canvas Tag X1 Y1 Command }
 #    Shape::UnBindScale    { Canvas Tag }
-#    Shape::Move           { Canvas Tags X Y }
+#    Shape::Full           { Canvas Tag args }
+#    Shape::Move           { Canvas Tags X Y { Direct False } }
 #    Shape::Scale          { Canvas Tag X Y args }
 #    Shape::Set            { Canvas Tag X Y }
 #    Shape::UnSet          { Canvas Tag }
@@ -1308,6 +1310,36 @@ namespace eval Shape {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Shape::BindFull>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les "bindings" de plein ecran/widget
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Tags>    : Tags des objets
+#  <X1>      : Coorconnee X du coin inferieur droit
+#  <Y1>      : Coorconnee Y du coin inferieur droit
+#  <Var>     : Variable de redimentionnement
+#  <Command> : Commande de redimentionnement
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::BindFull { Canvas Tag X1 Y1 Var Command } {
+   global GDefs
+
+   if { ![winfo exists $Canvas.bf$Tag] } {
+      checkbutton $Canvas.bf$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvfull.xbm -cursor hand1 -bd 1 \
+         -indicatoron false -variable $Var -onvalue 1 -offvalue 0 -command "if { \$$Var } { Shape::Full $Canvas $Tag $Command }"
+       $Canvas create window $X1 $Y1 -window $Canvas.bf$Tag -anchor se -tags "BF$Tag NOPRINT"
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Shape::BindMove>
 # Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
 #
@@ -1368,10 +1400,38 @@ proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
       $Canvas create window $X1 $Y1 -window $Canvas.bs$Tag -anchor se -tags "BS$Tag NOPRINT"
    }
 
-#   bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag \[winfo rootx $Canvas\] \[winfo rooty $Canvas\]"
    bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag %X %Y"
    bind $Canvas.bs$Tag <ButtonRelease-1> "Shape::UnSet $Canvas $Tag"
    bind $Canvas.bs$Tag <B1-Motion>       "Shape::Scale $Canvas $Tag %X %Y $Command"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::Full>
+# Creation : Avril 2008- J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "scaling" plein ecran/widget de la primitive
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Tag>     : Tag des objets
+#  <args>    : Commande de redimentionnement
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::Full { Canvas Tag args } {
+   variable Data
+
+   if { [llength [set xy [eval $args]]] } {
+      set X [lindex $xy 0]
+      set Y [lindex $xy 1]
+      $Canvas coords BS$Tag $X $Y
+      $Canvas coords BF$Tag [expr $X-11] $Y
+      $Canvas coords BO$Tag [expr $X-22] $Y
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -1385,6 +1445,7 @@ proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
 #  <Tags>    : Tag des objets
 #  <X>       : Coorconnee X du coin inferieur droit
 #  <Y>       : Coorconnee Y du coin inferieur droit
+#  <Direct>  : Utilise la coordonnes directment comme translation
 #
 # Retour:
 #
@@ -1392,23 +1453,30 @@ proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::Move { Canvas Tags X Y } {
+proc Shape::Move { Canvas Tags X Y { Direct False } } {
    variable Data
 
-   set X [$Canvas canvasx $X $Page::Data(Snap)]
-   set Y [$Canvas canvasy $Y $Page::Data(Snap)]
+   if { $Direct } {
+      set dx $X
+      set dy $Y
+   } else {
+      set X [$Canvas canvasx $X $Page::Data(Snap)]
+      set Y [$Canvas canvasy $Y $Page::Data(Snap)]
 
-   set dx [expr $X-$Data(X0)]
-   set dy [expr $Y-$Data(Y0)]
+      set dx [expr $X-$Data(X0)]
+      set dy [expr $Y-$Data(Y0)]
 
+      set Data(X0) $X
+      set Data(Y0) $Y
+
+   }
    foreach tag $Tags {
       $Canvas move $tag   $dx $dy
       $Canvas move BS$tag $dx $dy
       $Canvas move BF$tag $dx $dy
+      $Canvas move BO$tag $dx $dy
    }
 
-   set Data(X0) $X
-   set Data(Y0) $Y
 }
 
 #----------------------------------------------------------------------------
@@ -1446,6 +1514,7 @@ proc Shape::Scale { Canvas Tag X Y args } {
    if { [eval $args $X $Y] } {
       $Canvas coords BS$Tag $X $Y
       $Canvas coords BF$Tag [expr $X-11] $Y
+      $Canvas coords BO$Tag [expr $X-22] $Y
    }
 }
 
@@ -1500,6 +1569,9 @@ proc Shape::Set { Canvas Tag X Y } {
 
 proc Shape::UnSet { Canvas Tag } {
    variable Data
+
+   set Data(X0) 0
+   set Data(Y0) 0
 
    glrender -xexpose 1
 

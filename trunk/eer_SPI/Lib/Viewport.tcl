@@ -51,6 +51,8 @@
 #    Viewport::RotateDone     { Frame }
 #    Viewport::RotateInit     { Frame VP X Y }
 #    Viewport::Resize         { Frame VP X0 Y0 X1 Y1 Limit }
+#    Viewport::ResizeDepend   { Frame VP DX DY }
+#    Viewport::MoveDepend     { Frame VP DX DY }
 #    Viewport::Setup          { Frame }
 #    Viewport::UnSetup        { Frame }
 #    Viewport::UpdateData     { Frame { VP { } } }
@@ -2563,27 +2565,33 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
 
    Viewport::Activate $Frame $VP
 
+   set cv $Frame.page.canvas
+
    if { $X0==-999 } {
-      set coo [$Frame.page.canvas coords $VP]
+      set coo [$cv coords $VP]
       set X0  [lindex $coo 0]
       set Y0  [lindex $coo 1]
    }
 
-   if { [expr $X1-$X0]>25 && [expr $Y1-$Y0]>25 } {
+   if { [set dx [expr $X1-$X0]]>25 && [set dy [expr $Y1-$Y0]]>25 } {
+      set px [expr $Data(Width$VP)-$dx]
+      set py [expr $Data(Height$VP)-$dy]
+
       set Data(X$VP)      $X0
       set Data(Y$VP)      $Y0
-      set Data(Width$VP)  [expr $X1-$X0]
-      set Data(Height$VP) [expr $Y1-$Y0]
+      set Data(Width$VP)  $dx
+      set Data(Height$VP) $dy
 
-      $Frame.page.canvas itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
+      $cv itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
 
       if { $Data(Active$VP) } {
-         $Frame.page.canvas coords BS$Page::Data(Tag)$VP $X1 $Y1
-         $Frame.page.canvas coords BM$Page::Data(Tag)$VP [expr $X1-11] $Y1
-         $Frame.page.canvas coords BF$Page::Data(Tag)$VP [expr $X1-22] $Y1
-         $Frame.page.canvas coords BD$Page::Data(Tag)$VP $X1 $Y0
-         $Frame.page.canvas coords SC$Page::Data(Tag)$VP [expr $X1-150-35] $Y1
+         $cv coords BS$Page::Data(Tag)$VP $X1 $Y1
+         $cv coords BM$Page::Data(Tag)$VP [expr $X1-11] $Y1
+         $cv coords BF$Page::Data(Tag)$VP [expr $X1-22] $Y1
+         $cv coords BD$Page::Data(Tag)$VP $X1 $Y0
+         $cv coords SC$Page::Data(Tag)$VP [expr $X1-150-35] $Y1
       }
+      Viewport::ResizeDepend $Frame $VP $px $py
    }
 
    if { !$Limit } {
@@ -2593,6 +2601,80 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
       Page::Update $Frame
 
       $Frame.page.canvas config -cursor left_ptr
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::ResizeDepend>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Redimensionner les items dependant de la projection.
+#
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <DX>      : Translation en X
+#  <DY>      : Translation en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Viewport::ResizeDepend { Frame VP DX DY } {
+
+   #----- Check for databar full viewport toggle
+
+   if { [llength [$Frame.page.canvas find withtag DB$VP]] } {
+      if { $DataBar::Data(BarFull$VP) } {
+         Shape::Full $Frame.page.canvas DB$VP DataBar::Full $Frame DB$VP $VP $DY
+      }
+   }
+   #----- Check for colorbars full viewport toggle
+
+   foreach item [$Frame.page.canvas find withtag CB$VP] {
+      set tag [lindex [$Frame.page.canvas itemcget $item -tags] end]
+      if { $ColorBar::Data(BarFull$tag) } {
+         Shape::Full $Frame.page.canvas $tag ColorBar::Full $Frame.page.canvas $tag $VP $DX
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::MoveDepend>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Deplacer les items dependant de la projection.
+#
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <DX>      : Translation en X
+#  <DY>      : Translation en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Viewport::MoveDepend { Frame VP DX DY } {
+
+   if { [llength [$Frame.page.canvas find withtag DB$VP]] && $DataBar::Data(BarFull$VP) } {
+      Shape::Move $Frame.page.canvas DB$VP $DX $DY True
+      DataBar::Move $Frame $VP DB$VP
+      set DataBar::Data(BarFull$VP) 1
+   }
+   foreach item [$Frame.page.canvas find withtag CB$VP] {
+      set tag [lindex [$Frame.page.canvas itemcget $item -tags] end]
+      if { $ColorBar::Data(BarFull$tag) } {
+         Shape::Move $Frame.page.canvas $tag $DX $DY True
+         ColorBar::Move $Frame.page.canvas $tag
+         set ColorBar::Data(BarFull$tag) 1
+      }
    }
 }
 
