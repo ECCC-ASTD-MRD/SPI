@@ -143,9 +143,11 @@ proc MLDP1::CheckAvailableDiskSpace { } {
          #----- Answer is No (1).
          return 0
       }
+
    }
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -183,6 +185,7 @@ proc MLDP1::CheckFileSize { } {
       set Sim(IsMetFileSizeChecked) 0
       set Tmp(Delta)                $Sim(Delta)
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -267,11 +270,13 @@ proc MLDP1::CreateDirectories { } {
          Debug::TraceProc "MLDP1: Error! Unable to create simulation directories on $Sim(HostType) host $Sim(Host).\n\n$Message"
          return 0
       }
+
    }
 
    Debug::TraceProc "MLDP1: Simulation directories have been created successfully."
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -314,8 +319,11 @@ proc MLDP1::CreateLaunchInputFile { } {
    if { $Sim(IsEmailAddress) } {
       puts $file "email         : [format "%-15s" $Sim(EmailAddress)]"
    }
+   puts $file ""
    puts $file "issubmit      : [format "%-15s" $Sim(IsUsingSoumet)] \[Using soumet to launch job on remote host           : 0: No; 1: Yes\]"
-   puts $file "isencode      : [format "%-15s" 1] \[Encoding pool information within model result files : 0: No; 1: Yes\]"
+   puts $file "isrunmeteo    : [format "%-15s" 1] \[Running meteorological preprocessing                : 0: No; 1: Yes\]"
+   puts $file "isrunmodel    : [format "%-15s" 1] \[Running atmospheric transport/dispersion model      : 0: No; 1: Yes\]"
+   puts $file "isrunencode   : [format "%-15s" 1] \[Encoding pool information within model result files : 0: No; 1: Yes\]"
    if { $Sim(IsUsingSoumet) } {
       puts $file "isdelete      : [format "%-15s" 1] \[Deleting files located on remote host               : 0: No; 1: Yes\]"
       puts $file "isoutmeteo    : [format "%-15s" 1] \[Redirecting meteo preprocessing job to output file  : 0: No; 1: Yes\]"
@@ -336,6 +344,7 @@ proc MLDP1::CreateLaunchInputFile { } {
    Debug::TraceProc "MLDP1: Directives input file for launching script has been created successfully."
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -393,6 +402,7 @@ proc MLDP1::CreateMeteoInputFiles { } {
    Debug::TraceProc "MLDP1: Meteorological input files have been created successfully."
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -627,6 +637,7 @@ proc MLDP1::CreateModelInputFile { } {
    Debug::TraceProc "MLDP1: Model input file has been created successfully."
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -746,6 +757,7 @@ proc MLDP1::CreateScriptsLaunchJob { } {
    }
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -810,6 +822,7 @@ proc MLDP1::CreateScriptLaunchEncode { } {
    Debug::TraceProc "MLDP1: Script for encoding pool information has been created successfully."
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -881,6 +894,7 @@ proc MLDP1::CreateScriptLaunchMeteo { } {
    }
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -984,6 +998,7 @@ proc MLDP1::CreateScriptLaunchModel { } {
    }
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -1138,6 +1153,7 @@ proc MLDP1::DefineDirFiles { } {
 
    puts stdout $Sim(InfoLaunch)
    puts stdout $Sim(InfoVar)
+
 }
 
 #----------------------------------------------------------------------------
@@ -1182,6 +1198,7 @@ proc MLDP1::DeleteDirectories { } {
    Debug::TraceProc "MLDP1: Simulation directories have been removed successfully."
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -1511,6 +1528,7 @@ proc MLDP1::EmissionWrite { } {
    }
 
    close $file
+
 }
 
 #---------------------------------------------------------------------------
@@ -1565,6 +1583,7 @@ proc MLDP1::ExpandTime { Seconds } {
    }
 
    return $time
+
 }
 
 #----------------------------------------------------------------------------
@@ -1770,6 +1789,7 @@ proc MLDP1::ExtractMetFiles { } {
    Debug::TraceProc "MLDP1: Meteorological data files have been extracted successfully."
 
    return True
+
 }
 
 #----------------------------------------------------------------------------
@@ -1840,6 +1860,7 @@ proc MLDP1::FormatDateTime { DateTime } {
    set sec   [string range $DateTime 12 13]
 
    return "${year}-${month}-${day} ${hour}:${min}:${sec} UTC"
+
 }
 
 #----------------------------------------------------------------------------
@@ -1978,6 +1999,7 @@ proc MLDP1::KBytes2Human { Size } {
    set size [format "%.1f" $size]
 
    return "$size $unit"
+
 }
 
 #----------------------------------------------------------------------------
@@ -2029,6 +2051,7 @@ proc MLDP1::LaunchJob { } {
    }
 
    . config -cursor left_ptr
+
 }
 
 #----------------------------------------------------------------------------
@@ -2160,7 +2183,9 @@ proc MLDP1::ReloadLaunchParams { } {
 
       #----- Set meteorological database directories according to meteorological model.
       MLDP1::SetMetDataDir
+
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2206,9 +2231,11 @@ proc MLDP1::ReloadMetData { } {
       if { ![MLDP1::GetMetData] } {
          return False
       }
+
    }
 
    return True
+
 }
 
 #----------------------------------------------------------------------------
@@ -2258,6 +2285,7 @@ proc MLDP1::SetAccidentDate { } {
    set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt true] ; #----- Year of accident date.
    set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt true] ; #----- Month of accident date.
    set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true] ; #----- Day of accident date.
+
 }
 
 #----------------------------------------------------------------------------
@@ -2317,6 +2345,7 @@ proc MLDP1::SetArchVariables { } {
          set Sim(IsUsingSoumet) 1
       }
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2418,6 +2447,7 @@ proc MLDP1::SetHosts { Flag } {
    if { $Flag } {
       MLDP1::UpdateListHosts
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2453,7 +2483,9 @@ proc MLDP1::SetMetDataDir { } {
          set Sim(DBaseDiag) "/users/dor/afse/eer/projets/MLDP/dbase/data/dbase/prog/regeta"
          set Sim(DBaseProg) "/users/dor/afse/eer/projets/MLDP/dbase/data/dbase/prog/regeta"
       }
+
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2502,6 +2534,7 @@ proc MLDP1::SetNbCPUsMeteo { Flag } {
    if { $Flag } {
       MLDP1::UpdateListNbCPUsMeteo
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2556,6 +2589,7 @@ proc MLDP1::SetNbCPUsModel { Flag } {
    if { $Flag } {
       MLDP1::UpdateListNbCPUsModel
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2589,7 +2623,9 @@ proc MLDP1::SetNbOMPthreads { } {
       set idx [lsearch -exact $Sim(ListNbCPUsMeteo) $Sim(NbCPUsMeteo)]
       set Sim(ListNbOMPthreads) [lrange $Sim(ListNbCPUsMeteo) $idx end]
       Option::Set $Sim(NbOMPthreadsFrm) $Sim(ListNbOMPthreads)
+
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2633,6 +2669,7 @@ proc MLDP1::SetQueues { Flag } {
    if { $Flag } {
       MLDP1::UpdateListQueues
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -2837,6 +2874,7 @@ proc MLDP1::SimInitNew { } {
    #----- Initialize coordinates of center of grid according to selected source and
    #----- define polar stereographic grid.
    MLDP1::SetSrc
+
 }
 
 #----------------------------------------------------------------------------
@@ -2907,15 +2945,20 @@ proc MLDP1::SimLaunchCheck { } {
 
                   #----- Launch job.
                   MLDP1::LaunchJob
+
                }
+
             }
+
          }
+
       }
 
       #----- Relire les experiences
       Model::Check 0
 
    }
+
 }
 
 #----------------------------------------------------------------------------
@@ -3205,8 +3248,11 @@ proc MLDP1::SpeciesFormat { } {
                puts stderr "         This isotope will be ignored."
                puts stderr "         Half-life: $halflife s."
             }
+
          }
+
       }
+
    }
 }
 
@@ -3264,6 +3310,7 @@ proc MLDP1::UpdateListHosts { } {
 
    #----- Update list of available hosts.
    Option::Set $Sim(HostFrm) $Sim(Hosts)
+
 }
 
 #----------------------------------------------------------------------------
@@ -3286,6 +3333,7 @@ proc MLDP1::UpdateListNbCPUsMeteo { } {
 
    #----- Update list of available number of CPUs for meteorological preprocessing.
    Option::Set $Sim(NbCPUsMeteoFrm) $Sim(ListNbCPUsMeteo)
+
 }
 
 #----------------------------------------------------------------------------
@@ -3313,6 +3361,7 @@ proc MLDP1::UpdateListNbCPUsModel { } {
 
    #----- Update list of available multiplicative integer factor for number of OMP threads.
    Option::Set $Sim(OMPthreadFactFrm) $Sim(ListOMPthreadFact)
+
 }
 
 #----------------------------------------------------------------------------
@@ -3344,6 +3393,7 @@ proc MLDP1::UpdateListQueues { } {
 
    #----- Update list of available queues.
    Option::Set $Sim(QueueFrm) $Sim(Queues)
+
 }
 
 #----------------------------------------------------------------------------
@@ -3524,9 +3574,11 @@ proc MLDP1::ValidateEmail { } {
             return 0
          }
       }
+
    }
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -3887,6 +3939,7 @@ proc MLDP1::ValidateQueue { } {
    }
 
    return 1
+
 }
 
 #----------------------------------------------------------------------------
@@ -4114,7 +4167,9 @@ proc MLDP1::ValidateVerticalLevels { } {
             set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
             Dialog::CreateDefault .mldp1new 800 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(VerticalLevels1) $GDefs(Lang)]\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" warning 0 "OK"
          }
+
       }
+
    }
 
    return 1
