@@ -374,8 +374,8 @@ static int ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
 
    ProjCam     *cam=NULL;
    int                idx,i;
-   static CONST char *sopt[] = { "-dist","-angle",NULL };
-   enum                opt { DIST,ANGLE };
+   static CONST char *sopt[] = { "-dist","-aspect","-angle",NULL };
+   enum                opt { DIST,ASPECT,ANGLE };
 
    cam=ProjCam_Get(Name);
 
@@ -393,6 +393,11 @@ static int ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
       switch ((enum opt)idx) {
          case DIST:
             Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(cam->Dist*EARTHRADIUS));
+            return(TCL_OK);
+            break;
+
+         case ASPECT:
+            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(cam->Aspect*EARTHRADIUS));
             return(TCL_OK);
             break;
 
