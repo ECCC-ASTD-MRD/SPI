@@ -956,7 +956,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          if (Objc==6)
             dri=Tcl_GetString(Objv[5]);
-         return(GDAL_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),dri));
+         return(GDAL_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),dri,NULL));
          break;
 
       case FORMAT:
@@ -1219,6 +1219,8 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
  *  <Id>      : Identificateur a donner au fichier
  *  <Mode>    : Mode d'ouverture (R ou W)
  *  <Name>    : Non du fichier
+ *  <Driver>  : Driver a utiliser (Mode W)
+ *  <Desc>    : Descripteur du dataset
  *
  * Retour:
  *  <TCL_...> : Code d'erreur de TCL.
@@ -1228,7 +1230,7 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
  *
  *----------------------------------------------------------------------------
 */
-int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver) {
+int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char *Desc) {
 
    GDALDatasetH    set=NULL;
    GDALRasterBandH band;
@@ -1236,7 +1238,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver)
    GDAL_File      *file;
    int             i;
    char            buf[256];
-   char          **sub,*subid,*idx;
+   char          **sub,*subid,*idx,*desc;
    double          tran[6],inv[6];
 
    if (GDAL_FileGet(NULL,Id)) {
@@ -1284,9 +1286,20 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver)
          /* Loop over bands */
          for (i=0;sub[i]!=NULL;i++) {
             sprintf(subid,"%s%03i",Id,i/2);
+
+            /*Check for follow up descriptor*/
+            desc=NULL;
+            if (sub[i+1]!=NULL) {
+               idx=index(sub[i+1],'=');
+               if (*(idx-1)=='C') {
+                  desc=idx+1;
+               }
+            }
+
+            /*Read sub dataset*/
             idx=index(sub[i],'=');
             if (*(idx-1)=='E') {
-               GDAL_FileOpen(Interp,subid,Mode,idx+1,NULL);
+               GDAL_FileOpen(Interp,subid,Mode,idx+1,NULL,desc);
             }
          }
          free(subid);
@@ -1294,7 +1307,11 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver)
 
       for (i=0;i<GDALGetRasterCount(set);i++) {
          band=GDALGetRasterBand(set,i+1);
-         sprintf(buf,"%s %i \"%s\" %d %d",Id,i+1,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+         if (Desc) {
+            sprintf(buf,"%s %i \"%s:%s\" %d %d",Id,i+1,Desc,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+         } else {
+            sprintf(buf,"%s %i \"%s\" %d %d",Id,i+1,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+         }
          Tcl_AppendElement(Interp,buf);
       }
    }

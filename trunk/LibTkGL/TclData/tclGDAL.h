@@ -77,7 +77,7 @@ int        GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
 int        GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 void       GDAL_Wipe();
 
-int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver);
+int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char *Desc);
 int GDAL_FileClose(Tcl_Interp *Interp,char *Id);
 
 GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name);
