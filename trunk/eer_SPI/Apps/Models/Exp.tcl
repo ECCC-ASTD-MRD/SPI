@@ -78,8 +78,10 @@ namespace eval Exp {
                             "Do you want to delete the joint statement ?" }
    set Msg(JointStatement) { "Etes-vous certain de vouloir transferer le joint statement ?" \
                             "Do you really want to send the joint statement ?" }
-   set Msg(RSMCLead)      { "Etes-vous le RSMC en charge pour cet accident ?" \
-                            "Are you the lead RSMC for this accident ?" }
+   set Msg(RSMCLeadArea34) { "Est-ce que l'accident se situe dans la region III/IV (3/4) ?" \
+                            "Is the accident in the region III/IV (3/4) ?" }
+   set Msg(RSMCLeadArea5) { "Est-ce que l'accident se situe dans la region V (5) ?" \
+                            "Is the accident in the region V (5) ?" }
    set Msg(SendJoint)     { "Transfert en cours" "Transferring data" }
    set Msg(SuppressExp)   { "La suppression de l'experience supprimera definitivement toutes les simulations\
                              qui y son contenue.\n\nVoulez-vous supprimer cette experience ?" \
@@ -1016,11 +1018,20 @@ proc Exp::ProductRSMCJointData { } {
 
    #----- pose la question par rapport au lead de l'accident.
 
-   set send [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(RSMCLead) $GDefs(Lang)] \
+   set send [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(RSMCLeadArea34) $GDefs(Lang)] \
       warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
    if { $send } {
-      file delete -force $path/leadrsmc.txt
+      set send [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(RSMCLeadArea5) $GDefs(Lang)] \
+         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+
+      if { $send } {
+         file delete -force $path/leadrsmc.txt
+      } else {
+         exec echo "345" > $path/leadrsmc.txt
+         catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+      }
+
    } else {
       exec echo "34" > $path/leadrsmc.txt
       catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
