@@ -1233,7 +1233,7 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
 int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char *Desc) {
 
    GDALDatasetH    set=NULL;
-   GDALRasterBandH band;
+   GDALRasterBandH band=NULL;
    GDALDriverH     driver=NULL;
    GDAL_File      *file;
    int             i;
@@ -1249,7 +1249,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    if (Mode=='w' || Mode=='W') {                 /*Write Mode*/
       if (!Driver) {
          Tcl_AppendResult(Interp," GDAL_FileOpen: Invalid driver ",Driver,(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       /* Look for the specified driver */
@@ -1261,7 +1261,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
 
       if (!driver) {
          Tcl_AppendResult(Interp," GDAL_FileOpen: Invalid driver ",Driver,(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
    } else if (Mode=='a' ||  Mode=='A') {         /*Append Mode*/
@@ -1273,7 +1273,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    if (Mode!='w' && Mode!='W') {
       if (!set) {
          Tcl_AppendResult(Interp," GDAL_FileOpen: Cannot open GDAL file ",Name,(char *)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
       driver=GDALGetDatasetDriver(set);
 
@@ -1325,7 +1325,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    file->Set=set;
 
    /* Get the georeference */
-   if (Mode!='w' && Mode!='W') {
+   if (band && Mode!='w' && Mode!='W') {
       GDALGetGeoTransform(set,tran);
       GDALInvGeoTransform(tran,inv);
       file->Ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band),1,LVL_UNDEF,NULL,(char*)GDALGetProjectionRef(file->Set),tran,inv,NULL);
@@ -1337,7 +1337,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
 
    GDAL_FilePut(Interp,file);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
