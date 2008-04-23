@@ -740,11 +740,12 @@ proc Viewport::Follow { Frame VP X Y } {
       if { [llength $data] } {
          set obj [lindex $data 1]
          switch [lindex $data 0] {
-            "observation" { set loc   [observation define $obj -ID [lindex $data 2]]
-                            set coord [observation define $obj -COORD [lindex $data 2]]
-                            append Page::Data(Value) "$obj:[observation define $obj -DATA [lindex $data 2]] "
+            "observation" { set tag   [lindex $data 2]
+                            set loc   [observation define $obj -ID $tag]
+                            set coord [observation define $obj -COORD $tag]
+                            append Page::Data(Value) "$obj:[observation define $obj -DATA $tag] "
                         }
-            "metobs"      { set tag   [lindex [metobs define $obj -TAG] [lindex $data 2]]
+            "metobs"      { set tag   [lindex $data 2]
                             set loc   [lindex [metobs define $obj -ID $tag]]
                             set coord [metobs define $obj -COORD $tag]
                             set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
@@ -752,7 +753,7 @@ proc Viewport::Follow { Frame VP X Y } {
                             set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
                             append Page::Data(Value) "[lindex $item 2]:"
                             foreach val $vals {
-                              append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
+                               append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
                             }
                         }
          }
