@@ -393,6 +393,13 @@ catch {
    option add *Menu*tearOff           0
    option add *Menu*borderWidth       1
 }
+
+#----- NVidia Antialiasing
+
+set env(__GL_FSAA_MODE) 1 ;#2x Bilenear Multisampling
+set env(__GL_FSAA_MODE) 2 ;#2x Quincunx Multisampling
+set env(__GL_FSAA_MODE) 4 ;#2x2 SuperSampling (Best for Quadro2 Pro)
+set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
 "
    close $f
 

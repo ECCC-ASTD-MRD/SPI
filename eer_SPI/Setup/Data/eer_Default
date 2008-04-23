@@ -109,14 +109,18 @@ set Viewport::Resources(Util)      #ffff00   ;#Utilitaires
 set Viewport::Resources(Canal)     #00ffff   ;#Canal/Aqueduc
 set Viewport::Resources(Coord)     #000000   ;#Latlon
 
-set FSTD::Param(Interp)          LINEAR      ;#Type d'interpolation
+#----- Parametres des champs
+
+dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
+   -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
+   -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -topography GZ -sample 2 \
+   -intervalmode NONE 0 -intervals {}
 
 #----- Parametres des Observations
-#----- Params { Op LevelMode LevelNb Levels Factor Icon Color Texture Size Dim Info Value }
 
-set Obs::Params(DEFAULT)   { VAL NONE 0 "" 1.0 1 #000000 1 0 0 0 3 0 0 0 "" }
-set Obs::Param(Mantisse)   2                                      ;#Format d'affichage des valeurs
-set Obs::Param(Order)      FLOAT                                  ;#Format d'affichage des valeurs
+dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
+   -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
+   -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -mark 0 -intervalmode NONE 0
 
 #----- Parametres des trajectoires
 
