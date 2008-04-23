@@ -35,8 +35,8 @@
 #    Viewport::DrawLine       { Frame VP Coords Tags Color BD }
 #    Viewport::DrawRange      { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } }
 #    Viewport::ForceGrid      { Frame { Reset False } }
-#    Viewport::GoAlong        { Frame Speed Bearing Lat Lon }
-#    Viewport::GoARound       { Frame Speed Lat Lon }
+#    Viewport::GoAlong        { Frame Speed Bearing Lat Lon { Damping True } }
+#    Viewport::GoARound       { Frame Speed Lat Lon { Damping True } }
 #    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 #    Viewport::LinkDo         { VP }
 #    Viewport::LinkSet        { }
@@ -741,18 +741,19 @@ proc Viewport::Follow { Frame VP X Y } {
          set obj [lindex $data 1]
          switch [lindex $data 0] {
             "observation" { set loc   [observation define $obj -ID [lindex $data 2]]
-                           set coord [observation define $obj -COORD [lindex $data 2]]
-                           append Page::Data(Value) "$obj:[observation define $obj -DATA [lindex $data 2]] "
+                            set coord [observation define $obj -COORD [lindex $data 2]]
+                            append Page::Data(Value) "$obj:[observation define $obj -DATA [lindex $data 2]] "
                         }
-            "metobs"      { set loc   [lindex [metobs define $obj -ID] [lindex $data 2]]
-                           set coord [metobs define $obj -COORD $loc]
-                           set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
-                           set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
-                           set vals  [metobs define $obj -ELEMENT $loc [lindex $item 2] [metobs define $obj -VALID]]
-                           append Page::Data(Value) "[lindex $item 2]:"
-                           foreach val $vals {
+            "metobs"      { set tag   [lindex [metobs define $obj -TAG] [lindex $data 2]]
+                            set loc   [lindex [metobs define $obj -ID $tag]]
+                            set coord [metobs define $obj -COORD $tag]
+                            set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
+                            set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
+                            set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
+                            append Page::Data(Value) "[lindex $item 2]:"
+                            foreach val $vals {
                               append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
-                           }
+                            }
                         }
          }
          if  { $loc!="" } {
@@ -2239,6 +2240,7 @@ proc Viewport::RotateInit { Frame VP X Y } {
 #  <Bearing> : Direction
 #  <Lat>     : Latitude d'origine
 #  <Lon>     : Longitude d'origine
+#  <Damping> : Effet de ralentissement
 #
 # Retour:
 #
@@ -2246,7 +2248,7 @@ proc Viewport::RotateInit { Frame VP X Y } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
+proc Viewport::GoAlong { Frame Speed Bearing Lat Lon { Damping True } } {
    variable Map
 
    set ProjCam::Data(Name)  ""
@@ -2265,7 +2267,9 @@ proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
 
          #----- Damp the speed and calculate the displacement along the bearing
 
-         set Map(Speed) [expr $Map(Speed)/$Map(Damping)]
+         if { $Damping } {
+            set Map(Speed) [expr $Map(Speed)/$Map(Damping)]
+         }
          set t1 $t2
          set t2 [clock click -milliseconds]
          set dx [expr $dx+$Map(Speed)*($t2-$t1)]
@@ -2308,7 +2312,7 @@ proc Viewport::GoAlong { Frame Speed Bearing Lat Lon } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::GoAround { Frame Speed Lat Lon } {
+proc Viewport::GoAround { Frame Speed Lat Lon { Damping True } } {
    variable Map
 
    upvar #0 ProjCam::Data${Frame}::Cam  cam
@@ -2336,7 +2340,9 @@ proc Viewport::GoAround { Frame Speed Lat Lon } {
 
          #----- Damp the speed and calculate the displacement along the bearing
 
-         set Map(Speed) [expr $Map(Speed)/$Map(Damping)]
+         if { $Damping } {
+            set Map(Speed) [expr $Map(Speed)/$Map(Damping)]
+         }
          set t1 $t2
          set t2 [clock click -milliseconds]
          set dx [expr $dx+$Map(Speed)*($t2-$t1)]
