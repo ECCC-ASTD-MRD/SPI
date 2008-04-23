@@ -1117,7 +1117,7 @@ proc NowCaster::Obs::DrawInit  { Frame VP } {
 
    if { [llength [set picked [$VP -pick $Data(X) $Data(Y) { metobs }]]] } {
       set Data(InfoObs) [lindex $picked 1]
-      set Data(InfoTag) [lindex [metobs define $Data(InfoObs) -TAG] [lindex $picked 2]]
+      set Data(InfoTag) [lindex $picked 2]
       set Data(InfoId)  [metobs define $Data(InfoObs) -ID $Data(InfoTag)]
    } else {
       set Data(InfoId)  ""
@@ -1141,7 +1141,7 @@ proc NowCaster::Obs::MoveInit { Frame VP } {
 
    if { [llength [set picked [$VP -pick $Data(X) $Data(Y) { metobs }]]] } {
       set Data(InfoObs) [lindex $picked 1]
-      set Data(InfoTag) [lindex [metobs define $Data(InfoObs) -TAG] [lindex $picked 2]]
+      set Data(InfoTag) [lindex $picked 2]
       set Data(InfoId)  [metobs define $Data(InfoObs) -ID $Data(InfoTag)]
       if { $Data(Flat$Data(InfoObs)) } {
          set Data(X)  $Viewport::Data(X$VP)
