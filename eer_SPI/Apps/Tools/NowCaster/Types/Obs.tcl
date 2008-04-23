@@ -43,6 +43,7 @@ namespace eval NowCaster::Obs { } {
    set Data(Elems)       { }
    set Data(Item)        ""
    set Data(InfoObs)     ""
+   set Data(InfoTag)     ""
    set Data(InfoId)      ""
    set Data(Id)          ""
    set Data(Report)      False
@@ -317,7 +318,7 @@ proc NowCaster::Obs::Now { Sec { Check False } } {
    }
 
    if { $Data(InfoObs)!="" && [winfo exists .nowcasterinfo] } {
-      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId)
+      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag)
    }
 }
 
@@ -565,6 +566,7 @@ proc NowCaster::Obs::Delete { Obs } {
 
    if { $Obs==$Data(InfoObs) } {
       set Data(InfoObs) ""
+      set Data(InfoTag) ""
       set Data(InfoId)  ""
    }
 
@@ -1000,6 +1002,7 @@ proc NowCaster::Obs::ModelParse { } {
 # Parametres :
 #   <Obs>    : Observation
 #   <Id>     : Identificateur de la station
+#   <Tag>    : Identificateur unique de la station
 #
 # Retour    :
 #
@@ -1007,7 +1010,7 @@ proc NowCaster::Obs::ModelParse { } {
 #
 #-------------------------------------------------------------------------------
 
-proc NowCaster::Obs::Info { Obs Id } {
+proc NowCaster::Obs::Info { Obs Id Tag } {
    global GDefs
    variable Data
    variable Lbl
@@ -1019,9 +1022,9 @@ proc NowCaster::Obs::Info { Obs Id } {
       if { ![winfo exists .nowcasterinfo.cmd] } {
          frame .nowcasterinfo.cmd -relief raised -bd 1
             radiobutton .nowcasterinfo.cmd.on -text [lindex $Lbl(Report) $GDefs(Lang)] -variable NowCaster::Obs::Data(Report) -value True \
-               -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command "NowCaster::Obs::Info $Obs $Id"
+               -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command "NowCaster::Obs::Info $Obs $Id $Tag"
             radiobutton .nowcasterinfo.cmd.off -text [lindex $Lbl(Elem) $GDefs(Lang)] -variable NowCaster::Obs::Data(Report) -value False \
-               -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command "NowCaster::Obs::Info $Obs $Id"
+               -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command "NowCaster::Obs::Info $Obs $Id $Tag"
             pack .nowcasterinfo.cmd.on .nowcasterinfo.cmd.off  -side left -fill x -expand True
          pack .nowcasterinfo.cmd -side top -fill x
       }
@@ -1030,9 +1033,9 @@ proc NowCaster::Obs::Info { Obs Id } {
 
       #----- Per report
       if { $Data(Report) } {
-         foreach date [metobs define $Obs -DATE $Id] {
+         foreach date [metobs define $Obs -DATE $Tag] {
             $text insert end "\n[clock format $date  -format "%Y%m%d %H:%M" -gmt true]\n"
-            foreach report [metobs define $Obs -REPORT $Id $date] {
+            foreach report [metobs define $Obs -REPORT $Tag $date] {
                $text insert end "---------------------------------------------------------------\n"
                foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
                   $text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
@@ -1043,12 +1046,12 @@ proc NowCaster::Obs::Info { Obs Id } {
          }
       } else {
          #----- Per element
-         set elems [metobs define $Obs -ELEMENT $Id]
+         set elems [metobs define $Obs -ELEMENT $Tag]
 
          foreach elem $elems {
             $text insert end  "\n[format %06i [metobs table -code $elem]] $elem ([metobs table -unit $elem])\n"
-            foreach date [metobs define $Obs -DATE $Id] {
-               $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] [metobs define $Obs -ELEMENT $Id $elem $date]\n"
+            foreach date [metobs define $Obs -DATE $Tag] {
+               $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] [metobs define $Obs -ELEMENT $Tag $elem $date]\n"
             }
          }
       }
@@ -1084,7 +1087,8 @@ proc NowCaster::Obs::Find { Obs { Id "" } } {
    if { [winfo exists .nowcasterinfo] } {
       set Data(InfoObs) $Obs
       set Data(InfoId)  $Data(Id)
-      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId)
+      set Data(InfoTag) $Data(Id)
+      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag)
    }
 }
 
@@ -1113,12 +1117,14 @@ proc NowCaster::Obs::DrawInit  { Frame VP } {
 
    if { [llength [set picked [$VP -pick $Data(X) $Data(Y) { metobs }]]] } {
       set Data(InfoObs) [lindex $picked 1]
-      set Data(InfoId)  [lindex [metobs define $Data(InfoObs) -ID] [lindex $picked 2]]
+      set Data(InfoTag) [lindex [metobs define $Data(InfoObs) -TAG] [lindex $picked 2]]
+      set Data(InfoId)  [metobs define $Data(InfoObs) -ID $Data(InfoTag)]
    } else {
       set Data(InfoId)  ""
+      set Data(InfoTag) ""
       set Data(InfoObs) ""
    }
-   NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId)
+   NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag)
 }
 
 proc NowCaster::Obs::Draw      { Frame VP } {
@@ -1135,19 +1141,21 @@ proc NowCaster::Obs::MoveInit { Frame VP } {
 
    if { [llength [set picked [$VP -pick $Data(X) $Data(Y) { metobs }]]] } {
       set Data(InfoObs) [lindex $picked 1]
-      set Data(InfoId)  [lindex [metobs define $Data(InfoObs) -ID] [lindex $picked 2]]
+      set Data(InfoTag) [lindex [metobs define $Data(InfoObs) -TAG] [lindex $picked 2]]
+      set Data(InfoId)  [metobs define $Data(InfoObs) -ID $Data(InfoTag)]
       if { $Data(Flat$Data(InfoObs)) } {
          set Data(X)  $Viewport::Data(X$VP)
          set Data(Y)  $Viewport::Data(Y$VP)
          set Data(X0) 0
          set Data(Y0) 0
       } else {
-         set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoId)]
+         set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoTag)]
          set Data(X0) [lindex $xy 0]
          set Data(Y0) [lindex $xy 1]
       }
    } else {
       set Data(InfoId)  ""
+      set Data(InfoTag) ""
       set Data(InfoObs) ""
    }
 }
@@ -1156,8 +1164,8 @@ proc NowCaster::Obs::Move { Frame VP } {
    variable Data
 
    if { $Data(InfoId)!="" && $Data(InfoObs)!="" } {
-      set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoId)]
-      metobs define $Data(InfoObs) -PIXEL $Data(InfoId) [expr $Data(X0)+($Viewport::Map(X)-$Data(X))] [expr $Data(Y0)+($Viewport::Map(Y)-$Data(Y))]
+      set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoTag)]
+      metobs define $Data(InfoObs) -PIXEL $Data(InfoTag) [expr $Data(X0)+($Viewport::Map(X)-$Data(X))] [expr $Data(Y0)+($Viewport::Map(Y)-$Data(Y))]
       Page::Update $Page::Data(Frame)
    }
 }
