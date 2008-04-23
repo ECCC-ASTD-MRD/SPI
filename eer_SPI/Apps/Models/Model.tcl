@@ -556,6 +556,7 @@ proc Model::Source { Array Index Op } {
    if { $SPI::Src(Info)!="" } {
       set Data(Type)           $SPI::Src(Type)
 
+      set Data(Id$Data(Pos))   $SPI::Src(No)
       set Data(Name$Data(Pos)) "$SPI::Src(Name)"
       set Data(Lat$Data(Pos))  $SPI::Src(Lat)
       set Data(Lon$Data(Pos))  $SPI::Src(Lon)

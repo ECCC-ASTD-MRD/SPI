@@ -698,7 +698,7 @@ proc Exp::New { } {
 
       regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name$i) "_" Model::Data(Name$i)
 
-      lappend info [list $Model::Data(Name$i) $Data(Lat) $Data(Lon)]
+      lappend info [list $Model::Data(Name$i) $Data(Lat) $Data(Lon) $Model::Data(Id$i)]
    }
 
    if { [llength $info]==0 } {
