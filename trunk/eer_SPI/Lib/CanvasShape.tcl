@@ -125,40 +125,76 @@ proc CVCompass::Create { Frame X Y } {
 
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVCOMP CVCOMPLOC"
 
-   $canvas create image $X $Y -image COMPASSHEADING -tags "CVCOMP"
    $canvas create image $X $Y -image COMPASSFRAME -tags "CVCOMP"
 
    $canvas create image $X [expr $Y+50] -image CLOCKTIME -tags "CVCOMP"
    $canvas create image $X [expr $Y+72] -image COMPASSDIST -tags "CVCOMP"
 
-   $canvas create text $X $Y -tags "CVCOMP CVHEAD" -font XFont12 -fill black
    $canvas create text $X [expr $Y+50] -tags "CVCOMP CVCOMPANGLE" -font XFont12 -fill black
    $canvas create text $X [expr $Y+72] -tags "CVCOMP CVCOMPDIST" -font XFont12 -fill black
 
    $canvas create image -999 -999 -image COMPASSDIST -tags "CVCOMP CVCOMPSPD"
    $canvas create text -999 -999 -tags "CVCOMP CVCOMPSPD CVCOMPSPDT" -font XFont12 -fill black
 
+   $canvas create image $X $Y -image COMPASSHEADING -tags "CVCOMP CVCOMPH"
    $canvas create image $X [expr $Y-25] -image COMPASSDIR -tags "CVCOMP CVCOMPN"
    $canvas create image $X [expr $Y+25] -image COMPASSDIR -tags "CVCOMP CVCOMPS"
    $canvas create image [expr $X-25] $Y -image COMPASSDIR -tags "CVCOMP CVCOMPW"
    $canvas create image [expr $X+25] $Y -image COMPASSDIR -tags "CVCOMP CVCOMPE"
 
+   $canvas create text $X $Y -tags "CVCOMPHT" -font XFont12 -fill black
    $canvas create text $X [expr $Y-25] -text N -tags "CVCOMPNT" -font XFont12
    $canvas create text $X [expr $Y+25] -text S -tags "CVCOMPST" -font XFont12
    $canvas create text [expr $X-25] $Y -text [lindex { O W } $GDefs(Lang)] -tags "CVCOMPWT" -font XFont12
    $canvas create text [expr $X+25] $Y -text E -tags "CVCOMPET" -font XFont12
 
-   Shape::BindMove $canvas { CVCOMP CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET }
+   Shape::BindMove $canvas { CVCOMP CVCOMPHT CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET }
+
+   #----- Binding de rotation
 
    foreach tag { CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET } theta { 0 180 90 270 } {
       $canvas bind $tag <Enter>     "$canvas configure -cursor hand1"
       $canvas bind $tag <Leave>     "$canvas configure -cursor left_ptr"
-      $canvas bind $tag <B1-Motion> "CVCompass::Rotate $Frame %x %y $theta"
+      $canvas bind $tag <B1-Motion> "CVCompass::RotateDo $Frame %x %y $theta"
+   }
+
+   #----- Binding de translation
+
+   $canvas bind CVCOMPHT <Enter>     "$canvas configure -cursor hand1"
+   $canvas bind CVCOMPHT <Leave>     "$canvas configure -cursor left_ptr"
+   $canvas bind CVCOMPHT <B1-Motion>       "CVCompass::TranslateDo $Frame %x %y"
+   $canvas bind CVCOMPHT <ButtonRelease-1> "CVCompass::TranslateDone $Frame "
+}
+
+proc CVCompass::TranslateDo { Frame X Y  } {
+   variable Data
+
+   upvar #0 ProjCam::Data${Frame}::Cam  cam
+
+   set xy [$Frame.page.canvas coords CVCOMPLOC]
+   set dxy [expr hypot([lindex $xy 0]-$X,[lindex $xy 1]-$Y)]
+
+   $Frame.page.canvas coords CVCOMPHT $X $Y
+   $Frame.page.canvas coords CVCOMPH $X $Y
+
+   if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
+      set bearing [expr atan2($Y-[lindex $xy 1],$X-[lindex $xy 0])*57.2957795+90.0+$cam(CFX)]
+      set speed   [expr $dxy*[projcam stats $Frame -aspect]*0.00001]
+
+      Viewport::GoAlong $Frame $speed $bearing $Viewport::Map(Lat) $Viewport::Map(Lon) False
    }
 }
 
+proc CVCompass::TranslateDone { Frame } {
+   variable Data
+
+   Viewport::GoAlong $Frame 0 0 $Viewport::Map(Lat) $Viewport::Map(Lon) False
+   $Frame.page.canvas coords CVCOMPHT [lrange [$Frame.page.canvas coords CVCOMPLOC] 0 1]
+   $Frame.page.canvas coords CVCOMPH  [lrange [$Frame.page.canvas coords CVCOMPLOC] 0 1]
+}
+
 #----------------------------------------------------------------------------
-# Nom      : <CVCompass::Rotate>
+# Nom      : <CVCompass::RotateDo>
 # Creation : Mai 2007 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Rotation interactive de la rose des vents et camera
@@ -175,14 +211,15 @@ proc CVCompass::Create { Frame X Y } {
 #
 #----------------------------------------------------------------------------
 
-proc CVCompass::Rotate { Frame X Y Theta } {
+proc CVCompass::RotateDo { Frame X Y Theta } {
+
+   upvar #0 ProjCam::Data${Frame}::Cam  cam
 
    set xy [$Frame.page.canvas coords CVCOMPLOC]
 
    if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
       set bearing [expr -atan2($Y-[lindex $xy 1],$X-[lindex $xy 0])*57.2957795-90.0-$Theta]
 
-      upvar #0 ProjCam::Data${Frame}::Cam  cam
       set cam(CFX) $bearing
       ProjCam::Do $Frame $Frame $vp
    }
@@ -261,7 +298,7 @@ proc CVCompass::Update { Frame Bearing Angle Distance { Speed 0 } } {
    if { $Bearing<0 } {
       set Bearing [expr $Bearing+360.0]
    }
-   $canvas itemconfigure CVHEAD -text [format "%03.0f" $Bearing]
+   $canvas itemconfigure CVCOMPHT -text [format "%03.0f" $Bearing]
 
    if { $Speed!=0.0 } {
       $canvas coords CVCOMPSPD $x0 [expr $y0+94]
