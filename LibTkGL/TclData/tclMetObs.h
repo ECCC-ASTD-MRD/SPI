@@ -42,8 +42,9 @@
 #define MetObs_GetData(MD,E,V,T) (MD->Data[(T*MD->Nv+V)*MD->Ne+E])
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
 #define MET_VALID(V,N)  (V!=-979.0f && V!=-980.0f && V!=-999.0f && V!=N)
-#define MET_TYPEID   0
-#define MET_TYPENO   1
+#define MET_TYPEID   0x0
+#define MET_TYPENO   0x1
+#define MET_TYPETG   0x2
 #define MET_STATENEW 0x0
 #define MET_STATESCO 0x1
 #define MET_STATEHCO 0x2
@@ -88,6 +89,7 @@ typedef struct TMetLoc {
 
    char    *Id;             /*Identificateur*/
    char    *No;             /*Numero*/
+   char     Tag[16];        /*Tag unique*/
    char   **Info;           /*Autres informations*/
    Coord    Coord;          /*Position (lat,lon,elevation)*/
    Vect3d   Pix;            /*Pixel ou positioner la station statique*/
@@ -138,7 +140,8 @@ EntryTableB *MetObs_BUFRFindTableCode(unsigned int Code);
 EntryTableB *MetObs_BUFRFindTableDesc(char *Desc);
 EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code);
 
-TMetLoc *TMetLoc_Find(TMetObs *Obs,char *Id,int Type);
+TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type);
+TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type);
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev);
 
 TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);

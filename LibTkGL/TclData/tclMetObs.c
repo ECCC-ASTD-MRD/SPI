@@ -43,6 +43,7 @@ TCL_DECLARE_MUTEX(MUTEX_BURPFILE)
 static Tcl_HashTable MetObsTable;
 static Tcl_HashTable MetRepTable;
 static long          MetRepNo=0;
+static unsigned int  MetLocNo=0;
 static int           MetObsInit=0;
 
 static CONST char *LVLTYPE[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN" };
@@ -425,13 +426,14 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    TMetElem     *elem;
    TMetElemData *data;
    TMetModel    *mdl;
-   long          time;
+   long          time=0;
    int           e,t,i,j,d,v,idx,nv;
    float        *valf;
    double        val;
+   char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,VALID,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,VALID,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -454,7 +456,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
                if (!loc) {
                   Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
                   return(TCL_ERROR);
@@ -531,7 +534,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
                if (!loc) {
                   Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
                   return(TCL_ERROR);
@@ -567,14 +571,35 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                }
                Tcl_SetObjResult(Interp,obj);
             } else if (Objc==2) {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
                if (loc) {
-                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Observation id already exist",(char*)NULL);
-                  return(TCL_ERROR);
+                  if (search==MET_TYPETG) {
+                     Tcl_SetObjResult(Interp,Tcl_NewStringObj(loc->Id,-1));
+                     return(TCL_OK);
+                  } else {
+                     Tcl_AppendResult(Interp,"\n   MetObs_Define: Observation id already exist",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                }
                TMetLoc_New(obs,Tcl_GetString(Objv[i]),NULL,0.0,0.0,0.0);
            } else {
                Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -ID [id]\"",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            break;
+
+         case TAG:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               loc=obs->Loc;
+               while(loc) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(loc->Tag,-1));
+                  loc=loc->Next;
+               }
+               Tcl_SetObjResult(Interp,obj);
+           } else {
+               Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -TAG \"",(char*)NULL);
                return(TCL_ERROR);
             }
             break;
@@ -584,7 +609,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                Tcl_WrongNumArgs(Interp,4,Objv,"id [x y]");
                return(TCL_ERROR);
             }
-            loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
+            search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+            loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
             if (!loc) {
                Tcl_AppendResult(Interp,"\n   MetObs_Define: Observation id does not exist",(char*)NULL);
                return(TCL_ERROR);
@@ -611,7 +637,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
                if (!loc) {
                   Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
                   return(TCL_ERROR);
@@ -633,7 +660,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_DuplicateObj(obs->Elems));
             } else {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
                if (!loc) {
                   Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
                   return(TCL_ERROR);
@@ -738,37 +766,32 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_DuplicateObj(obs->Elems));
             } else {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
-               if (!loc) {
-                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-
-               if (Objc==2) {
-                  obj=Tcl_NewListObj(0,NULL);
-                  sub=Tcl_NewObj();
-                  elem=loc->Elems;
-                  while(elem) {
-                     for(d=0;d<elem->NData;d++) {
-                        Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
-                     }
-                     elem=elem->Next;
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               if (Objc==2 || Objc==3) {
+                  if (Objc==3) {
+                     Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                   }
-                  Tcl_SetObjResult(Interp,obj);
-               } else if (Objc==3) {
-                  Tcl_GetLongFromObj(Interp,Objv[++i],&time);
+
+                  loc=NULL;
                   obj=Tcl_NewListObj(0,NULL);
-                  elem=loc->Elems;
-                  while(elem) {
-                     if (elem->Time==time) {
-                        for(d=0;d<elem->NData;d++) {
-                           Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+                  while (loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search)) {
+                     elem=loc->Elems;
+                     while(elem) {
+                        if (!time || elem->Time==time) {
+                           for(d=0;d<elem->NData;d++) {
+                              Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+                           }
                         }
+                        elem=elem->Next;
                      }
-                     elem=elem->Next;
                   }
                   Tcl_SetObjResult(Interp,obj);
                } else if (Objc==4) {
+                  loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[1]),search);
+                  if (!loc) {
+                     Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                   Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                   data=MetReport_Get(Tcl_GetString(Objv[++i]));
                   TMetElem_InsertCopy(loc,0,time,data);
@@ -798,43 +821,42 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             break;
 
          case DATE:
+            if (Objc!=1 && Objc!=2) {
+               Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -DATE [id]\"",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            obj=Tcl_NewListObj(0,NULL);
+            sub=Tcl_NewObj();
+
             if (Objc==1) {
-               obj=Tcl_NewListObj(0,NULL);
                loc=obs->Loc;
-               sub=Tcl_NewObj();
                while(loc) {
                   elem=loc->Elems;
                   while(elem) {
                      Tcl_SetLongObj(sub,elem->Time);
                      if (Tcl_ListObjFind(Interp,obj,sub)==-1) {
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(elem->Time));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
                      }
                      elem=elem->Next;
                   }
                   loc=loc->Next;
                }
-               /*TODO Sort the list*/
-               Tcl_SetObjResult(Interp,obj);
             } else {
-               loc=TMetLoc_Find(obs,Tcl_GetString(Objv[++i]),MET_TYPEID);
-               if (!loc) {
-                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid observation id",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-
-               if (Objc==2) {
+               loc=NULL;
+               search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
+               while (loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search)) {
                   elem=loc->Elems;
-                  obj=Tcl_NewListObj(0,NULL);
                   while(elem) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(elem->Time));
+                     Tcl_SetLongObj(sub,elem->Time);
+                     if (Tcl_ListObjFind(Interp,obj,sub)==-1) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
+                     }
                      elem=elem->Next;
                   }
-                  Tcl_SetObjResult(Interp,obj);
-               } else {
-                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -DATE [id]\"",(char*)NULL);
-                  return(TCL_ERROR);
                }
             }
+            /*TODO Sort the list*/
+            Tcl_SetObjResult(Interp,obj);
             break;
 
          case VALID:
@@ -1140,34 +1162,40 @@ EntryTableB *MetObs_BUFRFindTableDesc(char *Desc) {
    return(bufr_tableb_fetch_entry_desc(BUFRTable->master.tableB,Desc));
 }
 
-TMetLoc *TMetLoc_Find(TMetObs *Obs,char *Id,int Type) {
-   TMetLoc *loc=Obs->Loc;
+TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type) {
+   TMetLoc *loc;
+
+   loc=From?From->Next:Obs->Loc;
 
    while(loc) {
-      if (Type) {
-         if (strcmp(loc->No,Id)==0) {
-            break;
-         }
+      if (Type==MET_TYPEID) {
+         if (strcmp(loc->Id,Id)==0) break;
+      } else if (Type==MET_TYPENO) {
+         if (strcmp(loc->No,Id)==0) break;
       } else {
-         if (strcmp(loc->Id,Id)==0) {
-            break;
-         }
+         if (strcmp(loc->Tag,Id)==0) break;
       }
       loc=loc->Next;
    }
    return(loc);
 }
 
-TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,char *Id,double Lat,double Lon,double Elev,int Type) {
-   TMetLoc *loc=Obs->Loc;
+TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type) {
+   TMetLoc *loc;
+
+   loc=From?From->Next:Obs->Loc;
 
    while(loc) {
-      if (Type) {
+      if (Type==MET_TYPENO) {
          if (strcmp(loc->No,Id)==0 && (Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
             break;
          }
-      } else {
+      } else if (Type==MET_TYPEID) {
          if (strcmp(loc->Id,Id)==0 && (Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+            break;
+         }
+      } else {
+         if (strcmp(loc->Tag,Id)==0 && (Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
             break;
          }
       }
@@ -1192,6 +1220,8 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    loc->Grid[0]=loc->Grid[1]=loc->Grid[2]=0;
    loc->Level=0;
    loc->Elems=NULL;
+
+   sprintf(loc->Tag,"|%u",MetLocNo++);
 
    /*Patch temporaire car le postscript m'aime pas les ()*/
    strrep(loc->Id,'(',' ');
@@ -1587,7 +1617,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          /*Insert station in list if not already done*/
          if (strlen(stnid) && lat!=-999.0 && lon!=-999.0) {
-            loc=TMetLoc_FindWithCoord(Obs,stnid,lat,lon,-999.0,MET_TYPEID);
+            loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,lat,lon,-999.0,MET_TYPEID);
             if (!loc) {
                loc=TMetLoc_New(Obs,stnid,NULL,lat,lon,hgt);
 //               loc->Grid[0]=dx;
@@ -1711,7 +1741,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
       /*Insert station in list if not already done*/
       strtrim(stnid,' ');
-      loc=TMetLoc_Find(Obs,stnid,MET_TYPEID);
+      loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID);
       if (!loc) {
          loc=TMetLoc_New(Obs,stnid,NULL,(blat-9000.0)/100.0,blon/100.0,hgt-400);
          loc->Grid[0]=dx;
@@ -1954,7 +1984,7 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                strrep(loc->No,')',' ');
             } else if (strcmp(gtok[n],"ID")==0) {            /*Identificateur*/
                /*Insert station in list if not already done*/
-               loc=TMetLoc_Find(Obs,tok[n],MET_TYPEID);
+               loc=TMetLoc_Find(Obs,NULL,tok[n],MET_TYPEID);
                if (!loc) {
                   loc=TMetLoc_New(Obs,tok[n],NULL,0.0,0.0,0.0);
                }
@@ -2025,8 +2055,8 @@ void MetObs_LocFree(TMetLoc *Loc){
    TMetElem *enext,*elem;
 
    while(loc) {
-      if (loc->Id) free(loc->Id);
-      if (loc->No) free(loc->No);
+      if (loc->Id)  free(loc->Id);
+      if (loc->No)  free(loc->No);
 
       elem=loc->Elems;
       while(elem) {
