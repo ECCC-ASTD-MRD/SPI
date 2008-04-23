@@ -527,22 +527,25 @@ void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta)
    Cam->From[1]=Delta*sin(ThetaYZ);
    Cam->From[2]=Delta*cos(ThetaYZ);
 
-   /*Rotation dans le plan XY*/
-   delta=ThetaYZ<0.0?-0.1:0.1;
-   tmp[0]=Cam->From[1]*sin(ThetaXY+delta);
-   tmp[1]=Cam->From[1]*cos(ThetaXY+delta);
-   tmp[2]=Cam->From[2];
+   if (ThetaYZ==0) {
+      Cam->Up[0]=2.0*sin(ThetaXY);
+      Cam->Up[1]=2.0*cos(ThetaXY);
 
-   Cam->From[0]=Cam->From[1]*sin(ThetaXY);
-   Cam->From[1]=Cam->From[1]*cos(ThetaXY);
+      Cam->From[0]=Cam->From[1]*sin(ThetaXY);
+      Cam->From[1]=Cam->From[1]*cos(ThetaXY);
+   } else {
+      /*Rotation dans le plan XY*/
+      delta=ThetaYZ<0.0?-0.1:0.1;
+      tmp[0]=Cam->From[1]*sin(ThetaXY+delta);
+      tmp[1]=Cam->From[1]*cos(ThetaXY+delta);
+      tmp[2]=Cam->From[2];
 
-   /*Determiner le vecteur haut Cam->Up*/
-   Vect_CrossProduct(Cam->Up,Cam->From,tmp);
+      Cam->From[0]=Cam->From[1]*sin(ThetaXY);
+      Cam->From[1]=Cam->From[1]*cos(ThetaXY);
 
-   if (Cam->Up[0]==0.0 && Cam->Up[1]==0.0 && Cam->Up[2]==0.0) {
-      Cam->Up[1]=1.0;
+      /*Determiner le vecteur haut Cam->Up*/
+      Vect_CrossProduct(Cam->Up,Cam->From,tmp);
    }
-
    /*Localiser dans l'espace*/
    Vect_Add(Cam->From,Cam->From,Cam->To);
 }
