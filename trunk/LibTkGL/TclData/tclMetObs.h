@@ -122,6 +122,7 @@ typedef struct TMetObs {
 int      TclMetObs_Init(Tcl_Interp *Interp);
 
 TMetObs *MetObs_Get(char *Name);
+char*    Metobs_GetTag(TMetObs *Obs,int No);
 Vect3d  *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_Obj *Elem,int *NObs,int Extrap);
 int      MetObs_Copy(Tcl_Interp *Interp,TMetObs *Obs,char *Name);
 int      MetObs_Extract(Tcl_Interp *Interp,TMetObs *Obs,TData *Field);

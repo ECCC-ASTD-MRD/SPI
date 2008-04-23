@@ -633,8 +633,16 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                   case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("metobs",-1)); break;
                   case PICK_FSTDFIELD: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("fstdfield",-1)); break;
                }
+
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(vp->Data[GLRender->GLPick[0]],-1));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[2]));
+
+               switch(GLRender->GLPick[1]) {
+                  case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Metobs_GetTag(MetObs_Get(vp->Data[GLRender->GLPick[0]]),GLRender->GLPick[2]),-1)); break;
+                  case PICK_TRAJ:
+                  case PICK_OBS:
+                  case PICK_FSTDFIELD: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[2])); break;
+               }
+
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[3]));
                Tcl_SetObjResult(Interp,obj);
             }
