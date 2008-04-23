@@ -1036,6 +1036,36 @@ TMetObs* MetObs_Get(char *Name) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <MetObs_GetTag>
+ * Creation     : Avril 2008 J.P. Gauthier
+ *
+ * But          : Obtenir un le tag unique d'une localisation d'observation
+ *
+ * Parametres   :
+ *   <Obs>      : Observation
+ *   <Idx>       : Index .
+ *
+ * Retour       : Pointeur sur le tag.
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+char* Metobs_GetTag(TMetObs *Obs,int Idx) {
+
+   TMetLoc *loc;
+
+   loc=Obs->Loc;
+   while(Idx--) {
+      if (!loc)
+         return(NULL);
+
+      loc=loc->Next;
+   }
+   return(loc->Tag);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetObs_Grid>
  * Creation     : Fevrier 2007 J.P. Gauthier
  *
