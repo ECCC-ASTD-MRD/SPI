@@ -931,6 +931,9 @@ proc MLDP1::CreateScriptLaunchModel { } {
    puts $file "echo \"\""
    puts $file ""
    puts $file "arch=`uname -s`"
+   if { $Sim(Arch) == "Linux" && !$Sim(IsUsingSoumet) } {
+      puts $file "mpiexec=r.mpiexec"
+   }
    puts $file "bin=$Sim(BinDir)/\${arch}/[file tail $Sim(ModelBin)]"
    puts $file "input=$Sim(TmpDir)/[file tail $Sim(ModelInputFile)]"
    puts $file "debug=$Sim(PrintDebugLevel)"
@@ -946,12 +949,14 @@ proc MLDP1::CreateScriptLaunchModel { } {
    puts $file "outmode=$Sim(OutputMode)"
 
    if { $Sim(Arch) == "Linux" && !$Sim(IsUsingSoumet) } {
+      puts $file "args=\"\\-input \${input} \\-print \${debug} \\-seed \${seed} \\-source \${source} \\-outmode \${outmode}\""
       puts $file "mpitasks=$Sim(NbMPItasks)"
       puts $file "ompthreads=$Sim(NbOMPthreads)"
    }
 
    puts $file ""
    if { $Sim(Arch) == "Linux" && !$Sim(IsUsingSoumet) } {
+      puts $file "export PATH=/home/dormrb02/ssm-mpich2-pgi6/mpich2_1.0.6_linux24-i386/bin:\${PATH}"
       puts $file "export OMP_NUM_THREADS=\${ompthreads}"
    }
    puts $file "export MLDP1_MPI_OMP_PARAMS=\"\""
@@ -962,13 +967,15 @@ proc MLDP1::CreateScriptLaunchModel { } {
       puts $file "echo \"Number of OMP threads : \${ompthreads}\""
       puts $file "echo \"OMP_NUM_THREADS       : \${OMP_NUM_THREADS}\""
       puts $file "echo \"MLDP1_MPI_OMP_PARAMS  : \${MLDP1_MPI_OMP_PARAMS}\""
+      puts $file "echo \"\""
+      puts $file "echo \"Version of \${mpiexec} : `which \${mpiexec}`\""
    } else {
       puts $file "echo \"MLDP1_MPI_OMP_PARAMS : \${MLDP1_MPI_OMP_PARAMS}\""
    }
 
    puts $file ""
    if { $Sim(Arch) == "Linux" && !$Sim(IsUsingSoumet) } {
-      puts $file "$Sim(Timing) mpirun -np \${mpitasks} \${bin} -input \${input} -print \${debug} -seed \${seed} -source \${source} -outmode \${outmode}"
+      puts $file "$Sim(Timing) \${mpiexec} -npex \${mpitasks} -args \${args} -pgm \${bin}"
    } else {
       puts $file "$Sim(Timing) \${bin} -input \${input} -print \${debug} -seed \${seed} -source \${source} -outmode \${outmode}"
    }
@@ -2561,10 +2568,10 @@ proc MLDP1::SetNbCPUsModel { Flag } {
    #----- Set CPU configuration for model according to architecture.
    switch $Sim(Arch) {
       "Linux"  {
-         set Sim(NbMPItasks)        $Sim(NbCPUsMeteo)
-         set Sim(ListNbMPItasks)    $Sim(ListNbCPUsMeteo)
-         set Sim(NbOMPthreads)      1
-         set Sim(ListNbOMPthreads)  { 1 }
+         set Sim(NbMPItasks)        1
+         set Sim(ListNbMPItasks)    { 1 }
+         set Sim(NbOMPthreads)      $Sim(NbCPUsMeteo)
+         set Sim(ListNbOMPthreads)  $Sim(ListNbCPUsMeteo)
          set Sim(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
          set Sim(ListOMPthreadFact) { 1 }
       }
