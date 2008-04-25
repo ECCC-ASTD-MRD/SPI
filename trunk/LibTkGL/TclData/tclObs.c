@@ -642,8 +642,9 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
    }
 
    if (new) {
-         Obs_FreeHash(Interp,Name);
+      Obs_FreeHash(Interp,Name);
    }
+
    if (Obs_Create(Interp,Name)!=TCL_OK) {
        return(NULL);
    }
@@ -657,8 +658,6 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
    new->Loc=Obs->Loc;
    new->Loc->Ref++;
 
-   new->Spec=Obs->Spec;
-   new->Spec->NRef++;
    new->Def=NULL;
 
    new->Tag=NULL;
