@@ -1,3 +1,53 @@
+#ERPG - Emergency Response Planning Guideline
+#
+#Number of ERPGs: 130
+#
+#
+#NOTE: This information is correct as of January 1, 2007. It is possible
+#that an ERPG under review by the Committee will be balloted and
+#approved in 2007, making it eligible for inclusion in the 2008 ERPG
+#Document Set.
+#
+#
+#Definitions:
+#
+#ERPG-1: The maximum airborne concentration below which it is believed nearly all individuals could be
+#exposed for up to 1 hour without experiencing more than mild, transient adverse health effects or without
+#perceiving a clearly defined objectionable odor.
+#
+#ERPG-2: The maximum airborne concentration below which it is believed nearly all individuals could be
+#exposed for up to 1 hour without experiencing or developing irreversible or other serious health effects
+#or symptoms that could impair an individual's ability to take protective action.
+#
+#ERPG-3: The maximum airborne concentration below which it is believed nearly all individuals could be
+#exposed for up to 1 hour without experiencing or developing life-threatening health effects.
+#
+#
+#Reference:
+#The AIHA 2007 Emergency Response Planning Guidelines & Workplace Environmental Exposure Levels Handbook, American Industrial Hygiene Association, Fairfax, Virginia
+#ISBN 978-1-931504-74-4
+#AIHA Press
+#American Industrial Hygiene Association
+#2700 Prosperity Ave., Suite 250
+#Fairfax, VA 22031
+#Tel.: (703) 849-8888
+#Fax: (703) 207-3561
+#http://www.aiha.org
+#e-mail: infonet@aiha.org
+#Stock No. AEAH07-559
+#
+#
+#Format:
+#1st column: Chemical Compound
+#2nd column: CAS Number
+#3rd column: Unit [ppm, mg/m3, ug/m3]
+#4th column: ERPG-1
+#5th column: ERPG-2
+#6th column: ERPG-3
+#
+#NA = not appropriate
+#ID = insufficient data
+
 array set ERPG {
 "Acetaldehyde (75-07-0)" { ppm { { 10 200 1000 } } }
 "Acetic Acid (64-19-7)" { ppm { { 5 35 250 } } }

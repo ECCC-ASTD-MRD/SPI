@@ -19,7 +19,7 @@
 #   FSTD::ParamFrame      { Frame Apply }
 #   FSTD::FieldFormat     { Field Val }
 #   FSTD::Follower        { Page Canvas VP Lat Lon X Y }
-#   FSTD::IntervalSet     { }
+#   FSTD::IntervalSet     { { Select 0 } }
 #   FSTD::IntervalSetMode { Mode { Par 0 } }
 #   FSTD::ParamGet        { { Spec "" } }
 #   FSTD::ParamSet        { { Spec "" } }
@@ -127,7 +127,6 @@ namespace eval FSTD {
    set Param(Intervals)     {}             ;#Niveaux de contours
    set Param(IntervalMode)  "NONE"         ;#Mode de selection des niveaux
    set Param(IntervalParam) 0              ;#Nombre de niveaux a definir
-   set Param(IntervalIndex) 0              ;#Index de selection des intervalles dans les listes ERPG/AEGL
    set Param(IntervalDef)   ""             ;#Nom du produit dans les listes  ERPG/AEGL
 
    set Param(Axis)          X
@@ -407,8 +406,8 @@ proc FSTD::ParamFrame { Frame Apply } {
       frame $Data(Frame).lev.select
          menubutton $Data(Frame).lev.select.mode -textvariable FSTD::Param(IntervalMode) -bd 1 \
             -menu $Data(Frame).lev.select.mode.list -relief raised -width 11 -relief ridge
-         ComboBox::Create $Data(Frame).lev.select.def FSTD::Param(IntervalDef) edit unsorted nodouble -1 \
-            "" 1 6 "FSTD::IntervalSet"
+         ComboBox::Create $Data(Frame).lev.select.def FSTD::Param(IntervalDef) edit sorted nodouble -1 \
+            "" 1 6 "FSTD::IntervalSet 1"
          pack $Data(Frame).lev.select.mode -side left
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 
@@ -436,13 +435,17 @@ proc FSTD::ParamFrame { Frame Apply } {
          -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 4]"
       $Data(Frame).lev.select.mode.list add separator
 
-      $Data(Frame).lev.select.mode.list add command -label AEGL-1 \
-         -command "FSTD::IntervalSetMode AEGL-1 -1"
-      $Data(Frame).lev.select.mode.list add command -label AEGL-2 \
-         -command "FSTD::IntervalSetMode AEGL-2 -1"
-      $Data(Frame).lev.select.mode.list add command -label AEGL-3 \
-         -command "FSTD::IntervalSetMode AEGL-3 -1"
-      $Data(Frame).lev.select.mode.list add command -label ERPG \
+      $Data(Frame).lev.select.mode.list add command -label "AEGL(10min)" \
+         -command "FSTD::IntervalSetMode AEGL(10min) -1"
+      $Data(Frame).lev.select.mode.list add command -label "AEGL(30min)" \
+         -command "FSTD::IntervalSetMode AEGL(30min) -1"
+      $Data(Frame).lev.select.mode.list add command -label "AEGL(60min)" \
+         -command "FSTD::IntervalSetMode AEGL(60min) -1"
+      $Data(Frame).lev.select.mode.list add command -label "AEGL(4hr)" \
+         -command "FSTD::IntervalSetMode AEGL(4hr) -1"
+      $Data(Frame).lev.select.mode.list add command -label "AEGL(8hr)" \
+         -command "FSTD::IntervalSetMode AEGL(8hr) -1"
+      $Data(Frame).lev.select.mode.list add command -label "ERPG" \
          -command "FSTD::IntervalSetMode ERPG -1"
 
       $Data(Frame).lev.select.mode.list add separator
@@ -502,17 +505,12 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } } {
    set mode [string range $Mode 0 3]
 
    if { $mode=="AEGL" || $mode=="ERPG" } {
-      if { $mode=="AEGL" } {
-         set Param(IntervalIndex) [expr [string index $Mode end]-1]
-      } else {
-         set Param(IntervalIndex) 0
-      }
       ComboBox::DelAll $Data(Frame).lev.select.def
       ComboBox::AddList $Data(Frame).lev.select.def [array names MetData::$mode]
       pack $Data(Frame).lev.select.def -side right -fill both -expand true
 
       if { $Par>-1 } {
-         set Param(IntervalDef) [lindex [array names MetData::$mode] [expr int($Par)]]
+         set Param(IntervalDef) [lindex [ComboBox::List $Data(Frame).lev.select.def] [expr int($Par)]]
       }
   } else {
       set Param(IntervalDef) ""
@@ -536,14 +534,29 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } } {
 #
 #----------------------------------------------------------------------------
 
-proc FSTD::IntervalSet { } {
+proc FSTD::IntervalSet { { Select 0 } } {
    variable Param
    variable Data
 
    if { $Param(IntervalDef)!="" } {
       upvar #0  MetData::[string range $Param(IntervalMode) 0 3] inter
-      set Param(Intervals) [lsort -increasing -real [lindex [lindex $inter($Param(IntervalDef)) 1] $Param(IntervalIndex)]]
+
+      switch  $Param(IntervalMode) {
+         "AEGL(10min)" { set index 0 }
+         "AEGL(30min)" { set index 1 }
+         "AEGL(60min)" { set index 2 }
+         "AEGL(4hr)"   { set index 3 }
+         "AEGL(8hr)"   { set index 4 }
+         "ERPG"        { set index 0 }
+      }
+
+      set Param(Intervals)     [lindex [lindex $inter($Param(IntervalDef)) 1] $index]
       set Param(IntervalParam) [ComboBox::Index $Data(Frame).lev.select.def exact $Param(IntervalDef)]
+
+      if { $Select } {
+         set Param(Unit)          [lindex $inter($Param(IntervalDef)) 0]
+         set Param(Desc)          $Param(IntervalDef)
+      }
    }
    FSTD::ParamSet
 }
