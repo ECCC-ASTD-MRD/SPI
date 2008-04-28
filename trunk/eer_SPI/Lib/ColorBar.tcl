@@ -215,7 +215,7 @@ proc ColorBar::Destroy { Frame VP No } {
       if { $idx!=-1 } {
          Shape::UnBindScale $Frame.page.canvas $id
          $Frame.page.canvas delete $id BF$id BO$id
-         destroy $Frame.bf$id $Frame.bf$id.menu
+         destroy $Frame.bo$id $Frame.bo$id.menu
          unset Data(Active$Frame)
 
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
@@ -247,7 +247,7 @@ proc ColorBar::DestroyAll { Frame { VP "" } } {
          set cb [lindex $Data(List$Frame) $idx]
          Shape::UnBindScale $Frame.page.canvas $cb
          $Frame.page.canvas delete $cb
-         destroy $Frame.bf$cb $Frame.bf$cb.menu
+         destroy $Frame.bo$cb $Frame.bo$cb.menu
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
       }
    }
@@ -438,7 +438,7 @@ proc ColorBar::Update { Frame { State -1 } } {
          if { [lsearch -exact $lst $id]==-1 } {
             Shape::UnBindScale $Frame.page.canvas $id
             $Frame.page.canvas delete $id
-            destroy $Frame.bf$id $Frame.bf$id.menu
+            destroy $Frame.bo$id $Frame.bo$id.menu
          }
       }
       set Data(List$Frame) $lst
