@@ -42,6 +42,11 @@ proc IdMetData { Show } {
 namespace eval MetData { } {
    variable Data
 
+   #----- Lire les diverses definitions
+
+   source $GDefs(Dir)/Data/AEGL.tcl
+   source $GDefs(Dir)/Data/ERPG.tcl
+
    set Data(ProgMax)  240   ;#Max prog usable
    set Data(IdAnal)   ""    ;#Analysis file name
    set Data(IdProg)   ""    ;#Prognosis file name
