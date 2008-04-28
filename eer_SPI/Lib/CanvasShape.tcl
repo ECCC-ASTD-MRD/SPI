@@ -54,6 +54,7 @@
 #    Shape::BindMove       { Canvas Tags args }
 #    Shape::BindScale      { Canvas Tag X1 Y1 Command }
 #    Shape::UnBindScale    { Canvas Tag }
+#    Shape::UnBindFull     { Canvas Tag }
 #    Shape::Full           { Canvas Tag args }
 #    Shape::Move           { Canvas Tags X Y { Direct False } }
 #    Shape::Scale          { Canvas Tag X Y args }
@@ -1641,6 +1642,29 @@ proc Shape::UnBindScale { Canvas Tag } {
 
    $Canvas delete BS$Tag
    destroy $Canvas.bs$Tag
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::UnBindFull>
+# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer les bindings de redimentionnement d'items
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Tags>    : Tags des objets
+#
+# Retour:
+#
+# Remarques :
+#    - On detruit les "bindings", l'item de canvas et le widget
+#
+#----------------------------------------------------------------------------
+
+proc Shape::UnBindFull { Canvas Tag } {
+
+   $Canvas delete BF$Tag
+   destroy $Canvas.bf$Tag
 }
 
 #----------------------------------------------------------------------------
