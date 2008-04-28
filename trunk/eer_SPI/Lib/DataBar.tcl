@@ -313,6 +313,7 @@ proc DataBar::Destroy { Frame VP } {
 
       if { $idx!=-1 } {
          Shape::UnBindScale $Frame.page.canvas DB$VP
+         Shape::UnBindFull  $Frame.page.canvas DB$VP
          $Frame.page.canvas delete DB$VP
          unset Data(Active$Frame)
 
@@ -344,6 +345,7 @@ proc DataBar::DestroyAll { Frame { VP "" } } {
       foreach idx [lsort -decreasing -integer [lsearch -all $Data(List$Frame) DB$VP*]] {
          set db [lindex $Data(List$Frame) $idx]
          Shape::UnBindScale $Frame.page.canvas $db
+         Shape::UnBindFull  $Frame.page.canvas $db
          $Frame.page.canvas delete $db
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
       }
@@ -506,6 +508,7 @@ proc DataBar::Update { Frame { State -1 } } {
       foreach id $Data(List$Frame) {
          if { [lsearch -exact $lst $id]==-1 } {
             Shape::UnBindScale $Frame.page.canvas $id
+            Shape::UnBindFull  $Frame.page.canvas $id
             $Frame.page.canvas delete $id
          }
       }
