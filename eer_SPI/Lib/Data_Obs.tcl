@@ -341,9 +341,9 @@ proc Obs::ParamFrame { Frame Apply } {
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
 
    labelframe $Data(Frame).lev -text [lindex $Lbl(Intervals) $GDefs(Lang)]
-      frame $Data(Frame).lev.select -relief sunken -bd 1
+      frame $Data(Frame).lev.select
          menubutton $Data(Frame).lev.select.mode -textvariable Obs::Param(IntervalMode) -bd 1 \
-            -menu $Data(Frame).lev.select.mode.list -relief raised
+            -menu $Data(Frame).lev.select.mode.list -relief raised -relief ridge -width 11
          pack $Data(Frame).lev.select.mode -side left
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 

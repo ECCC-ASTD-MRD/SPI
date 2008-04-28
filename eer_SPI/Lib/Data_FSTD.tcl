@@ -14,29 +14,31 @@
 #
 # Fonctions:
 #
-#   FSTD::Data        { Field }
-#   VectorBox::Create { Parent Apply args }
-#   FSTD::ParamFrame  { Frame Apply }
-#   FSTD::FieldFormat { Field Val }
-#   FSTD::Follower    { Page Canvas VP Lat Lon X Y }
-#   FSTD::ParamGet    { { Spec "" } }
-#   FSTD::ParamSet    { { Spec "" } }
-#   FSTD::ParamPut    { }
-#   FSTD::ParamInit   { Field { Spec "" } }
-#   FSTD::Register    { FieldId { Update True } }
-#   FSTD::UnRegister  { FieldId { Update True } }
-#   FSTD::Params      { Id Map args }
-#   FSTD::ParamUpdate { { Fields { } } }
-#   FSTD::VarMode     { Mode }
+#   FSTD::Data            { Field }
+#   VectorBox::Create     { Parent Apply args }
+#   FSTD::ParamFrame      { Frame Apply }
+#   FSTD::FieldFormat     { Field Val }
+#   FSTD::Follower        { Page Canvas VP Lat Lon X Y }
+#   FSTD::IntervalSet     { }
+#   FSTD::IntervalSetMode { Mode { Par 0 } }
+#   FSTD::ParamGet        { { Spec "" } }
+#   FSTD::ParamSet        { { Spec "" } }
+#   FSTD::ParamPut        { }
+#   FSTD::ParamInit       { Field { Spec "" } }
+#   FSTD::Register        { FieldId { Update True } }
+#   FSTD::UnRegister      { FieldId { Update True } }
+#   FSTD::Params          { Id Map args }
+#   FSTD::ParamUpdate     { { Fields { } } }
+#   FSTD::VarMode         { Mode }
 #
 #===============================================================================
 
-package provide FSTD 3.4
+package provide FSTD 3.5
 
 proc IdFSTD { show } {
 
    if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Data package FSTD Version 3.4"
+      puts "(INFO) Loading Standard CMC/CMOE Data package FSTD Version 3.5"
    }
 
    package require Bubble   ; IdBubble    False
@@ -125,6 +127,8 @@ namespace eval FSTD {
    set Param(Intervals)     {}             ;#Niveaux de contours
    set Param(IntervalMode)  "NONE"         ;#Mode de selection des niveaux
    set Param(IntervalParam) 0              ;#Nombre de niveaux a definir
+   set Param(IntervalIndex) 0              ;#Index de selection des intervalles dans les listes ERPG/AEGL
+   set Param(IntervalDef)   ""             ;#Nom du produit dans les listes  ERPG/AEGL
 
    set Param(Axis)          X
    set Param(X0)            1
@@ -400,23 +404,23 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
 
    labelframe $Data(Frame).lev -text [lindex $Lbl(Intervals) $GDefs(Lang)]
-      frame $Data(Frame).lev.select -relief sunken -bd 1
+      frame $Data(Frame).lev.select
          menubutton $Data(Frame).lev.select.mode -textvariable FSTD::Param(IntervalMode) -bd 1 \
-            -menu $Data(Frame).lev.select.mode.list -relief raised
+            -menu $Data(Frame).lev.select.mode.list -relief raised -width 11 -relief ridge
+         ComboBox::Create $Data(Frame).lev.select.def FSTD::Param(IntervalDef) edit unsorted nodouble -1 \
+            "" 1 6 "FSTD::IntervalSet"
          pack $Data(Frame).lev.select.mode -side left
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 
       frame $Data(Frame).lev.desc
          ComboBox::Create $Data(Frame).lev.desc.edit FSTD::Param(Intervals) edit sorted nodouble -1 \
-            "" 17 6 "set FSTD::Param(IntervalMode) NONE; FSTD::ParamSet"
+            "" 17 6 "FSTD::IntervalSetMode NONE"
          pack $Data(Frame).lev.desc.edit -side left -fill both -expand true
       pack $Data(Frame).lev.desc -side top -fill x -padx 2 -pady 2 -expand true
 
    pack $Data(Frame).var -side top -fill x -anchor n -padx 5 -pady 5
    pack $Data(Frame).def -side top -fill x -anchor n
    pack $Data(Frame).lev -side top -fill x -anchor n -padx 5
-
-   bind $Data(Frame).lev.desc.edit.select <KeyRelease> {+ set FSTD::Param(IntervalMode) NONE ; FSTD::ParamSet }
 
    #----- Creation du menu de mode de niveaux
 
@@ -427,21 +431,32 @@ proc FSTD::ParamFrame { Frame Apply } {
       $Data(Frame).lev.select.mode.list add cascade -label [lindex $Param(IntervalModes) 2] \
          -menu $Data(Frame).lev.select.mode.list.nb
       $Data(Frame).lev.select.mode.list add command -label [lindex $Param(IntervalModes) 3] \
-         -command "set FSTD::Param(Intervals) \"\" ; set FSTD::Param(IntervalMode) [lindex $Param(IntervalModes) 3] ; FSTD::ParamSet"
+         -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 3]"
       $Data(Frame).lev.select.mode.list add command -label [lindex $Param(IntervalModes) 4] \
-         -command "set FSTD::Param(Intervals) \"\" ; set FSTD::Param(IntervalMode) [lindex $Param(IntervalModes) 4] ; FSTD::ParamSet"
+         -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 4]"
+      $Data(Frame).lev.select.mode.list add separator
+
+      $Data(Frame).lev.select.mode.list add command -label AEGL-1 \
+         -command "FSTD::IntervalSetMode AEGL-1 -1"
+      $Data(Frame).lev.select.mode.list add command -label AEGL-2 \
+         -command "FSTD::IntervalSetMode AEGL-2 -1"
+      $Data(Frame).lev.select.mode.list add command -label AEGL-3 \
+         -command "FSTD::IntervalSetMode AEGL-3 -1"
+      $Data(Frame).lev.select.mode.list add command -label ERPG \
+         -command "FSTD::IntervalSetMode ERPG -1"
+
       $Data(Frame).lev.select.mode.list add separator
       $Data(Frame).lev.select.mode.list add command -label [lindex $Param(IntervalModes) 0] \
-         -command "set FSTD::Param(Intervals) \"\" ; set FSTD::Param(IntervalMode) [lindex $Param(IntervalModes) 0] ; FSTD::ParamSet"
+         -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 0]"
 
    menu $Data(Frame).lev.select.mode.list.inter
    menu $Data(Frame).lev.select.mode.list.nb
       for { set i 1 } { $i < 25 } { incr i } {
          $Data(Frame).lev.select.mode.list.nb add command -label "$i" \
-            -command "set FSTD::Param(Intervals) \"\"; set FSTD::Param(IntervalMode) [lindex $Param(IntervalModes) 2]; set FSTD::Param(IntervalParam) $i; FSTD::ParamSet"
+            -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 2] $i"
       }
 
-   bind $Data(Frame).lev.desc.edit.select <KeyRelease> {+ set FSTD::Param(IntervalMode) NONE ; FSTD::ParamSet }
+   bind $Data(Frame).lev.desc.edit.select <KeyRelease> {+ FSTD::IntervalSetMode NONE }
 
    #------ Creation des bulles d'aide
 
@@ -456,6 +471,81 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).lev.select.mode      [lindex $Bubble(Mode) $GDefs(Lang)]
    Bubble::Create $Data(Frame).lev.select.number    [lindex $Bubble(Nb) $GDefs(Lang)]
    Bubble::Create $Data(Frame).lev.edit             [lindex $Bubble(Intervals) $GDefs(Lang)]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FSTD::IntervalSetMode>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Instaurer des valeurs pour les intervalles selon les divers mode
+#
+# Parametres :
+#   <Mode>   : Mode de definition des intervalles
+#   <Par>    : Parametres du mode
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FSTD::IntervalSetMode { Mode { Par 0 } } {
+   variable Param
+   variable Data
+
+   if { $Mode!="NONE" } {
+      set Param(Intervals)      {}
+   }
+   set Param(IntervalMode)   $Mode
+   set Param(IntervalParam)  $Par
+
+   set mode [string range $Mode 0 3]
+
+   if { $mode=="AEGL" || $mode=="ERPG" } {
+      if { $mode=="AEGL" } {
+         set Param(IntervalIndex) [expr [string index $Mode end]-1]
+      } else {
+         set Param(IntervalIndex) 0
+      }
+      ComboBox::DelAll $Data(Frame).lev.select.def
+      ComboBox::AddList $Data(Frame).lev.select.def [array names MetData::$mode]
+      pack $Data(Frame).lev.select.def -side right -fill both -expand true
+
+      if { $Par>-1 } {
+         set Param(IntervalDef) [lindex [array names MetData::$mode] [expr int($Par)]]
+      }
+  } else {
+      set Param(IntervalDef) ""
+      pack forget $Data(Frame).lev.select.def
+   }
+
+   FSTD::IntervalSet
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FSTD::IntervalSet>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Instaurer des valeurs specifiques pour les intervalles (AEGL,ERPG)
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FSTD::IntervalSet { } {
+   variable Param
+   variable Data
+
+   if { $Param(IntervalDef)!="" } {
+      upvar #0  MetData::[string range $Param(IntervalMode) 0 3] inter
+      set Param(Intervals) [lsort -increasing -real [lindex [lindex $inter($Param(IntervalDef)) 1] $Param(IntervalIndex)]]
+      set Param(IntervalParam) [ComboBox::Index $Data(Frame).lev.select.def exact $Param(IntervalDef)]
+   }
+   FSTD::ParamSet
 }
 
 #----------------------------------------------------------------------------
@@ -634,6 +724,8 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) " $Param(Max)\]"
       }
    }
+
+   FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam)
 }
 
 #----------------------------------------------------------------------------
@@ -680,18 +772,13 @@ proc FSTD::ParamSet { { Spec "" } } {
       set inter {}
    }
 
-   if { $Param(IntervalMode)!="NONE" } {
-      dataspec configure $Spec -min $min -max $max -intervals {} -intervalmode $Param(IntervalMode) $Param(IntervalParam)
-   } else {
-      dataspec configure $Spec -min $min -max $max -intervals $inter -intervalmode $Param(IntervalMode) $Param(IntervalParam)
-   }
-
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -mapall $Param(MapAll) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -step $Param(Step) -geovector $Param(Geo) \
-      -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis)
+      -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) \
+      -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) -intervals $inter
 
    catch { $Data(ApplyButton) configure -state normal }
 
@@ -750,7 +837,7 @@ proc FSTD::ParamPut { } {
 
          foreach inter $MetStat::Rec(Inter$var) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
-               -command "set FSTD::Param(IntervalParam) $inter; set FSTD::Param(Intervals) \"\" ; set FSTD::Param(IntervalMode) INTERVAL ; FSTD::ParamSet"
+               -command "FSTD::IntervalSetMode INTERVAL $inter"
          }
       }
    }
