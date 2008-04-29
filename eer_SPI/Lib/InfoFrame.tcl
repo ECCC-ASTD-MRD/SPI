@@ -30,7 +30,7 @@ proc IdInfoFrame { Show } {
 }
 
 namespace eval InfoFrame {
-   global GEN
+   global GDefs
    variable Resources
    variable Data
    variable Bubble
