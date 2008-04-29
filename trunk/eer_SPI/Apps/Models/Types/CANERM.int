@@ -552,9 +552,9 @@ proc CANERM::SimCont { Parent } {
       pack $t.s.q.host $t.s.q.queue -side top -fill x
 
       button $t.s.launch -text [lindex $Lbl(Launch) $GDefs(Lang)] -bd 1 \
-         -command "catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ; CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 0 1"
+         -command "CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 0 1"
       button $t.s.gen -text [lindex $Lbl(Gen) $GDefs(Lang)] -bd 1 \
-         -command "catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ; CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 0 0"
+         -command "CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 0 0"
 
       pack $t.s.q -side top -fill x
       pack $t.s.launch -fill both -expand true
@@ -590,7 +590,6 @@ proc CANERM::SimCont { Parent } {
 
 proc CANERM::New { Parent } {
    global   GDefs
-   global   SPECIES
    variable Sim
    variable Msg
    variable Lbl
@@ -666,7 +665,7 @@ proc CANERM::New { Parent } {
          frame $t.iso.type.lbl
             label $t.iso.type.lbl.nb -text "Nb" -relief raised -bd 1 -width 3
             button $t.iso.type.lbl.add -text [lindex $Lbl(Add) $GDefs(Lang)] \
-               -relief raised -bd 1 -width 8 -command "CANERM::SpeciesStart $t.iso"
+               -relief raised -bd 1 -width 8 -command "IsoBox::Create $t.iso \"CANERM::SpeciesFormat $t.iso\""
             button $t.iso.type.lbl.del -text [lindex $Lbl(Suppress) $GDefs(Lang)] \
                -relief raised -bd 1 -width 8 -command "CANERM::SpeciesDelete $t.iso"
             label $t.iso.type.lbl.intensity -text [lindex $Lbl(Intensity) $GDefs(Lang)] \
@@ -776,9 +775,9 @@ proc CANERM::New { Parent } {
       pack $t.s.q.host $t.s.q.queue -side top -fill x
 
       button $t.s.launch -text [lindex $Lbl(Launch) $GDefs(Lang)] -bd 1 \
-         -command "catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ; CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 1 1"
+         -command "CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 1 1"
       button $t.s.gen -text [lindex $Lbl(Gen) $GDefs(Lang)] -bd 1 \
-         -command "catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ; CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 1 0"
+         -command "CANERM::SimLaunchCheck \[$t.d.l.list curselection\] 1 0"
 
       pack $t.s.q -side top -fill x
       pack $t.s.launch -fill both -expand true

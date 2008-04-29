@@ -197,7 +197,8 @@ proc MLCD::New { Parent } {
    #----- Radioactive Isotope Name.
    frame $frame.part.iso
       label $frame.part.iso.lbl -relief flat -anchor w -height 1 -text "[lindex $Lbl(EmIsoName) $GDefs(Lang)]"
-      button $frame.part.iso.but -relief raised -bd 1 -textvariable MLCD::Sim(EmIsoName) -width 20 -pady 1 -command "MLCD::SpeciesStart"
+      button $frame.part.iso.but -relief raised -bd 1 -textvariable MLCD::Sim(EmIsoName) -width 20 -pady 1 \
+         -command "IsoBox::Create $frame.part.iso MLCD::SpeciesFormat"
       pack $frame.part.iso.lbl $frame.part.iso.but -side left -expand true
    pack $frame.part.iso -side top -anchor w -padx 2 -fill x
    Bubble::Create $frame.part.iso "[lindex $Bubble(EmIsoName) $GDefs(Lang)]"

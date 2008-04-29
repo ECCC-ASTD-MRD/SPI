@@ -2389,92 +2389,42 @@ proc MLCD::SimSuppress { Confirm Pool } {
 # But      : Format the returned ligne by the isotope selector module.
 #
 # Parametres :
+#   <Line>   : Ligne de definiton d'un isotope
 #
 # Retour :
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
-proc MLCD::SpeciesFormat { } {
-   global SPECIES
+proc MLCD::SpeciesFormat { Line } {
    global GDefs
    variable Sim
    variable Warning
    variable Lbl
 
-   #----- Verification de la validite du pipeline
+   if { [llength $Line]==7 } {
 
-   if { [eof $SPECIES(Job)] == 1 } {
-      set SPECIES(Open) 0
-      close $SPECIES(Job)
-   } else {
+      set name        [lindex $Line 0]                 ; #----- Isotope Name.
+      set halflife    [format "%.2E" [lindex $Line 2]] ; #----- Half-Life [s].
+      set drydepvel   [lindex $Line 5]                 ; #----- Dry Deposition Velocity [m/s].
+      #----- Here, we ignore the wet scavenging rate [s^-1] since
+      #----- MLCD takes into account the wet scavenging coefficient (1.00E+05).
 
-      #----- Extraction de la ligne
+      if { $halflife > 0 } {
+         #----- Verify that the isotope's radioactive half-life is positive.
+         set Sim(EmIsoName)  $name
+         set Sim(EmHalfLife) $halflife
+         set Sim(EmDepVel)   $drydepvel
 
-      gets $SPECIES(Job) line
+      } else {
+         #----- Display warning message if radioactive half-life is negative or zero.
+         Dialog::CreateDefault .mlcdnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $name." warning 0 "OK"
 
-      #----- Verification de nombre de parametres inclus dans la ligne
-
-      if { [llength $line] == 8 } {
-
-         set name        [lindex $line 1]                 ; #----- Isotope Name.
-         set halflife    [format "%.2E" [lindex $line 3]] ; #----- Half-Life [s].
-         set drydepvel   [lindex $line 6]                 ; #----- Dry Deposition Velocity [m/s].
-         #----- Here, we ignore the wet scavenging rate [s^-1] since
-         #----- MLCD takes into account the wet scavenging coefficient (1.00E+05).
-
-         if { $halflife > 0 } {
-            #----- Verify that the isotope's radioactive half-life is positive.
-            set Sim(EmIsoName)  $name
-            set Sim(EmHalfLife) $halflife
-            set Sim(EmDepVel)   $drydepvel
-
-         } else {
-            #----- Display warning message if radioactive half-life is negative or zero.
-            Dialog::CreateDefault .mlcdnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $name." warning 0 "OK"
-
-            puts stderr ""
-            puts stderr "WARNING: Isotope $name has a null or negative radioactive half-life value."
-            puts stderr "         This isotope will be ignored."
-            puts stderr "         Half-life: $halflife s."
-         }
-
+         puts stderr ""
+         puts stderr "WARNING: Isotope $name has a null or negative radioactive half-life value."
+         puts stderr "         This isotope will be ignored."
+         puts stderr "         Half-life: $halflife s."
       }
-
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <MLCD::SpeciesStart>
-# Creation : 16 March 2004 - A. Malo - CMC/CMOE
-#
-# But      : Launch the isotope selector.
-#
-# Parametres :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-proc MLCD::SpeciesStart { } {
-   global SPECIES
-   global GDefs
-   variable Sim
-
-  if { $SPECIES(Open) == 0 } {
-
-     set SPECIES(Open) 1
-
-     set command "$GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl $GDefs(Lang) eta"
-     set SPECIES(Job) [open |$command r+]
-     set SPECIES(Pid) [pid $SPECIES(Job)]
-
-     fconfigure $SPECIES(Job) -blocking false
-     fileevent $SPECIES(Job) readable "MLCD::SpeciesFormat"
-  } else {
-     puts $SPECIES(Job) "show"
-     flush $SPECIES(Job)
    }
 }
 

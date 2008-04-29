@@ -15,7 +15,7 @@
 #
 #===============================================================================
 
-set SPECIES(Open) 0
+package require IsoBox
 
 namespace eval Watch {
    global   GDefs
@@ -373,31 +373,16 @@ proc Watch::Extract { IVar Pool } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::IsoDispatch { } {
-   global   SPECIES
+proc Watch::IsoDispatch { Ligne } {
    variable Data
 
-   if { [eof $SPECIES(Job)] == 1 } {
-      close $SPECIES(Job)
-      set SPECIES(Open) 0
-   } else {
-      gets $SPECIES(Job) ligne_source
+  if { [ComboBox::Index $Data(Tab2).species.list.box exact [lindex $Ligne 0]] == -1 } {
 
-      set command [string range $ligne_source 0 3]
-      set data    [string range $ligne_source 5 [string length $ligne_source]]
+      set Data(CANERMSpecie)         [lindex $Ligne 0]
+      set Data(CANERMIntensity)      [lindex $Ligne 1]
+      lappend Data(CANERMSpecieList) [lrange $Ligne 0 4]
 
-      if { $command == "data" } {
-         # ----- Verifier que l'espece n'est pas deja dans la selection
-
-         if { [ComboBox::Index $Data(Tab2).species.list.box exact [lindex $data 0]] == -1 } {
-
-            set Data(CANERMSpecie)         [lindex $data 0]
-            set Data(CANERMIntensity)      [lindex $data 1]
-            lappend Data(CANERMSpecieList) [lrange $data 0 4]
-
-            ComboBox::Add $Data(Tab2).species.list.box $Data(CANERMSpecie)
-         }
-      }
+      ComboBox::Add $Data(Tab2).species.list.box $Data(CANERMSpecie)
    }
 }
 
@@ -496,36 +481,6 @@ proc Watch::IsoSelect { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Watch::IsoStart>
-# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Lance le selecteur d'isotopes.
-#
-# Parametres      :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Watch::IsoStart { } {
-   global GDefs SPECIES
-
-   if { $SPECIES(Open) == 0 } {
-
-      set SPECIES(Open) 1
-
-      set command "$GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl $GDefs(Lang) eta"
-      set SPECIES(Job) [open |$command r+]
-      set SPECIES(Pid) [pid $SPECIES(Job)]
-
-      fconfigure $SPECIES(Job) -blocking false
-      fileevent $SPECIES(Job) readable Watch::IsoDispatch
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <Watch::New>
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -595,7 +550,7 @@ proc Watch::New { } {
 #-------------------------------------------------------------------------------
 
 proc Watch::Params { Frame } {
-   global   GDefs SPECIES
+   global   GDefs
    variable Lbl
    variable Bubble
    variable Data
@@ -645,7 +600,7 @@ proc Watch::Params { Frame } {
                label $Data(Tab2).species.list.lbl -text [lindex $Lbl(Species) $GDefs(Lang)] -width 10 -anchor w
 
                button $Data(Tab2).species.list.plus -bd 1 -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico \
-                  -command "Watch::IsoStart" -width 12
+                  -command "IsoBox::Create $Data(Tab2).species Watch::IsoDispatch" -width 12
                button $Data(Tab2).species.list.moins -bd 1 -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico  \
                   -command "Watch::IsoDelete" -width 12
                ComboBox::Create $Data(Tab2).species.list.box Watch::Data(CANERMSpecie) noedit unsorted nodouble \
@@ -691,9 +646,9 @@ proc Watch::Params { Frame } {
 
       frame .watchparams.command -relief ridge -bd 2
          button .watchparams.command.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] \
-            -command "catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ; Watch::Write" -bd 1
+            -command "Watch::Write" -bd 1
          button .watchparams.command.close -text [lindex $Lbl(Close) $GDefs(Lang)]  -bd 1 \
-            -command "catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ; destroy .watchparams"
+            -command "destroy .watchparams"
          pack .watchparams.command.apply .watchparams.command.close -side left -fill x -expand true
       pack .watchparams.command -side top -fill x -padx 5 -pady 5
 
@@ -778,7 +733,7 @@ proc Watch::ParamsInit { } {
 
          if { $Data(CANERM)==0 } {
             set Data(CANERMElev)       10000.0
-            set Data(CANERMSpecieList) [list [lrange [exec $GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl VOLCAN] 1 5] ]
+            set Data(CANERMSpecieList) [list [lrange [IsoBox::Get VOLCAN] 0 4] ]
             set Data(CANERMIntensity)  1.0e+18
             set Data(CANERMSpecie)     VOLCAN
          }
@@ -796,7 +751,7 @@ proc Watch::ParamsInit { } {
          }
          if { $Data(CANERM)==0 } {
             set Data(CANERMElev)       0.0
-            set Data(CANERMSpecieList) [list [lrange [exec $GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl 137-Cs] 1 5] ]
+            set Data(CANERMSpecieList) [list [lrange [IsoBox::Get 137-Cs] 0 4] ]
             set Data(CANERMIntensity)  1.0e+00
             set Data(CANERMSpecie)     137-Cs
            }

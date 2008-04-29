@@ -20,6 +20,8 @@ source $GDefs(Dir)/Apps/Models/Types/CANERM.txt
 source $GDefs(Dir)/Apps/Models/Types/CANERM.ctes
 source $GDefs(Dir)/Apps/Models/Types/CANERM.int
 
+package require IsoBox
+
 #-------------------------------------------------------------------------------
 # Nom      : <CANERM::CheckIntensity>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
@@ -203,7 +205,6 @@ proc CANERM::DrawInit { Frame VP } { }
 #----------------------------------------------------------------------------
 
 proc CANERM::ModeLeave { } {
-   global SPECIES
    variable Data
 
    if { $Page::Data(ToolMode) == "CANERM" } {
@@ -211,13 +212,6 @@ proc CANERM::ModeLeave { } {
    }
 
    Viewport::UnAssign $Data(Frame) $Data(VP) GRID
-
-   #----- Forcer la fermeture du selecteur d'isotopes
-
-   catch {
-      puts $SPECIES(Job) quit
-      flush $SPECIES(Job)
-   }
 }
 
 #----------------------------------------------------------------------------
@@ -509,14 +503,14 @@ proc CANERM::SimInitNew { } {
    #-----Cas nucleaire ou volcanique
 
    if { $Exp::Data(Type) == 0 } {
-      set iso [exec $GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl "VOLCAN" ]
+      set iso [IsoBox::Get VOLCAN]
       set Sim(FnVertDesc) CONSTANT
       set Sim(FnVert)     0.0
       set Sim(ISauve)     1
       set Sim(EmHeight)   10000.0
       set Sim(EmDuration) 1
    } else {
-      set iso [exec $GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl "137-Cs" ]
+      set iso [IsoBox::Get  137-Cs]
       set Sim(FnVertDesc) CONSTANT
       set Sim(FnVert)     0.0
       set Sim(ISauve)     3
@@ -558,12 +552,12 @@ proc CANERM::SimInitNew { } {
    set Sim(NI)           229
    set Sim(NJ)           229
    set Sim(IsoNb)        1
-   set Sim(IsoName)      [lindex $iso 1]
-   set Sim(IsoRelease)   [lindex $iso 2]
-   set Sim(IsoHalf)      [lindex $iso 3]
-   set Sim(IsoDry)       [lindex $iso 4]
-   set Sim(IsoWet)       [lindex $iso 5]
-   set Sim(IsoUnit)      [lindex $iso 7]
+   set Sim(IsoName)      [lindex $iso 0]
+   set Sim(IsoRelease)   [lindex $iso 1]
+   set Sim(IsoHalf)      [lindex $iso 2]
+   set Sim(IsoDry)       [lindex $iso 3]
+   set Sim(IsoWet)       [lindex $iso 4]
+   set Sim(IsoUnit)      [lindex $iso 6]
 
    set Sim(Src)          [lindex $Exp::Data(Pos) 0]
    set Sim(Pos)          $Exp::Data(Pos)
@@ -1188,6 +1182,7 @@ proc CANERM::SpeciesDelete { Frame } {
 #
 # Parametres :
 #   <Frame>  : Identificateur du frame
+#   <Line>   : Ligne de definiton d'un isotope
 #
 # Retour:
 #
@@ -1195,76 +1190,29 @@ proc CANERM::SpeciesDelete { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::SpeciesFormat { Frame } {
-   global   SPECIES
+proc CANERM::SpeciesFormat { Frame Line } {
    variable Sim
 
-   #----- Verification de la validite du pipeline
+   #----- Verification de nombre de parametres inclus dans la ligne
 
-   if { [eof $SPECIES(Job)] == 1 } {
-     set SPECIES(Open) 0
-     close $SPECIES(Job)
-   } else {
+   if { [llength $Line] == 7 } {
 
-      #----- Extraction de la ligne
+      if { [ComboBox::Add $Frame.type.entry.polluant [lindex $Line 0]] != -1 } {
+         set Sim(Intensity) [lindex $Line 1]
+         set Sim(Iso)       [lindex $Line 0]
 
-      gets $SPECIES(Job) line
+         lappend Sim(IsoName)    $Sim(Iso)
+         lappend Sim(IsoRelease) $Sim(Intensity)
+         lappend Sim(IsoHalf)    [lindex $Line 2]
+         lappend Sim(IsoDry)     [lindex $Line 3]
+         lappend Sim(IsoWet)     [lindex $Line 4]
+         lappend Sim(IsoUnit)    [lindex $Line 6]
+         $Frame.type.entry.intensity config -state normal
 
-      #----- Verification de nombre de parametres inclus dans la ligne
-
-      if { [llength $line] == 8 } {
-
-         if { [ComboBox::Add $Frame.type.entry.polluant [lindex $line 1]] != -1 } {
-            set Sim(Intensity) [lindex $line 2]
-            set Sim(Iso)       [lindex $line 1]
-
-            lappend Sim(IsoName)    $Sim(Iso)
-            lappend Sim(IsoRelease) $Sim(Intensity)
-            lappend Sim(IsoHalf)    [lindex $line 3]
-            lappend Sim(IsoDry)     [lindex $line 4]
-            lappend Sim(IsoWet)     [lindex $line 5]
-            lappend Sim(IsoUnit)    [lindex $line 7]
-            $Frame.type.entry.intensity config -state normal
-
-            if { [incr Sim(IsoNb)] == $Sim(MaxIso) } {
-               $Frame.type.entry.nb config -bg red
-            }
+         if { [incr Sim(IsoNb)] == $Sim(MaxIso) } {
+            $Frame.type.entry.nb config -bg red
          }
       }
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <SpeciesStart>
-# Creation : Janvier 1998 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lance le selecteur d'especes.
-#
-# Parametres :
-#   <Frame>  : Identificateur du frame
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc CANERM::SpeciesStart { Frame } {
-   global GDefs SPECIES
-
-   if { $SPECIES(Open) == 0 } {
-
-      set SPECIES(Open) 1
-
-      set command "$GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl $GDefs(Lang) eta"
-      set SPECIES(Job) [open |$command r+]
-      set SPECIES(Pid) [pid $SPECIES(Job)]
-
-      fconfigure $SPECIES(Job) -blocking false
-      fileevent $SPECIES(Job) readable "CANERM::SpeciesFormat $Frame"
-   } else {
-      puts $SPECIES(Job) "show"
-      flush $SPECIES(Job)
    }
 }
 
