@@ -347,7 +347,7 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
    # bind  $W.select  <B1-ButtonRelease> "if { !\[winfo ismapped .$top\] } { $W.box invoke }"
 
    #----- Si on tappe dans l'entree, rechercher la chaine dans la liste
-   bind $W.select <Any-KeyRelease> "ComboBox::Select $W"
+   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { ComboBox::Open $W; ComboBox::Select $W }"
 
    #----- Apres Enter dans l'entree, prendre ce qui est selectionne dans la liste
    bind $W.select <Key-Up>   "ComboBox::Open $W; ComboBox::SelectNext $W -1"
@@ -737,7 +737,7 @@ proc ComboBox::Select { W } {
 
    #----- Extraire la valeur affichee
 
-   set index [ComboBox::Index $W glob [$W.select get]*]
+   set index [ComboBox::Index $W glob *[$W.select get]*]
 
    #----- Selectionner la valeur
 
