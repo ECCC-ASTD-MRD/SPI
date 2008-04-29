@@ -559,7 +559,8 @@ proc MLDP1::NewScenarioAccident { Parent } {
 
       frame .newscenario.emint.fr.box2.header.rates
          label .newscenario.emint.fr.box2.header.rates.lbl -relief raised -height 3 -width 40 -bd 1 -text "[lindex $Lbl(ReleaseRateAccident) $GDefs(Lang)]"
-         button .newscenario.emint.fr.box2.header.rates.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -relief raised -bd 1 -width 10 -state active -command "MLDP1::SpeciesStart"
+         button .newscenario.emint.fr.box2.header.rates.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -relief raised -bd 1 -width 10 -state active \
+            -command "IsoBox::Create .newscenario MLDP1::SpeciesFormat"
          pack .newscenario.emint.fr.box2.header.rates.lbl .newscenario.emint.fr.box2.header.rates.add -side top -fill x -expand true
          Bubble::Create .newscenario.emint.fr.box2.header.rates.add "[lindex $Bubble(AddIso) $GDefs(Lang)]"
          Bubble::Create .newscenario.emint.fr.box2.header.rates.lbl "[lindex $Bubble(ReleaseRate) $GDefs(Lang)]"

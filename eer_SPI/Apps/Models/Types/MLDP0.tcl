@@ -22,6 +22,8 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP0.txt
 source $GDefs(Dir)/Apps/Models/Types/MLDP0.ctes
 source $GDefs(Dir)/Apps/Models/Types/MLDP0.int
 
+package require IsoBox
+
 #----------------------------------------------------------------------------
 # Nom        : <MLDP0::CheckAvailableDiskSpace>
 # Creation   : 16 January 2008 - A. Malo - CMC/CMOE
@@ -2047,7 +2049,6 @@ proc MLDP0::LaunchJob { } {
 #----------------------------------------------------------------------------
 
 proc MLDP0::ModeLeave { } {
-   global SPECIES
    variable Data
 
    if { $Page::Data(ToolMode)=="MLDP0" } {
@@ -2055,13 +2056,6 @@ proc MLDP0::ModeLeave { } {
    }
 
    Viewport::UnAssign $Data(Frame) $Data(VP) GRID
-
-   #----- Forcer la fermeture du selecteur d'isotopes
-
-   catch {
-      puts $SPECIES(Job) quit
-      flush $SPECIES(Job)
-   }
 }
 
 #----------------------------------------------------------------------------
@@ -2775,10 +2769,7 @@ proc MLDP0::SimInitNew { } {
 
 proc MLDP0::SimLaunchCheck { } {
    global   GDefs
-   global   SPECIES
    variable Sim
-
-   catch { puts \$SPECIES(Job) quit ; flush \$SPECIES(Job) } ;
 
    #----- Validate launching queue type.
    if { ![MLDP0::ValidateQueue] } {
@@ -3076,6 +3067,7 @@ proc MLDP0::SpeciesDelete { Idx } {
 #              d'especes.
 #
 # Parametres :
+#   <Line>   : Ligne de definiton d'un isotope
 #
 # Retour     :
 #
@@ -3083,92 +3075,39 @@ proc MLDP0::SpeciesDelete { Idx } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDP0::SpeciesFormat { } {
-   global SPECIES
+proc MLDP0::SpeciesFormat { Line } {
    global GDefs
    variable Sim
    variable Tmp
    variable Warning
    variable Lbl
 
-   #----- Verification de la validite du pipeline
+   if { [llength $Line]==7 } {
 
-   if { [eof $SPECIES(Job)] == 1 } {
-      set SPECIES(Open) 0
-      close $SPECIES(Job)
-   } else {
+      set name        [lindex $Line 0]                 ;# Isotope Name.
+      set halflife    [format "%.2E" [lindex $Line 2]] ;# Half-Life [s].
+      set wetscavrate [lindex $Line 4]                 ;# Wet Scavenging Rate [s^-1].
+      set drydepvel   [lindex $Line 5]                 ;# Dry Deposition Velocity [m/s].
 
-      #----- Extraction de la ligne
+      if { [llength $Tmp(Iso)] < $Sim(EmMaxIso) && [lsearchsub $Tmp(Iso) $name 0] == -1 } {
 
-      gets $SPECIES(Job) line
+         if { $halflife >= 900 } {
+            #----- Verify if isotope's radioactive half-life is long enough
+            #----- ( >= 15 minutes ) to generate relevant simulation results.
+            set Tmp(Iso[llength $Tmp(Iso)]) $name
+            lappend Tmp(Iso) "$name $halflife $drydepvel $wetscavrate"
 
-      #----- Verification de nombre de parametres inclus dans la ligne
+            MLDP0::UpdateEmissionDurationsTotalQuantityAccident
+         } else {
+            #----- Display warning message if radioactive half-life is less than 15 minutes.
+            Dialog::CreateDefault .mldp0new 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $name." warning 0 "OK"
 
-      if { [llength $line] == 8 } {
-
-         set name        [lindex $line 1]                 ;# Isotope Name.
-         set halflife    [format "%.2E" [lindex $line 3]] ;# Half-Life [s].
-         set wetscavrate [lindex $line 5]                 ;# Wet Scavenging Rate [s^-1].
-         set drydepvel   [lindex $line 6]                 ;# Dry Deposition Velocity [m/s].
-
-         if { [llength $Tmp(Iso)] < $Sim(EmMaxIso) && [lsearchsub $Tmp(Iso) $name 0] == -1 } {
-
-            if { $halflife >= 900 } {
-               #----- Verify if isotope's radioactive half-life is long enough
-               #----- ( >= 15 minutes ) to generate relevant simulation results.
-               set Tmp(Iso[llength $Tmp(Iso)]) $name
-               lappend Tmp(Iso) "$name $halflife $drydepvel $wetscavrate"
-
-               MLDP0::UpdateEmissionDurationsTotalQuantityAccident
-            } else {
-               #----- Display warning message if radioactive half-life is less than 15 minutes.
-               Dialog::CreateDefault .mldp0new 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $name." warning 0 "OK"
-
-               puts stderr ""
-               puts stderr "WARNING: Isotope $name has a radioactive half-life too short (less than 15 minutes) to generate relevant simulation results."
-               puts stderr "         This isotope will be ignored."
-               puts stderr "         Half-life: $halflife s."
-            }
-
+            puts stderr ""
+            puts stderr "WARNING: Isotope $name has a radioactive half-life too short (less than 15 minutes) to generate relevant simulation results."
+            puts stderr "         This isotope will be ignored."
+            puts stderr "         Half-life: $halflife s."
          }
-
       }
-
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP0::SpeciesStart>
-# Creation   : Janvier 1998 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Lance le selecteur d'especes.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP0::SpeciesStart { } {
-   global SPECIES
-   global GDefs
-   variable Sim
-
-  if { $SPECIES(Open) == 0 } {
-
-     set SPECIES(Open) 1
-
-     set command "$GDefs(Dir)/Process/SpecieSelector/SpecieSelector.tcl $GDefs(Lang) eta"
-     set SPECIES(Job) [open |$command r+]
-     set SPECIES(Pid) [pid $SPECIES(Job)]
-
-     fconfigure $SPECIES(Job) -blocking false
-     fileevent $SPECIES(Job) readable "MLDP0::SpeciesFormat"
-  } else {
-     puts $SPECIES(Job) "show"
-     flush $SPECIES(Job)
    }
 }
 
