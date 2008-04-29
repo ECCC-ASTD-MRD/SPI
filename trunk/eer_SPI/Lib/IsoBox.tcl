@@ -12,14 +12,11 @@
 #
 #      Cette interface permet de selectionne une espece d'isotope
 #
-# Remarques :
-#   aucune
+# Fonctions:
+#    IsoBox::Create { Parent { Command "" } }
+#    IsoBox::Get    { Iso }
+#    IsoBox::Insert { }
 #
-# Modification:
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #===============================================================================
 
@@ -55,16 +52,16 @@ namespace eval IsoBox {
 #
 # But      : Gere la fenetre de selection des isotopes
 #
-# Parametres :
+# Parametres  :
+#   <Parent>  : Fenetre Parent
+#   <Command> : Commande a utiliser pour chaque selection
 #
 # Remarques :
-#   Aucune
+#   - Si un commande est passe en parametre, elle est execute evac chaque selection avec
+#     comme seul argument la ligne selectionnee.
 #
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
+# Retour:
+#   <sel>   : La fonction retourne la derniere ligne selectionnee
 #
 #-------------------------------------------------------------------------------
 
@@ -140,37 +137,20 @@ proc IsoBox::Create { Parent { Command "" } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <IsoBox::Insert>
-# Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
+# Nom      : <IsoBox::Get>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Affiche la liste de tous les isotopes.
+# But      : Recuperer les informations d'une espece sans demarrer l'interface.
 #
 # Parametres :
+#  <Iso>     : Isotope
+#
+# Retour:
+#   <Info>   : Liste des informations de l'isotopes ou ""
 #
 # Remarques :
-#   aucune
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
 #
 #-------------------------------------------------------------------------------
-
-proc IsoBox::Insert { }  {
-   global GDefs
-
-   set f [open $GDefs(Dir)/Data/Specie.src]
-
-   while { [gets $f ligne]>=0 } {
-      if {[string index $ligne 0]!= "C" && [string length $ligne]>90} {
-         .isobox.bas.box insert end [format "%-9s %-11s %-10s %-11s %-10s %-10s %-5s"  \
-            [lindex $ligne 0] [lindex $ligne 10] [lindex $ligne 1] [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 14]]
-      }
-   }
-   close $f
-}
 
 proc IsoBox::Get { Iso }  {
    global GDefs
@@ -184,4 +164,32 @@ proc IsoBox::Get { Iso }  {
    } else {
       return ""
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <IsoBox::Insert>
+# Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche la liste de tous les isotopes.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc IsoBox::Insert { } {
+   global GDefs
+
+   set f [open $GDefs(Dir)/Data/Specie.src]
+
+   while { [gets $f ligne]>=0 } {
+      if {[string index $ligne 0]!= "C" && [string length $ligne]>90} {
+         .isobox.bas.box insert end [format "%-9s %-11s %-10s %-11s %-10s %-10s %-5s"  \
+            [lindex $ligne 0] [lindex $ligne 10] [lindex $ligne 1] [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 14]]
+      }
+   }
+   close $f
 }
