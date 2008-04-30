@@ -254,6 +254,7 @@ void GeoTex_ClearCoord(TGeoTex *Tex,TGeoTexTile *Tile) {
 int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
 
    int       nc;
+   float    *buf;
    GLuint    sc[]={GL_RED_SCALE, GL_GREEN_SCALE, GL_BLUE_SCALE, GL_ALPHA_SCALE };
    GLuint    bc[]={GL_RED_BIAS, GL_GREEN_BIAS, GL_BLUE_BIAS, GL_ALPHA_BIAS };
 
@@ -322,7 +323,19 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
             glPixelTransferf(bc[3],Band->Tex.Bias[0]*Band->Tex.Scale[0]);
          }
       }
-      glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx,Tile->Ny,0,Band->Tex.Type,Band->Tex.Dim,(GLvoid*)Tile->Data);
+
+      /*OpenGL does not manage 64 bit (double data), so we have to use a temporery float buffer*/
+      if (Band->Def->Type==TD_Float64) {
+         if (buf=(float*)malloc(Tile->Nx*Tile->Ny*sizeof(float))) {
+            for(nc=0;nc<Tile->Nx*Tile->Ny;nc++) {
+               buf[nc]=((double*)Tile->Data)[nc];
+            }
+            glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx,Tile->Ny,0,Band->Tex.Type,GL_FLOAT,(GLvoid*)buf);
+            free(buf);
+         }
+      } else {
+         glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx,Tile->Ny,0,Band->Tex.Type,Band->Tex.Dim,(GLvoid*)Tile->Data);
+      }
    }
 
    for (nc=0;nc<4;nc++) {
