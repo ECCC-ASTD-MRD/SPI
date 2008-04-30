@@ -453,7 +453,7 @@ proc FileBox::Create { Parent Dir Mode Types { File "" } } {
 
    #----- Creation des evenements
 
-   bind .filebox.path.name.select <Return>           { FileBox::GetContent $FileBox::Data(Path) }
+#   bind .filebox.path.name.select <Return>           { + FileBox::GetContent $FileBox::Data(Path) }
    bind .filebox.file.name        <Return>           " FileBox::Select $Mode 1 "
    bind .filebox.files.list       <ButtonRelease-1>  { FileBox::SelectList }
    bind .filebox.files.list       <Button-3>         { FileBox::Popup %X %Y %y}
