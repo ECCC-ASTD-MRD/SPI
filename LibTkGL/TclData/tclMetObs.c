@@ -1051,7 +1051,7 @@ TMetObs* MetObs_Get(char *Name) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-char* Metobs_GetTag(TMetObs *Obs,int Idx) {
+char* MetObs_GetTag(TMetObs *Obs,int Idx) {
 
    TMetLoc *loc;
 
