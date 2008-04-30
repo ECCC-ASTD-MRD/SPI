@@ -44,7 +44,7 @@ static long          TDataSpecNo=0;
 static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","X","+","*" };
-CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC" };
+CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
 CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
 
 TIcon IconList[]={
@@ -1389,7 +1389,6 @@ void DataSpec_Define(TDataSpec *Spec){
               Spec->InterM=-(floor(log10(fabs((Spec->Max-Spec->Min)/100.0))));
             }
          }
-
       }
    }
 }
