@@ -412,7 +412,7 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 
       frame $Data(Frame).lev.desc
-         ComboBox::Create $Data(Frame).lev.desc.edit FSTD::Param(Intervals) edit sorted nodouble -1 \
+         ComboBox::Create $Data(Frame).lev.desc.edit FSTD::Param(Intervals) editclose sorted nodouble -1 \
             "" 17 6 "FSTD::IntervalSetMode NONE"
          pack $Data(Frame).lev.desc.edit -side left -fill both -expand true
       pack $Data(Frame).lev.desc -side top -fill x -padx 2 -pady 2 -expand true

@@ -263,7 +263,7 @@ proc ComboBox::Enable { W } {
 # Parametres :
 #   <W>      : Nom du widget ComboBox
 #   <Var>    : Variable a assigner quand une selection dans la liste est faite
-#   <Edit>   : Entry editable ou non (edit ou noedit)
+#   <Edit>   : Entry editable ou non (edit, editclose ou noedit)
 #   <Type>   : Type de liste (sorted ou unsorted)
 #   <Mode>   : Doublon accepte ou non (double ou nodouble)
 #   <Max>    : Nombre maximum d'item dans la liste (-1, pas de maximum)
@@ -347,7 +347,7 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
    # bind  $W.select  <B1-ButtonRelease> "if { !\[winfo ismapped .$top\] } { $W.box invoke }"
 
    #----- Si on tappe dans l'entree, rechercher la chaine dans la liste
-   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { ComboBox::Open $W; ComboBox::Select $W }"
+   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { if { \"$Edit\"==\"edit\" } { ComboBox::Open $W; ComboBox::Select $W } }"
 
    #----- Apres Enter dans l'entree, prendre ce qui est selectionne dans la liste
    bind $W.select <Key-Up>   "ComboBox::Open $W; ComboBox::SelectNext $W -1"
