@@ -406,11 +406,13 @@ proc Model::New { Parent Command Label Single } {
    set Data(Type)  0
    set Data(Name)  "New experiment"
    set Data(Pos)   1
+   set Data(Id1)   "-"
    set Data(Name1) "New location"
    set Data(Lat1)  0.0
    set Data(Lon1)  0.0
 
    for { set i 2 } { $i <=50 } { incr i } {
+      set Data(Id$i)   "-"
       set Data(Name$i) ""
       set Data(Lat$i)  ""
       set Data(Lon$i)  ""
@@ -714,6 +716,7 @@ proc Model::TypeSelect { Frame No { Icon "" } } {
 proc Model::DrawInit { Frame VP } {
    variable Data
 
+   set Data(Id$Data(Pos))   "-"
    set Data(Name$Data(Pos)) "MousePoint"
    set Data(Lat$Data(Pos))   $Viewport::Map(LatCursor)
    set Data(Lon$Data(Pos))   $Viewport::Map(LonCursor)
@@ -722,6 +725,7 @@ proc Model::DrawInit { Frame VP } {
 proc Model::Draw { Frame VP } {
    variable Data
 
+   set Data(Id$Data(Pos))   "-"
    set Data(Name$Data(Pos)) "MousePoint"
    set Data(Lat$Data(Pos))   $Viewport::Map(LatCursor)
    set Data(Lon$Data(Pos))   $Viewport::Map(LonCursor)
