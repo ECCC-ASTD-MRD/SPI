@@ -1210,23 +1210,35 @@ TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type) {
    return(loc);
 }
 
-TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type) {
+TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
    TMetLoc *loc;
 
    loc=From?From->Next:Obs->Loc;
 
    while(loc) {
       if (Type==MET_TYPENO) {
-         if (strcmp(loc->No,Id)==0 && (Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
-            break;
+         if (strcmp(loc->No,Id)==0) {
+            if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+               break;
+            } else {
+               *Multi=1;
+            }
          }
       } else if (Type==MET_TYPEID) {
-         if (strcmp(loc->Id,Id)==0 && (Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
-            break;
+         if (strcmp(loc->Id,Id)==0) {
+            if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+               break;
+            } else {
+               *Multi=1;
+            }
          }
       } else {
-         if (strcmp(loc->Tag,Id)==0 && (Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
-            break;
+         if (strcmp(loc->Tag,Id)==0) {
+            if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+               break;
+            } else {
+               *Multi=1;
+            }
          }
       }
       loc=loc->Next;
@@ -1492,7 +1504,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    BufrCode      *bcv;
    EntryTableB   *eb;
    int            i,j;
-   char           stnid[32];
+   char           stnid[32],multi=0;
    double         value,lat,lon,hgt=0.0;
    int            yyyy,mm,dd,hh,mn,ss;
    time_t         time=0;
@@ -1647,7 +1659,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          /*Insert station in list if not already done*/
          if (strlen(stnid) && lat!=-999.0 && lon!=-999.0) {
-            loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,lat,lon,-999.0,MET_TYPEID);
+            loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,lat,lon,-999.0,MET_TYPEID,&multi);
             if (!loc) {
                loc=TMetLoc_New(Obs,stnid,NULL,lat,lon,hgt);
 //               loc->Grid[0]=dx;
@@ -1704,6 +1716,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    char     stnid[10];
    int     *elems=NULL,*tblval=NULL;
    float   *tblvalf=NULL;
+   char     multi=0;
 
    Tcl_MutexLock(&MUTEX_BURPFILE);
 
@@ -1771,7 +1784,10 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
       /*Insert station in list if not already done*/
       strtrim(stnid,' ');
-      loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID);
+      loc=NULL;
+      if (!multi)
+         loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID,&multi);
+
       if (!loc) {
          loc=TMetLoc_New(Obs,stnid,NULL,(blat-9000.0)/100.0,blon/100.0,hgt-400);
          loc->Grid[0]=dx;

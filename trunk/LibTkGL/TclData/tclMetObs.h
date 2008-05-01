@@ -142,7 +142,7 @@ EntryTableB *MetObs_BUFRFindTableDesc(char *Desc);
 EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code);
 
 TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type);
-TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type);
+TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi);
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev);
 
 TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
