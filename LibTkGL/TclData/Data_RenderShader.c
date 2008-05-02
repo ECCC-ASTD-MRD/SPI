@@ -450,7 +450,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 
-   /*Why the hell doesn't GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix*/
+   /*Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix*/
    if (Field->Def->Type!=TD_Float32) {
       if (buf=(float*)malloc(Field->Def->NI*Field->Def->NJ*sizeof(float))) {
          for(i=0;i<Field->Def->NI*Field->Def->NJ;i++) {
