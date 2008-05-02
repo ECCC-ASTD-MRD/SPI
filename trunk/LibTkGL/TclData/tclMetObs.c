@@ -1219,6 +1219,7 @@ TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,do
       if (Type==MET_TYPENO) {
          if (strcmp(loc->No,Id)==0) {
             if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+               *Multi=0;
                break;
             } else {
                *Multi=1;
@@ -1227,6 +1228,7 @@ TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,do
       } else if (Type==MET_TYPEID) {
          if (strcmp(loc->Id,Id)==0) {
             if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+               *Multi=0;
                break;
             } else {
                *Multi=1;
@@ -1235,6 +1237,7 @@ TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,do
       } else {
          if (strcmp(loc->Tag,Id)==0) {
             if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+               *Multi=0;
                break;
             } else {
                *Multi=1;
@@ -1504,7 +1507,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    BufrCode      *bcv;
    EntryTableB   *eb;
    int            i,j;
-   char           stnid[32],multi=0;
+   char           stnid[32],previd[32],multi=0;
    double         value,lat,lon,hgt=0.0;
    int            yyyy,mm,dd,hh,mn,ss;
    time_t         time=0;
@@ -1659,7 +1662,14 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          /*Insert station in list if not already done*/
          if (strlen(stnid) && lat!=-999.0 && lon!=-999.0) {
-            loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,lat,lon,-999.0,MET_TYPEID,&multi);
+
+            /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
+            loc=NULL;
+            if (!multi || strcmp(previd,stnid)!=0)
+               loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,lat,lon,-999.0,MET_TYPEID,&multi);
+
+            strcpy(previd,stnid);
+
             if (!loc) {
                loc=TMetLoc_New(Obs,stnid,NULL,lat,lon,hgt);
 //               loc->Grid[0]=dx;
@@ -1713,7 +1723,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0;
    int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp;
-   char     stnid[10];
+   char     stnid[10],previd[10];
    int     *elems=NULL,*tblval=NULL;
    float   *tblvalf=NULL;
    char     multi=0;
@@ -1782,12 +1792,14 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       if (stnid[0]=='>')
          continue;
 
-      /*Insert station in list if not already done*/
+      /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
       strtrim(stnid,' ');
       loc=NULL;
-      if (!multi)
+      if (!multi || strcmp(previd,stnid)!=0)
          loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID,&multi);
 
+      strcpy(previd,stnid);
+      /*Insert station in list if not already done*/
       if (!loc) {
          loc=TMetLoc_New(Obs,stnid,NULL,(blat-9000.0)/100.0,blon/100.0,hgt-400);
          loc->Grid[0]=dx;
