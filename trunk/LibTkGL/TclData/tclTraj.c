@@ -985,27 +985,34 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       for(i=0,n=0;i<Traj->NPr;i++) {
          if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
             glPushName(i);
-            glPushMatrix();
-            Proj->Type->Locate(Proj,Traj->Pr[i].Co.lat,Traj->Pr[i].Co.lon,1);
-            glTranslated(0.0,0.0,ZM(Proj,Traj->Pr[i].Co.elev));
-            glScalef(sz,sz,1.0);
 
-            if (spec->Fill) {
-               glColor3us(spec->Fill->red,spec->Fill->green,spec->Fill->blue);
-               glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-               if (Interp) glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
-               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
-               if (Interp) glFeedbackProcess(Interp,GL_2D);
-            }
+            if (i==0 || i==Traj->NPr-1 || (spec->InterNb && fmod(Traj->Pr[i].Date,spec->Inter[0])==0)) {
+               glPushMatrix();
+               Proj->Type->Locate(Proj,Traj->Pr[i].Co.lat,Traj->Pr[i].Co.lon,1);
+               glTranslated(0.0,0.0,ZM(Proj,Traj->Pr[i].Co.elev));
+               glScalef(sz,sz,1.0);
 
-            if (spec->Outline) {
-               glColor3us(spec->Outline->red,spec->Outline->green,spec->Outline->blue);
-               if (Interp) glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
-               glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
-               if (Interp) glFeedbackProcess(Interp,GL_2D);
+               if (spec->Fill) {
+                  glColor3us(spec->Fill->red,spec->Fill->green,spec->Fill->blue);
+                  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+                  if (Interp) glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
+                  glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+                  if (Interp) glFeedbackProcess(Interp,GL_2D);
+               }
+
+               if (spec->Outline) {
+                  glColor3us(spec->Outline->red,spec->Outline->green,spec->Outline->blue);
+                  if (Interp) glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
+                  if (spec->Mark && fmod(Traj->Pr[i].Date,spec->Mark)==0) {
+                     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+                  } else {
+                     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+                  }
+                  glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+                  if (Interp) glFeedbackProcess(Interp,GL_2D);
+               }
+               glPopMatrix();
             }
-            glPopMatrix();
             glPopName();
          }
       }
