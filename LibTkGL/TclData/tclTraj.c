@@ -890,91 +890,97 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       return(TCL_OK);
 
    if (spec->Width<=0)
-      return TCL_OK;
-
-   if (Interp) {
-      glFeedbackInit(Traj->NPr*40,GL_2D);
-      Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
-      sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",spec->Width+1);
-      Tcl_AppendResult(Interp,buf,(char*)NULL);
-   }
+      return(TCL_OK);
 
    sz=VP->Ratio*(spec->Size+spec->Width);
 
    glLineWidth(spec->Width+1);
    glEnable(GL_DEPTH_TEST);
-   glEnableClientState(GL_VERTEX_ARRAY);
 
-   glColor3us(0x00,0x00,0x00);
-   /*Height markers*/
-   if (spec->Mark==1 || spec->Mark==3) {
-      for(i=0,n=0;i<Traj->NPr;i++) {
-         if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-            co.lat=Traj->Pr[i].Co.lat;
-            co.lon=Traj->Pr[i].Co.lon;
-            co.elev=0.0;
-            Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
-            Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
-            n++;
-         }
+   if (GLMode!=GL_SELECT) {
+      if (Interp) {
+         glFeedbackInit(Traj->NPr*40,GL_2D);
+         Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
+         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",spec->Width+1);
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
       }
-      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINES,n*2,NULL,NULL);
-   }
 
-   /*Shadow (Ground zero)*/
-   if (spec->Mark==2 || spec->Mark==3) {
-      for(i=0,n=0;i<Traj->NPr;i++) {
-         if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-            co.lat=Traj->Pr[i].Co.lat;
-            co.lon=Traj->Pr[i].Co.lon;
-            co.elev=0.0;
-            Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n],1);
-            n++;
+      /*Height markers*/
+      glColor3us(0x00,0x00,0x00);
+      if (spec->Mark==1 || spec->Mark==3) {
+         for(i=0,n=0;i<Traj->NPr;i++) {
+            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
+               co.lat=Traj->Pr[i].Co.lat;
+               co.lon=Traj->Pr[i].Co.lon;
+               co.elev=0.0;
+               Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
+               Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
+               n++;
+            }
          }
+         Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINES,n*2,NULL,NULL);
       }
-      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
-   }
 
-   if (spec->Outline) {
-      glColor3us(spec->Outline->red,spec->Outline->green,spec->Outline->blue);
-   }
-
-   /*Ribbon*/
-   if (spec->Mark==4) {
-      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      glDisable(GL_CULL_FACE);
-
-      for(i=0,n=0;i<Traj->NPr;i++) {
-         if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-            co.lat=Traj->Pr[i].Co.lat;
-            co.lon=Traj->Pr[i].Co.lon;
-            co.elev=0.0;
-            Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
-            Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
-            n++;
+      /*Shadow (Ground zero)*/
+      if (spec->Mark==2 || spec->Mark==3) {
+         for(i=0,n=0;i<Traj->NPr;i++) {
+            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
+               co.lat=Traj->Pr[i].Co.lat;
+               co.lon=Traj->Pr[i].Co.lon;
+               co.elev=0.0;
+               Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n],1);
+               n++;
+            }
          }
+         Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
       }
-      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_QUAD_STRIP,n*2,NULL,NULL);
-      glEnable(GL_CULL_FACE);
-   } else {
 
-      /*Single Trajectory*/
-      for(i=0,n=0;i<Traj->NPr;i++) {
-         if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-            Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n],1);
-            n++;
+      if (spec->Outline) {
+         glColor3us(spec->Outline->red,spec->Outline->green,spec->Outline->blue);
+      }
+
+      /*Ribbon*/
+      if (spec->Mark==4) {
+         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+         glDisable(GL_CULL_FACE);
+
+         for(i=0,n=0;i<Traj->NPr;i++) {
+            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
+               co.lat=Traj->Pr[i].Co.lat;
+               co.lon=Traj->Pr[i].Co.lon;
+               co.elev=0.0;
+               Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
+               Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
+               n++;
+            }
          }
-      }
-      if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
-      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
-   }
+         Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_QUAD_STRIP,n*2,NULL,NULL);
+         glEnable(GL_CULL_FACE);
+      } else {
 
-   if (Interp)
-      glFeedbackProcess(Interp,GL_2D);
+         /*Single Trajectory*/
+         for(i=0,n=0;i<Traj->NPr;i++) {
+            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
+               Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n],1);
+               n++;
+            }
+         }
+         if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
+         Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
+      }
+
+      if (Interp)
+         glFeedbackProcess(Interp,GL_2D);
+   }
 
    if (spec->Icon) {
+     glPushName(PICK_TRAJ);
+     glDisable(GL_CULL_FACE);
+
       /*Single Trajectory*/
+      glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[spec->Icon].Co);
+      glMatrixMode(GL_MODELVIEW);
 
       for(i=0,n=0;i<Traj->NPr;i++) {
          if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
@@ -999,15 +1005,17 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
                if (Interp) glFeedbackProcess(Interp,GL_2D);
             }
-
             glPopMatrix();
             glPopName();
          }
       }
-      if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
-      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
+      glPopName();
+      glEnable(GL_CULL_FACE);
+      glDisableClientState(GL_VERTEX_ARRAY);
+//      if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
+//      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
    }
-   glDisableClientState(GL_VERTEX_ARRAY);
+
    glDisable(GL_DEPTH_TEST);
 
    return(1);

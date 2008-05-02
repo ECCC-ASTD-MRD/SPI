@@ -617,15 +617,14 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                if ((pick&PICK_METOBS) && (met=MetObs_Get(vp->Data[i]))) {
                   MetObs_Render(NULL,met,vp,proj,GL_SELECT);
                }
-/*
                if ((pick&PICK_TRAJ) && (traj=Traj_Get(vp->Data[i]))) {
                   Traj_Render(NULL,traj,vp,proj,GL_SELECT);
                }
-*/
                glPopName();
             }
 
             if (glPickProcess()>0) {
+fprintf(stderr,"---ksdjhgfkjsdfsdkjf\n");
                obj=Tcl_NewListObj(0,NULL);
                switch(GLRender->GLPick[1]) {
                   case PICK_TRAJ:      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("trajectory",-1));  break;
@@ -637,7 +636,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(vp->Data[GLRender->GLPick[0]],-1));
 
                switch(GLRender->GLPick[1]) {
-                  case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Metobs_GetTag(MetObs_Get(vp->Data[GLRender->GLPick[0]]),GLRender->GLPick[2]),-1)); break;
+                  case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(MetObs_GetTag(MetObs_Get(vp->Data[GLRender->GLPick[0]]),GLRender->GLPick[2]),-1)); break;
                   case PICK_TRAJ:
                   case PICK_OBS:
                   case PICK_FSTDFIELD: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[2])); break;
