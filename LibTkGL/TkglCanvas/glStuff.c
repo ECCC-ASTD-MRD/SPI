@@ -51,7 +51,7 @@ static float glArrayArrow[14] = { 0.0f,0.0f,0.5f,-1.0f,0.2f,-1.0f,0.2f,-2.0f,-0.
 static Tcl_HashTable glFontIdTable;
 static Tcl_HashTable glBitmapTable;
 
-static char *ExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression",NULL };
+static char *ExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression","GL_ARB_vertex_buffer_object",NULL };
 static char *ProgString[]={ "Field","FieldTex","DataTex","TopoTex",NULL };
 
 static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -2032,7 +2032,6 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
    /*Check for full scene anti-aliasing (MESA breaks the stencil buffer when enabling FSAA)*/
    if (GLRender->Soft) {
       attrTrue=attrSoft;
-      fprintf(stderr,"(INFO) glXCanvasInit: Running with MESA software implementation\n");
    } else {
       attrTrue=attrHard;
       if (GLRender->Ext[ARB_multisample]) {

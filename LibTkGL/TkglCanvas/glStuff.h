@@ -93,7 +93,7 @@
    }\
 }
 
-enum ExtToken { ARB_multisample, ARB_texture_compression };
+enum ExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum ProgToken { PROG_FIELD=0, PROG_FIELDTEX=1, PROG_DATATEX=2, PROG_TOPOTEX=3 };
 
 /* Structure pour OpenGL */
