@@ -125,6 +125,7 @@ typedef struct TDataSpec {
    int         Width;               /*Largeur*/
    int         Icon;                /*Icone*/
    int         Mark;                /*Marquage*/
+   int         Style;               /*Style*/
    double      Size;                /*Dimension*/
    float       Min,Max;             /*Minimum et Maximum des valeurs*/
    int         MinMax;              /*Indicateur de selection des min max*/
