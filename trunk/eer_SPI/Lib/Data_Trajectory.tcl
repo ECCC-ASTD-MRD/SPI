@@ -765,6 +765,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
    set items {}
    set h0 1e32
    set h1 1e-32
+   set secs {}
 
    foreach t $TrajId {
 
@@ -790,6 +791,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          set date  [lindex $parcel 0]
          set elev  [lindex $parcel 5]
          set spd   [lindex $parcel 8]
+         lappend secs $date
          set hour [clock format $date -format "%H" -gmt true]
          if { $hour=="00" } {
             set hour 0
@@ -807,7 +809,6 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          set h0 [expr $h<$h0?$h:$h0]
          set h  [vector stats TRAJGRAPH$t.Y -max]
          set h1 [expr $h>$h1?$h:$h1]
-
       }
 
       #----- Calculer la valeur de l'increment dans l'axe y du graph
@@ -829,7 +830,8 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          set incr 5
       }
 
-      graphaxis configure TRAJGRAPHAXISX -intervals [lsort -unique [vector get TRAJGRAPH$t.X]] -highlight $datea -all True
+      set secs [lsort -unique $secs]
+      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -highlight $datea -all True
       graphaxis configure TRAJGRAPHAXISY -incr $incr -min $h0 -max $h1
 
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \
