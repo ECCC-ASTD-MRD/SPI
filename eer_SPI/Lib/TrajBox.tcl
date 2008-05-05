@@ -1087,7 +1087,6 @@ proc TrajBox::Select { } {
             trajectory stats $id -tag "$Page::Data(Frame) $Viewport::Data(VP) $box"
             lappend Viewport::Data(Data$Viewport::Data(VP)) $id
             lappend trajs $id
-            Trajectory::ParticleInfoEnable $Page::Data(Canvas) $id
          } else {
             set vp [lindex [trajectory stats $id -tag] 1]
             if { [Page::Registered All Viewport $vp]==-1 } {
@@ -1114,8 +1113,7 @@ proc TrajBox::Select { } {
    #----- Initialiser les parametres globaux
 
    set Trajectory::Data(List) $trajs
-   Trajectory::Update
-   Trajectory::ParamApply $trajs
+   Trajectory:::ParamUpdate
 
    #----- Vider la liste de frame des animations
 
