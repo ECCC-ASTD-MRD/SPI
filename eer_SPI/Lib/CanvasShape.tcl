@@ -1909,9 +1909,9 @@ proc Shape::DrawTRIANGLE { Canvas Pixel Tags Color Size Fill } {
       set fillcolor white
    }
 
-   $Canvas create polygon [expr [lindex $Pixel 0] - $Size] [lindex $Pixel 1] \
-      [expr [lindex $Pixel 0] + $Size] [expr [lindex $Pixel 1] + $Size] \
-      [expr [lindex $Pixel 0] + $Size] [expr [lindex $Pixel 1] - $Size] \
+   $Canvas create polygon [lindex $Pixel 0] [expr [lindex $Pixel 1]-$Size] \
+      [expr [lindex $Pixel 0]+$Size] [expr [lindex $Pixel 1]+$Size] \
+      [expr [lindex $Pixel 0]-$Size] [expr [lindex $Pixel 1]+$Size] \
       -fill $fillcolor -outline $Color -width 1 -tag $Tags
 }
 
