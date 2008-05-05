@@ -1755,7 +1755,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
 
    Obs_PreInit(Obs);
 
-   if (Obs->Spec->Mark)
+   if (Obs->Spec->Style)
       Obs_RenderPath(Interp,Obs,VP,Proj);
 
    if (Obs->Spec->Icon)
@@ -1785,7 +1785,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
    /*Height markers*/
    glColor3us(0x00,0x00,0x00);
-   if (Obs->Spec->Mark==2 || Obs->Spec->Mark==4) {
+   if (Obs->Spec->Style==2 || Obs->Spec->Style==4) {
       glBegin(GL_LINES);
       for (i=0;i<Obs->Loc->Nb;i++) {
          co.lat=Obs->Loc->Coord[i].lat;
@@ -1801,7 +1801,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    }
 
    /*Shadow (Ground zero)*/
-   if (Obs->Spec->Mark==3 || Obs->Spec->Mark==4) {
+   if (Obs->Spec->Style==3 || Obs->Spec->Style==4) {
       glBegin(GL_LINE_STRIP);
       for (i=0;i<Obs->Loc->Nb;i++) {
          co.lat=Obs->Loc->Coord[i].lat;
@@ -1815,7 +1815,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    }
 
    /*Ribbon*/
-   if (Obs->Spec->Mark==5) {
+   if (Obs->Spec->Style==5) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glDisable(GL_CULL_FACE);
 
