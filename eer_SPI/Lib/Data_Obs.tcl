@@ -55,7 +55,7 @@ namespace eval Obs {
    dataspec create OBSDEFAULT
    dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
       -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
-      -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -mark 0 -intervalmode NONE 0
+      -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
    #----- Lecture des tables BUFR
 
@@ -86,7 +86,7 @@ namespace eval Obs {
    set Param(Map)           OBSDMAPEFAULT                          ;#Palette de couleur
    set Param(MapAll)        0                                      ;#Palette de couleur applique au vecteurs
    set Param(Size)          10                                     ;#Grandeur des icones
-   set Param(Mark)          0                                      ;#Affichage de la trajectoire
+   set Param(Style)         0                                      ;#Affichage de la trajectoire
    set Param(IntervalMode)  NONE                                   ;#Type de selection de niveaux
    set Param(IntervalParam) 0                                      ;#Nombre de niveaux
    set Param(Intervals)     ""                                     ;#Liste de niveaux
@@ -283,7 +283,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.traj
                IcoMenu::Create $Data(Frame).def.r.disp.traj.sel $GDefs(Dir)/Resources/Bitmap \
                   "zeroth.xbm tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4 5" \
-                  Obs::Param(Mark) Obs::ParamSet $Obs::Param(Mark) -relief groove -bd 2
+                  Obs::Param(Style) Obs::ParamSet $Obs::Param(Style) -relief groove -bd 2
                label $Data(Frame).def.r.disp.traj.lbl -text " [lindex $Lbl(Traj) $GDefs(Lang)]" -anchor w
             pack  $Data(Frame).def.r.disp.traj.sel $Data(Frame).def.r.disp.traj.lbl -side left -fill x
 
@@ -446,7 +446,7 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(MapAll)    [dataspec configure $Spec -mapall]
    set Param(Size)      [dataspec configure $Spec -size]
    set Param(Icon)      [dataspec configure $Spec -icon]
-   set Param(Mark)      [dataspec configure $Spec -mark]
+   set Param(Style)     [dataspec configure $Spec -style]
    set Param(Color)     [dataspec configure $Spec -color]
    set Param(Contour)   [dataspec configure $Spec -rendercontour]
    set Param(Vector)    [dataspec configure $Spec -rendervector]
@@ -523,7 +523,7 @@ proc Obs::ParamSet { { Spec "" } } {
    }
 
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -font $Param(Font) -colormap $Param(Map) \
-      -mark $Param(Mark) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
+      -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
       -rendervolume $Param(Volume) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo)
 
    catch { $Data(ApplyButton) configure -state normal }
