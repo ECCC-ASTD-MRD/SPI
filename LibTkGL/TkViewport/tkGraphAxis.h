@@ -47,6 +47,8 @@
 #define DONEX      0x01
 #define DONEY      0x02
 
+enum  GRAPHAXISFORMATS { GRAXNONE,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHHMM,GRAXDDMM,GRAXMMDD };
+
 typedef struct TGraphAxis {
    Tk_Dash        Dash;          /*Pointille*/
    Tk_Font        Font;          /*Font for drawing text*/
@@ -67,6 +69,7 @@ typedef struct TGraphAxis {
    int            HighLightNb;
    int            Numbered;      /*Numerotation de l'axe*/
    int            All;           /*Verification des overlap de label*/
+   int            Format;        /*Format de l'axe*/
 
    int            Order;         /*Ordre de grandeur des valeurs*/
    char           Done;          /*Flag de completion de process*/

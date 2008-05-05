@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 
+static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","DDMM","MMDD" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -178,8 +179,8 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    char        buf[256];
    int         i,j,idx;
 
-   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-format","-position","-angle","-numbered","-all",NULL };
-   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,FORMAT,POSITION,ANGLE,NUMBERED,ALL, };
+   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-all",NULL };
+   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,ALL, };
 
    axis=GraphAxis_Get(Name);
    if (!axis) {
@@ -463,6 +464,16 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case FORMAT:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GRAPHAXISFORMATS_STRING[axis->Format],-1));
+            } else {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GRAPHAXISFORMATS_STRING,"format",0,&axis->Format)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
+            }
+            break;
+
          case ALL:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(axis->All));
@@ -516,6 +527,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->HighLight=NULL;
    axis->Numbered=1;
    axis->All=0;
+   axis->Format=0;
    axis->Dash.number=0;
    axis->Justify=TK_JUSTIFY_CENTER;
    axis->Anchor=TK_ANCHOR_CENTER;
@@ -788,9 +800,14 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
    w=cos(DEG2RAD(Axis->Angle));
 
    if (Axis->Numbered) {
-      if (Axis->Label) {
+      if (Axis->InterNb) {
          for(i=0;i<Axis->InterNb;i++) {
-            text=Tk_ComputeTextLayout(font,Axis->Label[i],Tcl_NumUtfChars(Axis->Label[i],strlen(Axis->Label[i])),0,TK_JUSTIFY_CENTER,0,&width,&height);
+            if (Axis->Label) {
+               text=Tk_ComputeTextLayout(font,Axis->Label[i],Tcl_NumUtfChars(Axis->Label[i],strlen(Axis->Label[i])),0,TK_JUSTIFY_CENTER,0,&width,&height);
+            } else {
+               GraphAxis_Print(Axis,buf0,Axis->Inter[i],0);
+               text=Tk_ComputeTextLayout(font,buf0,Tcl_NumUtfChars(buf0,strlen(buf0)),0,TK_JUSTIFY_CENTER,0,&width,&height);
+            }
             Tk_FreeTextLayout(text);
             wt=wt<width?width:wt;
             ht=ht<height?height:ht;
@@ -911,8 +928,40 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *DX,int 
 */
 void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
 
+   struct tm *tsec;
+   time_t     sec;
+
 //fprintf(stderr,"(AQBUG) About to print %p %p %f\n",Axis,String,Value);
+
    if (Axis->Numbered) {
+      if (Axis->Format) {
+         sec=Value;
+         tsec=gmtime(&sec);
+         switch((enum GRAPHAXISFORMATS)Axis->Format) {
+            case GRAXDATE: sprintf(String,"%i/%02i/%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
+            case GRAXTIME: sprintf(String,"%02i:%02i:%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
+            case GRAXDATETIME: sprintf(String,"%i/%02i/%02i %02i:%02i:%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday,tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
+            case GRAXTIMEDATE: sprintf(String,"%02i:%02i:%02i\n%i/%02i/%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec,(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
+            case GRAX00HHDDMM: if (tsec->tm_hour==0) {
+                                  sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1));
+                               } else {
+                                  sprintf(String,"%02i",tsec->tm_hour);
+                               }
+                               break;
+            case GRAX00HHMMDD: if (tsec->tm_hour==0) {
+                                  sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,(tsec->tm_mon+1),tsec->tm_mday);
+                               } else {
+                                  sprintf(String,"%02i",tsec->tm_hour);
+                               }
+                               break;
+            case GRAXHHDDMM: sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1)); break;
+            case GRAXHHMM: sprintf(String,"%02i:%02",tsec->tm_hour,tsec->tm_min); break;
+            case GRAXDDMM: sprintf(String,"%02i/%02",tsec->tm_mday,(tsec->tm_mon+1)); break;
+            case GRAXMMDD: sprintf(String,"%02i/%02",(tsec->tm_mon+1),tsec->tm_mday); break;
+         }
+         return;
+      }
+
       if (Axis->Type=='O') {
          if (Value>0.0) {
             snprintf(String,32,"%.2e",Value);
