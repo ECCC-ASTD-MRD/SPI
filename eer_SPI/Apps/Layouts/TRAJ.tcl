@@ -146,19 +146,19 @@ proc TRAJ::LayoutUpdate { Frame } {
    #----- Afficher la legende
 
    if { $SPI::Data(ShowTrajLegend$Frame) } {
-      Trajectory::Legend $Frame white black $globex $legendy [expr $Page(Width)-$Page(Border)] [expr $Page(Height)-$Page(Border)] $Trajectory::Data(List)
+      Trajectory::Legend $Frame $globex $legendy [expr $Page(Width)-$Page(Border)] [expr $Page(Height)-$Page(Border)] $Trajectory::Data(List)
    }
 
    #----- Afficher les hauteurs
 
    if { $SPI::Data(ShowTrajHeight$Frame) } {
-      Trajectory::Height $Frame white black 15 15 $globex [expr $Page(Height)-$Page(Border)] $Trajectory::Data(List)
+      Trajectory::Height $Frame 15 15 $globex [expr $Page(Height)-$Page(Border)] $Trajectory::Data(List)
    }
 
    #----- Afficher le graphique des hauteurs
 
    if { $SPI::Data(ShowTrajGraph$Frame) } {
-      Trajectory::Graph $Frame white black $globex $graphy [expr $Page(Width)-$Page(Border)] $legendy $Trajectory::Data(List)
+      Trajectory::Graph $Frame $globex $graphy [expr $Page(Width)-$Page(Border)] $legendy $Trajectory::Data(List)
    }
 
    if { [$Frame.page.canvas type TESTMODE] != "" } {
