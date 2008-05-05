@@ -238,7 +238,6 @@ proc SPI::ParamsApply { } {
    Viewport::ConfigSet $Page::Data(Frame)
 
    Page::ParamApply
-   Trajectory::ParamApply
 
    . config -cursor watch
    $Page::Data(Canvas) config -cursor watch
@@ -295,7 +294,7 @@ proc SPI::Window { } {
    frame .info -bd 1 -relief raised
       menubutton .info.opt -image DOWN -menu .info.opt.menu -bd 1
       label .info.cooval -textvariable Page::Data(Coord) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 36
-      label .info.altval -textvariable Viewport::Map(AltCursor) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 5 -anchor e
+      label .info.altval -textvariable Viewport::Map(AltCursor) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 9 -anchor e
       label .info.fldval -textvariable Page::Data(Value) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 10
 
       ProgressBar::Create .info.job -color $GDefs(ColorHighLight) -width 50 -relief flat -variable ::SPI::Data(Percent)
