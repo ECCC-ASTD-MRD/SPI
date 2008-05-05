@@ -99,6 +99,9 @@ namespace eval MetStat { } {
    set Rec(TypeT) "Serie temporelle"
    set Rec(TypeX) "Divers"
    set Rec(Var)   ""
+   set Rec(Desc)  ""
+   set Rec(Level) {}
+   set Rec(Inter) {}
 
    #----- Definition des messages
 
@@ -363,6 +366,10 @@ proc MetStat::RECRCAdd { Var Desc Unit Factor Level Inter } {
    if { $Var!="" }   {
 
       lappend Rec(Var) $Var
+
+      if { $Desc==""   && ![info exists MetStat::Rec(Desc$Var)] }   { set Rec(Desc$Var)   $Rec(Desc) }
+      if { $Level==""  && ![info exists MetStat::Rec(Level$Var)] }  { set Rec(Level$Var)  $Rec(Level) }
+      if { $Inter==""  && ![info exists MetStat::Rec(Inter$Var)] }  { set Rec(Inter$Var)  $Rec(Inter) }
 
       if { $Desc!=""   || ![info exists MetStat::Rec(Desc$Var)] }   { set Rec(Desc$Var)   $Desc }
       if { $Level!=""  || ![info exists MetStat::Rec(Level$Var)] }  { set Rec(Level$Var)  $Level }
