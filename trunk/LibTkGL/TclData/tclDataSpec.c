@@ -227,11 +227,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step",
-                                 "-geovector","-icon","-mark","-mapall","-set","-cube","-axis","-texsample","-texsize","-interpolation","-light","-sprite",NULL };
+                                 "-geovector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-interpolation","-light","-sprite",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,POSITIONS,
-                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,GEOVECTOR,ICON,MARK,MAPALL,
+                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,INTERPOLATION,LIGHT,SPRITE };
 
    if (Objc==1)  s=0;
@@ -514,6 +514,16 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Mark);
+            }
+            break;
+
+         case STYLE:
+            if (Objc==1) {
+               if (Spec->Mark) {
+                  Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Style));
+               }
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Style);
             }
             break;
 
@@ -1110,6 +1120,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->MapAll=from->MapAll;
    to->Icon=from->Icon;
    to->Mark=from->Mark;
+   to->Style=from->Style;
    memcpy(to->Cube,from->Cube,6*sizeof(int));
    memcpy(to->Range,from->Range,from->RangeNb*sizeof(float));
    memcpy(to->Inter,from->Inter,from->InterNb*sizeof(float));
@@ -1236,6 +1247,7 @@ TDataSpec *DataSpec_New(){
    spec->SpriteImg=NULL;
    spec->Icon=0;
    spec->Mark=0;
+   spec->Style=0;
    spec->Stipple=NULL;
    spec->RangeNb=0;
    spec->PosNb=0;
