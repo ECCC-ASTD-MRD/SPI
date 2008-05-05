@@ -699,6 +699,7 @@ proc Viewport::ConfigSet { Frame } {
 #----------------------------------------------------------------------------
 
 proc Viewport::Follow { Frame VP X Y } {
+   global   GDefs
    variable Map
    variable Data
 
@@ -734,28 +735,34 @@ proc Viewport::Follow { Frame VP X Y } {
    $Frame.page.canvas delete PTRDATAINFO COORDLINK
 
    if { $Map(Speed)==0.0 } {
-      set data [$VP -pick $X $Y { observation metobs }]
+      set data [$VP -pick $X $Y { trajectory observation metobs }]
       set loc ""
 
       if { [llength $data] } {
          set obj [lindex $data 1]
          switch [lindex $data 0] {
+            "trajectory"  { set tag   [lindex $data 2]
+                            set parcel [trajectory define $obj -PARCEL $tag]
+                            set loc   "[trajectory define $obj -ID]\n[format %5.1f [lindex $parcel 5]] m\n[lindex $parcel 8] m/s"
+                            set coord [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
+                            append Page::Data(Value) "[trajectory define $obj -ID]:[DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)] "
+                          }
             "observation" { set tag   [lindex $data 2]
                             set loc   [observation define $obj -ID $tag]
                             set coord [observation define $obj -COORD $tag]
                             append Page::Data(Value) "$obj:[observation define $obj -DATA $tag] "
-                        }
+                          }
             "metobs"      { set tag   [lindex $data 2]
                             set loc   [lindex [metobs define $obj -ID $tag]]
                             set coord [metobs define $obj -COORD $tag]
                             set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
                             set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
                             set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
-                            append Page::Data(Value) "[lindex $item 2]:"
+                            append Page::Data(Value) "[lindex [metobs table -desc [lindex $item 2]] 0]:"
                             foreach val $vals {
                                append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
                             }
-                        }
+                          }
          }
          if  { $loc!="" } {
             $Frame.page.canvas create text [expr $X+5] $Y -tags PTRDATAINFO -text $loc -font XFont12 -fill black -anchor sw
