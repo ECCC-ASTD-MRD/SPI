@@ -61,14 +61,16 @@
 #    Shape::Set            { Canvas Tag X Y }
 #    Shape::UnSet          { Canvas Tag }
 #
-#    Shape::DrawHBar       { Canvas Pixel Tags Color Size Fill }
-#    Shape::DrawVBar       { Canvas Pixel Tags Color Size Fill }
-#    Shape::DrawCircle     { Canvas Pixel Tags Color Size Fill }
-#    Shape::DrawLosange    { Canvas Pixel Tags Color Size Fill
-#    Shape::DrawSable      { Canvas Pixel Tags Color Size Fill }
-#    Shape::DrawSquare     { Canvas Pixel Tags Color Size Fill }
-#    Shape::DrawStar       { Canvas Pixel Tags Color Size Fill }
-#    Shape::DrawTriangle   { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawHBAR       { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawVBAR       { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawCIRCLE     { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawLOZENGE    { Canvas Pixel Tags Color Size Fill
+#    Shape::DrawSAND       { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawSQUARE     { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawSTAR       { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawTRIANGLE   { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawPENTAGON   { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawHEXAGON    { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawX          { Canvas Pixel Tags Color Size Fill }
 #    Shape::Draw+          { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawIcoMETF    { Canvas Pixel Tags Color Size Fill }
@@ -1668,7 +1670,7 @@ proc Shape::UnBindFull { Canvas Tag } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawVBar>
+# Nom      : <Shape::DrawVBAR>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme Barre Verticale
@@ -1687,7 +1689,7 @@ proc Shape::UnBindFull { Canvas Tag } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawVBar { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawVBAR { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1702,7 +1704,7 @@ proc Shape::DrawVBar { Canvas Pixel Tags Color Size Fill } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawHBar>
+# Nom      : <Shape::DrawHBAR>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme Barre Horizontale
@@ -1721,7 +1723,7 @@ proc Shape::DrawVBar { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawHBar { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawHBAR { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1736,7 +1738,7 @@ proc Shape::DrawHBar { Canvas Pixel Tags Color Size Fill } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawCircle>
+# Nom      : <Shape::DrawCIRCLE>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme Circle
@@ -1755,7 +1757,7 @@ proc Shape::DrawHBar { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawCircle { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawCIRCLE { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1770,7 +1772,7 @@ proc Shape::DrawCircle { Canvas Pixel Tags Color Size Fill } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawLosange>
+# Nom      : <Shape::DrawLOZENGE>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme du Losange
@@ -1789,7 +1791,7 @@ proc Shape::DrawCircle { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawLosange { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawLOZENGE { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1825,7 +1827,7 @@ proc Shape::DrawLosange { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawSable { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawSAND { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1845,7 +1847,7 @@ proc Shape::DrawSable { Canvas Pixel Tags Color Size Fill } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawSquare>
+# Nom      : <Shape::DrawSQUARE>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme Square
@@ -1864,7 +1866,7 @@ proc Shape::DrawSable { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawSquare { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawSQUARE { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1879,7 +1881,7 @@ proc Shape::DrawSquare { Canvas Pixel Tags Color Size Fill } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawTriangle>
+# Nom      : <Shape::DrawTRIANGLE>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme Triangle
@@ -1898,7 +1900,7 @@ proc Shape::DrawSquare { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawTriangle { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawTRIANGLE { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {
       set fillcolor $Color
@@ -1912,6 +1914,87 @@ proc Shape::DrawTriangle { Canvas Pixel Tags Color Size Fill } {
       [expr [lindex $Pixel 0] + $Size] [expr [lindex $Pixel 1] - $Size] \
       -fill $fillcolor -outline $Color -width 1 -tag $Tags
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::DrawPENTAGON>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine la forme Pentagone
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Pixel>   : Position de la forme
+#  <Tags>    : Tags a appliquer a cette forme
+#  <Color>   : Liste des couleurs avant et arriere pour cette forme
+#  <Size>    : Grandeur de l'incone (Unite en pixel)
+#  <Fill>    : Remplie ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::DrawPENTAGON { Canvas Pixel Tags Color Size Fill } {
+
+   if { $Fill } {
+      set fillcolor $Color
+      set Tags "$Tags Fill$Color"
+   } else {
+      set fillcolor white
+   }
+
+   set s2 [expr $Size/2.0]
+   set s1 [expr $Size/4.0]
+
+   $Canvas create polygon [lindex $Pixel 0] [expr [lindex $Pixel 1]-$Size] \
+      [expr [lindex $Pixel 0]-$Size] [expr [lindex $Pixel 1]-$s1] \
+      [expr [lindex $Pixel 0]-$s2] [expr [lindex $Pixel 1]+$Size] \
+      [expr [lindex $Pixel 0]+$s2] [expr [lindex $Pixel 1]+$Size] \
+      [expr [lindex $Pixel 0]+$Size] [expr [lindex $Pixel 1]-$s1] \
+      -fill $fillcolor -outline $Color -width 1 -tag $Tags
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::DrawHEXAGON>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine la forme Hexagone
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Pixel>   : Position de la forme
+#  <Tags>    : Tags a appliquer a cette forme
+#  <Color>   : Liste des couleurs avant et arriere pour cette forme
+#  <Size>    : Grandeur de l'incone (Unite en pixel)
+#  <Fill>    : Remplie ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::DrawHEXAGON { Canvas Pixel Tags Color Size Fill } {
+
+   if { $Fill } {
+      set fillcolor $Color
+      set Tags "$Tags Fill$Color"
+   } else {
+      set fillcolor white
+   }
+
+   set s2 [expr $Size/2.0]
+
+   $Canvas create polygon [expr [lindex $Pixel 0]-$Size] [lindex $Pixel 1] \
+      [expr [lindex $Pixel 0]-$s2] [expr [lindex $Pixel 1]+$Size] \
+      [expr [lindex $Pixel 0]+$s2] [expr [lindex $Pixel 1]+$Size] \
+      [expr [lindex $Pixel 0]+$Size] [expr [lindex $Pixel 1]] \
+      [expr [lindex $Pixel 0]+$s2] [expr [lindex $Pixel 1]-$Size] \
+      [expr [lindex $Pixel 0]-$s2] [expr [lindex $Pixel 1]-$Size] \
+      -fill $fillcolor -outline $Color -width 1 -tag $Tags
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <Shape::DrawX>
@@ -1945,7 +2028,7 @@ proc Shape::DrawX { Canvas Pixel Tags Color Size Fill } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::DrawStar>
+# Nom      : <Shape::DrawSTAR>
 # Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Dessine la forme d'un X
@@ -1964,7 +2047,7 @@ proc Shape::DrawX { Canvas Pixel Tags Color Size Fill } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::DrawStar { Canvas Pixel Tags Color Size Fill } {
+proc Shape::DrawSTAR { Canvas Pixel Tags Color Size Fill } {
 
    set Tags "$Tags Out$Color"
 
