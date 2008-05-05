@@ -894,20 +894,21 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
    sz=VP->Ratio*(spec->Size+spec->Width);
 
-   glLineWidth(spec->Width+1);
+   glLineWidth(spec->Width);
    glEnable(GL_DEPTH_TEST);
+   glEnableClientState(GL_VERTEX_ARRAY);
 
    if (GLMode!=GL_SELECT) {
       if (Interp) {
          glFeedbackInit(Traj->NPr*40,GL_2D);
          Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",spec->Width+1);
+         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",spec->Width);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
       }
 
       /*Height markers*/
       glColor3us(0x00,0x00,0x00);
-      if (spec->Mark==1 || spec->Mark==3) {
+      if (spec->Style==1 || spec->Style==3) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
                co.lat=Traj->Pr[i].Co.lat;
@@ -922,7 +923,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       }
 
       /*Shadow (Ground zero)*/
-      if (spec->Mark==2 || spec->Mark==3) {
+      if (spec->Style==2 || spec->Style==3) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
                co.lat=Traj->Pr[i].Co.lat;
@@ -940,7 +941,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       }
 
       /*Ribbon*/
-      if (spec->Mark==4) {
+      if (spec->Style==4) {
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glDisable(GL_CULL_FACE);
 
@@ -974,11 +975,10 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
    }
 
    if (spec->Icon) {
-     glPushName(PICK_TRAJ);
-     glDisable(GL_CULL_FACE);
+      glPushName(PICK_TRAJ);
+      glDisable(GL_CULL_FACE);
 
       /*Single Trajectory*/
-      glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[spec->Icon].Co);
       glMatrixMode(GL_MODELVIEW);
 
@@ -993,16 +993,25 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                glScalef(sz,sz,1.0);
 
                if (spec->Fill) {
-                  glColor3us(spec->Fill->red,spec->Fill->green,spec->Fill->blue);
                   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-                  if (Interp) glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
+                  if (Interp) {
+                     Tk_CanvasPsColor(Interp,VP->canvas,spec->Fill);
+                     glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
+                  } else {
+                     glColor3us(spec->Fill->red,spec->Fill->green,spec->Fill->blue);
+                  }
                   glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
 
                if (spec->Outline) {
                   glColor3us(spec->Outline->red,spec->Outline->green,spec->Outline->blue);
-                  if (Interp) glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
+                  if (Interp) {
+                     Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
+                     glFeedbackInit(IconList[spec->Icon].Nb*8,GL_2D);
+                  } else {
+                     glColor3us(spec->Outline->red,spec->Outline->green,spec->Outline->blue);
+                  }
                   if (spec->Mark && fmod(Traj->Pr[i].Date,spec->Mark)==0) {
                      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
                   } else {
@@ -1018,11 +1027,11 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       }
       glPopName();
       glEnable(GL_CULL_FACE);
-      glDisableClientState(GL_VERTEX_ARRAY);
 //      if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
 //      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
    }
 
+   glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_DEPTH_TEST);
 
    return(1);
