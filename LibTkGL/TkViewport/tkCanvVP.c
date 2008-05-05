@@ -599,7 +599,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                pick=PICK_ALL;
             }
 
-            trViewport(GLRender->TRCon,(int)vp->x-((TkCanvas *)vp->canvas)->xOrigin,Tk_Height(Tk_CanvasTkwin(vp->canvas))-(vp->y-((TkCanvas *)vp->canvas)->yOrigin+vp->Height),vp->Width,vp->Height);
+            trViewport(GLRender->TRCon,(int)vp->x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-(vp->y+vp->Height),vp->Width,vp->Height);
             glPickInit(x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-y,2.0,2.0);
             glGetDoublev(GL_PROJECTION_MATRIX,vp->GLPick);
             ViewportSetup(vp->canvas,vp,proj,Tk_Width(Tk_CanvasTkwin(vp->canvas)),Tk_Height(Tk_CanvasTkwin(vp->canvas)),0,0,0);
@@ -624,7 +624,6 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             }
 
             if (glPickProcess()>0) {
-fprintf(stderr,"---ksdjhgfkjsdfsdkjf\n");
                obj=Tcl_NewListObj(0,NULL);
                switch(GLRender->GLPick[1]) {
                   case PICK_TRAJ:      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("trajectory",-1));  break;
