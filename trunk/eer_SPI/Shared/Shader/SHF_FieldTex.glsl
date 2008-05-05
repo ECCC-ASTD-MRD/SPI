@@ -63,11 +63,11 @@ void main() {
    }
 
    // Check for colormap limits
-   if (idx<-0.0001 || idx>1.0) {
+   if (idx<0.0 || idx>1.0) {
       discard;
    } else {
-      frg=vec4(texture1D(Colormap,clamp(idx,0.01,0.99)));
-//      frg=vec4(texture1D(Colormap,idx));
+      frg=vec4(texture1D(Colormap,idx));
+
       frg.a*=gl_Color.a;
       gl_FragColor=frg;
    }
