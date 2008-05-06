@@ -342,7 +342,7 @@ proc TrajBox::FileClose { No } {
          set i [lsearch -exact $Trajectory::Data(List) $traj]
          set Trajectory::Data(List) [lreplace $Trajectory::Data(List) $i $i]
 
-         trajectory destroy $traj
+         trajectory free $traj
       }
 
       set data(TrajList) [lreplace $data(TrajList) $idx $idx]

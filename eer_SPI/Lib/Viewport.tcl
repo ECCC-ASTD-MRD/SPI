@@ -326,6 +326,7 @@ proc Viewport::Assign { Frame VP Ids { Force 0 } } {
                Obs::Register $id
             } elseif { [trajectory is $id] } {
                trajectory stats $id -tag "$Frame $VP -1"
+               Trajectory::Register $id
             }
             set Force [expr $Force==-1?0:1]
          }
@@ -462,6 +463,8 @@ proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
                Obs::UnRegister $id
             } elseif { [metobs is $id] } {
                Obs::UnRegister $id
+            } elseif { [trajectory is $id] } {
+               Trajectory::UnRegister $id
             }
          }
          set Data(Data$VP) ""
@@ -476,6 +479,8 @@ proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
                   Obs::UnRegister $id
                } elseif { [metobs is $id] } {
                   Obs::UnRegister $id
+               } elseif { [trajectory is $id] } {
+                  Trajectory::UnRegister $id
                }
                set ok 1
             }
