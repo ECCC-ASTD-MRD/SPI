@@ -384,7 +384,7 @@ proc FileBox::Create { Parent Dir Mode Types { File "" } } {
 
    frame .filebox.path -relief raised -bd 1
       label .filebox.path.label -text [lindex $Lbl(Dir) $GDefs(Lang)] -width 10 -anchor w
-      ComboBox::Create .filebox.path.name FileBox::Data(Path) edit sorted nodouble -1 {} 40 10 "FileBox::GetContent \$FileBox::Data(Path)"
+      ComboBox::Create .filebox.path.name FileBox::Data(Path) editclose sorted nodouble -1 {} 40 10 "FileBox::GetContent \$FileBox::Data(Path)"
       button .filebox.path.save -image FOLDIN -bd 0 -command "FileBox::MemAdd"
       button .filebox.path.del -image FOLDOUT -bd 0 -command "FileBox::MemDel"
       menubutton .filebox.path.home -image FOLDUP -bd 0 -menu .filebox.path.home.back
