@@ -41,7 +41,7 @@ static int TrajNo=0;
 
 static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int Traj_Create(Tcl_Interp *Interp,char* Name);
-static int Traj_Destroy(Tcl_Interp *Interp,char *Name);
+static int Traj_Free(Tcl_Interp *Interp,char *Name);
 static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Traj_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 
@@ -99,8 +99,8 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
    TDataSpec   *spec;
 
    int         idx;
-   static CONST char *sopt[] = { "create","load","destroy","configure","define","stats","is","all","wipe",NULL };
-   enum                opt { CREATE,LOAD,DESTROY,CONFIGURE,DEFINE,STATS,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","load","destroy","free","configure","define","stats","is","all","wipe",NULL };
+   enum                opt { CREATE,LOAD,DESTROY,FREE,CONFIGURE,DEFINE,STATS,IS,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -132,11 +132,15 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
          break;
 
       case DESTROY:
+      case FREE:
          if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"traj");
             return(TCL_ERROR);
          }
-         return(Traj_Destroy(Interp,Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            Traj_Free(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case CONFIGURE:
@@ -478,7 +482,7 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Traj_Destroy>
+ * Nom          : <Traj_Free>
  * Creation     : Fevrier 2003 J.P. Gauthier
  *
  * But          : Destruction d'une trajectoire a partir de son nom.
@@ -493,7 +497,7 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int Traj_Destroy(Tcl_Interp *Interp,char *Name) {
+static int Traj_Free(Tcl_Interp *Interp,char *Name) {
 
    TTraj *traj=NULL;
 
