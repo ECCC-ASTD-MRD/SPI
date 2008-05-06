@@ -768,7 +768,6 @@ static void glDisplayLine(Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Dra
    XColor  *color;
    Pixmap   stipple;
    Tk_State state=itemPtr->state;
-   short    drawableX,drawableY;
 
   /* If the line as no graphic context or has no points, nothing to draw */
    if (!linePtr->numPoints)

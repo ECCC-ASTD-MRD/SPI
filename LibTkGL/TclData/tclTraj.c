@@ -41,7 +41,7 @@ static int TrajNo=0;
 
 static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int Traj_Create(Tcl_Interp *Interp,char* Name);
-static int Traj_Free(Tcl_Interp *Interp,char *Name);
+static int Traj_FreeHash(Tcl_Interp *Interp,char *Name);
 static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Traj_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 
@@ -98,7 +98,7 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
    TTraj       *traj;
    TDataSpec   *spec;
 
-   int         idx;
+   int         idx,n;
    static CONST char *sopt[] = { "create","load","destroy","free","configure","define","stats","is","all","wipe",NULL };
    enum                opt { CREATE,LOAD,DESTROY,FREE,CONFIGURE,DEFINE,STATS,IS,ALL,WIPE };
 
@@ -138,7 +138,7 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
             return(TCL_ERROR);
          }
          for(n=2;n<Objc;n++) {
-            Traj_Free(Interp,Tcl_GetString(Objv[n]));
+            Traj_FreeHash(Interp,Tcl_GetString(Objv[n]));
          }
          return(TCL_OK);
          break;
@@ -482,7 +482,7 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Traj_Free>
+ * Nom          : <Traj_FreeHash>
  * Creation     : Fevrier 2003 J.P. Gauthier
  *
  * But          : Destruction d'une trajectoire a partir de son nom.
@@ -497,7 +497,7 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int Traj_Free(Tcl_Interp *Interp,char *Name) {
+static int Traj_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    TTraj *traj=NULL;
 
