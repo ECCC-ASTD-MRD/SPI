@@ -987,7 +987,6 @@ void GraphUnSet(GraphItem *GR){
    glMatrixMode(GL_PROJECTION);
    glPopMatrix();
    glPopAttrib();
-   glEnable(GL_CULL_FACE);
 }
 
 /*----------------------------------------------------------------------------
