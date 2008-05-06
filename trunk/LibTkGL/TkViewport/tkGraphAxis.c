@@ -1147,11 +1147,8 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          if (Axis->Label) {
             text=Tk_ComputeTextLayout(font,Axis->Label[i],Tcl_NumUtfChars(Axis->Label[i],strlen(Axis->Label[i])),0,TK_JUSTIFY_CENTER,0,&width,&height);
          } else {
-//fprintf(stderr,"(AQBUG) Print value %f\n",Axis->Inter[i]);
             GraphAxis_Print(Axis,buf,Axis->Inter[i],0);
-//fprintf(stderr,"(AQBUG) Print buffer %s\n",buf);
             text=Tk_ComputeTextLayout(font,buf,strlen(buf),0,TK_JUSTIFY_CENTER,0,&width,&height);
-//fprintf(stderr,"(AQBUG) Print layout %p\n",text);
          }
 
          if (Side&HORIZONTAL) {
