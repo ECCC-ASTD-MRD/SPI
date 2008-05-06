@@ -27,7 +27,7 @@
 #    ComboBox::Index      { W Search Item }
 #    ComboBox::List       { W }
 #    ComboBox::Open       { W }
-#    ComboBox::Place      { W }
+#    ComboBox::Place      { W { Set True } }
 #    ComboBox::Select     { W }
 #    ComboBox::SelectNext { W Incr }
 #    ComboBox::Set        { W Pos }
@@ -347,7 +347,7 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
    # bind  $W.select  <B1-ButtonRelease> "if { !\[winfo ismapped .$top\] } { $W.box invoke }"
 
    #----- Si on tappe dans l'entree, rechercher la chaine dans la liste
-   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { if { \"$Edit\"==\"edit\" } { ComboBox::Open $W; ComboBox::Select $W } }"
+   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { if { \"$Edit\"==\"edit\" } { ComboBox::Open $W; ComboBox::Select $W False } }"
 
    #----- Apres Enter dans l'entree, prendre ce qui est selectionne dans la liste
    bind $W.select <Key-Up>   "ComboBox::Open $W; ComboBox::SelectNext $W -1"
@@ -723,6 +723,7 @@ proc ComboBox::Resize { W Y } {
 #
 # Parametres :
 #   <W>      : Nom du widget ComboBox ou supprimer
+#   <Set>    : Selectionner l'item, ou seulement se repositionner dessus
 #
 # Retour   :
 #
@@ -730,7 +731,7 @@ proc ComboBox::Resize { W Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc ComboBox::Select { W } {
+proc ComboBox::Select { W { Set True } } {
 
    upvar #0 ComboBox::${W}var Var
    upvar #0 ComboBox::${W}top Top
@@ -742,7 +743,9 @@ proc ComboBox::Select { W } {
    #----- Selectionner la valeur
 
    $Top.content selection clear 0 end
-   $Top.content selection set $index
+   if { $Set } {
+      $Top.content selection set $index
+   }
    $Top.content yview $index
 }
 
