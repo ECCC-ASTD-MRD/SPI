@@ -181,6 +181,7 @@ proc ComboBox::Close { W } {
       foreach grab $Data(Grab) {
          grab $grab
       }
+      $Top.content selection clear 0 end
    }
 }
 
@@ -347,7 +348,7 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
    # bind  $W.select  <B1-ButtonRelease> "if { !\[winfo ismapped .$top\] } { $W.box invoke }"
 
    #----- Si on tappe dans l'entree, rechercher la chaine dans la liste
-   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { if { \"$Edit\"==\"edit\" } { ComboBox::Open $W; ComboBox::Select $W False } }"
+   bind $W.select <Any-KeyRelease> "if { \"%K\"!=\"Return\" } { if { \"$Edit\"==\"edit\" } { ComboBox::Open $W; ComboBox::Select $W  } }"
 
    #----- Apres Enter dans l'entree, prendre ce qui est selectionne dans la liste
    bind $W.select <Key-Up>   "ComboBox::Open $W; ComboBox::SelectNext $W -1"
