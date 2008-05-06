@@ -193,8 +193,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    int         i,j,c,idx;
 
 
-   static CONST char *sopt[] = { "-colors","-outline","-fill","-iconoutline","-iconfill","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-error","-high","-low","-median","-min","-max","-xaxis","-yaxis","-zaxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
-   enum                opt { COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,XAXIS,YAXIS,ZAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
+   static CONST char *sopt[] = { "-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-error","-high","-low","-median","-min","-max","-xaxis","-yaxis","-zaxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
+   enum                opt { COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,XAXIS,YAXIS,ZAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
    item=GraphItem_Get(Name);
    if (!item) {
       Tcl_AppendResult(Interp,"\n   GraphItem_Config: unknown object: \"",Name,"\"",(char*)NULL);
@@ -270,6 +270,14 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             } else {
                if (item->IconFill) Tk_FreeColor(item->IconFill);
                item->IconFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+            }
+            break;
+
+         case ICONXFILLVALUE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(item->IconXFillValue));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&item->IconXFillValue);
             }
             break;
 
@@ -627,6 +635,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
    item->Icon=0;
    item->IconOutline=NULL;
    item->IconFill=NULL;
+   item->IconXFillValue=1e32;
    item->Dash.number=0;
    item->Colors=NULL;
 
@@ -1258,7 +1267,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    Vect3d    *v,v0,v1,vt;
    char       buf[32];
    double    *vm,x,y,db,dh,x0,y0;
-   int        i,j,n,vn;
+   int        i,j,n,vn,sz;
    XColor    *color=NULL;
    Tcl_Obj   *obj;
 
@@ -1436,6 +1445,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
    /* Display Icons */
    if (Item->Icon && Item->Size) {
+      sz=Item->Size+Item->Width;
       glLineWidth(Item->Width);
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
@@ -1446,11 +1456,12 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          } else {
             glTranslated(v[i][0],v[i][1]-dh,v[i][2]);
          }
-         glScalef(Item->Size,Item->Size,1.0f);
+         glScalef(sz,sz,1.0f);
+         glColor4us(Graph->BGColor->red,Graph->BGColor->green,Graph->BGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
          if (Item->IconFill) {
-            glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
-         } else {
-            glColor4us(Graph->BGColor->red,Graph->BGColor->green,Graph->BGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
+            if (Item->IconXFillValue==1e32 || fmod(vecx->V[i],Item->IconXFillValue)==0.0) {
+               glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
+            }
          }
          GraphItem_ColorXYZ(Interp,Graph,Item,i);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -2843,7 +2854,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    Vect3d    *v,v0,v1,vt;
    char       buf[256];
    double     x,y,db,dh,x0,y0;
-   int        i,j,n,vn;
+   int        i,j,n,vn,sz;
 
    double       rect[8];
 
@@ -3023,16 +3034,19 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    /* Display Icons */
    if (Item->Icon && Item->Size) {
       for(i=0;i<vn;i++) {
+         sz=Item->Size+Item->Width;
+
          if (Item->Orient[0]=='X') {
-            sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0]-dh,v[i][1],Item->Size,Item->Size);
+            sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0]-dh,v[i][1],sz,sz);
          } else {
-            sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0],v[i][1]-dh,Item->Size,Item->Size);
+            sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0],v[i][1]-dh,sz,sz);
          }
          Tcl_AppendResult(Interp,buf,(char*)NULL);
+
+         Tk_CanvasPsColor(Interp,Graph->canvas,Graph->BGColor);
          if (Item->IconFill) {
-            Tk_CanvasPsColor(Interp,Graph->canvas,Item->IconFill);
-         } else {
-            Tk_CanvasPsColor(Interp,Graph->canvas,Graph->BGColor);
+            if (Item->IconXFillValue==1e32 || fmod(vecx->V[i],Item->IconXFillValue)==0.0)
+               Tk_CanvasPsColor(Interp,Graph->canvas,Item->IconFill);
          }
          GraphItem_ColorXYZ(Interp,Graph,Item,i);
          Tk_glCanvasPsPath(Interp,Graph->canvas,IconList[Item->Icon].Co,IconList[Item->Icon].Nb);
