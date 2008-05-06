@@ -75,16 +75,18 @@ namespace eval Trajectory {
 
    #----- Constantes relatives a l'affichage des trajectoires
 
-   set Param(Color_Sel) orange                                                      ;#Couleur lorsque selectionee
-   set Param(Icons)     { NONE TRIANGLE SQUARE CIRCLE HBAR VBAR LOZENGE PENTAGON HEXAGON }
-   set Param(Icon)      SQUARE
+   set Param(Icons)     { TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON }
+   set Param(Colors)    { #ff0000 #0000ff #006400 #4C7A5C #FFCC00 #FF00CC #00FFFF #785D0C #ACF003 } ;#Liste des couleurs des niveaux
+   set Param(Icon)      TRIANGLE
    set Param(Color)     #ff0000                                                     ;#Couleur courante
    set Param(Style)     0                                                           ;#Type d'affichage
    set Param(Size)      3                                                           ;#Grandeur des icones
    set Param(Width)     1                                                           ;#Grandeur des icones
    set Param(Mark)      24                                                          ;#Remplir les icones
    set Param(Interval)  3                                                           ;#Intervale de selection des donnees
+   set Param(Idx)       -1                                                          ;#Index de config
 
+   set Param(Modes)     { LEVEL PARCEL ALL }                                        ;#Mode de selection des parametres
    set Param(Mode)      LEVEL                                                       ;#Mode de selection des parametres
    set Param(Spec)      ""                                                          ;#Variable a parametrer
    set Param(Specs)     {}                                                          ;#Variables a parametrer
@@ -298,6 +300,7 @@ proc Trajectory::ParamFrame { Frame Apply } {
    global GDefs
    variable Lbl
    variable Data
+   variable Param
 
    set Data(Frame) [TabFrame::Add $Frame 2 [lindex $Lbl(Traj) $GDefs(Lang)] False ""]
    set Data(ApplyButton) $Apply
@@ -314,12 +317,10 @@ proc Trajectory::ParamFrame { Frame Apply } {
       pack $Data(Frame).left.traj -side top -pady 5 -fill x
 
       menu $Data(Frame).left.traj.type.lst
-         $Data(Frame).left.traj.type.lst add command -label PARCEL \
-            -command "Trajectory::VarMode PARCEL"
-         $Data(Frame).left.traj.type.lst add command -label LEVEL \
-            -command "Trajectory::VarMode LEVEL"
-         $Data(Frame).left.traj.type.lst add command -label ALL \
-            -command "Trajectory::VarMode ALL"
+         foreach mode $Param(Modes) {
+            $Data(Frame).left.traj.type.lst add command -label $mode \
+               -command "Trajectory::VarMode $mode"
+         }
 
       labelframe $Data(Frame).left.show -text [lindex $Lbl(Options) $GDefs(Lang)]
          frame $Data(Frame).left.show.size
@@ -367,7 +368,7 @@ proc Trajectory::ParamFrame { Frame Apply } {
          frame $Data(Frame).right.part.ico
             label $Data(Frame).right.part.ico.lbl -text " [lindex $Lbl(Ico) $GDefs(Lang)]" -width 12 -anchor w
             IcoMenu::Create $Data(Frame).right.part.ico.sel $GDefs(Dir)/Resources/Bitmap \
-              { zeroth.xbm stri.xbm ssquare.xbm  scircle.xbm shbar.xbm svbar.xbm slos.xbm spenta.xbm shexa.xbm } $Trajectory::Param(Icons) \
+              { zeroth.xbm stri.xbm ssquare.xbm  scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm } [concat NONE $Trajectory::Param(Icons)] \
                Trajectory::Param(Icon) "Trajectory::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).right.part.ico.sel $Data(Frame).right.part.ico.lbl -side left
 
@@ -382,8 +383,6 @@ proc Trajectory::ParamFrame { Frame Apply } {
 
    IcoMenu::Set $Data(Frame).left.show.int.sel $Trajectory::Param(Interval)
 }
-
-
 
 #-------------------------------------------------------------------------------
 # Nom      : <Trajcetory::ParamGet>
@@ -416,8 +415,13 @@ proc Trajectory::ParamGet { { Spec "" } } {
    set Param(Icon)      [dataspec configure $Spec -icon]
    set Param(Size)      [dataspec configure $Spec -size]
    set Param(Color)     [dataspec configure $Spec -color]
-   set Param(Interval)  [expr int([dataspec configure $Spec -intervals]/3600)]
-   set Param(Mark)      [expr int([dataspec configure $Spec -mark]/3600)]
+
+   if { [llength [dataspec configure $Spec -intervals]] } {
+      set Param(Interval)  [expr int([dataspec configure $Spec -intervals]/3600)]
+   }
+   if { [dataspec configure $Spec -mark]!="" } {
+      set Param(Mark)      [expr int([dataspec configure $Spec -mark]/3600)]
+   }
    set Param(Style)     [dataspec configure $Spec -style]
    set Param(Width)     [dataspec configure $Spec -width]
 }
@@ -512,7 +516,13 @@ proc Trajectory::ParamInit { Traj { Spec "" } } {
          lappend Param(Specs) $Spec
 
          if { !$set } {
-            dataspec copy $Spec TRAJ500.00
+            dataspec create $Spec
+
+            incr Param(Idx)
+            dataspec configure $Spec -color [lindex $Param(Colors) [expr $Param(Idx)%[llength $Param(Colors)]]] \
+               -icon [lindex $Param(Icons) [expr $Param(Idx)%[llength $Param(Icons)]]] -width $Param(Width) \
+               -fill white -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] \
+               -mark [expr $Param(Mark)*3600]
          }
       }
    }
@@ -913,7 +923,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
       set date0   [lindex [lindex $parcels 0]   0]
       set date1   [lindex [lindex $parcels end] 0]
       set color   [trajectory configure $t -color]
-      set size    [trajectory configure $t -size]
+      set size    [expr [trajectory configure $t -size]+[trajectory configure $t -width]]
       set icon    [trajectory configure $t -icon]
       set mark    [expr int([trajectory configure $t -mark]/3600)]
       set inter   [expr int([trajectory configure $t -intervals]/3600)]
