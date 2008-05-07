@@ -162,7 +162,10 @@ namespace eval Page {
    set Data(Tag)        PAGE        ;#Tag identifiant la projection
 
    set Data(Coord)      ""          ;#Coordonnees a l'interieur de la page
+   set Data(CoordUnit)  DEG         ;#Type d'unite des coordonnees
+   set Data(CoordLink)  False       ;#Curseur commun
    set Data(Value)      ""          ;#Valeur a l'interieur de la page
+   set Data(Altitude)   ""          ;#Altitude a l'interieur de la page
    set Data(Mode)       Zoom        ;#Mode de manipulation
    set Data(ToolMode)   ""          ;#Outils de selection courant
    set Data(DrawMode)   ""          ;#Outils de dessin courant

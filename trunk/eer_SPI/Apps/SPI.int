@@ -306,10 +306,10 @@ proc SPI::Window { } {
    pack .info -side bottom -fill x
 
    menu .info.opt.menu
-      .info.opt.menu add radiobutton -label [lindex $Lbl(Deg) $GDefs(Lang)] -variable Viewport::Map(CoordUnit) -value DEG
-      .info.opt.menu add radiobutton -label [lindex $Lbl(Min) $GDefs(Lang)] -variable Viewport::Map(CoordUnit) -value MIN
+      .info.opt.menu add radiobutton -label [lindex $Lbl(Deg) $GDefs(Lang)] -variable Page::Data(CoordUnit) -value DEG
+      .info.opt.menu add radiobutton -label [lindex $Lbl(Min) $GDefs(Lang)] -variable Page::Data(CoordUnit) -value MIN
       .info.opt.menu add separator
-      .info.opt.menu add checkbutton -label [lindex $Lbl(Link) $GDefs(Lang)] -variable Viewport::Map(CoordLink)
+      .info.opt.menu add checkbutton -label [lindex $Lbl(Link) $GDefs(Lang)] -variable Page::Data(CoordLink)
       .info.opt.menu add separator
       .info.opt.menu add command -label [lindex $Lbl(Follower) $GDefs(Lang)] -command { Viewport::FollowerInfo $Page::Data(Frame) $Viewport::Data(VP) }
 
