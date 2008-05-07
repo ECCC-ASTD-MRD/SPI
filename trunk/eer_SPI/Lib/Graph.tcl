@@ -598,7 +598,7 @@ proc Graph::Mode { Type GR { Zoom False } } {
 
    if { $Zoom } {
 
-      $data(Canvas) bind GRAPH$GR                <Motion>        "Graph::${Type}::Coord $Page::Data(Frame) $GR %x %y"
+      $data(Canvas) bind GRAPH$GR                <Motion>        "Graph::${Type}::Coord $Page::Data(Frame) $GR \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
       $data(Canvas) bind GRAPH$GR                <Leave>         "set Page::Data(Coord) \"\";set Page::Data(Value) \"\""
 
       #----- Evenements de zoom
