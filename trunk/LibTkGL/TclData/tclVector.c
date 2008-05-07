@@ -156,7 +156,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case DIM:
          if(Objc!=3 && Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"vector [dims]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if(Objc==3) {
             vec=Vector_Get(Tcl_GetString(Objv[2]));
@@ -174,7 +174,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case LENGTH:
          if(Objc!=3 && Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"vector [length]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          vec=Vector_Get(Tcl_GetString(Objv[2]));
          if (!vec) {
@@ -192,7 +192,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case MEM:
          if(Objc!=3 && Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"vector [nb]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          vec=Vector_Get(Tcl_GetString(Objv[2]));
          if (!vec) {

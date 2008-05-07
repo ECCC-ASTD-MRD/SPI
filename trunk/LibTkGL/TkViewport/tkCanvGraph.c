@@ -43,7 +43,7 @@ void   Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   Graph_RenderTexture(GraphItem *Gr,TData *Field,int Tile);
 void   Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
-void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int PS);
+void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int Clear,int PS);
 void   GraphUnSet(GraphItem *GR);
 int    Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
 
@@ -262,13 +262,14 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
 */
 static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   GraphItem   *gr=(GraphItem *)Data;
+   GraphItem   *gr=(GraphItem*)Data;
    TGraphItem  *item=NULL;
+   Tcl_Obj     *obj=NULL;
    int          idx,ex,ok;
    double       x,y,z=0.0;
 
-   static CONST char *sopt[] = { "-unproject","-project",NULL };
-   enum                opt { UNPROJECT,PROJECT };
+   static CONST char *sopt[] = { "-unproject","-project","-pick",NULL };
+   enum                opt { UNPROJECT,PROJECT,PICK };
 
    Tcl_ResetResult(Interp);
 
@@ -305,6 +306,37 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case PROJECT:
+         break;
+
+      case PICK:
+         if (Objc!=4){
+            Tcl_WrongNumArgs(Interp,2,Objv,"x y");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
+         Tcl_GetDoubleFromObj(Interp,Objv[3],&y);
+
+         trViewport(GLRender->TRCon,(int)gr->xg[0],Tk_Height(Tk_CanvasTkwin(gr->canvas))-gr->yg[0],gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1]);
+         glPickInit(x,Tk_Height(Tk_CanvasTkwin(gr->canvas))-y,2.0,2.0);
+
+        /*Rendue des donnees vectorielle*/
+         GraphSet(gr->canvas,gr,Tk_Width(Tk_CanvasTkwin(gr->canvas)),Tk_Height(Tk_CanvasTkwin(gr->canvas)),0,0,0);
+         gr->ISide=0;
+         for(idx=0;idx<gr->NItem;idx++) {
+            glPushName(idx);
+            item=GraphItem_Get(gr->Item[idx]);
+            GraphItem_Display(NULL,gr,item,0,0,gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1],GL_SELECT);
+            if (item->Type==WIDEBAR) gr->ISide++;
+            glPopName();
+         }
+         GraphUnSet(gr);
+
+         if (glPickProcess()>1) {
+            obj=Tcl_NewListObj(0,NULL);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(gr->Item[GLRender->GLPick[0]],-1));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[1]));
+            Tcl_SetObjResult(Interp,obj);
+         }
          break;
    }
    return(TCL_OK);
@@ -812,8 +844,8 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
          a=0;
          for(i=0;i<gr->NItem;i++) {
             item=GraphItem_Get(gr->Item[i]);
-            GraphSet(Canvas,gr,Width,Height,0,0);
-            GraphItem_Display(NULL,gr,item,0,0,gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1]);
+            GraphSet(Canvas,gr,Width,Height,0,1,0);
+            GraphItem_Display(NULL,gr,item,0,0,gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1],GL_RENDER);
             GraphUnSet(gr);
             if (item->Type==WIDEBAR) gr->ISide++;
          }
@@ -949,14 +981,17 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
  *
  *----------------------------------------------------------------------------
 */
-void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int PS){
+void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int Clear,int PS){
 
    int w,h;
 
    glPushAttrib(GL_VIEWPORT_BIT);
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
-   glLoadIdentity();
+
+   if (Clear) {
+      glLoadIdentity();
+   }
 
    w=GR->xg[1]-GR->xg[0];
    h=GR->yg[0]-GR->yg[1];
@@ -972,7 +1007,6 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int P
       trOrtho(GLRender->TRCon,0,0,GR->Width,GR->Height,0.0,0.0);
    } else {
       glOrtho(0,w,0,h,-1,1);
-
    }
 
    glMatrixMode(GL_MODELVIEW);
@@ -1175,6 +1209,8 @@ static int GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
    if (Prepass) {
       return TCL_OK;
    }
+
+   gr->ISide=0;
 
    /*Coordonnee du viewport*/
    SETRECT(coords,gr->header.x1,gr->header.y1,gr->header.x2,gr->header.y2);
