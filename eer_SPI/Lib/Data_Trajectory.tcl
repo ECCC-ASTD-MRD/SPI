@@ -28,6 +28,7 @@
 #    Trajectory::Graph       { Frame X0 Y0 X1 Y1 TrajId }
 #    Trajectory::GraphPlot   { Frame TrajId }
 #    Trajectory::GraphScale  { Frame TrajId X Y }
+#    Trajectory::GraphFollow { Frame X Y }
 #    Trajectory::Height      { Frame X0 Y0 X1 Y1 TrajId }
 #    Trajectory::HeightScale { Frame TrajId X Y }
 #    Trajectory::Legend      { Frame X0 Y0 X1 Y1 TrajId }
@@ -732,8 +733,9 @@ proc Trajectory::Graph { Frame X0 Y0 X1 Y1 TrajId } {
 
    #----- Creer le graph
 
-   $canvas create graph -x $X0 -y $Y0 -width [expr $X1-$X0] -height [expr $Y1-$Y0] -anchor nw -command "" \
+   $canvas create graph -x $X0 -y $Y0 -width [expr $X1-$X0] -height [expr $Y1-$Y0] -anchor nw -command "trajgraph" \
        -fg black -bg white -fill white -tags "TRAJGRAPH" -font XFont10 -title $Lbl(Height) -legend False
+   $canvas bind TRAJGRAPH <Motion>  "Trajectory::GraphFollow $Frame \[$canvas canvasx %x\] \[$canvas canvasy %y\]"
 
    if { [llength $TrajId] } {
       if { ![graphaxis is TRAJGRAPHAXISX] } {
@@ -745,6 +747,45 @@ proc Trajectory::Graph { Frame X0 Y0 X1 Y1 TrajId } {
          graphaxis configure TRAJGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -gridwidth 1 -dash . -position LL -width 1
       }
       Trajectory::GraphPlot $Frame $TrajId
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Trajectory::GraphFollow>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Extrait l'information d'une particule a partir de la coordonnee X-Y
+#            dans le graph
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <X>       : X dans le canvas
+#  <Y>       : Y dans le canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Trajectory::GraphFollow { Frame X Y } {
+   global GDefs
+
+   if { [llength [set pick [trajgraph -pick $X $Y]]] } {
+      set item [lindex $pick 0]
+      set no   [lindex $pick 1]
+      set obj  [graphitem configure $item -tag]
+      set time [expr int([vector get [graphitem configure $item -xdata] $no])]
+
+      set parcel [trajectory define $obj -PARCEL $time]
+#      set loc   "[trajectory define $obj -ID]\n[format %5.1f [lindex $parcel 5]] m\n[lindex $parcel 8] m/s"
+      set Page::Data(Value)   "[trajectory define $obj -ID]:[DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]"
+      set Page::Data(Coord)    [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] $Page::Data(CoordUnit) $Page::Data(CoordPrec)]
+      set Page::Data(Altitude) [lindex $parcel 5]
+   } else {
+      set Page::Data(Value)    ""
+      set Page::Data(Coord)    ""
+      set Page::Data(Altitude) ""
    }
 }
 
@@ -847,8 +888,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \
          -icon [trajectory configure $t -icon] -outline [trajectory configure $t -color] -iconoutline [trajectory configure $t -color] \
          -size [trajectory configure $t -size] -width [trajectory configure $t -width] -iconfill [trajectory configure $t -color] \
-         -iconxfillvalue [expr 24*3600] \
-         -xdata TRAJGRAPH$t.X -ydata TRAJGRAPH$t.Y
+         -iconxfillvalue [expr 24*3600] -xdata TRAJGRAPH$t.X -ydata TRAJGRAPH$t.Y -tag $t
 
    }
    $Frame.page.canvas itemconfigure TRAJGRAPH -item $items

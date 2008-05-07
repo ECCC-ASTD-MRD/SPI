@@ -49,10 +49,10 @@ void GraphItem_Clear(TGraphItem *Item);
 void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int N);
 int  GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
 int  GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1);
-void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
+void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
 void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
@@ -809,6 +809,7 @@ void GraphItem_Wipe() {
  *   <Y0>       : Limite inferieure gauche du graph
  *   <X1>       : Limite superieur  droite du graph
  *   <Y1>       : Limite superieur  droite du graph
+ *   <GLMode>   : Mode de rendue
  *
  * Retour       :
  *
@@ -816,7 +817,7 @@ void GraphItem_Wipe() {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1) {
+void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    TData      *data;
    TVector    *vecx,*vecy,*vecz;
@@ -827,7 +828,7 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
 
    if (!axisx || !axisy) return;
 
-   if (Item->Data) {
+   if (Item->Data && GLMode!=GL_SELECT) {
 
       if ((data=Data_Get(Item->Data)) && data->Def && data->Def->NI>1) {
 
@@ -863,11 +864,11 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
          GraphAxis_Define(axisy,vecy,Y1-Y0);
 
       if (Item->Type==MINMAX)
-         GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1);
+         GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1,GLMode);
       else if (Item->Type==BOXPLOT)
-         GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1);
+         GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1,GLMode);
       else
-         GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1);
+         GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1,GLMode);
    }
 }
 
@@ -888,6 +889,7 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
  *   <Y0>       : Limite inferieure gauche du graph
  *   <X1>       : Limite superieur  droite du graph
  *   <Y1>       : Limite superieur  droite du graph
+ *   <GLMode>   : Mode de rendue
  *
  * Retour       :
  *
@@ -896,7 +898,7 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
  *---------------------------------------------------------------------------------------------------------------
 */
 
-void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
+void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    TVector   *vec,*vec0,*vec1;
    Vect3d    *v;
@@ -1009,6 +1011,7 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
  *   <Y0>       : Limite inferieure gauche du graph
  *   <X1>       : Limite superieur  droite du graph
  *   <Y1>       : Limite superieur  droite du graph
+ *   <GLMode>   : Mode de rendue
  *
  * Retour       :
  *
@@ -1016,7 +1019,7 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
+void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    TVector *vec,*vec0,*vec1;
    double  x[2],y[2];
@@ -1213,6 +1216,7 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
  *   <Graph>    : Item graph
  *   <Item>     : Item de graph
  *   <N>        : Index de la couleur a utiliser *
+ *
  * Retour       :
  *
  * Remarques :
@@ -1254,6 +1258,7 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
  *   <Y0>       : Limite inferieure gauche du graph
  *   <X1>       : Limite superieur  droite du graph
  *   <Y1>       : Limite superieur  droite du graph
+ *   <GLMode>   : Mode de rendue
  *
  * Retour       :
  *
@@ -1261,7 +1266,7 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
+void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    TVector   *vecx,*vecy;
    Vect3d    *v,v0,v1,vt;
@@ -1350,26 +1355,30 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       if (Item->Type==BAR || Item->Type==HISTOGRAM || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
-            GraphItem_ColorXYZ(Interp,Graph,Item,i);
-            glBegin(GL_QUADS);
-               glVertex2f(v[i][0]-db-dh,y0);
-               glVertex2f(v[i][0]-db-dh,v[i][1]);
-               glVertex2f(v[i][0]+db-dh,v[i][1]);
-               glVertex2f(v[i][0]+db-dh,y0);
-            glEnd();
+               glPushName(i);
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               glBegin(GL_QUADS);
+                  glVertex2f(v[i][0]-db-dh,y0);
+                  glVertex2f(v[i][0]-db-dh,v[i][1]);
+                  glVertex2f(v[i][0]+db-dh,v[i][1]);
+                  glVertex2f(v[i][0]+db-dh,y0);
+               glEnd();
+               glPopName();
            }
          } else {
             for(i=0;i<vn;i++) {
-            GraphItem_ColorXYZ(Interp,Graph,Item,i);
-            glBegin(GL_QUADS);
-               glVertex2f(x0,v[i][1]-db-dh);
-               glVertex2f(v[i][0],v[i][1]-db-dh);
-               glVertex2f(v[i][0],v[i][1]+db-dh);
-               glVertex2f(x0,v[i][1]+db-dh);
-            glEnd();
+               glPushName(i);
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               glBegin(GL_QUADS);
+                  glVertex2f(x0,v[i][1]-db-dh);
+                  glVertex2f(v[i][0],v[i][1]-db-dh);
+                  glVertex2f(v[i][0],v[i][1]+db-dh);
+                  glVertex2f(x0,v[i][1]+db-dh);
+               glEnd();
+               glPopName();
            }
          }
-      } else if (Item->Type!=NONE) {
+      } else if (Item->Type!=NONE && GLMode==GL_RENDER) {
 
          gluTessBeginPolygon(GLRender->GLTess,NULL);
          gluTessBeginContour(GLRender->GLTess);
@@ -1397,7 +1406,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
 
    /* Display graph outline */
-   if (Item->Outline && Item->Width) {
+   if (Item->Outline && Item->Width && GLMode==GL_RENDER) {
       glDash(&Item->Dash);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
       glLineWidth(Item->Width);
@@ -1463,9 +1472,11 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
             }
          }
+         glPushName(i);
          GraphItem_ColorXYZ(Interp,Graph,Item,i);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glDrawArrays(IconList[Item->Icon].Type,0,IconList[Item->Icon].Nb);
+         glPopName();
 
          if (Item->IconOutline && Item->Width) {
             glColor4us(Item->IconOutline->red,Item->IconOutline->green,Item->IconOutline->blue,Item->Alpha*Graph->Alpha*0.01*655);
@@ -1478,7 +1489,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
 
    /* Display Values */
-   if (Item->Value && Item->Font) {
+   if (Item->Value && Item->Font && GLMode==GL_RENDER) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
 
@@ -1500,12 +1511,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    if (Item->Bitmap) {
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
       for(i=0;i<vn;i++) {
+         glPushName(i);
          if (Item->Orient[0]=='X') {
             trRasterPos2i((v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2);
          } else {
             trRasterPos2i((v[i][0]-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-dh-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2);
          }
          glBitmap(Item->Bitmap->Width,Item->Bitmap->Height,0.0,0.0,0.0,0.0,(GLubyte *)Item->Bitmap->Data);
+         glPopName();
       }
    }
 
@@ -1524,18 +1537,20 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
       glEnable(GL_BLEND);
       for(i=0;i<vn;i++) {
+         glPushName(i);
          if (Item->Orient[0]=='X') {
             trRasterPos2i((v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-data.width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+data.height/2);
          } else {
             trRasterPos2i((v[i][0]-((TkCanvas*)Graph->canvas)->xOrigin)-data.width/2,-(v[i][1]-dh-((TkCanvas*)Graph->canvas)->yOrigin)+data.height/2);
          }
          glDrawPixels(data.width,data.height,data.pixelSize==3?GL_RGB:GL_RGBA,GL_UNSIGNED_BYTE,pixel);
+         glPopName();
       }
       free(pixel);
    }
 
    /* Display Fit curve */
-   if (Item->Fit) {
+   if (Item->Fit && GLMode==GL_RENDER) {
       switch(Item->Fit[0]) {
          case 'L' : vn=GraphItem_FitLinear(v,vecx,vecy,AxisX,AxisY,AxisZ,X0,Y0,X1,Y1); break;
 //         case 'G' : vn=GraphItem_FitGauss(v,vecx,vecy,AxisX,AxisY,AxisZ,X0,Y0,X1,Y1); break;

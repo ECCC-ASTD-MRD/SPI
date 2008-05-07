@@ -931,8 +931,6 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
    struct tm *tsec;
    time_t     sec;
 
-//fprintf(stderr,"(AQBUG) About to print %p %p %f\n",Axis,String,Value);
-
    if (Axis->Numbered) {
       if (Axis->Format) {
          sec=Value;
@@ -969,17 +967,9 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
             snprintf(String,32,"0");
          }
       } else {
-
-/*
-         if (Axis->Order>=1 && Value==floor(Value)) {
-            snprintf(String,32,"%.0f",Value);
-         } else {
-*/
-//fprintf(stderr,"(AQBUG) Print value 1\n");
          if (!DOrder && Axis->Incr!=0.0 && (Axis->Incr-ROUND(Axis->Incr))==0.0) {
             snprintf(String,32,"%.0f",Value);
          } else {
-//fprintf(stderr,"(AQBUG) Print value 2 %i\n",Axis->Order+DOrder);
             switch(Axis->Order+DOrder) {
                case   3: snprintf(String,32,"%.2f",Value);break;
                case   2: snprintf(String,32,"%.2f",Value);break;
@@ -994,13 +984,11 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
                case  -7: snprintf(String,32,"%.6e",Value);break;
                default : snprintf(String,32,"%.2e",Value);
             }
-//fprintf(stderr,"(AQBUG) Print value 3 %s\n",String);
          }
       }
    } else {
       String[0]='\0';
    }
-//fprintf(stderr,"(AQBUG) Print value 4\n");
 }
 
 /*--------------------------------------------------------------------------------------------------------------
