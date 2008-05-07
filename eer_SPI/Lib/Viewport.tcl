@@ -120,8 +120,6 @@ namespace eval Viewport {
    set Map(Types)       { "azimuthal equidistant" "azimuthal equal-area" "orthographic" "cylindric" "mercator" "grid" } ;#Type de projection geographique
 
    set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
-   set Map(CoordUnit)   DEG         ;#Type d'unite des coordonnees
-   set Map(CoordLink)   False       ;#Curseur commun
    set Map(X)           0           ;#Pixel en X
    set Map(Y)           0           ;#Pixel en Y
    set Map(Lat)         41.0        ;#Latitude centrale de l'affichage
@@ -708,8 +706,9 @@ proc Viewport::Follow { Frame VP X Y } {
    variable Map
    variable Data
 
-   set Page::Data(Value) ""
-   set Page::Data(Coord) ""
+   set Page::Data(Value)    ""
+   set Page::Data(Coord)    ""
+   set Page::Data(Altitude) ""
 
    #----- Obtenir les coordonnees du curseur
 
@@ -728,12 +727,13 @@ proc Viewport::Follow { Frame VP X Y } {
       set Map(GridJCursor)   [lindex $ij 1]
    }
 
-   if { $Map(CoordUnit)=="DEG" } {
+   if { $Page::Data(CoordUnit)=="DEG" } {
       set dec 10
    } else {
       set dec 5
    }
-   catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Map(CoordUnit) $dec] }
+   catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $dec] }
+   set Page::Data(Altitude) $Map(AltCursor)
 
    #----- Obtenir l'information des donnees
 
@@ -772,13 +772,13 @@ proc Viewport::Follow { Frame VP X Y } {
          if  { $loc!="" } {
             $Frame.page.canvas create text [expr $X+5] $Y -tags PTRDATAINFO -text $loc -font XFont12 -fill black -anchor sw
          }
-         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Map(CoordUnit) 10] }
-         catch { set Viewport::Map(AltCursor) [lindex $coord 2] }
+         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $dec] }
+         catch { set Page::Data(Altitude) [lindex $coord 2] }
       }
    }
    #----- Activation du pointeur commun
 
-   if { $Map(CoordLink) } {
+   if { $Page::Data(CoordLink) } {
       foreach frame $Page::Data(Frames) {
          $frame.page.canvas delete COORDLINK
          foreach vp [Page::Registered $frame Viewport] {
@@ -925,7 +925,7 @@ proc Viewport::FollowerInfo { Frame VP } {
 
    set i -1
    foreach follower $Data(Followers) {
-      if { $Map(CoordLink) } {
+      if { $Page::Data(CoordLink) } {
          set fs {}
          foreach frame $Page::Data(Frames) {
             foreach vp [Page::Registered $frame Viewport] {
