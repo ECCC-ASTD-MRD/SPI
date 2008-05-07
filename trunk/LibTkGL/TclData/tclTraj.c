@@ -243,6 +243,7 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    Tcl_Obj *obj,*sub;
    TTraj   *traj;
    int      i,j,idx;
+   time_t   t;
 
    static CONST char *sopt[] = { "-DATE","-DATEAP","-MODEL","-ID","-PATH","-MODE","-LEVELTYPE","-BACKWARD","-MIN","-MAX","-PARCELNB","-PARCELS","-PARCEL",NULL };
    enum                opt { DATE,DATEAP,MODEL,ID,PATH,MODE,LEVELTYPE,BACKWARD,MIN,MAX,PARCELNB,PARCELS,PARCEL };
@@ -362,21 +363,31 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
             if (Objc==2) {
                i++;
                if (strcmp(Tcl_GetString(Objv[i]),"end")==0) {
-                  j=traj->NPr-1;
+                  t=traj->NPr-1;
                } else {
-                  Tcl_GetIntFromObj(Interp,Objv[i],&j);
+                  Tcl_GetLongFromObj(Interp,Objv[i],&t);
                }
-               if (j<traj->NPr) {
+               /*A date (seconds) has been bassped in, look for the right index*/
+               if (t>10000) {
+                  for(j=0;j<traj->NPr;j++) {
+                     if (traj->Pr[j].Date==t) {
+                        t=j;
+                        break;
+                     }
+                  }
+               }
+
+               if (t<traj->NPr) {
                   sub=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(traj->Pr[j].Date));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.lat));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Sig));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Pres));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.elev));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].X));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Dist));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Speed));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(traj->Pr[t].Date));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.lat));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.lon));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Sig));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Pres));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.elev));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].X));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Dist));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Speed));
                   Tcl_SetObjResult(Interp,sub);
                }
             } else {
@@ -384,7 +395,7 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
       }
    }
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
