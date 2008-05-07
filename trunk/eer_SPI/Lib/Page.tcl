@@ -73,6 +73,7 @@
 #    Page::CanvasHeight    { Frame }
 #    Page::CanvasWidth     { Frame }
 #    Page::Create          { Frame Width Height }
+#    Page::CursorInfo      { Frame X Y Info }
 #    Page::Destroy         { Frame }
 #    Page::ModeCam         { Frame VP }
 #    Page::ModeData        { Frame VP }
@@ -763,6 +764,36 @@ proc Page::Create { Frame Width Height } {
 
    update idletasks
    . configure -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::CursorInfo>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Selectionner un objet pour manipulation (deplacement/scaling)
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#   <X>      : Coordonnee en X
+#   <Y>      : Coordonnee en Y
+#   <Info>   : Information sur la localisation a afficher
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::CursorInfo { Frame X Y Info } {
+
+   $Frame.page.canvas delete PAGECURSORINFO
+   if { $Info!="" } {
+      $Frame.page.canvas create text [expr $X+10] $Y -tags "PAGECURSORINFO PAGECURSORINFOTEXT" -text $Info -font XFont12 -fill black -anchor sw
+      set bbox [$Frame.page.canvas bbox PAGECURSORINFOTEXT]
+      $Frame.page.canvas create rectangle [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-2] [expr [lindex $bbox 2]+2] [expr [lindex $bbox 3]+2]\
+         -tags "PAGECURSORINFO PAGECURSORINFOFRAME" -fill white -outline black -width 1
+      $Frame.page.canvas lower PAGECURSORINFOFRAME PAGECURSORINFOTEXT
+   }
 }
 
 #----------------------------------------------------------------------------
