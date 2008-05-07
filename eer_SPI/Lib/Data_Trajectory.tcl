@@ -771,6 +771,8 @@ proc Trajectory::Graph { Frame X0 Y0 X1 Y1 TrajId } {
 proc Trajectory::GraphFollow { Frame X Y } {
    global GDefs
 
+   set info ""
+
    if { [llength [set pick [trajgraph -pick $X $Y]]] } {
       set item [lindex $pick 0]
       set no   [lindex $pick 1]
@@ -778,7 +780,7 @@ proc Trajectory::GraphFollow { Frame X Y } {
       set time [expr int([vector get [graphitem configure $item -xdata] $no])]
 
       set parcel [trajectory define $obj -PARCEL $time]
-#      set loc   "[trajectory define $obj -ID]\n[format %5.1f [lindex $parcel 5]] m\n[lindex $parcel 8] m/s"
+      set info  "[trajectory define $obj -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
       set Page::Data(Value)   "[trajectory define $obj -ID]:[DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]"
       set Page::Data(Coord)    [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] $Page::Data(CoordUnit) $Page::Data(CoordPrec)]
       set Page::Data(Altitude) [lindex $parcel 5]
@@ -787,6 +789,7 @@ proc Trajectory::GraphFollow { Frame X Y } {
       set Page::Data(Coord)    ""
       set Page::Data(Altitude) ""
    }
+   Page::CursorInfo $Frame $X $Y $info
 }
 
 #----------------------------------------------------------------------------
