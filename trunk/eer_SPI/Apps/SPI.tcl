@@ -1592,7 +1592,7 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
 
          frame $frame.info -bd 1 -relief raised
             label $frame.info.cooval -textvariable Page::Data(Coord) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 36
-            label $frame.info.altval -textvariable Viewport::Map(AltCursor) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 5 -anchor e
+            label $frame.info.altval -textvariable Page::Data(Altitude) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 5 -anchor e
             label $frame.info.fldval -textvariable Page::Data(Value) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 10
                pack $frame.info.cooval .info.altval -ipadx 2 -side left -fill y
             pack $frame.info.fldval -side left -fill both -expand true
