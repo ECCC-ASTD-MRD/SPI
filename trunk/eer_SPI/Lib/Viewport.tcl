@@ -727,12 +727,7 @@ proc Viewport::Follow { Frame VP X Y } {
       set Map(GridJCursor)   [lindex $ij 1]
    }
 
-   if { $Page::Data(CoordUnit)=="DEG" } {
-      set dec 10
-   } else {
-      set dec 5
-   }
-   catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $dec] }
+   catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
    set Page::Data(Altitude) $Map(AltCursor)
 
    #----- Obtenir l'information des donnees
@@ -772,7 +767,7 @@ proc Viewport::Follow { Frame VP X Y } {
          if  { $loc!="" } {
             $Frame.page.canvas create text [expr $X+5] $Y -tags PTRDATAINFO -text $loc -font XFont12 -fill black -anchor sw
          }
-         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $dec] }
+         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
          catch { set Page::Data(Altitude) [lindex $coord 2] }
       }
    }

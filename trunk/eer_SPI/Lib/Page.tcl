@@ -164,6 +164,7 @@ namespace eval Page {
    set Data(Coord)      ""          ;#Coordonnees a l'interieur de la page
    set Data(CoordUnit)  DEG         ;#Type d'unite des coordonnees
    set Data(CoordLink)  False       ;#Curseur commun
+   set Data(CoordPrec) 10           ;#Precision des coordonnees
    set Data(Value)      ""          ;#Valeur a l'interieur de la page
    set Data(Altitude)   ""          ;#Altitude a l'interieur de la page
    set Data(Mode)       Zoom        ;#Mode de manipulation
