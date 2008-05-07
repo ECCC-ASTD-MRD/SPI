@@ -521,7 +521,7 @@ proc Mapper::DepotWare::Select { Canvas Branch { Open "" } } {
 
       switch [TREE get $Branch type] {
          "DIR"  {
-            foreach file [glob -nocomplain $path/*] {
+            foreach file [lsort -dictionary -increasing [glob -nocomplain $path/*]] {
                set branch [TREE insert $Branch end]
                if { [file isdirectory $file] } {
                   TREE set $branch open False
