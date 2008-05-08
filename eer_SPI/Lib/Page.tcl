@@ -800,7 +800,7 @@ proc Page::CursorInfo { Frame X Y Info } {
       set x1 [lindex $bbox 2]
       set y1 [lindex $bbox 3]
       set coords [list [expr $x0-2] [expr $y1+2] [expr $x0-2] $y0 $x0 [expr $y0-2] $x1 [expr $y0-2] [expr $x1+2] $y0 \
-                       [expr $x1+2] [expr $y1-2] $x1 [expr $y1+2] [expr $x0-2] [expr $y1+2]]
+                       [expr $x1+2] $y1 $x1 [expr $y1+2] [expr $x0-2] [expr $y1+2]]
 
       $Frame.page.canvas coords PAGECURSORINFOFRAME $coords
       $Frame.page.canvas raise PAGECURSORINFO
