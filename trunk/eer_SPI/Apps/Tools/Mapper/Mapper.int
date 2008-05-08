@@ -255,6 +255,7 @@ proc Mapper::DBLayerOpen { } {
     if { $Data(DBName)!="" }     { append req "dbname=$Data(DBName) " }
 
     Mapper::ReadLayer $req $Data(DBSQL)
+    Mapper::UpdateData $Page::Data(Frame)
 }
 
 proc Mapper::PopUp { X Y y } {
