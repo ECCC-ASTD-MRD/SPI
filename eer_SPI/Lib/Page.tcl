@@ -768,9 +768,9 @@ proc Page::Create { Frame Width Height } {
 
 #----------------------------------------------------------------------------
 # Nom      : <Page::CursorInfo>
-# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Selectionner un objet pour manipulation (deplacement/scaling)
+# But      : Afficher une bull d'information
 #
 # Parametres :
 #   <Frame>  : Indentificateur de Page
@@ -786,14 +786,29 @@ proc Page::Create { Frame Width Height } {
 
 proc Page::CursorInfo { Frame X Y Info } {
 
-   $Frame.page.canvas delete PAGECURSORINFO
    if { $Info!="" } {
-      $Frame.page.canvas create text [expr $X+10] $Y -tags "PAGECURSORINFO PAGECURSORINFOTEXT" -text $Info -font XFont12 -fill black -anchor sw
+      if { ![llength [$Frame.page.canvas find withtag PAGECURSORINFO]] } {
+         $Frame.page.canvas create polygon -999 -999  -tags "PAGECURSORINFO PAGECURSORINFOFRAME" -fill white -outline black -width 1
+         $Frame.page.canvas create text -999 -999 -tags "PAGECURSORINFO PAGECURSORINFOTEXT" -text 333 -font XFont12 -fill black -anchor sw
+      }
+      $Frame.page.canvas coords PAGECURSORINFOTEXT [expr $X+10] $Y
+      $Frame.page.canvas itemconfigure PAGECURSORINFOTEXT -text $Info
+
       set bbox [$Frame.page.canvas bbox PAGECURSORINFOTEXT]
-      $Frame.page.canvas create rectangle [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-2] [expr [lindex $bbox 2]+2] [expr [lindex $bbox 3]+2]\
-         -tags "PAGECURSORINFO PAGECURSORINFOFRAME" -fill white -outline black -width 1
-      $Frame.page.canvas lower PAGECURSORINFOFRAME PAGECURSORINFOTEXT
+      set x0 [lindex $bbox 0]
+      set y0 [lindex $bbox 1]
+      set x1 [lindex $bbox 2]
+      set y1 [lindex $bbox 3]
+      set coords [list [expr $x0-2] [expr $y1+2] [expr $x0-2] $y0 $x0 [expr $y0-2] $x1 [expr $y0-2] [expr $x1+2] $y0 \
+                       [expr $x1+2] [expr $y1-2] $x1 [expr $y1+2] [expr $x0-2] [expr $y1+2]]
+
+      $Frame.page.canvas coords PAGECURSORINFOFRAME $coords
+      $Frame.page.canvas raise PAGECURSORINFO
+   } else {
+      $Frame.page.canvas coords PAGECURSORINFOFRAME -999 -999
+      $Frame.page.canvas coords PAGECURSORINFOTEXT -999 -999
    }
+   update idletasks
 }
 
 #----------------------------------------------------------------------------
