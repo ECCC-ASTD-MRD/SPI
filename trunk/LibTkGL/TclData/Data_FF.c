@@ -344,49 +344,6 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
    return(1);
 }
 
-/*----------------------------------------------------------------------------
- * Nom      : <FFContour>
- * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Produire le ligne de contours
- *
- * Parametres :
- *  <Ref>     : GeoReference
- *  <Def>     : Definitions des donnees
- *  <Line>    : Contour resultant (NULL -> Prepass)
- *  <PMatrix> : Matrice contenant les drapeaux de proximite des lignes de champs
- *  <X>       : Position X en point de grille
- *  <Y>       : Position Y en point de grille
- *  <Z>       : Position Z en point de grille
- *  <Level>   : Intervalle du contour
- *  <Mode>    : Type de referenciel (REF_COO,REF_GRID,REF_PROJ)
- *
- * Retour:
- *
- * Remarques :
- *
- *   La numerotation interne des vertex et des cotes/triangles d'un voxel est:
- *
- *          -4
- *       3 ----- 2
- *       | \ 2 / |
- *       |  \ /  |
- *    -3 |3  4  1| -1     4 (Valeur centrale du voxel)
- *       |  / \  |
- *       | / 0 \ |
- *       0 ----- 1
- *          -2
- *
- *   PMatrix    Permet de savoir si un voxel a deja ete visite
- *   first      Permet d'eliminer la possibilite du vertex precendent aux depart d'un cellule ou il y aura 2 vertex
- *   side       Determine quel cote ne pas tenir compte dans le prochain voxel
- *
- *   2 PASS algorithm :
- *   1st PASS - Calculating the length of a contour line (if Line NULL)
- *   2nd PASS - Stocking the position of the contour line
- *
- *----------------------------------------------------------------------------
- */
 unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,int *QX,int *QY,double *X,double *Y) {
 
    unsigned char next;
@@ -485,6 +442,49 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
    return(n);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <FFContour>
+ * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Produire le ligne de contours
+ *
+ * Parametres :
+ *  <Ref>     : GeoReference
+ *  <Def>     : Definitions des donnees
+ *  <Line>    : Contour resultant (NULL -> Prepass)
+ *  <PMatrix> : Matrice contenant les drapeaux de proximite des lignes de champs
+ *  <X>       : Position X en point de grille
+ *  <Y>       : Position Y en point de grille
+ *  <Z>       : Position Z en point de grille
+ *  <Level>   : Intervalle du contour
+ *  <Mode>    : Type de referenciel (REF_COO,REF_GRID,REF_PROJ)
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *   La numerotation interne des vertex et des cotes/triangles d'un voxel est:
+ *
+ *          -4
+ *       3 ----- 2
+ *       | \ 2 / |
+ *       |  \ /  |
+ *    -3 |3  4  1| -1     4 (Valeur centrale du voxel)
+ *       |  / \  |
+ *       | / 0 \ |
+ *       0 ----- 1
+ *          -2
+ *
+ *   PMatrix    Permet de savoir si un voxel a deja ete visite
+ *   first      Permet d'eliminer la possibilite du vertex precendent aux depart d'un cellule ou il y aura 2 vertex
+ *   side       Determine quel cote ne pas tenir compte dans le prochain voxel
+ *
+ *   2 PASS algorithm :
+ *   1st PASS - Calculating the length of a contour line (if Line NULL)
+ *   2nd PASS - Stocking the position of the contour line
+ *
+ *----------------------------------------------------------------------------
+ */
 int FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode,int Triangle) {
 
    int           idx,n=0,t=-4,z;
@@ -581,7 +581,6 @@ int FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PM
    }
    return(n);
 }
-
 /*----------------------------------------------------------------------------
  * Nom      : <FFMarchingCube>
  * Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE

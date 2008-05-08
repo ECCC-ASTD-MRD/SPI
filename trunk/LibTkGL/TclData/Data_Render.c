@@ -81,7 +81,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
    for (n=0;n<NbInter;n++) {
       /*Is the level within the data interval*/
-      if (Inter[n]<=Field->Stat->Min || Inter[n]>=Field->Stat->Max)
+      if (Inter[n]>=Field->Stat->Max)
          continue;
 
       memset(buf,0x0,FSIZE2D(Field->Def));
