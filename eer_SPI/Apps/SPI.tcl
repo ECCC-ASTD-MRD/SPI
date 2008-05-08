@@ -2077,8 +2077,8 @@ proc SPI::ProjectSaveLayout { File Frame Cam Size } {
    }
    SPI::LayoutSaveItems $Frame $File
    if { $Cam } {
-      puts $File "   set ProjCam::Data(Params\$Frame) \"[ProjCam::Mem $Frame _____]\""
-      puts $File "   ProjCam::Select \$Frame \$Frame  \$Frame"
+      puts $File "   set ProjCam::Data(Params\$Frame) \"[ProjCam::Mem $Frame \$Frame]\""
+      puts $File "   ProjCam::Select \$Frame \$Frame \$Frame True"
       eval set list \${ProjCam::Data${Frame}::Cam(LLens)}
       puts $File "   set ProjCam::Data\$\{Frame\}::Cam(LLens) \{ $list \}\n"
    }
