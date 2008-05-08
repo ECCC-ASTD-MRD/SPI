@@ -634,7 +634,7 @@ proc ProjCam::Save { Combo } {
 #
 #----------------------------------------------------------------------------
 
-proc ProjCam::Select { Cam Frame Name } {
+proc ProjCam::Select { Cam Frame Name { Now False } } {
    variable Data
    variable Param
 
@@ -653,7 +653,11 @@ proc ProjCam::Select { Cam Frame Name } {
 
    #----- Repositionner la camera
 
-   Viewport::GoTo $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
+   if { $Now } {
+      Viewport::Rotate  $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
+   } else {
+      Viewport::GoTo $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
+   }
 
    set cam(CFX)  [lindex $params 4]
    set cam(CFY)  [lindex $params 5]
