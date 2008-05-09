@@ -788,6 +788,7 @@ proc Page::CursorInfo { Frame X Y Info } {
 
    if { $Info!="" } {
       if { ![llength [$Frame.page.canvas find withtag PAGECURSORINFO]] } {
+         $Frame.page.canvas create polygon -999 -999  -tags "PAGECURSORINFO PAGECURSORINFOSHADOW" -fill black -transparency 50
          $Frame.page.canvas create polygon -999 -999  -tags "PAGECURSORINFO PAGECURSORINFOFRAME" -fill white -outline black -width 1
          $Frame.page.canvas create text -999 -999 -tags "PAGECURSORINFO PAGECURSORINFOTEXT" -text 333 -font XFont12 -fill black -anchor sw
       }
@@ -801,10 +802,14 @@ proc Page::CursorInfo { Frame X Y Info } {
       set y1 [lindex $bbox 3]
       set coords [list [expr $x0-2] [expr $y1+2] [expr $x0-2] $y0 $x0 [expr $y0-2] $x1 [expr $y0-2] [expr $x1+2] $y0 \
                        [expr $x1+2] $y1 $x1 [expr $y1+2] [expr $x0-2] [expr $y1+2]]
-
       $Frame.page.canvas coords PAGECURSORINFOFRAME $coords
+
+      set coords [list [expr $x0+3] [expr $y1+7] [expr $x0+3] [expr $y0+5] [expr $x0+5] [expr $y0+3] [expr $x1+5] [expr $y0+3] [expr $x1+7] [expr $y0+5] \
+                       [expr $x1+7] [expr $y1+5] [expr $x1+5] [expr $y1+7] [expr $x0+3] [expr $y1+7]]
+      $Frame.page.canvas coords PAGECURSORINFOSHADOW $coords
       $Frame.page.canvas raise PAGECURSORINFO
    } else {
+      $Frame.page.canvas coords PAGECURSORINFOSHADOW -999 -999
       $Frame.page.canvas coords PAGECURSORINFOFRAME -999 -999
       $Frame.page.canvas coords PAGECURSORINFOTEXT -999 -999
    }
