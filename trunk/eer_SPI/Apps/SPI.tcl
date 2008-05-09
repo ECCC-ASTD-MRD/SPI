@@ -1383,9 +1383,8 @@ proc SPI::IcoDraw { Frame args } {
                         $Frame.page.canvas bind $tag <Enter> ""
                         $Frame.page.canvas bind $tag <Leave> ""
                     } else {
-                        $Frame.page.canvas bind $tag <Enter> "$Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text \"$id\" \
-                           -fill $col -tags \"$group TEXT$group\" -anchor sw -font XFont10"
-                        $Frame.page.canvas bind $tag <Leave> "$Frame.page.canvas delete TEXT$group"
+                        $Frame.page.canvas bind $tag <Enter> "Page::CursorInfo $Frame  \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\] \"$id\""
+                        $Frame.page.canvas bind $tag <Leave> "Page::CursorInfo $Frame 0 0 \"\""
                      }
                   }
                }
