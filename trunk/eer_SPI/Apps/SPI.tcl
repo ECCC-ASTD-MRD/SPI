@@ -1953,6 +1953,9 @@ proc SPI::ProjectWindow { } {
    wm resizable .spiproject 0 0
    wm protocol .spiproject WM_DELETE_WINDOW { }
 
+   if { $SPI::Project(File)=="" } {
+      set SPI::Project(File) [pwd]/myproject.spi
+   }
    frame .spiproject.file -relief raised -bd 1
       label .spiproject.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 7 -anchor w
       entry .spiproject.file.path -bd 1 -bg $GDefs(ColorLight) -width 25 -textvariable SPI::Project(File)
@@ -2111,6 +2114,11 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       return
    }
 
+   #----- Check for extension
+   if { [file extension $File]!=".spi" } {
+      set File ${File}.spi
+   }
+
    set f [open $File w]
    puts $f "set SPI::Param(Project) [file rootname [file tail $File]]"
 
@@ -2130,7 +2138,7 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       puts $f "\nwm geom . \$SPI::Param(Geom)"
       puts $f "\nSPI::WindowLayout \$SPI::Param(PaneSide) \$SPI::Param(Panes)"
 
-      if { [winfo exists .params] } {
+      if { [winfo exists .params] && [winfo ismapped .params] } {
          puts $f "\nSPI::Params"
          puts $f "wm geometry .params [wm geom .params]"
          puts $f "TabFrame::Select .params.tab [TabFrame::Current .params.tab]"
