@@ -17,6 +17,7 @@
 #
 #    TabFrame::Add         { Tab Level Title Color }
 #    TabFrame::Create      { Tab Level Command { Width -1 } { Height -1 } }
+#    TabFrame::Clear       { Tab }
 #    TabFrame::Current     { Tab  }
 #    TabFrame::Delete      { Tab Level No }
 #    TabFrame::Destroy     { Tab }
@@ -159,6 +160,28 @@ proc TabFrame::Edit { Tab Level No } {
       TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
       incr xloc [winfo reqwidth $Tab.tab$no]
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TabFrame::Clear>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Reinitialiser les onglets.
+#
+# Parametres :
+#   <Tab>    : Frame Parent
+#
+# Retour     :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc TabFrame::Clear { Tab } {
+   variable Data
+
+   set Data(Nb$Tab) 0
+   set Data(Current$Tab) -1
 }
 
 #-------------------------------------------------------------------------------
