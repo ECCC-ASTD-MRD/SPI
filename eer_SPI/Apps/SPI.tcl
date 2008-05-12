@@ -1508,6 +1508,8 @@ proc SPI::PageDel { { Page "" } { All False } } {
       if { $top!="." } {
          TabFrame::Destroy $frame
          destroy $top
+      } else {
+         TabFrame::Clear $frame
       }
    } else {
 
