@@ -1956,13 +1956,6 @@ proc SPI::ProjectWindow { } {
    if { $SPI::Project(File)=="" } {
       set SPI::Project(File) [pwd]/myproject.spi
    }
-   frame .spiproject.file -relief raised -bd 1
-      label .spiproject.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 7 -anchor w
-      entry .spiproject.file.path -bd 1 -bg $GDefs(ColorLight) -width 25 -textvariable SPI::Project(File)
-      button .spiproject.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
-         -command { set SPI::Project(File) [FileBox::Create . "" Save [list $FileBox::Type(SPI)]] }
-      pack .spiproject.file.lbl .spiproject.file.path .spiproject.file.sel -side left -fill y
-   pack .spiproject.file -side top -fill x
    frame .spiproject.what -relief raised -bd 1
       label .spiproject.what.lbl -text [lindex $Lbl(ProjectItems) $GDefs(Lang)] -width 7 -anchor w
       frame .spiproject.what.s -relief sunken -bd 1 -bg $GDefs(ColorLight)
@@ -1981,7 +1974,7 @@ proc SPI::ProjectWindow { } {
    pack .spiproject.what -side top -fill x -expand true
    frame .spiproject.cmd
       button .spiproject.cmd.ok -text [lindex $Lbl(Save) $GDefs(Lang)] -bd 1 \
-         -command { SPI::ProjectSave $SPI::Project(File) $SPI::Project(Window) $SPI::Project(Layout) $SPI::Project(Camera) $SPI::Project(Data) $SPI::Project(Params); destroy .spiproject }
+         -command { SPI::ProjectSave [FileBox::Create . "" Save [list $FileBox::Type(SPI)]] $SPI::Project(Window) $SPI::Project(Layout) $SPI::Project(Camera) $SPI::Project(Data) $SPI::Project(Params); destroy .spiproject }
       button .spiproject.cmd.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1  \
          -command { destroy .spiproject }
       pack .spiproject.cmd.ok .spiproject.cmd.cancel -side left -fill x -expand true
@@ -2114,7 +2107,9 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       return
    }
 
-   #----- Check for extension
+   set SPI::Project(File) $File
+
+  #----- Check for extension
    if { [file extension $File]!=".spi" } {
       set File ${File}.spi
    }
@@ -2213,15 +2208,19 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
    if { $Params } {
 
       puts $f "\n#----- Data parameters"
+      set fonts {}
+      set cmaps {}
       foreach spec [dataspec all] {
          set cmap [dataspec configure $spec -colormap]
-         if { [colormap is $cmap] } {
+         if { [colormap is $cmap] && [lsearch -exact $cmaps $cmap]==-1 } {
+            lappend cmpas $cmap
             puts $f "\nif { !\[colormap is $cmap\] } { colormap create $cmap }"
             puts $f "colormap control $cmap -del"
             puts $f "colormap control $cmap -list { [colormap control $cmap -list] }"
          }
          set font [dataspec configure $spec -font]
-         if { $font!="" } {
+         if { $font!="" && [lsearch -exact $fonts $font]==-1 } {
+            lappend fonts $font
             puts $f "\ncatch { font create $font }"
             puts $f "font configure $font -family [font configure $font -family] -weight [font configure $font -weight] -size [font configure $font -size]\
                   -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
