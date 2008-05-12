@@ -2731,7 +2731,7 @@ proc Viewport::Setup { Frame } {
 
    font create FONT$Frame -family courier -weight bold -size -10
 
-   if { $Resources(Font)!="" } {
+   if { [lsearch -exact [font names] $Resources(Font)]!=-1 } {
       font configure FONT$Frame -family [font configure $Resources(Font) -family] -weight [font configure $Resources(Font) -weight] \
          -size [font configure $Resources(Font) -size]
    }
