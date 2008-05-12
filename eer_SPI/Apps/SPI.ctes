@@ -68,6 +68,7 @@ namespace eval SPI {
    set Src(Type)            ""
    set Src(Info)            ""
 
+   set Project(File)        ""
    set Project(Window)      True
    set Project(Layout)      True
    set Project(Data)        True
