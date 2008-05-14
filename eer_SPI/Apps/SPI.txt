@@ -128,9 +128,9 @@ namespace eval SPI {
    set Bubble(PageIn)      { "Agrandir la page de 10%" "Zoom page in 10%" }
    set Bubble(PageOut)     { "Réduire la page de 10%" "Zoom page out 10%" }
    set Bubble(PageFull)    { "Mode page complète" "Full page mode" }
-   set Bubble(LayoutName)  { "Nom de la mise en page courante" "Current page layout name" }
-   set Bubble(LayoutSave)  { "Sauvegarder la page courante" "Save the current page" }
-   set Bubble(LayoutDel)   { "Supprimer la page courante" "Delete the current page" }
+   set Bubble(LayoutName)  { "Nom de la mise-en-page courante" "Current page layout name" }
+   set Bubble(LayoutSave)  { "Sauvegarder la mise-en-page courante" "Save the current page layout" }
+   set Bubble(LayoutDel)   { "Supprimer la mise-en-page courante" "Delete the current page layout" }
    set Bubble(LayoutRun)   { "Exécuter un script sur la page courante" "Execute a script on the current page" }
    set Bubble(ZoomBack)    { "Zoom arrière" "Zoom back" }
    set Bubble(ZoomClear)   { "Annuler le zoom" "Cancel zoom" }
