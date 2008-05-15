@@ -113,10 +113,12 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
          if (!buf[Field->Def->NI*j+i]) {
             len=FFContour_Triangle(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,t);
+//            len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode);
             if (len>1) {
                if ((array=TArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
                   FFContour_Triangle(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,t);
+//                  FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode);
                } else {
                   fprintf(stderr,"(ERROR) Data_GetContour: Unable to alloc memory for contour %f",Inter[n]);
                }

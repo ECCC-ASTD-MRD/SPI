@@ -628,7 +628,7 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
 
    T3DModel* mdl;
 
-   if (!(mdl=(T3DModel*)Tcl_HashPut(Interp,&ModelTable,Name,sizeof(T3DModel)))) {
+   if (!(mdl=(T3DModel*)TclY_HashPut(Interp,&ModelTable,Name,sizeof(T3DModel)))) {
       return(TCL_ERROR);
    }
 
@@ -746,7 +746,7 @@ static int Model_Destroy(Tcl_Interp *Interp,char *Name) {
 
    T3DModel *mdl=NULL;
 
-   if ((mdl=(T3DModel*)Tcl_HashDel(&ModelTable,Name))) {
+   if ((mdl=(T3DModel*)TclY_HashDel(&ModelTable,Name))) {
       Model_Free(mdl);
       free(mdl);
    }
@@ -871,7 +871,7 @@ int Model_Init(Tcl_Interp *Interp) {
  *---------------------------------------------------------------------------------------------------------------
 */
 T3DModel* Model_Get(char *Name) {
-   return((T3DModel*)Tcl_HashGet(&ModelTable,Name));
+   return((T3DModel*)TclY_HashGet(&ModelTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------

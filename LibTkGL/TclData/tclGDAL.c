@@ -668,7 +668,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&GDAL_BandTable);
+         TclY_HashAll(Interp,&GDAL_BandTable);
          break;
 
       case WIPE:
@@ -702,7 +702,7 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
    GDAL_Band* band;
    int new;
 
-   if (!(band=(GDAL_Band*)Tcl_HashPut(Interp,&GDAL_BandTable,Name,sizeof(GDAL_Band)))) {
+   if (!(band=(GDAL_Band*)TclY_HashPut(Interp,&GDAL_BandTable,Name,sizeof(GDAL_Band)))) {
       return(NULL);
    }
 
@@ -851,7 +851,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
    GDAL_Band *band;
 
-   if ((band=(GDAL_Band*)Tcl_HashDel(&GDAL_BandTable,Name))) {
+   if ((band=(GDAL_Band*)TclY_HashDel(&GDAL_BandTable,Name))) {
 
       /* Liberation de la memoire allouee pour les textures*/
       band->Tex.Res=0;
@@ -889,7 +889,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
  *---------------------------------------------------------------------------------------------------------------
 */
 GDAL_Band* GDAL_BandGet(char *Name) {
-   return((GDAL_Band*)Tcl_HashGet(&GDAL_BandTable,Name));
+   return((GDAL_Band*)TclY_HashGet(&GDAL_BandTable,Name));
 }
 
 /*----------------------------------------------------------------------------
@@ -1144,7 +1144,7 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
 
    GDAL_File *file=NULL;
 
-   if ((file=(GDAL_File*)Tcl_HashDel(&GDAL_FileTable,Id))) {
+   if ((file=(GDAL_File*)TclY_HashDel(&GDAL_FileTable,Id))) {
       GDALClose(file->Set);
       if (file->Ref)
          GeoRef_Destroy(Interp,file->Ref->Name);

@@ -70,7 +70,7 @@ void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size);
  *----------------------------------------------------------------------------
 */
 ProjCam* ProjCam_Get(char* Name){
-   return((ProjCam*)Tcl_HashGet(&ProjCamTable,Name));
+   return((ProjCam*)TclY_HashGet(&ProjCamTable,Name));
 }
 
 /*----------------------------------------------------------------------------
@@ -430,7 +430,7 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
 
    ProjCam *cam;
 
-   if (!(cam=(ProjCam*)Tcl_HashPut(Interp,&ProjCamTable,Name,sizeof(ProjCam)))) {
+   if (!(cam=(ProjCam*)TclY_HashPut(Interp,&ProjCamTable,Name,sizeof(ProjCam)))) {
       return(TCL_ERROR);
    }
 
@@ -912,7 +912,7 @@ static int ProjCam_Destroy(Tcl_Interp *Interp, char *Name) {
 
    ProjCam *cam=NULL;
 
-   if ((cam=(ProjCam*)Tcl_HashDel(&ProjCamTable,Name))) {
+   if ((cam=(ProjCam*)TclY_HashDel(&ProjCamTable,Name))) {
       if (cam->CFrom) free(cam->CFrom);
       if (cam->CTo)   free(cam->CTo);
       if (cam->CUp)   free(cam->CUp);

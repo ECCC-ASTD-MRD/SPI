@@ -136,7 +136,7 @@ Tcl_Obj* OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geometry) {
          Name=buf;
       }
 
-      if (Tcl_HashSet(Interp,&OGR_GeometryTable,Name,Geometry)==TCL_ERROR) {
+      if (TclY_HashSet(Interp,&OGR_GeometryTable,Name,Geometry)==TCL_ERROR) {
          return(NULL);
       }
       return(Tcl_NewStringObj(Name,-1));
@@ -166,7 +166,7 @@ int OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name) {
 
    OGRGeometryH *geom=NULL;
 
-   if ((geom=(OGRGeometryH*)Tcl_HashDel(&OGR_GeometryTable,Name))) {
+   if ((geom=(OGRGeometryH*)TclY_HashDel(&OGR_GeometryTable,Name))) {
       OGR_G_DestroyGeometry(geom);
    }
    return(TCL_OK);
@@ -293,7 +293,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&OGR_GeometryTable);
+         TclY_HashAll(Interp,&OGR_GeometryTable);
          break;
    }
    return TCL_OK;
@@ -618,7 +618,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&OGR_LayerTable);
+         TclY_HashAll(Interp,&OGR_LayerTable);
          break;
 
       case WIPE:
@@ -648,7 +648,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
 
    OGR_Layer *layer;
 
-   if (!(layer=(OGR_Layer*)Tcl_HashPut(Interp,&OGR_LayerTable,Name,sizeof(OGR_Layer)))) {
+   if (!(layer=(OGR_Layer*)TclY_HashPut(Interp,&OGR_LayerTable,Name,sizeof(OGR_Layer)))) {
       return(NULL);
    }
 
@@ -749,7 +749,7 @@ int OGR_LayerDestroy(Tcl_Interp *Interp,char *Name) {
 
    OGR_Layer *layer=NULL;
 
-   if ((layer=(OGR_Layer*)Tcl_HashDel(&OGR_LayerTable,Name))) {
+   if ((layer=(OGR_Layer*)TclY_HashDel(&OGR_LayerTable,Name))) {
       DataSpec_FreeHash(Interp,layer->Spec->Name);
       OGR_LayerFree(layer);
       free(layer);
@@ -816,7 +816,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
  *---------------------------------------------------------------------------------------------------------------
 */
 OGR_Layer* OGR_LayerGet(char *Name) {
-   return((OGR_Layer*)Tcl_HashGet(&OGR_LayerTable,Name));
+   return((OGR_Layer*)TclY_HashGet(&OGR_LayerTable,Name));
 }
 
 /*----------------------------------------------------------------------------
@@ -934,7 +934,7 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
 
    OGR_File *file=NULL;
 
-   if ((file=(OGR_File*)Tcl_HashDel(&OGR_FileTable,Id))) {
+   if ((file=(OGR_File*)TclY_HashDel(&OGR_FileTable,Id))) {
       OGR_DS_Destroy(file->Data);
 
       free(file->Id);

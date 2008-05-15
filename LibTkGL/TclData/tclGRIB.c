@@ -210,7 +210,7 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
 
    GRIB_File *file=NULL;
 
-   if ((file=(GRIB_File*)Tcl_HashDel(&GRIB_FileTable,Id))) {
+   if ((file=(GRIB_File*)TclY_HashDel(&GRIB_FileTable,Id))) {
       fclose(file->Handle);
       free(file->Path);
       free(file->Id);

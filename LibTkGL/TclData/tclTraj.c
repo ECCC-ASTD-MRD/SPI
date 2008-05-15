@@ -210,7 +210,7 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&TrajTable);
+         TclY_HashAll(Interp,&TrajTable);
          break;
 
       case WIPE:
@@ -478,7 +478,7 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
 
    TTraj *traj=NULL;
 
-   if (!(traj=(TTraj*)Tcl_HashPut(Interp,&TrajTable,Name,sizeof(TTraj)))) {
+   if (!(traj=(TTraj*)TclY_HashPut(Interp,&TrajTable,Name,sizeof(TTraj)))) {
       return(TCL_ERROR);
    }
 
@@ -512,7 +512,7 @@ static int Traj_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    TTraj *traj=NULL;
 
-   if ((traj=(TTraj*)Tcl_HashDel(&TrajTable,Name))) {
+   if ((traj=(TTraj*)TclY_HashDel(&TrajTable,Name))) {
       DataSpec_FreeHash(Interp,traj->Spec->Name);
       Traj_Free(traj);
    }
@@ -558,7 +558,7 @@ void Traj_Free(TTraj *Traj) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TTraj* Traj_Get(char *Name) {
-   return((TTraj*)Tcl_HashGet(&TrajTable,Name));
+   return((TTraj*)TclY_HashGet(&TrajTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------

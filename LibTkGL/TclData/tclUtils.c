@@ -35,7 +35,7 @@
 #include <malloc.h>
 #include <string.h>
 
-int Tcl_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item) {
+int TclY_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item) {
 
    Tcl_Obj *obj;
    int      n,nb,idx=-1;
@@ -52,7 +52,7 @@ int Tcl_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item) {
    return(idx);
 }
 
-int Tcl_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table) {
+int TclY_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table) {
 
    Tcl_Obj       *lst;
    Tcl_HashSearch ptr;
@@ -69,7 +69,7 @@ int Tcl_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table) {
    return(TCL_OK);
 }
 
-void* Tcl_HashGet(Tcl_HashTable *Table,char *Name) {
+void* TclY_HashGet(Tcl_HashTable *Table,char *Name) {
 
    Tcl_HashEntry *entry;
 
@@ -82,14 +82,14 @@ void* Tcl_HashGet(Tcl_HashTable *Table,char *Name) {
    return(NULL);
 }
 
-int Tcl_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data) {
+int TclY_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data) {
 
    Tcl_HashEntry *entry;
    int            new;
 
    entry=Tcl_CreateHashEntry(Table,Name,&new);
    if (!new) {
-      if (Interp) Tcl_AppendResult(Interp,"Tcl_HashSet: Name already used: \"",Name,"\"",(char*)NULL);
+      if (Interp) Tcl_AppendResult(Interp,"TclY_HashSet: Name already used: \"",Name,"\"",(char*)NULL);
       return(TCL_ERROR);
    }
 
@@ -97,7 +97,7 @@ int Tcl_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data) {
    return(TCL_OK);
 }
 
-void* Tcl_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned int Size) {
+void* TclY_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned int Size) {
 
    void           *data=NULL;
    Tcl_HashEntry  *entry;
@@ -106,11 +106,11 @@ void* Tcl_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned in
    entry=Tcl_CreateHashEntry(Table,Name,&new);
 
    if (!new) {
-      if (Interp) Tcl_AppendResult(Interp,"Tcl_HashSet: Name already used: \"",Name,"\"",(char*)NULL);
+      if (Interp) Tcl_AppendResult(Interp,"TclY_HashSet: Name already used: \"",Name,"\"",(char*)NULL);
    } else {
 
       if (!(data=(void*)malloc(Size))) {
-         if (Interp) Tcl_AppendResult(Interp,"Tcl_HashPut: Unable to allocate memory",(char *)NULL);
+         if (Interp) Tcl_AppendResult(Interp,"TclY_HashPut: Unable to allocate memory",(char *)NULL);
       } else {
          Tcl_SetHashValue(entry,data);
          if (Interp) {
@@ -122,7 +122,7 @@ void* Tcl_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned in
    return(data);
 }
 
-void* Tcl_HashDel(Tcl_HashTable *Table,char *Name) {
+void* TclY_HashDel(Tcl_HashTable *Table,char *Name) {
 
    Tcl_HashEntry *entry;
    void          *item=NULL;

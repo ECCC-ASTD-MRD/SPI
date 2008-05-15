@@ -1116,7 +1116,7 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
 
    FSTD_File     *file;
 
-   if ((file=(FSTD_File*)Tcl_HashDel(&FSTD_FileTable,Id))) {
+   if ((file=(FSTD_File*)TclY_HashDel(&FSTD_FileTable,Id))) {
       file->Open=file->Open<0?1:file->Open;
       FSTD_FileUnset(Interp,file);
 

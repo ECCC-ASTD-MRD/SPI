@@ -364,7 +364,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&VectorTable);
+         TclY_HashAll(Interp,&VectorTable);
          break;
 
       case WIPE:
@@ -692,7 +692,7 @@ struct TDataDef* Vector_GetDef(TVector *Vec) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TVector* Vector_Get(char *Name) {
-   return((TVector*)Tcl_HashGet(&VectorTable,Name));
+   return((TVector*)TclY_HashGet(&VectorTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -718,7 +718,7 @@ int Vector_Destroy(Tcl_Interp *Interp,char *Name) {
    char           buf[256];
    int            i;
 
-   if ((vec=(TVector*)Tcl_HashDel(&VectorTable,Name))) {
+   if ((vec=(TVector*)TclY_HashDel(&VectorTable,Name))) {
       if (vec->Cn) {
          for(i=0;i<vec->N;i++) {
             Tcl_ListObjIndex(Interp,vec->Cn,i,&obj);

@@ -1025,7 +1025,7 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
 
    Projection *proj;
 
-   if (!(proj=(Projection*)Tcl_HashPut(Interp,&ProjectionTable,Name,sizeof(Projection)))) {
+   if (!(proj=(Projection*)TclY_HashPut(Interp,&ProjectionTable,Name,sizeof(Projection)))) {
       return(TCL_ERROR);
    }
 
@@ -1092,7 +1092,7 @@ void Projection_CreateType(char *Name,int Def,
 
    ProjectionType *project_type;
 
-   if (!(project_type=(ProjectionType*)Tcl_HashPut(NULL,&ProjectionTypes,Name,sizeof(ProjectionType)))) {
+   if (!(project_type=(ProjectionType*)TclY_HashPut(NULL,&ProjectionTypes,Name,sizeof(ProjectionType)))) {
       exit(0);
    }
 
@@ -1129,7 +1129,7 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
 
    Projection *proj;
 
-   if ((proj=(Projection*)Tcl_HashDel(&ProjectionTable,Name))) {
+   if ((proj=(Projection*)TclY_HashDel(&ProjectionTable,Name))) {
       if (proj->Params->Ref)
          GeoRef_Destroy(Interp,proj->Params->Ref->Name);
 
@@ -1165,7 +1165,7 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
  *----------------------------------------------------------------------------
 */
 Projection* Projection_Get(char *Name) {
-   return((Projection*)Tcl_HashGet(&ProjectionTable,Name));
+   return((Projection*)TclY_HashGet(&ProjectionTable,Name));
 }
 
 /*----------------------------------------------------------------------------
@@ -1185,7 +1185,7 @@ Projection* Projection_Get(char *Name) {
  *----------------------------------------------------------------------------
 */
 ProjectionType* Projection_GetType(char *Type) {
-   return((ProjectionType*)Tcl_HashGet(&ProjectionTypes,Type));
+   return((ProjectionType*)TclY_HashGet(&ProjectionTypes,Type));
 }
 
 /*----------------------------------------------------------------------------

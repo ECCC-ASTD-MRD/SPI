@@ -507,7 +507,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
 
    TGraphAxis *axis;
 
-   if (!(axis=(TGraphAxis*)Tcl_HashPut(Interp,&GraphAxisTable,Name,sizeof(TGraphAxis)))) {
+   if (!(axis=(TGraphAxis*)TclY_HashPut(Interp,&GraphAxisTable,Name,sizeof(TGraphAxis)))) {
       return(TCL_ERROR);
    }
 
@@ -568,7 +568,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TGraphAxis* GraphAxis_Get(char *Name) {
-   return((TGraphAxis*)Tcl_HashGet(&GraphAxisTable,Name));
+   return((TGraphAxis*)TclY_HashGet(&GraphAxisTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -592,7 +592,7 @@ static int GraphAxis_Free(Tcl_Interp *Interp,char *Name) {
    Tcl_HashEntry *entry;
    TGraphAxis    *axis;
 
-   if ((axis=(TGraphAxis*)Tcl_HashDel(&GraphAxisTable,Name))) {
+   if ((axis=(TGraphAxis*)TclY_HashDel(&GraphAxisTable,Name))) {
       GraphAxis_Clear(axis);
       free(axis);
    }

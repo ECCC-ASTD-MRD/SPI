@@ -39,6 +39,8 @@
 #include "bufr_array.h"
 #include "bufr_local.h"
 
+#include "tclMetDataset.h"
+
 #define MetObs_GetData(MD,E,V,T) (MD->Data[(T*MD->Nv+V)*MD->Ne+E])
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
 #define MET_VALID(V,N)  (V!=-979.0f && V!=-980.0f && V!=-999.0f && V!=N)
@@ -48,12 +50,6 @@
 #define MET_STATENEW 0x0
 #define MET_STATESCO 0x1
 #define MET_STATEHCO 0x2
-
-typedef struct TBUFRTable {
-   unsigned int No;
-   char         Desc[64];
-   char         Unit[16];
-} TBUFRTable;
 
 typedef struct TMetModelItem {
    int        X,Y;

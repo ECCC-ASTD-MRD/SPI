@@ -89,7 +89,7 @@ int TclCMap_Init(Tcl_Interp *Interp){
  *----------------------------------------------------------------------------
 */
 CMap_Rec* CMap_Get(char *Name) {
-   return((CMap_Rec*)Tcl_HashGet(&CMapTable,Name));
+   return((CMap_Rec*)TclY_HashGet(&CMapTable,Name));
 }
 
 /*----------------------------------------------------------------------------
@@ -178,7 +178,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
 */
 int CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map) {
 
-   return (Tcl_HashSet(Interp,&CMapTable,Map->Name,Map));
+   return (TclY_HashSet(Interp,&CMapTable,Map->Name,Map));
 }
 
 /*----------------------------------------------------------------------------
@@ -257,7 +257,7 @@ int CMap_Copy(Tcl_Interp *Interp,char *To,char *From) {
    }
 
    if (!(to=CMap_Get(To))) {
-      if (!(to=Tcl_HashPut(Interp,&CMapTable,To,sizeof(CMap_Rec)))) {
+      if (!(to=TclY_HashPut(Interp,&CMapTable,To,sizeof(CMap_Rec)))) {
          return(TCL_ERROR);
       }
    }
@@ -422,7 +422,7 @@ int CMap_Free(char *Name) {
 
    CMap_Rec *map=NULL;
 
-   if ((map=(CMap_Rec*)Tcl_HashDel(&CMapTable,Name))) {
+   if ((map=(CMap_Rec*)TclY_HashDel(&CMapTable,Name))) {
       free(map->Name);
       free(map);
    }

@@ -185,7 +185,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&TDataSpec_Table);
+         TclY_HashAll(Interp,&TDataSpec_Table);
          break;
 
       case WIPE:
@@ -1027,7 +1027,7 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TDataSpec* DataSpec_Get(char *Name) {
-   return((TDataSpec*)Tcl_HashGet(&TDataSpec_Table,Name));
+   return((TDataSpec*)TclY_HashGet(&TDataSpec_Table,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------

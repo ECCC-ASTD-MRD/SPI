@@ -36,11 +36,11 @@
 #include <tk.h>
 #include <tcl.h>
 
-int   Tcl_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table);
-void* Tcl_HashGet(Tcl_HashTable *Table,char *Name);
-void* Tcl_HashDel(Tcl_HashTable *Table,char *Name);
-void* Tcl_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned int Size);
-int   Tcl_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data);
-int   Tcl_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item);
+int   TclY_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table);
+void* TclY_HashGet(Tcl_HashTable *Table,char *Name);
+void* TclY_HashDel(Tcl_HashTable *Table,char *Name);
+void* TclY_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned int Size);
+int   TclY_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data);
+int   TclY_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item);
 
 #endif
