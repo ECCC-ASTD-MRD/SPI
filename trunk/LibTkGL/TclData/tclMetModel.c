@@ -189,7 +189,7 @@ static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&MetModelTable);
+         TclY_HashAll(Interp,&MetModelTable);
          break;
 
       case WIPE:
@@ -359,7 +359,7 @@ int MetModel_Create(Tcl_Interp *Interp,char *Name) {
 
    TMetModel *mdl;
 
-   if (!(mdl=(TMetModel*)Tcl_HashPut(Interp,&MetModelTable,Name,sizeof(TMetModel)))) {
+   if (!(mdl=(TMetModel*)TclY_HashPut(Interp,&MetModelTable,Name,sizeof(TMetModel)))) {
       return(TCL_ERROR);
    }
 
@@ -390,7 +390,7 @@ int MetModel_Create(Tcl_Interp *Interp,char *Name) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TMetModel* MetModel_Get(char *Name) {
-   return((TMetModel*)Tcl_HashGet(&MetModelTable,Name));
+   return((TMetModel*)TclY_HashGet(&MetModelTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------

@@ -507,7 +507,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&GeoRef_Table);
+         TclY_HashAll(Interp,&GeoRef_Table);
          break;
 
       case WIPE:
@@ -784,7 +784,7 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref) {
          Name=buf;
       }
 
-      if (Tcl_HashSet(Interp,&GeoRef_Table,Name,Ref)==TCL_ERROR) {
+      if (TclY_HashSet(Interp,&GeoRef_Table,Name,Ref)==TCL_ERROR) {
          return(NULL);
       }
 
@@ -813,7 +813,7 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TGeoRef* GeoRef_Get(char *Name) {
-   return((TGeoRef*)Tcl_HashGet(&GeoRef_Table,Name));
+   return((TGeoRef*)TclY_HashGet(&GeoRef_Table,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------

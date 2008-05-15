@@ -622,7 +622,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
 
    TGraphItem *item;
 
-   if (!(item=(TGraphItem*)Tcl_HashPut(Interp,&GraphItemTable,Name,sizeof(TGraphItem)))) {
+   if (!(item=(TGraphItem*)TclY_HashPut(Interp,&GraphItemTable,Name,sizeof(TGraphItem)))) {
       return(TCL_ERROR);
    }
 
@@ -686,7 +686,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TGraphItem* GraphItem_Get(char *Name) {
-   return((TGraphItem*)Tcl_HashGet(&GraphItemTable,Name));
+   return((TGraphItem*)TclY_HashGet(&GraphItemTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -709,7 +709,7 @@ static int GraphItem_Free(Tcl_Interp *Interp,char *Name) {
 
    TGraphItem *item;
 
-   if ((item=(TGraphItem*)Tcl_HashDel(&GraphItemTable,Name))) {
+   if ((item=(TGraphItem*)TclY_HashDel(&GraphItemTable,Name))) {
       GraphItem_Clear(item);
       free(item);
    }

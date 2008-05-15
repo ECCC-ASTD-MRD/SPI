@@ -265,7 +265,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&ObsTable);
+         TclY_HashAll(Interp,&ObsTable);
          break;
 
       case WIPE:
@@ -1114,7 +1114,7 @@ static int Obs_Create(Tcl_Interp *Interp,char *Name) {
    TObs *obs=NULL;
    char *buf=NULL;
 
-   if (!(obs=(TObs*)Tcl_HashPut(Interp,&ObsTable,Name,sizeof(TObs)))) {
+   if (!(obs=(TObs*)TclY_HashPut(Interp,&ObsTable,Name,sizeof(TObs)))) {
       return(TCL_ERROR);
    }
 
@@ -1158,7 +1158,7 @@ static int Obs_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    TObs *obs=NULL;
 
-   if ((obs=(TObs*)Tcl_HashDel(&ObsTable,Name))) {
+   if ((obs=(TObs*)TclY_HashDel(&ObsTable,Name))) {
       DataSpec_FreeHash(Interp,obs->Spec->Name);
       Obs_Free(obs);
    }
@@ -1206,7 +1206,7 @@ void Obs_Free(TObs *Obs) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TObs* Obs_Get(char *Name) {
-   return((TObs*)Tcl_HashGet(&ObsTable,Name));
+   return((TObs*)TclY_HashGet(&ObsTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------

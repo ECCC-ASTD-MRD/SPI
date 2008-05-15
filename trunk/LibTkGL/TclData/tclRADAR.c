@@ -460,13 +460,13 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
  *
  * Remarques :
  *
- *----------------------------------------------------------------------------
+ *------------------------------------------------------------s----------------
 */
 int Radar_FileClose(Tcl_Interp *Interp,char *Id){
 
    Radar_File *file=NULL;
 
-   if ((file=(Radar_File*)Tcl_HashDel(&Radar_FileTable,Id))) {
+   if ((file=(Radar_File*)TclY_HashDel(&Radar_FileTable,Id))) {
       FreeRadarData(&file->Data);
       GeoRef_Destroy(Interp,file->Ref->Name);
       free(file->Name);

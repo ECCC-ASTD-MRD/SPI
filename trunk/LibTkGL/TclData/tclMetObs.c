@@ -98,6 +98,7 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
    Tcl_CreateObjCommand(Interp,"metobs",MetObs_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"metreport",MetReport_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
+   TclMetDataset_Init(Interp);
    return(TCL_OK);
 }
 
@@ -173,10 +174,16 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
       case WRITE:
          if(Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"file { ids } title");
+            Tcl_WrongNumArgs(Interp,2,Objv,"file { obs } [format]");
             return(TCL_ERROR);
          }
-         return(MetObs_WriteASCII(Interp,Tcl_GetString(Objv[2]),Objv[3],Tcl_GetString(Objv[4])));
+/*
+         if (strcmp(Tcl_GetString(Objv[4]),"BUFR")==0) {
+            return(MetObs_WriteBUFR(Interp,Tcl_GetString(Objv[2]),Objv[3]));
+         } else if { strcmp(Tcl_GetString(Objv[4]),"OBS")==0 } {
+            return(MetObs_WriteBUFRASCII(Interp,Tcl_GetString(Objv[2]),Objv[3],Tcl_GetString(Objv[4])));
+         }
+*/
          break;
 
       case FREE:
@@ -227,7 +234,7 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&MetObsTable);
+         TclY_HashAll(Interp,&MetObsTable);
          break;
 
       case WIPE:
@@ -264,14 +271,16 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    long       code;
    char       table;
 
-   static CONST char *sopt[] = { "-readmaster","-readlocal","-code","-desc","-unit","-insert",NULL };
-   enum                opt { READMASTER,READLOCAL,CODE,DESC,UNIT,INSERT };
+   static CONST char *sopt[] = { "-readcmc","-readmaster","-readlocal","-code","-desc","-unit","-insert",NULL };
+   enum                opt { READCMC,READMASTER,READLOCAL,CODE,DESC,UNIT,INSERT };
 
    /*Figure out which table we are talking about*/
-   table=Tcl_GetString(Objv[1])[0];
-   if (table!='B' && table!='C' && table!='D') {
-      table='B';
-      no=0;
+   if (Objc>1) {
+      table=Tcl_GetString(Objv[1])[0];
+      if (table!='B' && table!='C' && table!='D') {
+         table='B';
+         no=0;
+      }
    }
 
    for (i=0;i<Objc;i++) {
@@ -281,6 +290,10 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
+         case READCMC:
+            bufr_load_cmc_tables(BUFRTable);
+            break;
+
          case READMASTER:
             if (Objc==1) {
             } else {
@@ -675,7 +688,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      for(d=0;d<elem->NData;d++) {
                         for(e=0;e<elem->EData[d]->Ne;e++) {
                            Tcl_SetStringObj(sub,elem->EData[d]->Code[e]->desc,-1);
-                           if (Tcl_ListObjFind(Interp,obj,sub)==-1) {
+                           if (TclY_ListObjFind(Interp,obj,sub)==-1) {
                               Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
                            }
                         }
@@ -750,7 +763,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         return(TCL_ERROR);
                      }
                      obj=Tcl_NewStringObj(eb->desc,-1);
-                     if (Tcl_ListObjFind(Interp,obs->Elems,obj)==-1) {
+                     if (TclY_ListObjFind(Interp,obs->Elems,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,obs->Elems,obj);
                      }
                      free(valf);
@@ -834,7 +847,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   elem=loc->Elems;
                   while(elem) {
                      Tcl_SetLongObj(sub,elem->Time);
-                     if (Tcl_ListObjFind(Interp,obj,sub)==-1) {
+                     if (TclY_ListObjFind(Interp,obj,sub)==-1) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
                      }
                      elem=elem->Next;
@@ -848,7 +861,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   elem=loc->Elems;
                   while(elem) {
                      Tcl_SetLongObj(sub,elem->Time);
-                     if (Tcl_ListObjFind(Interp,obj,sub)==-1) {
+                     if (TclY_ListObjFind(Interp,obj,sub)==-1) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
                      }
                      elem=elem->Next;
@@ -932,7 +945,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
 
    TMetObs *obs;
 
-   if (!(obs=(TMetObs*)Tcl_HashPut(Interp,&MetObsTable,Name,sizeof(TMetObs)))) {
+   if (!(obs=(TMetObs*)TclY_HashPut(Interp,&MetObsTable,Name,sizeof(TMetObs)))) {
       return(TCL_ERROR);
    }
 
@@ -976,7 +989,7 @@ static int MetObs_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    TMetObs *obs=NULL;
 
-   if ((obs=(TMetObs*)Tcl_HashDel(&MetObsTable,Name))) {
+   if ((obs=(TMetObs*)TclY_HashDel(&MetObsTable,Name))) {
       MetObs_Free(obs);
    }
    return(TCL_OK);
@@ -1032,7 +1045,7 @@ void MetObs_Free(TMetObs *Obs) {
  *---------------------------------------------------------------------------------------------------------------
 */
 TMetObs* MetObs_Get(char *Name) {
-   return((TMetObs*)Tcl_HashGet(&MetObsTable,Name));
+   return((TMetObs*)TclY_HashGet(&MetObsTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1158,6 +1171,15 @@ Vect3d *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_O
 int MetObs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
 
    return(TCL_OK);
+}
+
+int MetObs_WriteBUFR(Tcl_Interp *Interp,char *File,char *Template,Tcl_Obj *List,int Compress) {
+
+   return(TCL_OK);
+}
+
+BUFR_Tables *MetObs_GetTables(void) {
+   return(BUFRTable);
 }
 
 EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code) {
@@ -1551,7 +1573,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          data->Data=(float*)malloc(data->Ne*sizeof(float));
          data->Code=(EntryTableB**)malloc(data->Ne*sizeof(EntryTableB*));
 
-         stnid[0]='\0';
+         stnid[0]='-';stnid[1]='\0';
          lat=lon=-999.0;
          data->Ne=0;
 
@@ -1583,7 +1605,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Could not find element code (%i) int tables",bcv->descriptor);
                   } else {
                      Tcl_SetStringObj(obj,eb->desc,-1);
-                     if (Tcl_ListObjFind(Interp,Obs->Elems,obj)==-1) {
+                     if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
                      }
                   }
@@ -1652,7 +1674,6 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                            value=-999.0;
                         break;
                   }
-
                   data->Code[data->Ne]=eb;
                   data->Data[data->Ne]=value;
                   data->Ne++;
@@ -1661,7 +1682,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
 
          /*Insert station in list if not already done*/
-         if (strlen(stnid) && lat!=-999.0 && lon!=-999.0) {
+         if (lat!=-999.0 && lon!=-999.0) {
 
             /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
             loc=NULL;
@@ -1875,7 +1896,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             eb[e]=MetObs_BUFRFindTableCode(((int*)eb)[e]);
 
             Tcl_SetStringObj(obj,eb[e]->desc,-1);
-            if (Tcl_ListObjFind(Interp,Obs->Elems,obj)==-1) {
+            if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
             }
          }
@@ -2792,7 +2813,7 @@ static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
 
       case ALL:
-         Tcl_HashAll(Interp,&MetRepTable);
+         TclY_HashAll(Interp,&MetRepTable);
          break;
    }
    return(TCL_OK);
@@ -3021,7 +3042,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
  *---------------------------------------------------------------------------------------------------------------
 */
 TMetElemData* MetReport_Get(char *Name) {
-   return((TMetElemData*)Tcl_HashGet(&MetRepTable,Name));
+   return((TMetElemData*)TclY_HashGet(&MetRepTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -3049,7 +3070,7 @@ Tcl_Obj* MetReport_Put(Tcl_Interp *Interp,char *Name,TMetElemData *Report) {
          sprintf(buf,"METREPORT_____%li",MetRepNo++);
          Name=buf;
       }
-      if (Tcl_HashSet(Interp,&MetRepTable,Name,Report)==TCL_ERROR) {
+      if (TclY_HashSet(Interp,&MetRepTable,Name,Report)==TCL_ERROR) {
          return(NULL);
       }
 //      Ref->Name=strdup(Name);
@@ -3082,7 +3103,7 @@ int MetReport_Destroy(Tcl_Interp *Interp,char *Name) {
 
    TMetElemData  *ref=NULL;
 
-   if ((ref=(TMetElemData*)Tcl_HashDel(&MetRepTable,Name))) {
+   if ((ref=(TMetElemData*)TclY_HashDel(&MetRepTable,Name))) {
       TMetElemData_Free(ref);
    }
    return(TCL_OK);

@@ -163,7 +163,7 @@ int Data_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    TData *data;
 
-   if ((data=(TData*)Tcl_HashDel(&TData_Table,Name))) {
+   if ((data=(TData*)TclY_HashDel(&TData_Table,Name))) {
       Data_Free(data);
       DataSpec_FreeHash(Interp,data->Spec->Name);
    }
@@ -189,7 +189,7 @@ int Data_FreeHash(Tcl_Interp *Interp,char *Name) {
  *----------------------------------------------------------------------------
 */
 TData* Data_Get(char *Name) {
-   return((TData*)Tcl_HashGet(&TData_Table,Name));
+   return((TData*)TclY_HashGet(&TData_Table,Name));
 }
 
 /*----------------------------------------------------------------------------
