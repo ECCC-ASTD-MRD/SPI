@@ -36,6 +36,7 @@
 #include <tk.h>
 #include <tcl.h>
 
+FILE* TclY_ChannelOrSocketOpen(Tcl_Interp *Interp,Tcl_Obj *Obj,char *Mode);
 int   TclY_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table);
 void* TclY_HashGet(Tcl_HashTable *Table,char *Name);
 void* TclY_HashDel(Tcl_HashTable *Table,char *Name);

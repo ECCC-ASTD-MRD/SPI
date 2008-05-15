@@ -31,9 +31,42 @@
  *=========================================================
  */
 
-#include "tclUtils.h"
 #include <malloc.h>
 #include <string.h>
+
+#include "tclUtils.h"
+
+#include "tclInt.h"
+#include "tclPort.h"
+#include "tclIO.h"
+
+typedef struct TcpState {
+    Tcl_Channel channel;           /* Channel associated with this file. */
+    int fd;                        /* The socket itself. */
+    int flags;                     /* ORed combination of the bitfields defined below. */
+    Tcl_TcpAcceptProc *acceptProc; /* Proc to call on accept. */
+    ClientData acceptProcData;     /* The data for the accept proc. */
+} TcpState;
+
+FILE* TclY_ChannelOrSocketOpen(Tcl_Interp *Interp,Tcl_Obj *Obj,char *Mode) {
+
+   Tcl_Channel  sock=NULL;
+   FILE        *fid=NULL;
+   int          mode;
+
+   if ((sock=Tcl_GetChannel(Interp,Tcl_GetString(Obj),&mode))) {
+      if (!(fid=fdopen(((TcpState*)((Channel*)sock)->instanceData)->fd,Mode))) {
+         Tcl_AppendResult(Interp,"TclY_ChannelOrSocketOpen : Unable to open socket \"",Tcl_GetString(Obj),"\"",(char*)NULL);
+         return(NULL);
+      }
+   } else {
+      if (!(fid=fopen(Tcl_GetString(Obj),Mode))) {
+         Tcl_AppendResult(Interp,"TclY_ChannelOrSocketOpen : Unable to open file or Invalid template \"",Tcl_GetString(Obj),"\"",(char*)NULL);
+         return(NULL);
+      }
+   }
+   return(fid);
+}
 
 int TclY_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item) {
 
@@ -89,7 +122,7 @@ int TclY_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data) 
 
    entry=Tcl_CreateHashEntry(Table,Name,&new);
    if (!new) {
-      if (Interp) Tcl_AppendResult(Interp,"TclY_HashSet: Name already used: \"",Name,"\"",(char*)NULL);
+      if (Interp) Tcl_AppendResult(Interp,"TclY_HashSet: Name already used \"",Name,"\"",(char*)NULL);
       return(TCL_ERROR);
    }
 
@@ -106,7 +139,7 @@ void* TclY_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned i
    entry=Tcl_CreateHashEntry(Table,Name,&new);
 
    if (!new) {
-      if (Interp) Tcl_AppendResult(Interp,"TclY_HashSet: Name already used: \"",Name,"\"",(char*)NULL);
+      if (Interp) Tcl_AppendResult(Interp,"TclY_HashSet: Name already used \"",Name,"\"",(char*)NULL);
    } else {
 
       if (!(data=(void*)malloc(Size))) {
