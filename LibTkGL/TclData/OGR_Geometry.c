@@ -312,9 +312,9 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 
    static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-boundary","-buffer",
                                  "-convexhull","-intersection","-union,","-difference","-symmetricdifference",
-                                 "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",NULL };
+                                 "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap","-simplify",NULL };
    enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,
-                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,OVERLAP};
+                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,OVERLAP,SIMPLIFY };
 
    g0=OGR_GeometryGet(Name);
    if (!g0) {
@@ -585,6 +585,16 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
          }
          break;
+
+      case SIMPLIFY:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
+            return TCL_ERROR;
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
+         GPC_Simplify(dist,g0);
+         break;
+
 #endif
    }
    return TCL_OK;

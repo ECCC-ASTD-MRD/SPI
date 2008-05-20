@@ -529,7 +529,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           j,f,fop,fn,idx,nseg;
-   double        x,y,lat,lon;
+   double        x,y,lat,lon,tol;
    long         *table,y0,y1;
    OGR_Layer    *layer,*layerop;
    TGeoRef      *ref,*ref0;
@@ -539,8 +539,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj      *lst,*obj;
    char          buf[32];
 
-   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-extent","-buffer","-difference","-intersection",NULL };
-   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,EXTENT,BUFFER,DIFFERENCE,INTERSECTION };
+   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-extent","-buffer","-difference","-intersection","-simplify",NULL };
+   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -727,6 +727,22 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
          }
 #endif
+         break;
+
+      case SIMPLIFY:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
+            return TCL_ERROR;
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&tol);
+
+         for(f=0;f<layer->NFeature;f++) {
+            if (layer->Select[f]) {
+               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  GPC_Simplify(tol,geom);
+               }
+            }
+         }
          break;
 
       case TABLE:
