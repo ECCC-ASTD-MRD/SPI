@@ -565,3 +565,147 @@ int GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD
       }
    }
 }
+
+// Copyright 2002, softSurfer (www.softsurfer.com)
+// This code may be freely used and modified for any purpose
+// providing that this copyright notice is included with it.
+// SoftSurfer makes no warranty for this code, and cannot be held
+// liable for any real or imagined damage resulting from its use.
+// Users of this code must verify correctness for their application.
+//
+//  GPC_SimplifyDP():
+//  This is the Douglas-Peucker recursive simplification routine
+//  It just marks vertices that are part of the simplified polyline
+//  for approximating the polyline subchain v[j] to v[k].
+//    Input:  tol = approximation tolerance
+//            v[] = polyline array of vertex points
+//            j,k = indices for the subchain v[j] to v[k]
+//    Output: mk[] = array of markers matching vertex array v[]
+int GPC_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers) {
+
+   /*There is nothing to simplify*/
+   if (K<=J+1)
+      return(0);
+
+   int      i,n=0;
+   int      maxi=J;                    // index of vertex farthest from S
+   double   maxd2=0.0;                 // distance squared of farthest vertex
+   double   tol2=Tolerance*Tolerance;  // tolerance squared
+   double  cu;                         // segment length squared
+   Vect3d  w,u,p;
+   double  b,cw,dv2;                   // dv2 = distance v[i] to S squared
+
+   // test each vertex v[i] for max distance from S
+   // compute using the Feb 2001 Algorithm's dist_Point_to_Segment()
+   // Note: this works in any dimension (2D, 3D, ...)
+
+   Vect_Substract(u,Pt[K],Pt[J]);
+   cu=Vect_DotProduct(u,u);
+
+   for (i=J+1;i<K;i++) {
+      // compute distance squared
+      Vect_Substract(w,Pt[i],Pt[J]);
+      cw=Vect_DotProduct(w,u);
+      if (cw<=0) {
+         dv2=Vect_Dist2(Pt[i],Pt[J]);
+      } else if (cu<=cw) {
+         dv2=Vect_Dist2(Pt[i],Pt[K]);
+      } else {
+         b=cw/cu;
+         Vect_SMul(u,u,b);
+         Vect_Add(p,Pt[J],u);
+         dv2=Vect_Dist2(Pt[i],p);
+      }
+      // test with current max distance squared
+      if (dv2<=maxd2)
+         continue;
+
+      // v[i] is a new max vertex
+      maxi=i;
+      maxd2=dv2;
+   }
+
+   /*Error is worse than the tolerance*/
+   if (maxd2>tol2) {
+      /*split the polyline at the farthest vertex from S*/
+      Markers[maxi]=1;      // mark v[maxi] for the simplified polyline
+      n++;
+      /*Recursively simplify the two subpolylines at v[maxi]*/
+      n+=GPC_SimplifyDP(Tolerance,Pt,J,maxi,Markers);  // polyline v[j] to v[maxi]
+      n+=GPC_SimplifyDP(Tolerance,Pt,maxi,K,Markers);  // polyline v[maxi] to v[k]
+   }
+   /*Else the approximation is OK, so ignore intermediate vertices*/
+   return(n);
+}
+
+// GPC_Simplify():
+//    Input:  tol = approximation tolerance
+//            V[] = polyline array of vertex points
+//            n   = the number of points in V[]
+//    Output: sV[]= simplified polyline vertices (max is n)
+//    Return: m   = the number of points in sV[]
+int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
+
+   int    i,k,pv,n=-1,m=0;         // Misc counters
+   double tol2=Tolerance*Tolerance;  // Tolerance squared
+   Vect3d *pt,pt0,pt1;               // Vertex buffer
+   int    *mk;                       // Marker buffer
+
+   /*Simplify sub-geometry*/
+
+   for(i=0;i<OGR_G_GetGeometryCount(Geom);i++) {
+      n=GPC_Simplify(Tolerance,OGR_G_GetGeometryRef(Geom,i));
+   }
+
+   if ((n=OGR_G_GetPointCount(Geom))) {
+      mk=(int*)calloc(n,sizeof(int));
+      pt=(Vect3d*)calloc(n,sizeof(Vect3d));
+      if (!mk || !pt) {
+         fprintf(stderr,"(ERROR) GPC_Simplify: Unable to allocate buffers\n");
+         return(0);
+      }
+
+      /*STAGE 1: Vertex Reduction within tolerance of prior vertex cluster*/
+      for(i=k=1,pv=0;i<n;i++) {
+         OGR_G_GetPoint(Geom,i,&pt0[0],&pt0[1],&pt0[2]);
+         OGR_G_GetPoint(Geom,pv,&pt1[0],&pt1[1],&pt1[2]);
+
+         if (Vect_Dist2(pt0,pt1)<tol2)
+            continue;
+         Vect_Assign(pt[k],pt0);
+         k++;
+         pv=i;
+      }
+
+      /*Start at beginning and finish at the end*/
+      OGR_G_GetPoint(Geom,0,&pt[0][0],&pt[0][1],&pt[0][2]);
+      if (pv<n-1) {
+         OGR_G_GetPoint(Geom,n-1,&pt[k][0],&pt[k][1],&pt[k][2]);
+         k++;
+      }
+
+      /*STAGE 2: Douglas-Peucker polyline simplification*/
+      mk[0]=mk[k-1]=1;       // mark the first and last vertices
+      m=GPC_SimplifyDP(Tolerance,pt,0,k-1,mk);
+
+      // copy marked vertices to the output simplified polyline
+      OGR_G_Empty(Geom);
+      if (m>=2) {
+      for (i=m=0;i<k;i++) {
+         if (mk[i]) {
+            OGR_G_AddPoint_2D(Geom,pt[i][0],pt[i][1]);
+            m++;
+         }
+      }
+      } else {
+            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
+            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
+            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
+            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
+      }
+
+      free(pt);
+      free(mk);
+   }
+   return(m); // m vertices in simplified polyline
+}
