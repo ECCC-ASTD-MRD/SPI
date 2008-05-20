@@ -652,7 +652,6 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
    int    *mk;                       // Marker buffer
 
    /*Simplify sub-geometry*/
-
    for(i=0;i<OGR_G_GetGeometryCount(Geom);i++) {
       n=GPC_Simplify(Tolerance,OGR_G_GetGeometryRef(Geom,i));
    }
@@ -691,12 +690,12 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
       // copy marked vertices to the output simplified polyline
       OGR_G_Empty(Geom);
       if (m>=2) {
-      for (i=m=0;i<k;i++) {
-         if (mk[i]) {
-            OGR_G_AddPoint_2D(Geom,pt[i][0],pt[i][1]);
-            m++;
+         for (i=m=0;i<k;i++) {
+            if (mk[i]) {
+               OGR_G_AddPoint_2D(Geom,pt[i][0],pt[i][1]);
+               m++;
+            }
          }
-      }
       } else {
             OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
             OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
