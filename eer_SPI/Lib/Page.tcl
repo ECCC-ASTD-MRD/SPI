@@ -770,7 +770,7 @@ proc Page::Create { Frame Width Height } {
 # Nom      : <Page::CursorInfo>
 # Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Afficher une bull d'information
+# But      : Afficher une bulle d'information
 #
 # Parametres :
 #   <Frame>  : Indentificateur de Page
