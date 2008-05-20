@@ -101,11 +101,9 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    BUFR_Dataset  *set,*sub;
    BUFR_Message  *msg;
    FILE          *file;
-   unsigned long  fidx=0;
+   long           fidx=0;
+   int            idx,co;
 
-   Tcl_Channel    sock=NULL;
-
-   int            idx,co,mode;
    static CONST char *sopt[] = { "create","free","read","write","define","is","all",NULL };
    enum               opt { CREATE,FREE,READ,WRITE,DEFINE,IS,ALL };
 
@@ -301,7 +299,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj       *obj=NULL,*lst,*lst1,*lst2;
+   Tcl_Obj       *obj=NULL,*lst;
    BUFR_Dataset  *set;
    BUFR_Template *tmp;
    DataSubset    *subset;
@@ -744,7 +742,6 @@ Tcl_Obj* MetDataset_Put(Tcl_Interp *Interp,char *Name,BUFR_Dataset *Set) {
 Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV) {
 
    Tcl_Obj *obj;
-   char     buf[256];
    int      len;
 
    obj=Tcl_NewListObj(0,NULL);
@@ -756,6 +753,7 @@ Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV) {
       }
       /*if there are Meta Data defined
       if (BCV->meta) {
+         char     buf[256];
          bufr_print_metadata(buf,BCV->meta);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(buf,strlen(buf)));
       }*/
@@ -783,7 +781,7 @@ Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV) {
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(bufr_code_get_svalue(BCV,&len),-1));
          }
          if (BCV->value->af) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewByteArrayObj(BCV->value->af->bits,8));
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewByteArrayObj(BCV->value->af->bits,8));
          }
 
       }
@@ -895,7 +893,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
    BUFR_Template *tmp;
 
-   int         idx,n;
+   int         idx;
    static CONST char *sopt[] = { "create","free","read","write","define","is","all",NULL };
    enum               opt { CREATE,FREE,READ,WRITE,DEFINE,IS,ALL };
 
@@ -1004,7 +1002,6 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    BUFR_Template *tmp;
-   Tcl_Obj       *obj,*sub;
    int            i,idx;
 
    static CONST char *sopt[] = { "-DATASUBSET",NULL };
