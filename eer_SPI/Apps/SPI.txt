@@ -66,6 +66,7 @@ namespace eval SPI {
    set Lbl(Obs)            { "Observations (OBS)" "Observations (OBS)" }
    set Lbl(MetObs)         { "Observations météo (BURP/BUFR)" "Met Observations (BURP/BUFR)" }
    set Lbl(Radar)          { "Volume radar (IRIS)" "Radar volume scan (IRIS)" }
+   set Lbl(GDALOGR)        { "Données géographiques (GDAL/OGR)" "Geographical data (GDAL/OGR)" }
    set Lbl(Open)           { "Ouvrir un fichier" "Open file" }
    set Lbl(PageNew)        { "Nouvelle page" "New page" }
    set Lbl(PageDel)        { "Supprimer la page" "Delete page" }
