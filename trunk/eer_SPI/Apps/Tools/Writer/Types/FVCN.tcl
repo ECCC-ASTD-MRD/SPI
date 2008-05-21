@@ -84,7 +84,7 @@ proc Writer::FVCN::New { Pad Mode } {
    set Data(Mode$Pad) $Mode
 
    Writer::FVCN::Init $Pad
-   Writer::FVCN::GraphInit $Pad
+#   Writer::FVCN::GraphInit $Pad
 
    if { $Mode=="RET" } {
       $Pad.remarks configure -height 3
@@ -983,9 +983,13 @@ proc Writer::FVCN::PrintCommand { Canvas } {
 
    PrintBox::PrintTXT $file
 
-   set PrintBox::Print(FullName) $PrintBox::Print(FullName)_gr
-   set PrintBox::Print(Angle) landscape
-   PrintBox::PrintCommand $Data(Page)
+   #----- Graphical product
+   if { [winfo exists $Data(Page)] } {
+      set PrintBox::Print(FullName) $PrintBox::Print(FullName)_gr
+      set PrintBox::Print(Angle) landscape
+      PrintBox::PrintCommand $Data(Page)
+   }
+
    PrintBox::Destroy
 }
 
@@ -1187,7 +1191,8 @@ proc Writer::FVCN::PageInit { Pad } {
       set y [expr $y+$Writer::Data(Height)*$Data(HNext$Pad)]
 
    }
-      Writer::FVCN::GraphUpdate $Pad
+   #----- Graphical product
+#   Writer::FVCN::GraphUpdate $Pad
 }
 
 #----------------------------------------------------------------------------
@@ -1641,9 +1646,11 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
 
       #----- Update graphical product
 
+      if { [winfo exists $Data(Page)] } {
 #      Viewport::GoTo $Data(Page) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
-      Viewport::Rotate $Data(Page) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
-      Writer::FVCN::GraphUpdate $Writer::Data(Pad)
+         Viewport::Rotate $Data(Page) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
+         Writer::FVCN::GraphUpdate $Writer::Data(Pad)
+      }
    } else {
       Debug::TraceProc "Writer::FVCN::Site: Invalid source ($Name)"
    }
@@ -1693,7 +1700,7 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
       }
    }
 
-   #----- Produit graphique
+   #----- Graphical product
 
    if { [winfo exists $Data(Page)] } {
 
