@@ -522,6 +522,10 @@ proc SPI::WindowMenu { } {
          -command { SPI::FileOpen NEW TrajBox "" [list $FileBox::Type(TRAJ) $FileBox::Type(HYSPLIT)] "" } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(Obs) $GDefs(Lang)] ..." \
          -command { SPI::FileOpen NEW ObsBox "" [list $FileBox::Type(OBS)] "" } -underline 0
+      .menu.file.menu.type add command -label "[lindex $Lbl(MetObs) $GDefs(Lang)] ..." \
+         -command { NowCaster::Window Obs; NowCaster::Obs::Add [FileBox::Create . "" Load ""] } -underline 0
+      .menu.file.menu.type add command -label "[lindex $Lbl(Radar) $GDefs(Lang)] ..." \
+         -command { NowCaster::Window Radar; NowCaster::Radar::Add [FileBox::Create . "" Load ""] } -underline 0
       .menu.file.menu.type add separator
       .menu.file.menu.type add command -label "[lindex $Lbl(Icons) $GDefs(Lang)] ..." \
          -command { SPI::IcoOpen [FileBox::Create . "" Load [list $FileBox::Type(ICO)]] }  -underline 0
