@@ -209,9 +209,9 @@ proc PrintBox::PrintTXT { File } {
 
    if { $PrintBox::Print(Type)=="printer" } {
       if { $Print(Angle) == "portrait" } {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File > lpr -P$Print(Printer) }
+         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -P $Print(Printer) }
       } else {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3  $File > lpr -P$Print(Printer) }
+         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3  $File -P $Print(Printer) }
       }
    } else {
       if { $Print(Angle) == "portrait" } {
