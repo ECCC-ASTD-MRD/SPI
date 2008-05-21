@@ -96,19 +96,29 @@ namespace eval Mapper { } {
 
    set Data(GDALFormats) {
       {Arc/Info Binary Grid {*.adf}}
-      {USGS DOQ {*.doq}}
+      {ADRG/ARC Digitized Raster Graphics {*.gen *.thf}}
+      {Spot CEOS {*.ces}}
+      {Spot DIMAP {*.dim}}
+      {USGS DOQ 1 & 2 {*.doq}}
       {USGS SDTS DEM {*.catd *.ddf}}
       {USGS ASCII DEM {*.dem}}
       {Maptech/NOAA BSB Nautical Chart Format {*.kap}}
       {Military Elevation Data {*.dt0 *.dt1}}
       {GeoTIFF {*.tif}}
+      {Golden Software ASCII and binary Grid File Format {*.gsag *.gsbg *.gs7bg}}
+      {Grid eXchange File {*.gxf}}
+      {Image Display and Analysis {*.ida}}
       {Virtual Raster {*.vrt}}
       {National Imagery Transmission Format {*.nitf}}
+      {Network Common Data Format {*.cdf}}
       {Erdas Imagine Images {*.img}}
       {Erdas 7.x {*.lan *.gis}}
+      {ERMapper Compressed Wavelets {*.ecw *.ers}}
       {MS Windows Device Independent Bitmap {*.bmp}}
+      {Magellan BLX Topo {*.blx *.xlb}}
+      {NLAPS Data Format {*.ndf}}
       {PCIDSK Database File {*.pci}}
-      {HDF4 Dataset {*.hdf}}
+      {HDF 4-5 Dataset {*.hdf}}
       {ENVI .hdr Labelled {*.hdr}}
       {Envisat Image Product {*.n1}}
       {FITS {*.fits}}
@@ -120,21 +130,38 @@ namespace eval Mapper { } {
       {NLAPS Data Format {*.h1 *.h2 *.hd}}
       {PCI Raw Format {*.aux}}
       {Raster Matrix Format {*.rsw *.mtw}}
+      {Raster Product Format/RPF {*.toc}}
       {RadarSat2 XML {*.xml}}
       {Swedish Grid {*.rik}}
+      {SRTM HGT Format {*.hgt}}
+      {Terragen Heightfield {*.ter}}
+      {Sandia National Laboratories GSAT File Format {*.gff}}
       {Portable Network Graphics {*.png}}
-      {Netpbm {*.pgp *.ppm}}
+      {Netpbm {*.pgm *.ppm}}
       {VTP Binary Terrain Format {*.bt}}
+      {WMO GRIB1/GRIB2 {*.grb}}
       {X11 Pixmap {*.xpm}}}
 
    set Data(OGRFormats) {
+      {Arc/Info Binary Coverage {*.bin}}
       {ESRI Shapefile {*.shp}}
+      {ESRI ArcSDE {*.sde}}
+      {Géoconcept Export {*.gxt}}
+      {Geography Markup Language {*.gml}}
+      {GMT ASCII Vectors {*.gmt}}
+      {GPS Exchange Format {*.gpx}}
+      {GRASS 6+ {*}}
+      {INTERLIS 1 {*.itf *.xml *.ili}}
+      {Keyhole Markup Language {*.kml}}
       {MapInfo TAB and MIF/MID {*.mid *.mif *.tab *.dat *.map *.id *.ind}}
       {Microstation {*.dgn}}
       {SDTS {*.ddf}}
+      {SQLite RDBMS {*.sql}}
       {UK National Transfer Format {*.ntf}}
       {U.S. Census TIGER/Line {*.rt*}}
-      {Spatial and Attribute Indexing {*.sbn *.sbx}}}
+      {Spatial and Attribute Indexing {*.sbn *.sbx}}
+      {Virtual Datasource {*.vrt}}
+      {X-Plane/Flightgear aeronautical data {*.dat}}}
 
    set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
