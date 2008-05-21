@@ -23,7 +23,7 @@ source $GDefs(Dir)/Apps/Tools/NowCaster/NowCaster.int
 
 #----- Lire les types de donnees
 
-foreach type [glob $GDefs(Dir)/Apps/Tools/NowCaster/Types/*.tcl] {
+foreach type [lsort [glob $GDefs(Dir)/Apps/Tools/NowCaster/Types/*.tcl]] {
    lappend NowCaster::Data(Types) [file rootname [file tail $type]]
    source $type
 }

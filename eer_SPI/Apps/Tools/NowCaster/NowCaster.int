@@ -29,7 +29,7 @@
 #
 #----------------------------------------------------------------------------
 
-proc NowCaster::Window { } {
+proc NowCaster::Window { { Type "" } } {
    global GDefs
    variable Lbl
    variable Bubble
@@ -138,7 +138,11 @@ proc NowCaster::Window { } {
       }
    }
 
-   TabFrame::Select .nowcaster.tab 0
+   if { $Type!="" && [set idx [lsearch -exact $NowCaster::Data(Types) $Type]]!=-1 } {
+      TabFrame::Select .nowcaster.tab $idx
+   } else {
+      TabFrame::Select .nowcaster.tab 0
+   }
 
    Bubble::Create .nowcaster.time.clock      [lindex $Bubble(Now) $GDefs(Lang)]
    Bubble::Create .nowcaster.time.clock.down [lindex $Bubble(Opt) $GDefs(Lang)]
