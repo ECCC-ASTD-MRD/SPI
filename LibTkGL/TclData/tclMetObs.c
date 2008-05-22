@@ -2297,11 +2297,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          /*Get the element for the specific time*/
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Strict))) {
 
-            /*Fix transparency on validity time persistance*/
+            /*Fix transparency on validity time persistance and break if too old (alpha==0)*/
             if (Obs->Persistance) {
                alpha=1.0-((double)(Obs->Time-elem->Time)/Obs->Persistance);
                alpha=alpha<0.0?0:alpha;
+               if (alpha==0.0) {
+                  break;
+               }
             }
+
             /*Loop on the model items*/
             for(i=0;i<Obs->Model->NItem;i++) {
 
@@ -2461,7 +2465,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
                            }
 
-                          if (spec->RenderValue && MET_VALID(val,Obs->NoData) && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
+                           if (spec->RenderValue && MET_VALID(val,Obs->NoData) && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                               if (spec->Map && spec->MapAll) {
                                  VAL2COL(idx,spec,val);
 
@@ -2480,10 +2484,20 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            }
 
                            glPopMatrix();
+                           /*Skip the rest if in select mode and a valid one has been drawn*/
                            if (GLMode==GL_SELECT && MET_VALID(val,Obs->NoData))
                               break;
+
+                           /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
+                           if (!heb || Proj->Params->Scale==1.0) {
+                              break;
+                           }
                         }
                      }
+                           /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
+                           if (ne>=0 && (!heb || Proj->Params->Scale==1.0)) {
+                              break;
+                           }
                   }
                }
                if (GLMode==GL_SELECT)
