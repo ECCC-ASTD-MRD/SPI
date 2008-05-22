@@ -662,8 +662,6 @@ void GraphAxis_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) GraphAxis_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&GraphAxisTable,&ptr);
    while (entry) {
       GraphAxis_Clear((TGraphAxis*)Tcl_GetHashValue(entry));

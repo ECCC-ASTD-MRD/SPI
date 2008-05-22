@@ -1360,8 +1360,6 @@ void GDAL_Wipe() {
    Tcl_HashEntry  *entry=NULL;
    GDAL_File      *file;
 
-   printf("(INFO) GDAL_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&GDAL_FileTable,&ptr);
 
    while (entry) {

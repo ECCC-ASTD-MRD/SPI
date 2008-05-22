@@ -1071,8 +1071,6 @@ void Traj_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) Traj_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&TrajTable,&ptr);
 
    while (entry) {

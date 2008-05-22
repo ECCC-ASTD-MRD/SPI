@@ -143,7 +143,7 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
 
 TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data);
-TMetElemData **TMetElem_Add(TMetLoc *Loc,time_t Time);
+TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time);
 TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,int Exact);
 void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);

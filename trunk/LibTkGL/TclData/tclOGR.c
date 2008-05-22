@@ -1119,8 +1119,6 @@ void OGR_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) OGR_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&OGR_LayerTable,&ptr);
 
    while (entry) {
