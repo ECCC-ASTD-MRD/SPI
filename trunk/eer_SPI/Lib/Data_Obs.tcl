@@ -13,6 +13,7 @@
 #
 # Fonctions:
 #
+#   Obs::InfoGraph   { Obs Tag Elem }
 #   Obs::ParamGet    { { Spec "" } }
 #   Obs::ParamSet    { { Spec "" } }
 #   Obs::ParamPut    { }
@@ -170,6 +171,88 @@ namespace eval Obs {
                           "Colormap used for values" }
    set Bubble(Intervals) { "Liste des intervals (1 2 3 ... ou [0 1])"
                           "Intervals description (1 2 3 ... ou [0 1])" }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Obs::InfoGraph>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer un item de graph specifique pour les obs a inserer dans la bulle
+#            informative de la page
+#
+# Parametres :
+#   <Obs>    : Observation (metobs)
+#   <TagOrId>: Identificateur ou tag de la localisation
+#   <Elem>   : Element
+#
+# Retour     :
+#   <graphitem> : Item de graph
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Obs::InfoGraph { Obs Tag Elem } {
+
+   #----- Create the needed objects if they are not created yet
+   if { ![vector is PAGEOBSGRAPHDATA] } {
+      graphaxis create PAGEOBSGRAPHAXISX
+      graphaxis create PAGEOBSGRAPHAXISY
+      graphitem create PAGEOBSGRAPHITEM
+
+      vector create PAGEOBSGRAPHDATA
+      vector dim    PAGEOBSGRAPHDATA { X Y }
+      vector stat   PAGEOBSGRAPHDATA.X -nodata -999.0
+      vector stat   PAGEOBSGRAPHDATA.Y -nodata -999.0
+
+      graphaxis configure PAGEOBSGRAPHAXISX -font XFont10 -color black -position LL -width 1 -incr 3600
+      graphaxis configure PAGEOBSGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -position LL -width 1 -highoffset 2
+      graphitem configure PAGEOBSGRAPHITEM -xaxis PAGEOBSGRAPHAXISX -yaxis PAGEOBSGRAPHAXISY -type SPLINE -width 2 -outline red -tag PAGEOBSGRAPHITEM
+   }
+
+   #----- If we have enough elements to create a graph
+   vector clear PAGEOBSGRAPHDATA
+   set items [metobs define $Obs -ELEMENT $Tag $Elem]
+
+   #----- Is it a profile ?
+   if { [llength [lindex [lindex $items 0] 1]]>1 } {
+      if { [set elem [metmodel define [metobs define $Obs -MODEL] -topography]]!="" } {
+         set elevs [metobs define $Obs -ELEMENT $Tag $elem]
+         foreach item [lindex [lindex $items 0] 1] elev [lindex [lindex $elevs 0] 1] {
+            vector append PAGEOBSGRAPHDATA.X $item
+            vector append PAGEOBSGRAPHDATA.Y $elev
+         }
+      } else {
+         set i 0
+         foreach item [lindex [lindex $items 0] 1] {
+            vector append PAGEOBSGRAPHDATA.X $item
+            vector append PAGEOBSGRAPHDATA.Y [incr i]
+         }
+      }
+      graphaxis configure PAGEOBSGRAPHAXISX -min [vector stats PAGEOBSGRAPHDATA.X -min] -max [vector stats PAGEOBSGRAPHDATA.X -max] \
+         -intervals "[vector stats PAGEOBSGRAPHDATA.X -min] [vector stats PAGEOBSGRAPHDATA.X -max]" -format NONE
+      graphaxis configure PAGEOBSGRAPHAXISY -min [vector get PAGEOBSGRAPHDATA.Y 0] -max [vector get PAGEOBSGRAPHDATA.Y end] \
+         -intervals "[vector stats PAGEOBSGRAPHDATA.Y -min] [vector stats PAGEOBSGRAPHDATA.Y -max]" -format INTEGER
+
+   #----- Then it is a time serie
+   } else {
+      foreach item $items {
+         vector append PAGEOBSGRAPHDATA $item
+      }
+      graphaxis configure PAGEOBSGRAPHAXISX -min [vector stats PAGEOBSGRAPHDATA.X -min] -max [vector stats PAGEOBSGRAPHDATA.X -max] \
+         -intervals "[vector stats PAGEOBSGRAPHDATA.X -min] [vector stats PAGEOBSGRAPHDATA.X -max]" -format T-HH
+      graphaxis configure PAGEOBSGRAPHAXISY -min [vector stats PAGEOBSGRAPHDATA.Y -min] -max [vector stats PAGEOBSGRAPHDATA.Y -max] \
+         -intervals "[vector stats PAGEOBSGRAPHDATA.Y -min] [vector stats PAGEOBSGRAPHDATA.Y -max]"
+   }
+
+   graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
+      -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25]
+
+   if { [vector length PAGEOBSGRAPHDATA.X]>2 } {
+      return PAGEOBSGRAPHITEM
+   } else {
+      return ""
+   }
 }
 
 #-------------------------------------------------------------------------------
