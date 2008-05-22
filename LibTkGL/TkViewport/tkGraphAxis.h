@@ -38,8 +38,8 @@
 #include "tclData.h"
 #include "tclVector.h"
 
-#define AXISVALUE(SC,VAL) (SC->Type=='O'?(VAL>0.0?SC->Off+(log10(VAL)-SC->T0)*SC->Delta:0.0):SC->Off+(VAL-SC->T0)*SC->Delta)
-#define AXISPPOS(SC,POS)  (SC->Type=='O'?pow(10,(POS-SC->Off)/SC->Delta+SC->T0):(POS-SC->Off)/SC->Delta+SC->T0)
+#define AXISVALUE(SC,VAL) (SC->Type=='O'?(VAL>0.0?SC->Offset[0]+(log10(VAL)-SC->T0)*SC->Delta:0.0):SC->Offset[0]+(VAL-SC->T0)*SC->Delta)
+#define AXISPPOS(SC,POS)  (SC->Type=='O'?pow(10,(POS-SC->Offset[0])/SC->Delta+SC->T0):(POS-SC->Offset[0])/SC->Delta+SC->T0)
 
 #define HORIZONTAL 0x01
 #define VERTICAL   0x02
@@ -47,7 +47,7 @@
 #define DONEX      0x01
 #define DONEY      0x02
 
-enum  GRAPHAXISFORMATS { GRAXNONE,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHHMM,GRAXDDMM,GRAXMMDD };
+enum  GRAPHAXISFORMATS { GRAXNONE,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH };
 
 typedef struct TGraphAxis {
    Tk_Dash        Dash;          /*Pointille*/
@@ -58,11 +58,10 @@ typedef struct TGraphAxis {
    char         **Label;         /*Liste des labels corespondant aux intervals*/
    double        *Inter;         /*Liste des intervals*/
    int            InterNb;       /*Nombre d'interval*/
+   int            Offset[2];     /*Decallage superieur en %*/
    double         Min,Max;       /*Minimum et maximum de l'axe*/
    double         T0,T1;         /*Minimum et maximum de l'axe*/
    double         Angle;         /*Text angle*/
-   double         Offset[2];     /*Decallage superieur en %*/
-   double         Off;           /*Decallage su depart*/
    double         Incr;          /*Increment*/
    double         Delta;         /*Delta de deplacement en pixel par unite d'increment*/
    double        *HighLight;     /*Valeurs a mettre en evidence*/

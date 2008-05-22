@@ -702,6 +702,9 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
    int            a,i,idx,width,height,x,y,mx,my;
    char          *data[8];
 
+   if (!gr->Width || !gr->Height) {
+      return;
+   }
    Tk_GetFontMetrics(gr->Font,&tkm);
 
    if (gr->Alpha<100 || gr->AlphaLegend<100) {
