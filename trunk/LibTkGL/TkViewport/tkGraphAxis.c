@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","DDMM","MMDD" };
+static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -331,17 +331,17 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
          case LOWOFFSET:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(axis->Offset[0]));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(axis->Offset[0]));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Offset[0]);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&axis->Offset[0]);
             }
             break;
 
          case HIGHOFFSET:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(axis->Offset[1]));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(axis->Offset[1]));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Offset[1]);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&axis->Offset[1]);
             }
             break;
 
@@ -545,9 +545,8 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Order=0;
    axis->Mark=0.0;
    axis->Incr=0.0;
-   axis->Offset[0]=0.0;
-   axis->Offset[1]=0.0;
-   axis->Off=0.0;
+   axis->Offset[0]=0;
+   axis->Offset[1]=0;
 
    return(TCL_OK);
 }
@@ -733,8 +732,7 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
       Axis->Order=abs(Axis->Order)>abs(o)?Axis->Order:o;
    }
 
-   Axis->Off=Axis->Offset[0]*Delta;
-   Axis->Delta=(double)(Delta-(Axis->Offset[0]+Axis->Offset[1])*Delta)/(Axis->T1-Axis->T0);
+   Axis->Delta=(double)(Delta-(Axis->Offset[0]+Axis->Offset[1]))/(Axis->T1-Axis->T0);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -816,25 +814,26 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
          GraphAxis_Print(Axis,buf0,Axis->Min,0);
          GraphAxis_Print(Axis,buf1,Axis->Max,0);
          if (strlen(buf0)>strlen(buf1)) {
-            wt=Tk_TextWidth(font,buf0,strlen(buf0)+1)*1.25;
+            wt=Tk_TextWidth(font,buf0,strlen(buf0));
          } else {
-            wt=Tk_TextWidth(font,buf1,strlen(buf1)+1)*1.25;
+            wt=Tk_TextWidth(font,buf1,strlen(buf1));
          }
          ht=tkm.linespace;
       }
+      wt*=1.15;
    }
 
    if (Side==VERTICAL) {
       *Width=ABS(h)*wt*(Axis->Angle==0.0?1.0:0.5);
-      *Height=ABS(w)*0.5*ht+wt;
+      *Height=ABS(w)*0.5*ht+wt+10;
 
       if (Axis->Unit) {
-        *Height+=Axis->UnitHeight;
+        *Height+=Axis->UnitHeight+10;
       }
 
    } else {
       *Width=ABS(w)*wt*(Axis->Angle==0.0?1.0:0.5);
-      *Height=ABS(h)*wt+15+ht;
+      *Height=ABS(h)*wt+ht+10;
 
       if (Axis->Unit) {
         *Height+=Axis->UnitHeight+10;
@@ -953,9 +952,12 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
                                }
                                break;
             case GRAXHHDDMM: sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1)); break;
-            case GRAXHHMM: sprintf(String,"%02i:%02",tsec->tm_hour,tsec->tm_min); break;
-            case GRAXDDMM: sprintf(String,"%02i/%02",tsec->tm_mday,(tsec->tm_mon+1)); break;
-            case GRAXMMDD: sprintf(String,"%02i/%02",(tsec->tm_mon+1),tsec->tm_mday); break;
+            case GRAXHH:   sprintf(String,"%02i",tsec->tm_hour); break;
+            case GRAXTMINUSHH: sprintf(String,"T-%.0fH",(Axis->Max-Value)/3600.0); break;
+            case GRAXTPLUSHH: sprintf(String,"T+%.0fH",(Value-Axis->Min)/3600.0); break;
+            case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
+            case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
+            case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
          }
          return;
       }
