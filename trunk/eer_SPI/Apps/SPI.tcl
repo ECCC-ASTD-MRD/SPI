@@ -63,6 +63,7 @@ SPI::Splash "Sourcing packages"
 #   <Argc>   : Nombre d'arguments
 #   <No>     : Index dans la liste complete des arguments
 #   <Multi>  : Est-ce que ce type d'argument peut etre gerer de facon multiple par Cmd
+#   <Must>   : Est-ce que ce type d'argument doit absolument avoir des valeurs
 #   <Cmd>    : Commande a effectuer sur le ou les arguments
 #
 # Retour:
@@ -72,7 +73,7 @@ SPI::Splash "Sourcing packages"
 #
 #----------------------------------------------------------------------------
 
-proc ArgsParse { Argv Argc No Multi Cmd } {
+proc ArgsParse { Argv Argc No Multi Must Cmd } {
 
    #----- Garder l'index de depart
 
@@ -91,6 +92,12 @@ proc ArgsParse { Argv Argc No Multi Cmd } {
       }
       incr No
    }
+
+   if { $No==$idx && $Must } {
+      puts stderr "(ERROR) SPI: No arguments value were specified for argument [lindex $Argv [incr idx -1]]"
+      SPI::Quit 1
+   }
+
    if { $Cmd!="" && $Multi } {
       eval $Cmd \$files
    }
@@ -119,7 +126,7 @@ proc ArgsParse { Argv Argc No Multi Cmd } {
 proc CommandLine { } {
    global GDefs
 
-   puts stderr "Error: Wrong arguments must be:"
+   puts stderr "(ERROR) SPI: Wrong arguments must be:"
    puts stderr "
       \[-tclsh ...\]                    : Launch a tcl script through SPI's environment (No Tk)
       \[-soft\]                         : Launch in software mode
@@ -154,21 +161,21 @@ for { set i 0 } { $i < $argc } { incr i } {
       "batch"    { }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { set SPI::Param(Window) False }
-      "geom"     { set i [ArgsParse $argv $argc $i 0 "set SPI::Param(Geom)"] }
+      "geom"     { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"     { set GDefs(Lang) [lindex $argv [incr i]] }
-      "default"  { set i [ArgsParse $argv $argc $i 1 "set SPI::Param(Default)"] }
-      "field"    { set i [ArgsParse $argv $argc $i 1 ""] }
-      "traj"     { set i [ArgsParse $argv $argc $i 1 ""] }
-      "obs"      { set i [ArgsParse $argv $argc $i 1 ""] }
-      "icon"     { set i [ArgsParse $argv $argc $i 1 ""] }
-      "args"     { set i [ArgsParse $argv $argc $i 1 ""] }
-      "script"   { set i [ArgsParse $argv $argc $i 1 ""] }
-      "pane"     { set i [ArgsParse $argv $argc $i 0 ""] }
-      "side"     { set i [ArgsParse $argv $argc $i 0 ""] }
-      "layout"   { set i [ArgsParse $argv $argc $i 0 ""] }
-      "project"  { set i [ArgsParse $argv $argc $i 0 ""] }
-      "tool"     { set i [ArgsParse $argv $argc $i 0 ""] }
-      default    { CommandLine ; exit 1 }
+      "default"  { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Default)"] }
+      "field"    { set i [ArgsParse $argv $argc $i 1 0 ""] }
+      "traj"     { set i [ArgsParse $argv $argc $i 1 0 ""] }
+      "obs"      { set i [ArgsParse $argv $argc $i 1 0 ""] }
+      "icon"     { set i [ArgsParse $argv $argc $i 1 0 ""] }
+      "args"     { set i [ArgsParse $argv $argc $i 1 0 ""] }
+      "script"   { set i [ArgsParse $argv $argc $i 1 1 ""] }
+      "pane"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
+      "side"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
+      "layout"   { set i [ArgsParse $argv $argc $i 0 1 ""] }
+      "project"  { set i [ArgsParse $argv $argc $i 0 1 ""] }
+      "tool"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
+      default    { CommandLine ; SPI::Quit 1 }
    }
 }
 
@@ -1190,8 +1197,8 @@ proc SPI::Execute { Script } {
       if { ![file exists $Script] } {
          if { ![file exists $GDefs(DirEER)/Macro/$Script] } {
             if { ![file exists $GDefs(DirEER)/Macro/$Script.tcl] } {
-               puts stderr "SPI: Could not find script $Script"
-               return
+               puts stderr "(ERROR) SPI: Could not find script $Script"
+               SPI::Quit 1
             } else {
                set Script $GDefs(DirEER)/Macro/$Script.tcl
             }
@@ -2362,19 +2369,19 @@ for { set i 0 } { $i < $argc } { incr i } {
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { }
       "lang"     { }
-      "geom"     { set i [ArgsParse $argv $argc $i 1 ""]  }
-      "default"  { set i [ArgsParse $argv $argc $i 1 ""] }
-      "field"    { set i [ArgsParse $argv $argc $i 1 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
-      "traj"     { set i [ArgsParse $argv $argc $i 1 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
-      "obs"      { set i [ArgsParse $argv $argc $i 1 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
-      "icon"     { set i [ArgsParse $argv $argc $i 1 "SPI::IcoOpen"] }
-      "args"     { set i [ArgsParse $argv $argc $i 1 "set SPI::Param(Args)"] }
-      "script"   { set i [ArgsParse $argv $argc $i 1 "set SPI::Param(Script)"] }
-      "pane"     { set i [ArgsParse $argv $argc $i 1 "set SPI::Param(Panes)"] }
-      "side"     { set i [ArgsParse $argv $argc $i 0 "set SPI::Param(PaneSide)"] }
-      "layout"   { set i [ArgsParse $argv $argc $i 0 "set SPI::Param(Layout)"] }
-      "project"  { set i [ArgsParse $argv $argc $i 0 "set SPI::Param(Project)"] }
-      "tool"     { set i [ArgsParse $argv $argc $i 1 "set SPI::Param(Tool)"] }
+      "geom"     { set i [ArgsParse $argv $argc $i 1 1 ""]  }
+      "default"  { set i [ArgsParse $argv $argc $i 1 1 ""] }
+      "field"    { set i [ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
+      "traj"     { set i [ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
+      "obs"      { set i [ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
+      "icon"     { set i [ArgsParse $argv $argc $i 1 0 "SPI::IcoOpen"] }
+      "args"     { set i [ArgsParse $argv $argc $i 1 0 "set SPI::Param(Args)"] }
+      "script"   { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
+      "pane"     { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Panes)"] }
+      "side"     { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(PaneSide)"] }
+      "layout"   { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(Layout)"] }
+      "project"  { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(Project)"] }
+      "tool"     { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Tool)"] }
    }
 }
 
@@ -2414,8 +2421,8 @@ if { $SPI::Param(Project)!="" } {
 
    SPI::Splash "Setting up initial layout"
    if { ![SPI::LayoutLoad [lindex $Page::Data(Frames) 0] $layout] } {
-      puts stderr "SPI: Invalid Layout"
-      exit
+      puts stderr "(ERROR) SPI: Invalid Layout"
+      SPI::Quit 1
    }
 }
 
