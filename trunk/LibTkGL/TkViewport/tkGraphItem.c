@@ -2376,10 +2376,8 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       ((glTextItem*)Item->DescItem)->y=Y0;
       glComputeTextBbox(Graph->canvas,Item->DescItem);
    } else {
-      if (Item->Font) {
-         glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font?Item->Font:Graph->Font);
-         glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1);
-      }
+      glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font?Item->Font:Graph->Font);
+      glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1);
    }
 
    if (Item->Icon && Item->Size) {

@@ -2494,10 +2494,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            }
                         }
                      }
-                           /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
-                           if (ne>=0 && (!heb || Proj->Params->Scale==1.0)) {
-                              break;
-                           }
+                     /*Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway*/
+                     if (ne>=0 && (!heb || Proj->Params->Scale==1.0)) {
+                        break;
+                     }
                   }
                }
                if (GLMode==GL_SELECT)
