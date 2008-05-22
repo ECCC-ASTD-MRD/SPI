@@ -73,7 +73,7 @@
 #    Page::CanvasHeight    { Frame }
 #    Page::CanvasWidth     { Frame }
 #    Page::Create          { Frame Width Height }
-#    Page::CursorInfo      { Frame X Y Info }
+#    Page::CursorInfo      { Frame X Y Info { Graph "" } }
 #    Page::Destroy         { Frame }
 #    Page::ModeCam         { Frame VP }
 #    Page::ModeData        { Frame VP }
@@ -777,6 +777,7 @@ proc Page::Create { Frame Width Height } {
 #   <X>      : Coordonnee en X
 #   <Y>      : Coordonnee en Y
 #   <Info>   : Information sur la localisation a afficher
+#   <Graph>  : Graph a inserer dans la bulle
 #
 # Retour:
 #
@@ -784,18 +785,30 @@ proc Page::Create { Frame Width Height } {
 #
 #----------------------------------------------------------------------------
 
-proc Page::CursorInfo { Frame X Y Info } {
+proc Page::CursorInfo { Frame X Y Info { Graph "" } } {
 
    if { $Info!="" } {
       if { ![llength [$Frame.page.canvas find withtag PAGECURSORINFO]] } {
          $Frame.page.canvas create polygon -999 -999  -tags "PAGECURSORINFO PAGECURSORINFOSHADOW" -fill black -transparency 50
          $Frame.page.canvas create polygon -999 -999  -tags "PAGECURSORINFO PAGECURSORINFOFRAME" -fill white -outline black -width 1
-         $Frame.page.canvas create text -999 -999 -tags "PAGECURSORINFO PAGECURSORINFOTEXT" -text 333 -font XFont12 -fill black -anchor sw
+         $Frame.page.canvas create text -999 -999 -tags "PAGECURSORINFO PAGECURSORINFOSTUFF PAGECURSORINFOTEXT" -text 333 -font XFont12 -fill black -anchor sw
+
+         $Frame.page.canvas create graph -x -999 -y -999 -anchor nw -command "" -bd 0 -fg black -bg white -fill white -font XFont10\
+            -tags "PAGECURSORINFO PAGECURSORINFOSTUFF PAGECURSORINFOGRAPH" -legend True -xlegend -35 -ylegend -25 -bdlegend 0
+
+         $Frame.page.canvas bind PAGECURSORINFO <Enter> "Page::CursorInfo $Frame %X %Y \"\""
       }
+
+      if { [graphitem is $Graph] } {
+         $Frame.page.canvas itemconfigure PAGECURSORINFOGRAPH -item $Graph -x [expr $X+10] -y [expr $Y+2] -width 200 -height 100
+      } else {
+         $Frame.page.canvas itemconfigure PAGECURSORINFOGRAPH -item {} -x -999 -y -999 -width 0 -height 0
+      }
+
       $Frame.page.canvas coords PAGECURSORINFOTEXT [expr $X+10] $Y
       $Frame.page.canvas itemconfigure PAGECURSORINFOTEXT -text $Info
 
-      set bbox [$Frame.page.canvas bbox PAGECURSORINFOTEXT]
+      set bbox [$Frame.page.canvas bbox PAGECURSORINFOSTUFF]
       set x0 [lindex $bbox 0]
       set y0 [lindex $bbox 1]
       set x1 [lindex $bbox 2]
@@ -808,10 +821,13 @@ proc Page::CursorInfo { Frame X Y Info } {
                        [expr $x1+7] [expr $y1+5] [expr $x1+5] [expr $y1+7] [expr $x0+3] [expr $y1+7]]
       $Frame.page.canvas coords PAGECURSORINFOSHADOW $coords
       $Frame.page.canvas raise PAGECURSORINFO
+      $Frame.page.canvas raise PAGECURSORINFOSTUFF
    } else {
       $Frame.page.canvas coords PAGECURSORINFOSHADOW -999 -999
       $Frame.page.canvas coords PAGECURSORINFOFRAME -999 -999
       $Frame.page.canvas coords PAGECURSORINFOTEXT -999 -999
+      $Frame.page.canvas itemconfigure PAGECURSORINFOGRAPH -item {} -x -999 -y -999 -width 0 -height 0
+
    }
    update idletasks
 }

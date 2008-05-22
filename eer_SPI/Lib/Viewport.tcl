@@ -714,7 +714,9 @@ proc Viewport::Follow { Frame VP X Y } {
 
    set latlon [$VP -unproject $X $Y]
 
-   set info ""
+   set info  ""
+   set graph ""
+
    set Map(X) $X
    set Map(Y) $Y
    set Map(LatCursor)  [lindex $latlon 0]
@@ -762,13 +764,14 @@ proc Viewport::Follow { Frame VP X Y } {
                             foreach val $vals {
                                append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
                             }
+                            set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }
          }
          catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
          catch { set Page::Data(Altitude) [lindex $coord 2] }
       }
    }
-   Page::CursorInfo $Frame $X $Y $info
+   Page::CursorInfo $Frame $X $Y $info $graph
 
    #----- Activation du pointeur commun
 
