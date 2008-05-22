@@ -271,6 +271,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             Tcl_AppendResult(Interp,"Invalid vector",(char*)NULL);
             return(TCL_ERROR);
          } else {
+            n=0;
             if (Objc==4) {
                c=Tcl_GetString(Objv[3]);
                if (c[0]=='e' && c[1]=='n' && c[2]=='d') {
