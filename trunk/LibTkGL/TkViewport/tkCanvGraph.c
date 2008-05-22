@@ -87,6 +87,8 @@ static Tk_ConfigSpec GraphSpecs[] = {
         "0",Tk_Offset(GraphItem,xi),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_PIXELS,"-ylegend",(char *)NULL,(char *)NULL,
         "0",Tk_Offset(GraphItem,yi),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS,"-bdlegend",(char *)NULL,(char *)NULL,
+        "1",Tk_Offset(GraphItem,BDLegend),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_BOOLEAN, "-legend", (char *) NULL, (char *) NULL,
         "1", Tk_Offset(GraphItem,Legend), TK_CONFIG_DONT_SET_DEFAULT},
    { TK_CONFIG_BOOLEAN,"-update",(char *)NULL,(char *)NULL,
@@ -212,6 +214,7 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
    gr->xi         = 0;
    gr->yi         = 0;
    gr->Legend     = 1;
+   gr->BDLegend   = 1;
    gr->BDWidth    = 1;
    gr->Item       = NULL;
    gr->ItemStr    = NULL;
@@ -707,7 +710,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
    }
    Tk_GetFontMetrics(gr->Font,&tkm);
 
-   if (gr->Alpha<100 || gr->AlphaLegend<100) {
+   if (gr->Alpha<100) {
       glEnable(GL_BLEND);
    }
    glShadeModel(GL_SMOOTH);
@@ -895,23 +898,26 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
          x=gr->xg[0]+gr->xi;
          y=gr->yg[1]+gr->yi;
 
-         glLineWidth(1.0);
-         glPolygonMode(GL_FRONT,GL_FILL);
-         glColor4us(gr->BGColor->red,gr->BGColor->green,gr->BGColor->blue,gr->AlphaLegend*gr->Alpha*0.01*655);
-         glBegin(GL_QUADS);
-            glVertex2i(x,y);
-            glVertex2i(x,y+height+5);
-            glVertex2i(x+width+35,y+height+5);
-            glVertex2i(x+width+35,y);
-         glEnd();
-         glPolygonMode(GL_FRONT,GL_LINE);
-         glColor4us(gr->FGColor->red,gr->FGColor->green,gr->FGColor->blue,gr->AlphaLegend*gr->Alpha*0.01*655);
-         glBegin(GL_QUADS);
-            glVertex2i(x,y);
-            glVertex2i(x,y+height+5);
-            glVertex2i(x+width+35,y+height+5);
-            glVertex2i(x+width+35,y);
-         glEnd();
+         if (gr->BDLegend) {
+            glPolygonMode(GL_FRONT,GL_FILL);
+            glColor4us(gr->BGColor->red,gr->BGColor->green,gr->BGColor->blue,gr->AlphaLegend*gr->Alpha*0.01*655);
+            glBegin(GL_QUADS);
+               glVertex2i(x,y);
+               glVertex2i(x,y+height+5);
+               glVertex2i(x+width+35,y+height+5);
+               glVertex2i(x+width+35,y);
+            glEnd();
+
+            glLineWidth(gr->BDLegend);
+            glPolygonMode(GL_FRONT,GL_LINE);
+            glColor4us(gr->FGColor->red,gr->FGColor->green,gr->FGColor->blue,gr->AlphaLegend*gr->Alpha*0.01*655);
+            glBegin(GL_QUADS);
+               glVertex2i(x,y);
+               glVertex2i(x,y+height+5);
+               glVertex2i(x+width+35,y+height+5);
+               glVertex2i(x+width+35,y);
+            glEnd();
+         }
 
          x+=5;y+=5;
          for(i=0;i<gr->NItem;i++) {
@@ -1310,16 +1316,18 @@ static int GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
       x=gr->xg[0]+gr->xi;
       y=gr->yg[1]+gr->yi;
 
-      SETRECT(coords,x,y,x+width+35,y+height+5);
-      sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",1);
-      Tcl_AppendResult(Interp,buf,(char*)NULL);
-      Tk_CanvasPsColor(Interp,Canvas,gr->BGColor);
-      Tk_CanvasPsPath(Interp,Canvas,coords,4);
-      Tcl_AppendResult(Interp,"closepath fill\n",(char*)NULL);
+      if (gr->BDLegend) {
+         SETRECT(coords,x,y,x+width+35,y+height+5);
+         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",gr->BDLegend);
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
+         Tk_CanvasPsColor(Interp,Canvas,gr->BGColor);
+         Tk_CanvasPsPath(Interp,Canvas,coords,4);
+         Tcl_AppendResult(Interp,"closepath fill\n",(char*)NULL);
 
-      Tk_CanvasPsColor(Interp,Canvas,gr->FGColor);
-      Tk_CanvasPsPath(Interp,Canvas,coords,4);
-      Tcl_AppendResult(Interp,"closepath stroke\n",(char*)NULL);
+         Tk_CanvasPsColor(Interp,Canvas,gr->FGColor);
+         Tk_CanvasPsPath(Interp,Canvas,coords,4);
+         Tcl_AppendResult(Interp,"closepath stroke\n",(char*)NULL);
+      }
 
       x+=5;y+=5;
       for(i=0;i<gr->NItem;i++) {
