@@ -1396,7 +1396,7 @@ TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time) {
    TMetElem    *new,*pre,*elem=Loc->Elems;
    int          n;
 
-   /* Look for a spot in the ordered list*/
+   /*Look for a spot in the ordered list*/
    pre=NULL;
    while(elem && Time<elem->Time) {
       pre=elem;
@@ -1472,6 +1472,7 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,
 
    if (!(ptr=TMetElem_Add(Loc,data,Time))) {
       TMetElemData_Free(data);
+      free(data);
    } else {
       TMetElem_Clean(Loc,Min);
    }
