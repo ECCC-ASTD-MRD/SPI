@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
+static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -958,6 +958,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
             case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
             case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
             case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
+            case GRAXINTEGER: Value=ROUND(Value);sprintf(String,"%.0f",Value); break;
          }
          return;
       }
