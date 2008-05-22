@@ -1374,9 +1374,27 @@ void TMetElemData_Free(TMetElemData *Data) {
    }
 }
 
-TMetElemData **TMetElem_Add(TMetLoc *Loc,time_t Time) {
+int TMetElemData_Same(TMetElemData *Data0,TMetElemData *Data1) {
 
-   TMetElem     *new,*pre,*elem=Loc->Elems;
+   if (Data0->Ne!=Data1->Ne || Data0->Nv!=Data1->Nv || Data0->Nt!=Data1->Nt || Data0->St!=Data1->St) {
+      return(0);
+   }
+
+   if (memcmp(Data0->Code,Data1->Code,Data0->Ne*Data0->Nv*Data0->Nt*sizeof(float))!=0) {
+      return(0);
+   }
+
+   if (memcmp(Data0->Data,Data1->Data,Data0->Ne*Data0->Nv*Data0->Nt*sizeof(float))!=0) {
+      return(0);
+   }
+
+   return(1);
+}
+
+TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time) {
+
+   TMetElem    *new,*pre,*elem=Loc->Elems;
+   int          n;
 
    /* Look for a spot in the ordered list*/
    pre=NULL;
@@ -1388,6 +1406,11 @@ TMetElemData **TMetElem_Add(TMetLoc *Loc,time_t Time) {
    /*If we already have this time*/
    if (elem && Time==elem->Time) {
       new=elem;
+      for(n=0;n<elem->NData;n++) {
+         if (TMetElemData_Same(Data,elem->EData[n])) {
+            return(NULL);
+         }
+      }
       new->NData++;
    } else {
       new=(TMetElem*)malloc(sizeof(TMetElem));
@@ -1406,7 +1429,9 @@ TMetElemData **TMetElem_Add(TMetLoc *Loc,time_t Time) {
 
    /*Create a new data bloc*/
    new->EData=(TMetElemData**)realloc(new->EData,new->NData*sizeof(TMetElemData*));
-   return(&new->EData[new->NData-1]);
+   new->EData[new->NData-1]=Data;
+
+   return(new->EData[new->NData-1]);
 }
 
 void TMetElem_Clean(TMetLoc *Loc,time_t Time) {
@@ -1432,10 +1457,9 @@ void TMetElem_Clean(TMetLoc *Loc,time_t Time) {
 
 TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Codes) {
 
-   TMetElemData **ptr,*data=NULL;
+   TMetElemData *ptr,*data=NULL;
 
-   ptr=TMetElem_Add(Loc,Time);
-   *ptr=data=(TMetElemData*)malloc(sizeof(TMetElemData));
+   data=(TMetElemData*)malloc(sizeof(TMetElemData));
 
    data->Ne=Ne;
    data->Nv=Nv;
@@ -1446,17 +1470,21 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,
    data->Code=(EntryTableB**)malloc(data->Ne*sizeof(EntryTableB*));
    if (Codes) memcpy(data->Code,Codes,data->Ne*sizeof(EntryTableB*));
 
-   TMetElem_Clean(Loc,Min);
-   return(data);
+   if (!(ptr=TMetElem_Add(Loc,data,Time))) {
+      TMetElemData_Free(data);
+   } else {
+      TMetElem_Clean(Loc,Min);
+   }
+   return(ptr);
 }
 
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data) {
 
-   TMetElemData **ptr=NULL;
+   TMetElemData *ptr=NULL;
 
-   ptr=TMetElem_Add(Loc,Time);
-   *ptr=Data;
-   TMetElem_Clean(Loc,Min);
+   if ((ptr=TMetElem_Add(Loc,Data,Time))) {
+      TMetElem_Clean(Loc,Min);
+   }
    return(Data);
 }
 
@@ -1902,7 +1930,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
 
          data=TMetElem_Insert(loc,dt,time,nelem,nval,nt,tblvalf,eb);
-         data->St=bfam==0?MET_STATENEW:(bfam&0x8?MET_STATESCO:MET_STATEHCO);
+//         data->St=bfam==0?MET_STATENEW:(bfam&0x8?MET_STATESCO:MET_STATEHCO);
       }
    }
 
@@ -2723,8 +2751,6 @@ void MetObs_Wipe() {
 
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
-
-   printf("(INFO) MetObs_Wipe: Wiping allocated memory\n");
 
    entry=Tcl_FirstHashEntry(&MetObsTable,&ptr);
 

@@ -1610,8 +1610,6 @@ void DataSpec_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) DataSpec_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&TDataSpec_Table,&ptr);
 
    while (entry) {

@@ -763,8 +763,6 @@ void Data_Wipe() {
    Tcl_HashSearch  ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) Data_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
 
    while (entry) {

@@ -482,8 +482,6 @@ void MetModel_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) MetModel_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&MetModelTable,&ptr);
 
    while (entry) {

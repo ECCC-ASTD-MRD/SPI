@@ -784,8 +784,6 @@ void GraphItem_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) GraphItem_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&GraphItemTable,&ptr);
    while (entry) {
       GraphItem_Clear((TGraphItem*)Tcl_GetHashValue(entry));

@@ -2375,8 +2375,6 @@ void Obs_Wipe() {
    Tcl_HashSearch ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   printf("(INFO) Obs_Wipe: Wiping allocated memory\n");
-
    entry=Tcl_FirstHashEntry(&ObsTable,&ptr);
 
    while (entry) {
