@@ -387,17 +387,17 @@ proc NowCaster::Obs::Read { Obs Files } {
       proc NowCasterObsReader { Obs Files { Thread 0 } } {
 
          foreach file $Files {
-            thread::send $Thread "set NowCaster::Data(Job) \"\[lindex \$NowCaster::Obs::Msg(Read) \$GDefs(Lang)\] $file\""
+            thread::send -async $Thread "set NowCaster::Data(Job) \"\[lindex \$NowCaster::Obs::Msg(Read) \$GDefs(Lang)\] $file\""
             if { [catch { metobs read $Obs $file }] } {
-               thread::send $Thread "Dialog::CreateError .nowcaster \"\[lindex \$NowCaster::Obs::Error(File) \$GDefs(Lang)\]\n\n$file\" \$GDefs(Lang)"
+               thread::send -async $Thread "Dialog::CreateErrorListing .nowcaster \"\[lindex \$NowCaster::Obs::Error(File) \$GDefs(Lang)\]\" $file \$GDefs(Lang)"
             } else {
                file stat $file valid
                if { $Thread!="0" } {
-                  thread::send $Thread [list NowCaster::Obs::ReadProcess $Obs]
+                  thread::send -async $Thread [list NowCaster::Obs::ReadProcess $Obs]
                }
             }
          }
-         thread::send $Thread "set NowCaster::Data(Job) \"\""
+         thread::send -async $Thread "set NowCaster::Data(Job) \"\""
          thread::release
       }
       thread::wait
