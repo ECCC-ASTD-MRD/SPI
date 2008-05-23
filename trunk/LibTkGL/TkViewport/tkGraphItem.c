@@ -1288,7 +1288,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    v=(Vect3d*)malloc(n*sizeof(Vect3d));
 
    /* Compute graph curve points */
-   db=1000;
+   db=1000.0;
    vn=0;
    for(i=0;i<n;i++) {
       if (vecx->V[i]!=vecx->NoData && vecy->V[i]!=vecy->NoData) {
@@ -1298,11 +1298,11 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          /* Check font spacing */
          if (vn>0) {
             if (Item->Orient[0]=='X') {
-               j=fabs(v[vn][0]-v[vn-1][0]);
-               if (j!=0) db=db<j?db:j;
+               dh=fabs(v[vn][0]-v[vn-1][0]);
+               if (dh>0.0) db=db<dh?db:dh;
             } else {
-               j=fabs(v[vn][1]-v[vn-1][1]);
-               if (j!=0) db=db<j?db:j;
+               dh=fabs(v[vn][1]-v[vn-1][1]);
+               if (dh>0.0) db=db<dh?db:dh;
             }
          }
          vn++;
@@ -1311,10 +1311,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
    /* Compute item spacing and width for bar and histogram graph */
    switch(Item->Type) {
-      case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2*(Graph->NSide*0.5-Graph->ISide-0.5); break;
-      case BAR       : db*=0.25;                   dh=0.0;                                      break;
-      case HISTOGRAM : db*=0.50;                   dh=-db;                                      break;
-      default        : db=0.0;                     dh=0.0;                                      break;
+      case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2.0*(Graph->NSide*0.5-Graph->ISide-0.5); break;
+      case BAR       : db*=0.25;                   dh=0.0;                                        break;
+      case HISTOGRAM : db*=0.50;                   dh=-db;                                        break;
+      default        : db=0.0;                     dh=0.0;                                        break;
    }
 
    /* In case we fill, we need to close the path */
