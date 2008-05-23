@@ -271,8 +271,8 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             Tcl_AppendResult(Interp,"Invalid vector",(char*)NULL);
             return(TCL_ERROR);
          } else {
-            n=0;
             if (Objc==4) {
+               n=0;
                c=Tcl_GetString(Objv[3]);
                if (c[0]=='e' && c[1]=='n' && c[2]=='d') {
                   c=&c[3];
@@ -612,7 +612,7 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
       for(i=0;i<new->N;i++) {
          Tcl_ListObjIndex(Interp,new->Cn,i,&obj);
          sprintf(buf,"%s.%s",Name,Tcl_GetString(obj));
-         if (Vector_Copy(Interp,Vec->Cp[i],buf)!=TCL_OK) {
+         if (!Vector_Copy(Interp,Vec->Cp[i],buf)) {
             return(NULL);
          }
          new->Cp[i]=Vector_Get(buf);
@@ -1022,15 +1022,20 @@ int Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem) {
 */
 int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
 
-   Tcl_Obj *obj;
+   Tcl_Obj *obj,*sub;
    int      nobj,n;
+   TVector *vec=NULL;
 
    if (!Vec) {
       Tcl_AppendResult(Interp,"Vector_SetData: Invalid vector",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   Tcl_ListObjLength(Interp,List,&nobj);
+   if (vec=Vector_Get(Tcl_GetString(List))) {
+      nobj=vec->N;
+   } else {
+      Tcl_ListObjLength(Interp,List,&nobj);
+   }
 
    if (Vec->Cp) {
       if (nobj!=Vec->N) {
@@ -1038,9 +1043,18 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
          return(TCL_ERROR);
       }
      for(n=0;n<Vec->N;n++) {
-         Tcl_ListObjIndex(Interp,List,n,&obj);
-         if (Vector_SetData(Interp,Vec->Cp[n],obj,Idx)==TCL_ERROR) {
-            return(TCL_ERROR);
+         if (vec) {
+            Tcl_ListObjIndex(Interp,vec->Cn,n,&sub);
+            obj=Tcl_DuplicateObj(List);
+            Tcl_AppendStringsToObj(obj,".",Tcl_GetString(sub),(char*)NULL);
+            if (Vector_SetData(Interp,Vec->Cp[n],obj,Idx)==TCL_ERROR) {
+               return(TCL_ERROR);
+            }
+         } else {
+            Tcl_ListObjIndex(Interp,List,n,&obj);
+            if (Vector_SetData(Interp,Vec->Cp[n],obj,Idx)==TCL_ERROR) {
+               return(TCL_ERROR);
+            }
          }
       }
    } else {
@@ -1055,10 +1069,14 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
          Vec->V=(double*)calloc(Vec->N,sizeof(double));
       }
 
-      for(n=0;n<nobj;n++) {
-         Tcl_ListObjIndex(Interp,List,n,&obj);
-         if (Tcl_GetDoubleFromObj(Interp,obj,&Vec->V[Idx>=0?Idx+n:n])==TCL_ERROR) {
-            Vec->V[Idx>=0?Idx+n:n]=Vec->NoData;
+      if (vec) {
+         memcpy(Vec->V,vec->V,nobj);
+      } else {
+         for(n=0;n<nobj;n++) {
+            Tcl_ListObjIndex(Interp,List,n,&obj);
+            if (Tcl_GetDoubleFromObj(Interp,obj,&Vec->V[Idx>=0?Idx+n:n])==TCL_ERROR) {
+               Vec->V[Idx>=0?Idx+n:n]=Vec->NoData;
+            }
          }
       }
    }
@@ -1085,15 +1103,20 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
 */
 int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
 
-   Tcl_Obj *obj;
+   Tcl_Obj *obj,*sub;
    int      n,nobj;
+   TVector *vec=NULL;
 
    if (!Vec) {
       Tcl_AppendResult(Interp,"Vector_AppendData: Invalid vector",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   Tcl_ListObjLength(Interp,List,&nobj);
+   if (vec=Vector_Get(Tcl_GetString(List))) {
+      nobj=vec->N;
+   } else {
+      Tcl_ListObjLength(Interp,List,&nobj);
+   }
 
    if (Vec->Cp) {
       if (nobj!=Vec->N) {
@@ -1101,8 +1124,15 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
          return(TCL_ERROR);
       }
       for(n=0;n<Vec->N;n++) {
-         Tcl_ListObjIndex(Interp,List,n,&obj);
-         Vector_AppendData(Interp,Vec->Cp[n],obj);
+         if (vec) {
+            Tcl_ListObjIndex(Interp,vec->Cn,n,&sub);
+            obj=Tcl_DuplicateObj(List);
+            Tcl_AppendStringsToObj(obj,".",Tcl_GetString(sub),(char*)NULL);
+            Vector_AppendData(Interp,Vec->Cp[n],obj);
+         } else {
+            Tcl_ListObjIndex(Interp,List,n,&obj);
+            Vector_AppendData(Interp,Vec->Cp[n],obj);
+         }
       }
    } else {
       if (Vec->N+nobj>Vec->Nr) {
@@ -1115,13 +1145,17 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
          Vec->V=realloc(Vec->V,Vec->Nr*sizeof(double));
       }
 
-      for(n=0;n<nobj;n++) {
-         Tcl_ListObjIndex(Interp,List,n,&obj);
-         if (Tcl_GetDoubleFromObj(Interp,obj,&Vec->V[Vec->N+n])==TCL_ERROR) {
-            Vec->V[Vec->N+n]=Vec->NoData;
+      if (vec) {
+         memcpy(&Vec->V[Vec->N],vec->V,nobj);
+      } else {
+         for(n=0;n<nobj;n++) {
+            Tcl_ListObjIndex(Interp,List,n,&obj);
+            if (Tcl_GetDoubleFromObj(Interp,obj,&Vec->V[Vec->N+n])==TCL_ERROR) {
+               Vec->V[Vec->N+n]=Vec->NoData;
+            }
          }
       }
-      Vec->N+=n;
+      Vec->N+=nobj;
    }
    return(TCL_OK);
 }
