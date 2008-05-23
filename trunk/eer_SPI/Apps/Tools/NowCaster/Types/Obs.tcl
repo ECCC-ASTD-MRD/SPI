@@ -389,7 +389,7 @@ proc NowCaster::Obs::Read { Obs Files } {
          foreach file $Files {
             thread::send -async $Thread "set NowCaster::Data(Job) \"\[lindex \$NowCaster::Obs::Msg(Read) \$GDefs(Lang)\] $file\""
             if { [catch { metobs read $Obs $file }] } {
-               thread::send -async $Thread "Dialog::CreateErrorListing .nowcaster \"\[lindex \$NowCaster::Obs::Error(File) \$GDefs(Lang)\]\" $file \$GDefs(Lang)"
+               thread::send -async $Thread "Dialog::CreateErrorListing .nowcaster \"\[lindex \$NowCaster::Obs::Error(File) \$GDefs(Lang)\]\" \"$file\n\" \$GDefs(Lang)"
             } else {
                file stat $file valid
                if { $Thread!="0" } {
