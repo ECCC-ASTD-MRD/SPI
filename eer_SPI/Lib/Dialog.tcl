@@ -202,8 +202,7 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 
    if { [winfo exists .errorlist] == 1} {
 
-      set oldtext [lindex [.errorlist.haut.txt configure -text] 4]
-      .errorlist.haut.txt configure -text "$oldtext\n\n$Text"
+      .errorlist.haut.txt configure -text "$Text"
       .errorlist.bas.list insert end $List
 
    } else {
@@ -236,7 +235,7 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 
       #----- Afficher le frame du bas qui va contenir le bouton retour
 
-      button .errorlist.ok -text "OK" -command "catch { grab [lindex $previous 0] } ; destroy .error" -bd 1
+      button .errorlist.ok -text "OK" -command "catch { grab [lindex $previous 0] } ; destroy .errorlist" -bd 1
       pack .errorlist.ok -side bottom -ipadx 10 -fill x
       update idletasks
       grab .errorlist
