@@ -800,7 +800,7 @@ proc Page::CursorInfo { Frame X Y Info { Graph "" } } {
       }
 
       if { [graphitem is $Graph] } {
-         $Frame.page.canvas itemconfigure PAGECURSORINFOGRAPH -item $Graph -x [expr $X+10] -y [expr $Y+2] -width 200 -height 100
+         $Frame.page.canvas itemconfigure PAGECURSORINFOGRAPH -item $Graph -x [expr $X+10] -y [expr $Y+2] -width 210 -height 100
       } else {
          $Frame.page.canvas itemconfigure PAGECURSORINFOGRAPH -item {} -x -999 -y -999 -width 0 -height 0
       }

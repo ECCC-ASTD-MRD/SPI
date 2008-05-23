@@ -207,7 +207,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
 
       graphaxis configure PAGEOBSGRAPHAXISX -font XFont10 -color black -position LL -width 1 -incr 3600
       graphaxis configure PAGEOBSGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -position LL -width 1 -highoffset 2
-      graphitem configure PAGEOBSGRAPHITEM -xaxis PAGEOBSGRAPHAXISX -yaxis PAGEOBSGRAPHAXISY -type SPLINE -width 2 -outline red -tag PAGEOBSGRAPHITEM
+      graphitem configure PAGEOBSGRAPHITEM -xaxis PAGEOBSGRAPHAXISX -yaxis PAGEOBSGRAPHAXISY -width 1 -tag PAGEOBSGRAPHITEM
    }
 
    #----- If we have enough elements to create a graph
@@ -233,6 +233,8 @@ proc Obs::InfoGraph { Obs Tag Elem } {
          -intervals "[vector stats PAGEOBSGRAPHDATA.X -min] [vector stats PAGEOBSGRAPHDATA.X -max]" -format NONE
       graphaxis configure PAGEOBSGRAPHAXISY -min [vector get PAGEOBSGRAPHDATA.Y 0] -max [vector get PAGEOBSGRAPHDATA.Y end] \
          -intervals "[vector stats PAGEOBSGRAPHDATA.Y -min] [vector stats PAGEOBSGRAPHDATA.Y -max]" -format INTEGER
+      graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
+         -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25] -type LINE -orient Y -outline black -fill yellow
 
    #----- Then it is a time serie
    } else {
@@ -243,10 +245,10 @@ proc Obs::InfoGraph { Obs Tag Elem } {
          -intervals "[vector stats PAGEOBSGRAPHDATA.X -min] [vector stats PAGEOBSGRAPHDATA.X -max]" -format T-HH
       graphaxis configure PAGEOBSGRAPHAXISY -min [vector stats PAGEOBSGRAPHDATA.Y -min] -max [vector stats PAGEOBSGRAPHDATA.Y -max] \
          -intervals "[vector stats PAGEOBSGRAPHDATA.Y -min] [vector stats PAGEOBSGRAPHDATA.Y -max]"
+      graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
+         -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25] -type LINE -orient X -outline black -fill yellow
    }
 
-   graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
-      -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25]
 
    if { [vector length PAGEOBSGRAPHDATA.X]>2 } {
       return PAGEOBSGRAPHITEM
