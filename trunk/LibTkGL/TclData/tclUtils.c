@@ -155,6 +155,25 @@ void* TclY_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned i
    return(data);
 }
 
+void* TclY_HashReplace(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data) {
+
+   void           *data=NULL;
+   Tcl_HashEntry  *entry;
+   int             new;
+
+   entry=Tcl_FindHashEntry(Table,Name);
+
+   if (!entry) {
+      entry=Tcl_CreateHashEntry(Table,Name,&new);
+      data=NULL;
+   } else {
+      data=Tcl_GetHashValue(entry);
+   }
+   Tcl_SetHashValue(entry,Data);
+
+   return(data);
+}
+
 void* TclY_HashDel(Tcl_HashTable *Table,char *Name) {
 
    Tcl_HashEntry *entry;
