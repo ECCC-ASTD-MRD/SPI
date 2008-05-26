@@ -62,7 +62,7 @@ TFSTDVector *FSTD_VectorTableCheck(char *Var,int *Idx) {
          if (Idx) *Idx=0;
          return(&FSTDVectorTable[i]);
       }
-      if (FSTDVectorTable[i].VV &&strcmp(Var,FSTDVectorTable[i].VV)==0) {
+      if (FSTDVectorTable[i].VV && strcmp(Var,FSTDVectorTable[i].VV)==0) {
          if (Idx) *Idx=1;
          return(&FSTDVectorTable[i]);
       }
@@ -318,22 +318,20 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          } else {
             Tcl_ListObjLength(Interp,Objv[2],&n);
-            if (n<2) {
-               Tcl_AppendResult(Interp,"invalid nomber of composants, must be 2 or 3",(char*)NULL);
-               return(TCL_ERROR);
-            }
             Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
             if (!(uvw=FSTD_VectorTableCheck(Tcl_GetString(obj),NULL))) {
                uvw=&FSTDVectorTable[FSTDVectorTableSize];
                FSTDVectorTableSize++;
             }
             uvw->UU=strdup(Tcl_GetString(obj));
+            uvw->VV=uvw->WW=NULL;
             Tcl_ListObjIndex(Interp,Objv[2],1,&obj);
-            uvw->VV=strdup(Tcl_GetString(obj));
-            uvw->WW=NULL;
-            if (n==3) {
-               Tcl_ListObjIndex(Interp,Objv[2],2,&obj);
-               uvw->WW=strdup(Tcl_GetString(obj));
+            if (n>1) {
+               uvw->VV=strdup(Tcl_GetString(obj));
+               if (n>2) {
+                  Tcl_ListObjIndex(Interp,Objv[2],2,&obj);
+                  uvw->WW=strdup(Tcl_GetString(obj));
+               }
             }
          }
          break;
