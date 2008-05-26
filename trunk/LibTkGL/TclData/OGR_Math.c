@@ -488,7 +488,6 @@ double GPC_SegmentLength(OGRGeometryH Geom) {
    return(length);
 }
 
-
 /* 0----Intersection dosn't exists                                           */
 /* 1----Intersection exists.                                                 */
 /* 2----two line segments are parallel.                                      */
@@ -564,6 +563,65 @@ int GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD
          }
       }
    }
+}
+
+double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
+
+   Vect3d pt[2];
+   int    i,j,n;
+   double area=0,mid;
+
+   /* Process current geometry */
+   n=OGR_G_GetPointCount(Geom);
+
+   if (n==1) {
+      /* Proccess point */
+      OGR_G_GetPoint(Geom,0,X,Y,&pt[0][2]);
+      return(0.0);
+   } else if (n==2) {
+      /* Process line */
+      OGR_G_GetPoint(Geom,0,X,Y,&pt[0][2]);
+      OGR_G_GetPoint(Geom,1,&pt[1][0],&pt[1][1],&pt[1][2]);
+      *X+=(pt[1][0]-*X)/2.0;
+      *Y+=(pt[1][1]-*Y)/2.0;
+      return(0.0);
+   }
+
+   /* Process polygon/polyline */
+   for(i=0;i<n;i++) {
+      OGR_G_GetPoint(Geom,i,&pt[0][0],&pt[0][1],&pt[0][2]);
+      OGR_G_GetPoint(Geom,(i+1)%n,&pt[1][0],&pt[1][1],&pt[1][2]);
+
+      mid=pt[0][0]*pt[1][1]-pt[0][1]*pt[1][0];
+      area+=mid;
+      *X+=(pt[0][0]+pt[1][0])*mid;
+      *Y+=(pt[0][1]+pt[1][1])*mid;
+   }
+   area*=0.5;
+
+   /* Process sub geometry */
+   for(j=0;j<OGR_G_GetGeometryCount(Geom);j++) {
+      area+=OGR_Centroid2DProcess(OGR_G_GetGeometryRef(Geom,j),X,Y);
+   }
+
+   return(area);
+}
+
+double GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
+
+   double area;
+
+   *X=0.0;
+   *Y=0.0;
+
+   area=OGR_Centroid2DProcess(Geom,X,Y);
+
+   if (area!=0.0) {
+      *X*=1.0/(6.0*area);
+      *Y*=1.0/(6.0*area);
+   }
+
+   return(area<0?-area:area);
 }
 
 // Copyright 2002, softSurfer (www.softsurfer.com)

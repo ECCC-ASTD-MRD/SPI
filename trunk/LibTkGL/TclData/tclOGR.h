@@ -91,7 +91,6 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver);
 int OGR_FileClose(Tcl_Interp *Interp,char *Id);
 
 void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
-double OGR_Centroid2D(OGRGeometryH Geom,double *X,double *Y);
 
 OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name);
 OGRLayerH  OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
@@ -127,18 +126,24 @@ int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
+void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
+void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
+OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
+void         GPC_New(gpc_polygon *Poly);
+int          GPC_QSortInter(const Vect3d *A,const Vect3d *B);
+int          GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
+int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
 double       GPC_Length(OGRGeometryH Geom);
 double       GPC_SegmentLength(OGRGeometryH Geom);
-int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
-int          GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
-void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
-void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
-OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
 OGRGeometryH GPC_Clip(OGRGeometryH Line,OGRGeometryH Poly);
 int          GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);
+double       GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y);
+double       GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y);
+int          GPC_Simplify(double Tolerance,OGRGeometryH Geom);
+int          GPC_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers);
 
 #endif
