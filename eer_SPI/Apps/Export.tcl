@@ -53,12 +53,22 @@ namespace eval Export::Raster {
 
    set Data(Image)   0
    set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
+                       {Arc/Info ASCII Grid "AAIGrid" {*.adf}}
+                       {Military Elevation Data "DTED" {*.dt0 *.dt1}}
+                       {ERMapper Compressed Wavelets "ECW" { *.ers}}
+                       {ERMapper ERS "ERS" { *.ers}}
+                       {GMT Compatible NetCDF "GMT" {*.cdf}}
                        {Virtual Raster "VRT" {*.vrt}}
                        {National Imagery Transmission Format "NITF" {*.nitf}}
                        {Erdas Imagine Images "HFA" {*.img}}
                        {MS Windows Device Independent Bitmap "BMP" {*.bmp}}
                        {PCIDSK Database File "PCIDSK" {*.pci}}
-                       {HDF4 Dataset "HDF4Image" {*.hdf}}
+                       {HDF4 Dataset "HDF4" {*.hdf}}
+                       {HDF5 Dataset "HDF5" {*.hdf}}
+                       {Image Display and Analysis "IDA" {*.ida}}
+                       {JPEG and JPEG2000 "JPEG2000" {*.jpg *.jp2 *.j2k}}
+                       {SRTM HGT Format "SRTMHGT" {*.hgt}}
+                       {Raster Matrix Format "RMF" {*.rsw *.mtw}}
                        {ENVI .hdr Labelled "ENVI" {*.envi}}
                        {Atlantis MFF Raster "MFF" {*.mff}}
                        {Atlantis MFF2 (HKV) Raster "MFF2" {*.mff}}
@@ -83,8 +93,11 @@ namespace eval Export::Vector {
    variable Bubble
 
    set Data(Formats) { {Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
-                       {MapInfo Binary "MapInfo File" {*.tab *.dat *.map *.id }}
-                       {MapInfo Export "MapInfo File" {*.mif *.mid }}}
+                       {Géoconcept Export "Geoconcept" {*.gxt}}
+                       {Geography Markup Language "GML" {*.gml}}
+                       {GMT ASCII Vectors "GMT" {*.gmt}}
+                       {GPS Exchange Format "GPX" {*.gpx}}
+                       {MapInfo Binary "MapInfo File" {*.tab *.mif *.mid }}}
 
 }
 
