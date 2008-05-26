@@ -601,7 +601,7 @@ double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
 
    /* Process sub geometry */
    for(j=0;j<OGR_G_GetGeometryCount(Geom);j++) {
-      area+=OGR_Centroid2DProcess(OGR_G_GetGeometryRef(Geom,j),X,Y);
+      area+=GPC_Centroid2DProcess(OGR_G_GetGeometryRef(Geom,j),X,Y);
    }
 
    return(area);
@@ -614,7 +614,7 @@ double GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
    *X=0.0;
    *Y=0.0;
 
-   area=OGR_Centroid2DProcess(Geom,X,Y);
+   area=GPC_Centroid2DProcess(Geom,X,Y);
 
    if (area!=0.0) {
       *X*=1.0/(6.0*area);
