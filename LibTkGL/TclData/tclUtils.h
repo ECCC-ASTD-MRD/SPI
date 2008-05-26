@@ -41,6 +41,7 @@ int   TclY_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table);
 void* TclY_HashGet(Tcl_HashTable *Table,char *Name);
 void* TclY_HashDel(Tcl_HashTable *Table,char *Name);
 void* TclY_HashPut(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,unsigned int Size);
+void* TclY_HashReplace(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data);
 int   TclY_HashSet(Tcl_Interp *Interp,Tcl_HashTable *Table,char *Name,void *Data);
 int   TclY_ListObjFind(Tcl_Interp *Interp,Tcl_Obj *List,Tcl_Obj *Item);
 
