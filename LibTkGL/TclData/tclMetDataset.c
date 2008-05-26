@@ -891,7 +891,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrCode *BCV,Tcl_Obj *Obj) {
 */
 static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   BUFR_Template *tmp;
+   BUFR_Template *tmp,*new;
 
    int         idx;
    static CONST char *sopt[] = { "create","free","read","write","define","is","all",NULL };
@@ -936,6 +936,18 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
          break;
 
       case READ:
+         if(Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"template file");
+            return(TCL_ERROR);
+         }
+         if ((!(new=bufr_load_template(Tcl_GetString(Objv[3]),MetObs_GetTables())))) {
+            Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to read template file \"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         tmp=TclY_HashReplace(Interp,&MetTemplateTable,Tcl_GetString(Objv[2]),(void*)new);
+         if (tmp) {
+            bufr_free_template(tmp);
+         }
          break;
 
       case WRITE:
@@ -1099,7 +1111,6 @@ Tcl_Obj* MetTemplate_Put(Tcl_Interp *Interp,char *Name,BUFR_Template *Tmp) {
       if (TclY_HashSet(Interp,&MetTemplateTable,Name,Tmp)==TCL_ERROR) {
          return(NULL);
       }
-//      Ref->Name=strdup(Name);
 
       return(Tcl_NewStringObj(Name,-1));
    } else {
