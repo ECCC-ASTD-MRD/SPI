@@ -581,7 +581,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             continue;
          }
 
-         DataSpec_Format(Field->Spec,array->Value,buf);
+         DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,array->Value),buf);
          dx=Tk_TextWidth(Field->Spec->Font,buf,strlen(buf));
 
          if (Field->Spec->MapAll) {
