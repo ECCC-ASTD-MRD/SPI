@@ -1894,7 +1894,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strtrim(h.ETIKET,' ');
 
    /*Champs vectoriel ???*/
-   if ((uvw=FSTD_VectorTableCheck(h.NOMVAR,&idx))) {
+   if ((uvw=FSTD_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
       field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),TD_Float32);
       if (!field) {
          FSTD_FileUnset(Interp,file);
