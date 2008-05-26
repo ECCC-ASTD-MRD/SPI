@@ -1805,7 +1805,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
             idx=j*field[0]->Def->NI+i;
             Def_GetMod(field[0]->Def,idx,spd);
             if (nf>1 || Data_Within(field[0],spd)) {
-               n++;
                Layer->Feature[n]=OGR_F_Create(Layer->Def);
 
                df=0;
@@ -1843,6 +1842,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                }
                OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
                OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n]);
+               n++;
             }
          }
       }
