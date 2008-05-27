@@ -803,10 +803,12 @@ proc SPI::ContextMenuProj { } {
    .mapmenu add command -label [lindex $Lbl(Zoom_Reset) $GDefs(Lang)] -image ZOOMCLR -compound left \
       -command "ProjCam::ZoomOut \$Page::Data(Frame) \$Page::Data(Frame) \$Viewport::Data(VP) True True"
    .mapmenu add separator
-   .mapmenu add radiobutton -label [lindex $Lbl(Zoom_Rotate) $GDefs(Lang)] -variable Page::Data(Mode) -image MODEZOOM -compound left \
+   .mapmenu add radiobutton -label [lindex $Lbl(ModeZoom) $GDefs(Lang)] -variable Page::Data(Mode) -image MODEZOOM -compound left \
       -value Zoom -command { SPI::ToolMode SPI Zoom } -accelerator "F1"
-   .mapmenu add radiobutton -label [lindex $Lbl(ViewPoint) $GDefs(Lang)] -variable Page::Data(Mode) -image MODECAM -compound left \
+   .mapmenu add radiobutton -label [lindex $Lbl(ModeCam) $GDefs(Lang)] -variable Page::Data(Mode) -image MODECAM -compound left \
       -value Cam -command  { SPI::ToolMode SPI Cam } -accelerator "F2"
+   .mapmenu add radiobutton -label [lindex $Lbl(ModeTool) $GDefs(Lang)] -variable Page::Data(Mode) -image TOOL -compound left \
+      -command  { SPI::ToolMode $SPI::Param(Tool) $SPI::Param(ToolMode) } -accelerator "F3"
    .mapmenu add separator
    .mapmenu add cascade -label [lindex $Lbl(LinkView) $GDefs(Lang)] -menu .mapmenu.link  -image LINK -compound left
    .mapmenu add command -label [lindex $Lbl(Lock) $GDefs(Lang)]  -image MAGLOCK -compound left \
@@ -831,10 +833,11 @@ proc SPI::ContextMenuProj { } {
 
    #----- Creation des evenements de touches rapide
 
-   bind . <Key-Print>       ".mapmenu invoke 9"
-   bind . <Key-F9>          ".mapmenu invoke 11"
+   bind . <Key-Print>       ".mapmenu invoke 10"
+   bind . <Key-F9>          ".mapmenu invoke 12"
    bind . <Key-F1>          ".mapmenu invoke 3"
    bind . <Key-F2>          ".mapmenu invoke 4"
+   bind . <Key-F3>          ".mapmenu invoke 5"
 }
 
 #-------------------------------------------------------------------------------
