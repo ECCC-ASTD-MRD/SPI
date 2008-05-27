@@ -90,7 +90,7 @@ void       GDAL_BandGetStat(GDAL_Band *Band);
 int        GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int NIdx,int X0,int Y0,int X1,int Y1,int BD,int Full);
 int        GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band);
 int        GDAL_BandRenderTile(Projection *Proj,ViewportItem *VP,GDAL_Band *Band,TGeoTexTile *Tile,int Resolution);
-int        GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,int NbOptions,char **Options);
+int        GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options);
 int        GDAL_BandTile(GDAL_Band *Band,Projection *Proj);
 
 void       Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);

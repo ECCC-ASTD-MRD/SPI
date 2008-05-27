@@ -87,7 +87,7 @@ OGR_File* OGR_FileGet(Tcl_Interp *Interp,char *Id);
 int       OGR_FilePut(Tcl_Interp *Interp,OGR_File *File);
 void      OGR_Wipe();
 
-int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver);
+int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char **Options);
 int OGR_FileClose(Tcl_Interp *Interp,char *Id);
 
 void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);

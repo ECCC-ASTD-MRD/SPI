@@ -473,7 +473,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             nidx=0;
          }
 
-         code=GDAL_BandWrite(Interp,Objv[2],Tcl_GetString(Objv[3]),nidx,(char**)list);
+         code=GDAL_BandWrite(Interp,Objv[2],Tcl_GetString(Objv[3]),(char**)list);
          Tcl_Free((char*)list);
          return(code);
          break;

@@ -843,8 +843,10 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
    OGR_File  *file;
    Tcl_Obj   *obj;
 
-   int         idx,i;
+   int          idx,nidx,i,code;
    char        *driver=NULL;
+   const char **list=NULL;
+
    static CONST char *sopt[] = { "open","close","format","driver","filename",NULL };
    enum                opt { OPEN,CLOSE,FORMAT,DRIVER,FILENAME};
 
@@ -861,13 +863,22 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    switch ((enum opt)idx) {
       case OPEN:
-         if(Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename ?driver?");
-            return TCL_ERROR;
+         if(Objc!=5 && Objc!=6 && Objc!=7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename [driver] [options]");
+            return(TCL_ERROR);
          }
          if (Objc==6)
             driver=Tcl_GetString(Objv[5]);
-         return(OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver));
+
+         if (Objc==7) {
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&nidx,&list)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   OGR_FileCmd : Invalid list of creation options",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)list);
+         Tcl_Free((char*)list);
+         return(code);
          break;
 
       case FORMAT:
@@ -1015,7 +1026,7 @@ int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
  *
  *----------------------------------------------------------------------------
 */
-int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver) {
+int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char **Options) {
 
    OGRDataSourceH *source=NULL;
    OGRSFDriverH    driver=NULL;
@@ -1055,7 +1066,7 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver) 
             return(TCL_ERROR);
          }
 
-         source=OGR_Dr_CreateDataSource(driver,Name,NULL);
+         source=OGR_Dr_CreateDataSource(driver,Name,Options);
          if (!source) {
             Tcl_AppendResult(Interp," OGR_FileOpen: Cannot open OGR file for writing, it probably already exist",Name,(char*)NULL);
             return(TCL_ERROR);
