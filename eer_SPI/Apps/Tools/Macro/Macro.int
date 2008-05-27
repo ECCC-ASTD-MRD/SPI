@@ -74,7 +74,7 @@ proc Macro::Window { } {
          button $Data(Tab).head.new -image DOCNEW -bd 0 -relief flat -overrelief raised -command { Macro::New [FileBox::Create .macro $GDefs(DirEER)/Macro Save [list $FileBox::Type(TCL)]]}
          button $Data(Tab).head.load -image DOCLOAD -bd 0 -relief flat -overrelief raised -command { Macro::Load [FileBox::Create .macro "" Load [list $FileBox::Type(TCL)]]}
          button $Data(Tab).head.save -image DOCSAVE -bd 0 -relief flat -overrelief raised -command { Macro::Save [Macro::Current] } -state disabled
-         button $Data(Tab).head.del -image DOCDEL -bd 0 -relief flat -overrelief raised -command { Macro::UnDefine [Macro::Current] ; update idletasks; Macro::Select [Macro::Current]}
+         button $Data(Tab).head.del -image DOCDEL -bd 0 -relief flat -overrelief raised -command { Macro::Delete [Macro::Current] ; update idletasks; Macro::Select [Macro::Current]}
          button $Data(Tab).head.reset -image WORLDRESET -bd 0 -relief flat -overrelief raised -command { Macro::Reset }
          pack $Data(Tab).head.start $Data(Tab).head.reset $Data(Tab).head.new $Data(Tab).head.load $Data(Tab).head.save $Data(Tab).head.del -side left -padx 2
       pack $Data(Tab).head -side top -fill x

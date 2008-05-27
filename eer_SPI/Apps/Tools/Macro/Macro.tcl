@@ -520,6 +520,35 @@ proc Macro::New { Path } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Macro::Delete>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer une macro.
+#
+# Parametres :
+#   <Macro>  : Macro a supprimer
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Macro::Delete { Macro } {
+   global GDefs
+   variable Data
+   variable Msg
+   variable Lbl
+
+   set nok [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] "[lindex $Msg(Delete) $GDefs(Lang)]\n\n\tMacro::$Macro" info 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+   if { !$nok } {
+      file delete -force $Data(Path$Macro)
+
+      Macro::UnDefine $Macro
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Macro::Select>
 # Creation : Juillet 2006 - J.P. Gauthier - CMC/CMOE
 #
