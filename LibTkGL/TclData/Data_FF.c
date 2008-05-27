@@ -523,6 +523,10 @@ int FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PM
       Def_GetMod(Def,idx,vox[1])
       idx=idx-z-1;
 
+      if (vox[0]==vox[1] && vox[1]==vox[2] && vox[2]==vox[3]) {
+         break;
+      }
+
       vox[4]=(vox[0]+vox[1]+vox[2]+vox[3])*0.25;
 
       t+=4;
