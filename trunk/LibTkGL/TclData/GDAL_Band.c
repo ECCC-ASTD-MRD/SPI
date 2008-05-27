@@ -1331,7 +1331,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,int NbOptions,char **Options) {
+int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options) {
 
    Tcl_Obj        *obj;
    GDAL_Band      *band;
