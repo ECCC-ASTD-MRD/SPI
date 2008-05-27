@@ -60,7 +60,7 @@
 #define ROUND(V)                          ((int)(V+0.5))
 #define ILIN(X,Y,Z)                       (X+(Y-X)*(Z))
 #define ILFAC(Level,V0,V1)                ((V1==V0)?0.5:(Level-V0)/(V1-V0))
-#define ILVIN(VAL,A,B)                    ((VAL>=A && VAL<=B) || (VAL<=A && VAL>=B))
+#define ILVIN(VAL,A,B)                    ((A!=B) && ((VAL>=A && VAL<=B) || (VAL<=A && VAL>=B)))
 #define ILADD(SIDE,F)                     (SIDE?1.0f-F:F)
 #define FARENOUGH(DT,X0,Y0,X1,Y1)         (hypot((Y1-Y0),(X1-X0))>DT)
 #define LOG2(V)                           (floor(log10(V)/log10(2)))
