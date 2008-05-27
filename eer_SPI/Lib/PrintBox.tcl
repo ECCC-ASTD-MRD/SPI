@@ -16,7 +16,7 @@
 #    PrintBox::Destroy          { }
 #    PrintBox::Do               { Frame }
 #    PrintBox::FilePathDefine   { Path }
-#    PrintBox::Image            { Frame Format File }
+#    PrintBox::Image            { Frame Format File { Angle portrait } }
 #    PrintBox::Postscript       { Frame Format File { Device ps } }
 #    PrintBox::Print            { Frame X Y Width Height }
 #    PrintBox::PrintCommand     { Frame }
@@ -500,6 +500,7 @@ proc PrintBox::FilePathDefine { Path { Type "" } } {
 #  <Frame>   : Identificateur de Page
 #  <Format>  : Format de l'image
 #  <File>    : Nom du fichier
+#  <Angle>   : Angle d'impression (portrait,landscape)
 #
 # Retour:
 #
@@ -507,11 +508,12 @@ proc PrintBox::FilePathDefine { Path { Type "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc PrintBox::Image { Frame Format File } {
+proc PrintBox::Image { Frame Format File { Angle portrait } } {
 
    set PrintBox::Print(Type)     file
    set PrintBox::Print(Device)   $Format
    set PrintBox::Print(FullName) $File
+   set PrintBox::Print(Angle)    $Angle
 
    PrintBox::Do $Frame
 }
