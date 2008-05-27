@@ -63,7 +63,6 @@ namespace eval Writer::FVCN {
    set Data(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm @$GDefs(Dir)/Resources/Bitmap/raydiagright08.xbm @$GDefs(Dir)/Resources/Bitmap/rayver08.xbm"
    set Data(Delay)    60000
    set Data(Seconds)  [clock seconds]
-   set Data(Page)     ""
 }
 
 #----------------------------------------------------------------------------
@@ -84,7 +83,6 @@ proc Writer::FVCN::New { Pad Mode } {
    set Data(Mode$Pad) $Mode
 
    Writer::FVCN::Init $Pad
-#   Writer::FVCN::GraphInit $Pad
 
    if { $Mode=="RET" } {
       $Pad.remarks configure -height 3
@@ -93,6 +91,7 @@ proc Writer::FVCN::New { Pad Mode } {
    } else {
       $Pad.remarks insert 0.0 NIL
       $Pad.details insert 0.0 UNKNOWN
+      Writer::FVCN::GraphInit $Pad
    }
 
    Writer::FVCN::AshUpdate $Pad 0
@@ -143,6 +142,7 @@ proc Writer::FVCN::Init { Pad } {
    set Data(Obs$Pad)     "OBS VA CLD:"
    set Data(Lat$Pad)     0.0
    set Data(Lon$Pad)     0.0
+   set Data(Page$Pad)    ""
 
    #----- Regions de cendres par niveaux et heures
 
@@ -196,10 +196,47 @@ proc Writer::FVCN::Init { Pad } {
    set Data(File$Pad)   "FVCN"
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::Layout>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser le layout du produit graphique FVCN#
+#
+# Parametres :
+#    <Frame> : Page ou creer le layout
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc Writer::FVCN::Layout { Frame } {
    variable Data
 
    Page::Size $Frame 1015 675
+
+   set Viewport::Resources(FillCoast) #DCDCDC
+   set Viewport::Resources(FillLake)  ""
+   set Viewport::Resources(Coast)     #000000      ;#Cotes
+   set Viewport::Resources(Lake)      #0000ff      ;#Lacs
+   set Viewport::Resources(Polit)     #8C8C8C      ;#Bordures politiques
+   set Viewport::Resources(Coord)     #000000      ;#Latlon
+
+   set Viewport::Map(Coast)       1           ;#Cotes
+   set Viewport::Map(Lake)        1           ;#Lacs
+   set Viewport::Map(River)       0           ;#Rivieres
+   set Viewport::Map(Polit)       1           ;#Bordures politiques
+   set Viewport::Map(Admin)       0           ;#Bordures politiques internes
+   set Viewport::Map(City)        0           ;#Villes
+   set Viewport::Map(Road)        0           ;#Routes
+   set Viewport::Map(Rail)        0           ;#Chemin de fer
+   set Viewport::Map(Util)        0           ;#Utilitaires
+   set Viewport::Map(Canal)       0           ;#Canal/Aqueduc
+   set Viewport::Map(Topo)        0           ;#Topographie
+   set Viewport::Map(Bath)        0           ;#Bathymetrie
+   set Viewport::Map(Text)        0           ;#Texture
+   set Viewport::Map(Coord)       1           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Viewport::Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
+   set Viewport::Map(CoordNum)    2           ;#Numerotation des latlon
 
    set Data(VP0)  [Viewport::Create $Frame 5     5 500 270 False False]
    set Data(VP6)  [Viewport::Create $Frame 510   5 500 270 False False]
@@ -228,52 +265,80 @@ proc Writer::FVCN::Layout { Frame } {
       $Frame.page.canvas create rectangle [expr $dx+5] [expr $dy-20] [expr $dx+45] $dy -fill $color -outline $color -stipple $stipple -width 2
       incr dx 140
    }
-
-   Page::ModeSelect Zoom $Frame
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::GraphInit>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser le produit graphique
+#
+# Parametres :
+#    <Pad>   : Identificateur du pad
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Writer::FVCN::GraphInit { Pad } {
    variable Data
 
-   if { [winfo exist $Data(Page)] } {
-      raise $Data(Page)
+   if { [winfo exist $Data(Page$Pad)] } {
+      raise $Data(Page$Pad)
    } else {
+      wm geom .writer 1522x757
 #      set Data(Page) [SPI::PageNew True FVCNXX 1020x715]
-      set Data(Page) [SPI::PageNew $Pad FVCNXX 1020x715]
-      pack $Data(Page) -side right -anchor nw
+      set Data(Page$Pad) [SPI::PageNew $Pad FVCNXX 1020x715]
+      pack $Data(Page$Pad) -side right -anchor nw
 
-      SPI::LayoutLoad $Data(Page) Writer::FVCN
+      SPI::LayoutLoad $Data(Page$Pad) Writer::FVCN
    }
 }
 
-proc Writer::FVCN::GraphUpdate { Pad } {
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::GraphUpdate>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Mettre a jour les items du produit graphique
+#
+# Parametres :
+#    <Pad>   : Identificateur du pad
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
    variable Data
 
-   if { [winfo exist $Data(Page)] } {
+   if { [winfo exist $Data(Page$Pad)] } {
+
+      if { $Location } {
+#         Viewport::GoTo $Data(Page$Pad) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
+         Viewport::Rotate $Data(Page$Pad) $Data(Lat$Pad) $Data(Lon$Pad)
+      }
 
       #----- Update text
 
       set text  "VA ADVISORY\n[format "%-12s" DTG:] $Data(Issued$Pad)\n[format "%-12s" VAAC:] $Data(VAAC)\n[format "%-12s" "VOLCANO:"] $Data(Site$Pad)\n[format "%-12s" "PSN:"] $Data(Location$Pad)\n[format "%-12s" "AREA:"] $Data(Area$Pad)\n[format "%-12s" "SUMMIT ELEV:"] $Data(Elev$Pad)\n[format "%-12s" "ADVISORY NR:"] $Data(Advisory$Pad)"
-      $Data(Page).page.canvas itemconfigure COL1 -text $text
+      $Data(Page$Pad).page.canvas itemconfigure COL1 -text $text
 
       set text1 [Writer::BlocFormat "INFO SOURCE:" [Writer::TextExtract word 30 "" $Pad.info] 21]
       set text2 "[format "%-21s" "AVIATION COLOUR CODE:"] $Data(Code$Pad)"
       set text3 [Writer::BlocFormat "ERUPTION DETAILS:" [Writer::TextExtract word 30 "" $Pad.details] 21]
 
-      $Data(Page).page.canvas itemconfigure COL2 -text $text1\n$text2\n$text3
+      $Data(Page$Pad).page.canvas itemconfigure COL2 -text $text1\n$text2\n$text3
 
       set text1 [Writer::BlocFormat "RMK:" [Writer::TextExtract word 30 "" $Pad.remarks] 13]
       set text2 [Writer::BlocFormat "NXT ADVISORY:" [Writer::TextExtract word 30 "" $Pad.next] 13]
 
-      $Data(Page).page.canvas itemconfigure COL3 -text  $text1\n$text2
+      $Data(Page$Pad).page.canvas itemconfigure COL3 -text  $text1\n$text2
 
       #----- Update Legend
 
-      $Data(Page).page.canvas itemconfigure LVL1 -text SFC/FL200
-      $Data(Page).page.canvas itemconfigure LVL2 -text FL200/FL350
-      $Data(Page).page.canvas itemconfigure LVL3 -text FL350/FL600
-
-#      Writer::FVCN::LayoutUpdate $Data(Page)
+      $Data(Page$Pad).page.canvas itemconfigure LVL1 -text SFC/FL200
+      $Data(Page$Pad).page.canvas itemconfigure LVL2 -text FL200/FL350
+      $Data(Page$Pad).page.canvas itemconfigure LVL3 -text FL350/FL600
    }
 }
 
@@ -306,6 +371,7 @@ proc Writer::FVCN::Open { Pad File } {
       set Data(Mode$Pad) RET
    } else {
       set Data(Mode$Pad) NEW
+      Writer::FVCN::GraphInit $Pad
    }
 
    if { [string first ".sent" $File] != -1 } {
@@ -325,7 +391,14 @@ proc Writer::FVCN::Open { Pad File } {
    Writer::FVCN::Read $Pad $File $Data(Mode$Pad)
    Writer::FVCN::PageInit $Pad
    Writer::FVCN::UpdateTime $Pad $Data(Delay)
-}
+
+   set coo [Writer::FVCN::UnFormatCoord $Data(Location$Pad)]
+   set Data(Lat$Pad) [lindex $coo 0]
+   set Data(Lon$Pad) [lindex $coo 1]
+
+   Writer::FVCN::GraphUpdate $Pad True
+   Writer::FVCN::UpdateItems $Writer::Data(Frame)
+ }
 
 #----------------------------------------------------------------------------
 # Nom      : <Writer::FVCN::Correct>
@@ -535,6 +608,39 @@ proc Writer::FVCN::FormatCoord { Lat Lon } {
    set Lon "$dir[format "%03i" [lindex $Lon 0]][lindex $Lon 1]"
 
    return "$Lat $Lon"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::UnFormatCoord>
+# Creation : Sepetmbre 2001 - J.P.Gauthier - CMC/CMOE
+#
+# But      : Formater les coordonnes
+#
+# Parametres :
+#    <Lat>   : Latitude
+#    <Lon>   : Longitude
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::UnFormatCoord { Coord } {
+
+   set la [lindex $Coord 0]
+   set lo [lindex $Coord 1]
+
+   set lat [Convert::Minute2Decimal "[string range $la 1 2] [string range $la 3 4]"]
+   set lon [Convert::Minute2Decimal "[string range $lo 1 3] [string range $lo 4 5]"]
+
+   if { [string index $la 0]=="S" } {
+      set lat [expr -$lat]
+   }
+
+   if { [string index $lo 0]=="W" } {
+      set lon [expr -$lon]
+   }
+
+   return "$lat $lon"
 }
 
 #----------------------------------------------------------------------------
@@ -789,7 +895,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
    label $Pad.obs      -bg white  -font XFont12 -bd 0 -anchor w -textvariable Writer::FVCN::Data(Obs$Pad)
 
    entry $Pad.ash      -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Date0$Pad)
-   entry $Pad.location -bg gray75 -width 11 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Location$Pad)
+   entry $Pad.location -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Location$Pad)
    entry $Pad.area     -bg gray75 -width 47 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Area$Pad)
    entry $Pad.elev     -bg gray75 -width 8  -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Elev$Pad)
 
@@ -984,10 +1090,10 @@ proc Writer::FVCN::PrintCommand { Canvas } {
    PrintBox::PrintTXT $file
 
    #----- Graphical product
-   if { [winfo exists $Data(Page)] } {
-      set PrintBox::Print(FullName) $PrintBox::Print(FullName)_gr
+   if { [winfo exists $Data(Page$Writer::Data(Pad))] } {
+      set PrintBox::Print(FullName) $PrintBox::Print(FullName)
       set PrintBox::Print(Angle) landscape
-      PrintBox::PrintCommand $Data(Page)
+      PrintBox::PrintCommand $Data(Page$Writer::Data(Pad))
    }
 
    PrintBox::Destroy
@@ -1191,8 +1297,10 @@ proc Writer::FVCN::PageInit { Pad } {
       set y [expr $y+$Writer::Data(Height)*$Data(HNext$Pad)]
 
    }
+
    #----- Graphical product
-#   Writer::FVCN::GraphUpdate $Pad
+
+   Writer::FVCN::GraphUpdate $Pad
 }
 
 #----------------------------------------------------------------------------
@@ -1293,6 +1401,7 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    #----- Transmettre le message avec le script operationnel.
 
    exec chmod 644 $file
+   exec chmod 644 $file.png
 
    if { $Backup } {
       Debug::TraceProc "Writer::FVCN::Send: Sending via metmanager $name"
@@ -1307,6 +1416,12 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    }
 
    catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.txt"  }
+
+   #----- Graphical product
+   if { [winfo exists $Data(Page$Pad)] } {
+      PrintBox::Image $Data(Page$Pad) png $file landscape
+      catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file.png -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.png"  }
+   }
 
    if { !$Backup } {
       file delete -force $file
@@ -1442,7 +1557,7 @@ proc Writer::FVCN::VertexAdd { Frame VP X Y } {
       return
    }
 
-   if { $Writer::Data(Canvas)!="" } {
+   if { [winfo exists $Writer::Data(Canvas)] } {
       $Writer::Data(Canvas) delete FVCN
    }
 
@@ -1507,7 +1622,7 @@ proc Writer::FVCN::VertexDelete { Frame VP } {
 
    set field [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]
 
-   if { $Writer::Data(Canvas)!="" } {
+   if { [winfo exists $Writer::Data(Canvas)] } {
       $Writer::Data(Canvas) delete FVCN
    }
 
@@ -1561,7 +1676,7 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
       return
    }
 
-   if { $Writer::Data(Canvas)!="" } {
+   if { [winfo exists $Writer::Data(Canvas)] } {
       $Writer::Data(Canvas) delete VERTEXFOLLOW
    }
 
@@ -1646,11 +1761,7 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
 
       #----- Update graphical product
 
-      if { [winfo exists $Data(Page)] } {
-#      Viewport::GoTo $Data(Page) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
-         Viewport::Rotate $Data(Page) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
-         Writer::FVCN::GraphUpdate $Writer::Data(Pad)
-      }
+      Writer::FVCN::GraphUpdate $Writer::Data(Pad) True
    } else {
       Debug::TraceProc "Writer::FVCN::Site: Invalid source ($Name)"
    }
@@ -1677,16 +1788,16 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
    global GDefs
    variable Data
 
+   if { $Pad=="" } {
+      set Pad $Writer::Data(Pad)
+   }
+
    if { $Frame==$Writer::Data(Frame) } {
       if { $VP=="" } {
          set VP $Writer::Data(VP)
       }
 
-      if { $Pad=="" } {
-         set Pad $Writer::Data(Pad)
-      }
-
-      if { $Writer::Data(Canvas)!="" } {
+      if { [winfo exists $Writer::Data(Canvas)] } {
          $Writer::Data(Canvas) delete FVCN
       }
 
@@ -1702,19 +1813,18 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 
    #----- Graphical product
 
-   if { [winfo exists $Data(Page)] } {
+   if { [winfo exists $Data(Page$Pad)] } {
 
-      set Pad $Writer::Data(Pad)
-      $Data(Page).page.canvas delete ICOVAAC
+      $Data(Page$Pad).page.canvas delete ICOVAAC
       foreach h { 0 6 12 18 } {
-         $Data(Page).page.canvas itemconfigure DATE$h -text $Data(Date$h$Pad)
+         $Data(Page$Pad).page.canvas itemconfigure DATE$h -text $Data(Date$h$Pad)
          foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
             if  { [llength $Data(L$no$h$Pad)]>2 } {
-               Viewport::DrawArea $Data(Page) $Data(VP$h) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
+               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
             }
          }
          if { [set xy [ $Data(VP$h) -project $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad)) 0]]!="" && [lindex $xy 2]>0 } {
-            Shape::DrawIcoVAAC $Data(Page).page.canvas $xy "ICOVAAC" black 5 False
+            Shape::DrawIcoVAAC $Data(Page$Pad).page.canvas $xy "ICOVAAC" black 5 False
          }
       }
    }
