@@ -91,7 +91,6 @@ namespace eval SPI {
    set Lbl(TrajHeight)     { "Liste d'élévation" "Elevations list" }
    set Lbl(TrajLegend)     { "Légende de trajectoire" "Trajectory legend" }
    set Lbl(User)           { "Autres" "User defined" }
-   set Lbl(ViewPoint)      { "Point de vue" "View point" }
    set Lbl(Viewport)       { "Ajouter une vue" "Add Viewport" }
    set Lbl(Warning)        { "Attention" "Warning" }
    set Lbl(Window)         { "Fenêtre" "Window" }
@@ -100,7 +99,6 @@ namespace eval SPI {
    set Lbl(Yes)            { "Oui" "Yes" }
    set Lbl(Zoom_Back)      { "Zoom arrière" "Zoom back" }
    set Lbl(Zoom_Reset)     { "Annuler zoom" "Reset zoom" }
-   set Lbl(Zoom_Rotate)    { "Zoom/Rotation" "Zoom/Rotate" }
    set Lbl(LinkView)       { "Liaison de vues" "Link viewports" }
    set Lbl(LinkSrc)        { "Définir comme source du lien" "Set as link source" }
    set Lbl(LinkDest)       { "Lier a la vue source" "Link to source viewport" }
@@ -108,6 +106,9 @@ namespace eval SPI {
    set Lbl(Lock)           { "Fixer la loupe" "Lock magnifier" }
    set Lbl(Page)           { "Page" "Page" }
    set Lbl(Current)        { "Courante" "Current" }
+   set Lbl(ModeZoom)       { "Zoom/Rotation" "Zoom/Rotate" }
+   set Lbl(ModeCam)        { "Point de vue" "View point" }
+   set Lbl(ModeTool)       { "Outils courant" "Current Tool" }
 
    set Lbl(Frame0)         { "0 page secondaire" "0 secondary page" }
    set Lbl(Frame1)         { "1 page secondaire" "1 secondary page" }

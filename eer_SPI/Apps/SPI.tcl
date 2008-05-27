@@ -1794,6 +1794,11 @@ proc SPI::FileOpen { Box Type Title Extension Files } {
 #----------------------------------------------------------------------------
 
 proc SPI::ToolMode { Tool Mode { Off False } } {
+   variable Param
+
+   if { $Tool=="" } {
+      return
+   }
 
    if { $Tool=="SPI" } {
       if { $Off } {
@@ -1802,6 +1807,11 @@ proc SPI::ToolMode { Tool Mode { Off False } } {
          Page::ModeSelect $Mode
       }
    } else {
+      #----- Garder l'information sur le dernier outils utilise
+
+      set Param(Tool) $Tool
+      set Param(ToolMode) $Mode
+
       Page::ModeSelect $Mode
 
       #----- Une fonction d'affichage existe-t-elle pour cet outils

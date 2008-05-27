@@ -42,6 +42,7 @@ namespace eval SPI {
    set Param(Script)         ""           ;#Script en cours d'execution
    set Param(Layout)         SPI          ;#Layout courant
    set Param(Tool)           ""           ;#Outils courant
+   set Param(ToolMode)       Draw         ;#Mode de l'outils courant
    set Param(Tools)          ""           ;#Liste des outils disponibles
    set Param(Layouts)        { SPI }      ;#Liste des layouts
    set Param(Project)        ""           ;#Projet courant
