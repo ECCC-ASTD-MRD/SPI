@@ -249,7 +249,6 @@ proc Obs::InfoGraph { Obs Tag Elem } {
          -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25] -type LINE -orient X -outline black -fill yellow
    }
 
-
    if { [vector length PAGEOBSGRAPHDATA.X]>2 } {
       return PAGEOBSGRAPHITEM
    } else {

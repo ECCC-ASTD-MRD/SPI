@@ -68,7 +68,7 @@ namespace eval FSTD {
    dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -topography GZ -sample 2 \
-      -intervalmode NONE 0 -intervals {}
+      -intervals {}
 
    fstdfield vector { UU VV }
    fstdfield vector { UP VP }
@@ -597,7 +597,7 @@ proc FSTD::FieldFormat { Field Val } {
    if { $order=="AUTO" || $order=="EXPONENTIAL" } {
        eval set val \[format \"%1.${dec}e\" $Val\]
    } elseif { $order == "INTEGER" } {
-       eval set val \[format \"%i\" [expr int($Val)]\]
+       catch { eval set val \[format \"%i\" [expr int($Val)]\] }
    } elseif { $order == "FLOAT" } {
        eval set val \[format \"%1.${dec}f\" $Val\]
    }
