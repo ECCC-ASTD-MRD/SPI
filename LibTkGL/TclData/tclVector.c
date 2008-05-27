@@ -1070,7 +1070,7 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
       }
 
       if (vec) {
-         memcpy(Vec->V,vec->V,nobj);
+         memcpy(Vec->V,vec->V,nobj*sizeof(double));
       } else {
          for(n=0;n<nobj;n++) {
             Tcl_ListObjIndex(Interp,List,n,&obj);
@@ -1146,7 +1146,7 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
       }
 
       if (vec) {
-         memcpy(&Vec->V[Vec->N],vec->V,nobj);
+         memcpy(&Vec->V[Vec->N],vec->V,nobj*sizeof(double));
       } else {
          for(n=0;n<nobj;n++) {
             Tcl_ListObjIndex(Interp,List,n,&obj);
