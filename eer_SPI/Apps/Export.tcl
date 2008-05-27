@@ -97,7 +97,7 @@ namespace eval Export::Vector {
                        {Geography Markup Language "GML" {*.gml}}
                        {GMT ASCII Vectors "GMT" {*.gmt}}
                        {GPS Exchange Format "GPX" {*.gpx}}
-                       {MapInfo Binary "MapInfo File" {*.tab *.mif *.mid }}}
+                       {MapInfo Binary "MapInfo File" {*.mif *.mid}}}
 
 }
 
@@ -211,7 +211,12 @@ proc Export::Vector::Export { Path Format } {
       if { [file exists $file.[incr no]_$nv$ext] } {
          file delete -force $file.[incr no]_$nv$ext
       }
-      ogrfile open FILE write $file.[incr no]_$nv$ext $Format
+
+      if { $Format=="MapInfo File" } {
+         ogrfile open FILE write $file.[incr no]_$nv$ext $Format
+      } else {
+         ogrfile open FILE write $file.[incr no]_$nv$ext $Format FORMAT=MIF
+      }
       ogrlayer create FILE LAYER $nv
       ogrlayer import LAYER $field
       ogrfile close FILE
