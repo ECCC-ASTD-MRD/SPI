@@ -42,7 +42,7 @@ proc SPI::Splash { { Msg "" } } {
          wm overrideredirect .splash true
 
          image create photo SPLASH -file $GDefs(Dir)/Apps/SPI.gif
-         label .splash.img -image SPLASH
+         label .splash.img -image SPLASH -bg #03004C
          label .splash.info -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable SPI::Param(Loading)
 
          set x [expr int([winfo screenwidth  .]/2.0-[image width  SPLASH]/2.0)]
