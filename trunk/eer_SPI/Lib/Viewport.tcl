@@ -1271,6 +1271,7 @@ proc Viewport::Destroy { Frame { VP {} } } {
 proc Viewport::Do { Frame } {
    variable Map
    variable Data
+   variable Resources
 
    set Map(Type$Frame)   $Map(Type)
    set Map(GeoRef$Frame) $Map(GeoRef)
@@ -1282,6 +1283,13 @@ proc Viewport::Do { Frame } {
       -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) -data $Data(Data$Frame)
 
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
+
+   foreach vp [Page::Registered $Frame Viewport] {
+      $Frame.page.canvas itemconfigure $vp -bg $Resources(Bkg) \
+         -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
+         -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord)
+   }
 
    Page::Update  $Frame
 }
