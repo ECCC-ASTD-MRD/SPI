@@ -2256,9 +2256,9 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
             -rendertexture [dataspec configure $spec -rendertexture] -rendervolume [dataspec configure $spec -rendervolume] -renderparticle [dataspec configure $spec -renderparticle]\
             -rendercoord [dataspec configure $spec -rendercoord] -rendervalue [dataspec configure $spec -rendervalue] -renderlabel [dataspec configure $spec -renderlabel]\
             -rendergrid [dataspec configure $spec -rendergrid] -min \"[dataspec configure $spec -min]\" -max \"[dataspec configure $spec -max]\"\
-            -intervals \"[dataspec configure $spec -intervals]\" -intervalmode [dataspec configure $spec -intervalmode] -interpdegree \"[dataspec configure $spec -interpdegree]\"\
-            -extrapdegree \"[dataspec configure $spec -extrapdegree]\" -topography \"[dataspec configure $spec -topography]\" -sample \"[dataspec configure $spec -sample]\"\
-            -stipple \"[dataspec configure $spec -stipple]\" -colormap \"[dataspec configure $spec -colormap]\" -font \"[dataspec configure $spec -font]\""
+            -intervals \"[dataspec configure $spec -intervals]\" -interlabels \"[dataspec configure $spec -interlabels]\" -intervalmode [dataspec configure $spec -intervalmode] \
+            -interpdegree \"[dataspec configure $spec -interpdegree]\" -extrapdegree \"[dataspec configure $spec -extrapdegree]\" -topography \"[dataspec configure $spec -topography]\"\
+            -sample \"[dataspec configure $spec -sample]\" -stipple \"[dataspec configure $spec -stipple]\" -colormap \"[dataspec configure $spec -colormap]\" -font \"[dataspec configure $spec -font]\""
       }
    }
 
