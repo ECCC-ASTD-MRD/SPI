@@ -226,11 +226,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    static CONST char *sopt[] = { "-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
-                                 "-intervals","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step",
+                                 "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step",
                                  "-geovector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-interpolation","-light","-sprite",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
-                     WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,POSITIONS,
+                     WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,INTERPOLATION,LIGHT,SPRITE };
 
@@ -728,6 +728,18 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case INTERLABELS:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Spec->InterLabels);
+            } else {
+               if (Spec->InterLabels) {
+                  Tcl_DecrRefCount(Spec->InterLabels);
+               }
+               Spec->InterLabels=Objv[++i];
+               Tcl_IncrRefCount(Spec->InterLabels);
+            }
+            break;
+
          case RANGES:
            if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -1125,6 +1137,11 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    memcpy(to->Range,from->Range,from->RangeNb*sizeof(float));
    memcpy(to->Inter,from->Inter,from->InterNb*sizeof(float));
    memcpy(to->Pos,from->Pos,from->PosNb*sizeof(Vect3d));
+
+   if (from->InterLabels)
+      Tcl_IncrRefCount(from->InterLabels);
+   to->InterLabels=from->InterLabels;
+
    to->RangeNb=from->RangeNb;
    to->PosNb=from->PosNb;
    to->InterNb=from->InterNb;
@@ -1253,6 +1270,7 @@ TDataSpec *DataSpec_New(){
    spec->PosNb=0;
    spec->InterNb=0;
    spec->InterMode=0;
+   spec->InterLabels=NULL;
    spec->InterModeParam=0.0;
    spec->InterO=0;
    spec->InterM=0;
@@ -1316,17 +1334,18 @@ int DataSpec_Free(TDataSpec *Spec){
       return(0);
    }
 
-   if (Spec->Name)      free(Spec->Name);
-   if (Spec->Topo)      free(Spec->Topo);
-   if (Spec->Desc)      free(Spec->Desc);
-   if (Spec->Unit)      free(Spec->Unit);
-   if (Spec->Sprite)    free(Spec->Sprite);
-   if (Spec->Outline)   Tk_FreeColor(Spec->Outline);
-   if (Spec->Fill)      Tk_FreeColor(Spec->Fill);
-   if (Spec->HighLine)  Tk_FreeColor(Spec->HighLine);
-   if (Spec->HighFill)  Tk_FreeColor(Spec->HighFill);
-   if (Spec->Font)      Tk_FreeFont(Spec->Font);
-   if (Spec->Stipple)   glBitmapFree(Spec->Stipple);
+   if (Spec->Name)        free(Spec->Name);
+   if (Spec->Topo)        free(Spec->Topo);
+   if (Spec->Desc)        free(Spec->Desc);
+   if (Spec->Unit)        free(Spec->Unit);
+   if (Spec->Sprite)      free(Spec->Sprite);
+   if (Spec->Outline)     Tk_FreeColor(Spec->Outline);
+   if (Spec->Fill)        Tk_FreeColor(Spec->Fill);
+   if (Spec->HighLine)    Tk_FreeColor(Spec->HighLine);
+   if (Spec->HighFill)    Tk_FreeColor(Spec->HighFill);
+   if (Spec->Font)        Tk_FreeFont(Spec->Font);
+   if (Spec->Stipple)     glBitmapFree(Spec->Stipple);
+   if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);
 
    if (Spec->InterpDegree) free(Spec->InterpDegree);
    if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);
