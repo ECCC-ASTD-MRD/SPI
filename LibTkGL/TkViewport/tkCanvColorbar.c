@@ -717,10 +717,11 @@ void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text
 */
 void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1,int Y2){
 
-   int    idx,i,py0,py1,x0,x1,xt;
-   double y=0,incr,txt=0,value,height;
-   float  jps,jan;
-   char   buf[128];
+   int      idx,i,py0,py1,x0,x1,xt,n=0;
+   double   y=0,incr,txt=0,value,height;
+   float    jps,jan;
+   char     buf[128],*lbl;
+   Tcl_Obj *obj;
 
    if (!Spec->Map)
       return;
@@ -801,15 +802,24 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
           y-=incr;
       }
 
+      if (Spec->InterLabels) {
+         Tcl_ListObjLength(Interp,Spec->InterLabels,&n);
+      }
+
       /*Rendu des valeurs l'echelle*/
       for (i=0,y=Y2-5;i<Spec->InterNb;i++,y-=incr) {
-
-         DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Inter[i]),buf);
+         if (i<n) {
+            Tcl_ListObjIndex(Interp,Spec->InterLabels,i,&obj);
+            lbl=Tcl_GetString(obj);
+         } else {
+            DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Inter[i]),buf);
+            lbl=buf;
+         }
 
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,y),0,Spec->Outline,jan,1.0,jps);
+            glPostscriptText(Interp,CB->canvas,lbl,xt,Tk_CanvasPsY(CB->canvas,y),0,Spec->Outline,jan,1.0,jps);
          } else {
-            Colorbar_RenderText(CB,xt,y,CB->BarSide,buf,Spec);
+            Colorbar_RenderText(CB,xt,y,CB->BarSide,lbl,Spec);
          }
       }
 

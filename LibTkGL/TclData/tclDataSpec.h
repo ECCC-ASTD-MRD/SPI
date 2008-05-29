@@ -111,6 +111,7 @@ typedef struct TDataSpec {
    double      TopoFactor;          /*Facteur du modulateur 3D*/
    int         Interp;              /*Interpolation GL*/
    float       Inter[DATASPEC_MAX]; /*Intervalles de contours*/
+   Tcl_Obj    *InterLabels;         /*Libelle des intervalles*/
    int         InterNb;             /*Nombre d'intervalles de contour*/
    int         InterMode;           /*Mode de calcul des intervalles de contour*/
    double      InterModeParam;      /*Parameter du mode de calcul des intervalles de contours*/
