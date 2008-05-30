@@ -77,6 +77,7 @@ namespace eval NowCaster::Obs { } {
 
    set Bubble(Find)       { "Rechercher un station et centrer la vue sur celle-ci" "Find a station and locate the viewport on it" }
    set Bubble(Mode)       { "Activer le mode de sélection des observations\n\nBouton gauche: Sélection\nBouton centre: Déplacer une localisation" "Activate observation selection mode\n\nLeft button  : Select location\nMiddle button: Move location" }
+   set Bubble(Graph)      { "Activer les graphs dans la bulle d'information" "Enable graphs wirhin information bubble" }
    set Bubble(Params)     { "Paramêtres d'affiche" "Display parameters" }
    set Bubble(Add)        { "Ajouter une observation" "Add an observation" }
    set Bubble(Del)        { "Supprimer l'observation courante" "Delete current observation" }
@@ -119,11 +120,13 @@ proc NowCaster::Obs::Window { Frame } {
       checkbutton $Frame.head.mode -variable Page::Data(ToolMode) -onvalue NowCaster::Obs -offvalue SPI \
          -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
          -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+      checkbutton $Frame.head.graph -image BUBBLEGRAPH -relief sunken -bd 1 -overrelief raised -offrelief flat -anchor w -selectcolor $GDefs(ColorLight)\
+         -variable Obs::Data(BubbleGraph) -onvalue True -offvalue False -indicatoron False
       button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 2 }
       menubutton $Frame.head.add -image PLUS -bd 0 -relief flat -menu $Frame.head.add.list
       button $Frame.head.del -image DELETE -bd 1 -relief flat -overrelief raised \
          -command "catch { NowCaster::Obs::Delete \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
-      pack $Frame.head.mode $Frame.head.params  -side left
+      pack $Frame.head.mode $Frame.head.graph $Frame.head.params  -side left
       pack $Frame.head.del $Frame.head.add -side right -padx 2
    pack $Frame.head -side top -fill x
 
@@ -242,6 +245,7 @@ proc NowCaster::Obs::Window { Frame } {
    bind $Frame.select.list <ButtonRelease-1>  "catch { NowCaster::Obs::ObsSelect \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
 
    Bubble::Create $Frame.head.mode   [lindex $Bubble(Mode) $GDefs(Lang)]
+   Bubble::Create $Frame.head.graph  [lindex $Bubble(Graph) $GDefs(Lang)]
    Bubble::Create $Frame.head.params [lindex $Bubble(Params) $GDefs(Lang)]
    Bubble::Create $Frame.head.add    [lindex $Bubble(Add) $GDefs(Lang)]
    Bubble::Create $Frame.head.del    [lindex $Bubble(Del) $GDefs(Lang)]
