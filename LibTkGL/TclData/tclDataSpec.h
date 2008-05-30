@@ -48,8 +48,8 @@
 #define DATASPEC_ALLSET 0x03
 
 #define VECTORSIZE(SPEC,VAL) ((SPEC->RenderVector==ARROW?SPEC->Size*0.5+SPEC->Size*((VAL-SPEC->Min)/(SPEC->Max-SPEC->Min)):SPEC->Size))
-#define SPEC2VAL(SPEC,VAL)    (VAL/SPEC->ValFactor-SPEC->ValDelta)
-#define VAL2SPEC(SPEC,VAL)    ((VAL+SPEC->ValDelta)*SPEC->ValFactor)
+#define SPEC2VAL(SPEC,VAL)    (SPEC?VAL/SPEC->ValFactor-SPEC->ValDelta:VAL)
+#define VAL2SPEC(SPEC,VAL)    (SPEC?(VAL+SPEC->ValDelta)*SPEC->ValFactor:VAL)
 
 #define COL2VAL(IDX,SPEC,VAL) {\
    if (SPEC->InterNb>0){\
