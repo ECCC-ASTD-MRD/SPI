@@ -18,6 +18,7 @@ extern TData     *GField,*GFieldP;
 extern GDAL_Band *GBand;
 extern TObs      *GObs;
 extern TVector   *GVec;
+extern TData_Type GType;
 extern int        GMode;
 
 /*
@@ -114,6 +115,9 @@ EXTCHAR [A-Za-z0-9_.:#~]
    if((yylval.Obs=Obs_Get(yytext))) {
       GObs=GObs?GObs:yylval.Obs;
       GMode=GMode==T_VAL?T_OBS:GMode;
+      /*Force type to float since observations are only in float*/
+      if (GMode==T_OBS) GType=TD_Float32;
+
       if((yylval.Data=yylval.Obs->Def)) {
 #ifdef DEBUG
         fprintf(stderr,"(DEBUG) Found a T_DATA(Obs) token: %s\n", yytext);
@@ -125,6 +129,8 @@ EXTCHAR [A-Za-z0-9_.:#~]
    if((yylval.Vec=Vector_Get(yytext))) {
       GVec=GVec?GVec:yylval.Vec;
       GMode=GMode==T_VAL?T_VEC:GMode;
+      /*Force type to double since vectors are only in double*/
+      if (GMode==T_VEC) GType=TD_Float64;
 
       if((yylval.Data=Vector_GetDef(yylval.Vec))) {
 #ifdef DEBUG
