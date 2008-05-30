@@ -74,6 +74,7 @@ namespace eval Obs {
 
    set Data(List)           {}
    set Data(ListTool)       {}
+   set Data(BubbleGraph)    True
 
    #----- Parametres des obs
 
@@ -193,6 +194,11 @@ namespace eval Obs {
 #-------------------------------------------------------------------------------
 
 proc Obs::InfoGraph { Obs Tag Elem } {
+   variable Data
+
+   if { !$Data(BubbleGraph) } {
+      return
+   }
 
    #----- Create the needed objects if they are not created yet
    if { ![vector is PAGEOBSGRAPHDATA] } {
