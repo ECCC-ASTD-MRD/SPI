@@ -100,7 +100,7 @@ namespace eval Trajectory {
    set Data(List)           ""    ;#Liste des Id de trajectoire en memoire
    set Data(Frame)          ""    ;#Path du frame de configuration
 
-   #----- Definir les parametres par defaut standard
+   #----- Definir les parametres par defaut standard (VAAC/RSMC)
 
    dataspec create 500.00
    dataspec configure 500.00 -width $Param(Width) -fill white -color #ff0000 -icon TRIANGLE \
@@ -450,11 +450,9 @@ proc Trajectory::ParamSet { { Spec "" } } {
       set Spec $Param(Spec)
    }
 
-   if { ![dataspec is $Spec] } {
-      return
+   if { [dataspec is $Spec] } {
+      dataspec configure $Spec -color $Param(Color) -icon $Param(Icon)
    }
-
-   dataspec configure $Spec -color $Param(Color) -icon $Param(Icon)
 
    foreach t [trajectory all] {
       trajectory configure $t -width $Param(Width) -style $Param(Style) -fill white \
@@ -624,8 +622,8 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
              set Param(Spec) $current
              set exist 1
          }
-
          trajectory configure $traj -dataspec $var
+         trajectory configure $traj -width $Param(Width) -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
          ComboBox::Add $Data(Frame).left.traj.lvl $var
       }
    }
@@ -1179,7 +1177,7 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
       set parcel [trajectory define $t -PARCEL 0]
       set color  [trajectory configure $t -color]
       set shape  [trajectory configure $t -icon]
-      set size   [trajectory configure $t -size]
+      set size   [expr [trajectory configure $t -size]+[trajectory configure $t -width]]
       set width  [trajectory configure $t -width]
       set Pixel1 "$str $y"
       set Pixel2 "$end $y"
