@@ -762,7 +762,7 @@ proc Viewport::Follow { Frame VP X Y } {
                             set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
                             append Page::Data(Value) "[lindex [metobs table -desc [lindex $item 2]] 0]:"
                             foreach val $vals {
-                               append Page::Data(Value) "[expr ($val+[dataspec configure $spec -delta])*[dataspec configure $spec -factor]] "
+                               append Page::Data(Value) " $val"
                             }
                             set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }

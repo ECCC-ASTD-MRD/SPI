@@ -234,7 +234,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
       graphaxis configure PAGEOBSGRAPHAXISY -min [vector get PAGEOBSGRAPHDATA.Y 0] -max [vector get PAGEOBSGRAPHDATA.Y end] \
          -intervals "[vector stats PAGEOBSGRAPHDATA.Y -min] [vector stats PAGEOBSGRAPHDATA.Y -max]" -format INTEGER
       graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
-         -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25] -type LINE -orient Y -outline black -fill yellow
+         -desc [string range [lindex [metobs table -desc $Elem] 0] 0 20] -type LINE -orient Y -outline black -fill yellow
 
    #----- Then it is a time serie
    } else {
@@ -246,7 +246,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
       graphaxis configure PAGEOBSGRAPHAXISY -min [vector stats PAGEOBSGRAPHDATA.Y -min] -max [vector stats PAGEOBSGRAPHDATA.Y -max] \
          -intervals "[vector stats PAGEOBSGRAPHDATA.Y -min] [vector stats PAGEOBSGRAPHDATA.Y -max]"
       graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
-         -desc [string range [lindex [metobs table -desc $Elem] 0] 0 25] -type LINE -orient X -outline black -fill yellow
+         -desc [string range [lindex [metobs table -desc $Elem] 0] 0 20] -type LINE -orient X -outline black -fill yellow
    }
 
    if { [vector length PAGEOBSGRAPHDATA.X]>2 } {

@@ -557,7 +557,7 @@ proc FieldCalc::Close { } {
 proc FieldCalc::ConvertFactor { } {
    variable Conv
 
-   if { $Conv(From) != "" && $Conv(To)!= "" } {
+   if { $Conv(From)!= "" && $Conv(To)!= "" } {
       set Conv(Factor) [expr $Conv($Conv(From)) * (1.0/$Conv($Conv(To)))]
    } else {
       set Conv(Factor) ""

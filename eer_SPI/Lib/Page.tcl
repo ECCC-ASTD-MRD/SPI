@@ -794,7 +794,7 @@ proc Page::CursorInfo { Frame X Y Info { Graph "" } } {
          $Frame.page.canvas create text -999 -999 -tags "PAGECURSORINFO PAGECURSORINFOSTUFF PAGECURSORINFOTEXT" -text 333 -font XFont12 -fill black -anchor sw
 
          $Frame.page.canvas create graph -x -999 -y -999 -anchor nw -command "" -bd 0 -fg black -bg white -fill white -font XFont10\
-            -tags "PAGECURSORINFO PAGECURSORINFOSTUFF PAGECURSORINFOGRAPH" -legend True -xlegend -35 -ylegend -25 -bdlegend 0
+            -tags "PAGECURSORINFO PAGECURSORINFOSTUFF PAGECURSORINFOGRAPH" -legend True -xlegend -30 -ylegend -25 -bdlegend 0
 
          $Frame.page.canvas bind PAGECURSORINFO <Enter> "Page::CursorInfo $Frame %X %Y \"\""
       }
