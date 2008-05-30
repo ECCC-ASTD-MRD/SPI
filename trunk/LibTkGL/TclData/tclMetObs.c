@@ -439,6 +439,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    TMetElem     *elem;
    TMetElemData *data;
    TMetModel    *mdl;
+   TDataSpec    *spec;
    long          time=0;
    int           e,t,i,j,d,v,idx,nv;
    float        *valf;
@@ -703,6 +704,15 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   }
                   ++i;
 
+                  spec=NULL;
+                  if (obs->Model) {
+                     for(d=0;d<obs->Model->NItem;d++) {
+                        if (obs->Model->Items[d].Code[0]==eb->descriptor) {
+                           spec=obs->Model->Items[d].Spec;
+                           break;
+                        }
+                     }
+                  }
                   if (Objc==3) {
                      obj=Tcl_NewListObj(0,NULL);
                      elem=loc->Elems;
@@ -719,7 +729,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                               if (data->Code[e]->descriptor==eb->descriptor) {
                                  for(v=0;v<data->Nv;v++) {
                                     for(t=0;t<data->Nt;t++) {
-                                       Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                                       Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                     }
                                  }
                               }
@@ -738,7 +748,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                               if (data->Code[e]->descriptor==eb->descriptor) {
                                 for(v=0;v<data->Nv;v++) {
                                     for(t=0;t<data->Nt;t++) {
-                                       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                                       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                     }
                                  }
                               }
