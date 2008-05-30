@@ -78,7 +78,7 @@ namespace eval NowCaster::Obs { } {
    set Bubble(Find)       { "Rechercher un station et centrer la vue sur celle-ci" "Find a station and locate the viewport on it" }
    set Bubble(Mode)       { "Activer le mode de sélection des observations\n\nBouton gauche: Sélection\nBouton centre: Déplacer une localisation" "Activate observation selection mode\n\nLeft button  : Select location\nMiddle button: Move location" }
    set Bubble(Graph)      { "Activer les graphs dans la bulle d'information" "Enable graphs wirhin information bubble" }
-   set Bubble(Params)     { "Paramêtres d'affiche" "Display parameters" }
+   set Bubble(Params)     { "Paramêtres d'affichage" "Display parameters" }
    set Bubble(Add)        { "Ajouter une observation" "Add an observation" }
    set Bubble(Del)        { "Supprimer l'observation courante" "Delete current observation" }
    set Bubble(Model)      { "Nom du modèle de pointage" "Plotting model name" }
