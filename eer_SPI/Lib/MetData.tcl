@@ -17,7 +17,9 @@
 #   MetData::Find           { FLD FID NOMVAR TYPVAR DATEV IP1 IP2 IP3 ETIKET }
 #   MetData::FindAll        { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
 #   MetData::FormatDATEV    { Field }
+#   MetData::GetLatestRun   { Path }
 #   MetData::GetLatestStamp { Path }
+#   MetData::StampModulo    { Stamp Sec }
 #   MetData::GridDefineLL   { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
 #   MetData::GridDefinePS   { Scale NI NJ Lat Lon { Field "" } }
 #   MetData::ListIP2        { Index Var { Stamp 0 } }
@@ -149,6 +151,27 @@ proc MetData::Duration { List Idx0 Idx1 } {
    } else {
       return 0
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetData::GetLatestRun>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer la derniere run
+#
+# Parametres :
+#  <Path>    : Path des donnees de la run a recuperer
+#
+# Retour     :
+#  <run>     : Nom de fichier de la derniere run
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetData::GetLatestRun { Path } {
+
+   return [lindex [split [lindex [lsort -dictionary -increasing [glob -nocomplain $Path/*_???]] end] _] 0]
 }
 
 #----------------------------------------------------------------------------
