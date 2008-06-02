@@ -81,9 +81,9 @@ proc ArgsParse { Argv Argc No Multi Must Cmd } {
    set files ""
 
    #----- Parcourir les arguments du token specifie
+   while { ([llength [lindex $Argv $No]]>1 || [string is double [lindex $Argv $No]] || [string index [lindex $Argv $No] 0]!="-")  && $No < $Argc } {
 
-   while { ([string is double [lindex $Argv $No]] || [string index [lindex $Argv $No] 0]!="-")  && $No < $Argc } {
-      if { $Cmd!="" } {
+   if { $Cmd!="" } {
          if { $Multi } {
             lappend files [lindex $Argv $No]
          } else {
@@ -95,7 +95,7 @@ proc ArgsParse { Argv Argc No Multi Must Cmd } {
 
    if { $No==$idx && $Must } {
       puts stderr "(ERROR) SPI: No arguments value were specified for argument [lindex $Argv [incr idx -1]]"
-      SPI::Quit 1
+      exit 1
    }
 
    if { $Cmd!="" && $Multi } {
@@ -175,7 +175,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "layout"   { set i [ArgsParse $argv $argc $i 0 1 ""] }
       "project"  { set i [ArgsParse $argv $argc $i 0 1 ""] }
       "tool"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
-      default    { CommandLine ; SPI::Quit 1 }
+      default    { CommandLine ; exit 1 }
    }
 }
 
