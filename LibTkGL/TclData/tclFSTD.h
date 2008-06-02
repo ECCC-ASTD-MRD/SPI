@@ -41,6 +41,11 @@
 
 #include "tclData.h"
 
+#define FSTD_LISTALL   0
+#define FSTD_LISTVAR   1
+#define FSTD_LISTDATEV 2
+#define FSTD_LISTIP1   3
+
 typedef struct TFSTDVector {
    char  *UU,*VV,*WW;
 } TFSTDVector;
@@ -88,7 +93,7 @@ void   FSTD_FieldFree(TData *Field);
 int    FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode);
 int    FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom,TData *PField0,TData *PField1,double Top);
 int    FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Field0,TData *Field1);
-int    FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File);
+int    FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var);
 int    FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char *Eticket,int DIP1,int IP2,int IP3,char *TypVar,char *NomVar);
 int    FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key);
 int    FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert);

@@ -1737,6 +1737,8 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
  * Parametres :
  *  <Interp>  : Interpreteur TCL.
  *  <File>    : Fichier standard
+ *  <Mode>    : Type d'information
+ *  <Var>     : Variable specifique requise
  *
  * Retour         :
  *  <TCL_...> : Code d'erreur de TCL.
@@ -1745,9 +1747,10 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File){
+int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 
    FSTD_Head      head;
+   Tcl_Obj       *list,*obj;
    int            i,nb,ni,nj,nk;
    char           buf[1024],grtyp[2];
    double         nhour;
@@ -1755,6 +1758,9 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File){
 #ifdef LNK_FSTD
 
    nb=FSTD_FileSet(Interp,File);
+
+   list=Tcl_NewListObj(0,NULL);
+   obj=Tcl_NewObj();
 
    if (nb>=0) {
       Tcl_MutexLock(&MUTEX_FSTDFIELD);
@@ -1776,21 +1782,50 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File){
             strtrim(head.TYPVAR,' ');
             strtrim(head.ETIKET,' ');
 
-            /*Calculer la date de validitee du champs*/
-            nhour=(head.NPAS*head.DEET)/3600.0;
-            if (head.DATEO==0) {
-                head.DATEV=0;
-            } else {
-                f77name(incdatr)(&head.DATEV,&head.DATEO,&nhour);
+            /*Check for var if provided*/
+            if (!Var || strcmp(Var,head.NOMVAR)==0) {
+
+               /*Calculer la date de validitee du champs*/
+               nhour=(head.NPAS*head.DEET)/3600.0;
+               if (head.DATEO==0) {
+                  head.DATEV=0;
+               } else {
+                  f77name(incdatr)(&head.DATEV,&head.DATEO,&nhour);
+               }
+               if (head.DATEV==101010101) head.DATEV=0;
+
+               switch(Mode) {
+                  case FSTD_LISTALL:
+                     sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %09i %i %i %i",
+                        File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DATEV,ni,nj,nk);
+                     Tcl_SetStringObj(obj,buf,-1);
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                     break;
+
+                  case FSTD_LISTVAR:
+                     Tcl_SetStringObj(obj,head.NOMVAR,-1);
+                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                        Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                     }
+                     break;
+
+                  case FSTD_LISTDATEV:
+                     Tcl_SetIntObj(obj,head.DATEV);
+                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                        Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                     }
+                     break;
+
+                  case FSTD_LISTIP1:
+                     Tcl_SetIntObj(obj,head.IP1);
+                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                     }
+                     break;
+               }
             }
-            if (head.DATEV==101010101) head.DATEV=0;
-
-            sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %09i %i %i %i",
-                    File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DATEV,ni,nj,nk);
-            Tcl_AppendElement(Interp,buf);
-
             head.KEY=c_fstsui(File->Id,&ni,&nj,&nk);
-          }
+         }
       }
       Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
    } else {
@@ -1798,6 +1833,8 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File){
    }
 
 #endif
+   Tcl_SetObjResult(Interp,list);
+
    FSTD_FileUnset(Interp,File);
    return(TCL_OK);
 }

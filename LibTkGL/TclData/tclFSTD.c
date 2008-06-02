@@ -1031,10 +1031,12 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int                idx,type;
+   int                idx,itype,type;
    FSTD_File         *file=NULL;
-   static CONST char *sopt[] = { "is","open","close","filename",NULL };
-   enum               opt { IS,OPEN,CLOSE,FILENAME };
+
+   static CONST char *types[] = { "ALL","NOMVAR","DATEV","IP1" };
+   static CONST char *sopt[] = { "is","open","close","filename","list",NULL };
+   enum               opt { IS,OPEN,CLOSE,FILENAME,LIST };
 
    Tcl_ResetResult(Interp);
 
@@ -1088,6 +1090,20 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,0));
          return(TCL_OK);
+         break;
+
+      case LIST:
+         if(Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id mode [var]");
+            return(TCL_ERROR);
+         }
+         if (!(file=FSTD_FileGet(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         if (Tcl_GetIndexFromObj(Interp,Objv[3],types,"type",0,&itype)!=TCL_OK) {
+            return(TCL_ERROR);
+         }
+         return(FSTD_FieldList(Interp,file,itype,Objc==5?Tcl_GetString(Objv[4]):NULL));
          break;
    }
    return(TCL_OK);
@@ -1205,7 +1221,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
    Tcl_SetHashValue(entry,file);
 
-   return(FSTD_FieldList(Interp,file));
+   return(FSTD_FieldList(Interp,file,FSTD_LISTALL,NULL));
 }
 
 /*----------------------------------------------------------------------------
