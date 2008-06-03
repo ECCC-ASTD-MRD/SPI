@@ -1295,6 +1295,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
          v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
          v[vn][2]=0.0;
+
          /* Check font spacing */
          if (vn>0) {
             if (Item->Orient[0]=='X') {
@@ -1323,7 +1324,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       v0[0]=v[0][0];
       v0[1]=Y0;
       v0[2]=0.0;
-      v1[0]=v[n-1][0];
+      v1[0]=v[vn-1][0];
       v1[1]=Y0;
       v1[2]=0.0;
    } else {
@@ -1332,7 +1333,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       v0[1]=v[0][1];
       v0[2]=0.0;
       v1[0]=X0;
-      v1[1]=v[n-1][1];
+      v1[1]=v[vn-1][1];
       v1[2]=0.0;
    }
 
@@ -1390,6 +1391,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                   vm=glTessTmpGet();
                   vm[0]=InterpHermite(v[i==0?0:i-1][0],v[i][0],v[i<vn-1?i+1:vn-1][0],v[i<vn-2?i+2:vn-1][0],j/10.0,0.0,0.0);
                   vm[1]=InterpHermite(v[i==0?0:i-1][1],v[i][1],v[i<vn-1?i+1:vn-1][1],v[i<vn-2?i+2:vn-1][1],j/10.0,0.0,0.0);
+//                 vt[2]=InterpHermite(v[i==0?0:i-1][2],v[i][2],v[i<vn-1?i+1:vn-1][2],v[i<vn-2?i+2:vn-1][2],j/10.0,0.0,0.0);
                   vm[2]=0.0;
                   gluTessVertex(GLRender->GLTess,vm,vm);
                }
@@ -1439,7 +1441,8 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                   for(j=1;j<10;j++) {
                      vt[0]=InterpHermite(v[i==0?0:i-1][0],v[i][0],v[i<vn-1?i+1:vn-1][0],v[i<vn-2?i+2:vn-1][0],j/10.0,0.0,0.0);
                      vt[1]=InterpHermite(v[i==0?0:i-1][1],v[i][1],v[i<vn-1?i+1:vn-1][1],v[i<vn-2?i+2:vn-1][1],j/10.0,0.0,0.0);
-                     vt[2]=InterpHermite(v[i==0?0:i-1][2],v[i][2],v[i<vn-1?i+1:vn-1][2],v[i<vn-2?i+2:vn-1][2],j/10.0,0.0,0.0);
+//                     vt[2]=InterpHermite(v[i==0?0:i-1][2],v[i][2],v[i<vn-1?i+1:vn-1][2],v[i<vn-2?i+2:vn-1][2],j/10.0,0.0,0.0);
+                     vt[2]=0.0;
                      glVertex3dv(vt);
                   }
                }
