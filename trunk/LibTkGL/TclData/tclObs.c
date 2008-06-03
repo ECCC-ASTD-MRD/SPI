@@ -1750,7 +1750,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Interp)
       Tcl_AppendResult(Interp,"%% Postscript des observations\n",(char*)NULL);
 
-   if (GLMode==GL_SELECT && Obs->Loc->Nb>1000)
+   if (GLMode==GL_SELECT)
       return(0);
 
    Obs_PreInit(Obs);
