@@ -1035,8 +1035,8 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    FSTD_File         *file=NULL;
 
    static CONST char *types[] = { "ALL","NOMVAR","DATEV","IP1" };
-   static CONST char *sopt[] = { "is","open","close","filename","list",NULL };
-   enum               opt { IS,OPEN,CLOSE,FILENAME,LIST };
+   static CONST char *sopt[] = { "is","open","close","filename","info",NULL };
+   enum               opt { IS,OPEN,CLOSE,FILENAME,INFO };
 
    Tcl_ResetResult(Interp);
 
@@ -1092,7 +1092,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          return(TCL_OK);
          break;
 
-      case LIST:
+      case INFO:
          if(Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id mode [var]");
             return(TCL_ERROR);

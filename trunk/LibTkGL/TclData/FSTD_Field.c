@@ -1810,7 +1810,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                      break;
 
                   case FSTD_LISTDATEV:
-                     Tcl_SetIntObj(obj,head.DATEV);
+                     Tcl_SetLongObj(obj,System_Stamp2Seconds(head.DATEV));
                      if (TclY_ListObjFind(Interp,list,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                      }

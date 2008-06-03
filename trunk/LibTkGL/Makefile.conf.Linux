@@ -13,7 +13,7 @@ ARCH      = Linux
 LIB_VER   = 7.2.3
 LIB_VER   = 7.2.4
 TCLTK_VER = 8.5a6
-TCLTK_VER = 8.4.12
+TCLTK_VER = 8.4.13
 
 X_INCLUDE   =
 PROTO       =
