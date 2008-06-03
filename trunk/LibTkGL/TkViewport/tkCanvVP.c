@@ -1162,6 +1162,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    /*Loading data*/
    if (load) {
+      glDisable(GL_CULL_FACE);
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       glEnable(GL_BLEND);
