@@ -204,7 +204,7 @@ proc Mapper::DepotWare::Add { Name Type Path } {
    TREE set $idx path $Path
    TREE set $idx type $Type
 
-   Mapper::DepotWare::Tree $Mapper::Data(Tab2).list.canvas
+   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
 }
 
 #-------------------------------------------------------------------------------
@@ -250,236 +250,64 @@ proc Mapper::DepotWare::Del { Branch } {
             incr idx
          }
          TREE delete $Branch
-         $Mapper::Data(Tab2).list.canvas delete TEXTSELECT
-         Mapper::DepotWare::Tree $Mapper::Data(Tab2).list.canvas
+
+         CVTree::SelectClear $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
+         CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
       }
    }
    set Data(Select) ""
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::Tree>
+# Nom      : <Mapper::DepotWare::TreeId>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Afficher l'arbre des depots de donnees.
+# But      : Creer l'identification de la branche
 #
 # Parametres :
-#  <Canvas>  : Canvas ou afficher l'arbre
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
 #
 # Retour    :
+#  <Id>     : Identification
 #
 # Remarque :
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::Tree { Canvas } {
+proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
 
-   $Canvas delete MAPPERTREE
+   upvar $Leaf leaf
 
-   set X 0
-   set Y 0
-   Mapper::DepotWare::TreeBranch $Canvas root MAPPERTREE X Y
+   set type [$Tree get $Branch type]
+   set id ""
+   set leaf True
 
-   #----- Tree migth be empty
+   if { $type=="DIR" || $type=="URLWMS" } {
+      set leaf False
+   }
 
-   catch { $Canvas configure -scrollregion "0 0 [lrange [$Canvas bbox MAPPERTREE] 2 end]" }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::TreeBranch>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Afficher une branche de l'arbre de depots.
-#
-# Parametres :
-#  <Canvas>  : Canvas ou afficher l'arbre
-#  <Branch>  : Branche a afficher
-#  <Tag>     : Tag de l'arbre
-#  <X>       : Coordonnee en X
-#  <Y>       : Coordonnee en Y
-#
-# Retour    :
-#
-# Remarque :
-#   -Cette procedure est recursive et est applique a chaque branche de l'arbre
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::TreeBranch { Canvas Branch Tag  X Y } {
-   global GDefs
-   variable Data
-
-   upvar $X x
-   upvar $Y y
-
-   set dy 20
-   set dx 10
-   set y0 $y
-
-   incr x $dx
-
-   foreach branch [TREE children $Branch]  {
-
-     set y0 [incr y $dy]
-
-      set type [TREE get $branch type]
-      switch [string range $type 0 2] {
-         "URL" { set name "([string range $type 3 end]) [TREE get $branch name]" }
-         "WMS" { set name [TREE get $branch path] }
-         default { if { [TREE depth $branch]>1 } { set name [file tail [TREE get $branch path]] } else { set name "($type) [TREE get $branch name]" } }
+   if { $type=="GDAL" || $type=="OGR" || $type=="WMS" } {
+      if { ![Mapper::DepotWare::Check $Branch] } {
+         return ""
       }
-
-      if { $type=="GDAL" || $type=="OGR" || $type=="WMS" } {
-         if { [Mapper::DepotWare::Check $branch] } {
-            $Canvas create text [expr $x+$dx] $y -text $name -anchor w -tags "$Tag $branch TEXT$branch" -font $GDefs(Font)
-            $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "$Tag"
-            $Canvas bind TEXT$branch <Double-ButtonRelease-1> "Mapper::DepotWare::Select $Canvas $branch"
-         } else {
-            set y0 [incr y -$dy]
-         }
-      } else {
-         $Canvas create text [expr $x+$dx] $y -text $name -anchor w -tags "$Tag $branch TEXT$branch" -font $GDefs(Font)
-         if { [expr $x-$dx]>5 } {
-            $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "$Tag"
-         }
-
-         if { [TREE get $branch open] } {
-            $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico -tags "$Tag $branch"
-            $Canvas bind $branch <Button-1> "Mapper::DepotWare::Select $Canvas $branch False"
-            set x0 $x
-            set y0 $y
-            set yend [Mapper::DepotWare::TreeBranch $Canvas $branch $Tag x y]
-
-            set x $x0
-            $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "$Tag"
-         } else {
-            $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico -tags "$Tag $branch"
-            $Canvas bind $branch <Button-1> "Mapper::DepotWare::Select $Canvas $branch True"
-         }
-      }
-      $Canvas bind $branch <Button-3> "Mapper::DepotWare::PopUp $Canvas %X %Y $branch"
    }
-   return $y0
+   switch [string range $type 0 2] {
+      "URL" { set id "([string range $type 3 end]) [$Tree get $Branch name]" }
+      "WMS" { set id [$Tree get $Branch path] }
+      default { if { [$Tree depth $Branch]>1 } { set id [file tail [$Tree get $Branch path]] } else { set id "($type) [$Tree get $Branch name]" } }
+   }
+   return $id
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::PopUp>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Afficher le menu contectuel des branches de l'arbre.
-#
-# Parametres :
-#  <Canvas>  : Canvas ou afficher l'arbre
-#  <X>       : Coordonnee X du menu
-#  <Y>       : Coordonnee Y du menu
-#  <Branch>  : Branche selectionnee
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
-   global GDefs
-   variable Lbl
-   variable Data
-
-   if { ![winfo exists .depotwaremenu] } {
-      menu .depotwaremenu -type normal
-      .depotwaremenu add command -label [lindex $Lbl(Display) $GDefs(Lang)] -command ""
-      .depotwaremenu add cascade -label [lindex $Lbl(Index) $GDefs(Lang)] -menu .depotwaremenu.idx
-      .depotwaremenu add separator
-      .depotwaremenu add command -label [lindex $Lbl(Params) $GDefs(Lang)] -command { Mapper::DepotWare::Params 0 }
-      .depotwaremenu add command -label [lindex $Lbl(Del) $GDefs(Lang)] -command { Mapper::DepotWare::Del $Mapper::DepotWare::Data(Select) }
-
-       menu .depotwaremenu.idx -type normal
-   }
-
-   if { ![llength [$Canvas find withtag TEXTSELECT]] } {
-      eval $Canvas create rectangle [$Canvas bbox TEXT$Branch] -fill $GDefs(ColorHighLight) -outline black -width 1 -tags TEXTSELECT
-      $Canvas lower TEXTSELECT
-   }
-   eval $Canvas coords TEXTSELECT [$Canvas bbox TEXT$Branch]
-   set Data(Select) $Branch
-   set Data(Name) [TREE get $Branch name]
-   set Data(Path) [TREE get $Branch path]
-   set Data(Type) [TREE get $Branch type]
-
-   .depotwaremenu entryconfigure 0 -state disabled
-   .depotwaremenu entryconfigure 1 -state disabled
-   .depotwaremenu entryconfigure 3 -state disabled
-   .depotwaremenu entryconfigure 4 -state disabled
-   .depotwaremenu.idx delete 0 end
-
-   if { [TREE depth $Branch]==1 } {
-      .depotwaremenu entryconfigure 3 -state normal
-      .depotwaremenu entryconfigure 4 -state normal
-   }
-
-   if { $Data(Type)=="DIR" } {
-      if { [file exists $Data(Path)/Index/] } {
-         foreach file [glob -nocomplain $Data(Path)/Index/*.shp]  {
-            .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::ReadLayer $file; Mapper::UpdateData $Page::Data(Frame)"
-         }
-         .depotwaremenu entryconfigure 1 -state normal
-      }
-   } elseif { [TREE isleaf $Branch] } {
-      .depotwaremenu entryconfigure 0 -state normal -command "Mapper::DepotWare::Select $Canvas $Branch"
-   }
-
-   switch $Data(Type) {
-      "DIR"    { set Data(Type) [lindex $Lbl(Types) 0] }
-      "URLWMS" { set Data(Type) [lindex $Lbl(Types) 1] }
-      "URLWCS" { set Data(Type) [lindex $Lbl(Types) 2] }
-      "URLWFS" { set Data(Type) [lindex $Lbl(Types) 3] }
-   }
-   tk_popup .depotwaremenu $X $Y 0
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::Create>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Creer l'adrdre des depots.
-#
-# Parametres :
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::Create { } {
-   global GDefs
-   variable Data
-
-   if { [llength [TREE children root]] } {
-      return
-   }
-
-   if { [file exists $GDefs(DirEER)/Mapper/Params] } {
-      source $GDefs(DirEER)/Mapper/Params
-   }
-
-   foreach depot $Data(Depots) {
-      set idx [TREE insert root end]
-      TREE set $idx open False
-      TREE set $idx name [lindex $depot 0]
-      TREE set $idx type [lindex $depot 1]
-      TREE set $idx path [lindex $depot 2]
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::Select>
+# Nom      : <Mapper::DepotWare::TreeSelect>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Gerer la selection d'une branche de l'arbre des depots.
 #
 # Parametres :
-#  <Canvas>  : Canvas ou l'arbre est affiche
+#  <Tree>    : Arbre
 #  <Branch>  : Branche selectionnee
 #  <Open>    : Overture de la branche
 #
@@ -489,7 +317,7 @@ proc Mapper::DepotWare::Create { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::Select { Canvas Branch { Open "" } } {
+proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
    global GDefs
    variable Data
    variable Lbl
@@ -500,37 +328,25 @@ proc Mapper::DepotWare::Select { Canvas Branch { Open "" } } {
       return
    }
 
-   if { $Open!="" } {
-      TREE set $Branch open $Open
-   }
-
-   if { ![llength [$Canvas find withtag TEXTSELECT]] } {
-      eval $Canvas create rectangle [$Canvas bbox TEXT$Branch] -fill $GDefs(ColorHighLight) -outline black -width 1 -tags TEXTSELECT
-      $Canvas lower TEXTSELECT
-   }
-   eval $Canvas coords TEXTSELECT [$Canvas bbox TEXT$Branch]
    set Data(Select) $Branch
 
-   if { $Open!="False" && [TREE isleaf $Branch] } {
+   if { [$Tree isleaf $Branch] } {
 
       set Mapper::Data(Job) [lindex $Msg(Search) $GDefs(Lang)]
-      $Canvas configure -cursor watch
-      update idletasks;
+      set path [$Tree get $Branch path]
 
-      set path [TREE get $Branch path]
-
-      switch [TREE get $Branch type] {
+      switch [$Tree get $Branch type] {
          "DIR"  {
             foreach file [lsort -dictionary -increasing [glob -nocomplain $path/*]] {
-               set branch [TREE insert $Branch end]
+               set branch [$Tree insert $Branch end]
                if { [file isdirectory $file] } {
-                  TREE set $branch open False
-                  TREE set $branch name ""
-                  TREE set $branch path $file
-                  TREE set $branch type DIR
+                  $Tree set $branch open False
+                  $Tree set $branch name ""
+                  $Tree set $branch path $file
+                  $Tree set $branch type DIR
                } elseif { [Mapper::DepotWare::AddGDAL $branch $file] || [Mapper::DepotWare::AddOGR $branch $file] } {
                } else {
-                  TREE delete $branch
+                  $Tree delete $branch
                }
             }
          }
@@ -582,10 +398,113 @@ proc Mapper::DepotWare::Select { Canvas Branch { Open "" } } {
       }
    }
    Mapper::UpdateData $Page::Data(Frame)
-   Mapper::DepotWare::Tree $Canvas
-
    SPI::Progress 0 ""
-   $Canvas configure -cursor left_ptr
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::PopUp>
+# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher le menu contectuel des branches de l'arbre.
+#
+# Parametres :
+#  <Canvas>  : Canvas ou afficher l'arbre
+#  <X>       : Coordonnee X du menu
+#  <Y>       : Coordonnee Y du menu
+#  <Branch>  : Branche selectionnee
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
+   global GDefs
+   variable Lbl
+   variable Data
+
+   if { ![winfo exists .depotwaremenu] } {
+      menu .depotwaremenu -type normal
+      .depotwaremenu add command -label [lindex $Lbl(Display) $GDefs(Lang)] -command ""
+      .depotwaremenu add cascade -label [lindex $Lbl(Index) $GDefs(Lang)] -menu .depotwaremenu.idx
+      .depotwaremenu add separator
+      .depotwaremenu add command -label [lindex $Lbl(Params) $GDefs(Lang)] -command { Mapper::DepotWare::Params 0 }
+      .depotwaremenu add command -label [lindex $Lbl(Del) $GDefs(Lang)] -command { Mapper::DepotWare::Del $Mapper::DepotWare::Data(Select) }
+
+       menu .depotwaremenu.idx -type normal
+   }
+
+   set Data(Select) $Branch
+   set Data(Name) [TREE get $Branch name]
+   set Data(Path) [TREE get $Branch path]
+   set Data(Type) [TREE get $Branch type]
+
+   .depotwaremenu entryconfigure 0 -state disabled
+   .depotwaremenu entryconfigure 1 -state disabled
+   .depotwaremenu entryconfigure 3 -state disabled
+   .depotwaremenu entryconfigure 4 -state disabled
+   .depotwaremenu.idx delete 0 end
+
+   if { [TREE depth $Branch]==1 } {
+      .depotwaremenu entryconfigure 3 -state normal
+      .depotwaremenu entryconfigure 4 -state normal
+   }
+
+   if { $Data(Type)=="DIR" } {
+      if { [file exists $Data(Path)/Index/] } {
+         foreach file [glob -nocomplain $Data(Path)/Index/*.shp]  {
+            .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::ReadLayer $file; Mapper::UpdateData $Page::Data(Frame)"
+         }
+         .depotwaremenu entryconfigure 1 -state normal
+      }
+   } elseif { [TREE isleaf $Branch] } {
+      .depotwaremenu entryconfigure 0 -state normal -command "Mapper::DepotWare::TreeSelect Mapper::DepotWare::TREE $Branch True"
+   }
+
+   switch $Data(Type) {
+      "DIR"    { set Data(Type) [lindex $Lbl(Types) 0] }
+      "URLWMS" { set Data(Type) [lindex $Lbl(Types) 1] }
+      "URLWCS" { set Data(Type) [lindex $Lbl(Types) 2] }
+      "URLWFS" { set Data(Type) [lindex $Lbl(Types) 3] }
+   }
+   tk_popup .depotwaremenu $X $Y 0
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::Create>
+# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer l'adrdre des depots.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::Create { } {
+   global GDefs
+   variable Data
+
+   if { [llength [TREE children root]] } {
+      return
+   }
+
+   if { [file exists $GDefs(DirEER)/Mapper/Params] } {
+      source $GDefs(DirEER)/Mapper/Params
+   }
+
+   foreach depot $Data(Depots) {
+      set idx [TREE insert root end]
+      TREE set $idx open False
+      TREE set $idx name [lindex $depot 0]
+      TREE set $idx type [lindex $depot 1]
+      TREE set $idx path [lindex $depot 2]
+   }
+   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE Mapper::DepotWare::TreeId Mapper::DepotWare::TreeSelect Mapper::DepotWare::PopUp
 }
 
 #-------------------------------------------------------------------------------
@@ -974,7 +893,7 @@ proc Mapper::DepotWare::Reset { } {
    set Data(Lon0)   -180.0
    set Data(Lon1)   -180.0
 
-   Mapper::DepotWare::Tree $Mapper::Data(Tab2).list.canvas
+   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
 }
 
 #----------------------------------------------------------------------------
@@ -1103,7 +1022,7 @@ proc Mapper::DepotWare::DrawDone { Frame VP } {
    } else {
       set Data(Coo) "$Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1)"
    }
-   Mapper::DepotWare::Tree $Mapper::Data(Tab2).list.canvas
+   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
 }
 
 proc Mapper::DepotWare::MoveInit { Frame VP } {
