@@ -133,7 +133,6 @@ proc Mapper::Window { } {
       .mapper.data add .mapper.data.tab2
 
       Mapper::DepotWare::Create
-      Mapper::DepotWare::Tree $Data(Tab2).list.canvas
    }
 
    if { ![winfo exists .mappermenu] } {
