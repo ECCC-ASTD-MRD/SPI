@@ -50,6 +50,11 @@
 #    CVText::Paste         { Canvas { X {} } { Y {} } }
 #    CVText::Select        { Canvas }
 #
+#    CVTree::Render        { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } }
+#    CVTRee::RenderBranch  { Canvas Tree Branch X Y IdCommand SelectCommand { PopUpCommand "" } }
+#    CVTree::Select        { Canvas Tree Branch { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } { Open False } }
+#    CVTree::SelectClear   { Canvas Tree }
+#
 #    Shape::BindFull       { Canvas Tag X1 Y1 Var Command }
 #    Shape::BindMove       { Canvas Tags args }
 #    Shape::BindScale      { Canvas Tag X1 Y1 Command }
@@ -345,359 +350,6 @@ proc CVCompass::Write { Frame File } {
    puts $File "   #----- Affichage du compas"
    set c [$Frame.page.canvas coords CVCOMPLOC]
    puts $File "   CVCompass::Create \$Frame [lindex $c 0] [lindex $c 1]"
-}
-
-namespace eval CVText { }
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Init>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Initialiser les bindings de texte dynamique dans un canvas
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Init { Canvas } {
-
-   $Canvas bind CVTEXT <Enter>            { %W configure -cursor xterm }
-   $Canvas bind CVTEXT <Leave>            { %W configure -cursor left_ptr }
-   $Canvas bind CVTEXT <Button-1>         { CVText::Focus     %W [%W canvasx %x] [%W canvasy %y] ; CVText::Hit %W [%W canvasx %x] [%W canvasy %y]}
-   $Canvas bind CVTEXT <Double-Button-1>  { CVText::Select    %W }
-   $Canvas bind CVTEXT <B1-Motion>        { CVText::Drag      %W [%W canvasx %x] [%W canvasy %y] }
-
-   $Canvas bind CVTEXT <<Cut>>            { CVText::Copy      %W ; CVText::Delete %W }
-   $Canvas bind CVTEXT <<Copy>>           { CVText::Copy      %W }
-   $Canvas bind CVTEXT <<Paste>>          { CVText::Paste     %W }
-
-   $Canvas bind CVTEXT <Delete>           { CVText::Delete    %W }
-   $Canvas bind CVTEXT <Control-d>        { CVText::Delete    %W }
-   $Canvas bind CVTEXT <Control-h>        { CVText::BackSpace %W }
-   $Canvas bind CVTEXT <BackSpace>        { CVText::BackSpace %W }
-   $Canvas bind CVTEXT <Control-Delete>   { CVText::Erase     %W }
-   $Canvas bind CVTEXT <Key-Right>        { CVText::Move      %W 1 }
-   $Canvas bind CVTEXT <Control-f>        { CVText::Move      %W 1 }
-   $Canvas bind CVTEXT <Key-Left>         { CVText::Move      %W -1 }
-   $Canvas bind CVTEXT <Control-b>        { CVText::Move      %W -1 }
-   $Canvas bind CVTEXT <Key-Home>         { CVText::MoveEnd   %W 0 }
-   $Canvas bind CVTEXT <Key-End>          { CVText::MoveEnd   %W end }
-   $Canvas bind CVTEXT <Any-Key>          { CVText::Insert    %W %A ;}
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Focus>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Mettre le focus sur l'item sous le curseur dans le canvas
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <X>       : Coordonnee en X
-#  <Y>       : Coordonnee en Y
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Focus { Canvas X Y } {
-
-   focus $Canvas
-   set ids [$Canvas find overlapping $X $Y $X $Y]
-
-   foreach id $ids {
-      if { [lsearch -exact [$Canvas gettags $id] CVTEXT]!=-1 } {
-         break
-      }
-   }
-   $Canvas focus $id
-
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Copy>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Copier le text selectionne dans le clipboard
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Copy { Canvas } {
-
-   set item  [$Canvas select item]
-   set focus [$Canvas focus]
-
-   if { $item!={} } {
-      clipboard clear
-      clipboard append [string range [$Canvas itemcget $item -text] [$Canvas index $item sel.first] [$Canvas index $item sel.last]]
-   } elseif { $focus != {} } {
-      clipboard clear
-      clipboard append [$Canvas itemcget $focus -text]
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::BackSpace>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonction de backspace dans un item text du canvas
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::BackSpace { Canvas } {
-
-   set item  [$Canvas select item]
-   set focus [$Canvas focus]
-
-   if { $item != {} } {
-      $Canvas dchars $item sel.first sel.last
-   } elseif { $focus!={} } {
-      $Canvas icursor $focus [expr [$Canvas index $focus insert]-1]
-      $Canvas dchars $focus insert
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Delete>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonction delete dans un item text du canvas
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Delete { Canvas } {
-
-   set item  [$Canvas select item]
-   set focus [$Canvas focus]
-
-   if { $item != {} } {
-      $Canvas dchars $item sel.first sel.last
-   } elseif { $focus != {} } {
-      $Canvas dchars $focus insert
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Drag>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer une selection a partir du point initial
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <X>       : Coordonnee en X
-#  <Y>       : Coordonnee en Y
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Drag { Canvas X Y } {
-
-   $Canvas select to current @$X,$Y
-   $Canvas icursor current @$X,$Y
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Erase>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonction de suppression de tout le text
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Erase { Canvas } {
-   $Canvas delete [$Canvas focus]
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Hit>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Determiner la position d'insertion du curseur
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <X>       : Coordonnee en X
-#  <Y>       : Coordonnee en Y
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Hit { Canvas X Y { select 1 } } {
-
-   set focus [$Canvas focus]
-
-   $Canvas icursor $focus @$X,$Y
-   $Canvas select clear
-   $Canvas select from current @$X,$Y
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Insert>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Inserer le caractere a la position du curseur
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <Char>    : Caractere
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Insert { Canvas Char } {
-   $Canvas insert [$Canvas focus] insert $Char
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Move>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Deplacement dans le texte
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <Incr>    : Increment
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Move { Canvas Incr } {
-
-   set focus [$Canvas focus]
-   $Canvas icursor $focus [expr [$Canvas index $focus insert]+$Incr]
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::MoveEnd>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Deplacement aux extremite du texte
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <Pos>     : Extremite (0 ou end)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::MoveEnd { Canvas Pos } {
-
-   set focus [$Canvas focus]
-   $Canvas icursor $focus $Pos
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Paste>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Coller le texte du clipboard a la position d'insertion
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <X>       : Coordonnee en X
-#  <Y>       : Coordonnee en Y
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Paste { Canvas { X {} } { Y {} } } {
-
-   if { [catch { selection get } __s] && [catch { selection get -selection CLIPBOARD } __s] } {
-      return
-   }
-
-   set focus [$Canvas focus]
-
-   if { $focus=={} } {
-      set focus [$Canvas find withtag current]
-   }
-
-   if { $focus=={} } {
-
-      if { [string length $X]==0 } {
-         set X [expr [winfo pointerx $Canvas] -[winfo rootx $Canvas]]
-         set Y [expr [winfo pointery $Canvas] -[winfo rooty $Canvas]]
-      }
-      Focus $Canvas $X $Y
-   } else {
-      $Canvas focus $focus
-   }
-   $Canvas insert $focus insert $__s
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CVText::Select>
-# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Selection de tout le texte
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CVText::Select { Canvas } {
-
-   $Canvas select from current 0
-   $Canvas select to current end
 }
 
 #----------------------------------------------------------------------------
@@ -1341,6 +993,522 @@ proc CVScale::Update { Frame VP } {
       $canvas itemconfigure CVSCUNI -text "$Convert::Lbl($u)[lindex $Convert::Lbl(DistL) $GDefs(Lang)]"
    }
    $canvas raise CVSCALE
+}
+
+namespace eval CVText { }
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Init>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les bindings de texte dynamique dans un canvas
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Init { Canvas } {
+
+   $Canvas bind CVTEXT <Enter>            { %W configure -cursor xterm }
+   $Canvas bind CVTEXT <Leave>            { %W configure -cursor left_ptr }
+   $Canvas bind CVTEXT <Button-1>         { CVText::Focus     %W [%W canvasx %x] [%W canvasy %y] ; CVText::Hit %W [%W canvasx %x] [%W canvasy %y]}
+   $Canvas bind CVTEXT <Double-Button-1>  { CVText::Select    %W }
+   $Canvas bind CVTEXT <B1-Motion>        { CVText::Drag      %W [%W canvasx %x] [%W canvasy %y] }
+
+   $Canvas bind CVTEXT <<Cut>>            { CVText::Copy      %W ; CVText::Delete %W }
+   $Canvas bind CVTEXT <<Copy>>           { CVText::Copy      %W }
+   $Canvas bind CVTEXT <<Paste>>          { CVText::Paste     %W }
+
+   $Canvas bind CVTEXT <Delete>           { CVText::Delete    %W }
+   $Canvas bind CVTEXT <Control-d>        { CVText::Delete    %W }
+   $Canvas bind CVTEXT <Control-h>        { CVText::BackSpace %W }
+   $Canvas bind CVTEXT <BackSpace>        { CVText::BackSpace %W }
+   $Canvas bind CVTEXT <Control-Delete>   { CVText::Erase     %W }
+   $Canvas bind CVTEXT <Key-Right>        { CVText::Move      %W 1 }
+   $Canvas bind CVTEXT <Control-f>        { CVText::Move      %W 1 }
+   $Canvas bind CVTEXT <Key-Left>         { CVText::Move      %W -1 }
+   $Canvas bind CVTEXT <Control-b>        { CVText::Move      %W -1 }
+   $Canvas bind CVTEXT <Key-Home>         { CVText::MoveEnd   %W 0 }
+   $Canvas bind CVTEXT <Key-End>          { CVText::MoveEnd   %W end }
+   $Canvas bind CVTEXT <Any-Key>          { CVText::Insert    %W %A ;}
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Focus>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Mettre le focus sur l'item sous le curseur dans le canvas
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Focus { Canvas X Y } {
+
+   focus $Canvas
+   set ids [$Canvas find overlapping $X $Y $X $Y]
+
+   foreach id $ids {
+      if { [lsearch -exact [$Canvas gettags $id] CVTEXT]!=-1 } {
+         break
+      }
+   }
+   $Canvas focus $id
+
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Copy>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Copier le text selectionne dans le clipboard
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Copy { Canvas } {
+
+   set item  [$Canvas select item]
+   set focus [$Canvas focus]
+
+   if { $item!={} } {
+      clipboard clear
+      clipboard append [string range [$Canvas itemcget $item -text] [$Canvas index $item sel.first] [$Canvas index $item sel.last]]
+   } elseif { $focus != {} } {
+      clipboard clear
+      clipboard append [$Canvas itemcget $focus -text]
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::BackSpace>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonction de backspace dans un item text du canvas
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::BackSpace { Canvas } {
+
+   set item  [$Canvas select item]
+   set focus [$Canvas focus]
+
+   if { $item != {} } {
+      $Canvas dchars $item sel.first sel.last
+   } elseif { $focus!={} } {
+      $Canvas icursor $focus [expr [$Canvas index $focus insert]-1]
+      $Canvas dchars $focus insert
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Delete>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonction delete dans un item text du canvas
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Delete { Canvas } {
+
+   set item  [$Canvas select item]
+   set focus [$Canvas focus]
+
+   if { $item != {} } {
+      $Canvas dchars $item sel.first sel.last
+   } elseif { $focus != {} } {
+      $Canvas dchars $focus insert
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Drag>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer une selection a partir du point initial
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Drag { Canvas X Y } {
+
+   $Canvas select to current @$X,$Y
+   $Canvas icursor current @$X,$Y
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Erase>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonction de suppression de tout le text
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Erase { Canvas } {
+   $Canvas delete [$Canvas focus]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Hit>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Determiner la position d'insertion du curseur
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Hit { Canvas X Y { select 1 } } {
+
+   set focus [$Canvas focus]
+
+   $Canvas icursor $focus @$X,$Y
+   $Canvas select clear
+   $Canvas select from current @$X,$Y
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Insert>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Inserer le caractere a la position du curseur
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Char>    : Caractere
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Insert { Canvas Char } {
+   $Canvas insert [$Canvas focus] insert $Char
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Move>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Deplacement dans le texte
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Incr>    : Increment
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Move { Canvas Incr } {
+
+   set focus [$Canvas focus]
+   $Canvas icursor $focus [expr [$Canvas index $focus insert]+$Incr]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::MoveEnd>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Deplacement aux extremite du texte
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Pos>     : Extremite (0 ou end)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::MoveEnd { Canvas Pos } {
+
+   set focus [$Canvas focus]
+   $Canvas icursor $focus $Pos
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Paste>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Coller le texte du clipboard a la position d'insertion
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Paste { Canvas { X {} } { Y {} } } {
+
+   if { [catch { selection get } __s] && [catch { selection get -selection CLIPBOARD } __s] } {
+      return
+   }
+
+   set focus [$Canvas focus]
+
+   if { $focus=={} } {
+      set focus [$Canvas find withtag current]
+   }
+
+   if { $focus=={} } {
+
+      if { [string length $X]==0 } {
+         set X [expr [winfo pointerx $Canvas] -[winfo rootx $Canvas]]
+         set Y [expr [winfo pointery $Canvas] -[winfo rooty $Canvas]]
+      }
+      Focus $Canvas $X $Y
+   } else {
+      $Canvas focus $focus
+   }
+   $Canvas insert $focus insert $__s
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVText::Select>
+# Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Selection de tout le texte
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Select { Canvas } {
+
+   $Canvas select from current 0
+   $Canvas select to current end
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::Render>
+# Creation : Juin 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher un arbre dans un canvas.
+#
+# Parametres :
+#  <Canvas>      : Canvas ou afficher l'arbre
+#  <Tree>        : Arbre a afficher
+#  <Tag>         : Tag de l'arbre
+#  <X>           : Coordonnee en X
+#  <Y>           : Coordonnee en Y
+# <IdCommand>    : Command pour recuperer l'identification de la branche
+# <SelectCommand>: Command a effectuer lors de la selection d'une branche
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+
+namespace eval CVTree { }
+
+proc CVTree::Render { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } } {
+
+   $Canvas delete CVTREE$Tree
+
+   set X 0
+   set Y 0
+
+   CVTree::RenderBranch $Canvas $Tree root X Y $IdCommand $SelectCommand $PopUpCommand
+
+   catch { $Canvas configure -scrollregion "0 0 [lrange [$Canvas bbox CVTREE$Tree] 2 end]" }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::RenderBranch>
+# Creation : Juin 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher une branche d'un arbre dans un canvas.
+#
+# Parametres :
+#  <Canvas>      : Canvas ou afficher l'arbre
+#  <Tree>        : Arbre a afficher
+#  <Branch>      : Branche a afficher
+#  <Tag>         : Tag de l'arbre
+#  <X>           : Coordonnee en X
+#  <Y>           : Coordonnee en Y
+# <IdCommand>    : Command pour recuperer l'identification de la branche
+# <SelectCommand>: Command a effectuer lors de la selection d'une branche
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+
+proc CVTree::RenderBranch { Canvas Tree Branch X Y IdCommand SelectCommand { PopUpCommand "" } } {
+   global GDefs
+
+   upvar $X x
+   upvar $Y y
+
+   set dy 20
+   set dx 10
+   set y0 $y
+
+   incr x $dx
+
+   foreach branch [$Tree children $Branch]  {
+      set leaf True
+
+      if { [set id [$IdCommand $Tree $branch leaf]]!="" } {
+         set y0 [incr y $dy]
+
+         $Canvas create text [expr $x+$dx] $y -text $id -anchor w -tags "CVTREE$Tree $branch CVTREETEXT$branch" -font $GDefs(Font)
+         if { $leaf && [$Tree isleaf $branch] } {
+            if { [expr $x-$dx]>5 } {
+               $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "CVTREE$Tree"
+            }
+            $Canvas bind CVTREETEXT$branch <Double-ButtonRelease-1> "CVTree::Select $Canvas $Tree $branch $IdCommand $SelectCommand $PopUpCommand"
+         } else {
+            if { [expr $x-$dx]>5 } {
+               $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "CVTREE$Tree"
+            }
+            if { [$Tree get $branch open] } {
+               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico -tags "CVTREE$Tree $branch"
+               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch $IdCommand $SelectCommand $PopUpCommand False"
+               set x0 $x
+               set y0 $y
+               set yend [CVTree::RenderBranch $Canvas $Tree $branch x y $IdCommand $SelectCommand $PopUpCommand]
+
+               set x $x0
+               $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "CVTREE$Tree"
+            } else {
+               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico -tags "CVTREE$Tree $branch"
+               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch $IdCommand $SelectCommand $PopUpCommand True"
+            }
+         }
+         if { $PopUpCommand!="" } {
+           $Canvas bind $branch <Button-3> "CVTree::SelectBranch $Canvas $Tree $branch; $PopUpCommand $Canvas %X %Y $branch"
+         }
+      }
+   }
+   return $y0
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::Select>
+# Creation : Juin 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effecuter les commandes associe a la selection d'une branche.
+#
+# Parametres :
+#  <Canvas>      : Canvas ou afficher l'arbre
+#  <Tree>        : Arbre a afficher
+#  <Branch>      : Branche a afficher
+#  <Tag>         : Tag de l'arbre
+# <IdCommand>    : Command pour recuperer l'identification de la branche
+# <SelectCommand>: Command a effectuer lors de la selection d'une branche
+# <Open>         : Etat de la branche
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+
+proc CVTree::SelectBranch { Canvas Tree Branch } {
+   global GDefs
+
+   if { ![llength [$Canvas find withtag CVTREESELECT$Tree]] } {
+      eval $Canvas create rectangle [$Canvas bbox CVTREETEXT$Branch] -fill $GDefs(ColorHighLight) -outline black -width 1 -tags CVTREESELECT$Tree
+      $Canvas lower CVTREESELECT$Tree
+   }
+   eval $Canvas coords CVTREESELECT$Tree [$Canvas bbox CVTREETEXT$Branch]
+}
+
+proc CVTree::Select { Canvas Tree Branch { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } { Open False } } {
+   global GDefs
+
+   $Tree set $Branch open $Open
+
+   CVTree::SelectBranch $Canvas $Tree $Branch
+
+   if { $SelectCommand!="" } {
+      $Canvas configure -cursor watch
+      update idletasks;
+      eval $SelectCommand $Tree $Branch $Open
+      $Canvas configure -cursor left_ptr
+   }
+
+   CVTree::Render $Canvas $Tree $IdCommand $SelectCommand $PopUpCommand
+}
+
+proc CVTree::SelectClear { Canvas Tree } {
+
+   $Canvas delete CVTREESELECT$Tree
 }
 
 namespace eval Shape {
