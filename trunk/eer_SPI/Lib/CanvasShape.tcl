@@ -51,8 +51,8 @@
 #    CVText::Select        { Canvas }
 #
 #    CVTree::Render        { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } }
-#    CVTRee::RenderBranch  { Canvas Tree Branch X Y IdCommand SelectCommand { PopUpCommand "" } }
-#    CVTree::Select        { Canvas Tree Branch { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } { Open False } }
+#    CVTRee::RenderBranch  { Canvas Tree Branch X Y }
+#    CVTree::Select        { Canvas Tree Branch { Open False } }
 #    CVTree::SelectClear   { Canvas Tree }
 #
 #    Shape::BindFull       { Canvas Tag X1 Y1 Var Command }
@@ -1373,13 +1373,20 @@ proc CVText::Select { Canvas } {
 namespace eval CVTree { }
 
 proc CVTree::Render { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } } {
+   variable Data
 
    $Canvas delete CVTREE$Tree
 
    set X 0
    set Y 0
 
-   CVTree::RenderBranch $Canvas $Tree root X Y $IdCommand $SelectCommand $PopUpCommand
+   if { ![info exists ::CVTree::Data(Id$Tree)] } {
+      set Data(Id$Tree)     $IdCommand
+      set Data(Select$Tree) $SelectCommand
+      set Data(PopUp$Tree)  $PopUpCommand
+   }
+
+   CVTree::RenderBranch $Canvas $Tree root X Y
 
    catch { $Canvas configure -scrollregion "0 0 [lrange [$Canvas bbox CVTREE$Tree] 2 end]" }
 }
@@ -1397,8 +1404,6 @@ proc CVTree::Render { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpC
 #  <Tag>         : Tag de l'arbre
 #  <X>           : Coordonnee en X
 #  <Y>           : Coordonnee en Y
-# <IdCommand>    : Command pour recuperer l'identification de la branche
-# <SelectCommand>: Command a effectuer lors de la selection d'une branche
 #
 # Retour    :
 #
@@ -1407,7 +1412,8 @@ proc CVTree::Render { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpC
 #
 #-------------------------------------------------------------------------------
 
-proc CVTree::RenderBranch { Canvas Tree Branch X Y IdCommand SelectCommand { PopUpCommand "" } } {
+proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
+   variable Data
    global GDefs
 
    upvar $X x
@@ -1422,7 +1428,7 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y IdCommand SelectCommand { Pop
    foreach branch [$Tree children $Branch]  {
       set leaf True
 
-      if { [set id [$IdCommand $Tree $branch leaf]]!="" } {
+      if { [set id [$Data(Id$Tree) $Tree $branch leaf]]!="" } {
          set y0 [incr y $dy]
 
          $Canvas create text [expr $x+$dx] $y -text $id -anchor w -tags "CVTREE$Tree $branch CVTREETEXT$branch" -font $GDefs(Font)
@@ -1430,27 +1436,27 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y IdCommand SelectCommand { Pop
             if { [expr $x-$dx]>5 } {
                $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "CVTREE$Tree"
             }
-            $Canvas bind CVTREETEXT$branch <Double-ButtonRelease-1> "CVTree::Select $Canvas $Tree $branch $IdCommand $SelectCommand $PopUpCommand"
+            $Canvas bind CVTREETEXT$branch <Double-ButtonRelease-1> "CVTree::Select $Canvas $Tree $branch"
          } else {
             if { [expr $x-$dx]>5 } {
                $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "CVTREE$Tree"
             }
             if { [$Tree get $branch open] } {
                $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico -tags "CVTREE$Tree $branch"
-               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch $IdCommand $SelectCommand $PopUpCommand False"
+               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch False"
                set x0 $x
                set y0 $y
-               set yend [CVTree::RenderBranch $Canvas $Tree $branch x y $IdCommand $SelectCommand $PopUpCommand]
+               set yend [CVTree::RenderBranch $Canvas $Tree $branch x y]
 
                set x $x0
                $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "CVTREE$Tree"
             } else {
                $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico -tags "CVTREE$Tree $branch"
-               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch $IdCommand $SelectCommand $PopUpCommand True"
+               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch True"
             }
          }
-         if { $PopUpCommand!="" } {
-           $Canvas bind $branch <Button-3> "CVTree::SelectBranch $Canvas $Tree $branch; $PopUpCommand $Canvas %X %Y $branch"
+         if { $Data(PopUp$Tree)!="" } {
+           $Canvas bind $branch <Button-3> "CVTree::SelectBranch $Canvas $Tree $branch; $Data(PopUp$Tree) $Canvas %X %Y $branch"
          }
       }
    }
@@ -1468,9 +1474,6 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y IdCommand SelectCommand { Pop
 #  <Tree>        : Arbre a afficher
 #  <Branch>      : Branche a afficher
 #  <Tag>         : Tag de l'arbre
-# <IdCommand>    : Command pour recuperer l'identification de la branche
-# <SelectCommand>: Command a effectuer lors de la selection d'une branche
-# <Open>         : Etat de la branche
 #
 # Retour    :
 #
@@ -1489,21 +1492,22 @@ proc CVTree::SelectBranch { Canvas Tree Branch } {
    eval $Canvas coords CVTREESELECT$Tree [$Canvas bbox CVTREETEXT$Branch]
 }
 
-proc CVTree::Select { Canvas Tree Branch { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } { Open False } } {
+proc CVTree::Select { Canvas Tree Branch { Open False } } {
    global GDefs
+   variable Data
 
    $Tree set $Branch open $Open
 
    CVTree::SelectBranch $Canvas $Tree $Branch
 
-   if { $SelectCommand!="" } {
+   if { $Data(Select$Tree)!="" } {
       $Canvas configure -cursor watch
       update idletasks;
-      eval $SelectCommand $Tree $Branch $Open
+      eval  $Data(Select$Tree) $Tree $Branch $Open
       $Canvas configure -cursor left_ptr
    }
 
-   CVTree::Render $Canvas $Tree $IdCommand $SelectCommand $PopUpCommand
+   CVTree::Render $Canvas $Tree
 }
 
 proc CVTree::SelectClear { Canvas Tree } {
