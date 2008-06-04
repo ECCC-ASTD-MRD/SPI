@@ -1162,11 +1162,10 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    /*Loading data*/
    if (load) {
-      glDisable(GL_CULL_FACE);
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       glEnable(GL_BLEND);
-      glPolygonMode(GL_FRONT,GL_FILL);
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glTranslated(16+vp->header.x1+(vp->header.x2-vp->header.x1)*0.5-((TkCanvas*)Canvas)->xOrigin,16+vp->header.y1+(vp->header.y2-vp->header.y1)*0.5-((TkCanvas*)Canvas)->yOrigin,0.0);
       glScalef(16,16,1.0);
       glColor4us(0x00,0x00,0x00,16384);
