@@ -1024,30 +1024,30 @@ proc Animator::FlyPath { Cam Type } {
    switch $Type {
       "CIRCLE" {
          projcam configure $Cam -from $cam(From) -up $cam(Up)
-         eval lappend Fly(Controls) $cam(From) $cam(To) $cam(Up)
+         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+45] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+90] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+135] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+180] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+225] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+270] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+315] $cam(CFY) $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
-         eval lappend Fly(Controls) $cam(From) $cam(To) $cam(Up)
+         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
       }
       "AROUND" {
          projcam define $Cam -path ""
@@ -1057,36 +1057,36 @@ proc Animator::FlyPath { Cam Type } {
       }
       "TO" {
          projcam configure $Cam -from $cam(From) -up $cam(Up)
-         eval lappend Fly(Controls) $cam(From) $cam(To) $cam(Up)
+         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
 
          projcam define $Cam -circlefrom $cam(CFX) [expr (-89.0+$cam(CFY))/2.0] [expr $cam(CFZ)/3.0]
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
 
          projcam define $Cam -circlefrom $cam(CFX) -89.0 1e-20
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
       }
       "THROUGH" {
          projcam configure $Cam -from $cam(From) -up $cam(Up)
-         eval lappend Fly(Controls) $cam(From) $cam(To) $cam(Up)
+         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+90.0] -89.0 0.0
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] $cam(Up)
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] $cam(Up) $cam(Lens)]
 
          projcam define $Cam -circlefrom [expr $cam(CFX)+180.0] $cam(CFY)  $cam(CFZ)
-         eval lappend Fly(Controls) [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up]
+         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
       }
       "DEFAULT" {
          foreach idx $Fly(List) {
-            eval lappend Fly(Controls) [lindex $ProjCam::Data(Params$idx) 1] [lindex $ProjCam::Data(Params$idx) 0] [lindex $ProjCam::Data(Params$idx) 2]
+            lappend Fly(Controls) [list [lindex $ProjCam::Data(Params$idx) 1] [lindex $ProjCam::Data(Params$idx) 0] [lindex $ProjCam::Data(Params$idx) 2] [lindex $ProjCam::Data(Params$idx) 3]]
          }
       }
    }
 
    if { $Fly(Controls)!="" } {
-      eval projcam define $Cam -path $Fly(Controls)
+      projcam define $Cam -path $Fly(Controls)
       $Page::Data(Canvas) itemconf $Viewport::Data(VP) -camera $Page::Data(Frame)
 
-      set Fly(Length) [expr [llength $Fly(Controls)]/9-1]
+      set Fly(Length) [expr [llength $Fly(Controls)]-1]
    }
 
    set Fly(Length) [expr int($Fly(Length)*(100.0/$Fly(Speed)))]

@@ -47,7 +47,7 @@ static int  ProjCam_Destroy(Tcl_Interp *Interp,char *Name);
 void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta);
 void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta);
 void ProjCam_ParamsInit(ProjCam *Cam);
-int  ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,int Objc,Tcl_Obj *CONST Objv[]);
+int  ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List);
 void ProjCam_Fly(ProjCam *Cam);
 void ProjCam_Place(ProjCam *Cam);
 void ProjCam_Project(ProjCam *Cam,Projection *Proj);
@@ -314,7 +314,7 @@ static int ProjCam_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
 
       switch ((enum opt)idx) {
          case PATH:
-            return(ProjCam_Path(Interp,cam,Objc-1,Objv+1));
+            return(ProjCam_Path(Interp,cam,Objv[++i]));
             break;
 
          case FLY:
@@ -348,7 +348,7 @@ static int ProjCam_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
       }
    }
    ProjCam_ParamsInit(cam);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -445,9 +445,7 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
    cam->Show=0;
    cam->Update=0;
    cam->Pix=0.0;
-   cam->CFrom=NULL;
-   cam->CTo=NULL;
-   cam->CUp=NULL;
+   cam->Controls=NULL;
 
    ProjCam_ParamsInit(cam);
 
@@ -610,88 +608,112 @@ void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta) {
  *----------------------------------------------------------------------------
 */
 
-int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,int Objc,Tcl_Obj *CONST Objv[]) {
+int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List) {
 
-   int i,j;
+   int      n,nc,np,i;
+   Tcl_Obj *obj,*list,*param;
+
+   Tcl_ListObjLength(Interp,List,&nc);
 
    /*Free previous control point list*/
-   if (Cam->CFrom) {
-      free(Cam->CFrom);Cam->CFrom=NULL;
-      free(Cam->CTo);Cam->CTo=NULL;
-      free(Cam->CUp);Cam->CUp=NULL;
-      Cam->NbC=0;
+   if (nc!=Cam->NbC) {
+      if (Cam->Controls) {
+         free(Cam->Controls);Cam->Controls=NULL;
+         Cam->NbC=0;
+      }
+      /*Allocate new control point list*/
+      if (nc) {
+         Cam->Controls=(ProjCam*)malloc((nc+3)*sizeof(ProjCam));
+         if (!Cam->Controls) {
+            Tcl_AppendResult(Interp,"ProjCam_Control:: Could not allocate memory for control point list",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+      Cam->NbC=nc;
    }
 
-   if (Objc<=1) {
+   if (!nc) {
       return(TCL_OK);
    }
 
-   if (Objc%3!=0) {
-      Tcl_AppendResult(Interp,"ProjCam_Control:: Invalid number of coordinates",(char*)NULL);
-      return(TCL_ERROR);
-   }
-
    /*Process current control point list*/
-   Cam->CFrom=(Vect3d*)malloc((Objc/3+2)*sizeof(Vect3d));
-   Cam->CTo  =(Vect3d*)malloc((Objc/3+2)*sizeof(Vect3d));
-   Cam->CUp  =(Vect3d*)malloc((Objc/3+2)*sizeof(Vect3d));
-   Cam->Frame=0;
+   for(n=1,i=0;i<Cam->NbC;n++,i++) {
 
-   if (!Cam->From || !Cam->CTo || !Cam->CUp) {
-      Tcl_AppendResult(Interp,"ProjCam_Control:: Could not allocate memory for control point list",(char*)NULL);
-      return(TCL_ERROR);
-   }
+      Tcl_ListObjIndex(Interp,List,i,&list);
+      Tcl_ListObjLength(Interp,list,&nc);
+      if (nc!=4) {
+         Tcl_AppendResult(Interp,"ProjCam_Control:: Invalid number of values",(char*)NULL);
+         return(TCL_ERROR);
+      }
 
-   j=0;i=1;
-   while(j<Objc){
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CFrom[i][0]);
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CFrom[i][1]);
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CFrom[i][2]);
+      Tcl_ListObjIndex(Interp,list,0,&param);
+      Tcl_ListObjIndex(Interp,param,0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].From[0]);
+      Tcl_ListObjIndex(Interp,param,1,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].From[1]);
+      Tcl_ListObjIndex(Interp,param,2,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].From[2]);
 
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CTo[i][0]);
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CTo[i][1]);
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CTo[i][2]);
+      Tcl_ListObjIndex(Interp,list,1,&param);
+      Tcl_ListObjIndex(Interp,param,0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].To[0]);
+      Tcl_ListObjIndex(Interp,param,1,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].To[1]);
+      Tcl_ListObjIndex(Interp,param,2,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].To[2]);
 
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CUp[i][0]);
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CUp[i][1]);
-      Tcl_GetDoubleFromObj(Interp,Objv[j++],&Cam->CUp[i][2]);
-      Cam->NbC++;
-      i++;
-   }
+      Tcl_ListObjIndex(Interp,list,2,&param);
+      Tcl_ListObjIndex(Interp,param,0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].Up[0]);
+      Tcl_ListObjIndex(Interp,param,1,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].Up[1]);
+      Tcl_ListObjIndex(Interp,param,2,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&Cam->Controls[n].Up[2]);
 
-   /*Copy control point for interpolation purposes*/
-   if (Vect_Equal(Cam->CFrom[1],Cam->CFrom[i-1])) {     /*Path is closed*/
-      Vect_Assign(Cam->CFrom[0],Cam->CFrom[i-2]);
-      Vect_Assign(Cam->CFrom[i],Cam->CFrom[2]);
-      Vect_Assign(Cam->CFrom[i+1],Cam->CFrom[3]);
-   } else {                                                 /*Path is open*/
-      Vect_Assign(Cam->CFrom[0],Cam->CFrom[1]);
-      Vect_Assign(Cam->CFrom[i],Cam->CFrom[i-1]);
-      Vect_Assign(Cam->CFrom[i+1],Cam->CFrom[i-1]);
-   }
-
-   /*Copy control point for interpolation purposes*/
-   if (Vect_Equal(Cam->CTo[1],Cam->CTo[i-1])) {     /*Path is closed*/
-      Vect_Assign(Cam->CTo[0],Cam->CTo[i-2]);
-      Vect_Assign(Cam->CTo[i],Cam->CTo[2]);
-      Vect_Assign(Cam->CTo[i+1],Cam->CTo[3]);
-   } else {                                                 /*Path is open*/
-      Vect_Assign(Cam->CTo[0],Cam->CTo[1]);
-      Vect_Assign(Cam->CTo[i],Cam->CTo[i-1]);
-      Vect_Assign(Cam->CTo[i+1],Cam->CTo[i-1]);
+      Tcl_ListObjIndex(Interp,list,3,&param);
+      Tcl_GetDoubleFromObj(Interp,param,&Cam->Controls[n].Lens);
    }
 
    /*Copy control point for interpolation purposes*/
-   if (Vect_Equal(Cam->CUp[1],Cam->CUp[i-1])) {     /*Path is closed*/
-      Vect_Assign(Cam->CUp[0],Cam->CUp[i-2]);
-      Vect_Assign(Cam->CUp[i],Cam->CUp[2]);
-      Vect_Assign(Cam->CUp[i+1],Cam->CUp[3]);
+   if (Vect_Equal(Cam->Controls[1].From,Cam->Controls[n-1].From)) {     /*Path is closed*/
+      Vect_Assign(Cam->Controls[0].From,Cam->Controls[n-2].From);
+      Vect_Assign(Cam->Controls[n].From,Cam->Controls[2].From);
+      Vect_Assign(Cam->Controls[n+1].From,Cam->Controls[3].From);
    } else {                                                 /*Path is open*/
-      Vect_Assign(Cam->CUp[0],Cam->CUp[1]);
-      Vect_Assign(Cam->CUp[i],Cam->CUp[i-1]);
-      Vect_Assign(Cam->CUp[i+1],Cam->CUp[i-1]);
+      Vect_Assign(Cam->Controls[0].From,Cam->Controls[1].From);
+      Vect_Assign(Cam->Controls[n].From,Cam->Controls[n-1].From);
+      Vect_Assign(Cam->Controls[n+1].From,Cam->Controls[n-1].From);
    }
 
+   if (Vect_Equal(Cam->Controls[1].To,Cam->Controls[n-1].To)) {     /*Path is closed*/
+      Vect_Assign(Cam->Controls[0].To,Cam->Controls[n-2].To);
+      Vect_Assign(Cam->Controls[n].To,Cam->Controls[2].To);
+      Vect_Assign(Cam->Controls[n+1].To,Cam->Controls[3].To);
+   } else {                                                 /*Path is open*/
+      Vect_Assign(Cam->Controls[0].To,Cam->Controls[1].To);
+      Vect_Assign(Cam->Controls[n].To,Cam->Controls[n-1].To);
+      Vect_Assign(Cam->Controls[n+1].To,Cam->Controls[n-1].To);
+   }
+
+   if (Vect_Equal(Cam->Controls[1].Up,Cam->Controls[n-1].Up)) {     /*Path is closed*/
+      Vect_Assign(Cam->Controls[0].Up,Cam->Controls[n-2].Up);
+      Vect_Assign(Cam->Controls[n].Up,Cam->Controls[2].Up);
+      Vect_Assign(Cam->Controls[n+1].Up,Cam->Controls[3].Up);
+   } else {                                                 /*Path is open*/
+      Vect_Assign(Cam->Controls[0].Up,Cam->Controls[1].Up);
+      Vect_Assign(Cam->Controls[n].Up,Cam->Controls[n-1].Up);
+      Vect_Assign(Cam->Controls[n+1].Up,Cam->Controls[n-1].Up);
+   }
+
+   if (Cam->Controls[1].Lens==Cam->Controls[n-1].Lens) {     /*Path is closed*/
+      Cam->Controls[0].Lens=Cam->Controls[n-2].Lens;
+      Cam->Controls[n].Lens=Cam->Controls[2].Lens;
+      Cam->Controls[n+1].Lens=Cam->Controls[3].Lens;
+   } else {                                                 /*Path is open*/
+      Cam->Controls[0].Lens=Cam->Controls[1].Lens;
+      Cam->Controls[n].Lens=Cam->Controls[n-1].Lens;
+      Cam->Controls[n+1].Lens=Cam->Controls[n-1].Lens;
+   }
    return(TCL_OK);
 }
 
@@ -715,7 +737,7 @@ void ProjCam_Fly(ProjCam *Cam) {
    int     idx;
    double  d;
 
-   if (!Cam->CFrom) {
+   if (!Cam->Controls) {
       return;
    }
 
@@ -727,17 +749,19 @@ void ProjCam_Fly(ProjCam *Cam) {
    d=Cam->Frame-idx;
    idx++;
 
-   Cam->From[0]=InterpHermite(Cam->CFrom[idx-1][0],Cam->CFrom[idx][0],Cam->CFrom[idx+1][0],Cam->CFrom[idx+2][0],d,0.0,0.0);
-   Cam->From[1]=InterpHermite(Cam->CFrom[idx-1][1],Cam->CFrom[idx][1],Cam->CFrom[idx+1][1],Cam->CFrom[idx+2][1],d,0.0,0.0);
-   Cam->From[2]=InterpHermite(Cam->CFrom[idx-1][2],Cam->CFrom[idx][2],Cam->CFrom[idx+1][2],Cam->CFrom[idx+2][2],d,0.0,0.0);
+   Cam->From[0]=InterpHermite(Cam->Controls[idx-1].From[0],Cam->Controls[idx].From[0],Cam->Controls[idx+1].From[0],Cam->Controls[idx+2].From[0],d,0.0,0.0);
+   Cam->From[1]=InterpHermite(Cam->Controls[idx-1].From[1],Cam->Controls[idx].From[1],Cam->Controls[idx+1].From[1],Cam->Controls[idx+2].From[1],d,0.0,0.0);
+   Cam->From[2]=InterpHermite(Cam->Controls[idx-1].From[2],Cam->Controls[idx].From[2],Cam->Controls[idx+1].From[2],Cam->Controls[idx+2].From[2],d,0.0,0.0);
 
-   Cam->To[0]=InterpHermite(Cam->CTo[idx-1][0],Cam->CTo[idx][0],Cam->CTo[idx+1][0],Cam->CTo[idx+2][0],d,0.0,0.0);
-   Cam->To[1]=InterpHermite(Cam->CTo[idx-1][1],Cam->CTo[idx][1],Cam->CTo[idx+1][1],Cam->CTo[idx+2][1],d,0.0,0.0);
-   Cam->To[2]=InterpHermite(Cam->CTo[idx-1][2],Cam->CTo[idx][2],Cam->CTo[idx+1][2],Cam->CTo[idx+2][2],d,0.0,0.0);
+   Cam->To[0]=InterpHermite(Cam->Controls[idx-1].To[0],Cam->Controls[idx].To[0],Cam->Controls[idx+1].To[0],Cam->Controls[idx+2].To[0],d,0.0,0.0);
+   Cam->To[1]=InterpHermite(Cam->Controls[idx-1].To[1],Cam->Controls[idx].To[1],Cam->Controls[idx+1].To[1],Cam->Controls[idx+2].To[1],d,0.0,0.0);
+   Cam->To[2]=InterpHermite(Cam->Controls[idx-1].To[2],Cam->Controls[idx].To[2],Cam->Controls[idx+1].To[2],Cam->Controls[idx+2].To[2],d,0.0,0.0);
 
-   Cam->Up[0]=InterpHermite(Cam->CUp[idx-1][0],Cam->CUp[idx][0],Cam->CUp[idx+1][0],Cam->CUp[idx+2][0],d,0.0,0.0);
-   Cam->Up[1]=InterpHermite(Cam->CUp[idx-1][1],Cam->CUp[idx][1],Cam->CUp[idx+1][1],Cam->CUp[idx+2][1],d,0.0,0.0);
-   Cam->Up[2]=InterpHermite(Cam->CUp[idx-1][2],Cam->CUp[idx][2],Cam->CUp[idx+1][2],Cam->CUp[idx+2][2],d,0.0,0.0);
+   Cam->Up[0]=InterpHermite(Cam->Controls[idx-1].Up[0],Cam->Controls[idx].Up[0],Cam->Controls[idx+1].Up[0],Cam->Controls[idx+2].Up[0],d,0.0,0.0);
+   Cam->Up[1]=InterpHermite(Cam->Controls[idx-1].Up[1],Cam->Controls[idx].Up[1],Cam->Controls[idx+1].Up[1],Cam->Controls[idx+2].Up[1],d,0.0,0.0);
+   Cam->Up[2]=InterpHermite(Cam->Controls[idx-1].Up[2],Cam->Controls[idx].Up[2],Cam->Controls[idx+1].Up[2],Cam->Controls[idx+2].Up[2],d,0.0,0.0);
+
+   Cam->Lens=InterpHermite(Cam->Controls[idx-1].Lens,Cam->Controls[idx].Lens,Cam->Controls[idx+1].Lens,Cam->Controls[idx+2].Lens,d,0.0,0.0);
 }
 
 /*----------------------------------------------------------------------------
@@ -781,7 +805,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
    double d,p;
    Vect3d from,to,up;
 
-   if (!Cam->CFrom || !Cam->Show) {
+   if (!Cam->Controls || !Cam->Show) {
       return;
    }
 
@@ -800,9 +824,9 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
    d=0.01;
    while(j<Cam->NbC) {
       for(p=0;p<1.0;p+=d) {
-         from[0]=InterpHermite(Cam->CFrom[j-1][0],Cam->CFrom[j][0],Cam->CFrom[j+1][0],Cam->CFrom[j+2][0],p,0.0,0.0);
-         from[1]=InterpHermite(Cam->CFrom[j-1][1],Cam->CFrom[j][1],Cam->CFrom[j+1][1],Cam->CFrom[j+2][1],p,0.0,0.0);
-         from[2]=InterpHermite(Cam->CFrom[j-1][2],Cam->CFrom[j][2],Cam->CFrom[j+1][2],Cam->CFrom[j+2][2],p,0.0,0.0);
+         from[0]=InterpHermite(Cam->Controls[j-1].From[0],Cam->Controls[j].From[0],Cam->Controls[j+1].From[0],Cam->Controls[j+2].From[0],p,0.0,0.0);
+         from[1]=InterpHermite(Cam->Controls[j-1].From[1],Cam->Controls[j].From[1],Cam->Controls[j+1].From[1],Cam->Controls[j+2].From[1],p,0.0,0.0);
+         from[2]=InterpHermite(Cam->Controls[j-1].From[2],Cam->Controls[j].From[2],Cam->Controls[j+1].From[2],Cam->Controls[j+2].From[2],p,0.0,0.0);
 
          glVertex3dv(from);
       }
@@ -819,15 +843,15 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
       p=Cam->Frame-j;
       j++;
 
-      from[0]=InterpHermite(Cam->CFrom[j-1][0],Cam->CFrom[j][0],Cam->CFrom[j+1][0],Cam->CFrom[j+2][0],p,0.0,0.0);
-      from[1]=InterpHermite(Cam->CFrom[j-1][1],Cam->CFrom[j][1],Cam->CFrom[j+1][1],Cam->CFrom[j+2][1],p,0.0,0.0);
-      from[2]=InterpHermite(Cam->CFrom[j-1][2],Cam->CFrom[j][2],Cam->CFrom[j+1][2],Cam->CFrom[j+2][2],p,0.0,0.0);
-      to[0]=InterpHermite(Cam->CTo[j-1][0],Cam->CTo[j][0],Cam->CTo[j+1][0],Cam->CTo[j+2][0],p,0.0,0.0);
-      to[1]=InterpHermite(Cam->CTo[j-1][1],Cam->CTo[j][1],Cam->CTo[j+1][1],Cam->CTo[j+2][1],p,0.0,0.0);
-      to[2]=InterpHermite(Cam->CTo[j-1][2],Cam->CTo[j][2],Cam->CTo[j+1][2],Cam->CTo[j+2][2],p,0.0,0.0);
-      up[0]=InterpHermite(Cam->CUp[j-1][0],Cam->CUp[j][0],Cam->CUp[j+1][0],Cam->CUp[j+2][0],p,0.0,0.0);
-      up[1]=InterpHermite(Cam->CUp[j-1][1],Cam->CUp[j][1],Cam->CUp[j+1][1],Cam->CUp[j+2][1],p,0.0,0.0);
-      up[2]=InterpHermite(Cam->CUp[j-1][2],Cam->CUp[j][2],Cam->CUp[j+1][2],Cam->CUp[j+2][2],p,0.0,0.0);
+      from[0]=InterpHermite(Cam->Controls[j-1].From[0],Cam->Controls[j].From[0],Cam->Controls[j+1].From[0],Cam->Controls[j+2].From[0],p,0.0,0.0);
+      from[1]=InterpHermite(Cam->Controls[j-1].From[1],Cam->Controls[j].From[1],Cam->Controls[j+1].From[1],Cam->Controls[j+2].From[1],p,0.0,0.0);
+      from[2]=InterpHermite(Cam->Controls[j-1].From[2],Cam->Controls[j].From[2],Cam->Controls[j+1].From[2],Cam->Controls[j+2].From[2],p,0.0,0.0);
+      to[0]=InterpHermite(Cam->Controls[j-1].To[0],Cam->Controls[j].To[0],Cam->Controls[j+1].To[0],Cam->Controls[j+2].To[0],p,0.0,0.0);
+      to[1]=InterpHermite(Cam->Controls[j-1].To[1],Cam->Controls[j].To[1],Cam->Controls[j+1].To[1],Cam->Controls[j+2].To[1],p,0.0,0.0);
+      to[2]=InterpHermite(Cam->Controls[j-1].To[2],Cam->Controls[j].To[2],Cam->Controls[j+1].To[2],Cam->Controls[j+2].To[2],p,0.0,0.0);
+      up[0]=InterpHermite(Cam->Controls[j-1].Up[0],Cam->Controls[j].Up[0],Cam->Controls[j+1].Up[0],Cam->Controls[j+2].Up[0],p,0.0,0.0);
+      up[1]=InterpHermite(Cam->Controls[j-1].Up[1],Cam->Controls[j].Up[1],Cam->Controls[j+1].Up[1],Cam->Controls[j+2].Up[1],p,0.0,0.0);
+      up[2]=InterpHermite(Cam->Controls[j-1].Up[2],Cam->Controls[j].Up[2],Cam->Controls[j+1].Up[2],Cam->Controls[j+2].Up[2],p,0.0,0.0);
 
       ProjCam_Render(from,to,up,d*2);
    }
@@ -835,7 +859,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
    /* Draw the position and aspect */
    j=0;
    while(j++<Cam->NbC) {
-      ProjCam_Render(Cam->CFrom[j],Cam->CTo[j],Cam->CUp[j],d);
+      ProjCam_Render(Cam->Controls[j].From,Cam->Controls[j].To,Cam->Controls[j].Up,d);
    }
 
    /* Draw the To position */
@@ -913,9 +937,7 @@ static int ProjCam_Destroy(Tcl_Interp *Interp, char *Name) {
    ProjCam *cam=NULL;
 
    if ((cam=(ProjCam*)TclY_HashDel(&ProjCamTable,Name))) {
-      if (cam->CFrom) free(cam->CFrom);
-      if (cam->CTo)   free(cam->CTo);
-      if (cam->CUp)   free(cam->CUp);
+      if (cam->Controls) free(cam->Controls);
       free(cam);
    }
 

@@ -43,12 +43,12 @@
 #include "Vector.h"
 
 typedef struct ProjCam {
-   Vect3d  From,To,Up,Basis;
-   Vect3d *CFrom,*CTo,*CUp;
-   int     NbC;
-   int     Show;
-   int     Update;
-   double  Lens,Dist,A,Aspect,Clip,Frame,Pix;
+   struct ProjCam *Controls;
+   Vect3d          From,To,Up,Basis;
+   int             NbC;
+   int             Show;
+   int             Update;
+   double          Lens,Dist,A,Aspect,Clip,Frame,Pix;
 } ProjCam;
 
 
