@@ -446,8 +446,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,VALID,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-CODE","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,CODE,REPORT,NB,DATE,DATE0,DATE1,VALID,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -688,7 +688,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   while(elem) {
                      for(d=0;d<elem->NData;d++) {
                         for(e=0;e<elem->EData[d]->Ne;e++) {
-                           Tcl_SetStringObj(sub,elem->EData[d]->Code[e]->description,-1);
+                           Tcl_SetIntObj(sub,elem->EData[d]->Code[e]->descriptor);
                            if (TclY_ListObjFind(Interp,obj,sub)==-1) {
                               Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
                            }
@@ -772,7 +772,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         free(valf);
                         return(TCL_ERROR);
                      }
-                     obj=Tcl_NewStringObj(eb->description,-1);
+                     obj=Tcl_NewIntObj(eb->descriptor);
                      if (TclY_ListObjFind(Interp,obs->Elems,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,obs->Elems,obj);
                      }
@@ -1197,7 +1197,7 @@ EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code) {
    EntryTableB *eb=NULL;
 
    if (BUFRTable && BUFRTable->master.tableB) {
-      if (Tcl_GetIntFromObj(Interp,Code,&code)==TCL_OK) {
+      if (TclY_Get0IntFromObj(Interp,Code,&code)==TCL_OK) {
          eb=bufr_tableb_fetch_entry(BUFRTable->master.tableB,code);
       } else {
          eb=bufr_tableb_fetch_entry_desc(BUFRTable->master.tableB,Tcl_GetString(Code));
@@ -1678,7 +1678,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                   if (!(eb=MetObs_BUFRFindTableCode(bcv->descriptor))) {
                      fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Could not find element code (%i) int tables",bcv->descriptor);
                   } else {
-                     Tcl_SetStringObj(obj,eb->description,-1);
+                     Tcl_SetIntObj(obj,eb->descriptor);
                      if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
                      }
@@ -1976,7 +1976,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
             eb[e]=MetObs_BUFRFindTableCode(((int*)eb)[e]);
 
-            Tcl_SetStringObj(obj,eb[e]->description,-1);
+            Tcl_SetIntObj(obj,eb[e]->descriptor);
             if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
             }
@@ -3025,7 +3025,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                for(e=0;e<data->Ne;e++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(data->Code[e]->description,-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(data->Code[e]->descriptor));
                }
                Tcl_SetObjResult(Interp,obj);
             } else {

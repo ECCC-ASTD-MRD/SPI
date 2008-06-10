@@ -36,22 +36,8 @@
 #include <tk.h>
 #include <tcl.h>
 
-#define TclY_Get0IntFromObj(INTERP,OBJ,VAR) {\
-   if (Tcl_GetString(OBJ)[0]=='0') {\
-       sscanf(Tcl_GetString(OBJ),"%d",VAR);\
-   } else {\
-       Tcl_GetIntFromObj(INTERP,OBJ,VAR);\
-   }\
-}
-
-#define TclY_Get0LongFromObj(INTERP,OBJ,VAR) {\
-   if (Tcl_GetString(OBJ)[0]=='0') {\
-       sscanf(Tcl_GetString(OBJ),"%d",VAR);\
-   } else {\
-       Tcl_GetLongFromObj(INTERP,OBJ,VAR);\
-   }\
-}
-
+int TclY_Get0IntFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int *Var);
+int TclY_Get0LongFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,long *Var);
 FILE* TclY_ChannelOrSocketOpen(Tcl_Interp *Interp,Tcl_Obj *Obj,char *Mode);
 int   TclY_HashAll(Tcl_Interp *Interp,Tcl_HashTable *Table);
 void* TclY_HashGet(Tcl_HashTable *Table,char *Name);
