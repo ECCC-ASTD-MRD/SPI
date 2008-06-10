@@ -299,17 +299,17 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj       *obj=NULL,*lst;
-   BUFR_Dataset  *set;
-   BUFR_Template *tmp;
-   DataSubset    *subset;
-   ListNode      *node;
-   BufrCode      *bcv,**pbcd;
-   BufrCodeList  *bcl;
-   BufrDDOp      *ddo=NULL;
-   int            i,idx;
-   int            s,c,ns,nc,code;
-   int            f,x,y;
+   Tcl_Obj        *obj=NULL,*lst;
+   BUFR_Dataset   *set;
+   BUFR_Template  *tmp;
+   DataSubset     *subset;
+   ListNode       *node;
+   BufrDescriptor *bcv,**pbcd;
+   BUFR_Sequence  *bseq;
+   BufrDDOp       *ddo=NULL;
+   int             i,idx;
+   int             s,c,ns,nc,code;
+   int             f,x,y;
 
    static CONST char *sopt[] = {  "-BUFR_EDITION","-BUFR_MASTER_TABLE","-ORIG_CENTER","-ORIG_SUB_CENTER","-UPDATE_SEQUENCE","-DATA_CATEGORY","-INTERN_SUB_CATEGORY","-LOCAL_SUB_CATEGORY",
       "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-template",NULL };
@@ -522,8 +522,8 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                 lst=Tcl_NewListObj(0,NULL);
                 for(s=0;s<bufr_count_datasubset(set);s++) {
                   subset=bufr_get_datasubset(set,s);
-                  for (c=0;c<bufr_datasubset_count_code(subset);c++) {
-                     Tcl_ListObjAppendElement(Interp,lst,MetDataset_Code2Obj(Interp,bufr_datasubset_get_code(subset,c)));
+                  for (c=0;c<bufr_datasubset_count_descriptor(subset);c++) {
+                     Tcl_ListObjAppendElement(Interp,lst,MetDataset_Code2Obj(Interp,bufr_datasubset_get_descriptor(subset,c)));
                   }
                }
                Tcl_SetObjResult(Interp,lst);
@@ -538,20 +538,20 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                subset=bufr_get_datasubset(set,ns);
                if (Objc==2) {
                   lst=Tcl_NewListObj(0,NULL);
-                  for (c=0;c<bufr_datasubset_count_code(subset);c++) {
-                     Tcl_ListObjAppendElement(Interp,lst,MetDataset_Code2Obj(Interp,bufr_datasubset_get_code(subset,c)));
+                  for (c=0;c<bufr_datasubset_count_descriptor(subset);c++) {
+                     Tcl_ListObjAppendElement(Interp,lst,MetDataset_Code2Obj(Interp,bufr_datasubset_get_descriptor(subset,c)));
                   }
                   Tcl_SetObjResult(Interp,lst);
                } else {
                   Tcl_GetIntFromObj(Interp,Objv[++i],&nc);
-                  if (nc<0 || nc>=bufr_datasubset_count_code(subset)) {
+                  if (nc<0 || nc>=bufr_datasubset_count_descriptor(subset)) {
                      Tcl_AppendResult(Interp,"Invalid code index",(char*)NULL);
                      return(TCL_ERROR);
                   }
                   if (Objc==3) {
-                     Tcl_SetObjResult(Interp,MetDataset_Code2Obj(Interp,bufr_datasubset_get_code(subset,nc)));
+                     Tcl_SetObjResult(Interp,MetDataset_Code2Obj(Interp,bufr_datasubset_get_descriptor(subset,nc)));
                   } else {
-                     return(MetDataset_Obj2Code(Interp,bufr_datasubset_get_code(subset,nc),Objv[++i]));
+                     return(MetDataset_Obj2Code(Interp,bufr_datasubset_get_descriptor(subset,nc),Objv[++i]));
                   }
                }
             }
@@ -563,27 +563,25 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                return(TCL_ERROR);
             } else {
 
-               bcl=bufr_create_codelist(NULL);
-               pbcd=(BufrCode**)arr_get(set->tmplte->gabarit,0);
+               bseq=bufr_create_sequence(NULL);
+               pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
                for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
-                  bufr_add_code2list(bcl,bufr_duplicate_code(pbcd[c]));
+                  bufr_add_descriptor_to_sequence(bseq,bufr_dupl_descriptor(pbcd[c]));
                }
-               ddo=bufr_apply_Tables(NULL,bcl,set->tmplte,NULL);
+               ddo=bufr_apply_Tables(NULL,bseq,set->tmplte,NULL,&f);
 //               bufr_free_BufrDDOp(ddo);
 
-//               bcl=bufr_copy_codelist(bcl);
+//               bseq=bufr_copy_codelist(bseq);
 //               ddo=bufr_create_BufrDDOp();
-               node=lst_firstnode(bcl->list);
+               node=lst_firstnode(bseq->list);
 
                Tcl_ListObjLength(Interp,Objv[++i],&nc);
                for(c=0;c<nc;c++) {
                   Tcl_ListObjIndex(Interp,Objv[i],c,&lst);
                   Tcl_ListObjIndex(Interp,lst,0,&obj);
-                  Tcl_GetIntFromObj(Interp,obj,&code);
-                  Tcl_ListObjIndex(Interp,lst,1,&obj);
-
+                  TclY_Get0IntFromObj(Interp,obj,&code);
                   while (node) {
-                     bcv=(BufrCode*)node->data;
+                     bcv=(BufrDescriptor*)node->data;
                      if ((code!=bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
                         node=lst_nextnode(node);
                      } else {
@@ -602,21 +600,21 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      Tcl_AppendResult(Interp,"Mismatch between data and template",(char*)NULL);
                      return(TCL_ERROR);
                   }
-                  bufr_code2fxy(bcv->descriptor,&f,&x,&y);
+                  bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
 
                   ddo->current=node;
-                  bufr_apply_Tables(ddo,bcl,set->tmplte,node);
+//                  bufr_apply_Tables(ddo,bseq,set->tmplte,node);
 
                   MetDataset_Obj2Code(Interp,bcv,lst);
 
                   if (bcv->flags & FLAG_CLASS31) {
-                     bufr_expand_code(bcl->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables);
+                     bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables);
 
                      /*See if data present bitmap count matched with data code list*/
-                     if ((((BufrCode*)(lst_nextnode(node))->data)->descriptor==31031)&&(ddo->dpbm)) {
+                     if ((((BufrDescriptor*)(lst_nextnode(node))->data)->descriptor==31031)&&(ddo->dpbm)) {
                         int   nb31;
 
-                        nb31=bufr_code_get_ivalue(bcv);
+                        nb31=bufr_descriptor_get_ivalue(bcv);
                         if (nb31!=ddo->dpbm->nb_codes) {
                            fprintf(stderr,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,ddo->dpbm->nb_codes);
                         }
@@ -624,7 +622,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   }
                   node=lst_nextnode(node);
                }
-               bufr_add_datasubset(set,bcl,NULL);
+               bufr_add_datasubset(set,bseq,NULL);
             }
             break;
        }
@@ -739,7 +737,7 @@ Tcl_Obj* MetDataset_Put(Tcl_Interp *Interp,char *Name,BUFR_Dataset *Set) {
  *
  *---------------------------------------------------------------------------------------------------------------
  */
-Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV) {
+Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrDescriptor *BCV) {
 
    Tcl_Obj *obj;
    int      len;
@@ -760,25 +758,25 @@ Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV) {
       if (BCV->value) {
          /* If there are Associated Fields*/
          if (BCV->value->type==VALTYPE_INT32) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(bufr_code_get_ivalue(BCV)));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(bufr_descriptor_get_ivalue(BCV)));
          } else if (BCV->value->type == VALTYPE_INT64) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(bufr_code_get_ivalue(BCV)));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(bufr_descriptor_get_ivalue(BCV)));
          } else if (BCV->value->type == VALTYPE_FLT32) {
-            float value=bufr_code_get_fvalue(BCV);
+            float value=bufr_descriptor_get_fvalue(BCV);
             if (bufr_is_missing_float(value)) {
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MSNG",-1));
             } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(bufr_code_get_fvalue(BCV)));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(bufr_descriptor_get_fvalue(BCV)));
             }
          } else if (BCV->value->type == VALTYPE_FLT64) {
-            double value=bufr_code_get_fvalue(BCV);
+            double value=bufr_descriptor_get_fvalue(BCV);
             if (bufr_is_missing_double(value)) {
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MSNG",-1));
             } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(bufr_code_get_dvalue(BCV)));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(bufr_descriptor_get_dvalue(BCV)));
             }
          } else if (BCV->value->type == VALTYPE_STRING) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(bufr_code_get_svalue(BCV,&len),-1));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(bufr_descriptor_get_svalue(BCV,&len),-1));
          }
          if (BCV->value->af) {
 //            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewByteArrayObj(BCV->value->af->bits,8));
@@ -806,7 +804,7 @@ Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV) {
  *
  *---------------------------------------------------------------------------------------------------------------
  */
-int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrCode *BCV,Tcl_Obj *Obj) {
+int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
    Tcl_Obj *obj;
    int      n;
@@ -820,29 +818,29 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrCode *BCV,Tcl_Obj *Obj) {
    }
 
    if (!BCV->value)
-      BCV->value=bufr_make_value_for_code(BCV);
+      BCV->value=bufr_mkval_for_descriptor(BCV);
 
    if (BCV->value) {
       Tcl_ListObjIndex(Interp,Obj,1,&obj);
       switch(BCV->value->type) {
          case VALTYPE_STRING :
-            bufr_code_set_svalue(BCV,Tcl_GetString(obj));
+            bufr_descriptor_set_svalue(BCV,Tcl_GetString(obj));
          break;
 
          case VALTYPE_INT32 :
-            Tcl_GetIntFromObj(Interp,obj,&ival);
-            bufr_code_set_ivalue(BCV,ival);
+            TclY_Get0IntFromObj(Interp,obj,&ival);
+            bufr_descriptor_set_ivalue(BCV,ival);
             break;
 
          case VALTYPE_INT64 :
-            Tcl_GetLongFromObj(Interp,obj,&lval);
-            bufr_code_set_ivalue(BCV,lval);
+            TclY_Get0LongFromObj(Interp,obj,&lval);
+            bufr_descriptor_set_ivalue(BCV,lval);
             break;
 
          case VALTYPE_FLT64  :
             if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                if (!bufr_is_missing_double(dval)) {
-                  bufr_code_set_dvalue(BCV,dval);
+                  bufr_descriptor_set_dvalue(BCV,dval);
                }
             }
             break;
@@ -850,7 +848,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrCode *BCV,Tcl_Obj *Obj) {
          case VALTYPE_FLT32  :
             if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                if (!bufr_is_missing_float(dval)) {
-                  bufr_code_set_fvalue(BCV,dval);
+                  bufr_descriptor_set_fvalue(BCV,dval);
                }
             }
             break;

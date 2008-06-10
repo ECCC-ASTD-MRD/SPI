@@ -1124,7 +1124,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
             } else {
                i++;
-               Tcl_Get0IntFromObj(Interp,Objv[i],&head->DATEO);
+               TclY_Get0IntFromObj(Interp,Objv[i],&head->DATEO);
             }
             break;
 
@@ -1134,7 +1134,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
             } else {
                i++;
-               Tcl_Get0IntFromObj(Interp,Objv[i],&head->DATEV);
+               TclY_Get0IntFromObj(Interp,Objv[i],&head->DATEV);
             }
             break;
 

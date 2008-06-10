@@ -365,7 +365,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_GetIntFromObj(Interp,Objv[8],&ip3);
 
             /*Get the bogus date*/
-            Tcl_Get0IntFromObj(Interp,Objv[4],&datev);
+            TclY_Get0IntFromObj(Interp,Objv[4],&datev);
 
             return FSTD_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),-1,datev,Tcl_GetString(Objv[5]),ip1,ip2,ip3,Tcl_GetString(Objv[9]),Tcl_GetString(Objv[10]));
          } else {
@@ -407,7 +407,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_WrongNumArgs(Interp,2,Objv,"id datev eticket ip1 ip2 ip3 typvar nomvar [max]");
             return TCL_ERROR;
          }
-         Tcl_Get0IntFromObj(Interp,Objv[3],&datev);
+         TclY_Get0IntFromObj(Interp,Objv[3],&datev);
          Tcl_GetIntFromObj(Interp,Objv[5],&ip1);
          Tcl_GetIntFromObj(Interp,Objv[6],&ip2);
          Tcl_GetIntFromObj(Interp,Objv[7],&ip3);
@@ -1468,7 +1468,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp");
             return TCL_ERROR;
          }
-         Tcl_Get0IntFromObj(Interp,Objv[2],&stamp);
+         TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
          Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_Stamp2Seconds(stamp)));
          return TCL_OK;
          break;
@@ -1490,7 +1490,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp [format]");
             return TCL_ERROR;
          }
-         Tcl_Get0IntFromObj(Interp,Objv[2],&stamp);
+         TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
 
          System_StampDecode(stamp,&yyyy,&mm,&dd,&hh,&nn,&ss);
 
@@ -1509,7 +1509,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return TCL_ERROR;
          }
          Tcl_GetIntFromObj(Interp,Objv[2],&date);
-         Tcl_Get0IntFromObj(Interp,Objv[3],&time);
+         TclY_Get0IntFromObj(Interp,Objv[3],&time);
 
          op=3;
          f77name(newdate)(&stamp,&date,&time,&op);
@@ -1524,7 +1524,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp hours");
             return TCL_ERROR;
          }
-         Tcl_Get0IntFromObj(Interp,Objv[2],&stamp);
+         TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&tmpf);
 
          f77name(incdatr)(&op,&stamp,&tmpf);
@@ -1539,8 +1539,8 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp1 stamp2");
             return TCL_ERROR;
          }
-         Tcl_Get0IntFromObj(Interp,Objv[2],&stamp);
-         Tcl_Get0IntFromObj(Interp,Objv[3],&time);
+         TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
+         TclY_Get0IntFromObj(Interp,Objv[3],&time);
 
          f77name(difdatr)(&stamp,&time,&tmpf);
 
