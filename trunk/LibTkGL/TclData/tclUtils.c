@@ -48,6 +48,26 @@ typedef struct TcpState {
     ClientData acceptProcData;     /* The data for the accept proc. */
 } TcpState;
 
+int TclY_Get0IntFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int *Var) {
+
+   if (Tcl_GetString(Obj)[0]=='0') {
+       sscanf(Tcl_GetString(Obj),"%d",Var);
+       return(TCL_OK);
+   } else {
+       return (Tcl_GetIntFromObj(Interp,Obj,Var));
+   }
+}
+
+int TclY_Get0LongFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,long *Var) {
+
+   if (Tcl_GetString(Obj)[0]=='0') {
+       sscanf(Tcl_GetString(Obj),"%d",Var);
+       return(TCL_OK);
+   } else {
+       return (Tcl_GetLongFromObj(Interp,Obj,Var));
+   }
+}
+
 FILE* TclY_ChannelOrSocketOpen(Tcl_Interp *Interp,Tcl_Obj *Obj,char *Mode) {
 
    Tcl_Channel  sock=NULL;
