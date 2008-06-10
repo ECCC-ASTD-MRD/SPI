@@ -193,7 +193,7 @@ proc NowCaster::Obs::Window { Frame } {
 
          frame $Frame.model.elem.topo
             label $Frame.model.elem.topo.lbl -text [lindex $Lbl(Topo) $GDefs(Lang)] -width 11 -anchor w
-            ComboBox::Create $Frame.model.elem.topo.sel NowCaster::Obs::Data(Topo) noedit sorted nodouble -1 { } 2 15 set NowCaster::Obs::Data(Topo\$NowCaster::Obs::Data(CurrentObs)) \$NowCaster::Obs::Data(Topo)\; NowCaster::Obs::ModelApply
+            ComboBox::Create $Frame.model.elem.topo.sel NowCaster::Obs::Data(Topo) noedit sorted nodouble -1 { } 2 15 set NowCaster::Obs::Data(Topo\$NowCaster::Obs::Data(CurrentObs)) \[lindex \$NowCaster::Obs::Data(Topo) 0\]\; NowCaster::Obs::ModelApply
             pack $Frame.model.elem.topo.lbl -side left
             pack $Frame.model.elem.topo.sel -side left -fill x -expand True
          pack $Frame.model.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
@@ -225,7 +225,8 @@ proc NowCaster::Obs::Window { Frame } {
                set NowCaster::Obs::Data(Model.$x.$y) ""
                radiobutton $Frame.model.items.s.def$n -textvariable NowCaster::Obs::Data(Set.$x.$y) -relief raised -bd 1  -width 2 \
                   -variable NowCaster::Obs::Data(Item) -value .$x.$y -indicatoron False \
-                  -command "set NowCaster::Obs::Data(Var0) \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 0\]; set NowCaster::Obs::Data(Var1) \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 1\]"
+                  -command "set NowCaster::Obs::Data(Var0) \[NowCaster::Obs::VarSet \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 0\]
+                            set NowCaster::Obs::Data(Var1) \[NowCaster::Obs::VarSet \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 1\]"
                grid $Frame.model.items.s.def$n -row [expr $y+2] -column [expr $x+2] -sticky nsew
                incr n
             }
@@ -235,7 +236,8 @@ proc NowCaster::Obs::Window { Frame } {
          set NowCaster::Obs::Data(Model.0.3) ""
          radiobutton $Frame.model.items.s.def$n -textvariable NowCaster::Obs::Data(Set.0.3) -relief raised -bd 1 -width 5 \
             -variable NowCaster::Obs::Data(Item) -value .0.3  -indicatoron False \
-            -command "set NowCaster::Obs::Data(Var0) \[lindex \$NowCaster::Obs::Data(Model.0.3) 0\]; set NowCaster::Obs::Data(Var1) \[lindex \$NowCaster::Obs::Data(Model.0.3) 1\]"
+            -command { set NowCaster::Obs::Data(Var0) [NowCaster::Obs::VarSet [lindex $NowCaster::Obs::Data(Model.0.3) 0]
+                       set NowCaster::Obs::Data(Var1) [NowCaster::Obs::VarSet [lindex $NowCaster::Obs::Data(Model.0.3) 1] }
          grid $Frame.model.items.s.def$n -row 5 -column 1 -columnspan 3 -sticky nsew
 
       pack $Frame.model.items.s -side top -padx 5 -pady 5
@@ -264,6 +266,15 @@ proc NowCaster::Obs::Window { Frame } {
    Bubble::Create $Frame.model.items          [lindex $Bubble(Grid) $GDefs(Lang)]
 
    NowCaster::Obs::ModelLoad
+}
+
+proc NowCaster::Obs::VarSet { Var } {
+
+   if { $Var!="" } {
+      return "[lindex [metobs table -desc $Var] 0] $Var"
+   } else {
+      return $Var
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -629,7 +640,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance)
 
       foreach item $Data(Model$obs) {
-         set var [lindex $item 2]
+         set var [lindex [metobs table -desc [lindex $item 2]] 0]
          if { ![dataspec is $var] } {
             dataspec create $var
             catch { dataspec configure $var -unit [lindex [metobs table -code [metobs table -desc $var]] end] }
@@ -666,16 +677,18 @@ proc NowCaster::Obs::ObsSelect { Obs } {
 
       if { [winfo exists .nowcaster] } {
          ComboBox::DelAll  $Data(Frame).model.elem.var0.sel
-         ComboBox::AddList $Data(Frame).model.elem.var0.sel $Data(Elems$Obs)
-         ComboBox::Add     $Data(Frame).model.elem.var0.sel ""
-
          ComboBox::DelAll  $Data(Frame).model.elem.var1.sel
-         ComboBox::AddList $Data(Frame).model.elem.var1.sel $Data(Elems$Obs)
-         ComboBox::Add     $Data(Frame).model.elem.var1.sel ""
-
          ComboBox::DelAll  $Data(Frame).model.elem.topo.sel
-         ComboBox::AddList $Data(Frame).model.elem.topo.sel $Data(Elems$Obs)
-         ComboBox::Add     $Data(Frame).model.elem.topo.sel ""
+          foreach elem  $Data(Elems$Obs) {
+            set info "[lindex [metobs table -desc $elem] 0] $elem"
+
+            ComboBox::Add $Data(Frame).model.elem.var0.sel $info
+            ComboBox::Add $Data(Frame).model.elem.var1.sel $info
+            ComboBox::Add $Data(Frame).model.elem.topo.sel $info
+         }
+         ComboBox::Add $Data(Frame).model.elem.var0.sel ""
+         ComboBox::Add $Data(Frame).model.elem.var1.sel ""
+         ComboBox::Add $Data(Frame).model.elem.topo.sel ""
       }
       NowCaster::Obs::ModelSelect $Obs $Data(Model$Obs)
    }
@@ -706,7 +719,7 @@ proc NowCaster::Obs::ModelApply { } {
       set Data(Model$Data(Item)) {}
       set Data(Set$Data(Item))   ""
    } else {
-      set Data(Model$Data(Item)) [list $Data(Var0) $Data(Var1)]
+      set Data(Model$Data(Item)) [list [lindex $Data(Var0) end] [lindex $Data(Var1) end]]
       set Data(Set$Data(Item))   #
    }
    set Data(Model$Data(CurrentObs)) [NowCaster::Obs::ModelParse]
@@ -765,8 +778,8 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
    }
 
    if { $Data(Item)!="" } {
-      set Data(Var0) [lindex $Data(Model$Data(Item)) 0]
-      set Data(Var1) [lindex $Data(Model$Data(Item)) 1]
+      set Data(Var0) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 0]]
+      set Data(Var1) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 1]]
    }
 
    set Data(ModelName$Data(CurrentObs)) $Data(ModelName)
@@ -1051,13 +1064,13 @@ proc NowCaster::Obs::Info { Obs Id Tag } {
       } else {
          #----- Per element
          set elems [metobs define $Obs -ELEMENT $Tag]
-
          foreach elem $elems {
-            $text insert end  "\n[format %06i [metobs table -code $elem]] $elem ([metobs table -unit $elem])\n"
+            set info [metobs table -desc $elem]
+            $text insert end  "\n[format %06i $elem] [lindex $info 0] ([lindex $info 1])\n"
             foreach date [metobs define $Obs -DATE $Tag] {
                if  { [set val [metobs define $Obs -ELEMENT $Tag $elem $date]]!="" } {
                   $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] $val\n"
-}
+               }
             }
          }
       }
