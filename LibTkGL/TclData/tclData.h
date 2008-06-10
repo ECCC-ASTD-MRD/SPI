@@ -86,14 +86,6 @@
 #define PRESS2METER(LVL) (-8409.1*log((LVL==0?1e-31:LVL)/1200.0))
 #define SIGMA2METER(LVL) (-8409.1*log(LVL==0?1e-31:LVL))
 
-#define Tcl_Get0IntFromObj(INTERP,OBJ,VAR) {\
-   if (Tcl_GetString(OBJ)[0]=='0') {\
-       sscanf(Tcl_GetString(OBJ),"%d",VAR);\
-   } else {\
-       Tcl_GetIntFromObj(INTERP,OBJ,VAR);\
-   }\
-}
-
 typedef enum {
    TD_NEAREST                        = 0,
    TD_LINEAR                         = 1,

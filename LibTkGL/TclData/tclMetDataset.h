@@ -47,7 +47,7 @@ Tcl_Obj*       MetTemplate_Put(Tcl_Interp *Interp,char *Name,BUFR_Template *Tmp)
 FILE* MetDatafile_Get(char *Name);
 int MetDatafile_Put(Tcl_Interp *Interp,char *Name,FILE *File);
 
-Tcl_Obj*       MetDataset_Code2Obj(Tcl_Interp *Interp,BufrCode *BCV);
-int            MetDataset_Obj2Code(Tcl_Interp *Interp,BufrCode *BCV,Tcl_Obj *Obj);
+Tcl_Obj*       MetDataset_Code2Obj(Tcl_Interp *Interp,BufrDescriptor *BCV);
+int            MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj);
 
 #endif

@@ -335,14 +335,14 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             }
             if (Objc>2) {
-               if (eb->desc) free(eb->desc);
-               eb->desc=strdup(Tcl_GetString(Objv[++i]));
+               if (eb->description) free(eb->description);
+               eb->description=strdup(Tcl_GetString(Objv[++i]));
                if (Objc>3)
                   if (eb->unit) free(eb->unit);
                   eb->unit=strdup(Tcl_GetString(Objv[++i]));
             } else {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(eb->desc,-1));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(eb->description,-1));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(eb->unit,-1));
                Tcl_SetObjResult(Interp,obj);
             }
@@ -359,8 +359,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             }
 
             if (Objc>2) {
-               if (eb->desc) free(eb->desc);
-               eb->desc=strdup(Tcl_GetString(Objv[++i]));
+               if (eb->description) free(eb->description);
+               eb->description=strdup(Tcl_GetString(Objv[++i]));
                if (Objc>3)
                   if (eb->unit) free(eb->unit);
                   eb->unit=strdup(Tcl_GetString(Objv[++i]));
@@ -400,7 +400,7 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
             eb=bufr_new_EntryTableB();
             eb->descriptor=code;
-            eb->desc=strdup(Tcl_GetString(Objv[++i]));
+            eb->description=strdup(Tcl_GetString(Objv[++i]));
             eb->unit=strdup(Tcl_GetString(Objv[++i]));
             arr_add(BUFRTable->master.tableB,(char*)&eb);
             break;
@@ -688,7 +688,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   while(elem) {
                      for(d=0;d<elem->NData;d++) {
                         for(e=0;e<elem->EData[d]->Ne;e++) {
-                           Tcl_SetStringObj(sub,elem->EData[d]->Code[e]->desc,-1);
+                           Tcl_SetStringObj(sub,elem->EData[d]->Code[e]->description,-1);
                            if (TclY_ListObjFind(Interp,obj,sub)==-1) {
                               Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
                            }
@@ -772,7 +772,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         free(valf);
                         return(TCL_ERROR);
                      }
-                     obj=Tcl_NewStringObj(eb->desc,-1);
+                     obj=Tcl_NewStringObj(eb->description,-1);
                      if (TclY_ListObjFind(Interp,obs->Elems,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,obs->Elems,obj);
                      }
@@ -850,7 +850,6 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             }
             obj=Tcl_NewListObj(0,NULL);
             sub=Tcl_NewObj();
-
             if (Objc==1) {
                loc=obs->Loc;
                while(loc) {
@@ -1537,6 +1536,46 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    return(res);
 }
 
+TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt) {
+
+   TMetElemData *data;
+
+   data=(TMetElemData*)malloc(sizeof(TMetElemData));
+   data->Ne=Ne;
+   data->Nv=Nv;
+   data->Nt=Nt;
+   data->St=0x0;
+   data->Data=(float*)malloc(Ne*Nv*Nt*sizeof(float));
+   data->Code=(EntryTableB**)malloc(Ne*Nv*Nt*sizeof(EntryTableB*));
+
+   return(data);
+}
+
+int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *PrevId,char *Multi) {
+
+   TMetLoc *loc=NULL;
+   time_t   time=0;
+
+   /*Insert station in list if not already done*/
+   if (Data->Ne && Lat!=-999.0 && Lon!=-999.0) {
+
+      /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
+ //     if (!Multi || strcmp(PrevId,Id)!=0)
+         loc=TMetLoc_FindWithCoord(Obs,NULL,Id,Lat,Lon,-999.0,MET_TYPEID,Multi);
+
+      strcpy(PrevId,Id);
+
+      if (!loc) {
+         loc=TMetLoc_New(Obs,Id,NULL,Lat,Lon,Hgt);
+      }
+      Obs->Time0=(Obs->Time0<time && Obs->Time0!=0)?Obs->Time0:Time;
+      Obs->Time1=Obs->Time1>time?Obs->Time1:Time;
+      TMetElem_InsertCopy(loc,0,Time,Data);
+      return(1);
+   }
+   return(0);
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetObs_LoadBUFR>
  * Creation     : Mars 2008 J.P. Gauthier
@@ -1556,25 +1595,24 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 */
 int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
-   Tcl_Obj       *obj=NULL;
-   TMetLoc       *loc=NULL;
-   TMetElemData  *data=NULL;
+   Tcl_Obj        *obj=NULL;
+   TMetLoc        *loc=NULL;
+   TMetElemData   *data=NULL;
 
-   FILE          *fpBufr;
-   BUFR_Tables   *tbls;
-   BUFR_Message  *msg;
-   BUFR_Dataset  *dts;
-   DataSubset    *subset;
-   BufrCode      *bcv;
-   EntryTableB   *eb;
-   int            i,j;
-   char           stnid[32],previd[32],multi=0;
-   double         value,lat,lon,hgt=0.0;
-   int            yyyy,mm,dd,hh,mn,ss;
-   time_t         time=0;
+   FILE           *fpBufr;
+   BUFR_Tables    *tbls;
+   BUFR_Message   *msg;
+   BUFR_Dataset   *dts;
+   DataSubset     *subset;
+   BufrDescriptor *bcv;
+   EntryTableB    *eb;
+   int             i,j,ne,len;
+   char            stnid[256],previd[256],multi=0;
+   double          value,lat,lon,hgt=0.0;
+   int             yyyy,mm,dd,hh,mn,ss;
+   time_t          time=0;
 
    obj=Tcl_NewStringObj("",0);
-   yyyy=1970;mm=1;dd=1;hh=mn=ss=0;
 
    if (!(fpBufr=fopen(File,"r"))) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBUFR :  Unable to open file ",File,(char*)NULL);
@@ -1605,19 +1643,16 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             continue;
          }
 
-         data=(TMetElemData*)malloc(sizeof(TMetElemData));
-         data->Ne=bufr_datasubset_count_code(subset);
-         data->Nv=data->Nt=1;
-         data->St=0x0;
-         data->Data=(float*)malloc(data->Ne*sizeof(float));
-         data->Code=(EntryTableB**)malloc(data->Ne*sizeof(EntryTableB*));
+         ne=bufr_datasubset_count_descriptor(subset);
+         data=TMetElemData_New(ne,1,1);
+         data->Ne=0;
 
          stnid[0]='-';stnid[1]='\0';
          lat=lon=-999.0;
-         data->Ne=0;
+         yyyy=1970;mm=1;dd=1;hh=mn=ss=0;
 
-         for (j=0;j<bufr_datasubset_count_code(subset);j++) {
-            if (!(bcv=bufr_datasubset_get_code(subset,j))) {
+         for (j=0;j<bufr_datasubset_count_descriptor(subset);j++) {
+            if (!(bcv=bufr_datasubset_get_descriptor(subset,j))) {
                fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Invalid subset code");
                continue;
             }
@@ -1643,7 +1678,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                   if (!(eb=MetObs_BUFRFindTableCode(bcv->descriptor))) {
                      fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Could not find element code (%i) int tables",bcv->descriptor);
                   } else {
-                     Tcl_SetStringObj(obj,eb->desc,-1);
+                     Tcl_SetStringObj(obj,eb->description,-1);
                      if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
                      }
@@ -1651,32 +1686,57 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
                   /*Look for needed specific descriptor*/
                   switch(bcv->descriptor) {
-                     case 4001:  yyyy=bufr_code_get_ivalue(bcv); break; /*Date related*/
-                     case 4002:  mm=bufr_code_get_ivalue(bcv);   break;
-                     case 4003:  dd=bufr_code_get_ivalue(bcv);   break;
-                     case 4004:  hh=bufr_code_get_ivalue(bcv);   break;
-                     case 4005:  mn=bufr_code_get_ivalue(bcv);   break;
-                     case 4006:  ss=bufr_code_get_ivalue(bcv);   break;
-                     case 5001:  lat=bufr_code_get_dvalue(bcv);  break; /*Location related*/
-                     case 6001:  lon=bufr_code_get_dvalue(bcv);  break;
-                     case 5002:  lat=bufr_code_get_dvalue(bcv);  break;
-                     case 6002:  lon=bufr_code_get_dvalue(bcv);  break;
-                     case 27001: lat=bufr_code_get_dvalue(bcv);  break;
-                     case 28001: lon=bufr_code_get_dvalue(bcv);  break;
-                     case 27002: lat=bufr_code_get_dvalue(bcv);  break;
-                     case 28002: lon=bufr_code_get_dvalue(bcv);  break;
-                     case 27003: lat=bufr_code_get_dvalue(bcv);  break;
-                     case 28003: lon=bufr_code_get_dvalue(bcv);  break;
-                     case 27004: lat=bufr_code_get_dvalue(bcv);  break;
-                     case 28004: lon=bufr_code_get_dvalue(bcv);  break;
-                     case 5192:  lat=bufr_code_get_dvalue(bcv);  break;
-                     case 6192:  lon=bufr_code_get_dvalue(bcv);  break;
-                     case 5193:  lat=bufr_code_get_dvalue(bcv);  break;
-                     case 6193:  lon=bufr_code_get_dvalue(bcv);  break;
-                     case 7001:  hgt=bufr_code_get_dvalue(bcv);  break; /*Height related*/
-                     case 7002:  hgt=bufr_code_get_dvalue(bcv);  break;
-                     case 1002:  sprintf(stnid,"%i",bufr_code_get_ivalue(bcv)); break;
-                     case 1007:  sprintf(stnid,"%i",bufr_code_get_ivalue(bcv)); break;
+                     /*Date related*/
+                     case 4001:  yyyy=bufr_descriptor_get_ivalue(bcv); break;
+                     case 4002:  mm=bufr_descriptor_get_ivalue(bcv);   break;
+                     case 4003:  dd=bufr_descriptor_get_ivalue(bcv);   break;
+                     case 4004:  hh=bufr_descriptor_get_ivalue(bcv);   break;
+                     case 4005:  mn=bufr_descriptor_get_ivalue(bcv);   break;
+                     case 4006:  ss=bufr_descriptor_get_ivalue(bcv);   break;
+                     case 5001:  lat=bufr_descriptor_get_dvalue(bcv);  break;
+
+                     /*Location related*/
+                     case 6001:  lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 5002:  lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 6002:  lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 27001: lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 28001: lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 27002: lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 28002: lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 27003: lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 28003: lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 27004: lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 28004: lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 5192:  lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 6192:  lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 5193:  lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 6193:  lon=bufr_descriptor_get_dvalue(bcv);  break;
+
+                     /*Height related*/
+                     case 7001:  hgt=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 7002:  hgt=bufr_descriptor_get_dvalue(bcv);  break;
+
+                     /*Station ID related*/
+                     case 1002:  sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv)); break;
+                     case 1007:  sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv)); break;
+                     case 1015:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); break;
+                     case 1018:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); break;
+                     case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); break;
+
+                     /*Time displacement*/
+                     case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv); break;
+                     case 4012:  mm+=bufr_descriptor_get_ivalue(bcv); break;
+                     case 4013:  dd+=bufr_descriptor_get_ivalue(bcv); break;
+                     case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);
+
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                            data=TMetElemData_New(ne,1,1);
+                            data->Ne=0;
+                         }
+
+                      break;
+                     case 4015:  mn+=bufr_descriptor_get_ivalue(bcv); break;
+                     case 4016:  ss+=bufr_descriptor_get_ivalue(bcv); break;
                  }
 
                   /* If there are Associated Fields */
@@ -1687,19 +1747,19 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
                   switch(bcv->value->type) {
                      case VALTYPE_INT32:
-                        value=bufr_code_get_ivalue(bcv);
+                        value=bufr_descriptor_get_ivalue(bcv);
                         break;
                      case VALTYPE_INT64:
-                        value=bufr_code_get_ivalue(bcv);
+                        value=bufr_descriptor_get_ivalue(bcv);
                         break;
                      case VALTYPE_FLT32:
-                        value = bufr_code_get_fvalue(bcv);
+                        value = bufr_descriptor_get_fvalue(bcv);
                         if (bufr_is_missing_float(value)) {
                            value=-999.0;
                         }
                         break;
                     case VALTYPE_FLT64:
-                        value = bufr_code_get_dvalue(bcv);
+                        value = bufr_descriptor_get_dvalue(bcv);
                         if (bufr_is_missing_double(value)) {
                            value=-999.0;
                         }
@@ -1707,7 +1767,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case VALTYPE_STRING:
 /*                        int   len;
 
-                        char *str = bufr_code_get_svalue(bcv,&len);
+                        char *str = bufr_descriptor_get_svalue(bcv,&len);
                         printf("VALUE=%s",str);
 */
                            value=-999.0;
@@ -1721,26 +1781,8 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
 
          /*Insert station in list if not already done*/
-         if (lat!=-999.0 && lon!=-999.0) {
+         TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi);
 
-            /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
-            loc=NULL;
-            if (!multi || strcmp(previd,stnid)!=0)
-               loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,lat,lon,-999.0,MET_TYPEID,&multi);
-
-            strcpy(previd,stnid);
-
-            if (!loc) {
-               loc=TMetLoc_New(Obs,stnid,NULL,lat,lon,hgt);
-//               loc->Grid[0]=dx;
-//               loc->Grid[1]=dy;
-            }
-
-            time=System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1);
-            Obs->Time0=(Obs->Time0<time && Obs->Time0!=0)?Obs->Time0:time;
-            Obs->Time1=Obs->Time1>time?Obs->Time1:time;
-            TMetElem_InsertCopy(loc,0,time,data);
-         }
       }
       bufr_free_dataset(dts);
    }
@@ -1934,7 +1976,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
             eb[e]=MetObs_BUFRFindTableCode(((int*)eb)[e]);
 
-            Tcl_SetStringObj(obj,eb[e]->desc,-1);
+            Tcl_SetStringObj(obj,eb[e]->description,-1);
             if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
             }
@@ -2918,12 +2960,12 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                for(e=0;e<data->Ne;e++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(data->Code[e]->desc,-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(data->Code[e]->description,-1));
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&ne);
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(data->Code[ne]->desc,-1));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(data->Code[ne]->description,-1));
             }
             break;
 
@@ -2983,7 +3025,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                for(e=0;e<data->Ne;e++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(data->Code[e]->desc,-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(data->Code[e]->description,-1));
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
