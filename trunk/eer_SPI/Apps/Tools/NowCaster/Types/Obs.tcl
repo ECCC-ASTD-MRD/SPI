@@ -1055,7 +1055,9 @@ proc NowCaster::Obs::Info { Obs Id Tag } {
          foreach elem $elems {
             $text insert end  "\n[format %06i [metobs table -code $elem]] $elem ([metobs table -unit $elem])\n"
             foreach date [metobs define $Obs -DATE $Tag] {
-               $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] [metobs define $Obs -ELEMENT $Tag $elem $date]\n"
+               if  { [set val [metobs define $Obs -ELEMENT $Tag $elem $date]]!="" } {
+                  $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] $val\n"
+}
             }
          }
       }
