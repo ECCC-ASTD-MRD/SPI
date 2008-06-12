@@ -636,17 +636,19 @@ proc NowCaster::Obs::Update { { Obs {} } } {
    }
 
    foreach obs $Obs {
-      metmodel define [metobs define $obs -MODEL] -items $Data(Model$obs) -spacing $Data(Spacing$obs) -flat  $Data(Flat$obs) -topography $Data(Topo$obs)
+      set model [metobs define $obs -MODEL]
+      metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance)
 
       foreach item $Data(Model$obs) {
-         set var [lindex [metobs table -desc [lindex $item 2]] 0]
+         set desc [metobs table -desc [lindex $item 2]]
+         set var  [lindex $desc 0]
          if { ![dataspec is $var] } {
             dataspec create $var
-            catch { dataspec configure $var -unit [lindex [metobs table -code [metobs table -desc $var]] end] }
-            dataspec configure $var -desc $var -set 0
-        }
-        metmodel configure [metobs define $obs -MODEL] $var -dataspec $var
+            dataspec configure $var -desc $var -unit [lindex $desc end] -set 0
+         }
+         metmodel configure $model [lindex $item 2] -dataspec $var
+         puts stderr "$var .[metmodel configure $model [lindex $item 2] -dataspec]."
       }
    }
    Obs::ParamUpdate
@@ -780,6 +782,12 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
    if { $Data(Item)!="" } {
       set Data(Var0) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 0]]
       set Data(Var1) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 1]]
+
+      if { [set topo [metmodel define [metobs define $Data(CurrentObs) -MODEL] -topography]]!="" } {
+         set Data(Topo) "$topo [metobs table -code $topo]"
+      } else {
+         set Data(Topo) ""
+      }
    }
 
    set Data(ModelName$Data(CurrentObs)) $Data(ModelName)
