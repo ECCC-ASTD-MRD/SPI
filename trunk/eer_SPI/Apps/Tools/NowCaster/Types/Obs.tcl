@@ -225,8 +225,8 @@ proc NowCaster::Obs::Window { Frame } {
                set NowCaster::Obs::Data(Model.$x.$y) ""
                radiobutton $Frame.model.items.s.def$n -textvariable NowCaster::Obs::Data(Set.$x.$y) -relief raised -bd 1  -width 2 \
                   -variable NowCaster::Obs::Data(Item) -value .$x.$y -indicatoron False \
-                  -command "set NowCaster::Obs::Data(Var0) \[NowCaster::Obs::VarSet \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 0\]
-                            set NowCaster::Obs::Data(Var1) \[NowCaster::Obs::VarSet \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 1\]"
+                  -command "set NowCaster::Obs::Data(Var0) \[NowCaster::Obs::VarSet \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 0\]\]
+                            set NowCaster::Obs::Data(Var1) \[NowCaster::Obs::VarSet \[lindex \$NowCaster::Obs::Data(Model.$x.$y) 1\]\]"
                grid $Frame.model.items.s.def$n -row [expr $y+2] -column [expr $x+2] -sticky nsew
                incr n
             }
