@@ -1696,32 +1696,32 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case 5001:  lat=bufr_descriptor_get_dvalue(bcv);  break;
 
                      /*Location related*/
-                     case 6001:  lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 5002:  lat=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 6002:  lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 27001: lat=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 28001: lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 27002: lat=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 28002: lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 27003: lat=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 28003: lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 27004: lat=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 28004: lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 5192:  lat=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 6192:  lon=bufr_descriptor_get_dvalue(bcv);  break;
-                     case 5193:  lat=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 6001:
+                     case 6002:
+                     case 28001:
+                     case 28002:
+                     case 28003:
+                     case 28004:
+                     case 6192:
                      case 6193:  lon=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 5002:
+                     case 27001:
+                     case 27002:
+                     case 27003:
+                     case 27004:
+                     case 5192:
+                     case 5193:  lat=bufr_descriptor_get_dvalue(bcv);  break;
 
                      /*Height related*/
-                     case 7001:  hgt=bufr_descriptor_get_dvalue(bcv);  break;
+                     case 7001:
                      case 7002:  hgt=bufr_descriptor_get_dvalue(bcv);  break;
 
                      /*Station ID related*/
-                     case 1002:  sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv)); break;
-                     case 1007:  sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv)); break;
-                     case 1015:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); break;
-                     case 1018:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); break;
-                     case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); break;
+                     case 1002:
+                     case 1007:  sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv));  strtrim(stnid,' '); break;
+                     case 1015:
+                     case 1018:
+                     case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); strtrim(stnid,' '); break;
 
                      /*Time displacement*/
                      case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv); break;
@@ -2389,7 +2389,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
             /*Loop on the model items*/
             for(i=0;i<Obs->Model->NItem;i++) {
-
                if (!(spec=Obs->Model->Items[i].Spec)) {
                   continue;
                }
