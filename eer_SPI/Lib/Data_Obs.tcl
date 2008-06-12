@@ -684,14 +684,15 @@ proc Obs::ParamInit { Obs { Spec "" } } {
    variable Param
 
    if { [dataspec is $Spec] } {
-      set set [dataspec configure $Spec -set]
-      set var [dataspec configure $Spec -desc]
+      set set  [dataspec configure $Spec -set]
+      set var  [dataspec configure $Spec -desc]
+      set unit [dataspec configure $Spec -unit]
 
       if { [lsearch -exact $Param(Specs) $Spec]==-1 } {
          lappend Param(Specs) $Spec
          if { !$set } {
             dataspec copy $Spec OBSDEFAULT
-            dataspec configure $Spec -desc $var
+            dataspec configure $Spec -desc $var -unit $unit
          }
       }
 
@@ -707,7 +708,6 @@ proc Obs::ParamInit { Obs { Spec "" } } {
          dataspec configure $Spec -colormap OBSMAP$Spec
       }
 
-      set var [dataspec configure $Spec -desc]
       if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
          dataspec configure $Spec -unit $MetStat::Rec(Unit$var)
       }
