@@ -648,7 +648,6 @@ proc NowCaster::Obs::Update { { Obs {} } } {
             dataspec configure $var -desc $var -unit [lindex $desc end] -set 0
          }
          metmodel configure $model [lindex $item 2] -dataspec $var
-         puts stderr "$var .[metmodel configure $model [lindex $item 2] -dataspec]."
       }
    }
    Obs::ParamUpdate
