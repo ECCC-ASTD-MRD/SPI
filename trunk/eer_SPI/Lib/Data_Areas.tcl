@@ -113,6 +113,7 @@ proc Areas::CreateWidget { Parent } {
 proc Areas::Init { } {
    global GDefs
 
+   Areas::Read $GDefs(Dir)/Data/RSMC.shp     #AAAA00 #FFFF00
    Areas::Read $GDefs(Dir)/Data/VAAC.shp     #AA0000 #FF0000
    Areas::Read $GDefs(Dir)/Data/FIR.shp      #00AA00 #00FF00
    Areas::Read $GDefs(Dir)/Data/MWO.shp      #0000AA #0000FF
