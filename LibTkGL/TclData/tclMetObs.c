@@ -1724,19 +1724,42 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); strtrim(stnid,' '); break;
 
                      /*Time displacement*/
-                     case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv); break;
-                     case 4012:  mm+=bufr_descriptor_get_ivalue(bcv); break;
-                     case 4013:  dd+=bufr_descriptor_get_ivalue(bcv); break;
-                     case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);
-
+                     case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv);
                          if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-
                       break;
-                     case 4015:  mn+=bufr_descriptor_get_ivalue(bcv); break;
-                     case 4016:  ss+=bufr_descriptor_get_ivalue(bcv); break;
+                     case 4012:  mm+=bufr_descriptor_get_ivalue(bcv);
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                            data=TMetElemData_New(ne,1,1);
+                            data->Ne=0;
+                         }
+                      break;
+                     case 4013:  dd+=bufr_descriptor_get_ivalue(bcv);
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                            data=TMetElemData_New(ne,1,1);
+                            data->Ne=0;
+                         }
+                      break;
+                     case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                            data=TMetElemData_New(ne,1,1);
+                            data->Ne=0;
+                         }
+                      break;
+                     case 4015:  mn+=bufr_descriptor_get_ivalue(bcv);
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                            data=TMetElemData_New(ne,1,1);
+                            data->Ne=0;
+                         }
+                      break;
+                     case 4016:  ss+=bufr_descriptor_get_ivalue(bcv);
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                            data=TMetElemData_New(ne,1,1);
+                            data->Ne=0;
+                         }
+                      break;
                  }
 
                   /* If there are Associated Fields */
@@ -1755,13 +1778,13 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case VALTYPE_FLT32:
                         value = bufr_descriptor_get_fvalue(bcv);
                         if (bufr_is_missing_float(value)) {
-                           value=-999.0;
+                           value=nan("NaN");
                         }
                         break;
                     case VALTYPE_FLT64:
                         value = bufr_descriptor_get_dvalue(bcv);
                         if (bufr_is_missing_double(value)) {
-                           value=-999.0;
+                           value=nan("NaN");
                         }
                         break;
                      case VALTYPE_STRING:
@@ -1770,7 +1793,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                         char *str = bufr_descriptor_get_svalue(bcv,&len);
                         printf("VALUE=%s",str);
 */
-                           value=-999.0;
+                           value=nan("NaN");
                         break;
                   }
                   data->Code[data->Ne]=eb;
@@ -2537,7 +2560,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                                  if (Interp)
                                     glFeedbackInit(40,GL_2D);
-                                 Data_RenderBarbule(spec->RenderVector,1,0.0,0.0,0.0,0.0,val,dir,VECTORSIZE(spec,val),NULL);
+                                 Data_RenderBarbule(spec->RenderVector,1,0.0,0.0,0.0,0.0,VAL2SPEC(spec,val),dir,VECTORSIZE(spec,val),NULL);
                                  if (Interp) {
                                     glFeedbackProcess(Interp,GL_2D);
                                     Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
