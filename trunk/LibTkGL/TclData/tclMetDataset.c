@@ -310,6 +310,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    int             i,idx;
    int             s,c,ns,nc,code;
    int             f,x,y;
+   char           *buf[32];
 
    static CONST char *sopt[] = {  "-BUFR_EDITION","-BUFR_MASTER_TABLE","-ORIG_CENTER","-ORIG_SUB_CENTER","-UPDATE_SEQUENCE","-DATA_CATEGORY","-INTERN_SUB_CATEGORY","-LOCAL_SUB_CATEGORY",
       "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-template",NULL };
@@ -569,10 +570,6 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   bufr_add_descriptor_to_sequence(bseq,bufr_dupl_descriptor(pbcd[c]));
                }
                ddo=bufr_apply_Tables(NULL,bseq,set->tmplte,NULL,&f);
-//               bufr_free_BufrDDOp(ddo);
-
-//               bseq=bufr_copy_codelist(bseq);
-//               ddo=bufr_create_BufrDDOp();
                node=lst_firstnode(bseq->list);
 
                Tcl_ListObjLength(Interp,Objv[++i],&nc);
@@ -597,7 +594,8 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      continue;
                   }
                   if (code!=bcv->descriptor) {
-                     Tcl_AppendResult(Interp,"Mismatch between data and template",(char*)NULL);
+                     sprintf(buf," %06i",bcv->descriptor);
+                     Tcl_AppendResult(Interp,"Mismatch between data and template, code ",Tcl_GetString(obj)," should have been ",buf,(char*)NULL);
                      return(TCL_ERROR);
                   }
                   bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
@@ -623,6 +621,8 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   node=lst_nextnode(node);
                }
                bufr_add_datasubset(set,bseq,NULL);
+//               bufr_free_sequence(bseq);
+               bufr_free_BufrDDOp(ddo);
             }
             break;
        }
