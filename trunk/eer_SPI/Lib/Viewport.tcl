@@ -764,6 +764,7 @@ proc Viewport::Follow { Frame VP X Y } {
                             foreach val $vals {
                                append Page::Data(Value) " $val"
                             }
+                            append Page::Data(Value) " "
                             set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }
          }
