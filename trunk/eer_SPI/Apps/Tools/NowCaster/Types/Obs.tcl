@@ -750,6 +750,10 @@ proc NowCaster::Obs::ModelApply { } {
 proc NowCaster::Obs::ModelSelect { Model { List { } } } {
    variable Data
 
+   if { ![metobs is $Data(CurrentObs)] } {
+      return
+   }
+
    if { [llength $List] } {
       set model $List
    } else {
@@ -905,20 +909,7 @@ proc NowCaster::Obs::ModelLoad { } {
             set name [lindex $line 0]
             lappend Data(Models) $name
             set Data(Models$name) [lindex $line 1]
-            set Data(Param$name) [lindex $line 2]
-
-            #----- Convert description to code
-            set m 0
-            foreach item $Data(Models$name)  {
-               set code0 [lindex $item 2]
-               set code1 [lindex $item 3]
-               lset Data(Models$name) $m 2 [set code0 [lindex [metobs table -desc $code0] 0]]
-               if { $code1!="" } {
-                  lset Data(Models$name) $m 3 [lindex [metobs table -desc $code1] 0]
-               }
-               lset Data(Param$name) $m 2 $code0
-               incr m
-            }
+            set Data(Param$name)  [lindex $line 2]
          }
       }
       close $f
@@ -958,21 +949,18 @@ proc NowCaster::Obs::ModelSave { } {
       #----- Convert code to description
       set m 0
       foreach item $Data(Models$model) {
-         set var0 [lindex $item 2]
-         set var1 [lindex $item 3]
-         lset msave $m 2 [set var0 [metobs table -code $var0]]
-         if { $var1!="" } {
-            lset msave $m 3 [set var1 [metobs table -code $var1]]
-         }
 
-         Obs::ParamGet [lindex $item 2]
-         lappend mparam "dataspec configure $var0 -factor $Obs::Param(Factor) -value $Obs::Param(Order) $Obs::Param(Mantisse) -size $Obs::Param(Size)\
+         set desc [metobs table -desc [lindex $item 2]]
+         set var  [lindex $desc 0]
+         Obs::ParamGet $var
+         lappend mparam "dataspec configure \"$var\" -factor $Obs::Param(Factor) -value $Obs::Param(Order) $Obs::Param(Mantisse) -size $Obs::Param(Size)\
             -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\" -unit \"$Obs::Param(Unit)\" -rendercontour $Obs::Param(Contour)\
             -rendervector $Obs::Param(Vector) -rendertexture $Obs::Param(Texture) -rendervolume $Obs::Param(Volume)\
             -rendercoord $Obs::Param(Coord) -rendervalue $Obs::Param(Value) -renderlabel $Obs::Param(Label)\
             -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Intervals)\" -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)"
          incr m
       }
+#      puts $f "\"$model\" { $msave } [metmodel define $model -spacing] [metmodel define $model -flat] [metmodel define $model -topography] { $mparam }"
       puts $f "\"$model\" { $msave } { $mparam }"
    }
    close $f
