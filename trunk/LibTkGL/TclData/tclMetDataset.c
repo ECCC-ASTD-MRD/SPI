@@ -570,6 +570,11 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   bufr_add_descriptor_to_sequence(bseq,bufr_dupl_descriptor(pbcd[c]));
                }
                ddo=bufr_apply_Tables(NULL,bseq,set->tmplte,NULL,&f);
+               if (!ddo) {
+                  sprintf(buf,"%i",f);
+                  Tcl_AppendResult(Interp,"Error while applying BUFR tables (libECBUFR error code: ",buf,")",(char*)NULL);
+                  return(TCL_ERROR);
+               }
                node=lst_firstnode(bseq->list);
 
                Tcl_ListObjLength(Interp,Objv[++i],&nc);
@@ -601,7 +606,6 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
 
                   ddo->current=node;
-//                  bufr_apply_Tables(ddo,bseq,set->tmplte,node);
 
                   MetDataset_Obj2Code(Interp,bcv,lst);
 
@@ -620,8 +624,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   }
                   node=lst_nextnode(node);
                }
-               bufr_add_datasubset(set,bseq,NULL);
-//               bufr_free_sequence(bseq);
+               bufr_add_datasubset(set,bseq,ddo);
                bufr_free_BufrDDOp(ddo);
             }
             break;
@@ -828,13 +831,15 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
          break;
 
          case VALTYPE_INT32 :
-            TclY_Get0IntFromObj(Interp,obj,&ival);
-            bufr_descriptor_set_ivalue(BCV,ival);
+            if (TclY_Get0IntFromObj(Interp,obj,&ival)==TCL_OK) {
+               bufr_descriptor_set_ivalue(BCV,ival);
+            }
             break;
 
          case VALTYPE_INT64 :
-            TclY_Get0LongFromObj(Interp,obj,&lval);
-            bufr_descriptor_set_ivalue(BCV,lval);
+            if (TclY_Get0LongFromObj(Interp,obj,&lval)==TCL_OK) {
+               bufr_descriptor_set_ivalue(BCV,lval);
+            }
             break;
 
          case VALTYPE_FLT64  :
