@@ -1937,7 +1937,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                      if (!band->Ref->InvTransform) {
                         band->Ref->InvTransform=(double*)calloc(6,sizeof(double));
                      }
-                     if (!(GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,band->Ref->Transform,order))) {
+                     if (!(GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,band->Ref->Transform,1))) {
                         Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: () Unable to fit control points",(char*)NULL);
                         return(TCL_ERROR);
                      }
