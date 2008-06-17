@@ -116,18 +116,13 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    /*Get the projection transform*/
    if ((band->NbGCPs=GDALGetGCPCount(file->Set))) {
-      printf("(DEBUG) GDAL_BandRead: Using GCPs to get transform\n");
       if (band->GCPs) free(band->GCPs);
       band->GCPs=(GDAL_GCP*)malloc(band->NbGCPs*sizeof(GDAL_GCP));
       memcpy(band->GCPs,GDALGetGCPs(file->Set),band->NbGCPs*sizeof(GDAL_GCP));
-
-      if (!GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,tra,TRUE)) {
-          printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
-      }
    } else {
       GDALGetGeoTransform(file->Set,tra);
+      GDALInvGeoTransform(tra,inv);
    }
-   GDALInvGeoTransform(tra,inv);
 
    hband=GDALGetRasterBand(file->Set,Idxs[i]);
    type=GDALGetRasterDataType(hband);
@@ -166,7 +161,21 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    if (band->Ref)
       GeoRef_Destroy(Interp,band->Ref->Name);
-   band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,tra,inv,NULL);
+
+   if (band->GCPs) {
+      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,NULL,NULL,NULL);
+/*
+      if (!GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,tra,TRUE)) {
+          printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
+      }
+*/
+      printf("(DEBUG) GDAL_BandRead: Using GCPs to get transform\n");
+      if (!(band->Ref->GCPTransform=(void*)GDALCreateGCPTransformer(band->NbGCPs,band->GCPs,3,FALSE))) {
+          printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
+      }
+   } else {
+      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,tra,inv,NULL);
+   }
    GeoRef_Size(band->Ref,X0+BD,Y0+BD,0,X1-BD,Y1-BD,0,BD);
    GeoRef_Qualify(band->Ref);
 
@@ -1777,7 +1786,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 */
 int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         i,j,idx,nidx,nlst,approx=1;
+   int         i,j,idx,nidx,nlst,order=1;
    double      tra[6],inv[6],*tm=NULL,*im=NULL;
    GDAL_Band  *band;
    TGeoRef    *ref;
@@ -1867,7 +1876,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Objc!=2 && Objc!=3) {
-                  Tcl_WrongNumArgs(Interp,1,Objv,"{ gcps } [Approx]");
+                  Tcl_WrongNumArgs(Interp,1,Objv,"{ gcps } [Order]");
                   return(TCL_ERROR);
                }
 
@@ -1896,20 +1905,40 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                }
 
                if (Objc==3) {
-                  Tcl_GetBooleanFromObj(Interp,Objv[++i],&approx);
+                  Tcl_GetBooleanFromObj(Interp,Objv[++i],&order);
                }
 
-               if (!GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,tra,approx)) {
-                  Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: Unable to fit control points",(char*)NULL);
-                  return(TCL_ERROR);
+               if (band->Ref->GCPTransform) {
+                  GDALDestroyGCPTransformer(band->Ref->GCPTransform);
+                  band->Ref->GCPTransform=NULL;
                }
-               GDALInvGeoTransform(tra,inv);
-               ref=band->Ref;
-               if (ref) {
-                  band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,band->Ref->String,tra,inv,NULL);
-                  GeoRef_Destroy(Interp,ref->Name);
+
+               if (order==0) {
+                  if (!band->Ref->Transform) {
+                     band->Ref->Transform=(double*)calloc(6,sizeof(double));
+                  }
+                  if (!band->Ref->InvTransform) {
+                     band->Ref->InvTransform=(double*)calloc(6,sizeof(double));
+                  }
+                  if (!(GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,band->Ref->Transform,order))) {
+                     Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: Unable to fit control points",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  GDALInvGeoTransform(band->Ref->Transform,band->Ref->InvTransform);
+
                } else {
-                  band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,tra,inv,NULL);
+                  if (band->Ref->Transform) {
+                     free(band->Ref->Transform);
+                     band->Ref->Transform=NULL;
+                  }
+                  if (band->Ref->InvTransform) {
+                     free(band->Ref->InvTransform);
+                     band->Ref->InvTransform=NULL;
+                  }
+                  if (!(band->Ref->GCPTransform=(void*)GDALCreateGCPTransformer(band->NbGCPs,band->GCPs,order,FALSE))) {
+                     Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: Unable to fit control points",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                }
                GeoTex_ClearCoord(&band->Tex,NULL);
             }
