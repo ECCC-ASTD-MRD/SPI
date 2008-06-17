@@ -174,7 +174,9 @@ typedef struct TGeoRef {
    OGRCoordinateTransformationH  Function,InvFunction;    /*Projection functions*/
    OGRSpatialReferenceH          Spatial;                 /*Spatial reference*/
    double                       *Transform,*InvTransform; /*Transformation functions*/
-   void                         *GCPTransform,*GCPInvTransform;
+   void                         *GCPTransform;            /*GPC derivative transform (1,2,3 order)*/
+   void                         *TPSTransform;            /*GPC Thin Spline transform*/
+   void                         *RPCTransform;            /*GPC Rigorous Projection Model transform*/
 
    struct TGeoRef    *RefFrom;                            /*Georeference de reference (coupe verticale,...)*/
 
