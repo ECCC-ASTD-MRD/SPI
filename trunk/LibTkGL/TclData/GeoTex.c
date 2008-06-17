@@ -874,7 +874,7 @@ int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
    } else {
       Band->Tex.ResN=pow(2,ceil(log10(d)/log10(2)))/Band->Spec->TexSize;
    }
-   res=pow(2,LOG2(res));
+   res=pow(2,LOG2(res))*Band->Spec->TexRes;
    res=res<1?1:(res>Band->Tex.ResN?Band->Tex.ResN:res);
    pres=Band->Tex.Res;
 
