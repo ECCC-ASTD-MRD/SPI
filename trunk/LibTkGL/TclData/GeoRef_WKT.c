@@ -209,6 +209,10 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
          y=Ref->Transform[3]+Ref->Transform[4]*X+Ref->Transform[5]*Y;
       } else if (Ref->GCPTransform) {
          GDALGCPTransform(Ref->GCPTransform,FALSE,1,&x,&y,&z,&ok);
+      } else if (Ref->TPSTransform) {
+         GDALGCPTransform(Ref->TPSTransform,FALSE,1,&x,&y,&z,&ok);
+      } else if (Ref->RPCTransform) {
+         GDALGCPTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
       }
    }
 
@@ -275,8 +279,12 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
          if (Ref->InvTransform) {
             *X=Ref->InvTransform[0]+Ref->InvTransform[1]*x+Ref->InvTransform[2]*y;
             *Y=Ref->InvTransform[3]+Ref->InvTransform[4]*x+Ref->InvTransform[5]*y;
-         } else {
+         } else if (Ref->GCPTransform) {
             GDALGCPTransform(Ref->GCPTransform,TRUE,1,X,Y,&z,&ok);
+         } else if (Ref->TPSTransform) {
+            GDALTPSTransform(Ref->TPSTransform,TRUE,1,X,Y,&z,&ok);
+         } else if (Ref->RPCTransform) {
+            GDALRPCTransform(Ref->RPCTransform,TRUE,1,X,Y,&z,&ok);
          }
       }
 
