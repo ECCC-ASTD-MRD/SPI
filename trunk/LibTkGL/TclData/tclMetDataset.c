@@ -121,7 +121,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    switch ((enum opt)idx) {
       case CREATE:
          if(Objc<2 || Objc>5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id [template|file] [file index]");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id [template|file] [file index]");
             return(TCL_ERROR);
          }
 
@@ -176,7 +176,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case FREE:
          if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id");
             return(TCL_ERROR);
          }
          MetDataset_FreeHash(Interp,Tcl_GetString(Objv[2]));
@@ -184,7 +184,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case READ:
          if (Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id file");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id file");
             return(TCL_ERROR);
          }
          if (!(set=MetDataset_Get(Tcl_GetString(Objv[2])))) {
@@ -216,7 +216,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case WRITE:
          if (Objc<5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id file [BUFR|ASCII] [Compress]");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id file [BUFR|ASCII] [Compress]");
             return(TCL_ERROR);
          }
          if (!(set=MetDataset_Get(Tcl_GetString(Objv[2])))) {
@@ -253,7 +253,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case DEFINE:
          if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id ?option?");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id ?option?");
             return(TCL_ERROR);
          }
          return(MetDataset_Define(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
@@ -261,7 +261,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case IS:
          if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id");
             return(TCL_ERROR);
          }
          if (MetDataset_Get(Tcl_GetString(Objv[2]))) {
@@ -310,7 +310,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    int             i,idx;
    int             s,c,ns,nc,code;
    int             f,x,y;
-   char           *buf[32];
+   char            buf[32];
 
    static CONST char *sopt[] = {  "-BUFR_EDITION","-BUFR_MASTER_TABLE","-ORIG_CENTER","-ORIG_SUB_CENTER","-UPDATE_SEQUENCE","-DATA_CATEGORY","-INTERN_SUB_CATEGORY","-LOCAL_SUB_CATEGORY",
       "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-template",NULL };
@@ -740,6 +740,67 @@ Tcl_Obj* MetDataset_Put(Tcl_Interp *Interp,char *Name,BUFR_Dataset *Set) {
  *
  *---------------------------------------------------------------------------------------------------------------
  */
+Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
+
+   Tcl_Obj *obj=NULL;
+   char    *str;
+   float    fval;
+   double   dval;
+   int      ival;
+   long     lval;
+   int      len;
+
+   if (V) {
+
+      switch (V->type) {
+         case VALTYPE_STRING :
+            str=bufr_value_get_string(V,&len);
+            if (str) {
+               obj=Tcl_NewStringObj(str,-1);
+            } else {
+               obj=Tcl_NewStringObj("MSNG",-1);
+            }
+            break;
+         case VALTYPE_INT8:
+         case VALTYPE_INT32:
+            ival=bufr_value_get_int32(V);
+            if (ival==-1) {
+               obj=Tcl_NewStringObj("MSNG",0);
+            } else {
+               obj=Tcl_NewIntObj(ival);
+            }
+            break;
+
+         case VALTYPE_INT64  :
+            lval=bufr_value_get_int64(V);
+            if (lval==-1) {
+               obj=Tcl_NewStringObj("MSNG",0);
+            } else {
+               obj=Tcl_NewLongObj(lval);
+            }
+            break;
+
+         case VALTYPE_FLT32  :
+            fval=bufr_value_get_float(V);
+            if (bufr_is_missing_float(fval)) {
+               obj=Tcl_NewStringObj("MSNG",0);
+            } else {
+               obj=Tcl_NewDoubleObj(lval);
+            }
+            break;
+
+         case VALTYPE_FLT64  :
+            dval=bufr_value_get_double(V);
+            if (bufr_is_missing_double(dval)) {
+               obj=Tcl_NewStringObj("MSNG",0);
+            } else {
+               obj=Tcl_NewDoubleObj(lval);
+            }
+      }
+   }
+   return(obj);
+}
+
 Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrDescriptor *BCV) {
 
    Tcl_Obj *obj;
@@ -759,28 +820,7 @@ Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrDescriptor *BCV) {
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(buf,strlen(buf)));
       }*/
       if (BCV->value) {
-         /* If there are Associated Fields*/
-         if (BCV->value->type==VALTYPE_INT32) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(bufr_descriptor_get_ivalue(BCV)));
-         } else if (BCV->value->type == VALTYPE_INT64) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(bufr_descriptor_get_ivalue(BCV)));
-         } else if (BCV->value->type == VALTYPE_FLT32) {
-            float value=bufr_descriptor_get_fvalue(BCV);
-            if (bufr_is_missing_float(value)) {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MSNG",-1));
-            } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(bufr_descriptor_get_fvalue(BCV)));
-            }
-         } else if (BCV->value->type == VALTYPE_FLT64) {
-            double value=bufr_descriptor_get_fvalue(BCV);
-            if (bufr_is_missing_double(value)) {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MSNG",-1));
-            } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(bufr_descriptor_get_dvalue(BCV)));
-            }
-         } else if (BCV->value->type == VALTYPE_STRING) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(bufr_descriptor_get_svalue(BCV,&len),-1));
-         }
+         Tcl_ListObjAppendElement(Interp,obj,MetDataset_Value2Obj(BCV->value));
          if (BCV->value->af) {
 //            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewByteArrayObj(BCV->value->af->bits,8));
          }
@@ -830,6 +870,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
             bufr_descriptor_set_svalue(BCV,Tcl_GetString(obj));
          break;
 
+         case VALTYPE_INT8 :
          case VALTYPE_INT32 :
             if (TclY_Get0IntFromObj(Interp,obj,&ival)==TCL_OK) {
                bufr_descriptor_set_ivalue(BCV,ival);
@@ -914,7 +955,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
    switch ((enum opt)idx) {
       case CREATE:
          if(Objc!=3 && Objc!=4)  {
-            Tcl_WrongNumArgs(Interp,2,Objv,"template [file]");
+            Tcl_WrongNumArgs(Interp,1,Objv,"template [file]");
             return(TCL_ERROR);
          }
 
@@ -933,14 +974,14 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
       case FREE:
          if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"template");
+            Tcl_WrongNumArgs(Interp,1,Objv,"template");
             return(TCL_ERROR);
          }
          break;
 
       case READ:
          if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"template file");
+            Tcl_WrongNumArgs(Interp,1,Objv,"template file");
             return(TCL_ERROR);
          }
          if ((!(new=bufr_load_template(Tcl_GetString(Objv[3]),MetObs_GetTables())))) {
@@ -955,7 +996,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
       case WRITE:
          if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"template file");
+            Tcl_WrongNumArgs(Interp,1,Objv,"template file");
             return(TCL_ERROR);
          }
          if (!(tmp=MetTemplate_Get(Tcl_GetString(Objv[2])))) {
@@ -970,7 +1011,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
       case DEFINE:
          if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id ?option?");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id ?option?");
             return(TCL_ERROR);
          }
          return(MetTemplate_Define(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
@@ -978,7 +1019,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
       case IS:
          if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            Tcl_WrongNumArgs(Interp,1,Objv,"id");
             return(TCL_ERROR);
          }
          if (MetTemplate_Get(Tcl_GetString(Objv[2]))) {
@@ -1017,10 +1058,12 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    BUFR_Template *tmp;
-   int            i,idx;
+   BufrDescValue *code;
+   int            i,idx,c,v;
+   Tcl_Obj       *obj,*cd,*vl;
 
-   static CONST char *sopt[] = { "-DATASUBSET",NULL };
-   enum                opt { DATASUBSET };
+   static CONST char *sopt[] = { "-CODE","-BUFR_EDITION",NULL };
+   enum                opt { CODE,BUFR_EDITION };
 
    tmp=MetTemplate_Get(Name);
    if (!tmp) {
@@ -1035,7 +1078,56 @@ static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CO
       }
 
       switch ((enum opt)idx) {
+         case BUFR_EDITION:
+            if (Objc!=1 && Objc!=2) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"[edition]");
+               return(TCL_ERROR);
+            } else if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(tmp->edition));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&tmp->edition);
+            }
+            break;
 
+         case CODE:
+            if (Objc!=1 && Objc!=2 && Objc!=3) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"[index] [code/value]");
+               return(TCL_ERROR);
+            } else if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for (c=0;c<arr_count(tmp->codets);c++) {
+                  code=(BufrDescValue*)arr_get(tmp->codets,c);
+                  cd=Tcl_NewListObj(0,NULL);
+                  vl=Tcl_NewListObj(0,NULL);
+                  for (v=0;v<code->nbval;v++) {
+                     Tcl_ListObjAppendElement(Interp,vl,MetDataset_Value2Obj(code->values[v]));
+                  }
+                  Tcl_ListObjAppendElement(Interp,cd,Tcl_NewIntObj(code->descriptor));
+                  Tcl_ListObjAppendElement(Interp,cd,vl);
+                  Tcl_ListObjAppendElement(Interp,obj,cd);
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else if (Objc>1) { {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               if (c<0 || c>=arr_count(tmp->codets)) {
+                  Tcl_AppendResult(Interp,"\n   MetTemplate_Define : Invalid code index",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               code=(BufrDescValue *)arr_get(tmp->codets,c);
+
+               if (Objc==2) {
+                  cd=Tcl_NewListObj(0,NULL);
+                  vl=Tcl_NewListObj(0,NULL);
+                  for (v=0;v<code->nbval;v++) {
+                     Tcl_ListObjAppendElement(Interp,vl,MetDataset_Value2Obj(code->values[v]));
+                  }
+                  Tcl_ListObjAppendElement(Interp,cd,Tcl_NewIntObj(code->descriptor));
+                  Tcl_ListObjAppendElement(Interp,cd,vl);
+                  Tcl_SetObjResult(Interp,cd);
+               } else {
+               }
+            }
+            break;
       }
    }
    return(TCL_OK);
