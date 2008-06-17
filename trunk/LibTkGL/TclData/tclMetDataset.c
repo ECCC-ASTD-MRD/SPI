@@ -1107,7 +1107,7 @@ static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CO
                   Tcl_ListObjAppendElement(Interp,obj,cd);
                }
                Tcl_SetObjResult(Interp,obj);
-            } else if (Objc>1) { {
+            } else if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&c);
                if (c<0 || c>=arr_count(tmp->codets)) {
                   Tcl_AppendResult(Interp,"\n   MetTemplate_Define : Invalid code index",(char*)NULL);

@@ -1769,6 +1769,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                   }
 
                   switch(bcv->value->type) {
+                     case VALTYPE_INT8:
                      case VALTYPE_INT32:
                         value=bufr_descriptor_get_ivalue(bcv);
                         break;
@@ -1778,13 +1779,13 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case VALTYPE_FLT32:
                         value = bufr_descriptor_get_fvalue(bcv);
                         if (bufr_is_missing_float(value)) {
-                           value=nan("NaN");
+                           value=-999.0;
                         }
                         break;
                     case VALTYPE_FLT64:
                         value = bufr_descriptor_get_dvalue(bcv);
                         if (bufr_is_missing_double(value)) {
-                           value=nan("NaN");
+                           value=-999.0;
                         }
                         break;
                      case VALTYPE_STRING:
@@ -1793,7 +1794,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                         char *str = bufr_descriptor_get_svalue(bcv,&len);
                         printf("VALUE=%s",str);
 */
-                           value=nan("NaN");
+                           value=-999.0;
                         break;
                   }
                   data->Code[data->Ne]=eb;
@@ -1802,7 +1803,6 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                }
             }
          }
-
          /*Insert station in list if not already done*/
          TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi);
 

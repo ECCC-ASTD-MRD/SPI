@@ -960,6 +960,14 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       GDALDestroyGCPTransformer(Ref->GCPTransform);
       Ref->GCPTransform=NULL;
    }
+   if (Ref->TPSTransform) {
+      GDALDestroyTPSTransformer(Ref->TPSTransform);
+      Ref->TPSTransform=NULL;
+   }
+   if (Ref->RPCTransform) {
+      GDALDestroyRPCTransformer(Ref->RPCTransform);
+      Ref->RPCTransform=NULL;
+   }
 
    if (Ref->Spatial) {
       OSRDestroySpatialReference(Ref->Spatial);
@@ -1250,7 +1258,8 @@ TGeoRef* GeoRef_New() {
    ref->Transform=NULL;
    ref->InvTransform=NULL;
    ref->GCPTransform=NULL;
-   ref->GCPInvTransform=NULL;
+   ref->TPSTransform=NULL;
+   ref->RPCTransform=NULL;
 
    ref->Levels=NULL;
    ref->LevelType=LVL_UNDEF;
