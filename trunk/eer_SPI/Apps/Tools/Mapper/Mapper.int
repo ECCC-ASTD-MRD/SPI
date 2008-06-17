@@ -596,7 +596,8 @@ proc Mapper::ParamsGDAL { Object Tab } {
          Bubble::Create $Data(Frame2).pos.crop.mode [lindex $Bubble(CropDo) $GDefs(Lang)]
 
       set Data(Frame1) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Ref) $GDefs(Lang)] False ""]
-         frame $Data(Frame1).projhead
+
+        frame $Data(Frame1).projhead
             label $Data(Frame1).projhead.lbl -text [lindex $Lbl(Projection) $GDefs(Lang)] -width 10 -anchor nw
             button $Data(Frame1).projhead.file -image OPEN -relief flat -bd 0 -overrelief raised \
                -command "Mapper::ProjFile $Data(Frame1).proj.val \[FileBox::Create . \"\" Load \[list \$FileBox::Type(PROJ) \$FileBox::Type(TXT)\]\]"
@@ -637,6 +638,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
          pack $Data(Frame3).meta -side top -fill both -expand true -padx 5 -pady 5
 
       set Data(Frame4) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(GeoLoc) $GDefs(Lang)] False ""]
+
          frame $Data(Frame4).georef
             frame $Data(Frame4).georef.tool
                button $Data(Frame4).georef.tool.add -image PINADD -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordAdd
@@ -645,10 +647,9 @@ proc Mapper::ParamsGDAL { Object Tab } {
                   -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
                   -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
                button $Data(Frame4).georef.tool.calcul -text [lindex $Lbl(Calcul) $GDefs(Lang)] -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordSet
-               checkbutton $Data(Frame4).georef.tool.approx -text [lindex $Lbl(Approx) $GDefs(Lang)] -variable Mapper::GeoLocator::Data(Approx) -onvalue True -offvalue False \
-               -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
+               ComboBox::Create $Data(Frame4).georef.tool.fit Mapper::GeoLocator::Data(Mode) noedit unsorted nodouble -1 $Mapper::GeoLocator::Data(Modes) 10 10 ""
                pack $Data(Frame4).georef.tool.mode $Data(Frame4).georef.tool.add $Data(Frame4).georef.tool.del \
-                  $Data(Frame4).georef.tool.calcul $Data(Frame4).georef.tool.approx -side left -padx 2
+                  $Data(Frame4).georef.tool.fit $Data(Frame4).georef.tool.calcul -side left -padx 2
             pack $Data(Frame4).georef.tool -side top -fill x
 
             frame $Data(Frame4).georef.pt
@@ -700,7 +701,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
          Bubble::Create $Data(Frame4).georef.tool.del    [lindex $Bubble(RefDel) $GDefs(Lang)]
          Bubble::Create $Data(Frame4).georef.tool.mode   [lindex $Bubble(RefMode) $GDefs(Lang)]
          Bubble::Create $Data(Frame4).georef.tool.calcul [lindex $Bubble(RefCalcul) $GDefs(Lang)]
-         Bubble::Create $Data(Frame4).georef.tool.approx [lindex $Bubble(RefApprox) $GDefs(Lang)]
+         Bubble::Create $Data(Frame4).georef.tool.fit    [lindex $Bubble(RefFit) $GDefs(Lang)]
 
       frame .mapperparams.com
          checkbutton .mapperparams.com.real -image DOCSEL -bd 1 -relief raised \

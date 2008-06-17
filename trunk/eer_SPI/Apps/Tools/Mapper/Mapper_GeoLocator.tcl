@@ -25,7 +25,8 @@ namespace eval Mapper::GeoLocator { } {
    set Data(Lat)  0
    set Data(Lon)  0
 
-   set Data(Approx) True
+   set Data(Modes)  { "Simple" "Polynomial 1st order" "Polynomial 2nd order" "Polynomial 3rd order" "Thin spline" }
+   set Data(Mode)   [lindex $Data(Modes) 1]
    set Data(GCPS)   {}
    set Data(GCPNb)  0
 }
@@ -223,7 +224,7 @@ proc Mapper::GeoLocator::CoordSet { } {
          lappend listCoord [list $col $line $x $y]
       }
    }
-   gdalband define $Mapper::Data(Object) -gcps $listCoord $Mapper::GeoLocator::Data(Approx)
+   gdalband define $Mapper::Data(Object) -gcps $listCoord [lsearch -exact $Data(Modes) $Data(Mode)]
    set Mapper::Data(Trans)    [gdalband define $Mapper::Data(Object) -transform]
    set Mapper::Data(InvTrans) [gdalband define $Mapper::Data(Object) -invtransform]
 }

@@ -46,7 +46,6 @@ namespace eval Mapper { } {
    set Lbl(Meta)         { "Méta-données" "Metadata" }
    set Lbl(GeoLoc)       { "Géoréférencer" "Georeference" }
    set Lbl(Calcul)       { "Calculer" "Calculate" }
-   set Lbl(Approx)       { "Approximatif" "Approximation" }
    set Lbl(Map)          { "Palette" "Colormap" }
    set Lbl(Del)          { "Supprimer" "Delete" }
    set Lbl(Sel)          { "Sélection" "Selection" }
@@ -181,7 +180,7 @@ namespace eval Mapper { } {
    set Bubble(RefDel)        { "Supprimer le point de contrôle courant" "Delete current control point" }
    set Bubble(RefMode)       { "Activer le mode de positionnement des point de contrôle" "Activate control point positionning mode" }
    set Bubble(RefCalcul)     { "Calculer la transformation à partir des points de contrôle" "Calculate transform from control points" }
-   set Bubble(RefApprox)     { "Calcul Approximatif" "Aproximative calculus" }
+   set Bubble(RefFit)        { "Méthode de calcul de la transformation" "Tramsform fitting method" }
 
    set Bubble(DepotAdd)      { "Ajouter un dépot de données à la liste des dépots" "Add data repository to known repository list"}
    set Bubble(DepotDel)      { "Supprimenr le dépot de données de la liste" "Remove repository from list"}
