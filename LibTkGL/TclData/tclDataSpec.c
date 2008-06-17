@@ -227,12 +227,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step",
-                                 "-geovector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-interpolation","-light","-sprite",NULL };
+                                 "-geovector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
-                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,INTERPOLATION,LIGHT,SPRITE };
+                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE };
 
    if (Objc==1)  s=0;
 
@@ -604,6 +604,15 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->Light));
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->Light);
+            }
+            break;
+
+          case TEXRES:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->TexRes));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->TexRes);
+               Spec->TexRes=Spec->TexRes<1?1:Spec->TexRes;
             }
             break;
 
@@ -1151,6 +1160,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->InterM=from->InterM;
    to->Axis=from->Axis;
 
+   to->TexRes=from->TexRes;
    to->TexSize=from->TexSize;
    to->TexSample=from->TexSample;
    to->Interp=from->Interp;
@@ -1275,6 +1285,7 @@ TDataSpec *DataSpec_New(){
    spec->InterO=0;
    spec->InterM=0;
    spec->Interp=GL_NEAREST;
+   spec->TexRes=1;
    spec->TexStep=0.0;
    spec->TexSample=8;
    spec->TexSize=256;
