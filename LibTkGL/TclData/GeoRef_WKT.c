@@ -170,8 +170,8 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 */
 int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-   double x,y;
-   int    s,dx;
+   double x,y,z=0.0;
+   int    s,dx,ok;
 
    if (X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5) || X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5)) {
       if (!Extrap) {
@@ -201,12 +201,15 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    }
 
    /* Transform the point into georeferenced coordinates */
-   if (Transform && Ref->Transform) {
-      x=Ref->Transform[0]+Ref->Transform[1]*X+Ref->Transform[2]*Y;
-      y=Ref->Transform[3]+Ref->Transform[4]*X+Ref->Transform[5]*Y;
-   } else {
-      x=X;
-      y=Y;
+   x=X;
+   y=Y;
+   if (Transform) {
+      if (Ref->Transform) {
+         x=Ref->Transform[0]+Ref->Transform[1]*X+Ref->Transform[2]*Y;
+         y=Ref->Transform[3]+Ref->Transform[4]*X+Ref->Transform[5]*Y;
+      } else if (Ref->GCPTransform) {
+         GDALGCPTransform(Ref->GCPTransform,FALSE,1,&x,&y,&z,&ok);
+      }
    }
 
    /* Transform to latlon */
@@ -247,8 +250,8 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */
 int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   double x,y;
-   int    s,dx;
+   double x,y,z=0.0;
+   int    s,dx,ok;
 
    if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 
@@ -266,12 +269,15 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       }
 
       /* Transform from georeferenced coordinates */
-      if (Transform && Ref->InvTransform) {
-         *X=Ref->InvTransform[0]+Ref->InvTransform[1]*x+Ref->InvTransform[2]*y;
-         *Y=Ref->InvTransform[3]+Ref->InvTransform[4]*x+Ref->InvTransform[5]*y;
-      } else {
-         *X=x;
-         *Y=y;
+      *X=x;
+      *Y=y;
+      if (Transform) {
+         if (Ref->InvTransform) {
+            *X=Ref->InvTransform[0]+Ref->InvTransform[1]*x+Ref->InvTransform[2]*y;
+            *Y=Ref->InvTransform[3]+Ref->InvTransform[4]*x+Ref->InvTransform[5]*y;
+         } else {
+            GDALGCPTransform(Ref->GCPTransform,TRUE,1,X,Y,&z,&ok);
+         }
       }
 
       /* In case of non-uniform grid, figure out where in the position vector we are */
@@ -329,31 +335,24 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
 
    OGRSpatialReferenceH llref=NULL;
 
-   char *string;
-   double t[6],i[6];
-
-   if (String)       string=strdup(String);
-   if (Transform)    memcpy(t,Transform,6*sizeof(double));
-   if (InvTransform) memcpy(i,InvTransform,6*sizeof(double));
-
    GeoRef_Clear(Ref,0);
    Ref->Grid[0]='W';
 
    if (Transform) {
       Ref->Transform=(double*)calloc(6,sizeof(double));
-      memcpy(Ref->Transform,t,6*sizeof(double));
+      memcpy(Ref->Transform,Transform,6*sizeof(double));
    }
 
    if (InvTransform) {
       Ref->InvTransform=(double*)calloc(6,sizeof(double));
-      memcpy(Ref->InvTransform,i,6*sizeof(double));
+      memcpy(Ref->InvTransform,InvTransform,6*sizeof(double));
    }
 
    if (Spatial) {
       Ref->Spatial=OSRClone(Spatial);
       OSRExportToWkt(Ref->Spatial,&Ref->String);
    } else if (String) {
-      Ref->String=string;
+      Ref->String=strdup(String);
       Ref->Spatial=OSRNewSpatialReference(Ref->String);
    } else {
       Ref->String=strdup(REFDEFAULT);
