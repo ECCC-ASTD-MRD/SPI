@@ -57,6 +57,7 @@ namespace eval Mapper { } {
    set Lbl(Translate)    { "Translation" "Translation" }
    set Lbl(Position)     { "Position" "Position" }
    set Lbl(Rotation)     { "Rotation" "Rotation" }
+   set Lbl(Resolution)   { "Résolution" "Resolution" }
    set Lbl(Scale)        { "Echelle" "Scaling" }
    set Lbl(Invert)       { "Inversion" "Invert" }
    set Lbl(Material)     { "Matériel" "Material" }
@@ -155,6 +156,7 @@ namespace eval Mapper { } {
    set Bubble(CurveBand)     { "Sélection du canal/bande pour lequel vous soulez modifier la courbe" "Select the channel/band for which you want to change the curve" }
    set Bubble(Curve)         { "Sélection de la courbe a appliquer" "Sélect which curve to apply" }
    set Bubble(Transparency)  { "Facteur de transparence" "Transparency factor" }
+   set Bubble(Resolution)    { "Facteur de diminution de la résolution" "Diminutive resolution factor" }
    set Bubble(Interp)        { "Degrée d'interpolation" "Interpolation degree" }
    set Bubble(CurveTool)     { "Outil de modification de la courbe" "Curve modification tool" }
    set Bubble(CurveMin)      { "Minimum de la courbe" "Curve minimum" }

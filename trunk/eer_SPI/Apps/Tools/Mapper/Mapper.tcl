@@ -581,6 +581,7 @@ proc Mapper::ParamsGDALGet { Object } {
    set Data(Band)       red
    set Data(Sample)     [gdalband configure $Object -texsample]
    set Data(Texture)    [gdalband configure $Object -texsize]
+   set Data(Resolution) [gdalband configure $Object -texres]
    set Data(Tran)       [gdalband configure $Object -transparency]
    set Data(Interp)     [gdalband configure $Object -interpolation]
    set Data(Topo)       [gdalband configure $Object -topography]
@@ -632,14 +633,8 @@ proc Mapper::ParamsGDALSet { Object } {
       Mapper::ReadBand $Object [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)]
    }
 
-   gdalband configure $Object -texsample $Data(Sample)
-   gdalband configure $Object -texsize $Data(Texture)
-   gdalband configure $Object -transparency $Data(Tran)
-   gdalband configure $Object -interpolation $Data(Interp)
-   gdalband configure $Object -topography $Data(Topo)
-   gdalband configure $Object -topographyfactor $Data(TopoFactor)
-   gdalband configure $Object -font XFont12
-
+   gdalband configure $Object -texsample $Data(Sample) -texres $Data(Resolution) -texsize $Data(Texture) -transparency $Data(Tran) \
+      -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12
    gdalband stats $Object -nodata $Data(NoData)
 
    if { $Data(Cut) } {
@@ -649,8 +644,7 @@ proc Mapper::ParamsGDALSet { Object } {
    }
 
    set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
-   gdalband define $Object -projection $Data(Proj)
-   gdalband define $Object -transform $Data(Trans)
+   gdalband define $Object -projection $Data(Proj) -transform $Data(Trans)
 #   gdalband define $Object -invtransform $Data(InvTrans)
 
    Page::Update $Page::Data(Frame)

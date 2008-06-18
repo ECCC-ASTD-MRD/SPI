@@ -474,6 +474,13 @@ proc Mapper::ParamsGDAL { Object Tab } {
                      -showvalue False -command { if { $Mapper::Data(RealTime) } { Mapper::ParamsGDALSet $Mapper::Data(Object) }; catch }
                   pack $Data(Frame2).col.def.tran.lbl $Data(Frame2).col.def.tran.txt -side left
                   pack $Data(Frame2).col.def.tran.val -side left -fill x -expand True
+              frame $Data(Frame2).col.def.res
+                  label $Data(Frame2).col.def.res.lbl -text [lindex $Lbl(Resolution) $GDefs(Lang)] -width 14 -anchor w
+                  label $Data(Frame2).col.def.res.txt -textvariable Mapper::Data(Resolution) -width 3 -anchor w -relief sunken -bd 1
+                  scale $Data(Frame2).col.def.res.val -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 32 -variable Mapper::Data(Resolution) -orient horizontal -resolution 1\
+                     -showvalue False -command { if { $Mapper::Data(RealTime) } { Mapper::ParamsGDALSet $Mapper::Data(Object) }; catch }
+                  pack $Data(Frame2).col.def.res.lbl $Data(Frame2).col.def.res.txt -side left
+                  pack $Data(Frame2).col.def.res.val -side left -fill x -expand True
                frame $Data(Frame2).col.def.interp
                   label $Data(Frame2).col.def.interp.lbl -text [lindex $Lbl(Interp) $GDefs(Lang)] -width 14 -anchor w
                   ComboBox::Create $Data(Frame2).col.def.interp.val Mapper::Data(Interp) noedit sorted nodouble -1 $Data(Interps) 1 8 "if { \$Mapper::Data(RealTime) } { Mapper::ParamsGDALSet \$Mapper::Data(Object) }"
@@ -484,7 +491,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
                   entry $Data(Frame2).col.def.nodata.sel -textvariable Mapper::Data(NoData) -bd 1 -bg $GDefs(ColorLight)
                   pack $Data(Frame2).col.def.nodata.lbl -side left
                   pack $Data(Frame2).col.def.nodata.sel -side left -fill x -expand True
-               pack $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran \
+               pack $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran $Data(Frame2).col.def.res \
                    $Data(Frame2).col.def.interp $Data(Frame2).col.def.nodata -side top -fill x
             frame $Data(Frame2).col.curve
                button $Data(Frame2).col.curve.map -bd 2 -relief groove -image GDALMAPImg \
@@ -578,6 +585,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
          Bubble::Create $Data(Frame2).col.sel [lindex $Bubble(CurveBand) $GDefs(Lang)]
          Bubble::Create $Data(Frame2).col.def.curve [lindex $Bubble(Curve) $GDefs(Lang)]
          Bubble::Create $Data(Frame2).col.def.tran [lindex $Bubble(Transparency) $GDefs(Lang)]
+         Bubble::Create $Data(Frame2).col.def.res [lindex $Bubble(Resolution) $GDefs(Lang)]
          Bubble::Create $Data(Frame2).col.def.interp [lindex $Bubble(Interp) $GDefs(Lang)]
          Bubble::Create $Data(Frame2).col.def.nodata [lindex $Bubble(NoData) $GDefs(Lang)]
          Bubble::Create $Data(Frame2).col.curve.info.min [lindex $Bubble(CurveMin) $GDefs(Lang)]

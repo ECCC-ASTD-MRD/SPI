@@ -840,7 +840,8 @@ proc Mapper::DepotWare::WMSBuildXMLDef { Layer } {
       file mkdir $Data(CachePath)
    }
 
-   set file $Data(CachePath)/[string map { / "" ? "" " " "" } $url$layer].xml
+   set layer [string map { " " "%20" } $layer]
+   set file $Data(CachePath)/[string map { / "" ? "" " " "" : "" } $url$layer].xml
    if { [string first "?" ${url}]==-1 } {
       set url ${url}?
    } else {
@@ -855,7 +856,7 @@ proc Mapper::DepotWare::WMSBuildXMLDef { Layer } {
    append xml "   <Projection>EPSG:4326</Projection>\n   <BandsCount>$bands</BandsCount>\n   <BlockSizeX>$WMS(BlockSize)</BlockSizeX>\n   <BlockSizeY>$WMS(BlockSize)</BlockSizeY>\n"
 
    if { $cache && $Data(CachePath)!="" } {
-      append xml "<Cache>\n   <Path> $Data(CachePath)</Path>\n   <Depth>2</Depth>\n   </Cache>\n"
+      append xml "<Cache>\n   <Path> [file rootname $file]</Path>\n   <Depth>2</Depth>\n   </Cache>\n"
    }
    append xml "</GDAL_WMS>"
 
