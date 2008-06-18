@@ -79,6 +79,7 @@ namespace eval Mapper { } {
    set Data(RealTime)    False
    set Data(Crop)        False
    set Data(Fill)        ""
+   set Data(Resolution)  1
    set Data(Color)       black
    set Data(Width)       0
    set Data(Burn)        1
