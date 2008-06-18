@@ -76,6 +76,7 @@
 #    Shape::DrawTRIANGLE   { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawPENTAGON   { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawHEXAGON    { Canvas Pixel Tags Color Size Fill }
+#    Shape::DrawLIGHTNING  { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawX          { Canvas Pixel Tags Color Size Fill }
 #    Shape::Draw+          { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawIcoMETF    { Canvas Pixel Tags Color Size Fill }
@@ -2235,6 +2236,48 @@ proc Shape::DrawSTAR { Canvas Pixel Tags Color Size Fill } {
    $Canvas create line [lindex $Pixel 0] [expr [lindex $Pixel 1] - $Size] \
       [lindex $Pixel 0] [expr [lindex $Pixel 1] + $Size] \
       -fill $Color -width 1 -tag $Tags
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::DrawLIGHTNING>
+# Creation : Octobre 1998 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine la forme d'un X
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Pixel>   : Position de la forme
+#  <Tags>    : Tags a appliquer a cette forme
+#  <Color>   : Liste des couleurs avant et arriere pour cette forme
+#  <Size>    : Grandeur de l'incone (Unite en pixel)
+#  <Fill>    : Remplie ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::DrawLIGHTNING { Canvas Pixel Tags Color Size Fill } {
+
+   if { $Fill } {
+      set fillcolor $Color
+      set Tags "$Tags Fill$Color"
+   } else {
+      set fillcolor white
+   }
+
+   set s2 [expr $Size/2.0]
+
+   set id [$Canvas create polygon [expr [lindex $Pixel 0]+1.0] [expr [lindex $Pixel 1]-1.0] \
+      [expr [lindex $Pixel 0]-0.6] [expr [lindex $Pixel 1]-0.4] \
+      [lindex $Pixel 0] [expr [lindex $Pixel 1]+0.2] \
+      [expr [lindex $Pixel 0]-1.0] [expr [lindex $Pixel 1]+1.0] \
+      [expr [lindex $Pixel 0]+0.6] [expr [lindex $Pixel 1]+0.4] \
+      [lindex $Pixel 0] [expr [lindex $Pixel 1]-0.2] \
+      -fill $fillcolor -outline $Color -width 1 -tag $Tags]
+
+   $Canvas scale $id [lindex $Pixel 0] [lindex $Pixel 1] $Size $Size
 }
 
 #----------------------------------------------------------------------------

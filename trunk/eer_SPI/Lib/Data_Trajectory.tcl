@@ -76,7 +76,7 @@ namespace eval Trajectory {
 
    #----- Constantes relatives a l'affichage des trajectoires
 
-   set Param(Icons)     { TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON }
+   set Param(Icons)     { TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON LIGHTNING X + }
    set Param(Colors)    { #ff0000 #0000ff #006400 #4C7A5C #FFCC00 #FF00CC #00FFFF #785D0C #ACF003 } ;#Liste des couleurs des niveaux
    set Param(Icon)      TRIANGLE
    set Param(Color)     #ff0000                                                     ;#Couleur courante
@@ -369,7 +369,7 @@ proc Trajectory::ParamFrame { Frame Apply } {
          frame $Data(Frame).right.part.ico
             label $Data(Frame).right.part.ico.lbl -text " [lindex $Lbl(Ico) $GDefs(Lang)]" -width 12 -anchor w
             IcoMenu::Create $Data(Frame).right.part.ico.sel $GDefs(Dir)/Resources/Bitmap \
-              { zeroth.xbm stri.xbm ssquare.xbm  scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm } [concat NONE $Trajectory::Param(Icons)] \
+              { zeroth.xbm stri.xbm ssquare.xbm scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } [concat NONE $Trajectory::Param(Icons)] \
                Trajectory::Param(Icon) "Trajectory::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).right.part.ico.sel $Data(Frame).right.part.ico.lbl -side left
 
