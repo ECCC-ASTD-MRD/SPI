@@ -1996,6 +1996,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    /*Recuperer les type de niveaux*/
    lvl=FSTD_IP2Level(h.IP1,&type);
+
    /*Override le type de niveaux pour ZH is ip1=0*/
    if (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H' && h.IP1==0){
       type=LVL_MASL;
@@ -2065,9 +2066,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    FSTD_FieldSet(field);
 
-   if (grtyp[0]!='X' || (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H')){
+//   if (grtyp[0]!='X' || (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H')){
       GeoRef_Qualify(field->Ref);
-   }
+//   }
    field->Spec->Desc=strdup(h.NOMVAR);
    field->Def->Type=FSTD_Type[h.DATYP];
    memcpy(field->Head,&h,sizeof(FSTD_Head));
