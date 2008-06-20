@@ -118,8 +118,8 @@ namespace eval MLDP1 {
    set Bubble(MoveGrid2)              { "Permettre de modifier l'emplacement de\nla grille sur la sphère terrestre." "Allow to modify the location of\nthe grid on the earth's sphere." }
    set Bubble(ModifyPath)             { "Permettre de modifier les répertoires\ndes modèles météorologiques." "Allow to modify the meteorological\nmodels directories." }
    set Bubble(VerticalLevels)         { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
-   set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modeling of mesoscale fluctuations." }
-   set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodeling of mesoscale fluctuations." }
+   set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modelling of mesoscale fluctuations." }
+   set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
 
    set Bubble(Column)                 { "Propriétés de la colonne d'émission." "Emission column properties." }
@@ -355,15 +355,17 @@ namespace eval MLDP1 {
    set Error(NbIso)                             { "Il n'y a aucun polluant selectionné." "No pollutant selected." }
    set Error(Elev)                              { "L'élévation n'est pas valide et dépasse la limite de 30000 mètres." "Invalid elevation. It is over the 30000 meters limit." }
    set Error(Previous)                          { "Les résultats d'une simulation précédente sont manquants. Les calculs de concentrations, dépôts et doses seront donc invalides." "Previous simulation results missing. The concentrations, deposition and dosage calculations will be wrong." }
-   set Error(MetFiles)                          { "Erreur! Le nombre de fichiers disponibles dans la base de données météorologique est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veillez modifier la date et/ou le temps d'émission de l'accident." \
+   set Error(MetDBase)                          { "Erreur! Les répertoires des bases de données météorologiques diagnostiques et pronostiques ne sont pas définis. Veuillez spécifier les répertoires de ces bases de données." \
+                                                  "Error! The directories for diagnostic and prognostic meteorological databases are undefined. Please specify the path for these databases." }
+   set Error(MetFiles)                          { "Erreur! Le nombre de fichiers disponibles dans la base de données météorologique est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
                                                   "Error! The number of available files in the meteorological database is not enough to run the model according to accident release date-time. Please modify the accident release date-time." }
    set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
    set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
-   set Error(DateTimeMetFiles)                  { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veillez modifier la date et/ou le temps d'émission de l'accident." \
+   set Error(DateTimeMetFiles)                  { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
                                                   "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
 
-   set Error(EmailAddress)                      { "Erreur! L'adresse électronique est invalide. Veillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+   set Error(EmailAddress)                      { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
 
    set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
@@ -388,7 +390,7 @@ namespace eval MLDP1 {
    set Warning(NbSrc2)            { "\tNombre maximum de sources :" "\tMaximum number of sources :" }
    set Warning(NbSrc3)            { "\nSeules les" "\nOnly the first" }
    set Warning(NbSrc4)            { "premières sources seront considérées dans la modélisation. Par conséquent, les autres seront ignorées." \
-                                    "sources will be considered in the modeling. Therefore, the others will be ignored." }
+                                    "sources will be considered in the modelling. Therefore, the others will be ignored." }
    set Warning(Overwrite)         { "Avertissement! Ce scénario d'émission existe déjà. Voulez-vous vraiment le remplacer?\n\n\tNom du scénario :" \
                                     "Warning! This emission scenario already exists. Do you realy wish to overwrite it?\n\n\tScenario Name :" }
    set Warning(Save)              { "Avertissement! Voulez-vous sauvegarder ce scénario d'émission?\n\n\tNom du scénario :" \
@@ -409,12 +411,12 @@ namespace eval MLDP1 {
    set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
    set Warning(DiskSpace)         { "Avertissement! L'espace disque disponible associé au répertoire principal de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle MLDP1?" \
                                     "Warning! The available disk space associated to the main experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute MLDP1 model?" }
-   set Warning(DiskSpace2)        { "\tRépertoire principal     " "\tMain directory       " }
-   set Warning(DiskSpace3)        { "\tSystème de fichier       " "\tFile system          " }
-   set Warning(DiskSpace4)        { "\tDisque monté sur         " "\tDisk mounted on      " }
-   set Warning(DiskSpace5)        { "\tEspace disque critique   " "\tCritical disk space  " }
-   set Warning(DiskSpace6)        { "\tEspace disque disponible " "\tAvailable disk space " }
-   set Warning(DiskSpace7)        { "\tEspace disque utilisé    " "\tUsed disk space      " }
-   set Warning(DiskSpace8)        { "\tEspace disque total      " "\tTotal disk space     " }
+   set Warning(DiskSpace2)        { "\tRépertoire principal    " "\tMain directory      " }
+   set Warning(DiskSpace3)        { "\tSystème de fichier      " "\tFile system         " }
+   set Warning(DiskSpace4)        { "\tDisque monté sur        " "\tDisk mounted on     " }
+   set Warning(DiskSpace5)        { "\tEspace disque critique  " "\tCritical disk space " }
+   set Warning(DiskSpace6)        { "\tEspace disque disponible" "\tAvailable disk space" }
+   set Warning(DiskSpace7)        { "\tEspace disque utilisé   " "\tUsed disk space     " }
+   set Warning(DiskSpace8)        { "\tEspace disque total     " "\tTotal disk space    " }
 
 }

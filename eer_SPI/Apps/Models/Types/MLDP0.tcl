@@ -1722,8 +1722,8 @@ proc MLDP0::ExtractMetFiles { } {
    append Sim(InfoMet) "\nMeteorological data mode             : $Sim(Mode)"
    append Sim(InfoMet) "\nMeteorological data time interval    : $Sim(Delta) hr"
    append Sim(InfoMet) "\nNumber of meteorological files       : $Sim(NbMetFiles)"
-   append Sim(InfoMet) "\nNumber of diagnostics met files      : $nbtrials"
-   append Sim(InfoMet) "\nNumber of prognostics met files      : $nbprogs"
+   append Sim(InfoMet) "\nNumber of diagnostic meteo files     : $nbtrials"
+   append Sim(InfoMet) "\nNumber of prognostic meteo files     : $nbprogs"
    append Sim(InfoMet) "\nSimulation duration                  : [MLDP0::ExpandTime [expr $Sim(Duration)*3600]]"
    append Sim(InfoMet) "\nEffective simulation duration        : [MLDP0::ExpandTime [expr $Sim(EffectiveDurationSec)]]"
 
@@ -1872,6 +1872,15 @@ proc MLDP0::GetMetData { } {
       set LatestRun -1 ; #----- Ignored the latest run.
    } else {
       set LatestRun 1  ; #----- Take into account the latest run.
+   }
+
+   #----- Verify if diagnostic and prognostic databases are defined.
+   if { $Sim(DBaseDiag) == "" && $Sim(DBaseProg) == "" } {
+      puts stdout ""
+      Debug::TraceProc "MLDP0: Error! Diagnostic and prognostic databases are undefined."
+
+      Dialog::CreateError .mldp0new "[lindex $Error(MetDBase) $GDefs(Lang)]" $GDefs(Lang) 600
+      return False
    }
 
    #----- Get available meteorological files.
@@ -2370,7 +2379,13 @@ proc MLDP0::SetGridScaleRes { } {
 #
 # Retour     :
 #
-# Remarques  :
+# Remarques  : - Use back-end cluster as default machine for
+#                GEM Regional and GEM Global models.
+#              - Allow user to run MLDP0 model on :
+#                  - Linux workstation
+#                  - front-end machine
+#                  - back-end clusters
+#                for GEM Regional and GEM Global models.
 #
 #----------------------------------------------------------------------------
 
@@ -2380,8 +2395,8 @@ proc MLDP0::SetHosts { Flag } {
    global   GDefs
 
    #----- Define host name for running the model.
-   if { $Sim(Meteo) == "reg" } {
-      #----- Use back-end machine by default for Regional model.
+   if { $Sim(Meteo) == "reg" || $Sim(Meteo) == "glb" } {
+      #----- Use back-end cluster as default machine for GEM Regional and GEM Global models.
       set Sim(Host) [lindex $GDefs(BackEnd) 0]
    } else {
       set Sim(Host) $GDefs(Host)
@@ -2401,13 +2416,9 @@ proc MLDP0::SetHosts { Flag } {
       lappend Sim(Hosts) $GDefs(FrontEnd)
    }
 
-   if { $Sim(Meteo) == "reg" } {
-
-      #----- Add back-end machines to list of hosts.
-      foreach host $GDefs(BackEnd) {
-         lappend Sim(Hosts) $host
-      }
-
+   #----- Add back-end machines to list of hosts.
+   foreach host $GDefs(BackEnd) {
+      lappend Sim(Hosts) $host
    }
 
    if { $Flag } {
@@ -2444,10 +2455,26 @@ proc MLDP0::SetMetDataDir { } {
          #----- Set met database on back-end.
          set Sim(DBaseDiag) "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
          set Sim(DBaseProg) "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
+         #set Sim(DBaseDiag) "$Sim(Host):/fs/ops/cmo/gridpt/dbase/trial/regeta2"
+         #set Sim(DBaseProg) "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta"
       } else {
          #----- Set met database on host.
-         set Sim(DBaseDiag) "/users/dor/afse/eer/projets/MLDP/dbase/data/dbase/prog/regeta"
-         set Sim(DBaseProg) "/users/dor/afse/eer/projets/MLDP/dbase/data/dbase/prog/regeta"
+         set Sim(DBaseDiag) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
+         set Sim(DBaseProg) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
+         #set Sim(DBaseDiag) "/data/gridpt/dbase/trial/regeta2"
+         #set Sim(DBaseProg) "/data/gridpt/dbase/prog/regeta"
+      }
+
+   } elseif { $Sim(Meteo) == "glb" } {
+
+      if { [lsearch -exact $GDefs(BackEnd) $Sim(Host)] != -1 } {
+         #----- Set met database on back-end.
+         set Sim(DBaseDiag) "$Sim(Host):/fs/ops/cmo/gridpt/dbase/trial/glbeta2"
+         set Sim(DBaseProg) "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
+      } else {
+         #----- Set met database on host.
+         set Sim(DBaseDiag) "/data/gridpt/dbase/trial/glbeta2"
+         set Sim(DBaseProg) "/data/gridpt/dbase/prog/glbeta"
       }
 
    }
@@ -2897,6 +2924,7 @@ proc MLDP0::SimLaunchInit { Tab No } {
       #----- Get meteorological data according to met database, time interval between files, release accident date-time.
       if { ![MLDP0::GetMetData] } {
          TabFrame::Select $Tab 0
+         return 0
       }
 
    }
