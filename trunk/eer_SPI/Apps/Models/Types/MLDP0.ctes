@@ -67,7 +67,12 @@ namespace eval MLDP0 {
                                       "1 1000 2000 5000 10000 15000" \
                                       "1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000" \
                                       "1 100 200 300 400 500 600 700 800 900 1000" \
-                                      "1 50 100" }
+                                      "1 100 1000" \
+                                      "1 100 500 1000" \
+                                      "1 50 100" \
+                                      "1 50 100 500 1000" \
+                                      "1 50 100 1000" }
+
    #----- List of horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
    set Sim(ListVarMesoscale)    { 0.00 0.10 0.50 1.00 2.00 3.00 5.00 }
    #----- List of Lagrangian timescale for mesoscale fluctuations [s].
