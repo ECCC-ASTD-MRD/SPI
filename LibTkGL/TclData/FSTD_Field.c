@@ -854,6 +854,11 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       return(TCL_ERROR);
    }
 
+   if (FieldTo->Def->Mode && FieldTo->Def->Mode!=FieldTo->Def->Data[0]) {
+      free(FieldTo->Def->Mode);
+   }
+   FieldTo->Def->Mode=NULL;
+
    /*Verifier la dimension verticale*/
    if (FieldTo->Def->NK!=FieldFrom->Def->NK) {
       if (FieldTo->Def->Data[1]) {
@@ -861,18 +866,19 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          FieldTo->Def->Data[1]=NULL;
       }
       free(FieldTo->Def->Data[0]);
-      FieldTo->Def->Data[0]=(char*)calloc(FSIZE3D(FieldFrom->Def),TData_Size[FieldTo->Def->Type]);
       FieldTo->Def->NK=FieldFrom->Def->NK;
-      FieldTo->Ref=GeoRef_Resize(FieldTo->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels);
+      FieldTo->Def->Data[0]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
+      FieldTo->Ref=GeoRef_Resize(FieldTo->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldTo->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels);
    }
 
+   /*Verifier la 2ieme composantes*/
    if (FieldFrom->Def->Data[1]) {
       if (!FieldTo->Def->Data[1]) {
          FieldTo->Def->Data[1]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
       }
       FieldTo->Def->NC=2;
    } else{
-      if (FieldTo->Def->Data[1]) {
+     if (FieldTo->Def->Data[1]) {
          free(FieldTo->Def->Data[1]);
          FieldTo->Def->Data[1]=NULL;
       }
@@ -917,9 +923,9 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          return(TCL_ERROR);
       }
 
-      for(k=0;k<FieldFrom->Def->NK;k++) {
+      for(k=0;k<FieldTo->Def->NK;k++) {
          /*Effectuer l'interpolation selon le type de champs*/
-         if (FieldFrom->Def->Data[1]) {
+         if (FieldTo->Def->Data[1]) {
             /*Interpolation vectorielle*/
             Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
             Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
@@ -962,6 +968,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    }
    GeoRefEZ_UnLock();
 #endif
+   FieldTo->Def->Mode=NULL;
    /*In case of vectorial field, we have to recalculate the module*/
    if (FieldTo->Def->NC>1) {
       Data_GetStat(FieldTo);
