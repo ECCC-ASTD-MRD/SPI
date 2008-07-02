@@ -106,7 +106,7 @@ proc Locator::Close { } {
    set Data(Coo)    ""
    set Data(Inst)  1e32
 
-   if { $Data(Canvas)!="" } {
+   if { [winfo exists $Data(Canvas)] } {
       $Data(Canvas) delete RANGELOCATOR
       SPI::IcoDel LOCATION
    }
@@ -246,7 +246,7 @@ proc Locator::Get { Type { Mode 0 } } {
 
    set Data(Coo)    ""
 
-   if { $Data(Canvas) != "" } {
+   if { [winfo exists $Data(Canvas)] } {
       $Data(Canvas) delete RANGELOCATOR
       SPI::IcoDel LOCATION
    }
@@ -460,7 +460,7 @@ proc Locator::PrintCommand { Widget } {
 proc Locator::Select { List Y { Locate False } } {
    variable Data
 
-   if { $Data(Canvas)!="" } {
+   if { [winfo exists $Data(Canvas)] } {
       $Data(Canvas) delete RANGELOCATOR
    }
 
@@ -537,7 +537,7 @@ proc Locator::DrawInit  { Frame VP } {
 proc Locator::Draw      { Frame VP } {
    variable Data
 
-   if { $Data(Canvas)!="" } {
+   if { [winfo exists $Data(Canvas)] } {
       $Data(Canvas) delete RANGELOCATOR
    }
 
@@ -599,7 +599,7 @@ proc Locator::Move { Frame VP } {
 
    #----- Reaffecter le point de reference de translation
 
-   if { $Data(Canvas)!="" } {
+   if { [winfo exists $Data(Canvas)] } {
       $Data(Canvas) delete RANGELOCATOR
    }
 
