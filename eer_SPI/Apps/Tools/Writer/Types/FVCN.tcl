@@ -1401,7 +1401,6 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    #----- Transmettre le message avec le script operationnel.
 
    exec chmod 644 $file
-   exec chmod 644 $file.png
 
    if { $Backup } {
       Debug::TraceProc "Writer::FVCN::Send: Sending via metmanager $name"
@@ -1420,6 +1419,7 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    #----- Graphical product
    if { [winfo exists $Data(Page$Pad)] } {
       PrintBox::Image $Data(Page$Pad) png $file landscape
+      exec chmod 644 $file.png
       catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file.png -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.png"  }
    }
 
