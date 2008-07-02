@@ -1026,15 +1026,13 @@ proc Exp::ProductRSMCJointData { } {
          warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
       if { $send } {
-         file delete -force $path/leadrsmc.txt
+         catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_null.txt leadrsmc.txt }
       } else {
-         exec echo "345" > $path/leadrsmc.txt
-         catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+         catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_345.txt leadrsmc.txt }
       }
 
    } else {
-      exec echo "34" > $path/leadrsmc.txt
-      catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+      catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_34.txt leadrsmc.txt }
    }
 
    #----- cree le fichier pour la date.
