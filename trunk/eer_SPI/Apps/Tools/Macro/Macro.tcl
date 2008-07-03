@@ -112,7 +112,11 @@ proc Macro::Error { Error } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   Dialog::CreateError .macro "${stackproc}\n\n[lindex $Error $GDefs(Lang)]" $GDefs(Lang)
+   if { $SPI::Param(Batch) } {
+      puts stderr "${stackproc}: [lindex $Error $GDefs(Lang)]"
+   } else {
+      Dialog::CreateError .macro "${stackproc}\n\n[lindex $Error $GDefs(Lang)]" $GDefs(Lang)
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -135,8 +139,12 @@ proc Macro::Doing { Msg } {
 
    #----- Recuperer le nom de la procedure fautive
 
-   set Data(Job) $Msg
-   update idletasks
+   if { $SPI::Param(Batch) } {
+      puts stdout $Msg
+   } else {
+      set Data(Job) $Msg
+      update idletasks
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -159,7 +167,11 @@ proc Macro::Info { Info } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   Dialog::CreateInfo .macro "${stackproc}\n\n$Info"
+   if { $SPI::Param(Batch) } {
+      puts stdout "${stackproc}: $Info"
+   } else {
+      Dialog::CreateInfo .macro "${stackproc}\n\n$Info"
+   }
 }
 
 #-------------------------------------------------------------------------------
