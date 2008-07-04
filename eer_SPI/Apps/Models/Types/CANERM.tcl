@@ -414,7 +414,8 @@ proc CANERM::SimGetData { } {
 
    set anal [lsearchsub $Sim(Data) *trial* 2]
    if { $anal!=-1 } {
-      set Sim(Mode) diag
+      set Sim(Delta) 6
+      set Sim(Mode)  diag
    } else {
       set Sim(Mode) prog
    }
@@ -543,7 +544,7 @@ proc CANERM::SimInitNew { } {
    set Sim(DTIS)         "0000.0"
    set Sim(Mode)         "prog"
    set Sim(Meteo)        "glb"
-   set Sim(Delta)         3
+   set Sim(Delta)         6
    set Sim(Scale)        "FINE"
    set Sim(FnTime)       "CONSTANT"
    set Sim(Delai)        "0"
