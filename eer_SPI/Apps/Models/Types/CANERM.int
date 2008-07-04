@@ -532,7 +532,7 @@ proc CANERM::SimCont { Parent } {
       label $t.d.dur -relief raised -bd 1 -textvariable CANERM::Sim(Duration)
       frame $t.d.l -relief raised -bd 1
          Option::Create $t.d.l.delt  [lindex $Lbl(Delta) $GDefs(Lang)] CANERM::Sim(Delta) 0 2 \
-           { 1 3 6 } "CANERM::SimLaunchInit .canermcont.opt.frame1.d.l.list 0 . 1 1"
+           { 1 3 6 } "CANERM::SimLaunchInit .canermcont.opt.frame1.d.l.list 0 . 1 0"
          listbox $t.d.l.list -yscrollcommand [list $t.d.l.bar set] -bd 1 -exportselection 0 \
             -height 4 -width 12 -relief sunken -background $GDefs(ColorLight) -selectmode single
          scrollbar $t.d.l.bar -orient vertical -command [list $t.d.l.list yview] -bd 1 -width 10
