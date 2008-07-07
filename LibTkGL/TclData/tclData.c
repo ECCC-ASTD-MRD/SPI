@@ -2215,6 +2215,11 @@ int Data_ValSet(TData *Field,float I,float J,float Val) {
    if (I<0 || I>Field->Def->NI-1 || J<0 || J>Field->Def->NJ-1)
       return 0;
 
+   if (Field->Stat) {
+      free(Field->Stat);
+      Field->Stat=NULL;
+   }
+
    idx=ROUND(J)*Field->Def->NI+ROUND(I);
    Val=SPEC2VAL(Field->Spec,Val);
    Def_Set(Field->Def,0,idx,Val);
