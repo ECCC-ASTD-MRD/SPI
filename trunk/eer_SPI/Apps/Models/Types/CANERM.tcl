@@ -701,6 +701,19 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
    set t1         [lindex [lindex $data end] 0]
    set Sim(NbPer) [expr int([fstdstamp diff $t1 $t0])/$Sim(Dt)]
 
+   #----- In case of new sim and mode diag, make sure simhour is in 6 hour increment
+
+   if { $New && $Sim(Mode)=="diag" } {
+      set Sim(Delta) 6
+      if { $Sim(SimHour) == "00" } {
+         set hour 0
+      } else {
+         set hour [string trimleft $Sim(SimHour) 0]
+      }
+      set Sim(SimHour) [Convert::Set2Digit [expr $hour/$Sim(Delta)*$Sim(Delta)]]
+      puts stderr "111111 $Sim(Delta)"
+   }
+
    #----- On verifie les parametres de l'usager
 
    if { ![Exp::Params . CANERM $Sim(Info)] } {
@@ -838,7 +851,15 @@ proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
 
    if { [SimGetData] } {
 
-       #----- Selectionner une date par defaut
+     #----- En mode diag, on force le DeltaT a 6hrs et on descative la selection du DelatT
+
+     if { $Sim(Mode)=="diag" } {
+        Option::Disable $Tab.frame$No.d.l.delt
+     } else {
+        Option::Enable $Tab.frame$No.d.l.delt
+     }
+
+     #----- Selectionner une date par defaut
 
       set datasel  [lrange $Sim(Data) 1 end]
       foreach item $datasel {
