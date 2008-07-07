@@ -355,7 +355,7 @@ proc Obs::ParamFrame { Frame Apply } {
 
             frame $Data(Frame).def.r.disp.p
                IcoMenu::CreateDef $Data(Frame).def.r.disp.p.ico $GDefs(Dir)/Resources/Bitmap \
-                 { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm sx.xbm slight.xbm sx.xbm s+.xbm } \
+                 { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } \
                  $Param(Icons) Obs::Param(Icon) Obs::ParamSet 0 -relief groove -bd 2
                ColorBox::CreateSel $Data(Frame).def.r.disp.p.col Obs::Param(Color) Obs::ParamSet
                checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable Obs::Param(MapAll) -onvalue 1 -offvalue 0 \
