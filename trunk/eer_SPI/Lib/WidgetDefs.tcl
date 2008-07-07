@@ -27,6 +27,10 @@
 #    IcoMenu::CreateDef      { Frame Path Icons Values Var Command Def args }
 #    IcoMenu::Set            { Frame Value }
 #
+#    Option::Create          { Frame Label Var Edit Width List Cmd args }
+#    Option::Disable         { Frame }
+#    Option::Enable          { Frame }
+#
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
 #
@@ -157,6 +161,18 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
    menu $Frame.b.m
 
    Option::Set $Frame $List [lindex $args 0]
+}
+
+proc Option::Disable { Frame } {
+
+   $Frame.e configure -state disabled
+   $Frame.b configure -state disabled
+}
+
+proc Option::Enable { Frame } {
+
+   $Frame.e configure -state normal
+   $Frame.b configure -state normal
 }
 
 #-------------------------------------------------------------------------------
