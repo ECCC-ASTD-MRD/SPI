@@ -563,7 +563,6 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_WrongNumArgs(Interp,1,Objv,"[code/value list]");
                return(TCL_ERROR);
             } else {
-
                bseq=bufr_create_sequence(NULL);
                pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
                for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
@@ -863,7 +862,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
    if (!BCV->value)
       BCV->value=bufr_mkval_for_descriptor(BCV);
 
-   if (BCV->value) {
+   if (BCV->value && n>1) {
       Tcl_ListObjIndex(Interp,Obj,1,&obj);
       switch(BCV->value->type) {
          case VALTYPE_STRING :
