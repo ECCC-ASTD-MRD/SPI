@@ -66,12 +66,16 @@ typedef struct GraphItem  {
    XColor        *FillColor;       /*Couleur de remplissage*/
 
    char          *Command;         /*Nom de la commande de transformation*/
+
+   char          *Type;            /*Type de graph XY,XYZ,PIE,TEPHI,HODO*/
+   double         Angle;           /*Graph angle*/
+
    Tk_Item       *TitleItem;
    char          *Title;
    int            TitleWidth,TitleHeight;
 
    char         **Item;
-   char          *ItemStr;                 /*Liste des donnees associees (String)*/
+   char          *ItemStr;         /*Liste des donnees associees (String)*/
    int            NItem;
    ColorbarItem  *CB;              /*Colorbar*/
 
