@@ -1813,17 +1813,18 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 
    #----- Graphical product
 
-   if { $Frame==$Data(Page$Pad) && [winfo exists $Data(Page$Pad)] } {
+   if { [winfo exists $Data(Page$Pad)] } {
 
+      set f $Data(Page$Pad)
       $Data(Page$Pad).page.canvas delete ICOVAAC
       foreach h { 0 6 12 18 } {
          $Data(Page$Pad).page.canvas itemconfigure DATE$h -text $Data(Date$h$Pad)
          foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
             if  { [llength $Data(L$no$h$Pad)]>2 } {
-               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$Frame) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$Frame) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
+               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
             }
          }
-         if { [set xy [ $Data(VP$h$Frame) -project $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad)) 0]]!="" && [lindex $xy 2]>0 } {
+         if { [set xy [ $Data(VP$h$f) -project $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad)) 0]]!="" && [lindex $xy 2]>0 } {
             Shape::DrawIcoVAAC $Data(Page$Pad).page.canvas $xy "ICOVAAC" black 5 False
          }
       }
