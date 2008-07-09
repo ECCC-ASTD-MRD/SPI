@@ -871,14 +871,14 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
          case VALTYPE_INT8 :
          case VALTYPE_INT32 :
-            if (TclY_Get0IntFromObj(Interp,obj,&ival)==TCL_OK) {
-               bufr_descriptor_set_ivalue(BCV,ival);
+            if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
+               bufr_descriptor_set_ivalue(BCV,(int)dval);
             }
             break;
 
          case VALTYPE_INT64 :
-            if (TclY_Get0LongFromObj(Interp,obj,&lval)==TCL_OK) {
-               bufr_descriptor_set_ivalue(BCV,lval);
+            if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
+               bufr_descriptor_set_ivalue(BCV,(int)dval);
             }
             break;
 
