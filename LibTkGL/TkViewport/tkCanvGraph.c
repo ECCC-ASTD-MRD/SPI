@@ -101,6 +101,8 @@ static Tk_ConfigSpec GraphSpecs[] = {
        "white",Tk_Offset(GraphItem,FillColor),TK_CONFIG_NULL_OK },
    { TK_CONFIG_STRING,"-title",(char *)NULL,(char *)NULL,
        "",Tk_Offset(GraphItem,Title),0 },
+   { TK_CONFIG_STRING,"-type",(char *)NULL,(char *)NULL,
+       "XY",Tk_Offset(GraphItem,Type),0 },
    { TK_CONFIG_CUSTOM,"-item",(char *)NULL,(char *)NULL,
        (char *)NULL,0,TK_CONFIG_NULL_OK,&ItemOption },
    { TK_CONFIG_CUSTOM,"-tags",(char *)NULL,(char *)NULL,
@@ -224,6 +226,7 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
    gr->AlphaLegend= 100;
    gr->Frame      = NULL;
    gr->Update     = 0;
+   gr->Type       = NULL;
 
    /* Create the associated colorbar */
    gr->CB=(ColorbarItem*)malloc(sizeof(ColorbarItem));
@@ -700,7 +703,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
 
    GraphItem     *gr=(GraphItem*)Item;
    TGraphItem    *item=NULL;
-   TGraphAxis    *axisx,*axisy;
+   TGraphAxis    *axisx,*axisy,*axisz;
    Tk_FontMetrics tkm;
    int            a,i,idx,width,height,x,y,mx,my;
    char          *data[8];
@@ -763,31 +766,33 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             if ((axisy=GraphAxis_Get(item->YAxis))) axisy->Done=NOTDONE;
          }
 
-        /*Process axis*/
+         /*Process axis*/
          a=mx=my=0;
-         for(i=0;i<gr->NItem;i++) {
-            item=GraphItem_Get(gr->Item[i]);
+         if (gr->Type[0]!='T') {
+            for(i=0;i<gr->NItem;i++) {
+               item=GraphItem_Get(gr->Item[i]);
 
-            axisx=GraphAxis_Get(item->XAxis);
-            if (axisx && !(axisx->Done&DONEX)) {
-               idx=axisx->Pos[0]=='L'?0:1;
-               GraphAxis_Dim(Canvas,axisx,gr,HORIZONTAL,&x,&y);
-               gr->ah[a]=y;
-               gr->ay[a]=gr->yg[idx]+=idx?gr->ah[a]:-gr->ah[a];
-               mx=mx<x?x:mx;
-               a++;
-               axisx->Done|=DONEX;
-            }
+               axisx=GraphAxis_Get(item->XAxis);
+               if (axisx && !(axisx->Done&DONEX)) {
+                  idx=axisx->Pos[0]=='L'?0:1;
+                  GraphAxis_Dim(Canvas,axisx,gr,HORIZONTAL,&x,&y);
+                  gr->ah[a]=y;
+                  gr->ay[a]=gr->yg[idx]+=idx?gr->ah[a]:-gr->ah[a];
+                  mx=mx<x?x:mx;
+                  a++;
+                  axisx->Done|=DONEX;
+               }
 
-            axisy=GraphAxis_Get(item->YAxis);
-            if (axisy && !(axisy->Done&DONEY)) {
-               idx=axisy->Pos[1]=='L'?0:1;
-               GraphAxis_Dim(Canvas,axisy,gr,VERTICAL,&x,&y);
-               gr->ah[a]=y;
-               gr->ax[a]=gr->xg[idx]+=idx?-gr->ah[a]:gr->ah[a];
-               my=my<x?x:my;
-               a++;
-               axisy->Done|=DONEY;
+               axisy=GraphAxis_Get(item->YAxis);
+               if (axisy && !(axisy->Done&DONEY)) {
+                  idx=axisy->Pos[1]=='L'?0:1;
+                  GraphAxis_Dim(Canvas,axisy,gr,VERTICAL,&x,&y);
+                  gr->ah[a]=y;
+                  gr->ax[a]=gr->xg[idx]+=idx?-gr->ah[a]:gr->ah[a];
+                  my=my<x?x:my;
+                  a++;
+                  axisy->Done|=DONEY;
+               }
             }
          }
 
@@ -856,20 +861,23 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             if (item->Type==WIDEBAR) gr->ISide++;
          }
 
-         for(i=0;i<gr->NItem;i++) {
-            item=GraphItem_Get(gr->Item[i]);
-            axisx=GraphAxis_Get(item->XAxis);
-            if (axisx && !(axisx->Done&DONEX)) {
-               GraphAxis_Display(NULL,gr,axisx,gr->xg[0],gr->ay[a],gr->xg[1],gr->ay[a],gr->ah[a],HORIZONTAL);
-               axisx->Done|=DONEX;
-               a++;
-            }
+         /*if graph type is XY(Z)*/
+         if (gr->Type[0]=='X') {
+            for(i=0;i<gr->NItem;i++) {
+               item=GraphItem_Get(gr->Item[i]);
+               axisx=GraphAxis_Get(item->XAxis);
+               if (axisx && !(axisx->Done&DONEX)) {
+                  GraphAxis_Display(NULL,gr,axisx,gr->xg[0],gr->ay[a],gr->xg[1],gr->ay[a],gr->ah[a],HORIZONTAL);
+                  axisx->Done|=DONEX;
+                  a++;
+               }
 
-            axisy=GraphAxis_Get(item->YAxis);
-            if (axisy && !(axisy->Done&DONEY)) {
-               GraphAxis_Display(NULL,gr,axisy,gr->ax[a],gr->yg[0],gr->ax[a],gr->yg[1],gr->ah[a],VERTICAL);
-               axisy->Done|=DONEY;
-               a++;
+               axisy=GraphAxis_Get(item->YAxis);
+               if (axisy && !(axisy->Done&DONEY)) {
+                  GraphAxis_Display(NULL,gr,axisy,gr->ax[a],gr->yg[0],gr->ax[a],gr->yg[1],gr->ah[a],VERTICAL);
+                  axisy->Done|=DONEY;
+                  a++;
+               }
             }
          }
       }
@@ -904,8 +912,8 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             glBegin(GL_QUADS);
                glVertex2i(x,y);
                glVertex2i(x,y+height+5);
-               glVertex2i(x+width+35,y+height+5);
-               glVertex2i(x+width+35,y);
+               glVertex2i(x+width+55,y+height+5);
+               glVertex2i(x+width+55,y);
             glEnd();
 
             glLineWidth(gr->BDLegend);
@@ -914,8 +922,8 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             glBegin(GL_QUADS);
                glVertex2i(x,y);
                glVertex2i(x,y+height+5);
-               glVertex2i(x+width+35,y+height+5);
-               glVertex2i(x+width+35,y);
+               glVertex2i(x+width+55,y+height+5);
+               glVertex2i(x+width+55,y);
             glEnd();
          }
 

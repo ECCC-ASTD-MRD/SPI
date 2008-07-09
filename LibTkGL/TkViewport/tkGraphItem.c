@@ -193,8 +193,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    int         i,j,c,idx;
 
 
-   static CONST char *sopt[] = { "-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-error","-high","-low","-median","-min","-max","-xaxis","-yaxis","-zaxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
-   enum                opt { COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,XAXIS,YAXIS,ZAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
+   static CONST char *sopt[] = { "-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
+   enum                opt { COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
    item=GraphItem_Get(Name);
    if (!item) {
       Tcl_AppendResult(Interp,"\n   GraphItem_Config: unknown object: \"",Name,"\"",(char*)NULL);
@@ -468,6 +468,30 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case SPEED:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->Speed,-1));
+            } else {
+               if (item->Speed) free(item->Speed);
+               item->Speed=NULL;
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  item->Speed=strdup(Tcl_GetString(Objv[i]));
+               }
+            }
+            break;
+
+         case DIR:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->Dir,-1));
+            } else {
+               if (item->Dir) free(item->Dir);
+               item->Dir=NULL;
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  item->Dir=strdup(Tcl_GetString(Objv[i]));
+               }
+            }
+            break;
+
          case ERRORDATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->ErrorData,-1));
@@ -540,6 +564,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case TAXIS:
          case XAXIS:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->XAxis,-1));
@@ -552,6 +577,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case PAXIS:
          case YAXIS:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->YAxis,-1));
@@ -564,6 +590,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case THAXIS:
          case ZAXIS:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->ZAxis,-1));
@@ -572,6 +599,19 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                item->ZAxis=NULL;
                if (strlen(Tcl_GetString(Objv[++i]))) {
                   item->ZAxis=strdup(Tcl_GetString(Objv[i]));
+               }
+            }
+            break;
+
+         case MIXAXIS:
+         case WAXIS:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->WAxis,-1));
+            } else {
+               if (item->WAxis) free(item->WAxis);
+               item->WAxis=NULL;
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  item->WAxis=strdup(Tcl_GetString(Objv[i]));
                }
             }
             break;
@@ -657,9 +697,12 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
    item->XData=NULL;
    item->YData=NULL;
    item->ZData=NULL;
+   item->WAxis=NULL;
    item->XAxis=NULL;
    item->YAxis=NULL;
    item->ZAxis=NULL;
+   item->Speed=NULL;
+   item->Dir=NULL;
    item->ErrorData=NULL;
    item->MedianData=NULL;
    item->HighData=NULL;
@@ -752,12 +795,15 @@ void GraphItem_Clear(TGraphItem *Item) {
    if (Item->XData)       free(Item->XData);
    if (Item->YData)       free(Item->YData);
    if (Item->ZData)       free(Item->ZData);
+   if (Item->Speed)       free(Item->Speed);
+   if (Item->Dir)         free(Item->Dir);
    if (Item->ErrorData)   free(Item->ErrorData);
    if (Item->MedianData)  free(Item->MedianData);
    if (Item->HighData)    free(Item->HighData);
    if (Item->LowData)     free(Item->LowData);
    if (Item->MinData)     free(Item->MinData);
    if (Item->MaxData)     free(Item->MaxData);
+   if (Item->WAxis)       free(Item->WAxis);
    if (Item->XAxis)       free(Item->XAxis);
    if (Item->YAxis)       free(Item->YAxis);
    if (Item->ZAxis)       free(Item->ZAxis);
@@ -819,10 +865,12 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
 
    TData      *data;
    TVector    *vecx,*vecy,*vecz;
-   TGraphAxis *axisx,*axisy,*axisz;
+   TGraphAxis *axisx,*axisy,*axisz,*axisw;
 
    axisx=GraphAxis_Get(Item->XAxis);
    axisy=GraphAxis_Get(Item->YAxis);
+   axisz=GraphAxis_Get(Item->ZAxis);
+   axisw=GraphAxis_Get(Item->WAxis);
 
    if (!axisx || !axisy) return;
 
@@ -854,6 +902,7 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
 
       vecx=Vector_Get(Item->XData);
       vecy=Vector_Get(Item->YData);
+      vecz=Vector_Get(Item->ZData);
 
       if (vecx && vecx->N)
          GraphAxis_Define(axisx,vecx,X1-X0);
@@ -861,12 +910,30 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
       if (vecy && vecy->N)
          GraphAxis_Define(axisy,vecy,Y1-Y0);
 
+      if (Graph->Type[0]=='T') {
+         GraphAxis_Define(axisz,NULL,(int)hypot(X1-X0,Y1-Y0));
+         GraphAxis_Define(axisw,NULL,X1-X0);
+//         axisx->Delta*=COSA*0.65;
+//         axisz->Delta=780.0 / 3.3 * axisx->Delta;
+         axisx->Delta*=COSA*0.75*((double)(Y1-Y0)/(X1-X0));
+         axisz->Delta=780.0 / 3.3 * axisx->Delta;
+
+         if (!axisx->Done) {
+            axisx->Done|=DONEX;
+            GraphTehpi_DisplayWetAdiabats(Graph,axisz,axisx,axisy,X0,Y0,X1,Y1,GLMode);
+            GraphTehpi_DisplayMixRatios(Graph,axisz,axisx,axisy,axisw,X0,Y0,X1,Y1,GLMode);
+            GraphTehpi_DisplayDryAdiabats(Graph,axisz,axisx,axisy,X0,Y0,X1,Y1,GLMode);
+            GraphTehpi_DisplayIsobars(Graph,axisz,axisx,axisy,X0,Y0,X1,Y1,GLMode);
+            GraphTehpi_DisplayIsotherms(Graph,axisz,axisx,axisy,X0,Y0,X1,Y1,GLMode);
+         }
+      }
+
       if (Item->Type==MINMAX)
-         GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1,GLMode);
+         GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
       else if (Item->Type==BOXPLOT)
-         GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1,GLMode);
+         GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
       else
-         GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1,GLMode);
+         GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
    }
 }
 
@@ -1266,13 +1333,14 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
 */
 void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
-   TVector   *vecx,*vecy;
+   TVector   *vecx,*vecy,*vecs,*vecd;
    Vect3d    *v,v0,v1,vt;
    char       buf[32];
    double    *vm,x,y,db,dh,x0,y0;
    int        i,j,n,vn,sz;
    XColor    *color=NULL;
    Tcl_Obj   *obj;
+
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
@@ -1292,21 +1360,27 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    vn=0;
    for(i=0;i<n;i++) {
       if (vecx->V[i]!=vecx->NoData && vecy->V[i]!=vecy->NoData) {
-         v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
-         v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
-         v[vn][2]=0.0;
-
-         /* Check font spacing */
-         if (vn>0) {
-            if (Item->Orient[0]=='X') {
-               dh=fabs(v[vn][0]-v[vn-1][0]);
-               if (dh>0.0) db=db<dh?db:dh;
-            } else {
-               dh=fabs(v[vn][1]-v[vn-1][1]);
-               if (dh>0.0) db=db<dh?db:dh;
+         if (Graph->Type[0]=='T') {
+            if (GraphTephi_TP2XY(AxisZ,AxisX,AxisY,vecx->V[i],vecy->V[i],&v[vn][0],&v[vn][1])) {
+               vn++;
             }
+         } else {
+
+            v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
+            v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
+            v[vn][2]=0.0;
+
+            if (vn>0) {
+               if (Item->Orient[0]=='X') {
+                  dh=fabs(v[vn][0]-v[vn-1][0]);
+                  if (dh>0.0) db=db<dh?db:dh;
+               } else {
+                  dh=fabs(v[vn][1]-v[vn-1][1]);
+                  if (dh>0.0) db=db<dh?db:dh;
+               }
+            }
+            vn++;
          }
-         vn++;
       }
    }
 
@@ -1432,7 +1506,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             glEnd();
            }
          }
-      } else if (Item->Type!=NONE) {
+      } else if (Item->Type==LINE || Item->Type==SPLINE) {
          glBegin(GL_LINE_STRIP);
             if (Item->Fill) glVertex3dv(v0);
             for(i=0;i<vn;i++) {
@@ -1451,6 +1525,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          glEnd();
       }
       glDisable(GL_LINE_STIPPLE);
+
+      vecs=Vector_Get(Item->Speed);
+      vecd=Vector_Get(Item->Dir);
+      if (vecs && vecd) {
+         for(i=0;i<vn;i++) {
+            Data_RenderBarbule(1,1,0.0,v[i][0],v[i][1],0.0,vecs->V[i],vecd->V[i],Item->Size,NULL);
+         }
+      }
    }
 
    /* Display Icons */
@@ -2338,8 +2420,8 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_QUADS);
          glVertex2i(X1,y-5);
-         glVertex2i(X1+20,y-5);
-         glVertex2i(X1+20,y+5);
+         glVertex2i(X1+40,y-5);
+         glVertex2i(X1+40,y+5);
          glVertex2i(X1,y+5);
       glEnd();
       glDisable(GL_POLYGON_STIPPLE);
@@ -2351,8 +2433,8 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
          glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
          glBegin(GL_QUADS);
             glVertex2i(X1,y-5);
-            glVertex2i(X1+20,y-5);
-            glVertex2i(X1+20,y+5);
+            glVertex2i(X1+40,y-5);
+            glVertex2i(X1+40,y+5);
             glVertex2i(X1,y+5);
          glEnd();
          glDisable(GL_LINE_STIPPLE);
@@ -2366,7 +2448,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
 
          glBegin(GL_LINES);
             glVertex2i(X1,y);
-            glVertex2i(X1+20,y);
+            glVertex2i(X1+40,y);
          glEnd();
          glDisable(GL_LINE_STIPPLE);
       }
@@ -2385,7 +2467,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
       glPushMatrix();
-      glTranslated(X1+10,y,0);
+      glTranslated(X1+20,y,0);
       glScalef(Item->Size,-Item->Size,1.0f);
       if (Item->IconFill) {
          glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
@@ -2406,7 +2488,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
 
    if (Item->Bitmap) {
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
-      trRasterPos2i((X1+10-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(y-((TkCanvas*)Graph->canvas)->yOrigin)-Item->Bitmap->Height/2);
+      trRasterPos2i((X1+20-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(y-((TkCanvas*)Graph->canvas)->yOrigin)-Item->Bitmap->Height/2);
       glBitmap(Item->Bitmap->Width,Item->Bitmap->Height,0.0,0.0,0.0,0.0,(GLubyte *)Item->Bitmap->Data);
    }
 
@@ -2424,7 +2506,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       DataFlip(data.pixelPtr,pixel,data.width,data.height,data.pixelSize);
 
       glEnable(GL_BLEND);
-      trRasterPos2i((X1+10-((TkCanvas*)Graph->canvas)->xOrigin)-data.width/2,-(y-((TkCanvas*)Graph->canvas)->yOrigin)-data.height/2);
+      trRasterPos2i((X1+20-((TkCanvas*)Graph->canvas)->xOrigin)-data.width/2,-(y-((TkCanvas*)Graph->canvas)->yOrigin)-data.height/2);
       glDrawPixels(data.width,data.height,data.pixelSize==3?GL_RGB:GL_RGBA,GL_UNSIGNED_BYTE,pixel);
       glDisable(GL_BLEND);
 

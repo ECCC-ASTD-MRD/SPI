@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
+static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","FIT","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -316,7 +316,7 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
          case MIN:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(axis->Min));
-           } else {
+            } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Min);
             }
             break;
@@ -355,14 +355,14 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
          case TYPE:
             if (Objc==1) {
-               if (axis->Type=='I') {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("LINEAR",-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("LOGARITHMIC",-1));
+               switch(axis->Type) {
+                  case 'I': Tcl_SetObjResult(Interp,Tcl_NewStringObj("LINEAR",-1)); break;
+                  case 'O': Tcl_SetObjResult(Interp,Tcl_NewStringObj("LOGARITHMIC",-1)); break;
+                  case 'N': Tcl_SetObjResult(Interp,Tcl_NewStringObj("LN",-1)); break;
                }
             } else {
                axis->Type=Tcl_GetString(Objv[++i])[1];
-               if (axis->Type!='I'&& axis->Type!='O') {
+               if (axis->Type!='I' && axis->Type!='O'&& axis->Type!='N') {
                   axis->Type='I';
                   Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis type must be [LINEAR | LOGARITHMIC]",(char*)NULL);
                   return TCL_ERROR;
@@ -708,10 +708,14 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
    Axis->T0=Axis->Min;
    Axis->T1=Axis->Max;
 
-   if (Axis->Type=='O') {
-      Axis->T0=Axis->T0==0?0.0:log10(fabs(Axis->T0));
-      Axis->T1=Axis->T1==0?0.0:log10(fabs(Axis->T1));
-
+   if (Axis->Type!='I') {
+      if (Axis->Type=='O') {
+         Axis->T0=Axis->T0==0?0.0:log10(fabs(Axis->T0));
+         Axis->T1=Axis->T1==0?0.0:log10(fabs(Axis->T1));
+      } else {
+         Axis->T0=Axis->T0==0?0.0:log(fabs(Axis->T0));
+         Axis->T1=Axis->T1==0?0.0:log(fabs(Axis->T1));
+      }
       if (Axis->T0<Axis->T1) {
          Axis->T0=floor(Axis->T0);
          Axis->T1=ceil(Axis->T1);
@@ -731,6 +735,8 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
    }
 
    Axis->Delta=(double)(Delta-(Axis->Offset[0]+Axis->Offset[1]))/(Axis->T1-Axis->T0);
+   Axis->DT0=AXISVALUE(Axis,Axis->Min);
+   Axis->DT1=AXISVALUE(Axis,Axis->Max);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -927,65 +933,67 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
 
    struct tm *tsec;
    time_t     sec;
+   double     val;
 
    if (Axis->Numbered) {
-      if (Axis->Format) {
+      if (Axis->Format>2) {
          sec=Value;
          tsec=gmtime(&sec);
-         switch((enum GRAPHAXISFORMATS)Axis->Format) {
-            case GRAXDATE: sprintf(String,"%i/%02i/%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
-            case GRAXTIME: sprintf(String,"%02i:%02i:%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
-            case GRAXDATETIME: sprintf(String,"%i/%02i/%02i %02i:%02i:%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday,tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
-            case GRAXTIMEDATE: sprintf(String,"%02i:%02i:%02i\n%i/%02i/%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec,(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
-            case GRAX00HHDDMM: if (tsec->tm_hour==0) {
-                                  sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1));
-                               } else {
-                                  sprintf(String,"%02i",tsec->tm_hour);
-                               }
-                               break;
-            case GRAX00HHMMDD: if (tsec->tm_hour==0) {
-                                  sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,(tsec->tm_mon+1),tsec->tm_mday);
-                               } else {
-                                  sprintf(String,"%02i",tsec->tm_hour);
-                               }
-                               break;
-            case GRAXHHDDMM: sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1)); break;
-            case GRAXHH:   sprintf(String,"%02i",tsec->tm_hour); break;
-            case GRAXTMINUSHH: sprintf(String,"T-%.0fH",(Axis->Max-Value)/3600.0); break;
-            case GRAXTPLUSHH: sprintf(String,"T+%.0fH",(Value-Axis->Min)/3600.0); break;
-            case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
-            case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
-            case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
-            case GRAXINTEGER: Value=ROUND(Value);sprintf(String,"%.0f",Value); break;
-         }
-         return;
       }
 
-      if (Axis->Type=='O') {
-         if (Value>0.0) {
-            snprintf(String,32,"%.2e",Value);
-         } else {
-            snprintf(String,32,"0");
-         }
-      } else {
-         if (!DOrder && Axis->Incr!=0.0 && (Axis->Incr-ROUND(Axis->Incr))==0.0) {
-            snprintf(String,32,"%.0f",Value);
-         } else {
-            switch(Axis->Order+DOrder) {
-               case   3: snprintf(String,32,"%.2f",Value);break;
-               case   2: snprintf(String,32,"%.2f",Value);break;
-               case   1: snprintf(String,32,"%.2f",Value);break;
-               case   0:
-               case  -1: snprintf(String,32,"%.2f",Value);break;
-               case  -2: snprintf(String,32,"%.3f",Value);break;
-               case  -3: snprintf(String,32,"%.4f",Value);break;
-               case  -4: snprintf(String,32,"%.3e",Value);break;
-               case  -5: snprintf(String,32,"%.4e",Value);break;
-               case  -6: snprintf(String,32,"%.5e",Value);break;
-               case  -7: snprintf(String,32,"%.6e",Value);break;
-               default : snprintf(String,32,"%.2e",Value);
+      switch((enum GRAPHAXISFORMATS)Axis->Format) {
+         case GRAXDATE: sprintf(String,"%i/%02i/%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
+         case GRAXTIME: sprintf(String,"%02i:%02i:%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
+         case GRAXDATETIME: sprintf(String,"%i/%02i/%02i %02i:%02i:%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday,tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
+         case GRAXTIMEDATE: sprintf(String,"%02i:%02i:%02i\n%i/%02i/%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec,(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
+         case GRAX00HHDDMM: if (tsec->tm_hour==0) {
+                               sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1));
+                            } else {
+                               sprintf(String,"%02i",tsec->tm_hour);
+                            }
+                            break;
+         case GRAX00HHMMDD: if (tsec->tm_hour==0) {
+                               sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,(tsec->tm_mon+1),tsec->tm_mday);
+                            } else {
+                               sprintf(String,"%02i",tsec->tm_hour);
+                            }
+                            break;
+         case GRAXHHDDMM: sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1)); break;
+         case GRAXHH:   sprintf(String,"%02i",tsec->tm_hour); break;
+         case GRAXTMINUSHH: sprintf(String,"T-%.0fH",(Axis->Max-Value)/3600.0); break;
+         case GRAXTPLUSHH: sprintf(String,"T+%.0fH",(Value-Axis->Min)/3600.0); break;
+         case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
+         case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
+         case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
+         case GRAXINTEGER: Value=ROUND(Value);sprintf(String,"%.0f",Value);break;
+         case GRAXFIT: DOrder=0; val=Value; while (fmod(val*=10.0,1.0)>0.01) DOrder--; DOrder-=Axis->Order;
+         default:
+           if (Axis->Type!='I') {
+               if (Value>0.0) {
+                  snprintf(String,32,"%.2e",Value);
+               } else {
+                  snprintf(String,32,"0");
+               }
+            } else {
+               if (!DOrder && Axis->Incr!=0.0 && (Axis->Incr-ROUND(Axis->Incr))==0.0) {
+                  snprintf(String,32,"%.0f",Value);
+               } else {
+                  switch(Axis->Order+DOrder) {
+                     case   3: snprintf(String,32,"%.2f",Value);break;
+                     case   2: snprintf(String,32,"%.2f",Value);break;
+                     case   1: snprintf(String,32,"%.2f",Value);break;
+                     case   0:
+                     case  -1: snprintf(String,32,"%.2f",Value);break;
+                     case  -2: snprintf(String,32,"%.3f",Value);break;
+                     case  -3: snprintf(String,32,"%.4f",Value);break;
+                     case  -4: snprintf(String,32,"%.3e",Value);break;
+                     case  -5: snprintf(String,32,"%.4e",Value);break;
+                     case  -6: snprintf(String,32,"%.5e",Value);break;
+                     case  -7: snprintf(String,32,"%.6e",Value);break;
+                     default : snprintf(String,32,"%.2e",Value);
+                  }
+               }
             }
-         }
       }
    } else {
       String[0]='\0';

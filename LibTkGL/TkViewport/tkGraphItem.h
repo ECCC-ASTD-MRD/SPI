@@ -38,39 +38,40 @@
 #include "tclData.h"
 #include "tclVector.h"
 
-enum GraphType { NONE,LINE,SPLINE,BAR,WIDEBAR,HISTOGRAM,RASTER,BOXPLOT,MINMAX };
+enum GraphType { NONE,LINE,SPLINE,BAR,WIDEBAR,HISTOGRAM,RASTER,BOXPLOT,MINMAX,BARB };
 
 typedef struct TGraphItem {
    Tcl_Interp    *Interp;
-   Tk_Font        Font;                      /*Font for drawing text*/
-   Tk_Dash        Dash;                      /*pointille*/
-   Tk_TextLayout  Text;                      /*Cached text layout information*/
-   XColor        *Outline;                   /*Couleur d'arriere plan*/
-   XColor        *Fill;                      /*Couleur d'avant plan*/
-   XColor        *IconFill;                  /*Couleur d'avant plan des icones*/
-   XColor        *IconOutline;               /*Couleur d'arriere plan des icones*/
-   double         IconXFillValue;            /*Valeur de remplissage dans l'axe X*/
+   Tk_Font        Font;                       /*Font for drawing text*/
+   Tk_Dash        Dash;                       /*pointille*/
+   Tk_TextLayout  Text;                       /*Cached text layout information*/
+   XColor        *Outline;                    /*Couleur d'arriere plan*/
+   XColor        *Fill;                       /*Couleur d'avant plan*/
+   XColor        *IconFill;                   /*Couleur d'avant plan des icones*/
+   XColor        *IconOutline;                /*Couleur d'arriere plan des icones*/
+   double         IconXFillValue;             /*Valeur de remplissage dans l'axe X*/
    char          *ImageString;
-   T_glBitmap    *Stipple;                   /*Bitmap pour le stipple de mode fill*/
-   T_glBitmap    *Bitmap;                    /*Bitmap pour les points*/
-   Tcl_Obj       *Colors;                    /*Liset de couleurs*/
+   T_glBitmap    *Stipple;                    /*Bitmap pour le stipple de mode fill*/
+   T_glBitmap    *Bitmap;                     /*Bitmap pour les points*/
+   Tcl_Obj       *Colors;                     /*Liset de couleurs*/
 
-   double         Origin;                    /*Origine du graph selon l'axe et l'orientation*/
-   int            Width;                     /*line width*/
-   int            Size;                      /*Icon Size*/
-   char          *Orient;                    /*Orientation (X,Y,Z,XY,YZ,XZ)*/
-   char          *Fit;                       /*Fitting type*/
-   int            Icon;                      /*Icone*/
-   int            Value;                     /*Affichage des valeurs*/
-   int            Alpha;                     /*Transparence */
-   int            Type;                      /*Type de graph (NONE,LINE,SPLINE,BAR,HISTOGRAM,RASTER)*/
+   double         Origin;                     /*Origine du graph selon l'axe et l'orientation*/
+   int            Width;                      /*line width*/
+   int            Size;                       /*Icon Size*/
+   char          *Orient;                     /*Orientation (X,Y,Z,XY,YZ,XZ)*/
+   char          *Fit;                        /*Fitting type*/
+   int            Icon;                       /*Icone*/
+   int            Value;                      /*Affichage des valeurs*/
+   int            Alpha;                      /*Transparence */
+   int            Type;                       /*Type de graph (NONE,LINE,SPLINE,BAR,HISTOGRAM,RASTER)*/
    Tk_Item       *DescItem;
-   char          *Desc;                      /*Description de la donnee*/
+   char          *Desc;                       /*Description de la donnee*/
    int            DescWidth,DescHeight;
-   char          *XData,*YData,*ZData,*Data; /*Donnee*/
-   char          *XAxis,*YAxis,*ZAxis;       /*Echelles*/
-   char          *Tag;                       /*Identificateur informatif*/
+   char          *XData,*YData,*ZData,*Data;  /*Donnee*/
+   char          *XAxis,*YAxis,*ZAxis,*WAxis; /*Axes*/
+   char          *Tag;                        /*Identificateur informatif*/
 
+   char          *Speed,*Dir;
    char          *ErrorData,*MedianData,*HighData,*LowData,*MinData,*MaxData; /*BoxPlot data*/
 
 } TGraphItem;

@@ -7,7 +7,7 @@ include ../Makefile.conf
 INCLUDES   = $(X_INCLUDE) $(INCLUDE)
 CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(LIBS) $(PROTO) $(DEFINES)
 LIBHM      = -L$(INSTALL_PATH)/Shared/$(ARCH) -lproj -lGL -lGLU  -lTclData  -lTkglCanvas -L$(GDB_PATH)/lib/$(ARCH) -L$(GDB_PATH)/publib -lgdb -lc
-OBJS       = tkCanvVP.o Projection.o ProjCam.o ProjAzimuth.o ProjCylin.o ProjOrtho.o ProjGrid.o GeoData.o tkCanvColorbar.o tkCanvGraph.o tkGraphAxis.o tkGraphItem.o
+OBJS       = tkCanvVP.o Projection.o ProjCam.o ProjAzimuth.o ProjCylin.o ProjOrtho.o ProjGrid.o GeoData.o tkCanvColorbar.o tkCanvGraph.o tkGraphTephi.o tkGraphAxis.o tkGraphItem.o
 
 # Start of Makefile
 
