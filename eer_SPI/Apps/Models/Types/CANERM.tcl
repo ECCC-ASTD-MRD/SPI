@@ -608,6 +608,7 @@ proc CANERM::SimLaunch { Path GoGoGo } {
 
   . config -cursor watch
    update idletasks
+   puts stderr $Sim(IsoName)
 
    if { [lsearch -exact $GDefs(BackEnd) $Sim(Host)]!=-1 } {
       exec $GDefs(Dir)/Script/AIXScriptCreate.tcl $Sim(Host) $GDefs(FrontEnd) $Sim(JobFile) $Sim(Meteo) $Sim(NoPrev) \
@@ -624,8 +625,8 @@ proc CANERM::SimLaunch { Path GoGoGo } {
       exec $GDefs(Dir)/Script/SVScriptCreate.tcl $Path $GDefs(Dir) $arch $Sim(JobFile) \
          $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) \
          $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour) \
-         $Sim(Dt) $Sim(Meteo) $Sim(GridChanged) $Sim(NoPrev) $Sim(IsoName) \
-         $Sim(FreqIn) $Sim(FreqOut) $Sim(Restart) $Sim(PrevRestart)
+         $Sim(Dt) $Sim(Meteo) $Sim(GridChanged) $Sim(NoPrev) \
+         $Sim(FreqIn) $Sim(FreqOut) $Sim(Restart) $Sim(PrevRestart) $Sim(IsoName)
    }
 
    if { $GoGoGo } {
