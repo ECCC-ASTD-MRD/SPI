@@ -588,8 +588,15 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
    glPushMatrix();
 
    glTranslatef(x,y,0.0);
-   if (angle)
-      glRotatef(angle,0.0,0.0,1.0);
+   if (angle) {
+      if (angle>360) {
+         angle-=1000;
+         glRotatef(angle,0.0,0.0,1.0);
+         glRotatef(180,1.0,0.0,0.0);
+      } else {
+         glRotatef(angle,0.0,0.0,1.0);
+      }
+   }
 
    chunkPtr=layoutPtr->chunks;
    for (i=0;i<layoutPtr->numChunks;i++) {
