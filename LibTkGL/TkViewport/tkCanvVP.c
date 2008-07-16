@@ -1161,7 +1161,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    }
 
    /*Loading data*/
-   if (load) {
+   if (load && !GLRender->TRCon) {
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       glEnable(GL_BLEND);
