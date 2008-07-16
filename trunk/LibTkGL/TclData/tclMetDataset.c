@@ -233,7 +233,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             if (Objc==6) {
                Tcl_GetIntFromObj(Interp,Objv[5],&co);
             }
-            if (!(file=fopen(Tcl_GetString(Objv[3]),"a"))) {
+            if (!(file=fopen(Tcl_GetString(Objv[3]),"w"))) {
                Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to open file for writing\"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);
                return(TCL_ERROR);
             }
