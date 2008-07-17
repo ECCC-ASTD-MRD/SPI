@@ -68,6 +68,7 @@ namespace eval SPI {
    set Lbl(Radar)          { "Volume radar (IRIS)" "Radar volume scan (IRIS)" }
    set Lbl(GDALOGR)        { "Données géographiques (GDAL/OGR)" "Geographical data (GDAL/OGR)" }
    set Lbl(Open)           { "Ouvrir un fichier" "Open file" }
+   set Lbl(PageOther)      { "Autre page" "Other page" }
    set Lbl(PageNew)        { "Nouvelle page" "New page" }
    set Lbl(PageDel)        { "Supprimer la page" "Delete page" }
    set Lbl(PageOut)        { "Page externe" "External page" }
@@ -182,6 +183,8 @@ namespace eval SPI {
    set Msg(ProjectRead)    { "Toutes les pages existantes seront détruite et le travail courant sera perdu.\n\nVoulez-vous continuer ?"
                              "Every existing pages will be destroyed and you will loos you current work.\n\nDo you wish to continue ?" }
    set Msg(Page)           { "Ajouter cet item dans une nouvelle fenetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
+   set Msg(Locked)         { "La mise-en-page de la page courante ne peut être changée, que voulez-vous faire ?"
+                             "Current page layout cannot be changed, what do you want to do ?" }
 
    #----- Definitions des titres
 

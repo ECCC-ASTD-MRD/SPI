@@ -252,7 +252,7 @@ proc Page::Activate { Frame { Force 0 } } {
    global GDefs
    variable Data
 
-   if { $Page::Data(Frame)==$Frame && !$Force } {
+   if { $Frame=="" || ($Page::Data(Frame)==$Frame && !$Force) } {
       return
    }
 
@@ -533,6 +533,7 @@ proc SPI::LayoutDelete { } {
 # Parametres :
 #  <Frame>   : Identificateur de Page
 #  <Layout>  : Identificateur du Layout
+#  <Lock>    : Bloquer les changements suivant a cette page
 #
 # Retour:
 #
@@ -540,17 +541,56 @@ proc SPI::LayoutDelete { } {
 #
 #-------------------------------------------------------------------------------
 
+proc SPI::LayoutLock { Frame } {
+   set Page::Data(Lock$Frame) True
+}
+proc SPI::LayoutUnLock { Frame } {
+   set Page::Data(Lock$Frame) False
+}
+
 proc SPI::LayoutLoad { Frame Layout } {
    global   GDefs
    global   env
    variable Title
+   variable Lbl
+   variable Msg
+   variable Data
 
+   #----- Invalid layout
    if { $Layout=="" } {
       return 1
    }
 
-   #----- Lire le layout
+   #----- Current page layout is locked
+   if { $Page::Data(Lock$Frame) } {
+      set so [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] \
+          "[lindex $Msg(Locked) $GDefs(Lang)]" \
+          info 0 [lindex $Lbl(PageOther) $GDefs(Lang)] [lindex $Lbl(PageNew) $GDefs(Lang)] [lindex $Lbl(Cancel) $GDefs(Lang)]]
 
+      switch $so {
+         0 { ;#Find first layout not locked
+            foreach frame $Page::Data(Frames) {
+               if { !$Page::Data(Lock$frame) } {
+                  set Frame $frame
+                  break
+               }
+            }
+         }
+         1 { ;#Use a new page
+            set Frame [SPI::PageNew False]
+         }
+         2 { ;#Cancel the layout
+            return 1
+         }
+      }
+   }
+puts stderr $Frame
+   #----- Can't find an unlocked page
+   if { $Page::Data(Lock$Frame) } {
+      return 1
+   }
+
+   #----- Lire le layout
    if { $Layout=="SPI" } {
    } elseif { [file exists $Layout] && ![file isdirectory $Layout] } {
       uplevel #0 source $Layout
@@ -571,11 +611,12 @@ proc SPI::LayoutLoad { Frame Layout } {
    . config -cursor watch
    update idletasks
 
-   eval set proc \[info procs ::$SPI::Data(Layout$Frame)::LayoutClear\]
-   if { $proc!="" } {
-      eval $SPI::Data(Layout$Frame)::LayoutClear $Frame
+   if { [info exists  SPI::Data(Layout$Frame)] } {
+      eval set proc \[info procs ::$SPI::Data(Layout$Frame)::LayoutClear\]
+      if { $proc!="" } {
+         eval $SPI::Data(Layout$Frame)::LayoutClear $Frame
+      }
    }
-
    $Frame.page.canvas delete all
 
    Drawing::Clear $Frame
@@ -1591,7 +1632,7 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
       if { ![winfo exists $frame] } {
          toplevel     $frame
          wm title     $frame "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) $GDefs(StateSPI) ($env(USER) $GDefs(Host))"
-         eval wm geometry  $frame $Geom
+         eval wm geometry $frame $Geom
 
          label $frame.active -image MOUSE -relief raised -bd 1
 
@@ -1618,7 +1659,11 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
       if { $frame==".pan" } {
          set frame .mdi
       } elseif { $frame!=".mdi" } {
-         set frame $frame.mdi
+         if { [winfo exists $frame.mdi] } {
+            set frame $frame.mdi
+         } else {
+            set frame .mdi
+         }
       }
       set page [TabFrame::Add $frame 1 $Label True].frame
    }
