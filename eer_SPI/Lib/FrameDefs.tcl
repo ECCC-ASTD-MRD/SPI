@@ -70,12 +70,13 @@ namespace eval TabFrame {
 #
 # But      : Ajout d'un onglet.
 #
-# Parametres :
-#   <Tab>    : Frame Parent
-#   <Level>  : Niveau sur lequel positionner le tab
-#   <Title>  : Titre du tabulateur
-#   <Edit>   : Titre du tabulateur editable
-#   <Color>  : Couleur du tabulateur et de son frame
+# Parametres     :
+#   <Tab>        : Frame Parent
+#   <Level>      : Niveau sur lequel positionner le tab
+#   <Title>      : Titre du tabulateur
+#   <Edit>       : Titre du tabulateur editable
+#   <ColorFrame> : Couleur du tabulateur et de son frame
+#   <ColorTab>   : Couleur du tabulateur
 #
 # Retour     :
 #   <Path>   : Path complet du frame du tab
@@ -84,7 +85,7 @@ namespace eval TabFrame {
 #
 #-------------------------------------------------------------------------------
 
-proc TabFrame::Add { Tab Level Title Edit { Color "" } } {
+proc TabFrame::Add { Tab Level Title Edit { ColorFrame "" } { ColorTab "" } } {
    variable Data
    variable Resources
 
@@ -101,9 +102,13 @@ proc TabFrame::Add { Tab Level Title Edit { Color "" } } {
 
    frame $Tab.frame$no -relief raised -bd $Resources(BorderWidth)
 
-   if { $Color!="" } {
-      $Tab.tab$no configure    -bg $Color -disabledbackground $Color
-      $Tab.frame$no configure  -bg $Color
+   if { $ColorFrame!="" } {
+      $Tab.tab$no configure    -bg $ColorFrame -disabledbackground $ColorFrame
+      $Tab.frame$no configure  -bg $ColorFrame
+   }
+
+   if { $ColorTab!="" } {
+      $Tab.tab$no configure    -bg $ColorTab -disabledbackground $ColorTab
    }
 
    set xloc 0
