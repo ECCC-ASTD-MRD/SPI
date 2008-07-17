@@ -715,25 +715,27 @@ proc Page::Canvas { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Page::Create { Frame Width Height } {
+proc Page::Create { Frame Width Height { Active True } } {
    variable Data
 
    . configure -cursor watch
    update idletasks
 
-   lappend Data(Frames) $Frame
-
-   if { $Data(Frame)=="" } {
-      set Data(Frame)   $Frame
-      set Data(Canvas)  $Frame.page.canvas
-   }
-
+   set Data(Active$Frame)  $Active    ;#Mode Active (Manipulation in place)
    set Data(Scale$Frame)   100
+   set Data(Lock$Frame)    False
    set Data(Full$Frame)    False
    set Data(Width$Frame)   $Width
    set Data(Height$Frame)  $Height
    set Data(Data$Frame)    {}
    set Data(L$Frame)       1
+
+   lappend Data(Frames) $Frame
+
+   if { $Data(Frame)=="" && $Data(Active$Frame) } {
+      set Data(Frame)   $Frame
+      set Data(Canvas)  $Frame.page.canvas
+   }
 
    glrender -fsaa $OpenGL::Param(FSAA)
 
