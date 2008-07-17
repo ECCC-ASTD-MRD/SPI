@@ -287,11 +287,12 @@ proc Writer::FVCN::GraphInit { Pad } {
       raise $Data(Page$Pad)
    } else {
       wm geom .writer 1522x757
-#      set Data(Page) [SPI::PageNew True FVCNXX 1020x715]
-      set Data(Page$Pad) [SPI::PageNew $Pad FVCNXX 1020x715]
+      set Data(Page$Pad) $Pad.pg
+      Page::Create $Pad.pg 1020 715 False
       pack $Data(Page$Pad) -side right -anchor nw
 
       SPI::LayoutLoad $Data(Page$Pad) Writer::FVCN
+      SPI::LayoutLock $Data(Page$Pad)
    }
 }
 
@@ -314,7 +315,6 @@ proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
    if { [winfo exist $Data(Page$Pad)] } {
 
       if { $Location } {
-#         Viewport::GoTo $Data(Page$Pad) $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad))
          Viewport::Rotate $Data(Page$Pad) $Data(Lat$Pad) $Data(Lon$Pad)
       }
 
@@ -1813,7 +1813,7 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 
    #----- Graphical product
 
-   if { [winfo exists $Data(Page$Pad)] } {
+   if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
 
       set f $Data(Page$Pad)
       $Data(Page$Pad).page.canvas delete ICOVAAC

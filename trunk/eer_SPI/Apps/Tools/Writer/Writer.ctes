@@ -24,7 +24,7 @@ namespace eval Writer {
    image create bitmap opt   -file $GDefs(Dir)/Resources/Bitmap/opt.xbm
 
    set Param(Title)   { "Composition de message" "Message Writer" }
-   set Param(Version) 1.1
+   set Param(Version) 1.2
    set Param(Icon)    DOCWRITE
    set Param(Geom)    {}
    set Param(Dock)    False                                       ;#Docking
