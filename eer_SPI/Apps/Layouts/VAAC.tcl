@@ -373,8 +373,31 @@ proc VAAC::Layout { Frame } {
    variable Page
 
    #----- Initialisations des constantes relatives aux projections
-   set Viewport::Map(Border)   1
-   set Viewport::Map(LatLon)   1
+
+   set Viewport::Resources(FillCoast) ""
+   set Viewport::Resources(FillLake)  ""
+   set Viewport::Resources(Coast)     #000000      ;#Cotes
+   set Viewport::Resources(Lake)      #0000ff      ;#Lacs
+   set Viewport::Resources(Polit)     #ff0000      ;#Bordures politiques
+   set Viewport::Resources(Admin)     #ff0000      ;#Bordures politiques internes
+   set Viewport::Resources(Coord)     #000000      ;#Latlon
+
+   set Viewport::Map(Coast)       1           ;#Cotes
+   set Viewport::Map(Lake)        1           ;#Lacs
+   set Viewport::Map(River)       0           ;#Rivieres
+   set Viewport::Map(Polit)       1           ;#Bordures politiques
+   set Viewport::Map(Admin)       1           ;#Bordures politiques internes
+   set Viewport::Map(City)        0           ;#Villes
+   set Viewport::Map(Road)        0           ;#Routes
+   set Viewport::Map(Rail)        0           ;#Chemin de fer
+   set Viewport::Map(Util)        0           ;#Utilitaires
+   set Viewport::Map(Canal)       0           ;#Canal/Aqueduc
+   set Viewport::Map(Topo)        0           ;#Topographie
+   set Viewport::Map(Bath)        0           ;#Bathymetrie
+   set Viewport::Map(Text)        0           ;#Texture
+   set Viewport::Map(Coord)       1           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Viewport::Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
+   set Viewport::Map(CoordNum)    2           ;#Numerotation des latlon
 
    Page::Size $Frame $Page(Width) $Page(Height)
 
