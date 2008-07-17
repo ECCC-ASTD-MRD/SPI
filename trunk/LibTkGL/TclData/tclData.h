@@ -304,7 +304,6 @@ typedef struct TData {
 #include "Vertex.h"
 
 void     Data_FromString(char *String,TDataDef *Def,int Comp,int Idx);
-void     Data_ToString(char *String,TDataDef *Def,int Comp,int Idx,int Append);
 Tcl_Obj *Data_Val2Obj(TDataDef *Def,double Val);
 
 void     Data_Clean(TData *Data,int Map,int Pos,int Seg);

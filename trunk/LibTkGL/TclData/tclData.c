@@ -2062,30 +2062,6 @@ double Data_Level2Meter(int Type,double Level) {
    return(0.0);
 }
 
-void Data_ToString(char *String,TDataDef *Def,int Comp,int Idx,int Append) {
-
-   char buf[32];
-
-   switch(Def->Type) {
-      case TD_Unknown:sprintf(buf,"");break;
-      case TD_Binary: sprintf(buf,"");break;
-      case TD_Byte:   sprintf(buf,"%hhi" ,((char*)Def->Data[Comp])[Idx]); break;
-      case TD_UByte:  sprintf(buf,"%hhi" ,((unsigned char*)Def->Data[Comp])[Idx]);break;
-      case TD_Int16:  sprintf(buf,"%hi"  ,((short*)Def->Data[Comp])[Idx]);break;
-      case TD_UInt16: sprintf(buf,"%hi"  ,((unsigned short*)Def->Data[Comp])[Idx]);break;
-      case TD_Int32:  sprintf(buf,"%i"   ,((int*)Def->Data[Comp])[Idx]);break;
-      case TD_UInt32: sprintf(buf,"%u"   ,((unsigned int*)Def->Data[Comp])[Idx]);break;
-      case TD_Float32:sprintf(buf,"%.7f" ,((float*)Def->Data[Comp])[Idx]);break;
-      case TD_Float64:sprintf(buf,"%.25e",((double*)Def->Data[Comp])[Idx]);break;
-   }
-   if (Append) {
-      strcat(String," ");
-      strcat(String,buf);
-   } else {
-      sprintf(String,"%s",buf);
-   }
-}
-
 void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
 
    switch(Def->Type) {
@@ -2121,23 +2097,21 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
 */
 void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type){
 
-   int           i,j;
-   char          buf[20];
+   int      i,j;
+   double   val;
+   Tcl_Obj *objj,*obji;
 
-   Tcl_DString data;
-   Tcl_DStringInit(&data);
-
+   objj=Tcl_NewListObj(0,NULL);
    for(j=0;j<Field->Def->NJ;j++){
-      Tcl_DStringStartSublist(&data);
+      obji=Tcl_NewListObj(0,NULL);
       for(i=0;i<Field->Def->NI;i++){
-         Data_ToString(buf,Field->Def,0,j*Field->Def->NI+i,0);
-         Tcl_DStringAppendElement(&data,buf);
+         Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
+         Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(val));
       }
-      Tcl_DStringEndSublist(&data);
+      Tcl_ListObjAppendElement(Interp,objj,obji);
    }
 
-   Tcl_DStringResult(Interp,&data);
-   Tcl_DStringFree(&data);
+   Tcl_SetObjResult(Interp,objj);
 }
 
 /*----------------------------------------------------------------------------
