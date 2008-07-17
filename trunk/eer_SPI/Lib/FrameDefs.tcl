@@ -556,7 +556,7 @@ proc TabFrame::Place { Tab Level No Nb X Top { Hid False } } {
    set y [expr [winfo reqheight $Tab.tab$No] -1]
 
    if { $X==-1 } {
-      set X [winfo x $Tab.tab$No]
+      set X [expr [winfo x $Tab.tab$No]-[lindex [$Tab configure -bd] end]]
    }
 
    if { $Top } {
