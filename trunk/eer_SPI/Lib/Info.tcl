@@ -459,7 +459,7 @@ proc Info::Read { Id } {
 
    set info ""
    foreach i [join [fstdfield define INFO -DATA]] {
-      append info [format "%c" $i]
+      append info [format "%c" [expr int($i)]]
    }
 
    fstdfield free INFO
