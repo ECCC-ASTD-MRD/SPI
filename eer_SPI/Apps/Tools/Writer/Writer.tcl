@@ -49,7 +49,9 @@ proc Writer::Close { } {
       SPI::ToolMode SPI Zoom
    }
 
-   $Data(Canvas) delete FVCN
+   if { [winfo exists $Data(Canvas)] } {
+      $Data(Canvas) delete FVCN
+   }
 
    set Data(Active) 0
    destroy .writer
@@ -163,8 +165,8 @@ proc Writer::PadNew { Type Mode Layout File } {
    pack $Data(Pad).i -side bottom -fill x
    pack $Data(Pad).canvas -side left -fill both -expand true
 
-
    Writer::${Type}::LayoutInit $Data(Pad)
+   Writer::${Type}::ToolBar $Data(Pad).head
    trace variable SPI::Src(Info) w "Writer::${Type}::Source"
 
    if { $File!="" } {
@@ -173,7 +175,6 @@ proc Writer::PadNew { Type Mode Layout File } {
       ${Type}::${Mode} $Data(Pad) $Layout
    }
 
-   Writer::${Type}::ToolBar $Data(Pad).head
    TabFrame::Select .writer.pad [TabFrame::Current .writer.pad]
 }
 
