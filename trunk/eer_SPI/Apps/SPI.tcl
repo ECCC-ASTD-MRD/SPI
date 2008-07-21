@@ -584,7 +584,7 @@ proc SPI::LayoutLoad { Frame Layout } {
          }
       }
    }
-puts stderr $Frame
+
    #----- Can't find an unlocked page
    if { $Page::Data(Lock$Frame) } {
       return 1
