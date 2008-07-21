@@ -40,6 +40,12 @@ namespace eval Writer::FVCN {
    set Data(Next2)  "NO LATHER THAN"
    set Data(Next3)  "NO FURTHER ADVISORIES"
 
+   set Data(OBS)    "OBS VA CLD:"
+   set Data(EST)    "EST VA CLD:"
+   set Data(FCST6)  "FCST VA CLD  +6 HR"
+   set Data(FCST12) "FCST VA CLD +12 HR"
+   set Data(FCST18) "FCST VA CLD +18 HR"
+
    set Data(Rem1)  "RESPONSIBILITY FOR THIS EVENT HAS BEEN TRANSFERRED BY THE"
    set Data(Rem2)  "RESPONSIBILITY FOR THIS EVENT IS BEING TRANSFERRED TO THE"
    set Data(Rem12) "THIS STATEMENT UPDATES MESSAGE"
@@ -139,7 +145,7 @@ proc Writer::FVCN::Init { Pad } {
    set Data(Date0$Pad)    DD/HHMMZ
    set Data(Next$Pad)     ""
    set Data(Year$Pad)    0
-   set Data(Obs$Pad)     "OBS VA CLD:"
+   set Data(Obs$Pad)     $Data(OBS)
    set Data(Lat$Pad)     0.0
    set Data(Lon$Pad)     0.0
    set Data(Page$Pad)    ""
@@ -243,10 +249,10 @@ proc Writer::FVCN::Layout { Frame } {
    set Data(VP12$Frame) [Viewport::Create $Frame 5   280 500 270 False False]
    set Data(VP18$Frame) [Viewport::Create $Frame 510 280 500 270 False False]
 
-   $Frame.page.canvas create rectangle 5     5  70  21 -fill white -outline black -width 0.5
-   $Frame.page.canvas create rectangle 510   5 575  21 -fill white -outline black -width 0.5
-   $Frame.page.canvas create rectangle 5   280  70 296 -fill white -outline black -width 0.5
-   $Frame.page.canvas create rectangle 510 280 575 296 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 5     5 205  21 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 510   5 710  21 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 5   280 205 296 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 510 280 710 296 -fill white -outline black -width 0.5
 
    $Frame.page.canvas create text    9     7 -text "Date 0" -anchor nw -tag DATE0 -font XFont12
    $Frame.page.canvas create text    514   7 -text "Date 1" -anchor nw -tag DATE6 -font XFont12
@@ -556,11 +562,11 @@ proc Writer::FVCN::Format { Pad Mode } {
 
       #----- Ash cloud
 
-      puts $f "[format "%-21s" "OBS VA DTG:"] $Data(Date0$Pad)"
+      puts $f "[format "%-21s" $Data(OBS)] $Data(Date0$Pad)"
       puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 47 "" $Pad.ash0]]
-      puts $f [Writer::BlocFormat "FCST VA CLD +6 HR:" [Writer::TextExtract char 47 "" $Pad.ash6]]
-      puts $f [Writer::BlocFormat "FCST VA CLD +12 HR:" [Writer::TextExtract char 47 ""  $Pad.ash12]]
-      puts $f [Writer::BlocFormat "FCST VA CLD +18 HR:" [Writer::TextExtract char 47 ""  $Pad.ash18]]
+      puts $f [Writer::BlocFormat $Data(FCST6) [Writer::TextExtract char 47 "" $Pad.ash6]]
+      puts $f [Writer::BlocFormat $Data(FCST12) [Writer::TextExtract char 47 ""  $Pad.ash12]]
+      puts $f [Writer::BlocFormat $Data(FCST18) [Writer::TextExtract char 47 ""  $Pad.ash18]]
 
       #----- Next
 
@@ -965,7 +971,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    menubutton $Pad.optobs -bg white -bd 0 -menu $Pad.optobs.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
    menu $Pad.optobs.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
-      foreach lbl { "OBS VA CLD:" "EST VA CLD:" } {
+      foreach lbl [list $Data(OBS) $Data(EST)] {
          $Pad.optobs.menu add radiobutton -indicatoron false -label $lbl -variable Writer::FVCN::Data(Obs$Pad) -value $lbl
       }
 
@@ -1259,7 +1265,7 @@ proc Writer::FVCN::PageInit { Pad } {
 
       #----- Ash data
 
-      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text "OBS VA DTG:"
+      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(OBS)
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash
       incr y $Writer::Data(Height)
 
@@ -1269,17 +1275,17 @@ proc Writer::FVCN::PageInit { Pad } {
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash0
       set y [expr $y+$Writer::Data(Height)*$Data(HAsh0$Pad)]
 
-      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text "FCST VA CLD +6 HR:"
+      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(FCST6)
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash6
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash6
       set y [expr $y+$Writer::Data(Height)*$Data(HAsh6$Pad)]
 
-      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text "FCST VA CLD +12 HR:"
+      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(FCST12)
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash12
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash12
       set y [expr $y+$Writer::Data(Height)*$Data(HAsh12$Pad)]
 
-      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text "FCST VA CLD +18 HR:"
+      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(FCST18)
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash18
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash18
       set y [expr $y+$Writer::Data(Height)*$Data(HAsh18$Pad)]
@@ -1817,8 +1823,8 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 
       set f $Data(Page$Pad)
       $Data(Page$Pad).page.canvas delete ICOVAAC
-      foreach h { 0 6 12 18 } {
-         $Data(Page$Pad).page.canvas itemconfigure DATE$h -text $Data(Date$h$Pad)
+      foreach h { 0 6 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST6) $Data(FCST12) $Data(FCST18) ] {
+         $Data(Page$Pad).page.canvas itemconfigure DATE$h -text "$l $Data(Date$h$Pad)"
          foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
             if  { [llength $Data(L$no$h$Pad)]>2 } {
                Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
