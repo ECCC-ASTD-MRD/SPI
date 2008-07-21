@@ -159,6 +159,7 @@ proc Writer::FVCN::Init { Pad } {
    set Data(Hour$Pad)    0
 
    set Data(Date0$Pad)   [clock format $Data(Seconds) -format "%d/%H%MZ" -gmt True]
+   set Data(FCST0$Pad)   ""
    set Data(L10$Pad)     ""
    set Data(L20$Pad)     ""
    set Data(L30$Pad)     ""
@@ -264,7 +265,7 @@ proc Writer::FVCN::Layout { Frame } {
 
    $Frame.page.canvas create rectangle 5 555 1010 670 -fill white -outline black -width 0.5
    $Frame.page.canvas create text   10 560 -text "Col 1" -anchor nw -tag COL1 -font XFont12
-   $Frame.page.canvas create text  465 560 -text "Col 2" -anchor n  -tag COL2 -font XFont12
+   $Frame.page.canvas create text  455 560 -text "Col 2" -anchor n  -tag COL2 -font XFont12
    $Frame.page.canvas create text 1005 560 -text "Col 3" -anchor ne -tag COL3 -font XFont12
 
    set dx 350
@@ -338,8 +339,8 @@ proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
 
       $Data(Page$Pad).page.canvas itemconfigure COL2 -text $text1\n$text2\n$text3
 
-      set text1 [Writer::BlocFormat "RMK:" [Writer::TextExtract word 30 "" $Pad.remarks] 13]
-      set text2 [Writer::BlocFormat "NXT ADVISORY:" [Writer::TextExtract word 30 "" $Pad.next] 13]
+      set text1 [Writer::BlocFormat "RMK:" [Writer::TextExtract char 35 "" $Pad.remarks] 13]
+      set text2 [Writer::BlocFormat "NXT ADVISORY:" [Writer::TextExtract char 35 "" $Pad.next] 13]
 
       $Data(Page$Pad).page.canvas itemconfigure COL3 -text  $text1\n$text2
 
@@ -424,7 +425,7 @@ proc Writer::FVCN::Open { Pad File } {
    set Data(Lat$Pad) [lindex $coo 0]
    set Data(Lon$Pad) [lindex $coo 1]
 
-   Writer::FVCN::GraphUpdate $Pad True
+   Writer::FVCN::GraphUpdate $Pad False
    Writer::FVCN::UpdateItems $Writer::Data(Frame)
  }
 
@@ -584,7 +585,7 @@ proc Writer::FVCN::Format { Pad Mode } {
 
       #----- Ash cloud
 
-      puts $f "[format "%-21s" $Data(OBS)] $Data(Date0$Pad)"
+      puts $f "[format "%-21s" "OBS VA DTG:"] $Data(Date0$Pad)"
       puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 47 "" $Pad.ash0]]
       puts $f [Writer::BlocFormat $Data(FCST6)   [Writer::TextExtract char 47 "" $Pad.ash6]]
       puts $f [Writer::BlocFormat $Data(FCST12)  [Writer::TextExtract char 47 ""  $Pad.ash12]]
@@ -1299,7 +1300,7 @@ proc Writer::FVCN::PageInit { Pad } {
 
       #----- Ash data
 
-      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(OBS)
+      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text "OBS VA DTG:"
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash
       incr y $Writer::Data(Height)
 
@@ -1380,15 +1381,20 @@ proc Writer::FVCN::Read { Pad File Mode } {
    if { $Mode=="NEW" } {
       gets $f Data(Code$Pad)
       gets $f line ; $Pad.details insert 0.0 $line
-      gets $f Data(Date0$Pad)
       gets $f Data(Obs$Pad)
-      gets $f line
 
-      $Pad.ash0 insert 0.0 $line
+      #----- Have to check for older file format
+      if { [string index $Data(Obs$Pad) end]!=":" } {
+         set Data(Date0$Pad) $Data(Obs$Pad)
+         gets $f Data(Obs$Pad)
+         gets $f line
+         $Pad.ash0 insert 0.0 $line
+         set hours { 6 12 18 }
+      } else {
+         set hours { 0 6 12 18 }
+      }
 
-#      Writer::FVCN::AshUpdate $Pad 0
-
-      foreach h { 6 12 18 } {
+      foreach h $hours {
          gets $f line
          set Data(Date$h$Pad) [lindex $line 0]
          set Data(L1$h$Pad)   [lindex $line 1]
@@ -1403,13 +1409,18 @@ proc Writer::FVCN::Read { Pad File Mode } {
    }
    gets $f line  ; $Pad.remarks insert 0.0 $line
 
+   #----- Get graphical FVCN view if it exists
+   catch {
+      gets $f line
+      Viewport::GoTo $Data(Page$Pad) [lindex $line 10] [lindex $line 11] [lindex $line 3] [lindex $line 1] [lindex $line 0] [lindex $line 2]
+   }
+
    close $f
 
    #----- Update des dimension des textes
 
    set Data(HDetails$Pad) [Writer::TextExpand $Pad.details 47]
    set Data(HInfo$Pad)    [Writer::TextExpand $Pad.info 47]
-   set Data(HAsh0$Pad)    [Writer::TextExpand $Pad.ash0 47]
    set Data(HRemarks$Pad) [Writer::TextExpand $Pad.remarks 47]
    set Data(HNext$Pad)    [Writer::TextExpand $Pad.next 47]
 }
@@ -1954,10 +1965,8 @@ proc Writer::FVCN::Write { Pad Sent } {
    if { $Data(Mode$Pad)=="NEW" } {
       puts $f "$Data(Code$Pad)"
       puts $f "[Writer::TextExtract none 47 "" $Pad.details]"
-      puts $f "$Data(Date0$Pad)"
       puts $f "$Data(Obs$Pad)"
-      puts $f "[Writer::TextExtract none 47 "" $Pad.ash0]"
-      foreach h { 6 12 18 } {
+      foreach h { 0 6 12 18 } {
          set Data(FSCT$h$Pad) [Writer::TextExtract none 47 "" $Pad.ash$h]
          puts $f "{$Data(Date$h$Pad)} {$Data(L1$h$Pad)} {$Data(L2$h$Pad)} {$Data(L3$h$Pad)} {$Data(FSCT$h$Pad)}"
       }
@@ -1965,6 +1974,11 @@ proc Writer::FVCN::Write { Pad Sent } {
       puts $f "[Writer::TextExtract none 47 "" $Pad.next]"
    } else {
       puts $f "[Writer::TextExtract none 47 "" $Pad.remarks]"
+   }
+
+   #----- Save graphical FVCN view
+   if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
+      puts $f [ProjCam::Mem $Data(Page$Pad) _____]
    }
 
    close $f
