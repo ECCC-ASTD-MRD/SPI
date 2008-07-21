@@ -40,8 +40,8 @@ namespace eval MLDP1 {
    set Sim(ListModelTimeStep)   { 2 5 10 15 20 30 60 }                       ; #----- List of internal model time step [min].
    set Sim(ListEmMassMode)      { { "Formule empirique de Sparks et al. (1997)" "Édition" } \
                                   { "Empirical formula of Sparks et al. (1997)" "Edit" } } ; #----- List of mode for total mass released calculation.
-   set Sim(ListEmSizeDist)      { { "Empirique" "Fine" "Aucune" } \
-                                  { "Empirical" "Fine" "No" } }              ; #----- List of size distributions of particles (for volcano source type).
+   set Sim(ListEmSizeDist)      { { "Spurr 1992 (défaut)" "Redoubt 1989-1990" "Fine" "Aucune" } \
+                                  { "Spurr 1992 (default)" "Redoubt 1989-1990" "Fine" "No" } }   ; #----- List of size distributions of particles (for volcano source type).
    set Sim(ListEmVerticalDist)  { { "Uniforme" "Champignon" "Exponentielle" "Poisson" "Conique" } \
                                   { "Uniform" "Umbrella" "Exponential" "Poisson" "Conical" } }   ; #----- List of vertical plume distributions.
    set Sim(ListEmissionLabel)   { { "Relâchement" "Accalmie" "" } \

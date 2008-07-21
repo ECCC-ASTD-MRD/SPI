@@ -1101,7 +1101,7 @@ proc MLDP0::PopUp { X Y } {
       menu .mldp0popup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mldp0popup.res add command -label "All" -command "MLDP0::Result all"
          .mldp0popup.res add separator
-         .mldp0popup.res add command -label "Standard" -command "MLDP0::Result result"
+         .mldp0popup.res add command -label "Dispersion" -command "MLDP0::Result result"
 #         .mldp0popup.res add command -label "Post" -command "MLDP0::Result post"
 #         .mldp0popup.res add command -label "MetField" -command "MLDP0::Result metf"
 #         .mldp0popup.res add separator
@@ -2531,9 +2531,9 @@ proc MLDP0::ValidateSimulationDuration { } {
       return 0
    }
 
-   #----- Display warning if simulation duration > 48 hrs and output time step <= 60 min.
+   #----- Display warning if simulation duration > 72 hrs and output time step <= 60 min.
    if { !$Sim(IsResFileSizeChecked) } {
-      if { $Sim(Duration) > 48 && $Sim(OutputTimeStepMin) <= 60 } {
+      if { $Sim(Duration) > 72 && $Sim(OutputTimeStepMin) <= 60 } {
          set yes [Dialog::CreateDefault .mldp0new 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration4) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration5) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration6) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
          if { $yes } {
             focus $Sim(OutputTimeStepEnt)
@@ -2544,9 +2544,9 @@ proc MLDP0::ValidateSimulationDuration { } {
       }
    }
 
-   #----- Display warning if simulation duration > 48 hrs and time interval between met data files < 6.
+   #----- Display warning if simulation duration > 72 hrs and time interval between met data files < 6.
    if { !$Sim(IsMetFileSizeChecked) } {
-      if { $Sim(Duration) > 48 && $Sim(Delta) < 6 } {
+      if { $Sim(Duration) > 72 && $Sim(Delta) < 6 } {
          set yes [Dialog::CreateDefault .mldp0new 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration7) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration8) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration9) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
          if { $yes } {
             focus $Sim(SimDurationEnt)
