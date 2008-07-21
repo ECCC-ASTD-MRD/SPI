@@ -42,9 +42,12 @@ namespace eval Writer::FVCN {
 
    set Data(OBS)    "OBS VA CLD:"
    set Data(EST)    "EST VA CLD:"
-   set Data(FCST6)  "FCST VA CLD  +6 HR"
-   set Data(FCST12) "FCST VA CLD +12 HR"
-   set Data(FCST18) "FCST VA CLD +18 HR"
+   set Data(FCST6)  "FCST VA CLD  +6 HR:"
+   set Data(FCST12) "FCST VA CLD +12 HR:"
+   set Data(FCST18) "FCST VA CLD +18 HR:"
+   set Data(LVL1)   "SFC/FL200"
+   set Data(LVL2)   "FL200/FL350"
+   set Data(LVL3)   "FL350/FL600"
 
    set Data(Rem1)  "RESPONSIBILITY FOR THIS EVENT HAS BEEN TRANSFERRED BY THE"
    set Data(Rem2)  "RESPONSIBILITY FOR THIS EVENT IS BEING TRANSFERRED TO THE"
@@ -249,10 +252,10 @@ proc Writer::FVCN::Layout { Frame } {
    set Data(VP12$Frame) [Viewport::Create $Frame 5   280 500 270 False False]
    set Data(VP18$Frame) [Viewport::Create $Frame 510 280 500 270 False False]
 
-   $Frame.page.canvas create rectangle 5     5 205  21 -fill white -outline black -width 0.5
-   $Frame.page.canvas create rectangle 510   5 710  21 -fill white -outline black -width 0.5
-   $Frame.page.canvas create rectangle 5   280 205 296 -fill white -outline black -width 0.5
-   $Frame.page.canvas create rectangle 510 280 710 296 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 5     5 210  21 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 510   5 715  21 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 5   280 210 296 -fill white -outline black -width 0.5
+   $Frame.page.canvas create rectangle 510 280 715 296 -fill white -outline black -width 0.5
 
    $Frame.page.canvas create text    9     7 -text "Date 0" -anchor nw -tag DATE0 -font XFont12
    $Frame.page.canvas create text    514   7 -text "Date 1" -anchor nw -tag DATE6 -font XFont12
@@ -340,11 +343,30 @@ proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
 
       $Data(Page$Pad).page.canvas itemconfigure COL3 -text  $text1\n$text2
 
-      #----- Update Legend
+      #----- Update Legend, We have to extract the level heights from the main FVCN
+      #----- We suppose the time steps have all the same levels so use the step with the most levels
 
-      $Data(Page$Pad).page.canvas itemconfigure LVL1 -text SFC/FL200
-      $Data(Page$Pad).page.canvas itemconfigure LVL2 -text FL200/FL350
-      $Data(Page$Pad).page.canvas itemconfigure LVL3 -text FL350/FL600
+      set n 0
+      set lst {}
+      foreach h { 0 6 12 18 } {
+         if { [llength [set l [regexp -all -nocase -inline {([A-Z]|[0-9]){3,5}/FL+[0-9]{2,3}} [$Pad.ash$h get 0.0 end]]]]>$n } {
+            set lst $l
+            set n [llength $l]
+         }
+      }
+
+      set n 1
+      set lvl1 ""
+      set lvl2 ""
+      set lvl3 ""
+      foreach { str i } $lst {
+         set lvl$n $str
+         incr n
+      }
+
+      $Data(Page$Pad).page.canvas itemconfigure LVL1 -text $lvl1
+      $Data(Page$Pad).page.canvas itemconfigure LVL2 -text $lvl2
+      $Data(Page$Pad).page.canvas itemconfigure LVL3 -text $lvl3
    }
 }
 
@@ -564,9 +586,9 @@ proc Writer::FVCN::Format { Pad Mode } {
 
       puts $f "[format "%-21s" $Data(OBS)] $Data(Date0$Pad)"
       puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 47 "" $Pad.ash0]]
-      puts $f [Writer::BlocFormat $Data(FCST6) [Writer::TextExtract char 47 "" $Pad.ash6]]
-      puts $f [Writer::BlocFormat $Data(FCST12) [Writer::TextExtract char 47 ""  $Pad.ash12]]
-      puts $f [Writer::BlocFormat $Data(FCST18) [Writer::TextExtract char 47 ""  $Pad.ash18]]
+      puts $f [Writer::BlocFormat $Data(FCST6)   [Writer::TextExtract char 47 "" $Pad.ash6]]
+      puts $f [Writer::BlocFormat $Data(FCST12)  [Writer::TextExtract char 47 ""  $Pad.ash12]]
+      puts $f [Writer::BlocFormat $Data(FCST18)  [Writer::TextExtract char 47 ""  $Pad.ash18]]
 
       #----- Next
 
@@ -1050,12 +1072,24 @@ proc Writer::FVCN::AshUpdate { Pad Hour } {
          }
 
          if { $lL1 == 0 && $lL2 == 0 && $lL3 == 0 } {
+            set Data(LVL1) "SFC/FL600"
+            set Data(LVL2) ""
+            set Data(LVL3) ""
             set text "$Data(Date$Hour$Pad) SFC/FL600 NO VA EXP"
          } elseif { $lL1 == 0 && $lL2 == 0 && $lL3 != 0 } {
+            set Data(LVL1) "SFC/FL350"
+            set Data(LVL2) "FL350/FL600"
+            set Data(LVL3) ""
             set text "$Data(Date$Hour$Pad) SFC/FL350 NO VA EXP FL350/FL600 $cL3"
          } elseif { $lL1 != 0 && $lL2 == 0 && $lL3 == 0 } {
+            set Data(LVL1) "SFC/FL200"
+            set Data(LVL2) "FL350/FL600"
+            set Data(LVL3) ""
             set text "$Data(Date$Hour$Pad) SFC/FL200 $cL1 FL350/FL600 NO VA EXP"
          } else {
+            set Data(LVL1) "SFC/FL200"
+            set Data(LVL2) "FL200/FL350"
+            set Data(LVL3) "FL350/FL600"
             set text "$Data(Date$Hour$Pad) SFC/FL200 $cL1 FL200/FL350 $cL2 FL350/FL600 $cL3"
          }
       }
