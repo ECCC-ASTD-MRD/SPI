@@ -286,9 +286,13 @@ proc VAAC::DataInit { Frame } {
    set secacc [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true]
    set Data(Eruption) [clock format $secacc -format "%a %b %d %Y, %H%MZ" -gmt true]
 
-   #----- Initialiser la liste des heures disponibles
+#----- Initialiser la liste des heures disponibles (On arrondit a l'heure la plus proche)
 
-   set Sim(Stamp0) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
+#   set Sim(Stamp0) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
+   set Sim(Stamp0) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
+   if { $Sim(AccMin)>30 } {
+      set Sim(Stamp0) [fstdstamp incr $Sim(Stamp0) 1]
+}
    set Sim(StampS) [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
    set Data(HourD) [fstdstamp diff $Sim(Stamp0) $Sim(StampS)]
 
