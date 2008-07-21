@@ -18,9 +18,12 @@
 
 #----- Fichiers complementaires
 
-source $GDefs(Dir)/Apps/Models/Types/MLDP1.txt
-source $GDefs(Dir)/Apps/Models/Types/MLDP1.ctes
-source $GDefs(Dir)/Apps/Models/Types/MLDP1.int
+source /home/afsr/alm/spi/dev/Models/Types/MLDP1.txt
+source /home/afsr/alm/spi/dev/Models/Types/MLDP1.ctes
+source /home/afsr/alm/spi/dev/Models/Types/MLDP1.int
+#source $GDefs(Dir)/Apps/Models/Types/MLDP1.txt
+#source $GDefs(Dir)/Apps/Models/Types/MLDP1.ctes
+#source $GDefs(Dir)/Apps/Models/Types/MLDP1.int
 
 package require IsoBox
 
@@ -510,7 +513,7 @@ proc MLDP1::CreateModelInputFile { } {
       set IsComputeSV ".FALSE."
       set Density $Tmp(EmDensity)
    } elseif { $Sim(SrcType) == "volcano" } {
-      if { $Sim(EmSizeDistValue) == 2 } {
+      if { $Sim(EmSizeDistValue) == 3 } {
          set IsComputeSV ".FALSE."
       } else {
          set IsComputeSV ".TRUE."
@@ -523,9 +526,22 @@ proc MLDP1::CreateModelInputFile { } {
    if { $Sim(SrcType) == "volcano" } {
 
       #----- Number of particle diameter intervals.
-      if { $Sim(EmSizeDistValue) == 0 || $Sim(EmSizeDistValue) == 2 } {
+      if { $Sim(EmSizeDistValue) == 0 } {
 
-         #----- Empirical size distribution.
+         #----- Spurr 1992 empirical size distribution (Default distribution).
+         puts $file "[format "%-25s" 5] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
+         puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
+         puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
+         puts $file "4.0"
+         puts $file "8.0       0.100"
+         puts $file "16.0      0.200"
+         puts $file "31.0      0.400   Ex.: 40.0% of particles have a size (diameter) in the range 16-31 microns."
+         puts $file "62.5      0.200"
+         puts $file "125.0     0.100"
+
+      } elseif { $Sim(EmSizeDistValue) == 1 || $Sim(EmSizeDistValue) == 3 } {
+
+         #----- Redoubt 1989-1990 empirical size distribution.
          puts $file "[format "%-25s" 10] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
          puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
          puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
@@ -541,9 +557,9 @@ proc MLDP1::CreateModelInputFile { } {
          puts $file "500.0     0.153"
          puts $file "1000.0    0.066"
 
-      } elseif { $Sim(EmSizeDistValue) == 1 } {
-         #----- Fine size distribution.
+      } elseif { $Sim(EmSizeDistValue) == 2 } {
 
+         #----- Fine size distribution.
          puts $file "[format "%-25s" 4] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
          puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
          puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
@@ -1836,9 +1852,9 @@ proc MLDP1::File { Info Path Type Back } {
    set metfiles [glob -nocomplain $simpath/meteo/*] ; #----- Get all required meteorological files for model.
 
    switch $Type {
-      "all"     { set std "$simpath/results/$file.pos $simpath/results/$file.con $metfiles" }
-      "result"  { set std "$simpath/results/$file.pos $simpath/results/$file.con" }
-      "meteo"   { set std "$metfiles" }
+      "all"    { set std "$simpath/results/$file.pos $simpath/results/$file.con $metfiles" }
+      "result" { set std "$simpath/results/$file.pos $simpath/results/$file.con" }
+      "meteo"  { set std "$metfiles" }
    }
 
    return $std
@@ -2786,6 +2802,9 @@ proc MLDP1::SimInitNew { } {
    set Sim(IsResFileSizeChecked) 0                                   ; #----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ; #----- Flag indicating if met data file size has been checked (1) or not (0).
    set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
+   if { $Sim(SrcType) == "volcano" } {
+      set Sim(Duration)          72
+   }
    set Tmp(Duration)             $Sim(Duration)                      ; #----- Temporary variable for simulation duration.
    set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
    set Tmp(OutputTimeStepMin)    $Sim(OutputTimeStepMin)             ; #----- Temporary variable for output time step.
@@ -2821,7 +2840,7 @@ proc MLDP1::SimInitNew { } {
 
    #----- Initialize maximum plume height [m] and column radius [m].
    if { $Sim(SrcType) == "volcano" } {        #----- Volcano source type.
-      set Sim(EmHeight)  14000.0
+      set Sim(EmHeight)  10000.0
       set Sim(EmRadius)  1000.0
       set Sim(Species)   TRACER
       set Sim(NbSpecies) 1
