@@ -74,7 +74,7 @@ namespace eval Writer::FVCN {
    set Data(Ret)    "PLEASE SEE FV____ DDHHMM ISSUED BY ______ VAAC WHICH DESCRIBES CONDITIONS OVER OR NEAR THE MONTREAL VAAC AREA OF RESPONSIBILITY"
 
    set Data(Colors)   { red green blue }
-   set Data(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm @$GDefs(Dir)/Resources/Bitmap/raydiagright08.xbm @$GDefs(Dir)/Resources/Bitmap/rayver08.xbm"
+   set Data(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft04.xbm @$GDefs(Dir)/Resources/Bitmap/raydiagright04.xbm @$GDefs(Dir)/Resources/Bitmap/rayver04.xbm"
    set Data(Delay)    60000
    set Data(Seconds)  [clock seconds]
 }
@@ -163,25 +163,21 @@ proc Writer::FVCN::Init { Pad } {
    set Data(Level$Pad)   L1
    set Data(Hour$Pad)    0
 
-   set Data(Date0$Pad)   [clock format $Data(Seconds) -format "%d/%H%MZ" -gmt True]
    set Data(FCST0$Pad)   ""
    set Data(L10$Pad)     ""
    set Data(L20$Pad)     ""
    set Data(L30$Pad)     ""
 
-   set Data(Date6$Pad)   [clock format [expr $Data(Seconds)+3600*6] -format "%d/%H%MZ" -gmt True]
    set Data(FCST6$Pad)   ""
    set Data(L16$Pad)     ""
    set Data(L26$Pad)     ""
    set Data(L36$Pad)     ""
 
-   set Data(Date12$Pad)  [clock format [expr $Data(Seconds)+3600*12] -format "%d/%H%MZ" -gmt True]
    set Data(FCST12$Pad)  ""
    set Data(L112$Pad)    ""
    set Data(L212$Pad)    ""
    set Data(L312$Pad)    ""
 
-   set Data(Date18$Pad)  [clock format [expr $Data(Seconds)+3600*18] -format "%d/%H%MZ" -gmt True]
    set Data(FCST18$Pad)  ""
    set Data(L118$Pad)    ""
    set Data(L218$Pad)    ""
@@ -209,6 +205,36 @@ proc Writer::FVCN::Init { Pad } {
 
    set Data(Handle$Pad) "YES"
    set Data(File$Pad)   "FVCN"
+
+   Writer::FVCN::SetDate $Pad
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::SetDate>
+# Creation : Juillet 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les date d'observation et de previsions
+#
+# Parametres :
+#    <Pad>   : Identificateur du pad
+#    <Secs>  : Secondes
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::SetDate { Pad { Secs 0 } } {
+   variable Data
+
+   if { !$Secs } {
+      set Secs [clock seconds]
+   }
+   set Data(Date0$Pad)   [clock format $Secs -format "%d/%H%MZ" -gmt True]
+   set Data(Date6$Pad)   [clock format [expr $Secs+3600*6] -format "%d/%H%MZ" -gmt True]
+   set Data(Date12$Pad)  [clock format [expr $Secs+3600*12] -format "%d/%H%MZ" -gmt True]
+   set Data(Date18$Pad)  [clock format [expr $Secs+3600*18] -format "%d/%H%MZ" -gmt True]
+
+   return 1
 }
 
 #----------------------------------------------------------------------------
@@ -359,7 +385,7 @@ proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
 
       set n 0
       set lst {}
-      foreach h { 0 6 12 18 } {
+      foreach h { 6 12 18 } {
          if { [llength [set l [regexp -all -nocase -inline {([A-Z]|[0-9]){3,5}/FL+[0-9]{2,3}} [$Pad.ash$h get 0.0 end]]]]>$n } {
             set lst $l
             set n [llength $l]
@@ -934,6 +960,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
    label $Pad.obs      -bg white  -font XFont12 -bd 0 -anchor w -textvariable Writer::FVCN::Data(Obs$Pad)
 
    entry $Pad.ash      -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Date0$Pad)
+
    entry $Pad.location -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Location$Pad)
    entry $Pad.area     -bg gray75 -width 47 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Area$Pad)
    entry $Pad.elev     -bg gray75 -width 8  -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Elev$Pad)
@@ -951,10 +978,9 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    bind $Pad.details <Any-KeyRelease> "set Writer::FVCN::Data(HDetails$Pad) \[Writer::TextExpand %W 47 64\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.info    <Any-KeyRelease> "set Writer::FVCN::Data(HInfo$Pad)    \[Writer::TextExpand %W 47 32\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash0    <Any-KeyRelease> "set Writer::FVCN::Data(HAsh0$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash6    <Any-KeyRelease> "set Writer::FVCN::Data(HAsh6$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
+   bind $Pad.ash6    <Any-KeyRelease> "set Writer::FVCN::Data(HAsh6$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date6$Pad) \[$Pad.ash6  get 1.0 1.8\]"
+   bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date12$Pad) \[$Pad.ash12  get 1.0 1.8\]"
+   bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date18$Pad) \[$Pad.ash18  get 1.0 1.8\]"
    bind $Pad.remarks <Any-KeyRelease> "set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 256\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.next    <Any-KeyRelease> "set Writer::FVCN::Data(HNext$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
 
@@ -1886,10 +1912,17 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
          set va 0
          foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
             if  { [llength $Data(L$no$h$Pad)]>2 } {
+               if { $h==0 } {
+                  set color black
+                  set stipple @$GDefs(Dir)/Resources/Bitmap/rayhor04.xbm
+               }
                Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
                incr va
             }
          }
+
+         #----- Set no ash label if area is not defined
+
          if { $va } {
             $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text ""
          } else {
