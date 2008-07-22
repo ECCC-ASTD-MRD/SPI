@@ -268,7 +268,7 @@ proc Writer::FVCN::Layout { Frame } {
    $Frame.page.canvas create text  455 560 -text "Col 2" -anchor n  -tag COL2 -font XFont12
    $Frame.page.canvas create text 1005 560 -text "Col 3" -anchor ne -tag COL3 -font XFont12
 
-   set dx 350
+   set dx 320
    set dy 665
    foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Writer::FVCN::Data(Stipples) {
       $Frame.page.canvas create text      $dx $dy -text "" -anchor se -tag LVL$no -font XFont12
