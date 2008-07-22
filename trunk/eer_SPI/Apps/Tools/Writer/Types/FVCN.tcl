@@ -40,7 +40,10 @@ namespace eval Writer::FVCN {
    set Data(Next2)  "NO LATHER THAN"
    set Data(Next3)  "NO FURTHER ADVISORIES"
 
-   set Data(NoVA)   "NO VA EXPECTED"
+   set Data(NoVA0)   "VA NOT IDENTIFIABLE FROM SATELLITE DATA"
+   set Data(NoVA6)   "NO VA EXPECTED"
+   set Data(NoVA12)  "NO VA EXPECTED"
+   set Data(NoVA18)  "NO VA EXPECTED"
 
    set Data(OBS)    "OBS VA CLD:"
    set Data(EST)    "EST VA CLD:"
@@ -255,10 +258,10 @@ proc Writer::FVCN::Layout { Frame } {
    set Data(VP12$Frame) [Viewport::Create $Frame 5   280 500 270 False False]
    set Data(VP18$Frame) [Viewport::Create $Frame 510 280 500 270 False False]
 
-   $Frame.page.canvas create text    255 140 -text ""          -tag NOVA0  -font XFont24
-   $Frame.page.canvas create text    760 140 -text $Data(NoVA) -tag NOVA6  -font XFont24
-   $Frame.page.canvas create text    230 415 -text $Data(NoVA) -tag NOVA12 -font XFont24
-   $Frame.page.canvas create text    760 415 -text $Data(NoVA) -tag NOVA18 -font XFont24
+   $Frame.page.canvas create text    255 140 -text $Data(NoVA0)  -tag NOVA0  -font XFont20
+   $Frame.page.canvas create text    760 140 -text $Data(NoVA6)  -tag NOVA6  -font XFont20
+   $Frame.page.canvas create text    230 415 -text $Data(NoVA12) -tag NOVA12 -font XFont20
+   $Frame.page.canvas create text    760 415 -text $Data(NoVA18) -tag NOVA18 -font XFont20
 
    $Frame.page.canvas create rectangle 5     5 210  21 -fill white -outline black -width 0.5
    $Frame.page.canvas create rectangle 510   5 715  21 -fill white -outline black -width 0.5
@@ -1041,12 +1044,14 @@ proc Writer::FVCN::AshUpdate { Pad Hour } {
       #----- Convertir en format text
 
       if { [llength $Data(L10$Pad)]<6 } {
-         set text "VA NOT IDENTIFIABLE FROM SATELLITE DATA"
+         set text $Data(NoVA0)
       } else {
          set text ""
          foreach { lat lon elev } $Data(L10$Pad) {
             lappend text [Writer::FVCN::FormatCoord $lat $lon]
          }
+         puts stderr "...[lindex $Data(L10$Pad) 0].....$Data(L10$Pad)...."
+         lappend text [Writer::FVCN::FormatCoord [lindex $Data(L10$Pad) 0] [lindex $Data(L10$Pad) 1]]
          set text [join $text " - "]
       }
 
@@ -1068,6 +1073,7 @@ proc Writer::FVCN::AshUpdate { Pad Hour } {
                foreach { lat lon elev } $Data($l$Hour$Pad) {
                   lappend c$l [Writer::FVCN::FormatCoord $lat $lon]
                }
+               lappend c$l [Writer::FVCN::FormatCoord [lindex $Data($l$Hour$Pad) 0] [lindex $Data($l$Hour$Pad) 1]]
             }
 
             eval set len \[set l$l \[llength \$c$l\]\]
@@ -1881,13 +1887,13 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
          foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
             if  { [llength $Data(L$no$h$Pad)]>2 } {
                Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
+               incr va
             }
-            incr va
          }
-         if { !$va } {
+         if { $va } {
             $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text ""
          } else {
-            $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text $Data(NoVA)
+            $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text $Data(NoVA$h)
          }
          if { [set xy [ $Data(VP$h$f) -project $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad)) 0]]!="" && [lindex $xy 2]>0 } {
             Shape::DrawIcoVAAC $Data(Page$Pad).page.canvas $xy "ICOVAAC" black 5 False
