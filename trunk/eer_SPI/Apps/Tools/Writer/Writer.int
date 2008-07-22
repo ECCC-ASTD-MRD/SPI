@@ -39,7 +39,7 @@ proc Writer::Window { } {
       toplevel .writer
 
       set Data(Width)  [font measure XFont12 M]
-      set Data(Height) [font metrics XFont12 -linespace]
+      set Data(Height) [expr [font metrics XFont12 -linespace]+2]
 
       wm title     .writer "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
       wm geometry  .writer [expr $Data(Width)*70]x600+[winfo rootx .]+[winfo rooty .]

@@ -70,7 +70,7 @@ namespace eval Writer::FVCN {
    set Data(NoNONE) ""
    set Data(VAAC)   "MONTREAL"
 
-   set Data(Refer)  "PLEASE REFER TO SIGMETS FOR CURRENT WARNINGS. THIS VA ADVISORY AND GRAPHICAL PRODUCT ARE AVAILABLE AT  HTTP://WEATHEROFFICE.EC.GC.CA/EER/INDEX_E.HTML (ALL LOWER CASE)"
+   set Data(WWW)    "VA GRAPHICAL PRODUCT AVAILABLE AT\nHTTP://METEO.EC.GC.CA/EER (ALL LOWER CASE)"
    set Data(Ret)    "PLEASE SEE FV____ DDHHMM ISSUED BY ______ VAAC WHICH DESCRIBES CONDITIONS OVER OR NEAR THE MONTREAL VAAC AREA OF RESPONSIBILITY"
 
    set Data(Colors)   { red green blue }
@@ -630,6 +630,7 @@ proc Writer::FVCN::Format { Pad Mode } {
       #----- Next
 
       puts $f [Writer::BlocFormat "RMK:" [Writer::TextExtract word 47 "" $Pad.remarks]]
+      puts $f [Writer::BlocFormat "" [split $Data(WWW) \n]]
       puts $f [Writer::BlocFormat "NXT ADVISORY:" [Writer::TextExtract word 47 ""  $Pad.next]]
    }
 
@@ -965,14 +966,15 @@ proc Writer::FVCN::LayoutInit { Pad } {
    entry $Pad.area     -bg gray75 -width 47 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Area$Pad)
    entry $Pad.elev     -bg gray75 -width 8  -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Elev$Pad)
 
-   text $Pad.details   -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
-   text $Pad.info      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
-   text $Pad.ash0      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
-   text $Pad.ash6      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
-   text $Pad.ash12     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
-   text $Pad.ash18     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
-   text $Pad.remarks   -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
-   text $Pad.next      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
+   text  $Pad.details   -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
+   text  $Pad.info      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
+   text  $Pad.ash0      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
+   text  $Pad.ash6      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
+   text  $Pad.ash12     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
+   text  $Pad.ash18     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
+   text  $Pad.remarks   -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
+   label $Pad.www       -bg white  -font XFont12 -bd 0 -anchor w -textvariable Writer::FVCN::Data(WWW) -justify left
+   text  $Pad.next      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
 
    #----- Auto resizing des text widgets
 
@@ -981,7 +983,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
    bind $Pad.ash6    <Any-KeyRelease> "set Writer::FVCN::Data(HAsh6$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date6$Pad) \[$Pad.ash6  get 1.0 1.8\]"
    bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date12$Pad) \[$Pad.ash12  get 1.0 1.8\]"
    bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date18$Pad) \[$Pad.ash18  get 1.0 1.8\]"
-   bind $Pad.remarks <Any-KeyRelease> "set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 256\] ; Writer::FVCN::PageInit $Pad"
+   bind $Pad.remarks <Any-KeyRelease> "set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 [expr 256-[string length $Data(WWW)]]\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.next    <Any-KeyRelease> "set Writer::FVCN::Data(HNext$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
 
    #----- Menu d'options
@@ -1266,7 +1268,7 @@ proc Writer::FVCN::PageInit { Pad } {
    #----- Numero de message
 
    set y 4
-   set x [expr 2+$Writer::Data(Width)*22 ]
+   set x [expr 10+$Writer::Data(Width)*22 ]
 
    $Pad.canvas create window 2 $y -anchor nw -tags WIN -window $Pad.no
    $Pad.canvas create text [expr 2+$Writer::Data(Width)*7] $y -anchor nw -font XFont12 -tags HEADER -text "$Data(Id$Pad)"
@@ -1344,7 +1346,7 @@ proc Writer::FVCN::PageInit { Pad } {
       incr y $Writer::Data(Height)
 
       $Pad.canvas create window  1 $y -anchor nw -tags ASH -window $Pad.obs
-      $Pad.canvas create window [expr $x-12] $y -anchor ne -tags WIN -window $Pad.optobs
+      $Pad.canvas create window [expr $x-$Writer::Data(Height)] $y -anchor ne -tags WIN -window $Pad.optobs
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash0
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash0
       set y [expr $y+$Writer::Data(Height)*$Data(HAsh0$Pad)]
@@ -1370,6 +1372,9 @@ proc Writer::FVCN::PageInit { Pad } {
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optrem
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.remarks
       set y [expr $y+$Writer::Data(Height)*$Data(HRemarks$Pad)]
+
+      $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.www
+      set y [expr $y+$Writer::Data(Height)*2]
 
       $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags NEXT -text "NXT ADVISORY:"
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optnext
