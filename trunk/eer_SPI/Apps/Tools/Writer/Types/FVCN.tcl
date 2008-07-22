@@ -40,6 +40,8 @@ namespace eval Writer::FVCN {
    set Data(Next2)  "NO LATHER THAN"
    set Data(Next3)  "NO FURTHER ADVISORIES"
 
+   set Data(NoVA)   "NO VA EXPECTED"
+
    set Data(OBS)    "OBS VA CLD:"
    set Data(EST)    "EST VA CLD:"
    set Data(FCST6)  "FCST VA CLD  +6 HR:"
@@ -252,6 +254,11 @@ proc Writer::FVCN::Layout { Frame } {
    set Data(VP6$Frame)  [Viewport::Create $Frame 510   5 500 270 False False]
    set Data(VP12$Frame) [Viewport::Create $Frame 5   280 500 270 False False]
    set Data(VP18$Frame) [Viewport::Create $Frame 510 280 500 270 False False]
+
+   $Frame.page.canvas create text    255 140 -text ""          -tag NOVA0  -font XFont24
+   $Frame.page.canvas create text    760 140 -text $Data(NoVA) -tag NOVA6  -font XFont24
+   $Frame.page.canvas create text    230 415 -text $Data(NoVA) -tag NOVA12 -font XFont24
+   $Frame.page.canvas create text    760 415 -text $Data(NoVA) -tag NOVA18 -font XFont24
 
    $Frame.page.canvas create rectangle 5     5 210  21 -fill white -outline black -width 0.5
    $Frame.page.canvas create rectangle 510   5 715  21 -fill white -outline black -width 0.5
@@ -1870,10 +1877,17 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
       $Data(Page$Pad).page.canvas delete ICOVAAC
       foreach h { 0 6 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST6) $Data(FCST12) $Data(FCST18) ] {
          $Data(Page$Pad).page.canvas itemconfigure DATE$h -text "$l $Data(Date$h$Pad)"
+         set va 0
          foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
             if  { [llength $Data(L$no$h$Pad)]>2 } {
                Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
             }
+            incr va
+         }
+         if { !$va } {
+            $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text ""
+         } else {
+            $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text $Data(NoVA)
          }
          if { [set xy [ $Data(VP$h$f) -project $Data(Lat$Writer::Data(Pad)) $Data(Lon$Writer::Data(Pad)) 0]]!="" && [lindex $xy 2]>0 } {
             Shape::DrawIcoVAAC $Data(Page$Pad).page.canvas $xy "ICOVAAC" black 5 False
