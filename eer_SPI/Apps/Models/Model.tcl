@@ -109,7 +109,17 @@ namespace eval Model {
    image create photo ICO_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_BIO.gif
    image create photo ICO_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_SPILL.gif
 
+   image create photo ACT_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_VOLCANO.gif
+   image create photo ACT_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_NUCLEAR.gif
+   image create photo ACT_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_CTBT.gif
+   image create photo ACT_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_FIRE.gif
+   image create photo ACT_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_OTHER.gif
+   image create photo ACT_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_BIO.gif
+   image create photo ACT_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_SPILL.gif
+
    set Resources(Icos)  "ICO_VOLC ICO_NUCL ICO_CTBT ICO_FIRE ICO_BIO ICO_SPILL ICO_OTHE"
+   set Resources(Acts)  "ACT_VOLC ACT_NUCL ACT_CTBT ACT_FIRE ACT_BIO ACT_SPILL ACT_OTHE"
+
    set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
    set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
 }

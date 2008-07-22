@@ -248,7 +248,7 @@ proc Watch::CreateTree { } {
 
          if { $TData(CANERM) } {
 
-            set y1 [incr y 20]
+            set y1 [incr y 21]
 
             $canvas create line 10 $y 20 $y -tags TREE
             $canvas create text 40 $y -text CANERM -font $GDefs(Font) -anchor w -tags TREE
@@ -271,7 +271,7 @@ proc Watch::CreateTree { } {
 
          if { $TData(TRAJECT) } {
 
-            set y1 [incr y 20]
+            set y1 [incr y 21]
 
             $canvas create line 10 $y 35 $y -tags TREE
             $canvas create text 40 $y -text TRAJECT -font $GDefs(Font) -anchor w -tags "TRAJECT$name TREE"
@@ -282,7 +282,7 @@ proc Watch::CreateTree { } {
 
          if { $TData(SATDATA) } {
 
-            set y1 [incr y 20]
+            set y1 [incr y 21]
 
             $canvas create line 10 $y 35 $y -tags TREE
             $canvas create text 40 $y -text SATDATA -font $GDefs(Font) -anchor w -tags "SATDATA$name TREE"
@@ -292,7 +292,7 @@ proc Watch::CreateTree { } {
          }
          $canvas create line 10 $y0 10 $y1 -tags TREE
       }
-      incr y 20
+      incr y 21
    }
 
    $canvas bind SIGN <Enter> "$canvas config -cursor hand1"

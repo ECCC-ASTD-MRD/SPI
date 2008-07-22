@@ -269,9 +269,11 @@ proc Exp::Procedure { Text  } {
 #   <Prev>   : No de la simulation precedente
 #   <No>     : No de l'experience
 #   <Name>   : Nom de l'experience
+#   <Type>   : Type d'experience
 #   <Deep>   : Coordonnee de la profondeur de la branche en y
 #   <Branch> : Cordonnee de la profondeur de la branche
 #   <List>   : Liste des simulations
+#   <Open>   : Is the branch openned
 #
 # Retour     :
 #   <Deep>   : Coordonnee de la profondeur de la derniere branche en y
@@ -281,7 +283,7 @@ proc Exp::Procedure { Text  } {
 #
 #-------------------------------------------------------------------------------
 
-proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List } {
+proc Exp::CreateBranch { Canvas Model Prev No Name Type Deep Branch List { Open True } } {
    global GDefs
    variable Data
 
@@ -294,8 +296,6 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List } {
       ${Model}::PoolInfo $sim
 
       if { $Data(NoPrev) == $Prev } {
-         incr Deep 20
-
          #----- Creer le nom du widget (unique)
 
          regsub -all "\[^a-zA-Z0-9\]" $sim "" id
@@ -306,33 +306,40 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List } {
          switch $Data(State) {
             0 { set fg black }
             1 { set fg black }
-            2 { set fg red }
+            2 { set fg red ;  $Canvas itemconfigure IEXP$No -image [lindex $Model::Resources(Acts) $Type] }
             3 { set fg gray }
             4 { set fg blue }
          }
 
-         #----- Creer l'identificateur de l'experience
+         if { $Open } {
+            incr Deep 20
 
-         $Canvas create text [expr $x+5] $Deep -text "$Data(Desc)" -anchor w -tags "SIM SIM$id" -fill $fg -font $GDefs(Font)
-         $Canvas create line [expr $x-10] $Deep $x $Deep -width 1 -fill black -tags TREE
+            #----- Creer l'identificateur de l'experience
 
-         $Canvas create line [expr $x-10] $Deep $x $Deep -width 1 -fill black -tags TREE
-         $Canvas create line [expr $x-10] $branch [expr $x -10] $Deep -width 1 -fill black -tags TREE
+            $Canvas create text [expr $x+5] $Deep -text "$Data(Desc)" -anchor w -tags "SIM SIM$id" -fill $fg -font $GDefs(Font)
+            $Canvas create line [expr $x-10] $Deep $x $Deep -width 1 -fill black -tags TREE
 
-         $Canvas bind SIM$id <ButtonPress-3> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; Exp::SelectSim \"$sim\" ; ${Model}::PopUp %X %Y"
-         $Canvas bind SIM$id <ButtonPress-1> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; Exp::SelectSim \"$sim\""
+            $Canvas create line [expr $x-10] $Deep $x $Deep -width 1 -fill black -tags TREE
+            $Canvas create line [expr $x-10] $branch [expr $x -10] $Deep -width 1 -fill black -tags TREE
 
-         CanvasBubble::Create $Canvas SIM$id "[Info::Format $sim]"
+            $Canvas bind SIM$id <ButtonPress-3> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; Exp::SelectSim \"$sim\" ; ${Model}::PopUp %X %Y"
+            $Canvas bind SIM$id <ButtonPress-1> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; Exp::SelectSim \"$sim\""
+
+            CanvasBubble::Create $Canvas SIM$id "[Info::Format $sim]"
+         }
 
          #----- La branche est elle en execution
 
          if { [info exists Data(Job$id)] } {
-            Exp::LaunchUpdate $id 0
+            $Canvas itemconfigure IEXP$No -image [lindex $Model::Resources(Acts) $Type]
+            if { $Open } {
+               Exp::LaunchUpdate $id 0
+            }
          }
 
          #----- Appel recursif des sous branches
 
-         set Deep [Exp::CreateBranch $Canvas $Model $Data(NoSim) $No $Name $Deep [expr $Branch+1] $List]
+         set Deep [Exp::CreateBranch $Canvas $Model $Data(NoSim) $No $Name $Type $Deep [expr $Branch+1] $List $Open]
       }
    }
    return $Deep
@@ -372,7 +379,7 @@ proc Exp::CreateTree { } {
       set type [lindex $exp 2]
 
       $canvas create bitmap 10 $y -bitmap $Model::Resources(Plus) -tags "SIGN PEXP$no"
-      $canvas create image 30 $y -image [lindex $Model::Resources(Icos) $type] -tags "EXP"
+      $canvas create image 30 $y -image [lindex $Model::Resources(Icos) $type] -tags "EXP IEXP$no"
       $canvas create text 43 $y -text "$no $name" -anchor w -tags "SIGN EXP EXP$no" -font $GDefs(Font) -fill black
 
 
@@ -388,9 +395,9 @@ proc Exp::CreateTree { } {
 
       set y0 [set y1 [expr $y+10]]
 
-      #----- On creer les branches des modeles si necesaire
-
       if { [lsearch -exact $Exp::Data(Branch) $no] != -1 } {
+
+         #----- On creer les branches des modeles si necesaire
 
          $canvas itemconfigure PEXP$no -bitmap $Model::Resources(Minus)
 
@@ -403,7 +410,7 @@ proc Exp::CreateTree { } {
             }
 
             if { [llength $simlist] > 0 } {
-               set y1 [incr y 20]
+               set y1 [incr y 21]
 
                $canvas create line 10 $y 20 $y -tags TREE
                $canvas create text 40 $y -text $model -font $GDefs(Font) -anchor w -tags "TREE"
@@ -412,13 +419,26 @@ proc Exp::CreateTree { } {
 
                if { [lsearch -exact $Exp::Data(BranchSim) $model$no] != -1 } {
                   $canvas itemconfigure $model$no -bitmap $Model::Resources(Minus)
-                  set y [Exp::CreateBranch $canvas $model -1 $no $name $y 1 $simlist]
+                  set y [Exp::CreateBranch $canvas $model -1 $no $name $type $y 1 $simlist True]
+               } else {
+                  set y [Exp::CreateBranch $canvas $model -1 $no $name $type $y 1 $simlist False]
                }
             }
          }
          $canvas create line 10 $y0 10 $y1 -tags TREE
+      } else {
+         #----- Mais on parse quand meme pour verifier si il y a une execution en cours
+
+         foreach model $Data(Models) {
+            if { $model=="SATDATA" && [file exists $Param(Path)/${no}_${name}/SatData] } {
+               set simlist SATDATA
+            } else {
+               set simlist [Info::List $Param(Path)/${no}_${name}/${model}.pool]
+            }
+            Exp::CreateBranch $canvas $model -1 $no $name $type $y 1 $simlist False
+        }
       }
-      incr y 20
+      incr y 21
    }
 
    Exp::SelectSim $Data(SelectSim)
