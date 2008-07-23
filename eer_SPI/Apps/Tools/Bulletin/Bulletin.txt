@@ -106,6 +106,8 @@ namespace eval Bulletin {
 
    set Bubble(Line)      { "Affiche en ligne la région définie par les coordonnées de la sélection" "Display line area defined by selected coordinates" }
    set Bubble(Poly)      { "Affiche en polygone la région définie par les coordonnées de la sélection" "Display polygon area defined by selected coordinates" }
+   set Bubble(Locate)    { "Centrer sur la région" "Center on area" }
+   set Bubble(Zoom)      { "Zoom sur les limites de la région" "Zoom on area limits" }
    set Bubble(Off)       { "Ferme l'interface de recherche" "Shuts down the search interface" }
    set Bubble(Backward)  { "Activation de la recherche\nvers le haut" "Searches the bulletins backwards" }
    set Bubble(Forward)   { "Activation de la recherche\nvers le bas" "Searches the bulletins forwards" }

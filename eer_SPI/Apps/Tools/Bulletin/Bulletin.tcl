@@ -135,17 +135,22 @@ proc Bulletin::DatesMenu { } {
 #            l'outils de dessin
 #
 # Parametres :
-#   <Mode>   : Type de dessin (line,poly)
+#   <Draw>   : Type de dessin (line,poly)
+#   <Zoom>   : Zoom sur la region
 #
 # Remarques :
 #
 #----------------------------------------------------------------------------
 
-proc Bulletin::Draw { Mode } {
+proc Bulletin::Draw { Draw Zoom } {
    global GDefs
    variable Msg
 
    set text [string map { "\n" "" " " "" "." "" "-" " " } [.bulletin.mid.t get sel.first sel.last]]
+   set Data(Lat0) 999
+   set Data(Lon0) 999
+   set Data(Lat1) -999
+   set Data(Lon1) -999
 
    set ok [catch {
       foreach coord $text {
@@ -162,6 +167,10 @@ proc Bulletin::Draw { Mode } {
             set lo [expr -$lo]
          }
          lappend coords $la $lo 0.0
+         set Data(Lat0) [expr $la<$Data(Lat0)?$la:$Data(Lat0)]
+         set Data(Lon0) [expr $lo<$Data(Lon0)?$lo:$Data(Lon0)]
+         set Data(Lat1) [expr $la>$Data(Lat1)?$la:$Data(Lat1)]
+         set Data(Lon1) [expr $lo>$Data(Lon1)?$lo:$Data(Lon1)]
       }
    } error]
 
@@ -170,8 +179,19 @@ proc Bulletin::Draw { Mode } {
    } else {
       Drawing::Window
       set Drawing::Data(GeoRef) 1
-      Drawing::ItemAdd $Page::Data(Frame) $Mode $coords
+      set Drawing::Current(Color) #ffffff
+      set Drawing::Current(Width) 2
+      set Drawing::Current(Line) 0
+      set Drawing::Current(Pattern) @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm
+      set Drawing::Current(Outline) #000000
+      Drawing::ItemAdd $Page::Data(Frame) $Draw $coords
       SPI::ToolMode SPI Zoom
+
+      if { $Zoom } {
+         ProjCam::CloseUp $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) 0.10
+      } else {
+         Viewport::GoTo $Page::Data(Frame) $Data(Lat0) $Data(Lon0)
+      }
    }
 }
 
