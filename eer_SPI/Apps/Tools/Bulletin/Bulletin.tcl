@@ -179,7 +179,7 @@ proc Bulletin::Draw { Draw Zoom } {
    } else {
       Drawing::Window
       set Drawing::Data(GeoRef) 1
-      set Drawing::Current(Color) #ffffff
+      set Drawing::Current(Color) #000000
       set Drawing::Current(Width) 2
       set Drawing::Current(Line) 0
       set Drawing::Current(Pattern) @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm
