@@ -93,11 +93,13 @@ proc Bulletin::Window { } {
          pack .bulletin.bar.search -side left -fill x -ipadx 2 -expand True
 
          frame .bulletin.bar.draw -relief raised -bd 1
-            button .bulletin.bar.draw.line -image LINE -relief flat -bd 0 -overrelief raised \
-               -command { Bulletin::Draw line }
-            button .bulletin.bar.draw.poly -image POLY -relief flat -bd 0 -overrelief raised \
-               -command { Bulletin::Draw poly }
-            pack .bulletin.bar.draw.line .bulletin.bar.draw.poly -side left
+            button .bulletin.bar.draw.loc -image FINGER -bd 0 -relief flat -overrelief raised \
+               -command { Bulletin::Draw $Bulletin::Data(Draw) False }
+            button .bulletin.bar.draw.zoom -image MODEZOOM -bd 0 -relief flat -overrelief raised \
+               -command { Bulletin::Draw $Bulletin::Data(Draw) True }
+            radiobutton .bulletin.bar.draw.line -image LINE -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Bulletin::Data(Draw) -value line
+            radiobutton .bulletin.bar.draw.poly -image POLY -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Bulletin::Data(Draw) -value poly
+            pack .bulletin.bar.draw.loc .bulletin.bar.draw.zoom .bulletin.bar.draw.line .bulletin.bar.draw.poly -side left -padx 2
          pack .bulletin.bar.draw -side left -fill x -ipadx 2
 
       pack .bulletin.bar  -side top -fill x
@@ -149,6 +151,8 @@ proc Bulletin::Window { } {
       Bubble::Create .bulletin.bar.search.entry    [lindex $Bubble(Predicat) $GDefs(Lang)]
       Bubble::Create .bulletin.bar.draw.line       [lindex $Bubble(Line) $GDefs(Lang)]
       Bubble::Create .bulletin.bar.draw.poly       [lindex $Bubble(Poly) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.loc        [lindex $Bubble(Locate) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.zoom       [lindex $Bubble(Zoom) $GDefs(Lang)]
   }
 
    #----- Initialiser l'evenement de blinking

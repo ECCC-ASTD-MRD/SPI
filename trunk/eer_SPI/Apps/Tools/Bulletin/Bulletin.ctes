@@ -33,6 +33,11 @@ namespace eval Bulletin {
    set Data(Canvas) ""                    ;#Canvas Actif
    set Data(Frame)  ""                    ;#Frame actif
    set Data(VP)     ""                    ;#Viewport actif
+   set Data(Draw)  poly
+   set Data(Lat0)  999
+   set Data(Lon0)  999
+   set Data(Lat1) -999
+   set Data(Lon1) -999
 
    #----- Constantes relatives aux bulletins
 
