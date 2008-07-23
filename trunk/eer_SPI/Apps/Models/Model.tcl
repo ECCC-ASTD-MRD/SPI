@@ -694,6 +694,7 @@ proc Model::TypeSelect { Frame No { Icon "" } } {
          }
          SPI::IcoDel WATCH
          SPI::IcoAdd $Page::Data(Frame) EXPERIMENT "" $icos
+         Exp::CreateTree
         }
       2 {
          foreach watch $Watch::Data(List) {

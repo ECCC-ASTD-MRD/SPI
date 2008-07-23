@@ -210,7 +210,7 @@ proc Exp::Create { Frame } {
       button $Frame.path.sel -image OPEN -relief flat -bd 0 -overrelief raised \
          -command { Exp::ReadPath [FileBox::Create . "" LoadPath "" ] }
       ComboBox::Create $Frame.path.list Exp::Param(Path) noedit unsorted \
-         nodouble -1 $Exp::Param(Paths) 21 5 "Exp::Read; Exp::CreateTree"
+         nodouble -1 $Exp::Param(Paths) 21 5 "Exp::Read; Model::TypeSelect none 1"
 
       pack $Frame.path.sel -side left -padx 2
       pack $Frame.path.list -side left -fill x -expand true
@@ -269,7 +269,6 @@ proc Exp::Procedure { Text  } {
 #   <Prev>   : No de la simulation precedente
 #   <No>     : No de l'experience
 #   <Name>   : Nom de l'experience
-#   <Type>   : Type d'experience
 #   <Deep>   : Coordonnee de la profondeur de la branche en y
 #   <Branch> : Cordonnee de la profondeur de la branche
 #   <List>   : Liste des simulations
@@ -283,7 +282,7 @@ proc Exp::Procedure { Text  } {
 #
 #-------------------------------------------------------------------------------
 
-proc Exp::CreateBranch { Canvas Model Prev No Name Type Deep Branch List { Open True } } {
+proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True } } {
    global GDefs
    variable Data
 
@@ -295,7 +294,7 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Type Deep Branch List { Open 
    foreach sim $List {
       ${Model}::PoolInfo $sim
 
-      if { $Data(NoPrev) == $Prev } {
+      if { $Data(NoPrev)==$Prev } {
          #----- Creer le nom du widget (unique)
 
          regsub -all "\[^a-zA-Z0-9\]" $sim "" id
@@ -306,9 +305,9 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Type Deep Branch List { Open 
          switch $Data(State) {
             0 { set fg black }
             1 { set fg black }
-            2 { set fg red ;  $Canvas itemconfigure IEXP$No -image [lindex $Model::Resources(Acts) $Type] }
-            3 { set fg gray }
-            4 { set fg blue }
+            2 { set fg red; set Data(StateExp) 2 }
+            3 { set fg gray  }
+            4 { set fg blue  }
          }
 
          if { $Open } {
@@ -331,7 +330,8 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Type Deep Branch List { Open 
          #----- La branche est elle en execution
 
          if { [info exists Data(Job$id)] } {
-            $Canvas itemconfigure IEXP$No -image [lindex $Model::Resources(Acts) $Type]
+            set Data(StateExp) 2
+
             if { $Open } {
                Exp::LaunchUpdate $id 0
             }
@@ -339,7 +339,7 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Type Deep Branch List { Open 
 
          #----- Appel recursif des sous branches
 
-         set Deep [Exp::CreateBranch $Canvas $Model $Data(NoSim) $No $Name $Type $Deep [expr $Branch+1] $List $Open]
+         set Deep [Exp::CreateBranch $Canvas $Model $Data(NoSim) $No $Name $Deep [expr $Branch+1] $List $Open]
       }
    }
    return $Deep
@@ -374,14 +374,16 @@ proc Exp::CreateTree { } {
 
    foreach exp $Data(List) {
 
+      set Data(StateExp) 0
+
       set no   [lindex $exp 0]
       set name [lindex $exp 1]
       set type [lindex $exp 2]
+      set ico  [lindex $Model::Resources(Icos) $type]
 
       $canvas create bitmap 10 $y -bitmap $Model::Resources(Plus) -tags "SIGN PEXP$no"
-      $canvas create image 30 $y -image [lindex $Model::Resources(Icos) $type] -tags "EXP IEXP$no"
+      $canvas create image 30 $y -image $ico -tags "EXP IEXP$no"
       $canvas create text 43 $y -text "$no $name" -anchor w -tags "SIGN EXP EXP$no" -font $GDefs(Font) -fill black
-
 
       set str ""
       foreach loc [lindex $exp 3] {
@@ -419,9 +421,9 @@ proc Exp::CreateTree { } {
 
                if { [lsearch -exact $Exp::Data(BranchSim) $model$no] != -1 } {
                   $canvas itemconfigure $model$no -bitmap $Model::Resources(Minus)
-                  set y [Exp::CreateBranch $canvas $model -1 $no $name $type $y 1 $simlist True]
+                  set y [Exp::CreateBranch $canvas $model -1 $no $name $y 1 $simlist True]
                } else {
-                  set y [Exp::CreateBranch $canvas $model -1 $no $name $type $y 1 $simlist False]
+                  set y [Exp::CreateBranch $canvas $model -1 $no $name $y 1 $simlist False]
                }
             }
          }
@@ -435,13 +437,30 @@ proc Exp::CreateTree { } {
             } else {
                set simlist [Info::List $Param(Path)/${no}_${name}/${model}.pool]
             }
-            Exp::CreateBranch $canvas $model -1 $no $name $type $y 1 $simlist False
+            Exp::CreateBranch $canvas $model -1 $no $name $y 1 $simlist False
         }
       }
       incr y 21
+
+      #----- Change icon on experiment state
+
+      if { $Data(StateExp)==2 } {
+         set ico [lindex $Model::Resources(Acts) $type]
+      }
+      $canvas itemconfigure IEXP$no -image $ico
+      if { [info exists SPI::Ico(DefEXPERIMENT)] } {
+         set idx 0
+         foreach def $SPI::Ico(DefEXPERIMENT) {
+            if { [string match "* $no:$name" [lindex $def 0]] } {
+               lset SPI::Ico(DefEXPERIMENT) $idx 4 $ico
+            }
+            incr idx
+         }
+      }
    }
 
    Exp::SelectSim $Data(SelectSim)
+   SPI::IcoDraw   $Page::Data(Frame)
 
    $canvas bind SIGN <Enter> "$canvas config -cursor hand1"
    $canvas bind SIGN <Leave> "$canvas config -cursor left_ptr"
@@ -591,6 +610,7 @@ proc Exp::LaunchUpdate { Id Read } {
 
       if { [winfo exists $Data(Frame).info.exp.canvas] } {
          $Data(Frame).info.exp.canvas delete EXEC$Id
+         Exp::CreateTree
       }
 
       catch { close $Data(Job$Id) }
@@ -918,7 +938,7 @@ proc Exp::PopUp { X Y } {
    if { ![winfo exists .exppop] } {
 
       menu .exppop -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .exppop add command -label ""  -command "Model::TypeSelect none 1 \$Exp::Data(Name); SPI::Locate \$Exp::Data(Lat) \$Exp::Data(Lon)" \
+         .exppop add command -label ""  -command "Model::TypeSelect none 1 \$Exp::Data(Name); Exp::CreateTree; SPI::Locate \$Exp::Data(Lat) \$Exp::Data(Lon)" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
          .exppop add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu .exppop.new
          .exppop add separator
