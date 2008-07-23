@@ -145,21 +145,21 @@ proc Bulletin::Draw { Mode } {
    global GDefs
    variable Msg
 
-   set text [split [string map { "\n" " " "." "" } [.bulletin.mid.t get sel.first sel.last]] -]
+   set text [string map { "\n" "" " " "" "." "" "-" " " } [.bulletin.mid.t get sel.first sel.last]]
 
    set ok [catch {
       foreach coord $text {
-         set la [lindex $coord 0]
-         if { [string index $la 0]=="S" } {
-            set la [expr -[string range $la 1 end]/100.0]
-         } else {
-            set la [expr [string range $la 1 end]/100.0]
+          set da [string index $coord 0]
+          set la [Convert::Minute2Decimal "[string range $coord 1 2] [string range $coord 3 4]"]
+
+         if { $da=="S" } {
+            set la [expr -$la]
          }
-         set lo [lindex $coord 1]
-         if { [string index $lo 0]=="W" } {
-            set lo [expr -[string range $lo 1 end]/100.0]
-         } else {
-            set lo [expr [string range $lo 1 end]/100.0]
+
+         set do [string index $coord 5]
+         set lo [Convert::Minute2Decimal "[string range $coord 6 8] [string range $coord 9 10]"]
+         if { $do=="W" } {
+            set lo [expr -$lo]
          }
          lappend coords $la $lo 0.0
       }
