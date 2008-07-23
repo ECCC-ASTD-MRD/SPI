@@ -47,7 +47,7 @@ proc Bulletin::CommandToggle { Cmd1 Sleep1 Cmd2 Sleep2 } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <DatesMenu>
+# Nom      : <Bulletin::DatesMenu>
 # Creation : Juin 1997 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Insere les dates disponibles dans les menus de dates
@@ -126,6 +126,20 @@ proc Bulletin::DatesMenu { } {
 
    set Bul(Date) $date
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Bulletin::Draw>
+# Creation : Juillet 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche la region selectionne dans le viewport actif en utilisant
+#            l'outils de dessin
+#
+# Parametres :
+#   <Mode>   : Type de dessin (line,poly)
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Bulletin::Draw { Mode } {
    global GDefs
