@@ -48,7 +48,7 @@ proc Bulletin::Window { } {
       eval wm geometry  .bulletin $Param(Geom)
       wm minsize        .bulletin 229 96
 
-      # ----- Creation du frame du haut pour le menu principal.
+      #----- Creation du frame du haut pour le menu principal.
 
       frame .bulletin.menu -relief raised -bd 1
       pack .bulletin.menu -side top -fill x
@@ -71,25 +71,36 @@ proc Bulletin::Window { } {
 
       #----- fonctions de recherche
 
-      frame .bulletin.search -relief raised -bd 1
-         label .bulletin.search.label -text [lindex $Lbl(Search) $GDefs(Lang)]
-         entry .bulletin.search.entry -textvariable Bulletin::Search(Token) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 20
-         pack .bulletin.search.label .bulletin.search.entry -side left -fill y -padx 2
+      frame .bulletin.bar -relief flat
+         frame .bulletin.bar.search -relief raised -bd 1
+            label .bulletin.bar.search.label -text [lindex $Lbl(Search) $GDefs(Lang)]
+            entry .bulletin.bar.search.entry -textvariable Bulletin::Search(Token) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 20
+            pack .bulletin.bar.search.label .bulletin.bar.search.entry -side left -fill y -padx 2
 
-         button .bulletin.search.next  -relief flat -bd 0 -overrelief raised -image VCRFRAMEF \
-            -command "set Bulletin::Search(Handle) 1; Bulletin::SearchNext .bulletin.mid.t forwards"
-         button .bulletin.search.previous  -relief flat -bd 0 -overrelief raised -image VCRFRAMEB \
-            -command "set Bulletin::Search(Handle) 1; Bulletin::SearchNext .bulletin.mid.t backwards"
-         button .bulletin.search.stop  -relief flat -bd 0 -overrelief raised -image VCRSTOP \
-            -command "set Bulletin::Search(Handle) 0"
-         pack .bulletin.search.previous .bulletin.search.stop .bulletin.search.next  -side left
+            button .bulletin.bar.search.next  -relief flat -bd 0 -overrelief raised -image VCRFRAMEF \
+               -command "set Bulletin::Search(Handle) 1; Bulletin::SearchNext .bulletin.mid.t forwards"
+            button .bulletin.bar.search.previous  -relief flat -bd 0 -overrelief raised -image VCRFRAMEB \
+               -command "set Bulletin::Search(Handle) 1; Bulletin::SearchNext .bulletin.mid.t backwards"
+            button .bulletin.bar.search.stop  -relief flat -bd 0 -overrelief raised -image VCRSTOP \
+               -command "set Bulletin::Search(Handle) 0"
+            pack .bulletin.bar.search.previous .bulletin.bar.search.stop .bulletin.bar.search.next  -side left
 
-         radiobutton .bulletin.search.local -variable Bulletin::Search(Mode) -value 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -text [lindex $Lbl(Local) $GDefs(Lang)]
-         radiobutton .bulletin.search.global -variable Bulletin::Search(Mode) -value 1 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -text [lindex $Lbl(Global) $GDefs(Lang)]
-         pack .bulletin.search.local .bulletin.search.global -side left -fill y -padx 2
-      pack  .bulletin.search  -side top -fill x
+            radiobutton .bulletin.bar.search.local -variable Bulletin::Search(Mode) -value 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+               -text [lindex $Lbl(Local) $GDefs(Lang)]
+            radiobutton .bulletin.bar.search.global -variable Bulletin::Search(Mode) -value 1 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+               -text [lindex $Lbl(Global) $GDefs(Lang)]
+            pack .bulletin.bar.search.local .bulletin.bar.search.global -side left -fill both -padx 2
+         pack .bulletin.bar.search -side left -fill x -ipadx 2 -expand True
+
+         frame .bulletin.bar.draw -relief raised -bd 1
+            button .bulletin.bar.draw.line -image LINE -relief flat -bd 0 -overrelief raised \
+               -command { Bulletin::Draw line }
+            button .bulletin.bar.draw.poly -image POLY -relief flat -bd 0 -overrelief raised \
+               -command { Bulletin::Draw poly }
+            pack .bulletin.bar.draw.line .bulletin.bar.draw.poly -side left
+         pack .bulletin.bar.draw -side left -fill x -ipadx 2
+
+      pack .bulletin.bar  -side top -fill x
 
       # ----- Cree un "Frame" et un "ListBox".
 
@@ -125,17 +136,19 @@ proc Bulletin::Window { } {
          pack .bulletin.bas.doing -side left -fill both -expand true
       pack .bulletin.bas -side top -fill x -anchor s
 
-      Bubble::Create .bulletin.mid.frm.scrllist [lindex $Bubble(List) $GDefs(Lang)]
-      Bubble::Create .bulletin.mid.t            [lindex $Bubble(Msg) $GDefs(Lang)]
-      Bubble::Create .bulletin.bas.current      [lindex $Bubble(Current) $GDefs(Lang)]
-      Bubble::Create .bulletin.bas.for          [lindex $Bubble(Date) $GDefs(Lang)]
-      Bubble::Create .bulletin.bas.doing        [lindex $Bubble(Bar) $GDefs(Lang)]
-      Bubble::Create .bulletin.search.next      [lindex $Bubble(Forward) $GDefs(Lang)]
-      Bubble::Create .bulletin.search.previous  [lindex $Bubble(Backward) $GDefs(Lang)]
-      Bubble::Create .bulletin.search.stop      [lindex $Bubble(Stop) $GDefs(Lang)]
-      Bubble::Create .bulletin.searche.local    [lindex $Bubble(Local) $GDefs(Lang)]
-      Bubble::Create .bulletin.search.global    [lindex $Bubble(Global) $GDefs(Lang)]
-      Bubble::Create .bulletin.search.entry     [lindex $Bubble(Predicat) $GDefs(Lang)]
+      Bubble::Create .bulletin.mid.frm.scrllist    [lindex $Bubble(List) $GDefs(Lang)]
+      Bubble::Create .bulletin.mid.t               [lindex $Bubble(Msg) $GDefs(Lang)]
+      Bubble::Create .bulletin.bas.current         [lindex $Bubble(Current) $GDefs(Lang)]
+      Bubble::Create .bulletin.bas.for             [lindex $Bubble(Date) $GDefs(Lang)]
+      Bubble::Create .bulletin.bas.doing           [lindex $Bubble(Bar) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.next     [lindex $Bubble(Forward) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.previous [lindex $Bubble(Backward) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.stop     [lindex $Bubble(Stop) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.searche.local   [lindex $Bubble(Local) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.global   [lindex $Bubble(Global) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.entry    [lindex $Bubble(Predicat) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.line       [lindex $Bubble(Line) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.poly       [lindex $Bubble(Poly) $GDefs(Lang)]
   }
 
    #----- Initialiser l'evenement de blinking

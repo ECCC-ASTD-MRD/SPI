@@ -49,6 +49,8 @@ namespace eval Bulletin {
    set Msg(Cancel)       { "Recherche annulee" "Search cancelled" }
    set Msg(Selection)    { "Une selection existe dans la fenetre des bulletins. Que voulez-vous imprimer ?" \
                            "There is a selection in the text widget. What do you want to print ?" }
+   set Msg(Coords)       { "Problème dans la conversion des coordonnées sélectionnées." \
+                           "An error occured while converting selected coordinates." }
 
    #----- Liste des definitions des bulles d'aides.
 
@@ -102,6 +104,8 @@ namespace eval Bulletin {
    "Current job indicator, if any."
    }
 
+   set Bubble(Line)      { "Affiche en ligne la région définie par les coordonnées de la sélection" "Display line area defined by selected coordinates" }
+   set Bubble(Poly)      { "Affiche en polygone la région définie par les coordonnées de la sélection" "Display polygon area defined by selected coordinates" }
    set Bubble(Off)       { "Ferme l'interface de recherche" "Shuts down the search interface" }
    set Bubble(Backward)  { "Activation de la recherche\nvers le haut" "Searches the bulletins backwards" }
    set Bubble(Forward)   { "Activation de la recherche\nvers le bas" "Searches the bulletins forwards" }

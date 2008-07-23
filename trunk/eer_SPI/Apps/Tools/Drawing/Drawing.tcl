@@ -49,7 +49,7 @@
 #   Drawing::InitValu     { }
 #   Drawing::InitStream   { }
 #   Drawing::InitVert     { }
-#   Drawing::ItemAdd      { Frame Type }
+#   Drawing::ItemAdd      { Frame Type { Coords { } }
 #   Drawing::ItemDel      { Frame }
 #   Drawing::ItemIndex    { Frame Dir }
 #   Drawing::ItemSel      { Frame }
@@ -834,10 +834,10 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
             if { $Tag=="VERTEXFOLLOW" } {
                set dista [expr [$VP -distxy $x0 $y0 $x1 $y0]/2.0]
 
-               $Frame.page.canvas create text $lx1 $ly0 -text "  [Convert::FormatDist $dista]" -fill $Color -anchor w -tags "$Page::Data(Tag) $Tag"
+               $Frame.page.canvas create text $lx1 $ly0 -text "  [Convert::FormatDist $dista]" -fill $Outline -anchor w -tags "$Page::Data(Tag) $Tag"
                if { !$Fix } {
                   set distb [expr [$VP -distxy $x0 $y0 $x0 $y1]/2.0]
-                  $Frame.page.canvas create text $lx0 $ly1 -text "[Convert::FormatDist $distb]\n" -fill $Color -anchor s -tags "$Page::Data(Tag) $Tag"
+                  $Frame.page.canvas create text $lx0 $ly1 -text "[Convert::FormatDist $distb]\n" -fill $Outline -anchor s -tags "$Page::Data(Tag) $Tag"
                }
             }
             $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Color -outline $Outline -width $Width -stipple $Pattern \
@@ -1754,8 +1754,9 @@ proc Drawing::InitVert { } {
 # But      : Ajoute un nouvel item.
 #
 # Parametres :
-#  <Frame>  : Identificateur du canvas
+#  <Frame>   : Identificateur du canvas
 #  <Type>    : Type d'item
+#  <Coords>  : Coordonnees
 #
 # Retour:
 #
@@ -1763,7 +1764,7 @@ proc Drawing::InitVert { } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::ItemAdd { Frame Type } {
+proc Drawing::ItemAdd { Frame Type { Coords { } } } {
    variable Data
    variable Current
 
@@ -1774,26 +1775,27 @@ proc Drawing::ItemAdd { Frame Type } {
       set vp -1
       set mode static
    } else {
-      set vp ""
+      set vp $Viewport::Data(VP)
       set mode georef
    }
 
    switch $Type {
-      "imag" { set params [list $Type $no $vp "" $Current(Image) ""] }
-      "bitm" { set params [list $Type $no $vp "" $Current(Color) $Current(Bitmap) ""] }
-      "text" { set params [list $Type $no $vp "" $Current(Color) "" font$no $Current(Angle)] }
-      "line" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) $Current(Line) $Current(Arrow)] }
-      "poly" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "rect" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "oval" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "circ" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "dist" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) font$no $Current(Nautic)] }
-      "head" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) font$no] }
-      "valu" { set params [list $Type $no $vp "" $Current(Color) $Current(Date) font$no $Current(Grid) $Current(Coord)] }
-      "strm" { set params [list $Type $no $vp "" $Current(Color) $Current(Width) $Current(Step) $Current(Res) $Current(Coord)] }
-      "vert" { set params [list $Type $no $vp "" $Current(Color) "0 10000" font$no] }
-      "strk" { set params [list $Type $no $vp "" $Current(Color) $Current(Width)] }
+      "imag" { set params [list $Type $no $vp $Coords $Current(Image) ""] }
+      "bitm" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Bitmap) ""] }
+      "text" { set params [list $Type $no $vp $Coords $Current(Color) "" font$no $Current(Angle)] }
+      "line" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Arrow)] }
+      "poly" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
+      "rect" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
+      "oval" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
+      "circ" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
+      "dist" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) font$no $Current(Nautic)] }
+      "head" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) font$no] }
+      "valu" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Date) font$no $Current(Grid) $Current(Coord)] }
+      "strm" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Step) $Current(Res) $Current(Coord)] }
+      "vert" { set params [list $Type $no $vp $Coords $Current(Color) "0 10000" font$no] }
+      "strk" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width)] }
    }
+   set Current(Vertex) $Coords
    lappend Data(Params) $params
    set Data(Params$Frame) $Data(Params)
 
@@ -1801,7 +1803,7 @@ proc Drawing::ItemAdd { Frame Type } {
    $Data(Tab).items.list.box selection clear 0 end
    $Data(Tab).items.list.box selection set end
 
-   set Current(Vertex)  ""
+#      Draw $Frame $Current(Params)
 
    Drawing::ItemSel $Frame
 }

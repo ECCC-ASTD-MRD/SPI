@@ -127,6 +127,40 @@ proc Bulletin::DatesMenu { } {
    set Bul(Date) $date
 }
 
+proc Bulletin::Draw { Mode } {
+   global GDefs
+   variable Msg
+
+   set text [split [string map { "\n" " " "." "" } [.bulletin.mid.t get sel.first sel.last]] -]
+
+   set ok [catch {
+      foreach coord $text {
+         set la [lindex $coord 0]
+         if { [string index $la 0]=="S" } {
+            set la [expr -[string range $la 1 end]/100.0]
+         } else {
+            set la [expr [string range $la 1 end]/100.0]
+         }
+         set lo [lindex $coord 1]
+         if { [string index $lo 0]=="W" } {
+            set lo [expr -[string range $lo 1 end]/100.0]
+         } else {
+            set lo [expr [string range $lo 1 end]/100.0]
+         }
+         lappend coords $la $lo 0.0
+      }
+   } error]
+
+   if { $ok } {
+      Dialog::CreateErrorListing .bulletin [lindex $Msg(Coords) $GDefs(Lang)]\n\n$error [.bulletin.mid.t get sel.first sel.last] $GDefs(Lang)
+   } else {
+      Drawing::Window
+      set Drawing::Data(GeoRef) 1
+      Drawing::ItemAdd $Page::Data(Frame) $Mode $coords
+      SPI::ToolMode SPI Zoom
+   }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Bulletin::InsertArchives>
 # Creation : Juillet 1997 - J.P. Gauthier - CMC/CMOE -
