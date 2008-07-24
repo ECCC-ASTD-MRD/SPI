@@ -118,7 +118,7 @@ proc Drawing::Window { } {
          pack $Data(Tab).items.def -side left -fill y -ipadx 2 -ipady 2
 
          frame $Data(Tab).items.list
-            listbox $Data(Tab).items.list.box -width 20 -height 10 -bg white -selectbackground $GDefs(ColorHighLight) \
+            listbox $Data(Tab).items.list.box -width 20 -height 10 -bg white -selectbackground $GDefs(ColorHighLight) -selectforeground black \
                -yscrollcommand "$Data(Tab).items.list.scroll set" -bd 1 -exportselection false -selectmode single
             scrollbar $Data(Tab).items.list.scroll -command "$Data(Tab).items.list.box yview" -bd 1 -width 10
             pack $Data(Tab).items.list.box -side left -fill both -expand true
