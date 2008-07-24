@@ -26,9 +26,9 @@
 #   Drawing::DrawDist     { Frame VP Vertex Color Width Font Mode Tag }
 #   Drawing::DrawHead     { Frame VP Vertex Color Width Font Tag }
 #   Drawing::DrawLine     { Frame VP Vertex Color Width Line Arrow Tag }
-#   Drawing::DrawOval     { Frame VP Vertex Color Width Pattern Out Tag Fix }
-#   Drawing::DrawPoly     { Frame VP Vertex Color Width Line Pattern Out Tag }
-#   Drawing::DrawRect     { Frame VP Vertex Color Width Pattern Out Tag }
+#   Drawing::DrawOval     { Frame VP Vertex Color Width Pattern Fill Tag Fix }
+#   Drawing::DrawPoly     { Frame VP Vertex Color Width Line Pattern Fill Tag }
+#   Drawing::DrawRect     { Frame VP Vertex Color Width Pattern Fill Tag }
 #   Drawing::DrawText     { Frame VP Vertex Color Text Font Angle Tag }
 #   Drawing::DrawValu     { Frame VP Vertex Color Date Font Grid Coord Tag }
 #   Drawing::DrawStream   { Frame VP Vertex Color Width Step Res Tag }
@@ -55,8 +55,8 @@
 #   Drawing::ItemSel      { Frame }
 #   Drawing::SetIndex     { Frame Index Value }
 #   Drawing::SetArrow     { Frame Arrow }
+#   Drawing::SetColor     { Frame }
 #   Drawing::SetFill      { Frame }
-#   Drawing::SetOutline   { Frame }
 #   Drawing::SetLine      { Frame Line }
 #   Drawing::SetPattern   { Frame Pattern }
 #   Drawing::SetFont      { Frame Font }
@@ -782,7 +782,7 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
 #  <Color>   : Couleur
 #  <Width>   : Dimension de la police
 #  <Pattern> : Bitmap de remplissage
-#  <Outline> : Couleur du contour
+#  <Fill>    : Couleur de remplissage
 #  <Tag>     : Tag associe a l'item dans le canvas
 #  <Fix>     : Fixer les dimensions egale (Cercle)
 #
@@ -792,7 +792,7 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
+proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Fill Tag Fix } {
    global   GDefs
    variable Data
    variable Resources
@@ -834,13 +834,13 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
             if { $Tag=="VERTEXFOLLOW" } {
                set dista [expr [$VP -distxy $x0 $y0 $x1 $y0]/2.0]
 
-               $Frame.page.canvas create text $lx1 $ly0 -text "  [Convert::FormatDist $dista]" -fill $Outline -anchor w -tags "$Page::Data(Tag) $Tag"
+               $Frame.page.canvas create text $lx1 $ly0 -text "  [Convert::FormatDist $dista]" -fill $Color -anchor w -tags "$Page::Data(Tag) $Tag"
                if { !$Fix } {
                   set distb [expr [$VP -distxy $x0 $y0 $x0 $y1]/2.0]
-                  $Frame.page.canvas create text $lx0 $ly1 -text "[Convert::FormatDist $distb]\n" -fill $Outline -anchor s -tags "$Page::Data(Tag) $Tag"
+                  $Frame.page.canvas create text $lx0 $ly1 -text "[Convert::FormatDist $distb]\n" -fill $Color -anchor s -tags "$Page::Data(Tag) $Tag"
                }
             }
-            $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Color -outline $Outline -width $Width -stipple $Pattern \
+            $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Fill -outline $Color -width $Width -stipple $Pattern \
                -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
          }
       }
@@ -866,7 +866,7 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
          set y0 [expr $lo0-$dy]
          set y1 [expr $lo0+$dy]
 
-         $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Color -outline $Outline -width $Width -stipple $Pattern \
+         $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Fill -outline $Color -width $Width -stipple $Pattern \
             -tags "$Page::Data(Tag) $Data(Tag) $Tag"
       }
    }
@@ -886,7 +886,7 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
 #  <Width>   : Dimension de la police
 #  <Line>    : Type de ligne
 #  <Pattern> : Bitmap de remplissage
-#  <Outline> : Couleur du contour
+#  <Fill>    : Couleur du contour
 #  <Tag>     : Tag associe a l'item dans le canvas
 #
 # Retour:
@@ -895,7 +895,7 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Outline Tag Fix } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Outline Tag } {
+proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Fill Tag } {
    global   GDefs
    variable Data
    variable Resources
@@ -909,21 +909,21 @@ proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Outline Tag } 
 
       if { [llength $vr0]>4 } {
          eval $Frame.page.canvas create polygon $vr0 -stipple \$Pattern -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\" \
-           -fill \$Color -outline \$Outline -smooth $Line -width $Width
+           -fill \$Fill -outline \$Color -smooth $Line -width $Width
       } elseif { [llength $vr0]==4 } {
-         eval $Frame.page.canvas create line $vr0 -fill \$Outline -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
       }
 
       if { $Viewport::Map(Type$Page::Data(Frame))!="orthographic" } {
          if { [llength $vr1]>4 } {
             eval $Frame.page.canvas create polygon $vr1 -stipple \$Pattern -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\" \
-              -fill \$Color -outline \$Outline -smooth $Line -width $Width
+              -fill \$Fill -outline \$Color -smooth $Line -width $Width
          } elseif { [llength $vr1]==4 } {
-            eval $Frame.page.canvas create line $vr1 -fill \$Outline -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag \"
+            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag \"
          }
       }
    } else {
-      eval $Frame.page.canvas create polygon $Vertex [lindex $Vertex 0] [lindex $Vertex 1] -fill \$Color -outline \$Outline -smooth $Line -width $Width  -stipple \$Pattern \
+      eval $Frame.page.canvas create polygon $Vertex [lindex $Vertex 0] [lindex $Vertex 1] -fill \$Fill -outline \$Color -smooth $Line -width $Width  -stipple \$Pattern \
          -tags \"$Page::Data(Tag) $Data(Tag) $Tag\"
    }
 }
@@ -941,7 +941,7 @@ proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Outline Tag } 
 #  <Color>   : Couleur
 #  <Width>   : Dimension de la police
 #  <Pattern> : Bitmap de remplissage
-#  <Outline> : Couleur du contour
+#  <Fill>    : Couleur de remplissage
 #  <Tag>     : Tag associe a l'item dans le canvas
 #
 # Retour:
@@ -950,7 +950,7 @@ proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Outline Tag } 
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Outline Tag } {
+proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Fill Tag } {
    global   GDefs
    variable Data
    variable Resources
@@ -968,7 +968,7 @@ proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Outline Tag } {
 
          if { $l0 != "" && $l1 != "" && ([lindex $l0 2]>0 || [lindex $l1 2]>0) } {
             $Frame.page.canvas create rectangle [lindex $l0 0] [lindex $l0 1] [lindex $l1 0] [lindex $l1 1] \
-               -fill $Color -outline $Outline -width $Width -stipple $Pattern \
+               -fill $Fill -outline $Color -width $Width -stipple $Pattern \
                -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
          }
       }
@@ -980,7 +980,7 @@ proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Outline Tag } {
          }
 
          $Frame.page.canvas create rectangle $la0 $lo0 $la1 $lo1 \
-            -fill $Color -outline $Outline -width $Width -stipple $Pattern \
+            -fill $Fill -outline $Color -width $Width -stipple $Pattern \
             -tags "$Page::Data(Tag) $Data(Tag) $Tag"
       }
    }
@@ -1510,11 +1510,12 @@ proc Drawing::InitFont { Font } {
       set old [lindex $Resources(Font) end]
       lappend Resources(Font) $Font
 
-      if { $old != "" } {
-         font configure $Font -family [font actual $old -family] -weight [font actual $old -weight] \
-            -size [font actual $old -size] -slant [font actual $old -slant] -underline [font actual $old -underline] \
-            -overstrike [font actual $old -overstrike]
+      if { $old=="" } {
+         set old  XFont18
       }
+      font configure $Font -family [font actual $old -family] -weight [font actual $old -weight] \
+         -size [font actual $old -size] -slant [font actual $old -slant] -underline [font actual $old -underline] \
+         -overstrike [font actual $old -overstrike]
    }
 }
 
@@ -1569,12 +1570,12 @@ proc Drawing::InitPoly { } {
    set Current(Width)   [lindex $Current(Params) 5]
    set Current(Line)    [lindex $Current(Params) 6]
    set Current(Pattern) [lindex $Current(Params) 7]
-   set Current(Outline) [lindex $Current(Params) 8]
+   set Current(Fill)    [lindex $Current(Params) 8]
 
    .drawing.params.width.opt.menu             invoke $Current(Width)
    .drawing.params.type.opt.menu              invoke $Current(Line)
    IcoMenu::Set .drawing.params.pattern.opt $Current(Pattern)
-   pack .drawing.params.color .drawing.params.out .drawing.params.width .drawing.params.type .drawing.params.pattern -side top -fill x
+   pack .drawing.params.color .drawing.params.fill .drawing.params.width .drawing.params.type .drawing.params.pattern -side top -fill x
 }
 
 #----------------------------------------------------------------------------
@@ -1599,13 +1600,13 @@ proc Drawing::InitRect { } {
    set Current(Width)   [lindex $Current(Params) 5]
    set Current(Line)    [lindex $Current(Params) 6]
    set Current(Pattern) [lindex $Current(Params) 7]
-   set Current(Outline) [lindex $Current(Params) 8]
+   set Current(Fill)    [lindex $Current(Params) 8]
 
    .drawing.params.width.opt.menu             invoke $Current(Width)
    .drawing.params.type.opt.menu              invoke $Current(Line)
    IcoMenu::Set .drawing.params.pattern.opt $Current(Pattern)
 
-   pack .drawing.params.color .drawing.params.out .drawing.params.width .drawing.params.pattern -side top -fill x
+   pack .drawing.params.color .drawing.params.fill .drawing.params.width .drawing.params.pattern -side top -fill x
 }
 
 #----------------------------------------------------------------------------
@@ -1784,10 +1785,10 @@ proc Drawing::ItemAdd { Frame Type { Coords { } } } {
       "bitm" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Bitmap) ""] }
       "text" { set params [list $Type $no $vp $Coords $Current(Color) "" font$no $Current(Angle)] }
       "line" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Arrow)] }
-      "poly" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "rect" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "oval" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
-      "circ" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline)] }
+      "poly" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill)] }
+      "rect" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill)] }
+      "oval" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill)] }
+      "circ" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill)] }
       "dist" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) font$no $Current(Nautic)] }
       "head" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) font$no] }
       "valu" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Date) font$no $Current(Grid) $Current(Coord)] }
@@ -1922,7 +1923,7 @@ proc Drawing::ItemSel { Frame } {
       return
    }
 
-   pack forget .drawing.params.color .drawing.params.angle .drawing.params.out .drawing.params.width .drawing.params.font\
+   pack forget .drawing.params.color .drawing.params.angle .drawing.params.fill .drawing.params.width .drawing.params.font\
       .drawing.params.text .drawing.params.line .drawing.params.arrow .drawing.params.pattern \
       .drawing.params.type .drawing.params.bitmap .drawing.params.image .drawing.params.coord \
        .drawing.params.grid .drawing.params.date .drawing.params.nau
@@ -1979,10 +1980,10 @@ proc Drawing::ItemSel { Frame } {
       } else {
          .drawing.params.color.opt configure -fg $GDefs(ColorFrame)
       }
-      if { $Current(Outline)!="" } {
-         .drawing.params.out.opt   configure -fg $Current(Outline)
+      if { $Current(Fill)!="" } {
+         .drawing.params.fill.opt   configure -fg $Current(Fill)
       } else {
-         .drawing.params.out.opt configure -fg $GDefs(ColorFrame)
+         .drawing.params.fill.opt configure -fg $GDefs(ColorFrame)
       }
    }
 }
@@ -2118,16 +2119,15 @@ proc Drawing::SetColor { Frame } {
 
    Drawing::SetIndex $Frame 4 $Current(Color)
 
-   catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -fill $Current(Color) }
+   catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -outline $Current(Color) }
    catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -foreground $Current(Color) }
-   catch { $Frame.page.canvas itemconf VERTEXFOLLOW -fill $Current(Color) }
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Drawing::SetOutline>
+# Nom      : <Drawing::SetFill>
 # Creation : Novembre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Changer la couleur du dessin.
+# But      : Changer la couleur de remplissage du dessin.
 #
 # Parametres :
 #  <Frame>  : Identificateur du canvas
@@ -2138,13 +2138,14 @@ proc Drawing::SetColor { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::SetOutline { Frame } {
+proc Drawing::SetFill { Frame } {
    variable Data
    variable Current
 
-   Drawing::SetIndex $Frame 8 $Current(Outline)
+   Drawing::SetIndex $Frame 8 $Current(Fill)
 
-   catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -outline $Current(Outline) }
+   catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -fill $Current(Fill) }
+   catch { $Frame.page.canvas itemconf VERTEXFOLLOW -fill $Current(Color) }
 }
 
 #----------------------------------------------------------------------------
@@ -2583,13 +2584,13 @@ proc Drawing::VertexFollow { Frame VP X Y Scan } {
      "line" { Drawing::DrawLine $Frame $VP $tmplist \
               $Current(Color) $Current(Width) $Current(Line) $Current(Arrow) VERTEXFOLLOW }
      "poly" { Drawing::DrawPoly $Frame $VP $tmplist \
-              $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Outline) VERTEXFOLLOW }
+              $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill) VERTEXFOLLOW }
      "rect" { Drawing::DrawRect $Frame $VP $tmplist \
-              $Current(Color) $Current(Width)  $Current(Pattern) $Current(Outline) VERTEXFOLLOW }
+              $Current(Color) $Current(Width)  $Current(Pattern) $Current(Fill) VERTEXFOLLOW }
      "oval" { Drawing::DrawOval $Frame $VP $tmplist \
-              $Current(Color) $Current(Width) $Current(Pattern) $Current(Outline) VERTEXFOLLOW 0 }
+              $Current(Color) $Current(Width) $Current(Pattern) $Current(Fill) VERTEXFOLLOW 0 }
      "circ" { Drawing::DrawOval $Frame $VP $tmplist \
-              $Current(Color) $Current(Width) $Current(Pattern) $Current(Outline) VERTEXFOLLOW 1 }
+              $Current(Color) $Current(Width) $Current(Pattern) $Current(Fill) VERTEXFOLLOW 1 }
      "text" { Drawing::DrawText $Frame $VP $tmp \
               $Current(Color) $Current(Text) $Current(Font) $Current(Angle) VERTEXFOLLOW }
      "dist" { Drawing::DrawDist $Frame $VP $tmplist \

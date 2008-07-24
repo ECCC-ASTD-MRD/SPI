@@ -32,8 +32,8 @@ namespace eval Drawing {
    set Lbl(Save)     { "Enregistrer ..." "Save ..." }
 
    set Lbl(Angle)    { " Angle   " " Angle   " }
-   set Lbl(Fill)     { " Couleur " " Color   " }
-   set Lbl(Outline)  { " Contour " " Outline " }
+   set Lbl(Color)    { " Couleur " " Color   " }
+   set Lbl(Fill)     { " Remplissage " " Fill " }
    set Lbl(Type)     { " Type    " " Type    " }
    set Lbl(Width)    { " Largeur " " Width   " }
    set Lbl(Arrow)    { " Pointe  " " Arrow   " }
