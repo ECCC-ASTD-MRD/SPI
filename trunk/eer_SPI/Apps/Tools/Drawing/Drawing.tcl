@@ -795,6 +795,7 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
 proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Fill Tag Fix } {
    global   GDefs
    variable Data
+   variable Current
    variable Resources
 
    if { $VP > 0 } {
@@ -831,17 +832,18 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Fill Tag Fix } {
             set y0 [expr $ly0-$dy]
             set y1 [expr $ly0+$dy]
 
+            $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Fill -outline $Color -width $Width -stipple $Pattern \
+               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+
             if { $Tag=="VERTEXFOLLOW" } {
                set dista [expr [$VP -distxy $x0 $y0 $x1 $y0]/2.0]
 
-               $Frame.page.canvas create text $lx1 $ly0 -text "  [Convert::FormatDist $dista]" -fill $Color -anchor w -tags "$Page::Data(Tag) $Tag"
+               $Frame.page.canvas create text $lx1 $ly0 -font XFont14 -text "  [Convert::FormatDist $dista]" -fill $Color -anchor w -tags "$Page::Data(Tag) $Tag"
                if { !$Fix } {
                   set distb [expr [$VP -distxy $x0 $y0 $x0 $y1]/2.0]
-                  $Frame.page.canvas create text $lx0 $ly1 -text "[Convert::FormatDist $distb]\n" -fill $Color -anchor s -tags "$Page::Data(Tag) $Tag"
+                  $Frame.page.canvas create text $lx0 $ly1 -font XFont14 -text "[Convert::FormatDist $distb]\n" -fill $Color -anchor s -tags "$Page::Data(Tag) $Tag"
                }
             }
-            $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Fill -outline $Color -width $Width -stipple $Pattern \
-               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
          }
       }
    } else {
@@ -1804,9 +1806,11 @@ proc Drawing::ItemAdd { Frame Type { Coords { } } } {
    $Data(Tab).items.list.box selection clear 0 end
    $Data(Tab).items.list.box selection set end
 
-#      Draw $Frame $Current(Params)
-
    Drawing::ItemSel $Frame
+
+   if { ![llength $Coords] && $Page::Data(ToolMode)!="Drawing" } {
+      SPI::ToolMode Drawing Draw
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -1830,7 +1834,7 @@ proc Drawing::ItemDel { Frame } {
 
    #----- Si un item est selectionnee
 
-   if { $Current(Item) != "" } {
+   if { $Current(Item)!="" } {
 
       $Frame.page.canvas delete $Data(Tag)$Current(NoItem) D$Data(Tag)$Current(NoItem) VERTEXFOLLOW DVERTEXFOLLOW
 
@@ -1839,8 +1843,13 @@ proc Drawing::ItemDel { Frame } {
 
       set Data(Params$Frame) [set Data(Params)  [lreplace $Data(Params) $Current(Item) $Current(Item)]]
       set Current(Vertex) ""
-      set Current(Item)   ""
       set Current(Mode)   ""
+
+      if { $Current(Item)>=[$Data(Tab).items.list.box size] } {
+         set Current(Item)   ""
+      } else {
+         $Data(Tab).items.list.box selection set $Current(Item)
+      }
 
       Drawing::ItemSel $Frame
    }
@@ -1928,13 +1937,9 @@ proc Drawing::ItemSel { Frame } {
       .drawing.params.type .drawing.params.bitmap .drawing.params.image .drawing.params.coord \
        .drawing.params.grid .drawing.params.date .drawing.params.nau
 
-   if { $Page::Data(ToolMode)!="Drawing" } {
-      SPI::ToolMode Drawing Draw
-   }
-
    set Current(Item) [$Data(Tab).items.list.box curselection]
 
-   if { $Current(Item) != "" } {
+   if { $Current(Item)!="" } {
 
       #----- Definir les parametres courants selon les parametres de l'item
 

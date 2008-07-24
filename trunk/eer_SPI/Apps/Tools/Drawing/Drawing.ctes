@@ -49,7 +49,7 @@ namespace eval Drawing {
    set Current(BitIdx)   10                                     ;#Bitmap courant
    set Current(Item)     ""                                     ;#Item courant
    set Current(Line)     0                                      ;#Type de ligne actuel
-   set Current(Fill)      #111111                               ;#Couleur actuelle de remplissage
+   set Current(Fill)     #FFFFFF                                ;#Couleur actuelle de remplissage
    set Current(Color)    #000000                                ;#Couleur actuelle de contourage3
    set Current(Pattern)  ""                                     ;#Remplissage actuel
    set Current(Width)    1                                      ;#Epaisseur des lignes
