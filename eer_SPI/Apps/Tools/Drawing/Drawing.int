@@ -232,16 +232,16 @@ proc Drawing::Window { } {
          pack .drawing.params.date.opt -side right
 
       frame .drawing.params.color
-         label .drawing.params.color.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -anchor w
+         label .drawing.params.color.lbl -text [lindex $Lbl(Color) $GDefs(Lang)] -anchor w
          ColorBox::CreateSel .drawing.params.color.opt Drawing::Current(Color) Drawing::SetColor \$Page::Data(Frame)
          pack .drawing.params.color.lbl -side left
          pack .drawing.params.color.opt -side right
 
-      frame .drawing.params.out
-         label .drawing.params.out.lbl -text [lindex $Lbl(Outline) $GDefs(Lang)] -anchor w
-         ColorBox::CreateSel .drawing.params.out.opt  Drawing::Current(Outline) Drawing::SetOutline \$Page::Data(Frame)
-         pack .drawing.params.out.lbl -side left
-         pack .drawing.params.out.opt -side right
+      frame .drawing.params.fill
+         label .drawing.params.fill.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -anchor w
+         ColorBox::CreateSel .drawing.params.fill.opt  Drawing::Current(Fill) Drawing::SetFill \$Page::Data(Frame)
+         pack .drawing.params.fill.lbl -side left
+         pack .drawing.params.fill.opt -side right
 
       frame .drawing.params.nau
          label .drawing.params.nau.lbl -text [lindex $Lbl(Nautical) $GDefs(Lang)] -anchor w
