@@ -1476,10 +1476,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
       return(TCL_OK);
    }
 
-   /*Calculer les statistiques si elle ne le sont pas deja*/
-   if (!Field->Stat)
-      Data_GetStat(Field);
-
    ex=Field->Spec->ExtrapDegree[0]!='N'?1:0;
 
    for(i=0;i<Objc;i++) {
@@ -1523,10 +1519,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"image");
                return(TCL_ERROR);
             }
+            if (!Field->Stat)
+               Data_GetStat(Field);
             return Data_GetImage(Interp,Field,Tcl_GetString(Objv[++i]));
             break;
 
          case MAX:
+            if (!Field->Stat)
+               Data_GetStat(Field);
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Max)));
@@ -1541,6 +1541,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case MIN:
+            if (!Field->Stat)
+               Data_GetStat(Field);
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Min)));
@@ -1555,6 +1557,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case AVG:
+            if (!Field->Stat)
+               Data_GetStat(Field);
             Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Avg)));
             break;
 
