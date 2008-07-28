@@ -124,7 +124,7 @@ void Calc_Iterate3(TDataDef *R,TDataDef *A,TDataDef *B,TDataDef *C,TFunc3 *Func)
  * this is C-based, so what did you expect?
  *
  */
-TDataDef *Calc_Compat(Tcl_Interp *Interp,TDataDef *A,TDataDef *B,int Dim) {
+TDataDef *Calc_Compat(Tcl_Interp *Interp,TDataDef *A,TDataDef *B,int Dim,int Vect) {
 
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) Called Calc_Compat(A:%p,B:%p)\n",(void*)A,(void*)B);
@@ -151,15 +151,16 @@ TDataDef *Calc_Compat(Tcl_Interp *Interp,TDataDef *A,TDataDef *B,int Dim) {
       }
 
       /* Check that both have vectorial data, or neither do */
-      if((A->Data[1] && !B->Data[1]) || (!A->Data[1] && B->Data[1])) {
-         Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
-         return(NULL);
-      }
+      if (Vect) {
+         if ((A->Data[1] && !B->Data[1]) || (!A->Data[1] && B->Data[1])) {
+            Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
+            return(NULL);
+         }
 
-      /* Check that both have vectorial data, or neither do */
-      if((A->Data[2] && !B->Data[2]) || (!A->Data[2] && B->Data[2])) {
-         Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
-         return(NULL);
+         if(Vect && (A->Data[2] && !B->Data[2]) || (!A->Data[2] && B->Data[2])) {
+            Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
+            return(NULL);
+         }
       }
    }
    return(FSIZE3D(A)>FSIZE3D(B)?A:B);
@@ -447,13 +448,13 @@ TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,in
       return(NULL);
 
    if (FSIZE3D(A)==1) {
-      if (!Calc_Compat(GInterp,A,B,2))
+      if (!Calc_Compat(GInterp,A,B,2,1))
          return NULL;
       Def_Get(B,0,0,v);
       Def_Set(A,0,0,v);
    } else {
 
-      if (!Calc_Compat(GInterp,A,B,2))
+      if (!Calc_Compat(GInterp,A,B,2,1))
          return(NULL);
 
       if (FSIZE3D(B)==1) {
@@ -601,7 +602,7 @@ TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matr
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) Called Calc_Matrix2(A:%p,B:%p,Func:%p)\n",(void*)A,(void*)B,(void*)Func);
 #endif
-   m=Calc_Compat(GInterp,A,B,3);
+   m=Calc_Compat(GInterp,A,B,3,1);
 
    if (Iterate && !m)
       return(NULL);
@@ -647,7 +648,11 @@ TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iter
       return(NULL);
 */
 
-   m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3),3);
+   if ((Func==((TFunc3*)ifelse))) {
+      m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3,1),3,0);
+   } else {
+      m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3,1),3,1);
+   }
 
    if (Iterate && !m)
       return(NULL);
