@@ -798,14 +798,10 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   loc=NULL;
                   obj=Tcl_NewListObj(0,NULL);
                   while (loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search)) {
-                     elem=loc->Elems;
-                     while(elem) {
-                        if (!time || elem->Time==time) {
+                     if ((elem=TMetElem_Find(loc,time,obs->Strict))) {
                            for(d=0;d<elem->NData;d++) {
                               Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
                            }
-                        }
-                        elem=elem->Next;
                      }
                   }
                   Tcl_SetObjResult(Interp,obj);
@@ -3040,7 +3036,6 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                }
                Tcl_SetObjResult(Interp,sub);
             }
-
             break;
 
          case ELEMENT:
