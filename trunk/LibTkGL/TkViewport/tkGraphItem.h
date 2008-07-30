@@ -45,6 +45,7 @@ typedef struct TGraphItem {
    Tk_Font        Font;                       /*Font for drawing text*/
    Tk_Dash        Dash;                       /*pointille*/
    Tk_TextLayout  Text;                       /*Cached text layout information*/
+   Tk_Anchor      Anchor;                     /*Ancrage des valeurs*/
    XColor        *Outline;                    /*Couleur d'arriere plan*/
    XColor        *Fill;                       /*Couleur d'avant plan*/
    XColor        *IconFill;                   /*Couleur d'avant plan des icones*/

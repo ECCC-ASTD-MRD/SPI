@@ -47,6 +47,7 @@
 #define DONEX      0x01
 #define DONEY      0x02
 
+#define  FOOT    0.3048
 #define  T_MIN    -140.0
 #define  T_MAX    150.0
 #define  TH_MIN   200
@@ -74,8 +75,6 @@
 #define  A  45
 #define  COSA  cos(DEG2RAD(A))
 #define  SINA  sin(DEG2RAD(A))
-
-enum  GRAPHAXISFORMATS { GRAXNONE,GRAXFIT,GRAXINTEGER,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH };
 
 typedef struct TGraphAxis {
    Tk_Dash        Dash;          /*Pointille*/
