@@ -338,7 +338,7 @@ exp:
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) Range Indexing\n");
 #endif
-      if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NI-1 || (int)$12<0) {
+      if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0) {
          yyerror("Invalid grid range");
          YYERROR;
       } else {
@@ -355,7 +355,7 @@ exp:
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) Range Setting\n");
 #endif
-      if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NI-1 || (int)$12<0) {
+      if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0) {
          yyerror("Invalid grid range");
          YYERROR;
       } else {
@@ -373,8 +373,8 @@ exp:
       fprintf(stderr,"(DEBUG) Range Indexing\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 ||
-          (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NI-1 || (int)$12<0 ||
-          (int)$16>$1->NK-1 || (int)$16<0 || (int)$18>$1->NI-1 || (int)$18<0) {
+          (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0 ||
+          (int)$16>$1->NK-1 || (int)$16<0 || (int)$18>$1->NK-1 || (int)$18<0) {
          yyerror("Invalid grid range");
          YYERROR;
       } else {
