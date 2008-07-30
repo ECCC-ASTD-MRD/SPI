@@ -32,6 +32,19 @@
 
 #include "tkGraphAxis.h"
 
+extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
+
+//   thermo_be():   calculates bouyant energy in a layer
+double Thermo_Bouyant(double TP_bot,double TP_top,double TE_bot,double TE_top,double P_bot,double P_top) {
+
+   double tp_ave,te_ave;
+
+   tp_ave = 0.5*(TP_bot+TP_top);
+   te_ave = 0.5*(TE_bot+TE_top);
+
+   return(R_d*(tp_ave-te_ave)*log(P_bot/P_top));
+}
+
 //  Thermo_LatentHeatVapor():  calculates latent heat of vaporization
 //         t(deg C)
 double Thermo_LatentHeatVapor(double T) {
@@ -62,6 +75,33 @@ double Thermo_StandardHeight(double P) {
       return(h_trop-c_strat*log(P/p_trop));
     }
 }
+
+//  thermo_pt2sh():   calculates specific humidity
+//        p(mb), td(deg C), sh(g/kg)
+double Thermo_PT2SH(double P,double T) {
+
+   double  e_s;
+
+//   if (P<=0.0 || P>P_MAX || T<T_MIN || T>T_MAX) {
+//      return(MSNGV);
+//   }
+   e_s=Thermo_VaporPressure(T);
+   return(1000.0*R_d/R_v*e_s/(P-(1.0-R_d/R_v)*e_s));
+}
+
+//   thermo_vt():   calculates virtual temperature
+//         p(mb), t(deg C), td(deg C), t*(deg C)
+double Thermo_VirtualTemp(double P,double T,double TD) {
+
+   double sh;
+
+//   if (P<=0.0 || P>P_MAX || T<T_MIN || T>T_MAX || TD<T_MIN || TD>T_MAX)
+//      return(MSNGV);
+
+   sh = Thermo_PT2SH(P,TD);
+   return((1.0+0.001*(R_v/R_d-1.0)*sh)*(T+AZ)-AZ);
+}
+
 
 //   Thermo_PR2T():    calculates t from mixing ratio and pressure
 //       p(mb), r(g/kg), t(deg C)
@@ -126,6 +166,29 @@ double Thermo_PT2R(double P,double T) {
    return (1000.0*R_d/R_v*e_s/(P-e_s));
 }
 
+//   Thermo_RH2TD():   converts relative humidity to dew point
+//        p(mb), t(deg C), rh(%), td(deg C)
+double Thermo_RH2TD(double P,double T,double RH) {
+
+   double ratio;
+
+//   if (P <= 0.0 || P > P_MAX || T < T_MIN || T > T_MAX || RH <= 0.0 || RH > 100.0)
+//      return(MSNGV);
+   ratio=Thermo_PT2R(P,T)*0.01*RH;
+   return(Thermo_PT2R(P,ratio));
+}
+
+//   Thermo_TD2RH():   converts dew point to relative humidity
+//         p(mb), t(deg C), td(deg C), rh(%)
+double Thermo_TD2RH(double P,double T,double TD) {
+
+//   if (P<=0.0 || P>P_MAX || T<T_MIN || T>T_MAX || TD<T_MIN || TD>T_MAX)
+//      return(MSNGV);
+   if (TD>T)
+      TD=T;
+   return(100.0*Thermo_PT2R(P,TD)/Thermo_PT2R(P,T));
+}
+
 //***   Thermo_TTH2P():   calculates p from t and log(theta)
 //***         t(deg C), theta(deg K), p(mb)
 double Thermo_TTH2P(double T,double TH) {
@@ -188,14 +251,8 @@ void GraphTephi_TTH2XY(TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,do
    T=AXISVALUE(AxisT,T);
    TH=AXISVALUE(AxisTH,TH);
 
-//fprintf(stderr,"-----   (%f %f) %f %f \n",AxisTH->T0,AxisTH->T1,AxisTH->Delta,AXISVALUE(AxisTH,AxisTH->Min));
-   *X=(T*COSA + TH*SINA)-(AxisT->DT0*COSA+AxisTH->DT0*SINA)*0.75;
-   *Y=-((T*SINA - TH*COSA)-(AxisT->DT0*SINA-AxisTH->DT0*COSA)-50);
-   *X=(T*COSA + TH*SINA);
-   *Y=-(T*SINA - TH*COSA);
-
-//   *X=(T*TH/th1);
-//   *Y=-(T*TH/th1);
+   *X=(T*COSA + TH*SINA)-AxisT->Delta*60;
+   *Y=-(T*SINA - TH*COSA)-AxisT->Delta*30;
 }
 
 //***   GraphTephi_TP2XY():   converts t-p coordinates to window's x, y
@@ -233,6 +290,35 @@ void GraphTephi_THP2XY(TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,do
 
    t = Thermo_PTH2T(AxisTH,AxisT,AxisP,P,Theta);
    GraphTephi_TTH2XY(AxisTH,AxisT,AxisP,t,Theta,X,Y);
+}
+
+double GraphTephi_PX2T(TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,double P,int X,int *Y0,int *Y1) {
+
+   int    y,yt,yb;
+   double p0,p1,t;
+
+   yb=*Y0;
+   yt=*Y1;
+   y =(yb+yt)/2;
+   GraphTephi_XY2PT(AxisTH,AxisT,AxisP,X,*Y0,&p0,&t);
+   GraphTephi_XY2PT(AxisTH,AxisT,AxisP,X,*Y1,&p1,&t);
+
+   do {
+      GraphTephi_XY2PT(AxisTH,AxisT,AxisP,X,y,&p1,&t);
+      if (p1<P) {
+         yt=y;
+         y =(yb+yt)/2;
+       } else if (p1>P) {
+         yb=y;
+         y =(yb+yt)/2;
+       } else {
+         *Y0=yb;
+         return(t);
+       }
+   } while ((yt<yb)&&(y!=yt));
+   *Y0=yb;
+
+   return(t);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -899,3 +985,154 @@ void GraphTehpi_DisplayMixRatios(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
    }
    glDisable(GL_LINE_STIPPLE);
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphItem_DisplayXYZ>
+ * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Afficher l'item de graph dans le graph en vectoriel
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Graph>    : Item graph
+ *   <Item>     : Item de graph
+ *   <AxisT>    : Axe en X
+ *   <AxisY>    : Axe en Y
+ *   <AxisP>    : Axe en Z
+ *   <X0>       : Limite inferieure gauche du graph
+ *   <Y0>       : Limite inferieure gauche du graph
+ *   <X1>       : Limite superieur  droite du graph
+ *   <Y1>       : Limite superieur  droite du graph
+ *   <GLMode>   : Mode de rendue
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisT,TGraphAxis *AxisP,TGraphAxis *AxisTH,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
+
+   TVector   *vdry,*vpres,*vwet,*vdew,*vspd,*vdir,*vspr;
+   double     v[2],val,v0[2],t;
+   char       buf[32];
+   int        i,vn,j,x,y;
+   Tcl_Obj   *obj;
+
+   /*Pressure (YData)*/
+   vpres=Vector_Get(Item->YData);
+
+   if (Item->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
+   /* Display graph outline */
+   if (Item->Outline && Item->Width && GLMode==GL_RENDER) {
+      glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
+      glLineWidth(Item->Width);
+      glPolygonMode(GL_FRONT,GL_LINE);
+
+      /*DryBulb (XData)*/
+      if ((vdry=Vector_Get(Item->XData)) && (vn=vdry->N<vpres->N?vdry->N:vpres->N)) {
+         glBegin(GL_LINE_STRIP);
+         for(i=0;i<vn;i++) {
+            if (vdry->V[i]!=vdry->NoData && vpres->V[i]!=vpres->NoData) {
+               if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vdry->V[i],vpres->V[i],&v[0],&v[1])) {
+                  glVertex2dv(v);
+               } else {
+                  glEnd();
+                  glBegin(GL_LINE_STRIP);
+               }
+            }
+         }
+         glEnd();
+      }
+
+      /*WetBulb (MinData)*/
+      if ((vwet=Vector_Get(Item->MinData)) && (vn=vwet->N<vpres->N?vwet->N:vpres->N)) {
+         glDash(&Graph->Dash[1]);
+         glBegin(GL_LINE_STRIP);
+         for(i=0;i<vn;i++) {
+            if (vwet->V[i]!=vwet->NoData && vpres->V[i]!=vpres->NoData) {
+               if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vwet->V[i],vpres->V[i],&v[0],&v[1])) {
+                  glVertex2dv(v);
+               } else {
+                  glEnd();
+                  glBegin(GL_LINE_STRIP);
+               }
+            }
+         }
+         glEnd();
+      }
+
+      /*DewPoint (MaxData)*/
+      if ((vdew=Vector_Get(Item->MaxData)) && (vn=vdew->N<vpres->N?vdew->N:vpres->N)) {
+         glDash(&Graph->Dash[0]);
+         glBegin(GL_LINE_STRIP);
+         for(i=0;i<vn;i++) {
+            if (vdew->V[i]!=vdew->NoData && vpres->V[i]!=vpres->NoData) {
+               if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vdew->V[i],vpres->V[i],&v[0],&v[1])) {
+                  glVertex2dv(v);
+               } else {
+                  glEnd();
+                  glBegin(GL_LINE_STRIP);
+               }
+            }
+         }
+         glEnd();
+      }
+      glDisable(GL_LINE_STIPPLE);
+
+      vspd=Vector_Get(Item->Speed);
+      vdir=Vector_Get(Item->Dir);
+      vspr=Vector_Get(Item->ZData);
+      vspr=!vspr?vpres:vspr;
+
+      if (vspd && vdir) {
+         GraphTephi_TP2XY(AxisTH,AxisT,AxisP,AxisT->T1,AxisP->T0,&v0[0],&v0[1]);
+         for(i=0;i<vspd->N;i++) {
+            y=Y0;
+            t=GraphTephi_PX2T(AxisTH,AxisT,AxisP,vspr->V[i],v0[0],&y,&Y1);
+            if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,t,vspr->V[i],&v[0],&v[1])) {
+               Data_RenderBarbule(1,1,0.0,v0[0],v[1],0.0,vspd->V[i],vdir->V[i],Item->Size,NULL);
+            }
+         }
+      }
+   }
+
+   /* Display Values */
+   if (Item->Value && Item->Font && GLMode==GL_RENDER) {
+      val=-999.0;
+      glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
+      glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
+      for(i=0;i<vn;i++) {
+         switch(Item->Value) {
+            case  1:
+            case 14: if (vdry)  val=vdry->V[i]; break;
+            case 15: if (vpres) val=vpres->V[i]; break;
+            case 16: if (vwet)  val=vwet->V[i]; break;
+            case 17: if (vdew)  val=vdew->V[i]; break;
+            case 18: if (vdry && vdew) val=vdry->V[i]-vdew->V[i]; break;
+//            case 19: val=0.01*ua_rec->h[k]/FOOT; break;
+            case 20: if (vpres && vdry && vdew) val=Thermo_TD2RH(vpres->V[i],vdry->V[i],vdew->V[i]); break;
+         }
+         if (val!=-999.0) {
+            if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vdry->V[i],vpres->V[i],&v[0],&v[1])) {
+               GraphAxis_Print(AxisT,buf,val,-2);
+               j=Item->Width+2+(Item->Icon?Item->Size:0);
+               y=v[1]+j;
+               j=Tk_TextWidth(Item->Font,buf,strlen(buf));
+               switch(Item->Anchor) {
+                  case TK_ANCHOR_CENTER: x=v[0]-j/2; break;
+                  case TK_ANCHOR_W:      x=v[0]+j/strlen(buf);     break;
+                  case TK_ANCHOR_E:      x=v[0]-j-j/strlen(buf);   break;
+               }
+               glPrint(Interp,Graph->canvas,buf,x,y,0.0);
+            }
+         }
+      }
+   }
+
+   glDisable(GL_BLEND);
+}
+

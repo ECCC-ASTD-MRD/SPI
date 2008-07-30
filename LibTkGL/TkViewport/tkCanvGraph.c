@@ -228,6 +228,10 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
    gr->Update     = 0;
    gr->Type       = NULL;
 
+   Tk_GetDash(Interp,".",&gr->Dash[0]);
+   Tk_GetDash(Interp,"-",&gr->Dash[1]);
+   Tk_GetDash(Interp,"_",&gr->Dash[2]);
+
    /* Create the associated colorbar */
    gr->CB=(ColorbarItem*)malloc(sizeof(ColorbarItem));
    ColorbarCreate(Interp,Canvas,(Tk_Item*)gr->CB,0,NULL);

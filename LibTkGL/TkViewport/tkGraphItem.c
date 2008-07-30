@@ -35,6 +35,8 @@
 
 static Tcl_HashTable GraphItemTable;
 static CONST char *GraphTypeName[] = { "NONE","LINE","SPLINE","BAR","WIDEBAR","HISTOGRAM","RASTER","BOXPLOT","MINMAX" };
+static CONST char *GraphDataName[] = { "False","True","data","xdata","ydata","zdata","speed","dir","error","high","low","median","min","max","pressure","drybulb","wetbulb","dewpoint",
+   "SPREAD","HEIGHT","RELATIVEHUMIDITY" };
 
 extern CONST char *ICONS[];
 extern TIcon IconList[];
@@ -193,8 +195,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    int         i,j,c,idx;
 
 
-   static CONST char *sopt[] = { "-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
-   enum                opt { COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
+   static CONST char *sopt[] = { "-anchor","-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-windpres","-pressure","-drybulb","-wetbulb","-dewpoint","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
+   enum                opt { ANCHOR,COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,WINDPRES,PRESSURE,DRYBULB,WETBULB,DEWPOINT,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
    item=GraphItem_Get(Name);
    if (!item) {
       Tcl_AppendResult(Interp,"\n   GraphItem_Config: unknown object: \"",Name,"\"",(char*)NULL);
@@ -209,6 +211,14 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
       }
 
       switch ((enum opt)idx) {
+         case ANCHOR:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Tk_NameOfAnchor(item->Anchor),-1));
+             } else {
+               Tk_GetAnchorFromObj(Interp,Objv[++i],&item->Anchor);
+            }
+            break;
+
           case COLORS:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,item->Colors);
@@ -376,9 +386,13 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
          case VALUE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(item->Value));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GraphTypeName[item->Value],-1));
             } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&item->Value);
+               if (Tcl_GetBooleanFromObj(Interp,Objv[++i],&item->Value)==TCL_ERROR) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],GraphDataName,"data",0,&item->Value)!=TCL_OK) {
+                     return(TCL_ERROR);
+                  }
+               }
             }
             break;
 
@@ -387,7 +401,6 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(GraphTypeName[item->Type],-1));
             } else {
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],GraphTypeName,"type",0,&item->Type)!=TCL_OK) {
-                   Tcl_AppendResult(Interp,"GraphItem_Config: Invalid item type must be [NONE | LINE | SPLINE | BAR | WIDEBAR | HISTOGRAM | RASTER]",(char*)NULL);
                    return(TCL_ERROR);
                }
             }
@@ -432,6 +445,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case DRYBULB:
          case XDATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->XData,-1));
@@ -444,6 +458,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case PRESSURE:
          case YDATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->YData,-1));
@@ -456,6 +471,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case WINDPRES:
          case ZDATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->ZData,-1));
@@ -540,6 +556,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case WETBULB:
          case MINDATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->MinData,-1));
@@ -552,6 +569,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case DEWPOINT:
          case MAXDATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(item->MaxData,-1));
@@ -679,6 +697,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
    item->Dash.number=0;
    item->Colors=NULL;
 
+   item->Anchor=TK_ANCHOR_CENTER;
    item->Type=NONE;
    item->Origin=HUGE_VAL;
    item->Alpha=100;
@@ -913,10 +932,8 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
       if (Graph->Type[0]=='T') {
          GraphAxis_Define(axisz,NULL,(int)hypot(X1-X0,Y1-Y0));
          GraphAxis_Define(axisw,NULL,X1-X0);
-//         axisx->Delta*=COSA*0.65;
-//         axisz->Delta=780.0 / 3.3 * axisx->Delta;
-         axisx->Delta*=COSA*0.75*((double)(Y1-Y0)/(X1-X0));
-         axisz->Delta=780.0 / 3.3 * axisx->Delta;
+         axisx->Delta*=COSA*0.65*((Y1-Y0)<(X1-X0)?(double)(Y1-Y0)/(X1-X0):(double)(X1-X0)/(Y1-Y0));
+         axisz->Delta=780.0 / 3 * axisx->Delta;
 
          if (!axisx->Done) {
             axisx->Done|=DONEX;
@@ -926,7 +943,8 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
             GraphTehpi_DisplayIsobars(Graph,axisz,axisx,axisy,X0,Y0,X1,Y1,GLMode);
             GraphTehpi_DisplayIsotherms(Graph,axisz,axisx,axisy,X0,Y0,X1,Y1,GLMode);
          }
-      }
+         GraphItem_DisplayTephi(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
+      } else {
 
       if (Item->Type==MINMAX)
          GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
@@ -934,6 +952,7 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
          GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
       else
          GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
+      }
    }
 }
 
@@ -1333,7 +1352,7 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
 */
 void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
-   TVector   *vecx,*vecy,*vecs,*vecd;
+   TVector   *vecx,*vecy,*vecs,*vecd,*val;
    Vect3d    *v,v0,v1,vt;
    char       buf[32];
    double    *vm,x,y,db,dh,x0,y0;
@@ -1362,6 +1381,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       if (vecx->V[i]!=vecx->NoData && vecy->V[i]!=vecy->NoData) {
          if (Graph->Type[0]=='T') {
             if (GraphTephi_TP2XY(AxisZ,AxisX,AxisY,vecx->V[i],vecy->V[i],&v[vn][0],&v[vn][1])) {
+               v[vn][2]=0.0;
                vn++;
             }
          } else {
@@ -1383,7 +1403,6 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          }
       }
    }
-
    /* Compute item spacing and width for bar and histogram graph */
    switch(Item->Type) {
       case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2.0*(Graph->NSide*0.5-Graph->ISide-0.5); break;
@@ -1576,17 +1595,38 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
 
-      for(i=0;i<vn;i++) {
-         if (Item->Orient[0]=='X') {
-            GraphAxis_Print(AxisY,buf,vecy->V[i],-2);
-         } else {
-            GraphAxis_Print(AxisX,buf,vecx->V[i],-2);
+      switch(Item->Value) {
+         case  1: val=(Item->Orient[0]=='X')?vecx:vecy; break;
+         case  2: val=vecx; break;
+         case  3: val=vecx; break;
+         case  4: val=vecy; break;
+         case  5: val=Vector_Get(Item->ZData); break;
+         case  6: val=Vector_Get(Item->Speed); break;
+         case  7: val=Vector_Get(Item->Dir); break;
+         case  8: val=Vector_Get(Item->ErrorData); break;
+         case  9: val=Vector_Get(Item->HighData); break;
+         case 10: val=Vector_Get(Item->LowData); break;
+         case 11: val=Vector_Get(Item->MedianData); break;
+         case 12: val=Vector_Get(Item->MinData); break;
+         case 13: val=Vector_Get(Item->MaxData); break;
+      }
+      if (val) {
+         for(i=0;i<vn;i++) {
+            if (Item->Value==4) {
+               GraphAxis_Print(AxisY,buf,val->V[i],-2);
+            } else {
+               GraphAxis_Print(AxisX,buf,val->V[i],-2);
+            }
+            j=Item->Width+2+(Item->Icon?Item->Size:0);
+            y=v[i][1]+j;
+            j=Tk_TextWidth(Item->Font,buf,strlen(buf));
+            switch(Item->Anchor) {
+               case TK_ANCHOR_CENTER: x=v[i][0]-j/2; break;
+               case TK_ANCHOR_W:      x=v[i][0]+j/strlen(buf);     break;
+               case TK_ANCHOR_E:      x=v[i][0]-j-j/strlen(buf);   break;
+            }
+            glPrint(Interp,Graph->canvas,buf,x,y,0.0);
          }
-         j=Tk_TextWidth(Item->Font,buf,strlen(buf))/2;
-         x=v[i][0]-j;
-         j=Item->Width+2+(Item->Icon?Item->Size:0);
-         y=v[i][1]+j;
-         glPrint(Interp,Graph->canvas,buf,x,y,0.0);
       }
    }
 

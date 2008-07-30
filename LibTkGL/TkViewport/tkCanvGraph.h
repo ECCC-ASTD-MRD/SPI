@@ -46,12 +46,16 @@
 #define SETRECT(VAR,X0,Y0,X1,Y1)   VAR[0]=X0; VAR[1]=Y0; VAR[2]=X1; VAR[3]=Y0; VAR[4]=X1; VAR[5]=Y1; VAR[6]=X0; VAR[7]=Y1;
 #define SETLINE(VAR,X0,Y0,X1,Y1)   VAR[0]=X0; VAR[1]=Y0; VAR[2]=X1; VAR[3]=Y1;
 
+enum  GRAPHFORMATS { GRAXNONE,GRAXFIT,GRAXINTEGER,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH };
+
+
 typedef struct GraphItem  {
    Tk_Item        header;          /*Generic stuff that's the same for all types*/
    Tk_Canvas      canvas;          /*Pointeur sur le canvas contenant le viewport*/
    Tk_Anchor      anchor;          /*Where to anchor pixmap relative to (x,y)*/
    Tk_Font        Font;            /*Font for drawing text*/
    Tk_TextLayout  Text;            /*Cached text layout information*/
+   Tk_Dash        Dash[3];         /*Pointille*/
 
    double         x,y;             /*Coordinates of positioning point for pixmap*/
    int            Width,Height;    /*Dimensions du viewport*/

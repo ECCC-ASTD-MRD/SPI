@@ -35,7 +35,7 @@
 
 #include <stdio.h>
 
-static CONST char *GRAPHAXISFORMATS_STRING[] = { "NONE","FIT","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
+static CONST char *GRAPHFORMATS_STRING[] = { "NONE","FIT","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -466,9 +466,9 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
          case FORMAT:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GRAPHAXISFORMATS_STRING[axis->Format],-1));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GRAPHFORMATS_STRING[axis->Format],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GRAPHAXISFORMATS_STRING,"format",0,&axis->Format)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GRAPHFORMATS_STRING,"format",0,&axis->Format)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -941,7 +941,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
          tsec=gmtime(&sec);
       }
 
-      switch((enum GRAPHAXISFORMATS)Axis->Format) {
+      switch((enum GRAPHFORMATS)Axis->Format) {
          case GRAXDATE: sprintf(String,"%i/%02i/%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday); break;
          case GRAXTIME: sprintf(String,"%02i:%02i:%02i",tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
          case GRAXDATETIME: sprintf(String,"%i/%02i/%02i %02i:%02i:%02i",(tsec->tm_year+1900),(tsec->tm_mon+1),tsec->tm_mday,tsec->tm_hour,tsec->tm_min,tsec->tm_sec); break;
