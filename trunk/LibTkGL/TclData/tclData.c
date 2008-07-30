@@ -1563,11 +1563,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case HIGH:
+            if (!Field->Stat)
+               Data_GetStat(Field);
             Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             Tcl_SetObjResult(Interp,Data_HighLow(Interp,Field,1,len));
             break;
 
          case LOW:
+            if (!Field->Stat)
+               Data_GetStat(Field);
             Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             Tcl_SetObjResult(Interp,Data_HighLow(Interp,Field,0,len));
             break;
