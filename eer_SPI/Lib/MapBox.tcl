@@ -64,7 +64,6 @@ namespace eval MapBox {
    set Data(Max)      100      ;#Maximum dans la palette
    set Data(Curve)    LINEAR   ;#Courbe d'etendue des couleurs
    set Data(List)     ""       ;#Liste des noms de palettes
-   set Data(Nb)       0        ;#Liste des noms de palettes
 
    set Data(Map)      ""                            ;#Colormap a editer
    set Data(Command)  ""                            ;#Command d'application
@@ -242,7 +241,7 @@ proc MapBox::ControlAdd { Canvas X } {
    variable Control
    variable Data
 
-   set idx [expr int(($X-$Control(X0))/(256.0/$Data(Nb)))]
+   set idx [expr $X-$Control(X0)]
    set color [colormap configure $Data(Map) -index $idx]
    eval colormap control $Data(Map) -add $idx $color
    eval set rgb \[format \"#%02x%02x%02x\" $color\]
@@ -365,26 +364,19 @@ proc MapBox::ControlInit { Canvas } {
    variable Control
    variable Data
 
-   set points   [colormap control $Data(Map) -list]
-   set Data(Nb) [llength $points]
-   set x -1
    set Control(Nb) 0
 
    $Canvas delete CTRL
 
-   foreach point $points {
+   foreach point [colormap control $Data(Map) -list] {
 
-      incr x
-      set r [lindex $point 0]
-      set g [lindex $point 1]
-      set b [lindex $point 2]
-      set a [lindex $point 3]
+      set x [lindex $point 0]
+      set r [lindex $point 1]
+      set g [lindex $point 2]
+      set b [lindex $point 3]
+      set a [lindex $point 4]
 
-      if { $r==0 && $g==0 && $b==0 && $a==0 } {
-         continue
-      }
-
-      set X   [expr $x*256.0/$Data(Nb)+$Control(X0)]
+      set X   [expr $x+$Control(X0)]
       set rgb [format "#%02x%02x%02x" $r $g $b]
 
       MapBox::ControlBind $Canvas $X $x $rgb
@@ -412,13 +404,11 @@ proc MapBox::ControlMove { Canvas Id X } {
    variable Control
    variable Data
 
-   set idx [expr int(($X-$Control(X0))/(256.0/$Data(Nb)))]
+   set idx [expr $X-$Control(X0)]
    set x   [expr $X-$Control(X)]
 
    if { $idx>=0 && $idx<256 } {
-
-      set ok [colormap control $Data(Map) -move $idx $Control($Id)]
-      if { $ok } {
+      if { [colormap control $Data(Map) -move $idx $Control($Id)] } {
 
          $Canvas move CTRL$Id $x 0
 
