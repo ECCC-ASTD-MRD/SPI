@@ -1032,19 +1032,24 @@ int CMap_ColorList(Tcl_Interp *Interp,CMap_Rec *CMap,int Comp,int Mode) {
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(CMap->Control[i][Comp-1]));
          }
       } else {
-         sub=Tcl_NewListObj(0,NULL);
          if (Mode) {
+            sub=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Color[i][0]));
             Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Color[i][1]));
             Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Color[i][2]));
             Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Color[i][3]));
+            Tcl_ListObjAppendElement(Interp,obj,sub);
          } else {
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][0]));
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][1]));
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][2]));
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][3]));
+            if (CMap->Control[i][0] || CMap->Control[i][1] || CMap->Control[i][2] || CMap->Control[i][3]) {
+               sub=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(i));
+               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][0]));
+               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][1]));
+               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][2]));
+               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(CMap->Control[i][3]));
+               Tcl_ListObjAppendElement(Interp,obj,sub);
+            }
          }
-         Tcl_ListObjAppendElement(Interp,obj,sub);
       }
    }
    Tcl_SetObjResult(Interp,obj);
@@ -1275,13 +1280,13 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    int  i;
 
    if (!CMap) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    fp = fopen(RGBAFile,"w");
    if (fp == NULL) {
       Tcl_AppendResult(Interp,"CMap_Write: cannot open RGBA definition file\"",RGBAFile,(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Parametres de la palette*/
@@ -1302,7 +1307,7 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    fputs(buf,fp);
 
    fclose(fp);
-   return TCL_OK;
+   return(TCL_OK);
 }
 /*----------------------------------------------------------------------------
  * Nom      : <CMap_ControlDefine>
