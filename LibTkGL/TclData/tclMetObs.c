@@ -1602,7 +1602,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    DataSubset     *subset;
    BufrDescriptor *bcv;
    EntryTableB    *eb;
-   int             i,j,ne,len;
+   int             i,j,ne,len,strid=0;
    char            stnid[256],previd[256],multi=0;
    double          value,lat,lon,hgt=0.0;
    int             yyyy,mm,dd,hh,mn,ss;
@@ -1712,12 +1712,12 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case 7001:
                      case 7002:  hgt=bufr_descriptor_get_dvalue(bcv);  break;
 
-                     /*Station ID related*/
+                     /*Station ID related but prioritize string version*/
                      case 1002:
-                     case 1007:  sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv));  strtrim(stnid,' '); break;
+                     case 1007:  if (!strid) { sprintf(stnid,"%i",bufr_descriptor_get_ivalue(bcv));  strtrim(stnid,' '); }; break;
                      case 1015:
                      case 1018:
-                     case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); strtrim(stnid,' '); break;
+                     case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); strtrim(stnid,' '); strid=1; break;
 
                      /*Time displacement*/
                      case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv);
