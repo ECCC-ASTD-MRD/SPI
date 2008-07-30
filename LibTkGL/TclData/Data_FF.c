@@ -801,7 +801,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
    GLuint s;
 
    Vect_Clear(p);
-   ds=fabs(Step*0.01);
+   ds=fabs(Step*0.001);
    dr=10000.0;
 
    do {
