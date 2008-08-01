@@ -339,16 +339,20 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case SORT:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"vector");
+         if(Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"vector [dim]");
             return TCL_ERROR;
          }
          vec=Vector_Get(Tcl_GetString(Objv[2]));
+         c=NULL;
+         if (Objc==4) {
+            c=Tcl_GetString(Objv[3]);
+         }
          if (!vec) {
             Tcl_AppendResult(Interp,"Invalid vector",(char*)NULL);
             return(TCL_ERROR);
          } else {
-            return Vector_Sort(Interp,vec);
+            return Vector_Sort(Interp,vec,c);
          }
          break;
 
@@ -463,6 +467,11 @@ static int Vector_Stat(Tcl_Interp *Interp,TVector *Vec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Vec->NoData));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Vec->NoData);
+               if (Vec->Cp) {
+                  for(v=0;v<Vec->N;v++) {
+                     Vec->Cp[n]->NoData=Vec->NoData;
+                  }
+               }
             }
             break;
 
@@ -887,6 +896,7 @@ int Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len) {
  * Parametres   :
  *   <Interp>   : Interpreteur Tcl
  *   <Vec>      : Vecteur
+ *   <Comp>     : Composante sur laquelle trie (NULL=aucune)
  *
  * Retour       : Code de retour standard TCL
  *
@@ -894,22 +904,84 @@ int Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Vector_Sort(Tcl_Interp *Interp,TVector *Vec) {
+void Vector_Swap(TVector *Vec,int IdxFrom,int IdxTo) {
 
-   int   i;
+   int    n;
+   double v;
+
+   if (Vec->Cp) {
+      for(n=0;n<Vec->N;n++) {
+         v=Vec->Cp[n]->V[IdxTo];
+         Vec->Cp[n]->V[IdxTo]=Vec->Cp[n]->V[IdxFrom];
+         Vec->Cp[n]->V[IdxFrom]=v;
+       }
+   } else {
+      v=Vec->V[IdxTo];
+      Vec->V[IdxTo]=Vec->V[IdxFrom];
+      Vec->V[IdxFrom]=v;
+   }
+}
+
+void Vector_QuickSort(TVector *Vec,int Comp,int start,int end) {
+
+   int     l=start;
+   int     r=end;
+   double *v;
+
+   v=Comp==-1?Vec->V:Vec->Cp[Comp]->V;
+
+   if (end-start>=1) {
+      int pivot=v[start];
+
+      while (r>l) {
+         while (v[l]<=pivot && l<=end && r>l)
+            l++;
+         while (v[r]>pivot && r>=start && r>=l)
+            r--;
+         if (r>l)
+            Vector_Swap(Vec,l,r);
+      }
+      Vector_Swap(Vec,start,r);
+
+      Vector_QuickSort(Vec,Comp,start,r-1);
+      Vector_QuickSort(Vec,Comp,r+1,end);
+   } else {
+      return;
+   }
+}
+
+int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp) {
+
+   int      n,end,c;
+   double   tmp;
+   Tcl_Obj *obj;
 
    if (!Vec) {
       Tcl_AppendResult(Interp,"Vector_Sort: Invalid vector",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   if (Vec->Cp) {
-      for(i=0;i<Vec->N;i++) {
-         Vector_Sort(Interp,Vec->Cp[i]);
+   c=Vec->Cp?0:-1;
+   end=Vec->Cp?Vec->Cp[0]->N:Vec->N;
+
+   /*If a component is specified, find it*/
+   if (Comp) {
+      for(n=0;n<Vec->N;n++) {
+         Tcl_ListObjIndex(Interp,Vec->Cn,n,&obj);
+         if (strcmp(Tcl_GetString(obj),Comp)==0) {
+            c=n;
+            end=Vec->Cp[n]->N;
+            break;
+         }
       }
-   } else {
-      qsort(Vec->V,Vec->N,sizeof(double),QSort_Double);
+      if (n==Vec->N) {
+         Tcl_AppendResult(Interp,"Vector_Sort: Invalid component",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
+
+   /*Sort on the specific component*/
+   Vector_QuickSort(Vec,c,0,end-1);
 
    return(TCL_OK);
 }
