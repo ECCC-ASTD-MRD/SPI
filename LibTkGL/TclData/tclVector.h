@@ -62,7 +62,7 @@ typedef struct TVectorSpec {
 
 typedef struct TVector {
    double          *V;      /* Valeurs */
-   double           NoData; /*Valeur de novalue*/
+   double           NoData; /* Valeur de novalue*/
    int              N,Nr;   /* Longueur du vecteur et longueur memoire*/
    Tcl_Obj         *Cn;     /* Noms des composantes */
    struct TVector **Cp;     /* Pointeur sur les composantes */
@@ -81,10 +81,12 @@ int      Vector_Destroy(Tcl_Interp *Interp,char *Name);
 int      Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List);
 int      Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx);
 Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub);
-int      Vector_Sort(Tcl_Interp *Interp,TVector *Vec);
+int      Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp);
 int      Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len);
 int      Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem);
 void     Vector_Free(TVector *Vec);
 void     Vector_Wipe();
 
+void Vector_Swap(TVector *Vec,int IdxFrom,int IdxTo);
+void Vector_QuickSort(TVector *Vec,int Comp,int start,int end);
 #endif
