@@ -18,12 +18,9 @@
 
 #----- Fichiers complementaires
 
-source /home/afsr/alm/spi/dev/Models/Types/MLDP1.txt
-source /home/afsr/alm/spi/dev/Models/Types/MLDP1.ctes
-source /home/afsr/alm/spi/dev/Models/Types/MLDP1.int
-#source $GDefs(Dir)/Apps/Models/Types/MLDP1.txt
-#source $GDefs(Dir)/Apps/Models/Types/MLDP1.ctes
-#source $GDefs(Dir)/Apps/Models/Types/MLDP1.int
+source $GDefs(Dir)/Apps/Models/Types/MLDP1.txt
+source $GDefs(Dir)/Apps/Models/Types/MLDP1.ctes
+source $GDefs(Dir)/Apps/Models/Types/MLDP1.int
 
 package require IsoBox
 
