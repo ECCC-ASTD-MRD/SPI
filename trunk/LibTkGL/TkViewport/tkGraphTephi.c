@@ -1091,10 +1091,12 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
       if (vspd && vdir) {
          GraphTephi_TP2XY(AxisTH,AxisT,AxisP,AxisT->T1,AxisP->T0,&v0[0],&v0[1]);
          for(i=0;i<vspd->N;i++) {
-            y=Y0;
-            t=GraphTephi_PX2T(AxisTH,AxisT,AxisP,vspr->V[i],v0[0],&y,&Y1);
-            if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,t,vspr->V[i],&v[0],&v[1])) {
-               Data_RenderBarbule(1,1,0.0,v0[0],v[1],0.0,vspd->V[i],vdir->V[i],Item->Size,NULL);
+            if (vspd->V[i]!=vspd->NoData && vdir->V[i]!=vdir->NoData && vspr->V[i]!=vspr->NoData) {
+               y=Y0;
+               t=GraphTephi_PX2T(AxisTH,AxisT,AxisP,vspr->V[i],v0[0],&y,&Y1);
+               if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,t,vspr->V[i],&v[0],&v[1])) {
+                  Data_RenderBarbule(1,1,0.0,v0[0],v[1],0.0,vspd->V[i],vdir->V[i],Item->Size,NULL);
+               }
             }
          }
       }

@@ -747,9 +747,17 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
          glEnd();
       }
 
-      gr->xg[0]=gr->header.x1+5;gr->xg[1]=gr->header.x2-5;
-      gr->yg[0]=gr->header.y2-5;gr->yg[1]=gr->header.y1+5;
-      gr->yg[1]+=gr->TitleHeight+5; /*header*/
+      /*Setup borders*/
+      gr->xg[0]=gr->header.x1;gr->xg[1]=gr->header.x2;
+      gr->yg[0]=gr->header.y2;gr->yg[1]=gr->header.y1;
+      if (gr->Type[0]!='T') {
+         gr->xg[0]+=5;gr->xg[1]-=5;
+         gr->yg[0]-=5;gr->yg[1]+=5;
+      }
+      if (gr->TitleWidth) {
+         gr->yg[1]+=gr->TitleHeight+5;
+      }
+
       gr->NSide=gr->ISide=0;
       gr->CB->NbData=0;
       if (gr->CB->Data) free(gr->CB->Data);gr->CB->Data=NULL;
