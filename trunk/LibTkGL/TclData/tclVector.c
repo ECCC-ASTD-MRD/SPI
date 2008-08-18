@@ -469,7 +469,7 @@ static int Vector_Stat(Tcl_Interp *Interp,TVector *Vec,int Objc,Tcl_Obj *CONST O
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Vec->NoData);
                if (Vec->Cp) {
                   for(v=0;v<Vec->N;v++) {
-                     Vec->Cp[n]->NoData=Vec->NoData;
+                     Vec->Cp[v]->NoData=Vec->NoData;
                   }
                }
             }
@@ -924,19 +924,18 @@ void Vector_Swap(TVector *Vec,int IdxFrom,int IdxTo) {
 
 void Vector_QuickSort(TVector *Vec,int Comp,int start,int end) {
 
-   int     l=start;
+   int     l=start+1;
    int     r=end;
    double *v;
 
    v=Comp==-1?Vec->V:Vec->Cp[Comp]->V;
 
    if (end-start>=1) {
-      int pivot=v[start];
 
       while (r>l) {
-         while (v[l]<=pivot && l<=end && r>l)
+         while (v[l]<=v[start] && l<=end && r>l)
             l++;
-         while (v[r]>pivot && r>=start && r>=l)
+         while (v[r]>v[start] && r>=start && r>=l)
             r--;
          if (r>l)
             Vector_Swap(Vec,l,r);
