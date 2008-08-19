@@ -24,6 +24,8 @@ namespace eval NowCaster::Obs { } {
    variable Bubble
    variable Param
 
+   font create TEPHIFONT -family arial  -size -10
+
    set Param(Title)      { "Observation" "Observation" }
 
    set Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa
@@ -45,6 +47,7 @@ namespace eval NowCaster::Obs { } {
    set Data(InfoObs)     ""
    set Data(InfoTag)     ""
    set Data(InfoId)      ""
+   set Data(InfoAll)     False
    set Data(Id)          ""
    set Data(Report)      False
 
@@ -65,6 +68,9 @@ namespace eval NowCaster::Obs { } {
    set Lbl(Find)    { "Trouver une station" "Find station" }
    set Lbl(Surface) { "Surface" "Surface" }
    set Lbl(Upper)   { "Upper" "Upper" }
+   set Lbl(Tephi)   { "Tephigramme" "Tephigram" }
+   set Lbl(All)     { "Tous" "All" }
+   set Lbl(Current) { "Courant" "Current" }
 
    set Msg(Read)   { "Lecture des données d'observations" "Reading observation data" }
    set Msg(Exist)  { "Un model de ce nom existe déja, désirez vous le remplacer ?"
@@ -333,7 +339,7 @@ proc NowCaster::Obs::Now { Sec { Check False } } {
    }
 
    if { $Data(InfoObs)!="" && [winfo exists .nowcasterinfo] } {
-      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag)
+      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag) $Data(InfoAll)
    }
 }
 
@@ -1022,53 +1028,178 @@ proc NowCaster::Obs::ModelParse { } {
 #
 #-------------------------------------------------------------------------------
 
-proc NowCaster::Obs::Info { Obs Id Tag } {
+proc NowCaster::Obs::InfoWindow { { Obs "" } } {
+   global GDefs
+   variable Lbl
+
+   if { [winfo exists .nowcasterinfo]} {
+      raise .nowcasterinfo
+   } else {
+      toplevel .nowcasterinfo
+      wm title .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs"
+      wm transient .nowcasterinfo .
+      wm geometry .nowcasterinfo 800x600
+
+      TabFrame::Create .nowcasterinfo.tab 1 ""
+      set tab [TabFrame::Add .nowcasterinfo.tab 1 [lindex $Lbl(Report) $GDefs(Lang)] True]
+      frame ${tab}.bar -relief flat
+         radiobutton ${tab}.bar.cur -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text [lindex $Lbl(Current) $GDefs(Lang)] -variable NowCaster::Obs::Data(InfoAll) -value False -selectcolor $GDefs(ColorLight) \
+            -command { NowCaster::Obs::Info $NowCaster::Obs::Data(InfoObs) $NowCaster::Obs::Data(InfoId) $NowCaster::Obs::Data(InfoTag) $NowCaster::Obs::Data(InfoAll) }
+         radiobutton ${tab}.bar.all -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text [lindex $Lbl(All) $GDefs(Lang)] -variable NowCaster::Obs::Data(InfoAll) -value True -selectcolor $GDefs(ColorLight) \
+            -command { NowCaster::Obs::Info $NowCaster::Obs::Data(InfoObs) $NowCaster::Obs::Data(InfoId) $NowCaster::Obs::Data(InfoTag) $NowCaster::Obs::Data(InfoAll) }
+         pack ${tab}.bar.cur ${tab}.bar.all -side left -pady 2 -ipady 2 -ipadx 2
+     pack ${tab}.bar -side top -fill x -padx 5 -pady 5
+
+      frame ${tab}.info -relief flat
+         text ${tab}.info.text -relief sunken -bd 1 -yscrollcommand "${tab}.info.scrolly set"  -xscrollcommand "${tab}.info.scrollx set" \
+           -width 1 -height 1 -bg $GDefs(ColorLight) -wrap none
+         scrollbar ${tab}.info.scrolly -relief sunken -command "${tab}.info.text yview" -bd 1 -width 10
+         scrollbar ${tab}.info.scrollx -relief sunken -command "${tab}.info.text xview" -bd 1 -width 10 -orient horizontal
+
+         pack ${tab}.info.scrollx -side bottom -fill x -anchor s
+         pack ${tab}.info.text -side left -expand true -fill both
+         pack ${tab}.info.scrolly -side left -fill y
+      pack ${tab}.info -side top -fill both -expand true -padx 5 -pady 5
+
+      set tab [TabFrame::Add .nowcasterinfo.tab 1 [lindex $Lbl(Elem) $GDefs(Lang)] True]
+      frame ${tab}.bar -relief flat
+         radiobutton ${tab}.bar.cur -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text [lindex $Lbl(Current) $GDefs(Lang)] -variable NowCaster::Obs::Data(InfoAll) -value False -selectcolor $GDefs(ColorLight) \
+            -command { NowCaster::Obs::Info $NowCaster::Obs::Data(InfoObs) $NowCaster::Obs::Data(InfoId) $NowCaster::Obs::Data(InfoTag) $NowCaster::Obs::Data(InfoAll) }
+         radiobutton ${tab}.bar.all -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text [lindex $Lbl(All) $GDefs(Lang)] -variable NowCaster::Obs::Data(InfoAll) -value True -selectcolor $GDefs(ColorLight) \
+            -command { NowCaster::Obs::Info $NowCaster::Obs::Data(InfoObs) $NowCaster::Obs::Data(InfoId) $NowCaster::Obs::Data(InfoTag) $NowCaster::Obs::Data(InfoAll) }
+         pack ${tab}.bar.cur ${tab}.bar.all -side left -pady 2 -ipady 2 -ipadx 2
+     pack ${tab}.bar -side top -fill x -padx 5 -pady 5
+      frame ${tab}.info -relief flat
+         text ${tab}.info.text -relief sunken -bd 1 -yscrollcommand "${tab}.info.scrolly set"  -xscrollcommand "${tab}.info.scrollx set" \
+           -width 1 -height 1 -bg $GDefs(ColorLight) -wrap none
+         scrollbar ${tab}.info.scrolly -relief sunken -command "${tab}.info.text yview" -bd 1 -width 10
+         scrollbar ${tab}.info.scrollx -relief sunken -command "${tab}.info.text xview" -bd 1 -width 10 -orient horizontal
+
+         pack ${tab}.info.scrollx -side bottom -fill x -anchor s
+         pack ${tab}.info.text -side left -expand true -fill both
+         pack ${tab}.info.scrolly -side left -fill y
+      pack ${tab}.info -side top -fill both -expand true -padx 5 -pady 5
+
+      set tab [TabFrame::Add .nowcasterinfo.tab 1 [lindex $Lbl(Tephi) $GDefs(Lang)] True]
+      glcanvas ${tab}.glcanvas -width 0 -height 0 -bg white -relief sunken -bd 1 -highlightthickness 0
+      pack ${tab}.glcanvas -fill both -expand true -padx 5 -pady 5
+
+      ${tab}.glcanvas create graph -x 0 -y 0 -width 1 -height 1 -anchor nw -xlegend 5 -ylegend 5 -command "gr" -legend True \
+         -fg black -bg gray75 -fill white -tags "TEPHI" -font XFont12 -title "" -type TEPHI -tag TEPHI
+
+      bind ${tab}.glcanvas <Configure> "update idletasks; ${tab}.glcanvas itemconfigure TEPHI -width \[winfo width ${tab}.glcanvas\] -height \[winfo height ${tab}.glcanvas\];"
+      pack .nowcasterinfo.tab -side top -fill both -expand true -padx 5 -pady 5
+
+      #----- Creation des unite de l'echelle
+
+      if { ![graphaxis is TEPHIAXIST] } {
+         graphaxis create TEPHIAXIST
+         graphaxis create TEPHIAXISTH
+         graphaxis create TEPHIAXISP
+         graphaxis create TEPHIAXISMIX
+
+         graphaxis configure TEPHIAXIST  -font TEPHIFONT -color black -gridcolor black -gridwidth 1 -position LL -width 1 -unit T \
+            -min -70 -max 72 -increment 10 -highlightwidth 2 -highlight { 0 }
+         graphaxis configure TEPHIAXISP  -font TEPHIFONT -color black -gridcolor black -gridwidth 1 -position LL -width 1 -unit P \
+            -min 1050 -max 10  -increment 50  -intervals { 1050 1000 950 900 850 800 750 700 650 600 550 500 450 400 350 300 250 200 150 100 50 40 30 20 } \
+            -highlightwidth 2 -highlight { 1000 850 700 500 250 }
+         graphaxis configure TEPHIAXISTH -font TEPHIFONT -color black -gridcolor black -gridwidth 1  -position LL -width 1 -unit TH \
+            -min 220 -max 520 -increment 10 -format INTEGER -type LN -highlightwidth 2 -highlight { 300 }
+         graphaxis configure TEPHIAXISMIX -font TEPHIFONT -color black -gridcolor gray75 -gridwidth 1 -position LL -width 2 -unit MIX \
+         -min 0.02 -max 50 -increment 10 -format FIT -intervals { 0.02 0.05 0.15 0.3 0.6 1.0 1.5 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 \
+            12.0 14.0 16.0 18.0 20.0 25.0 30.0 35.0 40.0 50.0 } -labels { 0.02 0.05 0.15 0.3 0.6 1 1.5 2 3 4 5 6 7 8 9 10 \
+            12 14 16 18 20 25 30 35 40 50 }
+      }
+
+      TabFrame::Select .nowcasterinfo.tab 0
+    }
+}
+
+proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
    global GDefs
    variable Data
    variable Lbl
 
-   if { [metobs is $Obs] } {
-      set text [Text::Create .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs" "" 80 20]
-      $text delete 0.0 end
+    if { [metobs is $Obs] } {
+       NowCaster::Obs::InfoWindow "$Obs (Station:$Id)"
 
-      if { ![winfo exists .nowcasterinfo.cmd] } {
-         frame .nowcasterinfo.cmd -relief raised -bd 1
-            radiobutton .nowcasterinfo.cmd.on -text [lindex $Lbl(Report) $GDefs(Lang)] -variable NowCaster::Obs::Data(Report) -value True \
-               -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command "NowCaster::Obs::Info $Obs $Id $Tag"
-            radiobutton .nowcasterinfo.cmd.off -text [lindex $Lbl(Elem) $GDefs(Lang)] -variable NowCaster::Obs::Data(Report) -value False \
-               -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command "NowCaster::Obs::Info $Obs $Id $Tag"
-            pack .nowcasterinfo.cmd.on .nowcasterinfo.cmd.off  -side left -fill x -expand True
-         pack .nowcasterinfo.cmd -side top -fill x
+      set datev [metobs define $Obs -VALID]
+
+      if { $All } {
+         set dates [metobs define $Obs -DATE $Tag]
+      } else {
+         set dates $datev
       }
-
-      $text insert 0.0 "Station : $Id\n"
 
       #----- Per report
-      if { $Data(Report) } {
-         foreach date [metobs define $Obs -DATE $Tag] {
-            $text insert end "\n[clock format $date  -format "%Y%m%d %H:%M" -gmt true]\n"
-            foreach report [metobs define $Obs -REPORT $Tag $date] {
-               $text insert end "---------------------------------------------------------------\n"
-               foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
-                  $text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
-               }
-               $text insert end "\n"
-#               metreport free $report
+      .nowcasterinfo.tab.frame0.info.text delete 0.0 end
+      foreach date $dates {
+         .nowcasterinfo.tab.frame0.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true]\n"
+         foreach report [metobs define $Obs -REPORT $Tag $date] {
+            .nowcasterinfo.tab.frame0.info.text insert end "---------------------------------------------------------------\n"
+            foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
+               .nowcasterinfo.tab.frame0.info.text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
+            }
+#         metreport free $report
+         }
+         .nowcasterinfo.tab.frame0.info.text insert end "\n"
+      }
+
+      #----- Per element
+      .nowcasterinfo.tab.frame1.info.text delete 0.0 end
+      set elems [metobs define $Obs -ELEMENT $Tag]
+      foreach elem $elems {
+         set info [metobs table -desc $elem]
+         .nowcasterinfo.tab.frame1.info.text insert end  "[format %06i $elem] [lindex $info 0] ([lindex $info 1])\n"
+         .nowcasterinfo.tab.frame1.info.text insert end "---------------------------------------------------------------\n"
+         foreach date $dates {
+            if  { [set val [metobs define $Obs -ELEMENT $Tag $elem $date]]!="" } {
+               .nowcasterinfo.tab.frame1.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] $val\n"
             }
          }
-      } else {
-         #----- Per element
-         set elems [metobs define $Obs -ELEMENT $Tag]
-         foreach elem $elems {
-            set info [metobs table -desc $elem]
-            $text insert end  "\n[format %06i $elem] [lindex $info 0] ([lindex $info 1])\n"
-            foreach date [metobs define $Obs -DATE $Tag] {
-               if  { [set val [metobs define $Obs -ELEMENT $Tag $elem $date]]!="" } {
-                  $text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] $val\n"
-               }
+         .nowcasterinfo.tab.frame1.info.text insert end  "\n"
+      }
+
+      #----- Tephi
+
+      vector free TEPHIPROF
+      vector create TEPHIPROF
+      vector dim TEPHIPROF { PRES TEMP WET DEW  }
+      vector stats TEPHIPROF -nodata -999.0
+
+      foreach report [metobs define $Obs -REPORT $Tag $datev] {
+         foreach pres [metreport define $report -ELEMENT 007004] temp [metreport define $report -ELEMENT 012001] dew [metreport define $report -ELEMENT 012192] {
+            if { $pres!=-999.0 } {
+               vector append TEPHIPROF [list [expr $pres/100.0] [expr $temp!=-999?($temp-273.15):$temp] -999.0 [expr $temp!=-999?($temp-$dew-273.15):-999]]
             }
          }
       }
+      vector sort TEPHIPROF PRES
+
+      vector free TEPHIWIND
+      vector create TEPHIWIND
+      vector dim TEPHIWIND { PRES SPD DIR  }
+      foreach report [metobs define $Obs -REPORT $Tag $datev] {
+         foreach pres [metreport define $report -ELEMENT 007004] spd [metreport define $report -ELEMENT 011002] dir [metreport define $report -ELEMENT 011001] {
+            if { $pres!=-999 && $spd!=-999 && $dir!=-999 } {
+               vector append TEPHIWIND [list [expr $pres/100.0] [expr $spd*1.94384617179] $dir]
+            }
+         }
+      }
+
+      if { ![graphitem is TEPHIITEM] } {
+         graphitem create TEPHIITEM
+      }
+      graphitem configure TEPHIITEM -paxis TEPHIAXISP -taxis TEPHIAXIST -thaxis TEPHIAXISTH -mixaxis TEPHIAXISMIX \
+         -pressure TEPHIPROF.PRES -drybulb TEPHIPROF.TEMP -wetbulb TEPHIPROF.WET -dewpoint TEPHIPROF.DEW -windpres TEPHIWIND.PRES \
+         -speed TEPHIWIND.SPD -dir TEPHIWIND.DIR \
+         -desc "Station $Id" -type LINE -width 2 -outline blue -value RELATIVEHUMIDITY -font TEPHIFONT -anchor w -size 15
+
+      .nowcasterinfo.tab.frame2.glcanvas itemconfigure TEPHI -item { TEPHIITEM }
    }
 }
 
@@ -1102,7 +1233,7 @@ proc NowCaster::Obs::Find { Obs { Id "" } } {
       set Data(InfoObs) $Obs
       set Data(InfoId)  $Data(Id)
       set Data(InfoTag) $Data(Id)
-      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag)
+      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag) $Data(InfoAll)
    }
 }
 
@@ -1138,7 +1269,7 @@ proc NowCaster::Obs::DrawInit  { Frame VP } {
       set Data(InfoTag) ""
       set Data(InfoObs) ""
    }
-   NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag)
+   NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag) $Data(InfoAll)
 }
 
 proc NowCaster::Obs::Draw      { Frame VP } {
