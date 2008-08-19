@@ -154,15 +154,20 @@ proc Bulletin::Draw { Draw Zoom } {
 
    set ok [catch {
       foreach coord $text {
-          set da [string index $coord 0]
-          set la [Convert::Minute2Decimal "[string range $coord 1 2] [string range $coord 3 4]"]
+         scan "$coord" "%1s%d%1s%d" da la do lo
+
+         set lad [expr $la / 100]
+         set lam [expr $la - $lad * 100]
+         set la [Convert::Minute2Decimal "$lad $lam"]
 
          if { $da=="S" } {
             set la [expr -$la]
          }
 
-         set do [string index $coord 5]
-         set lo [Convert::Minute2Decimal "[string range $coord 6 8] [string range $coord 9 10]"]
+         set lod [expr $lo / 100]
+         set lom [expr $lo - $lod * 100]
+         set lo [Convert::Minute2Decimal "$lod $lom"]
+
          if { $do=="W" } {
             set lo [expr -$lo]
          }
