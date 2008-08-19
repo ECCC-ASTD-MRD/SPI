@@ -235,6 +235,8 @@ proc Obs::InfoGraph { Obs Tag Elem } {
             vector append PAGEOBSGRAPHDATA.Y [incr i]
          }
       }
+      vector sort PAGEOBSGRAPHDATA Y
+
       graphaxis configure PAGEOBSGRAPHAXISX -min [vector stats PAGEOBSGRAPHDATA.X -min] -max [vector stats PAGEOBSGRAPHDATA.X -max] \
          -intervals "[vector stats PAGEOBSGRAPHDATA.X -min] [vector stats PAGEOBSGRAPHDATA.X -max]" -format NONE
       graphaxis configure PAGEOBSGRAPHAXISY -min [vector get PAGEOBSGRAPHDATA.Y 0] -max [vector get PAGEOBSGRAPHDATA.Y end] \
@@ -247,6 +249,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
       foreach item $items {
          vector append PAGEOBSGRAPHDATA $item
       }
+
       graphaxis configure PAGEOBSGRAPHAXISX -min [vector stats PAGEOBSGRAPHDATA.X -min] -max [vector stats PAGEOBSGRAPHDATA.X -max] \
          -intervals "[vector stats PAGEOBSGRAPHDATA.X -min] [vector stats PAGEOBSGRAPHDATA.X -max]" -format T-HH
       graphaxis configure PAGEOBSGRAPHAXISY -min [vector stats PAGEOBSGRAPHDATA.Y -min] -max [vector stats PAGEOBSGRAPHDATA.Y -max] \
