@@ -175,7 +175,7 @@ proc Bulletin::Draw { Draw Zoom } {
    } error]
 
    if { $ok } {
-      Dialog::CreateErrorListing .bulletin [lindex $Msg(Coords) $GDefs(Lang)]\n\n$error [.bulletin.mid.t get sel.first sel.last] $GDefs(Lang)
+      Dialog::CreateErrorListing .bulletin [lindex $Msg(Coords) $GDefs(Lang)] [.bulletin.mid.t get sel.first sel.last] $GDefs(Lang)
    } else {
       Drawing::Window
       set Drawing::Data(GeoRef) 1
@@ -183,9 +183,8 @@ proc Bulletin::Draw { Draw Zoom } {
       set Drawing::Current(Width) 2
       set Drawing::Current(Line) 0
       set Drawing::Current(Pattern) @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm
-      set Drawing::Current(Outline) #000000
+      set Drawing::Current(Fill) #FFFFFF
       Drawing::ItemAdd $Page::Data(Frame) $Draw $coords
-      SPI::ToolMode SPI Zoom
 
       if { $Zoom } {
          ProjCam::CloseUp $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) 0.10
