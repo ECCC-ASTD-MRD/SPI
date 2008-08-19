@@ -2914,6 +2914,10 @@ proc Viewport::UpdateData { Frame { VP { } } } {
       set VP [Page::Registered $Frame Viewport]
    }
 
+   if { ![winfo exists $Frame.page.canvas] } {
+      return
+   }
+
    #----- Faire un update de tous les viewports
 
    foreach vp $VP {
@@ -2926,7 +2930,7 @@ proc Viewport::UpdateData { Frame { VP { } } } {
             $Frame.page.canvas itemconf $vp -data {}
          }
       } else {
-        $Frame.page.canvas itemconf $vp -data [FieldCalc::Macro $vp $vp $Data(Data$vp)]
+         $Frame.page.canvas itemconf $vp -data [FieldCalc::Macro $vp $vp $Data(Data$vp)]
       }
    }
    Miniport::UpdateData $Frame $VP
