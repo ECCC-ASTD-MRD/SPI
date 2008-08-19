@@ -48,7 +48,7 @@ PROJ_PATH = $(LIB_PATH)/proj-4.4.9
 GRIB_PATH = $(LIB_PATH)/grib_api-0.9.31
 
 # BUFR libecbufr path
-BUFR_PATH=  $(LIB_PATH)/libecbufr-0.7
+BUFR_PATH=  $(LIB_PATH)/libecbufr-0.7.3
 
 # Geographical database localisation
 GDB_PATH = /data/cmoe/afsr005/DBGeo/

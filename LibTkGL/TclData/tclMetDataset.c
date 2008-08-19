@@ -191,11 +191,12 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Invalid dataset \"",Tcl_GetString(Objv[2]),"\"",(char*)NULL);
             return(TCL_ERROR);
          }
-         if (bufr_load_dataset(set,Tcl_GetString(Objv[3]))<=0) {
-            if (!(file=fopen(Tcl_GetString(Objv[3]),"r"))) {
-               Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to open file \"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);
-               return(TCL_ERROR);
-            }
+         if (!(file=fopen(Tcl_GetString(Objv[3]),"r"))) {
+            Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to open file \"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         if (bufr_read_dataset_dump(set,file)<=0) {
             if (bufr_read_message(file,&msg)<=0) {
                Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to read message from file \"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);
                return(TCL_ERROR);
@@ -231,7 +232,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          } else if (strcmp(Tcl_GetString(Objv[4]),"BUFR")==0) {
             co=0;
             if (Objc==6) {
-               Tcl_GetIntFromObj(Interp,Objv[5],&co);
+               Tcl_GetBooleanFromObj(Interp,Objv[5],&co);
             }
             if (!(file=fopen(Tcl_GetString(Objv[3]),"w"))) {
                Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to open file for writing\"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);
