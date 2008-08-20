@@ -2337,7 +2337,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    TMetElem     *elem;
    TMetElemData *data;
    TDataSpec    *spec;
-   EntryTableB  *eb,*heb;
+   EntryTableB  *eb;
    Vect3d        pix;
    char          buf[128];
    double        z,val,dir,dx,dy,k;
@@ -2377,9 +2377,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
   if (Obs->Model->Topo && strlen(Obs->Model->Topo)) {
       glEnable(GL_DEPTH_TEST);
-      heb=MetObs_BUFRFindTableDesc(Obs->Model->Topo);
+      eb=MetObs_BUFRFindTableDesc(Obs->Model->Topo);
    } else {
-      heb=NULL;
+      eb=NULL;
    }
 
    /*For all of the sations*/
@@ -2459,7 +2459,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            }
 
                            /*Get height*/
-                           if (heb && (k=TMetElem_Height(data,heb->descriptor,ne,v,0))!=-999.0) {
+                           if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
                               z=k;
                            } else {
                               z=Data_Level2Meter(loc->Level,loc->Coord.elev);
@@ -2588,13 +2588,13 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               break;
 
                            /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
-                           if (!heb || Proj->Params->Scale==1.0) {
+                           if (!eb || Proj->Params->Scale==1.0) {
                               break;
                            }
                         }
                      }
                      /*Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway*/
-                     if (ne>=0 && (!heb || Proj->Params->Scale==1.0)) {
+                     if (ne>=0 && (!eb || Proj->Params->Scale==1.0)) {
                         break;
                      }
                   }
