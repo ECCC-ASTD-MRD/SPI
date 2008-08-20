@@ -443,7 +443,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                c=BUFR_GET_MONTH(set);
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(c));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               TclY_Get0IntFromObj(Interp,Objv[++i],&c);
                BUFR_SET_MONTH(set,c);
             }
             break;
@@ -453,7 +453,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                c=BUFR_GET_DAY(set);
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(c));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               TclY_Get0IntFromObj(Interp,Objv[++i],&c);
                BUFR_SET_DAY(set,c);
             }
             break;
@@ -463,7 +463,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                c=BUFR_GET_HOUR(set);
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(c));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               TclY_Get0IntFromObj(Interp,Objv[++i],&c);
                BUFR_SET_HOUR(set,c);
             }
             break;
@@ -473,7 +473,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                c=BUFR_GET_MINUTE(set);
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(c));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               TclY_Get0IntFromObj(Interp,Objv[++i],&c);
                 BUFR_SET_MINUTE(set,c);
             }
             break;
@@ -483,7 +483,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                c=BUFR_GET_SECOND(set);
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(c));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               TclY_Get0IntFromObj(Interp,Objv[++i],&c);
                BUFR_SET_SECOND(set,c);
             }
             break;
