@@ -653,8 +653,8 @@ proc Viewport::ConfigSet { Frame } {
 
    if { [info exists Miniport::Data(Mini$Frame)] } {
       projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
-         -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) \
-         -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text)-mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+         -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
+         -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
      $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
