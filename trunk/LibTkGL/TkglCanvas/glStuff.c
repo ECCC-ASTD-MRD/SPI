@@ -1669,6 +1669,91 @@ void glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Thet
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <glStencilCheck>
+ * Creation : Aout 2008 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Verifier une region rectangulaire du stencil buffer pour l'existence
+ *            d'une valeur, en pratique, on verifier un masque.
+ *
+ * Parametres :
+ *  <X>       : Coordonnee X
+ *  <Y>       : Coordonnee Y
+ *  <Width>   : Largeur
+ *  <Height>  : Hauteur
+ *  <Ref>     : Valeur de reference a verifier
+ *
+ * Retour:
+ *  <Exist>   : Trouve ou non
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+GLuint glStencilMaskCheck(int X,int Y,int Width,int Height,int Ref) {
+
+   GLuint i,s[2][1024],ds;
+
+   /*Set length in pixel and max it to pixel buffer size (1024)*/
+   ds=Width>1024?1024:Width;
+
+   /*Clear pixel buffer (2 scanlines, top and botton) and get the stencil buffer values of thoses*/
+   memset(s,0x0,(ds<<1)*sizeof(GLuint));
+   glReadPixels(X,Y,ds,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s[0]);
+   glReadPixels(X,Y+Height,ds,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s[1]);
+
+   /*Check if any pixel is already written to in the two scanlines*/
+   for(i=0;i<ds;i++) {
+      if ((s[0][i]&Ref) || (s[1][i]&Ref)) {
+         ds=0;
+         break;
+      }
+   }
+   return(!ds);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <glStencilMaskQuad>
+ * Creation : Aout 2008 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Appliquer une region rectangulaire dans le stencil buffer.
+ *
+ * Parametres :
+ *  <X>       : Coordonnee X
+ *  <Y>       : Coordonnee Y
+ *  <Width>   : Largeur
+ *  <Height>  : Hauteur
+ *  <Theta>   : Angle
+ *  <DX>      : Buffer en X
+ *  <DY>      : Buffer en Y
+ *
+ * Retour:
+ *  <Exist>   : Trouve ou non
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void glStencilMaskQuad(int X,int Y,int Width,int Height,int Theta,int DX,int DY) {
+
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
+
+   glTranslatef(X,Y,0.0);
+   glRotatef(Theta,0.0,0.0,1.0);
+
+   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+   glBegin(GL_QUADS);
+      glVertex2i(-DX,-DY);
+      glVertex2i(Width+DX,-DY);
+      glVertex2i(Width+DX,Height+DY);
+      glVertex2i(-DX,Height+DY);
+   glEnd();
+   glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+
+   glPopMatrix();
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <glTextureFit>
  * Creation : Juin 2002 - J.P. Gauthier - CMC/CMOE
  *

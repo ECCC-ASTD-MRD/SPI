@@ -1730,20 +1730,20 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   GDB_GeoRender(Interp,Proj,tile->Admin,ABS(GDB->Params.Admin),Proj->Params->VP->ColorAdmin,0);
                }
 
-               if (GDB->Params.City && tile->TCity) {
-                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->Params->VP->ColorCity,6);
-               }
-
-               if (GDB->Params.Place && tile->TPlace) {
-                  GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->Params->VP->ColorPlace,0);
-               }
-
                if (GDB->Params.Road && tile->Road) {
                   GDB_GeoRender(Interp,Proj,tile->Road,ABS(GDB->Params.Road),Proj->Params->VP->ColorRoad,0);
                }
 
                if (GDB->Params.Rail && tile->Rail) {
                   GDB_GeoRender(Interp,Proj,tile->Rail,ABS(GDB->Params.Rail),Proj->Params->VP->ColorRail,0);
+               }
+
+               if (GDB->Params.City && tile->TCity) {
+                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->Params->VP->ColorCity,6);
+               }
+
+               if (GDB->Params.Place && tile->TPlace) {
+                  GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->Params->VP->ColorPlace,0);
                }
             }
 
@@ -1931,14 +1931,25 @@ void GDB_TxtGet(int Type,float Lat,float Lon,char *Txt) {
 */
 void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point) {
 
-   Vect3d pos,pix;
-   int len;
+   Tk_FontMetrics tkm;
+   Vect3d         pos,pix;
+   int            len,dx,dy;
+
    if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->Params->VP->tkfont || GLRender->Resolution>1)
       return;
 
-   glColor3us(Color->red,Color->green,Color->blue);
+   Tk_GetFontMetrics(Proj->Params->VP->tkfont,&tkm);
+   dy=tkm.ascent;
+
+   if (Interp) {
+      Tk_CanvasPsColor(Interp,Proj->Params->VP->canvas,Color);
+   } else {
+      glColor3us(Color->red,Color->green,Color->blue);
+   }
+
    glFontUse(Tk_Display(Tk_CanvasTkwin(Proj->Params->VP->canvas)),Proj->Params->VP->tkfont);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+   glStencilFunc(GL_ALWAYS,0x81,0x81);
 
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
@@ -1955,16 +1966,28 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
 
       len=strlen(Txt->String);
 
-      if (len && (Proj->PixDist<500 || isupper(Txt->String[strlen(Txt->String)-2]))) {
+      if (len>1 && (Proj->PixDist<500 || isupper(Txt->String[strlen(Txt->String)-2]))) {
          if (Proj->Type->Project(Proj->Params,&Txt->Co,&pos,1)) {
-            gluProject(pos[0],pos[1],pos[2],
-                  Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,
-                  &pix[0],&pix[1],&pix[2]);
+            gluProject(pos[0],pos[1],pos[2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&pix[0],&pix[1],&pix[2]);
 
-            if (Point) {
-               glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0],pix[1],0);
+            pix[0]+=Point;
+            pix[1]+=Point;
+
+            /*Get length in pixel and max it to pixel buffer size (1024)*/
+            dx=Tk_TextWidth(Proj->Params->VP->tkfont,Txt->String,len);
+
+            /*If clear, print the label*/
+            if (!glStencilMaskCheck(pix[0],pix[1],dx,dy,0x80)) {
+               if (Point) {
+                  glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
+               }
+               glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0],pix[1],0);
+
+               /*Write the label coverage to the stencil buffer*/
+               glStencilMask(0x80);
+               glStencilMaskQuad(pix[0],pix[1],dx,dy,0,10,10);
+               glStencilMask(0xff);
             }
-            glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0]+Point,pix[1]+Point,0);
          }
       }
       Txt=Txt->Next;
@@ -1972,6 +1995,8 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
 
    Projection_Clip(Proj);
 
+   glStencilFunc(GL_ALWAYS,0x01,0x01);
+   glMatrixMode(GL_PROJECTION);
    glPopMatrix();
    glMatrixMode(GL_MODELVIEW);
    glPopMatrix();
