@@ -109,8 +109,8 @@ typedef struct GDB_Tile {
    GDB_Box       Box;
 
    struct GDB_Map  Topo;
-   struct GDB_Geo *Coast,*FCoast;
-   struct GDB_Geo *Lake,*FLake;
+   struct GDB_Geo *Coast,*FCoast,*FCoastIn;
+   struct GDB_Geo *Lake,*FLake,*FLakeIn;
    struct GDB_Geo *River;
    struct GDB_Geo *Polit;
    struct GDB_Geo *Admin;

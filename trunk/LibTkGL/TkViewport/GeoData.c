@@ -325,6 +325,8 @@ int GDB_Init(GDB_Data *GDB) {
          GDB->Tile[x][y].Lake=NULL;
          GDB->Tile[x][y].FCoast=NULL;
          GDB->Tile[x][y].FLake=NULL;
+         GDB->Tile[x][y].FCoastIn=NULL;
+         GDB->Tile[x][y].FLakeIn=NULL;
          GDB->Tile[x][y].River=NULL;
          GDB->Tile[x][y].Polit=NULL;
          GDB->Tile[x][y].Admin=NULL;
@@ -640,6 +642,12 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
          glDeleteLists(Tile->FLand1,1);
          Tile->FLand1=0;
       }
+      if (Tile->FLand2) {
+         GDB_GeoFree(Tile->FCoastIn);
+         Tile->FCoastIn=NULL;
+         glDeleteLists(Tile->FLand2,1);
+         Tile->FLand2=0;
+      }
 
       if (Tile->Lake) {
          GDB_GeoFree(Tile->Lake);
@@ -650,6 +658,12 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
          Tile->FLake=NULL;
          glDeleteLists(Tile->FWater1,1);
          Tile->FWater1=0;
+      }
+      if (Tile->FWater2) {
+         GDB_GeoFree(Tile->FLakeIn);
+         Tile->FLakeIn=NULL;
+         glDeleteLists(Tile->FWater2,1);
+         Tile->FWater2=0;
       }
 
       if (Tile->River) {
@@ -719,13 +733,17 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
                                  break;
             case GDB_TYPE_TEXT : if (tile->Topo.Tex!=-1) { glDeleteTextures(1,&tile->Topo.Tex); tile->Topo.Tex=-1; }
                                  break;
-            case GDB_TYPE_COAST: if (tile->Coast) { GDB_GeoFree(tile->Coast); tile->Coast=NULL; }
-                                 if (tile->FCoast) { GDB_GeoFree(tile->FCoast); tile->FCoast=NULL; }
-                                 if (tile->FLand1) { glDeleteLists(tile->FLand1,1); tile->FLand1=0; }
+            case GDB_TYPE_COAST: if (tile->Coast)    { GDB_GeoFree(tile->Coast); tile->Coast=NULL; }
+                                 if (tile->FCoast)   { GDB_GeoFree(tile->FCoast); tile->FCoast=NULL; }
+                                 if (tile->FCoastIn) { GDB_GeoFree(tile->FCoastIn); tile->FCoastIn=NULL; }
+                                 if (tile->FLand1)   { glDeleteLists(tile->FLand1,1); tile->FLand1=0; }
+                                 if (tile->FLand2)   { glDeleteLists(tile->FLand2,1); tile->FLand2=0; }
                                  break;
-            case GDB_TYPE_LAKE : if (tile->Lake) { GDB_GeoFree(tile->Lake); tile->Lake=NULL; }
-                                 if (tile->FLake) { GDB_GeoFree(tile->FLake); tile->FLake=NULL; }
+            case GDB_TYPE_LAKE : if (tile->Lake)    { GDB_GeoFree(tile->Lake); tile->Lake=NULL; }
+                                 if (tile->FLake)   { GDB_GeoFree(tile->FLake); tile->FLake=NULL; }
+                                 if (tile->FLakeIn) { GDB_GeoFree(tile->FLakeIn); tile->FLakeIn=NULL; }
                                  if (tile->FWater1) { glDeleteLists(tile->FWater1,1); tile->FWater1=0; }
+                                 if (tile->FWater2) { glDeleteLists(tile->FWater2,1); tile->FWater2=0; }
                                  break;
             case GDB_TYPE_RIVER: if (tile->River) { GDB_GeoFree(tile->River); tile->River=NULL; }
                                  break;
@@ -873,8 +891,10 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
             GDB_GeoProj(GeoPtr,Proj);
          }
          switch(Data) {
-            case GDB_FIL_LAND: tile->FCoast=GeoPtr; break;
-            case GDB_FIL_LAKE: tile->FLake=GeoPtr; break;
+            case GDB_FIL_LAND:  tile->FCoast=GeoPtr; break;
+            case GDB_FIL_LAKE:  tile->FLake=GeoPtr; break;
+            case GDB_FIL_LAND2: tile->FCoastIn=GeoPtr; break;
+            case GDB_FIL_LAKE2: tile->FLakeIn=GeoPtr; break;
          }
          break;
 
@@ -1577,8 +1597,12 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
    if (GDB->Params.Mask || Proj->Params->VP->ColorFCoast || Proj->Params->VP->ColorFLake) {
       if (!Tile->FCoast)
          GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_FIL,GDB_FIL_LAND);
+      if (!Tile->FCoastIn)
+         GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_FIL,GDB_FIL_LAND2);
       if (!Tile->FLake)
          GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_FIL,GDB_FIL_LAKE);
+      if (!Tile->FLakeIn)
+         GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_FIL,GDB_FIL_LAKE2);
    }
 
    if (GDB->Params.Coast && !Tile->Coast)
@@ -1706,6 +1730,14 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                if (Proj->Params->VP->ColorFLake && tile->FLake) {
                  if (!tile->FWater1) tile->FWater1=GDB_GeoTess(NULL,tile->FLake);
                   GDB_FillRender(Interp,Proj,tile->FWater1,tile->Box,tile->FLake,Proj->Params->VP->ColorFLake,0xff);
+               }
+               if (Proj->Params->VP->ColorFCoast && tile->FCoastIn) {
+                  if (!tile->FLand2) tile->FLand2=GDB_GeoTess(NULL,tile->FCoastIn);
+                  GDB_FillRender(Interp,Proj,tile->FLand2,tile->Box,tile->FCoastIn,Proj->Params->VP->ColorFCoast,0xff);
+               }
+               if (Proj->Params->VP->ColorFLake && tile->FLakeIn) {
+                 if (!tile->FWater2) tile->FWater2=GDB_GeoTess(NULL,tile->FLakeIn);
+                  GDB_FillRender(Interp,Proj,tile->FWater2,tile->Box,tile->FLakeIn,Proj->Params->VP->ColorFLake,0xff);
                }
             }
 
