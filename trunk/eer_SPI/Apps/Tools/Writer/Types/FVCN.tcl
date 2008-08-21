@@ -266,7 +266,7 @@ proc Writer::FVCN::Layout { Frame } {
    set Viewport::Map(Lake)        1           ;#Lacs
    set Viewport::Map(River)       0           ;#Rivieres
    set Viewport::Map(Polit)       1           ;#Bordures politiques
-   set Viewport::Map(Admin)       0           ;#Bordures politiques internes
+   set Viewport::Map(Admin)       1           ;#Bordures politiques internes
    set Viewport::Map(City)        0           ;#Villes
    set Viewport::Map(Road)        0           ;#Routes
    set Viewport::Map(Rail)        0           ;#Chemin de fer
