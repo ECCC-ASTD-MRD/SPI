@@ -73,6 +73,7 @@ typedef struct ViewportItem  {
    XColor *ColorPolit;            /*Couleur des delimitations politiques*/
    XColor *ColorAdmin;            /*Couleur des delimitations politiques internes*/
    XColor *ColorCity;             /*Couleur des villes*/
+   XColor *ColorPlace;            /*Couleur des delimitations politiques*/
    XColor *ColorRoad;             /*Couleur des routes*/
    XColor *ColorRail;             /*Couleur des chemin de fer*/
    XColor *ColorUtil;             /*Couleur des donnees utilitaires*/

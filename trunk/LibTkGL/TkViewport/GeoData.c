@@ -61,7 +61,7 @@ int          GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,in
 int          GDB_TileResolution(GDB_Data *GDB,double Dist);
 void         GDB_TxtGet(int Type,float Lat,float Lon,char *Txt);
 void         GDB_TxtFree(GDB_Txt *Txt);
-void         GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color);
+void         GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point);
 void         GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
 int          GDB_TileResolution(GDB_Data *GDB,double Dist);
 
@@ -305,8 +305,7 @@ int GDB_Init(GDB_Data *GDB) {
    GDB->Params.City=0;
    GDB->Params.Road=0;
    GDB->Params.Rail=0;
-   GDB->Params.Util=0;
-   GDB->Params.Canal=0;
+   GDB->Params.Place=0;
 
    GDB->Params.CoordLoc=0;
    GDB->Params.CoordDef=0.0;
@@ -319,7 +318,7 @@ int GDB_Init(GDB_Data *GDB) {
          GDB->Tile[x][y].Topo.Vr=NULL;
          GDB->Tile[x][y].Topo.Tex=-1;
 
-         GDB->Tile[x][y].TPolit=NULL;
+         GDB->Tile[x][y].TPlace=NULL;
          GDB->Tile[x][y].TCity=NULL;
 
          GDB->Tile[x][y].Coast=NULL;
@@ -330,11 +329,8 @@ int GDB_Init(GDB_Data *GDB) {
          GDB->Tile[x][y].Polit=NULL;
          GDB->Tile[x][y].Admin=NULL;
          GDB->Tile[x][y].Road=NULL;
-         GDB->Tile[x][y].City=NULL;
          GDB->Tile[x][y].Road=NULL;
          GDB->Tile[x][y].Rail=NULL;
-         GDB->Tile[x][y].Util=NULL;
-         GDB->Tile[x][y].Canal=NULL;
          GDB->Tile[x][y].Box.Nb=0;
          GDB->Tile[x][y].Res=0;
 
@@ -668,10 +664,6 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
          GDB_GeoFree(Tile->Admin);
          Tile->Admin=NULL;
       }
-      if (Tile->City) {
-         GDB_GeoFree(Tile->City);
-         Tile->City=NULL;
-      }
       if (Tile->Road) {
          GDB_GeoFree(Tile->Road);
          Tile->Road=NULL;
@@ -680,20 +672,12 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
          GDB_GeoFree(Tile->Rail);
          Tile->Rail=NULL;
       }
-      if (Tile->Util) {
-         GDB_GeoFree(Tile->Util);
-         Tile->Util=NULL;
-      }
-      if (Tile->Canal) {
-         GDB_GeoFree(Tile->Canal);
-         Tile->Canal=NULL;
-      }
 
       /*Donnees textuelles*/
 
-      if (Tile->TPolit) {
-         if (Tile->TPolit>(GDB_Txt*)0x1) GDB_TxtFree(Tile->TPolit);
-         Tile->TPolit=NULL;
+      if (Tile->TPlace) {
+         if (Tile->TPlace>(GDB_Txt*)0x1) GDB_TxtFree(Tile->TPlace);
+         Tile->TPlace=NULL;
       }
       if (Tile->TCity) {
          if (Tile->TCity>(GDB_Txt*)0x1) GDB_TxtFree(Tile->TCity);
@@ -746,19 +730,16 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
             case GDB_TYPE_RIVER: if (tile->River) { GDB_GeoFree(tile->River); tile->River=NULL; }
                                  break;
             case GDB_TYPE_POLIT: if (tile->Polit) { GDB_GeoFree(tile->Polit); tile->Polit=NULL; }
-                                 if (tile->TPolit) { if (tile->TPolit>(GDB_Txt*)0x1 )GDB_TxtFree(tile->TPolit); tile->TPolit=NULL; }
                                  break;
             case GDB_TYPE_ADMIN: if (tile->Admin) { GDB_GeoFree(tile->Admin); tile->Admin=NULL; }
                                  break;
-            case GDB_TYPE_CITY:  if (tile->City) { GDB_GeoFree(tile->City); tile->City=NULL; }
-                                 if (tile->TCity) { if (tile->TCity>(GDB_Txt*)0x1 )GDB_TxtFree(tile->TCity); tile->TCity=NULL; } break;
+            case GDB_TYPE_CITY:  if (tile->TCity) { if (tile->TCity>(GDB_Txt*)0x1 )GDB_TxtFree(tile->TCity); tile->TCity=NULL; }
+                                 break;
+            case GDB_TYPE_PLACE: if (tile->TPlace) { if (tile->TPlace>(GDB_Txt*)0x1 )GDB_TxtFree(tile->TPlace); tile->TPlace=NULL; }
+                                 break;
             case GDB_TYPE_ROAD:  if (tile->Road) { GDB_GeoFree(tile->Road); tile->Road=NULL; }
                                  break;
             case GDB_TYPE_RAIL:  if (tile->Rail) { GDB_GeoFree(tile->Rail); tile->Rail=NULL; }
-                                 break;
-            case GDB_TYPE_UTIL:  if (tile->Util) { GDB_GeoFree(tile->Util); tile->Util=NULL; }
-                                 break;
-            case GDB_TYPE_CANAL: if (tile->Canal) { GDB_GeoFree(tile->Canal); tile->Canal=NULL; }
                                  break;
          }
       }
@@ -847,8 +828,8 @@ unsigned int GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
  *   -On recupere les donnees en latlon et on les projete immediatement dans
  *    le referentiel de la projection courante.
  *
+ *----------------------------------------------------------------------------
 */
-
 int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 
    GDB_Tile *tile=(GDB_Tile*)Tile;
@@ -878,11 +859,8 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
             case GDB_LIN_RIVER: tile->River=GeoPtr; break;
             case GDB_LIN_POLIT: tile->Polit=GeoPtr; break;
             case GDB_LIN_ADMIN: tile->Admin=GeoPtr; break;
-            case GDB_LIN_CITY : tile->City=GeoPtr;  break;
             case GDB_LIN_ROAD : tile->Road=GeoPtr;  break;
             case GDB_LIN_RAIL : tile->Rail=GeoPtr;  break;
-            case GDB_LIN_UTIL : tile->Util=GeoPtr;  break;
-            case GDB_LIN_CANAL: tile->Canal=GeoPtr; break;
          }
          break;
 
@@ -902,9 +880,10 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 
       case GDB_TXT:
          gdb_limit(tile->Box.Co[0].lat,tile->Box.Co[0].lon,tile->Box.Co[2].lat,tile->Box.Co[2].lon);
-         gdb_text(tile->Res,Data,GDB_TxtGet);
+         gdb_text(tile->Res<16?16:tile->Res,Data,GDB_TxtGet);
          switch(Data) {
-            case GDB_TXT_POLIT: tile->TPolit=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
+            case GDB_TXT_POLIT: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
+            case GDB_TXT_AIRP: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
             case GDB_TXT_CITY : tile->TCity=TxtPtr?TxtPtr:(GDB_Txt*)0x1  ; break;
          }
          break;
@@ -1210,6 +1189,7 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
       glLineWidth(Width);
    }
 
+   glEnableClientState(GL_VERTEX_ARRAY);
    while (Geo) {
 
       if (Geo->Box.Nb>1) {
@@ -1231,6 +1211,7 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
       }
       Geo=Geo->Next;
    }
+   glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 /*----------------------------------------------------------------------------
@@ -1612,29 +1593,20 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
    if (GDB->Params.Polit && !Tile->Polit)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_POLIT);
 
-   if (GDB->Params.Polit<0 && !Tile->TPolit)
-      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_TXT,GDB_TXT_POLIT);
-
    if (GDB->Params.Admin && !Tile->Admin)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_ADMIN);
 
-   if (GDB->Params.City && !Tile->City)
-      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_CITY);
-
-   if (GDB->Params.City<0 && !Tile->TCity)
+   if (GDB->Params.City && !Tile->TCity)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_TXT,GDB_TXT_CITY);
+
+   if (GDB->Params.Place && !Tile->TPlace)
+      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_TXT,GDB_TXT_POLIT);
 
    if (GDB->Params.Road && !Tile->Road)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_ROAD);
 
    if (GDB->Params.Rail && !Tile->Rail)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_RAIL);
-
-   if (GDB->Params.Util && !Tile->Util)
-      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_UTIL);
-
-   if (GDB->Params.Canal && !Tile->Canal)
-      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_CANAL);
 
    if (GDB->Params.Topo && !GDB->Params.Bath && !Tile->Topo.Map)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_MAP,GDB_MAP_DEM);
@@ -1683,7 +1655,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
       return(0);
 
    res=GDB_TileResolution(GDB,Proj->Params->VP->Cam->Pix);
-   glEnableClientState(GL_VERTEX_ARRAY);
 
    for(x=0;x<GDB->DegX;x++) {
       for(y=0;y<GDB->DegY;y++) {
@@ -1755,20 +1726,16 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   GDB_GeoRender(Interp,Proj,tile->Polit,ABS(GDB->Params.Polit),Proj->Params->VP->ColorPolit,0);
                 }
 
-               if (GDB->Params.Polit<0 && tile->TPolit) {
-                  GDB_TxtRender(Interp,Proj,tile->TPolit,Proj->Params->VP->ColorPolit);
-               }
-
                if (GDB->Params.Admin && tile->Admin) {
                   GDB_GeoRender(Interp,Proj,tile->Admin,ABS(GDB->Params.Admin),Proj->Params->VP->ColorAdmin,0);
                }
 
-               if (GDB->Params.City && tile->City) {
-                  GDB_GeoRender(Interp,Proj,tile->City,ABS(GDB->Params.City),Proj->Params->VP->ColorCity,1);
-                  }
+               if (GDB->Params.City && tile->TCity) {
+                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->Params->VP->ColorCity,6);
+               }
 
-               if (GDB->Params.City<0 && tile->TCity) {
-                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->Params->VP->ColorCity);
+               if (GDB->Params.Place && tile->TPlace) {
+                  GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->Params->VP->ColorPlace,0);
                }
 
                if (GDB->Params.Road && tile->Road) {
@@ -1777,14 +1744,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
                if (GDB->Params.Rail && tile->Rail) {
                   GDB_GeoRender(Interp,Proj,tile->Rail,ABS(GDB->Params.Rail),Proj->Params->VP->ColorRail,0);
-               }
-
-               if (GDB->Params.Util && tile->Util) {
-                  GDB_GeoRender(Interp,Proj,tile->Util,ABS(GDB->Params.Util),Proj->Params->VP->ColorUtil,0);
-               }
-
-               if (GDB->Params.Canal && tile->Canal) {
-                  GDB_GeoRender(Interp,Proj,tile->Canal,ABS(GDB->Params.Canal),Proj->Params->VP->ColorCanal,0);
                }
             }
 
@@ -1816,7 +1775,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    glDisable(GL_COLOR_MATERIAL);
    glDisable(GL_LIGHTING);
    glDisable(GL_LIGHT0);
-   glDisableClientState(GL_VERTEX_ARRAY);
    return(ras);
 }
 
@@ -1971,15 +1929,16 @@ void GDB_TxtGet(int Type,float Lat,float Lon,char *Txt) {
  *
  *----------------------------------------------------------------------------
 */
-void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color) {
+void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point) {
 
    Vect3d pos,pix;
-
+   int len;
    if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->Params->VP->tkfont || GLRender->Resolution>1)
       return;
 
    glColor3us(Color->red,Color->green,Color->blue);
    glFontUse(Tk_Display(Tk_CanvasTkwin(Proj->Params->VP->canvas)),Proj->Params->VP->tkfont);
+   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
@@ -1994,12 +1953,19 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
 
    while (Txt) {
 
-      if (Proj->Type->Project(Proj->Params,&Txt->Co,&pos,1)) {
-         gluProject(pos[0],pos[1],pos[2],
-                 Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,
-                 &pix[0],&pix[1],&pix[2]);
+      len=strlen(Txt->String);
 
-         glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0],pix[1],0);
+      if (len && (Proj->PixDist<500 || isupper(Txt->String[strlen(Txt->String)-2]))) {
+         if (Proj->Type->Project(Proj->Params,&Txt->Co,&pos,1)) {
+            gluProject(pos[0],pos[1],pos[2],
+                  Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,
+                  &pix[0],&pix[1],&pix[2]);
+
+            if (Point) {
+               glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0],pix[1],0);
+            }
+            glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0]+Point,pix[1]+Point,0);
+         }
       }
       Txt=Txt->Next;
    }
