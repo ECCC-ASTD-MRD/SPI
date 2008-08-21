@@ -189,6 +189,76 @@ double Thermo_TD2RH(double P,double T,double TD) {
    return(100.0*Thermo_PT2R(P,TD)/Thermo_PT2R(P,T));
 }
 
+//  Thermo_TD2WB():   calculates wet bulb
+//         p(mb), t(deg C), td(deg C), tw(deg C)
+
+float Thermo_TD2WB(double P,double T,double TD) {
+
+   int    k;
+   double  tw, l_v, r_w, r_d;
+   double  fun, fun1;
+   double  eps = 0.01;
+
+//   if (P<=0.0 || P>P_MAX || T<T_MIN || T>T_MAX || TD<T_MIN || TD > T_MAX)
+//      return(MSNGV);
+
+   if (TD>T)
+      TD=T;
+
+   r_d = 0.001 * Thermo_PT2R(P,TD);
+   tw = T;
+   l_v = Thermo_LatentHeatVapor(tw);
+   r_w = 0.001 * Thermo_PT2R(P,tw);
+   fun = (r_w - r_d) * l_v / (cp_d + r_w * cv_d);
+   fun1 = 1.0 + l_v * l_v * r_w / (cp_d * R_v * (tw + AZ) * (tw + AZ));
+   k = 0;
+   while (fabs(fun) > eps && k < 10) {
+      tw -= fun / fun1;
+      l_v = Thermo_LatentHeatVapor(tw);
+      r_w = 0.001 * Thermo_PT2R(P,tw);
+      fun = tw - T + (r_w - r_d) * l_v / (cp_d + r_w * cv_d);
+      fun1 = 1.0 + l_v * l_v * r_w / (cp_d * R_v * (tw + AZ) * (tw + AZ));
+      k++;
+   }
+   return (tw);
+}
+
+//  Thermo_WB2TD():   calculates dew point from wet bulb temperature
+//         p(mb), t(deg C), tw(deg C), td(deg C)
+double Thermo_WB2TD(double P,double T,double TW) {
+
+   double l_v,r_w,r_d;
+
+//   if (P<=0.0 || P>P_MAX || T<T_MIN || T>T_MAX || TW<T_MIN || TW>T_MAX)
+//      return(MSNGV);
+
+   if (TW>T)
+      TW=T;
+
+   r_w = Thermo_PT2R(P,TW);
+   l_v = Thermo_LatentHeatVapor(TW);
+   if ((r_d = r_w - (1000.0 * cp_d + r_w * cv_d) * (T-TW) / l_v) <= 0.0)
+      return (T_MIN);
+   return(Thermo_PR2T(P,r_d));
+}
+
+//   Thermo_WB2TF():   calculates frost point from wet bulb temperature
+//        p(mb), t(deg C), tw(deg C), tf(deg C)
+double Thermo_WB2TF(double P,double T,double TW) {
+
+   double r_w,r_f;
+
+//   if (P<=0.0 || P>P_MAX || T<T_MIN || T>T_MAX || TW<T_MIN || TW>T_MAX)
+//       return(MSNGV);
+
+   if (TW>T)
+      TW=T;
+   r_w = Thermo_PT2R(P,TW);
+   if ((r_f = r_w - (1000.0 * cp_d + r_w * cv_d) * (T - TW) / L_s) <= 0.0)
+      return (T_MIN);
+   return (Thermo_PR2T(P,r_f));
+}
+
 //***   Thermo_TTH2P():   calculates p from t and log(theta)
 //***         t(deg C), theta(deg K), p(mb)
 double Thermo_TTH2P(double T,double TH) {
