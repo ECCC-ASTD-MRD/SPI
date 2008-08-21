@@ -602,9 +602,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    double      lat,lon,ni,nj,tmp;
 
    static CONST char *sopt[] = { "-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
-                                 "-mapadmin","-mapcity","-maproad","-maprail","-maputil","-mapcanal","-mapcoord","-scale","-data","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis",NULL };
+                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis",NULL };
    enum                opt { LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
-                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPUTIL,MAPCANAL,MAPCOORD,SCALE,DATA,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS };
+                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS };
 
    proj=Projection_Get(Name);
    if (!proj) {
@@ -853,23 +853,13 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             }
             break;
 
-        case MAPUTIL:
+        case MAPPLACE:
             if (Objc==1) {
-              Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Geo->Params.Util));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Geo->Params.Place));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->Geo->Params.Util);
-               if (proj->Geo->Params.Util==0)
-                  GDB_TileFreeType(proj->Geo,GDB_TYPE_UTIL);
-            }
-            break;
-
-        case MAPCANAL:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Geo->Params.Canal));
-            } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->Geo->Params.Canal);
-               if (proj->Geo->Params.Canal==0)
-                  GDB_TileFreeType(proj->Geo,GDB_TYPE_CANAL);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->Geo->Params.Place);
+               if (proj->Geo->Params.Place==0)
+                  GDB_TileFreeType(proj->Geo,GDB_TYPE_PLACE);
             }
             break;
 

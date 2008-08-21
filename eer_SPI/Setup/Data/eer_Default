@@ -93,7 +93,6 @@ set Viewport::Map(CoordDef)    10            ;#Intervale entre les latlon en deg
 set Viewport::Map(CoordNum)    2             ;#Numerotation des latlon
 set Viewport::Map(Elev)        1.0           ;#Facteur d'expansion des elevations
 set Viewport::Map(TPolit)      1             ;#Identifications provinces
-set Viewport::Map(TCity)       1             ;#Identifications villes
 
 set Viewport::Resources(Font)      [font create -family Helvetica -weight bold -size -10]   ;#Police de caractere de la vue
 set Viewport::Resources(Bkg)       white     ;#Couleur du font (background)
@@ -102,7 +101,7 @@ set Viewport::Resources(Lake)      #0000ff   ;#Lacs
 set Viewport::Resources(River)     #0000ff   ;#Rivieres
 set Viewport::Resources(Polit)     #ff0000   ;#Bordures politiques
 set Viewport::Resources(Admin)     #ff0000   ;#Bordures politiques internes
-set Viewport::Resources(City)      #ffa500   ;#Villes
+set Viewport::Resources(City)      #000000   ;#Villes
 set Viewport::Resources(Road)      #404040   ;#Routes
 set Viewport::Resources(Rail)      #ff1493   ;#Chemin de fer
 set Viewport::Resources(Util)      #ffff00   ;#Utilitaires

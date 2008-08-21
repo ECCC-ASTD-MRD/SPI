@@ -90,12 +90,11 @@ namespace eval Viewport {
    set Map(Lake)        1           ;#Lacs
    set Map(River)       0           ;#Rivieres
    set Map(Polit)       1           ;#Bordures politiques
+   set Map(Place)       0           ;#Endroits
    set Map(Admin)       0           ;#Bordures politiques internes
    set Map(City)        0           ;#Villes
    set Map(Road)        0           ;#Routes
    set Map(Rail)        0           ;#Chemin de fer
-   set Map(Util)        0           ;#Utilitaires
-   set Map(Canal)       0           ;#Canal/Aqueduc
    set Map(Topo)        0           ;#Topographie
    set Map(Bath)        0           ;#Bathymetrie
    set Map(Text)        0           ;#Texture
@@ -109,8 +108,6 @@ namespace eval Viewport {
    set Map(Speed)       0.0         ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07        ;#Facteur de l'effet de ralentissement
 
-   set Map(TPolit)      1           ;#Identifications provinces
-   set Map(TCity)       1           ;#Identifications villes
    set Map(Type)        orthographic;#Type de projection
 
    set Map(ZAxis)       0
@@ -150,12 +147,11 @@ namespace eval Viewport {
    set Resources(Lake)      #0000ff      ;#Lacs
    set Resources(River)     #0000ff      ;#Rivieres
    set Resources(Polit)     #ff0000      ;#Bordures politiques
+   set Resources(Place)     #000000      ;#Endroits
    set Resources(Admin)     #ff0000      ;#Bordures politiques internes
    set Resources(City)      #ffa500      ;#Villes
    set Resources(Road)      #404040      ;#Routes
    set Resources(Rail)      #ff1493      ;#Chemin de fer
-   set Resources(Util)      #ffff00      ;#Utilitaires
-   set Resources(Canal)     #00ffff      ;#Canal/Aqueduc
    set Resources(Coord)     #000000      ;#Latlon
    set Resources(Font)      ""           ;#Police
 
@@ -166,12 +162,11 @@ namespace eval Viewport {
    set Lbl(Lake)           { "Lac"      "Lake" }
    set Lbl(River)          { "Rivière"  "River" }
    set Lbl(Polit)          { "Pays"     "State" }
+   set Lbl(Place)          { "Endroit" "Place" }
    set Lbl(Admin)          { "Province" "Province" }
    set Lbl(City)           { "Ville"    "City" }
    set Lbl(Road)           { "Route"    "Road" }
    set Lbl(Rail)           { "Rail"     "Rail" }
-   set Lbl(Util)           { "Utilité"  "Utilities" }
-   set Lbl(Canal)          { "Canal"    "Channel" }
    set Lbl(Coord)          { "LatLon"   "LatLon" }
    set Lbl(Sun)            { "Soleil"   "Sun" }
 
@@ -541,14 +536,9 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(Admin)       [projection configure $Frame -mapadmin]
    set Map(Road)        [projection configure $Frame -maproad]
    set Map(Rail)        [projection configure $Frame -maprail]
-   set Map(Util)        [projection configure $Frame -maputil]
-   set Map(Canal)       [projection configure $Frame -mapcanal]
    set Map(Topo)        [projection configure $Frame -maptopo]
    set Map(Bath)        [projection configure $Frame -mapbath]
    set Map(Text)        [projection configure $Frame -maptext]
-
-   set Map(TPolit)      [expr $Map(Polit)<0?-1:1]
-   set Map(TCity)       [expr $Map(City)<0?-1:1]
 
    set Resources(Font)      [lindex [$Frame.page.canvas itemconf $VP -font] 4]
    set Resources(Bkg)       [lindex [$Frame.page.canvas itemconf $VP -bg] 4]
@@ -559,12 +549,11 @@ proc Viewport::ConfigGet { Frame VP } {
    set Resources(Lake)      [lindex [$Frame.page.canvas itemconf $VP -colorlake] 4]
    set Resources(River)     [lindex [$Frame.page.canvas itemconf $VP -colorriver] 4]
    set Resources(Polit)     [lindex [$Frame.page.canvas itemconf $VP -colorpolit] 4]
+   set Resources(Place)     [lindex [$Frame.page.canvas itemconf $VP -colorplace] 4]
    set Resources(Admin)     [lindex [$Frame.page.canvas itemconf $VP -coloradmin] 4]
    set Resources(City)      [lindex [$Frame.page.canvas itemconf $VP -colorcity] 4]
    set Resources(Road)      [lindex [$Frame.page.canvas itemconf $VP -colorroad] 4]
    set Resources(Rail)      [lindex [$Frame.page.canvas itemconf $VP -colorrail] 4]
-   set Resources(Util)      [lindex [$Frame.page.canvas itemconf $VP -colorutil] 4]
-   set Resources(Canal)     [lindex [$Frame.page.canvas itemconf $VP -colorcanal] 4]
    set Resources(Coord)     [lindex [$Frame.page.canvas itemconf $VP -colorcoord] 4]
 }
 
@@ -599,13 +588,10 @@ proc Viewport::ConfigPut { Frame VP } {
    $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coast)]
    $Data(Frame).layer.lake.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Lake)]
    $Data(Frame).layer.river.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(River)]
-   $Data(Frame).layer.poli.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst [expr abs($Map(Polit))]]
+   $Data(Frame).layer.poli.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Polit)]
    $Data(Frame).layer.admin.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Admin)]
-   $Data(Frame).layer.city.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst [expr abs($Map(City))]]
    $Data(Frame).layer.road.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Road)]
    $Data(Frame).layer.rail.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Rail)]
-   $Data(Frame).layer.util.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Util)]
-   $Data(Frame).layer.canal.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Canal)]
    $Data(Frame).layer.ll.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coord)]
 
    ColorBox::ConfigNoColor $Data(Frame).layer.coast.col $Resources(Coast)
@@ -614,12 +600,11 @@ proc Viewport::ConfigPut { Frame VP } {
    ColorBox::ConfigNoColor $Data(Frame).layer.lake.fcol $Resources(FillLake)
    ColorBox::ConfigNoColor $Data(Frame).layer.river.col $Resources(River)
    ColorBox::ConfigNoColor $Data(Frame).layer.poli.col $Resources(Polit)
+   ColorBox::ConfigNoColor $Data(Frame).layer.place.col $Resources(Place)
    ColorBox::ConfigNoColor $Data(Frame).layer.admin.col $Resources(Admin)
    ColorBox::ConfigNoColor $Data(Frame).layer.city.col $Resources(City)
    ColorBox::ConfigNoColor $Data(Frame).layer.road.col $Resources(Road)
    ColorBox::ConfigNoColor $Data(Frame).layer.rail.col $Resources(Rail)
-   ColorBox::ConfigNoColor $Data(Frame).layer.util.col $Resources(Util)
-   ColorBox::ConfigNoColor $Data(Frame).layer.canal.col $Resources(Canal)
    ColorBox::ConfigNoColor $Data(Frame).layer.ll.col $Resources(Coord)
 }
 
@@ -649,10 +634,9 @@ proc Viewport::ConfigSet { Frame } {
    Viewport::ForceGrid $Frame
 
    projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask)\
-      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit [expr $Map(Polit)*$Map(TPolit)] \
-      -mapadmin $Map(Admin) -mapcity [expr $Map(City)*$Map(TCity)] -maproad  $Map(Road)\
-      -maprail $Map(Rail)   -maputil $Map(Util) -mapcanal $Map(Canal) -maptopo $Map(Topo) -mapbath $Map(Bath)\
-      -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
+      -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
+      -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
       -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] \
       -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
 
@@ -664,22 +648,19 @@ proc Viewport::ConfigSet { Frame } {
       $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-         -colorroad $Resources(Road) -colorrail $Resources(Rail) \
-         -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord)
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
    }
 
    if { [info exists Miniport::Data(Mini$Frame)] } {
-      projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit [expr $Map(Polit)*$Map(TPolit)] \
-         -mapadmin $Map(Admin) -mapcity [expr $Map(City)*$Map(TCity)] -maproad  $Map(Road)\
-         -maprail $Map(Rail)   -maputil $Map(Util) -mapcanal $Map(Canal) -maptopo $Map(Topo) -mapbath $Map(Bath)\
-         -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+      projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+         -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) \
+         -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text)-mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
      $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-         -colorroad $Resources(Road) -colorrail $Resources(Rail) \
-         -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord)
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
    }
 }
 
@@ -1153,8 +1134,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
    $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -fg black -font FONT$Frame -bg $Resources(Bkg) \
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-      -colorroad $Resources(Road) -colorrail $Resources(Rail) \
-      -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord) \
+      -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
       -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -backbuffer $OpenGL::Param(BBuf)
 
    if { $Active } {
@@ -1278,18 +1258,17 @@ proc Viewport::Do { Frame } {
    set Map(GeoRef$Frame) $Map(GeoRef)
 
    projection configure $Frame -type $Map(Type) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
-      -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) \
-      -mappolit $Map(Polit) -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road)\
-      -maprail $Map(Rail)   -maputil $Map(Util) -mapcanal $Map(Canal) -maptopo $Map(Topo) \
-      -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) -data $Data(Data$Frame)
+      -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
+      -mapplace $Map(Place) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) -data $Data(Data$Frame)
 
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
 
    foreach vp [Page::Registered $Frame Viewport] {
       $Frame.page.canvas itemconfigure $vp -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
-         -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorutil $Resources(Util) -colorcanal $Resources(Canal) -colorcoord $Resources(Coord)
+         -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) -colorplace $Resources(Place) \
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorcoord $Resources(Coord)
    }
 
    Page::Update  $Frame
@@ -1789,8 +1768,6 @@ proc Viewport::ParamFrame { Frame Apply } {
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Polit) "$Apply configure -state normal" $Viewport::Map(Polit) -relief groove -bd 2
          $Data(Frame).layer.poli.sz.menu add separator
-         $Data(Frame).layer.poli.sz.menu add checkbutton -label [lindex $Lbl(Name) $GDefs(Lang)] -variable Viewport::Map(TPolit) -onvalue -1 -offvalue 1 \
-            -command "$Apply configure -state normal"
          ColorBox::CreateSel $Data(Frame).layer.poli.col Viewport::Resources(Polit) $Apply configure -state normal
          label $Data(Frame).layer.poli.lbl -text [format "%-10s" [lindex $Lbl(Polit) $GDefs(Lang)]]
          pack $Data(Frame).layer.poli.col $Data(Frame).layer.poli.sz -side left
@@ -1806,16 +1783,22 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.admin.lbl -side right
 
       frame $Data(Frame).layer.city
-         IcoMenu::Create $Data(Frame).layer.city.sz $GDefs(Dir)/Resources/Bitmap \
-            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-            Viewport::Map(City) "$Apply configure -state normal" $Viewport::Map(City) -relief groove -bd 2
-         $Data(Frame).layer.city.sz.menu add separator
-         $Data(Frame).layer.city.sz.menu add checkbutton -label [lindex $Lbl(Name) $GDefs(Lang)] -variable Viewport::Map(TCity) -onvalue -1 -offvalue 1 \
-            -command "$Apply configure -state normal"
+         checkbutton $Data(Frame).layer.city.sz -variable Viewport::Map(City) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          ColorBox::CreateSel $Data(Frame).layer.city.col Viewport::Resources(City) $Apply configure -state normal
          label $Data(Frame).layer.city.lbl -text [format "%-10s" [lindex $Lbl(City) $GDefs(Lang)]]
-         pack $Data(Frame).layer.city.col $Data(Frame).layer.city.sz -side left
+         pack $Data(Frame).layer.city.col -side left
+         pack $Data(Frame).layer.city.sz -side left -padx 1 -ipadx 1
          pack $Data(Frame).layer.city.lbl -side right
+
+      frame $Data(Frame).layer.place
+         checkbutton $Data(Frame).layer.place.sz -variable Viewport::Map(Place) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+         ColorBox::CreateSel $Data(Frame).layer.place.col Viewport::Resources(Place) $Apply configure -state normal
+         label $Data(Frame).layer.place.lbl -text [format "%-10s" [lindex $Lbl(Place) $GDefs(Lang)]]
+         pack $Data(Frame).layer.place.col -side left
+         pack $Data(Frame).layer.place.sz -side left -padx 1 -ipadx 1
+         pack $Data(Frame).layer.place.lbl -side right
 
       frame $Data(Frame).layer.road
          IcoMenu::Create $Data(Frame).layer.road.sz $GDefs(Dir)/Resources/Bitmap \
@@ -1835,24 +1818,6 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.rail.col $Data(Frame).layer.rail.sz -side left
          pack $Data(Frame).layer.rail.lbl -side right
 
-      frame $Data(Frame).layer.util
-         IcoMenu::Create $Data(Frame).layer.util.sz $GDefs(Dir)/Resources/Bitmap \
-            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-            Viewport::Map(Util) "$Apply configure -state normal" $Viewport::Map(Util) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.util.col Viewport::Resources(Util) $Apply configure -state normal
-         label $Data(Frame).layer.util.lbl -text [format "%-10s" [lindex $Lbl(Util) $GDefs(Lang)]]
-         pack $Data(Frame).layer.util.col $Data(Frame).layer.util.sz -side left
-         pack $Data(Frame).layer.util.lbl -side right
-
-      frame $Data(Frame).layer.canal
-         IcoMenu::Create $Data(Frame).layer.canal.sz $GDefs(Dir)/Resources/Bitmap \
-            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-            Viewport::Map(Canal) "$Apply configure -state normal" $Viewport::Map(Canal) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.canal.col Viewport::Resources(Canal) $Apply configure -state normal
-         label $Data(Frame).layer.canal.lbl -text [format "%-10s" [lindex $Lbl(Canal) $GDefs(Lang)]]
-         pack $Data(Frame).layer.canal.col $Data(Frame).layer.canal.sz -side left
-         pack $Data(Frame).layer.canal.lbl -side right
-
       frame $Data(Frame).layer.ll
          IcoMenu::Create $Data(Frame).layer.ll.sz $GDefs(Dir)/Resources/Bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
@@ -1865,9 +1830,8 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.ll.lbl -side right
 
       pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
-         $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.road $Data(Frame).layer.rail \
-         $Data(Frame).layer.util $Data(Frame).layer.canal $Data(Frame).layer.ll \
-         -side top -anchor sw -padx 2 -fill x
+         $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.place $Data(Frame).layer.road $Data(Frame).layer.rail \
+         $Data(Frame).layer.ll -side top -anchor sw -padx 2 -fill x
 
    #----- LatLon
 
@@ -2751,11 +2715,9 @@ proc Viewport::Setup { Frame } {
    projection create $Frame
    projection configure $Frame -location $Map(Lat) $Map(Lon) -type $Map(Type$Frame) -georef $Map(GeoRef$Frame) \
       -mapres $Map(Res) -mask -$Map(Mask) -scale $Map(Elev) \
-      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
-      -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road)  -maprail $Map(Rail) \
-      -maputil $Map(Util)   -mapcanal $Map(Canal) -maptopo $Map(Topo) \
-      -maptext $Map(Text)   -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) \
-      -date $Data(Seconds$Frame)
+      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
+      -mapcity $Map(City) -maproad $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) -mapplace $Map(Place) \
+      -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Seconds$Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -2982,15 +2944,13 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Map(Lake)        [projection configure $Frame -maplake]"
       puts $File "   set Viewport::Map(River)       [projection configure $Frame -mapriver]"
       puts $File "   set Viewport::Map(Admin)       [projection configure $Frame -mapadmin]"
+      puts $File "   set Viewport::Map(Polit)       [projection configure $Frame -mappolit]"
+      puts $File "   set Viewport::Map(Place)       [projection configure $Frame -mapplace]"
       puts $File "   set Viewport::Map(Road)        [projection configure $Frame -maproad]"
       puts $File "   set Viewport::Map(Rail)        [projection configure $Frame -maprail]"
-      puts $File "   set Viewport::Map(Util)        [projection configure $Frame -maputil]"
-      puts $File "   set Viewport::Map(Canal)       [projection configure $Frame -mapcanal]"
       puts $File "   set Viewport::Map(Topo)        [projection configure $Frame -maptopo]"
       puts $File "   set Viewport::Map(Bath)        [projection configure $Frame -mapbath]"
       puts $File "   set Viewport::Map(Text)        [projection configure $Frame -maptext]"
-      puts $File "   set Viewport::Map(TPolit)      [expr $Viewport::Map(Polit)<0?-1:1]"
-      puts $File "   set Viewport::Map(TCity)       [expr $Viewport::Map(City)<0?-1:1]"
       puts $File "   set Viewport::Resources(Bkg)       \"[lindex [$Frame.page.canvas itemconf $vp -bg] 4]\""
       puts $File "   set Viewport::Resources(FillCoast) \"[lindex [$Frame.page.canvas itemconf $vp -colorfillcoast] 4]\""
       puts $File "   set Viewport::Resources(FillLake)  \"[lindex [$Frame.page.canvas itemconf $vp -colorfilllake] 4]\""
@@ -2998,12 +2958,11 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Resources(Lake)      \"[lindex [$Frame.page.canvas itemconf $vp -colorlake] 4]\""
       puts $File "   set Viewport::Resources(River)     \"[lindex [$Frame.page.canvas itemconf $vp -colorriver] 4]\""
       puts $File "   set Viewport::Resources(Polit)     \"[lindex [$Frame.page.canvas itemconf $vp -colorpolit] 4]\""
+      puts $File "   set Viewport::Resources(Place)     \"[lindex [$Frame.page.canvas itemconf $vp -colorplace] 4]\""
       puts $File "   set Viewport::Resources(Admin)     \"[lindex [$Frame.page.canvas itemconf $vp -coloradmin] 4]\""
       puts $File "   set Viewport::Resources(City)      \"[lindex [$Frame.page.canvas itemconf $vp -colorcity] 4]\""
       puts $File "   set Viewport::Resources(Road)      \"[lindex [$Frame.page.canvas itemconf $vp -colorroad] 4]\""
       puts $File "   set Viewport::Resources(Rail)      \"[lindex [$Frame.page.canvas itemconf $vp -colorrail] 4]\""
-      puts $File "   set Viewport::Resources(Util)      \"[lindex [$Frame.page.canvas itemconf $vp -colorutil] 4]\""
-      puts $File "   set Viewport::Resources(Canal)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcanal] 4]\""
       puts $File "   set Viewport::Resources(Coord)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcoord] 4]\""
 
       set no 1

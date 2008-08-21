@@ -68,11 +68,11 @@
 
 #define GDB_FORCE  0xFF
 
-typedef enum { GDB_TYPE_MAP,GDB_TYPE_TEXT,GDB_TYPE_COAST,GDB_TYPE_LAKE,GDB_TYPE_RIVER,GDB_TYPE_POLIT,GDB_TYPE_ADMIN,GDB_TYPE_CITY,GDB_TYPE_ROAD,GDB_TYPE_RAIL,GDB_TYPE_UTIL,GDB_TYPE_CANAL } GDB_Type;
+typedef enum { GDB_TYPE_MAP,GDB_TYPE_TEXT,GDB_TYPE_COAST,GDB_TYPE_LAKE,GDB_TYPE_RIVER,GDB_TYPE_POLIT,GDB_TYPE_ADMIN,GDB_TYPE_CITY,GDB_TYPE_ROAD,GDB_TYPE_RAIL,GDB_TYPE_PLACE } GDB_Type;
 
 typedef struct GDB_Params {
    int    Topo,Bath,Text,Mask;
-   int    Coast,Lake,River,Polit,Admin,City,Road,Rail,Util,Canal;
+   int    Coast,Lake,River,Polit,Admin,City,Road,Rail,Place;
    int    CoordLoc,CoordNum;
    double CoordDef;
 } GDB_Params;
@@ -114,12 +114,9 @@ typedef struct GDB_Tile {
    struct GDB_Geo *River;
    struct GDB_Geo *Polit;
    struct GDB_Geo *Admin;
-   struct GDB_Geo *City,*FCity;
    struct GDB_Geo *Road;
    struct GDB_Geo *Rail;
-   struct GDB_Geo *Util;
-   struct GDB_Geo *Canal;
-   struct GDB_Txt *TPolit;
+   struct GDB_Txt *TPlace;
    struct GDB_Txt *TCity;
 
    unsigned int FLand1,FLand2,FWater1,FWater2;

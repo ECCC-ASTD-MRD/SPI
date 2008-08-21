@@ -94,6 +94,8 @@ static Tk_ConfigSpec configSpecs[] = {
         "black",Tk_Offset(ViewportItem,ColorAdmin),TK_CONFIG_NULL_OK },
    { TK_CONFIG_COLOR,"-colorcity",(char *)NULL,(char *)NULL,
         "black",Tk_Offset(ViewportItem,ColorCity),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR,"-colorplace",(char *)NULL,(char *)NULL,
+        "black",Tk_Offset(ViewportItem,ColorPlace),TK_CONFIG_NULL_OK },
    { TK_CONFIG_COLOR,"-colorroad",(char *)NULL,(char *)NULL,
         "black",Tk_Offset(ViewportItem,ColorRoad),TK_CONFIG_NULL_OK },
    { TK_CONFIG_COLOR,"-colorrail",(char *)NULL,(char *)NULL,
@@ -248,6 +250,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->ColorPolit  = NULL;
    vp->ColorAdmin  = NULL;
    vp->ColorCity   = NULL;
+   vp->ColorPlace  = NULL;
    vp->ColorRoad   = NULL;
    vp->ColorRail   = NULL;
    vp->ColorUtil   = NULL;
@@ -810,6 +813,7 @@ static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
    Tk_FreeColor(vp->ColorPolit);
    Tk_FreeColor(vp->ColorAdmin);
    Tk_FreeColor(vp->ColorCity);
+   Tk_FreeColor(vp->ColorPlace);
    Tk_FreeColor(vp->ColorRoad);
    Tk_FreeColor(vp->ColorRail);
    Tk_FreeColor(vp->ColorUtil);
