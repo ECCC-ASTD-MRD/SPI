@@ -1219,14 +1219,6 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    pos=Field->Ref->Pos;
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-   rj=ceil(2.0/FFCellResolution(VP,Proj,pos[idxk+Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2],pos[idxk+(Field->Def->NJ/2+1)*Field->Def->NI+Field->Def->NI/2]));
-   rj=rj>7?7:rj;
-
-   if (Field->Ref->Grid[0]=='V') {
-     ri=1;
-   } else {
-     ri=rj;
-   }
 
    /*Afficher les points*/
    if (Field->Ref->Grid[0]=='M') {
@@ -1249,12 +1241,22 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(1);
    }
 
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) Data_RenderTexture: Current Resolution %i %i\n",ri,rj);
-#endif
    if (Field->Spec->InterNb || Proj->Type->Def==PROJPLANE || Field->Ref->Grid[0]=='W') {
       ri=1;
       rj=1;
+   } else {
+      rj=ceil(2.0/FFCellResolution(VP,Proj,pos[idxk+Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2],pos[idxk+(Field->Def->NJ/2+1)*Field->Def->NI+Field->Def->NI/2]));
+      rj=rj>7?7:rj;
+   }
+
+   if (Field->Ref->Grid[0]=='V') {
+     ri=1;
+   } else {
+     ri=rj;
+   }
+
+   if (ri==0 || rj==0) {
+      return(0);
    }
 
    if (Field->Spec->InterNb) {
@@ -1264,10 +1266,6 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    /*Grille avec loop sur la longitude*/
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
-   }
-
-   if (ri==0 || rj==0) {
-      return(0);
    }
 
    /*Process gridpoints*/
