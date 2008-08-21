@@ -221,6 +221,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glUniform1fARB(GLShader_UniformGet(prog,"Min"),min);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),rng);
    glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Field->Spec->InterNb);
+   glUniform1iARB(GLShader_UniformGet(prog,"Bi"),(Field->Spec->InterpDegree[0]=='N'?0:1));
    att0=GLShader_AttribGet(prog,"Vd");
 
    glBegin(GL_TRIANGLES);
