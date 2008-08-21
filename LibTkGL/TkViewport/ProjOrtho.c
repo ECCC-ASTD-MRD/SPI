@@ -42,6 +42,7 @@
 int    Ortho_Init(Tcl_Interp *Interp);
 void   Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void   Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
+void   Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int    Ortho_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void   Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
 double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,ViewportItem *VP);
@@ -170,10 +171,10 @@ double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,Vie
  *
  *----------------------------------------------------------------------------
 */
-void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+void Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[256];
-   double  lat,lon,delt;
+   double  delt;
 
    if (Proj->Geo->Params.Coast) {
 
@@ -220,6 +221,16 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       if (Interp)
          glFeedbackProcess(Interp,GL_2D);
+   }
+}
+
+void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+
+   char    buf[256];
+   double  lat,lon,delt;
+
+   if (!Interp) {
+      Ortho_DrawGlobe(Interp,VP,Proj);
    }
 
    /*Affichage des latlons*/
@@ -401,6 +412,7 @@ int Ortho_Init(Tcl_Interp *Interp){
       Ortho_Render,
       Ortho_DrawFirst,
       Ortho_DrawLast,
+      Ortho_DrawGlobe,
       Ortho_UnProject,
       Ortho_Project,
       Ortho_ProjectPoint,

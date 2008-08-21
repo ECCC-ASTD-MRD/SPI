@@ -41,6 +41,7 @@
 int  Grid_Init(Tcl_Interp *Interp);
 void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
+void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
 void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode);
@@ -72,12 +73,9 @@ Tcl_Obj*      Grid_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *P
  *
  *----------------------------------------------------------------------------
 */
-void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[256];
-   Coord   loc;
-   Vect3d  pix,prev;
-
 
    if (Interp) {
       glFeedbackInit(20,GL_2D);
@@ -121,6 +119,17 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
+}
+
+void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+
+   char    buf[256];
+   Coord   loc;
+   Vect3d  pix,prev;
+
+   if (!Interp) {
+      Grid_DrawGlobe(Interp,VP,Proj);
+   }
 
    /*Latlons*/
    if (Proj->Geo->Params.CoordLoc) {
@@ -274,6 +283,7 @@ int Grid_Init(Tcl_Interp *Interp){
       Grid_Render,
       Grid_DrawFirst,
       Grid_DrawLast,
+      Grid_DrawGlobe,
       Grid_UnProject,
       Grid_Project,
       Grid_ProjectPoint,

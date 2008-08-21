@@ -98,7 +98,7 @@ typedef struct ProjectionType {
    char                        *Name;
    Projection_CallLocate       *Locate;
    Projection_CallRender       *Render;
-   Projection_CallDraw         *DrawFirst,*DrawLast;
+   Projection_CallDraw         *DrawFirst,*DrawLast,*DrawGlobe;
    Projection_CallUnProject    *UnProject;
    Projection_CallProject      *Project;
    Projection_CallProjectPoint *ProjectPoint;
@@ -127,6 +127,7 @@ void Projection_CreateType(
          ,Projection_CallRender       *Render
          ,Projection_CallDraw         *DrawFirst
          ,Projection_CallDraw         *DrawLast
+         ,Projection_CallDraw         *DrawGlobe
          ,Projection_CallUnProject    *UnProject
          ,Projection_CallProject      *Project
          ,Projection_CallProjectPoint *ProjectPoint

@@ -1675,6 +1675,11 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
       res=1;
    }
 
+   /*If we do postscript, we have to draw the globe first*/
+   if ((Mode & GDB_FILL) && Interp) {
+      Proj->Type->DrawGlobe(Interp,Proj->Params->VP,Proj);
+   }
+
    if (!res)
       return(0);
 

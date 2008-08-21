@@ -39,6 +39,7 @@
 /*Prototypes*/
 
 int  Azimuth_Init(Tcl_Interp *Interp);
+void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  AzimuthDist_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 int  AzimuthArea_Locate(Projection *Proj,double Lat,double Lon,int Undo);
@@ -55,7 +56,7 @@ Tcl_Obj*      Azimuth_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection
 int           Azimuth_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pix00,Vect3d Pix01,Vect3d Pix10,Vect3d Pix11);
 
 /*----------------------------------------------------------------------------
- * Nom      : <Azimuth_DrawGlobe>
+ * Nom      : <Azimuth_DrawFirst>
  * Creation : Juillet 98 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Dessine le pourtour du globe.
@@ -72,6 +73,45 @@ int           Azimuth_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord 
  *----------------------------------------------------------------------------
 */
 void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+
+   char    buf[256];
+
+   if (Proj->Geo->Params.Coast) {
+
+      if (Interp) {
+         glFeedbackInit(3000,GL_2D);
+         if (VP->ColorFLake && VP->ColorFCoast) {
+            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
+         } else {
+            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
+         }
+         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
+      }
+
+      glTranslated(0.0,0.0,1.0);
+      if (VP->ColorFLake && VP->ColorFCoast) {
+         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
+         glDisable(GL_STENCIL_TEST);
+         glPolygonMode(GL_FRONT,GL_FILL);
+         glDrawCircle(64,GL_POLYGON);
+         if (Interp)
+            glFeedbackProcess(Interp,GL_2D);
+      }
+
+      glEnable(GL_STENCIL_TEST);
+      glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
+      glLineWidth(ABS(Proj->Geo->Params.Coast));
+      glDrawCircle(64,GL_LINE_STRIP);
+
+      glTranslated(0.0,0.0,-1.0);
+
+      if (Interp)
+         glFeedbackProcess(Interp,GL_2D);
+   }
+}
+
+void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[256];
    Coord   co;
@@ -91,7 +131,7 @@ void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       }
 
       glTranslated(0.0,0.0,1.0);
-      if (VP->ColorFLake && VP->ColorFCoast) {
+      if (VP->ColorFLake && VP->ColorFCoast && !Interp) {
          glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
          glDisable(GL_STENCIL_TEST);
          glPolygonMode(GL_FRONT,GL_FILL);
@@ -146,7 +186,6 @@ void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
         glEnd();
      }
       if (Interp) glFeedbackProcess(Interp,GL_2D);
-
    }
 }
 
@@ -171,8 +210,9 @@ int Azimuth_Init(Tcl_Interp *Interp){
    Projection_CreateType("azimuthal equidistant",PROJSPHERE,
       AzimuthDist_Locate,
       Azimuth_Render,
-      Azimuth_DrawGlobe,
+      Azimuth_DrawFirst,
       NULL,
+      Azimuth_DrawGlobe,
       AzimuthDist_UnProject,
       AzimuthDist_Project,
       Azimuth_ProjectPoint,
@@ -181,8 +221,9 @@ int Azimuth_Init(Tcl_Interp *Interp){
    Projection_CreateType("azimuthal equal-area",PROJSPHERE,
       AzimuthArea_Locate,
       Azimuth_Render,
-      Azimuth_DrawGlobe,
+      Azimuth_DrawFirst,
       NULL,
+      Azimuth_DrawGlobe,
       AzimuthArea_UnProject,
       AzimuthArea_Project,
       Azimuth_ProjectPoint,

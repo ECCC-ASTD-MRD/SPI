@@ -1077,7 +1077,7 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
 */
 void Projection_CreateType(char *Name,int Def,
    Projection_CallLocate *Locate,Projection_CallRender *Render,Projection_CallDraw *DrawFirst,
-   Projection_CallDraw *DrawLast,Projection_CallUnProject *UnProject,Projection_CallProject *Project,
+   Projection_CallDraw *DrawLast,Projection_CallDraw *DrawGlobe,Projection_CallUnProject *UnProject,Projection_CallProject *Project,
    Projection_CallProjectPoint *ProjectPoint,Projection_CallProjectLine *ProjectLine) {
 
    ProjectionType *project_type;
@@ -1092,6 +1092,7 @@ void Projection_CreateType(char *Name,int Def,
    project_type->Render       = Render;
    project_type->DrawFirst    = DrawFirst;
    project_type->DrawLast     = DrawLast;
+   project_type->DrawGlobe    = DrawGlobe;
    project_type->UnProject    = UnProject;
    project_type->Project      = Project;
    project_type->ProjectPoint = ProjectPoint;

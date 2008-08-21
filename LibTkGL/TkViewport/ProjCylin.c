@@ -41,6 +41,7 @@
 int  Cylin_Init(Tcl_Interp *Interp);
 void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
+void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
 void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode);
@@ -74,12 +75,9 @@ int           Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vec
  *
  *----------------------------------------------------------------------------
 */
-void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
-   double  x,y,incr;
    char    buf[256];
-   Vect3d  vr;
-   Coord   co;
 
    if (Proj->Geo->Params.Coast) {
       if (Interp) {
@@ -123,6 +121,18 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       if (Interp)
          glFeedbackProcess(Interp,GL_2D);
+   }
+}
+
+void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
+
+   double  x,y,incr;
+   char    buf[256];
+   Vect3d  vr;
+   Coord   co;
+
+   if (!Interp) {
+      Cylin_DrawGlobe(Interp,VP,Proj);
    }
 
    /*Latlons*/
@@ -261,6 +271,7 @@ int Cylin_Init(Tcl_Interp *Interp){
       Cylin_Render,
       Cylin_DrawFirst,
       Cylin_DrawLast,
+      Cylin_DrawGlobe,
       Cylin_UnProject,
       Cylin_Project,
       Cylin_ProjectPoint,
@@ -271,6 +282,7 @@ int Cylin_Init(Tcl_Interp *Interp){
       Cylin_Render,
       Merca_DrawFirst,
       Cylin_DrawLast,
+      Cylin_DrawGlobe,
       Merca_UnProject,
       Merca_Project,
       Cylin_ProjectPoint,
@@ -821,7 +833,7 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       }
 
       /*Pourtour de la carte*/
-      if (VP->ColorFLake && VP->ColorFCoast) {
+      if (VP->ColorFLake && VP->ColorFCoast && !Interp) {
          glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
          glDisable(GL_STENCIL_TEST);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
