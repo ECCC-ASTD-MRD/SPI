@@ -2264,7 +2264,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
             d+=hypot(p1[0]-p0[0],p1[1]-p0[1]);
             if (Data->Spec->RenderLabel<0 || d>=delta) {
 
-               /*We dont want overlapping label so check teh stencil buffer*/
+               /*We dont want overlapping label so check the stencil buffer*/
                glReadPixels(p1[0],p1[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
                if (s&0x4) {
                   continue;
@@ -2281,9 +2281,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
                th=RAD2DEG(th);
 
                /*Draw the boc in the stencil buffer*/
-               glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               glDrawStringBG(p1[0],p1[1],th,dx,dy,4,1);
-               glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+               glStencilMaskQuad(p1[0],p1[1],dx,dy,th,4,1);
                glDisable(GL_STENCIL_TEST);
 
                if (Interp) {

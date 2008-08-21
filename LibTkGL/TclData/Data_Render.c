@@ -641,9 +641,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
                /*Draw the bloc in the stencil buffer*/
                glStencilMask(0x20);
-               glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               glDrawStringBG(p1[0],p1[1],th,dx,dy,4,1);
-               glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+               glStencilMaskQuad(p1[0],p1[1],dx,dy,th,4,1);
 
                if (Interp) {
                   glPostscriptTextBG(Interp,VP->canvas,p1[0],p1[1],th,dx,dy,4,1,VP->BGColor,1);
