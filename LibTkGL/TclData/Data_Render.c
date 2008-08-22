@@ -1160,6 +1160,99 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <Data_RenderMesh>
+ * Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue les calculs et l'affichage pour le type triangle mesh .
+ *
+ * Parametres :
+ *  <Champs>  : Champs
+ *  <VP>      : Parametres du viewport
+ *  <Proj>    : Parametres de la projection
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
+
+   int     n,idxk;
+   Vect3d  b,p,p0,p1,p2;
+   Vect3d *pos;
+
+   if (!Field->Ref || !Field->Ref->Pos) {
+      return(0);
+   }
+
+   /*Do we need transparency*/
+   if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
+   /*Setup 1D Texture*/
+   glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   glEnable(GL_TEXTURE_1D);
+
+   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
+   pos=&Field->Ref->Pos[idxk];
+
+   if (!Field->Map)
+      FSTD_DataMap(Field,False);
+
+   glLineWidth(1.0);
+   if (Field->Spec->InterpDegree[0]=='L') {
+      glEnableClientState(GL_VERTEX_ARRAY);
+      Proj->Type->Render(Proj,0,pos,Field->Ref->Idx,NULL,Field->Map,GL_TRIANGLES,Field->Ref->NIdx,NULL,NULL);
+      glDisableClientState(GL_VERTEX_ARRAY);
+   } else {
+      glBegin(GL_TRIANGLES);
+      for(n=0;n<Field->Ref->NIdx-3;n+=3) {
+         Vect_Init(b,1.0/3.0,1.0/3.0,1.0/3.0);
+         Bary_Interp(b,p,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Vect_Init(b,0.0,0.5,0.5);
+         Bary_Interp(b,p0,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Vect_Init(b,0.5,0.0,0.5);
+         Bary_Interp(b,p1,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Vect_Init(b,0.5,0.5,0.0);
+         Bary_Interp(b,p2,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+
+         glTexCoord1f(Field->Map[Field->Ref->Idx[n]]);
+         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glVertex3dv(p);
+         glVertex3dv(p1);
+         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glVertex3dv(p);
+         glVertex3dv(p2);
+
+         glTexCoord1f(Field->Map[Field->Ref->Idx[n+1]]);
+         glVertex3dv(pos[Field->Ref->Idx[n+1]]);
+         glVertex3dv(p);
+         glVertex3dv(p0);
+         glVertex3dv(pos[Field->Ref->Idx[n+1]]);
+         glVertex3dv(p);
+         glVertex3dv(p2);
+
+         glTexCoord1f(Field->Map[Field->Ref->Idx[n+2]]);
+         glVertex3dv(pos[Field->Ref->Idx[n+2]]);
+         glVertex3dv(p);
+         glVertex3dv(p0);
+         glVertex3dv(pos[Field->Ref->Idx[n+2]]);
+         glVertex3dv(p);
+         glVertex3dv(p1);
+      }
+      glEnd();
+   }
+   glDisable(GL_TEXTURE_1D);
+   glEnable(GL_CULL_FACE);
+   glDisable(GL_BLEND);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Data_RenderTexture>
  * Creation : Septembre 2000 - J.P. Gauthier - CMC/CMOE
  *
@@ -1190,11 +1283,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos) {
-      return(0);
-   }
-
-   if (Field->Ref->Grid[0]=='X' || Field->Ref->Grid[0]=='Y') {
+   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='X' || Field->Ref->Grid[0]=='Y') {
       return(0);
    }
 
@@ -1210,34 +1299,19 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    }
 
+   /*Afficher les points*/
+   if (Field->Ref->Grid[0]=='M') {
+      Data_RenderMesh(Field,VP,Proj);
+      return(1);
+   }
+
    /*Do we need transparency*/
-   if (Field->Spec->Map->Alpha) {
+   if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
 
    pos=Field->Ref->Pos;
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-
-   /*Afficher les points*/
-   if (Field->Ref->Grid[0]=='M') {
-      /*Setup 1D Texture*/
-      glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
-      glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-      glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-      glEnable(GL_TEXTURE_1D);
-
-      if (!Field->Map) FSTD_DataMap(Field,False);
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glLineWidth(1.0);
-      Proj->Type->Render(Proj,0,&Field->Ref->Pos[idxk],Field->Ref->Idx,NULL,Field->Map,GL_TRIANGLES,Field->Ref->NIdx,NULL,NULL);
-
-      glDisable(GL_TEXTURE_1D);
-      glEnable(GL_CULL_FACE);
-      glDisable(GL_BLEND);
-      glDisableClientState(GL_VERTEX_ARRAY);
-      return(1);
-   }
 
    if (Field->Spec->InterNb || Proj->Type->Def==PROJPLANE || Field->Ref->Grid[0]=='W') {
       ri=1;
