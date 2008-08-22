@@ -34,6 +34,31 @@
 #include "tclData.h"
 #include "Vertex.h"
 
+int Bary_Get(Vect3d B,double X,double Y,double X0,double Y0,double X1,double Y1,double X2,double Y2) {
+
+   double b,x0,x1,x2,y0,y1,y2;
+
+   x0=X0-X; y0=Y0-Y;
+   x1=X1-X; y1=Y1-Y;
+   x2=X2-X; y2=Y2-Y;
+
+   b=1.0/((X1-X0)*(Y2-Y0)-(X2-X0)*(Y1-Y0));
+   B[0]=(x1*y2-x2*y1)*b;
+   B[1]=(x2*y0-x0*y2)*b;
+   B[2]=(x0*y1-x1*y0)*b;
+
+   return(B[0]>=0 && B[1]>=0 && B[2]>=0);
+}
+
+int Bary_Interp(Vect3d B,Vect3d P,Vect3d P0,Vect3d P1,Vect3d P2) {
+
+   P[0]=B[0]*P0[0]+B[1]*P1[0]+B[2]*P2[0];
+   P[1]=B[0]*P0[1]+B[1]*P1[1]+B[2]*P2[1];
+   P[2]=B[0]*P0[2]+B[1]*P1[2]+B[2]*P2[2];
+
+   return(1);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <VertexGradient>
  * Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
