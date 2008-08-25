@@ -110,6 +110,7 @@ proc IdIcons { Show } {
    image create photo RANGE       -file $GDefs(Dir)/Resources/Image/Icon/Ranges.gif
    image create photo MAGLOCK     -file $GDefs(Dir)/Resources/Image/Icon/MagLock.gif
    image create photo TABLETO     -file $GDefs(Dir)/Resources/Image/Icon/TableTo.gif
+   image create photo TARGET      -file $GDefs(Dir)/Resources/Image/Icon/Target.gif
 
    image create photo OPEN        -file $GDefs(Dir)/Resources/Image/Icon/Open.gif
    image create photo OPENDIR     -file $GDefs(Dir)/Resources/Image/Icon/OpenDir.gif
