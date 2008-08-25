@@ -251,6 +251,8 @@ proc TRAJ::LayoutToolBar { Frame } {
       label $Frame.bar.id -text " TRAJ " -relief sunken -bd 1
 
       menubutton $Frame.bar.prod -bd 1 -text [lindex $Lbl(Products) $GDefs(Lang)] -menu $Frame.bar.prod.menu
+      button $Frame.bar.zoomto -image TARGET -relief flat -bd 0 -overrelief raised \
+         -command { Trajectory::Locate [Viewport::Assigned $Page::Data(Frame) $Viewport::Data(VP) trajectory] 0.1 }
 
       checkbutton $Frame.bar.graph -text [lindex $Lbl(Graph) $GDefs(Lang)] -onvalue 1 -offvalue 0 \
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False\
@@ -262,7 +264,7 @@ proc TRAJ::LayoutToolBar { Frame } {
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False\
          -variable SPI::Data(ShowTrajLegend$Frame) -command "TRAJ::LayoutUpdate $Frame"
       pack $Frame.bar.height $Frame.bar.graph $Frame.bar.legend -side right -ipadx 2 -ipady 1
-      pack $Frame.bar.id $Frame.bar.prod -side left -fill y
+      pack $Frame.bar.id $Frame.bar.prod $Frame.bar.zoomto -side left -fill y
 
       menu $Frame.bar.prod.menu -tearoff 0 -bd 1 -activeborderwidth 1
          $Frame.bar.prod.menu add command -label [lindex $Lbl(Join) $GDefs(Lang)] \
