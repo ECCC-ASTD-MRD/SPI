@@ -1352,13 +1352,14 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
 */
 void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
-   TVector   *vecx,*vecy,*vecs,*vecd,*val;
-   Vect3d    *v,v0,v1,vt;
-   char       buf[32];
-   double    *vm,x,y,db,dh,x0,y0;
-   int        i,j,n,vn,sz;
-   XColor    *color=NULL;
-   Tcl_Obj   *obj;
+   Tk_FontMetrics tkm;
+   Tcl_Obj       *obj;
+   TVector       *vecx,*vecy,*vecs,*vecd,*val;
+   Vect3d        *v,v0,v1,vt;
+   char           buf[32];
+   double        *vm,x,y,db,dh,x0,y0;
+   int            i,j,n,vn,sz,px,py,pw;
+   XColor        *color=NULL;
 
 
    vecx=Vector_Get(Item->XData);
@@ -1611,6 +1612,8 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          case 13: val=Vector_Get(Item->MaxData); break;
       }
       if (val) {
+         px=py=pw=0;
+         Tk_GetFontMetrics(Item->Font,&tkm);
          for(i=0;i<vn;i++) {
             if (Item->Value==4) {
                GraphAxis_Print(AxisY,buf,val->V[i],-2);
@@ -1625,7 +1628,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                case TK_ANCHOR_W:      x=v[i][0]+j/strlen(buf);     break;
                case TK_ANCHOR_E:      x=v[i][0]-j-j/strlen(buf);   break;
             }
-            glPrint(Interp,Graph->canvas,buf,x,y,0.0);
+            if (!((y>=py && y<=py+tkm.linespace) || (y+tkm.linespace>=py && y<=py)) || !((x>=px && x<=px+pw) ||  (x+j>=px && x+j<=px+pw))) {
+               px=x;py=y;pw=j;
+               glPrint(Interp,Graph->canvas,buf,x,y,0.0);
+            }
          }
       }
    }
