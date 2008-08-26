@@ -1119,23 +1119,6 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
          glEnd();
       }
 
-      /*WetBulb (MinData)*/
-      if ((vwet=Vector_Get(Item->MinData)) && (vn=vwet->N<vpres->N?vwet->N:vpres->N)) {
-         glDash(&Graph->Dash[1]);
-         glBegin(GL_LINE_STRIP);
-         for(i=0;i<vn;i++) {
-            if (vwet->V[i]!=vwet->NoData && vpres->V[i]!=vpres->NoData) {
-               if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vwet->V[i],vpres->V[i],&v[0],&v[1])) {
-                  glVertex2dv(v);
-               } else {
-                  glEnd();
-                  glBegin(GL_LINE_STRIP);
-               }
-            }
-         }
-         glEnd();
-      }
-
       /*DewPoint (MaxData)*/
       if ((vdew=Vector_Get(Item->MaxData)) && (vn=vdew->N<vpres->N?vdew->N:vpres->N)) {
          glDash(&Graph->Dash[0]);
@@ -1152,6 +1135,25 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
          }
          glEnd();
       }
+
+      /*WetBulb (MinData)*/
+      if ((vwet=Vector_Get(Item->MinData)) && (vn=vwet->N<vpres->N?vwet->N:vpres->N)) {
+         glDash(&Graph->Dash[1]);
+         glBegin(GL_LINE_STRIP);
+         for(i=0;i<vn;i++) {
+            if (vdry->V[i]!=vdry->NoData && vdew->V[i]!=vdew->NoData && vpres->V[i]!=vpres->NoData) {
+               vwet->V[i]=Thermo_TD2WB(vpres->V[i],vdry->V[i],vdew->V[i]);
+               if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vwet->V[i],vpres->V[i],&v[0],&v[1])) {
+                  glVertex2dv(v);
+               } else {
+                  glEnd();
+                  glBegin(GL_LINE_STRIP);
+               }
+            }
+         }
+         glEnd();
+      }
+
       glDisable(GL_LINE_STIPPLE);
 
       vspd=Vector_Get(Item->Speed);
