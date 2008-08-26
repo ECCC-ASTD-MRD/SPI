@@ -102,11 +102,36 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 */
 int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY){
 
+   Vect3d   b,v;
    float    x,y;
    void     *p0,*p1;
    int      valid=0,mem,ix,iy,n;
 
    *Length=Def->NoData;
+
+   if (Ref->Grid[0]=='M') {
+      if (C<Def->NC && X>=0 && Y>=0) {
+         b[0]=X-(int)X;
+         b[1]=Y-(int)Y;
+         b[2]=1.0-b[0]-b[1];
+         ix=(int)X;
+
+         if (Mode=='N') {
+            n=(b[0]>b[1]?(b[0]>b[2]?0:2):(b[1]>b[2]?1:2));
+            Def_Get(Def,C,Ref->Idx[ix+n],v[0]);
+            *Length=v[0];
+         } else {
+            Def_Get(Def,C,Ref->Idx[ix],v[0]);
+            Def_Get(Def,C,Ref->Idx[ix+1],v[1]);
+            Def_Get(Def,C,Ref->Idx[ix+2],v[2]);
+
+            *Length=Bary_Interp1D(b,v);
+         }
+         return(1);
+      } else {
+         return(0);
+      }
+   }
 
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
    if (C<Def->NC && X>=Ref->X0 && Y>=Ref->Y0 && Z>=0 && X<=Ref->X1 && Y<=Ref->Y1 && Z<=Def->NK-1) {
@@ -265,29 +290,43 @@ void GeoRef_Expand(TGeoRef *Ref) {
 */
 int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   float i,j,lat,lon,d,dx=1.0;
-   int   di,dj,idx;
+   float  i,j,lat,lon,d,dx=1.0;
+   int    n,di,dj,idx;
+   Vect3d b;
 
    *X=-1.0;
    *Y=-1.0;
 
    if (Ref->Type&GRID_SPARSE) {
       if (Ref->Lon && Ref->Lat) {
-         for(dj=0;dj<=(Ref->Y1-Ref->Y0);dj++) {
-            for(di=0;di<=(Ref->X1-Ref->X0);di++) {
+         if (Ref->Grid[0]=='M') {
+            for(n=0;n<Ref->NIdx-3;n+=3) {
+               if (Bary_Get(b,Lon,Lat,Ref->Lon[Ref->Idx[n]],Ref->Lat[Ref->Idx[n]],
+                  Ref->Lon[Ref->Idx[n+1]],Ref->Lat[Ref->Idx[n+1]],Ref->Lon[Ref->Idx[n+2]],Ref->Lat[Ref->Idx[n+2]])) {
 
-               idx=dj*(Ref->X1-Ref->X0)+di;
-               dx=hypot(fabs(Lon-Ref->Lon[idx]),fabs(Lat-Ref->Lat[idx]));
-
-               if (dx<0.1 && dx<d) {
-                  *X=di;*Y=dj;d=dx;
+                  *X=n+b[0];
+                  *Y=n+b[1];
+                  return(1);
                }
             }
-         }
-         if (d<1.0) {
-            return(1);
-         } else {
             return(0);
+         } else {
+            for(dj=0;dj<=(Ref->Y1-Ref->Y0);dj++) {
+               for(di=0;di<=(Ref->X1-Ref->X0);di++) {
+
+                  idx=dj*(Ref->X1-Ref->X0)+di;
+                  dx=hypot(fabs(Lon-Ref->Lon[idx]),fabs(Lat-Ref->Lat[idx]));
+
+                  if (dx<0.1 && dx<d) {
+                     *X=di;*Y=dj;d=dx;
+                  }
+               }
+            }
+            if (d<1.0) {
+               return(1);
+            } else {
+               return(0);
+            }
          }
       } else {
          return(0);
