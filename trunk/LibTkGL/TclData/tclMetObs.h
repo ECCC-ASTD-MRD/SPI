@@ -47,9 +47,6 @@
 #define MET_TYPEID   0x0
 #define MET_TYPENO   0x1
 #define MET_TYPETG   0x2
-#define MET_STATENEW 0x0
-#define MET_STATESCO 0x1
-#define MET_STATEHCO 0x2
 
 typedef struct TMetModelItem {
    int        X,Y;
@@ -60,7 +57,7 @@ typedef struct TMetModelItem {
 typedef struct TMetModel {
    char *Name;
    char *Topo;
-   int NItem,NRef,Space,Flat;
+   int   NItem,NRef,Space,Flat;
    TMetModelItem *Items;
 } TMetModel;
 
@@ -104,15 +101,16 @@ typedef struct TMetObs {
 
    char    **Info;
    int      NbInfo;
-   time_t   Time,Time0,Time1;
-   time_t   Cache;
-   time_t   Persistance;
-   float    NoData;
-   int      Strict;
+   time_t   Time,Time0,Time1;   /*Time ranges*/
+   time_t   Cache;              /*How long to keep in memory*/
+   time_t   Persistance;        /*How long before no valid*/
+   float    NoData;             /*No data value*/
+   int      Strict;             /*Data date selection looseness*/
+   int      State;             /*Data state descriptor*/
    int      FId;
 
-   TMetLoc    *Loc;        /*Liste des localisations (stations)*/
-   TMetModel  *Model;      /*Modele d'affichage*/
+   TMetLoc    *Loc;             /*Liste des localisations (stations)*/
+   TMetModel  *Model;           /*Modele d'affichage*/
 } TMetObs;
 
 int      TclMetObs_Init(Tcl_Interp *Interp);
@@ -141,7 +139,7 @@ TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type);
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi);
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev);
 
-TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
+TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int St,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data);
 TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time);
 TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,int Exact);

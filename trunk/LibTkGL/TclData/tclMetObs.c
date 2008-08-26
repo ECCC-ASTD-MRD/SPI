@@ -446,8 +446,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-CODE","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,CODE,REPORT,NB,DATE,DATE0,DATE1,VALID,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-CODE","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-STATUS","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,CODE,REPORT,NB,DATE,DATE0,DATE1,VALID,STATUS,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -725,11 +725,13 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         Tcl_ListObjAppendElement(Interp,obj,sub);
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
-                           for(e=0;e<data->Ne;e++) {
-                              if (data->Code[e]->descriptor==eb->descriptor) {
-                                 for(v=0;v<data->Nv;v++) {
-                                    for(t=0;t<data->Nt;t++) {
-                                       Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
+                           if (obs->State==-1 || obs->State==data->St) {
+                              for(e=0;e<data->Ne;e++) {
+                                 if (data->Code[e]->descriptor==eb->descriptor) {
+                                    for(v=0;v<data->Nv;v++) {
+                                       for(t=0;t<data->Nt;t++) {
+                                          Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
+                                       }
                                     }
                                  }
                               }
@@ -742,13 +744,15 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      obj=Tcl_NewListObj(0,NULL);
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                      if ((elem=TMetElem_Find(loc,time,obs->Strict))) {
-                       for(d=0;d<elem->NData;d++) {
+                        for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
-                           for(e=0;e<data->Ne;e++) {
-                              if (data->Code[e]->descriptor==eb->descriptor) {
-                                for(v=0;v<data->Nv;v++) {
-                                    for(t=0;t<data->Nt;t++) {
-                                       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
+                           if (obs->State==-1 || obs->State==data->St) {
+                              for(e=0;e<data->Ne;e++) {
+                                 if (data->Code[e]->descriptor==eb->descriptor) {
+                                 for(v=0;v<data->Nv;v++) {
+                                       for(t=0;t<data->Nt;t++) {
+                                          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
+                                       }
                                     }
                                  }
                               }
@@ -767,7 +771,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         valf[v]=val;
                      }
 
-                     if (!(data=TMetElem_Insert(loc,0,time,1,nv,1,valf,&eb))) {
+                     if (!(data=TMetElem_Insert(loc,0,time,0x0,1,nv,1,valf,&eb))) {
                         Tcl_AppendResult(Interp,"\n   MetObs_Define: Unable to add element",(char*)NULL);
                         free(valf);
                         return(TCL_ERROR);
@@ -891,6 +895,14 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
              }
             break;
 
+         case STATUS:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->State));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&obs->State);
+            }
+            break;
+
          case MODEL:
             if (Objc==1) {
                obs->Model->NRef++;
@@ -964,6 +976,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Cache  = 0;
    obs->Persistance = 0;
    obs->Strict = 0;
+   obs->State = -1;
    obs->Info   = NULL;
    obs->NbInfo = 0;
    obs->NoData = -999.0f;
@@ -1460,7 +1473,7 @@ void TMetElem_Clean(TMetLoc *Loc,time_t Time) {
    }
 }
 
-TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,int Nt,float *Data,EntryTableB **Codes) {
+TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int St,int Ne,int Nv,int Nt,float *Data,EntryTableB **Codes) {
 
    TMetElemData *ptr,*data=NULL;
 
@@ -1469,7 +1482,7 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Ne,int Nv,
    data->Ne=Ne;
    data->Nv=Nv;
    data->Nt=Nt;
-   data->St=0x0;
+   data->St=St;
    data->Data=(float*)malloc(data->Ne*data->Nv*data->Nt*sizeof(float));
    if (Data) memcpy(data->Data,Data,data->Ne*data->Nv*data->Nt*sizeof(float));
    data->Code=(EntryTableB**)malloc(data->Ne*sizeof(EntryTableB*));
@@ -1941,7 +1954,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             code=TCL_ERROR;
             break;
          }
-
          // 0x0=New, 0x8=Correction, 0x10=Repeat, 0X18=Human Correction
 //         if (bfam!=0) { continue; };
 //         if (bfam&0x8) { continue; };
@@ -2001,8 +2013,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
          }
 
-         data=TMetElem_Insert(loc,dt,time,nelem,nval,nt,tblvalf,eb);
-//         data->St=bfam==0?MET_STATENEW:(bfam&0x8?MET_STATESCO:MET_STATEHCO);
+         data=TMetElem_Insert(loc,dt,time,bfam,nelem,nval,nt,tblvalf,eb);
       }
    }
 
@@ -2169,7 +2180,7 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                }
             } else if (strncmp(gtok[n],"DATA",4)==0) {       /*Values*/
 /*TODO
-               data=TMetElem_Insert(loc,0,gtime[n],nelem,nt*nval);
+               data=TMetElem_Insert(loc,0,gtime[n],0x0,nelem,nt*nval);
 
                if (tok[n][0]=='-' && tok[n][1]=='\0') {
                   ((float*)obs->Def->Data[0])[nb]=-999.0f;
@@ -2430,6 +2441,11 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                /*Loop on the data*/
                for(d=0;d<elem->NData;d++) {
                   data=elem->EData[d];
+
+                  /*Check for data state matching*/
+                  if (Obs->State!=-1 && Obs->State!=data->St) {
+                     continue;
+                  }
 
                   ne=-1;
                   for(e=0;e<data->Ne;e++) {
@@ -2958,8 +2974,8 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    float        *valf;
    double        val;
 
-   static CONST char *sopt[] = { "-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
-   enum                opt { ELEMENT,DESC,UNIT,CODE,VALUE };
+   static CONST char *sopt[] = { "-STATUS","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
+   enum                opt { STATUS,ELEMENT,DESC,UNIT,CODE,VALUE };
 
    data=MetReport_Get(Name);
    if (!data) {
@@ -2974,6 +2990,14 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
       }
 
       switch ((enum opt)idx) {
+         case STATUS:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(data->St));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&data->St);
+            }
+            break;
+
          case DESC:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);

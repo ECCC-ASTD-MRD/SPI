@@ -94,6 +94,9 @@ proc IdIcons { Show } {
    image create photo SQUARE      -file $GDefs(Dir)/Resources/Image/Icon/Square.gif
    image create photo LINE        -file $GDefs(Dir)/Resources/Image/Icon/Line.gif
    image create photo POLY        -file $GDefs(Dir)/Resources/Image/Icon/Polygon.gif
+   image create photo BARB        -file $GDefs(Dir)/Resources/Image/Icon/Barb.gif
+   image create photo DASH1       -file $GDefs(Dir)/Resources/Image/Icon/Dash1.gif
+   image create photo DASH2       -file $GDefs(Dir)/Resources/Image/Icon/Dash2.gif
    image create photo VAL         -file $GDefs(Dir)/Resources/Image/Icon/Gauge.gif
    image create photo STREAM      -file $GDefs(Dir)/Resources/Image/Icon/Stream.gif
    image create photo RULER       -file $GDefs(Dir)/Resources/Image/Icon/Ruler.gif
