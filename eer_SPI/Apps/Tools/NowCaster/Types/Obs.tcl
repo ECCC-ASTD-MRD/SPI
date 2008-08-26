@@ -40,6 +40,7 @@ namespace eval NowCaster::Obs { } {
    set Data(Obs)         { }
    set Data(Topo)        ""
    set Data(CurrentObs)  NONE
+   set Data(Status)      -1
    set Data(Spacing)     25
    set Data(Flat)        0
    set Data(Elems)       { }
@@ -96,6 +97,7 @@ namespace eval NowCaster::Obs { } {
    set Bubble(Topo)       { "Variable definnisant l'élévation" "Variable definning the elevation" }
    set Bubble(Spacing)    { "Espacement entre les éléments de pointage" "Spacing between the plotted elements" }
    set Bubble(Grid)       { "Sélection du positionnement des élément\nrelativement à la position centrale en blanc" "Element position selection relative\not the central location in white" }
+   set Bubble(Status)     { "Sélection du type/famille d'observation" "Select type/family of observation" }
 }
 
 #----------------------------------------------------------------------------
@@ -204,6 +206,15 @@ proc NowCaster::Obs::Window { Frame } {
             pack $Frame.model.elem.topo.sel -side left -fill x -expand True
          pack $Frame.model.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
 
+         frame $Frame.model.elem.status
+            label $Frame.model.elem.status.lbl -text Status -width 11 -anchor w
+            spinbox $Frame.model.elem.status.sel -textvariable NowCaster::Obs::Data(Status) -from -1 -to 63 -wrap 1 -bd 1 -bg $GDefs(ColorLight) \
+               -command { set NowCaster::Obs::Data(Status$NowCaster::Obs::Data(CurrentObs)) $NowCaster::Obs::Data(Status); NowCaster::Obs::ModelApply }
+            pack $Frame.model.elem.status.lbl -side left
+            pack $Frame.model.elem.status.sel -side left -fill x -expand True
+         pack $Frame.model.elem.status -side top -fill x -padx 2 -pady 2 -expand True
+         bind $Frame.model.elem.status.sel <Return>  { set NowCaster::Obs::Data(Status$NowCaster::Obs::Data(CurrentObs)) $NowCaster::Obs::Data(Status); NowCaster::Obs::ModelApply }
+
          frame $Frame.model.elem.spc
             label $Frame.model.elem.spc.lbl -text [lindex $Lbl(Spacing) $GDefs(Lang)] -width 11 -anchor w
             label $Frame.model.elem.spc.txt -textvariable NowCaster::Obs::Data(Spacing) -width 4 -anchor w -relief sunken -bd 1 -bg $GDefs(ColorLight)
@@ -265,11 +276,12 @@ proc NowCaster::Obs::Window { Frame } {
    Bubble::Create $Frame.model.name.del   [lindex $Bubble(ModelDel) $GDefs(Lang)]
    Bubble::Create $Frame.model.name.new   [lindex $Bubble(ModelClear) $GDefs(Lang)]
 
-   Bubble::Create $Frame.model.elem.var0.sel  [lindex $Bubble(Variable0) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.var1.sel  [lindex $Bubble(Variable1) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.topo.sel  [lindex $Bubble(Topo) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.spc.val   [lindex $Bubble(Spacing) $GDefs(Lang)]
-   Bubble::Create $Frame.model.items          [lindex $Bubble(Grid) $GDefs(Lang)]
+   Bubble::Create $Frame.model.elem.var0.sel   [lindex $Bubble(Variable0) $GDefs(Lang)]
+   Bubble::Create $Frame.model.elem.var1.sel   [lindex $Bubble(Variable1) $GDefs(Lang)]
+   Bubble::Create $Frame.model.elem.topo.sel   [lindex $Bubble(Topo) $GDefs(Lang)]
+   Bubble::Create $Frame.model.elem.spc.val    [lindex $Bubble(Spacing) $GDefs(Lang)]
+   Bubble::Create $Frame.model.elem.status.sel [lindex $Bubble(Status) $GDefs(Lang)]
+   Bubble::Create $Frame.model.items           [lindex $Bubble(Grid) $GDefs(Lang)]
 
    NowCaster::Obs::ModelLoad
 }
@@ -541,6 +553,7 @@ proc NowCaster::Obs::Add { Path } {
    set Data(Param$obs)     {}
    set Data(Spacing$obs)   $Data(Spacing)
    set Data(Flat$obs)      $Data(Flat)
+   set Data(Status$obs)    $Data(Status)
 
    #----- Read in the data
 
@@ -644,7 +657,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
    foreach obs $Obs {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
-      metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance)
+      metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -STATUS $Data(Status$obs)
 
       foreach item $Data(Model$obs) {
          set desc [metobs table -desc [lindex $item 2]]
@@ -681,6 +694,7 @@ proc NowCaster::Obs::ObsSelect { Obs } {
       set Data(CurrentObs) $Obs
       set Data(Elems)      $Data(Elems$Obs)
       set Data(ModelName)  $Data(ModelName$Obs)
+      set Data(Status)     $Data(Status$Obs)
 
       if { [winfo exists .nowcaster] } {
          ComboBox::DelAll  $Data(Frame).model.elem.var0.sel
@@ -1085,6 +1099,21 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
       pack ${tab}.info -side top -fill both -expand true -padx 5 -pady 5
 
       set tab [TabFrame::Add .nowcasterinfo.tab 1 [lindex $Lbl(Tephi) $GDefs(Lang)] True]
+      frame ${tab}.bar -relief flat
+         checkbutton ${tab}.bar.dry -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text "DRY " -variable a -selectcolor $GDefs(ColorLight) -image LINE -compound right \
+            -command {}
+         checkbutton ${tab}.bar.wet -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text "WET " -variable s -selectcolor $GDefs(ColorLight) -image DASH1 -compound right \
+            -command {}
+         checkbutton ${tab}.bar.dew -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text "DEW " -variable d -selectcolor $GDefs(ColorLight) -image DASH2 -compound right \
+            -command {}
+         checkbutton ${tab}.bar.wind -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -text "Wind " -variable f  -selectcolor $GDefs(ColorLight) -image BARB -compound right \
+            -command {}
+         pack ${tab}.bar.dry ${tab}.bar.wet ${tab}.bar.dew ${tab}.bar.wind -side left -pady 2 -ipadx 2
+      pack ${tab}.bar -side top -fill x -padx 5 -pady 5
       glcanvas ${tab}.glcanvas -width 0 -height 0 -bg white -relief sunken -bd 1 -highlightthickness 0
       pack ${tab}.glcanvas -fill both -expand true -padx 5 -pady 5
 
@@ -1103,7 +1132,7 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
          graphaxis create TEPHIAXISMIX
 
          graphaxis configure TEPHIAXIST  -font TEPHIFONT -color black -gridcolor black -gridwidth 1 -position LL -width 1 -unit T \
-            -min -70 -max 72 -increment 10 -highlightwidth 2 -highlight { 0 }
+            -min -70 -max 72 -increment 10 -highlightwidth 2 -highlight { 0 } -format INTEGER
          graphaxis configure TEPHIAXISP  -font TEPHIFONT -color black -gridcolor black -gridwidth 1 -position LL -width 1 -unit P \
             -min 1050 -max 10  -increment 50  -intervals { 1050 1000 950 900 850 800 750 700 650 600 550 500 450 400 350 300 250 200 150 100 50 40 30 20 } \
             -highlightwidth 2 -highlight { 1000 850 700 500 250 }
@@ -1141,6 +1170,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
          .nowcasterinfo.tab.frame0.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true]\n"
          foreach report [metobs define $Obs -REPORT $Tag $date] {
             .nowcasterinfo.tab.frame0.info.text insert end "---------------------------------------------------------------\n"
+            .nowcasterinfo.tab.frame0.info.text insert end "Status: [metreport define $report -STATUS]\n"
             foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
                .nowcasterinfo.tab.frame0.info.text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
             }
