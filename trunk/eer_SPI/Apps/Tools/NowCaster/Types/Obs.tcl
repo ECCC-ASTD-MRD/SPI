@@ -72,6 +72,7 @@ namespace eval NowCaster::Obs { } {
    set Lbl(Tephi)   { "Tephigramme" "Tephigram" }
    set Lbl(All)     { "Tous" "All" }
    set Lbl(Current) { "Courant" "Current" }
+   set Lbl(Status)  { "Type" "Type" }
 
    set Msg(Read)   { "Lecture des données d'observations" "Reading observation data" }
    set Msg(Exist)  { "Un model de ce nom existe déja, désirez vous le remplacer ?"
@@ -207,8 +208,8 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.model.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
 
          frame $Frame.model.elem.status
-            label $Frame.model.elem.status.lbl -text Status -width 11 -anchor w
-            spinbox $Frame.model.elem.status.sel -textvariable NowCaster::Obs::Data(Status) -from -1 -to 63 -wrap 1 -bd 1 -bg $GDefs(ColorLight) \
+            label $Frame.model.elem.status.lbl -text [lindex $Lbl(Status) $GDefs(Lang)] -width 11 -anchor w
+            spinbox $Frame.model.elem.status.sel -textvariable NowCaster::Obs::Data(Status) -from -1 -to 255 -wrap 1 -bd 1 -bg $GDefs(ColorLight) \
                -command { set NowCaster::Obs::Data(Status$NowCaster::Obs::Data(CurrentObs)) $NowCaster::Obs::Data(Status); NowCaster::Obs::ModelApply }
             pack $Frame.model.elem.status.lbl -side left
             pack $Frame.model.elem.status.sel -side left -fill x -expand True
