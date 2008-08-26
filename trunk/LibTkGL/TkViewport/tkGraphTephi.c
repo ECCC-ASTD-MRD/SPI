@@ -1083,11 +1083,12 @@ void GraphTehpi_DisplayMixRatios(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
 */
 void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisT,TGraphAxis *AxisP,TGraphAxis *AxisTH,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
-   TVector   *vdry,*vpres,*vwet,*vdew,*vspd,*vdir,*vspr;
-   double     v[2],val,v0[2],t;
-   char       buf[32];
-   int        i,vn,j,x,y;
-   Tcl_Obj   *obj;
+   Tk_FontMetrics tkm;
+   Tcl_Obj       *obj;
+   TVector       *vdry,*vpres,*vwet,*vdew,*vspd,*vdir,*vspr;
+   double         v[2],val,v0[2],t;
+   char           buf[32];
+   int            i,vn,j,x,y,px,py,pw;
 
    /*Pressure (YData)*/
    vpres=Vector_Get(Item->YData);
@@ -1175,8 +1176,11 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
    /* Display Values */
    if (Item->Value && Item->Font && GLMode==GL_RENDER) {
       val=-999.0;
+      px=py=pw=0;
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
+      Tk_GetFontMetrics(Item->Font,&tkm);
+
       for(i=0;i<vn;i++) {
          switch(Item->Value) {
             case  1:
@@ -1199,7 +1203,10 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
                   case TK_ANCHOR_W:      x=v[0]+j/strlen(buf);     break;
                   case TK_ANCHOR_E:      x=v[0]-j-j/strlen(buf);   break;
                }
-               glPrint(Interp,Graph->canvas,buf,x,y,0.0);
+               if (!((y>=py && y<=py+tkm.linespace) || (y+tkm.linespace>=py && y<=py)) || !((x>=px && x<=px+pw) ||  (x+j>=px && x+j<=px+pw))) {
+                  px=x;py=y;pw=j;
+                  glPrint(Interp,Graph->canvas,buf,x,y,0.0);
+               }
             }
          }
       }
