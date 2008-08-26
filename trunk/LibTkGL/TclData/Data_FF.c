@@ -585,6 +585,7 @@ int FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PM
    }
    return(n);
 }
+
 /*----------------------------------------------------------------------------
  * Nom      : <FFMarchingCube>
  * Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
