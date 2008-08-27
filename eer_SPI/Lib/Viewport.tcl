@@ -22,6 +22,7 @@
 #    Viewport::ConfigPut      { Frame VP }
 #    Viewport::ConfigSet      { Frame }
 #    Viewport::Follow         { Frame VP X Y }
+#    Viewport::Follower       { Page Canvas VP Lat Lon X Y }
 #    Viewport::FollowerAdd    { Follower }
 #    Viewport::FollowerRemove { Follower }
 #    Viewport::FollowerInfo   { Frame VP }
@@ -75,38 +76,38 @@ namespace eval Viewport {
    variable Resources
    variable Lbl
 
-   set Data(VPNb)       0           ;#Compteur de viewport
-   set Data(VP)         ""          ;#Viewport courant
-   set Data(Seconds)    0           ;#Temps en seconde de la projection
-   set Data(Followers)  {}          ;#Liste des packages de suivit des coordonnees
-   set Data(FollowerNb) 0           ;#Nombre de suivit courant
-   set Data(Link)       {}          ;#Lien source
-   set Data(Data)       {}          ;#Liste des donnees
+   set Data(VPNb)       0            ;#Compteur de viewport
+   set Data(VP)         ""           ;#Viewport courant
+   set Data(Seconds)    0            ;#Temps en seconde de la projection
+   set Data(Followers)  { Viewport } ;#Liste des packages de suivit des coordonnees
+   set Data(FollowerNb) 0            ;#Nombre de suivit courant
+   set Data(Link)       {}           ;#Lien source
+   set Data(Data)       {}           ;#Liste des donnees
 
-   set Map(Sun)         0           ;#Affichage du Soleil
-   set Map(Res)         0           ;#Resolution geographique (0=Auto,2,4,8,16,32,64,128)
-   set Map(Mask)        0           ;#Masque (Tout=0,Terre=1,Mer=2)
-   set Map(Coast)       1           ;#Cotes
-   set Map(Lake)        1           ;#Lacs
-   set Map(River)       0           ;#Rivieres
-   set Map(Polit)       1           ;#Bordures politiques
-   set Map(Place)       0           ;#Endroits
-   set Map(Admin)       0           ;#Bordures politiques internes
-   set Map(City)        0           ;#Villes
-   set Map(Road)        0           ;#Routes
-   set Map(Rail)        0           ;#Chemin de fer
-   set Map(Topo)        0           ;#Topographie
-   set Map(Bath)        0           ;#Bathymetrie
-   set Map(Text)        0           ;#Texture
-   set Map(Coord)       1           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
-   set Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
-   set Map(CoordNum)    2           ;#Numerotation des latlon
-   set Map(Elev)        1.0         ;#Facteur d'expansion des elevations
-   set Map(GeoRef)      ""          ;#Geo-reference courante (Mode Grid)
-   set Map(Grabbed)     False       ;#Etat de la vue
-   set Map(Delay)       800.0       ;#Temps de deplacement en millisecondes
-   set Map(Speed)       0.0         ;#Vitesse de deplacement en metres/millisecondes
-   set Map(Damping)     1.07        ;#Facteur de l'effet de ralentissement
+   set Map(Sun)         0            ;#Affichage du Soleil
+   set Map(Res)         0            ;#Resolution geographique (0=Auto,2,4,8,16,32,64,128)
+   set Map(Mask)        0            ;#Masque (Tout=0,Terre=1,Mer=2)
+   set Map(Coast)       1            ;#Cotes
+   set Map(Lake)        1            ;#Lacs
+   set Map(River)       0            ;#Rivieres
+   set Map(Polit)       1            ;#Bordures politiques
+   set Map(Place)       0            ;#Endroits
+   set Map(Admin)       0            ;#Bordures politiques internes
+   set Map(City)        0            ;#Villes
+   set Map(Road)        0            ;#Routes
+   set Map(Rail)        0            ;#Chemin de fer
+   set Map(Topo)        0            ;#Topographie
+   set Map(Bath)        0            ;#Bathymetrie
+   set Map(Text)        0            ;#Texture
+   set Map(Coord)       1            ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Map(CoordDef)    10.0         ;#Intervale entre les latlon en degres
+   set Map(CoordNum)    2            ;#Numerotation des latlon
+   set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
+   set Map(GeoRef)      ""           ;#Geo-reference courante (Mode Grid)
+   set Map(Grabbed)     False        ;#Etat de la vue
+   set Map(Delay)       800.0        ;#Temps de deplacement en millisecondes
+   set Map(Speed)       0.0          ;#Vitesse de deplacement en metres/millisecondes
+   set Map(Damping)     1.07         ;#Facteur de l'effet de ralentissement
 
    set Map(Type)        orthographic;#Type de projection
 
@@ -695,9 +696,6 @@ proc Viewport::Follow { Frame VP X Y } {
 
    set latlon [$VP -unproject $X $Y]
 
-   set info  ""
-   set graph ""
-
    set Map(X) $X
    set Map(Y) $Y
    set Map(LatCursor)  [lindex $latlon 0]
@@ -714,48 +712,9 @@ proc Viewport::Follow { Frame VP X Y } {
    catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
    set Page::Data(Altitude) $Map(AltCursor)
 
-   #----- Obtenir l'information des donnees
+   #----- Activation du pointeur commun
 
    $Frame.page.canvas delete COORDLINK
-
-   if { $Map(Speed)==0.0 } {
-      set data [$VP -pick $X $Y { trajectory observation metobs }]
-
-      if { [llength $data] } {
-         set obj [lindex $data 1]
-         switch [lindex $data 0] {
-            "trajectory"  { set tag   [lindex $data 2]
-                            set parcel [trajectory define $obj -PARCEL $tag]
-                            set info  "[trajectory define $obj -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
-                            set coord [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
-                            append Page::Data(Value) "[trajectory define $obj -ID]:[DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)] "
-                          }
-            "observation" { set tag   [lindex $data 2]
-                            set info  [observation define $obj -ID $tag]
-                            set coord [observation define $obj -COORD $tag]
-                            append Page::Data(Value) "$obj:[observation define $obj -DATA $tag] "
-                          }
-            "metobs"      { set tag   [lindex $data 2]
-                            set info  [lindex [metobs define $obj -ID $tag]]
-                            set coord [metobs define $obj -COORD $tag]
-                            set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
-                            set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
-                            set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
-                            append Page::Data(Value) "[lindex [metobs table -desc [lindex $item 2]] 0]:"
-                            foreach val $vals {
-                               append Page::Data(Value) " $val"
-                            }
-                            append Page::Data(Value) " "
-                            set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
-                          }
-         }
-         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
-         catch { set Page::Data(Altitude) [lindex $coord 2] }
-      }
-   }
-   Page::CursorInfo $Frame $X $Y $info $graph
-
-   #----- Activation du pointeur commun
 
    if { $Page::Data(CoordLink) } {
       foreach frame $Page::Data(Frames) {
@@ -789,10 +748,9 @@ proc Viewport::Follow { Frame VP X Y } {
       Viewport::FollowerInfo $Frame $VP
    } else {
       foreach follower $Data(Followers) {
-         eval ${follower}::Follower  $Frame $Frame.page.canvas $VP $Map(LatCursor) $Map(LonCursor) $X $Y
+         eval ${follower}::Follower $Frame $Frame.page.canvas $VP $Map(LatCursor) $Map(LonCursor) $X $Y
       }
    }
-
 
    #----- Verifier la validitee de la coordonnee
 
@@ -808,6 +766,78 @@ proc Viewport::Follow { Frame VP X Y } {
       }
       return 1
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Viewport::Follower>
+# Creation : Novembre 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Plugin au bindings de suivit de coordonnees du Viewport
+#
+# Parametres :
+#   <Frame>  : Page courante
+#   <Canvas> : Canvas courant
+#   <VP>     : Viewport courant
+#   <Lat>    : Lattitude
+#   <Lon>    : Longitude
+#   <X>      : Pixel en X
+#   <Y>      : Pixel en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
+   global GDefs
+   variable Data
+   variable Map
+
+   set info  ""
+   set graph ""
+   set list  ""
+
+   if { $Map(Speed)==0.0 } {
+      set data [$VP -pick $X $Y { trajectory observation metobs }]
+puts stderr $data
+      if { [llength $data] } {
+         set obj [lindex $data 1]
+         switch [lindex $data 0] {
+            "trajectory"  { set tag    [lindex $data 2]
+                            set parcel [trajectory define $obj -PARCEL $tag]
+                            set info  "[trajectory define $obj -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
+                            set coord  [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
+                            set id     [trajectory define $obj -ID]
+                            set vals   [DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]
+                            append Page::Data(Value) "$id:$vals "
+                          }
+            "observation" {
+                            set tag   [lindex $data 2]
+                            set info  [observation define $obj -ID $tag]
+                            set coord [observation define $obj -COORD $tag]
+                            set id    $obj
+                            set vals  [observation define $obj -DATA $tag]
+                            append Page::Data(Value) "$id:$vals "
+                          }
+            "metobs"      { set tag   [lindex $data 2]
+                            set info  [lindex [metobs define $obj -ID $tag]]
+                            set coord [metobs define $obj -COORD $tag]
+                            set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
+                            set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
+                            set id    [lindex [metobs table -desc [lindex $item 2]] 0]
+                            set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
+                            append Page::Data(Value) "$id:[join $vals " "] "
+                            set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
+                          }
+         }
+         lappend list [list $id {} {} $vals]
+         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
+         catch { set Page::Data(Altitude) [lindex $coord 2] }
+      }
+   }
+   Page::CursorInfo $Page $X $Y $info $graph
+   return $list
 }
 
 #----------------------------------------------------------------------------
@@ -908,13 +938,13 @@ proc Viewport::FollowerInfo { Frame VP } {
          set fs {}
          foreach frame $Page::Data(Frames) {
             foreach vp [Page::Registered $frame Viewport] {
-               foreach f [${follower}::Follower $frame $frame.page.canvas $vp $Map(LatCursor) $Map(LonCursor) 0 0] {
+               foreach f [${follower}::Follower $frame $frame.page.canvas $vp $Map(LatCursor) $Map(LonCursor) $Map(X) $Map(Y)] {
                    Viewport::FollowerSet [incr i] [lindex $f 0] [lindex $f 3] [lindex [lindex $f 1] 0] [lindex [lindex $f 1] 1] [lindex [lindex $f 2] 0] [lindex [lindex $f 2] 1]
                }
             }
          }
       } else {
-         foreach f [${follower}::Follower $Frame $Frame.page.canvas $VP $Map(LatCursor) $Map(LonCursor) 0 0] {
+         foreach f [${follower}::Follower $Frame $Frame.page.canvas $VP $Map(LatCursor) $Map(LonCursor) $Map(X) $Map(Y)] {
             Viewport::FollowerSet [incr i] [lindex $f 0] [lindex $f 3] [lindex [lindex $f 1] 0] [lindex [lindex $f 1] 1] [lindex [lindex $f 2] 0] [lindex [lindex $f 2] 1]
          }
       }
