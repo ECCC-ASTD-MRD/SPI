@@ -37,12 +37,20 @@
 #include "bufr_array.h"
 #include "bufr_local.h"
 
+typedef struct BUFR_Datasubset {
+   BUFR_Sequence  *BSeq;
+   BufrDDOp       *BDDO;
+   ListNode       *Node;
+} BUFR_Datasubset;
+
 int TclMetDataset_Init(Tcl_Interp *Interp);
 
-BUFR_Dataset*  MetDataset_Get(char *Name);
-Tcl_Obj*       MetDataset_Put(Tcl_Interp *Interp,char *Name,BUFR_Dataset *Set);
-BUFR_Template* MetTemplate_Get(char *Name);
-Tcl_Obj*       MetTemplate_Put(Tcl_Interp *Interp,char *Name,BUFR_Template *Tmp);
+BUFR_Dataset*    MetDataset_Get(char *Name);
+Tcl_Obj*         MetDataset_Put(Tcl_Interp *Interp,char *Name,BUFR_Dataset *Set);
+BUFR_Datasubset* MetDatasubset_Get(char *Name);
+int              MetDatasubset_Put(Tcl_Interp *Interp,char *Name,BUFR_Datasubset *SSet);
+BUFR_Template*   MetTemplate_Get(char *Name);
+Tcl_Obj*         MetTemplate_Put(Tcl_Interp *Interp,char *Name,BUFR_Template *Tmp);
 
 FILE* MetDatafile_Get(char *Name);
 int MetDatafile_Put(Tcl_Interp *Interp,char *Name,FILE *File);
