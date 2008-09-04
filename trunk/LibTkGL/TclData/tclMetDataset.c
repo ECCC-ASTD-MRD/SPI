@@ -33,7 +33,9 @@
 
 static Tcl_HashTable MetDatafileTable;
 static Tcl_HashTable MetDatasetTable;
+static Tcl_HashTable MetDatasubsetTable;
 static Tcl_HashTable MetTemplateTable;
+static long          MetDatasubsetNo=0;
 static long          MetDatasetNo=0;
 static long          MetTemplateNo=0;
 static int           MetDatasetInit=0;
@@ -67,6 +69,7 @@ int TclMetDataset_Init(Tcl_Interp *Interp) {
 
    if (!MetDatasetInit++) {
       Tcl_InitHashTable(&MetDatasetTable,TCL_STRING_KEYS);
+      Tcl_InitHashTable(&MetDatasubsetTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&MetDatafileTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&MetTemplateTable,TCL_STRING_KEYS);
    }
@@ -300,23 +303,24 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj        *obj=NULL,*lst;
-   BUFR_Dataset   *set;
-   BUFR_Template  *tmp;
-   DataSubset     *subset;
-   ListNode       *node;
-   BufrDescriptor *bcv,**pbcd;
-   BUFR_Sequence  *bseq;
-   BufrDDOp       *ddo=NULL;
-   int             i,idx;
-   int             s,c,ns,nc,code;
-   int             f,x,y;
-   char            buf[32];
+   Tcl_Obj         *obj=NULL,*lst;
+   BUFR_Dataset    *set;
+   BUFR_Datasubset *sset;
+   BUFR_Template   *tmp;
+   DataSubset      *subset;
+   ListNode        *node;
+   BufrDescriptor  *bcv,**pbcd;
+   BUFR_Sequence   *bseq;
+   BufrDDOp        *ddo=NULL;
+   int              i,idx;
+   int              s,c,ns,nc,code;
+   int              f,x,y;
+   char             buf[32];
 
    static CONST char *sopt[] = {  "-BUFR_EDITION","-BUFR_MASTER_TABLE","-ORIG_CENTER","-ORIG_SUB_CENTER","-UPDATE_SEQUENCE","-DATA_CATEGORY","-INTERN_SUB_CATEGORY","-LOCAL_SUB_CATEGORY",
-      "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-template",NULL };
+      "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-subsetaddcode","-subsetstart","-subsetend","-template",NULL };
    enum                opt { BUFR_EDITION,BUFR_MASTER_TABLE,ORIG_CENTER,ORIG_SUB_CENTER,UPDATE_SEQUENCE,DATA_CATEGORY,INTERN_SUB_CATEGORY,LOCAL_SUB_CATEGORY,
-      MASTER_TABLE_VERSION,LOCAL_TABLE_VERSION,YEAR,MONTH,DAY,HOUR,MINUTE,SECOND,DATA_FLAG,SUBSETNB,SUBSET,SUBSETADD,TEMPLATE };
+      MASTER_TABLE_VERSION,LOCAL_TABLE_VERSION,YEAR,MONTH,DAY,HOUR,MINUTE,SECOND,DATA_FLAG,SUBSETNB,SUBSET,SUBSETADD,SUBSETADDCODE,SUBSETSTART,SUBSETEND,TEMPLATE };
 
    set=MetDataset_Get(Name);
    if (!set) {
@@ -564,6 +568,9 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_WrongNumArgs(Interp,1,Objv,"[code/value list]");
                return(TCL_ERROR);
             } else {
+               Tcl_ListObjLength(Interp,Objv[++i],&nc);
+               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+
                bseq=bufr_create_sequence(NULL);
                pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
                for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
@@ -577,7 +584,6 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                }
                node=lst_firstnode(bseq->list);
 
-               Tcl_ListObjLength(Interp,Objv[++i],&nc);
                for(c=0;c<nc;c++) {
                   Tcl_ListObjIndex(Interp,Objv[i],c,&lst);
                   Tcl_ListObjIndex(Interp,lst,0,&obj);
@@ -604,7 +610,6 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      return(TCL_ERROR);
                   }
                   bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
-
                   ddo->current=node;
 
                   MetDataset_Obj2Code(Interp,bcv,lst);
@@ -626,6 +631,93 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                }
                bufr_add_datasubset(set,bseq,ddo);
                bufr_free_BufrDDOp(ddo);
+            }
+            break;
+
+         case SUBSETSTART:
+            sset=(BUFR_Datasubset*)malloc(sizeof(BUFR_Datasubset));
+            MetDatasubset_Put(Interp,Name,sset);
+
+            sset->BSeq=bufr_create_sequence(NULL);
+            pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
+            for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
+               bufr_add_descriptor_to_sequence(sset->BSeq,bufr_dupl_descriptor(pbcd[c]));
+            }
+            sset->BDDO=bufr_apply_Tables(NULL,sset->BSeq,set->tmplte,NULL,&f);
+            sset->Node=lst_firstnode(sset->BSeq->list);
+
+            if (!sset->BDDO) {
+               sprintf(buf,"%i",f);
+               Tcl_AppendResult(Interp,"Error while applying BUFR tables (libECBUFR error code: ",buf,")",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            break;
+
+         case SUBSETEND:
+            if ((sset=MetDatasubset_Get(Name))) {
+               bufr_add_datasubset(set,sset->BSeq,sset->BDDO);
+               bufr_free_BufrDDOp(sset->BDDO);
+               TclY_HashDel(&MetDatasubsetTable,Name);
+               free(sset);
+            }
+            break;
+
+         case SUBSETADDCODE:
+            if (Objc<2) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"[code/value list]");
+               return(TCL_ERROR);
+            } else {
+               sset=MetDatasubset_Get(Name);
+               if (!sset) {
+                  Tcl_AppendResult(Interp,"\n   MetDataset_Define: No new subset initialized",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+
+               for(++i;i<Objc;i++) {
+                  Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+                  TclY_Get0IntFromObj(Interp,obj,&code);
+
+                  while (sset->Node) {
+                     bcv=(BufrDescriptor*)sset->Node->data;
+                     if ((code!=bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
+                        sset->Node=lst_nextnode(sset->Node);
+                     } else {
+                        break;
+                     }
+                  }
+                  if (!sset->Node) {
+                     Tcl_AppendResult(Interp,"Too many code for template",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  if ((code==bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
+                     sset->Node=lst_nextnode(sset->Node);
+                     continue;
+                  }
+                  if (code!=bcv->descriptor) {
+                     sprintf(buf," %06i",bcv->descriptor);
+                     Tcl_AppendResult(Interp,"Mismatch between data and template, code ",Tcl_GetString(obj)," should have been ",buf,(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
+                  sset->BDDO->current=sset->Node;
+
+                  MetDataset_Obj2Code(Interp,bcv,Objv[i]);
+
+                  if (bcv->flags & FLAG_CLASS31) {
+                     bufr_expand_node_descriptor(sset->BSeq->list,lst_prevnode(sset->Node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables);
+
+                     /*See if data present bitmap count matched with data code list*/
+                     if ((((BufrDescriptor*)(lst_nextnode(sset->Node))->data)->descriptor==31031)&&(sset->BDDO->dpbm)) {
+                        int nb31;
+
+                        nb31=bufr_descriptor_get_ivalue(bcv);
+                        if (nb31!=sset->BDDO->dpbm->nb_codes) {
+                           fprintf(stderr,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,sset->BDDO->dpbm->nb_codes);
+                        }
+                     }
+                  }
+                  sset->Node=lst_nextnode(sset->Node);
+               }
             }
             break;
        }
@@ -682,10 +774,18 @@ FILE* MetDatafile_Get(char *Name) {
    return((FILE*)TclY_HashGet(&MetDatafileTable,Name));
 }
 
-int MetDatafile_Put(Tcl_Interp *Interp,char *Name,FILE *File) {
+BUFR_Datasubset* MetDatasubset_Get(char *Name) {
+   return((BUFR_Datasubset*)TclY_HashGet(&MetDatasubsetTable,Name));
+}
 
+int MetDatafile_Put(Tcl_Interp *Interp,char *Name,FILE *File) {
    return(TclY_HashSet(Interp,&MetDatafileTable,Name,File));
 }
+
+int MetDatasubset_Put(Tcl_Interp *Interp,char *Name,BUFR_Datasubset *SSet) {
+   return(TclY_HashSet(Interp,&MetDatasubsetTable,Name,SSet));
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetDataset_Put>
  * Creation     : Mai 2008 J.P. Gauthier
