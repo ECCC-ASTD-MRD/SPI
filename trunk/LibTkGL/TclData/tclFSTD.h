@@ -139,6 +139,7 @@ extern int c_gdllfxy();
 extern int c_gdrls();
 extern int c_ezsint();
 extern int c_ezuvint();
+extern int c_ezwdint();
 extern int c_ezsetopt();
 extern int c_gdll();
 extern int c_gdllsval();

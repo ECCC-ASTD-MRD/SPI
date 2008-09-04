@@ -563,7 +563,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             FSTD_FieldReadMesh(field0);
 
          n=-1;
-        /*Interpolate a field*/
+         /*Interpolate a field*/
          field1=Data_Get(Tcl_GetString(Objv[3]));
          if (field1) {
             if (Objc>4) {

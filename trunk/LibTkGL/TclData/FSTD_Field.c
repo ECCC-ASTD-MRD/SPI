@@ -931,7 +931,14 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
             Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
             Def_Pointer(FieldTo->Def,1,k*FSIZE2D(FieldTo->Def),pt1);
             Def_Pointer(FieldFrom->Def,1,k*FSIZE2D(FieldFrom->Def),pf1);
-            ok=c_ezuvint(pt0,pt1,pf0,pf1);
+
+            /*In case of Y grid, get the speed and dir instead of wind components
+              since grid oriented components dont mean much*/
+            if (FieldTo->Ref->Grid[0]=='Y') {
+               ok=c_ezwdint(pt0,pt1,pf0,pf1);
+            } else {
+               ok=c_ezuvint(pt0,pt1,pf0,pf1);
+            }
         } else{
             /*Interpolation scalaire*/
             Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
