@@ -109,6 +109,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 
    *Length=Def->NoData;
 
+   /*In case of triangle meshe*/
    if (Ref->Grid[0]=='M') {
       if (C<Def->NC && X>=0 && Y>=0) {
          b[0]=X-(int)X;
@@ -156,7 +157,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          return(valid);
       }
 
-      if (Def->Data[1] && !C) {
+      if (Ref->Grid[0]!='Y' && Ref->Grid[0]!='X' && Def->Data[1] && !C) {
          if (Ref && Ref->Id>-1) {
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
@@ -176,6 +177,8 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          if (Def->Type<=9 || Mode=='N' || (X==ix && Y==iy)) {
             mem+=iy*Def->NI+ix;
             Def_Get(Def,C,mem,*Length);
+            if (Def->Data[1] && !C)
+               Def_Get(Def,1,mem,*ThetaXY);
          } else {
             if (Ref && Ref->Id>-1) {
                Def_Pointer(Def,C,mem,p0);
