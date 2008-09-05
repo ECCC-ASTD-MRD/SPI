@@ -49,6 +49,7 @@ proc Kriger::Close { } {
 
 
    Graph::Destroy $Data(GraphFrame) $Data(Graph)
+   Page::Destroy  $Data(GraphFrame)
 
    #----- Clear grid
 
