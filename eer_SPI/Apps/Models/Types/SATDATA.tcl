@@ -8,7 +8,7 @@
 # Fichier   : SATDATA.tcl
 # Creation  : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But       : Description des procedures relatives au module TRAJECTOIRE.
+# But       : Description des procedures relatives au module de donnees satellitaires.
 #
 #===============================================================================
 
