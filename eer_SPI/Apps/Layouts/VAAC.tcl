@@ -15,6 +15,7 @@
 
 namespace eval VAAC {
    variable Lbl
+   variable Error
    variable Data
    variable Page
 
@@ -32,6 +33,10 @@ namespace eval VAAC {
    set Lbl(Standard)    { "Standard" "Standard" }
    set Lbl(Left)        { "Gauche" "Left" }
    set Lbl(Right)       { "Droite" "Right" }
+
+   #----- Definitions des messages d'erreurs
+
+   set Error(Hours) { "Aucune heure m'a été sélectionnée." "You did not select any hour." }
 
    #---- Definitions des entetes et textes de la carte
 
@@ -710,7 +715,7 @@ proc VAAC::Transmit { Frame } {
    variable Print
    variable Sim
    variable Lbl
-   variable Msg
+   variable Error
    variable Data
 
    set file "$GDefs(DirEER)/eer_Tmp/VAAC_[pid]_[clock seconds]"
@@ -722,6 +727,10 @@ proc VAAC::Transmit { Frame } {
       if { $Print($hour) } {
          incr maxhour
       }
+   }
+   if { !$maxhour } {
+      Dialog::CreateError . "[lindex $Error(Hours) $GDefs(Lang)]" $GDefs(Lang)
+      return
    }
 
    SPI::Progress 0
