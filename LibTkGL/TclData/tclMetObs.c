@@ -540,9 +540,9 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                loc=obs->Loc;
                while(loc) {
                   sub=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(loc->Coord.lat));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(loc->Coord.lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(loc->Coord.elev));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(loc->Coord.Lat));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(loc->Coord.Lon));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(loc->Coord.Elev));
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                   loc=loc->Next;
                }
@@ -556,18 +556,18 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                }
                if (Objc==2) {
                   obj=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc->Coord.lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc->Coord.lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc->Coord.elev));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc->Coord.Lat));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc->Coord.Lon));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc->Coord.Elev));
                   Tcl_SetObjResult(Interp,obj);
               } else if (Objc==4) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.lat);
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.lon);
-                  loc->Coord.elev=0.0;
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.Lat);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.Lon);
+                  loc->Coord.Elev=0.0;
                } else if (Objc==5) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.lat);
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.lon);
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.elev);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.Lat);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.Lon);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc->Coord.Elev);
                } else {
                   Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -COORD [id] [lat - lon] [elev]\"",(char*)NULL);
                   return(TCL_ERROR);
@@ -1136,7 +1136,7 @@ Vect3d *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_O
          loc=Obs->Loc;
          while(loc) {
 
-            j=Ref->UnProject(Ref,&pos[*NObs][0],&pos[*NObs][1],loc->Coord.lat,loc->Coord.lon,Extrap,1);
+            j=Ref->UnProject(Ref,&pos[*NObs][0],&pos[*NObs][1],loc->Coord.Lat,loc->Coord.Lon,Extrap,1);
 
             skip=0;
             for(k=0;k<*NObs;k++) {
@@ -1258,7 +1258,7 @@ TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,do
    while(loc) {
       if (Type==MET_TYPENO) {
          if (strcmp(loc->No,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
                *Multi=0;
                break;
             } else {
@@ -1267,7 +1267,7 @@ TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,do
          }
       } else if (Type==MET_TYPEID) {
          if (strcmp(loc->Id,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
                *Multi=0;
                break;
             } else {
@@ -1276,7 +1276,7 @@ TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,do
          }
       } else {
          if (strcmp(loc->Tag,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.lat==Lat) && (Lon==-999.0 || loc->Coord.lon==Lon) && (Elev==-999.0 || loc->Coord.elev==Elev)) {
+            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
                *Multi=0;
                break;
             } else {
@@ -1297,9 +1297,9 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    loc->Id=Id?strdup(Id):NULL;
    loc->No=No?strdup(No):NULL;
    loc->Info=NULL;
-   loc->Coord.lat=Lat;
-   loc->Coord.lon=Lon;
-   loc->Coord.elev=Elev;
+   loc->Coord.Lat=Lat;
+   loc->Coord.Lon=Lon;
+   loc->Coord.Elev=Elev;
    loc->Pix[0]=0.0;
    loc->Pix[1]=0.0;
    loc->Grid[0]=loc->Grid[1]=loc->Grid[2]=0;
@@ -2136,9 +2136,9 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          hd=0;
          for(n=0;n<ntok;n++) {
             if (strcmp(gtok[n],"LAT")==0) {                  /*Latitude information*/
-               loc->Coord.lat=atof(tok[n]);
+               loc->Coord.Lat=atof(tok[n]);
             } else if (strcmp(gtok[n],"LON")==0) {           /*Longitude information*/
-               loc->Coord.lon=atof(tok[n]);
+               loc->Coord.Lon=atof(tok[n]);
             } else if (strcmp(gtok[n],"ELEVTYPE")==0) {      /*Elevation type information*/
                if (isdigit(tok[n][0])) {
                   loc->Level=atoi(tok[n]);
@@ -2167,7 +2167,7 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                   }
                }
             } else if (strcmp(gtok[n],"ELEV")==0) {          /*Elevation information*/
-               loc->Coord.elev=atof(tok[n]);
+               loc->Coord.Elev=atof(tok[n]);
             } else if (strcmp(gtok[n],"NO")==0) {            /*Number information*/
                loc->No=strdup(tok[n]);
                strrep(loc->No,'(',' ');
@@ -2478,7 +2478,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
                               z=k;
                            } else {
-                              z=Data_Level2Meter(loc->Level,loc->Coord.elev);
+                              z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
                            }
 
                           /*Set position within projection*/
@@ -2491,7 +2491,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  glTranslated(pix[0],pix[1],0.0);
                               }
                            } else {
-                              Proj->Type->Locate(Proj,loc->Coord.lat,loc->Coord.lon,1);
+                              Proj->Type->Locate(Proj,loc->Coord.Lat,loc->Coord.Lon,1);
                               glTranslated(0.0,0.0,ZM(Proj,z));
                               glScalef(VP->Ratio,VP->Ratio,1.0);
                            }
@@ -2551,7 +2551,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                 sprintf(buf,"(%.4f,%.4f)",loc->Coord.lat,loc->Coord.lon);
+                                 sprintf(buf,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
                               }
                               id=1;
@@ -2970,7 +2970,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    Tcl_Obj      *obj,*sub;
    TMetElemData *data;
    EntryTableB  *eb;
-   int           ne,e,v,t,nv,nt,i,j,idx;
+   int           ne,e,v,t,nv,nt,i,j,idx,n,nl;
    float        *valf;
    double        val;
 
@@ -3070,24 +3070,38 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
-               if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,Objv[++i]))) {
-                  Tcl_AppendResult(Interp,"\n   MetReport_Define: Wrong element",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-
                if (Objc==2) {
-                  obj=Tcl_NewListObj(0,NULL);
-                  for(e=0;e<data->Ne;e++) {
-                     if (data->Code[e]->descriptor==eb->descriptor) {
-                        for(v=0;v<data->Nv;v++) {
-                           for(t=0;t<data->Nt;t++) {
-                              Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                  Tcl_ListObjLength(Interp,Objv[++i],&nl);
+                  nv=0;
+                  for(n=0;n<nl;n++) {
+                     Tcl_ListObjIndex(Interp,Objv[i],n,&sub);
+                     if ((eb=MetObs_BUFRFindTableCodeOrDesc(Interp,sub))) {
+                        obj=Tcl_NewListObj(0,NULL);
+                        for(e=0;e<data->Ne;e++) {
+                           if (data->Code[e]->descriptor==eb->descriptor) {
+                              nv=1;
+                              for(v=0;v<data->Nv;v++) {
+                                 for(t=0;t<data->Nt;t++) {
+                                    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                                 }
+                              }
                            }
                         }
+                        if (nv) {
+                           Tcl_SetObjResult(Interp,obj);
+                           return(TCL_OK);
+                           break;
+                        }
+                     } else {
+                        Tcl_AppendResult(Interp,"\n   MetReport_Define: Wrong element(s)",(char*)NULL);
+                        return(TCL_ERROR);
                      }
                   }
-                  Tcl_SetObjResult(Interp,obj);
                } else if (Objc==3) {
+                  if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,Objv[++i]))) {
+                     Tcl_AppendResult(Interp,"\n   MetReport_Define: Wrong element",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                   Tcl_ListObjLength(Interp,Objv[++i],&nv);
                   Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
                   Tcl_ListObjLength(Interp,obj,&nt);

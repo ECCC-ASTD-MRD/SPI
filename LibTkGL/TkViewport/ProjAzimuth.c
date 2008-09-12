@@ -165,9 +165,9 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Trace des latitudes*/
       if (Interp) glFeedbackInit(4000,GL_2D);
-      for(co.lon=-180;co.lon<180;co.lon+=Proj->Geo->Params.CoordDef){
+      for(co.Lon=-180;co.Lon<180;co.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(co.lat=-90+Proj->Geo->Params.CoordDef;co.lat<=90-Proj->Geo->Params.CoordDef;co.lat+=1){
+         for(co.Lat=-90+Proj->Geo->Params.CoordDef;co.Lat<=90-Proj->Geo->Params.CoordDef;co.Lat+=1){
             Proj->Type->Project(Proj->Params,&co,&vr,1);
             glVertex3dv(vr);
          }
@@ -177,9 +177,9 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Trace des longitudes*/
       if (Interp) glFeedbackInit(4000,GL_2D);
-      for(co.lat=-90+Proj->Geo->Params.CoordDef;co.lat<90;co.lat+=Proj->Geo->Params.CoordDef){
+      for(co.Lat=-90+Proj->Geo->Params.CoordDef;co.Lat<90;co.Lat+=Proj->Geo->Params.CoordDef){
         glBegin(GL_LINE_STRIP);
-        for(co.lon=-180;co.lon<=180;co.lon+=1){
+        for(co.Lon=-180;co.Lon<=180;co.Lon+=1){
             Proj->Type->Project(Proj->Params,&co,&vr,1);
             glVertex3dv(vr);
          }
@@ -255,9 +255,9 @@ int AzimuthDist_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
    Vect3d pix;
 
    if (Undo) {
-      loc.lat=Lat;
-      loc.lon=Lon;
-      loc.elev=0.0;
+      loc.Lat=Lat;
+      loc.Lon=Lon;
+      loc.Elev=0.0;
       AzimuthDist_Project(Proj->Params,&loc,&pix,1);
       glTranslated(pix[0],pix[1],0.0);
    } else {
@@ -289,9 +289,9 @@ int AzimuthArea_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
    Vect3d pix;
 
    if (Undo) {
-      loc.lat=Lat;
-      loc.lon=Lon;
-      loc.elev=0.0;
+      loc.Lat=Lat;
+      loc.Lon=Lon;
+      loc.Elev=0.0;
       AzimuthArea_Project(Proj->Params,&loc,&pix,1);
       glTranslated(pix[0],pix[1],0.0);
    } else {
@@ -513,11 +513,11 @@ int Azimuth_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d
    Vect3d in[2];
    Coord  co[2];
 
-   co[0].lat=Pt1.lat;co[0].lon=Pt1.lon;
-   co[1].lat=Pt2.lat;co[1].lon=Pt2.lon;
+   co[0].Lat=Pt1.Lat;co[0].Lon=Pt1.Lon;
+   co[1].Lat=Pt2.Lat;co[1].Lon=Pt2.Lon;
 
-   CLAMPLAT(co[0].lat);
-   CLAMPLAT(co[1].lat);
+   CLAMPLAT(co[0].Lat);
+   CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
    Proj->Type->Project(Proj->Params,co,in,2);
@@ -558,24 +558,24 @@ unsigned long AzimuthDist_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,l
    out=(Vect3d*)(Pix?Pix:Loc);
 
    for(n=0;n<ABS(Nb);n++) {
-      if (((Coord*)Loc)[n].lat==-999.0 || ((Coord*)Loc)[n].lon==-999.0) {
+      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
          out[n][2]=-999.0;
       } else {
 
-         loc.lat=DEG2RAD(((Coord*)Loc)[n].lat);
-         loc.lon=DEG2RAD(((Coord*)Loc)[n].lon);
-         loc.elev=((Coord*)Loc)[n].elev;
+         loc.Lat=DEG2RAD(((Coord*)Loc)[n].Lat);
+         loc.Lon=DEG2RAD(((Coord*)Loc)[n].Lon);
+         loc.Elev=((Coord*)Loc)[n].Elev;
 
          lon=DEG2RAD(Params->Lon);
-         cllon=cos(loc.lon-lon);
-         cllat=cos(loc.lat);
-         slat=sin(loc.lat);
+         cllon=cos(loc.Lon-lon);
+         cllat=cos(loc.Lat);
+         slat=sin(loc.Lat);
          k=acos(Params->SLat*slat+cllon*Params->CLat*cllat);
          k=k/sin(k);
 
-         out[n][0]=0.322580645*(k*cllat*sin(loc.lon-lon));
+         out[n][0]=0.322580645*(k*cllat*sin(loc.Lon-lon));
          out[n][1]=0.322580645*(k*(Params->CLat*slat-Params->SLat*cllat*cllon));
-         out[n][2]=1.0+loc.elev*Params->Scale*Params->ZFactor;
+         out[n][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
          e++;
       }
    }
@@ -610,24 +610,24 @@ unsigned long AzimuthArea_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,l
    out=(Vect3d*)(Pix?Pix:Loc);
 
    for(n=0;n<ABS(Nb);n++) {
-      if (((Coord*)Loc)[n].lat==-999.0 || ((Coord*)Loc)[n].lon==-999.0) {
+      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
          out[n][2]=-999.0;
       } else {
 
-         loc.lat=DEG2RAD(((Coord*)Loc)[n].lat);
-         loc.lon=DEG2RAD(((Coord*)Loc)[n].lon);
-         loc.elev=((Coord*)Loc)[n].elev;
+         loc.Lat=DEG2RAD(((Coord*)Loc)[n].Lat);
+         loc.Lon=DEG2RAD(((Coord*)Loc)[n].Lon);
+         loc.Elev=((Coord*)Loc)[n].Elev;
 
          lon=DEG2RAD(Params->Lon);
-         cllon=cos(loc.lon-lon);
-         cllat=cos(loc.lat);
-         slat=sin(loc.lat);
+         cllon=cos(loc.Lon-lon);
+         cllat=cos(loc.Lat);
+         slat=sin(loc.Lat);
 
          k=sqrt(2.0/(1+Params->SLat*slat+cllon*Params->CLat*cllat));
 
-         out[n][0]=0.5*(k*cllat*sin(loc.lon-lon));
+         out[n][0]=0.5*(k*cllat*sin(loc.Lon-lon));
          out[n][1]=0.5*(k*(Params->CLat*slat-Params->SLat*cllat*cllon));
-         out[n][2]=(loc.elev*Params->Scale+EARTHRADIUS)/EARTHRADIUS;
+         out[n][2]=(loc.Elev*Params->Scale+EARTHRADIUS)/EARTHRADIUS;
          e++;
       }
    }
@@ -672,24 +672,24 @@ int AzimuthDist_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d 
       sinc=sin(c);
       cosc=cos(c);
 
-      Loc->lat=asin(cosc*Params->SLat+(obj[1]*sinc*Params->CLat)/c);
-      if (Loc->lat==DEG2RAD(90.0)) {
-           Loc->lon=lon+atan2(obj[0],obj[1]);
-      } else if (Loc->lat==-DEG2RAD(90.0)) {
-           Loc->lon=lon+atan2(-obj[0],obj[1]);
+      Loc->Lat=asin(cosc*Params->SLat+(obj[1]*sinc*Params->CLat)/c);
+      if (Loc->Lat==DEG2RAD(90.0)) {
+           Loc->Lon=lon+atan2(obj[0],obj[1]);
+      } else if (Loc->Lat==-DEG2RAD(90.0)) {
+           Loc->Lon=lon+atan2(-obj[0],obj[1]);
       } else {
-           Loc->lon=lon+atan2(obj[0]*sinc,c*Params->CLat*cosc-obj[1]*Params->SLat*sinc);
+           Loc->Lon=lon+atan2(obj[0]*sinc,c*Params->CLat*cosc-obj[1]*Params->SLat*sinc);
       }
 
-      Loc->lat=RAD2DEG(Loc->lat);
-      Loc->lon=RAD2DEG(Loc->lon);
+      Loc->Lat=RAD2DEG(Loc->Lat);
+      Loc->Lon=RAD2DEG(Loc->Lon);
 
-      if (Loc->lon<=(180.0+Params->Lon) && Loc->lon>=(-180.0+Params->Lon) && Loc->lat<=90.0 && Loc->lat>=-90.0) {
+      if (Loc->Lon<=(180.0+Params->Lon) && Loc->Lon>=(-180.0+Params->Lon) && Loc->Lat<=90.0 && Loc->Lat>=-90.0) {
          return(1);
       }
    }
-   Loc->lat=-999.0;
-   Loc->lon=-999.0;
+   Loc->Lat=-999.0;
+   Loc->Lon=-999.0;
 
    return(0);
 }
@@ -734,24 +734,24 @@ int AzimuthArea_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d 
       sinc=sin(c);
       cosc=cos(c);
 
-      Loc->lat=asin(cosc*Params->SLat+(obj[1]*sinc*Params->CLat)/p);
-      if (Loc->lat==DEG2RAD(90.0)) {
-           Loc->lon=lon+atan2(obj[0],obj[1]);
-      } else if (Loc->lat==-DEG2RAD(90.0)) {
-           Loc->lon=lon+atan2(-obj[0],obj[1]);
+      Loc->Lat=asin(cosc*Params->SLat+(obj[1]*sinc*Params->CLat)/p);
+      if (Loc->Lat==DEG2RAD(90.0)) {
+           Loc->Lon=lon+atan2(obj[0],obj[1]);
+      } else if (Loc->Lat==-DEG2RAD(90.0)) {
+           Loc->Lon=lon+atan2(-obj[0],obj[1]);
       } else {
-           Loc->lon=lon+atan2(obj[0]*sinc,p*Params->CLat*cosc-obj[1]*Params->SLat*sinc);
+           Loc->Lon=lon+atan2(obj[0]*sinc,p*Params->CLat*cosc-obj[1]*Params->SLat*sinc);
       }
 
-      Loc->lat=RAD2DEG(Loc->lat);
-      Loc->lon=RAD2DEG(Loc->lon);
+      Loc->Lat=RAD2DEG(Loc->Lat);
+      Loc->Lon=RAD2DEG(Loc->Lon);
 
-      if (Loc->lon<=(180.0+Params->Lon) && Loc->lon>=(-180.0+Params->Lon) && Loc->lat<=90.0 && Loc->lat>=-90.0) {
+      if (Loc->Lon<=(180.0+Params->Lon) && Loc->Lon>=(-180.0+Params->Lon) && Loc->Lat<=90.0 && Loc->Lat>=-90.0) {
          return(1);
       }
    }
-   Loc->lat=-999.0;
-   Loc->lon=-999.0;
+   Loc->Lat=-999.0;
+   Loc->Lon=-999.0;
 
    return(0);
 }

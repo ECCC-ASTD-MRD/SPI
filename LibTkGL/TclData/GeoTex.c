@@ -377,21 +377,21 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    x1=x1>Band->Ref->X1?Band->Ref->X1:x1;
    y1=y1>Band->Ref->Y1?Band->Ref->Y1:y1;
 
-   Tile->Box.Co[0].elev=0.0;
-   Tile->Box.Co[1].elev=0.0;
-   Tile->Box.Co[2].elev=0.0;
-   Tile->Box.Co[3].elev=0.0;
+   Tile->Box.Co[0].Elev=0.0;
+   Tile->Box.Co[1].Elev=0.0;
+   Tile->Box.Co[2].Elev=0.0;
+   Tile->Box.Co[3].Elev=0.0;
 
    if (!Proj->Params->Geographic) {
-      Tile->Box.Co[0].lat=y0;Tile->Box.Co[0].lon=x0;
-      Tile->Box.Co[1].lat=y1;Tile->Box.Co[1].lon=x0;
-      Tile->Box.Co[2].lat=y1;Tile->Box.Co[2].lon=x1;
-      Tile->Box.Co[3].lat=y0;Tile->Box.Co[3].lon=x1;
+      Tile->Box.Co[0].Lat=y0;Tile->Box.Co[0].Lon=x0;
+      Tile->Box.Co[1].Lat=y1;Tile->Box.Co[1].Lon=x0;
+      Tile->Box.Co[2].Lat=y1;Tile->Box.Co[2].Lon=x1;
+      Tile->Box.Co[3].Lat=y0;Tile->Box.Co[3].Lon=x1;
    } else {
-      Band->Ref->Project(Band->Ref,x0,y0,&Tile->Box.Co[0].lat,&Tile->Box.Co[0].lon,1,1);
-      Band->Ref->Project(Band->Ref,x0,y1,&Tile->Box.Co[1].lat,&Tile->Box.Co[1].lon,1,1);
-      Band->Ref->Project(Band->Ref,x1,y1,&Tile->Box.Co[2].lat,&Tile->Box.Co[2].lon,1,1);
-      Band->Ref->Project(Band->Ref,x1,y0,&Tile->Box.Co[3].lat,&Tile->Box.Co[3].lon,1,1);
+      Band->Ref->Project(Band->Ref,x0,y0,&Tile->Box.Co[0].Lat,&Tile->Box.Co[0].Lon,1,1);
+      Band->Ref->Project(Band->Ref,x0,y1,&Tile->Box.Co[1].Lat,&Tile->Box.Co[1].Lon,1,1);
+      Band->Ref->Project(Band->Ref,x1,y1,&Tile->Box.Co[2].Lat,&Tile->Box.Co[2].Lon,1,1);
+      Band->Ref->Project(Band->Ref,x1,y0,&Tile->Box.Co[3].Lat,&Tile->Box.Co[3].Lon,1,1);
   }
 
    /*Projection des coins de la texture*/
@@ -861,9 +861,9 @@ int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
 
    /*Figure out geographical resolution*/
    if (Proj->Params->Geographic) {
-      Band->Ref->Project(Band->Ref,Band->Def->NI/2,Band->Def->NJ/2,&co[0].lat,&co[0].lon,1,1);
-      Band->Ref->Project(Band->Ref,Band->Def->NI/2+1,Band->Def->NJ/2,&co[1].lat,&co[1].lon,1,1);
-      res=Proj->PixDist/DIST(0.0,DEG2RAD(co[0].lat),DEG2RAD(co[0].lon),DEG2RAD(co[1].lat),DEG2RAD(co[1].lon));
+      Band->Ref->Project(Band->Ref,Band->Def->NI/2,Band->Def->NJ/2,&co[0].Lat,&co[0].Lon,1,1);
+      Band->Ref->Project(Band->Ref,Band->Def->NI/2+1,Band->Def->NJ/2,&co[1].Lat,&co[1].Lon,1,1);
+      res=Proj->PixDist/DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
    } else {
       res=Proj->PixDist*MAX((float)Band->Def->NI/Proj->Params->VP->Width,(float)Band->Def->NJ/Proj->Params->VP->Height);
    }

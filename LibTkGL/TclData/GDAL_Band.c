@@ -929,8 +929,8 @@ void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
 
    for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
       OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-      FromRef->Project(FromRef,vr[0],vr[1],&co.lat,&co.lon,1,1);
-      ToRef->UnProject(ToRef,&vr[0],&vr[1],co.lat,co.lon,1,1);
+      FromRef->Project(FromRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
+      ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
       OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
    }
 }
@@ -1560,9 +1560,9 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                for(c=0;c<band->Def->NC;c++) {
                   obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Max));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.elev));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lat));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lon));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Elev));
                   Tcl_ListObjAppendElement(Interp,lst,obj);
                }
                Tcl_SetObjResult(Interp,lst);
@@ -1571,9 +1571,9 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                if (c<band->Def->NC) {
                   obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Max));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.elev));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lat));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lon));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Elev));
                   Tcl_SetObjResult(Interp,obj);
                }
             }
@@ -1590,9 +1590,9 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                for(c=0;c<band->Def->NC;c++) {
                   obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Min));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.elev));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lat));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lon));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Elev));
                   Tcl_ListObjAppendElement(Interp,lst,obj);
                }
                Tcl_SetObjResult(Interp,lst);
@@ -1601,9 +1601,9 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                if (c<band->Def->NC) {
                   obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Min));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.elev));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lat));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lon));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Elev));
                   Tcl_SetObjResult(Interp,obj);
                }
             }
@@ -2194,17 +2194,17 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
          if (n)
             Band->Stat[c].Avg/=n;
 
-         Band->Stat[c].MinLoc.lat=0;
-         Band->Stat[c].MinLoc.lon=0;
-         Band->Stat[c].MinLoc.elev=0;
-         Band->Stat[c].MaxLoc.lat=0;
-         Band->Stat[c].MaxLoc.lon=0;
-         Band->Stat[c].MaxLoc.elev=0;
+         Band->Stat[c].MinLoc.Lat=0;
+         Band->Stat[c].MinLoc.Lon=0;
+         Band->Stat[c].MinLoc.Elev=0;
+         Band->Stat[c].MaxLoc.Lat=0;
+         Band->Stat[c].MaxLoc.Lon=0;
+         Band->Stat[c].MaxLoc.Elev=0;
 
          if (Band->Ref && Band->Ref->Project) {
             /*Recuperer les coordonnees latlon des min max*/
-            Band->Ref->Project(Band->Ref,pts[0],pts[1],&Band->Stat[c].MinLoc.lat,&Band->Stat[c].MinLoc.lon,0,1);
-            Band->Ref->Project(Band->Ref,pts[2],pts[3],&Band->Stat[c].MaxLoc.lat,&Band->Stat[c].MaxLoc.lon,0,1);
+            Band->Ref->Project(Band->Ref,pts[0],pts[1],&Band->Stat[c].MinLoc.Lat,&Band->Stat[c].MinLoc.Lon,0,1);
+            Band->Ref->Project(Band->Ref,pts[2],pts[3],&Band->Stat[c].MaxLoc.Lat,&Band->Stat[c].MaxLoc.Lon,0,1);
          }
       }
    }

@@ -136,8 +136,8 @@ int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
       return(0);
    }
 
-   loc0.lat=DEG2RAD(Ref->Loc.lat);
-   loc0.lon=DEG2RAD(Ref->Loc.lon);
+   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
 
    X*=Ref->ResA;
    Y*=Ref->ResR;
@@ -146,8 +146,8 @@ int GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    d=M2RAD(Y*Ref->CTH);
 
    if (Transform) {
-      *Lat=asin(sin(loc0.lat)*cos(d)+cos(loc0.lat)*sin(d)*cos(x));
-      *Lon=fmod(loc0.lon+(atan2(sin(x)*sin(d)*cos(loc0.lat),cos(d)-sin(loc0.lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
+      *Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
+      *Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(*Lat)))+M_PI,M_2PI)-M_PI;
       *Lat=RAD2DEG(*Lat);
       *Lon=RAD2DEG(*Lon);
    } else {
@@ -184,13 +184,13 @@ int GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
    Coord loc0;
    double x,d;
 
-   loc0.lat=DEG2RAD(Ref->Loc.lat);
-   loc0.lon=DEG2RAD(Ref->Loc.lon);
+   loc0.Lat=DEG2RAD(Ref->Loc.Lat);
+   loc0.Lon=DEG2RAD(Ref->Loc.Lon);
    Lat=DEG2RAD(Lat);
    Lon=DEG2RAD(Lon);
 
-   d=fabs(DIST(0.0,loc0.lat,loc0.lon,Lat,Lon));
-   x=-RAD2DEG(COURSE(loc0.lat,loc0.lon,Lat,Lon));
+   d=fabs(DIST(0.0,loc0.Lat,loc0.Lon,Lat,Lon));
+   x=-RAD2DEG(COURSE(loc0.Lat,loc0.Lon,Lat,Lon));
    *X=x<0.0?x+360.0:x;
    *Y=d/Ref->CTH;
 
@@ -236,9 +236,9 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
    ref=GeoRef_New();
 
    ref->Grid[0]='R';
-   ref->Loc.lat=Lat;
-   ref->Loc.lon=Lon;
-   ref->Loc.elev=Height;
+   ref->Loc.Lat=Lat;
+   ref->Loc.Lon=Lon;
+   ref->Loc.Elev=Height;
    ref->R=R;
    ref->ResR=ResR;
    ref->ResA=ResA;

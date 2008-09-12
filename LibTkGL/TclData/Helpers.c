@@ -218,6 +218,15 @@ void System_StampDecode(int Stamp,int *YYYY,int *MM,int *DD,int *H,int *M,int *S
    *S/=1e2;
 }
 
+void System_StampEncode(int *Stamp,int YYYY,int MM,int DD,int H,int M,int S) {
+
+   int op=3,date,time;
+
+   date=YYYY*10000+MM*100+DD;
+   time=H*1000000+M*10000+S*100;
+   f77name(newdate)(Stamp,&date,&time,&op);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <System_Seconds2Stamp>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE

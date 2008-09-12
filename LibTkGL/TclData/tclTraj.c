@@ -36,8 +36,8 @@
 
 /* HashTable Tcl pour les trajectoires */
 static Tcl_HashTable TrajTable;
-static int TrajInit=0;
-static int TrajNo=0;
+static int  TrajInit=0;
+static long TrajNo=0;
 
 static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int Traj_Create(Tcl_Interp *Interp,char* Name);
@@ -344,12 +344,12 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                for (j=0;j<traj->NPr;j++) {
                   sub=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(traj->Pr[j].Date));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.lat));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Sig));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Pres));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.elev));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].X));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.Lat));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.Lon));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZSig));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZPres));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.Elev));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZMSL));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Dist));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Speed));
                   Tcl_ListObjAppendElement(Interp,obj,sub);
@@ -380,12 +380,12 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                if (t<traj->NPr) {
                   sub=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(traj->Pr[t].Date));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.lat));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Sig));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Pres));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.elev));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].X));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.Lat));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.Lon));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZSig));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZPres));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.Elev));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZMSL));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Dist));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Speed));
                   Tcl_SetObjResult(Interp,sub);
@@ -458,7 +458,7 @@ static int Traj_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Traj_Create>
+ * Nom          : <Traj_New>
  * Creation     : Fevrier 2003 J.P. Gauthier
  *
  * But          : Creation d'un objet trajectoire et insertion d'un nouveau nom dans la table.
@@ -478,20 +478,74 @@ static int Traj_Create(Tcl_Interp *Interp,char *Name) {
 
    TTraj *traj=NULL;
 
-   if (!(traj=(TTraj*)TclY_HashPut(Interp,&TrajTable,Name,sizeof(TTraj)))) {
+   if (!(traj=Traj_New())) {
       return(TCL_ERROR);
    }
 
-   if (!(traj->Spec=DataSpec_Create(Interp,NULL))) {
+   if (!(Traj_Put(Interp,Name,traj))) {
       return(TCL_ERROR);
+   }
+   return(TCL_OK);
+}
+
+TTraj *Traj_New() {
+
+   TTraj *traj=NULL;
+
+   if (!(traj=(TTraj*)malloc(sizeof(TTraj)))) {
+      return(NULL);
    }
 
    /*Initialisation de la structure traj*/
    traj->Tag=NULL;
+   traj->Spec=NULL;
 
-   return(TCL_OK);
+   return(traj);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Traj_Put>
+ * Creation     : Juillet 2008 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Creer et insere dans la table de trajectoire
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Name>     : Nom de l'objet bande a obtenir.
+ *   <Traj>     : Donnees de la trajectoire
+ *
+ * Retour       : Pointeur sur l'objet Tcl representant la trajectoire
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+Tcl_Obj* Traj_Put(Tcl_Interp *Interp,char *Name,TTraj *Traj) {
+
+   char buf[64];
+
+   if (!Name) {
+      sprintf(buf,"TRAJ_____%li",TrajNo++);
+      Name=buf;
+   }
+
+   if (Traj) {
+      if (TclY_HashSet(Interp,&TrajTable,Name,Traj)==TCL_ERROR) {
+         return(NULL);
+      }
+
+      if (!(Traj->Spec)) {
+         Traj->Spec=DataSpec_Create(Interp,NULL);
+      }
+      Traj->Tag=NULL;
+
+      return(Tcl_NewStringObj(Name,-1));
+   } else {
+      if (Interp)
+         Tcl_AppendResult(Interp,"\n   Traj_Put: Traj invalid: \"",Name, "\"",(char *)NULL);
+      return(NULL);
+   }
+}
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Traj_FreeHash>
  * Creation     : Fevrier 2003 J.P. Gauthier
@@ -629,10 +683,10 @@ int Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj) {
 */
 int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 
-   Tcl_Obj   *obj;
+   Tcl_Obj   *obj,*sub;
    TTraj     *traj=NULL,head;
    TDataSpec *spec;
-   char       buf[512],name[16];
+   char       buf[512];
    int        i,j,year,month,day,hour,nb,ap,ntr=0;
 
    obj=Tcl_NewListObj(0,NULL);
@@ -685,7 +739,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       /*Incomplete file*/
       if (feof(Stream)) {
          if (Interp)
-            Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Invalid trajectory file ",name,(char*)NULL);
+            Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Invalid trajectory file ",File,(char*)NULL);
          return(0);
       }
 
@@ -698,23 +752,21 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       /*Read all the parcel info*/
       for(i=0;i<nb;i++) {
 
+         traj=Traj_New();
+
          if (Interp) {
-            sprintf(name,"TRAJ%i",TrajNo++);
-            if (Traj_Create(Interp,name)==TCL_OK) {
-               traj=Traj_Get(name);
+            if ((sub=Traj_Put(Interp,NULL,traj))) {
                spec=traj->Spec;
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(name,-1));
+               Tcl_ListObjAppendElement(Interp,obj,sub);
             } else {
-               Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Could not create trajectory object link ",name,(char*)NULL);
+               Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Could not create trajectory object link",(char*)NULL);
                return(0);
             }
-         } else {
-            traj=(TTraj*)malloc(sizeof(TTraj));
          }
 
          memcpy(traj,&head,sizeof(head));
          traj->Spec=spec;
-         traj->Pr=(TParcel*)malloc(traj->NPr*sizeof(TParcel));
+         traj->Pr=(TParticle*)malloc(traj->NPr*sizeof(TParticle));
 
          if (ap || i!=0)
             fgets(buf,512,Stream);
@@ -722,13 +774,13 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          for(j=0;j<traj->NPr;j++) {
             fgets(buf,512,Stream);
             sscanf(buf,"%i %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
-               &traj->Pr[j].Co.lat,&traj->Pr[j].Co.lon,&traj->Pr[j].Sig,&traj->Pr[j].Pres,
-               &traj->Pr[j].Co.elev,&traj->Pr[j].X,&traj->Pr[j].Dist,&traj->Pr[j].Speed);
+               &traj->Pr[j].Co.Lat,&traj->Pr[j].Co.Lon,&traj->Pr[j].ZSig,&traj->Pr[j].ZPres,
+               &traj->Pr[j].Co.Elev,&traj->Pr[j].ZMSL,&traj->Pr[j].Dist,&traj->Pr[j].Speed);
 
-            traj->Min=traj->Pr[j].Co.elev<traj->Min?traj->Pr[j].Co.elev:traj->Min;
-            traj->Max=traj->Pr[j].Co.elev>traj->Max?traj->Pr[j].Co.elev:traj->Max;
-            traj->Pr[j].Co.lon=traj->Pr[j].Co.lon>180.0?traj->Pr[j].Co.lon-360.0:traj->Pr[j].Co.lon;
-            traj->Pr[j].Co.lon=traj->Pr[j].Co.lon<-180.0?traj->Pr[j].Co.lon+360.0:traj->Pr[j].Co.lon;
+            traj->Min=traj->Pr[j].Co.Elev<traj->Min?traj->Pr[j].Co.Elev:traj->Min;
+            traj->Max=traj->Pr[j].Co.Elev>traj->Max?traj->Pr[j].Co.Elev:traj->Max;
+            traj->Pr[j].Co.Lon=traj->Pr[j].Co.Lon>180.0?traj->Pr[j].Co.Lon-360.0:traj->Pr[j].Co.Lon;
+            traj->Pr[j].Co.Lon=traj->Pr[j].Co.Lon<-180.0?traj->Pr[j].Co.Lon+360.0:traj->Pr[j].Co.Lon;
 
             if (System_IsStamp(traj->Pr[j].Date)) {
                traj->Pr[j].Date=System_Stamp2Seconds(traj->Pr[j].Date);
@@ -766,9 +818,9 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 */
 int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 
-   Tcl_Obj *obj;
+   Tcl_Obj *obj,*sub;
    TTraj    *traj[100];
-   char     buf[512],name[16];
+   char     buf[512];
    int      i,j[10],mdl,year,month,day,hour,nb,nbp,nbt,ntr=0;
    float    lat,lon,s,h;
    long     pos;
@@ -796,18 +848,17 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    obj=Tcl_NewListObj(0,NULL);
    for (i=0;i<nbt;i++) {
       fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %f %f %f",&year,&month,&day,&hour,&lat,&lon,&h);
-      if (Interp) {
-         sprintf(name,"TRAJ%i",TrajNo++);
-         if (Traj_Create(Interp,name)==TCL_OK) {
-            traj[i]=Traj_Get(name);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(name,-1));
-          } else {
-            Tcl_AppendResult(Interp,"\n   Traj_LoadARL :  Could not create trajectory object link ",name,(char*)NULL);
-            return(0);
+
+      if ((traj[i]=Traj_New())) {
+         Traj[ntr]=traj[i];
+         if (Interp) {
+            if ((sub=Traj_Put(Interp,NULL,traj[i]))) {
+               Tcl_ListObjAppendElement(Interp,obj,sub);
+            } else {
+               Tcl_AppendResult(Interp,"\n   Traj_LoadARL :  Could not create trajectory object link",(char*)NULL);
+               return(0);
+            }
          }
-      } else {
-         traj[i]=(TTraj*)malloc(sizeof(TTraj));
-         if (Traj) Traj[ntr]=traj[i];
       }
       ntr++;
 
@@ -844,7 +895,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 
    for(i=0;i<nbt;i++) {
       traj[i]->NPr=nbp;
-      traj[i]->Pr=(TParcel*)malloc(traj[i]->NPr*sizeof(TParcel));
+      traj[i]->Pr=(TParticle*)malloc(traj[i]->NPr*sizeof(TParticle));
       j[i]=0;
    }
 
@@ -857,16 +908,16 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       nb--;
       year=year>50?year+1900:year+2000;
       traj[nb]->Pr[j[nb]].Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000,1);
-      traj[nb]->Pr[j[nb]].Co.lat=lat;
-      traj[nb]->Pr[j[nb]].Co.lon=lon;
-      traj[nb]->Pr[j[nb]].Sig=0.0;
-      traj[nb]->Pr[j[nb]].Pres=s;
-      traj[nb]->Pr[j[nb]].Co.elev=h;
-      traj[nb]->Pr[j[nb]].X=0.0;
+      traj[nb]->Pr[j[nb]].Co.Lat=lat;
+      traj[nb]->Pr[j[nb]].Co.Lon=lon;
+      traj[nb]->Pr[j[nb]].ZSig=0.0;
+      traj[nb]->Pr[j[nb]].ZPres=s;
+      traj[nb]->Pr[j[nb]].Co.Elev=h;
+      traj[nb]->Pr[j[nb]].ZMSL=0.0;
       traj[nb]->Pr[j[nb]].Dist=0.0;
       traj[nb]->Pr[j[nb]].Speed=0.0;
-      traj[nb]->Min=traj[nb]->Pr[j[nb]].Co.elev<traj[nb]->Min?traj[nb]->Pr[j[nb]].Co.elev:traj[nb]->Min;
-      traj[nb]->Max=traj[nb]->Pr[j[nb]].Co.elev>traj[nb]->Max?traj[nb]->Pr[j[nb]].Co.elev:traj[nb]->Max;
+      traj[nb]->Min=traj[nb]->Pr[j[nb]].Co.Elev<traj[nb]->Min?traj[nb]->Pr[j[nb]].Co.Elev:traj[nb]->Min;
+      traj[nb]->Max=traj[nb]->Pr[j[nb]].Co.Elev>traj[nb]->Max?traj[nb]->Pr[j[nb]].Co.Elev:traj[nb]->Max;
       j[nb]++;
    }
 
@@ -926,9 +977,9 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       if (spec->Style==1 || spec->Style==3) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               co.lat=Traj->Pr[i].Co.lat;
-               co.lon=Traj->Pr[i].Co.lon;
-               co.elev=0.0;
+               co.Lat=Traj->Pr[i].Co.Lat;
+               co.Lon=Traj->Pr[i].Co.Lon;
+               co.Elev=0.0;
                Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
                Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
                n++;
@@ -941,9 +992,9 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       if (spec->Style==2 || spec->Style==3) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               co.lat=Traj->Pr[i].Co.lat;
-               co.lon=Traj->Pr[i].Co.lon;
-               co.elev=0.0;
+               co.Lat=Traj->Pr[i].Co.Lat;
+               co.Lon=Traj->Pr[i].Co.Lon;
+               co.Elev=0.0;
                Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n],1);
                n++;
             }
@@ -962,9 +1013,9 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               co.lat=Traj->Pr[i].Co.lat;
-               co.lon=Traj->Pr[i].Co.lon;
-               co.elev=0.0;
+               co.Lat=Traj->Pr[i].Co.Lat;
+               co.Lon=Traj->Pr[i].Co.Lon;
+               co.Elev=0.0;
                Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
                Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
                n++;
@@ -1003,8 +1054,8 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
             if (i==0 || i==Traj->NPr-1 || (spec->InterNb && fmod(Traj->Pr[i].Date,spec->Inter[0])==0)) {
                glPushMatrix();
-               Proj->Type->Locate(Proj,Traj->Pr[i].Co.lat,Traj->Pr[i].Co.lon,1);
-               glTranslated(0.0,0.0,ZM(Proj,Traj->Pr[i].Co.elev));
+               Proj->Type->Locate(Proj,Traj->Pr[i].Co.Lat,Traj->Pr[i].Co.Lon,1);
+               glTranslated(0.0,0.0,ZM(Proj,Traj->Pr[i].Co.Elev));
                glScalef(sz,sz,1.0);
 
                if (spec->Fill) {
