@@ -1380,28 +1380,20 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    vn=0;
    for(i=0;i<n;i++) {
       if (vecx->V[i]!=vecx->NoData && vecy->V[i]!=vecy->NoData) {
-         if (Graph->Type[0]=='T') {
-            if (GraphTephi_TP2XY(AxisZ,AxisX,AxisY,vecx->V[i],vecy->V[i],&v[vn][0],&v[vn][1])) {
-               v[vn][2]=0.0;
-               vn++;
-            }
-         } else {
+         v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
+         v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
+         v[vn][2]=0.0;
 
-            v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
-            v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
-            v[vn][2]=0.0;
-
-            if (vn>0) {
-               if (Item->Orient[0]=='X') {
-                  dh=fabs(v[vn][0]-v[vn-1][0]);
-                  if (dh>0.0) db=db<dh?db:dh;
-               } else {
-                  dh=fabs(v[vn][1]-v[vn-1][1]);
-                  if (dh>0.0) db=db<dh?db:dh;
-               }
+         if (vn>0) {
+            if (Item->Orient[0]=='X') {
+               dh=fabs(v[vn][0]-v[vn-1][0]);
+               if (dh>0.0) db=db<dh?db:dh;
+            } else {
+               dh=fabs(v[vn][1]-v[vn-1][1]);
+               if (dh>0.0) db=db<dh?db:dh;
             }
-            vn++;
          }
+         vn++;
       }
    }
    /* Compute item spacing and width for bar and histogram graph */

@@ -206,22 +206,22 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
          case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Objc!=4) {
                   Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid location, must be 3 \"",(char*)NULL);
                   return TCL_ERROR;
                }
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.lat);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.lon);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.elev);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.Lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.Lon);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.Elev);
 
-               if (loc.lat!=Rad->Ref->Loc.lat || loc.lon!=Rad->Ref->Loc.lon  || loc.elev!=Rad->Ref->Loc.elev) {
+               if (loc.Lat!=Rad->Ref->Loc.Lat || loc.Lon!=Rad->Ref->Loc.Lon  || loc.Elev!=Rad->Ref->Loc.Elev) {
                   ref=Rad->Ref;
-                  Rad->Ref=GeoRef_RDRSetup(loc.lat,loc.lon,loc.elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->Levels);
+                  Rad->Ref=GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->Levels);
                   GeoRef_Destroy(Interp,ref->Name);
                   Data_Clean(Rad,1,1,1);
                }
@@ -430,14 +430,14 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
          Rad->Ref->CTH=cos(th);
          Rad->Ref->STH=sin(th);
          for (i=0;i<Rad->Def->NI;i++) {
-            coord.lat=Rad->Ref->Lat[i];
-            coord.lon=CLAMPLON(Rad->Ref->Lon[i]);
-            Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.lat,coord.lon,1,0);
-            coord.elev=Rad->Ref->Loc.elev+Rad->Ref->STH*dt;
+            coord.Lat=Rad->Ref->Lat[i];
+            coord.Lon=CLAMPLON(Rad->Ref->Lon[i]);
+            Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
+            coord.Elev=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
             if (Proj) {
                ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Rad->Ref->Pos[idxi],1);
             } else {
-               Vect_Init(Rad->Ref->Pos[idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.elev);
+               Vect_Init(Rad->Ref->Pos[idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.Elev);
             }
             idxi++;
          }
@@ -459,7 +459,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
                   Vect_Assign(Rad->Ref->Pos[idxk],Rad->Ref->Pos[dk+j*Rad->Def->NI]);
                } else {
                   dt=j*head->Data->binResolutionKM*1000;
-                  Rad->Ref->Pos[idxk][2]=Rad->Ref->Loc.elev+Rad->Ref->STH*dt;
+                  Rad->Ref->Pos[idxk][2]=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
                   Rad->Ref->Project(Rad->Ref,i,j,&Rad->Ref->Pos[idxk][1],&Rad->Ref->Pos[idxk][0],0,1);
                }
             }

@@ -386,13 +386,13 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                pt0[1]-=vp->y;
                proj->Type->UnProject(vp,proj->Params,&loc0,pt0);
                if (proj->Params->Geographic) {
-                  CLAMPLON(loc0.lon);
-                  h=GDB_GetMap(proj->Geo,loc0.lat,loc0.lon);
+                  CLAMPLON(loc0.Lon);
+                  h=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
 
-                  proj->Params->Ref->UnProject(proj->Params->Ref,&pt0[0],&pt0[1],loc0.lat,loc0.lon,0,1);
+                  proj->Params->Ref->UnProject(proj->Params->Ref,&pt0[0],&pt0[1],loc0.Lat,loc0.Lon,0,1);
                } else {
-                  pt0[0]=loc0.lon;
-                  pt0[1]=loc0.lat;
+                  pt0[0]=loc0.Lon;
+                  pt0[1]=loc0.Lat;
                }
             } else {
                pt0[0]=pt0[1]=-1.0;
@@ -419,10 +419,10 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
 
             if (proj->Params->Ref) {
                if (proj->Params->Geographic) {
-                  proj->Params->Ref->Project(proj->Params->Ref,pt0[0],pt0[1],&loc0.lat,&loc0.lon,0,1);
+                  proj->Params->Ref->Project(proj->Params->Ref,pt0[0],pt0[1],&loc0.Lat,&loc0.Lon,0,1);
                } else {
-                  loc0.lat=pt0[1];
-                  loc0.lon=pt0[0];
+                  loc0.Lat=pt0[1];
+                  loc0.Lon=pt0[0];
                }
             } else {
                pt0[0]=pt0[1]=-1.0;
@@ -441,15 +441,15 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             pt0[0]-=vp->x;
             pt0[1]-=vp->y;
             proj->Type->UnProject(vp,proj->Params,&loc0,pt0);
-            loc0.elev=0.0;
+            loc0.Elev=0.0;
             if (proj->Params->Geographic) {
-               CLAMPLON(loc0.lon);
-               loc0.elev=GDB_GetMap(proj->Geo,loc0.lat,loc0.lon);
+               CLAMPLON(loc0.Lon);
+               loc0.Elev=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
             }
             obj=Tcl_NewListObj(0,NULL);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.lat));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.lon));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.elev));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lon));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Elev));
             Tcl_SetObjResult(Interp,obj);
             break;
 
@@ -458,9 +458,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_WrongNumArgs(Interp,2,Objv,"lat lon elev [Anywhere]");
                return(TCL_ERROR);
             }
-            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lat);
-            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.lon);
-            Tcl_GetDoubleFromObj(Interp,Objv[4],&loc0.elev);
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
+            Tcl_GetDoubleFromObj(Interp,Objv[4],&loc0.Elev);
             if (Objc==6) {
                Tcl_GetBooleanFromObj(Interp,Objv[5],&bool);
             } else {
@@ -489,9 +489,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             Tcl_GetDoubleFromObj(Interp,Objv[5],&pt1[1]);
 
             if (proj->Type->UnProject(vp,proj->Params,&loc0,pt0) && proj->Type->UnProject(vp,proj->Params,&loc1,pt1)) {
-               loc0.lat=DEG2RAD(loc0.lat);loc0.lon=DEG2RAD(loc0.lon);
-               loc1.lat=DEG2RAD(loc1.lat);loc1.lon=DEG2RAD(loc1.lon);
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(DIST(0.0,loc0.lat,loc0.lon,loc1.lat,loc1.lon)));
+               loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
+               loc1.Lat=DEG2RAD(loc1.Lat);loc1.Lon=DEG2RAD(loc1.Lon);
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(DIST(0.0,loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon)));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(0.0));
             }
@@ -502,15 +502,15 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_WrongNumArgs(Interp,2,Objv,"lat0 lon0 lat1 lon1 elev");
                return(TCL_ERROR);
             }
-            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lat);
-            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.lon);
-            Tcl_GetDoubleFromObj(Interp,Objv[4],&loc1.lat);
-            Tcl_GetDoubleFromObj(Interp,Objv[5],&loc1.lon);
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
+            Tcl_GetDoubleFromObj(Interp,Objv[4],&loc1.Lat);
+            Tcl_GetDoubleFromObj(Interp,Objv[5],&loc1.Lon);
             Tcl_GetDoubleFromObj(Interp,Objv[6],&x);
 
-            loc0.lat=DEG2RAD(loc0.lat);loc0.lon=DEG2RAD(loc0.lon);
-            loc1.lat=DEG2RAD(loc1.lat);loc1.lon=DEG2RAD(loc1.lon);
-            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(DIST(x,loc0.lat,loc0.lon,loc1.lat,loc1.lon)));
+            loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
+            loc1.Lat=DEG2RAD(loc1.Lat);loc1.Lon=DEG2RAD(loc1.Lon);
+            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(DIST(x,loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon)));
             break;
 
          case DISTPIX:
@@ -536,15 +536,15 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                x=RAD2DEG(atan2(vp->Cam->Up[0],vp->Cam->Up[1]));
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(vp->Cam->Up[2]>0.9999999?x+180:x));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lat);
-               Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.lon);
-               Tcl_GetDoubleFromObj(Interp,Objv[4],&loc1.lat);
-               Tcl_GetDoubleFromObj(Interp,Objv[5],&loc1.lon);
+               Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
+               Tcl_GetDoubleFromObj(Interp,Objv[4],&loc1.Lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[5],&loc1.Lon);
 
-               loc0.lat=DEG2RAD(loc0.lat);loc0.lon=DEG2RAD(loc0.lon);
-               loc1.lat=DEG2RAD(loc1.lat);loc1.lon=DEG2RAD(loc1.lon);
+               loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
+               loc1.Lat=DEG2RAD(loc1.Lat);loc1.Lon=DEG2RAD(loc1.Lon);
 
-               x=COURSE(loc0.lat,loc0.lon,loc1.lat,loc1.lon);
+               x=COURSE(loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon);
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(RAD2DEG(x)));
             }
             break;
@@ -554,23 +554,23 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist angle");
                return(TCL_ERROR);
             }
-            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lat);
-            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.lon);
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
             Tcl_GetDoubleFromObj(Interp,Objv[4],&d);
             Tcl_GetDoubleFromObj(Interp,Objv[5],&x);
 
-            loc0.lat=DEG2RAD(loc0.lat);
-            loc0.lon=DEG2RAD(loc0.lon);
+            loc0.Lat=DEG2RAD(loc0.Lat);
+            loc0.Lon=DEG2RAD(loc0.Lon);
             x=DEG2RAD(x);
             d=M2RAD(d);
 
-            loc1.lat=asin(sin(loc0.lat)*cos(d)+cos(loc0.lat)*sin(d)*cos(x));
-            loc1.lon=fmod(loc0.lon+(atan2(sin(x)*sin(d)*cos(loc0.lat),cos(d)-sin(loc0.lat)*sin(loc1.lat)))+M_PI,M_2PI)-M_PI;
-            loc1.lat=RAD2DEG(loc1.lat);loc1.lon=RAD2DEG(loc1.lon);
+            loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
+            loc1.Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
+            loc1.Lat=RAD2DEG(loc1.Lat);loc1.Lon=RAD2DEG(loc1.Lon);
 
             obj=Tcl_NewListObj(0,NULL);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.lat));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.lon));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lon));
             Tcl_SetObjResult(Interp,obj);
             break;
 

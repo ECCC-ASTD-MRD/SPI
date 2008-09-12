@@ -131,7 +131,7 @@
 
 /*Structure pour les coordonees latlon*/
 typedef struct Coord {
-   double lon,lat,elev;
+   double Lon,Lat,Elev;
 } Coord;
 
 typedef union {

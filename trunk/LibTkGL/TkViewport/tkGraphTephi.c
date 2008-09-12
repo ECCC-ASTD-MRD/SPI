@@ -1141,8 +1141,12 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
          glDash(&Graph->Dash[1]);
          glBegin(GL_LINE_STRIP);
          for(i=0;i<vn;i++) {
-            if (vdry->V[i]!=vdry->NoData && vdew->V[i]!=vdew->NoData && vpres->V[i]!=vpres->NoData) {
-               vwet->V[i]=Thermo_TD2WB(vpres->V[i],vdry->V[i],vdew->V[i]);
+            if (vwet->V[i]==vwet->NoData) {
+               if (vdry->V[i]!=vdry->NoData && vdew->V[i]!=vdew->NoData && vpres->V[i]!=vpres->NoData) {
+                  vwet->V[i]=Thermo_TD2WB(vpres->V[i],vdry->V[i],vdew->V[i]);
+               }
+            }
+            if (vwet->V[i]!=vwet->NoData && vpres->V[i]!=vpres->NoData) {
                if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,vwet->V[i],vpres->V[i],&v[0],&v[1])) {
                   glVertex2dv(v);
                } else {
@@ -1186,8 +1190,8 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
       for(i=0;i<vn;i++) {
          switch(Item->Value) {
             case  1:
-            case 14: if (vdry)  val=vdry->V[i]; break;
-            case 15: if (vpres) val=vpres->V[i]; break;
+            case 14: if (vpres) val=vpres->V[i]; break;
+            case 15: if (vdry)  val=vdry->V[i]; break;
             case 16: if (vwet)  val=vwet->V[i]; break;
             case 17: if (vdew)  val=vdew->V[i]; break;
             case 18: if (vdry && vdew) val=vdry->V[i]-vdew->V[i]; break;

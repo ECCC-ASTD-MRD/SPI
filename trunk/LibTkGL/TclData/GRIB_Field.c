@@ -98,15 +98,15 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj) {
       for (j=0;j<Field->Def->NJ;j++) {
 
          for (i=0;i<Field->Def->NI;i++) {
-            flat=coord.lat=Field->Ref->Lat[i];
-            flon=coord.lon=CLAMPLON(Field->Ref->Lon[i]);
+            flat=coord.Lat=Field->Ref->Lat[i];
+            flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
             idx=j*Field->Def->NI+i;
-            coord.elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
+            coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
 
             if (Proj) {
                ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Field->Ref->Pos[idx],1);
             } else {
-               Vect_Init(Field->Ref->Pos[idx],Field->Ref->Lat[i],Field->Ref->Lon[i],coord.elev);
+               Vect_Init(Field->Ref->Pos[idx],Field->Ref->Lat[i],Field->Ref->Lon[i],coord.Elev);
             }
          }
       }
@@ -129,9 +129,9 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj) {
                idxi=j*Field->Def->NI+i;
                idxk=k*Field->Def->NI*Field->Def->NJ+idxi;
 
-               Field->Ref->Project(Field->Ref,i,j,&coord.lat,&coord.lon,0,1);
-               coord.elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
-               Vect_Init(Field->Ref->Pos[idxk],coord.lon,coord.lat,coord.elev);
+               Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
+               coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
+               Vect_Init(Field->Ref->Pos[idxk],coord.Lon,coord.Lat,coord.Elev);
             }
          }
       }

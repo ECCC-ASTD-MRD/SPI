@@ -249,14 +249,14 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&y);
          if (proj->Params->Ref) {
-            proj->Params->Ref->Project(proj->Params->Ref,x,y,&loc0.lat,&loc0.lon,1,1);
+            proj->Params->Ref->Project(proj->Params->Ref,x,y,&loc0.Lat,&loc0.Lon,1,1);
          } else {
-            loc0.lat=y;
-            loc0.lon=x;
+            loc0.Lat=y;
+            loc0.Lon=x;
          }
          obj=Tcl_NewListObj(0,NULL);
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.lat));
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.lon));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lat));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lon));
          Tcl_SetObjResult(Interp,obj);
          break;
 
@@ -265,13 +265,13 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_WrongNumArgs(Interp,2,Objv,"lat lon");
             return(TCL_ERROR);
          }
-         Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.lat);
-         Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lon);
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
          if (proj->Params->Ref) {
-            proj->Params->Ref->UnProject(proj->Params->Ref,&x,&y,loc0.lat,loc0.lon,1,1);
+            proj->Params->Ref->UnProject(proj->Params->Ref,&x,&y,loc0.Lat,loc0.Lon,1,1);
          } else {
-            y=loc0.lat;
-            x=loc0.lon;
+            y=loc0.Lat;
+            x=loc0.Lon;
          }
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
@@ -298,23 +298,23 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist angle");
             return(TCL_ERROR);
          }
-         Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.lat);
-         Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lon);
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&d);
          Tcl_GetDoubleFromObj(Interp,Objv[4],&x);
 
-         loc0.lat=DEG2RAD(loc0.lat);
-         loc0.lon=DEG2RAD(loc0.lon);
+         loc0.Lat=DEG2RAD(loc0.Lat);
+         loc0.Lon=DEG2RAD(loc0.Lon);
          x=DEG2RAD(x);
          d=M2RAD(d);
 
-         loc1.lat=asin(sin(loc0.lat)*cos(d)+cos(loc0.lat)*sin(d)*cos(x));
-         loc1.lon=fmod(loc0.lon+(atan2(sin(x)*sin(d)*cos(loc0.lat),cos(d)-sin(loc0.lat)*sin(loc1.lat)))+M_PI,M_2PI)-M_PI;
-         loc1.lat=RAD2DEG(loc1.lat);loc1.lon=RAD2DEG(loc1.lon);
+         loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
+         loc1.Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
+         loc1.Lat=RAD2DEG(loc1.Lat);loc1.Lon=RAD2DEG(loc1.Lon);
 
          obj=Tcl_NewListObj(0,NULL);
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.lat));
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.lon));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lat));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lon));
          Tcl_SetObjResult(Interp,obj);
          break;
 
@@ -337,18 +337,18 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(0.0));
          } else {
             Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
-            Tcl_GetDoubleFromObj(Interp,obj,&loc0.lat);
+            Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
             Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
-            Tcl_GetDoubleFromObj(Interp,obj,&loc0.lon);
+            Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lon);
             while (n<nobj) {
                Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&loc1.lat);
+               Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
                Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&loc1.lon);
+               Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lon);
 
-               loc0.lat=DEG2RAD(loc0.lat);loc0.lon=DEG2RAD(loc0.lon);
-               loct.lat=DEG2RAD(loc1.lat);loct.lon=DEG2RAD(loc1.lon);
-               d+=DIST(x,loc0.lat,loc0.lon,loct.lat,loct.lon);
+               loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
+               loct.Lat=DEG2RAD(loc1.Lat);loct.Lon=DEG2RAD(loc1.Lon);
+               d+=DIST(x,loc0.Lat,loc0.Lon,loct.Lat,loct.Lon);
 
                loc0=loc1;
             }
@@ -361,15 +361,15 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_WrongNumArgs(Interp,0,Objv,"lat0 lon0 lat1 lon1");
             return(TCL_ERROR);
          }
-         Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.lat);
-         Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.lon);
-         Tcl_GetDoubleFromObj(Interp,Objv[3],&loc1.lat);
-         Tcl_GetDoubleFromObj(Interp,Objv[4],&loc1.lon);
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
+         Tcl_GetDoubleFromObj(Interp,Objv[3],&loc1.Lat);
+         Tcl_GetDoubleFromObj(Interp,Objv[4],&loc1.Lon);
 
-         loc0.lat=DEG2RAD(loc0.lat);loc0.lon=DEG2RAD(loc0.lon);
-         loc1.lat=DEG2RAD(loc1.lat);loc1.lon=DEG2RAD(loc1.lon);
+         loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
+         loc1.Lat=DEG2RAD(loc1.Lat);loc1.Lon=DEG2RAD(loc1.Lon);
 
-         x=COURSE(loc0.lat,loc0.lon,loc1.lat,loc1.lon);
+         x=COURSE(loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon);
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(RAD2DEG(x)));
          break;
    }
@@ -463,34 +463,34 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
 
    /* Get the first path coordinate*/
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&loc0.lat);
+   Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&loc0.lon);
+   Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lon);
 
    while (i<nobj) {
 
       /* Output start of path segment*/
-      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.lat));
-      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.lon));
+      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lat));
+      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lon));
 
       /* Parse all the path coordinates*/
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&loc1.lat);
+      Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&loc1.lon);
+      Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lon);
 
-      loc0.lat=DEG2RAD(loc0.lat);
-      loc0.lon=DEG2RAD(loc0.lon);
-      loct.lat=DEG2RAD(loc1.lat);
-      loct.lon=DEG2RAD(loc1.lon);
+      loc0.Lat=DEG2RAD(loc0.Lat);
+      loc0.Lon=DEG2RAD(loc0.Lon);
+      loct.Lat=DEG2RAD(loc1.Lat);
+      loct.Lon=DEG2RAD(loc1.Lon);
 
-      slat0=sin(loc0.lat);
-      clat0=cos(loc0.lat);
-      clat1=cos(loct.lat);
+      slat0=sin(loc0.Lat);
+      clat0=cos(loc0.Lat);
+      clat1=cos(loct.Lat);
 
       /* Figure out true course and distance*/
-      td=2.0*asin(sqrt(pow((sin((loc0.lat-loct.lat)/2.0)),2.0)+clat0*clat1*pow((sin((loc0.lon-loct.lon)/2.0)),2.0)));
-      tc=fmod(atan2(sin(loc0.lon-loct.lon)*clat1,clat0*sin(loct.lat)-slat0*clat1*cos(loc0.lon-loct.lon)),M_2PI);
+      td=2.0*asin(sqrt(pow((sin((loc0.Lat-loct.Lat)/2.0)),2.0)+clat0*clat1*pow((sin((loc0.Lon-loct.Lon)/2.0)),2.0)));
+      tc=fmod(atan2(sin(loc0.Lon-loct.Lon)*clat1,clat0*sin(loct.Lat)-slat0*clat1*cos(loc0.Lon-loct.Lon)),M_2PI);
 
       st=sin(tc);
       ct=cos(tc);
@@ -501,7 +501,7 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
          sd=sin(d);
          cd=cos(d);
          lat=asin(slat0*cd+clat0*sd*ct);
-         lon=fmod(loc0.lon-atan2(st*sd*clat0,cd-slat0*sin(lat))+M_PI,M_2PI)-M_PI;
+         lon=fmod(loc0.Lon-atan2(st*sd*clat0,cd-slat0*sin(lat))+M_PI,M_2PI)-M_PI;
 
          lon=RAD2DEG(lon);
          lat=RAD2DEG(lat);
@@ -515,8 +515,8 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
    }
 
    /* Output las path coordinate */
-   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.lat));
-   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.lon));
+   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lat));
+   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lon));
 
    return(objo);
 }
@@ -893,14 +893,14 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
         case AXISCOORD:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.lat);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.lon);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.elev);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.Lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.Lon);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.Elev);
             }
             break;
 
@@ -1034,9 +1034,9 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
    proj->Params->Scale        = 1;
    proj->Params->ZFactor      = 1.0;
    proj->Params->TAxis        = 1;
-   proj->Params->ZAxis.lat    = 0.0;
-   proj->Params->ZAxis.lon    = 0.0;
-   proj->Params->ZAxis.elev   = 0.0;
+   proj->Params->ZAxis.Lat    = 0.0;
+   proj->Params->ZAxis.Lon    = 0.0;
+   proj->Params->ZAxis.Elev   = 0.0;
    proj->Params->Lat          = 0.0;
    proj->Params->Lon          = 0.0;
    proj->Params->VP           = NULL;
@@ -1267,25 +1267,25 @@ int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
    }
 
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&Pos[nb].lat);
+   Tcl_GetDoubleFromObj(Interp,obj,&Pos[nb].Lat);
 
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&Pos[nb].lon);
+   Tcl_GetDoubleFromObj(Interp,obj,&Pos[nb].Lon);
 
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&Pos[nb].elev);
+   Tcl_GetDoubleFromObj(Interp,obj,&Pos[nb].Elev);
    nb++;
 
    while(i<nobj){
 
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&pt.lat);
+      Tcl_GetDoubleFromObj(Interp,obj,&pt.Lat);
 
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&pt.lon);
+      Tcl_GetDoubleFromObj(Interp,obj,&pt.Lon);
 
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&pt.elev);
+      Tcl_GetDoubleFromObj(Interp,obj,&pt.Elev);
 
       switch(Type) {
 
@@ -1295,9 +1295,9 @@ int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
 
          case 'C' :
             /*Define increments*/
-            ilat =pt.lat -Pos[nb-1].lat;
-            ilon =pt.lon -Pos[nb-1].lon;
-            ielev=pt.elev-Pos[nb-1].elev;
+            ilat =pt.Lat -Pos[nb-1].Lat;
+            ilon =pt.Lon -Pos[nb-1].Lon;
+            ielev=pt.Elev-Pos[nb-1].Elev;
 
             /*If we went from 180.0 ou -180.0*/
             ilon=ilon>180.0f?-(360.0f-ilon):ilon<-180.0f?360.0f+ilon:ilon;
@@ -1312,9 +1312,9 @@ int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
 
                /*Partition and increment segment*/
                while(split--){
-                  pt.lat+=ilat;
-                  pt.lon+=ilon;
-                  pt.elev+=ielev;
+                  pt.Lat+=ilat;
+                  pt.Lon+=ilon;
+                  pt.Elev+=ielev;
                   Pos[nb++]=pt;
                }
             } else {
@@ -1323,11 +1323,11 @@ int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
             break;
 
          case 'T' :
-            lat0=DEG2RAD(Pos[nb-1].lat);
-            lon0=DEG2RAD(Pos[nb-1].lon);
-            lat1=DEG2RAD(pt.lat);
-            lon1=DEG2RAD(pt.lon);
-            ielev=pt.elev-Pos[nb-1].elev;
+            lat0=DEG2RAD(Pos[nb-1].Lat);
+            lon0=DEG2RAD(Pos[nb-1].Lon);
+            lat1=DEG2RAD(pt.Lat);
+            lon1=DEG2RAD(pt.Lon);
+            ielev=pt.Elev-Pos[nb-1].Elev;
 
             sinlat0=sin(lat0);
             sinlat1=sin(lat1);
@@ -1343,17 +1343,17 @@ int Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List) {
                tc=fmod(atan2(sin(lon0-lon1)*coslat1,coslat0*sinlat1-sinlat0*coslat1*cos(lon0-lon1)),M_2PI);
                dn/=split;
                ielev/=split;
-               p0.elev=Pos[nb-1].elev;
+               p0.Elev=Pos[nb-1].Elev;
 
                /*Partition and increment segment*/
                for(j=1;j<split;j++) {
                   sindn=sin(dn*j);
                   cosdn=cos(dn*j);
-                  p0.lat=asin(sinlat0*cosdn+coslat0*sindn*cos(tc));
-                  p0.lon=fmod(lon0-atan2(sin(tc)*sindn*coslat0,cosdn-sinlat0*sin(p0.lat))+M_PI,M_2PI)-M_PI;
-                  p0.lat=RAD2DEG(p0.lat);
-                  p0.lon=RAD2DEG(p0.lon);
-                  p0.elev+=ielev;
+                  p0.Lat=asin(sinlat0*cosdn+coslat0*sindn*cos(tc));
+                  p0.Lon=fmod(lon0-atan2(sin(tc)*sindn*coslat0,cosdn-sinlat0*sin(p0.Lat))+M_PI,M_2PI)-M_PI;
+                  p0.Lat=RAD2DEG(p0.Lat);
+                  p0.Lon=RAD2DEG(p0.Lon);
+                  p0.Elev+=ielev;
                   Pos[nb++]=p0;
                }
             }
@@ -1578,11 +1578,11 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
          pt[2]=0;
          Proj->Type->UnProject(VP,Proj->Params,&co[1],pt);
 
-         co[0].lat=DEG2RAD(co[0].lat);
-         co[0].lon=DEG2RAD(co[0].lon);
-         co[1].lat=DEG2RAD(co[1].lat);
-         co[1].lon=DEG2RAD(co[1].lon);
-         d=DIST(0.0,co[0].lat,co[0].lon,co[1].lat,co[1].lon);
+         co[0].Lat=DEG2RAD(co[0].Lat);
+         co[0].Lon=DEG2RAD(co[0].Lon);
+         co[1].Lat=DEG2RAD(co[1].Lat);
+         co[1].Lon=DEG2RAD(co[1].Lon);
+         d=DIST(0.0,co[0].Lat,co[0].Lon,co[1].Lat,co[1].Lon);
       } else {
          d=1.0*VP->Cam->Aspect;
       }
@@ -1644,8 +1644,8 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       /*Get the sun*/
       if (Proj->Sun) {
          sec=Proj->Date>86400?Proj->Date:time(NULL)+Proj->Date;
-         sun_position(sec,&Proj->SunPos.lat,&Proj->SunPos.lon);
-         Proj->SunPos.elev=146000.0;
+         sun_position(sec,&Proj->SunPos.Lat,&Proj->SunPos.Lon);
+         Proj->SunPos.Elev=146000.0;
          Proj->Type->Project(Proj->Params,&Proj->SunPos,&pt,1);
          Proj->LightPos[0]=pt[0];Proj->LightPos[1]=pt[1];Proj->LightPos[2]=pt[2];Proj->LightPos[3]=0.0;
       } else {

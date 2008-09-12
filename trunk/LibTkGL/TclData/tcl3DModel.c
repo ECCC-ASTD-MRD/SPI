@@ -287,9 +287,9 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
          case COORDINATE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
             }
@@ -647,7 +647,7 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
    mdl->Path=NULL;
    mdl->Active=1;
    mdl->Ref=NULL;
-   mdl->Co.lat=mdl->Co.lon=-999.0;
+   mdl->Co.Lat=mdl->Co.Lon=-999.0;
    mdl->NObj=0;
    mdl->Obj=NULL;
    mdl->NMt=0;
@@ -1208,8 +1208,8 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
                   /*Projection to georef*/
                   if (M->Ref) {
-                     M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.lat,&M->Co.lon,1,0);
-                     M->Co.elev=obj->Vr[idx][2];
+                     M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
+                     M->Co.Elev=obj->Vr[idx][2];
 
                      Proj->Type->Project(Proj->Params,&M->Co,&vr,1);
                      Vect_Assign(vrf,vr);

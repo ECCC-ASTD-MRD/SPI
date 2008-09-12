@@ -971,18 +971,18 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
             Vect_Max(Layer->Vr[1],Layer->Vr[1],vr);
          }
 
-         Ref->Project(Ref,vr[0],vr[1],&co.lat,&co.lon,1,0);
-         co.elev=vr[2];
+         Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+         co.Elev=vr[2];
          if (Layer && Layer->Topo>0) {
-            co.elev=Elev;
+            co.Elev=Elev;
          }
          if (Layer && Layer->Topo==0) {
-            gdb_mapget(handle,co.lat,co.lon,(void*)&z);co.elev=z*Layer->TopoFactor;
+            gdb_mapget(handle,co.Lat,co.Lon,(void*)&z);co.Elev=z*Layer->TopoFactor;
          }
-         pvr[n][0]=co.lon;
-         pvr[n][1]=co.lat;
-         pvr[n][2]=co.elev+Extrude;
-         OGR_ArrayNr[(n+Size)]=&GDB_NMap[(int)co.lat+90][(int)co.lon+180];
+         pvr[n][0]=co.Lon;
+         pvr[n][1]=co.Lat;
+         pvr[n][2]=co.Elev+Extrude;
+         OGR_ArrayNr[(n+Size)]=&GDB_NMap[(int)co.Lat+90][(int)co.Lon+180];
       }
       Proj->Type->Project(Proj->Params,pvr,NULL,nv);
 

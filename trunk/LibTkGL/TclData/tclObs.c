@@ -381,9 +381,9 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                obj=Tcl_NewListObj(0,NULL);
                for (j=0;j<obs->Loc->Nb;j++) {
                   sub=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].lat));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].elev));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].Lat));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].Lon));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].Elev));
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                }
                Tcl_SetObjResult(Interp,obj);
@@ -394,18 +394,18 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                   return TCL_ERROR;
                }
                if (Objc==4) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].lat);
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].lon);
-                  obs->Loc->Coord[j].elev=0.0;
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].Lat);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].Lon);
+                  obs->Loc->Coord[j].Elev=0.0;
                } else if (Objc==5) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].lat);
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].lon);
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].elev);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].Lat);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].Lon);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&obs->Loc->Coord[j].Elev);
                } else {
                   sub=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].lat));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].elev));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].Lat));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].Lon));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(obs->Loc->Coord[j].Elev));
                   Tcl_SetObjResult(Interp,sub);
                }
             } else {
@@ -717,7 +717,7 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
 #endif
    for(i=0;i<Obs->Loc->Nb;i++) {
 
-      if (!Field->Ref->UnProject(Field->Ref,&x,&y,Obs->Loc->Coord[i].lat,Obs->Loc->Coord[i].lon,0,1)) {
+      if (!Field->Ref->UnProject(Field->Ref,&x,&y,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,0,1)) {
          ((float*)Obs->Def->Data[0])[i]=Obs->Def->NoData;
       } else {
          Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,x,y,Field->Def->Level,&val,&tmp);
@@ -765,22 +765,22 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
          if (Ref->Grid[0]=='V') {
             /* Get the right level*/
             for(k=Ref->LevelNb-1;k>=0;k--) {
-              if (Obs->Loc->Coord[i].elev>Ref->Levels[k])
+              if (Obs->Loc->Coord[i].Elev>Ref->Levels[k])
                   break;
             }
             dk=Ref->Levels[k+1]-Ref->Levels[k];
-            pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].elev-Ref->Levels[k])/dk);
+            pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-Ref->Levels[k])/dk);
 
             /*Get the horizontal position*/
             d=1e32;
             idx=0;
 
             /*Find closest point*/
-            c2.lat=DEG2RAD(Obs->Loc->Coord[i].lat);c2.lon=DEG2RAD(Obs->Loc->Coord[i].lon);
+            c2.Lat=DEG2RAD(Obs->Loc->Coord[i].Lat);c2.Lon=DEG2RAD(Obs->Loc->Coord[i].Lon);
             n=Ref->X1-Ref->X0;
             for(k=0;k<=n;k++) {
-               c0.lat=DEG2RAD(Ref->Lat[k]);c0.lon=DEG2RAD(Ref->Lon[k]);
-               dk=DIST(0,c2.lat,c2.lon,c0.lat,c0.lon);
+               c0.Lat=DEG2RAD(Ref->Lat[k]);c0.Lon=DEG2RAD(Ref->Lon[k]);
+               dk=DIST(0,c2.Lat,c2.Lon,c0.Lat,c0.Lon);
                if (d>dk) {
                   d=dk;
                   idx=k;
@@ -788,11 +788,11 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
             }
 
             /*Figure out right angle crossing point*/
-            c1.lat=DEG2RAD(Ref->Lat[idx==n?idx-1:idx+1]);c1.lon=DEG2RAD(Ref->Lon[idx==n?idx-1:idx+1]);
+            c1.Lat=DEG2RAD(Ref->Lat[idx==n?idx-1:idx+1]);c1.Lon=DEG2RAD(Ref->Lon[idx==n?idx-1:idx+1]);
             pos[*NObs][0]=idx+GeoFunc_RadialPointRatio(c0,c1,c2);
             j=(pos[*NObs][0]>0 && pos[*NObs][0]<=n)?1:0;
          } else {
-            j=Ref->UnProject(Ref,&pos[*NObs][0],&pos[*NObs][1],Obs->Loc->Coord[i].lat,Obs->Loc->Coord[i].lon,Extrap,1);
+            j=Ref->UnProject(Ref,&pos[*NObs][0],&pos[*NObs][1],Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,Extrap,1);
          }
 
          skip=0;
@@ -1293,11 +1293,11 @@ int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
         fputs(" ",stream);
         fputs(loc->No[n],stream);
       }
-      sprintf(buf," %.15f",loc->Coord[n].lat);
+      sprintf(buf," %.15f",loc->Coord[n].Lat);
       fputs(buf,stream);
-      sprintf(buf," %.15f",loc->Coord[n].lon);
+      sprintf(buf," %.15f",loc->Coord[n].Lon);
       fputs(buf,stream);
-      sprintf(buf," %.5f",loc->Coord[n].elev);
+      sprintf(buf," %.5f",loc->Coord[n].Elev);
       fputs(buf,stream);
       sprintf(buf," %i",obs->LevelType);
       fputs(buf,stream);
@@ -1479,9 +1479,9 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          hd=0;
          for(n=0;n<ntok;n++) {
             if (strcmp(gtok[n],"LAT")==0) {                  /*Latitude information*/
-               loc->Coord[nb].lat=atof(tok[n]);
+               loc->Coord[nb].Lat=atof(tok[n]);
             } else if (strcmp(gtok[n],"LON")==0) {           /*Longitude information*/
-               loc->Coord[nb].lon=atof(tok[n]);
+               loc->Coord[nb].Lon=atof(tok[n]);
             } else if (strcmp(gtok[n],"ELEVTYPE")==0) {      /*Elevation type information*/
                if (isdigit(tok[n][0])) {
                   levtyp=atoi(tok[n]);
@@ -1510,7 +1510,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                   }
                }
             } else if (strcmp(gtok[n],"ELEV")==0) {          /*Elevation information*/
-               loc->Coord[nb].elev=atof(tok[n]);
+               loc->Coord[nb].Elev=atof(tok[n]);
             } else if (strcmp(gtok[n],"NO")==0) {            /*Number information*/
                loc->No[nb]=strdup(tok[n]);
                /*Patch temporaire car le postscript niaise avec les paranthese non uniforme*/
@@ -1785,9 +1785,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    if (Obs->Spec->Style==2 || Obs->Spec->Style==4) {
       glBegin(GL_LINES);
       for (i=0;i<Obs->Loc->Nb;i++) {
-         co.lat=Obs->Loc->Coord[i].lat;
-         co.lon=Obs->Loc->Coord[i].lon;
-         co.elev=0.0;
+         co.Lat=Obs->Loc->Coord[i].Lat;
+         co.Lon=Obs->Loc->Coord[i].Lon;
+         co.Elev=0.0;
 
          Proj->Type->Project(Proj->Params,&Obs->Loc->Coord[i],&pix[0],1);
          Proj->Type->Project(Proj->Params,&co,&pix[1],1);
@@ -1801,9 +1801,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    if (Obs->Spec->Style==3 || Obs->Spec->Style==4) {
       glBegin(GL_LINE_STRIP);
       for (i=0;i<Obs->Loc->Nb;i++) {
-         co.lat=Obs->Loc->Coord[i].lat;
-         co.lon=Obs->Loc->Coord[i].lon;
-         co.elev=0.0;
+         co.Lat=Obs->Loc->Coord[i].Lat;
+         co.Lon=Obs->Loc->Coord[i].Lon;
+         co.Elev=0.0;
 
          Proj->Type->Project(Proj->Params,&co,&pix[1],1);
          glVertex3dv(pix[1]);
@@ -1820,9 +1820,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       for (i=0;i<Obs->Loc->Nb;i++) {
          val=((float*)Obs->Def->Data[0])[i];
          VAL2COL(idx,Obs->Spec,val);
-         co.lat=Obs->Loc->Coord[i].lat;
-         co.lon=Obs->Loc->Coord[i].lon;
-         co.elev=0.0;
+         co.Lat=Obs->Loc->Coord[i].Lat;
+         co.Lon=Obs->Loc->Coord[i].Lon;
+         co.Elev=0.0;
 
          Proj->Type->Project(Proj->Params,&Obs->Loc->Coord[i],&pix[0],1);
          Proj->Type->Project(Proj->Params,&co,&pix[1],1);
@@ -1890,8 +1890,8 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          if (idx>=0) {
             glPushName(i);
             glPushMatrix();
-            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].lat,Obs->Loc->Coord[i].lon,1);
-            z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].elev));
+            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
+            z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev));
             glTranslated(0.0,0.0,z);
 
             sz=VP->Ratio*(Obs->Spec->Size*0.5+Obs->Spec->RenderContour);
@@ -1960,8 +1960,8 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
             glPushName(i);
             glPushMatrix();
-            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].lat,Obs->Loc->Coord[i].lon,1);
-            z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].elev));
+            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
+            z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev));
             glTranslated(0.0,0.0,z);
 
             if (Interp) {
@@ -2073,9 +2073,9 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       if (idx>=0 || (!OBSVALID(val) && (!Obs->Spec->InterNb && Obs->Spec->Max==((float*)Obs->Def->Data[0])[Obs->Max] && Obs->Spec->Min==((float*)Obs->Def->Data[0])[Obs->Min]))) {
 
          /*Project coordinates to 2D screen space*/
-         co.elev=Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].elev);
-         co.lat=Obs->Loc->Coord[i].lat;
-         co.lon=Obs->Loc->Coord[i].lon;
+         co.Elev=Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev);
+         co.Lat=Obs->Loc->Coord[i].Lat;
+         co.Lon=Obs->Loc->Coord[i].Lon;
 
          /*If visible, draw text*/
          if (Projection_Pixel(Proj,VP,co,vr)) {
@@ -2120,7 +2120,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
             }
 
             if (Obs->Spec->RenderCoord) {
-               sprintf(buf,"(%.4f, %.4f)",Obs->Loc->Coord[i].lat,Obs->Loc->Coord[i].lon);
+               sprintf(buf,"(%.4f, %.4f)",Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon);
                if (!sz) {
                   dx=-Tk_TextWidth(Obs->Spec->Font,buf,strlen(buf))/2;
                   dy=-tkm.linespace/2;
@@ -2183,7 +2183,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    }
 
    for(i=0;i<Obs->Loc->Nb;i++) {
-      Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].lat,Obs->Loc->Coord[i].lon,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].elev),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
+      Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
    }
 
    if (Interp) {
@@ -2266,13 +2266,13 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   f=1;
                } else {
                   f=0;
-                  if (obs->Loc->Coord[n].lat>=dlat0 && obs->Loc->Coord[n].lat<=dlat1) {
+                  if (obs->Loc->Coord[n].Lat>=dlat0 && obs->Loc->Coord[n].Lat<=dlat1) {
                      if (dl<=180) {
-                        if (obs->Loc->Coord[n].lon>=dlon0 && obs->Loc->Coord[n].lon<=dlon1) {
+                        if (obs->Loc->Coord[n].Lon>=dlon0 && obs->Loc->Coord[n].Lon<=dlon1) {
                            f=1;
                         }
                      } else {
-                        if ((obs->Loc->Coord[n].lon<=dlon0 && obs->Loc->Coord[n].lon>-180) || (obs->Loc->Coord[n].lon>=dlon1 && obs->Loc->Coord[n].lon<180)) {
+                        if ((obs->Loc->Coord[n].Lon<=dlon0 && obs->Loc->Coord[n].Lon>-180) || (obs->Loc->Coord[n].Lon>=dlon1 && obs->Loc->Coord[n].Lon<180)) {
                            f=1;
                         }
                      }
@@ -2290,9 +2290,9 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Def_Get(obs->Def,0,obs->Max,val);
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(obs->Spec,val)));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].Elev));
                Tcl_SetObjResult(Interp,obj);
             }
             break;
@@ -2302,9 +2302,9 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Def_Get(obs->Def,0,obs->Min,val);
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(obs->Spec,val)));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].Elev));
                Tcl_SetObjResult(Interp,obj);
             }
             break;

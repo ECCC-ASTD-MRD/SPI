@@ -1244,8 +1244,8 @@ void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
 
    Coord co[2];
 
-   Layer->Ref->Project(Layer->Ref,Layer->Vr[0][0],Layer->Vr[0][1],&co[0].lat,&co[0].lon,0,1);
-   Layer->Ref->Project(Layer->Ref,Layer->Vr[1][0],Layer->Vr[1][1],&co[1].lat,&co[1].lon,0,1);
+   Layer->Ref->Project(Layer->Ref,Layer->Vr[0][0],Layer->Vr[0][1],&co[0].Lat,&co[0].Lon,0,1);
+   Layer->Ref->Project(Layer->Ref,Layer->Vr[1][0],Layer->Vr[1][1],&co[1].Lat,&co[1].Lon,0,1);
    Proj->Type->Project(Proj->Params,co,Layer->Vr,2);
 }
 
@@ -2193,8 +2193,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             OGR_GeometryRender(Proj,VP,Layer->Ref,Layer,geom,elev*Layer->TopoFactor,extr*Layer->ExtrudeFactor);
             OGR_Box(Proj,Layer);
             GPC_Centroid2D(geom,&vr[0],&vr[1]);
-            Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].lat,&Layer->Loc[f].lon,1,1);
-            Layer->Loc[f].elev=0.0;
+            Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].Lat,&Layer->Loc[f].Lon,1,1);
+            Layer->Loc[f].Elev=0.0;
          }
          if (gen) glEndList();
       }

@@ -97,21 +97,21 @@ double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,Vie
       Pt1=tmp;
    }
 
-   Pt0.lat=DEG2RAD(Pt0.lat);
-   Pt0.lon=DEG2RAD(Pt0.lon);
-   Pt1.lat=DEG2RAD(Pt1.lat);
-   Pt1.lon=DEG2RAD(Pt1.lon);
+   Pt0.Lat=DEG2RAD(Pt0.Lat);
+   Pt0.Lon=DEG2RAD(Pt0.Lon);
+   Pt1.Lat=DEG2RAD(Pt1.Lat);
+   Pt1.Lon=DEG2RAD(Pt1.Lon);
 
-   sinlat0=sin(Pt0.lat);
-   sinlat1=sin(Pt1.lat);
-   coslat0=cos(Pt0.lat);
-   coslat1=cos(Pt1.lat);
+   sinlat0=sin(Pt0.Lat);
+   sinlat1=sin(Pt1.Lat);
+   coslat0=cos(Pt0.Lat);
+   coslat1=cos(Pt1.Lat);
 
    /*True course along which to iterate*/
-   tc=fmod(atan2(sin(Pt0.lon-Pt1.lon)*coslat1,coslat0*sinlat1-sinlat0*coslat1*cos(Pt0.lon-Pt1.lon)),M_2PI);
+   tc=fmod(atan2(sin(Pt0.Lon-Pt1.Lon)*coslat1,coslat0*sinlat1-sinlat0*coslat1*cos(Pt0.Lon-Pt1.Lon)),M_2PI);
 
    /*Distance between points*/
-   dn=acos(sinlat0*sinlat1+cos(Pt0.lon-Pt1.lon)*coslat0*coslat1);
+   dn=acos(sinlat0*sinlat1+cos(Pt0.Lon-Pt1.Lon)*coslat0*coslat1);
    d2=dn*0.5f;
    dn=d2;
 
@@ -121,13 +121,13 @@ double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,Vie
       /*Position along true course*/
       sindn=sin(dn);
       cosdn=cos(dn);
-      tmp.lat=asin(sinlat0*cosdn+coslat0*sindn*cos(tc));
-      tmp.lon=fmod(Pt0.lon-atan2(sin(tc)*sindn*coslat0,cosdn-sinlat0*sin(tmp.lat))+M_PI,M_2PI)-M_PI;
-      tmp.elev=Pt1.elev;
+      tmp.Lat=asin(sinlat0*cosdn+coslat0*sindn*cos(tc));
+      tmp.Lon=fmod(Pt0.Lon-atan2(sin(tc)*sindn*coslat0,cosdn-sinlat0*sin(tmp.Lat))+M_PI,M_2PI)-M_PI;
+      tmp.Elev=Pt1.Elev;
 
       /*Project the position*/
-      tmp.lat=RAD2DEG(tmp.lat);
-      tmp.lon=RAD2DEG(tmp.lon);
+      tmp.Lat=RAD2DEG(tmp.Lat);
+      tmp.Lon=RAD2DEG(tmp.Lon);
 
       Proj->Type->Project(Proj->Params,&tmp,&in,1);
       gluProject(in[0],in[1],in[2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&inter[0],&inter[1],&inter[2]);
@@ -287,7 +287,7 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  ax[2];
 
    /*Draw 3DAxis*/
-   if (Proj->Params->TAxis && Proj->Params->ZAxis.elev!=0.0) {
+   if (Proj->Params->TAxis && Proj->Params->ZAxis.Elev!=0.0) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
@@ -297,13 +297,13 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glPolygonOffset(0.5,1.0);
       glEnable(GL_BLEND);
 
-      incr=pow(10,ORDER(Proj->Params->ZAxis.elev)-1);
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2.5:incr;
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2:incr;
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2:incr;
+      incr=pow(10,ORDER(Proj->Params->ZAxis.Elev)-1);
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2.5:incr;
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
 
       switch(Proj->Params->TAxis) {
-         case 1: ax[0]=Proj->Params->ZAxis.lat; ax[1]=0.0; break;
+         case 1: ax[0]=Proj->Params->ZAxis.Lat; ax[1]=0.0; break;
          case 2: ax[0]=90.0; ax[1]=-90.0; break;
       }
 
@@ -311,13 +311,13 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glEnable(GL_POLYGON_OFFSET_FILL);
       glColor3us(0xAAAA,0xAAAA,0xAAAA);
       glBegin(GL_QUAD_STRIP);
-      co.lon=Proj->Params->ZAxis.lon;
-      for(co.lat=ax[0];co.lat>=-90.0;co.lat-=1.0) {
-         co.elev=0.0;
+      co.Lon=Proj->Params->ZAxis.Lon;
+      for(co.Lat=ax[0];co.Lat>=-90.0;co.Lat-=1.0) {
+         co.Elev=0.0;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
          glVertex3dv(vr);
 
-         co.elev=Proj->Params->ZAxis.elev;
+         co.Elev=Proj->Params->ZAxis.Elev;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
          glVertex3dv(vr);
       }
@@ -326,10 +326,10 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Draw Y axis increments*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      co.lon=Proj->Params->ZAxis.lon;
-      for(co.elev=0;co.elev<=Proj->Params->ZAxis.elev;co.elev+=incr) {
+      co.Lon=Proj->Params->ZAxis.Lon;
+      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINE_STRIP);
-         for(co.lat=ax[0];co.lat>=-90.0;co.lat-=1.0){
+         for(co.Lat=ax[0];co.Lat>=-90.0;co.Lat-=1.0){
             Proj->Type->Project(Proj->Params,&co,&vr,1);
             glVertex3dv(vr);
          }
@@ -338,21 +338,21 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*X Axis*/
       glPushMatrix();
-      glRotatef(Proj->Params->ZAxis.lon,0.0,1.0,0.0);
-      glRotatef(-Proj->Params->ZAxis.lat,1.0,0.0,0.0);
+      glRotatef(Proj->Params->ZAxis.Lon,0.0,1.0,0.0);
+      glRotatef(-Proj->Params->ZAxis.Lat,1.0,0.0,0.0);
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
 
       /*X Axis Filling*/
       glEnable(GL_POLYGON_OFFSET_FILL);
       glColor3us(0xDDDD,0xDDDD,0xDDDD);
       glBegin(GL_QUAD_STRIP);
-      co.lat=0.0;
-      for(co.lon=ax[1];co.lon<=ax[1]+180;co.lon+=1.0){
-         co.elev=0.0;
+      co.Lat=0.0;
+      for(co.Lon=ax[1];co.Lon<=ax[1]+180;co.Lon+=1.0){
+         co.Elev=0.0;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
          glVertex3dv(vr);
 
-         co.elev=Proj->Params->ZAxis.elev;
+         co.Elev=Proj->Params->ZAxis.Elev;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
          glVertex3dv(vr);
       }
@@ -361,22 +361,22 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*X Axis Increment*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      co.lat=0.0;
-      for(co.elev=0;co.elev<=Proj->Params->ZAxis.elev;co.elev+=incr) {
+      co.Lat=0.0;
+      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINE_STRIP);
-         for(co.lon=ax[1];co.lon<=ax[1]+180;co.lon+=1.0){
+         for(co.Lon=ax[1];co.Lon<=ax[1]+180;co.Lon+=1.0){
             Proj->Type->Project(Proj->Params,&co,&vr,1);
             glVertex3dv(vr);
          }
          glEnd();
 
          glPushMatrix();
-         co.lon=0.0;
-         Proj->Type->Locate(Proj,co.lat,co.lon,1);
-         glTranslated(0.0,0.0,ZM(Proj,co.elev));
+         co.Lon=0.0;
+         Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
+         glTranslated(0.0,0.0,ZM(Proj,co.Elev));
          glRotatef(90.0,1.0,0.0,0.0);
          glScalef(VP->Ratio,VP->Ratio,1.0);
-         sprintf(buf,"  %i",(int)co.elev);
+         sprintf(buf,"  %i",(int)co.Elev);
          glPrint(Interp,VP->canvas,buf,vr[0],vr[1],0);
          glPopMatrix();
       }
@@ -717,27 +717,27 @@ unsigned long Ortho_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
 
    for(n=0;n<ABS(Nb);n++) {
 
-      if (((Coord*)Loc)[n].lat==-999.0 || ((Coord*)Loc)[n].lon==-999.0) {
+      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
          out[n][2]=-999.0;
       } else {
 
-         loc.lat=DEG2RAD(((Coord*)Loc)[n].lat);
-         loc.lon=DEG2RAD(((Coord*)Loc)[n].lon);
-         loc.elev=((Coord*)Loc)[n].elev;
+         loc.Lat=DEG2RAD(((Coord*)Loc)[n].Lat);
+         loc.Lon=DEG2RAD(((Coord*)Loc)[n].Lon);
+         loc.Elev=((Coord*)Loc)[n].Elev;
 
          /*Determiner l'elevation relative*/
-         if (loc.elev==0.0) {
+         if (loc.Elev==0.0) {
             r=1.0;
          } else {
-            r=1.0+loc.elev*Params->Scale*Params->ZFactor;
+            r=1.0+loc.Elev*Params->Scale*Params->ZFactor;
          }
 
          /*Calcul des membres repetes*/
-         coslat=r*cos(loc.lat);
+         coslat=r*cos(loc.Lat);
 
-         out[n][0]=coslat*sin(loc.lon);
-         out[n][1]=r*sin(loc.lat);
-         out[n][2]=coslat*cos(loc.lon);
+         out[n][0]=coslat*sin(loc.Lon);
+         out[n][1]=r*sin(loc.Lat);
+         out[n][2]=coslat*cos(loc.Lon);
          e++;
       }
    }
@@ -784,15 +784,15 @@ int Ortho_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
 
          c=cos(asin(r));
 
-         Loc->lat=RAD2DEG(asin(c*Params->SLat + obj[1]*Params->CLat));
-         Loc->lon=Params->Lon+RAD2DEG(atan2(obj[0],(Params->CLat*c - obj[1]*Params->SLat)));
+         Loc->Lat=RAD2DEG(asin(c*Params->SLat + obj[1]*Params->CLat));
+         Loc->Lon=Params->Lon+RAD2DEG(atan2(obj[0],(Params->CLat*c - obj[1]*Params->SLat)));
 
          return(1);
       }
    }
 
-   Loc->lat=-999.0;
-   Loc->lon=-999.0;
+   Loc->Lat=-999.0;
+   Loc->Lon=-999.0;
 
    return 0;
 }

@@ -312,31 +312,31 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
                for (j=0;j<Field->Def->NJ;j++) {
 
                   idx=j*Field->Def->NI+i;
-                  coord.elev=0.0;
+                  coord.Elev=0.0;
 
                   /*Reproject coordinates if needed*/
                   if (Field->Ref->Grid[1]=='Z') {
-                     Field->Ref->Project(Field->Ref,i,j,&coord.lat,&coord.lon,1,1);
-                     if (gz) coord.elev=gz[idx];
+                     Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
+                     if (gz) coord.Elev=gz[idx];
                   } else if (Field->Ref->Grid[1]=='Y') {
-                     Field->Ref->Project(Field->Ref,i,j,&coord.lat,&coord.lon,1,1);
+                     Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
                   } else {
-                     coord.lat=Field->Ref->Lat[idx];
-                     coord.lon=Field->Ref->Lon[idx];
+                     coord.Lat=Field->Ref->Lat[idx];
+                     coord.Lon=Field->Ref->Lon[idx];
                   }
 
                   if (Field->Ref->Hgt) {
-                     coord.elev+=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Hgt[idx]);
+                     coord.Elev+=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Hgt[idx]);
                   } else {
-                     coord.elev+=z;
+                     coord.Elev+=z;
                   }
-                  coord.elev*=Field->Spec->TopoFactor;
+                  coord.Elev*=Field->Spec->TopoFactor;
 
                   /*Si les positions sont hors domaine, outter space*/
-                  if (coord.lat<-900.0 || coord.lon<-900.0) {
-                     coord.elev=1e32;
+                  if (coord.Lat<-900.0 || coord.Lon<-900.0) {
+                     coord.Elev=1e32;
                   }
-                  Vect_Init(Field->Ref->Pos[k*sz+idx],coord.lon,coord.lat,coord.elev);
+                  Vect_Init(Field->Ref->Pos[k*sz+idx],coord.Lon,coord.Lat,coord.Elev);
                }
             }
          }
@@ -460,19 +460,19 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
          }
 
          for (i=0;i<Field->Def->NI;i++) {
-            flat=coord.lat=Field->Ref->Lat[i];
-            flon=coord.lon=CLAMPLON(Field->Ref->Lon[i]);
+            flat=coord.Lat=Field->Ref->Lat[i];
+            flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
             idx=j*Field->Def->NI+i;
             if (gz && Field->Ref->RefFrom->Id>-1) {
                GeoRefEZ_Lock();
                c_gdllsval(Field->Ref->RefFrom->Id,&fele,gz,&flat,&flon,1);
                GeoRefEZ_UnLock();
-               coord.elev=fele*10.0*Field->Spec->TopoFactor;
+               coord.Elev=fele*10.0*Field->Spec->TopoFactor;
             } else {
-               coord.elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
+               coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
             }
-            coord.elev*=Field->Spec->TopoFactor;
-            Vect_Init(Field->Ref->Pos[idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.elev);
+            coord.Elev*=Field->Spec->TopoFactor;
+            Vect_Init(Field->Ref->Pos[idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.Elev);
          }
       }
       if (Proj) {
@@ -538,26 +538,26 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                idxk=k*Field->Def->NI*Field->Def->NJ+idxi;
 
                if (gz) {
-                  coord.elev=gz[idxi]*Field->Spec->TopoFactor;
+                  coord.Elev=gz[idxi]*Field->Spec->TopoFactor;
                   if (Field->Spec->Topo[0]=='G' && Field->Spec->Topo[1]=='Z' ) {
-                     coord.elev*=10.0;
+                     coord.Elev*=10.0;
                   }
                } else {
-                  coord.elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
+                  coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
                }
-               coord.elev*=Field->Spec->TopoFactor;
+               coord.Elev*=Field->Spec->TopoFactor;
 
                if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
-                  Vect_Init(Field->Ref->Pos[idxk],i,j,coord.elev);
+                  Vect_Init(Field->Ref->Pos[idxk],i,j,coord.Elev);
                } else {
                   if (Field->Ref->Id>-1) {
-                     coord.lat=lat[idxi];
-                     coord.lon=CLAMPLON(lon[idxi]);
+                     coord.Lat=lat[idxi];
+                     coord.Lon=CLAMPLON(lon[idxi]);
                   } else {
-                     Field->Ref->Project(Field->Ref,i,j,&coord.lat,&coord.lon,0,1);
+                     Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
                   }
 
-                  Vect_Init(Field->Ref->Pos[idxk],coord.lon,coord.lat,coord.elev);
+                  Vect_Init(Field->Ref->Pos[idxk],coord.Lon,coord.Lat,coord.Elev);
                }
             }
          }
@@ -2318,7 +2318,8 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    for(k=0;k<Field->Def->NK;k++) {
       idx=k*FSIZE2D(Field->Def);
 
-      ip1=Field->Def->NK==1?((FSTD_Head*)Field->Head)->IP1:FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
+//      ip1=Field->Def->NK==1?((FSTD_Head*)Field->Head)->IP1:FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
+      ip1=FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
 
       /*Inscription de l'enregistrement*/
       Def_Pointer(Field->Def,0,idx,p);
@@ -2351,113 +2352,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    } else {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Could not write field (c_fstecr failed)",(char*)NULL);
       return TCL_ERROR;
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <FSTD_IP2Meter>
- * Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Transfomer une valeur IP1 en elevation en metres.
- *
- * Parametres :
- *  <IP>      : Valeur IP1
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-double FSTD_IP2Meter(int IP) {
-
-   int   mode=-1,flag=0,kind;
-   float level=0.0;
-   char  format;
-
-   /*Si c'est 0 on force a 0 metre car 0 mb=outter space*/
-   if (IP==0)
-      return(0);
-
-#ifdef LNK_FSTD
-   /*Convertir en niveau reel*/
-   f77name(convip)(&IP,&level,&kind,&mode,&format,&flag);
-#endif
-
-   return(Data_Level2Meter(kind,level));
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <FSTD_IP2Level>
- * Creation : Mai 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Transfomer un IP1 en niveau.
- *
- * Parametres :
- *  <Level>   : Valeur du niveau
- *  <Type>    : Type de niveau (Coordonnees)
- *
- * Retour:
- *  <IP>      : Niveau
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-double FSTD_IP2Level(int IP,int *Type) {
-
-   int    mode=-1,flag=0;
-   float  level=0.0;
-   char   format;
-
-#ifdef LNK_FSTD
-   /*Convertir en niveau reel*/
-   f77name(convip)(&IP,&level,Type,&mode,&format,&flag);
-
-#endif
-   return(level);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <FSTD_Level2IP>
- * Creation : Mai 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Transfomer un niveau en IP1.
- *
- * Parametres :
- *  <Level>   : Valeur du niveau
- *  <Type>    : Type de niveau (Coordonnees)
- *
- * Retour:
- *  <IP>      : IP1
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int FSTD_Level2IP(float Level,int Type) {
-
-   int    mode=3,flag=0,ip=0;
-   char   format;
-
-   if (Type<0) {
-      return(-1);
-   } else {
-#ifdef LNK_FSTD
-
-      /*ETA | HYBRID | THETA -> SIGMA*/
-      if (Type==LVL_ETA || Type==LVL_THETA || Type==LVL_HYBRID) {
-         Type=LVL_SIGMA;
-      }
-
-      /*MAGL | GALCHEN | UNDEF -> MASL*/
-      if (Type==LVL_MAGL|| Type==LVL_GALCHEN) {
-         Type=LVL_MASL;
-      }
-      /*Convertir en niveau reel*/
-      f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
-#endif
-      return(ip);
    }
 }
 

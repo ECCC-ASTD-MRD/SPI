@@ -47,6 +47,7 @@ static int           FSTDId=1;
 
 static TFSTDVector FSTDVectorTable[256];
 static int         FSTDVectorTableSize=0;
+static int         FSTDIP1Mode=3;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -295,9 +296,9 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    int         idx;
    static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM",NULL };
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
-   static CONST char *sopt[] = { "vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp","configure","define","stats","sort","copy","free","clear","clean","wipe","is",NULL };
-   enum                opt { VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,CONFIGURE,
+   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,CONFIGURE,
                      DEFINE,STATS,SORT,COPY,FREE,CLEAR,CLEAN,WIPE,IS };
 
    Tcl_ResetResult(Interp);
@@ -332,6 +333,25 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   Tcl_ListObjIndex(Interp,Objv[2],2,&obj);
                   uvw->WW=strdup(Tcl_GetString(obj));
                }
+            }
+         }
+         break;
+
+      case IP1MODE:
+         if (Objc==2) {
+            if (FSTDIP1Mode==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEW",-1));
+            } else {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj("OLD",-1));
+            }
+         } else {
+            if (strcmp(Tcl_GetString(Objv[2]),"NEW")==0) {
+               FSTDIP1Mode=2;
+            } else if  (strcmp(Tcl_GetString(Objv[2]),"OLD")==0) {
+               FSTDIP1Mode=3;
+            } else {
+               Tcl_AppendResult(Interp,"Wrong mode, must be NEW or OLD",(char*)NULL);
+               return(TCL_ERROR);
             }
          }
          break;
@@ -1372,6 +1392,113 @@ int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
 
    Tcl_MutexUnlock(&MUTEX_FSTDFILE);
    return(ok);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_IP2Meter>
+ * Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Transfomer une valeur IP1 en elevation en metres.
+ *
+ * Parametres :
+ *  <IP>      : Valeur IP1
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+double FSTD_IP2Meter(int IP) {
+
+   int   mode=-1,flag=0,kind;
+   float level=0.0;
+   char  format;
+
+   /*Si c'est 0 on force a 0 metre car 0 mb=outter space*/
+   if (IP==0)
+      return(0);
+
+#ifdef LNK_FSTD
+   /*Convertir en niveau reel*/
+   f77name(convip)(&IP,&level,&kind,&mode,&format,&flag);
+#endif
+
+   return(Data_Level2Meter(kind,level));
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_IP2Level>
+ * Creation : Mai 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Transfomer un IP1 en niveau.
+ *
+ * Parametres :
+ *  <Level>   : Valeur du niveau
+ *  <Type>    : Type de niveau (Coordonnees)
+ *
+ * Retour:
+ *  <IP>      : Niveau
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+double FSTD_IP2Level(int IP,int *Type) {
+
+   int    mode=-1,flag=0;
+   float  level=0.0;
+   char   format;
+
+#ifdef LNK_FSTD
+   /*Convertir en niveau reel*/
+   f77name(convip)(&IP,&level,Type,&mode,&format,&flag);
+
+#endif
+   return(level);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_Level2IP>
+ * Creation : Mai 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Transfomer un niveau en IP1.
+ *
+ * Parametres :
+ *  <Level>   : Valeur du niveau
+ *  <Type>    : Type de niveau (Coordonnees)
+ *
+ * Retour:
+ *  <IP>      : IP1
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int FSTD_Level2IP(float Level,int Type) {
+
+   int    flag=0,ip=0;
+   char   format;
+
+   if (Type<0) {
+      return(-1);
+   } else {
+#ifdef LNK_FSTD
+
+      /*ETA | HYBRID | THETA -> SIGMA*/
+      if (Type==LVL_ETA || Type==LVL_THETA || Type==LVL_HYBRID) {
+         Type=LVL_SIGMA;
+      }
+
+      /*MAGL | GALCHEN | UNDEF -> MASL*/
+      if (Type==LVL_MAGL|| Type==LVL_GALCHEN) {
+         Type=LVL_MASL;
+      }
+      /*Convertir en niveau reel*/
+      f77name(convip)(&ip,&Level,&Type,&FSTDIP1Mode,&format,&flag);
+#endif
+      return(ip);
+   }
 }
 
 /*----------------------------------------------------------------------------

@@ -903,11 +903,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
          Proj->Type->UnProject(VP,Proj->Params,&coo,pix);
-         if (coo.lat==-999.0) {
+         if (coo.Lat==-999.0) {
             continue;
          }
 
-         if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.lat,coo.lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
+         if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
             /*Get the cell resolution, if not the same, to use as step size for a constant spacing*/
             if (pi!=(int)i ||  pj!=(int)j) {
                pi=i;
@@ -1639,7 +1639,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                Def_Get(Field->Def,0,idx,u);
                Def_Get(Field->Def,1,idx,v);
                Def_GetMod(Field->Def,idx,len);
-               Field->Ref->Project(Field->Ref,i,j,&coo.lat,&coo.lon,1,1);
+               Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
                if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
                   if (Field->Spec->MapAll) {
                      VAL2COL(idx,Field->Spec,len);
@@ -1651,7 +1651,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.lat,coo.lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[0]),len,180+RAD2DEG(atan2(u,v)),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[0]),len,180+RAD2DEG(atan2(u,v)),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }
@@ -1672,9 +1672,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
                Proj->Type->UnProject(VP,Proj->Params,&coo,pix);
-               if (coo.lat!=-999.0) {
-                  lat[n]=coo.lat;
-                  lon[n]=(coo.lon<0?coo.lon+360:coo.lon);
+               if (coo.Lat!=-999.0) {
+                  lat[n]=coo.Lat;
+                  lon[n]=(coo.Lon<0?coo.Lon+360:coo.Lon);
                   n++;
                }
             }
@@ -1928,8 +1928,8 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
    /*Affichage des labels*/
    for(r=0;r<Field->Spec->RangeNb;r++) {
       glPushMatrix();
-      Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r],&loc.lat,&loc.lon,1,1);
-      Proj->Type->Locate(Proj,loc.lat,loc.lon,1);
+      Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r],&loc.Lat,&loc.Lon,1,1);
+      Proj->Type->Locate(Proj,loc.Lat,loc.Lon,1);
 
       h=sin(DEG2RAD(Field->Ref->Levels[0]))*Field->Spec->Range[r];
 

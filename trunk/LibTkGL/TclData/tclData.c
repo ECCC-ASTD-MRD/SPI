@@ -322,29 +322,29 @@ void Data_GetStat(TData *Field){
    if (Field->Stat->Min==1e200 || Field->Stat->Min==Field->Stat->Max) Field->Stat->Min=0.0;
 
    /*Recuperer les coordonnees latlon des min max*/
-   Field->Stat->MinLoc.lat=0;
-   Field->Stat->MinLoc.lon=0;
-   Field->Stat->MinLoc.elev=0;
-   Field->Stat->MaxLoc.lat=0;
-   Field->Stat->MaxLoc.lon=0;
-   Field->Stat->MaxLoc.elev=0;
+   Field->Stat->MinLoc.Lat=0;
+   Field->Stat->MinLoc.Lon=0;
+   Field->Stat->MinLoc.Elev=0;
+   Field->Stat->MaxLoc.Lat=0;
+   Field->Stat->MaxLoc.Lon=0;
+   Field->Stat->MaxLoc.Elev=0;
 
    if (Field->Ref && Field->Ref->Grid[0]!='V') {
       if (Field->Ref->Lat && Field->Ref->Lon) {
-         Field->Stat->MinLoc.lat=Field->Ref->Lat[FIDX2D(Field->Def,imin,jmin)];
-         Field->Stat->MinLoc.lon=Field->Ref->Lon[FIDX2D(Field->Def,imin,jmin)];
-         Field->Stat->MaxLoc.lat=Field->Ref->Lat[FIDX2D(Field->Def,imax,jmax)];
-         Field->Stat->MaxLoc.lon=Field->Ref->Lon[FIDX2D(Field->Def,imax,jmax)];
+         Field->Stat->MinLoc.Lat=Field->Ref->Lat[FIDX2D(Field->Def,imin,jmin)];
+         Field->Stat->MinLoc.Lon=Field->Ref->Lon[FIDX2D(Field->Def,imin,jmin)];
+         Field->Stat->MaxLoc.Lat=Field->Ref->Lat[FIDX2D(Field->Def,imax,jmax)];
+         Field->Stat->MaxLoc.Lon=Field->Ref->Lon[FIDX2D(Field->Def,imax,jmax)];
       } else if (Field->Ref->Project) {
-         Field->Ref->Project(Field->Ref,imin,jmin,&Field->Stat->MinLoc.lat,&Field->Stat->MinLoc.lon,1,1);
-         Field->Ref->Project(Field->Ref,imax,jmax,&Field->Stat->MaxLoc.lat,&Field->Stat->MaxLoc.lon,1,1);
+         Field->Ref->Project(Field->Ref,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
+         Field->Ref->Project(Field->Ref,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
       }
       if (Field->Ref->Hgt) {
-         Field->Stat->MinLoc.elev=Field->Ref->Hgt[FIDX2D(Field->Def,imin,jmin)];
-         Field->Stat->MaxLoc.elev=Field->Ref->Hgt[FIDX2D(Field->Def,imax,jmax)];
+         Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(Field->Def,imin,jmin)];
+         Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(Field->Def,imax,jmax)];
       }  else {
-         Field->Stat->MinLoc.elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[kmin]);
-         Field->Stat->MaxLoc.elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[kmax]);
+         Field->Stat->MinLoc.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[kmin]);
+         Field->Stat->MaxLoc.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[kmax]);
       }
    }
 }
@@ -1530,9 +1530,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Max)));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Stat->Max);
@@ -1546,9 +1546,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Min)));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Stat->Min);

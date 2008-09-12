@@ -144,13 +144,13 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          Tcl_AppendResult(Interp,buf,(char*)NULL);
       }
 
-      loc.elev=0.0;
+      loc.Elev=0.0;
 
       /*Longitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.lat=(-90+Proj->Geo->Params.CoordDef);loc.lat<=(90-Proj->Geo->Params.CoordDef);loc.lat+=Proj->Geo->Params.CoordDef){
+      for(loc.Lat=(-90+Proj->Geo->Params.CoordDef);loc.Lat<=(90-Proj->Geo->Params.CoordDef);loc.Lat+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(loc.lon=-180;loc.lon<=180;loc.lon+=1.0){
+         for(loc.Lon=-180;loc.Lon<=180;loc.Lon+=1.0){
             if (Grid_Project(Proj->Params,&loc,&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->Params->LI,GL_LINE_STRIP);
             } else {
@@ -163,9 +163,9 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Latitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.lon=-180;loc.lon<=(180-Proj->Geo->Params.CoordDef);loc.lon+=Proj->Geo->Params.CoordDef){
+      for(loc.Lon=-180;loc.Lon<=(180-Proj->Geo->Params.CoordDef);loc.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(loc.lat=-90;loc.lat<=90;loc.lat+=1.0){
+         for(loc.Lat=-90;loc.Lat<=90;loc.Lat+=1.0){
             if (Grid_Project(Proj->Params,&loc,&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->Params->LI,GL_LINE_STRIP);
             } else {
@@ -190,7 +190,7 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  ax[2];
 
    /*Draw 3DAxis*/
-   if (Proj->Params->TAxis && Proj->Params->ZAxis.elev!=0.0) {
+   if (Proj->Params->TAxis && Proj->Params->ZAxis.Elev!=0.0) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       glEnable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
@@ -201,14 +201,14 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glLineWidth(1.0);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-      incr=pow(10,ORDER(Proj->Params->ZAxis.elev)-1);
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2.5:incr;
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2:incr;
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2:incr;
+      incr=pow(10,ORDER(Proj->Params->ZAxis.Elev)-1);
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2.5:incr;
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
 
-      co.lat=Proj->Params->ZAxis.lat;
-      co.lon=Proj->Params->ZAxis.lon;
-      co.elev=Proj->Params->ZAxis.elev;
+      co.Lat=Proj->Params->ZAxis.Lat;
+      co.Lon=Proj->Params->ZAxis.Lon;
+      co.Elev=Proj->Params->ZAxis.Elev;
       Proj->Type->Project(Proj->Params,&co,&vr,1);
 
       switch(Proj->Params->TAxis) {
@@ -235,7 +235,7 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Draw Z axis increments*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      for(co.elev=0;co.elev<=Proj->Params->ZAxis.elev;co.elev+=incr) {
+      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINES);
             Proj->Type->Project(Proj->Params,&co,&vr,1);
             glVertex3d(vr[0],-Proj->Params->LJ,vr[2]);
@@ -245,11 +245,11 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          glEnd();
 
          glPushMatrix();
-         Proj->Type->Locate(Proj,co.lat,co.lon,1);
-         glTranslated(0.0,0.0,ZM(Proj,co.elev));
+         Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
+         glTranslated(0.0,0.0,ZM(Proj,co.Elev));
          glRotatef(90.0,1.0,0.0,0.0);
          glScalef(VP->Ratio,VP->Ratio,1.0);
-         sprintf(buf,"  %i",(int)co.elev);
+         sprintf(buf,"  %i",(int)co.Elev);
          glPrint(Interp,VP->canvas,buf,vr[0],vr[1],0);
          glPopMatrix();
       }
@@ -315,9 +315,9 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
    Vect3d pix;
    Coord  loc;
 
-   loc.lat=Lat;
-   loc.lon=Lon;
-   loc.elev=0.0;
+   loc.Lat=Lat;
+   loc.Lon=Lon;
+   loc.Elev=0.0;
 
    if (Grid_Project(Proj->Params,&loc,&pix,1)) {
       if (Undo) {
@@ -582,24 +582,24 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
 
    /* Get the first path coordinate*/
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&loc0.lat);
+   Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
    Tcl_ListObjIndex(Interp,List,i++,&obj);
-   Tcl_GetDoubleFromObj(Interp,obj,&loc0.lon);
+   Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lon);
 
    while (i<nobj) {
 
       /* Output start of path segment*/
-      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.lat));
-      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.lon));
+      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lat));
+      Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lon));
 
       /* Parse all the path coordinates*/
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&loc1.lat);
+      Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
       Tcl_ListObjIndex(Interp,List,i++,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&loc1.lon);
+      Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lon);
 
-      Proj->Params->Ref->UnProject(Proj->Params->Ref,&p0[0],&p0[1],loc0.lat,loc0.lon,1,1);
-      Proj->Params->Ref->UnProject(Proj->Params->Ref,&p1[0],&p1[1],loc1.lat,loc1.lon,1,1);
+      Proj->Params->Ref->UnProject(Proj->Params->Ref,&p0[0],&p0[1],loc0.Lat,loc0.Lon,1,1);
+      Proj->Params->Ref->UnProject(Proj->Params->Ref,&p1[0],&p1[1],loc1.Lat,loc1.Lon,1,1);
 
       ed=id=1.0/(sqrt(pow(p1[1]-p0[1],2)+pow(p1[0]-p0[0],2))/Dist);
 
@@ -607,17 +607,17 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
       while(ed<1.0) {
          p[0]=ILIN(p0[0],p1[0],ed);
          p[1]=ILIN(p0[1],p1[1],ed);
-         Proj->Params->Ref->Project(Proj->Params->Ref,p[0],p[1],&loc0.lat,&loc0.lon,0,1);
-         Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.lat));
-         Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.lon));
+         Proj->Params->Ref->Project(Proj->Params->Ref,p[0],p[1],&loc0.Lat,&loc0.Lon,0,1);
+         Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lat));
+         Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lon));
          ed+=id;
       }
       loc0=loc1;
    }
 
    /* Output las path coordinate */
-   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.lat));
-   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.lon));
+   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lat));
+   Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lon));
 
    return(objo);
 }
@@ -701,11 +701,11 @@ int Grid_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pi
    Vect3d in[2];
    Coord  co[2];
 
-   co[0].lat=Pt1.lat;co[0].lon=Pt1.lon;
-   co[1].lat=Pt2.lat;co[1].lon=Pt2.lon;
+   co[0].Lat=Pt1.Lat;co[0].Lon=Pt1.Lon;
+   co[1].Lat=Pt2.Lat;co[1].Lon=Pt2.Lon;
 
-   CLAMPLAT(co[0].lat);
-   CLAMPLAT(co[1].lat);
+   CLAMPLAT(co[0].Lat);
+   CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
    Proj->Type->Project(Proj->Params,co,in,2);
@@ -803,20 +803,20 @@ unsigned long Grid_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb)
    nb=ABS(Nb);
    for(n=0;n<nb;n++) {
 
-      loc.lat=((Coord*)Loc)[n].lat;
-      loc.lon=((Coord*)Loc)[n].lon;
-      loc.elev=((Coord*)Loc)[n].elev;
+      loc.Lat=((Coord*)Loc)[n].Lat;
+      loc.Lon=((Coord*)Loc)[n].Lon;
+      loc.Elev=((Coord*)Loc)[n].Elev;
 
       if (Params->Geographic) {
-         if (loc.lat==-999.0 || loc.lon==-999.0) {
+         if (loc.Lat==-999.0 || loc.Lon==-999.0) {
             out[e][2]=-999.0;
             continue;
          } else {
-            ref->UnProject(ref,&out[e][0],&out[e][1],loc.lat,loc.lon,1,1);
+            ref->UnProject(ref,&out[e][0],&out[e][1],loc.Lat,loc.Lon,1,1);
          }
       } else {
-         out[e][0]=loc.lon;
-         out[e][1]=loc.lat;
+         out[e][0]=loc.Lon;
+         out[e][1]=loc.Lat;
       }
 
       if (ref->AX && ref->AY) {
@@ -845,7 +845,7 @@ unsigned long Grid_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb)
 
       out[e][0]=(out[e][0]-ref->X0)/d-Params->LI;
       out[e][1]=(out[e][1]-ref->Y0)/d-Params->LJ;
-      out[e][2]=1.0+loc.elev*Params->Scale*Params->ZFactor;
+      out[e][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
 
       /*Si en dehors du domain*/
       if (Nb>0 && (out[e][0]<-Params->LI || out[e][0]>Params->LI || out[e][1]<-Params->LJ || out[e][1]>Params->LJ)) {
@@ -883,8 +883,8 @@ int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
    double   x,y,d,depth=1.0;
    int      s;
 
-   Loc->lat=-999.0;
-   Loc->lon=-999.0;
+   Loc->Lat=-999.0;
+   Loc->Lon=-999.0;
 
    if (!(ref=Params->Ref))
       return(0);
@@ -925,10 +925,10 @@ int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
       }
 
       if (Params->Geographic) {
-         return(ref->Project(ref,x,y,&Loc->lat,&Loc->lon,0,1));
+         return(ref->Project(ref,x,y,&Loc->Lat,&Loc->Lon,0,1));
       } else {
-         Loc->lat=y;
-         Loc->lon=x;
+         Loc->Lat=y;
+         Loc->Lon=x;
       }
    }
 

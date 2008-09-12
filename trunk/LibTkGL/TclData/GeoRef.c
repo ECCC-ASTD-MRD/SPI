@@ -177,7 +177,7 @@ double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3) {
 
    GeoFunc_RadialPointOn(C1,C2,C3,&cr);
 
-   return(DIST(0,C1.lat,C1.lon,cr.lat,cr.lon)/DIST(0,C1.lat,C1.lon,C2.lat,C2.lon));
+   return(DIST(0,C1.Lat,C1.Lon,cr.Lat,cr.Lon)/DIST(0,C1.Lat,C1.Lon,C2.Lat,C2.Lon));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -203,8 +203,8 @@ int GeoFunc_RadialPointOn(Coord C1,Coord C2,Coord C3,Coord *CR) {
    double crs12,crs13,crs3x;
 
    /*Calculates 90 degree course crossing*/
-   crs12=COURSE(C1.lat,C1.lon,C2.lat,C2.lon);
-   crs13=COURSE(C1.lat,C1.lon,C3.lat,C3.lon);
+   crs12=COURSE(C1.Lat,C1.Lon,C2.Lat,C2.Lon);
+   crs13=COURSE(C1.Lat,C1.Lon,C3.Lat,C3.Lon);
    crs3x=crs13>crs12?crs12-M_PI2:crs12+M_PI2;
 
    return(GeoFunc_RadialIntersect(C1,C3,crs12,crs3x,CR));
@@ -235,23 +235,23 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
 
    Coord sinc2,cosc2,sinc1,cosc1;
 
-   sinc1.lat=sin(C1.lat);sinc1.lon=sin(C1.lon);
-   cosc1.lat=cos(C1.lat);cosc1.lon=cos(C1.lon);
-   sinc2.lat=sin(C2.lat);sinc2.lon=sin(C2.lon);
-   cosc2.lat=cos(C2.lat);cosc2.lon=cos(C2.lon);
+   sinc1.Lat=sin(C1.Lat);sinc1.Lon=sin(C1.Lon);
+   cosc1.Lat=cos(C1.Lat);cosc1.Lon=cos(C1.Lon);
+   sinc2.Lat=sin(C2.Lat);sinc2.Lon=sin(C2.Lon);
+   cosc2.Lat=cos(C2.Lat);cosc2.Lon=cos(C2.Lon);
 
-   dst12=2*asin(sqrt(pow((sin((C1.lat-C2.lat)/2)),2) + cosc1.lat*cosc2.lat*pow(sin((C1.lon-C2.lon)/2),2)));
+   dst12=2*asin(sqrt(pow((sin((C1.Lat-C2.Lat)/2)),2) + cosc1.Lat*cosc2.Lat*pow(sin((C1.Lon-C2.Lon)/2),2)));
 
-   if (sin(C2.lon-C1.lon)<0) {
-      crs12=acos((sinc2.lat-sinc1.lat*cos(dst12))/(sin(dst12)*cosc1.lat));
+   if (sin(C2.Lon-C1.Lon)<0) {
+      crs12=acos((sinc2.Lat-sinc1.Lat*cos(dst12))/(sin(dst12)*cosc1.Lat));
    } else {
-      crs12=2.0*M_PI-acos((sinc2.lat-sinc1.lat*cos(dst12))/(sin(dst12)*cosc1.lat));
+      crs12=2.0*M_PI-acos((sinc2.Lat-sinc1.Lat*cos(dst12))/(sin(dst12)*cosc1.Lat));
    }
 
-   if (sin(C1.lon-C2.lon)<0) {
-      crs21=acos((sinc1.lat-sinc2.lat*cos(dst12))/(sin(dst12)*cosc2.lat));
+   if (sin(C1.Lon-C2.Lon)<0) {
+      crs21=acos((sinc1.Lat-sinc2.Lat*cos(dst12))/(sin(dst12)*cosc2.Lat));
    } else {
-      crs21=M_2PI-acos((sinc1.lat-sinc2.lat*cos(dst12))/(sin(dst12)*cosc2.lat));
+      crs21=M_2PI-acos((sinc1.Lat-sinc2.Lat*cos(dst12))/(sin(dst12)*cosc2.Lat));
    }
 
    ang1=fmod(CRS13-crs12+M_PI,M_2PI)-M_PI;
@@ -265,8 +265,8 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
       ang2=fabs(ang2);
       ang3=acos(-cos(ang1)*cos(ang2)+sin(ang1)*sin(ang2)*cos(dst12));
       dst13=asin(sin(ang2)*sin(dst12)/sin(ang3));
-      C3->lat=asin(sinc1.lat*cos(dst13)+cosc1.lat*sin(dst13)*cos(CRS13));
-      C3->lon=fmod(C1.lon-asin(sin(CRS13)*sin(dst13)/cos(C3->lat))+M_PI,M_2PI)-M_PI;
+      C3->Lat=asin(sinc1.Lat*cos(dst13)+cosc1.Lat*sin(dst13)*cos(CRS13));
+      C3->Lon=fmod(C1.Lon-asin(sin(CRS13)*sin(dst13)/cos(C3->Lat))+M_PI,M_2PI)-M_PI;
    }
 
    return(1);
@@ -702,20 +702,20 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
         case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ref->Loc.lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ref->Loc.lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ref->Loc.elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ref->Loc.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ref->Loc.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ref->Loc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Objc>4) {
                   Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid location, must be 4 \"",(char*)NULL);
                   return(TCL_ERROR);
                }
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&ref->Loc.lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&ref->Loc.Lat);
                if (Objc>2)
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&ref->Loc.lon);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&ref->Loc.Lon);
                if (Objc>3)
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&ref->Loc.elev);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&ref->Loc.Elev);
             }
             break;
 
@@ -1002,13 +1002,13 @@ void GeoRef_Qualify(TGeoRef *Ref) {
    if (Ref->Grid[0]=='A' || Ref->Grid[0]=='G') {
       Ref->Type|=GRID_WRAP;
    } else {
-      Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].lat,&co[0].lon,1,1);
-      Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0+1.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].lat,&co[1].lon,1,1);
-      d[0]=DIST(0.0,DEG2RAD(co[0].lat),DEG2RAD(co[0].lon),DEG2RAD(co[1].lat),DEG2RAD(co[1].lon));
+      Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
+      Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0+1.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
+      d[0]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
 
-      Ref->Project(Ref,Ref->X0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].lat,&co[0].lon,1,1);
-      Ref->Project(Ref,Ref->X1,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].lat,&co[1].lon,1,1);
-      d[1]=DIST(0.0,DEG2RAD(co[0].lat),DEG2RAD(co[0].lon),DEG2RAD(co[1].lat),DEG2RAD(co[1].lon));
+      Ref->Project(Ref,Ref->X0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
+      Ref->Project(Ref,Ref->X1,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
+      d[1]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
 
       if (d[1]<=(d[0]*1.5)) {
          Ref->Type|=GRID_WRAP;
@@ -1049,7 +1049,7 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1) {
    if (Ref0->Id>-1 && Ref1->Id>-1 && Ref0->Id!=Ref1->Id)
       return(0);
 
-   if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.lat!=Ref1->Loc.lat || Ref0->Loc.lon!=Ref1->Loc.lon || Ref0->Loc.elev!=Ref1->Loc.elev)
+   if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.Lat!=Ref1->Loc.Lat || Ref0->Loc.Lon!=Ref1->Loc.Lon || Ref0->Loc.Elev!=Ref1->Loc.Elev)
       return(0);
 
    if ((Ref0->String && !Ref1->String) || (!Ref0->String && Ref1->String))
@@ -1090,9 +1090,9 @@ TGeoRef *GeoRef_Reference(TGeoRef *Ref) {
    ref->Value=Ref->Value;
    ref->Distance=Ref->Distance;
 
-   ref->Loc.lat=Ref->Loc.lat;
-   ref->Loc.lon=Ref->Loc.lon;
-   ref->Loc.elev=Ref->Loc.elev;
+   ref->Loc.Lat=Ref->Loc.Lat;
+   ref->Loc.Lon=Ref->Loc.Lon;
+   ref->Loc.Elev=Ref->Loc.Elev;
    ref->R=Ref->R;
    ref->ResR=Ref->ResR;
    ref->ResA=Ref->ResA;
@@ -1160,9 +1160,9 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    switch(ref->Grid[0]) {
       case 'R' :
          ref->Id=-(++TGeoRef_TableNo);
-         ref->Loc.lat=Ref->Loc.lat;
-         ref->Loc.lon=Ref->Loc.lon;
-         ref->Loc.elev=Ref->Loc.elev;
+         ref->Loc.Lat=Ref->Loc.Lat;
+         ref->Loc.Lon=Ref->Loc.Lon;
+         ref->Loc.Elev=Ref->Loc.Elev;
          ref->R=Ref->R;
          ref->ResR=Ref->ResR;
          ref->ResA=Ref->ResA;
@@ -1266,9 +1266,9 @@ TGeoRef* GeoRef_New() {
    ref->LevelNb=0;
 
    /*RDR Specific*/
-   ref->Loc.lat=-999;
-   ref->Loc.lon=-999;
-   ref->Loc.elev=-999;
+   ref->Loc.Lat=-999;
+   ref->Loc.Lon=-999;
+   ref->Loc.Elev=-999;
    ref->R=0;
    ref->CTH=0;
    ref->STH=0;

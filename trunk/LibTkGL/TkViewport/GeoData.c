@@ -389,10 +389,10 @@ void GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon
 
    geo=(GDB_Geo*)malloc(sizeof(GDB_Geo));
 
-   geo->Box.Co[0].lat=Lat0; geo->Box.Co[0].lon=Lon0; geo->Box.Co[0].elev=0.0;
-   geo->Box.Co[1].lat=Lat1; geo->Box.Co[1].lon=Lon0; geo->Box.Co[1].elev=0.0;
-   geo->Box.Co[2].lat=Lat1; geo->Box.Co[2].lon=Lon1; geo->Box.Co[2].elev=0.0;
-   geo->Box.Co[3].lat=Lat0; geo->Box.Co[3].lon=Lon1; geo->Box.Co[3].elev=0.0;
+   geo->Box.Co[0].Lat=Lat0; geo->Box.Co[0].Lon=Lon0; geo->Box.Co[0].Elev=0.0;
+   geo->Box.Co[1].Lat=Lat1; geo->Box.Co[1].Lon=Lon0; geo->Box.Co[1].Elev=0.0;
+   geo->Box.Co[2].Lat=Lat1; geo->Box.Co[2].Lon=Lon1; geo->Box.Co[2].Elev=0.0;
+   geo->Box.Co[3].Lat=Lat0; geo->Box.Co[3].Lon=Lon1; geo->Box.Co[3].Elev=0.0;
    geo->Box.Nb=Nb;
 
    geo->Loc=(Vect3d*)malloc(Nb*sizeof(Vect3d));
@@ -864,7 +864,7 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 
    switch(Type) {
       case GDB_LIN:
-         gdb_limit(tile->Box.Co[0].lat,tile->Box.Co[0].lon,tile->Box.Co[2].lat,tile->Box.Co[2].lon);
+         gdb_limit(tile->Box.Co[0].Lat,tile->Box.Co[0].Lon,tile->Box.Co[2].Lat,tile->Box.Co[2].Lon);
          gdb_line(tile->Res,Data,GDB_GeoGetVector);
          if (!GeoPtr) {
             GDB_GeoGetVector(Data,0,0.0,0.0,0.0,0.0,NULL);
@@ -883,7 +883,7 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
          break;
 
       case GDB_FIL:
-         gdb_limit(tile->Box.Co[0].lat,tile->Box.Co[0].lon,tile->Box.Co[2].lat,tile->Box.Co[2].lon);
+         gdb_limit(tile->Box.Co[0].Lat,tile->Box.Co[0].Lon,tile->Box.Co[2].Lat,tile->Box.Co[2].Lon);
          gdb_fill(tile->Res,Data,GDB_GeoGetVector);
          if (!GeoPtr) {
             GDB_GeoGetVector(Data,0,0.0,0.0,0.0,0.0,NULL);
@@ -899,7 +899,7 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
          break;
 
       case GDB_TXT:
-         gdb_limit(tile->Box.Co[0].lat,tile->Box.Co[0].lon,tile->Box.Co[2].lat,tile->Box.Co[2].lon);
+         gdb_limit(tile->Box.Co[0].Lat,tile->Box.Co[0].Lon,tile->Box.Co[2].Lat,tile->Box.Co[2].Lon);
          gdb_text(tile->Res<16?16:tile->Res,Data,GDB_TxtGet);
          switch(Data) {
             case GDB_TXT_POLIT: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
@@ -910,7 +910,7 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 
       case GDB_MAP:
          over=1.0/MAX(1,tile->Res);
-         gdb_limit(tile->Box.Co[0].lat-over,tile->Box.Co[0].lon-over,tile->Box.Co[2].lat+over,tile->Box.Co[2].lon+over);
+         gdb_limit(tile->Box.Co[0].Lat-over,tile->Box.Co[0].Lon-over,tile->Box.Co[2].Lat+over,tile->Box.Co[2].Lon+over);
          switch(Data) {
 //            case GDB_MAP_TEX: gdb_map(MAX(1,tile->Res),GDB_MAP_BAT,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size); break;
             case GDB_MAP_DEM: gdb_map(MAX(1,tile->Res),GDB_MAP_DEM,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size); break;
@@ -951,10 +951,10 @@ void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *P
 
    int n;
 
-   Tile->Box.Co[0].lat=Lat0;Tile->Box.Co[0].lon=Lon0;Tile->Box.Co[0].elev=0.0;
-   Tile->Box.Co[1].lat=Lat0;Tile->Box.Co[1].lon=Lon0+Delta;Tile->Box.Co[1].elev=0.0;
-   Tile->Box.Co[2].lat=Lat0+Delta;Tile->Box.Co[2].lon=Lon0+Delta;Tile->Box.Co[2].elev=0.0;
-   Tile->Box.Co[3].lat=Lat0+Delta;Tile->Box.Co[3].lon=Lon0;Tile->Box.Co[3].elev=0.0;
+   Tile->Box.Co[0].Lat=Lat0;Tile->Box.Co[0].Lon=Lon0;Tile->Box.Co[0].Elev=0.0;
+   Tile->Box.Co[1].Lat=Lat0;Tile->Box.Co[1].Lon=Lon0+Delta;Tile->Box.Co[1].Elev=0.0;
+   Tile->Box.Co[2].Lat=Lat0+Delta;Tile->Box.Co[2].Lon=Lon0+Delta;Tile->Box.Co[2].Elev=0.0;
+   Tile->Box.Co[3].Lat=Lat0+Delta;Tile->Box.Co[3].Lon=Lon0;Tile->Box.Co[3].Elev=0.0;
 
    if (!(n=Proj->Type->Project(Proj->Params,Tile->Box.Co,Tile->Box.Vr,4))) {
       Tile->Box.Nb=-1;
@@ -992,10 +992,10 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
       return(GDB_OUT);
 
    /*Test for inclusion of focal point*/
-   lat[0]=FMIN(Box.Co[0].lat,Box.Co[2].lat);
-   lat[1]=FMAX(Box.Co[0].lat,Box.Co[2].lat);
-   lon[0]=FMIN(Box.Co[0].lon,Box.Co[2].lon);
-   lon[1]=FMAX(Box.Co[0].lon,Box.Co[2].lon);
+   lat[0]=FMIN(Box.Co[0].Lat,Box.Co[2].Lat);
+   lat[1]=FMAX(Box.Co[0].Lat,Box.Co[2].Lat);
+   lon[0]=FMIN(Box.Co[0].Lon,Box.Co[2].Lon);
+   lon[1]=FMAX(Box.Co[0].Lon,Box.Co[2].Lon);
 
    if (Proj->Params->Lat>=lat[0] && Proj->Params->Lat<=lat[1] && Proj->Params->Lon>=lon[0] && Proj->Params->Lon<=lon[1]) {
       return(GDB_VIS);
@@ -1097,22 +1097,22 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
       pix[1]=i;
       if (Proj->Type->UnProject(VP,Proj->Params,&coord,pix)) {
-        cmod=fmod(coord.lat,GDB->Params.CoordNum*GDB->Params.CoordDef);
+        cmod=fmod(coord.Lat,GDB->Params.CoordNum*GDB->Params.CoordDef);
          if (ABS(cmod)<tolerance) {
 
-            coord.lat-=cmod;
-            if (old!=coord.lat) {
+            coord.Lat-=cmod;
+            if (old!=coord.Lat) {
 
-               old=coord.lat;
+               old=coord.Lat;
 
                if (GDB->Params.CoordDef<1.0) {
-                  sprintf(buf,"%0.2f",ABS(coord.lat));
+                  sprintf(buf,"%0.2f",ABS(coord.Lat));
                } else {
-                  sprintf(buf,"%i",(int)ABS(coord.lat));
+                  sprintf(buf,"%i",(int)ABS(coord.Lat));
                }
 
-               if (coord.lat!=0.0) {
-                  if (coord.lat>0.0) {
+               if (coord.Lat!=0.0) {
+                  if (coord.Lat>0.0) {
                      strcat(buf,"N");
                   } else {
                      strcat(buf,"S");
@@ -1133,23 +1133,23 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
       pix[0]=i;
       if (Proj->Type->UnProject(VP,Proj->Params,&coord,pix)) {
-         cmod=fmod(coord.lon,GDB->Params.CoordNum*GDB->Params.CoordDef);
+         cmod=fmod(coord.Lon,GDB->Params.CoordNum*GDB->Params.CoordDef);
          if (ABS(cmod)<tolerance) {
 
-            coord.lon-=cmod;
-            if (old!=coord.lon) {
+            coord.Lon-=cmod;
+            if (old!=coord.Lon) {
 
-               old=coord.lon;
-               coord.lon=CLAMPLON(coord.lon);
+               old=coord.Lon;
+               coord.Lon=CLAMPLON(coord.Lon);
 
                if (GDB->Params.CoordDef<1.0) {
-                  sprintf(buf,"%0.2f",ABS(coord.lon));
+                  sprintf(buf,"%0.2f",ABS(coord.Lon));
                } else {
-                  sprintf(buf,"%i",(int)ABS(coord.lon));
+                  sprintf(buf,"%i",(int)ABS(coord.Lon));
                }
 
-               if (coord.lon!=0.0 && ABS(coord.lon)!=180.0) {
-                  if (coord.lon>0.0) {
+               if (coord.Lon!=0.0 && ABS(coord.Lon)!=180.0) {
+                  if (coord.Lon>0.0) {
                      strcat(buf,"E");
                   } else {
                      strcat(buf,"W");
@@ -1359,8 +1359,8 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       dc=(Delta/5.0);
       dtx=1.0/(Delta/(Delta/5.0));
       dty=1.0/(Delta/(Delta/5.0));
-      loc.elev=0.0;
-      loc.lon=Lon0;
+      loc.Elev=0.0;
+      loc.Lon=Lon0;
 
       /*Construction de la surface en serie de quad dans la verticale*/
       for(tx=-dtx,x=0;x<=Delta;x+=dc,tx+=dtx) {
@@ -1375,21 +1375,21 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
             if (x) {
                glTexCoord2f(tx,ty);
                if (Proj->Sun) {
-                  loc.lat=Lat0+Delta-y;
-                  loc.lon=Lon0+x-dc;
-                  glNormal3dv(GDB_NMap[(int)loc.lat+90][(int)loc.lon+180]);
+                  loc.Lat=Lat0+Delta-y;
+                  loc.Lon=Lon0+x-dc;
+                  glNormal3dv(GDB_NMap[(int)loc.Lat+90][(int)loc.Lon+180]);
                }
                glVertex3dv(GDB_VBuf[y]);
             }
 
-            loc.lat=Lat0+Delta-y;
-            loc.lon=Lon0+x;
+            loc.Lat=Lat0+Delta-y;
+            loc.Lon=Lon0+x;
             Proj->Type->Project(Proj->Params,&loc,&GDB_VBuf[y],1);
 
             if (x) {
                glTexCoord2f(tx+dtx,ty);
                if (Proj->Sun) {
-                  glNormal3dv(GDB_NMap[(int)loc.lat+90][(int)loc.lon+180]);
+                  glNormal3dv(GDB_NMap[(int)loc.Lat+90][(int)loc.Lon+180]);
                }
                glVertex3dv(GDB_VBuf[y]);
             }
@@ -1415,9 +1415,9 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                dc=(y+1)*width+(x+1);
                dr=y*(width-2)+x;
 
-               loc.lat=Lat0+Delta-(y*dy);
-               loc.lon=Lon0+(x*dx);
-               loc.elev=map[dc];
+               loc.Lat=Lat0+Delta-(y*dy);
+               loc.Lon=Lon0+(x*dx);
+               loc.Elev=map[dc];
                Proj->Type->Project(Proj->Params,&loc,&Topo->Vr[dr],1);
             }
          }
@@ -1521,9 +1521,9 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
                dc=(y+1)*width+(x+1);
                dr=y*(width-2)+x;
 
-               loc.lat=Lat0+Delta-(y*dy);
-               loc.lon=Lon0+(x*dx);
-               loc.elev=map[dc];
+               loc.Lat=Lat0+Delta-(y*dy);
+               loc.Lon=Lon0+(x*dx);
+               loc.Elev=map[dc];
                Proj->Type->Project(Proj->Params,&loc,&Topo->Vr[dr],1);
             }
          }
@@ -1646,7 +1646,7 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
       int w,h,t;
       char  file[256],*buf;
 
-      sprintf(file,"%s/ras/tex-%i.%i.%i.tif",getenv("GDB_PATH"),Tile->Res<4?4:(Tile->Res>64?64:Tile->Res),(int)(Tile->Box.Co[0].lon+180.0)/GDB->DegT,(int)(Tile->Box.Co[0].lat+90.0)/GDB->DegT);
+      sprintf(file,"%s/ras/tex-%i.%i.%i.tif",getenv("GDB_PATH"),Tile->Res<4?4:(Tile->Res>64?64:Tile->Res),(int)(Tile->Box.Co[0].Lon+180.0)/GDB->DegT,(int)(Tile->Box.Co[0].Lat+90.0)/GDB->DegT);
       Tile->Topo.Tex=Texture_Read(file);
    }
    return(1);
@@ -1938,9 +1938,9 @@ void GDB_TxtGet(int Type,float Lat,float Lon,char *Txt) {
    GDB_Txt *txt;
 
    txt=(GDB_Txt*)malloc(sizeof(GDB_Txt));
-   txt->Co.lat=Lat;
-   txt->Co.lon=Lon;
-   txt->Co.elev=0.0;
+   txt->Co.Lat=Lat;
+   txt->Co.Lon=Lon;
+   txt->Co.Elev=0.0;
    txt->String=strdup(Txt);
 
    txt->Next=TxtPtr;

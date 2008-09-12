@@ -36,11 +36,11 @@
 
 #include "tclData.h"
 
-typedef struct TParcel {
+typedef struct TParticle {
    long   Date;
    Coord  Co;
-   float  Sig,Pres,X,Dist,Speed;
-} TParcel;
+   float  ZPres,ZSig,ZMSL,Dist,Speed;
+} TParticle;
 
 typedef struct TTraj {
    Tcl_Obj      *Tag;
@@ -57,15 +57,17 @@ typedef struct TTraj {
    char     Model[16];
    int      Mode;
    char     Type;
-   TParcel *Pr;
+   TParticle *Pr;
 } TTraj;
 
-void   Traj_Free(TTraj *Traj);
-TTraj* Traj_Get(char *Name);
-int    TclTraj_Init(Tcl_Interp*);
-int    Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj);
-int    Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj);
-int    Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj);
-void   Traj_Wipe();
+TTraj*   Traj_New();
+void     Traj_Free(TTraj *Traj);
+TTraj*   Traj_Get(char *Name);
+Tcl_Obj* Traj_Put(Tcl_Interp *Interp,char *Name,TTraj *Traj);
+int      TclTraj_Init(Tcl_Interp*);
+int      Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj);
+int      Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj);
+int      Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj);
+void     Traj_Wipe();
 
 #endif

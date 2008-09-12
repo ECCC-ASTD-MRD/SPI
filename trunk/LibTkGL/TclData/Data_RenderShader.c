@@ -359,11 +359,11 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
          Proj->Type->UnProject(VP,Proj->Params,&coo,pix);
-         if (coo.lat==-999.0) {
+         if (coo.Lat==-999.0) {
             continue;
          }
 
-         if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.lat,coo.lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
+         if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
             /*Get the cell resolution, if not the same, to use as step size for a constant spacing*/
             if (pi!=(int)i ||  pj!=(int)j) {
                pi=i;

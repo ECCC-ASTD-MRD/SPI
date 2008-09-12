@@ -176,7 +176,7 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  ax[2];
 
    /*Draw 3DAxis*/
-   if (Proj->Params->TAxis && Proj->Params->ZAxis.elev!=0.0) {
+   if (Proj->Params->TAxis && Proj->Params->ZAxis.Elev!=0.0) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
@@ -187,14 +187,14 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glMatrixMode(GL_MODELVIEW);
       glLineWidth(1.0);
 
-      incr=pow(10,ORDER(Proj->Params->ZAxis.elev)-1);
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2.5:incr;
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2:incr;
-      incr=(Proj->Params->ZAxis.elev/incr)>10?incr*2:incr;
+      incr=pow(10,ORDER(Proj->Params->ZAxis.Elev)-1);
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2.5:incr;
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
 
-      co.lat=Proj->Params->ZAxis.lat;
-      co.lon=Proj->Params->ZAxis.lon;
-      co.elev=Proj->Params->ZAxis.elev;
+      co.Lat=Proj->Params->ZAxis.Lat;
+      co.Lon=Proj->Params->ZAxis.Lon;
+      co.Elev=Proj->Params->ZAxis.Elev;
       Proj->Type->Project(Proj->Params,&co,&vr,1);
       PROJCHECK(Proj,vr[0])
 
@@ -222,7 +222,7 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Draw Z axis increments*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      for(co.elev=0;co.elev<=Proj->Params->ZAxis.elev;co.elev+=incr) {
+      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINES);
             Proj->Type->Project(Proj->Params,&co,&vr,1);
             PROJCHECK(Proj,vr[0])
@@ -233,11 +233,11 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          glEnd();
 
          glPushMatrix();
-         Proj->Type->Locate(Proj,co.lat,co.lon,1);
-         glTranslated(0.0,0.0,ZM(Proj,co.elev));
+         Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
+         glTranslated(0.0,0.0,ZM(Proj,co.Elev));
          glRotatef(90.0,1.0,0.0,0.0);
          glScalef(VP->Ratio,VP->Ratio,1.0);
-         sprintf(buf,"  %i",(int)co.elev);
+         sprintf(buf,"  %i",(int)co.Elev);
          glPrint(Interp,VP->canvas,buf,vr[0],vr[1],0);
          glPopMatrix();
       }
@@ -673,11 +673,11 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
    Vect3d in[2];
    Coord  co[2];
 
-   co[0].lat=Pt1.lat;co[0].lon=Pt1.lon;
-   co[1].lat=Pt2.lat;co[1].lon=Pt2.lon;
+   co[0].Lat=Pt1.Lat;co[0].Lon=Pt1.Lon;
+   co[1].Lat=Pt2.Lat;co[1].Lon=Pt2.Lon;
 
-   CLAMPLAT(co[0].lat);
-   CLAMPLAT(co[1].lat);
+   CLAMPLAT(co[0].Lat);
+   CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
    Proj->Type->Project(Proj->Params,co,in,2);
@@ -741,17 +741,17 @@ unsigned long Cylin_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
 
    for(n=0;n<ABS(Nb);n++) {
 
-      if (((Coord*)Loc)[n].lat==-999.0 || ((Coord*)Loc)[n].lon==-999.0) {
+      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
          out[n][2]=-999.0;
       } else {
-         loc.lat=((Coord*)Loc)[n].lat;
-         loc.lon=((Coord*)Loc)[n].lon;
-         loc.elev=((Coord*)Loc)[n].elev;
-         CLAMPLON(loc.lon);
+         loc.Lat=((Coord*)Loc)[n].Lat;
+         loc.Lon=((Coord*)Loc)[n].Lon;
+         loc.Elev=((Coord*)Loc)[n].Elev;
+         CLAMPLON(loc.Lon);
 
-         out[n][0]=loc.lon/90.0;
-         out[n][1]=loc.lat/90.0;
-         out[n][2]=1.0+loc.elev*Params->Scale*Params->ZFactor;
+         out[n][0]=loc.Lon/90.0;
+         out[n][1]=loc.Lat/90.0;
+         out[n][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
          e++;
       }
    }
@@ -786,15 +786,15 @@ int Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
 
-      Loc->lon=Params->Lon+obj[0]*90.0;
-      Loc->lat=Params->Lat+obj[1]*90.0;
+      Loc->Lon=Params->Lon+obj[0]*90.0;
+      Loc->Lat=Params->Lat+obj[1]*90.0;
 
-      if (Loc->lon<=(180.0+Params->Lon) && Loc->lon>=(-180.0+Params->Lon) && Loc->lat<=90.0 && Loc->lat>=-90.0) {
+      if (Loc->Lon<=(180.0+Params->Lon) && Loc->Lon>=(-180.0+Params->Lon) && Loc->Lat<=90.0 && Loc->Lat>=-90.0) {
          return 1;
       }
    }
-   Loc->lat=-999.0;
-   Loc->lon=-999.0;
+   Loc->Lat=-999.0;
+   Loc->Lon=-999.0;
 
    return 0;
 }
@@ -960,17 +960,17 @@ unsigned long Merca_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
 
    for(n=0;n<ABS(Nb);n++) {
 
-      if (((Coord*)Loc)[n].lat==-999.0 || ((Coord*)Loc)[n].lon==-999.0) {
+      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
          out[n][2]=-999.0;
       } else {
-         loc.lat=((Coord*)Loc)[n].lat;
-         loc.lon=((Coord*)Loc)[n].lon;
-         loc.elev=((Coord*)Loc)[n].elev;
-         CLAMPLON(loc.lon);
+         loc.Lat=((Coord*)Loc)[n].Lat;
+         loc.Lon=((Coord*)Loc)[n].Lon;
+         loc.Elev=((Coord*)Loc)[n].Elev;
+         CLAMPLON(loc.Lon);
 
-         out[n][0]=loc.lon/90.0;
-         out[n][1]=log(tan(M_PI4 + (loc.lat>78.0?78.0:(loc.lat<-78.0?-78.0:loc.lat))/180.0));
-         out[n][2]=1.0+loc.elev*Params->Scale*Params->ZFactor;
+         out[n][0]=loc.Lon/90.0;
+         out[n][1]=log(tan(M_PI4 + (loc.Lat>78.0?78.0:(loc.Lat<-78.0?-78.0:loc.Lat))/180.0));
+         out[n][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
          e++;
       }
    }
@@ -1004,15 +1004,15 @@ int Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
 
-      Loc->lon=Params->Lon+obj[0]*90.0;
-      Loc->lat=(atan(exp(obj[1]+log(tan(M_PI4 + Params->Lat/180.0))))-M_PI4)*180.0;
+      Loc->Lon=Params->Lon+obj[0]*90.0;
+      Loc->Lat=(atan(exp(obj[1]+log(tan(M_PI4 + Params->Lat/180.0))))-M_PI4)*180.0;
 
-      if (Loc->lon<=(180.0+Params->Lon) && Loc->lon>=(-180.0+Params->Lon) && Loc->lat<=78.0 && Loc->lat>=-78.0) {
+      if (Loc->Lon<=(180.0+Params->Lon) && Loc->Lon>=(-180.0+Params->Lon) && Loc->Lat<=78.0 && Loc->Lat>=-78.0) {
          return(1);
       }
    }
-   Loc->lat=-999.0;
-   Loc->lon=-999.0;
+   Loc->Lat=-999.0;
+   Loc->Lon=-999.0;
 
    return(0);
 }
