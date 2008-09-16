@@ -516,6 +516,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                    fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
                    idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
                 }
+                if (ni!=Field->Def->NI || nj!=Field->Def->NJ || nk!=Field->Def->NK) {
+                   idx=-1;
+                }
            } else {
                idx=-1;
             }
