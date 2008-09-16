@@ -800,7 +800,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
 
    if { $Map(Speed)==0.0 } {
       set data [$VP -pick $X $Y { trajectory observation metobs }]
-puts stderr $data
+
       if { [llength $data] } {
          set obj [lindex $data 1]
          switch [lindex $data 0] {
