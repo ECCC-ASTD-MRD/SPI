@@ -564,7 +564,7 @@ proc CVClock::Time { Frame Sec Total } {
       set Data(Sec$Frame) $Sec
       set Sec [expr int($Sec+[lindex [lindex $Data(Zones) $Data(Zone$Frame)] 1]*3600)]
 
-      set hour [clock format $Sec -format "%k" -gmt true]
+      scan [clock format $Sec -format "%H" -gmt true] "%02i" hour
       set min  [clock format $Sec -format "%M" -gmt true]
       set jour [DateStuff::StringDay   [clock format $Sec -format "%w" -gmt true] $GDefs(Lang)]
       set mois [DateStuff::StringMonth [clock format $Sec -format "%m" -gmt true] $GDefs(Lang)]
