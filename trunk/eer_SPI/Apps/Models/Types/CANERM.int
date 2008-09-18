@@ -494,6 +494,9 @@ proc CANERM::SimCont { Parent } {
    CANERM::SimInitCont
    CANERM::GridDef
 
+   #---- Grid Def has an imprecision when converting back and forth so set to previous grid
+   set Sim(Grid) $Sim(PGrid)
+
    TabFrame::Create .canermcont.opt 1 "CANERM::SimLaunchInit .canermcont.opt.frame1.d.l.list 0"
    pack .canermcont.opt -side top -fill both -expand true -padx 5 -pady 5
 
