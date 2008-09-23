@@ -222,9 +222,6 @@ TGeoRef* GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *Strin
 void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRGeometryH Geometry);
 TGeoRef* GeoRef_RDRCheck(double Lat,double Lon,double Height,double Radius,double ResR,double ResA);
 
-void     GeoRefEZ_Lock(void);
-void     GeoRefEZ_UnLock(void);
-
 void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1,int Y1);
 void  GeoScan_Clear(TGeoScan *Scan);
 

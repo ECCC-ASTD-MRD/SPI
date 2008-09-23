@@ -952,9 +952,9 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 
 // Due to ezscint bugs, I cannot release the grid (gdaxes)
 //   if (Ref->Id>-1)
-//      GeoRefEZ_Lock();
+//      EZLock_RPNInt();
 //      c_gdrls(Ref->Id);
-//      GeoRefEZ_UnLock();
+//      EZUnLock_RPNInt();
 
    if (Ref->GCPTransform) {
       GDALDestroyGCPTransformer(Ref->GCPTransform);

@@ -32,11 +32,6 @@
  */
 #include "tclData.h"
 
-TCL_DECLARE_MUTEX(MUTEX_FSTDEZ)
-
-void GeoRefEZ_Lock(void) { Tcl_MutexLock(&MUTEX_FSTDEZ); }
-void GeoRefEZ_UnLock(void) { Tcl_MutexUnlock(&MUTEX_FSTDEZ); }
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNDistance>
  * Creation     : Mars 2007 J.P. Gauthier - CMC/CMOE
@@ -65,9 +60,9 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
    i[1]=X1+1.0;
    j[1]=Y1+1.0;
 
-   GeoRefEZ_Lock();
+   EZLock_RPNInt();
    c_gdllfxy(Ref->Id,&lat,&lon,&i,&j,2);
-   GeoRefEZ_UnLock();
+   EZUnLock_RPNInt();
 
    X0=DEG2RAD(lon[0]);
    X1=DEG2RAD(lon[1]);
@@ -161,9 +156,9 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          if (Ref && Ref->Id>-1) {
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
-            GeoRefEZ_Lock();
+            EZLock_RPNInt();
             c_gdxywdval(Ref->Id,Length,ThetaXY,p0,p1,&x,&y,1);
-            GeoRefEZ_UnLock();
+            EZUnLock_RPNInt();
          }
       } else {
          ix=ROUND(X);
@@ -182,9 +177,9 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          } else {
             if (Ref && Ref->Id>-1) {
                Def_Pointer(Def,C,mem,p0);
-               GeoRefEZ_Lock();
+               EZLock_RPNInt();
                c_gdxysval(Ref->Id,Length,p0,&x,&y,1);
-               GeoRefEZ_UnLock();
+               EZUnLock_RPNInt();
             } else {
                *Length=VertexValN(Ref,Def,C,X,Y,Z);
             }
@@ -250,9 +245,9 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 
    i=X+1.0;
    j=Y+1.0;
-   GeoRefEZ_Lock();
+   EZLock_RPNInt();
    c_gdllfxy(Ref->Id,&lat,&lon,&i,&j,1);
-   GeoRefEZ_UnLock();
+   EZUnLock_RPNInt();
    *Lat=lat;
    *Lon=lon>180?lon-=360:lon;
 
@@ -264,9 +259,9 @@ void GeoRef_Expand(TGeoRef *Ref) {
    if (Ref->Id>=0 && !Ref->AX && Ref->Grid[0]=='Z') {
       Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
       Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
-      GeoRefEZ_Lock();
+      EZLock_RPNInt();
       c_gdgaxes(Ref->Id,Ref->AX,Ref->AY);
-      GeoRefEZ_UnLock();
+      EZUnLock_RPNInt();
    }
 }
 
@@ -342,9 +337,9 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       lat=Lat;
 
       /*Extraire la valeur du point de grille*/
-      GeoRefEZ_Lock();
+      EZLock_RPNInt();
       c_gdxyfll(Ref->Id,&i,&j,&lat,&lon,1);
-      GeoRefEZ_UnLock();
+      EZUnLock_RPNInt();
 
       *X=i-1.0;
       *Y=j-1.0;
@@ -398,9 +393,9 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
 
    if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
-      GeoRefEZ_Lock();
+      EZLock_RPNInt();
       ref->Id=c_ezqkdef(NI,NJ,GRTYP,IG1,IG2,IG3,IG4,FID);
-      GeoRefEZ_UnLock();
+      EZUnLock_RPNInt();
    } else {
       ref->Id=-1;
    }

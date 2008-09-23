@@ -1865,7 +1865,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    Tcl_MutexLock(&MUTEX_BURPFILE);
 
    if (Obs->FId==-1)
-      Obs->FId=FSTD_FileGetId();
+      Obs->FId=cs_fnomid();
 
    dt=Obs->Time-Obs->Cache;
    dt=Obs->Time-60;
