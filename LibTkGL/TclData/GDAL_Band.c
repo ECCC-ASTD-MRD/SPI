@@ -997,9 +997,9 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
          }
       }
       if (!Scan->Valid) {
-         GeoRefEZ_Lock();
+         EZLock_RPNInt();
          c_gdllfxy(Scan->FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
-         GeoRefEZ_UnLock();
+         EZUnLock_RPNInt();
       }
       d=2;
       sz=4;
@@ -1034,9 +1034,9 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
             }
          }
 
-         GeoRefEZ_Lock();
+         EZLock_RPNInt();
          c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
-         GeoRefEZ_UnLock();
+         EZUnLock_RPNInt();
 
          for(x=n-1;x>=0;x--) {
             Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;

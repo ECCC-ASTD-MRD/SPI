@@ -1,6 +1,5 @@
 # Makefile Bins
 
-CC   = /usr/bin/gcc-3.4
 CC   = cc
 AR   = ar rv
 LD   = ld -shared -x
@@ -38,6 +37,9 @@ TK_PATH  = $(INSTALL_PATH)/TclTk/$(ARCH)
 # OpenGL librairies
 #GL_PATH   = $(LIB_PATH)/mesa-6.5/
 
+# RPN librairie
+RPN_PATH =  /home/afsr/005/Projects/RMNe
+
 # GDAL librairie
 GDAL_PATH = $(LIB_PATH)/gdal-1.3.2
 
@@ -61,5 +63,5 @@ FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
 
 # global includes
 INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include \
-   -I$(GDB_PATH)/include -I$(GL_PATH)/include -I$(PROJ_PATH)/include -I$(GDAL_PATH)/include \
+   -I$(GDB_PATH)/include -I$(RPN_PATH)/include -I$(GL_PATH)/include -I$(PROJ_PATH)/include -I$(GDAL_PATH)/include \
    -I$(URP_PATH)/include -I$(GRIB_PATH)/include -I$(BUFR_PATH)/include -I$(FLT_PATH)/include -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD

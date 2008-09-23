@@ -34,7 +34,6 @@
 #include "tclFSTD.h"
 #include "Projection.h"
 
-TCL_DECLARE_MUTEX(MUTEX_FSTDFIELD)
 TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
 typedef struct ThreadSpecificData {
@@ -144,13 +143,11 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
    int key,ni,nj,nk;
 
    if (!*Ptr) {
-      Tcl_MutexLock(&MUTEX_FSTDFIELD);
       if (Grid) {
-         key=c_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
+         key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
       } else {
-         key=c_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
+         key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
       }
-      Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
       if (key<0) {
          fprintf(stderr,"(WARNING) FSTD_FieldReadComp: Could not find component field field %s (c_fstinf failed)\n",Var);
          return(0);
@@ -159,9 +156,7 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
             fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
             return(0);
          }
-         Tcl_MutexLock(&MUTEX_FSTDFIELD);
-         c_fstluk(*Ptr,key,&ni,&nj,&nk);
-         Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+         cs_fstluk(*Ptr,key,&ni,&nj,&nk);
       }
    }
    return(ni*nj*nk);
@@ -201,9 +196,7 @@ int FSTD_FieldReadMesh(TData *Field) {
 
             /* Lire le champs d'indexes*/
             if (!Field->Ref->Idx) {
-               Tcl_MutexLock(&MUTEX_FSTDFIELD);
-               key=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",head->IG1,head->IG2,head->IG3,"","##");
-               Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+               key=cs_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",head->IG1,head->IG2,head->IG3,"","##");
                if (key < 0) {
                   fprintf(stderr,"(ERROR) FSTD_ReadMesh: Could not find index field %s (c_fstinf failed)","##");
                   return(0);
@@ -213,9 +206,7 @@ int FSTD_FieldReadMesh(TData *Field) {
                      fprintf(stderr,"(ERROR) FSTD_ReadMesh: Not enough memory to read coordinates fields");
                      return(0);
                   }
-                  Tcl_MutexLock(&MUTEX_FSTDFIELD);
-                  c_fstluk(Field->Ref->Idx,key,&ni,&nj,&nk);
-                  Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+                  cs_fstluk(Field->Ref->Idx,key,&ni,&nj,&nk);
                }
             }
             break;
@@ -287,7 +278,7 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
    } else {
       if (Field->Spec->Topo) {
          FSTD_FileSet(NULL,head->FID);
-         Tcl_MutexLock(&MUTEX_FSTDFIELD);
+         EZLock_RPNField();
          idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
          if (idx<0) {
             fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
@@ -299,7 +290,7 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
             if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
             c_fstluk(gz,idx,&i,&j,&k);
          }
-         Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+         EZUnLock_RPNField();
          FSTD_FileUnset(NULL,head->FID);
       }
 
@@ -447,7 +438,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
          /*Essayer de recuperer le modulateur (GZ)*/
          if (head->FID) {
             ip1=FSTD_Level2IP(Field->Ref->Levels[j],Field->Ref->LevelType);
-            Tcl_MutexLock(&MUTEX_FSTDFIELD);
+            EZLock_RPNField();
             idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,"GZ");
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
@@ -456,7 +447,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
                c_fstluk(gz,idx,&ni,&nj,&nk);
             }
-            Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+            EZUnLock_RPNField();
          }
 
          for (i=0;i<Field->Def->NI;i++) {
@@ -464,9 +455,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
             flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
             idx=j*Field->Def->NI+i;
             if (gz && Field->Ref->RefFrom->Id>-1) {
-               GeoRefEZ_Lock();
+               EZLock_RPNInt();
                c_gdllsval(Field->Ref->RefFrom->Id,&fele,gz,&flat,&flon,1);
-               GeoRefEZ_UnLock();
+               EZUnLock_RPNInt();
                coord.Elev=fele*10.0*Field->Spec->TopoFactor;
             } else {
                coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
@@ -490,9 +481,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
             fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to process gridpoint location");
             return(NULL);
          }
-         GeoRefEZ_Lock();
+         EZLock_RPNInt();
          c_gdll(Field->Ref->Id,lat,lon);
-         GeoRefEZ_UnLock();
+         EZUnLock_RPNInt();
       }
 
       /*Localiser les point de grille dans l'espace*/
@@ -509,7 +500,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
          if (head->FID && Field->Spec->Topo) {
 
             ip1=FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
-            Tcl_MutexLock(&MUTEX_FSTDFIELD);
+            EZLock_RPNField();
             if (Field->Spec->Topo) {
                idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
                if (idx<0) {
@@ -529,7 +520,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
                c_fstluk(gz,idx,&ni,&nj,&nk);
             }
-            Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+            EZUnLock_RPNField();
          }
 
          /*For every gridpoints*/
@@ -898,7 +889,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
    FSTD_FieldSetTo(FieldTo,FieldFrom);
 
-   GeoRefEZ_Lock();
+   EZLock_RPNInt();
 
    if (Mode==0) {
       c_ezsetopt("INTERP_DEGREE","NEAREST");
@@ -922,7 +913,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate:  EZSCINT internal error, could not define gridset",(char*)NULL);
-         GeoRefEZ_UnLock();
+         EZUnLock_RPNInt();
          return(TCL_ERROR);
       }
 
@@ -951,7 +942,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
-         GeoRefEZ_UnLock();
+         EZUnLock_RPNInt();
          return(TCL_ERROR);
       }
   } else {
@@ -976,7 +967,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          }
       }
    }
-   GeoRefEZ_UnLock();
+   EZUnLock_RPNInt();
 #endif
    FieldTo->Def->Mode=NULL;
    /*In case of vectorial field, we have to recalculate the module*/
@@ -1397,9 +1388,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Field->Ref->Lon=(float*)malloc(FSIZE2D(fieldAX->Def)*sizeof(float));
                memcpy(Field->Ref->Lat,fieldAY->Def->Data[0],FSIZE2D(fieldAY->Def)*sizeof(float));
                memcpy(Field->Ref->Lon,fieldAX->Def->Data[0],FSIZE2D(fieldAX->Def)*sizeof(float));
-               GeoRefEZ_Lock();
+               EZLock_RPNInt();
                Field->Ref->Id=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
-               GeoRefEZ_UnLock();
+               EZUnLock_RPNInt();
                GeoRef_Qualify(Field->Ref);
                Data_Clean(Field,1,1,1);
                return(TCL_OK);
@@ -1420,9 +1411,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Data_Clean(Field,1,1,1);
                ref=Field->Ref;
                if (ref && ref->Id>-1 && grtyp[0]!='V') {
-                  GeoRefEZ_Lock();
+                  EZLock_RPNInt();
                   c_gdrls(ref->Id);
-                  GeoRefEZ_UnLock();
+                  EZUnLock_RPNInt();
                }
                if (grtyp[0]=='W') {
                   Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->LevelType:LVL_UNDEF),(ref?ref->Levels:NULL),Tcl_GetString(Objv[++i]),NULL,NULL,NULL);
@@ -1664,9 +1655,7 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
       Tcl_AppendResult(Interp,"FSTD_FieldFind: unable to allocate find array",(char*)NULL);
       return(TCL_ERROR);
    }
-   Tcl_MutexLock(&MUTEX_FSTDFIELD);
-   c_fstinl(file->Id,&ni,&nj,&nk,DateV,Eticket,IP1,IP2,IP3,TypVar,NomVar,idlst,&idnb,Max);
-   Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+   cs_fstinl(file->Id,&ni,&nj,&nk,DateV,Eticket,IP1,IP2,IP3,TypVar,NomVar,idlst,&idnb,Max);
 
    FSTD_FileUnset(Interp,file);
 
@@ -1716,12 +1705,10 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
    strcpy(h.ETIKET,"            ");
    h.KEY=Key;
 
-   Tcl_MutexLock(&MUTEX_FSTDFIELD);
-   ok=c_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,
+   ok=cs_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,
          &h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
          &grtyp,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
-   Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
 
    FSTD_FileUnset(Interp,file);
 
@@ -1780,7 +1767,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    obj=Tcl_NewObj();
 
    if (nb>=0) {
-      Tcl_MutexLock(&MUTEX_FSTDFIELD);
+      EZLock_RPNField();
       head.KEY=c_fstinf(File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"","");
 
       for (i=0;i<nb;i++) {
@@ -1844,7 +1831,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
             head.KEY=c_fstsui(File->Id,&ni,&nj,&nk);
          }
       }
-      Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+      EZUnLock_RPNField();
    } else {
       return(TCL_ERROR);
    }
@@ -1899,14 +1886,14 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    if(FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
 
-   Tcl_MutexLock(&MUTEX_FSTDFIELD);
+   EZLock_RPNField();
    /*Rechercher et lire l'information de l'enregistrement specifie*/
    if (Key==-1) {
       Key=c_fstinf(file->Id,&ni,&nj,&nk,DateV,Eticket,IP1,IP2,IP3,TypVar,NomVar);
       if (Key<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Specified field does not exist (c_fstinf failed)",(char*)NULL);
          FSTD_FileUnset(Interp,file);
-         Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+         EZUnLock_RPNField();
          return(TCL_ERROR);
       }
    }
@@ -1929,7 +1916,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    if (ok<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not get field information for ",Name," (c_fstprm failed)",(char*)NULL);
       FSTD_FileUnset(Interp,file);
-      Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+      EZUnLock_RPNField();
       return(TCL_ERROR);
    }
 
@@ -1952,7 +1939,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),TD_Float32);
       if (!field) {
          FSTD_FileUnset(Interp,file);
-         Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+         EZUnLock_RPNField();
          return(TCL_ERROR);
       }
 
@@ -1967,7 +1954,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (ok<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find first component field ",uvw->UU," (c_fstinf failed)",(char*)NULL);
             FSTD_FileUnset(Interp,file);
-            Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+            EZUnLock_RPNField();
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[0],ok,&ni,&nj,&nk);
@@ -1980,7 +1967,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (ok<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find second component field ",uvw->VV," (c_fstinf failed)",(char*)NULL);
             FSTD_FileUnset(Interp,file);
-            Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+            EZUnLock_RPNField();
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[1],ok,&ni,&nj,&nk);
@@ -1993,7 +1980,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (ok<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find third component field ",uvw->WW," (c_fstinf failed)",(char*)NULL);
             FSTD_FileUnset(Interp,file);
-            Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+            EZUnLock_RPNField();
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[2],ok,&ni,&nj,&nk);
@@ -2003,7 +1990,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       /*Verifier si le champs existe et est valide*/
       field=Data_Valid(Interp,Name,ni,nj,nk,1,TD_Float32);
       if (!field) {
-         Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+         EZUnLock_RPNField();
          return(TCL_ERROR);
       }
 
@@ -2079,7 +2066,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    if (grtyp[0]!='W') {
       field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,h.FID->Id);
    }
-   Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+   EZUnLock_RPNField();
 
    FSTD_FieldSet(field);
 
@@ -2135,13 +2122,13 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
       return TCL_ERROR;
 
    /*Recuperer les indexes de tout les niveaux*/
-   Tcl_MutexLock(&MUTEX_FSTDFIELD);
+   EZLock_RPNField();
    c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,idxs,&nk,512);
 
    if (nk<1) {
       fprintf(stderr,"(WARNING) FSTD_FieldReadLevels: Could not find any other levels\n");
       FSTD_FileUnset(Interp,head->FID);
-      Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+      EZUnLock_RPNField();
       return(0);
    }
 
@@ -2193,7 +2180,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
    if (!Data_DefResize(Field->Def,ni,nj,nk)) {
       fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
       FSTD_FileUnset(Interp,head->FID);
-      Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+      EZUnLock_RPNField();
       return 0;
    }
 
@@ -2234,7 +2221,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
       if (ok<0) {
          fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
          FSTD_FileUnset(Interp,head->FID);
-         Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+         EZUnLock_RPNField();
          return 0;
       }
    }
@@ -2256,7 +2243,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
    }
 
    FSTD_FileUnset(Interp,head->FID);
-   Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+   EZUnLock_RPNField();
 
    Data_GetStat(Field);
 #endif
@@ -2316,7 +2303,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       }
    }
 
-   Tcl_MutexLock(&MUTEX_FSTDFIELD);
+   EZLock_RPNField();
 
    for(k=0;k<Field->Def->NK;k++) {
       idx=k*FSIZE2D(Field->Def);
@@ -2345,7 +2332,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       }
    }
 
-   Tcl_MutexUnlock(&MUTEX_FSTDFIELD);
+   EZUnLock_RPNField();
 
    FSTD_FileUnset(Interp,file);
 #endif
@@ -2558,9 +2545,9 @@ int FSTD_ZGrid(Tcl_Interp *Interp,Tcl_Obj *Tic,Tcl_Obj *Tac,Tcl_Obj *Set) {
          if (Grd_xlon2<0) Grd_xlon2=360.0+Grd_xlon2;
 /*
          np=1;
-         GeoRefEZ_Lock();
+         EZLock_RPNInt();
          f77name(ez_gfxyfll)(&Grd_lonr,&Grd_latr,&x,&y,&np,&Grd_xlat1,&Grd_xlon1,&Grd_xlat2,&Grd_xlon2);
-         GeoRefEZ_UnLock();
+         EZUnLock_RPNInt();
          Grd_lonr=x;
          Grd_latr=y;
  */

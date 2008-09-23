@@ -38,8 +38,6 @@
 #include "tclGDAL.h"
 #include <sys/timeb.h>
 
-TCL_DECLARE_MUTEX(MUTEX_FSTDFILE)
-
 /*Table contenant la liste des champs en memoire*/
 static Tcl_HashTable FSTD_FileTable;
 static int           FSTDInit=0;
@@ -1162,39 +1160,6 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_FileGetId>
- * Creation : Octobre 2006 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Gestion des numero d'unite pour fnom(). Ceci doit se faire de
- *           maniere globale puisque la meme unitte ne peut etre utilise en meme temps.
- *           De plus, il n'y a rien de threadsafe alors welcome mutex
- *
- * Parametres :
- *
- * Retour:
- *  <id>      : Id de fichier pour fnom de 0 a 999 - 6 car utilise comme stderr
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int FSTD_FileGetId() {
-
-   int id;
-   Tcl_MutexLock(&MUTEX_FSTDFILE);
-
-   if (++FSTDId>998) {
-      FSTDId=2;
-   }
-
-   /*Patch pour rmn008 (Unit 6 = bad)*/
-   id=FSTDId==6?++FSTDId:FSTDId;
-
-   Tcl_MutexUnlock(&MUTEX_FSTDFILE);
-   return(id);
-}
-
-/*----------------------------------------------------------------------------
  * Nom      : <FSTD_FileOpen>
  * Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
  *
@@ -1231,7 +1196,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    file=(FSTD_File*)malloc(sizeof(FSTD_File));
    file->Mode=Mode;
    file->CId=strdup(Id);
-   file->Id=FSTD_FileGetId();
+   file->Id=cs_fnomid();
    file->Open=file->Id<1?-1:0;
 
    if (realpath(Name,buf)) {
@@ -1304,9 +1269,10 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       rem=1;
    }
 
-   Tcl_MutexLock(&MUTEX_FSTDFILE);
+   EZLock_RPNFile();
    if (!File->Open || File->Open==-1) {
 #ifdef LNK_FSTD
+
       /*RPN's c_fnom() function changes the path we give it so make a copy of it before and use the copy*/
       filename=strdup(File->Name);
 
@@ -1330,7 +1296,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
       if (ok<0) {
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed)",(char *)NULL);
-         Tcl_MutexUnlock(&MUTEX_FSTDFILE);
+         EZUnLock_RPNFile();
          return(-1);
       }
 
@@ -1339,13 +1305,13 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 //         exit(1);
          ok=c_fclos(File->Id);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv)",(char *)NULL);
-         Tcl_MutexUnlock(&MUTEX_FSTDFILE);
+         EZUnLock_RPNFile();
          return(-1);
       }
    }
 #endif
    File->Open=File->Open<0?-2:File->Open+1;
-   Tcl_MutexUnlock(&MUTEX_FSTDFILE);
+   EZUnLock_RPNFile();
 
    return(ok);
 }
@@ -1374,7 +1340,7 @@ int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
    if (!File)
       return(0);
 
-   Tcl_MutexLock(&MUTEX_FSTDFILE);
+   EZLock_RPNFile();
    File->Open--;
 
    if (!File->Open) {
@@ -1390,7 +1356,7 @@ int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
       }
    }
 
-   Tcl_MutexUnlock(&MUTEX_FSTDFILE);
+   EZUnLock_RPNFile();
    return(ok);
 }
 

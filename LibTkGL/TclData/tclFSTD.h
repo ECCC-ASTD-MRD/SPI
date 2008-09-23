@@ -36,7 +36,8 @@
 #define _tclFSTD_h
 
 #ifdef LNK_FSTD
-#include <rpnmacros.h>
+#include "rpnmacros.h"
+#include "eztile.h"
 #endif
 
 #include "tclData.h"
@@ -116,35 +117,6 @@ int         FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name);
 FSTD_File*  FSTD_FileGet(Tcl_Interp *Interp,char *Id);
 int         FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File);
 int         FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File);
-int         FSTD_FileGetId(void);
-
-extern int c_fnom();
-extern int c_fclos();
-extern int c_fstouv();
-extern int c_fstfrm();
-extern int c_fstecr();
-extern int c_fstinf();
-extern int c_fstprm();
-extern int c_fstluk();
-extern int c_fstinl();
-extern int c_fstopc();
-
-extern int c_ezqkdef();
-extern int c_ezgdef_fmem();
-extern int c_ezdefset();
-extern int c_gdxysval();
-extern int c_gdxywdval();
-extern int c_gdxyfll();
-extern int c_gdllfxy();
-extern int c_gdrls();
-extern int c_ezsint();
-extern int c_ezuvint();
-extern int c_ezwdint();
-extern int c_ezsetopt();
-extern int c_gdll();
-extern int c_gdllsval();
-extern int c_gdllwdval();
-extern int c_gdllvval();
 
 #endif
 
