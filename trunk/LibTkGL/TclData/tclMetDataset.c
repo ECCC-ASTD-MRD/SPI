@@ -318,9 +318,9 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    char             buf[32];
 
    static CONST char *sopt[] = {  "-BUFR_EDITION","-BUFR_MASTER_TABLE","-ORIG_CENTER","-ORIG_SUB_CENTER","-UPDATE_SEQUENCE","-DATA_CATEGORY","-INTERN_SUB_CATEGORY","-LOCAL_SUB_CATEGORY",
-      "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-subsetaddcode","-subsetstart","-subsetend","-template",NULL };
+      "-MASTER_TABLE_VERSION","-LOCAL_TABLE_VERSION","-YEAR","-MONTH","-DAY","-HOUR","-MINUTE","-SECOND","-DATA_FLAG","-subsetnb","-subset","-subsetadd","-subsetadddescriptor","-subsetstart","-subsetend","-template",NULL };
    enum                opt { BUFR_EDITION,BUFR_MASTER_TABLE,ORIG_CENTER,ORIG_SUB_CENTER,UPDATE_SEQUENCE,DATA_CATEGORY,INTERN_SUB_CATEGORY,LOCAL_SUB_CATEGORY,
-      MASTER_TABLE_VERSION,LOCAL_TABLE_VERSION,YEAR,MONTH,DAY,HOUR,MINUTE,SECOND,DATA_FLAG,SUBSETNB,SUBSET,SUBSETADD,SUBSETADDCODE,SUBSETSTART,SUBSETEND,TEMPLATE };
+      MASTER_TABLE_VERSION,LOCAL_TABLE_VERSION,YEAR,MONTH,DAY,HOUR,MINUTE,SECOND,DATA_FLAG,SUBSETNB,SUBSET,SUBSETADD,SUBSETADDDESCRIPTOR,SUBSETSTART,SUBSETEND,TEMPLATE };
 
    set=MetDataset_Get(Name);
    if (!set) {
@@ -662,7 +662,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             }
             break;
 
-         case SUBSETADDCODE:
+         case SUBSETADDDESCRIPTOR:
             if (Objc<2) {
                Tcl_WrongNumArgs(Interp,1,Objv,"[code/value list]");
                return(TCL_ERROR);
@@ -1162,8 +1162,8 @@ static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CO
    int            i,idx,c,v;
    Tcl_Obj       *obj,*cd,*vl;
 
-   static CONST char *sopt[] = { "-CODE","-BUFR_EDITION",NULL };
-   enum                opt { CODE,BUFR_EDITION };
+   static CONST char *sopt[] = { "-DESCRIPTOR","-BUFR_EDITION",NULL };
+   enum                opt { DESCRIPTOR,BUFR_EDITION };
 
    tmp=MetTemplate_Get(Name);
    if (!tmp) {
@@ -1189,7 +1189,7 @@ static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CO
             }
             break;
 
-         case CODE:
+         case DESCRIPTOR:
             if (Objc!=1 && Objc!=2 && Objc!=3) {
                Tcl_WrongNumArgs(Interp,1,Objv,"[index] [code/value]");
                return(TCL_ERROR);
