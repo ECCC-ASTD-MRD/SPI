@@ -598,7 +598,7 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
    ComboBox::DelAll $Data(Frame).left.traj.lvl
 
    foreach traj $Trajs {
-      if { [trajectory is $traj] } {
+      if { [trajectory is $traj] && [trajectory define $traj -PARCELNB] } {
           switch $Param(Mode) {
             "LEVEL"    { if { [trajectory define $traj -LEVELTYPE]=="P" } {
                             set var [format "%.2f" [lindex [trajectory define $traj -PARCEL 0] 4]]
