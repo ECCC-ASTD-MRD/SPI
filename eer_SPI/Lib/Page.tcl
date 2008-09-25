@@ -1580,12 +1580,13 @@ proc Page::Update { { Frame "" } { VP True } } {
    variable Data
 
    #----- Est-ce que la page est valide
-   if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
-      return
-   }
 
    if { $Frame=="" } {
       set Frame $Page::Data(Frame)
+   } else {
+      if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
+         return
+      }
    }
 
    #----- Est-ce que la page existe encore
