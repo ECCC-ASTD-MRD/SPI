@@ -833,7 +833,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
          }
          lappend list [list $id {} {} $vals]
          catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
-         catch { set Page::Data(Altitude) [lindex $coord 2] }
+         catch { set Page::Data(Altitude) [format "%.2f" [lindex $coord 2]] }
       }
    }
    Page::CursorInfo $Page $X $Y $info $graph
