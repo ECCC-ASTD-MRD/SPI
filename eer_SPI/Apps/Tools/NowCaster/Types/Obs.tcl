@@ -23,8 +23,9 @@ namespace eval NowCaster::Obs { } {
    variable Msg
    variable Bubble
    variable Param
+   variable Tephi
 
-   font create TEPHIFONT -family arial  -size -10
+   font create TEPHIFONT  -family arial  -size -10
 
    set Param(Title)      { "Observation" "Observation" }
 
@@ -51,6 +52,12 @@ namespace eval NowCaster::Obs { } {
    set Data(InfoAll)     False
    set Data(Id)          ""
    set Data(Report)      False
+
+   set Tephi(Dry)   True
+   set Tephi(Wet)   True
+   set Tephi(Dew)   True
+   set Tephi(Wind)  True
+   set Tephi(Info)  False
 
    set Lbl(Var0)    { "Variable  " "Variable  " }
    set Lbl(Var1)    { "Direction " "Direction " }
@@ -1102,18 +1109,23 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
       set tab [TabFrame::Add .nowcasterinfo.tab 1 [lindex $Lbl(Tephi) $GDefs(Lang)] True]
       frame ${tab}.bar -relief flat
          checkbutton ${tab}.bar.dry -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -text "DRY " -variable a -selectcolor $GDefs(ColorLight) -image LINE -compound right \
-            -command {}
+            -text "DRY " -variable NowCaster::Obs::Tephi(Dry) -selectcolor $GDefs(ColorLight) -image LINE -compound right \
+            -command { NowCaster::Obs::Graph } -onvalue True -offvalue False
          checkbutton ${tab}.bar.wet -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -text "WET " -variable s -selectcolor $GDefs(ColorLight) -image DASH1 -compound right \
-            -command {}
+            -text "WET " -variable NowCaster::Obs::Tephi(Wet) -selectcolor $GDefs(ColorLight) -image DASH2 -compound right \
+            -command { NowCaster::Obs::Graph } -onvalue True -offvalue False
          checkbutton ${tab}.bar.dew -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -text "DEW " -variable d -selectcolor $GDefs(ColorLight) -image DASH2 -compound right \
-            -command {}
+            -text "DEW " -variable NowCaster::Obs::Tephi(Dew) -selectcolor $GDefs(ColorLight) -image DASH1 -compound right \
+            -command { NowCaster::Obs::Graph } -onvalue True -offvalue False
          checkbutton ${tab}.bar.wind -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -text "Wind " -variable f  -selectcolor $GDefs(ColorLight) -image BARB -compound right \
-            -command {}
-         pack ${tab}.bar.dry ${tab}.bar.wet ${tab}.bar.dew ${tab}.bar.wind -side left -pady 2 -ipadx 2
+            -text "Wind " -variable NowCaster::Obs::Tephi(Wind)  -selectcolor $GDefs(ColorLight) -image BARB -compound right \
+            -command { NowCaster::Obs::Graph } -onvalue True -offvalue False
+         menubutton ${tab}.bar.info -text "Info:" -relief flat -bd 0 -menu ${tab}.bar.info.menu
+         menu ${tab}.bar.info.menu
+         foreach info { "False" "pressure" "drybulb" "wetbulb" "dewpoint" "SPREAD" "HEIGHT" "RELATIVEHUMIDITY" } {
+            ${tab}.bar.info.menu add command -label "$info" -command "${tab}.bar.info configure -text \"Info: $info\"; set NowCaster::Obs::Tephi(Info) $info; NowCaster::Obs::Graph"
+         }
+         pack ${tab}.bar.wet ${tab}.bar.dew ${tab}.bar.wind ${tab}.bar.info -side left -pady 2 -ipadx 2
       pack ${tab}.bar -side top -fill x -padx 5 -pady 5
       glcanvas ${tab}.glcanvas -width 0 -height 0 -bg white -relief sunken -bd 1 -highlightthickness 0
       pack ${tab}.glcanvas -fill both -expand true -padx 5 -pady 5
@@ -1154,8 +1166,8 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
    variable Data
    variable Lbl
 
-    if { [metobs is $Obs] } {
-       NowCaster::Obs::InfoWindow "$Obs (Station:$Id)"
+   if { [metobs is $Obs] } {
+      NowCaster::Obs::InfoWindow "$Obs (Station:$Id)"
 
       set datev [metobs define $Obs -VALID]
 
@@ -1199,25 +1211,24 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
 
       vector free TEPHIPROF
       vector create TEPHIPROF
-      vector dim TEPHIPROF { PRES TEMP WET DEW  }
+      vector dim TEPHIPROF { PRES DRY WET DEW  }
       vector stats TEPHIPROF -nodata -999.0
 
       foreach report [metobs define $Obs -REPORT $Tag $datev] {
-         foreach pres [metreport define $report -ELEMENT 007004] temp [metreport define $report -ELEMENT 012001] dew [metreport define $report -ELEMENT 012192] {
+         foreach pres [metreport define $report -ELEMENT 007004] temp [metreport define $report -ELEMENT { 012001 012101 }] wet [metreport define $report -ELEMENT 012102] dew [metreport define $report -ELEMENT { 012192 }] {
             if { $pres!=-999.0 } {
-               vector append TEPHIPROF [list [expr $pres/100.0] [expr $temp!=-999?($temp-273.15):$temp] -999.0 [expr $temp!=-999?($temp-$dew-273.15):-999]]
+               catch { vector append TEPHIPROF [list [expr $pres/100.0] [expr $temp!=-999?($temp-273.15):$temp] -999 [expr $temp!=-999?($temp-$dew-273.15):-999]] }
             }
          }
       }
       vector sort TEPHIPROF PRES
-
       vector free TEPHIWIND
       vector create TEPHIWIND
       vector dim TEPHIWIND { PRES SPD DIR  }
       foreach report [metobs define $Obs -REPORT $Tag $datev] {
          foreach pres [metreport define $report -ELEMENT 007004] spd [metreport define $report -ELEMENT 011002] dir [metreport define $report -ELEMENT 011001] {
             if { $pres!=-999 && $spd!=-999 && $dir!=-999 } {
-               vector append TEPHIWIND [list [expr $pres/100.0] [expr $spd*1.94384617179] $dir]
+               catch { vector append TEPHIWIND [list [expr $pres/100.0] [expr $spd*1.94384617179] $dir] }
             }
          }
       }
@@ -1225,13 +1236,21 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       if { ![graphitem is TEPHIITEM] } {
          graphitem create TEPHIITEM
       }
-      graphitem configure TEPHIITEM -paxis TEPHIAXISP -taxis TEPHIAXIST -thaxis TEPHIAXISTH -mixaxis TEPHIAXISMIX \
-         -pressure TEPHIPROF.PRES -drybulb TEPHIPROF.TEMP -wetbulb TEPHIPROF.WET -dewpoint TEPHIPROF.DEW -windpres TEPHIWIND.PRES \
-         -speed TEPHIWIND.SPD -dir TEPHIWIND.DIR \
-         -desc "Station $Id" -type LINE -width 2 -outline blue -value RELATIVEHUMIDITY -font TEPHIFONT -anchor w -size 15
-
-      .nowcasterinfo.tab.frame2.glcanvas itemconfigure TEPHI -item { TEPHIITEM }
+      graphitem configure TEPHIITEM -desc "Station $Id"
+      NowCaster::Obs::Graph
    }
+}
+
+proc NowCaster::Obs::Graph { } {
+   variable Tephi
+
+   graphitem configure TEPHIITEM -paxis TEPHIAXISP -taxis TEPHIAXIST -thaxis TEPHIAXISTH -mixaxis TEPHIAXISMIX \
+      -pressure TEPHIPROF.PRES -drybulb TEPHIPROF.DRY -wetbulb [expr $Tephi(Wet)?"TEPHIPROF.WET":""] \
+      -dewpoint [expr $Tephi(Dew)?"TEPHIPROF.DEW":""] -windpres TEPHIWIND.PRES \
+      -speed [expr $Tephi(Wind)?"TEPHIWIND.SPD":""] -dir [expr $Tephi(Wind)?"TEPHIWIND.DIR":""] \
+      -type LINE -width 2 -outline blue -value $Tephi(Info) -font XFont12 -anchor w -size 15
+
+   .nowcasterinfo.tab.frame2.glcanvas itemconfigure TEPHI -item { TEPHIITEM }
 }
 
 #-------------------------------------------------------------------------------
