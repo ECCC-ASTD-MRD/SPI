@@ -27,6 +27,9 @@ ARC_PATH = /data/cmoe/afsr005/Archive
 # Installation path of the binaries
 INSTALL_PATH  = /users/dor/afsr/005/eer_SPI/eer_SPI
 
+# EER Path
+EER_PATH = /home/binops/afse/eer
+
 # Tk Path
 TCL_SRC  = $(ARC_PATH)/tcl$(TCLTK_VER)
 TCL_PATH = $(INSTALL_PATH)/TclTk/$(ARCH)
@@ -62,6 +65,6 @@ URP_PATH = /home/afsr/005/Projects/Code/URP
 FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
 
 # global includes
-INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include \
+INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include -I$(EER_PATH)/include \
    -I$(GDB_PATH)/include -I$(RPN_PATH)/include -I$(GL_PATH)/include -I$(PROJ_PATH)/include -I$(GDAL_PATH)/include \
    -I$(URP_PATH)/include -I$(GRIB_PATH)/include -I$(BUFR_PATH)/include -I$(FLT_PATH)/include -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD
