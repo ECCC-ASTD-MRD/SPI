@@ -206,7 +206,7 @@ int FSTD_FieldReadMesh(TData *Field) {
                      fprintf(stderr,"(ERROR) FSTD_ReadMesh: Not enough memory to read coordinates fields");
                      return(0);
                   }
-                  cs_fstluk(Field->Ref->Idx,key,&ni,&nj,&nk);
+                  cs_fstluk((float*)Field->Ref->Idx,key,&ni,&nj,&nk);
                }
             }
             break;
@@ -863,6 +863,8 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       FieldTo->Def->NK=FieldFrom->Def->NK;
       FieldTo->Def->Data[0]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
       FieldTo->Ref=GeoRef_Resize(FieldTo->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldTo->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels);
+   } else {
+      FieldTo->Ref->LevelType=FieldFrom->Ref->LevelType;
    }
 
    /*Verifier la 2ieme composantes*/
@@ -939,6 +941,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
             Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
             ok=c_ezsint(pt0,pf0);
          }
+         FieldTo->Ref->Levels[k]=FieldFrom->Ref->Levels[k];
       }
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
@@ -1707,7 +1710,7 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
 
    ok=cs_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,
          &h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
-         &grtyp,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
+         grtyp,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
 
    FSTD_FileUnset(Interp,file);
