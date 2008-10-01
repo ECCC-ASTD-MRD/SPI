@@ -7,15 +7,9 @@ echo "----- Architecture Found : $ARCH -----"
 echo ""
 
 echo ""
-echo "----- Making Utilities Files -----"
-echo ""
-cd Utils
-make
-
-echo ""
 echo "----- Making OpenGL Canvas Library  Object -----"
 echo ""
-cd ../TkglCanvas
+cd TkglCanvas
 make install
 
 echo ""
