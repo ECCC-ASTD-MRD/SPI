@@ -1644,7 +1644,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       /*Get the sun*/
       if (Proj->Sun) {
          sec=Proj->Date>86400?Proj->Date:time(NULL)+Proj->Date;
-         sun_position(sec,&Proj->SunPos.Lat,&Proj->SunPos.Lon);
+         Astro_SunPos(sec,&Proj->SunPos.Lat,&Proj->SunPos.Lon);
          Proj->SunPos.Elev=146000.0;
          Proj->Type->Project(Proj->Params,&Proj->SunPos,&pt,1);
          Proj->LightPos[0]=pt[0];Proj->LightPos[1]=pt[1];Proj->LightPos[2]=pt[2];Proj->LightPos[3]=0.0;

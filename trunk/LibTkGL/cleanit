@@ -7,15 +7,9 @@ echo "----- Architecture Found : $ARCH -----"
 echo ""
 
 echo ""
-echo "----- Cleaning Utilities Files -----"
-echo ""
-cd Utils
-make clean
-
-echo ""
 echo "----- Cleaning OpenGL Renderer Library  Object -----"
 echo ""
-cd ../TkglCanvas
+cd TkglCanvas
 make clean
 
 echo ""

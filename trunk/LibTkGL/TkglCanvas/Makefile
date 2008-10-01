@@ -15,7 +15,7 @@ LIBTCL    = -L$(TCL_PATH)/lib -ltcl8.4
 # Start of Makefile
 
 OBJ         = tkglCanvas.o tkglCanvLine.o tkglCanvBmap.o tkglCanvPoly.o tkglRectOval.o tkglCanvArc.o tkglCanvText.o tkglCanvImg.o tkCanvWind.o tkCanvPs.o tkCanvUtil.o\
-	glFont.o glStuff.o glShader.o ../Utils/tr.o
+	glFont.o glStuff.o glShader.o tr.o
 
 all:$(OBJ)
 
