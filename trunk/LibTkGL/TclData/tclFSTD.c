@@ -598,7 +598,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                }
             }
 
-            if (field1->Ref->Grid[0]=='M' || field1->Ref->Grid[0]=='Y' || field1->Ref->Grid[0]=='X') {
+            if (field1->Ref && field1->Ref->Type|GRID_SPARSE) {
                FSTD_FieldReadMesh(field1);
             }
 
@@ -1419,8 +1419,8 @@ double FSTD_IP2Level(int IP,int *Type) {
 #ifdef LNK_FSTD
    /*Convertir en niveau reel*/
    f77name(convip)(&IP,&level,Type,&mode,&format,&flag);
-
 #endif
+
    return(level);
 }
 

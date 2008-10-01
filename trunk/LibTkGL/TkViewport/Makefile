@@ -1,6 +1,8 @@
+ARCH        = $(shell uname)
+
 # Source in configuration
 
-include ../Makefile.conf
+include ../Makefile.$(ARCH)
 
 # Makefile Specific definitions
 

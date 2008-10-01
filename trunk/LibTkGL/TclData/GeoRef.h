@@ -40,32 +40,7 @@
 #include "ogr_api.h"
 #include "ogr_srs_api.h"
 #include "Vector.h"
-
-#ifndef M_PI
-#define M_PI        3.141592653589793115997963468544        /*Pi*/
-#endif
-#ifndef M_2PI
-#define M_2PI       6.283185307179586231995926937088        /*Deux fois Pix*/
-#endif
-#ifndef M_PI2
-#define M_PI2       1.570796326794896557998981734272        /*Pi sur deux*/
-#endif
-#ifndef M_PI4
-#define M_PI4       0.785398163397448278999490867136        /*Pi sur quatre*/
-#endif
-
-#define EARTHRADIUS 6378140.0                         /*Rayon de la terre en metres*/
-
-#define LVL_MASL    0
-#define LVL_SIGMA   1
-#define LVL_PRES    2
-#define LVL_UNDEF   3
-#define LVL_MAGL    4
-#define LVL_HYBRID  5
-#define LVL_THETA   6
-#define LVL_ETA     7
-#define LVL_GALCHEN 8
-#define LVL_ANGLE   9
+#include "eerUtils.h"
 
 #define GRID_NONE     0x0
 #define GRID_REGULAR  0x1
@@ -75,24 +50,6 @@
 #define GRID_TILE     0x10
 #define GRID_VERTICAL 0x20
 #define GRID_RADIAL   0x40
-
-#define DIST(E,A0,O0,A1,O1)  ((E+EARTHRADIUS)*acos(sin(A0)*sin(A1)+cos(O0-O1)*cos(A0)*cos(A1)))
-#define COURSE(A0,O0,A1,O1)  (fmod(atan2(sin(O0-O1)*cos(A1),cos(A0)*sin(A1)-sin(A0)*cos(A1)*cos(O0-O1)),M_2PI))
-#define RAD2DEG(R)           ((R)*57.295779513082322864647721871734)
-#define DEG2RAD(D)           ((D)*0.017453292519943295474371680598)
-#define M2RAD(M)             ((M)*0.00000015706707756635)
-#define RAD2M(R)             ((R)*6.36670701949370745569e+06)
-
-#define ORDER(VAL)                        (VAL==0.0?1.0:floor(log10(ABS(VAL))))
-#define VOUT(C0,C1,MI,MA)                 ((C0<MI && C1<MI) || (C0>MA && C1>MA))
-#define VIN(VAL,MIN,MAX)                  ((VAL>MIN && VAL<MAX))
-#define CLAMPLAT(LAT)                     (LAT=LAT>90.0?90.0:(LAT<-90.0?-90.0:LAT))
-#define CLAMPLON(LON)                     (LON=LON>180?LON-360:(LON<-180?LON+360:LON))
-#define INSIDE(PT,X0,Y0,X1,Y1)            (PT[0]<=X1 && PT[0]>=X0 && PT[1]<=Y1 && PT[1]>=Y0)
-#define FMIN(X,Y)                         (X<Y?X:Y)
-#define FMAX(X,Y)                         (X>Y?X:Y)
-#define FWITHIN(DL,LA0,LO0,LA1,LO1,LA,LO) ((LA>=LA0 && LA<=LA1)?((DL<=180)?(LO>=LO0 && LO<=LO1):((LO<=LO0 && DL>-180) || (LO>=LO1 && DL<180))):0)
-#define FCLAMP(R,PX0,PY0,PX1,PY1)         if (PX0<R->X0) PX0=R->X0; if (PY0<R->Y0) PY0=R->Y0; if (PX1>R->X1) PX1=R->X1; if (PY1>R->Y1) PY1=R->Y1;
 
 //#define REFDEFAULT "GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]"
 //#define REFDEFAULT "GEOGCS[\"NAD83",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"

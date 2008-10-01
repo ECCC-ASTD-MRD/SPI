@@ -38,7 +38,7 @@
 #include "Projection.h"
 #include "tclData.h"
 #include "GeoRef.h"
-#include "Helpers.h"
+#include "eerUtils.h"
 
 #define F3V     3
 #define F3VN    6

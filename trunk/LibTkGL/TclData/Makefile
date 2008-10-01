@@ -1,13 +1,15 @@
+ARCH        = $(shell uname)
+
 # Source in configuration
 
-include ../Makefile.conf
+include ../Makefile.$(ARCH)
 
 # Makefile Specific definitions
 
 GRAMMAR = Data_Calc
 
 INCLUDES  = $(INCLUDE)
-LIBS      = -L$(INSTALL_PATH)/Shared/$(ARCH) -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -lc
+LIBS      = -L$(INSTALL_PATH)/Shared/$(ARCH) -L$(EER_PATH)/lib/$(ARCH) -leerUtils -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -lc
 LIBTK     = -L$(TK_PATH)/lib -ltk8.4
 LIBTCL    = -L$(TCL_PATH)/lib -ltcl8.4
 LDFLAGS   = $(LIBS) $(LIBTCL) $(LIBTK) --warn-once --no-undefined 
@@ -19,7 +21,7 @@ YACCFLAGS =
 # Start of Makefile
 
 OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o \
-	Helpers.o Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o \
+	Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o \
 	../Utils/Vector.o ../Utils/gpc.o tclUtils.o Vertex.o  \
 	GeoTex.o GeoRef.o GeoRef_RPN.o GeoRef_WKT.o GeoRef_RDR.o \
 	tclVector.o tclDataSpec.o tclData.o tclCMap.o tclTraj.o tclObs.o \
