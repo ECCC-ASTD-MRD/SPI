@@ -45,7 +45,7 @@
 #include "tclVector.h"
 #include "Vector.h"
 #include "glStuff.h"
-#include "Helpers.h"
+#include "eerUtils.h"
 #include "tclUtils.h"
 
 #define TCLDATA_VERSION "7.2.4"
@@ -76,15 +76,7 @@
 #define EXP    2
 #define GAUSS  3
 #define LINEAR 4
-#define TINY_VALUE 1e-25
-#define HUGE_VALUE 1e-300
 #define PARSE_LEN  4096
-
-#define TRUE   1
-#define FALSE  0
-
-#define PRESS2METER(LVL) (-8409.1*log((LVL==0?1e-31:LVL)/1200.0))
-#define SIGMA2METER(LVL) (-8409.1*log(LVL==0?1e-31:LVL))
 
 typedef enum {
    TD_NEAREST                        = 0,
