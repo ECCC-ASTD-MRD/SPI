@@ -4,7 +4,7 @@
 * 2100 Trans-Canadienne
 * Dorval, Quebec
 *
-* Projet    : Projection diverses de la carte vectorielle.
+* Projet    : Calculs dur des vecteurs.
 * Fichier   : Vector.c
 * Creation  : Janvier 2000 - J.P. Gauthier
 *
