@@ -45,9 +45,6 @@
 #define Vect_Dist2(V1,V2)        ((V1[0]-V2[0])*(V1[0]-V2[0])+(V1[1]-V2[1])*(V1[1]-V2[1])+(V1[2]-V2[2])*(V1[2]-V2[2]))
 #define Vect_Dist(V1,V2)         sqrt(Vect_Dist2(V1,V2))
 
-/*
-#define Vect_Interp(V,V1,V2,R)   Vect_Substract(V,V2,V1);V[0]=V[0]<-2.0?V[0]+4.0:(V[0]>2.0?V[0]-4.0:V[0]);Vect_SMul(V,V,R);Vect_Add(V,V1,V)
-*/
 #define Vect_Interp(V,V1,V2,R)   Vect_Substract(V,V2,V1);Vect_SMul(V,V,R);Vect_Add(V,V1,V)
 #define Vect_InterpC(V,V1,V2,R)  Vect_Substract(V,V2,V1);V[0]=V[0]>2?-(4-V[0]):(V[0]<-2?4+V[0]:V[0]);Vect_SMul(V,V,R);Vect_Add(V,V1,V)
 
