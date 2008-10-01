@@ -2440,7 +2440,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_Pick : Invalid layer",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    Tcl_ListObjLength(Interp,List,&nobj);
@@ -2451,7 +2451,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    } else {
       if (nobj%2!=0 || nobj==0) {
          Tcl_AppendResult(Interp,"OGR_Pick : Invalid number of coordinates",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch(nobj) {
@@ -2461,9 +2461,13 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
       for(f=0;f<nobj;f+=2) {
          Tcl_ListObjIndex(Interp,List,f,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&lat);
+         if (Tcl_GetDoubleFromObj(Interp,obj,&lat)==TCL_ERROR) {
+            return(TCL_ERROR);
+         }
          Tcl_ListObjIndex(Interp,List,f+1,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&lon);
+         if (Tcl_GetDoubleFromObj(Interp,obj,&lon)==TCL_ERROR) {
+            return(TCL_ERROR);
+         }
          Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
          OGR_G_AddPoint_2D(pick,x,y);
       }
