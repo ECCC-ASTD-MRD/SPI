@@ -20,9 +20,8 @@ YACCFLAGS =
 
 # Start of Makefile
 
-OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o \
-	Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o \
-	gpc.o tclUtils.o Vertex.o \
+OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
+	Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o Vertex.o \
 	GeoTex.o GeoRef.o GeoRef_RPN.o GeoRef_WKT.o GeoRef_RDR.o \
 	tclVector.o tclDataSpec.o tclData.o tclCMap.o tclTraj.o tclObs.o \
 	tclFSTD.o FSTD_Field.o FSTD_Export.o \
