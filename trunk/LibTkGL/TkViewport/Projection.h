@@ -45,10 +45,6 @@
 
 #define MAXGEOSEG   2000                              /*Nombre maximal de segment par boite*/
 
-#ifndef ABS
-#define ABS(val)                  ((val)<0.0?-(val):(val))
-#endif
-
 #define ZM(P,H)     (1.0+H*P->Params->Scale*P->Params->ZFactor) /*Projection de l'elevation*/
 
 #define CYLCHECK(D,V)             (V=(D>2.0f)?V-4.0f:(D<-2.0f)?V+4.0f:V)
