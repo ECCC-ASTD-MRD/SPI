@@ -9,7 +9,7 @@ include ../Makefile.$(ARCH)
 GRAMMAR = Data_Calc
 
 INCLUDES  = $(INCLUDE)
-LIBS      = -L$(INSTALL_PATH)/Shared/$(ARCH) -L$(EER_PATH)/lib/$(ARCH) -leerUtils -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -lc
+LIBS      = -L$(INSTALL_PATH)/Shared/$(ARCH) -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -L$(EER_PATH)/lib/$(ARCH) -leerUtils -lc
 LIBTK     = -L$(TK_PATH)/lib -ltk8.4
 LIBTCL    = -L$(TCL_PATH)/lib -ltcl8.4
 LDFLAGS   = $(LIBS) $(LIBTCL) $(LIBTK) --warn-once --no-undefined 

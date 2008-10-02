@@ -874,7 +874,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case SORT:
          if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fldlist");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return Data_DefSort(Interp,Objv[2]);
          break;
@@ -882,12 +882,12 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case CONFIGURE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
          if (!field0) {
             Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          if (!field0->Stat)

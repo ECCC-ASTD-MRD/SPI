@@ -37,7 +37,7 @@
 
 #ifdef LNK_FSTD
 #include "rpnmacros.h"
-#include "eztile.h"
+#include "EZTile.h"
 #endif
 
 #include "tclData.h"
