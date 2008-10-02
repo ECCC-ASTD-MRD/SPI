@@ -510,7 +510,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                 if (ni!=Field->Def->NI || nj!=Field->Def->NJ || nk!=Field->Def->NK) {
                    idx=-1;
                 }
-           } else {
+            } else {
                idx=-1;
             }
             if (idx<0) {
@@ -2184,7 +2184,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
       fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
       FSTD_FileUnset(Interp,head->FID);
       EZUnLock_RPNField();
-      return 0;
+      return(0);
    }
 
 #ifdef DEBUG
@@ -2225,7 +2225,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
          fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
          FSTD_FileUnset(Interp,head->FID);
          EZUnLock_RPNField();
-         return 0;
+         return(0);
       }
    }
 
