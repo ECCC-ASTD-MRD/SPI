@@ -122,7 +122,7 @@ proc SATDATA::PopUp { X Y } {
       menu .satdatapopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .satdatapopup add command -label "SATDATA"  -command "" -background yellow -activebackground yellow
          .satdatapopup add command -label [lindex $Lbl(Result) $GDefs(Lang)] \
-            -command { SPI::FileOpen NEW FieldBox "$Exp::Data(Name) (SATDATA)" "" $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData }
+            -command { SPI::FileOpen NEW FieldBox "$Exp::Data(Name) (SATDATA)" "" [Exp::Path]/SatData }
          .satdatapopup add separator
          .satdatapopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "SATDATA::Suppress"
    }
