@@ -106,6 +106,13 @@ proc Meteo::Tree { } {
          Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/dbase/prog/chronos 00 *} "{chronos 0}"
          Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/dbase/prog/chronos 12 *} "{chronos 0}"
 
+   Tree::Add Meteo::Data(Tree) {par 0}
+      Tree::Add Meteo::Data(Tree) {progpar 0} "{par 0}"
+         Tree::Add Meteo::Data(Tree) {mach 0}  "{progpar 0}"
+            Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/par/dbase/prog/mach 00 *} "{mach 0}"
+            Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/par/dbase/prog/mach 12 *} "{mach 0}"
+
+
    Tree::Add Meteo::Data(Tree) {anal 0}
       Tree::Add Meteo::Data(Tree) {glbeta1 fstdfield /data/gridpt/dbase/anal/glbeta1 * *_???}  "{anal 0}"
       Tree::Add Meteo::Data(Tree) {glbeta2 fstdfield /data/gridpt/dbase/anal/glbeta2 * *_???}  "{anal 0}"
