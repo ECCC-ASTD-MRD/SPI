@@ -14,6 +14,8 @@
 # Fonctions:
 #    Dialog::CreateDefault      { Master Loc Width Title Text Bitmap Default args }
 #    Dialog::CreateInfo         { Master Text }
+#    Dialog::CreateWait         { Master Text { Percent 0 } }
+#    Dialog::DestroyWait        { }
 #    Dialog::CreateError        { Master Text Lang }
 #    Dialog::CreateErrorListing { Master Text List Lang }
 #    Dialog::CreateMessage      { Master Text }
@@ -293,6 +295,64 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
       update idletasks
       grab .dlginfo
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::CreateWait>
+# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Afficher un message d'information sur un processue en cours.
+#
+# Parametres :
+#    <Master>  : Fenetre toplevel auquel l'aide est reliee.
+#    <Text>    : Texte a afficher.
+#    <Percent> : Pourcentage d'execution.
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Dialog::CreateWait { Master Text { Percent 1000 } } {
+
+   if { [winfo exists .dlgwait]==1 } {
+
+      set oldtext [lindex [.dlgwait.txt configure -text] 4]
+      .dlgwait.txt configure -text "$oldtext\n\n$Text"
+
+   } else {
+
+      toplevel .dlgwait
+      wm overrideredirect .dlgwait true
+      if { [winfo exists $Master] } {
+         wm transient .dlgwait $Master
+         wm geom .dlgwait +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+      }
+
+      message .dlgwait.txt -aspect 1000 -text $Text -relief raised -bd 1
+      pack .dlgwait.txt -padx 20 -pady 20
+
+      grab .dlgwait
+   }
+   update idletasks
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::CreateWait>
+# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Detruit le message d'information sur un processue en cours.
+#
+# Parametres :
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Dialog::DestroyWait { } {
+
+   destroy .dlgwait
 }
 
 #----------------------------------------------------------------------------
