@@ -803,6 +803,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
 
       if { [llength $data] } {
          set obj [lindex $data 1]
+         set id ""
          switch [lindex $data 0] {
             "trajectory"  { set tag    [lindex $data 2]
                             set parcel [trajectory define $obj -PARCEL $tag]
@@ -831,9 +832,11 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }
          }
-         lappend list [list $id {} {} $vals]
-         catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
-         catch { set Page::Data(Altitude) [format "%.2f" [lindex $coord 2]] }
+         if { $id!="" } {
+            lappend list [list $id {} {} $vals]
+            catch { set Page::Data(Coord) [Convert::FormatCoord [lindex $coord 0] [lindex $coord 1] $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
+            catch { set Page::Data(Altitude) [format "%.2f" [lindex $coord 2]] }
+         }
       }
    }
    Page::CursorInfo $Page $X $Y $info $graph
