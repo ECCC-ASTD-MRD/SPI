@@ -1260,12 +1260,11 @@ FSTD_File* FSTD_FileGet(Tcl_Interp *Interp,char *Id){
 int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
    int ok=0,rem=0;
-   char *filename;
 
    if (!File)
       return(-1);
 
-   if (File->Name[strlen(File->Name)-1]==':') {
+  if (index(File->Name,':') && File->Name[0]!=':') {
       rem=1;
    }
 
@@ -1273,26 +1272,22 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
    if (!File->Open || File->Open==-1) {
 #ifdef LNK_FSTD
 
-      /*RPN's c_fnom() function changes the path we give it so make a copy of it before and use the copy*/
-      filename=strdup(File->Name);
-
       if (File->Mode=='w' ||  File->Mode=='W') {                /*Write Mode*/
           if (rem)
-            ok=c_fnom(&File->Id,filename,"STD+RND+R/W+REMOTE",0);
+            ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W+REMOTE",0);
          else
-            ok=c_fnom(&File->Id,filename,"STD+RND+R/W",0);
+            ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W",0);
       } else if (File->Mode=='a' ||  File->Mode=='A') {         /*Append Mode*/
          if (rem)
-            ok=c_fnom(&File->Id,filename,"STD+RND+OLD+R/W+REMOTE",0);
+            ok=c_fnom(&File->Id,File->Name,"STD+RND+OLD+R/W+REMOTE",0);
          else
-            ok=c_fnom(&File->Id,filename,"STD+RND+OLD+R/W",0);
+            ok=c_fnom(&File->Id,File->Name,"STD+RND+OLD+R/W",0);
       } else {                                                  /*ReadOnly Mode*/
          if (rem) {
-            ok=c_fnom(&File->Id,filename,"STD+RND+R/O+REMOTE",0);
+            ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O+REMOTE",0);
          } else
-            ok=c_fnom(&File->Id,filename,"STD+RND+R/O",0);
+            ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O",0);
       }
-      free(filename);
 
       if (ok<0) {
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed)",(char *)NULL);

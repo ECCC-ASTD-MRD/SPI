@@ -1738,37 +1738,37 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-                      break;
+                         break;
                      case 4012:  mm+=bufr_descriptor_get_ivalue(bcv);
                          if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-                      break;
+                         break;
                      case 4013:  dd+=bufr_descriptor_get_ivalue(bcv);
                          if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-                      break;
+                         break;
                      case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);
                          if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-                      break;
+                         break;
                      case 4015:  mn+=bufr_descriptor_get_ivalue(bcv);
                          if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-                      break;
+                         break;
                      case 4016:  ss+=bufr_descriptor_get_ivalue(bcv);
                          if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
-                      break;
+                         break;
                  }
 
                   /* If there are Associated Fields */
