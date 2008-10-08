@@ -972,19 +972,18 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
          case VALTYPE_INT8 :
          case VALTYPE_INT32 :
-            if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
-               bufr_descriptor_set_ivalue(BCV,(int)dval);
-            }
-            break;
-
          case VALTYPE_INT64 :
-            if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
+            if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
+               bufr_descriptor_set_ivalue(BCV,-1);
+            } else if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                bufr_descriptor_set_ivalue(BCV,(int)dval);
             }
             break;
 
          case VALTYPE_FLT64  :
-            if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
+            if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
+               bufr_descriptor_set_dvalue(BCV,bufr_get_max_double());
+            } else if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                if (!bufr_is_missing_double(dval)) {
                   bufr_descriptor_set_dvalue(BCV,dval);
                }
@@ -992,7 +991,9 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
             break;
 
          case VALTYPE_FLT32  :
-            if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
+            if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
+               bufr_descriptor_set_fvalue(BCV,bufr_get_max_float());
+            } else if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                if (!bufr_is_missing_float(dval)) {
                   bufr_descriptor_set_fvalue(BCV,dval);
                }
