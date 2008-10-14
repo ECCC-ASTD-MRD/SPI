@@ -27,6 +27,40 @@ foreach format [glob $GDefs(Dir)/Apps/Tools/Writer/Types/*.tcl] {
    lappend Writer::Data(Types)  [file rootname [file tail $format]]
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Writer::AutoSave>
+# Creation : Octobre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Sauvegarder automatique le message
+#
+# Parametres :
+#   <Type>   : Type de message
+#   <Pad>    : Onglet du message
+#   <Delay>  : Delai de sauvegarde
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::AutoSave { Type Pad { Delay 0 } } {
+   global   GDefs
+   variable Data
+
+   if { $Type!="" } {
+      if { [winfo exists $Pad] } {
+         Writer::${Type}::Write $Pad -1
+
+         if { $Delay } {
+            after $Delay [list Writer::AutoSave $Type $Pad $Delay]
+         }
+      } else {
+         catch { file delete $GDefs(DirMsg)/$Type/$Data(AutoSaveFile) }
+      }
+   }
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Writer::Close>
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
@@ -41,10 +75,10 @@ foreach format [glob $GDefs(Dir)/Apps/Tools/Writer/Types/*.tcl] {
 #-------------------------------------------------------------------------------
 
 proc Writer::Close { } {
+   global   GDefs
    variable Data
 
    #----- Liberer l'allocation des champs
-
    if { [lindex [split $Page::Data(ToolMode) ":"] 0]=="Writer" } {
       SPI::ToolMode SPI Zoom
    }
@@ -54,6 +88,11 @@ proc Writer::Close { } {
    }
 
    set Data(Active) 0
+
+   #----- Supprimer les autosave
+   foreach type $Writer::Data(Types) {
+      catch { file delete $GDefs(DirMsg)/$type/$Data(AutoSaveFile) }
+   }
    destroy .writer
 
    if { !$SPI::Param(Window) } { SPI::Quit }
@@ -176,6 +215,8 @@ proc Writer::PadNew { Type Mode Layout File } {
    }
 
    TabFrame::Select .writer.pad [TabFrame::Current .writer.pad]
+
+   Writer::AutoSave $Type $Data(Pad) $Data(AutoSaveDelay)
 }
 
 #----------------------------------------------------------------------------

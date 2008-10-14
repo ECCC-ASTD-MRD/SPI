@@ -15,6 +15,7 @@
 #===============================================================================
 
 namespace eval Writer {
+   global   env
    global   GDefs
    variable Data
    variable Param
@@ -33,6 +34,9 @@ namespace eval Writer {
    set Data(Canvas) ""
    set Data(Frame)  ""
    set Data(VP)     ""
+
+   set Data(AutoSaveFile)  autosave_$env(USER)_[clock format [clock seconds] -format "%Y%m%d.%H%MZ" -gmt True].msg
+   set Data(AutoSaveDelay) 300000
 
    set Data(Types)  { }
    set Data(Type)   FVCN
