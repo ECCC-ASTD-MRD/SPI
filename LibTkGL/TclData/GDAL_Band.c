@@ -536,23 +536,31 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
          idx=FIDX2D(Def,X0,Y0);
 
          /* If we are computing areas */
-         if (Area>0.0){
-            if (Type=='A') {
-//               inter=OGR_G_Intersection(Geom,Def->Poly);
-               inter=GPC_OnOGR(GPC_INT,Geom,Def->Poly);
-               if (Mode=='C' || Mode=='N') {
-                  dp=OGR_G_GetArea(inter)/Area;
-               } else if (Mode=='A') {
-                  dp=OGR_G_GetArea(inter);
-               }
-            } else {
-//               inter=OGR_G_Intersection(Geom,Def->Poly);
-               inter=GPC_Clip(Geom,Def->Poly);
-               if (Mode=='C' || Mode=='N') {
-                  dp=GPC_Length(inter)/Area;
-               } else if (Mode=='A') {
-                  dp=GPC_Length(inter);
-               }
+         if (Area>0.0) {
+            switch(Type) {
+               case 'A' :
+//                  inter=OGR_G_Intersection(Geom,Def->Poly);
+                  inter=GPC_OnOGR(GPC_INT,Geom,Def->Poly);
+                  if (Mode=='C' || Mode=='N') {
+                     dp=OGR_G_GetArea(inter)/Area;
+                  } else if (Mode=='A') {
+                     dp=OGR_G_GetArea(inter);
+                  }
+                  break;
+
+               case 'L':
+//                  inter=OGR_G_Intersection(Geom,Def->Poly);
+                  inter=GPC_Clip(Geom,Def->Poly);
+                  if (Mode=='C' || Mode=='N') {
+                     dp=GPC_Length(inter)/Area;
+                  } else if (Mode=='A') {
+                     dp=GPC_Length(inter);
+                  }
+                  break;
+
+               case 'P':
+                  dp=1.0;
+                  break;
             }
             Def_Get(Def,0,idx,val);
             if (isnan(val) || val==Def->NoData)
@@ -857,10 +865,10 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          } else {
 
             if (Mode=='C' || Mode=='A' || Mode=='N') {
-               if (Type=='A') {
-                  area=OGR_G_GetArea(geom);
-               } else {
-                  area=GPC_Length(geom);
+               switch(Type) {
+                  case 'A': area=OGR_G_GetArea(geom); break;
+                  case 'L': area=GPC_Length(geom); break;
+                  case 'P': area=1.0; break;
                }
             } else {
                area=0.0;
