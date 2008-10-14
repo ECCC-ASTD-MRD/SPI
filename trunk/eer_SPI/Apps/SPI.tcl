@@ -1390,6 +1390,10 @@ proc SPI::IcoDraw { Frame args } {
    variable Data
    variable Ico
 
+   if { ![winfo exists $Frame.page.canvas] } {
+      return
+   }
+
    eval $Frame.page.canvas delete $Ico(Groups)
 
    foreach group $Ico(Groups) {
