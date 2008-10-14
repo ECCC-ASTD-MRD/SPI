@@ -213,15 +213,15 @@ proc Kriger::Grid { Coords } {
             #----- Create new grid
 
             fstdfield create KRIGGRID $ni $nj 1 Float32
-            fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -GRTYP V -ETIKET KRIG_GRID -IP1 12001 -IG1 1 -IG2 1 -IG3 1 -IG4 0
+            fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -GRTYP V -ETIKET KRIG_GRID -IP1 12001 -IG1 100 -IG2 100 -IG3 100 -IG4 0
             fstdfield stats KRIGGRID -leveltype MASL -levels $elevs -grid $coords
 
             fstdfield create KRIGTIC $ni 1 1 Float32
-            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L -ETIKET KRIG_GRID -IP1 1 -IP2 1 -IP3 1
+            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L -ETIKET KRIG_GRID -IP1 100 -IP2 100 -IP3 100
             fstdfield create KRIGTAC 1 $ni 1 Float32
-            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L -ETIKET KRIG_GRID -IP1 1 -IP2 1 -IP3 1
+            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L -ETIKET KRIG_GRID -IP1 100 -IP2 100 -IP3 100
             fstdfield create KRIGTZH $nj 1 1 Float32
-            fstdfield define KRIGTZH -NOMVAR ZH -TYPVAR X -GRTYP X -ETIKET KRIG_GRID -IP1 1 -IP2 1 -IP3 1
+            fstdfield define KRIGTZH -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET KRIG_GRID -IP1 100 -IP2 100 -IP3 100
             fstdfield define KRIGTZH -DATA [list $elevs]
 
             for { set i 0 } { $i < $ni } { incr i } {
@@ -317,7 +317,7 @@ proc Kriger::Save { File } {
                     fstdfield write KRIGTAC KRIGFILE -32 True
          }
       }
-      fstdfile close KRIGERFILE
+      fstdfile close KRIGFILE
    }
 }
 
