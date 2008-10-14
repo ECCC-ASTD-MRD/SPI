@@ -492,7 +492,7 @@ proc FieldBox::FileOpen { No File } {
    foreach file $File {
 
       #----- Le fichier existe il ???
-      if { ![file exists $file] && [string index $file end]!=":" } {
+      if { ![file exists $file] && [string first : $file]==-1 } {
          Dialog::CreateError .fieldbox$No "[lindex $Error(Exist) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
          continue
       }
