@@ -22,7 +22,7 @@
 #   Info::Path    { Items Info }
 #   Info::Read    { Id }
 #   Info::Request { Path }
-#   Info::Set     { Path Info }
+#   Info::Set     { Path Info { State "" }}
 #   Info::Strip   { Info Idx }
 #
 # Remarques :
@@ -517,6 +517,7 @@ proc Info::Request { Path } {
 # Parametres  :
 #    <Path>   : Path complet du fichier pool
 #    <Info>   : Ligne de description de la simulation
+#    <State>  : Etat de la simulation
 #
 # Retour:
 #
@@ -525,13 +526,19 @@ proc Info::Request { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Set { Path Info } {
+proc Info::Set { Path Info { State "" } } {
+   global GDefs
+   variable Lbl
+
+   set list [split $Info :]
 
    if { [file exists $Path] } {
-      set list [split $Info :]
-
       file rename -force $Path $Path.old
       catch { exec grep -v "^[lindex $list 0]:.*:[join [lrange $list 2 end] :]" $Path.old > $Path }
+   }
+
+   if { $State!="" } {
+      set Info "[lindex $list 0]:[lindex $Lbl(State) $GDefs(Lang)]=${State}:[join [lrange $list 2 end] :]"
    }
    exec echo $Info >> $Path
 }
