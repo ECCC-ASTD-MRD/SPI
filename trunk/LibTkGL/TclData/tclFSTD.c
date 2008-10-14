@@ -734,8 +734,8 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                Tcl_WrongNumArgs(Interp,2,Objv,"field layer type [field]");
                return TCL_ERROR;
             }
-            if (Tcl_GetString(Objv[4])[0]!='F' && Tcl_GetString(Objv[4])[0]!='C' && Tcl_GetString(Objv[4])[0]!='A' && Tcl_GetString(Objv[4])[0]!='W' && Tcl_GetString(Objv[4])[0]!='I' && Tcl_GetString(Objv[4])[0]!='L') {
-               Tcl_AppendResult(Interp,"\n   FSTD_FieldCmd : invalid rasterization type, must be, FAST, WITHIN, INTERSECT, CONSERVATIVE, NORMALIZED_CONSERVATIVE, ALIASED, LENGTH_CONSERVATIVE, LENGTH_NORMALIZED_CONSERVATIVE, or LENGTH_ALIASED",(char*)NULL);
+            if (Tcl_GetString(Objv[4])[0]!='F' && Tcl_GetString(Objv[4])[0]!='C' && Tcl_GetString(Objv[4])[0]!='A' && Tcl_GetString(Objv[4])[0]!='W' && Tcl_GetString(Objv[4])[0]!='I' && Tcl_GetString(Objv[4])[0]!='L' && Tcl_GetString(Objv[4])[0]!='P') {
+               Tcl_AppendResult(Interp,"\n   FSTD_FieldCmd : invalid rasterization type, must be, FAST, WITHIN, INTERSECT, CONSERVATIVE, NORMALIZED_CONSERVATIVE, ALIASED, POINT_CONSERVATIVE, LENGTH_CONSERVATIVE, LENGTH_NORMALIZED_CONSERVATIVE, or LENGTH_ALIASED",(char*)NULL);
                return(TCL_ERROR);
             }
             field=NULL;
@@ -751,7 +751,11 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             if (imode=='L') {
                imode=Tcl_GetString(Objv[4])[7];
                itype='L';
+            } else if (imode=='P') {
+               imode=Tcl_GetString(Objv[4])[6];
+               itype='P';
             }
+
             return(Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x));
          }
 
