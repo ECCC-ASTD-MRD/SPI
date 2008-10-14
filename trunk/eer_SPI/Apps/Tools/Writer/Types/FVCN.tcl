@@ -40,19 +40,16 @@ namespace eval Writer::FVCN {
    set Data(Next2)  "NO LATHER THAN"
    set Data(Next3)  "NO FURTHER ADVISORIES"
 
-   set Data(NoVA0)   "VA NOT IDENTIFIABLE FROM SATELLITE DATA"
-   set Data(NoVA6)   "NO VA EXPECTED"
+   set Data(NoVA00)  "VA NOT IDENTIFIABLE FROM SATELLITE DATA"
+   set Data(NoVA06)  "NO VA EXPECTED"
    set Data(NoVA12)  "NO VA EXPECTED"
    set Data(NoVA18)  "NO VA EXPECTED"
 
    set Data(OBS)    "OBS VA CLD:"
    set Data(EST)    "EST VA CLD:"
-   set Data(FCST6)  "FCST VA CLD  +6 HR:"
+   set Data(FCST06) "FCST VA CLD  +6 HR:"
    set Data(FCST12) "FCST VA CLD +12 HR:"
    set Data(FCST18) "FCST VA CLD +18 HR:"
-   set Data(LVL1)   "SFC/FL200"
-   set Data(LVL2)   "FL200/FL350"
-   set Data(LVL3)   "FL350/FL600"
 
    set Data(Rem1)  "RESPONSIBILITY FOR THIS EVENT HAS BEEN TRANSFERRED BY THE"
    set Data(Rem2)  "RESPONSIBILITY FOR THIS EVENT IS BEING TRANSFERRED TO THE"
@@ -73,8 +70,8 @@ namespace eval Writer::FVCN {
    set Data(WWW)    "VA GRAPHICAL PRODUCT AVAILABLE AT\nHTTP://METEO.EC.GC.CA/EER (ALL LOWER CASE)"
    set Data(Ret)    "PLEASE SEE FV____ DDHHMM ISSUED BY ______ VAAC WHICH DESCRIBES CONDITIONS OVER OR NEAR THE MONTREAL VAAC AREA OF RESPONSIBILITY"
 
-   set Data(Colors)   { red green blue }
-   set Data(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft04.xbm @$GDefs(Dir)/Resources/Bitmap/raydiagright04.xbm @$GDefs(Dir)/Resources/Bitmap/rayver04.xbm"
+   set Data(Colors)   { blue green red black }
+   set Data(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft04.xbm @$GDefs(Dir)/Resources/Bitmap/raydiagright04.xbm @$GDefs(Dir)/Resources/Bitmap/rayver04.xbm @$GDefs(Dir)/Resources/Bitmap/rayhor04.xbm"
    set Data(Delay)    60000
    set Data(Seconds)  [clock seconds]
 }
@@ -108,8 +105,8 @@ proc Writer::FVCN::New { Pad Mode } {
       Writer::FVCN::GraphInit $Pad
    }
 
-   Writer::FVCN::AshUpdate $Pad 0
-   Writer::FVCN::AshUpdate $Pad 6
+   Writer::FVCN::AshUpdate $Pad 00
+   Writer::FVCN::AshUpdate $Pad 06
    Writer::FVCN::AshUpdate $Pad 12
    Writer::FVCN::AshUpdate $Pad 18
 
@@ -150,7 +147,6 @@ proc Writer::FVCN::Init { Pad } {
    set Data(Advisory$Pad) ""
    set Data(Info$Pad)     ""
    set Data(Code$Pad)     UNKNOWN
-   set Data(Date0$Pad)    DD/HHMMZ
    set Data(Next$Pad)     ""
    set Data(Year$Pad)    0
    set Data(Obs$Pad)     $Data(OBS)
@@ -160,36 +156,21 @@ proc Writer::FVCN::Init { Pad } {
 
    #----- Regions de cendres par niveaux et heures
 
-   set Data(Level$Pad)   L1
-   set Data(Hour$Pad)    0
+   set Data(Level$Pad)   L0
+   set Data(Hour$Pad)    00
 
-   set Data(FCST0$Pad)   ""
-   set Data(L10$Pad)     ""
-   set Data(L20$Pad)     ""
-   set Data(L30$Pad)     ""
-
-   set Data(FCST6$Pad)   ""
-   set Data(L16$Pad)     ""
-   set Data(L26$Pad)     ""
-   set Data(L36$Pad)     ""
-
-   set Data(FCST12$Pad)  ""
-   set Data(L112$Pad)    ""
-   set Data(L212$Pad)    ""
-   set Data(L312$Pad)    ""
-
-   set Data(FCST18$Pad)  ""
-   set Data(L118$Pad)    ""
-   set Data(L218$Pad)    ""
-   set Data(L318$Pad)    ""
+   foreach h { 00 06 12 18 } {
+      set Data(FCST$h$Pad)  ""
+      set Data(L0$h$Pad)    ""
+      set Data(L1$h$Pad)    ""
+      set Data(L2$h$Pad)    ""
+      set Data(LVL$h)       { "" "" "" }
+      set Data(HAsh$h$Pad)  1
+   }
 
    set Data(HVAAC$Pad)    1
    set Data(HInfo$Pad)    1
    set Data(HDetails$Pad) 1
-   set Data(HAsh0$Pad)    1
-   set Data(HAsh6$Pad)    1
-   set Data(HAsh12$Pad)   1
-   set Data(HAsh18$Pad)   1
    set Data(HNext$Pad)    1
    set Data(HRemarks$Pad) 1
 
@@ -229,8 +210,8 @@ proc Writer::FVCN::SetDate { Pad { Secs 0 } } {
    if { !$Secs } {
       set Secs [clock seconds]
    }
-   set Data(Date0$Pad)   [clock format $Secs -format "%d/%H%MZ" -gmt True]
-   set Data(Date6$Pad)   [clock format [expr $Secs+3600*6] -format "%d/%H%MZ" -gmt True]
+   set Data(Date00$Pad)  [clock format $Secs -format "%d/%H%MZ" -gmt True]
+   set Data(Date06$Pad)  [clock format [expr $Secs+3600*6] -format "%d/%H%MZ" -gmt True]
    set Data(Date12$Pad)  [clock format [expr $Secs+3600*12] -format "%d/%H%MZ" -gmt True]
    set Data(Date18$Pad)  [clock format [expr $Secs+3600*18] -format "%d/%H%MZ" -gmt True]
 
@@ -279,13 +260,13 @@ proc Writer::FVCN::Layout { Frame } {
    set Viewport::Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
    set Viewport::Map(CoordNum)    2           ;#Numerotation des latlon
 
-   set Data(VP0$Frame)  [Viewport::Create $Frame 5     5 500 270 False False]
-   set Data(VP6$Frame)  [Viewport::Create $Frame 510   5 500 270 False False]
+   set Data(VP00$Frame) [Viewport::Create $Frame 5     5 500 270 False False]
+   set Data(VP06$Frame) [Viewport::Create $Frame 510   5 500 270 False False]
    set Data(VP12$Frame) [Viewport::Create $Frame 5   280 500 270 False False]
    set Data(VP18$Frame) [Viewport::Create $Frame 510 280 500 270 False False]
 
-   $Frame.page.canvas create text    255 140 -text $Data(NoVA0)  -tag NOVA0  -font XFont20
-   $Frame.page.canvas create text    760 140 -text $Data(NoVA6)  -tag NOVA6  -font XFont20
+   $Frame.page.canvas create text    255 140 -text $Data(NoVA00) -tag NOVA00  -font XFont20
+   $Frame.page.canvas create text    760 140 -text $Data(NoVA06) -tag NOVA06  -font XFont20
    $Frame.page.canvas create text    230 415 -text $Data(NoVA12) -tag NOVA12 -font XFont20
    $Frame.page.canvas create text    760 415 -text $Data(NoVA18) -tag NOVA18 -font XFont20
 
@@ -294,21 +275,21 @@ proc Writer::FVCN::Layout { Frame } {
    $Frame.page.canvas create rectangle 5   280 210 296 -fill white -outline black -width 0.5
    $Frame.page.canvas create rectangle 510 280 715 296 -fill white -outline black -width 0.5
 
-   $Frame.page.canvas create text    9     7 -text "Date 0" -anchor nw -tag DATE0 -font XFont12
-   $Frame.page.canvas create text    514   7 -text "Date 1" -anchor nw -tag DATE6 -font XFont12
+   $Frame.page.canvas create text    9     7 -text "Date 0" -anchor nw -tag DATE00 -font XFont12
+   $Frame.page.canvas create text    514   7 -text "Date 1" -anchor nw -tag DATE06 -font XFont12
    $Frame.page.canvas create text    9   282 -text "Date 2" -anchor nw -tag DATE12 -font XFont12
    $Frame.page.canvas create text    514 282 -text "Date 3" -anchor nw -tag DATE18 -font XFont12
 
    $Frame.page.canvas create rectangle 5 555 1010 670 -fill white -outline black -width 0.5
-   $Frame.page.canvas create text   10 560 -text "Col 1" -anchor nw -tag COL1 -font XFont12
-   $Frame.page.canvas create text  455 560 -text "Col 2" -anchor n  -tag COL2 -font XFont12
-   $Frame.page.canvas create text 1005 560 -text "Col 3" -anchor ne -tag COL3 -font XFont12
+   $Frame.page.canvas create text   10 560 -text "Col 1" -anchor nw -tag COL0 -font XFont12
+   $Frame.page.canvas create text  455 560 -text "Col 2" -anchor n  -tag COL1 -font XFont12
+   $Frame.page.canvas create text 1005 560 -text "Col 3" -anchor ne -tag COL2 -font XFont12
 
    set dx 320
    set dy 665
-   foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Writer::FVCN::Data(Stipples) {
+   foreach no { 0 1 2 }  {
       $Frame.page.canvas create text      $dx $dy -text "" -anchor se -tag LVL$no -font XFont12
-      $Frame.page.canvas create rectangle [expr $dx+5] [expr $dy-20] [expr $dx+45] $dy -fill $color -outline $color -stipple $stipple -width 2
+      $Frame.page.canvas create rectangle [expr $dx+5] [expr $dy-20] [expr $dx+45] $dy -fill "" -outline "" -stipple "" -width 2 -tag CVL$no
       incr dx 140
    }
 }
@@ -367,43 +348,61 @@ proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
       #----- Update text
 
       set text  "VA ADVISORY\n[format "%-12s" DTG:] $Data(Issued$Pad)\n[format "%-12s" VAAC:] $Data(VAAC)\n[format "%-12s" "VOLCANO:"] $Data(Site$Pad)\n[format "%-12s" "PSN:"] $Data(Location$Pad)\n[format "%-12s" "AREA:"] $Data(Area$Pad)\n[format "%-12s" "SUMMIT ELEV:"] $Data(Elev$Pad)\n[format "%-12s" "ADVISORY NR:"] $Data(Advisory$Pad)"
-      $Data(Page$Pad).page.canvas itemconfigure COL1 -text $text
+      $Data(Page$Pad).page.canvas itemconfigure COL0 -text $text
 
       set text1 [Writer::BlocFormat "INFO SOURCE:" [Writer::TextExtract word 30 "" $Pad.info] 21]
       set text2 "[format "%-21s" "AVIATION COLOUR CODE:"] $Data(Code$Pad)"
       set text3 [Writer::BlocFormat "ERUPTION DETAILS:" [Writer::TextExtract word 30 "" $Pad.details] 21]
 
-      $Data(Page$Pad).page.canvas itemconfigure COL2 -text $text1\n$text2\n$text3
+      $Data(Page$Pad).page.canvas itemconfigure COL1 -text $text1\n$text2\n$text3
 
       set text1 [Writer::BlocFormat "RMK:" [Writer::TextExtract char 35 "" $Pad.remarks] 13]
       set text2 [Writer::BlocFormat "NXT ADVISORY:" [Writer::TextExtract char 35 "" $Pad.next] 13]
 
-      $Data(Page$Pad).page.canvas itemconfigure COL3 -text  $text1\n$text2
+      $Data(Page$Pad).page.canvas itemconfigure COL2 -text  $text1\n$text2
+   }
+}
 
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::GraphAreaColor>
+# Creation : Mai 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Mettre a jour les couleurs pour chaque niveau
+#
+# Parametres :
+#    <Pad>   : Identificateur du pad
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::GraphAreaColor { Pad } {
+   variable Data
+
+   if { [winfo exist $Data(Page$Pad)] } {
       #----- Update Legend, We have to extract the level heights from the main FVCN
-      #----- We suppose the time steps have all the same levels so use the step with the most levels
-
-      set n 0
-      set lst {}
-      foreach h { 6 12 18 } {
-         if { [llength [set l [regexp -all -nocase -inline {([A-Z]|[0-9]){3,5}/FL+[0-9]{2,3}} [$Pad.ash$h get 0.0 end]]]]>$n } {
-            set lst $l
-            set n [llength $l]
+      #----- to dispacth the colors ans stipplings
+      set lvls {}
+      foreach h { 00 06 12 18 } {
+         set text [$Pad.ash$h get 0.0 end]
+         set l 0
+         foreach { lvl i } [regexp -all -nocase -inline {([A-Z]|[0-9]){3,5}/FL+[0-9]{2,3} [NS][0-9]{4}} $text] {
+            if { [lsearch -exact $lvls [set lvl [lindex $lvl 0]]]==-1 } {
+               lappend lvls $lvl
+            }
+            lset Data(LVL$h) $l $lvl
+            incr l
          }
       }
 
-      set n 1
-      set lvl1 ""
-      set lvl2 ""
-      set lvl3 ""
-      foreach { str i } $lst {
-         set lvl$n $str
-         incr n
+      set i 0
+      foreach lvl $lvls {
+         set Data(Color$lvl) [lindex $Data(Colors) $i]
+         set Data(Stipple$lvl) [lindex $Data(Stipples) $i]
+         $Data(Page$Pad).page.canvas itemconfigure LVL$i -text $lvl
+         $Data(Page$Pad).page.canvas itemconfigure CVL$i -fill $Data(Color$lvl) -outline $Data(Color$lvl) -stipple $Data(Stipple$lvl)
+         incr i
       }
-
-      $Data(Page$Pad).page.canvas itemconfigure LVL1 -text $lvl1
-      $Data(Page$Pad).page.canvas itemconfigure LVL2 -text $lvl2
-      $Data(Page$Pad).page.canvas itemconfigure LVL3 -text $lvl3
    }
 }
 
@@ -463,7 +462,7 @@ proc Writer::FVCN::Open { Pad File } {
 
    Writer::FVCN::GraphUpdate $Pad False
    Writer::FVCN::UpdateItems $Writer::Data(Frame)
- }
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <Writer::FVCN::Correct>
@@ -621,9 +620,9 @@ proc Writer::FVCN::Format { Pad Mode } {
 
       #----- Ash cloud
 
-      puts $f "[format "%-21s" "OBS VA DTG:"] $Data(Date0$Pad)"
-      puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 47 "" $Pad.ash0]]
-      puts $f [Writer::BlocFormat $Data(FCST6)   [Writer::TextExtract char 47 "" $Pad.ash6]]
+      puts $f "[format "%-21s" "OBS VA DTG:"] $Data(Date00$Pad)"
+      puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 47 "" $Pad.ash00]]
+      puts $f [Writer::BlocFormat $Data(FCST06)   [Writer::TextExtract char 47 "" $Pad.ash06]]
       puts $f [Writer::BlocFormat $Data(FCST12)  [Writer::TextExtract char 47 ""  $Pad.ash12]]
       puts $f [Writer::BlocFormat $Data(FCST18)  [Writer::TextExtract char 47 ""  $Pad.ash18]]
 
@@ -692,21 +691,25 @@ proc Writer::FVCN::FormatCoord { Lat Lon } {
 
 proc Writer::FVCN::UnFormatCoord { Coord } {
 
-   set la [lindex $Coord 0]
-   set lo [lindex $Coord 1]
+   if { [llength $Coord]!=2 } {
+      return "0.0 0.0"
+   } else {
+      set la [lindex $Coord 0]
+      set lo [lindex $Coord 1]
 
-   set lat [Convert::Minute2Decimal "[string range $la 1 2] [string range $la 3 4]"]
-   set lon [Convert::Minute2Decimal "[string range $lo 1 3] [string range $lo 4 5]"]
+      set lat [Convert::Minute2Decimal "[string range $la 1 2] [string range $la 3 4]"]
+      set lon [Convert::Minute2Decimal "[string range $lo 1 3] [string range $lo 4 5]"]
 
-   if { [string index $la 0]=="S" } {
-      set lat [expr -$lat]
+      if { [string index $la 0]=="S" } {
+         set lat [expr -$lat]
+      }
+
+      if { [string index $lo 0]=="W" } {
+         set lon [expr -$lon]
+      }
+
+      return "$lat $lon"
    }
-
-   if { [string index $lo 0]=="W" } {
-      set lon [expr -$lon]
-   }
-
-   return "$lat $lon"
 }
 
 #----------------------------------------------------------------------------
@@ -920,8 +923,8 @@ proc Writer::FVCN::Clear { Pad } {
 
    destroy $Pad.fvcn $Pad.code $Pad.volcano $Pad.advisory $Pad.issued $Pad.no $Pad.date $Pad.corid
    destroy $Pad.location $Pad.area $Pad.elev $Pad.ash $Pad.vaac $Pad.details
-   destroy $Pad.info $Pad.ash0 $Pad.ash6 $Pad.ash12 $Pad.ash18 $Pad.remarks $Pad.next
-   destroy $Pad.optvolcano $Pad.optcode $Pad.optinfo $Pad.optvaac $Pad.optnext $Pad.optrem $Pad.optobs $Pad.optash0 $Pad.optash6 $Pad.optash12 $Pad.optash18
+   destroy $Pad.info $Pad.ash00 $Pad.ash06 $Pad.ash12 $Pad.ash18 $Pad.remarks $Pad.next
+   destroy $Pad.optvolcano $Pad.optcode $Pad.optinfo $Pad.optvaac $Pad.optnext $Pad.optrem $Pad.optobs $Pad.optash00 $Pad.optash06 $Pad.optash12 $Pad.optash18
 
    if { $Writer::Data(Canvas)!="" } {
       $Writer::Data(Canvas) delete FVCN
@@ -960,7 +963,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
    label $Pad.vaac     -bg white  -font XFont12 -bd 0 -anchor w -textvariable Writer::FVCN::Data(VAAC)
    label $Pad.obs      -bg white  -font XFont12 -bd 0 -anchor w -textvariable Writer::FVCN::Data(Obs$Pad)
 
-   entry $Pad.ash      -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Date0$Pad)
+   entry $Pad.ash      -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Date00$Pad)
 
    entry $Pad.location -bg gray75 -width 12 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Location$Pad)
    entry $Pad.area     -bg gray75 -width 47 -font XFont12 -bd 0 -textvariable Writer::FVCN::Data(Area$Pad)
@@ -968,8 +971,8 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    text  $Pad.details   -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
    text  $Pad.info      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
-   text  $Pad.ash0      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
-   text  $Pad.ash6      -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
+   text  $Pad.ash00     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
+   text  $Pad.ash06     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
    text  $Pad.ash12     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
    text  $Pad.ash18     -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap char
    text  $Pad.remarks   -bg gray75 -height 1 -width 47 -font XFont12 -bd 0 -wrap word
@@ -980,9 +983,10 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    bind $Pad.details <Any-KeyRelease> "set Writer::FVCN::Data(HDetails$Pad) \[Writer::TextExpand %W 47 64\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.info    <Any-KeyRelease> "set Writer::FVCN::Data(HInfo$Pad)    \[Writer::TextExpand %W 47 32\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash6    <Any-KeyRelease> "set Writer::FVCN::Data(HAsh6$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date6$Pad) \[$Pad.ash6  get 1.0 1.8\]"
-   bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date12$Pad) \[$Pad.ash12  get 1.0 1.8\]"
-   bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date18$Pad) \[$Pad.ash18  get 1.0 1.8\]"
+   bind $Pad.ash00   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh00$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash06   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh06$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date06$Pad) \[$Pad.ash06  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date12$Pad) \[$Pad.ash12  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date18$Pad) \[$Pad.ash18  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.remarks <Any-KeyRelease> "set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 [expr 256-[string length $Data(WWW)]]\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.next    <Any-KeyRelease> "set Writer::FVCN::Data(HNext$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
 
@@ -1036,11 +1040,11 @@ proc Writer::FVCN::LayoutInit { Pad } {
          $Pad.optobs.menu add radiobutton -indicatoron false -label $lbl -variable Writer::FVCN::Data(Obs$Pad) -value $lbl
       }
 
-   radiobutton $Pad.optash0 -variable Writer::FVCN::Data(Hour$Pad) -value 0 -indicatoron false -image box -selectimage check \
+   radiobutton $Pad.optash00 -variable Writer::FVCN::Data(Hour$Pad) -value 00 -indicatoron false -image box -selectimage check \
       -bg white -bd 0 -selectcolor white -width $Writer::Data(Height) -height $Writer::Data(Height) \
       -command { SPI::ToolMode Writer::FVCN Draw True; if { $Writer::Data(Canvas)!="" } { $Writer::Data(Canvas) delete FVCN } }
 
-   foreach h { 6 12 18 } {
+   foreach h { 06 12 18 } {
       radiobutton $Pad.optash$h -variable Writer::FVCN::Data(Hour$Pad) -value $h -indicatoron false -image box -selectimage check \
          -bg white -bd 0 -selectcolor white -width $Writer::Data(Height) -height $Writer::Data(Height) \
          -command { SPI::ToolMode Writer::FVCN Draw True }
@@ -1057,6 +1061,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
 # Parametres :
 #  <Pad>     : Identificateur du Pad
 #  <Hour>    : Heure
+#  <Text>    : Texte de la prevision des regions
 #
 # Retour:
 #
@@ -1064,81 +1069,72 @@ proc Writer::FVCN::LayoutInit { Pad } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::FVCN::AshUpdate { Pad Hour } {
+proc Writer::FVCN::AshUpdate { Pad Hour { Text "" } } {
    variable Data
 
-   if { $Hour == 0 } {
+   if { $Text=="" } {
 
       #----- Convertir en format text
+      foreach l { L0 L1 L2 } {
 
-      if { [llength $Data(L10$Pad)]<6 } {
-         set text $Data(NoVA0)
-      } else {
-         set text ""
-         foreach { lat lon elev } $Data(L10$Pad) {
-            lappend text [Writer::FVCN::FormatCoord $lat $lon]
+         set c$l ""
+
+         #----- Si il y au moins de 2 points, on converti
+         if { [llength $Data($l$Hour$Pad)]>3 } {
+            foreach { lat lon elev } $Data($l$Hour$Pad) {
+               lappend c$l [Writer::FVCN::FormatCoord $lat $lon]
+            }
+            lappend c$l [Writer::FVCN::FormatCoord [lindex $Data($l$Hour$Pad) 0] [lindex $Data($l$Hour$Pad) 1]]
          }
-         puts stderr "...[lindex $Data(L10$Pad) 0].....$Data(L10$Pad)...."
-         lappend text [Writer::FVCN::FormatCoord [lindex $Data(L10$Pad) 0] [lindex $Data(L10$Pad) 1]]
-         set text [join $text " - "]
+
+         eval set len \[set l$l \[llength \$c$l\]\]
+
+         if { $len == 0 } {
+            set c$l "NO VA EXP"
+         } else {
+            eval set c$l \[join \$c$l \" - \"\]
+         }
       }
 
-   } else {
-
-      if { $Data(FCST$Hour$Pad)!="" } {
-         set text $Data(FCST$Hour$Pad)
-      } else {
-
-         #----- Convertir en format text
-
-         foreach l { L1 L2 L3 } {
-
-            set c$l ""
-
-            #----- Si il y au moins de 2 points, on converti
-
-            if { [llength $Data($l$Hour$Pad)]>3 } {
-               foreach { lat lon elev } $Data($l$Hour$Pad) {
-                  lappend c$l [Writer::FVCN::FormatCoord $lat $lon]
-               }
-               lappend c$l [Writer::FVCN::FormatCoord [lindex $Data($l$Hour$Pad) 0] [lindex $Data($l$Hour$Pad) 1]]
+      if { $Hour=="00" } {
+         if { $lL0==0 && $lL1==0 && $lL2==0 } {
+            set Text $Data(NoVA00)
+         } else {
+            set Text ""
+            set Data(LVL00) { "" "" "" }
+            if { $lL0!=0 } {
+               lset Data(LVL00) 0 "SFC/FL200"
+               append Text "SFC/FL200 $cL0 "
             }
-
-            eval set len \[set l$l \[llength \$c$l\]\]
-
-            if { $len == 0 } {
-               set c$l "NO VA EXP"
-            } else {
-               eval set c$l \[join \$c$l \" - \"\]
+            if { $lL1!=0 } {
+               lset Data(LVL00) 1 "FL200/FL350"
+               append Text "FL200/FL350 $cL1 "
+            }
+            if { $lL2!=0 } {
+               lset Data(LVL00) 2  "FL350/FL600"
+               append Text "FL350/FL600 $cL2"
             }
          }
-
-         if { $lL1 == 0 && $lL2 == 0 && $lL3 == 0 } {
-            set Data(LVL1) "SFC/FL600"
-            set Data(LVL2) ""
-            set Data(LVL3) ""
-            set text "$Data(Date$Hour$Pad) SFC/FL600 NO VA EXP"
-         } elseif { $lL1 == 0 && $lL2 == 0 && $lL3 != 0 } {
-            set Data(LVL1) "SFC/FL350"
-            set Data(LVL2) "FL350/FL600"
-            set Data(LVL3) ""
-            set text "$Data(Date$Hour$Pad) SFC/FL350 NO VA EXP FL350/FL600 $cL3"
-         } elseif { $lL1 != 0 && $lL2 == 0 && $lL3 == 0 } {
-            set Data(LVL1) "SFC/FL200"
-            set Data(LVL2) "FL350/FL600"
-            set Data(LVL3) ""
-            set text "$Data(Date$Hour$Pad) SFC/FL200 $cL1 FL350/FL600 NO VA EXP"
+      } else {
+         if { $lL0==0 && $lL1==0 && $lL2==0 } {
+            set Data(LVL$Hour) { "" "" "" }
+            set Text "$Data(Date$Hour$Pad) SFC/FL600 NO VA EXP"
+         } elseif { $lL0==0 && $lL1==0 && $lL2!=0 } {
+            set Data(LVL$Hour) { "FL350/FL600" "" "" }
+            set Text "$Data(Date$Hour$Pad) SFC/FL350 NO VA EXP FL350/FL600 $cL2"
+         } elseif { $lL0!=0 && $lL1==0 && $lL2==0 } {
+            set Data(LVL$Hour) { "SFC/FL200" "" "" }
+            set Text "$Data(Date$Hour$Pad) SFC/FL200 $cL0 FL350/FL600 NO VA EXP"
          } else {
-            set Data(LVL1) "SFC/FL200"
-            set Data(LVL2) "FL200/FL350"
-            set Data(LVL3) "FL350/FL600"
-            set text "$Data(Date$Hour$Pad) SFC/FL200 $cL1 FL200/FL350 $cL2 FL350/FL600 $cL3"
+            set Data(LVL$Hour) { "SFC/FL200" "FL200/FL350" "FL350/FL600" }
+            set Text "$Data(Date$Hour$Pad) SFC/FL200 $cL0 FL200/FL350 $cL1 FL350/FL600 $cL2"
          }
       }
    }
 
+   set Data(FCSTh$Hour$Pad) $Text
    $Pad.ash$Hour delete 0.0 end
-   $Pad.ash$Hour insert 0.0 $text
+   $Pad.ash$Hour insert 0.0 $Text
 
    set Data(HAsh$Hour$Pad) [Writer::TextExpand $Pad.ash$Hour 47]
    Writer::FVCN::PageInit $Pad
@@ -1347,14 +1343,14 @@ proc Writer::FVCN::PageInit { Pad } {
 
       $Pad.canvas create window  1 $y -anchor nw -tags ASH -window $Pad.obs
       $Pad.canvas create window [expr $x-$Writer::Data(Height)] $y -anchor ne -tags WIN -window $Pad.optobs
-      $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash0
-      $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash0
-      set y [expr $y+$Writer::Data(Height)*$Data(HAsh0$Pad)]
+      $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash00
+      $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash00
+      set y [expr $y+$Writer::Data(Height)*$Data(HAsh00$Pad)]
 
-      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(FCST6)
-      $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash6
-      $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash6
-      set y [expr $y+$Writer::Data(Height)*$Data(HAsh6$Pad)]
+      $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(FCST06)
+      $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash06
+      $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.ash06
+      set y [expr $y+$Writer::Data(Height)*$Data(HAsh06$Pad)]
 
       $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags ASH -text $Data(FCST12)
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optash12
@@ -1429,25 +1425,25 @@ proc Writer::FVCN::Read { Pad File Mode } {
 
       #----- Have to check for older file format
       if { [string index $Data(Obs$Pad) end]!=":" } {
-         set Data(Date0$Pad) $Data(Obs$Pad)
-         gets $f Data(Obs$Pad)
+         set Data(Date00$Pad) $Data(Obs$Pad)
          gets $f line
-         $Pad.ash0 insert 0.0 $line
-         set hours { 6 12 18 }
+         $Pad.ash00 insert 0.0 $line
+         set hours { 06 12 18 }
       } else {
-         set hours { 0 6 12 18 }
+         set hours { 00 06 12 18 }
       }
 
       foreach h $hours {
          gets $f line
          set Data(Date$h$Pad) [lindex $line 0]
-         set Data(L1$h$Pad)   [lindex $line 1]
-         set Data(L2$h$Pad)   [lindex $line 2]
-         set Data(L3$h$Pad)   [lindex $line 3]
+         set Data(L0$h$Pad)   [lindex $line 1]
+         set Data(L1$h$Pad)   [lindex $line 2]
+         set Data(L2$h$Pad)   [lindex $line 3]
          if { [llength $line]==5 } {
-            set Data(FCST$h$Pad) [lindex $line 4]
+            Writer::FVCN::AshUpdate $Pad $h [lindex $line 4]
+         } else {
+            Writer::FVCN::AshUpdate $Pad $h
          }
-         Writer::FVCN::AshUpdate $Pad $h
       }
       gets $f line ; $Pad.next insert 0.0 $line
    }
@@ -1673,20 +1669,13 @@ proc Writer::FVCN::VertexAdd { Frame VP X Y } {
 
          set date [fstdstamp todate [fstdfield define $field -DATEV]]
          set Data(Date$h$p) "[lindex $date 2]/[lindex $date 3][lindex $date 4]Z"
-
-         if { $h==0 } {
-            set Data(Level$p) L1
-         } else {
-            set Data(Level$p) [lindex { L1 L1 L1 L2 L3 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
-         }
+         set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
 
          lappend Data($Data(Level$p)$h$p) $X $Y 0
 
          set Writer::Data(Canvas) $Page::Data(Canvas)
          set Writer::Data(Frame)  $Frame
          set Writer::Data(VP)     $VP
-
-         set Data(FCST$h$p) ""
 
          Writer::FVCN::AshUpdate   $p $h
          Writer::FVCN::UpdateItems $Frame $VP $p
@@ -1726,12 +1715,7 @@ proc Writer::FVCN::VertexDelete { Frame VP } {
       set p $Writer::Data(Pad)
       set h $Data(Hour$p)
 
-      if { $h==0 } {
-         set Data(Level$p) L1
-      } else {
-         set Data(Level$p) [lindex { L1 L1 L1 L2 L3 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
-      }
-
+      set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
       set Data($Data(Level$p)$h$p) [lreplace $Data($Data(Level$p)$h$p) end-2 end]
 
       set Writer::Data(Canvas) $Page::Data(Canvas)
@@ -1788,11 +1772,7 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
          set p $Writer::Data(Pad)
          set h $Data(Hour$p)
 
-         if { $h==0 } {
-            set Data(Level$p) L1
-         } else {
-            set Data(Level$p) [lindex { L1 L1 L1 L2 L3 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
-         }
+         set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
 
          set tmp $Data($Data(Level$p)$h$p)
          lappend tmp $X $Y 0
@@ -1906,22 +1886,41 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
       }
    }
 
-   #----- Graphical product
+   Writer::FVCN::UpdateGraphItems $Pad
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::UpdateGraphItems>
+# Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Mettre a jour les items de region
+#
+# Parametres :
+#  <Pad>     : Identificateur du pad
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::UpdateGraphItems { Pad } {
+   global GDefs
+   variable Data
 
    if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
 
+      Writer::FVCN::GraphAreaColor $Pad
+
       set f $Data(Page$Pad)
       $Data(Page$Pad).page.canvas delete ICOVAAC
-      foreach h { 0 6 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST6) $Data(FCST12) $Data(FCST18) ] {
+      foreach h { 00 06 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST06) $Data(FCST12) $Data(FCST18) ] {
          $Data(Page$Pad).page.canvas itemconfigure DATE$h -text "$l $Data(Date$h$Pad)"
          set va 0
-         foreach no { 1 2 3 } color $Writer::FVCN::Data(Colors) stipple $Data(Stipples) {
-            if  { [llength $Data(L$no$h$Pad)]>2 } {
-               if { $h==0 } {
-                  set color black
-                  set stipple @$GDefs(Dir)/Resources/Bitmap/rayhor04.xbm
-               }
-               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h $color $color $stipple False 2
+         foreach no { 0 1 2 } lvl $Data(LVL$h)  {
+            if  {  $lvl!="" && [llength $Data(L$no$h$Pad)]>4 } {
+               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h \
+                  $Data(Color$lvl) $Data(Color$lvl) $Data(Stipple$lvl) False 2
                incr va
             }
          }
@@ -1948,7 +1947,7 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 #
 # Parametres :
 #  <Pad>     : Identificateur du PAd
-#  <Sent>    : Message envoye.
+#  <Sent>    : Message envoye (-1 = autosave mode).
 #
 # Retour    :
 #   <File>  : Nom du fichier
@@ -1968,40 +1967,45 @@ proc Writer::FVCN::Write { Pad Sent } {
    global GDefs
    variable Data
 
-   #----- On s'assure que le nom du fichier soit qu'une seul chaine.
-
-   regsub -all "\[^a-zA-Z0-9-\]" $Data(Site$Pad) _ file
-
-   #----- Determine le nom du fichier.
-
-   set date [clock format $Data(Seconds) -format "%Y%m%d%H%MZ" -gmt True]
-
-   if { !$Sent } {
-      set file $Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]-${file}.msg
+   if { $Sent==-1 } {
+      set file $Writer::Data(AutoSaveFile)
    } else {
-      set file $date-$Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]-${file}.msg
-   }
 
-   if { $Data(Mode$Pad)=="RET" } {
-      set file $file.ret
-   }
+      #----- On s'assure que le nom du fichier soit qu'une seul chaine.
 
-   if { $Data(Cor$Pad)!="" } {
-      set file $file.cor
-   }
+      regsub -all "\[^a-zA-Z0-9-\]" $Data(Site$Pad) _ file
 
-   if { $Sent } {
-      set file $file.sent
-      set Data(Sent$Pad) 1
-   }
+      #----- Determine le nom du fichier.
 
-   if { [file exists $GDefs(DirMsg)/FVCN/$file] } {
-      set ok [Dialog::CreateDefault .writer 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
-          "[lindex $Writer::Msg(Exist) $GDefs(Lang)]\n\t$file\n" \
-          info 0 [lindex $Writer::Lbl(No) $GDefs(Lang)] [lindex $Writer::Lbl(Yes) $GDefs(Lang)]]
+      set date [clock format $Data(Seconds) -format "%Y%m%d%H%MZ" -gmt True]
 
-      if { !$ok } {
-         return
+      if { !$Sent } {
+         set file $Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]-${file}.msg
+      } else {
+         set file $date-$Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]-${file}.msg
+      }
+
+      if { $Data(Mode$Pad)=="RET" } {
+         set file $file.ret
+      }
+
+      if { $Data(Cor$Pad)!="" } {
+         set file $file.cor
+      }
+
+      if { $Sent } {
+         set file $file.sent
+         set Data(Sent$Pad) 1
+      }
+
+      if { [file exists $GDefs(DirMsg)/FVCN/$file] } {
+         set ok [Dialog::CreateDefault .writer 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
+            "[lindex $Writer::Msg(Exist) $GDefs(Lang)]\n\t$file\n" \
+            info 0 [lindex $Writer::Lbl(No) $GDefs(Lang)] [lindex $Writer::Lbl(Yes) $GDefs(Lang)]]
+
+         if { !$ok } {
+            return ""
+         }
       }
    }
 
@@ -2024,9 +2028,9 @@ proc Writer::FVCN::Write { Pad Sent } {
       puts $f "$Data(Code$Pad)"
       puts $f "[Writer::TextExtract none 47 "" $Pad.details]"
       puts $f "$Data(Obs$Pad)"
-      foreach h { 0 6 12 18 } {
+      foreach h { 00 06 12 18 } {
          set Data(FSCT$h$Pad) [Writer::TextExtract none 47 "" $Pad.ash$h]
-         puts $f "{$Data(Date$h$Pad)} {$Data(L1$h$Pad)} {$Data(L2$h$Pad)} {$Data(L3$h$Pad)} {$Data(FSCT$h$Pad)}"
+         puts $f "{$Data(Date$h$Pad)} {$Data(L0$h$Pad)} {$Data(L1$h$Pad)} {$Data(L2$h$Pad)} {$Data(FSCT$h$Pad)}"
       }
       puts $f "[Writer::TextExtract none 47 "" $Pad.remarks]"
       puts $f "[Writer::TextExtract none 47 "" $Pad.next]"

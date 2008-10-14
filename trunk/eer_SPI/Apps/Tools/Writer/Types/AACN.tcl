@@ -585,7 +585,7 @@ proc Writer::AACN::ToolBar { Pad } {
 #
 # Parametres :
 #  <Pad>     : Identificateur du PAd
-#  <Sent>    : Message envoye.
+#  <Sent>    : Message envoye (-1 = autosave mode).
 #
 # Retour    :
 #   <File>  : Nom du fichier
@@ -605,36 +605,40 @@ proc Writer::AACN::Write { Pad Sent } {
    global GDefs
    variable Data
 
-   #----- On s'assure que le nom du fichier soit qu'une seul chaine.
-
-   regsub -all " " [lindex $Data(Site$Pad) 0] _ file
-   regsub -all "/." $file "" file
-
-   #----- Determine le nom du fichier.
-
-   set date [clock format $Data(Seconds) -format "%Y%m%d%H%MZ" -gmt True]
-
-   if { !$Sent } {
-      set file $Data(No$Pad)-${file}.msg
+   if { $Sent==-1 } {
+      set file $Writer::Data(AutoSaveFile)
    } else {
-      set file $date-$Data(No$Pad)-${file}.msg
-   }
+      #----- On s'assure que le nom du fichier soit qu'une seul chaine.
 
-   if { $Data(Cor$Pad)!="" } {
-      set file $file.cor
-   }
+      regsub -all " " [lindex $Data(Site$Pad) 0] _ file
+      regsub -all "/." $file "" file
 
-   if { $Sent } {
-      set file $file.sent
-   }
+      #----- Determine le nom du fichier.
 
-   if { [file exists $GDefs(DirMsg)/AACN/$file] } {
-      set ok [Dialog::CreateDefault .writer 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
-          "[lindex $Writer::Msg(Exist) $GDefs(Lang)]\n\t$file\n" \
-          info 0 [lindex $Writer::Lbl(No) $GDefs(Lang)] [lindex $Writer::Lbl(Yes) $GDefs(Lang)]]
+      set date [clock format $Data(Seconds) -format "%Y%m%d%H%MZ" -gmt True]
 
-      if { !$ok } {
-         return
+      if { !$Sent } {
+         set file $Data(No$Pad)-${file}.msg
+      } else {
+         set file $date-$Data(No$Pad)-${file}.msg
+      }
+
+      if { $Data(Cor$Pad)!="" } {
+         set file $file.cor
+      }
+
+      if { $Sent } {
+         set file $file.sent
+      }
+
+      if { [file exists $GDefs(DirMsg)/AACN/$file] } {
+         set ok [Dialog::CreateDefault .writer 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
+            "[lindex $Writer::Msg(Exist) $GDefs(Lang)]\n\t$file\n" \
+            info 0 [lindex $Writer::Lbl(No) $GDefs(Lang)] [lindex $Writer::Lbl(Yes) $GDefs(Lang)]]
+
+         if { !$ok } {
+            return
+         }
       }
    }
 
