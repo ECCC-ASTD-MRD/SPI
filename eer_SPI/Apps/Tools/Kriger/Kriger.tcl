@@ -1,4 +1,4 @@
-#===============================================================================
+#==============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
 # 2100 Trans-Canadienne
@@ -54,7 +54,7 @@ proc Kriger::Close { } {
    #----- Clear grid
 
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID
-   fstdfield free KRIGGRID KRIGTIC KRIGTAC KRIGTZH
+   fstdfield free KRIGGRID KRIGTIC KRIGTAC KRIGTOC
    graphitem free KRIGITEM
 
    destroy .kriger
@@ -184,7 +184,7 @@ proc Kriger::Grid { Coords } {
    #----- Clear previous grid
 
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID
-   fstdfield free KRIGGRID KRIGTIC KRIGTAC KRIGTZH
+   fstdfield free KRIGGRID KRIGTIC KRIGTAC KRIGTOC
    $Data(GraphFrame).page.canvas itemconfigure GRAPH$Data(Graph) -item {}
 
    if { [llength $Coords]>2 } {
@@ -197,8 +197,9 @@ proc Kriger::Grid { Coords } {
             }
             set coords [projection function $Page::Data(Frame) -path $Coords $Data(HResolution)]
 
-            set ni [expr [llength $coords]/2]
-            set nj [llength $elevs]
+            set ni  [expr [llength $coords]/2]
+            set nj  [llength $elevs]
+            set nij [expr $ni+$nj]
             if { $ni==0 || $nj==0 } {
                return
                set Data(Job) ""
@@ -213,16 +214,16 @@ proc Kriger::Grid { Coords } {
             #----- Create new grid
 
             fstdfield create KRIGGRID $ni $nj 1 Float32
-            fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -GRTYP V -ETIKET KRIG_GRID -IP1 12001 -IG1 100 -IG2 100 -IG3 100 -IG4 0
+            fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -GRTYP V -ETIKET KRIG -IP1 12001 -IG1 $nij -IG2 $ni -IG3 $nj -IG4 0
             fstdfield stats KRIGGRID -leveltype MASL -levels $elevs -grid $coords
 
             fstdfield create KRIGTIC $ni 1 1 Float32
-            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L -ETIKET KRIG_GRID -IP1 100 -IP2 100 -IP3 100
+            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
             fstdfield create KRIGTAC 1 $ni 1 Float32
-            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L -ETIKET KRIG_GRID -IP1 100 -IP2 100 -IP3 100
-            fstdfield create KRIGTZH $nj 1 1 Float32
-            fstdfield define KRIGTZH -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET KRIG_GRID -IP1 100 -IP2 100 -IP3 100
-            fstdfield define KRIGTZH -DATA [list $elevs]
+            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
+            fstdfield create KRIGTOC $nj 1 1 Float32
+            fstdfield define KRIGTOC -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
+            fstdfield define KRIGTOC -DATA [list $elevs]
 
             for { set i 0 } { $i < $ni } { incr i } {
                fstdfield stats KRIGTIC -gridvalue $i 0 [lindex $coords [expr $i*2]]
@@ -246,8 +247,9 @@ proc Kriger::Grid { Coords } {
                set lon1 $t
             }
 
-            set nj [expr int(($lat1-$lat0)/$dlat)]
-            set ni [expr int(($lon1-$lon0)/$dlon)]
+            set nj  [expr int(($lat1-$lat0)/$dlat)]
+            set ni  [expr int(($lon1-$lon0)/$dlon)]
+            set nij [expr $ni+$nj]
             if { $ni==0 || $nj==0 } {
                return
                set Data(Job) ""
@@ -260,12 +262,12 @@ proc Kriger::Grid { Coords } {
             }
 
             fstdfield create KRIGGRID $ni $nj 1 Float32
-            fstdfield define KRIGGRID -NOMVAR XSEC -TYPVAR O -ETIKET KRIG_GRID -IP1 12001 -IG1 1 -IG2 1 -IG3 1 -IG4 0 -GRTYP Z
+            fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -ETIKET KRIG -IP1 12001 -IG1 $nij -IG2 $ni -IG3 $nj -IG4 0 -GRTYP Z
 
             fstdfield create KRIGTIC $ni 1 1 Float32
-            fstdfield define KRIGTIC -NOMVAR >> -TYPVAR X -ETIKET KRIG_GRID -IP1 1 -IP2 1 -IP3 1 -GRTYP L 0 0 1.0 1.0
+            fstdfield define KRIGTIC -NOMVAR >> -TYPVAR X -ETIKET KRIG_GRIDH -IP1 $nij -IP2 $ni -IP3 $nj -GRTYP L 0 0 1.0 1.0
             fstdfield create KRIGTAC 1 $nj 1 Float32
-            fstdfield define KRIGTAC -NOMVAR ^^ -TYPVAR X -ETIKET KRIG_GRID -IP1 1 -IP2 1 -IP3 1 -GRTYP L 0 0 1.0 1.0
+            fstdfield define KRIGTAC -NOMVAR ^^ -TYPVAR X -ETIKET KRIG_GRIDH -IP1 $nij -IP2 $ni -IP3 $nj -GRTYP L 0 0 1.0 1.0
 
             for { set i 0 } { $i < $ni } { incr i } {
                fstdfield stats KRIGTIC -gridvalue $i 0 [expr ($lon0+$dlon*$i)]
@@ -304,12 +306,14 @@ proc Kriger::Save { File } {
 
    if { $File!="" } {
       fstdfile open  KRIGFILE write $File
+      fstdfield define KRIGGRID -NOMVAR [string range [lindex [split $Data(Obs) .] 0] 0 3] \
+         -ETIKET [string range [lindex [split $Data(Obs) .] 0] 0 11]
       switch $Data(GridType) {
          "Vertical" {
                     fstdfield write KRIGGRID KRIGFILE -32 True
                     fstdfield write KRIGTIC KRIGFILE -32 True
                     fstdfield write KRIGTAC KRIGFILE -32 True
-                    fstdfield write KRIGTZH KRIGFILE -32 True
+                    fstdfield write KRIGTOC KRIGFILE -32 True
          }
          "LatLon" {
                     fstdfield write KRIGGRID KRIGFILE -32 True
