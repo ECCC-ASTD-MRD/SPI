@@ -248,7 +248,7 @@ proc FileBox::GetContent { Path } {
          }
       }
 
-      if { $d } {
+      if { $d && [string first \" $file]==-1 } {
          catch { lappend lines [format "%-$Data(Width)s %8s %10i" $file [file attributes $file -owner] $size] }
          set Data(Size) [expr $Data(Size)+$size]
          incr Data(Nb)
