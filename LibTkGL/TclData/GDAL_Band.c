@@ -1142,9 +1142,12 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
             }
             dx++;
 
+            /*Skip if no mask*/
+            if (FromDef->Mask && !FromDef->Mask[GScan.V[x]])
+               continue;
+
             /*Skip if no data*/
             Def_Get(FromDef,0,GScan.V[x],vx);
-//            vx=GScan.V[x];
             if ((isnan(vx) || vx==FromDef->NoData) && Mode!=TD_COUNT)
                continue;
 
@@ -1189,43 +1192,47 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                for(ndi=di0;ndi<=di1;ndi++) {
                   idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
 
-                  /*If the previous value is nodata, initialize the counter*/
-                  if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                     fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
-                  }
+                  /*Skip if no mask*/
+                  if (!ToDef->Mask || ToDef->Mask[idxt]) {
 
-                  switch(Mode) {
-                     case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
-                                                break;
-                     case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
-                                                break;
-                     case TD_SUM              : fld[idxt]+=vx;
-                                                break;
-                     case TD_VARIANCE         : acc[idxt]+=1.0;
-                                                Def_Get(TmpDef,0,idxt,val);
-                                                fld[idxt]+=(vx-val)*(vx-val);
-                                                break;
-                     case TD_SQUARE           : acc[idxt]+=1.0;
-                                                fld[idxt]+=vx*vx;
-                                                break;
-                     case TD_COUNT            : acc[idxt]+=1.0;
-                     case TD_AVERAGE          :
-                     case TD_NORMALIZED_COUNT : if (Table) {
-                                                   t=0;
-                                                   while(t<ToDef->NK) {
-                                                      if (vx==Table[t] && t<ToDef->NK) {
-                                                         if (Mode!=TD_COUNT) acc[idxt]+=1.0;
-                                                         fld[t*nij+idxt]++;
-                                                         break;
+                     /*If the previous value is nodata, initialize the counter*/
+                     if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
+                        fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                     }
+
+                     switch(Mode) {
+                        case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
+                                                   break;
+                        case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
+                                                   break;
+                        case TD_SUM              : fld[idxt]+=vx;
+                                                   break;
+                        case TD_VARIANCE         : acc[idxt]+=1.0;
+                                                   Def_Get(TmpDef,0,idxt,val);
+                                                   fld[idxt]+=(vx-val)*(vx-val);
+                                                   break;
+                        case TD_SQUARE           : acc[idxt]+=1.0;
+                                                   fld[idxt]+=vx*vx;
+                                                   break;
+                        case TD_COUNT            : acc[idxt]+=1.0;
+                        case TD_AVERAGE          :
+                        case TD_NORMALIZED_COUNT : if (Table) {
+                                                      t=0;
+                                                      while(t<ToDef->NK) {
+                                                         if (vx==Table[t] && t<ToDef->NK) {
+                                                            if (Mode!=TD_COUNT) acc[idxt]+=1.0;
+                                                            fld[t*nij+idxt]++;
+                                                            break;
+                                                         }
+                                                         t++;
                                                       }
-                                                      t++;
+                                                   } else {
+                                                      if (Mode!=TD_COUNT) acc[idxt]+=1.0;
+                                                      if (vx!=FromDef->NoData)
+                                                         fld[idxt]+=vx;
                                                    }
-                                                } else {
-                                                   if (Mode!=TD_COUNT) acc[idxt]+=1.0;
-                                                   if (vx!=FromDef->NoData)
-                                                      fld[idxt]+=vx;
-                                                }
-                                                break;
+                                                   break;
+                     }
                   }
                }
             }

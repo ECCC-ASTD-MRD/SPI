@@ -1016,6 +1016,7 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Type=Type;
    def->Buffer=NULL;
    def->Accum=NULL;
+   def->Mask=NULL;
    def->Pick=def->Poly=NULL;
 
    for(i=0;i<Dim;i++) {
@@ -1085,6 +1086,7 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
 
       if (Def->Buffer)     free(Def->Buffer); Def->Buffer=NULL;
       if (Def->Accum)      free(Def->Accum);  Def->Accum=NULL;
+      if (Def->Mask)       free(Def->Mask);   Def->Mask=NULL;
    }
    return(Def);
 }
@@ -1117,6 +1119,7 @@ void Data_DefFree(TDataDef *Def){
 
       if (Def->Buffer)     free(Def->Buffer);
       if (Def->Accum)      free(Def->Accum);
+      if (Def->Mask)       free(Def->Mask);
       if (Def->Poly)       OGR_G_DestroyGeometry(Def->Poly);
 //      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 
@@ -1157,6 +1160,7 @@ TDataDef *Data_DefCopy(TDataDef *Def){
       def->Level=Def->Level;
       def->Buffer=NULL;
       def->Accum=NULL;
+      def->Mask=NULL;
       def->Pick=def->Poly=NULL;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
@@ -1198,6 +1202,7 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
       def->Level=Def->Level;
       def->Buffer=NULL;
       def->Accum=NULL;
+      def->Mask=NULL;
       def->Pick=def->Poly=NULL;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
@@ -1457,6 +1462,7 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
 int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj *obj,*sub;
+   TData   *fld;
    int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex;
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv;
@@ -1468,9 +1474,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix",NULL };
+      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix","-mask",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX };
+      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX,MASK };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2022,6 +2028,34 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         case TD_Float64: Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[i]),buf,Tcl_NewDoubleObj(val),0x0);
                      }
                   }
+               }
+            }
+            break;
+
+         case MASK:
+            if (Objc!=2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"fld");
+               return(TCL_ERROR);
+            } else {
+               if (fld==Data_Get(Tcl_GetString(Objv[++i]))) {
+                  if (fld->Def->NI==Field->Def->NI && fld->Def->NJ==Field->Def->NJ && fld->Def->NK==Field->Def->NK) {
+                     if (!Field->Def->Mask) {
+                        if (!(Field->Def->Mask=(char*)malloc(FSIZE3D(Field->Def)))) {
+                           Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate mask",(char*)NULL);
+                           return(TCL_ERROR);
+                        }
+                     }
+                     for(ni=0;ni<FSIZE3D(Field->Def);ni++) {
+                        Def_Get(Field->Def,0,ni,val);
+                        Field->Def->Mask[ni]=(val!=0.0);
+                     }
+                  } else {
+                     Tcl_AppendResult(Interp,"Data_Stat: Mask and data dimensions don't fit",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+               } else {
+                  Tcl_AppendResult(Interp,"Data_Stat: Invalid data to get mask from",(char*)NULL);
+                  return(TCL_ERROR);
                }
             }
             break;

@@ -254,6 +254,7 @@ typedef struct TDataDef {
    double  NoData;         /*Valeur de novalue*/
    double *Buffer;         /*Buffer temporaire*/
    double *Accum;          /*Accumulation Buffer temporaire*/
+   char   *Mask;           /*Massque a appliquer au traitement sur le champs*/
    char *Data[4];          /*Composantes du champs*/
    char *Mode;             /*Module des champs Data is vectoriel*/
    OGRGeometryH *Pick,*Poly;
