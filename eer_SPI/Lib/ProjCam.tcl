@@ -583,7 +583,6 @@ proc ProjCam::Save { Combo } {
    if { $Data(Name)=="" } {
       Dialog::CreateError . [lindex $Msg(Name) $GDefs(Lang)] $GDefs(Lang)
       return
-
    }
 
    set nok 0
@@ -599,8 +598,9 @@ proc ProjCam::Save { Combo } {
       set line "$Data(Name) [ProjCam::Mem $Page::Data(Frame) $Data(Name)]"
 
       if { [file exists $Data(File)] } {
-         file copy -force $Data(File) $Data(File).old
+         file rename -force $Data(File) $Data(File).old
       }
+      catch { exec grep -v "^$Data(Name) " $Data(File).old > $Data(File) }
       exec echo $line >> $Data(File)
 
       #----- Ajouter la vue a la liste des vues
