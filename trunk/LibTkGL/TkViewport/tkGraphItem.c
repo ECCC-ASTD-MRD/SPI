@@ -1361,7 +1361,6 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    int            i,j,n,vn,sz,px,py,pw;
    XColor        *color=NULL;
 
-
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
 
