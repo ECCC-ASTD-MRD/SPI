@@ -1730,41 +1730,14 @@ proc MLDP1::ExtractMetFiles { } {
       append Sim(InfoMet) "\n$data"
    }
 
-   #----- Count number of diagnostics and prognostics met files.
-   set nbtrials 0
-   set nbprogs  0
-   foreach data $Sim(Data) {
-
-      set filename [lindex $data 2]
-
-      if { [string match "*\/trial\/*" $filename] } {
-         incr nbtrials
-      } elseif { [string match "*\/prog\/*" $filename] } {
-         incr nbprogs
-      }
-
-   }
-
-   #----- Set experiment mode according to number of diagnostics and prognostics available met files.
-   if { $nbtrials > 0 && $nbprogs > 0 } {
-      set Sim(Mode) mixte
-   } elseif { $nbtrials > 0 } {
-      set Sim(Mode) diag
-   } elseif { $nbprogs > 0 } {
-      set Sim(Mode) prog
-   }
-
    append Sim(InfoMet) "\n"
    append Sim(InfoMet) "\nEmission date-time (stamp)           : $Sim(AccDateTime) ($Sim(AccDateTimeStamp))"
    append Sim(InfoMet) "\nSimulation date-time (stamp)         : $SimDateTime ($SimDateTimeStamp)"
    append Sim(InfoMet) "\nDiagnostics meteorological database  : $Sim(DBaseDiag)"
    append Sim(InfoMet) "\nPrognostics meteorological database  : $Sim(DBaseProg)"
    append Sim(InfoMet) "\nMeteorological model                 : $Sim(Meteo)"
-   append Sim(InfoMet) "\nMeteorological data mode             : $Sim(Mode)"
    append Sim(InfoMet) "\nMeteorological data time interval    : $Sim(Delta) hr"
    append Sim(InfoMet) "\nNumber of meteorological files       : $Sim(NbMetFiles)"
-   append Sim(InfoMet) "\nNumber of diagnostic meteo files     : $nbtrials"
-   append Sim(InfoMet) "\nNumber of prognostic meteo files     : $nbprogs"
    append Sim(InfoMet) "\nSimulation duration                  : [MLDP1::ExpandTime [expr $Sim(Duration)*3600]]"
    append Sim(InfoMet) "\nEffective simulation duration        : [MLDP1::ExpandTime [expr $Sim(EffectiveDurationSec)]]"
 
@@ -1774,13 +1747,6 @@ proc MLDP1::ExtractMetFiles { } {
    if { [llength $Sim(Data)] < 2 } {
       puts stdout ""
       Debug::TraceProc "MLDP1: Error! Not enough available meteorological data files."
-      Dialog::CreateError .mldp1new "[lindex $Error(MetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
-      return False
-   }
-
-   if { $nbtrials == 0 && $nbprogs == 0 } {
-      puts stdout ""
-      Debug::TraceProc "MLDP1: Error! No diagnostics and prognostics meteorological files."
       Dialog::CreateError .mldp1new "[lindex $Error(MetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
       return False
    }
@@ -2773,7 +2739,6 @@ proc MLDP1::SimInitNew { } {
    set Sim(State)     1    ; #----- State of simulation.
    set Sim(NoSim)    -1    ; #----- Simulation number.
    set Sim(NoPrev)   -1    ; #----- Previous simulation number.
-   set Sim(Mode)      prog ; #----- Type of meteorological data.
 
    set Sim(TabPrevNo)       -1 ; #----- Previous tab no.
    set Sim(IsScenarioValid)  0 ; #----- Flag indicating if emission scenario has been validated successfully (1) or not (0).
