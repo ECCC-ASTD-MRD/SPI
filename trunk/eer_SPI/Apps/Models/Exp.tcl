@@ -95,6 +95,28 @@ namespace eval Exp {
                             "An error occurred while running this job" }
    set Msg(Correct0)      { "Voulez-vous lancer le modèle" "Do you wish to launch" }
    set Msg(Correct1)      { "à partir de ces paramètres d'entrée ci-haut?" "model with the above input parameters?" }
+   set Msg(Kill)          { "Arrêt de la simulation" "Terminating simulation" }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Exp::Id>
+# Creation : October 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Construire un identificateur unique a partir de l'info de la simulation.
+#
+# Parametres :
+#   <Info>   : Information des parametres de la simulation
+#
+# Retour:
+#   <Id>    : Identificateur unique
+
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Exp::Id { Info } {
+   regsub -all "\[^a-zA-Z0-9\]" $Info "" id
+   return [string range $id 0 100]
 }
 
 #-------------------------------------------------------------------------------
@@ -295,10 +317,10 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
       ${Model}::PoolInfo $sim
 
       if { $Data(NoPrev)==$Prev } {
+
          #----- Creer le nom du widget (unique)
 
-         regsub -all "\[^a-zA-Z0-9\]" $sim "" id
-         set id [string range $id 0 100]
+         set id [Exp::Id $sim]
 
          #----- Code de couleur
 
@@ -475,7 +497,7 @@ proc Exp::CreateTree { } {
 #
 # Parametres :
 #   <Job>    : Travail a lancer (script,bin,...)
-#   <Id>     : Information du pool
+#   <Info>   : Information du pool
 #   <Length> : Longueur du travail (Nombre de ligne de sortie)
 #   <args>   : Fichier de sortie de la trace
 #
@@ -485,13 +507,12 @@ proc Exp::CreateTree { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Exp::Launch { Job Id Length args } {
+proc Exp::Launch { Job Info Length args } {
    variable Data
 
    #----- Recuperer les coordonnees du tag
 
-   regsub -all "\[^a-zA-Z0-9\]" $Id "" tag
-   set tag [string range $tag 0 100]
+   set tag [Exp::Id $Info]
 
    #----- Ouvrir le fichier d'output de la job
 
@@ -522,7 +543,7 @@ proc Exp::Launch { Job Id Length args } {
 # But      : Tuer une execution immediatement.
 #
 # Parametres :
-#   <Id>     : Information du pool
+#   <Info>     : Information du pool
 #
 # Retour:
 #
@@ -530,13 +551,12 @@ proc Exp::Launch { Job Id Length args } {
 #
 #-------------------------------------------------------------------------------
 
-proc Exp::Kill { Id } {
+proc Exp::Kill { Info } {
    variable Data
 
    #----- Recuperer les coordonnees du tag
 
-   regsub -all "\[^a-zA-Z0-9\]" $Id "" id
-   set id [string range $id 0 100]
+   set id [Exp::Id $Info]
 
    if { [info exists Data(Job$id)] } {
 
@@ -676,6 +696,101 @@ proc Exp::LaunchUpdate { Id Read } {
             $Data(Frame).info.exp.canvas raise EXEC$Id SIMSELECT
          }
       }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Exp::ThreadUpdate>
+# Creation : Octobre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Surveiller l'evolution d'une thread
+#
+# Parametres :
+#   <Id>     : Identificateur de la simulation
+#   <Path>   : Path de l'experience
+#   <Objs>   : Objets donnees resultants
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Exp::ThreadUpdate { Id Path { Objs { } } } {
+   global   GDefs
+   variable Data
+   variable Msg
+
+   if { [simulation is $Id] } {
+
+      #----- If simulation is finished, destroy it
+      if { [set pc [simulation define $Id -percent]]==100 } {
+         Info::Set $Path [simulation define $Id -tag] 1
+         Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) $Objs True
+         simulation destroy $Id
+      } else {
+         #----- If we have associated data objects
+         if { $pc<100 && [llength $Objs] } {
+            Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) $Objs True
+            Page::UpdateCommand $Page::Data(Frame)
+         }
+
+         #----- Recheck in 5 seconds
+         after 5000 [list Exp::ThreadUpdate $Id $Path $Objs]
+      }
+
+      #----- Adjust percentage bar
+      if { [winfo exists $Data(Frame).info.exp.canvas] } {
+
+         $Data(Frame).info.exp.canvas delete EXEC$Id
+
+         if { $pc<100 && [llength [set coords [$Data(Frame).info.exp.canvas bbox SIM$Id]]] } {
+            eval $Data(Frame).info.exp.canvas create rectangle $coords -outline #FF9E9E -fill white -tags \"EXEC EXEC$Id\"
+            lset coords 2 [expr [lindex $coords 0]+[expr double([lindex $coords 2] - [lindex $coords 0])*$pc/100.0]]
+            eval $Data(Frame).info.exp.canvas create rectangle $coords -outline #FF9E9E -fill #FF9E9E -tags \"EXEC EXEC$Id\"
+            $Data(Frame).info.exp.canvas raise EXEC$Id SIMSELECT
+            $Data(Frame).info.exp.canvas raise SIM$Id EXEC$Id
+         }
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Exp::ThreadKill>
+# Creation : Octobre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer l'execution d'une simulation dans une thread
+#
+# Parametres :
+#   <Id>     : Identificateur de la simulation
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Exp::ThreadKill { Id } {
+   global GDefs
+   variable Msg
+   variable Data
+
+   if { [simulation is $Id] } {
+
+      set ::Model::Data(Job) "[lindex $Msg(Kill) $GDefs(Lang)]"
+      Dialog::CreateWait $Data(Frame) [lindex $Msg(Kill) $GDefs(Lang)]
+      update idletasks
+
+      #----- Signal simulation to finish and wait for it to do so
+      simulation define $Id -state DONE
+      while { [simulation define $Id -percent]!=100 } { }
+      simulation destroy $Id
+
+      set ::Model::Data(Job) ""
+      Dialog::DestroyWait
+
+      #----- Suppression de la barre d'execution
+      $Data(Frame).info.exp.canvas delete EXEC$Id
    }
 }
 
@@ -1305,7 +1420,7 @@ proc Exp::SelectBranchSim { Tag } {
 # But      : Selection d'une simulation.
 #
 # Parametres :
-#   <Pool>   : Descripteur de la simulation
+#   <Info>   : Descripteur de la simulation
 #
 # Retour:
 #
@@ -1313,18 +1428,17 @@ proc Exp::SelectBranchSim { Tag } {
 #
 #----------------------------------------------------------------------------
 
-proc Exp::SelectSim { Pool } {
+proc Exp::SelectSim { Info } {
    variable Data
 
-   if { $Pool != "" } {
+   if { $Info!="" } {
 
       #----- Selectionner la nouvelle simulation
 
-      regsub -all "\[^a-zA-Z0-9\]" $Pool "" id
-      set id [string range $id 0 100]
+      set id [Exp::Id $Info]
       eval $Data(Frame).info.exp.canvas coords SIMSELECT [$Data(Frame).info.exp.canvas bbox SIM$id]
 
-      set Data(SelectSim) $Pool
+      set Data(SelectSim) $Info
    }
 }
 
