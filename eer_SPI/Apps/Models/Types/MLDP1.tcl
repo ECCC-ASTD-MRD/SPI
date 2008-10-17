@@ -1,4 +1,3 @@
-#!/software/cmc/tcl-8.4.5/bin/wish8.4
 #============================================================================
 # Environnement Canada - Service meteorologique du Canada
 # Centre meteorologique canadien
