@@ -19,6 +19,7 @@
 #   MetData::FormatDATEV    { Field }
 #   MetData::GetLatestRun   { Path }
 #   MetData::GetLatestStamp { Path }
+#   MetData::GetMode        { Files }
 #   MetData::StampModulo    { Stamp Sec }
 #   MetData::GridDefineLL   { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
 #   MetData::GridDefinePS   { Scale NI NJ Lat Lon { Field "" } }
@@ -195,6 +196,51 @@ proc MetData::GetLatestStamp { Path } {
    set file  [lindex [lsort -dictionary [glob -tails -directory $Path *_???]] end]
    set stamp [fstdstamp fromseconds [clock scan "[string range $file 0 7] [string range $file 8 9]"]]
    return $stamp
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetData::GetMode>
+# Creation : Octobre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Determiner le mode selon la liste des fichiers selectionnes
+#
+# Parametres :
+#  <Files>   : Liste des fichiers
+#
+# Retour     :
+#  <Mode>    : mode (prog, diag ou mixte)
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetData::GetMode { Files } {
+
+   #----- Count number of diagnostics and prognostics met files.
+   set trials 0
+   set progs  0
+
+   foreach file $Files {
+
+      set filename [lindex $file 2]
+
+      if { [string match "*trial*" $filename] } {
+         incr trials
+      } elseif { [string match "*prog*" $filename] } {
+         incr progs
+      }
+   }
+
+   #----- Figure out mode.
+   if { $trials } {
+      if { $progs } {
+         return "mixte"
+      } else {
+         return "diag"
+      }
+   } else {
+      return "prog"
+   }
 }
 
 #----------------------------------------------------------------------------
