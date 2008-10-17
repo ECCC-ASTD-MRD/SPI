@@ -1730,12 +1730,15 @@ proc MLDP1::ExtractMetFiles { } {
       append Sim(InfoMet) "\n$data"
    }
 
+   set Sim(Mode) [MetData::GetMode $Sim(Data)]
+
    append Sim(InfoMet) "\n"
    append Sim(InfoMet) "\nEmission date-time (stamp)           : $Sim(AccDateTime) ($Sim(AccDateTimeStamp))"
    append Sim(InfoMet) "\nSimulation date-time (stamp)         : $SimDateTime ($SimDateTimeStamp)"
    append Sim(InfoMet) "\nDiagnostics meteorological database  : $Sim(DBaseDiag)"
    append Sim(InfoMet) "\nPrognostics meteorological database  : $Sim(DBaseProg)"
    append Sim(InfoMet) "\nMeteorological model                 : $Sim(Meteo)"
+   append Sim(InfoMet) "\nMeteorological data mode             : $Sim(Mode)"
    append Sim(InfoMet) "\nMeteorological data time interval    : $Sim(Delta) hr"
    append Sim(InfoMet) "\nNumber of meteorological files       : $Sim(NbMetFiles)"
    append Sim(InfoMet) "\nSimulation duration                  : [MLDP1::ExpandTime [expr $Sim(Duration)*3600]]"
@@ -2739,6 +2742,7 @@ proc MLDP1::SimInitNew { } {
    set Sim(State)     1    ; #----- State of simulation.
    set Sim(NoSim)    -1    ; #----- Simulation number.
    set Sim(NoPrev)   -1    ; #----- Previous simulation number.
+   set Sim(Mode)      prog ; #----- Type of meteorological data.
 
    set Sim(TabPrevNo)       -1 ; #----- Previous tab no.
    set Sim(IsScenarioValid)  0 ; #----- Flag indicating if emission scenario has been validated successfully (1) or not (0).

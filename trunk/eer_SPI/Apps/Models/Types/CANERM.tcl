@@ -411,13 +411,10 @@ proc CANERM::SimGetData { } {
    set dacc [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
 
    set Sim(Data) [MetData::File $dacc $Sim(DBaseDiag) $Sim(DBaseProg) F 0 $Sim(Delta)]
+   set Sim(Mode) [MetData::GetMode $Sim(Data)]
 
-   set anal [lsearchsub $Sim(Data) *trial* 2]
-   if { $anal!=-1 } {
+   if { $Sim(Mode)=="diag" } {
       set Sim(Delta) 6
-      set Sim(Mode)  diag
-   } else {
-      set Sim(Mode) prog
    }
 
    if { [llength $Sim(Data)] <=1 } {
@@ -712,7 +709,6 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
          set hour [string trimleft $Sim(SimHour) 0]
       }
       set Sim(SimHour) [Convert::Set2Digit [expr $hour/$Sim(Delta)*$Sim(Delta)]]
-      puts stderr "111111 $Sim(Delta)"
    }
 
    #----- On verifie les parametres de l'usager
@@ -1259,5 +1255,5 @@ proc CANERM::PoolInfo { Info } {
    set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
    set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
    set Exp::Data(State)  [Info::Strip $Info State]
-   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo][Info::Strip $Info Mode] [Info::Strip $Info Scale] ($Exp::Data(NoSim))"
+   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo] [Info::Strip $Info Scale] ($Exp::Data(NoSim))"
 }
