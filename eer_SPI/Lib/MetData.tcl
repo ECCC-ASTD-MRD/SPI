@@ -16,7 +16,7 @@
 #   MetData::File           { Date APath PPath Mode Mixed { Host "" } }
 #   MetData::Find           { FLD FID NOMVAR TYPVAR DATEV IP1 IP2 IP3 ETIKET }
 #   MetData::FindAll        { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
-#   MetData::FormatDATEV    { Field }
+#   MetData::FormatDATEV    { Field { Min False } }
 #   MetData::GetLatestRun   { Path }
 #   MetData::GetLatestStamp { Path }
 #   MetData::GetMode        { Files }
@@ -515,8 +515,9 @@ proc MetData::FindAll { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
 #
 # But      : Recupere la date de validitee d'un champs.
 #
-# Parametres  :
-#   <Field> : Identificateur du champs
+# Parametres :
+#   <Field>  : Identificateur du champs
+#   <Min>    : Ajouter les minutes
 #
 # Retour    :
 #   <Date>  : Date de validitee du champs formatee
@@ -525,7 +526,7 @@ proc MetData::FindAll { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
 #
 #-------------------------------------------------------------------------------
 
-proc MetData::FormatDATEV { Field } {
+proc MetData::FormatDATEV { Field { Min False } } {
 
    #----- Obtenir la date reelle a partir de la date d'origine du champs (STAMP)
    #----- Transformer en secondes pour traiter la date
@@ -534,7 +535,11 @@ proc MetData::FormatDATEV { Field } {
 
    #----- Retour de la date de validitee
 
-   return [clock format $seconds -format "%a %b %d %Y, %H UTC" -gmt true]
+   if { $Min } {
+      return [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -gmt true]
+   } else {
+      return [clock format $seconds -format "%a %b %d %Y, %H UTC" -gmt true]
+   }
 }
 
 #-------------------------------------------------------------------------------
