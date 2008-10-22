@@ -951,10 +951,13 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
 
 // Due to ezscint bugs, I cannot release the grid (gdaxes)
-//   if (Ref->Id>-1)
-//      EZLock_RPNInt();
-//      c_gdrls(Ref->Id);
-//      EZUnLock_RPNInt();
+   if (Ref->Id>-1) {
+/*
+      EZLock_RPNInt();
+      c_gdrls(Ref->Id);
+      EZUnLock_RPNInt();
+*/
+   }
 
    if (Ref->GCPTransform) {
       GDALDestroyGCPTransformer(Ref->GCPTransform);

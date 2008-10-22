@@ -846,7 +846,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                return(TCL_ERROR);
             }
          }
-         if (n==15 || n==16) {
+         if (n==16 || n==17) {
             return(Data_GridAverage(Interp,field0->Ref,field0->Def,NULL,NULL,NULL,NULL,n,1));
          } else {
             Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);
@@ -1010,6 +1010,10 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          if (field0->Def->Accum) {
             free(field0->Def->Accum);
             field0->Def->Accum=NULL;
+         }
+         if (field0->Def->Mask) {
+            free(field0->Def->Mask);
+            field0->Def->Mask=NULL;
          }
          break;
 

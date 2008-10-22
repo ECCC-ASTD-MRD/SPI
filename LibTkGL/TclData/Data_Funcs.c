@@ -55,6 +55,7 @@ TFuncDef FuncD[] = {
   { "lut"       , lut       , 3 , TD_Unknown },
   { "fkernel"   , fkernel   , 2 , TD_Unknown },
   { "fcentile"  , fcentile  , 3 , TD_Unknown },
+  { "fpeel"     , fpeel     , 3 , TD_Unknown },
   { "darea"     , darea     , 1 , TD_Float32 },
   { "ddx"       , ddx       , 1 , TD_Float32 },
   { "ddy"       , ddy       , 1 , TD_Float32 },
@@ -161,6 +162,78 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   }
 
   return(NULL);
+}
+
+double fpeel(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+
+   double        v,vb,vc;
+   unsigned long i,j,idx,idxi;
+   char          t;
+
+   Def_Get(MB,0,0,vb);
+   Def_Get(MC,0,0,vc);
+
+   /*Parse the matrix*/
+   for(j=0;j<MA->NJ;j++) {
+      idx=j*MA->NI;
+      for(i=0;i<MA->NI;i++) {
+         t=0;
+
+         idxi=idx+i;
+         Def_Get(MA,0,idxi,v);
+         if (v==vb) {
+            if (i>0) {
+               Def_Get(MA,0,idxi-1,v);
+               if (v==vc) t++;
+            }
+            if (i<MA->NI-1) {
+               Def_Get(MA,0,idxi+1,v);
+               if (v==vc) t++;
+            }
+
+            if (j>0) {
+               idxi=idx-MA->NI+i;
+               Def_Get(MA,0,idxi,v);
+               if (v==vc) t++;
+
+               if (i>0) {
+                  Def_Get(MA,0,idxi-1,v);
+                  if (v==vc) t++;
+               }
+               if (i<MA->NI-1) {
+                  Def_Get(MA,0,idxi+1,v);
+                  if (v==vc) t++;
+               }
+            }
+
+            if (j<MA->NJ-1) {
+               idxi=idx+MA->NI+i;
+               Def_Get(MA,0,idxi,v);
+               if (v==vc) t++;
+
+               if (i>0) {
+                  Def_Get(MA,0,idxi-1,v);
+                  if (v==vc) t++;
+               }
+               if (i<MA->NI-1) {
+                  Def_Get(MA,0,idxi+1,v);
+                  if (v==vc) t++;
+               }
+            }
+
+            /*Test for survival or death*/
+            idxi=idx+i;
+            if (t) {
+               Def_Set(Res,0,idxi,vc);
+            } else {
+               Def_Set(Res,0,idxi,v);
+            }
+         } else {
+            Def_Set(Res,0,idxi,v);
+         }
+      }
+   }
+   return(0.0);
 }
 
 double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
