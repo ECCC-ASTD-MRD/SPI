@@ -2054,8 +2054,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      return(TCL_ERROR);
                   }
                } else {
-                  Tcl_AppendResult(Interp,"Data_Stat: Invalid data to get mask from",(char*)NULL);
-                  return(TCL_ERROR);
+                  if (Field->Def->Mask) {
+                     free(Field->Def->Mask);
+                  }
+                  Field->Def->Mask=NULL;
                }
             }
             break;

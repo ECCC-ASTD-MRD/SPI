@@ -86,6 +86,7 @@ double in(TDataDef *Res,TDataDef *MA,TDataDef *MB);
 double lut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
 double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB);
 double fcentile(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
+double fpeel(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
 
 /*Matrix reduction operations*/
 double stat_all(TDataDef *MA,TDataDef *MB);   /* All stats */

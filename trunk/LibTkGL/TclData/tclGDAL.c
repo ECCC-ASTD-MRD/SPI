@@ -411,7 +411,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          }
-         if (n==15 || n==16) {
+         if (n==16 || n==17) {
             return(Data_GridAverage(Interp,band->Ref,band->Def,NULL,NULL,NULL,NULL,n,1));
          } else {
             Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);
@@ -653,6 +653,10 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (band->Def->Accum) {
             free(band->Def->Accum);
             band->Def->Accum=NULL;
+         }
+         if (band->Def->Mask) {
+            free(band->Def->Mask);
+            band->Def->Mask=NULL;
          }
          break;
       case IS:
