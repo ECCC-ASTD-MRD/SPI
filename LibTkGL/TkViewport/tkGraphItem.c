@@ -386,7 +386,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
          case VALUE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GraphTypeName[item->Value],-1));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GraphDataName[item->Value],-1));
             } else {
                if (Tcl_GetBooleanFromObj(Interp,Objv[++i],&item->Value)==TCL_ERROR) {
                   if (Tcl_GetIndexFromObj(Interp,Objv[i],GraphDataName,"data",0,&item->Value)!=TCL_OK) {
