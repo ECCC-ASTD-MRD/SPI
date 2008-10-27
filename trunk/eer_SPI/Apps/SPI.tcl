@@ -18,7 +18,7 @@
 #----- Lire la liste des definitions communes
 
 set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end]
-set GDefs(Dir)     [file dirname [info script]]/..
+set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
 
 if { ![file exists [set defs $env(HOME)/.eer_ToolDefs/.eer_Defs-[regsub \[:alpha:\]+ $GDefs(Version) ""]]] } {
    exec $GDefs(Dir)/Setup/Setup
