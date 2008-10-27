@@ -564,7 +564,10 @@ proc CVClock::Time { Frame Sec Total } {
       set Data(Sec$Frame) $Sec
       set Sec [expr int($Sec+[lindex [lindex $Data(Zones) $Data(Zone$Frame)] 1]*3600)]
 
-      scan [clock format $Sec -format "%H" -gmt true] "%02i" hour
+      #----- We need the hour without leading 0. Could have used %k but not available on IRIX64
+      if { [set hour [string trimleft [clock format $Sec -format "%H" -gmt true] 0]]=="" } {
+         set hour 0
+      }
       set min  [clock format $Sec -format "%M" -gmt true]
       set jour [DateStuff::StringDay   [clock format $Sec -format "%w" -gmt true] $GDefs(Lang)]
       set mois [DateStuff::StringMonth [clock format $Sec -format "%m" -gmt true] $GDefs(Lang)]
