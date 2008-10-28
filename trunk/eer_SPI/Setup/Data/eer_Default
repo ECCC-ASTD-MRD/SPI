@@ -107,8 +107,12 @@ set Viewport::Resources(Rail)      #ff1493   ;#Chemin de fer
 set Viewport::Resources(Util)      #ffff00   ;#Utilitaires
 set Viewport::Resources(Canal)     #00ffff   ;#Canal/Aqueduc
 set Viewport::Resources(Coord)     #000000   ;#Latlon
+set Viewport::Resources(FillCoast) #C2D74B   ;#Cotes (Polygones)
+set Viewport::Resources(FillLake)  #33C2FF   ;#Lacs (Polygones)
 
 #----- Parametres des champs
+
+set FSTD::Param(Interp)            LINEAR         ;#Type d'interpolation
 
 dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
    -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
