@@ -1210,21 +1210,21 @@ int Projection_Init(Tcl_Interp *Interp){
 
       /*Initialisation du package de projection cylindrique*/
       if (Azimuth_Init(Interp)==TCL_ERROR)
-         return TCL_ERROR;
+         return(TCL_ERROR);
 
       /*Initialisation du package de projection cylindrique*/
       if (Cylin_Init(Interp)==TCL_ERROR)
-         return TCL_ERROR;
+         return(TCL_ERROR);
 
       /*Initialisation du package de projection orthographique*/
       if (Ortho_Init(Interp)==TCL_ERROR)
-         return TCL_ERROR;
+         return(TCL_ERROR);
 
       /*Initialisation du package de projection usager*/
       if (Grid_Init(Interp)==TCL_ERROR)
-         return TCL_ERROR;
+         return(TCL_ERROR);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

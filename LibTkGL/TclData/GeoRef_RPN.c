@@ -411,5 +411,5 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=GeoRef_RPNValue;
    ref->Distance=GeoRef_RPNDistance;
-  return(GeoRef_Find(ref));
+   return(GeoRef_Find(ref));
 }
