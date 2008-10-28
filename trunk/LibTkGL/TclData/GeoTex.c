@@ -668,6 +668,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
   /*Allocate temp buffer if not already done*/
    if (!Tile->Data) {
       if (!(Tile->Data=(char*)malloc(Tile->Nx*Tile->Ny*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
+         fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
          return(0);
       }
    }
