@@ -1154,7 +1154,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
 
-   FSTD_File     *file;
+   FSTD_File *file;
 
    if ((file=(FSTD_File*)TclY_HashDel(&FSTD_FileTable,Id))) {
       file->Open=file->Open<0?1:file->Open;
@@ -1191,14 +1191,14 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
 
    Tcl_HashEntry *entry;
    FSTD_File     *file;
-   int            new;
+   int            new,type;
    char           buf[2048];
 
    /* Creer l'entree dans la liste table de fichiers standards */
    entry=Tcl_CreateHashEntry(&FSTD_FileTable,Id,&new);
    if (!new) {
       Tcl_AppendResult(Interp,"FSTD_FileOpen: File already opened, cannot reuse openned file identificator ",Id,(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    file=(FSTD_File*)malloc(sizeof(FSTD_File));
@@ -1299,14 +1299,14 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
       if (ok<0) {
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed)",(char *)NULL);
-         EZUnLock_RPNFile();
+         ok=c_fclos(File->Id);
          return(-1);
       }
 
       ok=c_fstouv(File->Id,"RND");
       if (ok<=-1) {
-//         exit(1);
-         ok=c_fclos(File->Id);
+         // We should close the fid but c_fstouv keeps something opened and fstfrm blows up.
+         // ok=c_fclos(File->Id);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv)",(char *)NULL);
          EZUnLock_RPNFile();
          return(-1);
