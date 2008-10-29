@@ -129,6 +129,7 @@ proc IdPage { show } {
    #----- Inclusion de la librairie de projection
 
    load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkViewport$GDefs(Ext)
+   load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim
 
    package require PrintBox  ; IdPrintBox  False
    package require ProjCam   ; IdProjCam   False
@@ -1006,7 +1007,7 @@ proc Page::ModeData { Frame VP } {
 
    $c bind $Data(Tag)$VP <ButtonPress-2>   "$c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP"
    $c bind $Data(Tag)$VP <B2-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
-   $c bind $Data(Tag)$VP <ButtonRelease-2> "$Page::Data(ToolMode)::MoveDone $Frame $VP ; $c config -cursor left_ptr"
+   $c bind $Data(Tag)$VP <ButtonRelease-2> "\$Page::Data(ToolMode)::MoveDone $Frame $VP ; $c config -cursor left_ptr"
 
    $c config -cursor left_ptr
 }

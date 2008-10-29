@@ -157,7 +157,7 @@ proc TRAJECT::New { Parent } {
          Option::Create $frame.s.sel.queue [lindex $Lbl(Queue) $GDefs(Lang)] TRAJECT::Sim(Queue) 0 19 $GDefs(Queue) ""
          pack $frame.s.sel.host $frame.s.sel.queue -side top -fill x
       button $frame.s.launch -text [lindex $Lbl(Go) $GDefs(Lang)] -bd 1 -highlightthickness 0 \
-        -command "TRAJECT::SimLaunchNew"
+        -command "TRAJECT::SimLaunch"
       pack $frame.s.sel $frame.s.t0 $frame.s.t1 -side top -fill x
       pack $frame.s.launch  -side bottom -fill both -expand true
    pack $frame.s -side right -padx 5 -pady 10 -fill both -expand true -anchor n

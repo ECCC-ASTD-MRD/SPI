@@ -149,12 +149,12 @@ proc TRAJECT::InitNew { } {
 #
 #----------------------------------------------------------------------------
 
-proc TRAJECT::PoolInfo { Pool } {
+proc TRAJECT::PoolInfo { Info } {
 
-   set Exp::Data(NoSim)  [Info::Strip $Pool NoSim]
-   set Exp::Data(NoPrev) [Info::Strip $Pool NoPrev]
-   set Exp::Data(State)  [Info::Strip $Pool State]
-   set Exp::Data(Desc)   "[Info::Strip $Pool Duration] Hrs [Info::Strip $Pool Meteo][Info::Strip $Pool Mode] ($Exp::Data(NoSim))"
+   set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
+   set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
+   set Exp::Data(State)  [Info::Strip $Info State]
+   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo][Info::Strip $Info Mode] ($Exp::Data(NoSim))"
 }
 
 #---------------------------------------------------------------------------
@@ -235,6 +235,7 @@ proc TRAJECT::SimInitLaunch { Path No } {
    set Sim(AccYear)  [clock format $Sim(Second) -format "%Y" -gmt true]
    set Sim(AccMonth) [clock format $Sim(Second) -format "%m" -gmt true]
    set Sim(AccDay)   [clock format $Sim(Second) -format "%d" -gmt true]
+   set Sim(Second)   [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt True]
 
    #----- Determine les fichiers necessaires a la simulation.
 
@@ -292,7 +293,7 @@ proc TRAJECT::SimInitLaunch { Path No } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::SimLaunchNew>
+# Nom      : <TRAJECT::SimLaunch>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Executer les scripts permettant de lancer le modele.
@@ -305,7 +306,7 @@ proc TRAJECT::SimInitLaunch { Path No } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::SimLaunchNew { } {
+proc TRAJECT::SimLaunch { } {
    global GDefs
    variable Lbl
    variable Msg
@@ -316,26 +317,14 @@ proc TRAJECT::SimLaunchNew { } {
       Dialog::CreateError . [lindex $Error(EndDate) $GDefs(Lang)] $GDefs(Lang)
       return
    }
-
    set Sim(Duration) [lindex $Sim(Duration) 0]
 
    #----- Creation du repertoire.
-
    set Sim(NoSim) [Info::Request $Sim(BasePath)/TRAJECT.pool]
    set Sim(Path)  "$Sim(BasePath)/TRAJECT.$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)00"
-
    file mkdir $Sim(Path)
 
-   set date "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)"
-
-   if { $date<=19981009 } {
-      set Sim(Bin) traj-SIGMA
-   } else {
-      set Sim(Bin) traj-RK
-   }
-
    #----- Recuperer le range de fichier selon la selection de l'usager
-
    set end [.trajectnew.opt.frame1.d.l.list curselection]
 
    if { $Sim(Method) == "Trajectoire" } {
@@ -344,71 +333,26 @@ proc TRAJECT::SimLaunchNew { } {
       #      selection afin de reajuster l'element choisi avec la
       #      'vrai' liste ( $Sim(Data) ) et non ( $datasel ).
 
-      incr end
-
-      set Sim(Data) [lrange $Sim(Data) 0 $end]
+      set Sim(Data) [lrange $Sim(Data) 0 [incr end]]
+      set Sim(Retro) True
    } else {
       set Sim(Data) [lrange $Sim(Data) $end end]
-      set end
+      set Sim(Retro) False
    }
+   set Sim(Mode) [MetData::GetMode $Sim(Data)]
 
-   #----- Creer le fichier de donnees meteo
-
-   set f [open $Sim(Path)/data_std_sim w 0644]
+   #----- Get the metdata files
+   set files {}
    foreach file $Sim(Data) {
-      puts $f [lindex $file 2]
+      lappend files [lindex $file 2]
    }
-   close $f
+   exec echo [join $files "\n"] > $Sim(Path)/data_std_sim
 
-   #----- Determiner le mode de l'experience selon les donnees
-   #      0=prognosis
-   #      1=analysys
-   #      2=mixte
-
-   set anal [lsearchsub $Sim(Data) *trial* 2]
-   set prog [lsearchsub $Sim(Data) *prog* 2]
-
-   if { $anal!=-1 && $prog!=-1 } {
-      set Sim(Mode) mixte
-      set mode 2
-   } elseif { $anal!=-1 } {
-      set Sim(Mode) diag
-      set mode 1
-   } else {
-      set Sim(Mode) prog
-      set mode 0
-   }
-
-   #----- Creation du fichier de directives
-
-   set f [open $Sim(Path)/entre w 0644]
-
-   puts $f "'[string toupper $Sim(Name)] '"
-   puts $f $mode
-
-   if { $Sim(Method) != "Trajectoire" } {
-      puts $f ".TRUE.   Mode retro-trajectoire ?"
-      set Sim(Retro) true
-   } else {
-      puts $f ".FALSE.  Mode retro-trajectoire ?"
-      set Sim(Retro) false
-   }
-
-   if { $Sim(LevelUnit) == "METRES" } {
-      puts $f "'H'      Niveaux en metres"
-   } else {
-      puts $f "'P'      Niveaux en millibars"
-   }
-
-   puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-
-   #----- Recuperer les niveaux valides
-
+   #----- Get the levels
    set Sim(Level) ""
    set nblvl 0
-
-   for { set i 1 } { $i <=25 } { incr i } {
-      if { $Sim(Level$i) != "" } {
+   for { set i 1 } { $i<=25 } { incr i } {
+      if { $Sim(Level$i)!="" } {
          lappend Sim(Level) "$Sim(Level$i)"
          incr nblvl
       } else {
@@ -416,63 +360,103 @@ proc TRAJECT::SimLaunchNew { } {
       }
    }
 
-   puts $f "[expr $nblvl*[llength $Sim(Pos)]]        Nombre de position de parcelles"
+   #----- Get the particles list
+   set parts {}
    foreach pos $Sim(Pos) {
       foreach level $Sim(Level) {
-         puts $f "[lindex $pos 2] [lindex $pos 1] $level [lindex $pos 0]"
+         lappend parts [list [lindex $pos 2] [lindex $pos 1] $level [lindex $pos 0]]
       }
    }
-   puts $f "$Sim(AccYear)     Annee de l'accident"
-   puts $f "$Sim(AccMonth)       Mois de l'accident"
-   puts $f "$Sim(AccDay)       Jour de l'accident"
-   puts $f "$Sim(AccHour)       Heure de l'accident"
 
-   close $f
-
-   #----- Creer de commandes
-
-   set f [open $Sim(Path)/traject.sh w 0755]
-
-   puts $f "#!/bin/ksh"
-   puts $f ". ~/.profile"
-   puts $f "set -x"
-   puts $f "arch=`uname -s`"
-   puts $f "cd $Sim(Path)"
-
-   if { $Sim(DeltaS) > 0 } {
-      puts $f "$GDefs(Dir)/Script/TrajectBatch.tcl $Sim(Path) $Sim(Bin) $Sim(DeltaS) $Sim(DeltaL) $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour) $Sim(Retro)"
+   if { $Sim(Retro) } {
+      set mode FORWARD
    } else {
-      puts $f "$GDefs(Dir)/Script/TrajectLaunch.sh $GDefs(Dir)/Bin/\${arch}/$Sim(Bin) $GDefs(Dir)/Script $Sim(Path)"
+      set mode BACKWARD
    }
 
-   puts $f "exec $GDefs(Dir)/Script/SimDone.sh $Sim(Path)/sim.pool $Sim(Path)/../TRAJECT.pool"
-   close $f
-
-   set Sim(State) 1
-   set pool [Info::Code ::TRAJECT::Sim $Sim(Info) :]
-   exec echo "$pool" >> $Sim(Path)/sim.pool
+   if { $Sim(LevelUnit)=="METRES" } {
+      set unit MAGL
+   } else {
+      set unit PRESSURE
+   }
 
    set Sim(State) 2
-   set pool [Info::Code ::TRAJECT::Sim $Sim(Info) :]
-   exec echo "$pool" >> $Sim(BasePath)/TRAJECT.pool
+   set info [Info::Code ::TRAJECT::Sim $Sim(Info) :]
+   Info::Set $Sim(BasePath)/TRAJECT.pool $info
 
-   if { $Sim(Queue)!="none" } {
-       Debug::TraceProc "TRAJECT: Submitting model on : $Sim(Host)"
-       exec soumet++ $Sim(Path)/traject.sh -cm 300M -t 3600 -mach $Sim(Host) -cl $Sim(Queue) -listing $Sim(Path)
-   } else {
-      Debug::TraceProc "TRAJECT: Launching model on : $Sim(Host)"
+   Debug::TraceProc "TRAJECT: Launching model on : $Sim(Host)"
 
-      if { $Sim(Host)!=$GDefs(Host) } {
-         exec rsh -l $GDefs(FrontEndUser) -n $Sim(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
+   if { $Sim(Host)!=$GDefs(Host) } {
+
+      Info::Set $Sim(Path)/sim.pool $info 1
+
+      #----- Creation du fichier de directives
+      set f [open $Sim(Path)/entre w 0644]
+
+      puts $f "'[string toupper $Sim(Name)] '"
+      puts $f $Sim(Mode)
+
+      if { $Sim(Retro) } {
+         puts $f ".FALSE.  Mode retro-trajectoire ?"
       } else {
-         Exp::Launch "$Sim(Path)/traject.sh" "$pool" [expr 36+[llength $Sim(Data)]*240*[llength $Sim(Level)]*[llength $Sim(Pos)]] $Sim(Path)/traject.out
+         puts $f ".TRUE.   Mode retro-trajectoire ?"
       }
+
+      if { $Sim(LevelUnit) == "METRES" } {
+         puts $f "'H'      Niveaux en metres"
+      } else {
+         puts $f "'P'      Niveaux en millibars"
+      }
+
+      puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
+      puts $f "[expr $nblvl*[llength $Sim(Pos)]]        Nombre de position de parcelles"
+      foreach part $parts {
+         puts $f "$part"
+      }
+      puts $f "$Sim(AccYear)     Annee de l'accident"
+      puts $f "$Sim(AccMonth)       Mois de l'accident"
+      puts $f "$Sim(AccDay)       Jour de l'accident"
+      puts $f "$Sim(AccHour)       Heure de l'accident"
+
+      close $f
+
+      #----- Creation du script de lancement
+      set f [open $Sim(Path)/traject.sh w 0755]
+
+      puts $f "#!/bin/ksh"
+      puts $f ". ~/.profile"
+      puts $f "set -x"
+      puts $f "arch=`uname -s`"
+      puts $f "ulimit -s 500000"
+      puts $f "ulimit -m unlimited"
+      puts $f "ulimit -d unlimited"
+      puts $f "cd $Sim(Path)"
+      puts $f "$GDefs(Dir)/Bin/\${arch}/Traj -i entre -fich10 `cat data_std_sim` -tinc $Sim(DeltaS) -tlen $Sim(DeltaL) -o traject.points"
+      puts $f "exec $GDefs(Dir)/Script/SimDone.sh sim.pool ../TRAJECT.pool"
+
+      close $f
+
+      if { $Sim(Queue)!="none" } {
+         exec soumet++ $Sim(Path)/traject.sh -cm 300M -t 3600 -mach $Sim(Host) -cl $Sim(Queue) -listing $Sim(Path)
+      } else {
+         exec ssh -l $GDefs(FrontEndUser) -n $Sim(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
+      }
+   } else {
+      set id [Exp::Id $info]
+      simulation create $id -type trajectory
+      simulation param $id -title $Sim(Name) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
+         -mode $mode -unit $unit -date $Sim(Second) -particles $parts -data $files -output $Sim(Path)/traject.points \
+         -tinc $Sim(DeltaS) -tlen $Sim(DeltaL)
+      simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/traject.log
+
+      #----- Launch simulation within a new thread
+      eval set tid1 \[thread::create \{ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim\; simulation run $id\}\]
+
+      Exp::ThreadUpdate $id $Sim(BasePath)/TRAJECT.pool [simulation param $id -result]
    }
 
-   destroy .trajectnew
-
    #----- Relire les experiences
-
+      destroy .trajectnew
    Model::Check 0
 }
 
@@ -484,7 +468,7 @@ proc TRAJECT::SimLaunchNew { } {
 #
 # Parametres  :
 #   <Confirm> : Confirmation de la suppression
-#   <Pool>    : Identificateur de la simulation
+#   <Info>    : Identificateur de la simulation
 #
 # Retour :
 #
@@ -492,7 +476,7 @@ proc TRAJECT::SimLaunchNew { } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::SimSuppress { Confirm Pool } {
+proc TRAJECT::SimSuppress { Confirm Info } {
    global GDefs
    variable Msg
    variable Lbl
@@ -501,7 +485,7 @@ proc TRAJECT::SimSuppress { Confirm Pool } {
    . config -cursor watch
    update idletasks
 
-   set path "[Exp::Path]/[Info::Path $Sim(Info)  $Pool]"
+   set path "[Exp::Path]/[Info::Path $Sim(Info)  $Info]"
 
    if { $Confirm } {
 
@@ -519,8 +503,8 @@ proc TRAJECT::SimSuppress { Confirm Pool } {
 
    Debug::TraceProc "TRAJECT: Suppressing trajectory: $path"
 
-   Exp::Kill    $Pool
-   Info::Delete [Exp::Path]/TRAJECT.pool $Pool
+   Exp::ThreadKill [Exp::Id $Info]
+   Info::Delete [Exp::Path]/TRAJECT.pool $Info
    file delete -force $path
 
    #----- Relire les experiences

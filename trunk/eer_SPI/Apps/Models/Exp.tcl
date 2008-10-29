@@ -1181,13 +1181,13 @@ proc Exp::ProductRSMCJointData { } {
          warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
       if { $send } {
-         catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_null.txt leadrsmc.txt }
+         catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_null.txt leadrsmc.txt }
       } else {
-         catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_345.txt leadrsmc.txt }
+         catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_345.txt leadrsmc.txt }
       }
 
    } else {
-      catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_34.txt leadrsmc.txt }
+      catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/leadrsmc_34.txt leadrsmc.txt }
    }
 
    #----- cree le fichier pour la date.
@@ -1202,10 +1202,10 @@ proc Exp::ProductRSMCJointData { } {
 
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
-   catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 }
+   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 }
 
    if { !$join } {
-      catch { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html }
+      catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html }
    }
 
    destroy .msgbox
@@ -1252,7 +1252,7 @@ proc Exp::ProductRSMCJointStatement { File } {
       return
    }
 
-   catch  { exec rsh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html }
+   catch  { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html }
    . config -cursor left_ptr
 }
 
