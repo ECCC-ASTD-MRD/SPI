@@ -657,7 +657,7 @@ proc HFManager::HostRead { } {
    }
 
    if { [lsearch -exact $Host(List) $GDefs(Host)]==-1 } {
-      set Host($GDefs(Host)) [list - rsh rcp {}]
+      set Host($GDefs(Host)) [list - ssh scp {}]
       set Host(Prefix$GDefs(Host)) ""
       lappend Host(List) $GDefs(Host)
    }
@@ -694,10 +694,10 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
    set idx [lsearch -exact $Host(List) $Host(Name$Id)]
 
    if { $idx == -1 } {
-      set home [split [exec rsh -n $Host(Name$Id) pwd] " "]
+      set home [split [exec ssh -n $Host(Name$Id) pwd] " "]
       if { [llength $home] == 1 } {
          lappend Host(List) $Host(Name$Id)
-         eval set Host(\$Host(Name$Id)) \"- rsh rcp \{\}\"
+         eval set Host(\$Host(Name$Id)) \"- ssh scp \{\}\"
          eval set Host(Prefix\$Host(Name$Id)) \"\"
          ComboBox::AddList .hfman.host.$Id.host.sel $Host(Name$Id)
          HFManager::HostWrite $Id
