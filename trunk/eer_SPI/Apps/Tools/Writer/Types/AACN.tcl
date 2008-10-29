@@ -454,11 +454,11 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
 
    if { $Backup } {
       Debug::TraceProc "Writer::AACN::Send: Sending via metmanager $name"
-      catch  { exec rsh metmgr1 -l $GDefs(FrontEndUser) ./usr/local/env/profile_ksh_usr\s;export DISPLAY=$env(DISPLAY)\;export TERM=$env(TERM)\;/opt/mm/bin/amxmit -s $file }
+      catch  { exec ssh metmgr1 -l $GDefs(FrontEndUser) ./usr/local/env/profile_ksh_usr\s;export DISPLAY=$env(DISPLAY)\;export TERM=$env(TERM)\;/opt/mm/bin/amxmit -s $file }
    } else {
       Debug::TraceProc "Writer::AACN::Send: Sending via nanproc $name"
       if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-         catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) /usr/local/env/afsisio/scripts/usr/nanproc -bs -p b -f $file }
+         catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) /usr/local/env/afsisio/scripts/usr/nanproc -bs -p b -f $file }
       } else {
          catch  { exec nanproc -bs -p b -f $file }
       }

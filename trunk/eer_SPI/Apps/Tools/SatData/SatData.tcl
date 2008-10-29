@@ -117,9 +117,7 @@ proc SatData::DataExtract { InFile } {
    #----- execute the converter program.
 
    if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-      puts stderr "Option 1... $GDefs(FrontEnd) $GDefs(Host)"
-      puts stderr "rsh pollux -l $GDefs(FrontEndUser) . ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $GDefs(DirEER)/eer_Tmp/SAT_hdf2fstd.out"
-      catch { exec rsh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $GDefs(DirEER)/eer_Tmp/SAT_hdf2fstd.out" }
+      catch { exec ssh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $GDefs(DirEER)/eer_Tmp/SAT_hdf2fstd.out" }
    } else {
       puts stderr "Option 2... not available right now, sorry ! ( $GDefs(FrontEnd) $GDefs(Host) )"
       if { $trace } {

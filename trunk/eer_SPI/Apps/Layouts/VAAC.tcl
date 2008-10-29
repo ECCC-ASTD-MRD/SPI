@@ -785,22 +785,22 @@ proc VAAC::Transmit { Frame } {
             if { $no!="ca0281c" && $no!="ca0282c" && $no!="ca0287c" && $no!="ca0288c" } {
                SPI::Progress +0 "Sending over WAFS"
 
-               catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/;. /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" }
+               catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/;. /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" }
 
                #----- envoyer sur les sites web.
 
                exec convert ${file}.pbm -resize 680x880 ${file}.png
-               catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/$Sim(Name).${hour}.png"  }
+               catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/$Sim(Name).${hour}.png"  }
             }
          }
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
-            catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/;. /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " }
+            catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/;. /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " }
 
             #----- envoyer sur les sites web.
 
             exec convert ${file}.pbm -resize 680x880 ${file}.png
-            catch  { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/$Sim(Name).${hour}.png"  }
+            catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/$Sim(Name).${hour}.png"  }
          }
       }
    }
