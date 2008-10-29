@@ -106,7 +106,7 @@ proc Mapper::Window { } {
          button $Data(Tab1).head.zoom -image MODEZOOM -bd 0 -relief flat -overrelief raised -command "Mapper::Zoom"
          checkbutton $Data(Tab1).head.ref -variable Mapper::Data(GeoRef) -offvalue "" -command "Mapper::SetGeoRef" \
             -image RESET -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
-         pack $Data(Tab1).head.mode $Data(Tab1).head.open  $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
+         pack $Data(Tab1).head.mode $Data(Tab1).head.open $Data(Tab1).head.db $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
 
          frame $Data(Tab1).head.idx
             button $Data(Tab1).head.idx.down -image UP -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll -1"
@@ -172,6 +172,7 @@ proc Mapper::Window { } {
    Bubble::Create $Data(Tab1).head.zoom     [lindex $Bubble(Zoom) $GDefs(Lang)]
    Bubble::Create $Data(Tab1).head.mode     [lindex $Bubble(Mode) $GDefs(Lang)]
    Bubble::Create $Data(Tab1).head.open     [lindex $Bubble(File) $GDefs(Lang)]
+   Bubble::Create $Data(Tab1).head.db       [lindex $Bubble(DB) $GDefs(Lang)]
 
    trace add variable Viewport::Data(Data) write Mapper::Toggler
    Viewport::FollowerAdd Mapper
@@ -1286,7 +1287,7 @@ proc Mapper::ParamsOGR { Object Tab } {
             pack $Data(Frame4).meta.text -side left -fill both -expand true
             pack $Data(Frame4).meta.scroll -side left -fill y
          pack $Data(Frame4).meta -side top -fill both -expand true -padx 5 -pady 5
-         button $Data(Frame4).reset -text [lindex $Lbl(Clear) $GDefs(Lang)] -relief groove -bd 2 -command "Mapper::SelectOGRClear $Mapper::Data(Object)"
+         button $Data(Frame4).reset -text [lindex $Lbl(Clear) $GDefs(Lang)] -relief groove -bd 2 -command { Mapper::SelectOGRClear $Mapper::Data(Object) }
          pack $Data(Frame4).reset -side top -fill x -padx 5 -pady 5
 
       set Data(Frame5) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Table) $GDefs(Lang)] False ""]

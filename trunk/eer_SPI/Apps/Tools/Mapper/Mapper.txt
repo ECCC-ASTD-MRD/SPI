@@ -147,6 +147,7 @@ namespace eval Mapper { } {
    set Bubble(Down)     { "Descend la donnée sélectionnée dans la liste d'affichage" "Bring the selected data down in the display list" }
    set Bubble(Del)      { "Supprime la donnée selectionnée de la liste d'affichage" "Delete the selected data from the display list" }
    set Bubble(File)     { "Ouvrir un fichier de données géographiques" "Open a file of geographic data" }
+   set Bubble(DB)       { "Ouvrir un des données géographiques sur une base de données PostGIS" "Open geographic data on a PostGIS database" }
    set Bubble(Op)       { "Opérateur de sélection:\n\n~= Expression régulière\n== Égal à\n!= Différent de\n<  Plus petit que\n<= Plus petit ou égal\n>  Plus grand\n>= Plus grand ou égal\n<> Entre\n\[\] Parmi"
                           "Selection operator:\n\n~= Regular expression\n== Equal to\n!= Different from\n<  Smaller than\n<= Smaller or equal to\n>  Greather than\n>= Greather or equal to\n<> From - to\n\[\] Within" }
    set Bubble(Histo)    { "Extraire l'histogramme de la bande sélectionnée" "Extract selected band histogram" }
