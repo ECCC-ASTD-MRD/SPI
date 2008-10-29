@@ -40,7 +40,6 @@ namespace eval TRAJECT {
    if { $Sim(Host)!=$GDefs(FrontEnd) } {
       lappend Sim(Hosts) $GDefs(FrontEnd)
    }
-   set Sim(Host)          $GDefs(FrontEnd)
 
    set Sim(Model)  TRAJECT
    set Sim(State)  1
