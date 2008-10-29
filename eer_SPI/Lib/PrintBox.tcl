@@ -668,7 +668,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
          #----- Hardcode temporaire pour envoyer sur le nouveau site
 
          if { $Print(WEBSite)=="WEATHEROFFICE_VAAC" } {
-            catch { exec rsh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) -n ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $Print(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/[file tail $Print(FullName)].$Print(Device)" }
+            catch { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) -n ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $Print(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/[file tail $Print(FullName)].$Print(Device)" }
          } else {
             eval exec scp $Print(FullName).$Print(Device) ${site}/[file tail $Print(FullName)].$Print(Device) > /dev/null
          }
