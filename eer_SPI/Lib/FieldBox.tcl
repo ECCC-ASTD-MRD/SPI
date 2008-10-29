@@ -499,14 +499,14 @@ proc FieldBox::FileOpen { No File } {
 
       #----- Si le fichier est deja ouvert
 
-      if { [lsearch -exact $data(FileList) $file] != -1 } {
+      if { [lsearch -exact $data(FileList) $file]!=-1 } {
          continue
       }
 
       #----- Determiner l'index du fichier a ouvrir
 
       for { set fid 1 } { $fid < 10000 } { incr fid } {
-         if { [lsearch -exact $Data(FIDList) $fid] == -1 } {
+         if { [lsearch -exact $Data(FIDList) $fid]==-1 } {
             break
          }
       }
@@ -514,19 +514,17 @@ proc FieldBox::FileOpen { No File } {
       #----- Ouvrir le fichier
 
       set index ""
-      if { ![catch { set index [fstdfile open $fid read $file] }] } {
-         if { $index=="" } {
-            fstdfile close $fid
-         } else {
-            lappend data(TypeList) fstdfield
-         }
+      set bad [catch { set index [fstdfile open $fid read $file] }]
+      if { $bad } {
+         fstdfile close $fid
+#         set bad [catch { set index [gribfile open $fid read $file] }]
+#         if { $bad } {
+#            gribfile close $fid
+#         } else {
+#            lappend data(TypeList) gribfield
+#         }
       } else {
-         catch { set index [gribfile open $fid read $file] }
-         if { $index=="" } {
-            gribfile close $fid
-         } else {
-            lappend data(TypeList) gribfield
-         }
+         lappend data(TypeList) fstdfield
       }
 
       if { $index=="" } {
