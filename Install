@@ -38,16 +38,11 @@ then
    echo "   Found previous installation, cleaning it up"
    echo ""
    rm -f -r $ipath/eer_SPI-$ver/* $ipath/eer_SPI-$ver/.*
-else
-   echo "   Creating new package"
-   echo ""
-#   swim -a create -p cmc/eer_SPI-$ver -de "SPI (EER Viewer and Model manager)"
-    mkdir $ipath/eer_SPI-$ver
 fi
 
 echo "   Copying data ..."
 echo ""
-cp -R $path/eer_SPI/* $ipath/eer_SPI-$ver
+cp -Rp $path/eer_SPI/* $ipath/eer_SPI-$ver
 
 #----- Get the GDB path
 
