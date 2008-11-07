@@ -1309,9 +1309,13 @@ proc Graph::ParamsObsSelect { Type GR Desc } {
 
    upvar #0 Graph::${Type}::${Type}${GR}::Data  data
 
-   set idx [lindex [observation define [lindex $data(Obs) 0] -IDX $Desc] 0]
-   set coords [lrange [observation define [lindex $data(Obs) 0] -COORD $idx] 0 1]
-   set data(Obs$Graph::Data(Pos)) $Desc
+   foreach item $data(Data) {
+      if { [observation is $item] } {
+         set idx [lindex [observation define $item -IDX $Desc] 0]
+         set coords [lrange [observation define $item -COORD $idx] 0 1]
+         set data(Obs$Graph::Data(Pos)) $Desc
+      }
+   }
    Graph::${Type}::ItemDefine $GR $Graph::Data(Pos) $coords
 }
 
