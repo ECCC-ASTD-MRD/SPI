@@ -370,7 +370,6 @@ proc Graph::Compare::Init { Frame } {
       set Data(PosPos)          {}
       set Data(DescPos)         {}
       set Data(Data)            {}        ;#Liste des champs selectionnees
-      set Data(Obs)             {}        ;#Liste des stations selectionnee
       set Data(ObsIds)          {}        ;#Liste des positions observations
       set Data(ObsToken)        ""        ;#Token de recherche
 
@@ -553,7 +552,7 @@ proc Graph::Compare::ItemDefine { GR Pos Coords { Update True } } {
    }
 
    if { [info exists Graph::Compare::Compare${GR}::Data(Items)] } {
-      foreach item [lrange $data(Items) [llength [concat $data(Data) $data(Obs)]] end] {
+      foreach item [lrange $data(Items) [llength $data(Data)] end] {
          Graph::Compare::ItemDel $GR $item
       }
    }
@@ -571,7 +570,7 @@ proc Graph::Compare::ItemDefine { GR Pos Coords { Update True } } {
 
    Graph::Idle $GR Compare
    set i -1
-   foreach field [concat $data(Data) $data(Obs)] {
+   foreach field $data(Data)] {
       set item ${Pos}_Item[incr i]
 
       lappend data(Items$Pos) $item
@@ -796,7 +795,6 @@ proc Graph::Compare::Data { GR Data } {
    #----- Recuperer les champs correspondants du viewport actif
 
    set data(Data)   {}
-   set data(Obs)    {}
    set data(ObsIds) {}
 
    foreach item $Data {
@@ -805,14 +803,10 @@ proc Graph::Compare::Data { GR Data } {
       }
       if { [observation is $item] } {
          lappend data(Obs) $item
+         set data(ObsIds) [concat $data(ObsIds) [observation define $item -ID]]
       }
    }
 
-   #----- Determiner les id d'obs disponible
-
-   foreach obs $data(Obs) {
-      set data(ObsIds) [concat $data(ObsIds) [observation define $obs -ID]]
-   }
    set data(ObsIds) [lsort -unique -dictionary -increasing $data(ObsIds)]
 
    Graph::ParamsScaleUniform Compare $GR

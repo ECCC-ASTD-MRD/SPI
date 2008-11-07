@@ -473,7 +473,6 @@ proc Graph::Time::Init { Frame } {
       set Data(IP3)             True      ;#Valider les IP3
       set Data(Pos)             {}        ;#Liste des positions
       set Data(Data)            {}        ;#Liste des champs selectionnees
-      set Data(Obs)             {}        ;#Liste des stations selectionnee
       set Data(ObsIds)          {}        ;#Liste des observations selectionnee
       set Data(ObsToken)        ""        ;#Token de recherche
       set Data(Time)            ""
@@ -691,7 +690,7 @@ proc Graph::Time::ItemDefine { GR Pos Coords { Update True } } {
    }
 
    if { [info exists Graph::Time::Time${GR}::Data(Items$Pos)] } {
-      foreach item [lrange $data(Items$Pos) [expr [llength $data(Data)]+[llength $data(Obs)]] end] {
+      foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
          Graph::Time::ItemDel $GR $item
       }
    }
@@ -705,7 +704,7 @@ proc Graph::Time::ItemDefine { GR Pos Coords { Update True } } {
 
    Graph::Idle $GR Time
 
-   foreach field [concat $data(Data) $data(Obs)] {
+   foreach field $data(Data) {
       set item ${Pos}_Item[incr i]
       lappend data(Items$Pos) $item
 
@@ -940,7 +939,6 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
    #----- Recuperer la suite temporelle pour chaque champs
 
    set data(Data)   {}
-   set data(Obs)    {}
    set data(ObsIds) {}
    set nb [expr 95.0/([llength $Data]+1)]
    set sec ""
@@ -1004,7 +1002,7 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
          }
          set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
          set data(ObsIds)    [lsort -unique -dictionary -increasing $data(ObsIds)]
-         lappend data(Obs) $item
+         lappend data(Data)  $item
       }
       SPI::Progress +$nb "[lindex $Msg(Reading) $GDefs(Lang)] $sec"
    }

@@ -401,7 +401,6 @@ proc Graph::Contingency::Init { Frame } {
       set Data(Items)   {}         ;#Liste des items
       set Data(Pos)     {}         ;#Liste des positions
       set Data(Data)    {}        ;#Liste des donnees du graph
-      set Data(Obs)     ""        ;#Liste des stations selectionnee
       set Data(Select)  ""        ;#Case selectionnee
       set Data(Lat0)    0         ;#Rectangle de selection
       set Data(Lat1)    0         ;#Rectangle de selection
@@ -701,7 +700,6 @@ proc Graph::Contingency::Clear { GR } {
 
    set data(TIJ)    0
    set data(Select) ""
-   set data(Obs)    ""
 
    #----- Initialiser les listes
 
@@ -738,7 +736,6 @@ proc Graph::Contingency::ItemData { GR Pos Item Data } {
        set data1 [lindex $duo 1]
 
        if { [fstdfield is $data0] && [fstdfield is $data1] } {
-          set data(Obs) ""
           Graph::Contingency::ItemDataField $GR $data0 $data1
        } elseif { [observation is $data0] || [observation is $data1] } {
           Graph::Contingency::ItemDataObs $GR $data0 $data1
@@ -776,8 +773,6 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
    set ry [expr [llength $graph(RYList)]-1]
 
    #----- Dans le cas d'un champs, on en extrait les valeurs aux position de l'observation
-
-   set data(Obs) $Data0
 
    if { [fstdfield is $Data1] } {
       observation copy $Data1 $Data0

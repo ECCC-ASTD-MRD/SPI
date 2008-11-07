@@ -399,7 +399,6 @@ proc Graph::Profile::Init { Frame } {
       set Data(Items)           {}        ;#Liste des items
       set Data(Pos)             {}        ;#Liste des positions
       set Data(Data)            {}        ;#Liste des champs selectionnees
-      set Data(Obs)             {}        ;#Liste des observations
       set Data(ObsIds)          {}        ;#Liste des positions observations
       set Data(ObsToken)        ""        ;#Token de recherche
 
@@ -591,7 +590,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    }
 
    if { [info exists Graph::Profile::Profile${GR}::Data(Items$Pos)] } {
-      foreach item [lrange $data(Items$Pos) [expr [llength $data(Data)]+[llength $data(Obs)]] end] {
+      foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
          Graph::Profile::ItemDel $GR $item
       }
    }
@@ -604,7 +603,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    set i -1
 
    Graph::Idle $GR Profile
-   foreach field [concat $data(Data) $data(Obs)] {
+   foreach field $data(Data) {
       set item ${Pos}_Item[incr i]
       lappend data(Items$Pos) $item
 
@@ -821,7 +820,6 @@ proc Graph::Profile::Data { GR Data } {
    #----- Recuperer les champs correspondants du viewport actif
 
    set data(Data)   {}
-   set data(Obs)    {}
    set data(ObsIds) {}
    set nb [expr 95.0/([llength $Data]+1)]
    SPI::Progress +$nb
@@ -849,7 +847,7 @@ proc Graph::Profile::Data { GR Data } {
 
          set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
          set data(ObsIds)    [lsort -unique -dictionary -increasing $data(ObsIds)]
-         lappend data(Obs) $item
+         lappend data(Data) $item
       }
       SPI::Progress +$nb  [lindex $Msg(Reading) $GDefs(Lang)]
    }
