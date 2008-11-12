@@ -49,6 +49,7 @@ typedef struct TTraj {
    float    Min,Max;
    int      Lapse;
    long     Date;
+   float    Height;
    int      AP;
    int      Back;
    int      NPr;

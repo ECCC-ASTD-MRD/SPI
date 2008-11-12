@@ -600,12 +600,7 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
    foreach traj $Trajs {
       if { [trajectory is $traj] && [trajectory define $traj -PARCELNB] } {
           switch $Param(Mode) {
-            "LEVEL"    { if { [trajectory define $traj -LEVELTYPE]=="P" } {
-                            set var [format "%.2f" [lindex [trajectory define $traj -PARCEL 0] 4]]
-                         } else {
-                            set var [format "%.2f" [lindex [trajectory define $traj -PARCEL 0] 5]]
-                         }
-                       }
+            "LEVEL"    { set var [format "%.2f" [trajectory define $traj -LEVEL]] }
             "PARCEL"   { set var $traj }
             "ALL"      { set var TRAJ }
          }
@@ -971,9 +966,9 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
 
       if { $y < $Y1 } {
          if { [trajectory define $t -LEVELTYPE]=="P" } {
-            set Title "[format %5.0f [lindex [lindex $parcels 0] 4]] HPA"
+            set Title "[format %5.0f [trajectory define $t -LEVEL]] HPA"
          } else {
-            set Title "[format %5.0f [lindex [lindex $parcels 0] 5]] AGL"
+            set Title "[format %5.0f [trajectory define $t -LEVEL]] AGL"
          }
          $canvas create text $x $y -text "$Title" -fill $color -tags TRAJHEIGHT -anchor e -font XFont10
       } else {

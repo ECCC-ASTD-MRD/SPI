@@ -245,8 +245,8 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    int      i,j,idx;
    time_t   t;
 
-   static CONST char *sopt[] = { "-DATE","-DATEAP","-MODEL","-ID","-PATH","-MODE","-LEVELTYPE","-BACKWARD","-MIN","-MAX","-PARCELNB","-PARCELS","-PARCEL",NULL };
-   enum                opt { DATE,DATEAP,MODEL,ID,PATH,MODE,LEVELTYPE,BACKWARD,MIN,MAX,PARCELNB,PARCELS,PARCEL };
+   static CONST char *sopt[] = { "-DATE","-DATEAP","-MODEL","-ID","-PATH","-MODE","-LEVEL","-LEVELTYPE","-BACKWARD","-MIN","-MAX","-PARCELNB","-PARCELS","-PARCEL",NULL };
+   enum                opt { DATE,DATEAP,MODEL,ID,PATH,MODE,LEVEL,LEVELTYPE,BACKWARD,MIN,MAX,PARCELNB,PARCELS,PARCEL };
 
    traj=Traj_Get(Name);
    if (!traj) {
@@ -299,6 +299,13 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
          case MODE:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(traj->Mode));
+            } else {
+            }
+            break;
+
+         case LEVEL:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(traj->Height));
             } else {
             }
             break;
@@ -771,6 +778,11 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          if (ap || i!=0)
             fgets(buf,512,Stream);
 
+         /*Get starting height*/
+         sscanf(buf,"%i %f %f %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
+
+         /*Loop on parcel positions*/
+         traj->Spec=spec;
          for(j=0;j<traj->NPr;j++) {
             fgets(buf,512,Stream);
             sscanf(buf,"%i %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
@@ -918,6 +930,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       traj[nb]->Pr[j[nb]].Speed=0.0;
       traj[nb]->Min=traj[nb]->Pr[j[nb]].Co.Elev<traj[nb]->Min?traj[nb]->Pr[j[nb]].Co.Elev:traj[nb]->Min;
       traj[nb]->Max=traj[nb]->Pr[j[nb]].Co.Elev>traj[nb]->Max?traj[nb]->Pr[j[nb]].Co.Elev:traj[nb]->Max;
+      traj[nb]->Height=traj[nb]->Pr[0].Co.Elev;
       j[nb]++;
    }
 
@@ -1125,7 +1138,8 @@ void Traj_Wipe() {
    entry=Tcl_FirstHashEntry(&TrajTable,&ptr);
 
    while (entry) {
-      Traj_Free((TTraj*)Tcl_GetHashValue(entry));
+      /*Because of the data sharing with the Traj model, dont Free the data*/
+//      Traj_Free((TTraj*)Tcl_GetHashValue(entry));
       Tcl_DeleteHashEntry(entry);
       entry=Tcl_FirstHashEntry(&TrajTable,&ptr);
    }
