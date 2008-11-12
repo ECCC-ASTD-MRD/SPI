@@ -386,39 +386,38 @@ proc TRAJECT::SimLaunch { } {
 
    Debug::TraceProc "TRAJECT: Launching model on : $Sim(Host)"
 
+   #----- Creation du fichier de directives
+   set f [open $Sim(Path)/entre w 0644]
+
+   puts $f "'[string toupper $Sim(Name)] '"
+
+   if { $Sim(Retro) } {
+      puts $f ".FALSE.  Mode retro-trajectoire ?"
+   } else {
+      puts $f ".TRUE.   Mode retro-trajectoire ?"
+   }
+
+   if { $Sim(LevelUnit) == "METRES" } {
+      puts $f "'H'      Niveaux en metres"
+   } else {
+      puts $f "'P'      Niveaux en millibars"
+   }
+
+   puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
+   puts $f "[expr $nblvl*[llength $Sim(Pos)]]        Nombre de position de parcelles"
+   foreach part $parts {
+      puts $f "$part"
+   }
+   puts $f "$Sim(AccYear)     Annee de l'accident"
+   puts $f "$Sim(AccMonth)       Mois de l'accident"
+   puts $f "$Sim(AccDay)       Jour de l'accident"
+   puts $f "$Sim(AccHour)       Heure de l'accident"
+
+   close $f
+
    if { $Sim(Host)!=$GDefs(Host) } {
 
       Info::Set $Sim(Path)/sim.pool $info 1
-
-      #----- Creation du fichier de directives
-      set f [open $Sim(Path)/entre w 0644]
-
-      puts $f "'[string toupper $Sim(Name)] '"
-      puts $f $Sim(Mode)
-
-      if { $Sim(Retro) } {
-         puts $f ".FALSE.  Mode retro-trajectoire ?"
-      } else {
-         puts $f ".TRUE.   Mode retro-trajectoire ?"
-      }
-
-      if { $Sim(LevelUnit) == "METRES" } {
-         puts $f "'H'      Niveaux en metres"
-      } else {
-         puts $f "'P'      Niveaux en millibars"
-      }
-
-      puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-      puts $f "[expr $nblvl*[llength $Sim(Pos)]]        Nombre de position de parcelles"
-      foreach part $parts {
-         puts $f "$part"
-      }
-      puts $f "$Sim(AccYear)     Annee de l'accident"
-      puts $f "$Sim(AccMonth)       Mois de l'accident"
-      puts $f "$Sim(AccDay)       Jour de l'accident"
-      puts $f "$Sim(AccHour)       Heure de l'accident"
-
-      close $f
 
       #----- Creation du script de lancement
       set f [open $Sim(Path)/traject.sh w 0755]
