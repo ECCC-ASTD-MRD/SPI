@@ -51,6 +51,7 @@ PROJ_PATH = $(LIB_PATH)/proj-4.4.9
 
 # ECMWF GRIB librairie
 GRIB_PATH = $(LIB_PATH)/grib_api-0.9.31
+#GRIB_PATH = $(LIB_PATH)/grib_api-1.6.4
 
 # BUFR libecbufr path
 BUFR_PATH=  $(LIB_PATH)/libecbufr-0.7.3
