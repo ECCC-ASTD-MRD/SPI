@@ -164,7 +164,7 @@ proc Writer::FVCN::Init { Pad } {
       set Data(L0$h$Pad)    ""
       set Data(L1$h$Pad)    ""
       set Data(L2$h$Pad)    ""
-      set Data(LVL$h)       { "" "" "" }
+      set Data(LVL$h)       {}
       set Data(HAsh$h$Pad)  1
    }
 
@@ -383,14 +383,16 @@ proc Writer::FVCN::GraphAreaColor { Pad } {
       #----- Update Legend, We have to extract the level heights from the main FVCN
       #----- to dispacth the colors ans stipplings
       set lvls {}
+
       foreach h { 00 06 12 18 } {
          set text [$Pad.ash$h get 0.0 end]
+         set Data(LVL$h) {}
          set l 0
          foreach { lvl i } [regexp -all -nocase -inline {([A-Z]|[0-9]){3,5}/FL+[0-9]{2,3} [NS][0-9]{4}} $text] {
             if { [lsearch -exact $lvls [set lvl [lindex $lvl 0]]]==-1 } {
                lappend lvls $lvl
             }
-            lset Data(LVL$h) $l $lvl
+            lappend Data(LVL$h) $lvl
             incr l
          }
       }
@@ -402,6 +404,11 @@ proc Writer::FVCN::GraphAreaColor { Pad } {
          $Data(Page$Pad).page.canvas itemconfigure LVL$i -text $lvl
          $Data(Page$Pad).page.canvas itemconfigure CVL$i -fill $Data(Color$lvl) -outline $Data(Color$lvl) -stipple $Data(Stipple$lvl)
          incr i
+         puts stderr "$i $lvl $Data(Color$lvl)"
+      }
+      for { } { $i<5 } { incr i } {
+         $Data(Page$Pad).page.canvas itemconfigure LVL$i -text ""
+         $Data(Page$Pad).page.canvas itemconfigure CVL$i -fill "" -outline ""
       }
    }
 }
@@ -1075,59 +1082,27 @@ proc Writer::FVCN::AshUpdate { Pad Hour { Text "" } } {
    if { $Text=="" } {
 
       #----- Convertir en format text
-      foreach l { L0 L1 L2 } {
+      foreach l { L0 L1 L2 } lvl { "SFC/FL200" "FL200/FL350" "FL350/FL600" } {
 
-         set c$l ""
+         set coords ""
 
-         #----- Si il y au moins de 2 points, on converti
-         if { [llength $Data($l$Hour$Pad)]>3 } {
+         if { [llength $Data($l$Hour$Pad)] } {
             foreach { lat lon elev } $Data($l$Hour$Pad) {
-               lappend c$l [Writer::FVCN::FormatCoord $lat $lon]
+               lappend coords [Writer::FVCN::FormatCoord $lat $lon]
             }
-            lappend c$l [Writer::FVCN::FormatCoord [lindex $Data($l$Hour$Pad) 0] [lindex $Data($l$Hour$Pad) 1]]
+            lappend coords [Writer::FVCN::FormatCoord [lindex $Data($l$Hour$Pad) 0] [lindex $Data($l$Hour$Pad) 1]]
          }
 
-         eval set len \[set l$l \[llength \$c$l\]\]
-
-         if { $len == 0 } {
-            set c$l "NO VA EXP"
-         } else {
-            eval set c$l \[join \$c$l \" - \"\]
+         if { [llength $coords] } {
+            append Text "$lvl [join $coords " - "] "
          }
       }
 
-      if { $Hour=="00" } {
-         if { $lL0==0 && $lL1==0 && $lL2==0 } {
+      if { $Text=="" } {
+         if { $Hour=="00" } {
             set Text $Data(NoVA00)
          } else {
-            set Text ""
-            set Data(LVL00) { "" "" "" }
-            if { $lL0!=0 } {
-               lset Data(LVL00) 0 "SFC/FL200"
-               append Text "SFC/FL200 $cL0 "
-            }
-            if { $lL1!=0 } {
-               lset Data(LVL00) 1 "FL200/FL350"
-               append Text "FL200/FL350 $cL1 "
-            }
-            if { $lL2!=0 } {
-               lset Data(LVL00) 2  "FL350/FL600"
-               append Text "FL350/FL600 $cL2"
-            }
-         }
-      } else {
-         if { $lL0==0 && $lL1==0 && $lL2==0 } {
-            set Data(LVL$Hour) { "" "" "" }
-            set Text "$Data(Date$Hour$Pad) SFC/FL600 NO VA EXP"
-         } elseif { $lL0==0 && $lL1==0 && $lL2!=0 } {
-            set Data(LVL$Hour) { "FL350/FL600" "" "" }
-            set Text "$Data(Date$Hour$Pad) SFC/FL350 NO VA EXP FL350/FL600 $cL2"
-         } elseif { $lL0!=0 && $lL1==0 && $lL2==0 } {
-            set Data(LVL$Hour) { "SFC/FL200" "" "" }
-            set Text "$Data(Date$Hour$Pad) SFC/FL200 $cL0 FL350/FL600 NO VA EXP"
-         } else {
-            set Data(LVL$Hour) { "SFC/FL200" "FL200/FL350" "FL350/FL600" }
-            set Text "$Data(Date$Hour$Pad) SFC/FL200 $cL0 FL200/FL350 $cL1 FL350/FL600 $cL2"
+            set Text "NO VA EXP"
          }
       }
    }
@@ -1914,15 +1889,28 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
 
       set f $Data(Page$Pad)
       $Data(Page$Pad).page.canvas delete ICOVAAC
-      foreach h { 00 06 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST06) $Data(FCST12) $Data(FCST18) ] {
+      foreach h { 00 06 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST06) $Data(FCST12) $Data(FCST18)] {
          $Data(Page$Pad).page.canvas itemconfigure DATE$h -text "$l $Data(Date$h$Pad)"
+         $Data(Page$Pad).page.canvas delete FVCN$h
+         set no 0
          set va 0
-         foreach no { 0 1 2 } lvl $Data(LVL$h)  {
-            if  {  $lvl!="" && [llength $Data(L$no$h$Pad)]>4 } {
-               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $Data(L$no$h$Pad) "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN" FVCN$no$h \
+         foreach lvl $Data(LVL$h)  {
+            set i -1
+            set coords {}
+            foreach l { L0 L1 L2 } {
+               if { [llength [set coords $Data($l$h$Pad)]] } {
+                  incr i
+               }
+               if { $i==$no } {
+                  break
+               }
+            }
+            if  { [llength $coords)]>=4 } {
+               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $coords "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN$h FVCN" FVCN$no$h \
                   $Data(Color$lvl) $Data(Color$lvl) $Data(Stipple$lvl) False 2
                incr va
             }
+            incr no
          }
 
          #----- Set no ash label if area is not defined
