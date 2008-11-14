@@ -1272,7 +1272,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
    if (!File)
       return(-1);
 
-  if (index(File->Name,':') && File->Name[0]!=':') {
+   if (index(File->Name,':') && File->Name[0]!=':') {
       rem=1;
    }
 
