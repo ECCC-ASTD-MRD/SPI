@@ -2037,7 +2037,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"fld");
                return(TCL_ERROR);
             } else {
-               if (fld==Data_Get(Tcl_GetString(Objv[++i]))) {
+               if (fld=Data_Get(Tcl_GetString(Objv[++i]))) {
                   if (fld->Def->NI==Field->Def->NI && fld->Def->NJ==Field->Def->NJ && fld->Def->NK==Field->Def->NK) {
                      if (!Field->Def->Mask) {
                         if (!(Field->Def->Mask=(char*)malloc(FSIZE3D(Field->Def)))) {
