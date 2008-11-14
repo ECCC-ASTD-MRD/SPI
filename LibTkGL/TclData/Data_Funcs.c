@@ -55,7 +55,7 @@ TFuncDef FuncD[] = {
   { "lut"       , lut       , 3 , TD_Unknown },
   { "fkernel"   , fkernel   , 2 , TD_Unknown },
   { "fcentile"  , fcentile  , 3 , TD_Unknown },
-  { "fpeel"     , fpeel     , 3 , TD_Unknown },
+  { "fpeel"     , fpeel     , 1 , TD_Unknown },
   { "darea"     , darea     , 1 , TD_Float32 },
   { "ddx"       , ddx       , 1 , TD_Float32 },
   { "ddy"       , ddy       , 1 , TD_Float32 },
@@ -164,14 +164,11 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   return(NULL);
 }
 
-double fpeel(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+double fpeel(TDataDef *Res,TDataDef *MA) {
 
-   double        v,vb,vc;
+   double        v;
    unsigned long i,j,idx,idxi;
    char          t;
-
-   Def_Get(MB,0,0,vb);
-   Def_Get(MC,0,0,vc);
 
    /*Parse the matrix*/
    for(j=0;j<MA->NJ;j++) {
@@ -181,50 +178,50 @@ double fpeel(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
 
          idxi=idx+i;
          Def_Get(MA,0,idxi,v);
-         if (v==vb) {
+         if (v!=0.0) {
             if (i>0) {
                Def_Get(MA,0,idxi-1,v);
-               if (v==vc) t++;
+               if (v==0.0) t++;
             }
             if (i<MA->NI-1) {
                Def_Get(MA,0,idxi+1,v);
-               if (v==vc) t++;
+               if (v==0.0) t++;
             }
 
             if (j>0) {
                idxi=idx-MA->NI+i;
                Def_Get(MA,0,idxi,v);
-               if (v==vc) t++;
+               if (v==0.0) t++;
 
                if (i>0) {
                   Def_Get(MA,0,idxi-1,v);
-                  if (v==vc) t++;
+                  if (v==0.0) t++;
                }
                if (i<MA->NI-1) {
                   Def_Get(MA,0,idxi+1,v);
-                  if (v==vc) t++;
+                  if (v==0.0) t++;
                }
             }
 
             if (j<MA->NJ-1) {
                idxi=idx+MA->NI+i;
                Def_Get(MA,0,idxi,v);
-               if (v==vc) t++;
+               if (v==0.0) t++;
 
                if (i>0) {
                   Def_Get(MA,0,idxi-1,v);
-                  if (v==vc) t++;
+                  if (v==0.0) t++;
                }
                if (i<MA->NI-1) {
                   Def_Get(MA,0,idxi+1,v);
-                  if (v==vc) t++;
+                  if (v==0.0) t++;
                }
             }
 
             /*Test for survival or death*/
             idxi=idx+i;
             if (t) {
-               Def_Set(Res,0,idxi,vc);
+               Def_Set(Res,0,idxi,0.0);
             } else {
                Def_Set(Res,0,idxi,v);
             }
