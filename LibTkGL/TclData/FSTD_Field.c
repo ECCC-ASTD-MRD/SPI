@@ -575,6 +575,49 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FSTD_DecodeHybrid>
+ * Creation : Novembre 2008 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Decoder les parametres des niveaux hybrides a partir du champs
+ *
+ * Parametres   :
+ *  <Unit>      : Unite du ficher
+ *  <IP2>       : IP2
+ *  <IP3>       : IP3
+ *  <Etiket>    : Etiket
+ *  <Datev>     : Date de validitee
+ *  <PTop>      : Pression au top
+ *  <PRef>      : Pression de reference
+ *  <RCoef>     : Coeeficient
+ *
+ * Retour:
+ *  <TCL_...> : (Index du champs HY <0=erreur).
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+ */
+int FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,float *PTop,float *PRef,float *RCoef) {
+
+   int   l,deet,ip1a,ip2a,ip3a,ig1a,ig2a,ig3a,ig4a,bit;
+   int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
+   int   npas,nia,nja,i,j,k,ierr,kind,flag=0,mode=-1;
+   char  typ,grda,blk_S;
+   char  var[5];
+   char  labanl[13];
+
+   l = c_fstinf(Unit,&i,&j,&k,DateV,Etiket,-1,IP2,IP3,"X",Var);
+   if (l>=0) {
+       ierr= c_fstprm(l,&idayo,&deet,&npas,&nia,&nja,&k,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
+                    &ig1a,&ig2a,&ig3a,&ig4a,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
+       f77name(convip)(&ip1a,PTop,&kind,&mode,&blk_S,&flag);
+       *RCoef=ig2a/1000.0f;
+       *PRef=ig1a;
+   }
+   return(l);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldVertInterpolate>
  * Creation : Avril 2003 - S. Gaudreault - CMC/CMOE
  *
@@ -599,7 +642,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
 int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom,TData *PField0,TData *PField1,double Top) {
 
    float  *gzfrom=NULL,*gzto=NULL,*p0=NULL,*p1=NULL,ptop,pref,rcoef;
-   int     gridfrom,gridto,i;
+   int     gridfrom,gridto,i,id;
    void   *pto,*pfrom;
 
    FSTD_Head *headto=(FSTD_Head*)FieldTo->Head;
@@ -693,8 +736,8 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       threadData->viInterp=c_videfine();
    }
    ptop=Top;
-   pref=800;
-   rcoef=1.0;
+   pref=800.0f;
+   rcoef=1.0f;
 
    Tcl_MutexLock(&MUTEX_FSTDVI);
    c_visetopt(threadData->viInterp,"INTERP_DEGREE",FieldTo->Spec->InterpDegree);
@@ -703,17 +746,18 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    /*Try to read HY for hybrid levels*/
    if (FieldFrom->Ref->LevelType==LVL_HYBRID) {
       i=-1;
-      char var[4]="HY  ";
-      char etik[12]="            ";
-      FSTD_FileSet(NULL,((FSTD_Head*)(FieldFrom->Head))->FID);
-      f77name(read_decode_hyb)(&(((FSTD_Head*)FieldFrom->Head)->FID->Id),var,&i,&i,etik,&i,&ptop,&pref,&rcoef);
-      FSTD_FileUnset(NULL,((FSTD_Head*)(FieldFrom->Head))->FID);
+      id=(((FSTD_Head*)FieldFrom->Head)->FID->Id);
+      FSTD_FileSet(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
+      if (FSTD_DecodeHybrid(id,"HY   ",i,i,"             ",i,&ptop,&pref,&rcoef)<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find hybrid definition field HY",(char*) NULL);
+      }
+      FSTD_FileUnset(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
    }
 
    if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,ptop,pref,rcoef,gzfrom))<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize source grid (c_viqkdef)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,ptop,pref,rcoef,gzto))<0) {
