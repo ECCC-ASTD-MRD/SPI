@@ -103,11 +103,11 @@ static Tk_ConfigSpec configSpecs[] = {
       Tk_Offset(glPolygonItem,smooth),TK_CONFIG_DONT_SET_DEFAULT,&smoothOption },
    { TK_CONFIG_INT,"-splinesteps",(char*)NULL,(char*)NULL,"12",
        Tk_Offset(glPolygonItem, splineSteps), TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-state",(char*)NULL,(char*)NULL,(char*)NULL, 
+   { TK_CONFIG_CUSTOM,"-state",(char*)NULL,(char*)NULL,(char*)NULL,
       Tk_Offset(Tk_Item,state),TK_CONFIG_NULL_OK,&stateOption },
    { TK_CONFIG_CUSTOM,"-stipple",(char*)NULL,(char*)NULL,(char*)NULL,
       Tk_Offset(glPolygonItem,fillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-   { TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,"100", 
+   { TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,"100",
       Tk_Offset(glPolygonItem, alpha), TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM,"-tags",(char*)NULL,(char*)NULL,(char*)NULL,
        0,TK_CONFIG_NULL_OK, &tagsOption },
@@ -707,7 +707,6 @@ static void glDisplayPolygon(canvas, itemPtr, display, drawable, x, y, width, he
 
    /* Fill the polygon */
    if (polyPtr->fillColor) {
-
       if (stipple) {
          glEnable(GL_POLYGON_STIPPLE);
          glPolygonStipple(stipple->Data);
@@ -870,7 +869,7 @@ static void glPolygonInsert(canvas, itemPtr, beforeThis, obj)
 
     glComputePolygonBbox(canvas, polyPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -932,7 +931,7 @@ static void glPolygonDeleteCoords(canvas, itemPtr, first, last)
     polyPtr->numPoints -= count/2;
     glComputePolygonBbox(canvas, polyPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1147,7 +1146,7 @@ static int glPolygonToArea(canvas, itemPtr, rectPtr)
 				 * means everything seen so far was
 				 * inside the area;  -1 means everything
 				 * was outside the area.  0 means overlap
-				 * has been found. */ 
+				 * has been found. */
     double width;
     Tk_State state = itemPtr->state;
 
@@ -1215,7 +1214,7 @@ static int glPolygonToArea(canvas, itemPtr, rectPtr)
     changedMiterToBevel = 0;
     for (count = numPoints, coordPtr = polyPoints; count >= 2;
 	    count--, coordPtr += 2) {
- 
+
 	/*
 	 * If rounding is done around the first point of the edge
 	 * then test a circular region around the point with the
@@ -1332,7 +1331,7 @@ static void glScalePolygon(canvas, itemPtr, originX, originY, scaleX, scaleY)
     }
     glComputePolygonBbox(canvas, polyPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
