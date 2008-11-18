@@ -893,6 +893,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             }
          }
       }
+      glDisable(GL_CULL_FACE);
 
       /* Colorbar if needed */
       if (gr->CB->NbData) {
@@ -1041,7 +1042,6 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int C
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
    glLoadIdentity();
-   glDisable(GL_CULL_FACE);
 }
 
 void GraphUnSet(GraphItem *GR){

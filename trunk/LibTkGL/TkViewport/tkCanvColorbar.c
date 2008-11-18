@@ -419,7 +419,6 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
    int          y0=0,y1,y2,yh=0,i,inc=0;
 
    glShadeModel(GL_FLAT);
-   glDisable(GL_CULL_FACE);
    glEnable(GL_SCISSOR_TEST);
 
    if (cb->NbData) {
@@ -509,7 +508,6 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
    glPopMatrix();
    glDisable(GL_SCISSOR_TEST);
    glDisable(GL_BLEND);
-   glEnable(GL_CULL_FACE);
    glShadeModel(GL_SMOOTH);
 }
 
@@ -1233,14 +1231,12 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
    int    yh=0,y0=0,y1,y2,i,inc;
 
    if (Tk_CanvasPsFont(Interp,Canvas,cb->Font)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Prepass) {
-      return TCL_OK;
+      return(TCL_OK);
    }
-
-   glDisable(GL_CULL_FACE);
 
    if (cb->NbData) {
       inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
@@ -1311,9 +1307,7 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
          Tcl_AppendResult(Interp,"closepath stroke\n",(char*)NULL);
       }
    }
-
-   glEnable(GL_CULL_FACE);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
