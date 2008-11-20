@@ -1961,16 +1961,16 @@ proc Writer::FVCN::Write { Pad Sent } {
 
       #----- On s'assure que le nom du fichier soit qu'une seul chaine.
 
-      regsub -all "\[^a-zA-Z0-9-\]" $Data(Site$Pad) _ file
+      regsub -all "\[^a-zA-Z0-9-\]" $Data(Site$Pad) - file
 
       #----- Determine le nom du fichier.
 
-      set date [clock format $Data(Seconds) -format "%Y%m%d%H%MZ" -gmt True]
+      set date [clock format $Data(Seconds) -format "%Y%m%d-%H%MZ" -gmt True]
 
       if { !$Sent } {
-         set file $Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]-${file}.msg
+         set file $Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]_${file}.msg
       } else {
-         set file $date-$Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]-${file}.msg
+         set file $date_$Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]_${file}.msg
       }
 
       if { $Data(Mode$Pad)=="RET" } {
