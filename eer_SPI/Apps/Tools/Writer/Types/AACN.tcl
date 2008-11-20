@@ -610,17 +610,17 @@ proc Writer::AACN::Write { Pad Sent } {
    } else {
       #----- On s'assure que le nom du fichier soit qu'une seul chaine.
 
-      regsub -all " " [lindex $Data(Site$Pad) 0] _ file
+      regsub -all " " [lindex $Data(Site$Pad) 0] - file
       regsub -all "/." $file "" file
 
       #----- Determine le nom du fichier.
 
-      set date [clock format $Data(Seconds) -format "%Y%m%d%H%MZ" -gmt True]
+      set date [clock format $Data(Seconds) -format "%Y%m%d-%H%MZ" -gmt True]
 
       if { !$Sent } {
-         set file $Data(No$Pad)-${file}.msg
+         set file $Data(No$Pad)_${file}.msg
       } else {
-         set file $date-$Data(No$Pad)-${file}.msg
+         set file $date_$Data(No$Pad)_${file}.msg
       }
 
       if { $Data(Cor$Pad)!="" } {
