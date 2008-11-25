@@ -205,7 +205,7 @@ proc Writer::PadNew { Type Mode Layout File } {
    pack $Data(Pad).canvas -side left -fill both -expand true
 
    Writer::${Type}::LayoutInit $Data(Pad)
-   Writer::${Type}::ToolBar $Data(Pad).head
+   Writer::${Type}::ToolBar $Data(Pad)
    trace variable SPI::Src(Info) w "Writer::${Type}::Source"
 
    if { $File!="" } {

@@ -134,6 +134,7 @@ proc Writer::FVCN::Init { Pad } {
 
    #----- Definitions des variables internes
 
+   set Data(Test$Pad)     False
    set Data(Sent$Pad)     0
    set Data(No$Pad)       FVCN00
    set Data(Id$Pad)       CWAO
@@ -1537,28 +1538,63 @@ proc Writer::FVCN::Source { Array Index Op } {
 proc Writer::FVCN::ToolBar { Pad } {
    global GDefs
 
-   checkbutton $Pad.mode -variable Page::Data(ToolMode) -onvalue Writer::FVCN -offvalue SPI \
+   checkbutton $Pad.head.mode -variable Page::Data(ToolMode) -onvalue Writer::FVCN -offvalue SPI \
       -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
       -command { SPI::ToolMode $Page::Data(ToolMode) Draw True }
-   button $Pad.save -image OPEN -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
       -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
-   button $Pad.print -image PRINT -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
       -command { PrintBox::Create $Writer::Data(Pad).canvas PRINT Writer::$Writer::Data(Type) }
-   button $Pad.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send }
-   button $Pad.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send 1 }
-   button $Pad.close -image DELETE -bd 0 -relief flat -overrelief raised \
+   checkbutton $Pad.head.test -variable Writer::${Writer::Data(Type)}::Data(Test$Pad) -onvalue True -offvalue False \
+      -text [lindex $Writer::Lbl(Test) $GDefs(Lang)] -indicatoron 0 -relief groove -bd 2 -overrelief flat -offrelief groove  \
+      -command { Writer::${Writer::Data(Type)}::Test $Writer::Data(Pad) }
+   button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
       -command { Writer::PadClose 1 }
-   pack $Pad.mode $Pad.save $Pad.print $Pad.send $Pad.send2 -side left -padx 2
-   pack $Pad.close -side right -padx 2
+   pack $Pad.head.mode $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 -side left -padx 2
+   pack $Pad.head.test -side left -ipadx 2 -padx 2 -fill y
+   pack $Pad.head.close -side right -padx 2
 
-   Bubble::Create $Pad.mode  [lindex $Writer::Bubble(Select) $GDefs(Lang)]
-   Bubble::Create $Pad.save  [lindex $Writer::Bubble(Save) $GDefs(Lang)]
-   Bubble::Create $Pad.print [lindex $Writer::Bubble(Print) $GDefs(Lang)]
-   Bubble::Create $Pad.send  [lindex $Writer::Bubble(Send) $GDefs(Lang)]
-   Bubble::Create $Pad.send2  [lindex $Writer::Bubble(SendBackup) $GDefs(Lang)]
-   Bubble::Create $Pad.close [lindex $Writer::Bubble(Close) $GDefs(Lang)]
+   Bubble::Create $Pad.head.mode  [lindex $Writer::Bubble(Select) $GDefs(Lang)]
+   Bubble::Create $Pad.head.save  [lindex $Writer::Bubble(Save) $GDefs(Lang)]
+   Bubble::Create $Pad.head.print [lindex $Writer::Bubble(Print) $GDefs(Lang)]
+   Bubble::Create $Pad.head.send  [lindex $Writer::Bubble(Send) $GDefs(Lang)]
+   Bubble::Create $Pad.head.send2 [lindex $Writer::Bubble(SendBackup) $GDefs(Lang)]
+   Bubble::Create $Pad.head.close [lindex $Writer::Bubble(Close) $GDefs(Lang)]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::Test>
+# Creation : Novembre 20008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher les la chaines TEST dans le message
+#
+# Parametres :
+#  <Pad>     : Frame du message
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+proc Writer::FVCN::Test { Pad } {
+   variable Data
+
+   if { $Data(Test$Pad) } {
+      set x 800
+      set y 20
+      for { set i 0 } { $i < 5 } { incr i } {
+         $Data(Page$Pad).page.canvas create image $x $y -image TEST -tags "TEST" -anchor ne
+         incr x -128
+         incr y 128
+      }
+      Shape::BindMove $Data(Page$Pad).page.canvas TEST
+   } else {
+      $Data(Page$Pad).page.canvas delete TEST
+   }
 }
 
 #----------------------------------------------------------------------------
