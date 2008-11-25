@@ -42,6 +42,7 @@ namespace eval Writer {
    set Lbl(Yes)        { "Oui" "Yes" }
    set Lbl(No)         { "Non" "No" }
    set Lbl(Edit)       { "Edition" "Edit" }
+   set Lbl(Test)       { "Mode Test" "Test Mode" }
 
    #----- Definitions des messages
 

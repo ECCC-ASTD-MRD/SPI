@@ -558,24 +558,24 @@ proc Writer::AACN::UpdateItems { Frame { VP "" } { Pad "" } } {
 proc Writer::AACN::ToolBar { Pad } {
    global GDefs
 
-   button $Pad.save -image OPEN -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
       -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
-   button $Pad.print -image PRINT -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
       -command { PrintBox::Create $Writer::Data(Pad).canvas PRINT Writer::$Writer::Data(Type) }
-   button $Pad.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send }
-   button $Pad.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send 1 }
-   button $Pad.close -image DELETE -bd 0 -relief flat -overrelief raised \
+   button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
       -command { Writer::PadClose 1 }
-   pack $Pad.save $Pad.print $Pad.send $Pad.send2 -side left -padx 2
-   pack $Pad.close -side right -padx 2
+   pack $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 -side left -padx 2
+   pack $Pad.head.close -side right -padx 2
 
-   Bubble::Create $Pad.save  [lindex $Writer::Bubble(Save) $GDefs(Lang)]
-   Bubble::Create $Pad.print [lindex $Writer::Bubble(Print) $GDefs(Lang)]
-   Bubble::Create $Pad.send  [lindex $Writer::Bubble(Send) $GDefs(Lang)]
-   Bubble::Create $Pad.send2  [lindex $Writer::Bubble(SendBackup) $GDefs(Lang)]
-   Bubble::Create $Pad.close [lindex $Writer::Bubble(Close) $GDefs(Lang)]
+   Bubble::Create $Pad.head.save  [lindex $Writer::Bubble(Save) $GDefs(Lang)]
+   Bubble::Create $Pad.head.print [lindex $Writer::Bubble(Print) $GDefs(Lang)]
+   Bubble::Create $Pad.head.send  [lindex $Writer::Bubble(Send) $GDefs(Lang)]
+   Bubble::Create $Pad.head.send2  [lindex $Writer::Bubble(SendBackup) $GDefs(Lang)]
+   Bubble::Create $Pad.head.close [lindex $Writer::Bubble(Close) $GDefs(Lang)]
 }
 #----------------------------------------------------------------------------
 # Nom      : <Writer::AACN::Write>
