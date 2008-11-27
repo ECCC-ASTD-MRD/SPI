@@ -44,6 +44,7 @@ int        GRIB_FileClose(Tcl_Interp *Interp,char *Id);
 GRIB_File* GRIB_FileGet(char *Id);
 int        GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File);
 
+int     GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key);
 void    GRIB_FieldFree(TData *Data);
 void    GRIB_FieldSet(TData *Data);
 void    GRIB_HeadCopy(void *To,void *From);

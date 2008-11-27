@@ -181,7 +181,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,NULL,NULL,NULL);
 
       printf("(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
-      if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(rpcinfo,FALSE,0.1,NULL))) {
+      if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1))) {
          printf("(WARNING) GDAL_BandRead: (Unable to fit RPC\n");
       }
    } else {
@@ -651,9 +651,9 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       OGR_G_AddGeometryDirectly(ToDef->Poly,ToDef->Pick);
    }
 
-   if (Mode=='N' && !ToDef->Accum) {
-      ToDef->Accum=(double*)calloc(FSIZE2D(ToDef),sizeof(double));
-      if (!ToDef->Accum) {
+   if (Mode=='N' && !ToDef->Buffer) {
+      ToDef->Buffer=(double*)calloc(FSIZE2D(ToDef),sizeof(double));
+      if (!ToDef->Buffer) {
          Tcl_AppendResult(Interp,"Data_GridConservative: Unable to allocate accumulation buffer",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -702,7 +702,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
             Def_Set(ToDef,0,idx,val0);
 
             if (Mode=='N') {
-               ToDef->Accum[idx]+=area;
+               ToDef->Buffer[idx]+=area;
             }
          }
       }
@@ -734,7 +734,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                if (List)
                   item=Tcl_NewListObj(0,NULL);
 
-               nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Accum,env.MinX,env.MinY,env.MaxX,env.MaxY);
+               nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Buffer,env.MinX,env.MinY,env.MaxX,env.MaxY);
                if (List && n) {
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
@@ -755,8 +755,8 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
    if (Final && Mode=='N') {
       for(n=0;n<FSIZE2D(ToDef);n++) {
          Def_Get(ToDef,0,n,val0);
-         if (ToDef->Accum[n]!=0.0) {
-            val0/=ToDef->Accum[n];
+         if (ToDef->Buffer[n]!=0.0) {
+            val0/=ToDef->Buffer[n];
             Def_Set(ToDef,0,n,val0);
          }
       }
@@ -796,7 +796,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    long     f,n=0,nt=0;
    double   value,area,t,x0,y0,x1,y1;
    int      fld=-1,pr=1;
-   double  *total=NULL;
 
 #ifdef GDAL126
    OGRCoordinateTransformationH tr=NULL;
@@ -888,7 +887,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
             /*Si le feature est dans le raster*/
             if (!(x1<0 || x0>Def->NI || y0>Def->NJ || y1<0)) {
-               nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,total,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1);
+               nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,NULL,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1);
 #ifdef DEBUG
                fprintf(stderr,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,x0,y0,x1,y1);
 #endif
@@ -943,26 +942,29 @@ void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
    }
 }
 
-int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
+int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
 
    register int idx,x,y,n=0;
-   int          d=0,sz;
+   int          d=0,sz,dd;
    double       x0,y0,x1,y1;
    double      *transform=NULL;
 
+   dd=Dim-1;
    Scan->N=0;
 
+   /*WKT grid type*/
    if (Scan->FromRef->Grid[0]=='W') {
       transform=Scan->FromRef->Transform;
-      for(y=Scan->Y0;y<=Scan->Y1+1;y++) {
+      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
          idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
-         for(x=Scan->X0;x<=Scan->X1+1;x++,idx++,n++) {
+         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
             if (x<=Scan->X1 && y<=Scan->Y1) {
                Scan->V[Scan->N++]=idx;
             }
 
             if (!Scan->Valid) {
-               x0=x-0.5;y0=y-0.5;
+               x0=dd?x-0.5:x;
+               y0=dd?y-0.5:y;
                if (transform) {
                   Scan->X[n]=transform[0]+transform[1]*x0+transform[2]*y0;
                   Scan->Y[n]=transform[3]+transform[4]*x0+transform[5]*y0;
@@ -977,8 +979,9 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
          OCTTransform(Scan->FromRef->Function,n,Scan->X,Scan->Y,NULL);
       }
 
-      d=2;
+      d=dd?2:1;
       sz=8;
+   /*Y Grid type*/
    } else if (Scan->FromRef->Grid[0]=='Y') {
       for(n=0;n<FromDef->NI;n++,idx++) {
          Scan->V[n]=idx;
@@ -990,17 +993,18 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
       d=1;
       sz=4;
       Scan->N=n;
+   /*Other RPN grids*/
    } else {
-      for(y=Scan->Y0;y<=Scan->Y1+1;y++) {
+      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
          idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
-         for(x=Scan->X0;x<=Scan->X1+1;x++,idx++,n++) {
+         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
             if (x<=Scan->X1 && y<=Scan->Y1) {
                Scan->V[Scan->N++]=idx;
             }
 
             if (!Scan->Valid) {
-               ((float*)Scan->X)[n]=x+0.5;
-               ((float*)Scan->Y)[n]=y+0.5;
+               ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
+               ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
             }
          }
       }
@@ -1009,10 +1013,11 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
          c_gdllfxy(Scan->FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
          EZUnLock_RPNInt();
       }
-      d=2;
+      d=dd?2:1;
       sz=4;
    }
 
+   /*Project to destination grid*/
    if (!Scan->Valid) {
       if (Scan->ToRef->Grid[0]=='W') {
          transform=Scan->ToRef->InvTransform;
@@ -1081,18 +1086,18 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef) {
 */
 int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TData_Interp Mode,int Final){
 
-   double        val,vx,di[4],dj[4],*fld,di0,di1,dj0,dj1,*acc=NULL;
+   double        val,vx,di[4],dj[4],*fld,di0,di1,dj0,dj1;
+   int          *acc=NULL;
    unsigned long idxt,idxk,idxj;
    unsigned int  n2,ndi,ndj,nij,nijk,k,t,s,n,x,x0,x1,y,y0,y1,dx,dy;
+   extern TGeoScan GScan;
 
    acc=ToDef->Accum;
    fld=ToDef->Buffer;
    nij=FSIZE2D(ToDef);
    nijk=FSIZE3D(ToDef);
 
-   extern TGeoScan GScan;
-
-   if (Mode!=TD_NOP && Mode!=TD_ACCUM) {
+   if (Mode!=TD_NOP && Mode!=TD_ACCUM && Mode!=TD_BUFFER) {
       if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,1)) {
          return(TCL_OK);
       }
@@ -1100,17 +1105,16 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
       /*In case of average, we need an accumulator*/
       if (Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT) {
          if (!ToDef->Accum) {
-            ToDef->Accum=calloc(nij,sizeof(double));
+            acc=ToDef->Accum=calloc(nij,sizeof(int));
             if (!ToDef->Accum) {
                Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate accumulation buffer",(char*)NULL);
                return(TCL_ERROR);
             }
          }
       }
-      acc=ToDef->Accum;
 
       if (!ToDef->Buffer) {
-         ToDef->Buffer=calloc(nijk,sizeof(double));
+         fld=ToDef->Buffer=calloc(nijk,sizeof(double));
          if (!ToDef->Buffer) {
             Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate buffer",(char*)NULL);
             return(TCL_ERROR);
@@ -1118,8 +1122,6 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
          for(x=0;x<nijk;x++)
             ToDef->Buffer[x]=ToDef->NoData;
       }
-
-      fld=ToDef->Buffer;
       n2=ToDef->NI>>1;
 
       /*if > 2048x2048, loop by lines otherwise, do it in one shot*/
@@ -1129,7 +1131,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
             Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
             return(TCL_ERROR);
          }
-         s=GeoScan_Get(&GScan,FromDef);
+         s=GeoScan_Get(&GScan,FromDef,FromDef->CellDim);
 
          /*Loop over source data*/
          dx=0;
@@ -1152,11 +1154,11 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                continue;
 
             /*Figure out ordered coverage*/
-            di[0]=GScan.X[n];   di0=di1=di[0];
-            dj[0]=GScan.Y[n];   dj0=dj1=dj[0];
             if (s>1) {
-               di[1]=GScan.X[n+1]; di0=FMIN(di0,di[1]); di1=FMAX(di1,di[1]);
-               dj[1]=GScan.Y[n+1]; dj0=FMIN(dj0,dj[1]); dj1=FMAX(dj1,dj[1]);
+               di[0]=GScan.X[n];
+               dj[0]=GScan.Y[n];
+               di[1]=GScan.X[n+1]; di0=FMIN(di[0],di[1]); di1=FMAX(di[0],di[1]);
+               dj[1]=GScan.Y[n+1]; dj0=FMIN(dj[0],dj[1]); dj1=FMAX(dj[0],dj[1]);
 
                di[2]=GScan.X[n+GScan.DX+1]; di0=FMIN(di0,di[2]); di1=FMAX(di1,di[2]);
                dj[2]=GScan.Y[n+GScan.DX+1]; dj0=FMIN(dj0,dj[2]); dj1=FMAX(dj1,dj[2]);
@@ -1166,8 +1168,8 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                di0=ROUND(di0);dj0=ROUND(dj0);
                di1=ROUND(di1);dj1=ROUND(dj1);
             } else {
-               di0=di1=ROUND(di0);
-               dj0=dj1=ROUND(dj1);
+               di0=di1=ROUND(GScan.X[n]);
+               dj0=dj1=ROUND(GScan.Y[n]);
             }
 
             /*Are we within the destination field*/
@@ -1187,51 +1189,100 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                di1=val+ToDef->NI;
             }
 
-            for(ndj=dj0;ndj<=dj1;ndj++) {
-               idxj=ndj*ToDef->NI;
-               for(ndi=di0;ndi<=di1;ndi++) {
-                  idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
+            /*Check if we need to loop*/
+            if (dj0==dj1 && di0==di1) {
+               idxt=dj0*ToDef->NI+di0;
 
-                  /*Skip if no mask*/
-                  if (!ToDef->Mask || ToDef->Mask[idxt]) {
+               /*Skip if no mask*/
+               if (!ToDef->Mask || ToDef->Mask[idxt]) {
 
-                     /*If the previous value is nodata, initialize the counter*/
-                     if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                        fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
-                     }
+                  /*If the previous value is nodata, initialize the counter*/
+                  if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
+                     fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                  }
 
-                     switch(Mode) {
-                        case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
-                                                   break;
-                        case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
-                                                   break;
-                        case TD_SUM              : fld[idxt]+=vx;
-                                                   break;
-                        case TD_VARIANCE         : acc[idxt]+=1.0;
-                                                   Def_Get(TmpDef,0,idxt,val);
-                                                   fld[idxt]+=(vx-val)*(vx-val);
-                                                   break;
-                        case TD_SQUARE           : acc[idxt]+=1.0;
-                                                   fld[idxt]+=vx*vx;
-                                                   break;
-                        case TD_COUNT            : acc[idxt]+=1.0;
-                        case TD_AVERAGE          :
-                        case TD_NORMALIZED_COUNT : if (Table) {
-                                                      t=0;
-                                                      while(t<ToDef->NK) {
-                                                         if (vx==Table[t] && t<ToDef->NK) {
-                                                            if (Mode!=TD_COUNT) acc[idxt]+=1.0;
-                                                            fld[t*nij+idxt]++;
-                                                            break;
-                                                         }
-                                                         t++;
+                  switch(Mode) {
+                     case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
+                                                break;
+                     case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
+                                                break;
+                     case TD_SUM              : fld[idxt]+=vx;
+                                                break;
+                     case TD_VARIANCE         : acc[idxt]++;
+                                                Def_Get(TmpDef,0,idxt,val);
+                                                fld[idxt]+=(vx-val)*(vx-val);
+                                                break;
+                     case TD_SQUARE           : acc[idxt]++;
+                                                fld[idxt]+=vx*vx;
+                                                break;
+                     case TD_COUNT            : acc[idxt]++;
+                     case TD_AVERAGE          :
+                     case TD_NORMALIZED_COUNT : if (Table) {
+                                                   t=0;
+                                                   while(t<ToDef->NK) {
+                                                      if (vx==Table[t] && t<ToDef->NK) {
+                                                         if (Mode!=TD_COUNT) acc[idxt]++;
+                                                         fld[t*nij+idxt]++;
+                                                         break;
                                                       }
-                                                   } else {
-                                                      if (Mode!=TD_COUNT) acc[idxt]+=1.0;
-                                                      if (vx!=FromDef->NoData)
-                                                         fld[idxt]+=vx;
+                                                      t++;
                                                    }
-                                                   break;
+                                                } else {
+                                                   if (Mode!=TD_COUNT) acc[idxt]++;
+                                                   if (vx!=FromDef->NoData)
+                                                      fld[idxt]+=vx;
+                                                }
+                                                break;
+                  }
+               }
+
+            } else {
+               for(ndj=dj0;ndj<=dj1;ndj++) {
+                  idxj=ndj*ToDef->NI;
+                  for(ndi=di0;ndi<=di1;ndi++) {
+                     idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
+
+                     /*Skip if no mask*/
+                     if (!ToDef->Mask || ToDef->Mask[idxt]) {
+
+                        /*If the previous value is nodata, initialize the counter*/
+                        if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
+                           fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                        }
+
+                        switch(Mode) {
+                           case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
+                                                      break;
+                           case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
+                                                      break;
+                           case TD_SUM              : fld[idxt]+=vx;
+                                                      break;
+                           case TD_VARIANCE         : acc[idxt]++;
+                                                      Def_Get(TmpDef,0,idxt,val);
+                                                      fld[idxt]+=(vx-val)*(vx-val);
+                                                      break;
+                           case TD_SQUARE           : acc[idxt]++;
+                                                      fld[idxt]+=vx*vx;
+                                                      break;
+                           case TD_COUNT            : acc[idxt]++;
+                           case TD_AVERAGE          :
+                           case TD_NORMALIZED_COUNT : if (Table) {
+                                                         t=0;
+                                                         while(t<ToDef->NK) {
+                                                            if (vx==Table[t] && t<ToDef->NK) {
+                                                               if (Mode!=TD_COUNT) acc[idxt]++;
+                                                               fld[t*nij+idxt]++;
+                                                               break;
+                                                            }
+                                                            t++;
+                                                         }
+                                                      } else {
+                                                         if (Mode!=TD_COUNT) acc[idxt]++;
+                                                         if (vx!=FromDef->NoData)
+                                                            fld[idxt]+=vx;
+                                                      }
+                                                      break;
+                        }
                      }
                   }
                }
@@ -1241,24 +1292,33 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
    }
 
    /*Finalize and reassign*/
-   if (Final || Mode==TD_ACCUM) {
+   if (Final || Mode==TD_ACCUM || Mode==TD_BUFFER) {
       idxk=0;
       for(k=0;k<ToDef->NK;k++) {
          for(x=0;x<nij;x++,idxk++) {
-            if (Mode==TD_ACCUM) {
-               if (acc) {
-                  Def_Set(ToDef,0,idxk,acc[x]);
-               } else {
-                  Def_Set(ToDef,0,idxk,0.0);
-               }
-            } else {
-               if (fld) {
-                  if (acc && acc[x]!=0.0) fld[idxk]/=acc[x];
-                  Def_Set(ToDef,0,idxk,fld[idxk]);
-               } else {
-                  Def_Set(ToDef,0,idxk,0.0);
-               }
-            }
+            switch(Mode) {
+               case TD_ACCUM:
+                  if (acc) {
+                     Def_Set(ToDef,0,idxk,acc[x]);
+                  } else {
+                     Def_Set(ToDef,0,idxk,ToDef->NoData);
+                  }
+                  break;
+               case TD_BUFFER:
+                  if (fld) {
+                     Def_Set(ToDef,0,idxk,fld[idxk]);
+                  } else {
+                     Def_Set(ToDef,0,idxk,ToDef->NoData);
+                  }
+                  break;
+               default:
+                  if (fld) {
+                     if (acc && acc[x]!=0) fld[idxk]/=acc[x];
+                     Def_Set(ToDef,0,idxk,fld[idxk]);
+                  } else {
+                     Def_Set(ToDef,0,idxk,ToDef->NoData);
+                  }
+           }
          }
       }
    }
@@ -1485,8 +1545,8 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj     *obj,*lst;
 
    static CONST char *sopt[] = { "-tag","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
-      "-gridvalue","-coordvalue","-project","-unproject","-extent","-histogram",NULL };
-   enum        opt {  TAG,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,HISTOGRAM };
+      "-gridvalue","-coordvalue","-project","-unproject","-extent","-histogram","-celldim",NULL };
+   enum        opt {  TAG,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,HISTOGRAM,CELLDIM };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -1785,6 +1845,14 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("-",-1));
                return TCL_OK;
+            }
+            break;
+
+         case CELLDIM:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(band->Def->CellDim));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&band->Def->CellDim);
             }
             break;
       }

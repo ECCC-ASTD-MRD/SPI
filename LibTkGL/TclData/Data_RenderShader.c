@@ -32,6 +32,7 @@
  */
 
 #include "Data_FF.h"
+#include "glShader.h"
 
 int   Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);

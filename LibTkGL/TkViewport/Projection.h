@@ -84,7 +84,7 @@ typedef int           (Projection_CallLocate)       (Projection *Proj,double Lat
 typedef void          (Projection_CallRender)       (Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
 typedef void          (Projection_CallDraw)         (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 typedef int           (Projection_CallUnProject)    (ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
-typedef unsigned long (Projection_CallProject)      (ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+typedef unsigned long (Projection_CallProject)      (const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
 
 typedef Tcl_Obj* (Projection_CallProjectPoint) (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
 typedef Tcl_Obj* (Projection_CallProjectLine)  (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NbCo);
@@ -115,6 +115,8 @@ int  Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int 
 int  Projection_Transform(Tcl_Interp *Interp,char* Name,ViewportItem *VP,int argc,char **argv);
 int  Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List);
 Tcl_Obj* Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist);
+Tcl_Obj* Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist);
+void Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
 
 void Projection_CreateType(
           char                        *Name

@@ -41,7 +41,6 @@ static int           TDataInit=0;
 int                  TData_Size[]={ 0,0,1,1,2,2,4,4,8,8,4,8 };
 
 static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-int        Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Tcldata_Init>
@@ -471,7 +470,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    GeoRef_Qualify(cut->Ref);
 
    if (!NbC || !NbF)
-      return;
+      return(TCL_OK);
 
    cut->Ref->Lat=(float*)malloc(NbC*sizeof(float));
    cut->Ref->Lon=(float*)malloc(NbC*sizeof(float));
@@ -998,6 +997,7 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->NK=NK;
    def->NC=abs(Dim);
    def->Container=abs(Dim)==0;
+   def->CellDim=2;
    def->NoData=nan("NaN");
    def->Level=0;
 
@@ -1151,6 +1151,7 @@ TDataDef *Data_DefCopy(TDataDef *Def){
    if (Def) {
       def=(TDataDef*)malloc(sizeof(TDataDef));
       def->Container=Def->Container;
+      def->CellDim=Def->CellDim;
       def->NI=Def->NI;
       def->NJ=Def->NJ;
       def->NK=Def->NK;
@@ -1193,6 +1194,7 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
    if (Def) {
       def=(TDataDef*)malloc(sizeof(TDataDef));
       def->Container=0;
+      def->CellDim=Def->CellDim;
       def->NI=Def->NI;
       def->NJ=Def->NJ;
       def->NK=Def->NK;
@@ -1474,9 +1476,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix","-mask",NULL };
+      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix","-mask","-celldim",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX,MASK };
+      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX,MASK,CELLDIM };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2038,15 +2040,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             } else {
                if ((fld=Data_Get(Tcl_GetString(Objv[++i])))) {
-                  if (fld->Def->NI==Field->Def->NI && fld->Def->NJ==Field->Def->NJ && fld->Def->NK==Field->Def->NK) {
+                  if (fld->Def->NI==Field->Def->NI && fld->Def->NJ==Field->Def->NJ) {
                      if (!Field->Def->Mask) {
-                        if (!(Field->Def->Mask=(char*)malloc(FSIZE3D(Field->Def)))) {
+                        if (!(Field->Def->Mask=(char*)malloc(FSIZE2D(Field->Def)))) {
                            Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate mask",(char*)NULL);
                            return(TCL_ERROR);
                         }
                      }
-                     for(ni=0;ni<FSIZE3D(Field->Def);ni++) {
-                        Def_Get(Field->Def,0,ni,val);
+                     for(ni=0;ni<FSIZE2D(fld->Def);ni++) {
+                        Def_Get(fld->Def,0,ni,val);
                         Field->Def->Mask[ni]=(val!=0.0);
                      }
                   } else {
@@ -2064,6 +2066,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      return(TCL_ERROR);
                   }
                }
+            }
+            break;
+
+         case CELLDIM:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->CellDim));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Field->Def->CellDim);
             }
             break;
       }

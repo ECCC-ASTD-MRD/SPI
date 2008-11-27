@@ -41,15 +41,14 @@
 int  Azimuth_Init(Tcl_Interp *Interp);
 void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
-int  AzimuthDist_Locate(Projection *Proj,double Lat,double Lon,int Undo);
-int  AzimuthArea_Locate(Projection *Proj,double Lat,double Lon,int Undo);
+int  Azimuth_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void Azimuth_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
 
 /*Fonctions de transformations*/
 
-unsigned long AzimuthDist_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+unsigned long AzimuthDist_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           AzimuthDist_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
-unsigned long AzimuthArea_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+unsigned long AzimuthArea_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           AzimuthArea_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
 Tcl_Obj*      Azimuth_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
 Tcl_Obj*      Azimuth_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo);
@@ -168,7 +167,7 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       for(co.Lon=-180;co.Lon<180;co.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(co.Lat=-90+Proj->Geo->Params.CoordDef;co.Lat<=90-Proj->Geo->Params.CoordDef;co.Lat+=1){
-            Proj->Type->Project(Proj->Params,&co,&vr,1);
+            Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
             glVertex3dv(vr);
          }
          glEnd();
@@ -180,7 +179,7 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       for(co.Lat=-90+Proj->Geo->Params.CoordDef;co.Lat<90;co.Lat+=Proj->Geo->Params.CoordDef){
         glBegin(GL_LINE_STRIP);
         for(co.Lon=-180;co.Lon<=180;co.Lon+=1){
-            Proj->Type->Project(Proj->Params,&co,&vr,1);
+            Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
             glVertex3dv(vr);
          }
         glEnd();
@@ -208,7 +207,7 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 int Azimuth_Init(Tcl_Interp *Interp){
 
    Projection_CreateType("azimuthal equidistant",PROJSPHERE,
-      AzimuthDist_Locate,
+      Azimuth_Locate,
       Azimuth_Render,
       Azimuth_DrawFirst,
       NULL,
@@ -219,7 +218,7 @@ int Azimuth_Init(Tcl_Interp *Interp){
       Azimuth_ProjectLine);
 
    Projection_CreateType("azimuthal equal-area",PROJSPHERE,
-      AzimuthArea_Locate,
+      Azimuth_Locate,
       Azimuth_Render,
       Azimuth_DrawFirst,
       NULL,
@@ -232,7 +231,7 @@ int Azimuth_Init(Tcl_Interp *Interp){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <AzimuthDist_Locate>
+ * Nom      : <Azimuth_Locate>
  * Creation : Aout 2000 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Centrer la projection sur une coordonnee particuliere.
@@ -249,17 +248,16 @@ int Azimuth_Init(Tcl_Interp *Interp){
  *
  *----------------------------------------------------------------------------
 */
-int AzimuthDist_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
+int Azimuth_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 
-   Coord  loc;
-   Vect3d pix;
+   GeoVect loc;
 
    if (Undo) {
-      loc.Lat=Lat;
-      loc.Lon=Lon;
-      loc.Elev=0.0;
-      AzimuthDist_Project(Proj->Params,&loc,&pix,1);
-      glTranslated(pix[0],pix[1],0.0);
+      loc.C.Lat=Lat;
+      loc.C.Lon=Lon;
+      loc.C.Elev=0.0;
+      AzimuthDist_Project(Proj->Params,&loc,NULL,1);
+      glTranslated(loc.V[0],loc.V[1],0.0);
    } else {
    }
    return 0;
@@ -285,15 +283,14 @@ int AzimuthDist_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 */
 int AzimuthArea_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 
-   Coord  loc;
-   Vect3d pix;
+   GeoVect loc;
 
    if (Undo) {
-      loc.Lat=Lat;
-      loc.Lon=Lon;
-      loc.Elev=0.0;
-      AzimuthArea_Project(Proj->Params,&loc,&pix,1);
-      glTranslated(pix[0],pix[1],0.0);
+      loc.C.Lat=Lat;
+      loc.C.Lon=Lon;
+      loc.C.Elev=0.0;
+      Proj->Type->Project(Proj->Params,&loc,NULL,1);
+      glTranslated(loc.V[0],loc.V[1],0.0);
    } else {
    }
    return 0;
@@ -468,7 +465,7 @@ Tcl_Obj* Azimuth_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Pr
 
    obj=Tcl_NewListObj(0,NULL);
 
-   Proj->Type->Project(Proj->Params,&Pt1,&in,1);
+   Proj->Type->Project(Proj->Params,(GeoVect*)&Pt1,(GeoVect*)&in,1);
    gluProject(in[0],in[1],in[2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
 
    /*Repositionner dans le referentiel de Tcl*/
@@ -520,7 +517,7 @@ int Azimuth_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d
    CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
-   Proj->Type->Project(Proj->Params,co,in,2);
+   Proj->Type->Project(Proj->Params,(GeoVect*)co,(GeoVect*)in,2);
 
    gluProject(in[0][0],in[0][1],in[0][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix00[0],&Pix00[1],&Pix00[2]);
    Pix00[1]=Proj->Params->VP->Height-Pix00[1];
@@ -548,23 +545,24 @@ int Azimuth_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d
  *
  *----------------------------------------------------------------------------
 */
-unsigned long AzimuthDist_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long AzimuthDist_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
-   long n,e=0;
-   double        k,lon,cllon,cllat,slat;
-   Coord         loc;
-   Vect3d *out;
+   Coord    loc;
+   GeoVect *out;
+   long     n,e=0;
+   double   r,k,lon,cllon,cllat,slat;
 
-   out=(Vect3d*)(Pix?Pix:Loc);
+   out=(Pix?Pix:Loc);
+   r=Params->Scale*Params->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
-      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
-         out[n][2]=-999.0;
+      if (Loc[n].C.Lat==-999.0 || Loc[n].C.Lon==-999.0) {
+         out[n].V[2]=-999.0;
       } else {
 
-         loc.Lat=DEG2RAD(((Coord*)Loc)[n].Lat);
-         loc.Lon=DEG2RAD(((Coord*)Loc)[n].Lon);
-         loc.Elev=((Coord*)Loc)[n].Elev;
+         loc.Lat=DEG2RAD(Loc[n].C.Lat);
+         loc.Lon=DEG2RAD(Loc[n].C.Lon);
+         loc.Elev=Loc[n].C.Elev;
 
          lon=DEG2RAD(Params->Lon);
          cllon=cos(loc.Lon-lon);
@@ -573,9 +571,9 @@ unsigned long AzimuthDist_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,l
          k=acos(Params->SLat*slat+cllon*Params->CLat*cllat);
          k=k/sin(k);
 
-         out[n][0]=0.322580645*(k*cllat*sin(loc.Lon-lon));
-         out[n][1]=0.322580645*(k*(Params->CLat*slat-Params->SLat*cllat*cllon));
-         out[n][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
+         out[n].V[0]=0.322580645*(k*cllat*sin(loc.Lon-lon));
+         out[n].V[1]=0.322580645*(k*(Params->CLat*slat-Params->SLat*cllat*cllon));
+         out[n].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
          e++;
       }
    }
@@ -600,23 +598,24 @@ unsigned long AzimuthDist_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,l
  *
  *----------------------------------------------------------------------------
 */
-unsigned long AzimuthArea_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long AzimuthArea_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
-   long n,e=0;
-   double        k,lon,cllon,cllat,slat;
-   Coord         loc;
-   Vect3d       *out;
+   Coord    loc;
+   GeoVect *out;
+   long     n,e=0;
+   double   r,k,lon,cllon,cllat,slat;
 
-   out=(Vect3d*)(Pix?Pix:Loc);
+   out=(Pix?Pix:Loc);
+   r=Params->Scale*Params->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
-      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
-         out[n][2]=-999.0;
+      if (Loc[n].C.Lat==-999.0 || Loc[n].C.Lon==-999.0) {
+         out[n].V[2]=-999.0;
       } else {
 
-         loc.Lat=DEG2RAD(((Coord*)Loc)[n].Lat);
-         loc.Lon=DEG2RAD(((Coord*)Loc)[n].Lon);
-         loc.Elev=((Coord*)Loc)[n].Elev;
+         loc.Lat=DEG2RAD(Loc[n].C.Lat);
+         loc.Lon=DEG2RAD(Loc[n].C.Lon);
+         loc.Elev=Loc[n].C.Elev;
 
          lon=DEG2RAD(Params->Lon);
          cllon=cos(loc.Lon-lon);
@@ -625,9 +624,9 @@ unsigned long AzimuthArea_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,l
 
          k=sqrt(2.0/(1+Params->SLat*slat+cllon*Params->CLat*cllat));
 
-         out[n][0]=0.5*(k*cllat*sin(loc.Lon-lon));
-         out[n][1]=0.5*(k*(Params->CLat*slat-Params->SLat*cllat*cllon));
-         out[n][2]=(loc.Elev*Params->Scale+EARTHRADIUS)/EARTHRADIUS;
+         out[n].V[0]=0.5*(k*cllat*sin(loc.Lon-lon));
+         out[n].V[1]=0.5*(k*(Params->CLat*slat-Params->SLat*cllat*cllon));
+         out[n].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
          e++;
       }
    }
