@@ -45,11 +45,6 @@
 #include "tclObs.h"
 #include "tclMetObs.h"
 
-#ifdef LNK_CDF
-#include "tclCDF.h"
-#endif
-
-#define STRING_LOAD "Loading ..."
 #define NBFRAMEMAX 512
 #define TKVIEWPORT_VERSION "7.2.4"
 #define VPY(VP,Y) ((((TkCanvas*)VP->canvas)->yOrigin+VP->Height)-Y)

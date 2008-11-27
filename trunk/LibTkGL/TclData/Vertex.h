@@ -39,6 +39,9 @@
 
 #define Bary_Interp1D(B,V)  (B[0]*V[0]+B[1]*V[1]+B[2]*V[2])
 
+int Bary_Get(Vect3d B,double X,double Y,double X0,double Y0,double X1,double Y1,double X2,double Y2);
+int Bary_Interp(Vect3d B,Vect3d P,Vect3d P0,Vect3d P1,Vect3d P2);
+
 void  VertexGradient(TGeoRef *Ref,TDataDef *Def,Vect3d Nr);
 int   VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z);
 float VertexVal(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z);

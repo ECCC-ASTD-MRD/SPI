@@ -37,10 +37,13 @@
 #include <tcl.h>
 
 #include "projects.h"
+#include "gdal.h"
+#include "gdal_alg.h"
 #include "ogr_api.h"
 #include "ogr_srs_api.h"
 #include "Vector.h"
 #include "eerUtils.h"
+#include "tclUtils.h"
 
 #define GRID_NONE     0x0
 #define GRID_REGULAR  0x1
@@ -93,7 +96,7 @@ typedef struct Coord {
 
 typedef union {
    Vect3d V;
-   Coord C;
+   Coord  C;
 } GeoVect;
 
 struct TDataDef;

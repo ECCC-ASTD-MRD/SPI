@@ -292,7 +292,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    char        *field,imode,itype;
 
    int         idx;
-   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM",NULL };
+   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp","configure","define","stats","sort","copy","free","clear","clean","wipe","is",NULL };
@@ -620,7 +620,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                }
                FSTD_FieldSetTo(field0,field1);
                return(Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=17) {
+            } else if (n>=5 && n<=18) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
@@ -686,7 +686,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   obj=Objv[7];
                }
                return(Data_GridConservative(Interp,field0->Ref,field0->Def,band->Ref,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=16) {
+            } else if (n>=5 && n<=18) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
@@ -846,7 +846,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                return(TCL_ERROR);
             }
          }
-         if (n==16 || n==17) {
+         if (n==16 || n==17 || n==18) {
             return(Data_GridAverage(Interp,field0->Ref,field0->Def,NULL,NULL,NULL,NULL,n,1));
          } else {
             Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);
@@ -1507,10 +1507,6 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    enum                opt { TOSECONDS,FROMSECONDS,TODATE,FROMDATE,INCR,DIFF,KEY };
 
 #ifdef LNK_FSTD
-
-   extern newdate();
-   extern incdatr();
-   extern difdatr();
 
    extern time_t timezone;
 

@@ -50,12 +50,12 @@ int  Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 
 /*Fonctions de transformations*/
 
-unsigned long Cylin_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
 Tcl_Obj*      Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
 Tcl_Obj*      Cylin_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo);
 int           Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pix00,Vect3d Pix01,Vect3d Pix10,Vect3d Pix11);
-unsigned long Merca_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
 
 /*----------------------------------------------------------------------------
@@ -195,7 +195,7 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       co.Lat=Proj->Params->ZAxis.Lat;
       co.Lon=Proj->Params->ZAxis.Lon;
       co.Elev=Proj->Params->ZAxis.Elev;
-      Proj->Type->Project(Proj->Params,&co,&vr,1);
+      Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
       PROJCHECK(Proj,vr[0])
 
       switch(Proj->Params->TAxis) {
@@ -224,7 +224,7 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
       for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINES);
-            Proj->Type->Project(Proj->Params,&co,&vr,1);
+            Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
             PROJCHECK(Proj,vr[0])
             glVertex3d(vr[0],-1.0,vr[2]);
             glVertex3d(vr[0],ax[1],vr[2]);
@@ -623,7 +623,7 @@ Tcl_Obj* Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
 
    obj=Tcl_NewListObj(0,NULL);
 
-   Proj->Type->Project(Proj->Params,&Pt1,&in,1);
+   Proj->Type->Project(Proj->Params,(GeoVect*)&Pt1,(GeoVect*)&in,1);
 
    d=in[0]-Proj->Params->L;   /*Test le depassement*/
    CYLCHECK(d,in[0]);
@@ -680,7 +680,7 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
    CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
-   Proj->Type->Project(Proj->Params,co,in,2);
+   Proj->Type->Project(Proj->Params,(GeoVect*)co,(GeoVect*)in,2);
 
    m=DELTA(in[0],in[1]);
 
@@ -731,27 +731,29 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
  *
  *----------------------------------------------------------------------------
 */
-unsigned long Cylin_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
-   long n,e=0;
-   Coord   loc;
-   Vect3d *out;
+   Coord    loc;
+   GeoVect *out;
+   long     n,e=0;
+   double   r;
 
-   out=(Vect3d*)(Pix?Pix:Loc);
+   out=Pix?Pix:Loc;
+   r=Params->Scale*Params->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
 
-      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
-         out[n][2]=-999.0;
+      if (Loc[n].C.Lat==-999.0 || Loc[n].C.Lon==-999.0) {
+         out[n].V[2]=-999.0;
       } else {
-         loc.Lat=((Coord*)Loc)[n].Lat;
-         loc.Lon=((Coord*)Loc)[n].Lon;
-         loc.Elev=((Coord*)Loc)[n].Elev;
+         loc.Lat=Loc[n].C.Lat;
+         loc.Lon=Loc[n].C.Lon;
+         loc.Elev=Loc[n].C.Elev;
          CLAMPLON(loc.Lon);
 
-         out[n][0]=loc.Lon/90.0;
-         out[n][1]=loc.Lat/90.0;
-         out[n][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
+         out[n].V[0]=loc.Lon/90.0;
+         out[n].V[1]=loc.Lat/90.0;
+         out[n].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
          e++;
       }
    }
@@ -950,27 +952,29 @@ int Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  *----------------------------------------------------------------------------
 */
-unsigned long Merca_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
-   long n,e=0;
-   Coord   loc;
-   Vect3d *out;
+   Coord    loc;
+   GeoVect *out;
+   long     n,e=0;
+   double   r;
 
-   out=(Vect3d*)(Pix?Pix:Loc);
+   out=Pix?Pix:Loc;
+   r=Params->Scale*Params->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
 
-      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
-         out[n][2]=-999.0;
+      if (Loc[n].C.Lat==-999.0 || Loc[n].C.Lon==-999.0) {
+         out[n].V[2]=-999.0;
       } else {
-         loc.Lat=((Coord*)Loc)[n].Lat;
-         loc.Lon=((Coord*)Loc)[n].Lon;
-         loc.Elev=((Coord*)Loc)[n].Elev;
+         loc.Lat=Loc[n].C.Lat;
+         loc.Lon=Loc[n].C.Lon;
+         loc.Elev=Loc[n].C.Elev;
          CLAMPLON(loc.Lon);
 
-         out[n][0]=loc.Lon/90.0;
-         out[n][1]=log(tan(M_PI4 + (loc.Lat>78.0?78.0:(loc.Lat<-78.0?-78.0:loc.Lat))/180.0));
-         out[n][2]=1.0+loc.Elev*Params->Scale*Params->ZFactor;
+         out[n].V[0]=loc.Lon/90.0;
+         out[n].V[1]=log(tan(M_PI4 + (loc.Lat>78.0?78.0:(loc.Lat<-78.0?-78.0:loc.Lat))/180.0));
+         out[n].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
          e++;
       }
    }

@@ -113,7 +113,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TObs              *obs;
    GDALDataType       type;
 
-   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM",NULL };
+   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
    static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","is","project","unproject","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,IS,PROJECT,UNPROJECT,ALL,WIPE };
 
@@ -331,7 +331,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   obj=Objv[7];
                }
                return(Data_GridConservative(Interp,band->Ref,band->Def,comb->Ref,comb->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=17) {
+            } else if (n>=5 && n<=18) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"bandto bandfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
@@ -411,7 +411,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          }
-         if (n==16 || n==17) {
+         if (n==16 || n==17 || n==18) {
             return(Data_GridAverage(Interp,band->Ref,band->Def,NULL,NULL,NULL,NULL,n,1));
          } else {
             Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);

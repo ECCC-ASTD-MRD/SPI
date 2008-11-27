@@ -166,7 +166,7 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
 
 double fpeel(TDataDef *Res,TDataDef *MA) {
 
-   double        v;
+   double        v,va;
    unsigned long i,j,idx,idxi;
    char          t;
 
@@ -177,8 +177,8 @@ double fpeel(TDataDef *Res,TDataDef *MA) {
          t=0;
 
          idxi=idx+i;
-         Def_Get(MA,0,idxi,v);
-         if (v!=0.0) {
+         Def_Get(MA,0,idxi,va);
+         if (va!=0.0) {
             if (i>0) {
                Def_Get(MA,0,idxi-1,v);
                if (v==0.0) t++;
@@ -223,10 +223,10 @@ double fpeel(TDataDef *Res,TDataDef *MA) {
             if (t) {
                Def_Set(Res,0,idxi,0.0);
             } else {
-               Def_Set(Res,0,idxi,v);
+               Def_Set(Res,0,idxi,va);
             }
          } else {
-            Def_Set(Res,0,idxi,v);
+            Def_Set(Res,0,idxi,va);
          }
       }
    }

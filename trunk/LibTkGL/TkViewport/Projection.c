@@ -1392,7 +1392,7 @@ int Projection_Pixel(Projection *Proj,ViewportItem *VP,Coord Co,Vect3d Pix) {
    double d;
    Vect3d vr;
 
-   Proj->Type->Project(Proj->Params,&Co,&vr,1);
+   Proj->Type->Project(Proj->Params,(GeoVect*)&Co,(GeoVect*)&vr,1);
    if (Proj->Type->Def==PROJCYLIN) {
       d=vr[0]-Proj->Params->L;
       CYLCHECK(d,vr[0]);
@@ -1646,7 +1646,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
          sec=Proj->Date>86400?Proj->Date:time(NULL)+Proj->Date;
          Astro_SunPos(sec,&Proj->SunPos.Lat,&Proj->SunPos.Lon);
          Proj->SunPos.Elev=146000.0;
-         Proj->Type->Project(Proj->Params,&Proj->SunPos,&pt,1);
+         Proj->Type->Project(Proj->Params,(GeoVect*)&Proj->SunPos,(GeoVect*)&pt,1);
          Proj->LightPos[0]=pt[0];Proj->LightPos[1]=pt[1];Proj->LightPos[2]=pt[2];Proj->LightPos[3]=0.0;
       } else {
          Proj->LightPos[0]=0.0;Proj->LightPos[1]=0.943158;Proj->LightPos[2]=0.3;Proj->LightPos[3]=0.0;

@@ -457,10 +457,10 @@ void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
    while(Geo) {
 
       /*Projeter tout les vecteurs*/
-      Geo->Box.Nb=Proj->Type->Project(Proj->Params,Geo->Loc,NULL,Geo->Box.Nb);
+      Geo->Box.Nb=Proj->Type->Project(Proj->Params,(GeoVect*)Geo->Loc,NULL,Geo->Box.Nb);
 
       /*Calculer les limites de la boite*/
-      if (!Proj->Type->Project(Proj->Params,Geo->Box.Co,Geo->Box.Vr,4)) {
+      if (!Proj->Type->Project(Proj->Params,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,4)) {
          Geo->Box.Nb=-1;
       }
 
@@ -956,7 +956,7 @@ void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *P
    Tile->Box.Co[2].Lat=Lat0+Delta;Tile->Box.Co[2].Lon=Lon0+Delta;Tile->Box.Co[2].Elev=0.0;
    Tile->Box.Co[3].Lat=Lat0+Delta;Tile->Box.Co[3].Lon=Lon0;Tile->Box.Co[3].Elev=0.0;
 
-   if (!(n=Proj->Type->Project(Proj->Params,Tile->Box.Co,Tile->Box.Vr,4))) {
+   if (!(n=Proj->Type->Project(Proj->Params,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,4))) {
       Tile->Box.Nb=-1;
    } else {
       Tile->Box.Nb=1;
@@ -1384,7 +1384,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
 
             loc.Lat=Lat0+Delta-y;
             loc.Lon=Lon0+x;
-            Proj->Type->Project(Proj->Params,&loc,&GDB_VBuf[y],1);
+            Proj->Type->Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&GDB_VBuf[y],1);
 
             if (x) {
                glTexCoord2f(tx+dtx,ty);
@@ -1418,7 +1418,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                loc.Lat=Lat0+Delta-(y*dy);
                loc.Lon=Lon0+(x*dx);
                loc.Elev=map[dc];
-               Proj->Type->Project(Proj->Params,&loc,&Topo->Vr[dr],1);
+               Proj->Type->Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
             }
          }
       }
@@ -1524,7 +1524,7 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
                loc.Lat=Lat0+Delta-(y*dy);
                loc.Lon=Lon0+(x*dx);
                loc.Elev=map[dc];
-               Proj->Type->Project(Proj->Params,&loc,&Topo->Vr[dr],1);
+               Proj->Type->Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
             }
          }
       }
@@ -2004,7 +2004,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
       len=strlen(Txt->String);
 
       if (len>1 && (Proj->PixDist<500 || isupper(Txt->String[strlen(Txt->String)-2]))) {
-         if (Proj->Type->Project(Proj->Params,&Txt->Co,&pos,1)) {
+         if (Proj->Type->Project(Proj->Params,(GeoVect*)&Txt->Co,(GeoVect*)&pos,1)) {
             gluProject(pos[0],pos[1],pos[2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&pix[0],&pix[1],&pix[2]);
 
             pix[0]+=Point;

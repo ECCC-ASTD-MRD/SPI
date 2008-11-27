@@ -49,7 +49,7 @@ double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,Vie
 
 /*Fonctions de transformations*/
 
-unsigned long Ortho_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+unsigned long Ortho_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           Ortho_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
 Tcl_Obj*      Ortho_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
 Tcl_Obj*      Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo);
@@ -82,19 +82,19 @@ Tcl_Obj*      Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *
 */
 double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,ViewportItem *VP){
 
-   Vect3d inter,in;
-   Coord  tmp;
-   int    rt=-1;
+   Vect3d  inter;
+   GeoVect tmp;
+   int     rt=-1;
    double  theta,dn,tc,d2;
    double  sinlat0,coslat0,sinlat1,coslat1,sindn,cosdn;
 
    /*From front to back*/
-   Proj->Type->Project(Proj->Params,&Pt1,&in,1);
-   gluProject(in[0],in[1],in[2],VP->GLModR,VP->GLProj,VP->GLView,&inter[0],&inter[1],&inter[2]);
+   Proj->Type->Project(Proj->Params,(GeoVect*)&Pt1,&tmp,1);
+   gluProject(tmp.V[0],tmp.V[1],tmp.V[2],VP->GLModR,VP->GLProj,VP->GLView,&inter[0],&inter[1],&inter[2]);
    if (inter[2]<=1.0) {
-      tmp=Pt0;
+      tmp.C=Pt0;
       Pt0=Pt1;
-      Pt1=tmp;
+      Pt1=tmp.C;
    }
 
    Pt0.Lat=DEG2RAD(Pt0.Lat);
@@ -121,16 +121,16 @@ double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,Vie
       /*Position along true course*/
       sindn=sin(dn);
       cosdn=cos(dn);
-      tmp.Lat=asin(sinlat0*cosdn+coslat0*sindn*cos(tc));
-      tmp.Lon=fmod(Pt0.Lon-atan2(sin(tc)*sindn*coslat0,cosdn-sinlat0*sin(tmp.Lat))+M_PI,M_2PI)-M_PI;
-      tmp.Elev=Pt1.Elev;
+      tmp.C.Lat=asin(sinlat0*cosdn+coslat0*sindn*cos(tc));
+      tmp.C.Lon=fmod(Pt0.Lon-atan2(sin(tc)*sindn*coslat0,cosdn-sinlat0*sin(tmp.C.Lat))+M_PI,M_2PI)-M_PI;
+      tmp.C.Elev=Pt1.Elev;
 
       /*Project the position*/
-      tmp.Lat=RAD2DEG(tmp.Lat);
-      tmp.Lon=RAD2DEG(tmp.Lon);
+      tmp.C.Lat=RAD2DEG(tmp.C.Lat);
+      tmp.C.Lon=RAD2DEG(tmp.C.Lon);
 
-      Proj->Type->Project(Proj->Params,&tmp,&in,1);
-      gluProject(in[0],in[1],in[2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&inter[0],&inter[1],&inter[2]);
+      Proj->Type->Project(Proj->Params,&tmp,NULL,1);
+      gluProject(tmp.V[0],tmp.V[1],tmp.V[2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&inter[0],&inter[1],&inter[2]);
 
       d2*=0.5f;
       if (inter[2]>1.0){
@@ -282,8 +282,7 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  incr;
    char    buf[15];
    double  lat,lon;
-   Vect3d  vr;
-   Coord   co;
+   GeoVect vr,co;
    double  ax[2];
 
    /*Draw 3DAxis*/
@@ -311,27 +310,27 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glEnable(GL_POLYGON_OFFSET_FILL);
       glColor3us(0xAAAA,0xAAAA,0xAAAA);
       glBegin(GL_QUAD_STRIP);
-      co.Lon=Proj->Params->ZAxis.Lon;
-      for(co.Lat=ax[0];co.Lat>=-90.0;co.Lat-=1.0) {
-         co.Elev=0.0;
+      co.C.Lon=Proj->Params->ZAxis.Lon;
+      for(co.C.Lat=ax[0];co.C.Lat>=-90.0;co.C.Lat-=1.0) {
+         co.C.Elev=0.0;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
-         glVertex3dv(vr);
+         glVertex3dv(vr.V);
 
-         co.Elev=Proj->Params->ZAxis.Elev;
+         co.C.Elev=Proj->Params->ZAxis.Elev;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
-         glVertex3dv(vr);
+         glVertex3dv(vr.V);
       }
       glEnd();
       glDisable(GL_POLYGON_OFFSET_FILL);
 
       /*Draw Y axis increments*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      co.Lon=Proj->Params->ZAxis.Lon;
-      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
+      co.C.Lon=Proj->Params->ZAxis.Lon;
+      for(co.C.Elev=0;co.C.Elev<=Proj->Params->ZAxis.Elev;co.C.Elev+=incr) {
          glBegin(GL_LINE_STRIP);
-         for(co.Lat=ax[0];co.Lat>=-90.0;co.Lat-=1.0){
+         for(co.C.Lat=ax[0];co.C.Lat>=-90.0;co.C.Lat-=1.0){
             Proj->Type->Project(Proj->Params,&co,&vr,1);
-            glVertex3dv(vr);
+            glVertex3dv(vr.V);
          }
          glEnd();
       }
@@ -346,38 +345,38 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glEnable(GL_POLYGON_OFFSET_FILL);
       glColor3us(0xDDDD,0xDDDD,0xDDDD);
       glBegin(GL_QUAD_STRIP);
-      co.Lat=0.0;
-      for(co.Lon=ax[1];co.Lon<=ax[1]+180;co.Lon+=1.0){
-         co.Elev=0.0;
+      co.C.Lat=0.0;
+      for(co.C.Lon=ax[1];co.C.Lon<=ax[1]+180;co.C.Lon+=1.0){
+         co.C.Elev=0.0;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
-         glVertex3dv(vr);
+         glVertex3dv(vr.V);
 
-         co.Elev=Proj->Params->ZAxis.Elev;
+         co.C.Elev=Proj->Params->ZAxis.Elev;
          Proj->Type->Project(Proj->Params,&co,&vr,1);
-         glVertex3dv(vr);
+         glVertex3dv(vr.V);
       }
       glEnd();
       glDisable(GL_POLYGON_OFFSET_FILL);
 
       /*X Axis Increment*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      co.Lat=0.0;
-      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
+      co.C.Lat=0.0;
+      for(co.C.Elev=0;co.C.Elev<=Proj->Params->ZAxis.Elev;co.C.Elev+=incr) {
          glBegin(GL_LINE_STRIP);
-         for(co.Lon=ax[1];co.Lon<=ax[1]+180;co.Lon+=1.0){
+         for(co.C.Lon=ax[1];co.C.Lon<=ax[1]+180;co.C.Lon+=1.0){
             Proj->Type->Project(Proj->Params,&co,&vr,1);
-            glVertex3dv(vr);
+            glVertex3dv(vr.V);
          }
          glEnd();
 
          glPushMatrix();
-         co.Lon=0.0;
-         Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
-         glTranslated(0.0,0.0,ZM(Proj,co.Elev));
+         co.C.Lon=0.0;
+         Proj->Type->Locate(Proj,co.C.Lat,co.C.Lon,1);
+         glTranslated(0.0,0.0,ZM(Proj,co.C.Elev));
          glRotatef(90.0,1.0,0.0,0.0);
          glScalef(VP->Ratio,VP->Ratio,1.0);
-         sprintf(buf,"  %i",(int)co.Elev);
-         glPrint(Interp,VP->canvas,buf,vr[0],vr[1],0);
+         sprintf(buf,"  %i",(int)co.C.Elev);
+         glPrint(Interp,VP->canvas,buf,vr.V[0],vr.V[1],0);
          glPopMatrix();
       }
 
@@ -562,7 +561,7 @@ Tcl_Obj* Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
    /*Boucler sur tout les points definissant la region*/
    for(i=0;i<NCo;i++) {
 
-      Proj->Type->Project(Proj->Params,&Co[i],&in,1);
+      Proj->Type->Project(Proj->Params,(GeoVect*)&Co[i],(GeoVect*)&in,1);
       gluProject(in[0],in[1],in[2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
       pix[1]=VP->Height-pix[1];
       pix[2]=1-pix[2];
@@ -669,12 +668,13 @@ Tcl_Obj* Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
 Tcl_Obj* Ortho_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any){
 
    Tcl_Obj *obj;
-   Vect3d   pix,in;
+   GeoVect  in;
+   Vect3d   pix;
 
    obj=Tcl_NewListObj(0,NULL);
 
-   Proj->Type->Project(Proj->Params,&Pt1,&in,1);
-   gluProject(in[0],in[1],in[2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
+   Proj->Type->Project(Proj->Params,(GeoVect*)&Pt1,&in,1);
+   gluProject(in.V[0],in.V[1],in.V[2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
 
    /*Repositionner dans le referentiel de Tcl*/
    pix[1]=VP->Height-pix[1];
@@ -706,38 +706,33 @@ Tcl_Obj* Ortho_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
  *
  *----------------------------------------------------------------------------
 */
-unsigned long Ortho_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long Ortho_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
-   long n,e=0;
-   double r,coslat;
-   Coord   loc;
-   Vect3d *out;
+   long     n,e=0;
+   double   r,rd,coslat;
+   Coord    loc;
+   GeoVect *out;
 
-   out=(Vect3d*)(Pix?Pix:Loc);
+   out=(Pix?Pix:Loc);
+   r=Params->Scale*Params->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
 
-      if (((Coord*)Loc)[n].Lat==-999.0 || ((Coord*)Loc)[n].Lon==-999.0) {
-         out[n][2]=-999.0;
+      if (Loc[n].C.Lat==-999.0 || Loc[n].C.Lon==-999.0) {
+         out[n].V[2]=-999.0;
       } else {
 
-         loc.Lat=DEG2RAD(((Coord*)Loc)[n].Lat);
-         loc.Lon=DEG2RAD(((Coord*)Loc)[n].Lon);
-         loc.Elev=((Coord*)Loc)[n].Elev;
-
-         /*Determiner l'elevation relative*/
-         if (loc.Elev==0.0) {
-            r=1.0;
-         } else {
-            r=1.0+loc.Elev*Params->Scale*Params->ZFactor;
-         }
+         loc.Lat=DEG2RAD(Loc[n].C.Lat);
+         loc.Lon=DEG2RAD(Loc[n].C.Lon);
+         loc.Elev=Loc[n].C.Elev;
 
          /*Calcul des membres repetes*/
-         coslat=r*cos(loc.Lat);
+         rd=(loc.Elev==0.0)?1.0:(1.0+loc.Elev*r);
+         coslat=rd*cos(loc.Lat);
 
-         out[n][0]=coslat*sin(loc.Lon);
-         out[n][1]=r*sin(loc.Lat);
-         out[n][2]=coslat*cos(loc.Lon);
+         out[n].V[0]=coslat*sin(loc.Lon);
+         out[n].V[1]=(loc.Elev==0.0)?sin(loc.Lat):rd*sin(loc.Lat);
+         out[n].V[2]=coslat*cos(loc.Lon);
          e++;
       }
    }
@@ -764,7 +759,6 @@ unsigned long Ortho_Project(ProjParams *Params,GeoVect *Loc,GeoVect *Pix,long Nb
  *
  *----------------------------------------------------------------------------
 */
-
 int Ortho_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
 
    Vect3d obj;

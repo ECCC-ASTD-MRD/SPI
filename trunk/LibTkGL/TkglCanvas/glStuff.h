@@ -200,6 +200,7 @@ int      glFeedbackProcess(Tcl_Interp *Interp,int GLMode);
 int      glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Height);
 void     glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width);
 int      glPostscriptStipple(Tcl_Interp *Interp,T_glBitmap *Bitmap);
+void     trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height,TRcontext *TR);
 void     glPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height);
 void     glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int X2,int Y2,XColor *Color,int Fill);
 void     glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int Y1,int Angle,XColor *Color,float XOff,float YOff,float Justify);
@@ -215,6 +216,9 @@ GLushort glDash(Tk_Dash *Dash);
 void     glDrawArrow(GLint Mode);
 void     glDrawCircle(int Inter,GLint Mode);
 void     glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style);
+
+void     glPickInit(double WinX,double WinY,double DX,double DY);
+int      glPickProcess();
 
 void      glTessError(GLenum Err);
 GLdouble *glTessTmpGet();

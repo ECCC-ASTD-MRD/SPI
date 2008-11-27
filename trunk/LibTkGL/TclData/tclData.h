@@ -39,14 +39,13 @@
 #include <strings.h>
 #include <stdlib.h>
 
-#include "rpnmacros.h"
+#include "eerUtils.h"
+#include "tclUtils.h"
 #include "GeoRef.h"
 #include "tclDataSpec.h"
 #include "tclVector.h"
 #include "Vector.h"
 #include "glStuff.h"
-#include "eerUtils.h"
-#include "tclUtils.h"
 
 #define TCLDATA_VERSION "7.2.4"
 
@@ -96,7 +95,8 @@ typedef enum {
    TD_LENGTH_ALIASED                 = 14,
    TD_LENGTH_NORMALIZED_CONSERVATIVE = 15,
    TD_NOP                            = 16,
-   TD_ACCUM                          = 17
+   TD_ACCUM                          = 17,
+   TD_BUFFER                         = 18
 } TData_Interp;
 
 typedef enum {
@@ -251,20 +251,21 @@ typedef struct TDataStat {
 } TDataStat;
 
 typedef struct TDataDef {
-   double  NoData;         /*Valeur de novalue*/
-   double *Buffer;         /*Buffer temporaire*/
-   double *Accum;          /*Accumulation Buffer temporaire*/
-   char   *Mask;           /*Massque a appliquer au traitement sur le champs*/
-   char *Data[4];          /*Composantes du champs*/
-   char *Mode;             /*Module des champs Data is vectoriel*/
-   OGRGeometryH *Pick,*Poly;
+   double  NoData;           /*Valeur de novalue*/
+   double *Buffer;           /*Buffer temporaire*/
+   int    *Accum;            /*Accumulation Buffer temporaire*/
+   char   *Mask;             /*Masque a appliquer au traitement sur le champs*/
+   char   *Data[4];          /*Composantes du champs*/
+   char   *Mode;             /*Module des champs Data is vectoriel*/
+   OGRGeometryH *Pick,*Poly; /*Geometry used in various interpolation method*/
 
-   TData_Type Type;        /*Type de donnees du champs*/
-   int NI,NJ,NK,NC;        /*Dimensions du champs*/
+   TData_Type Type;          /*Type de donnees du champs*/
+   int NI,NJ,NK,NC;          /*Dimensions du champs*/
 
-   char    Container;      /*Container pointant sur d'autres donnees*/
-   int     Level;          /*Niveau courant*/
-   int     Limits[3][2];   /*Limites d'interet*/
+   char    CellDim;          /*Defined grid point coverage, point=1 or area=2*/
+   char    Container;        /*Container pointant sur d'autres donnees*/
+   int     Level;            /*Niveau courant*/
+   int     Limits[3][2];     /*Limites d'interet*/
 } TDataDef;
 
 struct TData;
@@ -319,6 +320,7 @@ int      Data_WithinNb(TData *Field);
 void     Data_Wipe();
 void     Data_PreInit(TData *Data);
 int      Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef);
+int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 
 TDataDef *Data_DefCopy(TDataDef *Def);
 TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type);

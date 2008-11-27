@@ -35,12 +35,8 @@
 #ifndef _tclFSTD_h
 #define _tclFSTD_h
 
-#ifdef LNK_FSTD
-#include "rpnmacros.h"
-#include "EZTile.h"
-#endif
-
 #include "tclData.h"
+#include "EZTile.h"
 
 #define FSTD_LISTALL   0
 #define FSTD_LISTVAR   1

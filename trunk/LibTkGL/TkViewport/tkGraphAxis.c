@@ -45,15 +45,9 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 static int GraphAxis_Create(Tcl_Interp *Interp,char *Name);
 static int GraphAxis_Free(Tcl_Interp *Interp,char *Name);
 
-void GraphAxis_Clear(TGraphAxis *Axis);
-void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta);
 void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,int *Width,int *Height);
-int  GraphAxis_Displacement(TGraphAxis *Axis,Tk_Font Font,Tk_FontMetrics TKM,int Side,char *String,int *DX,int *DY);
-void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder);
 void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side);
 void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side);
-void GraphAxis_Wipe();
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclGraphAxis_Init>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE

@@ -118,4 +118,10 @@ typedef struct TGraphAxis {
 int TclGraphAxis_Init(Tcl_Interp *Interp);
 
 TGraphAxis* GraphAxis_Get(char *Name);
+
+void GraphAxis_Clear(TGraphAxis *Axis);
+void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta);
+int  GraphAxis_Displacement(TGraphAxis *Axis,Tk_Font Font,Tk_FontMetrics TKM,int Side,char *String,int *DX,int *DY);
+void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder);
+void GraphAxis_Wipe();
 #endif

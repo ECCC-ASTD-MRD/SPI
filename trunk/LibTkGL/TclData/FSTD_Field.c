@@ -1707,8 +1707,8 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
    FSTD_FileUnset(Interp,file);
 
    for(ni=0;ni<idnb;ni++) {
-     sprintf(buf,"%i",idlst[ni]);
-     Tcl_AppendElement(Interp,buf);
+      sprintf(buf,"%i",idlst[ni]);
+      Tcl_AppendElement(Interp,buf);
    }
    free(idlst);
 #endif
