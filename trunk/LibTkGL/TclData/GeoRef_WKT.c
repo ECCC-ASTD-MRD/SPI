@@ -361,7 +361,12 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
       OSRExportToWkt(Ref->Spatial,&Ref->String);
    } else if (String) {
       Ref->String=strdup(String);
-      Ref->Spatial=OSRNewSpatialReference(Ref->String);
+      if (strlen(Ref->String)<20) {
+         Ref->Spatial=OSRNewSpatialReference(NULL);
+         OSRSetWellKnownGeogCS(Ref->Spatial,Ref->String);
+      } else {
+         Ref->Spatial=OSRNewSpatialReference(Ref->String);
+      }
    } else {
       Ref->String=strdup(REFDEFAULT);
       Ref->Spatial=OSRNewSpatialReference(Ref->String);
