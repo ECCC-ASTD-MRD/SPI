@@ -912,7 +912,7 @@ proc Page::ModeCam { Frame VP } {
    $c bind $Data(Tag)$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind $Data(Tag)$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame True"
 
-   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "update idletasks; set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2; Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2"
 
    #----- Evenements de manipulation sur l'axe X-Y
 
@@ -1199,7 +1199,7 @@ proc Page::ModeZoom { Frame VP } {
    $c bind $Data(Tag)$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind $Data(Tag)$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame True"
 
-   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "update idletasks; set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2; Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2"
 
    $c config -cursor left_ptr
 }

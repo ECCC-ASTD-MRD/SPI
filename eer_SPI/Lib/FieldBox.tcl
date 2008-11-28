@@ -517,12 +517,12 @@ proc FieldBox::FileOpen { No File } {
       set bad [catch { set index [fstdfile open $fid read $file] }]
       if { $bad } {
          fstdfile close $fid
-#         set bad [catch { set index [gribfile open $fid read $file] }]
-#         if { $bad } {
-#            gribfile close $fid
-#         } else {
-#            lappend data(TypeList) gribfield
-#         }
+         set bad [catch { set index [gribfile open $fid read $file] }]
+         if { $bad } {
+            gribfile close $fid
+         } else {
+            lappend data(TypeList) gribfield
+         }
       } else {
          lappend data(TypeList) fstdfield
       }
