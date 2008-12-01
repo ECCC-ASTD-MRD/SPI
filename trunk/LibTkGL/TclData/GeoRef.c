@@ -174,10 +174,19 @@ void GeoScan_Clear(TGeoScan *Scan) {
 double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3) {
 
    Coord cr;
+   double d0,d1,d2;
 
    GeoFunc_RadialPointOn(C1,C2,C3,&cr);
 
-   return(DIST(0,C1.Lat,C1.Lon,cr.Lat,cr.Lon)/DIST(0,C1.Lat,C1.Lon,C2.Lat,C2.Lon));
+   d0=DIST(0,C1.Lat,C1.Lon,C2.Lat,C2.Lon);
+   d1=DIST(0,C1.Lat,C1.Lon,cr.Lat,cr.Lon);
+   d2=DIST(0,C2.Lat,C2.Lon,cr.Lat,cr.Lon);
+
+   if(d2>d0) {
+      return(-(d2-d0)/d0);
+   } else {
+      return(d1/d0);
+   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
