@@ -867,7 +867,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename [driver] [options]");
             return(TCL_ERROR);
          }
-         if (Objc==6)
+         if (Objc>=6)
             driver=Tcl_GetString(Objv[5]);
 
          if (Objc==7) {
@@ -876,6 +876,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
                return(TCL_ERROR);
             }
          }
+
          code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)list);
          Tcl_Free((char*)list);
          return(code);
