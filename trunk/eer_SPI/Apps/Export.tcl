@@ -213,9 +213,9 @@ proc Export::Vector::Export { Path Format } {
       }
 
       if { $Format=="MapInfo File" } {
-         ogrfile open FILE write $file.[incr no]_$nv$ext $Format
+         ogrfile open FILE write $file.[incr no]_$nv$ext $Format { FORMAT=MIF }
       } else {
-         ogrfile open FILE write $file.[incr no]_$nv$ext $Format FORMAT=MIF
+         ogrfile open FILE write $file.[incr no]_$nv$ext $Format
       }
       ogrlayer create FILE LAYER $nv
       ogrlayer import LAYER $field
