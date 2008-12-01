@@ -763,13 +763,21 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
       for(i=0;i<Obs->Loc->Nb;i++) {
 
          if (Ref->Grid[0]=='V') {
+            j=1;
+
             /* Get the right level*/
             for(k=Ref->LevelNb-1;k>=0;k--) {
               if (Obs->Loc->Coord[i].Elev>Ref->Levels[k])
                   break;
             }
-            dk=Ref->Levels[k+1]-Ref->Levels[k];
-            pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-Ref->Levels[k])/dk);
+            if (k==Ref->LevelNb-1) {
+               dk=Ref->Levels[k]-Ref->Levels[k-1];
+               pos[*NObs][1]=ILIN(k-1,k,(Obs->Loc->Coord[i].Elev-Ref->Levels[k])/dk);
+               j=0;
+            } else {
+               dk=Ref->Levels[k+1]-Ref->Levels[k];
+               pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-Ref->Levels[k])/dk);
+            }
 
             /*Get the horizontal position*/
             d=1e32;
@@ -790,7 +798,9 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
             /*Figure out right angle crossing point*/
             c1.Lat=DEG2RAD(Ref->Lat[idx==n?idx-1:idx+1]);c1.Lon=DEG2RAD(Ref->Lon[idx==n?idx-1:idx+1]);
             pos[*NObs][0]=idx+GeoFunc_RadialPointRatio(c0,c1,c2);
-            j=(pos[*NObs][0]>0 && pos[*NObs][0]<=n)?1:0;
+            if (pos[*NObs][0]<0 || pos[*NObs][0]>n) {
+               j=0;
+            }
          } else {
             j=Ref->UnProject(Ref,&pos[*NObs][0],&pos[*NObs][1],Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,Extrap,1);
          }
