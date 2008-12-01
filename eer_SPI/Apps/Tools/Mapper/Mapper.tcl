@@ -532,7 +532,7 @@ proc Mapper::ReadLayer { File { SQL "" } } {
          if { [ogrlayer define $layer -nb]==0 } {
             Dialog::CreateError . "[lindex $Msg(NoFeature) $GDefs(Lang)] : $layer" $GDefs(Lang)
             ogrlayer free $layer
-            ogrfile close $file
+            ogrfile close $File
             continue
          }
          ogrlayer configure $layer -font OGRFONT -activeoutline yellow -width 1
