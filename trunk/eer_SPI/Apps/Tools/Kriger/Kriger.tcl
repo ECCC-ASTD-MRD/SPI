@@ -282,8 +282,7 @@ proc Kriger::Grid { Coords } {
       #----- Assign for display
 
       fstdfield configure KRIGGRID -rendertexture 1 -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
-      Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID
-      Viewport::UpdateData $Page::Data(Frame)
+      Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID True
    }
    set Data(Job) ""
 }
@@ -322,15 +321,6 @@ proc Kriger::Save { File } {
          }
       }
       fstdfile close KRIGFILE
-   }
-}
-
-proc Kriger::Read { File } {
-
-   if { $File!="" } {
-      fstdfile open 1 read $File
-      fstdfield read Macro::SECTION 1 -1 "XSECTION" -1 -1 -1 "" ""
-      fstdfile close 1
    }
 }
 
@@ -441,7 +431,6 @@ proc Kriger::VertexFollow { Frame VP X Y Scan } {
       } else {
          set coords [lrange $Data(Coords) 0 1]
          lappend coords $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
-         puts stderr $coords
       }
       Kriger::Grid $coords
    }
