@@ -1,6 +1,6 @@
 #!/bin/sh
 
 DIR=${0%tclsh}
-. ${DIR}/.spi
+. ${DIR}/version
 
 exec ${SHARED}/TclTk/bin/tclsh${TCL_VERSION} $@
