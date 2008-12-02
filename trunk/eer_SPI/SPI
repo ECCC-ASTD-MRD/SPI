@@ -1,7 +1,7 @@
 #!/bin/sh
 
 DIR=${0%SPI}
-. ${DIR}/.spi
+. ${DIR}/version
 
 SOFT=0
 HOST=`hostname`
