@@ -1655,9 +1655,9 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
 int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
    GDB_Tile *tile;
-   int   x,y,res=0,i,ras=0;
-   float lat,lon,over;
-   short *tmp;
+   int       x,y,res=0,i,ras=0;
+   float     lat,lon,over;
+   short    *tmp;
 
    if (GDB->Res<0) {
       return(0);
@@ -1687,7 +1687,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
    for(x=0;x<GDB->DegX;x++) {
       for(y=0;y<GDB->DegY;y++) {
-
          lat=y*GDB->DegT-90.0;
          lon=x*GDB->DegT-180.0;
          over=1.0/MAX(1,res);
