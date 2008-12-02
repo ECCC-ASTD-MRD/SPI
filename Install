@@ -16,14 +16,13 @@ then
    exit 0
 fi
 
-ver=7.2.4a
+ver=7.3.0
 mach=`uname -n`
 arch=`uname`
 user=`whoami`
 path=$0
 path=${path%Install}
 
-echo $path
 echo "EER Installer for version $ver"
 
 echo ""
@@ -42,6 +41,11 @@ fi
 
 echo "   Copying data ..."
 echo ""
+if [ ! -d $ipath/eer_SPI-$ver ]
+then
+   mkdir $ipath/eer_SPI-$ver
+fi
+
 cp -Rp $path/eer_SPI/* $ipath/eer_SPI-$ver
 
 #----- Get the GDB path
