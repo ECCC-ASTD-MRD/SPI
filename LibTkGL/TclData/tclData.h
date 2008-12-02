@@ -47,7 +47,7 @@
 #include "Vector.h"
 #include "glStuff.h"
 
-#define TCLDATA_VERSION "7.2.4"
+#define TCLDATA_VERSION "7.3.0"
 
 #define DSIZE(D)                          (D[0]?(D[1]?(D[2]?3:2):1):0)
 #define FSIZE2D(D)                        (D->NI*D->NJ)
