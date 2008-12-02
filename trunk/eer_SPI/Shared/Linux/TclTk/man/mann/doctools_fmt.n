@@ -1,0 +1,805 @@
+'\"
+'\" Generated from file './modules/doctools/doctools_fmt.man' by tcllib/doctools with format 'nroff'
+'\" Copyright (c) 2002-2004 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+'\"
+'\" -*- tcl -*- doctools manpage
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
+'\"
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
+'\"
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: man.macros,v 1.2 2004/01/15 06:36:12 andreas_kupries Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+'\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+'\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+'\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+'\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+'\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+'\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+'\"	# SO - start of list of standard options
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 4c 8c 12c
+.ft B
+..
+'\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+'\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+'\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+'\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.TH "doctools_fmt" n 1.0 doctools "Documentation tools"
+.BS
+.SH "NAME"
+doctools_fmt \- Specification of a simple Tcl Markup Language for Manpages
+.SH "SYNOPSIS"
+\fBcomment\fR \fItext\fR
+.sp
+\fBinclude\fR \fIfilename\fR
+.sp
+\fBvset\fR \fIvarname\fR \fIvalue\fR
+.sp
+\fBvset\fR \fIvarname\fR
+.sp
+\fBlb\fR
+.sp
+\fBrb\fR
+.sp
+\fBmanpage_begin\fR \fIcommand\fR \fIsection\fR \fIversion\fR
+.sp
+\fBmanpage_end\fR
+.sp
+\fBmoddesc\fR \fIdesc\fR
+.sp
+\fBtitledesc\fR \fIdesc\fR
+.sp
+\fBcopyright\fR \fItext\fR
+.sp
+\fBdescription\fR
+.sp
+\fBrequire\fR \fIpkg\fR ?\fIversion\fR?
+.sp
+\fBsection\fR \fIname\fR
+.sp
+\fBsubsection\fR \fIname\fR
+.sp
+\fBpara\fR
+.sp
+\fBsee_also\fR \fIargs\fR
+.sp
+\fBkeywords\fR \fIargs\fR
+.sp
+\fBarg\fR \fItext\fR
+.sp
+\fBcmd\fR \fItext\fR
+.sp
+\fBopt\fR \fItext\fR
+.sp
+\fBemph\fR \fItext\fR
+.sp
+\fBstrong\fR \fItext\fR
+.sp
+\fBsectref\fR \fItext\fR ?\fIlabel\fR?
+.sp
+\fBsyscmd\fR \fItext\fR
+.sp
+\fBmethod\fR \fItext\fR
+.sp
+\fBnamespace\fR \fItext\fR
+.sp
+\fBoption\fR \fItext\fR
+.sp
+\fBwidget\fR \fItext\fR
+.sp
+\fBfun\fR \fItext\fR
+.sp
+\fBtype\fR \fItext\fR
+.sp
+\fBpackage\fR \fItext\fR
+.sp
+\fBclass\fR \fItext\fR
+.sp
+\fBvar\fR \fItext\fR
+.sp
+\fBfile\fR \fItext\fR
+.sp
+\fBuri\fR \fItext\fR ?\fItext\fR?
+.sp
+\fBterm\fR \fItext\fR
+.sp
+\fBconst\fR \fItext\fR
+.sp
+\fBnl\fR
+.sp
+\fBexample_begin\fR
+.sp
+\fBexample_end\fR
+.sp
+\fBexample\fR \fItext\fR
+.sp
+\fBlist_begin\fR \fIwhat\fR
+.sp
+\fBlist_end\fR
+.sp
+\fBbullet\fR
+.sp
+\fBenum\fR
+.sp
+\fBlst_item\fR \fItext\fR
+.sp
+\fBcall\fR \fIargs\fR
+.sp
+\fBarg_def\fR \fItype\fR \fIname\fR ?\fImode\fR?
+.sp
+\fBopt_def\fR \fIname\fR ?\fIarg\fR?
+.sp
+\fBcmd_def\fR \fIcommand\fR
+.sp
+\fBtkoption_def\fR \fIname\fR \fIdbname\fR \fIdbclass\fR
+.sp
+\fBusage\fR \fIargs\fR
+.sp
+.BE
+.SH "DESCRIPTION"
+.PP
+This document specifies version 1 of a text format for man pages. The
+name of this format is \fIdoctools\fR and it provides all the
+necessary commands to write a manpage.
+It is complemented by both the \fIdoctoc\fR format for writing tables
+of contents and the \fIdocidx\fR format for writing keyword indices.
+The formal specifications for these two formats can be found in the
+companion documents \fIdoctoc_fmt\fR and \fIdocidx_fmt\fR.
+A third companion document describes the package \fBdoctools\fR,
+which provides commands for the processing of text in \fIdoctools\fR
+format.
+.PP
+Like for the formats \fIdoctoc\fR and \fIdocidx\fR a generic
+framework for the conversion of \fIdoctools\fR to any number of
+different output formats is provided.
+This framework is provided by the package \fBdoctools\fR.
+.PP
+Anyone who wishes to write a toc formatting engine which plugs into
+this framework has to read the document \fIdoctools_api\fR. This is the
+formal specification of the API between the framework and its engines.
+.SH "FORMAT SPECIFICATION"
+.SS "OVERVIEW"
+\fIdoctools\fR is similar to LaTeX. Input written in this format
+consists primarily of text, with markup commands embedded into it. The
+format used to mark commands is different from LaTeX however. All text
+between matching pairs of [ and ] is a command, possibly with
+arguments. Note that both brackets have to be on the same line for a
+command to be recognized.
+.PP
+In contrast to both \fIdoctoc\fR and \fIdocidx\fR this format does
+allow arbitrary text between markup commands. Only some places are
+restricted to only white space.
+.SS "GRAMMAR"
+The overall syntax of a manpage is best captured in a formal
+context-free grammar. Our notation for the grammar is EBNF. Strings
+will stand for markup commands, however their arguments (if they have
+any) are not part of the grammar. Our grammar contains lexical
+elements as well.
+.PP
+First we specify the whitespace and other text at the lexical level,
+which also includes comments.
+.PP
+.nf
+
+    COMMENT  ::= "comment"
+    WHITE    ::= { '\\n' | '\\t' | ' ' | '\\r' | COMMENT }
+    TEXT     ::= { All characters except '[' }
+
+.fi
+.PP
+Then we define rules for all the keywords. Here we introduce our
+knowledge that some commands allow only whitespace after them.
+.PP
+.nf
+
+    BEGIN      ::= "manpage_begin" WHITE
+    END        ::= "manpage_end"
+    TITLE      ::= "titledesc"     WHITE
+    MODULE     ::= "moddesc"       WHITE
+    REQUIRE    ::= "require"       WHITE
+    COPYRIGHT  ::= "copyright"     WHITE
+    DESC       ::= "description"
+
+    SECTION    ::= "section"
+    SUBSEC     ::= "subsection"
+    PARA       ::= "para"
+    NL         ::= "nl"
+    SEE_ALSO   ::= "see_also"
+    KEYWORDS   ::= "keywords"
+
+    ARG        ::= "arg"
+    CMD        ::= "cmd"
+    OPT        ::= "opt"
+    EMPH       ::= "emph"
+    STRONG     ::= "strong"
+    SECTREF    ::= "sectref"
+    USAGE      ::= "usage"
+    SYSCMD     ::= "syscmd"
+    METHOD     ::= "method"
+    NAMESPACE  ::= "namespace"
+    OPTION     ::= "option"
+    WIDGET     ::= "widget"
+    FUN        ::= "fun"
+    TYPE       ::= "type"
+    PACKAGE    ::= "package"
+    CLASS      ::= "class"
+    VAR        ::= "var"
+    FILE       ::= "file"
+    URI        ::= "uri"
+    TERM       ::= "term"
+    CONST      ::= "const"
+    LB         ::= "lb"
+    RB         ::= "rb"
+    EX_BEGIN   ::= "example_begin"
+    EX_END     ::= "example_end"
+    EXAMPLE    ::= "example"
+
+    LIST_BEGIN ::= "list_begin" WHITE
+    LIST_END   ::= "list_end"
+    LIST_ITEM  ::= "lst_item"
+    BULLET     ::= "bullet"
+    ENUM       ::= "enum"
+    CALL       ::= "call"
+    ARGDEF     ::= "arg_def"
+    OPTDEF     ::= "opt_def"
+    CMDDEF     ::= "cmd_def"
+    TKODEF     ::= "tkoption_def"
+
+    INCLUDE    ::= "include"
+    VSET       ::= "vset"
+    DEFUN      ::= { INCLUDE | VSET }
+
+.fi
+At last we can specify the whole manpage. Here we introduce our
+knowledge that inclusion of other files may happen essentially
+everywhere, like the definition of document variables and comments.
+The content of any included file has to fit into the including file
+according to the location in the grammar the inclusion is at.
+.PP
+.nf
+
+    MANPAGE      ::= DEFUN BEGIN HEADER DESC BODY END
+
+    HEADER       ::= { TITLE | MODULE | COPYRIGHT } { REQUIRE }
+    BODY         ::= REGULAR_TEXT { SECTION SECBODY }
+    SECBODY      ::= REGULAR_TEXT { SUBSEC SUBSECBODY }
+    SUBSECBODY   ::= REGULAR_TEXT
+
+    REGULAR_TEXT ::= TEXT_CHUNK { PARA TEXT_CHUNK }
+    TEXT_CHUNK   ::= { TEXT | DEFUN | XREF | MARKUP | COMMENT | A_LIST | AN_EXAMPLE }
+
+    A_LIST       ::= LIST_BEGIN { ( LIST_ITEM | CALL ) LIST_TEXT } LIST_END
+                   | LIST_BEGIN { BULLET LIST_TEXT } LIST_END
+                   | LIST_BEGIN { ENUM   LIST_TEXT } LIST_END
+                   | LIST_BEGIN { ARGDEF LIST_TEXT } LIST_END
+                   | LIST_BEGIN { OPTDEF LIST_TEXT } LIST_END
+                   | LIST_BEGIN { CMDDEF LIST_TEXT } LIST_END
+                   | LIST_BEGIN { TKODEF LIST_TEXT } LIST_END
+
+    LIST_TEXT    ::= TEXT_CHUNK { NL TEXT_CHUNK }
+
+    AN_EXAMPLE   ::= EXAMPLE | EX_BEGIN EXAMPLE_TEXT EX_END
+    EXAMPLE_TEXT ::= { TEXT | DEFUN | MARKUP }
+
+    MARKUP       ::= { BRACKETS | SEMANTIC }
+
+    XREF         ::= SEE_ALSO | KEYWORDS
+    BRACKETS     ::= LB | RB
+    SEMANTIC     ::= ARG | EMPH | CLASS | STRONG | OPTION
+                   | CMD | TYPE | CONST | METHOD | SECTREF
+                   | OPT | TERM | FUN   | SYSCMD | PACKAGE
+                   | VAR | FILE | USAGE | WIDGET | NAMESPACE
+                   | URI
+
+.fi
+.SS "COMMANDS"
+Here we specify the commands used in the grammar. Some commands
+specified here were not used in the grammar at all. The usage of these
+commands is confined to the arguments of other commands.
+.TP
+\fBcomment\fR \fItext\fR
+The command declares that the argument \fItext\fR is a comment.
+.TP
+\fBinclude\fR \fIfilename\fR
+This command loads the contents of the file \fIfilename\fR for
+processing at its own place.
+.TP
+\fBvset\fR \fIvarname\fR \fIvalue\fR
+This form of the command sets the document variable \fIvarname\fR to
+the specified \fIvalue\fR. It does not generate output.
+.TP
+\fBvset\fR \fIvarname\fR
+This form of the command returns the value associated with the
+document variable \fIvarname\fR.
+.TP
+\fBlb\fR
+This command adds a left bracket to the output. \fINote\fR that the
+bracket commands are necessary as plain brackets are used to begin and
+end the formatting commands.
+.TP
+\fBrb\fR
+This command adds a right bracket to the output. \fINote\fR that the
+bracket commands are necessary as plain brackets are used to begin and
+end the formatting commands.
+.TP
+\fBmanpage_begin\fR \fIcommand\fR \fIsection\fR \fIversion\fR
+This is the command to start a manpage. The arguments are the name of
+the \fIcommand\fR described by the manpage, the \fIsection\fR of the
+manpages this manpage resides in, and the \fIversion\fR of the module
+containing the command.
+.TP
+\fBmanpage_end\fR
+This is the command to close a manpage.
+.TP
+\fBmoddesc\fR \fIdesc\fR
+This command is optional. When used it will register its argument
+\fIdesc\fR as a short description of the module the manpage resides
+in.
+.TP
+\fBtitledesc\fR \fIdesc\fR
+This command is optional. When used it will register its argument
+\fIdesc\fR as the title of the manpage. When not used the information
+from \fBmoddesc\fR will be used for the title as well.
+.TP
+\fBcopyright\fR \fItext\fR
+This command is optional. When used its argument \fItext\fR will
+declare a copyright assignment for the manpage. When invoked more than
+once the assignments are accumulated.
+.sp
+A doctools processor application (like \fBdtplite\fR) is allowed to
+provide such information too, but a formatting engine has to give the
+accumulated arguments of this command precedence over the data coming
+from the application.
+.TP
+\fBdescription\fR
+This is the command to separate the header part of the manpage from
+the main body.
+.TP
+\fBrequire\fR \fIpkg\fR ?\fIversion\fR?
+This is the command to list the packages which are required by an
+application or other library to import the described package and its
+prerequisites.
+.TP
+\fBsection\fR \fIname\fR
+This is the command to partition the body of the manpage into named
+sections. Note that the command \fBdescription\fR at the beginning of
+the manpage body implicitly starts a section named "DESCRIPTION". A
+section command implicitly closes the last \fBpara\fRgraph coming
+before it and also implicitly opens the first paragraph of the new
+section.
+.TP
+\fBsubsection\fR \fIname\fR
+This is the command to partition the body of a \fIsection\fR into
+named sub-sections. A subsection command implicitly closes the last
+\fBpara\fRgraph coming before it and also implicitly opens the first
+paragraph of the new section.
+.TP
+\fBpara\fR
+This is the command to partition the text in a section or sub-section
+into paragraphs. Each invokation closes the paragraph coming before it
+and opens a new paragraph for the text coming after.
+.TP
+\fBsee_also\fR \fIargs\fR
+This is the command to define direct cross-references to other
+documents. Each argument is a label identifying the referenced
+document. If this command is used multiple times all the arguments
+accumulate.
+.TP
+\fBkeywords\fR \fIargs\fR
+This is the command to define the keywords applying to this
+document. Each argument is a single keyword. If this command is used
+multiple times all the arguments accumulate.
+.TP
+\fBarg\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a command
+argument.
+.TP
+\fBcmd\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a command.
+.TP
+\fBopt\fR \fItext\fR
+Declares that the argument \fItext\fR is something optional. Most
+often used in conjunction with \fBarg\fR to denote optional command
+arguments. Example:
+.nf
+
+    [arg foo]
+        A regular argument.
+
+    [opt [arg foo]]
+        An optional argument.
+
+.fi
+.TP
+\fBemph\fR \fItext\fR
+Emphasize the \fItext\fR.
+.TP
+\fBstrong\fR \fItext\fR
+Emphasize the \fItext\fR. Same as \fBemph\fR. Usage of this command is
+discouraged. The command is deprecated and present only for backward
+compatibility.
+.TP
+\fBsectref\fR \fItext\fR ?\fIlabel\fR?
+Declares that the argument \fItext\fR is the name of a section
+somewhere else in the document, and the current location should refer
+to it.
+Without an explicit \fIlabel\fR for the reference within the text the
+section title \fItext\fR is used.
+.TP
+\fBsyscmd\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a system command.
+.TP
+\fBmethod\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of an object method.
+.TP
+\fBnamespace\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a namespace.
+.TP
+\fBoption\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of an option.
+.TP
+\fBwidget\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a widget.
+.TP
+\fBfun\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a function.
+.TP
+\fBtype\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a data type.
+.TP
+\fBpackage\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a package.
+.TP
+\fBclass\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a class.
+.TP
+\fBvar\fR \fItext\fR
+Declares that the argument \fItext\fR is the name of a variable.
+.TP
+\fBfile\fR \fItext\fR
+Declares that the argument \fItext\fR is a file .
+.TP
+\fBuri\fR \fItext\fR ?\fItext\fR?
+Declares that the argument \fItext\fR is an uri. The second argument,
+if it is present, is the human-readable description of the uri. In
+other words, the label for the link. Without a labeling text the uri
+is used as its own label.
+.TP
+\fBterm\fR \fItext\fR
+Declares that the argument \fItext\fR contains some unspecific
+terminology.
+.TP
+\fBconst\fR \fItext\fR
+Declares that the argument \fItext\fR is a constant value.
+.TP
+\fBnl\fR
+This command signals vertical space to separate blocks of text.
+'\"
+'\"     FUTURE: This is the same as para, but restricted to use inside of
+'\"     list elements. Whereas para's are restricted to usage outside list
+'\"     elements. Given that both do the same this separation is stupid.
+'\"     Doctools V2 will have only one command, 'para', useable everywhere.
+'\"     The formatting engine has to switch outputs, if truly necessary.
+'\"
+.TP
+\fBexample_begin\fR
+This command begins an example block. Subsequent text belongs to the
+example. Line breaks, spaces, and tabs have to be preserved literally.
+.TP
+\fBexample_end\fR
+This command closes the example block.
+.TP
+\fBexample\fR \fItext\fR
+This command wraps its argument \fItext\fR into an example. In other
+words, it is a simpler form of markup for the creation of an
+example. It should be used if the example text does not need need
+special markup.
+.TP
+\fBlist_begin\fR \fIwhat\fR
+This command starts new list. The value of the argument \fIwhat\fR
+determines what type of list is opened. This also defines what command
+has to be used to start an item in the new list. The allowed types
+(and their associated item commands) are:
+.RS
+.TP
+\fIbullet\fR
+\fBbullet\fR
+.TP
+\fIenum\fR
+\fBenum\fR
+.TP
+\fIdefinitions\fR
+\fBlst_item\fR and \fBcall\fR
+.TP
+\fIarg\fR
+\fBarg_def\fR
+.TP
+\fIcmd\fR
+\fBcmd_def\fR
+.TP
+\fIopt\fR
+\fBopt_def\fR
+.TP
+\fItkoption\fR
+\fBtkoption_def\fR
+.RE
+.sp
+.TP
+\fBlist_end\fR
+This command ends the list opened by the last \fBlist_begin\fR.
+.TP
+\fBbullet\fR
+This command starts a new list item in a bulletted list. The previous
+item is automatically closed.
+.TP
+\fBenum\fR
+This command starts a new list item in an enumerated list. The
+previous item is automatically closed.
+.TP
+\fBlst_item\fR \fItext\fR
+This command starts a new list item in a definition list. The argument
+is the term to be defined. The previous item is automatically closed.
+.TP
+\fBcall\fR \fIargs\fR
+This command starts a new list item in a definition list, but the term
+defined by it is a command and its arguments. The previous item is
+automatically closed. The first argument is the name of the described
+command, and everything after that are descriptions of the command
+arguments.
+.TP
+\fBarg_def\fR \fItype\fR \fIname\fR ?\fImode\fR?
+This command starts a new list item in an argument list. The previous
+item is automatically closed. Specifies the data-\fItype\fR of the
+described argument, its \fIname\fR and its i/o-\fImode\fR. The latter
+is optional.
+.TP
+\fBopt_def\fR \fIname\fR ?\fIarg\fR?
+This command starts a new list item in an option list. The previous
+item is automatically closed. Specifies the \fIname\fR of the option
+and its arguments (\fIarg\fR). The latter is a list, and can be left
+out.
+.TP
+\fBcmd_def\fR \fIcommand\fR
+This command starts a new list item in a command list.  The previous
+item is automatically closed. Specifies the name of the \fIcommand\fR.
+.TP
+\fBtkoption_def\fR \fIname\fR \fIdbname\fR \fIdbclass\fR
+This command starts a new list item in a widget option list. The
+previous item is automatically closed.
+Specifies the \fIname\fR of the option, i.e. the name used in scripts,
+the name used by the option database (\fIdbname\fR), and the class
+(type) of the option (\fIdbclass\fR).
+.TP
+\fBusage\fR \fIargs\fR
+This command is like \fBcall\fR, except that a formatting engine must
+not generate output at the location of the command. In other words,
+this command is \fIsilent\fR. The data it defines may appear in a
+different section of the output, for example a table of contents, or
+synopsis, depending on the formatting engine and its output format.
+.SH "EXAMPLE"
+The sources of this manpage can serve as an example for all of the
+markup described by it. Almost every possible construct is used here.
+.SH "SEE ALSO"
+docidx_fmt, doctoc_fmt, doctools, doctools_api
+.SH "KEYWORDS"
+HTML, LaTeX, TMML, generic markup, manpage, markup, nroff
+.SH "COPYRIGHT"
+.nf
+Copyright (c) 2002-2004 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+.fi

@@ -1,26 +1,6 @@
 #!/bin/sh
 
 DIR=${0%wish}
-ARCH=`uname -s`
-TCL_VERSION=8.4
-SPI_VERSION=7.2.4
-SPI_PATH=${DIR}
+. ${DIR}/.spi
 
-#----- Library location
-
-export SPI_VERSION
-export SPI_PATH
-export ARCH
-export LD_LIBRARY_PATH=${DIR}/TclTk/${ARCH}/lib:${DIR}/Shared/$ARCH:${DIR}/Shared/${ARCH}/GL:$LD_LIBRARY_PATH
-export TCLLIBPATH="${DIR}/TclTk/${ARCH}/lib/tcl${TCL_VERSION} ${DIR}/TclTk/${ARCH}/lib/tk${TCL_VERSION} ${DIR}/TclTk/${ARCH}/lib ${DIR}/Shared/${ARCH} ${DIR}/Lib"
-export TCL_LIBRARY="${DIR}/TclTk/${ARCH}/lib/tcl${TCL_VERSION}"
-
-#----- GDAL data
-
-export GDAL_DATA=${DIR}/Data/epsg_csv/
-
-#----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
-
-export MA_TABLEBURP_PERSONNELLE=${DIR}/Data/table_b_bufr
-
-exec ${DIR}/TclTk/${ARCH}/bin/wish${TCL_VERSION} $@
+exec ${SHARED}/TclTk/bin/wish${TCL_VERSION} $@

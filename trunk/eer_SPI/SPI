@@ -1,13 +1,9 @@
 #!/bin/sh
 
-DIR=$0
-DIR=${DIR%SPI}
+DIR=${0%SPI}
+. ${DIR}/.spi
 
-TCL_VERSION=8.4
-SPI_VERSION=7.2.4
-SPI_PATH=${DIR}
 SOFT=0
-ARCH=`uname -s`
 HOST=`hostname`
 SCREEN=0
 X_GEO='1024x768'
@@ -22,27 +18,6 @@ ulimit -s unlimited 2>/dev/null
 ulimit -t unlimited 2>/dev/null
 ulimit -m unlimited 2>/dev/null
 ulimit -d unlimited 2>/dev/null
-
-#----- Library location
-
-export SPI_VERSION
-export SPI_PATH
-export LD_LIBRARY_PATH=${DIR}/TclTk/${ARCH}/lib:${DIR}/Shared/${ARCH}:${LD_LIBRARY_PATH}
-export TCLLIBPATH="${DIR}/TclTk/${ARCH}/lib/tcl${TCL_VERSION} ${DIR}/TclTk/${ARCH}/lib/tk${TCL_VERSION} ${DIR}/TclTk/${ARCH}/lib ${DIR}/Shared/${ARCH} ${DIR}/Lib"
-export TCL_LIBRARY="${DIR}/TclTk/${ARCH}/lib/tcl${TCL_VERSION}"
-
-#----- GDAL data
-
-export GDAL_DATA=${DIR}/Data/epsg_csv/
-
-#----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
-
-export MA_TABLEBURP_PERSONNELLE=${DIR}/Data/table_b_bufr
-
-#----- Force GRIB Tables
-
-export GRIB_TEMPLATE_PATH=/data/cmoe/afsr005/Lib/Linux/grib_api-0.9.31/share/grib_api/templates
-export GRIB_DEFINITION_PATH=/data/cmoe/afsr005/Lib/Linux/grib_api-0.9.31/share/grib_api/definitions
 
 #----- Parse the flags fo batch token
 
@@ -98,7 +73,7 @@ do
 
    if [[ $flag = "-tclsh" ]]
    then
-      ${DIR}/TclTk/${ARCH}/bin/tclsh${TCL_VERSION} "${DIR}/Apps/SPI.tcl" $@
+      ${DIR}/Shared/${ARCH}/TclTk/bin/tclsh${TCL_VERSION} "${DIR}/Apps/SPI.tcl" $@
       code=$?
       exit $code
    fi
@@ -121,7 +96,7 @@ fi
 
 #----- Let's start up the software
 
-${DIR}/TclTk/${ARCH}/bin/wish${TCL_VERSION} "${DIR}/Apps/SPI.tcl" -- "$@"
+${DIR}/Shared/${ARCH}/TclTk/bin/wish${TCL_VERSION} "${DIR}/Apps/SPI.tcl" -- "$@"
 code=$?
 
 if [[ ($PID_XVFB -ne 0) ]]
