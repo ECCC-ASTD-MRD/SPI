@@ -1604,9 +1604,13 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          if (Field->Def->Data[2]) {
             for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
                if (i+1<Field->Def->NI) {
-                  Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i0,&j0,Field->Ref->Lat[i],Field->Ref->Lon[i],1,1);
-                  Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i1,&j1,Field->Ref->Lat[i+1],Field->Ref->Lon[i+1],1,1);
-                  theta=90.0+RAD2DEG(atan2(i1-i0,j1-j0));
+                  if (Field->Ref->RefFrom) {
+                     Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i0,&j0,Field->Ref->Lat[i],Field->Ref->Lon[i],1,1);
+                     Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i1,&j1,Field->Ref->Lat[i+1],Field->Ref->Lon[i+1],1,1);
+                     theta=90.0+RAD2DEG(atan2(i1-i0,j1-j0));
+                  } else {
+                     theta=90.0;
+                  }
                }
                for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
                   idx=j*Field->Def->NI+i;
