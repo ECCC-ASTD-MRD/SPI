@@ -1,7 +1,7 @@
 #----- Definitions
 ARCH=`uname -s`
 TCL_VERSION=8.4
-SPI_VERSION=7.2.4
+SPI_VERSION=7.3.0
 SPI_PATH=${DIR}
 SHARED=${DIR}/Shared/${ARCH}
 

@@ -9,7 +9,7 @@ YACC = bison
 # Target architecture
 
 ARCH      = Linux
-LIB_VER   = 7.2.4
+LIB_VER   = 7.3.0
 TCLTK_VER = 8.5a6
 TCLTK_VER = 8.4.13
 
@@ -34,10 +34,10 @@ EER_PATH = /home/binops/afse/eer
 
 # Tk Path
 TCL_SRC  = $(ARC_PATH)/tcl$(TCLTK_VER)
-TCL_PATH = $(INSTALL_PATH)/TclTk/$(ARCH)
+TCL_PATH = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
 
 TK_SRC   = $(ARC_PATH)/tk$(TCLTK_VER)
-TK_PATH  = $(INSTALL_PATH)/TclTk/$(ARCH)
+TK_PATH  = $(INSTALL_PATH/Shared/$(ARCH)/TclTk
 
 # OpenGL librairies
 #GL_PATH   = $(LIB_PATH)/mesa-6.5/
