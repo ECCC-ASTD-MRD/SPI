@@ -144,9 +144,9 @@ proc HFManager::FileCommand { Id Command } {
         "FSTD" {
             set paths { }
             foreach path $file {
-               lappend paths $HFManager::Host(Name$Id):$path:
+               lappend paths $HFManager::Host(Name$Id):$path
             }
-            SPI::FileOpen NEW FieldBox "$HFManager::Host(Name$Id):$file:" $FileBox::Type(FSTD) $paths
+            SPI::FileOpen NEW FieldBox "$HFManager::Host(Name$Id):$file" $FileBox::Type(FSTD) $paths
             return
             }
 
