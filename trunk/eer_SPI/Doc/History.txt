@@ -1,3 +1,41 @@
+Version 7.3.0 (Decembre 2008)
+- Nouveau modele trajectoire, intégré dans SPI (On voit les résultats pendant qu'il roule)
+- Ajout des intervalles de contours AEGL et ERPG
+- Ajout de la selection de la zone horaire dans l'horloge (Amérique du nord)
+- Les indicateurs N,S,E,O et la direction du compas peuvent maintenant être utilisés pour manipuler la projecion
+- Ajout du mode pleine vue des colorbar et légende, ceux-ci s'ajuste automatiquement au redimenssionnement et déplacement des vues auxquelles ils sont associés.
+- Ajout de 'animation des lignes de courants
+- Changement de la version de MESA (OpenGL software) pour 7.0.3
+- Ajout des type date et heure (Date,Time,DateTime) pour les champs de données vectorielles (OGR)
+- Problem de libération de thread quand on détruit une vue est réglé
+- Recodage du sélecteur d'èspeces
+- Problème d'affichage avec les champs RPN de type entier est maintenant réglé
+- Problème d'affichage avec les champs GDAL de type double est maintenant réglé
+- Utilisation d'une heuristique afin de lire plus rapidement les données BURP multi-localisation telles ASCAT
+- Refonte complète du code de traitement et d'affichage des trajectoires afin de les gérer par la librairie C plutot qu'en TCL
+- Ajout de format des textes des axes de graph, surtout pour formatter les dates automatiquements
+- Ajout de valeurs par défaut dans le .recrc
+- Ajout du pick dans les graphs
+- API des données BUFR
+- Ajout d'un algorithme de simplification de polygones (Douglas-Peucker)
+- Ajout des régions RSMC
+- Ajout des fonctions de transformations de 2e et 3e ordre de la librairie GDAL
+- Téphigrammes dans les graphes de SPI
+- Modification à l'outils d'animation afin de pouvoir animer un flyby
+- Nouveau produit FVCN graphique
+- Ajout d'une fonction pour dessiner les régions définies dans des messages FVCN directemnt dasn SPI afin de pouvoir vérifier l'intersection avec notre région de responsabilitée
+- Ajout d'une fonction de tri dans les vecteur Tcl, ce qui permet de trier selon l'une des composantes du vecteur, la pression par exemple
+- Changements majeurs dans l'affichage des libelle de villes de GDB
+- Correction de problème d'interpolation pour les grilles "M" (triangle meshes) ainsi que de la méthode d'affichage en NEAREST
+- Ajout de la sélection du BFAM des données BUFR pour l'affichage
+- Correction d'un problème avec les grilles G
+- Correction d'un problème dans l'interpolation horizontale, le niveau de la source ne se retrouvait pas dans la destination
+- Ajout d'une fonction pour sélectionner le mode de traitement des IP1, nouveau ou ancien et incompréhensible style
+- Utilisation de librmn10
+- Ajout du mode d'interpolation POINT_CONSERVATIVE
+- Ajout d'un masque binaire aux structures des champs de données
+- Ajout de la fonction autosave au FVCN dans l'outils Writer
+
 Version 7.2.4 (Mars 2008)
 - Ajout de la fonction zoom en utilisant le roulette de la souris.
 - Ajout de fonctions de continuations de mouvement (spin) avec les manipulations de viewport.

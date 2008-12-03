@@ -1080,8 +1080,8 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       if (GLRender->TRCon) {
          /*Wait for everything to be loaded*/
          sec=clock();
-         while (((clock()-sec)<(30*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
-         if ((clock()-sec)>=(30*CLOCKS_PER_SEC)) {
+         while (((clock()-sec)<(60*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
+         if ((clock()-sec)>=(60*CLOCKS_PER_SEC)) {
             fprintf(stderr,"(WARNING) ViewportDisplay: Warning, waited too long for data, rendering anyway\n");
          }
          vp->Update=1;
