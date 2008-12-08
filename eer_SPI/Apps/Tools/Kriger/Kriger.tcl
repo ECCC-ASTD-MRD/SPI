@@ -304,9 +304,10 @@ proc Kriger::Save { File } {
    variable Data
 
    if { $File!="" } {
+      fstdfield define KRIGGRID -NOMVAR [string range [lindex [split $Data(Obs) .] 0] 0 3]
+      FieldParams::Window KRIGGRID
+
       fstdfile open  KRIGFILE write $File
-      fstdfield define KRIGGRID -NOMVAR [string range [lindex [split $Data(Obs) .] 0] 0 3] \
-         -ETIKET [string range [lindex [split $Data(Obs) .] 0] 0 11]
       switch $Data(GridType) {
          "Vertical" {
                     fstdfield write KRIGGRID KRIGFILE -32 True

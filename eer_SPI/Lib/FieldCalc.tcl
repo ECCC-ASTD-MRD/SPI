@@ -751,6 +751,7 @@ proc FieldCalc::FormulaDel { } {
       }
    }
 }
+
 #----------------------------------------------------------------------------
 # Nom      : <FieldCalc::FormulaLoad>
 # Creation : Aout 2004 - J.P. Gauthier - CMC/CMOE
@@ -1143,9 +1144,11 @@ proc FieldCalc::Save { File } {
       return
    }
 
-   fstdfile open 40 write $File
-   fstdfield write $Data(Operand) 40 0 True
-   fstdfile close 40
+   FieldParams::Window $Data(Operand)
+
+   fstdfile open CALCFILE write $File
+   fstdfield write $Data(Operand) CALCFILE 0 True
+   fstdfile close CALCFILE
 }
 
 #----------------------------------------------------------------------------

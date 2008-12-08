@@ -1581,7 +1581,6 @@ namespace eval FieldParams {
    set Lbl(Apply)      { "Appliquer" "Apply" }
    set Lbl(Values)     { "Valeurs" "Values" }
    set Lbl(Info)       { "Informations" "Informations" }
-   set Lbl(Save)       { "Enregistrer" "Save" }
 
    set Data(Field)     ""
    set Data(ParamsOut) { NOMVAR TYPVAR IP1 IP2 IP3 ETIKET DATEO DEET NPAS NI NJ NK NBITS DATYP GRTYP IG1 IG2 IG3 IG4 SWA LNG DLTF UBC EX1 EX2 EX3 }
@@ -1596,6 +1595,7 @@ proc FieldParams::Window { { Field "" } } {
    variable Data
 
    set Data(Lock) False
+   set Data(Done) False
 
    if { ![winfo exists .fieldboxparams] } {
       toplevel .fieldboxparams
@@ -1690,10 +1690,8 @@ proc FieldParams::Window { { Field "" } } {
       $Data(Tab2).data.table window configure 0,0 -window $Data(Tab2).data.table.lock -sticky nsew
 
       frame .fieldboxparams.cmd
-         button .fieldboxparams.cmd.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command { Viewport::FollowerRemove FieldParams; destroy .fieldboxparams }
-         button .fieldboxparams.cmd.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field) }
-         button .fieldboxparams.cmd.save   -text [lindex $Lbl(Save) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field); FieldParams::Write [FileBox::Create .fieldboxparams "" Save [list $FileBox::Type(FSTD)]] $FieldParams::Data(Field) }
-         pack .fieldboxparams.cmd.cancel .fieldboxparams.cmd.apply .fieldboxparams.cmd.save -side left
+         button .fieldboxparams.cmd.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field); Viewport::FollowerRemove FieldParams; destroy .fieldboxparams; set FieldParams::Data(Done) True }
+         pack .fieldboxparams.cmd.apply -side left
       pack .fieldboxparams.tab -side top -fill both -expand True -padx 5 -pady 5 -ipadx 5
       pack .fieldboxparams.cmd -side top -anchor e -padx 5 -pady 5
 
@@ -1706,6 +1704,10 @@ proc FieldParams::Window { { Field "" } } {
 
    FieldParams::GetInfo $Field
    FieldParams::GetMatrix $Field
+
+   if { $Field!="" } {
+      tkwait variable FieldParams::Data(Done)
+   }
 }
 
 proc FieldParams::Follower { Page Canvas VP Lat Lon X Y } {
@@ -1837,35 +1839,7 @@ proc FieldParams::SetInfo { { Field "" } } {
       foreach param $Data(ParamsIn) {
          fstdfield define $Field -$param $Data($param)
       }
-      fstdfield clean $Field
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldParams::Write>
-# Creation : Juin 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Enregistrer le champs avec les nouveaux parametres/donnees.
-#
-# Parametres  :
-#   <Field>   : Identificateur du champs
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldParams::Write { File Field  } {
-   variable Data
-
-   if { $File == "" } {
-      return
-   }
-
-   fstdfile open FIELDPARAMS write $File
-   fstdfield write $Field FIELDPARAMS 0 True
-   fstdfile close FIELDPARAMS
 }
 
 #----------------------------------------------------------------------------
