@@ -634,7 +634,7 @@ proc FieldCalc::Window { { Parent .} } {
    frame .fieldcalc.expr -relief raised -bd 1
       radiobutton .fieldcalc.expr.lbl -text "Calc " -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
          -variable FieldCalc::Data(Edit) -value .fieldcalc.expr.op.select -selectcolor $GDefs(ColorHighLight)
-      ComboBox::Create .fieldcalc.expr.op FieldCalc::Data(Operand) edit unsorted nodouble -1 "" 40 3 { }
+      ComboBox::Create .fieldcalc.expr.op FieldCalc::Data(Operand) editclose unsorted nodouble -1 "" 40 3 { }
       button .fieldcalc.expr.save -image FOLDIN -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is $FieldCalc::Data(Operand)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
