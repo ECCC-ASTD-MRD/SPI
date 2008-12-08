@@ -1692,7 +1692,7 @@ proc FieldParams::Window { { Field "" } } {
       frame .fieldboxparams.cmd
          button .fieldboxparams.cmd.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command { Viewport::FollowerRemove FieldParams; destroy .fieldboxparams }
          button .fieldboxparams.cmd.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field) }
-         button .fieldboxparams.cmd.save   -text [lindex $Lbl(Save) $GDefs(Lang)]  -bd 1 -command { FieldParams::Write [FileBox::Create .fieldboxparams "" Save [list $FileBox::Type(FSTD)]] $FieldParams::Data(Field) }
+         button .fieldboxparams.cmd.save   -text [lindex $Lbl(Save) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field); FieldParams::Write [FileBox::Create .fieldboxparams "" Save [list $FileBox::Type(FSTD)]] $FieldParams::Data(Field) }
          pack .fieldboxparams.cmd.cancel .fieldboxparams.cmd.apply .fieldboxparams.cmd.save -side left
       pack .fieldboxparams.tab -side top -fill both -expand True -padx 5 -pady 5 -ipadx 5
       pack .fieldboxparams.cmd -side top -anchor e -padx 5 -pady 5
