@@ -157,11 +157,11 @@ proc Export::Raster::Export { Path Format } {
       }
 
       # dx sx ry dy rx sy
-      puts stderr "$Export::Data(Lon0) $dlon 0.0 $Export::Data(Lat1) 0.0 -$dlat"
+#      puts stderr "$Export::Data(Lon0) $dlon 0.0 $Export::Data(Lat1) 0.0 -$dlat"
 
       gdalband define BAND -transform [list $Export::Data(Lon0) $dlon 0.0 $Export::Data(Lat1) 0.0 -$dlat]
       gdalband import BAND $field
-      gdalfile open FILE write $file.[incr no]_$nv$ext $Format
+      gdalfile open FILE write ${file}_[incr no]_${nv}${ext} $Format
       gdalband write BAND FILE
       gdalfile close FILE
       gdalband free BAND
@@ -207,15 +207,16 @@ proc Export::Vector::Export { Path Format } {
       set nv   [fstdfield define $field -NOMVAR]
       set file [file rootname $Path]
       set ext  [file extension $Path]
+      set name ${file}_[incr no]_${nv}${ext}
 
-      if { [file exists $file.[incr no]_$nv$ext] } {
-         file delete -force $file.[incr no]_$nv$ext
+      if { [file exists $name] } {
+         file delete -force $name
       }
 
       if { $Format=="MapInfo File" } {
-         ogrfile open FILE write $file.[incr no]_$nv$ext $Format { FORMAT=MIF }
+         ogrfile open FILE write $name $Format { FORMAT=MIF }
       } else {
-         ogrfile open FILE write $file.[incr no]_$nv$ext $Format
+         ogrfile open FILE write $name $Format
       }
       ogrlayer create FILE LAYER $nv
       ogrlayer import LAYER $field
