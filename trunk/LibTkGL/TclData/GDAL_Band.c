@@ -1435,6 +1435,7 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
    GDALColorTableH htable;
    GDALColorEntry  centry;
    int             i,ns,nc,n,di,sz;
+   char           *str;
 
    Tcl_ListObjLength(Interp,Bands,&ns);
    if (!ns) {
@@ -1472,8 +1473,11 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
             if (band->Ref->Transform)
                GDALSetGeoTransform(file->Set,band->Ref->Transform);
 
-            if (band->Ref->String)
-               GDALSetProjection(file->Set,band->Ref->String);
+            if (band->Ref->Spatial) {
+               OSRExportToWkt(band->Ref->Spatial,&str);
+               GDALSetProjection(file->Set,str);
+               OGRFree(str);
+            }
          }
       }
    }
