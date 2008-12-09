@@ -1734,11 +1734,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
          free(field);
          return(TCL_ERROR);
       }
-
-      /* Get stats if not already done*/
-      if (!field[f]->Stat)
-         Data_GetStat(field[f]);
-
       Data_PreInit(field[f]);
    }
 
