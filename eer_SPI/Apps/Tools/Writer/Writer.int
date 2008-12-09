@@ -112,6 +112,8 @@ proc Writer::Menu { } {
          -command { Writer::PadNew FVCN New NEW "" }
       .writer.menu.win.menu.new add command -label "FVCN [lindex $Lbl(RET) $GDefs(Lang)]" \
          -command { Writer::PadNew FVCN New RET "" }
+      .writer.menu.win.menu.new add command -label "FVCN [lindex $Lbl(EXP) $GDefs(Lang)]" \
+         -command { Writer::PadNew FVCN New EXP "" }
       .writer.menu.win.menu.new add separator
       .writer.menu.win.menu.new add command -label "AACN" \
          -command { Writer::PadNew AACN New NEW "" }

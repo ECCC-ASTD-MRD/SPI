@@ -33,6 +33,7 @@ namespace eval Writer {
    set Lbl(New)        { "Nouveau" "New" }
    set Lbl(NEW)        { "Standard" "Standard" }
    set Lbl(RET)        { "Retransmission" "Retransmission" }
+   set Lbl(EXP)        { "Expéditif" "Expeditive" }
    set Lbl(Print)      { "Imprimer ..." "Print ..." }
    set Lbl(Save)       { "Sauvegarder" "Save" }
    set Lbl(Send)       { "Transmettre" "Transmit" }
