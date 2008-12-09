@@ -28,11 +28,12 @@ namespace eval Writer::FVCN {
    set Data(Info2)  "CVO, "
    set Data(Info3)  "GOES, "
    set Data(Info4)  "POES, "
-   set Data(Info5)  "PIREP, "
-   set Data(Info6)  "MET ANAL, "
-   set Data(Info7)  "MET PROG, "
-   set Data(Info8)  "SOUNDING, "
-   set Data(Info9)  "MWO REYKJAVIK, "
+   set Data(Info5)  "AIREP, "
+   set Data(Info6)  "PIREP, "
+   set Data(Info7)  "MET ANAL, "
+   set Data(Info8)  "MET PROG, "
+   set Data(Info9)  "SOUNDING, "
+   set Data(Info10) "MWO REYKJAVIK, "
 
    set Data(Prev2)  "THIS STATEMENT UPDATES MESSAGE"
 
@@ -50,9 +51,11 @@ namespace eval Writer::FVCN {
    set Data(FCST06) "FCST VA CLD  +6 HR:"
    set Data(FCST12) "FCST VA CLD +12 HR:"
    set Data(FCST18) "FCST VA CLD +18 HR:"
+   set Data(EST1)   "FL___/___ (COORDONNEES LAT/LONG)"
 
    set Data(Rem1)  "RESPONSIBILITY FOR THIS EVENT HAS BEEN TRANSFERRED BY THE"
    set Data(Rem2)  "RESPONSIBILITY FOR THIS EVENT IS BEING TRANSFERRED TO THE"
+   set Data(Rem3)  "WE ARE INVESTIGATING THIS REPORT. AN UPDATED ADVISORY WILL BE ISSUED AS SOON AS POSSIBLE"
    set Data(Rem12) "THIS STATEMENT UPDATES MESSAGE"
    set Data(Rem22) "THE NEXT STATEMENT WILL BE ISSUED BY THE"
    set Data(Rem23) "BY __/__ UTC UNDER THE HEADER"
@@ -66,6 +69,7 @@ namespace eval Writer::FVCN {
    set Data(NoKNES) "FVXX"
    set Data(NoNONE) ""
    set Data(VAAC)   "MONTREAL"
+   set Data(NA)     "NOT AVAILABLE"
 
    set Data(WWW)    "VA GRAPHICAL PRODUCT AVAILABLE AT\nHTTP://METEO.EC.GC.CA/EER (ALL LOWER CASE)"
    set Data(Ret)    "PLEASE SEE FV____ DDHHMM ISSUED BY ______ VAAC WHICH DESCRIBES CONDITIONS OVER OR NEAR THE MONTREAL VAAC AREA OF RESPONSIBILITY"
@@ -94,15 +98,29 @@ proc Writer::FVCN::New { Pad Mode } {
    set Data(Mode$Pad) $Mode
 
    Writer::FVCN::Init $Pad
+   Writer::FVCN::UpdateTime $Pad $Data(Delay)
 
-   if { $Mode=="RET" } {
-      $Pad.remarks configure -height 3
-      $Pad.remarks insert 0.0 $Data(Ret)
-      set Data(HRemarks$Pad) 3
-   } else {
-      $Pad.remarks insert 0.0 NIL
-      $Pad.details insert 0.0 UNKNOWN
-      Writer::FVCN::GraphInit $Pad
+   switch $Mode {
+      "RET" {
+         $Pad.remarks configure -height 3
+         $Pad.remarks insert 0.0 $Data(Ret)
+         set Data(HRemarks$Pad) 3
+         pack forget $Pad.head.test
+      }
+      "EXP" {
+         set Data(Area$Pad)  ""
+         set Data(InfoSel5$Pad) 1
+         set Data(Obs$Pad) $Data(EST)
+         Writer::FVCN::SetRem  $Pad $Pad.remarks 3 NONE
+         Writer::FVCN::SetNext $Pad $Pad.next 1 FVCN
+         Writer::FVCN::SetInfo $Pad $Pad.info
+         pack forget $Pad.head.test
+     }
+      default {
+         $Pad.remarks insert 0.0 NIL
+         $Pad.details insert 0.0 UNKNOWN
+         Writer::FVCN::GraphInit $Pad
+      }
    }
 
    Writer::FVCN::AshUpdate $Pad 00
@@ -110,7 +128,6 @@ proc Writer::FVCN::New { Pad Mode } {
    Writer::FVCN::AshUpdate $Pad 12
    Writer::FVCN::AshUpdate $Pad 18
 
-   Writer::FVCN::UpdateTime $Pad $Data(Delay)
    Writer::FVCN::Site "" UNKNOWN "" "" "" ""
 
    Writer::FVCN::PageInit $Pad
@@ -143,7 +160,7 @@ proc Writer::FVCN::Init { Pad } {
    set Data(Issued$Pad)   ""
    set Data(Site$Pad)     UNKNOWN
    set Data(Location$Pad) N0000E00000
-   set Data(Area$Pad)     "NOT AVAILABLE"
+   set Data(Area$Pad)     $Data(NA)
    set Data(Elev$Pad)     0M
    set Data(Advisory$Pad) ""
    set Data(Info$Pad)     ""
@@ -184,6 +201,7 @@ proc Writer::FVCN::Init { Pad } {
    set Data(InfoSel7$Pad)  0
    set Data(InfoSel8$Pad)  0
    set Data(InfoSel9$Pad)  0
+   set Data(InfoSel10$Pad) 0
 
    set Data(Handle$Pad) "YES"
    set Data(File$Pad)   "FVCN"
@@ -618,7 +636,7 @@ proc Writer::FVCN::Format { Pad Mode } {
 
    puts $f [Writer::BlocFormat "INFO SOURCE:" [Writer::TextExtract word 47 "" $Pad.info]]
 
-   if { $Mode!="NEW" } {
+   if { $Mode=="RET" } {
       puts $f [Writer::BlocFormat "RMK:" [Writer::TextExtract word 47 "" $Pad.remarks]]
    } else {
 
@@ -630,14 +648,16 @@ proc Writer::FVCN::Format { Pad Mode } {
 
       puts $f "[format "%-21s" "OBS VA DTG:"] $Data(Date00$Pad)"
       puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 47 "" $Pad.ash00]]
-      puts $f [Writer::BlocFormat $Data(FCST06)   [Writer::TextExtract char 47 "" $Pad.ash06]]
+      puts $f [Writer::BlocFormat $Data(FCST06)  [Writer::TextExtract char 47 "" $Pad.ash06]]
       puts $f [Writer::BlocFormat $Data(FCST12)  [Writer::TextExtract char 47 ""  $Pad.ash12]]
       puts $f [Writer::BlocFormat $Data(FCST18)  [Writer::TextExtract char 47 ""  $Pad.ash18]]
 
       #----- Next
 
       puts $f [Writer::BlocFormat "RMK:" [Writer::TextExtract word 47 "" $Pad.remarks]]
-      puts $f [Writer::BlocFormat "" [split $Data(WWW) \n]]
+      if { $Mode!="EXP" } {
+         puts $f [Writer::BlocFormat "" [split $Data(WWW) \n]]
+      }
       puts $f [Writer::BlocFormat "NXT ADVISORY:" [Writer::TextExtract word 47 ""  $Pad.next]]
    }
 
@@ -872,7 +892,7 @@ proc Writer::FVCN::GetNo { Name } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Writer::FVCN::Info>
+# Nom      : <Writer::FVCN::SetInfo>
 # Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Inserer les sources d'informations.
@@ -885,12 +905,12 @@ proc Writer::FVCN::GetNo { Name } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::FVCN::Info { Pad Text } {
+proc Writer::FVCN::SetInfo { Pad Text } {
    variable Data
 
    #----- Creer la ligne de texte avec les options selectionee
 
-   foreach src { 1 2 3 4 5 6 7 8 9 } {
+   foreach src { 1 2 3 4 5 6 7 8 9 10 } {
 
       if { $Data(InfoSel${src}$Pad) } {
 
@@ -1018,7 +1038,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
       foreach idx { 1 2 3 4 5 6 7 8 9 } {
          set Data(InfoSel$idx$Pad) 0
          $Pad.optinfo.menu add checkbutton -label $Data(Info$idx) -variable Writer::FVCN::Data(InfoSel$idx$Pad) \
-            -command "Writer::FVCN::Info $Pad $Pad.info"
+            -command "Writer::FVCN::SetInfo $Pad $Pad.info"
       }
 
    menubutton $Pad.optnext -bg white -bd 0 -menu $Pad.optnext.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
@@ -1031,8 +1051,9 @@ proc Writer::FVCN::LayoutInit { Pad } {
    menu $Pad.optrem.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
       $Pad.optrem.menu add cascade -label $Data(Rem1) -menu $Pad.optrem.menu.from
       $Pad.optrem.menu add cascade -label $Data(Rem2) -menu $Pad.optrem.menu.to
+      $Pad.optrem.menu add command -label $Data(Rem3) -command "Writer::FVCN::SetRem $Pad $Pad.remarks 3 NONE"
       $Pad.optrem.menu add separator
-      $Pad.optrem.menu add command -label NIL -command "Writer::FVCN::SetRem $Pad $Pad.remarks 3 NONE"
+      $Pad.optrem.menu add command -label NIL -command "Writer::FVCN::SetRem $Pad $Pad.remarks 4 NONE"
 
    menu $Pad.optrem.menu.from -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
    menu $Pad.optrem.menu.to -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
@@ -1101,7 +1122,11 @@ proc Writer::FVCN::AshUpdate { Pad Hour { Text "" } } {
 
       if { $Text=="" } {
          if { $Hour=="00" } {
-            set Text $Data(NoVA00)
+            if { $Data(Mode$Pad)=="EXP" } {
+               set Text $Data(EST1)
+            } else {
+               set Text $Data(NoVA00)
+            }
          } else {
             set Text "NO VA EXP"
          }
@@ -1209,7 +1234,8 @@ proc Writer::FVCN::SetRem { Pad Text No FV } {
    switch $No {
       1 { $Text insert 0.0 "$Data(Rem1) $Data(Id$FV). $Data(Rem12) ${no}___" }
       2 { $Text insert 0.0 "$Data(Rem2) $Data(Id$FV). $Data(Rem22) $Data(Id$FV) $Data(Rem23) ${no}___" }
-      3 { $Text insert 0.0 "NIL" }
+      3 { $Text insert 0.0 "$Data(Rem3)" }
+      4 { $Text insert 0.0 "NIL" }
    }
 
    set Data(HRemarks$Pad) [Writer::TextExpand $Text 47 256]
@@ -1345,8 +1371,10 @@ proc Writer::FVCN::PageInit { Pad } {
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.remarks
       set y [expr $y+$Writer::Data(Height)*$Data(HRemarks$Pad)]
 
-      $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.www
-      set y [expr $y+$Writer::Data(Height)*2]
+      if { $Data(Mode$Pad)=="NEW" } {
+         $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.www
+         set y [expr $y+$Writer::Data(Height)*2]
+      }
 
       $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags NEXT -text "NXT ADVISORY:"
       $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optnext
@@ -1842,7 +1870,11 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
          set Data(Site$Writer::Data(Pad))     "$Name"
          set Data(Location$Writer::Data(Pad)) "UNKNOWN"
          set Data(Elev$Writer::Data(Pad))     ""
-         set Data(Area$Writer::Data(Pad))     "NOT AVAILABLE"
+         if { $Data(Mode$Writer::Data(Pad))=="EXP" } {
+            set Data(Area$Writer::Data(Pad))  ""
+         } else {
+            set Data(Area$Writer::Data(Pad))  $Data(NA)
+         }
       }
 
       #----- Update graphical product
@@ -2048,7 +2080,9 @@ proc Writer::FVCN::Write { Pad Sent } {
    puts $f "$Data(Advisory$Pad)"
    puts $f "[Writer::TextExtract none 47 "" $Pad.info]"
 
-   if { $Data(Mode$Pad)=="NEW" } {
+   if { $Data(Mode$Pad)=="RET" } {
+      puts $f "[Writer::TextExtract none 47 "" $Pad.remarks]"
+   } else {
       puts $f "$Data(Code$Pad)"
       puts $f "[Writer::TextExtract none 47 "" $Pad.details]"
       puts $f "$Data(Obs$Pad)"
@@ -2058,8 +2092,6 @@ proc Writer::FVCN::Write { Pad Sent } {
       }
       puts $f "[Writer::TextExtract none 47 "" $Pad.remarks]"
       puts $f "[Writer::TextExtract none 47 "" $Pad.next]"
-   } else {
-      puts $f "[Writer::TextExtract none 47 "" $Pad.remarks]"
    }
 
    #----- Save graphical FVCN view
