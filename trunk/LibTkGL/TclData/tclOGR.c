@@ -103,8 +103,8 @@ OGRGeometryH* OGR_GeometryGet(char *Name) {
    /* Recherche du nom dans la table */
    entry=Tcl_FindHashEntry(&OGR_GeometryTable,Name);
 
-   if(!entry)
-      return NULL;
+   if (!entry)
+      return(NULL);
 
    return((OGRGeometryH)Tcl_GetHashValue(entry));
 }
@@ -222,7 +222,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[3]));
          if (t==wkbNone) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be Point,3D Point,Line String,3D Line String,Polygon,3D Polygon,Multi Point,3D Multi Point,Multi Line String,3D Multi Line String,Multi Polygon,3D Multi Polygon,Geometry Collection,3D Geometry Collection,Linear Ring\"",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          g0=OGR_G_CreateGeometry(t);
          obj=OGR_GeometryPut(Interp,Tcl_GetString(Objv[2]),g0);
@@ -239,7 +239,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       case COPY:
          if(Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometryto geometryfrom");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          if (g0=OGR_GeometryGet(Tcl_GetString(Objv[3]))) {
@@ -250,8 +250,9 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
             Tcl_SetObjResult(Interp,obj);
          } else {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
+         break;
 
       case FREE:
          if (Objc<3) {
