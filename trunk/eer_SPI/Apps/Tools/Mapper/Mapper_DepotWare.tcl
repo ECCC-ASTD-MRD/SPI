@@ -68,7 +68,8 @@ namespace eval Mapper::DepotWare {
    set Lbl(Save)      { "Sauvegarder" "Save" }
    set Lbl(Cancel)    { "Annuler" "Cancel" }
 
-   set Msg(WMSRequest) { "Problème dans la requète de capacitées (GetCapabilities)" "Problem requesting capabilities (GetCapabilities)" }
+   set Msg(WMSRequest) { "Problème dans la requète de capacitées WMS (GetCapabilities)" "Problem requesting capabilities WMS (GetCapabilities)" }
+   set Msg(WCSRequest) { "Problème dans la requète de capacitées WCS (GetCapabilities)" "Problem requesting capabilities WCS (GetCapabilities)" }
    set Msg(Search)     { "Recherche ..." "Searching ..." }
    set Msg(Del)        { "Voulez-vous vraiment supprimer ce dépot de la liste ?" "Do you really want to remove this repository from the list ?" }
 }
@@ -283,11 +284,11 @@ proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
    set id ""
    set leaf True
 
-   if { $type=="DIR" || $type=="URLWMS" } {
+   if { $type=="DIR" || $type=="URLWMS" || $type=="URLWCS" } {
       set leaf False
    }
 
-   if { $type=="GDAL" || $type=="OGR" || $type=="WMS" } {
+   if { $type=="GDAL" || $type=="OGR" || $type=="WMS"  || $type=="WCS" } {
       if { ![Mapper::DepotWare::Check $Branch] } {
          return ""
       }
@@ -295,6 +296,7 @@ proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
    switch [string range $type 0 2] {
       "URL" { set id "([string range $type 3 end]) [$Tree get $Branch name]" }
       "WMS" { set id [$Tree get $Branch path] }
+      "WCS" { set id [$Tree get $Branch path] }
       default { if { [$Tree depth $Branch]>1 } { set id [file tail [$Tree get $Branch path]] } else { set id "($type) [$Tree get $Branch name]" } }
    }
    return $id
@@ -379,13 +381,37 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
             }
             dom::destroy $doc
          }
-
          "WMS"  { set path [Mapper::DepotWare::WMSBuildXMLDef $path]
                   if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
                      Mapper::ReadBand $path "" 3
                    }
                 }
-         "WCS"  { }
+
+         "URLWCS"  {
+            if { [string first "?" ${path}]==-1 } {
+               set req [http::geturl "${path}?&SERVICE=WCS&REQUEST=GetCapabilities"]
+            } else {
+               set req [http::geturl "${path}&SERVICE=WCS&REQUEST=GetCapabilities"]
+            }
+            if { [catch { set doc [dom::parse [http::data $req]] } ] } {
+               Dialog::CreateErrorListing . [lindex $Msg(WCSRequest) $GDefs(Lang)] [http::data $req] $GDefs(Lang)
+               return
+            }
+
+            set WCS(Version) 1.1.0
+            set layer [lindex [set [dom::document getElementsByTagName $doc CoverageSummary]] 0]
+            foreach layer [Mapper::DepotWare::WCSParseLayer $path $layer] {
+               set branch [TREE insert $Branch end]
+               Mapper::DepotWare::AddWCS $branch $layer
+            }
+            dom::destroy $doc
+         }
+         "WCS"  { set path [Mapper::DepotWare::WCSBuildXMLDef $path]
+                  if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
+                     Mapper::ReadBand $path "" 3
+                   }
+                }
+
          "WFS"  { }
          "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
                      Mapper::ReadBand $path
@@ -541,6 +567,39 @@ proc Mapper::DepotWare::AddWMS { Branch Layer } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::AddWMS>
+# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajouter une branche pour une couche WMS.
+#
+# Parametres :
+#  <Branch>  : Branche
+#  <Layer>   : Couche
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::AddWCS { Branch Layer } {
+   variable WCS
+
+   TREE set $Branch open False
+   TREE set $Branch name ""
+   TREE set $Branch path $Layer
+   TREE set $Branch type WCS
+   TREE set $Branch width  -1
+   TREE set $Branch height -1
+
+   set bbox  [lindex $WCS($Layer) 3]
+   TREE set $Branch 00 [list [lindex $bbox 1] [lindex $bbox 0]]
+   TREE set $Branch 01 [list [lindex $bbox 3] [lindex $bbox 0]]
+   TREE set $Branch 10 [list [lindex $bbox 1] [lindex $bbox 2]]
+   TREE set $Branch 11 [list [lindex $bbox 3] [lindex $bbox 2]]
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::AddGDAL>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
 #
@@ -633,6 +692,98 @@ proc Mapper::DepotWare::AddOGR { Branch File } {
       ogrfile close OGRPARSE
    }
    return False
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::WCSParseLayer>
+# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Decoder du XML pour en extraire l'information des couches.
+#
+# Parametres :
+#  <URL>     : URL du depot
+#  <Node>    : Node XML
+#  <First>   : Premiere couche ?
+#
+# Retour    :
+#
+# Remarque :
+#   - Certaines couches cont imbriquees alors cette procedure est recursive
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::WCSParseLayer { URL Node { First True } } {
+   variable WCS
+
+   if { $First } {
+      set WCS(Layers) {}
+      set WCS(BBox)   {}
+      set WCS(Name)   ""
+      set WCS(Format)  ""
+      set WCS(Geographic)   ""
+      set WCS(SizeX)  0
+      set WCS(SizeY)  0
+   }
+
+   foreach node [set [dom::node configure $Node -childNodes]] {
+      switch [dom::node configure $node  -nodeName] {
+         CoverageSummary          { Mapper::DepotWare::WCSParseLayer $URL $node False }
+         EX_GeographicBoundingBox { Mapper::DepotWare::WMSParseGeographic $node }
+         LatLonBoundingBox        { Mapper::DepotWare::WMSParseLatLonBoundingBox $node }
+         BoundingBox              { Mapper::DepotWare::WMSParseBoundingBox $node }
+         Identifier               { set WCS(Name)  [dom::node cget [dom::node children $node] -nodeValue] }
+         ows:Title                { set WCS(Title) [dom::node cget [dom::node children $node] -nodeValue] }
+      }
+   }
+puts stderr -----$WCS(Title)---
+   if { $WCS(Name)!="" } {
+      set WCS($WCS(Title)) [list $URL $WCS(Name) $WCS(BBox) $WCS(Geographic) $WCS(SizeX) $WCS(SizeY) $WCS(Format)]
+      lappend WCS(Layers) $WCS(Title)
+   }
+   set WCS(Name) ""
+   return $WCS(Layers)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::WCSBuildXMLDef>
+# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Construction du fichier de definition XML necessaire a GDAL pour
+#            lire les donnees.
+#
+# Parametres :
+#  <Layer>   : Couche
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::WCSBuildXMLDef { Layer } {
+   variable WCS
+   variable Data
+
+   set url    [lindex $WCS($Layer) 0]
+   set layer  [lindex $WCS($Layer) 1]
+
+   set layer [string map { " " "%20" } $layer]
+   if { [string first "?" ${url}]==-1 } {
+      set url ${url}?
+   } else {
+      set url $url
+   }
+
+   set xml "<GDAL_WCS>\n"
+   append xml "   <ServiceURL>${url}</ServiceURL>\n"
+   append xml "   <CoverageName>$layer</CoverageName>"
+   append xml "</GDAL_WCS>"
+
+   set f [open $file w]
+   puts $f $xml
+   close $f
+
+   return $file
 }
 
 #-------------------------------------------------------------------------------
