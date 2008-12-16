@@ -28,22 +28,36 @@ namespace eval Export {
    set Data(Lat1)   90.0
    set Data(Lon0)  -180.0
    set Data(Lon1)   180.0
-   set Data(Res)    1000
+   set Data(Res)    0.01
    set Data(Coo)    ""
    set Data(Path)   ""
    set Data(Type)   Vector
    set Data(Types)  { Vector Raster }
-   set Data(Format) {Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+   set Data(Format) {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
 
-   set Lbl(Export)         { "Exporter" "Export" }
-   set Lbl(File)           { "Fichier" "File" }
-   set Lbl(Format)         { "Format" "Format" }
-   set Lbl(Cancel)         { "Annuler" "Cancel" }
+   set Lbl(Export)   { "Exporter" "Export" }
+   set Lbl(File)     { "Fichier" "File" }
+   set Lbl(Cancel)   { "Annuler" "Cancel" }
+   set Lbl(Vector)   { "Vertoriel" "Vectorial" }
+   set Lbl(Raster)   { "Matriciel" "Raster" }
+   set Lbl(Host)     { "Hôte" "Hostname" }
+   set Lbl(Port)     { "Port" "Port" }
+   set Lbl(DBase)    { "Base de donnée" "Database" }
+   set Lbl(User)     { "Usager" "User" }
+   set Lbl(Password) { "Mot de passe" "Password" }
+   set Lbl(Format)   { "Format" "Format" }
+   set Lbl(Loc)      { "Localisation" "Localisation" }
+   set Lbl(What)     { "Quoi" "What" }
+   set Lbl(How)      { "Comment" "How" }
+   set Lbl(Where)    { "Où" "Where" }
 
-   set Bubble(File)        { "Chemin complet du fichier d'exportation" "Full export path" }
-   set Bubble(Path)        { "Sélection du repertoire" "Select path" }
 
-   set Error(Path)         { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
+   set Bubble(Type)   { "Type de données exportée" "Type of exported data" }
+   set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
+
+   set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
+   set Error(Data)    { "Il n'y a aucune donnée RPN a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
+                        "No RPN data to export. You have to display the fields on the active viewport to be able to export them." }
 }
 
 namespace eval Export::Raster {
@@ -76,15 +90,17 @@ namespace eval Export::Raster {
 
    set Lbl(Area)     { "Région" "Area" }
    set Lbl(Type)     { "Type" "Type" }
+   set Lbl(Values)   { "Valeurs" "Values" }
+   set Lbl(Res)      { "Résolution" "Resolution" }
    set Lbl(Data)     { "Données" "Data" }
-   set Lbl(ImageRGB) { "RGB" "RGB" }
+   set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
 
    set Bubble(Lat0) { "Latitude du coin inférieur gauche" "Lower left corner latitude" }
    set Bubble(Lon0) { "Longitude  du coin inférieur gauche" "Lower left corner longitude" }
    set Bubble(Lat1) { "Latitude du coin supérieur droit" "Upper right corner latitude" }
    set Bubble(Lon1) { "Longitude du coin supérieur droit" "Upper right corner longitude" }
-   set Bubble(Res)  { "Résolution maximale en pixels" "Maximum pixel resolution" }
+   set Bubble(Res)  { "Résolution en degrés" "Resolution in degrees" }
 }
 
 namespace eval Export::Vector {
@@ -92,12 +108,13 @@ namespace eval Export::Vector {
    variable Lbl
    variable Bubble
 
-   set Data(Formats) { {Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+   set Data(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
                        {Géoconcept Export "Geoconcept" {*.gxt}}
                        {Geography Markup Language "GML" {*.gml}}
                        {GMT ASCII Vectors "GMT" {*.gmt}}
                        {GPS Exchange Format "GPX" {*.gpx}}
-                       {MapInfo Binary "MapInfo File" {*.mif *.mid}}}
+                       {MapInfo Binary "MapInfo File" {*.mif *.mid}}
+                       {PostgreSQL "PostgreSQL" {}} }
 
 }
 
@@ -121,63 +138,39 @@ namespace eval Export::Vector {
 proc Export::Raster::Export { Path Format } {
    variable Data
 
-   set no 0
-
-   set dlat [expr $Export::Data(Lat1)-$Export::Data(Lat0)]
-   set dlon [expr $Export::Data(Lon1)-$Export::Data(Lon0)]
-
-   if { $dlat>$dlon } {
-      set dy [expr int($Export::Data(Res))]
-      set dx [expr int($dlon*$Export::Data(Res)/$dlat)]
-   } else {
-      set dy [expr int($dlat*$Export::Data(Res)/$dlon)]
-      set dx [expr int($Export::Data(Res))]
-   }
-
-   set dlat [expr $dlat/($dy-1)]
-   set dlon [expr $dlon/($dx-1)]
-
+   set no   0
    set file [file rootname $Path]
    set ext  [file extension $Path]
 
-   puts stderr "Export::Raster::Export: Output dimensions $dx ($dlon) x $dy ($dlat)"
-
    foreach field $FSTD::Data(List) {
 
-      set desc ""
-      set nv [fstdfield define $field -NOMVAR]
+      if { $Export::Data($field) } {
+         set desc ""
+         set nv [fstdfield define $field -NOMVAR]
 
-      switch $Data(Image) {
-         0 {  set map [fstdfield configure $field -colormap]
-              fstdfield configure $field -colormap ""
-              gdalband create BAND $dx $dy 1 Float32
-           }
-         1 { gdalband create BAND $dx $dy 4 Byte }
-         2 { gdalband create BAND $dx $dy 1 Byte }
+         switch $Data(Image) {
+            0 {  set map [fstdfield configure $field -colormap]
+               fstdfield configure $field -colormap ""
+               gdalband create BAND $Export::Data(DX) $Export::Data(DY) 1 Float32
+            }
+            1 { gdalband create BAND $Export::Data(DX) $Export::Data(DY) 4 Byte }
+            2 { gdalband create BAND $Export::Data(DX) $Export::Data(DY) 1 Byte }
+         }
+
+         gdalband define BAND -transform [list $Export::Data(Lon0) $Export::Data(DLon) 0.0 $Export::Data(Lat1) 0.0 -$Export::Data(DLat)]
+         gdalband import BAND $field
+         gdalfile open FILE write ${file}_${no}_${nv}${ext} $Format
+         gdalband write BAND FILE
+         gdalfile close FILE
+         gdalband free BAND
+
+         if { $Data(Image)==0 } {
+            fstdfield configure $field -colormap $map
+         }
+
+         incr no
       }
-
-      # dx sx ry dy rx sy
-#      puts stderr "$Export::Data(Lon0) $dlon 0.0 $Export::Data(Lat1) 0.0 -$dlat"
-
-      gdalband define BAND -transform [list $Export::Data(Lon0) $dlon 0.0 $Export::Data(Lat1) 0.0 -$dlat]
-      gdalband import BAND $field
-      gdalfile open FILE write ${file}_[incr no]_${nv}${ext} $Format
-      gdalband write BAND FILE
-      gdalfile close FILE
-      gdalband free BAND
-
-      if { $Data(Image)==0 } {
-         fstdfield configure $field -colormap $map
-      }
-
-      incr no
    }
-}
-
-proc Export::Raster::Is { Format } {
-   variable Data
-
-   return [lsearch -exact $Data(Formats) $Format]
 }
 
 #----------------------------------------------------------------------------
@@ -204,31 +197,47 @@ proc Export::Vector::Export { Path Format } {
 
    foreach field $FSTD::Data(List) {
 
-      set nv   [fstdfield define $field -NOMVAR]
-      set file [file rootname $Path]
-      set ext  [file extension $Path]
-      set name ${file}_[incr no]_${nv}${ext}
+      if { $Export::Data($field) } {
+         set nv      [fstdfield define $field -NOMVAR]
+         set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
+         set lvltype [fstdfield stats $field -leveltype]
+         set date    [clock format [fstdstamp toseconds [fstdfield define $field -DATEV]] -format "%Y%m%d_%H:%M" -gmt true]
 
-      if { [file exists $name] } {
-         file delete -force $name
-      }
+         set layer ${nv}_${date}_${lvl}_${lvltype}
 
-      if { $Format=="MapInfo File" } {
-         ogrfile open FILE write $name $Format { FORMAT=MIF }
-      } else {
-         ogrfile open FILE write $name $Format
+
+         if { $Format=="PostgreSQL" } {
+            set req "PG:"
+            if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
+            if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
+            if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
+            if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
+            if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
+            puts stderr "ogrfile open FILE write $req $Format"
+            ogrfile open FILE write $req $Format
+         } else {
+            set file [file rootname $Path]
+            set ext  [file extension $Path]
+            set name ${file}_${no}_${nv}${ext}
+
+            if { [file exists $name] } {
+               file delete -force $name
+            }
+
+            if { $Format=="MapInfo File" } {
+               ogrfile open FILE write $name $Format { FORMAT=MIF }
+            } else {
+               ogrfile open FILE write $name $Format
+            }
+         }
+
+         ogrlayer create FILE LAYER $layer
+         ogrlayer import LAYER $field
+         ogrfile close FILE
+         ogrlayer free LAYER
+         incr no
       }
-      ogrlayer create FILE LAYER $nv
-      ogrlayer import LAYER $field
-      ogrfile close FILE
-      ogrlayer free LAYER
    }
-}
-
-proc Export::Vector::Is { Format } {
-   variable Data
-
-   return [lsearch -exact $Data(Formats) $Format]
 }
 
 #----------------------------------------------------------------------------
@@ -271,19 +280,27 @@ proc Export::Raster::Option { Frame } {
    variable Bubble
 
    frame $Frame.area
-      label $Frame.area.lbl -text [lindex $Lbl(Area) $GDefs(Lang)] -width 7 -anchor w
+      label $Frame.area.lbl -text [lindex $Lbl(Area) $GDefs(Lang)] -width 10 -anchor w
       checkbutton $Frame.area.mode -variable Page::Data(ToolMode) -onvalue Export \
          -offvalue SPI -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-         -command "SPI::ToolMode Export Data True" -selectcolor  $GDefs(ColorLight)
+         -command { SPI::ToolMode $Page::Data(ToolMode) Data True } -selectcolor  $GDefs(ColorLight)
       entry $Frame.area.lat0 -bd 1 -bg $GDefs(ColorLight) -width 7 -textvariable Export::Data(Lat0)
       entry $Frame.area.lon0 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Data(Lon0)
       entry $Frame.area.lat1 -bd 1 -bg $GDefs(ColorLight) -width 7 -textvariable Export::Data(Lat1)
       entry $Frame.area.lon1 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Data(Lon1)
-      entry $Frame.area.res  -bd 1 -bg $GDefs(ColorLight) -width 4 -textvariable Export::Data(Res)
-      pack $Frame.area.lbl $Frame.area.lat0 $Frame.area.lon0 $Frame.area.lat1 $Frame.area.lon1 $Frame.area.res -side left -fill y
+      pack $Frame.area.lbl $Frame.area.lat0 $Frame.area.lon0 $Frame.area.lat1 $Frame.area.lon1 -side left -fill y
       pack $Frame.area.mode -side left -fill x -expand true
+
+   frame $Frame.res
+      label $Frame.res.lbl -text [lindex $Lbl(Res) $GDefs(Lang)] -width 10 -anchor w
+      entry $Frame.res.sel  -bd 1 -bg $GDefs(ColorLight) -width 6 -textvariable Export::Data(Res)
+      label $Frame.res.dim -textvariable Export::Data(Dim) -anchor w
+      pack $Frame.res.lbl $Frame.res.sel -side left
+      pack $Frame.res.dim -side left -fill x -expand True
+      bind $Frame.res.sel <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
+
    frame $Frame.type
-      label $Frame.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -width 7 -anchor w
+      label $Frame.type.lbl -text [lindex $Lbl(Values) $GDefs(Lang)] -width 10 -anchor w
       radiobutton $Frame.type.data -text [lindex $Lbl(Data) $GDefs(Lang)] -variable Export::Raster::Data(Image) -value 0 \
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
       radiobutton $Frame.type.rgb  -text [lindex $Lbl(ImageRGB) $GDefs(Lang)] -variable Export::Raster::Data(Image) -value 1 \
@@ -292,13 +309,13 @@ proc Export::Raster::Option { Frame } {
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
       pack  $Frame.type.lbl -side left
       pack  $Frame.type.data $Frame.type.rgb $Frame.type.idx -side left -fill x -expand true
-   pack $Frame.area $Frame.type -side top -fill both -expand true
+   pack $Frame.area $Frame.res $Frame.type -side top -fill both -expand true
 
-   Bubble::Create $Frame.lat0 [lindex $Bubble(Lat0) $GDefs(Lang)]
-   Bubble::Create $Frame.lon0 [lindex $Bubble(Lon0) $GDefs(Lang)]
-   Bubble::Create $Frame.lat1 [lindex $Bubble(Lat1) $GDefs(Lang)]
-   Bubble::Create $Frame.lon1 [lindex $Bubble(Lon1) $GDefs(Lang)]
-   Bubble::Create $Frame.res  [lindex $Bubble(Res) $GDefs(Lang)]
+   Bubble::Create $Frame.area.lat0 [lindex $Bubble(Lat0) $GDefs(Lang)]
+   Bubble::Create $Frame.area.lon0 [lindex $Bubble(Lon0) $GDefs(Lang)]
+   Bubble::Create $Frame.area.lat1 [lindex $Bubble(Lat1) $GDefs(Lang)]
+   Bubble::Create $Frame.area.lon1 [lindex $Bubble(Lon1) $GDefs(Lang)]
+   Bubble::Create $Frame.res.sel  [lindex $Bubble(Res) $GDefs(Lang)]
 }
 
 
@@ -345,77 +362,230 @@ proc Export::Close { } {
 proc Export::Window { } {
    global GDefs
    variable Lbl
+   variable Error
    variable Bubble
    variable Data
 
-   toplevel     .export
+   if { ![llength $FSTD::Data(List)] } {
+      Dialog::CreateError . [lindex $Error(Data) $GDefs(Lang)] $GDefs(Lang)
+      return
+   }
+
+   toplevel     .export -relief raised -bd 1
    wm title     .export [lindex $Lbl(Export) $GDefs(Lang)]
    wm protocol  .export WM_DELETE_WINDOW { Export::Close }
    wm resizable .export 0 0
    wm geom      .export +[winfo rootx .]+[winfo rooty .]
    wm transient .export .
 
-   frame .export.file -relief raised -bd 1
-      label .export.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 7 -anchor w
-      entry .export.file.path -bd 1 -bg $GDefs(ColorLight) -width 36 -textvariable Export::Data(Path)
-      button .export.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
-         -command { Export::Set [FileBox::Create .export $Export::Data(Path) Save [concat $Export::Vector::Data(Formats) $Export::Raster::Data(Formats)]] }
-      pack .export.file.lbl .export.file.path .export.file.sel -side left -fill y
-   pack .export.file -side top -fill x -expand true
+   labelframe .export.what -text [lindex $Lbl(What) $GDefs(Lang)]
+      foreach field $FSTD::Data(List) {
+         set Export::Data($field) 1
+         set desc "[fstdfield define $field -NOMVAR] [clock format [fstdstamp toseconds [fstdfield define $field -DATEV]] -format "%Y%m%d_%H:%M" -gmt true] \
+             [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]] [fstdfield stats $field -leveltype]"
+         checkbutton .export.what.f$field -text $desc -variable Export::Data($field) -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
+         pack .export.what.f$field -side top -fill x -expand True
+      }
 
-   frame .export.option -relief raised -bd 1
-   pack .export.option -side top -fill x -expand true
+   labelframe .export.how -text [lindex $Lbl(How) $GDefs(Lang)]
+      frame .export.how.type
+         label .export.how.type.lbl -text Type -width 14 -anchor w
+         radiobutton .export.how.type.vector -text [lindex $Lbl(Vector) $GDefs(Lang)] -variable Export::Data(Type) -value Vector \
+            -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -command { Export::SetType $Export::Data(Type) }
+         radiobutton .export.how.type.raster -text [lindex $Lbl(Raster) $GDefs(Lang)] -variable Export::Data(Type) -value Raster \
+            -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -command { Export::SetType $Export::Data(Type) }
+         pack .export.how.type.lbl -side left
+         pack .export.how.type.vector .export.how.type.raster -side left -fill x -ipadx 30 -expand True
 
-   frame .export.cmd
+      frame .export.how.sel
+         label .export.how.sel.lbl -text Format -width 14 -anchor w
+         ComboBox::Create .export.how.sel.sel Export::Data(Format) edit sorted nodouble -1 {} 15 6 {Export::SetFormat $Export::Data(Format)}
+         pack .export.how.sel.lbl -side left
+         pack .export.how.sel.sel -side left -fill x -expand True
+
+   labelframe .export.where -text [lindex $Lbl(Where) $GDefs(Lang)]
+       frame .export.where.file
+         label .export.where.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 14 -anchor w
+         entry .export.where.file.path -bd 1 -bg $GDefs(ColorLight) -width 1 -textvariable Export::Data(Path)
+         button .export.where.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
+            -command { set Export::Data(Path) [FileBox::Create .export $Export::Data(Path) Save [list $Export::Data(Format)]] }
+         pack .export.where.file.lbl -side left
+         pack .export.where.file.path -side left -fill both -expand True
+         pack .export.where.file.sel -side left -fill y
+
+      frame .export.where.db
+         frame .export.where.db.host
+            label .export.where.db.host.lbl -text [lindex $Lbl(Host) $GDefs(Lang)] -width 14 -anchor w
+            entry .export.where.db.host.sel -bd 1 -bg $GDefs(ColorLight) -width 36 -textvariable Export::Data(Host)
+            pack .export.where.db.host.lbl -side left
+            pack .export.where.db.host.sel -side left -fill both -expand True
+         frame .export.where.db.port
+            label .export.where.db.port.lbl -text [lindex $Lbl(Port) $GDefs(Lang)] -width 14 -anchor w
+            entry .export.where.db.port.sel -bd 1 -bg $GDefs(ColorLight) -width 36 -textvariable Export::Data(Port)
+            pack .export.where.db.port.lbl -side left
+            pack .export.where.db.port.sel -side left -fill both -expand True
+         frame .export.where.db.name
+            label .export.where.db.name.lbl -text [lindex $Lbl(DBase) $GDefs(Lang)] -width 14 -anchor w
+            entry .export.where.db.name.sel -bd 1 -bg $GDefs(ColorLight) -width 36 -textvariable Export::Data(DBase)
+            pack .export.where.db.name.lbl -side left
+            pack .export.where.db.name.sel -side left -fill both -expand True
+         frame .export.where.db.user
+             label .export.where.db.user.lbl -text [lindex $Lbl(User) $GDefs(Lang)] -width 14 -anchor w
+            entry .export.where.db.user.sel -bd 1 -bg $GDefs(ColorLight) -width 36 -textvariable Export::Data(User)
+            pack .export.where.db.user.lbl -side left
+            pack .export.where.db.user.sel -side left -fill both -expand True
+        frame .export.where.db.pswd
+            label .export.where.db.pswd.lbl -text [lindex $Lbl(Password) $GDefs(Lang)] -width 14 -anchor w
+            entry .export.where.db.pswd.sel -bd 1 -bg $GDefs(ColorLight) -width 36 -textvariable Export::Data(Password) -show *
+            pack .export.where.db.pswd.lbl -side left
+            pack .export.where.db.pswd.sel -side left -fill both -expand True
+         pack .export.where.db.host .export.where.db.port .export.where.db.name .export.where.db.user .export.where.db.pswd \
+            -side top -fill x -expand True
+
+      pack .export.how.type .export.how.sel -side top -fill x -expand True
+   pack .export.what .export.how .export.where -side top -fill x -expand True -padx 5
+
+   frame .export.cmd -relief sunken -bd 1
       button .export.cmd.ok -text [lindex $Lbl(Export) $GDefs(Lang)] -bd 1 \
          -command { Export::Do }
       button .export.cmd.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1  \
          -command { Export::Close }
       pack .export.cmd.ok .export.cmd.cancel -side left -fill x -expand true
-   pack .export.cmd -side top -fill x -expand true
+   pack .export.cmd -side top -fill x -expand true -padx 5 -pady 5
 
-   Export::Set $Data(Path)
-
-   Bubble::Create .export.file.path [lindex $Bubble(File) $GDefs(Lang)]
-   Bubble::Create .export.file.sel  [lindex $Bubble(Path) $GDefs(Lang)]
+   set format $Data(Format)
+   Export::SetType $Data(Type)
+   Export::SetFormat $format
+   Export::SetDim $Data(Res)
 }
 
-proc Export::Set { Path } {
+#----------------------------------------------------------------------------
+# Nom      : <Export::SetDim>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calculer les parametres des dimensions de l'image raster
+#
+# Parametres :
+#  <Res>     : Resolution en degree
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Export::SetDim { Res } {
    variable Data
 
-   if { $Path!="" } {
-      set Data(Path) $Path
-      set Data(Format) [FileBox::GetType]
-   }
+   set Data(Res) $Res
 
-   destroy .export.option
+   set dlat [expr $Export::Data(Lat1)-$Export::Data(Lat0)]
+   set dlon [expr $Export::Data(Lon1)-$Export::Data(Lon0)]
 
-   foreach type $Data(Types) {
-      if { [Export::${type}::Is $Data(Format)]!=-1 } {
-         set Data(Type) $type
-         frame .export.option -relief raised -bd 1
-         pack .export.option -side top -fill x -expand true -after .export.file
-         Export::${type}::Option .export.option
-         break
-      }
+   set Data(DY) [expr abs(int($dlat/$Res))]
+   set Data(DX) [expr abs(int($dlon/$Res))]
+
+   if { $Data(DX)>1 && $Data(DY)>1 } {
+      set Data(DLat) [expr $dlat/($Data(DY)-1)]
+      set Data(DLon) [expr $dlon/($Data(DX)-1)]
+
+      set Data(Dim) " deg = $Data(DX) x $Data(DY)"
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Export::SetFormat>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Appliquer les parametre relatifs a la selection du format
+#
+# Parametres :
+#  <Format>  : Format d'exportation
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Export::SetFormat { Format } {
+   variable Data
+
+   set Data(Format) $Format
+
+   if { [lindex $Format 0]=="PostgreSQL" } {
+      pack forget .export.where.file
+      pack .export.where.db -side top -fill x -expand True
+   } else {
+      pack forget .export.where.db
+      pack .export.where.file -side top -fill x -expand True
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Export::SetType>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Appliquer les parametre relatifs a la selection du type d'export
+#
+# Parametres :
+#  <Type>    : Type d'exportation (Vector ou Raster)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Export::SetType { Type } {
+   variable Data
+
+   ComboBox::DelAll .export.how.sel.sel
+   eval ComboBox::AddList .export.how.sel.sel \${Export::${Type}::Data(Formats)}
+
+   destroy .export.option
+   labelframe .export.option -text Options
+   pack .export.option -side top -fill x -expand true -after .export.where -padx 5
+   Export::${Type}::Option .export.option
+}
+
+
+#----------------------------------------------------------------------------
+# Nom      : <Export::Do>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lancer le processus d'exportation
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Export::Do { } {
    global GDefs
    variable Data
    variable Error
 
-   if { $Data(Path)=="" } {
-      Dialog::CreateError .export [lindex $Error(Path) $GDefs(Lang)] $GDefs(Lang)
-      return
+   set format [lindex $Data(Format) end-1]
+
+   if { $format=="PostgreSQL" } {
+
+   } else {
+      if { $Data(Path)=="" } {
+         Dialog::CreateError .export [lindex $Error(Path) $GDefs(Lang)] $GDefs(Lang)
+         return
+      }
    }
 
    .export configure -cursor watch
    update idletasks
 
-   eval Export::${Data(Type)}::Export $Data(Path) \"[lindex $Data(Format) end-1]\"
+   eval Export::${Data(Type)}::Export $Data(Path) \$format
 
    .export configure -cursor left_ptr
    Export::Close
@@ -486,6 +656,7 @@ proc Export::Draw       { Frame VP } {
    set Data(VP)     $VP
 
    Viewport::DrawRange $Frame $VP $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) RANGEEXPORT red
+   Export::SetDim $Data(Res)
 }
 
 proc Export::DrawDone { Frame VP } {
@@ -508,6 +679,7 @@ proc Export::DrawDone { Frame VP } {
    } else {
       set Data(Coo) "$Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1)"
    }
+   Export::SetDim $Data(Res)
 }
 
 proc Export::MoveInit { Frame VP } {
