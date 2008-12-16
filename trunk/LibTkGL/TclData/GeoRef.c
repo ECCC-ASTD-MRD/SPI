@@ -792,7 +792,6 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref) {
          sprintf(buf,"GEOREF_____%li",GeoRefNo++);
          Name=buf;
       }
-
       if (TclY_HashSet(Interp,&GeoRef_Table,Name,Ref)==TCL_ERROR) {
          return(NULL);
       }

@@ -354,10 +354,12 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          if (Objc==6) {
             ref=GeoRef_Get(Tcl_GetString(Objv[5]));
-            if (ref) {
+            if (!ref) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: invalid georeference object",(char*)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
+         } else {
+            ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,NULL,NULL,NULL);
          }
          if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])),Tcl_GetString(Objv[4]),ref)) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);

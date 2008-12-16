@@ -37,7 +37,7 @@ TCL_SRC  = $(ARC_PATH)/tcl$(TCLTK_VER)
 TCL_PATH = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
 
 TK_SRC   = $(ARC_PATH)/tk$(TCLTK_VER)
-TK_PATH  = $(INSTALL_PATH/Shared/$(ARCH)/TclTk
+TK_PATH  = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
 
 # OpenGL librairies
 #GL_PATH   = $(LIB_PATH)/mesa-6.5/
