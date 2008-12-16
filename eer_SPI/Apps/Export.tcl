@@ -52,8 +52,11 @@ namespace eval Export {
    set Lbl(Where)    { "Où" "Where" }
 
 
-   set Bubble(Type)   { "Type de données exportée" "Type of exported data" }
+   set Bubble(Type)   { "Type d'exportation des données" "Export Type of data" }
    set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
+   set Bubble(Data)   { "Sélection des données a exporter" "Select data to export" }
+   set Bubble(File)   { "Nom du fichier d'exportation" "Export filename" }
+   set Bubble(DBase)  { "Paramêtres de connection a la base de donnée" "Database connexion parameters" }
 
    set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
    set Error(Data)    { "Il n'y a aucune donnée RPN a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
@@ -96,11 +99,12 @@ namespace eval Export::Raster {
    set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
 
-   set Bubble(Lat0) { "Latitude du coin inférieur gauche" "Lower left corner latitude" }
-   set Bubble(Lon0) { "Longitude  du coin inférieur gauche" "Lower left corner longitude" }
-   set Bubble(Lat1) { "Latitude du coin supérieur droit" "Upper right corner latitude" }
-   set Bubble(Lon1) { "Longitude du coin supérieur droit" "Upper right corner longitude" }
-   set Bubble(Res)  { "Résolution en degrés" "Resolution in degrees" }
+   set Bubble(Lat0)   { "Latitude du coin inférieur gauche" "Lower left corner latitude" }
+   set Bubble(Lon0)   { "Longitude  du coin inférieur gauche" "Lower left corner longitude" }
+   set Bubble(Lat1)   { "Latitude du coin supérieur droit" "Upper right corner latitude" }
+   set Bubble(Lon1)   { "Longitude du coin supérieur droit" "Upper right corner longitude" }
+   set Bubble(Res)    { "Résolution en degrés" "Resolution in degrees" }
+   set Bubble(Values) { "Méthode d'exportation des valeurs" "Values exportation method" }
 }
 
 namespace eval Export::Vector {
@@ -204,7 +208,6 @@ proc Export::Vector::Export { Path Format } {
          set date    [clock format [fstdstamp toseconds [fstdfield define $field -DATEV]] -format "%Y%m%d_%H:%M" -gmt true]
 
          set layer ${nv}_${date}_${lvl}_${lvltype}
-
 
          if { $Format=="PostgreSQL" } {
             set req "PG:"
@@ -315,7 +318,8 @@ proc Export::Raster::Option { Frame } {
    Bubble::Create $Frame.area.lon0 [lindex $Bubble(Lon0) $GDefs(Lang)]
    Bubble::Create $Frame.area.lat1 [lindex $Bubble(Lat1) $GDefs(Lang)]
    Bubble::Create $Frame.area.lon1 [lindex $Bubble(Lon1) $GDefs(Lang)]
-   Bubble::Create $Frame.res.sel  [lindex $Bubble(Res) $GDefs(Lang)]
+   Bubble::Create $Frame.res       [lindex $Bubble(Res) $GDefs(Lang)]
+   Bubble::Create $Frame.type      [lindex $Bubble(Values) $GDefs(Lang)]
 }
 
 
@@ -454,6 +458,12 @@ proc Export::Window { } {
          -command { Export::Close }
       pack .export.cmd.ok .export.cmd.cancel -side left -fill x -expand true
    pack .export.cmd -side top -fill x -expand true -padx 5 -pady 5
+
+   Bubble:::Create .export.what       [lindex $Bubble(Data) $GDefs(Lang)]
+   Bubble:::Create .export.how.type   [lindex $Bubble(Type) $GDefs(Lang)]
+   Bubble:::Create .export.how.sel    [lindex $Bubble(Format) $GDefs(Lang)]
+   Bubble:::Create .export.where.file [lindex $Bubble(File) $GDefs(Lang)]
+   Bubble:::Create .export.where.db   [lindex $Bubble(DBase) $GDefs(Lang)]
 
    set format $Data(Format)
    Export::SetType $Data(Type)
