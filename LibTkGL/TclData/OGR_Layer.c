@@ -96,7 +96,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
                if (!ref) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                if (ref!=layer->Ref) {
                   GeoRef_Destroy(Interp,layer->Ref->Name);
@@ -1639,35 +1639,36 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 */
 int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg) {
 
-   double n,dn;
+   double n,dn,df;
    double x,y,la,lo;
    int    pt=0;
 
    dn=1.0/Seg;
+   df=dn*0.5;
 
    /*Left Up */
-   for(n=-0.5;n<0.5;n+=dn) {
+   for(n=-0.5;n<(0.5+df);n+=dn) {
       RefFrom->Project(RefFrom,I-0.5,J+n,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
    /*Top right*/
-   for(n=-0.5;n<0.5;n+=dn) {
+   for(n=-0.5;n<(0.5+df);n+=dn) {
       RefFrom->Project(RefFrom,I+n,J+0.5,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
    /*Right Down*/
-   for(n=0.5;n>-0.5;n-=dn) {
+   for(n=0.5;n>-(0.5+df);n-=dn) {
       RefFrom->Project(RefFrom,I+0.5,J+n,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
    /*Bottom Left*/
-   for(n=0.5;n>-0.5;n-=dn) {
+   for(n=0.5;n>-(0.5+df);n-=dn) {
       RefFrom->Project(RefFrom,I+n,J-0.5,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
@@ -2027,7 +2028,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         break;
                      }
                   }
-               }
+              }
                if (List && n) {
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));

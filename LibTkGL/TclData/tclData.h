@@ -120,7 +120,6 @@ extern int TData_Size[];
 #define Def_PointerMode(Def,Idx,Ptr) Ptr=Def->Mode+Idx*TData_Size[Def->Type];
 
 #define Def_Set(Def,Comp,Idx,Val) {\
-if (Idx>=0 && Idx<(Def->NI*Def->NJ*Def->NK)) \
 switch(Def->Type) {\
    case TD_Unknown:break;\
    case TD_Binary: break;\
