@@ -100,13 +100,12 @@ proc Mapper::Window { } {
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command  { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab1).head.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[concat \[list \$FileBox::Type(ALL)\] \$Mapper::Data(GDALFormats) \$Mapper::Data(OGRFormats)\]\]"
-         button $Data(Tab1).head.db -image OPEN -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::DBLayerWindow"
          button $Data(Tab1).head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command "Mapper::Params True"
          button $Data(Tab1).head.loc -image FINGER -bd 0 -relief flat -overrelief raised -command "Mapper::Locate"
          button $Data(Tab1).head.zoom -image MODEZOOM -bd 0 -relief flat -overrelief raised -command "Mapper::Zoom"
          checkbutton $Data(Tab1).head.ref -variable Mapper::Data(GeoRef) -offvalue "" -command "Mapper::SetGeoRef" \
             -image RESET -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
-         pack $Data(Tab1).head.mode $Data(Tab1).head.open $Data(Tab1).head.db $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
+         pack $Data(Tab1).head.mode $Data(Tab1).head.open $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
 
          frame $Data(Tab1).head.idx
             button $Data(Tab1).head.idx.down -image UP -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll -1"
@@ -172,90 +171,9 @@ proc Mapper::Window { } {
    Bubble::Create $Data(Tab1).head.zoom     [lindex $Bubble(Zoom) $GDefs(Lang)]
    Bubble::Create $Data(Tab1).head.mode     [lindex $Bubble(Mode) $GDefs(Lang)]
    Bubble::Create $Data(Tab1).head.open     [lindex $Bubble(File) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.db       [lindex $Bubble(DB) $GDefs(Lang)]
 
    trace add variable Viewport::Data(Data) write Mapper::Toggler
    Viewport::FollowerAdd Mapper
-}
-
-proc Mapper::DBLayerWindow { } {
-   global GDefs
-   variable Lbl
-   variable Bubble
-
-   set Data(DBHost)     ""
-   set Data(DBUser)     ""
-   set Data(DBPort)     ""
-   set Data(DBPassword) ""
-   set Data(DBName)     ""
-   set Data(DBRequest)  ""
-
-   set Lbl(Open)     { "Ouvrir" "Open" }
-   set Lbl(DBase)    { "Base de données" "Database" }
-   set Lbl(Host)     { "Hôte" "Host" }
-   set Lbl(Port)     { "Port" "Port" }
-   set Lbl(User)     { "Usager" "User" }
-   set Lbl(Password) { "Mot de passe" "Password" }
-   set Lbl(Name)     { "Nom" "Name" }
-   set Lbl(Request)  { "Requète SQL" "SQL request" }
-
-   toplevel         .dblayerwindow
-   wm title         .dblayerwindow "[lindex $Lbl(DBase) $GDefs(Lang)] "
-
-   frame .dblayerwindow.host -bd 1 -relief raised
-      label .dblayerwindow.host.lbl -text [lindex $Lbl(Host) $GDefs(Lang)] -width 12 -anchor w
-      entry .dblayerwindow.host.ent -textvariable Mapper::Data(DBHost) -bd 1 -bg $GDefs(ColorLight)
-      label .dblayerwindow.host.plbl -text [lindex $Lbl(Port) $GDefs(Lang)] -width 4 -anchor w
-      entry .dblayerwindow.host.pent -textvariable Mapper::Data(DBPort) -bd 1 -bg $GDefs(ColorLight)
-      pack .dblayerwindow.host.lbl -side left
-      pack .dblayerwindow.host.ent -side left -fill x -expand True
-      pack .dblayerwindow.host.plbl .dblayerwindow.host.pent -side left
-   pack .dblayerwindow.host -side top -fill x
-
-   frame .dblayerwindow.user -bd 1 -relief raised
-      label .dblayerwindow.user.lbl -text [lindex $Lbl(User) $GDefs(Lang)] -width 12 -anchor w
-      entry .dblayerwindow.user.ent -textvariable Mapper::Data(DBUser) -bd 1 -bg $GDefs(ColorLight)
-      label .dblayerwindow.user.plbl -text [lindex $Lbl(Password) $GDefs(Lang)] -width 12 -anchor w
-      entry .dblayerwindow.user.pent -textvariable Mapper::Data(DBPassword) -bd 1 -bg $GDefs(ColorLight) -show *
-      pack .dblayerwindow.user.lbl -side left
-      pack .dblayerwindow.user.ent -side left -fill x -expand True
-      pack .dblayerwindow.user.plbl .dblayerwindow.user.pent -side left
-   pack .dblayerwindow.user -side top -fill x
-
-   frame .dblayerwindow.name -bd 1 -relief raised
-      label .dblayerwindow.name.lbl -text [lindex $Lbl(Name) $GDefs(Lang)] -width 12 -anchor w
-      entry .dblayerwindow.name.ent -textvariable Mapper::Data(DBName) -bd 1 -bg $GDefs(ColorLight)
-      pack .dblayerwindow.name.lbl -side left
-      pack .dblayerwindow.name.ent -side left -fill x -expand True
-   pack .dblayerwindow.name -side top -fill x
-
-   frame .dblayerwindow.req -bd 1 -relief raised
-      label .dblayerwindow.req.lbl -text [lindex $Lbl(Request) $GDefs(Lang)] -width 12 -anchor w
-      text .dblayerwindow.req.ent -bd 1 -bg $GDefs(ColorLight) -height 5
-      pack .dblayerwindow.req.lbl -side top -fill x
-      pack .dblayerwindow.req.ent -side top -fill both
-   pack .dblayerwindow.req -side top -fill both
-
-   frame .dblayerwindow.cmd
-      button .dblayerwindow.cmd.open -text [lindex $Lbl(Open) $GDefs(Lang)] -bd 1 -command { Mapper::DBLayerOpen }
-      button .dblayerwindow.cmd.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1 -command { destroy .dblayerwindow }
-      pack .dblayerwindow.cmd.open .dblayerwindow.cmd.cancel -side left -fill x -expand True
-   pack .dblayerwindow.cmd -side top -fill x
-}
-
-proc Mapper::DBLayerOpen { } {
-   variable Data
-#   "host=odysseus port=5433 user=afsugil dbname=verification password=patate"
-    set Data(DBSQL) [string trim [.dblayerwindow.req.ent get 0.0 end]]
-    set req "PG:"
-    if { $Data(DBHost)!="" }     { append req "host=$Data(DBHost) " }
-    if { $Data(DBPort)!="" }     { append req "port=$Data(DBPort) " }
-    if { $Data(DBUser)!="" }     { append req "user=$Data(DBUser) " }
-    if { $Data(DBPassword)!="" } { append req "password=$Data(DBPassword) " }
-    if { $Data(DBName)!="" }     { append req "dbname=$Data(DBName) " }
-
-    Mapper::ReadLayer $req $Data(DBSQL)
-    Mapper::UpdateData $Page::Data(Frame)
 }
 
 proc Mapper::PopUp { X Y y } {
