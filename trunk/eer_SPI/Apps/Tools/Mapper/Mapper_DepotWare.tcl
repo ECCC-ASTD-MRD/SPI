@@ -15,6 +15,11 @@
 #
 #===============================================================================
 
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_DIR.tcl
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WMS.tcl
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WCS.tcl
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_PGS.tcl
+
 namespace eval Mapper::DepotWare {
    variable WMS
    variable Data
@@ -38,23 +43,10 @@ namespace eval Mapper::DepotWare {
    set Data(GDALExclude) { .hdr .jgw .txt .met }  ;# Fichier a exclure
    set Data(OGRExclude)  { .dbf .shx .txt }  ;# Fichier a exclure
 
-   set WMS(BlockSize) 512
-   set WMS(Layers)  {}
-
-   set WMS(SizeX)        0
-   set WMS(SizeY)        0
-   set WMS(Version)      ""
-   set WMS(Name)         ""
-   set WMS(Format)       ""
-   set WMS(Title)        ""
-   set WMS(BBox)         ""
-   set WMS(Styles)       ""
-   set WMS(Geographic)   ""
-   set WMS(Opaque)       0
 
    set Lbl(Title)     { "Paramêtres du dépot de données" "Data repository parameters" }
-   set Lbl(Types)     {  "DIR - Data directory" "WMS - Web Mapping Service" }
-#   set Lbl(Types)     {  "DIR - Data directory" "WMS - Web Mapping Service" "WCS - Web Coverage Service" "WFS - Web Feature Service" }
+   set Lbl(Types)     {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" }
+#   set Lbl(Types)     {  "DIR - Data directory" "PGS - PostGIS database"  "WMS - Web Mapping Service" "WCS - Web Coverage Service" "WFS - Web Feature Service" }
    set Lbl(Path)      { "Localisation" "Localisation" }
    set Lbl(Type)      { "Type" "Type" }
    set Lbl(Cache)     { "Cache" "Cache" }
@@ -67,9 +59,8 @@ namespace eval Mapper::DepotWare {
    set Lbl(Params)    { "Paramêtres" "Parameters" }
    set Lbl(Save)      { "Sauvegarder" "Save" }
    set Lbl(Cancel)    { "Annuler" "Cancel" }
+   set Lbl(Desc)      { "Description" "Description" }
 
-   set Msg(WMSRequest) { "Problème dans la requète de capacitées WMS (GetCapabilities)" "Problem requesting capabilities WMS (GetCapabilities)" }
-   set Msg(WCSRequest) { "Problème dans la requète de capacitées WCS (GetCapabilities)" "Problem requesting capabilities WCS (GetCapabilities)" }
    set Msg(Search)     { "Recherche ..." "Searching ..." }
    set Msg(Del)        { "Voulez-vous vraiment supprimer ce dépot de la liste ?" "Do you really want to remove this repository from the list ?" }
 }
@@ -97,65 +88,72 @@ proc Mapper::DepotWare::CacheClean { } {
 #
 #-------------------------------------------------------------------------------
 
+proc Mapper::DepotWare::ParamsSelect { } {
+   global GDefs
+   variable Data
+   variable Lbl
+
+   destroy .mapperdepot.params
+
+   labelframe .mapperdepot.params -text [lindex $Lbl(Params) $GDefs(Lang)]
+   pack .mapperdepot.params -side top -fill x -padx 5 -after .mapperdepot.type
+
+   Mapper::DepotWare::[lindex ${Data(Type)} 0]::Params .mapperdepot.params
+}
+
 proc Mapper::DepotWare::Params { { Save 1 } } {
    global GDefs
    variable Data
    variable Lbl
 
-   toplevel         .mapperdepot
+   if { [winfo exists .mapperdepot] } {
+      raise .mapperdepot
+      return
+   }
+
+   toplevel         .mapperdepot -relief raised -bd 1
    wm title         .mapperdepot [lindex $Lbl(Title) $GDefs(Lang)]
    wm resizable     .mapperdepot 1 1
    wm protocol      .mapperdepot WM_DELETE_WINDOW { }
    wm geom          .mapperdepot +[expr [winfo rootx .mapper]+50]+[expr [winfo rooty .mapper]+50]
 
-  catch { set Data(CacheSize) [lindex [exec du -ms $Data(CachePath)] 0] }
+   catch { set Data(CacheSize) [lindex [exec du -ms $Data(CachePath)] 0] }
 
-   frame .mapperdepot.bg  -relief raised -bd 1
-      frame .mapperdepot.bg.type
-         label .mapperdepot.bg.type.lbl -anchor w -text [lindex $Lbl(Type) $GDefs(Lang)] -width 15
-         ComboBox::Create .mapperdepot.bg.type.sel Mapper::DepotWare::Data(Type) noedit unsorted nodouble -1 $Lbl(Types) 55 14 ""
-         pack .mapperdepot.bg.type.lbl -side left
-         pack .mapperdepot.bg.type.sel -side left -fill x -expand True
-      pack .mapperdepot.bg.type -fill x -expand True  -padx 5
+   labelframe .mapperdepot.type -text [lindex $Lbl(Desc) $GDefs(Lang)]
+      frame .mapperdepot.type.name
+         label .mapperdepot.type.name.lbl -anchor w -text [lindex $Lbl(Name) $GDefs(Lang)] -width 15
+         entry .mapperdepot.type.name.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(Name)
+         pack .mapperdepot.type.name.lbl -side left
+         pack .mapperdepot.type.name.ent -side left  -fill x -expand True
+      pack .mapperdepot.type.name -fill x -expand True
+      frame .mapperdepot.type.type
+         label .mapperdepot.type.type.lbl -anchor w -text [lindex $Lbl(Type) $GDefs(Lang)] -width 15
+         ComboBox::Create .mapperdepot.type.type.sel Mapper::DepotWare::Data(Type) noedit unsorted nodouble -1 $Lbl(Types) 50 5 \
+            { Mapper::DepotWare::ParamsSelect }
+         pack .mapperdepot.type.type.lbl -side left
+         pack .mapperdepot.type.type.sel -side left -fill x -expand True
+      pack .mapperdepot.type.type -fill x -expand True
 
-      frame .mapperdepot.bg.name
-         label .mapperdepot.bg.name.lbl -anchor w -text [lindex $Lbl(Name) $GDefs(Lang)] -width 15
-         entry .mapperdepot.bg.name.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(Name)
-         pack .mapperdepot.bg.name.lbl -side left
-         pack .mapperdepot.bg.name.ent -side left  -fill x -expand True
-      pack .mapperdepot.bg.name -fill x -expand True  -padx 5
+   labelframe .mapperdepot.cache -text [lindex $Lbl(Cache) $GDefs(Lang)]
+      label .mapperdepot.cache.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
+      button .mapperdepot.cache.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
+         -command  { set Mapper::DepotWare::Data(CachePath) [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
+      entry .mapperdepot.cache.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CachePath)
+      label .mapperdepot.cache.lbld -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
+      entry .mapperdepot.cache.szent -width 6 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CacheSize)
+      button .mapperdepot.cache.clean -image DELETE -bd 0 -relief flat -overrelief raised -relief raised \
+         -command  { Mapper::DepotWare::CacheClean }
+      label .mapperdepot.cache.szlbl -anchor w -text Mb -width 2
+      pack .mapperdepot.cache.lbl .mapperdepot.cache.szent .mapperdepot.cache.szlbl -side left
+      pack .mapperdepot.cache.ent -side left  -fill x -expand True
+      pack .mapperdepot.cache.clean .mapperdepot.cache.open -side left
+   pack .mapperdepot.type .mapperdepot.cache -side top -fill x -padx 5
 
-      frame .mapperdepot.bg.path
-         label .mapperdepot.bg.path.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
-         button .mapperdepot.bg.path.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
-            -command  { set Mapper::DepotWare::Data(Path) [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::Data(GDALFormats) $Mapper::Data(OGRFormats)]] }
-         entry .mapperdepot.bg.path.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(Path)
-         pack .mapperdepot.bg.path.lbl -side left
-         pack .mapperdepot.bg.path.ent -side left  -fill x -expand True
-         pack .mapperdepot.bg.path.open -side left
-      pack .mapperdepot.bg.path -fill x -expand True  -padx 5
-
-      frame .mapperdepot.bg.cache
-         label .mapperdepot.bg.cache.lbl -anchor w -text [lindex $Lbl(Cache) $GDefs(Lang)] -width 15
-         button .mapperdepot.bg.cache.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
-            -command  { set Mapper::DepotWare::Data(CachePath) [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
-         entry .mapperdepot.bg.cache.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CachePath)
-         entry .mapperdepot.bg.cache.szent -width 6 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CacheSize)
-         button .mapperdepot.bg.cache.clean -image DELETE -bd 0 -relief flat -overrelief raised -relief raised \
-            -command  { Mapper::DepotWare::CacheClean }
-         label .mapperdepot.bg.cache.szlbl -anchor w -text Mb -width 2
-         pack .mapperdepot.bg.cache.lbl .mapperdepot.bg.cache.szent .mapperdepot.bg.cache.szlbl -side left
-         pack .mapperdepot.bg.cache.ent -side left  -fill x -expand True
-         pack .mapperdepot.bg.cache.clean .mapperdepot.bg.cache.open -side left
-      pack .mapperdepot.bg.cache -fill x -expand True  -padx 5
-
-   pack .mapperdepot.bg -side top -fill both -expand True
-
-   frame .mapperdepot.cmd
-      button .mapperdepot.cmd.ok -bd 1 -text [lindex $Lbl(Save) $GDefs(Lang)] -command  { Mapper::DepotWare::Add $Mapper::DepotWare::Data(Name) [lindex $Mapper::DepotWare::Data(Type) 0] $Mapper::DepotWare::Data(Path); destroy .mapperdepot }
+   frame .mapperdepot.cmd -relief sunken -bd 1
+      button .mapperdepot.cmd.ok -bd 1 -text [lindex $Lbl(Save) $GDefs(Lang)] -command  { Mapper::DepotWare::Add $Mapper::DepotWare::Data(Name) [lindex $Mapper::DepotWare::Data(Type) 0]; destroy .mapperdepot }
       button .mapperdepot.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command  { destroy .mapperdepot }
       pack .mapperdepot.cmd.ok .mapperdepot.cmd.cancel -side left  -fill x -expand True
-   pack .mapperdepot.cmd -side top -fill x -expand True
+   pack .mapperdepot.cmd -side top -fill x -padx 5 -pady 5
 
    if { $Save } {
       .mapperdepot.cmd.ok configure -state normal
@@ -172,8 +170,7 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
 #
 # Parametres :
 #   <Name>   : Identification du depot
-#   <Type>   : Type de depot (WMS,WCS,WFS,DIR)
-#   <Path>   : Path ou UR du depot
+#   <Type>   : Type de depot (WMS,WCS,WFS,DIR,PGS)
 #
 # Retour    :
 #
@@ -181,28 +178,32 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::Add { Name Type Path } {
+proc Mapper::DepotWare::Add { Name Type } {
    global GDefs
    variable Data
 
    if { ![file exists $GDefs(DirEER)/Mapper] || ![file isdirectory $GDefs(DirEER)/Mapper] } {
       file mkdir $GDefs(DirEER)/Mapper
    }
+
+   set req [Mapper::DepotWare::${Type}::Request]
+
    if { $Type!="DIR" } {
-      set Type URL$Type
+      set Type "URL$Type"
    }
 
    if  { $Name=="" } {
-      set Name $Path
+      set Name $req
    }
 
-   lappend Data(Depots) [list $Name $Type $Path]
+   lappend Data(Depots) [list $Name $Type $req]
    exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(Depots) { $Data(Depots) }" > $GDefs(DirEER)/Mapper/Params
+   exec chmod 600 $GDefs(DirEER)/Mapper/Params
 
    set idx [TREE insert root end]
    TREE set $idx open False
    TREE set $idx name $Name
-   TREE set $idx path $Path
+   TREE set $idx path $req
    TREE set $idx type $Type
 
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
@@ -284,19 +285,21 @@ proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
    set id ""
    set leaf True
 
-   if { $type=="DIR" || $type=="URLWMS" || $type=="URLWCS" } {
+   if { $type=="DIR" || [string range $type 0 2]=="URL" } {
       set leaf False
    }
 
-   if { $type=="GDAL" || $type=="OGR" || $type=="WMS"  || $type=="WCS" } {
+   if { $type=="GDAL" || $type=="OGR" || $type=="WMS" || $type=="WCS" || $type=="PGS"  } {
       if { ![Mapper::DepotWare::Check $Branch] } {
          return ""
       }
    }
+
    switch [string range $type 0 2] {
       "URL" { set id "([string range $type 3 end]) [$Tree get $Branch name]" }
       "WMS" { set id [$Tree get $Branch path] }
       "WCS" { set id [$Tree get $Branch path] }
+      "PGS" { set id [$Tree get $Branch path] }
       default { if { [$Tree depth $Branch]>1 } { set id [file tail [$Tree get $Branch path]] } else { set id "($type) [$Tree get $Branch name]" } }
    }
    return $id
@@ -337,82 +340,7 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
       set Mapper::Data(Job) [lindex $Msg(Search) $GDefs(Lang)]
       set path [$Tree get $Branch path]
 
-      switch [$Tree get $Branch type] {
-         "DIR"  {
-            foreach file [lsort -dictionary -increasing [glob -nocomplain $path/*]] {
-               set branch [$Tree insert $Branch end]
-               if { [file isdirectory $file] } {
-                  $Tree set $branch open False
-                  $Tree set $branch name ""
-                  $Tree set $branch path $file
-                  $Tree set $branch type DIR
-               } elseif { [Mapper::DepotWare::AddGDAL $branch $file] || [Mapper::DepotWare::AddOGR $branch $file] } {
-               } else {
-                  $Tree delete $branch
-               }
-            }
-         }
-
-         "URLWMS"  {
-            if { [string first "?" ${path}]==-1 } {
-               set req [http::geturl "${path}?&SERVICE=WMS&REQUEST=GetCapabilities"]
-            } else {
-               set req [http::geturl "${path}&SERVICE=WMS&REQUEST=GetCapabilities"]
-            }
-
-            if { [catch { set doc [dom::parse [http::data $req]] } ] } {
-               Dialog::CreateErrorListing . [lindex $Msg(WMSRequest) $GDefs(Lang)] [http::data $req] $GDefs(Lang)
-               return
-            }
-
-            set WMS(Version) 1.1.1
-            set getmap [lindex [set [dom::document getElementsByTagName $doc GetMap]] 0]
-            foreach node [set [dom::document getElementsByTagName $getmap Format]] {
-               set WMS(Format) [dom::node cget  [dom::node children $node] -nodeValue]
-               if { $WMS(Format)=="image/png" || $WMS(Format)=="image/jpeg" } {
-                  break
-               }
-            }
-
-            set layer [lindex [set [dom::document getElementsByTagName $doc Layer]] 0]
-            foreach layer [Mapper::DepotWare::WMSParseLayer $path $layer] {
-               set branch [TREE insert $Branch end]
-               Mapper::DepotWare::AddWMS $branch $layer
-            }
-            dom::destroy $doc
-         }
-         "WMS"  { set path [Mapper::DepotWare::WMSBuildXMLDef $path]
-                  if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                     Mapper::ReadBand $path "" 3
-                   }
-                }
-
-         "URLWCS"  {
-            if { [string first "?" ${path}]==-1 } {
-               set req [http::geturl "${path}?&SERVICE=WCS&REQUEST=GetCapabilities"]
-            } else {
-               set req [http::geturl "${path}&SERVICE=WCS&REQUEST=GetCapabilities"]
-            }
-            if { [catch { set doc [dom::parse [http::data $req]] } ] } {
-               Dialog::CreateErrorListing . [lindex $Msg(WCSRequest) $GDefs(Lang)] [http::data $req] $GDefs(Lang)
-               return
-            }
-
-            set WCS(Version) 1.1.0
-            set layer [lindex [set [dom::document getElementsByTagName $doc CoverageSummary]] 0]
-            foreach layer [Mapper::DepotWare::WCSParseLayer $path $layer] {
-               set branch [TREE insert $Branch end]
-               Mapper::DepotWare::AddWCS $branch $layer
-            }
-            dom::destroy $doc
-         }
-         "WCS"  { set path [Mapper::DepotWare::WCSBuildXMLDef $path]
-                  if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                     Mapper::ReadBand $path "" 3
-                   }
-                }
-
-         "WFS"  { }
+      switch -glob [set type [$Tree get $Branch type]] {
          "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
                      Mapper::ReadBand $path
                   }
@@ -421,6 +349,8 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
                      Mapper::ReadLayer $path
                   }
                 }
+         "URL*"  { Mapper::DepotWare::[string range $type 3 end]::Select $Tree $Branch $path [string range $type 0 2] }
+         default { Mapper::DepotWare::${type}::Select $Tree $Branch $path [string range $type 0 2] }
       }
    }
    Mapper::UpdateData $Page::Data(Frame)
@@ -488,11 +418,12 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
       .depotwaremenu entryconfigure 0 -state normal -command "Mapper::DepotWare::TreeSelect Mapper::DepotWare::TREE $Branch True"
    }
 
-   switch $Data(Type) {
-      "DIR"    { set Data(Type) [lindex $Lbl(Types) 0] }
-      "URLWMS" { set Data(Type) [lindex $Lbl(Types) 1] }
-      "URLWCS" { set Data(Type) [lindex $Lbl(Types) 2] }
-      "URLWFS" { set Data(Type) [lindex $Lbl(Types) 3] }
+   set type [lindex $Data(Type) end]
+   foreach lbl  $Lbl(Types) {
+      if { $type==[lindex $lbl 0] } {
+         set Data(Type) $lbl
+         break
+      }
    }
    tk_popup .depotwaremenu $X $Y 0
 }
@@ -523,6 +454,7 @@ proc Mapper::DepotWare::Create { } {
       source $GDefs(DirEER)/Mapper/Params
    }
 
+
    foreach depot $Data(Depots) {
       set idx [TREE insert root end]
       TREE set $idx open False
@@ -531,491 +463,6 @@ proc Mapper::DepotWare::Create { } {
       TREE set $idx path [lindex $depot 2]
    }
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE Mapper::DepotWare::TreeId Mapper::DepotWare::TreeSelect Mapper::DepotWare::PopUp
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::AddWMS>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajouter une branche pour une couche WMS.
-#
-# Parametres :
-#  <Branch>  : Branche
-#  <Layer>   : Couche
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::AddWMS { Branch Layer } {
-   variable WMS
-
-   TREE set $Branch open False
-   TREE set $Branch name ""
-   TREE set $Branch path $Layer
-   TREE set $Branch type WMS
-   TREE set $Branch width  -1
-   TREE set $Branch height -1
-
-   set bbox  [lindex $WMS($Layer) 3]
-   TREE set $Branch 00 [list [lindex $bbox 1] [lindex $bbox 0]]
-   TREE set $Branch 01 [list [lindex $bbox 3] [lindex $bbox 0]]
-   TREE set $Branch 10 [list [lindex $bbox 1] [lindex $bbox 2]]
-   TREE set $Branch 11 [list [lindex $bbox 3] [lindex $bbox 2]]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::AddWMS>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajouter une branche pour une couche WMS.
-#
-# Parametres :
-#  <Branch>  : Branche
-#  <Layer>   : Couche
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::AddWCS { Branch Layer } {
-   variable WCS
-
-   TREE set $Branch open False
-   TREE set $Branch name ""
-   TREE set $Branch path $Layer
-   TREE set $Branch type WCS
-   TREE set $Branch width  -1
-   TREE set $Branch height -1
-
-   set bbox  [lindex $WCS($Layer) 3]
-   TREE set $Branch 00 [list [lindex $bbox 1] [lindex $bbox 0]]
-   TREE set $Branch 01 [list [lindex $bbox 3] [lindex $bbox 0]]
-   TREE set $Branch 10 [list [lindex $bbox 1] [lindex $bbox 2]]
-   TREE set $Branch 11 [list [lindex $bbox 3] [lindex $bbox 2]]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::AddGDAL>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajouter une branche pour une couche GDAL.
-#
-# Parametres :
-#  <Branch>  : Branche
-#  <File>    : Fichier
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::AddGDAL { Branch File } {
-   variable Data
-
-   if { [lsearch -exact $Data(GDALExclude) [string tolower [file extension $File]]]!=-1 } {
-      return False
-   }
-
-   eval set bad [catch { set bands [gdalfile open GDALPARSE read $File] }]
-
-   if { !$bad } {
-      if { [llength $bands] } {
-         set width  [gdalfile width  GDALPARSE]
-         set height [gdalfile height GDALPARSE]
-
-         TREE set $Branch open False
-         TREE set $Branch name ""
-         TREE set $Branch path $File
-         TREE set $Branch type GDAL
-         TREE set $Branch width  $width
-         TREE set $Branch height $height
-         TREE set $Branch 00 [gdalfile project GDALPARSE 1 1]
-         TREE set $Branch 01 [gdalfile project GDALPARSE 1 $height]
-         TREE set $Branch 10 [gdalfile project GDALPARSE $width 1]
-         TREE set $Branch 11 [gdalfile project GDALPARSE $width $height]
-
-         gdalfile close GDALPARSE
-         return True
-      }
-      gdalfile close GDALPARSE
-   }
-   return False
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::AddOGR>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajouter une branche pour une couche OGR.
-#
-# Parametres :
-#  <Branch>  : Branche
-#  <File>    : Fichier
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::AddOGR { Branch File } {
-   variable Data
-
-   if { [lsearch -exact $Data(OGRExclude) [string tolower [file extension $File]]]!=-1 } {
-      return False
-   }
-
-   set bad [catch { set layers [ogrfile open OGRPARSE read $File] }]
-
-   if { !$bad } {
-      if { [llength $layers] } {
-         TREE set $Branch open False
-         TREE set $Branch name ""
-         TREE set $Branch path $File
-         TREE set $Branch type OGR
-         TREE set $Branch width  0
-         TREE set $Branch height 0
-         TREE set $Branch 00 [list -90 -180.0]
-         TREE set $Branch 01 [list 90 -180.0]
-         TREE set $Branch 10 [list 90 180.0]
-         TREE set $Branch 11 [list -90 180.0]
-
-         ogrfile close OGRPARSE
-         return True
-      }
-      ogrfile close OGRPARSE
-   }
-   return False
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WCSParseLayer>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Decoder du XML pour en extraire l'information des couches.
-#
-# Parametres :
-#  <URL>     : URL du depot
-#  <Node>    : Node XML
-#  <First>   : Premiere couche ?
-#
-# Retour    :
-#
-# Remarque :
-#   - Certaines couches cont imbriquees alors cette procedure est recursive
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WCSParseLayer { URL Node { First True } } {
-   variable WCS
-
-   if { $First } {
-      set WCS(Layers) {}
-      set WCS(BBox)   {}
-      set WCS(Name)   ""
-      set WCS(Format)  ""
-      set WCS(Geographic)   ""
-      set WCS(SizeX)  0
-      set WCS(SizeY)  0
-   }
-
-   foreach node [set [dom::node configure $Node -childNodes]] {
-      switch [dom::node configure $node  -nodeName] {
-         CoverageSummary          { Mapper::DepotWare::WCSParseLayer $URL $node False }
-         EX_GeographicBoundingBox { Mapper::DepotWare::WMSParseGeographic $node }
-         LatLonBoundingBox        { Mapper::DepotWare::WMSParseLatLonBoundingBox $node }
-         BoundingBox              { Mapper::DepotWare::WMSParseBoundingBox $node }
-         Identifier               { set WCS(Name)  [dom::node cget [dom::node children $node] -nodeValue] }
-         ows:Title                { set WCS(Title) [dom::node cget [dom::node children $node] -nodeValue] }
-      }
-   }
-puts stderr -----$WCS(Title)---
-   if { $WCS(Name)!="" } {
-      set WCS($WCS(Title)) [list $URL $WCS(Name) $WCS(BBox) $WCS(Geographic) $WCS(SizeX) $WCS(SizeY) $WCS(Format)]
-      lappend WCS(Layers) $WCS(Title)
-   }
-   set WCS(Name) ""
-   return $WCS(Layers)
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WCSBuildXMLDef>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Construction du fichier de definition XML necessaire a GDAL pour
-#            lire les donnees.
-#
-# Parametres :
-#  <Layer>   : Couche
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WCSBuildXMLDef { Layer } {
-   variable WCS
-   variable Data
-
-   set url    [lindex $WCS($Layer) 0]
-   set layer  [lindex $WCS($Layer) 1]
-
-   set layer [string map { " " "%20" } $layer]
-   if { [string first "?" ${url}]==-1 } {
-      set url ${url}?
-   } else {
-      set url $url
-   }
-
-   set xml "<GDAL_WCS>\n"
-   append xml "   <ServiceURL>${url}</ServiceURL>\n"
-   append xml "   <CoverageName>$layer</CoverageName>"
-   append xml "</GDAL_WCS>"
-
-   set f [open $file w]
-   puts $f $xml
-   close $f
-
-   return $file
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMSParseLayer>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Decoder du XML pour en extraire l'information des couches.
-#
-# Parametres :
-#  <URL>     : URL du depot
-#  <Node>    : Node XML
-#  <First>   : Premiere couche ?
-#
-# Retour    :
-#
-# Remarque :
-#   - Certaines couches cont imbriquees alors cette procedure est recursive
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WMSParseLayer { URL Node { First True } } {
-   variable WMS
-
-   if { $First } {
-      set WMS(Layers) {}
-      set WMS(SizeX) 864000
-      set WMS(SizeY) 432000
-      set WMS(Width) 512
-      set WMS(Height) 512
-      set WMS(Cache)  1
-   }
-   set WMS(Style)  {}
-
-   foreach node [set [dom::node configure $Node -childNodes]] {
-      switch [dom::node configure $node  -nodeName] {
-         Layer                    { set WMS(Opaque) [dom::element getAttribute $node opaque]
-                                    Mapper::DepotWare::WMSParseLayer $URL $node False }
-         EX_GeographicBoundingBox { Mapper::DepotWare::WMSParseGeographic $node }
-         LatLonBoundingBox        { Mapper::DepotWare::WMSParseLatLonBoundingBox $node }
-         BoundingBox              { Mapper::DepotWare::WMSParseBoundingBox $node }
-         Name                     { set WMS(Name)  [dom::node cget [dom::node children $node] -nodeValue] }
-         Title                    { set WMS(Title) [dom::node cget [dom::node children $node] -nodeValue] }
-         Dimension                { set WMS(Cache) 0 }
-         DataURL                  { }
-         Style                    { Mapper::DepotWare::WMSParseStyle $node }
-      }
-   }
-
-   if { $WMS(Name)!="" } {
-      set WMS($WMS(Title)) [list $URL $WMS(Name) $WMS(BBox) $WMS(Geographic) $WMS(SizeX) $WMS(SizeY) $WMS(Format) $WMS(Style) $WMS(Opaque) $WMS(Cache)]
-      lappend WMS(Layers) $WMS(Title)
-   }
-   set WMS(Name) ""
-   return $WMS(Layers)
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMSParseStyle>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Decoder du XML pour en extraire l'information des styles.
-#
-# Parametres :
-#  <Node>    : Node XML
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WMSParseStyle { Node } {
-   variable WMS
-
-   lappend WMS(Style) [dom::node cget [lindex [dom::node children $Node] 0] -nodeValue]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMSParseDimension>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Decoder du XML pour en extraire l'information des dimensions.
-#
-# Parametres :
-#  <Node>    : Node XML
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WMSParseDimension { Node } {
-
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMSParseGeographic>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Decoder du XML pour en extraire l'information des limites geographiques.
-#
-# Parametres :
-#  <Node>    : Node XML
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WMSParseGeographic { Node } {
-   variable WMS
-
-   set WMS(Geographic) [list\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node westBoundLongitude]]] -nodeValue]\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node northBoundLatitude]]] -nodeValue]\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node eastBoundLongitude]]] -nodeValue]\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node southBoundLatitude]]] -nodeValue]]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMSParseBoundingBox>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Decoder du XML pour en extraire l'information des limites de la
-#            boite de visibilite.
-#
-# Parametres :
-#  <Node>    : Node XML
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WMSParseBoundingBox { Node } {
-   variable WMS
-
-   set x0 [dom::element getAttribute $Node minx]
-   set y0 [dom::element getAttribute $Node miny]
-   set x1 [dom::element getAttribute $Node maxx]
-   set y1 [dom::element getAttribute $Node maxy]
-   set epsg [dom::element getAttribute $Node SRS]
-   set crs  [dom::element getAttribute $Node CRS]
-
-   set WMS(BBox)  [list $x0 $y0 $x1 $y1]
-
-   if { $epsg=="EPSG:4326" || $epsg=="EPSG:4269" || $crs=="CRS:84" } {
-      set WMS(SizeX) 864000
-      set WMS(SizeY) 432000
-   } else {
-      set WMS(SizeX) [expr $x1-$x0]
-      set WMS(SizeY) [expr $y1-$y0]
-   }
-}
-
-proc Mapper::DepotWare::WMSParseLatLonBoundingBox { Node } {
-   variable WMS
-
-   set WMS(Geographic) [list [dom::element getAttribute $Node minx] [dom::element getAttribute $Node maxy] \
-      [dom::element getAttribute $Node maxx] [dom::element getAttribute $Node miny]]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMSBuildXMLDef>
-# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Construction du fichier de definition XML necessaire a GDAL pour
-#            lire les donnees.
-#
-# Parametres :
-#  <Layer>   : Couche
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::DepotWare::WMSBuildXMLDef { Layer } {
-   variable WMS
-   variable Data
-
-   set url    [lindex $WMS($Layer) 0]
-   set layer  [lindex $WMS($Layer) 1]
-   set geog   [lindex $WMS($Layer) 3]
-   set sizex  [lindex $WMS($Layer) 4]
-   set sizey  [lindex $WMS($Layer) 5]
-   set format [lindex $WMS($Layer) 6]
-   set style  [lindex $WMS($Layer) 7]
-   set opaque [lindex $WMS($Layer) 8]
-   set cache  [lindex $WMS($Layer) 9]
-
-   if { $opaque==0 } {
-      set bands 4
-      set ttag TRANSPARENT=TRUE
-    } else {
-      set bands 3
-      set ttag TRANSPARENT=FALSE
-   }
-
-   if { ![file exists $Data(CachePath)] } {
-      file mkdir $Data(CachePath)
-   }
-
-   set layer [string map { " " "%20" } $layer]
-   set file $Data(CachePath)/[string map { / "" ? "" " " "" : "" } $url$layer].xml
-   if { [string first "?" ${url}]==-1 } {
-      set url ${url}?
-   } else {
-      set url $url
-   }
-
-   set xml "<GDAL_WMS>\n   <Service name=\"WMS\">\n      <Version>$WMS(Version)</Version>\n"
-   append xml "      <ServerUrl>${url}${ttag}&</ServerUrl>\n      <SRS>EPSG:4326</SRS>\n      <ImageFormat>$format</ImageFormat>\n"
-   append xml "      <Layers>$layer</Layers>\n      <Styles></Styles>\n   </Service>\n"
-
-   append xml "   <DataWindow>\n      <UpperLeftX>[lindex $geog 0]</UpperLeftX>\n      <UpperLeftY>[lindex $geog 1]</UpperLeftY>\n      <LowerRightX>[lindex $geog 2]</LowerRightX>\n      <LowerRightY>[lindex $geog 3]</LowerRightY>\n      <SizeX>$sizex</SizeX>\n      <SizeY>$sizey</SizeY>\n   </DataWindow>\n"
-   append xml "   <Projection>EPSG:4326</Projection>\n   <BandsCount>$bands</BandsCount>\n   <BlockSizeX>$WMS(BlockSize)</BlockSizeX>\n   <BlockSizeY>$WMS(BlockSize)</BlockSizeY>\n"
-
-   if { $cache && $Data(CachePath)!="" } {
-      append xml "<Cache>\n   <Path> [file rootname $file]</Path>\n   <Depth>2</Depth>\n   </Cache>\n"
-   }
-   append xml "</GDAL_WMS>"
-
-   set f [open $file w]
-   puts $f $xml
-   close $f
-
-   return $file
 }
 
 #----------------------------------------------------------------------------

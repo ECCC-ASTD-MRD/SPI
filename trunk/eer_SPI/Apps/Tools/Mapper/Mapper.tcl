@@ -502,7 +502,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } } {
    return True
 }
 
-proc Mapper::ReadLayer { File { SQL "" } } {
+proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
    global GDefs
    variable Msg
    variable Data
@@ -519,6 +519,14 @@ proc Mapper::ReadLayer { File { SQL "" } } {
 
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
+
+   #----- If a layer index has been specified, use it
+   if { [llength $Index] } {
+      set idxs {}
+      foreach idx $Index {
+         lappend idxs [list $Data(Id$File) [lindex $idx 0] [lindex $idx 1]]
+      }
+   }
 
    foreach idx $idxs {
       set layer [lindex $idx 2]
