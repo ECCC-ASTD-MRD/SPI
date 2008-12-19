@@ -147,6 +147,33 @@ proc Mapper::DepotWare::CacheClean { } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::ParamsSave>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Sauvegarde des parametres d'un depot de donnees.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::ParamsSave { } {
+   global GDefs
+   variable Data
+
+   if { ![file exists $GDefs(DirEER)/Mapper] || ![file isdirectory $GDefs(DirEER)/Mapper] } {
+      file mkdir $GDefs(DirEER)/Mapper
+   }
+
+   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)"  > $GDefs(DirEER)/Mapper/Params
+   exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" >> $GDefs(DirEER)/Mapper/Params
+   exec chmod 600 $GDefs(DirEER)/Mapper/Params
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::Params>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
 #
@@ -172,6 +199,20 @@ proc Mapper::DepotWare::ParamsSelect { } {
 
    Mapper::DepotWare::[lindex ${Data(Type)} 0]::Params .mapperdepot.params
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::Params>
+# Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Interface des parametres d'un depot de donnees.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Params { { Save 1 } } {
    global GDefs
@@ -217,7 +258,7 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
    pack .mapperdepotparams.cache -side top -fill x -padx 5 -pady 5
 
    frame .mapperdepotparams.cmd -relief sunken -bd 1
-      button .mapperdepotparams.cmd.ok -bd 1 -text [lindex $Lbl(Apply) $GDefs(Lang)] -command  { destroy .mapperdepotparams }
+      button .mapperdepotparams.cmd.ok -bd 1 -text [lindex $Lbl(Apply) $GDefs(Lang)] -command  { Mapper::DepotWare::ParamsSave; destroy .mapperdepotparams }
       button .mapperdepotparams.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command  { destroy .mapperdepotparams }
       pack .mapperdepotparams.cmd.ok .mapperdepotparams.cmd.cancel -side left  -fill x -expand True
    pack .mapperdepotparams.cmd -side top -fill x -padx 5 -pady 5
@@ -283,12 +324,7 @@ proc Mapper::DepotWare::Window { } {
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Add { Name Type } {
-   global GDefs
    variable Data
-
-   if { ![file exists $GDefs(DirEER)/Mapper] || ![file isdirectory $GDefs(DirEER)/Mapper] } {
-      file mkdir $GDefs(DirEER)/Mapper
-   }
 
    set req [Mapper::DepotWare::${Type}::Request]
 
@@ -301,8 +337,7 @@ proc Mapper::DepotWare::Add { Name Type } {
    }
 
    lappend Data(Depots) [list $Name $Type $req]
-   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(Depots) { $Data(Depots) }" > $GDefs(DirEER)/Mapper/Params
-   exec chmod 600 $GDefs(DirEER)/Mapper/Params
+   Mapper::DepotWare::ParamsSave
 
    set idx [TREE insert root end]
    TREE set $idx open False
@@ -349,9 +384,10 @@ proc Mapper::DepotWare::Del { Branch } {
       if { !$nodel } {
          set idx 0
          foreach depot $Data(Depots) {
-            if { [lindex $depot 0]==$name && [lindex $depot 1]==$type &&  [lindex $depot 2]==$path } {
+            if { [lindex $depot 0]==$name && [lindex $depot 1]==$type && [lindex $depot 2]==$path } {
                set Data(Depots) [lreplace $Data(Depots) $idx $idx]
-               exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" > $GDefs(DirEER)/Mapper/Params
+               Mapper::DepotWare::ParamsSave
+               break
             }
             incr idx
          }
