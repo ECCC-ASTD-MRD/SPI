@@ -65,7 +65,7 @@ proc Mapper::DepotWare::WMS::Params { Frame } {
       entry $Frame.path.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::WMS::Data(URL)
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
-   pack $Frame.path -fill x -expand True  -padx 5
+   pack $Frame.path -fill x -expand True
 }
 
 #-------------------------------------------------------------------------------

@@ -53,7 +53,7 @@ proc Mapper::DepotWare::WCS::Params { Frame } {
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
       pack $Frame.path.open -side left
-   pack $Frame.path -fill x -expand True  -padx 5
+   pack $Frame.path -fill x -expand True
 }
 
 #-------------------------------------------------------------------------------

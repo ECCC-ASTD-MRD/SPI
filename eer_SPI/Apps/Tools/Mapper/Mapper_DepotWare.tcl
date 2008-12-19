@@ -25,9 +25,11 @@ namespace eval Mapper::DepotWare {
    variable Data
    variable Lbl
    variable Msg
+   variable Bubble
 
-   set Data(CachePath) /tmp/$env(USER)/gdalwmscache                ;#Path du cache pour le WMS
-   set Data(CacheSize) 1024                                        ;#Dimension maximale du cache WMS
+   set Data(CachePath) /tmp/$env(USER)/gdalwmscache                ;#Path du cache
+   set Data(CacheSize) 0                                           ;#Dimension du cache
+   set Data(CacheMax)  1024                                        ;#Dimension maximale du cache
 
    ::struct::tree TREE
 
@@ -44,34 +46,104 @@ namespace eval Mapper::DepotWare {
    set Data(OGRExclude)  { .dbf .shx .txt }  ;# Fichier a exclure
 
 
-   set Lbl(Title)     { "Paramêtres du dépot de données" "Data repository parameters" }
-   set Lbl(Types)     {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" }
-#   set Lbl(Types)     {  "DIR - Data directory" "PGS - PostGIS database"  "WMS - Web Mapping Service" "WCS - Web Coverage Service" "WFS - Web Feature Service" }
-   set Lbl(Path)      { "Localisation" "Localisation" }
-   set Lbl(Type)      { "Type" "Type" }
-   set Lbl(Cache)     { "Cache" "Cache" }
-   set Lbl(Yes)       { "Oui" "Yes" }
-   set Lbl(No)        { "Non" "No" }
-   set Lbl(Del)       { "Supprimer" "Delete" }
-   set Lbl(Display)   { "Afficher" "Display" }
-   set Lbl(Index)     { "Afficher l'index" "Display index" }
-   set Lbl(Name)      { "Identification" "Identification" }
-   set Lbl(Params)    { "Paramêtres" "Parameters" }
-   set Lbl(Save)      { "Sauvegarder" "Save" }
-   set Lbl(Cancel)    { "Annuler" "Cancel" }
-   set Lbl(Desc)      { "Description" "Description" }
+   set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
+   set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
+   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" }
+#   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database"  "WMS - Web Mapping Service" "WCS - Web Coverage Service" "WFS - Web Feature Service" }
+   set Lbl(Path)        { "Localisation" "Localisation" }
+   set Lbl(Type)        { "Type" "Type" }
+   set Lbl(Cache)       { "Cache" "Cache" }
+   set Lbl(Max)         { "Maximum (Mo)" "Maximum (Mb)" }
+   set Lbl(Add)         { "Ajouter" "Add" }
+   set Lbl(Yes)         { "Oui" "Yes" }
+   set Lbl(No)          { "Non" "No" }
+   set Lbl(Del)         { "Supprimer" "Delete" }
+   set Lbl(Apply)       { "Appliquer" "Apply" }
+   set Lbl(Display)     { "Afficher" "Display" }
+   set Lbl(Index)       { "Afficher l'index" "Display index" }
+   set Lbl(Name)        { "Identification" "Identification" }
+   set Lbl(Params)      { "Paramêtres" "Parameters" }
+   set Lbl(Save)        { "Sauvegarder" "Save" }
+   set Lbl(Cancel)      { "Annuler" "Cancel" }
+   set Lbl(Desc)        { "Description" "Description" }
 
    set Msg(Search)     { "Recherche ..." "Searching ..." }
+   set Msg(Clean)      { "Nettoyage du cache ..." "Cleaning cache ..." }
+   set Msg(Clear)      { "Suppression du cache ..." "Deleting cache ..." }
    set Msg(Del)        { "Voulez-vous vraiment supprimer ce dépot de la liste ?" "Do you really want to remove this repository from the list ?" }
+
+   set Bubble(Clear)   { "Supprimer le cache" "Erase cache" }
+   set Bubble(Size)    { "Taille courante du cache" "Current cache size" }
 }
 
-proc Mapper::DepotWare::CacheClean { } {
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::CacheClear>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Liberer tous l'espace en cache.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::CacheClear { } {
+   global GDefs
    variable Data
+   variable Msg
+
+   set Mapper::Data(Job) [lindex $Msg(Clear) $GDefs(Lang)]
+   update idletasks
 
    file delete -force $Data(CachePath)
    file mkdir $Data(CachePath)
 
    set Data(CacheSize) 0
+   set Mapper::Data(Job) ""
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::CacheClean>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Liberer l'espace en cache depassant le maximum en ordre d'acces.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::CacheClean { } {
+   global GDefs
+   variable Data
+   variable Msg
+
+   set Mapper::Data(Job) [lindex $Msg(Clean) $GDefs(Lang)]
+   update idletasks
+
+   #----- If cache exists
+   if { ![catch { set Data(CacheSize) [lindex [exec du -sk $Data(CachePath)] 0] }] } {
+
+
+      #----- Get all files with associated size sorted by access date
+      set files [split [exec find $Data(CachePath) -type f -printf "%A@ %p %k\n"  | sort -r] \n]
+
+      #----- Loop on files and erase until cache is smaller than specified maximum
+      foreach file $files {
+         file delete -force [lindex $file 1]
+         if { [set Data(CacheSize) [expr $Data(CacheSize)-[lindex $file end]]]<$Data(CacheMax) } {
+            break
+         }
+      }
+      set Data(CacheSize) [lindex [exec du -h $Data(CachePath)] 0]
+   }
+   set Mapper::Data(Job) ""
 }
 
 #-------------------------------------------------------------------------------
@@ -105,6 +177,59 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
    global GDefs
    variable Data
    variable Lbl
+   variable Bubble
+
+   if { [winfo exists .mapperdepotparams] } {
+      raise .mapperdepotparams
+      return
+   }
+
+   toplevel         .mapperdepotparams -relief raised -bd 1
+   wm title         .mapperdepotparams [lindex $Lbl(TitleParams) $GDefs(Lang)]
+   wm resizable     .mapperdepotparams 1 1
+   wm protocol      .mapperdepotparams WM_DELETE_WINDOW { }
+   wm geom          .mapperdepotparams +[expr [winfo rootx .mapper]+50]+[expr [winfo rooty .mapper]+50]
+   wm transient     .mapperdepotparams .mapper
+
+   catch { set Data(CacheSize) [lindex [exec du -sh $Data(CachePath)] 0] }
+
+   labelframe .mapperdepotparams.cache -text [lindex $Lbl(Cache) $GDefs(Lang)]
+      frame .mapperdepotparams.cache.path
+         label .mapperdepotparams.cache.path.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
+         button .mapperdepotparams.cache.path.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
+            -command  { set Mapper::DepotWare::Data(CachePath) [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
+         entry .mapperdepotparams.cache.path.ent -width 30 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CachePath)
+         pack .mapperdepotparams.cache.path.lbl -side left
+         pack .mapperdepotparams.cache.path.ent -side left  -fill x -expand True
+         pack .mapperdepotparams.cache.path.open -side left
+      frame .mapperdepotparams.cache.sz
+         label .mapperdepotparams.cache.sz.lbl -anchor w -text [lindex $Lbl(Max) $GDefs(Lang)] -width 15
+         spinbox .mapperdepotparams.cache.sz.inc -bd 1 -bg $GDefs(ColorLight) -increment 10 -from 0 -to 4096 \
+            -textvariable Mapper::DepotWare::Data(CacheMax)
+         label .mapperdepotparams.cache.sz.cur -anchor w -textvariable Mapper::DepotWare::Data(CacheSize)
+         button .mapperdepotparams.cache.sz.clear -image DELETE -bd 0 -relief flat -overrelief raised -relief raised \
+            -command  { Mapper::DepotWare::CacheClear }
+         pack .mapperdepotparams.cache.sz.lbl -side left
+         pack .mapperdepotparams.cache.sz.inc -side left  -fill x -expand True
+         pack .mapperdepotparams.cache.sz.cur -side left -padx 5
+         pack .mapperdepotparams.cache.sz.clear -side left
+      pack .mapperdepotparams.cache.path .mapperdepotparams.cache.sz -side top -fill x
+   pack .mapperdepotparams.cache -side top -fill x -padx 5 -pady 5
+
+   frame .mapperdepotparams.cmd -relief sunken -bd 1
+      button .mapperdepotparams.cmd.ok -bd 1 -text [lindex $Lbl(Apply) $GDefs(Lang)] -command  { destroy .mapperdepotparams }
+      button .mapperdepotparams.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command  { destroy .mapperdepotparams }
+      pack .mapperdepotparams.cmd.ok .mapperdepotparams.cmd.cancel -side left  -fill x -expand True
+   pack .mapperdepotparams.cmd -side top -fill x -padx 5 -pady 5
+
+   Bubble::Create .mapperdepotparams.cache.sz.cur  [lindex $Bubble(Size) $GDefs(Lang)]
+   Bubble::Create .mapperdepotparams.cache.sz.clear  [lindex $Bubble(Clear) $GDefs(Lang)]
+}
+
+proc Mapper::DepotWare::Window { } {
+   global GDefs
+   variable Data
+   variable Lbl
 
    if { [winfo exists .mapperdepot] } {
       raise .mapperdepot
@@ -116,8 +241,7 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
    wm resizable     .mapperdepot 1 1
    wm protocol      .mapperdepot WM_DELETE_WINDOW { }
    wm geom          .mapperdepot +[expr [winfo rootx .mapper]+50]+[expr [winfo rooty .mapper]+50]
-
-   catch { set Data(CacheSize) [lindex [exec du -ms $Data(CachePath)] 0] }
+   wm transient     .mapperdepot .mapper
 
    labelframe .mapperdepot.type -text [lindex $Lbl(Desc) $GDefs(Lang)]
       frame .mapperdepot.type.name
@@ -133,33 +257,13 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
          pack .mapperdepot.type.type.lbl -side left
          pack .mapperdepot.type.type.sel -side left -fill x -expand True
       pack .mapperdepot.type.type -fill x -expand True
-
-   labelframe .mapperdepot.cache -text [lindex $Lbl(Cache) $GDefs(Lang)]
-      label .mapperdepot.cache.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
-      button .mapperdepot.cache.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
-         -command  { set Mapper::DepotWare::Data(CachePath) [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
-      entry .mapperdepot.cache.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CachePath)
-      label .mapperdepot.cache.lbld -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
-      entry .mapperdepot.cache.szent -width 6 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CacheSize)
-      button .mapperdepot.cache.clean -image DELETE -bd 0 -relief flat -overrelief raised -relief raised \
-         -command  { Mapper::DepotWare::CacheClean }
-      label .mapperdepot.cache.szlbl -anchor w -text Mb -width 2
-      pack .mapperdepot.cache.lbl .mapperdepot.cache.szent .mapperdepot.cache.szlbl -side left
-      pack .mapperdepot.cache.ent -side left  -fill x -expand True
-      pack .mapperdepot.cache.clean .mapperdepot.cache.open -side left
-   pack .mapperdepot.type .mapperdepot.cache -side top -fill x -padx 5
+   pack  .mapperdepot.type -side top -fill x -padx 5 -pady 5
 
    frame .mapperdepot.cmd -relief sunken -bd 1
-      button .mapperdepot.cmd.ok -bd 1 -text [lindex $Lbl(Save) $GDefs(Lang)] -command  { Mapper::DepotWare::Add $Mapper::DepotWare::Data(Name) [lindex $Mapper::DepotWare::Data(Type) 0]; destroy .mapperdepot }
+      button .mapperdepot.cmd.ok -bd 1 -text [lindex $Lbl(Add) $GDefs(Lang)] -command  { Mapper::DepotWare::Add $Mapper::DepotWare::Data(Name) [lindex $Mapper::DepotWare::Data(Type) 0]; destroy .mapperdepot }
       button .mapperdepot.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command  { destroy .mapperdepot }
       pack .mapperdepot.cmd.ok .mapperdepot.cmd.cancel -side left  -fill x -expand True
    pack .mapperdepot.cmd -side top -fill x -padx 5 -pady 5
-
-   if { $Save } {
-      .mapperdepot.cmd.ok configure -state normal
-   } else {
-      .mapperdepot.cmd.ok configure -state disabled
-   }
 }
 
 #-------------------------------------------------------------------------------
@@ -385,7 +489,7 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
       .depotwaremenu add command -label [lindex $Lbl(Display) $GDefs(Lang)] -command ""
       .depotwaremenu add cascade -label [lindex $Lbl(Index) $GDefs(Lang)] -menu .depotwaremenu.idx
       .depotwaremenu add separator
-      .depotwaremenu add command -label [lindex $Lbl(Params) $GDefs(Lang)] -command { Mapper::DepotWare::Params 0 }
+#      .depotwaremenu add command -label [lindex $Lbl(Params) $GDefs(Lang)] -command { Mapper::DepotWare::Window 0 }
       .depotwaremenu add command -label [lindex $Lbl(Del) $GDefs(Lang)] -command { Mapper::DepotWare::Del $Mapper::DepotWare::Data(Select) }
 
        menu .depotwaremenu.idx -type normal
