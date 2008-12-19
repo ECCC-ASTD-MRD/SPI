@@ -89,6 +89,8 @@ proc Mapper::Close { } {
    }
 
    Viewport::FollowerRemove Mapper
+   Mapper::DepotWare::CacheClean
+
    destroy .mapper
 
    if { !$SPI::Param(Window) } { SPI::Quit }

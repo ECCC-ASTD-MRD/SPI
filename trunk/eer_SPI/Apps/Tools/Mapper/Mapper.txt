@@ -185,7 +185,8 @@ namespace eval Mapper { } {
    set Bubble(RefFit)        { "Méthode de calcul de la transformation" "Tramsform fitting method" }
 
    set Bubble(DepotAdd)      { "Ajouter un dépot de données à la liste des dépots" "Add data repository to known repository list"}
-   set Bubble(DepotDel)      { "Supprimenr le dépot de données de la liste" "Remove repository from list"}
+   set Bubble(DepotDel)      { "Supprimer le dépot de données de la liste" "Remove repository from list"}
    set Bubble(DepotReset)    { "Annuler la region d'intérêt" "Cancel area of interest" }
    set Bubble(DepotSelect)   { "Sélection d'une région d'intérêt" "Select an area of interest" }
+   set Bubble(DepotParams)   { "Paramètres du dépot de données" "Data repository parameters" }
 }
