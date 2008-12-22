@@ -42,10 +42,6 @@ namespace eval Mapper::DepotWare {
    set Data(Lon0)   -180.0
    set Data(Lon1)   -180.0
 
-   set Data(GDALExclude) { .hdr .jgw .txt .met }  ;# Fichier a exclure
-   set Data(OGRExclude)  { .dbf .shx .txt }  ;# Fichier a exclure
-
-
    set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
    set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
    set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" }
