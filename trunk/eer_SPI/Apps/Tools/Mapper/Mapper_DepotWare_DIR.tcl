@@ -22,6 +22,9 @@ namespace eval Mapper::DepotWare::DIR {
    set Lbl(Path) { "Répertoire" "Directory" }
 
    set Data(Path) ""
+
+   set Data(GDALExclude) { .hdr .jgw .txt .met }  ;# Fichier a exclure
+   set Data(OGRExclude)  { .dbf .shx .txt }  ;# Fichier a exclure
 }
 
 #-------------------------------------------------------------------------------
@@ -47,7 +50,7 @@ proc Mapper::DepotWare::DIR::Params { Frame } {
    frame $Frame.path
       label $Frame.path.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
       button $Frame.path.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
-         -command  { set Mapper::DepotWare::Data(Path) [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::Data(GDALFormats) $Mapper::Data(OGRFormats)]] }
+         -command  { set Mapper::DepotWare::DIR::Data(Path) [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::Data(GDALFormats) $Mapper::Data(OGRFormats)]] }
       entry $Frame.path.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::DIR::Data(Path)
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
@@ -82,7 +85,7 @@ proc  Mapper::DepotWare::DIR::Select { Tree Branch Path URL } {
          $Tree set $branch name ""
          $Tree set $branch path $file
          $Tree set $branch type DIR
-      } elseif { [Mapper::DepotWare::DIR::AddGDAL $branch $file] || [Mapper::DepotWare::DIR::AddOGR $branch $file] } {
+      } elseif { [Mapper::DepotWare::DIR::AddGDAL $Tree $branch $file] || [Mapper::DepotWare::DIR::AddOGR $Tree $branch $file] } {
       } else {
          $Tree delete $branch
       }
@@ -128,7 +131,7 @@ proc Mapper::DepotWare::DIR::Request { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::DIR::AddGDAL { Branch File } {
+proc Mapper::DepotWare::DIR::AddGDAL { Tree Branch File } {
    variable Data
 
    if { [lsearch -exact $Data(GDALExclude) [string tolower [file extension $File]]]!=-1 } {
@@ -142,16 +145,16 @@ proc Mapper::DepotWare::DIR::AddGDAL { Branch File } {
          set width  [gdalfile width  GDALPARSE]
          set height [gdalfile height GDALPARSE]
 
-         TREE set $Branch open False
-         TREE set $Branch name ""
-         TREE set $Branch path $File
-         TREE set $Branch type GDAL
-         TREE set $Branch width  $width
-         TREE set $Branch height $height
-         TREE set $Branch 00 [gdalfile project GDALPARSE 1 1]
-         TREE set $Branch 01 [gdalfile project GDALPARSE 1 $height]
-         TREE set $Branch 10 [gdalfile project GDALPARSE $width 1]
-         TREE set $Branch 11 [gdalfile project GDALPARSE $width $height]
+         $Tree set $Branch open False
+         $Tree set $Branch name ""
+         $Tree set $Branch path $File
+         $Tree set $Branch type GDAL
+         $Tree set $Branch width  $width
+         $Tree set $Branch height $height
+         $Tree set $Branch 00 [gdalfile project GDALPARSE 1 1]
+         $Tree set $Branch 01 [gdalfile project GDALPARSE 1 $height]
+         $Tree set $Branch 10 [gdalfile project GDALPARSE $width 1]
+         $Tree set $Branch 11 [gdalfile project GDALPARSE $width $height]
 
          gdalfile close GDALPARSE
          return True
@@ -177,7 +180,7 @@ proc Mapper::DepotWare::DIR::AddGDAL { Branch File } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::DIR::AddOGR { Branch File } {
+proc Mapper::DepotWare::DIR::AddOGR { Tree Branch File } {
    variable Data
 
    if { [lsearch -exact $Data(OGRExclude) [string tolower [file extension $File]]]!=-1 } {
@@ -188,16 +191,16 @@ proc Mapper::DepotWare::DIR::AddOGR { Branch File } {
 
    if { !$bad } {
       if { [llength $layers] } {
-         TREE set $Branch open False
-         TREE set $Branch name ""
-         TREE set $Branch path $File
-         TREE set $Branch type OGR
-         TREE set $Branch width  0
-         TREE set $Branch height 0
-         TREE set $Branch 00 [list -90 -180.0]
-         TREE set $Branch 01 [list 90 -180.0]
-         TREE set $Branch 10 [list 90 180.0]
-         TREE set $Branch 11 [list -90 180.0]
+         $Tree set $Branch open False
+         $Tree set $Branch name ""
+         $Tree set $Branch path $File
+         $Tree set $Branch type OGR
+         $Tree set $Branch width  0
+         $Tree set $Branch height 0
+         $Tree set $Branch 00 [list -90 -180.0]
+         $Tree set $Branch 01 [list 90 -180.0]
+         $Tree set $Branch 10 [list 90 180.0]
+         $Tree set $Branch 11 [list -90 180.0]
 
          ogrfile close OGRPARSE
          return True
