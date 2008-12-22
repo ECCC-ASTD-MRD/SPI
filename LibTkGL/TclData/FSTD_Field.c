@@ -82,7 +82,8 @@ void FSTD_FieldSet(TData *Data){
    head->NPAS=0;
    head->NBITS=16;
    head->DATYP=1;
-   head->IP1=head->IP2=head->IP3=0;
+   head->IP1=-1;
+   head->IP2=head->IP3=0;
    head->TYPVAR[0]='\0';
    head->NOMVAR[0]='\0';
    head->ETIKET[0]='\0';
@@ -2356,7 +2357,10 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       idx=k*FSIZE2D(Field->Def);
 
 //      ip1=Field->Def->NK==1?((FSTD_Head*)Field->Head)->IP1:FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
-      ip1=FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
+      /*If IP1 is set, use it otherwise, convert it from levels array*/
+      if ((ip1=((FSTD_Head*)Field->Head)->IP1)==-1 || Field->Def->NK>1) {
+         ip1=FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
+      }
 
       /*Inscription de l'enregistrement*/
       Def_Pointer(Field->Def,0,idx,p);
