@@ -122,20 +122,24 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    rx=ry=1;
    nx=GDALGetRasterBandXSize(hband);
    ny=GDALGetRasterBandYSize(hband);
+
+   /*Add border to dimensions to read*/
    X0-=BD;X1+=BD;
    Y0-=BD;Y1+=BD;
 
+   /*Check for limit overflow*/
    X0=X0<0?0:X0; X1=X1>=nx?nx-1:X1;
    Y0=Y0<0?0:Y0; Y1=Y1>=ny?ny-1:Y1;
 
-   if ((nx=X1-X0)<=0) {
+   /*If size is smaller than 1 thna read the whole thing*/
+   if ((nx=X1-X0+1)<=1) {
       nx=GDALGetRasterBandXSize(hband);
       X0=0;
       X1=nx-1;
       BD=0;
       rx=0;
    }
-   if ((ny=Y1-Y0)<=0) {
+   if ((ny=Y1-Y0+1)<=1) {
       ny=GDALGetRasterBandYSize(hband);
       Y0=0;
       Y1=ny-1;
@@ -182,7 +186,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
       printf("(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
       if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1))) {
-         printf("(WARNING) GDAL_BandRead: (Unable to fit RPC\n");
+         printf("(WARNING) GDAL_BandRead: Unable to fit RPC\n");
       }
    } else {
       band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,tra,inv,NULL);
