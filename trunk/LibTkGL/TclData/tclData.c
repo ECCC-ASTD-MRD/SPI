@@ -1972,6 +1972,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_GetDoubleFromObj(Interp,obj,&dv);
                   levels[index]=dv;
                }
+               ((FSTD_Head*)Field->Head)->IP1=-1;
                Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->LevelType:LVL_UNDEF),levels);
             }
             break;
