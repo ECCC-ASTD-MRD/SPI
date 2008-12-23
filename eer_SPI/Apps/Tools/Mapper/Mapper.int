@@ -1139,7 +1139,7 @@ proc Mapper::ParamsOGR { Object Tab } {
                spinbox $Data(Frame2).inter.order.prec -textvariable Mapper::Data(Mantisse) -width 2 -from 0 -to 30 -wrap 1 -bd 1 \
                   -command "" -bg $GDefs(ColorLight)
                button $Data(Frame2).inter.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
-                  -command "FontBox::Create $Data(Frame2).shape.order.font \"Mapper::ParamsOGRSet \$Mapper::Data(Object)\" OGRFONT"
+                  -command "FontBox::Create $Data(Frame2).inter.order.font \"Mapper::ParamsOGRSet \$Mapper::Data(Object)\" OGRFONT"
                pack $Data(Frame2).inter.order.lbl -side left -padx 5
                pack $Data(Frame2).inter.order.font $Data(Frame2).inter.order.prec -side left
                pack $Data(Frame2).inter.order.val -side left -fill x -expand True -padx 5
