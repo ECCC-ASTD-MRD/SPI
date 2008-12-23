@@ -396,19 +396,14 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
    /*Projection des coins de la texture*/
    Proj->Type->Project(Proj->Params,Tile->Box.Co,Tile->Box.Vr,-4);
-
-   /*Test for overflow on raster limits*/
-   Tile->Rx=x1<=Band->Ref->X1?r:Band->Ref->X1-Tile->Dx;
-   Tile->Ry=y1<=Band->Ref->Y1?r:Band->Ref->Y1-Tile->Dy;
-   Tile->Nx=(float)(x1-x0)/Tile->Res;
-   Tile->Ny=(float)(y1-y0)/Tile->Res;
    Tile->Box.Nb=4;
 
-   Tile->Rx=(Tile->Dx+r)<=Band->Ref->X1?r:Band->Ref->X1-Tile->Dx;
-   Tile->Ry=(Tile->Dy+r)<=Band->Ref->Y1?r:Band->Ref->Y1-Tile->Dy;
-
+   /*Test for overflow on raster limits*/
+   Tile->Rx=(Tile->Dx+r)<=Band->Ref->X1?r:Band->Ref->X1-Tile->Dx+1;
+   Tile->Ry=(Tile->Dy+r)<=Band->Ref->Y1?r:Band->Ref->Y1-Tile->Dy+1;
    Tile->Nx=(float)Tile->Rx/r*Band->Spec->TexSize;
    Tile->Ny=(float)Tile->Ry/r*Band->Spec->TexSize;
+
    return(1);
 }
 
@@ -433,7 +428,7 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
    double       nlx,nly,dx,dy,x0,y0,x,y,dr;
-   int          j=0,handle=0,r,tlx,tly,t=2,rh,rw,ix,iy,xy;
+   int          j=0,handle=0,tlx,tly,t=2,ix,iy,xy;
    short        z;
    GDAL_Band   *tband=NULL;
    TGeoTexTile *ttile=NULL;
@@ -451,11 +446,6 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
          handle=gdb_mapopen(GDB_RES,GDB_MAP_DEM,&t);
       }
    }
-
-   /*Test for overflow*/
-   r=Band->Spec->TexSize*Tile->Res;
-   rw=((Tile->Dx+r)<=Band->Ref->X1?r:Band->Ref->X1-Tile->Dx);
-   rh=((Tile->Dy+r)<=Band->Ref->Y1?r:Band->Ref->Y1-Tile->Dy);
 
    /*Check tile sampling resolution*/
    if (!Band->Spec->Topo) {
@@ -477,8 +467,8 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
       fprintf(stderr,"(ERROR) GeoTex_Sample: Unable to allocate sub tile normal coordinates matrix");
    }
 
-   nlx=(double)rw/(Tile->Tlx-1);
-   nly=(double)rh/(Tile->Tly-1);
+   nlx=(double)Tile->Rx/(Tile->Tlx-1);
+   nly=(double)Tile->Ry/(Tile->Tly-1);
    dr=1.0/Tile->Res;
 
    for(tlx=0;tlx<Tile->Tlx;tlx++) {
@@ -1047,7 +1037,7 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
 
    /*Parse the tree to find best resolution tile*/
    tile=next=Tex->Tile;
-   if (!tile->Flag&GEOTEX_DATA || (*X<0 || *X>Tex->Nx || *Y<0 || *Y>Tex->Ny)) {
+   if (!tile->Flag&GEOTEX_DATA || (*X<0 || *X>=Tex->Nx || *Y<0 || *Y>=Tex->Ny)) {
       next=tile=best=NULL;
    }
 
@@ -1064,19 +1054,19 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
 
       /*Check for the next best subtile*/
       tile=next->Sub[0];
-      if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
+      if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
          next=tile;
       } else {
          tile=next->Sub[1];
-         if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
+         if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
             next=tile;
          } else {
             tile=next->Sub[2];
-            if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
+            if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
                next=tile;
             } else {
                tile=next->Sub[3];
-               if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
+               if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
                   next=tile;
                } else {
                   break;

@@ -1829,7 +1829,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
             if (lat==-999.0) {
                 Tcl_SetObjResult(Interp,Tcl_NewStringObj("-",-1));
-                return TCL_OK;
+                return(TCL_OK);
             }
             if (band->Ref->UnProject(band->Ref,&x0,&y0,lat,lon,0,1)) {
                DEFCLAMP(band->Def,x0,y0);
@@ -1852,7 +1852,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("-",-1));
-               return TCL_OK;
+               return(TCL_OK);
             }
             break;
 
