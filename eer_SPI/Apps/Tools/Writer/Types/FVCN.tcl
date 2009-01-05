@@ -111,17 +111,17 @@ proc Writer::FVCN::New { Pad Mode } {
          set Data(Area$Pad)  ""
          set Data(InfoSel5$Pad) 1
          set Data(Obs$Pad) $Data(EST)
+         Writer::FVCN::UpdateTime $Pad $Data(Delay) 1
          Writer::FVCN::SetRem  $Pad $Pad.remarks 3 NONE
          Writer::FVCN::SetNext $Pad $Pad.next 1 FVCN
          Writer::FVCN::SetInfo $Pad $Pad.info
          pack forget $Pad.head.test
-         Writer::FVCN::UpdateTime $Pad $Data(Delay) 1
      }
       default {
          $Pad.remarks insert 0.0 NIL
          $Pad.details insert 0.0 UNKNOWN
-         Writer::FVCN::GraphInit $Pad
          Writer::FVCN::UpdateTime $Pad $Data(Delay)
+         Writer::FVCN::GraphInit $Pad
       }
    }
 
