@@ -98,7 +98,6 @@ proc Writer::FVCN::New { Pad Mode } {
    set Data(Mode$Pad) $Mode
 
    Writer::FVCN::Init $Pad
-   Writer::FVCN::UpdateTime $Pad $Data(Delay)
 
    switch $Mode {
       "RET" {
@@ -106,6 +105,7 @@ proc Writer::FVCN::New { Pad Mode } {
          $Pad.remarks insert 0.0 $Data(Ret)
          set Data(HRemarks$Pad) 3
          pack forget $Pad.head.test
+         Writer::FVCN::UpdateTime $Pad $Data(Delay)
       }
       "EXP" {
          set Data(Area$Pad)  ""
@@ -115,11 +115,13 @@ proc Writer::FVCN::New { Pad Mode } {
          Writer::FVCN::SetNext $Pad $Pad.next 1 FVCN
          Writer::FVCN::SetInfo $Pad $Pad.info
          pack forget $Pad.head.test
+         Writer::FVCN::UpdateTime $Pad $Data(Delay) 1
      }
       default {
          $Pad.remarks insert 0.0 NIL
          $Pad.details insert 0.0 UNKNOWN
          Writer::FVCN::GraphInit $Pad
+         Writer::FVCN::UpdateTime $Pad $Data(Delay)
       }
    }
 
@@ -1633,13 +1635,14 @@ proc Writer::FVCN::Test { Pad } {
 #
 # Parametres :
 #   <Pad>    : Identificateur du Pad
-#   <MS>     : Milisecondes de refresh
+#   <Delay>  : Refresh time in milliseconds
+#   <Hours>  : Hours to next advisory
 #
 # Remarques :
 #
 #----------------------------------------------------------------------------
 
-proc Writer::FVCN::UpdateTime { Pad MS } {
+proc Writer::FVCN::UpdateTime { Pad Delay { Hours 6 } } {
    variable Data
 
    if { $Data(Handle$Pad) != "" } {
@@ -1655,10 +1658,12 @@ proc Writer::FVCN::UpdateTime { Pad MS } {
       #       puisque l'usager pourra changer la valeur du
       #       statement actuel ( "NO FURTHER" ou "NEXT ADVISORY" ).
 
-      set next "[expr $Data(Seconds) + 6 * 3600]"
+      set next "[expr $Data(Seconds) + $Hours * 3600]"
       set Data(Next$Pad)  "[string toupper [clock format $next -format "%Y%m%d/%H%MZ" -gmt True]]"
 
-      set Data(Handle$Pad) [after $MS "Writer::FVCN::UpdateTime $Pad $MS"]
+      if { $Delay } {
+         set Data(Handle$Pad) [after $Delay "Writer::FVCN::UpdateTime $Pad $Delay $Hours"]
+      }
    }
 }
 
