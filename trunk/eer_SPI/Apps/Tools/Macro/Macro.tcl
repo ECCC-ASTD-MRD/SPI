@@ -113,7 +113,7 @@ proc Macro::Error { Error } {
    set stackproc [lindex $stacklist 0]
 
    if { $SPI::Param(Batch) } {
-      puts stderr "${stackproc}: [lindex $Error $GDefs(Lang)]"
+      puts stderr "(ERROR) ${stackproc}: [lindex $Error $GDefs(Lang)]"
    } else {
       Dialog::CreateError .macro "${stackproc}\n\n[lindex $Error $GDefs(Lang)]" $GDefs(Lang)
    }
@@ -275,7 +275,7 @@ proc Macro::Check { Macro } {
       if { [winfo exists .macro] } {
          Dialog::CreateDefault .macro 400 "Macro::[lindex $Lbl(Error) $GDefs(Lang)]  (Macro::$Macro)" [lindex $Error(Execute) $GDefs(Lang)] error 0 [lindex $Lbl(Ok) $GDefs(Lang)]
       } else {
-         puts stderr "Macro::[lindex $Lbl(Error) $GDefs(Lang)]  (Macro::$Macro) : [lindex $Error(Execute) $GDefs(Lang)]"
+         puts stderr "(ERROR) Macro::$Macro : [lindex $Error(Execute) $GDefs(Lang)]"
       }
       return False
    }
@@ -284,7 +284,7 @@ proc Macro::Check { Macro } {
       if { [winfo exists .macro] } {
          Dialog::CreateDefault .macro 400 "Macro::[lindex $Lbl(Error) $GDefs(Lang)]  (Macro::$Macro)" [lindex $Error(Info) $GDefs(Lang)] error 0 [lindex $Lbl(Ok) $GDefs(Lang)]
       } else {
-         puts stderr "Macro::[lindex $Lbl(Error) $GDefs(Lang)]  (Macro::$Macro) : [lindex $Error(Info) $GDefs(Lang)]"
+         puts stderr "(ERROR) Macro::$Macro : [lindex $Error(Info) $GDefs(Lang)]"
       }
       return False
    }
