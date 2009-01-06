@@ -23,47 +23,6 @@ set SPI::Param(PaneSide)       right        ;#Position des sidepane
 set SPI::Param(Exp)            False        ;#Affichage des experiences
 set SPI::Param(Layout)         SPI          ;#Layout courant
 
-#----- Parametres des outils
-
-set Console::Param(Geom)   { 200x400+[winfo rootx .]+[winfo rooty .] }
-set Console::Param(Dock)   True
-
-set Mapper::Param(Geom)    { 300x600+[winfo rootx .]+[winfo rooty .] }
-set Mapper::Param(Dock)    True
-set Mapper::Param(Paths)   { }
-
-set Macro::Param(Geom)     { 200x400+[winfo rootx .]+[winfo rooty .] }
-set Macro::Param(Dock)     True
-set Macro::Param(Paths)    { }
-
-set Drawing::Param(Geom)   { 200x600+[winfo rootx .]+[winfo rooty .] }
-set Drawing::Param(Dock)   True
-
-set Locator::Param(Geom)   { +[winfo rootx .]+[winfo rooty .] }
-
-set HFManager::Param(Geom) { 700x200+[winfo rootx .]+[winfo rooty .] }
-
-set FieldBox::Param(Geom)  { 415x200+[winfo rootx .]+[winfo rooty .] }
-set TrajBox::Param(Geom)   { 435x200+[winfo rootx .]+[winfo rooty .] }
-set ObsBox::Param(Geom)    { 315x200+[winfo rootx .]+[winfo rooty .] }
-set FieldCalc::Param(Geom) { 550x190+[winfo rootx .]+[winfo rooty .] }
-set Animator::Param(Geom)  { 275x275+[winfo rootx .]+[winfo rooty .] }
-
-set Exp::Param(Paths)      { }
-
-set NowCaster::Param(Geom) { 200x400+[winfo rootx .]+[winfo rooty .] }
-set NowCaster::Param(Dock) True
-set NowCaster::Radar::Param(Paths)    { }
-set NowCaster::Obs::Param(Table)      /home/binops/afsi/sio/datafiles/constants/table_b_bufr_e
-set NowCaster::Obs::Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/ozone /data/ade/dbase/surface/pm25 /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
-set NowCaster::Obs::Param(PathsUpper) { /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/airep }
-
-#----- Printing parameters
-
-set PrintBox::Print(Path)     $env(HOME)                            ;#Path par defaut du fichier d'impression
-set PrintBox::Print(Filename) output                                ;#Nom par defaut du fichier d'impression
-set PrintBox::Print(FileType) {Portable Network Graphics {*.png}}   ;#Format par defaut du fichier d'impression
-
 #----- Parametres de la projection
 
 namespace eval Viewport { }
@@ -110,6 +69,25 @@ set Viewport::Resources(Coord)     #000000   ;#Latlon
 set Viewport::Resources(FillCoast) #C2D74B   ;#Cotes (Polygones)
 set Viewport::Resources(FillLake)  #33C2FF   ;#Lacs (Polygones)
 
+#----- Parametres des Legende
+
+namespace eval DataBar { }
+
+set DataBar::Param(Title) "Title"            ;#Titre par defaut
+set DataBar::Param(Full)  1                  ;#Pleine largeur
+
+#----- Parametres des Colorbar
+
+namespace eval ColorBar { }
+
+set ColorBar::Param(Full)   0                ;#Pleine hauteur
+set ColorBar::Param(BG)     white            ;#Couleur du fond
+set ColorBar::Param(Alpha)  100              ;#Transparence
+set ColorBar::Param(Split)  0                ;#Separation des intervals
+set ColorBar::Param(Border) 0                ;#Epaisseur de la bordure des intervalles
+set ColorBar::Param(Width)  15               ;#Largeur de la barre de couleur
+set ColorBar::Param(Side)   right            ;#Position des chiffres
+
 #----- Parametres des champs
 
 set FSTD::Param(Interp)            LINEAR         ;#Type d'interpolation
@@ -152,3 +130,44 @@ set Graph::Font(Select)    [font create -family courier -size -8   -weight bold]
 set Graph::Font(Axis)      [font create -family courier -size -10  -weight bold]
 set Graph::Font(Graph)     [font create -family courier -size -14  -weight bold]
 set Graph::Font(Angle)     0
+
+#----- Parametres des outils
+
+set Console::Param(Geom)   { 200x400+[winfo rootx .]+[winfo rooty .] }
+set Console::Param(Dock)   True
+
+set Mapper::Param(Geom)    { 300x600+[winfo rootx .]+[winfo rooty .] }
+set Mapper::Param(Dock)    True
+set Mapper::Param(Paths)   { }
+
+set Macro::Param(Geom)     { 200x400+[winfo rootx .]+[winfo rooty .] }
+set Macro::Param(Dock)     True
+set Macro::Param(Paths)    { }
+
+set Drawing::Param(Geom)   { 200x600+[winfo rootx .]+[winfo rooty .] }
+set Drawing::Param(Dock)   True
+
+set Locator::Param(Geom)   { +[winfo rootx .]+[winfo rooty .] }
+
+set HFManager::Param(Geom) { 700x200+[winfo rootx .]+[winfo rooty .] }
+
+set FieldBox::Param(Geom)  { 415x200+[winfo rootx .]+[winfo rooty .] }
+set TrajBox::Param(Geom)   { 435x200+[winfo rootx .]+[winfo rooty .] }
+set ObsBox::Param(Geom)    { 315x200+[winfo rootx .]+[winfo rooty .] }
+set FieldCalc::Param(Geom) { 550x190+[winfo rootx .]+[winfo rooty .] }
+set Animator::Param(Geom)  { 275x275+[winfo rootx .]+[winfo rooty .] }
+
+set Exp::Param(Paths)      { }
+
+set NowCaster::Param(Geom) { 200x400+[winfo rootx .]+[winfo rooty .] }
+set NowCaster::Param(Dock) True
+set NowCaster::Radar::Param(Paths)    { }
+set NowCaster::Obs::Param(Table)      /home/binops/afsi/sio/datafiles/constants/table_b_bufr_e
+set NowCaster::Obs::Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/ozone /data/ade/dbase/surface/pm25 /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
+set NowCaster::Obs::Param(PathsUpper) { /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/airep }
+
+#----- Printing parameters
+
+set PrintBox::Print(Path)     $env(HOME)                            ;#Path par defaut du fichier d'impression
+set PrintBox::Print(Filename) output                                ;#Nom par defaut du fichier d'impression
+set PrintBox::Print(FileType) {Portable Network Graphics {*.png}}   ;#Format par defaut du fichier d'impression
