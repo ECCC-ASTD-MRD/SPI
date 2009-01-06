@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIR=${0%wish}
-. ${DIR}/version
+export SPI_PATH=${0%wish}
+. ${SPI_PATH}/version
 
 exec ${SHARED}/TclTk/bin/wish${TCL_VERSION} $@
