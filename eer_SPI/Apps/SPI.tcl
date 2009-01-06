@@ -778,7 +778,6 @@ proc SPI::LayoutSaveItems { Frame File } {
 
    set SPI::Data(ShowColorBar$Frame)   [ColorBar::Active $Frame]
    if { $SPI::Data(ShowColorBar$Frame) } {
-      puts $File ""
       ColorBar::Write $Frame $File
       puts $File "   set SPI::Data(ShowColorBar\$Frame) 1"
    }
@@ -787,7 +786,6 @@ proc SPI::LayoutSaveItems { Frame File } {
 
    set SPI::Data(ShowDataBar$Frame)   [DataBar::Active $Frame]
    if { $SPI::Data(ShowDataBar$Frame) } {
-      puts $File ""
       DataBar::Write $Frame $File
       puts $File "   set SPI::Data(ShowDataBar\$Frame) 1"
    }
@@ -2505,7 +2503,9 @@ set env(LD_PRELOAD) ""
 #----- Execution du script si necessaire
 
 foreach script $SPI::Param(Script) {
+   puts "(INFO) SPI: Starting execution of script $script"
    SPI::Splash "Executing $script"
    SPI::Execute $script
+   puts "(INFO) SPI: Done executing script $script"
 }
 SPI::Splash

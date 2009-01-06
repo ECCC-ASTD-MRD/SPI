@@ -13,7 +13,8 @@
 #
 # Fonctions:
 #    ColorBar::Active     { Frame }
-#    ColorBar::Create     { Frame VP No Id Field }
+#    ColorBar::Create     { Frame VP X0 Y0 Width Height { Fields { } } }
+#    ColorBar::Set        { Frame VP No Id Field }
 #    ColorBar::Destroy    { Frame VP No }
 #    ColorBar::DestroyAll { Frame { VP "" }}
 #    ColorBar::Full       { Canvas Tag VP { Pix 0 } }
@@ -37,6 +38,7 @@ proc IdColorBar { show } {
 
 namespace eval ColorBar {
    variable Data
+   variable Param
    variable Lbl
 
    set Lbl(BarFrame)  { "Cadre" "Frame" }
@@ -48,6 +50,14 @@ namespace eval ColorBar {
    set Lbl(BarWide)   { "Barre large" "Wide bar" }
    set Lbl(BarLeft)   { "Barre à gauche" "Bar to the left" }
    set Lbl(BarRight)  { "Barre à droite" "Bar to the right" }
+
+   set Param(Full)   0
+   set Param(BG)     white
+   set Param(Alpha)  100
+   set Param(Split)  0
+   set Param(Border) 0
+   set Param(Width)  15
+   set Param(Side)   right
 }
 
 #------------------------------------------------------------------------------
@@ -97,9 +107,108 @@ proc ColorBar::Id { VP Id } {
 #
 #-------------------------------------------------------------------------------
 
-proc ColorBar::Create { Frame VP No Id Field } {
+proc ColorBar::Create { Frame VP X0 Y0 Width Height { Fields {} } } {
    global GDefs
    variable Data
+   variable Param
+   variable Lbl
+
+   set Data(Active$Frame) 1
+   set No -1
+   set Id -1
+
+   set tag [ColorBar::Id $VP $Id]:$VP$No
+   set x  $X0
+   set y  $Y0
+   set w  $Width
+   set h  $Height
+   set Data($VP$No) [list $X0 $Y0 $Width $Height $tag]
+
+   if { ![llength $Fields] } {
+      set Fields [lindex [$Frame.page.canvas itemconfigure $VP -data] 4]
+   }
+
+   if { ![info exists Data(List$Frame)] } {
+      set Data(List$Frame) {}
+      set idx -1
+   } else {
+      set idx [lsearch -exact $Data(List$Frame) $tag]
+   }
+
+   if { $idx!=-1 } {
+      $Frame.page.canvas itemconfigure $tag -x $x -y $y -width $w -height $h -data $Fields
+   } else {
+
+      if { ![info exists ColorBar::Data(Split$tag)] } {
+         set Data(Full$tag)   0
+         set Data(BG$tag)     $Param(BG)
+         set Data(Alpha$tag)  $Param(Alpha)
+         set Data(Split$tag)  $Param(Split)
+         set Data(Border$tag) $Param(Border)
+         set Data(Width$tag)  $Param(Width)
+         set Data(Side$tag)   $Param(Side)
+      }
+
+      $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
+         -data $Fields -tags "$Page::Data(Tag) CB$VP $tag" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
+         -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag)
+
+      menubutton $Frame.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
+         -menu $Frame.bo$tag.menu
+      menu $Frame.bo$tag.menu -bg $GDefs(ColorFrame)
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFrame) $GDefs(Lang)] -variable ColorBar::Data(BG$tag) -onvalue white -offvalue "" \
+            -command "$Frame.page.canvas itemconfigure $tag -bg \$ColorBar::Data(BG$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(Alpha$tag) -onvalue 50 -offvalue 100 \
+            -command "$Frame.page.canvas itemconfigure $tag -transparency \$ColorBar::Data(Alpha$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add separator
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarSplit) $GDefs(Lang)] -variable ColorBar::Data(Split$tag) -onvalue 5 -offvalue 0 \
+            -command "$Frame.page.canvas itemconfigure $tag -barsplit \$ColorBar::Data(Split$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarBorder) $GDefs(Lang)] -variable ColorBar::Data(Border$tag) -onvalue 1 -offvalue 0 \
+            -command "$Frame.page.canvas itemconfigure $tag -barborder \$ColorBar::Data(Border$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add separator
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarThin) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 15 \
+            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarMedium) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 30 \
+            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarWide) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 50 \
+            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add separator
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarLeft) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value left \
+            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarRight) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value right \
+            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
+      $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h-1] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
+
+      Shape::BindMove  $Frame.page.canvas $tag ColorBar::Move $Frame.page.canvas $tag
+      Shape::BindScale $Frame.page.canvas $tag [expr $x+$w] [expr $y+$h] "ColorBar::Scale $Frame.page.canvas $tag"
+      Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h-1] ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+
+      lappend Data(List$Frame) $tag
+   }
+   return $tag
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <ColorBar::Set>
+# Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer un widget de selection de palette
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#   <Field>  : Champs associe
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc ColorBar::Set { Frame VP No Id Field } {
+   global GDefs
+   variable Data
+   variable Param
    variable Lbl
 
    if { ![info exists Data(Active$Frame)] } {
@@ -138,49 +247,49 @@ proc ColorBar::Create { Frame VP No Id Field } {
          set Data($VP$No) [list $x $y $w $h $tag]
       }
 
-      if { ![info exists ColorBar::Data(BarSplit$tag)] } {
-         set Data(BarFull$tag)   1
-         set Data(BarBG$tag)     white
-         set Data(BarAlpha$tag)  100
-         set Data(BarSplit$tag)  0
-         set Data(BarBorder$tag) 0
-         set Data(BarWidth$tag)  15
-         set Data(BarSide$tag)   right
+      if { ![info exists ColorBar::Data(Split$tag)] } {
+         set Data(Full$tag)   $Param(Full)
+         set Data(BG$tag)     $Param(BG)
+         set Data(Alpha$tag)  $Param(Alpha)
+         set Data(Split$tag)  $Param(Split)
+         set Data(Border$tag) $Param(Border)
+         set Data(Width$tag)  $Param(Width)
+         set Data(Side$tag)   $Param(Side)
       }
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
-         -data $Field -tags "$Page::Data(Tag) CB$VP $tag" -anchor nw -barsplit $Data(BarSplit$tag) -barside $Data(BarSide$tag) \
-         -barborder $Data(BarBorder$tag) -barwidth $Data(BarWidth$tag) -bg $Data(BarBG$tag) -transparency $Data(BarAlpha$tag)
+         -data $Field -tags "$Page::Data(Tag) CB$VP $tag" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
+         -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag)
 
       menubutton $Frame.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
          -menu $Frame.bo$tag.menu
       menu $Frame.bo$tag.menu -bg $GDefs(ColorFrame)
-         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFrame) $GDefs(Lang)] -variable ColorBar::Data(BarBG$tag) -onvalue white -offvalue "" \
-            -command "$Frame.page.canvas itemconfigure $tag -bg \$ColorBar::Data(BarBG$tag); Page::Update $Frame"
-         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(BarAlpha$tag) -onvalue 50 -offvalue 100 \
-            -command "$Frame.page.canvas itemconfigure $tag -transparency \$ColorBar::Data(BarAlpha$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFrame) $GDefs(Lang)] -variable ColorBar::Data(BG$tag) -onvalue white -offvalue "" \
+            -command "$Frame.page.canvas itemconfigure $tag -bg \$ColorBar::Data(BG$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(Alpha$tag) -onvalue 50 -offvalue 100 \
+            -command "$Frame.page.canvas itemconfigure $tag -transparency \$ColorBar::Data(Alpha$tag); Page::Update $Frame"
          $Frame.bo$tag.menu add separator
-         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarSplit) $GDefs(Lang)] -variable ColorBar::Data(BarSplit$tag) -onvalue 5 -offvalue 0 \
-            -command "$Frame.page.canvas itemconfigure $tag -barsplit \$ColorBar::Data(BarSplit$tag); Page::Update $Frame"
-         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarBorder) $GDefs(Lang)] -variable ColorBar::Data(BarBorder$tag) -onvalue 1 -offvalue 0 \
-            -command "$Frame.page.canvas itemconfigure $tag -barborder \$ColorBar::Data(BarBorder$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarSplit) $GDefs(Lang)] -variable ColorBar::Data(Split$tag) -onvalue 5 -offvalue 0 \
+            -command "$Frame.page.canvas itemconfigure $tag -barsplit \$ColorBar::Data(Split$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarBorder) $GDefs(Lang)] -variable ColorBar::Data(Border$tag) -onvalue 1 -offvalue 0 \
+            -command "$Frame.page.canvas itemconfigure $tag -barborder \$ColorBar::Data(Border$tag); Page::Update $Frame"
          $Frame.bo$tag.menu add separator
-         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarThin) $GDefs(Lang)] -variable ColorBar::Data(BarWidth$tag) -value 15 \
-            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(BarWidth$tag); Page::Update $Frame"
-         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarMedium) $GDefs(Lang)] -variable ColorBar::Data(BarWidth$tag) -value 30 \
-            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(BarWidth$tag); Page::Update $Frame"
-         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarWide) $GDefs(Lang)] -variable ColorBar::Data(BarWidth$tag) -value 50 \
-            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(BarWidth$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarThin) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 15 \
+            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarMedium) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 30 \
+            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarWide) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 50 \
+            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
          $Frame.bo$tag.menu add separator
-         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarLeft) $GDefs(Lang)] -variable ColorBar::Data(BarSide$tag) -value left \
-            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(BarSide$tag); Page::Update $Frame"
-         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarRight) $GDefs(Lang)] -variable ColorBar::Data(BarSide$tag) -value right \
-            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(BarSide$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarLeft) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value left \
+            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarRight) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value right \
+            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h-1] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
       Shape::BindMove  $Frame.page.canvas $tag ColorBar::Move $Frame.page.canvas $tag
       Shape::BindScale $Frame.page.canvas $tag [expr $x+$w] [expr $y+$h] "ColorBar::Scale $Frame.page.canvas $tag"
-      Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h-1] ColorBar::Data(BarFull$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+      Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h-1] ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
 
       lappend Data(List$Frame) $tag
    }
@@ -281,7 +390,7 @@ proc ColorBar::Move { Canvas Tag } {
 
    set tag [lindex [split $Tag :] end]
    set Data($tag) [list $x $y $w $h $Tag]
-   set Data(BarFull$Tag) False
+   set Data(Full$Tag) False
 }
 
 #------------------------------------------------------------------------------
@@ -354,7 +463,7 @@ proc ColorBar::Scale { Canvas Tag X Y } {
       $Canvas itemconfigure $Tag -width $w -height $h
       set tag [lindex [split $Tag :] end]
       set Data($tag) [list $x $y $w $h $Tag]
-      set Data(BarFull$Tag) False
+      set Data(Full$Tag) False
       return True
    } else {
       return False
@@ -397,12 +506,12 @@ proc ColorBar::Update { Frame { State -1 } } {
             if { [fstdfield is $field] } {
                if { [fstdfield configure $field -rendertexture] || [fstdfield configure $field -mapall] || [fstdfield configure $field -rendervector]!="NONE" || [fstdfield configure $field -renderparticle] } {
                   set id [fstdfield configure $field -dataspec]
-                  lappend lst [ColorBar::Create $Frame $vp [incr i] $id $field]
+                  lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
                }
             } elseif { [observation is $field] } {
                if { [observation configure $field -rendertexture] || [observation configure $field -rendervector]!="NONE" } {
                   set id [observation configure $field -dataspec]
-                  lappend lst [ColorBar::Create $Frame $vp [incr i] $id $field]
+                  lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
                }
             } elseif { [metobs is $field] } {
                set model [metobs define $field -MODEL]
@@ -415,7 +524,7 @@ proc ColorBar::Update { Frame { State -1 } } {
                   }
                }
                if { [llength $specs] } {
-                  lappend lst [ColorBar::Create $Frame $vp [incr i] $id $specs]
+                  lappend lst [ColorBar::Set $Frame $vp [incr i] $id $specs]
                }
             }
          }
@@ -424,11 +533,11 @@ proc ColorBar::Update { Frame { State -1 } } {
       foreach field [projection configure $Frame -data] {
          if { [ogrlayer is $field] } {
             if { [ogrlayer configure $field -colormap]!="" && [ogrlayer define $field -map]!="" } {
-               lappend lst [ColorBar::Create $Frame $vp [incr i] $field $field]
+               lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
             }
          } elseif { [gdalband is $field] } {
             if { [gdalband configure $field -colormap]!="" && [gdalband define $field -nb]==1 } {
-#               lappend lst [ColorBar::Create $Frame $vp [incr i] $field $field]
+#               lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
             }
          }
       }
@@ -478,7 +587,7 @@ proc ColorBar::UpdateVP { Frame VP List } {
       }
 
       if { [dataspec is $spec] && ([dataspec configure $spec -rendertexture] || [dataspec configure $spec -rendervector]!="NONE" || [ataspec configure $spec -renderparticle]) } {
-         lappend lst [ColorBar::Create $Frame $VP $i $id $field]
+         lappend lst [ColorBar::Set $Frame $VP $i $id $field]
          incr i
       }
    }
@@ -506,9 +615,7 @@ proc ColorBar::Write { Frame File } {
    puts $File "   #-----  Positionnement des ColorBars"
    puts $File ""
    puts $File "   set ColorBar::Data(Active\$Frame) 1"
-   puts $File "   set vp \[Page::Registered \$Frame Viewport\]"
 
-   set v 0
    foreach vp [Page::Registered $Frame Viewport] {
       set i 0
       foreach field [Viewport::Assigned $Frame $vp { fstdfield observation }] {
@@ -517,7 +624,6 @@ proc ColorBar::Write { Frame File } {
          }
          incr i
       }
-      incr v
    }
    puts $File ""
 }
