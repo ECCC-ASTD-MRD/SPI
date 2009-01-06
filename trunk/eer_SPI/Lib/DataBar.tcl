@@ -41,6 +41,7 @@ namespace eval DataBar {
    variable Param
 
    set Param(Title) "Title"
+   set Param(Full)  1
 
    image create photo DATABARLOGO -file $GDefs(Dir)/Resources/Image/Symbol/Logo/Flag.gif
 }
@@ -109,7 +110,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    set Data(Active$Frame) 1
    set Data($VP)          [list $x0 $y0 $x1 $y1]
-   set Data(BarFull$VP)   1
+   set Data(Full$VP)   $Param(Full)
 
    if { ![info exists Data(List$Frame)] } {
       set Data(List$Frame) {}
@@ -126,7 +127,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    Shape::BindMove  $Frame.page.canvas DB$VP DataBar::Move $Frame $VP DB$VP
    Shape::BindScale $Frame.page.canvas DB$VP $x1 $y1 "DataBar::Scale $Frame $VP DB$VP"
-   Shape::BindFull  $Frame.page.canvas DB$VP [expr $x1-11] $y1 DataBar::Data(BarFull$VP) "DataBar::Full $Frame DB$VP $VP"
+   Shape::BindFull  $Frame.page.canvas DB$VP [expr $x1-11] $y1 DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
 }
 
 proc DataBar::SetTitle { Frame VP Title } {
@@ -412,7 +413,7 @@ proc DataBar::Full { Frame Tag VP { Pix 0 } } {
 proc DataBar::Move { Frame VP Tag } {
    variable Data
 
-   set Data(BarFull$VP) False
+   set Data(Full$VP) False
    set Data($VP) [$Frame.page.canvas coords FR$Tag]
 }
 
@@ -449,7 +450,7 @@ proc DataBar::Scale { Frame VP Tag X Y } {
 
       $Frame.page.canvas scale $Tag $x0 $y0 $dx $dy
       set Data($VP) [$Frame.page.canvas coords FR$Tag]
-      set Data(BarFull$VP) False
+      set Data(Full$VP) False
       eval DataBar::Draw $Frame $VP $Data($VP)
       return True
    } else {
@@ -577,14 +578,11 @@ proc DataBar::Write { Frame File } {
    puts $File "   #-----  Positionnement des DataBars"
    puts $File ""
    puts $File "   set DataBar::Data(Active\$Frame) 1"
-   puts $File "   set vp \[Page::Registered \$Frame Viewport\]"
 
-   set v 0
    foreach vp [Page::Registered $Frame Viewport] {
       if { [info exists DataBar::Data($vp)] } {
          puts $File "   set DataBar::Data(\$$Viewport::Data(Alias$vp)) \[list $DataBar::Data($vp)\]"
       }
-      incr v
    }
    puts $File ""
 }

@@ -2650,7 +2650,7 @@ proc Viewport::ResizeDepend { Frame VP DX DY } {
    #----- Check for databar full viewport toggle
 
    if { [llength [$Frame.page.canvas find withtag DB$VP]] } {
-      if { $DataBar::Data(BarFull$VP) } {
+      if { $DataBar::Data(Full$VP) } {
          Shape::Full $Frame.page.canvas DB$VP DataBar::Full $Frame DB$VP $VP $DY
       }
    }
@@ -2658,7 +2658,7 @@ proc Viewport::ResizeDepend { Frame VP DX DY } {
 
    foreach item [$Frame.page.canvas find withtag CB$VP] {
       set tag [lindex [$Frame.page.canvas itemcget $item -tags] end]
-      if { $ColorBar::Data(BarFull$tag) } {
+      if { $ColorBar::Data(Full$tag) } {
          Shape::Full $Frame.page.canvas $tag ColorBar::Full $Frame.page.canvas $tag $VP $DX
       }
    }
@@ -2685,17 +2685,17 @@ proc Viewport::ResizeDepend { Frame VP DX DY } {
 
 proc Viewport::MoveDepend { Frame VP DX DY } {
 
-   if { [llength [$Frame.page.canvas find withtag DB$VP]] && $DataBar::Data(BarFull$VP) } {
+   if { [llength [$Frame.page.canvas find withtag DB$VP]] && $DataBar::Data(Full$VP) } {
       Shape::Move $Frame.page.canvas DB$VP $DX $DY True
       DataBar::Move $Frame $VP DB$VP
-      set DataBar::Data(BarFull$VP) 1
+      set DataBar::Data(Full$VP) 1
    }
    foreach item [$Frame.page.canvas find withtag CB$VP] {
       set tag [lindex [$Frame.page.canvas itemcget $item -tags] end]
-      if { $ColorBar::Data(BarFull$tag) } {
+      if { $ColorBar::Data(Full$tag) } {
          Shape::Move $Frame.page.canvas $tag $DX $DY True
          ColorBar::Move $Frame.page.canvas $tag
-         set ColorBar::Data(BarFull$tag) 1
+         set ColorBar::Data(Full$tag) 1
       }
    }
 }
