@@ -139,8 +139,13 @@ proc Macro::Doing { Msg } {
 
    #----- Recuperer le nom de la procedure fautive
 
+   set stacklist [info level -1]
+   set stackproc [lindex $stacklist 0]
+
    if { $SPI::Param(Batch) } {
-      puts stdout $Msg
+      if { $Msg!="" } {
+         puts stdout "(DOING) ${stackproc}: $Msg"
+      }
    } else {
       set Data(Job) $Msg
       update idletasks
@@ -168,7 +173,7 @@ proc Macro::Info { Info } {
    set stackproc [lindex $stacklist 0]
 
    if { $SPI::Param(Batch) } {
-      puts stdout "${stackproc}: $Info"
+      puts stdout "(INFO) ${stackproc}: $Info"
    } else {
       Dialog::CreateInfo .macro "${stackproc}\n\n$Info"
    }
