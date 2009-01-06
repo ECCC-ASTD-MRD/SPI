@@ -1,7 +1,7 @@
 #!/bin/sh
 
-DIR=${0%SPI}
-. ${DIR}/version
+export SPI_PATH=${0%SPI}
+. ${SPI_PATH}/version
 
 SOFT=0
 HOST=`hostname`
@@ -73,15 +73,14 @@ do
 
    if [[ $flag = "-tclsh" ]]
    then
-      ${DIR}/Shared/${ARCH}/TclTk/bin/tclsh${TCL_VERSION} "${DIR}/Apps/SPI.tcl" $@
+      ${SPI_PATH}/Shared/${ARCH}/TclTk/bin/tclsh${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" $@
       code=$?
       exit $code
    fi
 done
 
 #----- Testing hardware capabilities
-
-if [[ `${DIR}/Lib/System.tcl` -eq 0 ]]
+if [[ `${SPI_PATH}/Lib/System.tcl` -eq 0 ]]
 then
    SOFT=1
 fi
@@ -90,13 +89,13 @@ fi
 
 if [[ ($SOFT -eq 1) ]]
 then
-   export LD_LIBRARY_PATH=${DIR}/Shared/${ARCH}/GL:${LD_LIBRARY_PATH}
-   export LD_PRELOAD=${DIR}/Shared/${ARCH}/GL/libGL.so
+   export LD_LIBRARY_PATH=${SPI_PATH}/Shared/${ARCH}/GL:${LD_LIBRARY_PATH}
+   export LD_PRELOAD=${SPI_PATH}/Shared/${ARCH}/GL/libGL.so
 fi
 
 #----- Let's start up the software
 
-${DIR}/Shared/${ARCH}/TclTk/bin/wish${TCL_VERSION} "${DIR}/Apps/SPI.tcl" -- "$@"
+${SPI_PATH}/Shared/${ARCH}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
 code=$?
 
 if [[ ($PID_XVFB -ne 0) ]]
