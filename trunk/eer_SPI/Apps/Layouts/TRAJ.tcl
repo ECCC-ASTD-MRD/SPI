@@ -221,7 +221,7 @@ proc TRAJ::PrintWidget { Frame } {
    #----- Constantes pour l'impression par PrintBox
 
    if { [llength $Trajectory::Data(List)] } {
-      set PrintBox::Print(Filename) "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]"
+      set PrintBox::Print(Filename) "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]_traj"
    } else {
       set PrintBox::Print(Filename) "output"
    }
@@ -395,19 +395,20 @@ proc TRAJ::SATNET { Frame Mode } {
    Debug::TraceProc "Sending $file.gif over SATNET"
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; . /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -r systime -i $file.gif" }
+   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" }
 
    #----- envoyer sur les sites web.
 
    set name "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]"
    exec convert ${file}.gif ${file}.png
 
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${name}_satnet.png"  }
+   set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
+   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png"  }
 
    #----- supprimer les residus
 
    SPI::Progress 20 "Cleaning temporary files"
-   file delete -force $file.ps $file.png
+   file delete -force $file.ps $file.png $file.gif
 
    SPI::Progress 0
    $Frame.page.canvas config -cursor left_ptr

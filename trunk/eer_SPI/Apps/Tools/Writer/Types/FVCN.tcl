@@ -760,7 +760,7 @@ proc Writer::FVCN::GetAdvisory { Pad Name } {
    global   GDefs
    variable Data
 
-   regsub -all "\[^a-zA-Z0-9-\]" $Name _ name
+   regsub -all "\[^a-zA-Z0-9-\]" $Name - name
 
    #----- Recupere tout les fichiers transmis.
 
@@ -815,7 +815,7 @@ proc Writer::FVCN::GetNo { Name } {
    variable Data
    variable Msg
 
-   regsub -all "\[^a-zA-Z0-9-\]" $Name _ name
+   regsub -all "\[^a-zA-Z0-9-\]" $Name - name
 
    #----- Recupere tout les fichiers transmis.
 

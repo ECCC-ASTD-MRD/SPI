@@ -777,6 +777,8 @@ proc VAAC::Transmit { Frame } {
          Debug::TraceProc  "Transmitting VAAC Map $Data(Hours_) with number $no"
          SPI::Progress +$n "Transmitting VAAC Map $Data(Hours_) with number $no"
 
+         set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
+
          if { $Data(SendWAS)==1 || $Data(SendBRA)==1 } {
 
             #----- On bloque les numeros pour les heures 48 a 66 parce que WAFS n'en veut pas
@@ -785,22 +787,22 @@ proc VAAC::Transmit { Frame } {
             if { $no!="ca0281c" && $no!="ca0282c" && $no!="ca0287c" && $no!="ca0288c" } {
                SPI::Progress +0 "Sending over WAFS"
 
-               catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/;. /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" }
+               catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" }
 
                #----- envoyer sur les sites web.
 
                exec convert ${file}.pbm -resize 680x880 ${file}.png
-               catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/$Sim(Name).${hour}.png"  }
+               catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_canerm_${hour}.png"  }
             }
          }
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
-            catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/;. /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " }
+            catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " }
 
             #----- envoyer sur les sites web.
 
             exec convert ${file}.pbm -resize 680x880 ${file}.png
-            catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/$Sim(Name).${hour}.png"  }
+            catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_canerm_${hour}.png"  }
          }
       }
    }
@@ -1023,7 +1025,7 @@ proc VAAC::PrintWidget { Frame } {
 
    #----- Constantes pour l'impression par PrintBox
 
-   set PrintBox::Print(Filename) "$Sim(Name)"
+   set PrintBox::Print(Filename) "$Sim(Name)_canerm"
    set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)"
 }
 
@@ -1095,12 +1097,12 @@ proc VAAC::PrintCommand { Frame } {
                if { $vp != "All" } {
                   set lbl [lindex [split $hour _] $idx]
                   InfoFrame::Incr .printbox.job 1 "Generating VAAC Map $Lbl(FL1$vp)_$Lbl(FL2$vp) ${lbl}"
-                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_$Lbl(FL1$vp)_$Lbl(FL2$vp).${lbl}"
+                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_$Lbl(FL1$vp)_$Lbl(FL2$vp)_${lbl}"
                   PrintBox::Print $Frame $Viewport::Data(X$Page($vp)) [expr $Viewport::Data(Y$Page($vp)) - 50]\
                      $Viewport::Data(Width$Page($vp)) [expr $Viewport::Data(Height$Page($vp)) + 50]
                } else {
                   InfoFrame::Incr .printbox.job 1 "Generating VAAC Map ${hour}"
-                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename).${hour}"
+                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_${hour}"
                   PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame]
                }
             }
