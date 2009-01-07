@@ -911,7 +911,6 @@ proc SPI::Locate { Lat Lon } {
       set Viewport::Map(GridI) [lindex $ij 0]
       set Viewport::Map(GridJ) [lindex $ij 1]
    }
-
    Viewport::GoTo $Page::Data(Frame) $Lat $Lon
 }
 

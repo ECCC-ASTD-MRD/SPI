@@ -567,11 +567,9 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
 
 proc Graph::LocTool { GR Type Array Index Op } {
 
-   set Viewport::Map(Lat) $SPI::Src(Lat)
-   set Viewport::Map(Lon) $SPI::Src(Lon)
-   Viewport::Rotate $Page::Data(Frame)
-
-   Graph::${Type}::ItemDefine $GR $Graph::Data(Pos) [list $SPI::Src(Lat) $SPI::Src(Lon)]
+   if { $GR!="" } {
+      Graph::${Type}::ItemDefine $GR $Graph::Data(Pos) [list $SPI::Src(Lat) $SPI::Src(Lon)]
+   }
 }
 
 #------------------------------------------------------------------------------
