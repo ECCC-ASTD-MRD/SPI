@@ -2062,32 +2062,35 @@ proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } {
    variable Map
    variable Data
 
-   upvar #0 ProjCam::Data${Frame}::Cam cam
+   if { [winfo exists $Frame] } {
 
-   if { $Lat!=-999 && $Lon!=-999 } {
-      set Map(Lat) $Lat
-      set Map(Lon) $Lon
-   }
+      upvar #0 ProjCam::Data${Frame}::Cam cam
 
-   if { $Map(Type$Frame)=="grid" } {
-      projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
-   } else {
-      projection configure $Frame -location $Map(Lat) $Map(Lon)
-   }
+      if { $Lat!=-999 && $Lon!=-999 } {
+         set Map(Lat) $Lat
+         set Map(Lon) $Lon
+      }
 
-   if { $Zoom } {
-      projcam configure $Frame -lens [set cam(Lens) $Zoom]
+      if { $Map(Type$Frame)=="grid" } {
+         projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
+      } else {
+         projection configure $Frame -location $Map(Lat) $Map(Lon)
+      }
+
+      if { $Zoom } {
+         projcam configure $Frame -lens [set cam(Lens) $Zoom]
+      }
+      if { [llength $From] } {
+         eval projcam configure $Frame -from [set cam(From) $From]
+      }
+      if { [llength $To] } {
+         eval projcam configure $Frame -to [set cam(To) $To]
+      }
+      if { [llength $Up] } {
+         eval projcam configure $Frame -up [set cam(up) $Up]
+      }
+      Page::Update $Frame
    }
-   if { [llength $From] } {
-      eval projcam configure $Frame -from [set cam(From) $From]
-   }
-   if { [llength $To] } {
-      eval projcam configure $Frame -to [set cam(To) $To]
-   }
-   if { [llength $Up] } {
-      eval projcam configure $Frame -up [set cam(up) $Up]
-   }
-   Page::Update $Frame
 }
 
 #----------------------------------------------------------------------------
