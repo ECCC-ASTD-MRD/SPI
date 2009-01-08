@@ -105,6 +105,8 @@ line:
 
 exp:
    T_ERROR {
+      yyerror("Invalid function or data id in expression");
+      YYERROR;
    }
 
    | T_INT {
