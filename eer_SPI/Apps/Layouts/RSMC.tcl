@@ -56,7 +56,7 @@ namespace eval RSMC {
    set Data(Max)        { 0 0 0 }
    set Data(FieldList)  ""
    set Data(Fields)     { FM MF DD DI WD WI IT DOSE }
-   set Data(Units)      { "/M3" "*S/M3" "/M2" "/M2" "/M2" "/M2" "/M2" }
+   set Data(Units)      { "/m³" "*s/m³" "/m²" "/m²" "/m²" "/m²" "/m²" }
    set Data(Desc)       { "Surface to 500 M mean concentration" "24-hr time integrated 0 to 500 M layer concentrations" \
                           "6 hours dry deposition" "Total dry deposition" "6 hours wet deposition" "Total wet deposition" "Total deposition" }
 
@@ -387,11 +387,11 @@ proc RSMC::LayoutUpdate { Frame } {
    #----- Update de la page
 
    switch $Sim(Scale) {
-      "MESO"  { set lgrille "50 Km" }
-      "FINE"  { set lgrille "25 Km" }
-      "VFINE" { set lgrille "10 Km" }
-      "EFINE" { set lgrille "5 Km" }
-      default { set lgrille "150 Km" }
+      "MESO"  { set lgrille "50 km" }
+      "FINE"  { set lgrille "25 km" }
+      "VFINE" { set lgrille "10 km" }
+      "EFINE" { set lgrille "5 km" }
+      default { set lgrille "150 km" }
    }
 
    switch $Sim(FnTime) {
@@ -426,7 +426,7 @@ proc RSMC::LayoutUpdate { Frame } {
    $canvas itemconf RSMCRELEASE -text "Date of release : $daterelease"
 
    $canvas itemconf FT2 -text "$Data(FT2) ${fonction}"
-   $canvas itemconf FT3 -text "${duree} $Sim(EmDuration) H"
+   $canvas itemconf FT3 -text "${duree} $Sim(EmDuration) h"
    $canvas itemconf FT4 -text "$Data(FT4) GAUSSIAN"
    $canvas itemconf FT5 -text "$Data(FT5) ${lgrille}"
    $canvas itemconf FT6 -text "$Sim(Event)"
