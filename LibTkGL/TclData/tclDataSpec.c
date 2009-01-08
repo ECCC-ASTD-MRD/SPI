@@ -740,7 +740,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case INTERLABELS:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Spec->InterLabels);
+               if (Spec->InterLabels)
+                  Tcl_SetObjResult(Interp,Spec->InterLabels);
             } else {
                if (Spec->InterLabels) {
                   Tcl_DecrRefCount(Spec->InterLabels);
