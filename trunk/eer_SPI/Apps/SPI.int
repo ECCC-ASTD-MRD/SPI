@@ -862,9 +862,4 @@ proc SPI::ToolDef { Path } {
 
    set tool [file tail [file rootname $Path]]
    lappend SPI::Param(Tools) $tool
-
-   eval set title \$${tool}::Param(Title)
-
-   .menu.tools.menu add command -label "[lindex $title $GDefs(Lang)] ..." \
-       -command "${tool}::Window"
 }
