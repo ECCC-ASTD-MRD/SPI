@@ -2276,6 +2276,7 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       set fonts {}
       set cmaps {}
       foreach spec [dataspec all] {
+
          set cmap [dataspec configure $spec -colormap]
          if { [colormap is $cmap] && [lsearch -exact $cmaps $cmap]==-1 } {
             lappend cmpas $cmap
@@ -2283,6 +2284,7 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
             puts $f "colormap control $cmap -del"
             puts $f "colormap control $cmap -list { [colormap control $cmap -list] }"
          }
+
          set font [dataspec configure $spec -font]
          if { $font!="" && [lsearch -exact $fonts $font]==-1 } {
             lappend fonts $font
