@@ -10,12 +10,12 @@ YACC = bison
 
 ARCH      = Linux
 LIB_VER   = 7.3.0
-TCLTK_VER = 8.5a6
 TCLTK_VER = 8.4.13
+#TCLTK_VER = 8.5.6
 
 X_INCLUDE   =
 PROTO       =
-DEFINES     = -DLNK_FSTD -DLNK_GDALOGR -DLNK_URP -DTCL_THREADS -DGDAL126 -DLNK_GRIB
+DEFINES     = -DLNK_FSTD -DLNK_GDALOGR -DLNK_URP -DTCL_THREADS -DGDAL126 -DLNK_GRIB -DLIB_VER=${LIB_VER} -DTCLTK_VER=${TCLTK_VER}
 
 CDEBUGFLAGS =
 CCOPTIONS   = -O2 -funroll-all-loops -finline-functions -fPIC
@@ -35,9 +35,11 @@ EER_PATH = /home/binops/afse/eer
 # Tk Path
 TCL_SRC  = $(ARC_PATH)/tcl$(TCLTK_VER)
 TCL_PATH = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
+#TCL_PATH = /data/cmoex6/afsr005/eer_SPI-7.3.0/Shared/$(ARCH)/TclTk
 
 TK_SRC   = $(ARC_PATH)/tk$(TCLTK_VER)
 TK_PATH  = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
+#TK_PATH  = /data/cmoex6/afsr005/eer_SPI-7.3.0/Shared/$(ARCH)/TclTk
 
 # OpenGL librairies
 #GL_PATH   = $(LIB_PATH)/mesa-6.5/
@@ -68,4 +70,4 @@ FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
 INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include -I$(EER_PATH)/include \
         -I$(GDB_PATH)/include -I$(GL_PATH)/include -I$(PROJ_PATH)/include -I$(GDAL_PATH)/include -I$(URP_PATH)/include \
         -I$(GRIB_PATH)/include -I$(BUFR_PATH)/include -I$(FLT_PATH)/include -I$(RMN_PATH)/include -I$(RMN_PATH)/include/$(ARCH) \
-        -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD 
+        -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD

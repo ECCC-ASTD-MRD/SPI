@@ -1043,7 +1043,7 @@ proc ProjCam::ZoomIn { Cam Frame VP { Factor 0 } } {
 
    set Data(Name) ""
 
-   projcam configure $Cam -to 0 0 1
+   projcam configure $Cam -to { 0 0 1 }
    Viewport::GoTo $Frame $lat $lon $lens
 
    #----- Dans le cas de projection grille
