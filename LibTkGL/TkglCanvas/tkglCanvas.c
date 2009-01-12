@@ -5561,6 +5561,6 @@ int Glcanvas_Init(Tcl_Interp* Interp) {
    Tcl_CreateObjCommand(Interp,"glcanvas",Tk_glCanvasObjCmd,(ClientData*)Tk_MainWindow(Interp),NULL);
    glInit(Interp);
 
-   Tcl_PkgProvide(Interp,"TkglCanvas",TKGLCANVAS_VERSION);
+   Tcl_PkgProvide(Interp,"TkglCanvas","TCLTK_VER");
    return TCL_OK;
 }

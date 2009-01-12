@@ -2081,13 +2081,13 @@ proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } {
          projcam configure $Frame -lens [set cam(Lens) $Zoom]
       }
       if { [llength $From] } {
-         eval projcam configure $Frame -from [set cam(From) $From]
+         projcam configure $Frame -from [set cam(From) $From]
       }
       if { [llength $To] } {
-         eval projcam configure $Frame -to [set cam(To) $To]
+         projcam configure $Frame -to [set cam(To) $To]
       }
       if { [llength $Up] } {
-         eval projcam configure $Frame -up [set cam(up) $Up]
+         projcam configure $Frame -up [set cam(up) $Up]
       }
       Page::Update $Frame
    }
@@ -2505,15 +2505,15 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
             #----- Move camera to new incremental position
             if { $F } {
                set cam(From) [list [expr $Fx-(($Fx-$fx)*$dprdp)] [expr $Fy-(($Fy-$fy)*$dprdp)] [expr $Fz-(($Fz-$fz)*$dprdp)]]
-               eval projcam configure $Frame -from $cam(From)
+               projcam configure $Frame -from $cam(From)
             }
             if { $T } {
                set cam(To) [list [expr $Tx-(($Tx-$tx)*$dprdp)] [expr $Ty-(($Ty-$ty)*$dprdp)] [expr $Tz-(($Tz-$tz)*$dprdp)]]
-               eval projcam configure $Frame -to $cam(To)
+               projcam configure $Frame -to $cam(To)
             }
             if { $U } {
                set cam(Up) [list [expr $Ux-(($Ux-$ux)*$dprdp)] [expr $Uy-(($Uy-$uy)*$dprdp)] [expr $Uz-(($Uz-$uz)*$dprdp)]]
-               eval projcam configure $Frame -up $cam(Up)
+               projcam configure $Frame -up $cam(Up)
             }
 
             #----- Rotate to new incremental position

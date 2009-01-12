@@ -20,8 +20,6 @@
 #include "tkCanvas.h"   /* Pour garder les autres fonctions du Canvas */
 #include "glStuff.h"
 
-#define TKGLCANVAS_VERSION "8.4.12"
-
 int  Glcanvas_Init(Tcl_Interp* Interp);
 void Tk_glCreateItemType(Tk_ItemType *typePtr);
 Tk_Item *Tk_glGetItem(ClientData clientData,Tcl_Obj *Obj);

@@ -46,7 +46,6 @@
 #include "tclMetObs.h"
 
 #define NBFRAMEMAX 512
-#define TKVIEWPORT_VERSION "7.3.0"
 #define VPY(VP,Y) ((((TkCanvas*)VP->canvas)->yOrigin+VP->Height)-Y)
 
 /*The structure below defines the record for each pixmap item.*/

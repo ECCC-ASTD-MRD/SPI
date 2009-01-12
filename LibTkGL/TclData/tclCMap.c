@@ -1167,6 +1167,7 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
 
    /*Envoyer le data dans l'image Tk*/
 
+//TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 
@@ -1603,6 +1604,7 @@ int CMap_SelImage(Tcl_Interp *Interp,char Mode,char *Img,double Val){
 
    /*Envoyer le data dans l'image Tk*/
 
+//TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 

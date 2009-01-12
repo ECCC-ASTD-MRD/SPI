@@ -137,7 +137,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       Tcl_InitHashTable(&TData_Table,TCL_STRING_KEYS);
    }
 
-   Tcl_PkgProvide(Interp,"TclData",TCLDATA_VERSION);
+   Tcl_PkgProvide(Interp,"TclData","LIB_VER");
 
    return(TCL_OK);
 }
@@ -1346,7 +1346,9 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
    }
 
    /*Envoyer le data dans l'image Tk*/
+//TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+
    free(data.pixelPtr);
 
    return TCL_OK;

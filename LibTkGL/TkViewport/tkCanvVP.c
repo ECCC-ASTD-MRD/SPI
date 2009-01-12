@@ -205,7 +205,7 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
 
    memset(ViewportTable,0x0,VPMAX*sizeof(ViewportItem*));
 
-   Tcl_PkgProvide(Interp,"TkViewport",TKVIEWPORT_VERSION);
+   Tcl_PkgProvide(Interp,"TkViewport","LIB_VER");
    return(TCL_OK);
 }
 
