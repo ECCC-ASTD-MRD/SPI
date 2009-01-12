@@ -100,60 +100,61 @@ static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    Tcl_ResetResult(Interp);
 
+
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
       case CREATE:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return ProjCam_Create(Interp,Tcl_GetString(Objv[2]));
+         return(ProjCam_Create(Interp,Tcl_GetString(Objv[2])));
          break;
 
       case CONFIGURE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return ProjCam_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(ProjCam_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
       case DEFINE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return ProjCam_Define(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(ProjCam_Define(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
       case STATS:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return ProjCam_Stats(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(ProjCam_Stats(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
       case DESTROY:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return ProjCam_Destroy(Interp,Tcl_GetString(Objv[2]));
+         return(ProjCam_Destroy(Interp,Tcl_GetString(Objv[2])));
          break;
 
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (ProjCam_Get(Tcl_GetString(Objv[2]))) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -187,23 +188,22 @@ static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 */
 static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj       *obj;
+   Tcl_Obj *obj;
    ProjCam *cam=NULL;
-   int            idx,i;
+   int      idx,i,n;
 
    static CONST char *sopt[] = { "-to","-from","-up","-lens","-show",NULL };
    enum                opt { TO,FROM,UP,LENS,SHOW };
 
    cam=ProjCam_Get(Name);
    if (!cam) {
-      Tcl_AppendResult(Interp,"ProjCam_Config: invalid camera definition",(char *)NULL);
-      return TCL_ERROR;
+      Tcl_AppendResult(Interp,"ProjCam_Config: Invalid camera definition",(char*)NULL);
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
-
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
@@ -215,9 +215,17 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(cam->To[2]));
                Tcl_SetObjResult(Interp,obj);
              } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->To[0]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->To[1]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->To[2]);
+               Tcl_ListObjLength(Interp,Objv[++i],&n);
+               if (n!=3) {
+                  Tcl_AppendResult(Interp,"ProjCam_Config: Invalid number of component",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->To[0]);
+               Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->To[1]);
+               Tcl_ListObjIndex(Interp,Objv[i],2,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->To[2]);
             }
             break;
 
@@ -229,9 +237,17 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(cam->From[2]));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->From[0]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->From[1]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->From[2]);
+               Tcl_ListObjLength(Interp,Objv[++i],&n);
+               if (n!=3) {
+                  Tcl_AppendResult(Interp,"ProjCam_Config: Invalid number of component",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->From[0]);
+               Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->From[1]);
+               Tcl_ListObjIndex(Interp,Objv[i],2,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->From[2]);
             }
             break;
 
@@ -243,9 +259,17 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(cam->Up[2]));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->Up[0]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->Up[1]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->Up[2]);
+               Tcl_ListObjLength(Interp,Objv[++i],&n);
+               if (n!=3) {
+                  Tcl_AppendResult(Interp,"ProjCam_Config: Invalid number of component",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->Up[0]);
+               Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->Up[1]);
+               Tcl_ListObjIndex(Interp,Objv[i],2,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&cam->Up[2]);
             }
             break;
 
@@ -266,9 +290,10 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
             break;
       }
    }
+
    ProjCam_ParamsInit(cam);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
