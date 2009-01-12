@@ -36,12 +36,8 @@
 #include <string.h>
 #include "glStuff.h"
 
-#ifdef WIN32
-#include "glFont.h"
-#else
 #include <sys/resource.h>
 #include <unistd.h>
-#endif
 
 GLParams *GLRender;  /* Structure globale des parametres OpenGL */
 
@@ -116,7 +112,6 @@ static int glInfo(Tcl_Interp *Interp,char *Argv){
       Tcl_AppendResult(Interp,gluGetString(GLU_VERSION),(char *)NULL);
    } else if (strcmp(Argv,"GLU_EXTENSIONS") == 0) {
       Tcl_AppendResult(Interp,gluGetString(GLU_EXTENSIONS),(char *)NULL);
-#ifndef WIN32
    } else if (strcmp(Argv,"GLX_VERSION") == 0) {
       Tcl_AppendResult(Interp,glXGetClientString(GLRender->XDisplay,GLX_VERSION),(char *)NULL);
    } else if (strcmp(Argv,"GLX_VENDOR") == 0) {
@@ -136,7 +131,6 @@ static int glInfo(Tcl_Interp *Interp,char *Argv){
    } else if (strcmp(Argv,"X_DEPTH") == 0) {
       sprintf(buf,"%i",GLRender->GLVis->depth);
       Tcl_AppendResult(Interp,buf,(char *)NULL);
-#endif
    } else {
       Tcl_AppendResult(Interp,"\n   wrong option: must be \"GLX_VERSION GLX_VENDOR GLX_EXTENSIONS GL_VERSION GL_VENDOR GL_RENDERER GL_EXTENSIONS GLU_VERSION GLU_EXTENSIONS X_DEPTH X_VISUAL\"",(char*)NULL);
       return TCL_ERROR;
@@ -441,6 +435,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    handle=Tk_FindPhoto(Interp,Img);
 
    /*Definire les parametres du block de donnees */
+//TK84   Tk_PhotoSetSize(Interp,handle,Width,Height);
    Tk_PhotoSetSize(handle,Width,Height);
 
    data.width=TR->TileWidthNB-dx;
@@ -461,6 +456,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
       }
 
       /* Envoyer le data dans l'image Tk */
+//TK84      Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
       Tk_PhotoPutBlock(handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
       free(data.pixelPtr);
    } else {
@@ -508,6 +504,7 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
 
    /*Definire les parametres du bock de donnees*/
 
+//TK84   Tk_PhotoSetSize(Interp,handle,data.width,data.height);
    Tk_PhotoSetSize(handle,data.width,data.height);
 
    data.pitch=data.width*3;
@@ -529,6 +526,7 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
    }
 
    /*Envoyer le data dans l'image Tk*/
+//TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 
@@ -580,14 +578,7 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
    Font            fid;
    char            key[64];
    T_glFont       *glfont=NULL;
-#ifdef WIN32
-   WinFont        *font;
-   HFONT          oldfont;
-   HDC            hdc;
-   TEXTMETRIC     def;
-#else
    XFontStruct    *def;
-#endif
 
    fid=Tk_FontId(FontId);
    sprintf(key,"%s",Tk_NameOfFont(FontId));
@@ -605,18 +596,6 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
 
    if (!glfont) {
       /* Get the font */
-#ifdef WIN32
-      font=(WinFont*)FontId;
-
-      /* Select the font in the DC */
-      hdc=GetDC(font->hwnd);
-      oldfont=SelectObject(hdc,font->subFontArray[0].hFont);
-      if (!GetTextMetrics(hdc,&def)) {
-         fprintf(stderr,"(ERROR) glFontSet: Unable to get font information.\n");
-      }
-      f0=def.tmFirstChar;
-      f1=def.tmLastChar;
-#else
       glfont=(T_glFont*)malloc(sizeof(T_glFont));
       glfont->fid=fid;
       def=XQueryFont(Disp,fid);
@@ -625,7 +604,6 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
       }
       f0=def->min_char_or_byte2;
       f1=def->max_char_or_byte2;
-#endif
 
       glfont->nchar=(GLuint)f1+1;
       glfont->list=glGenLists(glfont->nchar);
@@ -635,16 +613,9 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
       if (!glfont->list || !glfont->tex)
          fprintf(stderr,"(ERROR) glFontSet: Unable to allocate font display list.\n");
 
-#ifdef WIN32
-      if (!wglUseFontBitmaps(hdc,f0,f1-f0,glfont->list+f0))
-         fprintf(stderr,"(ERROR) glFontUse: Unable to construct bitmap display list.\n");
-
-      SelectObject(hdc,oldfont);
-      ReleaseDC(font->hwnd,hdc);
-#else
 //      glXUseXFont(def->fid,f0,f1-f0+1,base+f0);
       glXFontTexture(def->fid,f0,f1-f0+1,glfont->list+f0,glfont->tex);
-#endif
+
       if (!entry)
          entry=Tcl_CreateHashEntry(&glFontIdTable,key,&new);
 
@@ -1823,19 +1794,13 @@ void glXShutDown() {
 
    if (GLRender->GLCon) {
       printf("(INFO) glXShutDown: Freeing direct rendering context\n");
-#ifdef WIN32
-     wglDeleteContext(GLRender->GLCon);
-#else
      glXDestroyContext(GLRender->XDisplay,GLRender->GLCon);
-#endif
    }
 
-#ifndef WIN32
-   if (GLRender->GLVis) {
+  if (GLRender->GLVis) {
       printf("(INFO) glXShutDown: Freeing visual\n");
       XFree(GLRender->GLVis);
    }
-#endif
 
    printf("(INFO) glXShutDown: Freeing renderer structure\n");
    if (GLRender->GLFeed) free(GLRender->GLFeed);
@@ -2028,68 +1993,6 @@ void glInit(Tcl_Interp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
-#ifdef WIN32
-int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
-
-   int pixelformat;
-   int glmin,glmaj,gl;
-   HDC hdc;
-
-   PIXELFORMATDESCRIPTOR pfd = {
-   sizeof(PIXELFORMATDESCRIPTOR),  //  size of this pfd
-   1,                     // version number
-   PFD_DRAW_TO_WINDOW |   // support window
-   PFD_SUPPORT_OPENGL |   // support OpenGL
-   PFD_DOUBLEBUFFER,      // double buffered
-   PFD_TYPE_RGBA,         // RGBA type
-   24,                    // 24-bit color depth
-   0, 0, 0, 0, 0, 0,      // color bits ignored
-   8,                     // no alpha buffer
-   0,                     // shift bit ignored
-   0,                     // no accumulation buffer
-   0, 0, 0, 0,            // accum bits ignored
-   8,                     // 32-bit z-buffer
-   8,                     // no stencil buffer
-   0,                     // no auxiliary buffer
-   PFD_MAIN_PLANE,        // main layer
-   0,                     // reserved
-   0, 0, 0                // layer masks ignored
-   };
-
-   hdc=GetDC(Tk_GetHWND(Tk_WindowId(TkWin)));
-   pixelformat=ChoosePixelFormat(hdc,&pfd);
-
-   if (!pixelformat) {
-      fprintf(stderr,"(ERROR) glXCanvasInit: Could not find a suitable pixel format\n");
-      return(TCL_ERROR);
-   }
-
-   if (SetPixelFormat(hdc,pixelformat,&pfd)==FALSE) {
-      fprintf(stderr,"(ERROR) glXCanvasInit: Could not find set the pixel format\n");
-      return(TCL_ERROR);
-   }
-
-   /* Setup some useful pointers */
-   GLRender->XDisplay = Tk_Display(TkWin);        /* Get the XDisplay of the main window */
-   GLRender->XScreen  = Tk_Screen(TkWin);         /* Get the XID of the application */
-   GLRender->XScreenNo= Tk_ScreenNumber(TkWin);   /* Get the screen number */
-
-   if (GLRender->GLCon) {
-      fprintf(stderr,"(INFO) glXCanvasInit: Context already created\n");
-   } else {
-      GLRender->GLCon=wglCreateContext(hdc);
-      if (!GLRender->GLCon) {
-         fprintf(stderr,"(ERROR) glXCanvasInit: Could not create a rendering context\n");
-      }
-   }
-
-   /*Generer les primitives de base*/
-   glGenCircle(0,360);
-   ReleaseDC(Tk_GetHWND(Tk_WindowId(TkWin)),hdc);
-
-   return TCL_OK;
-}
-#else
 int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
    int glmin,glmaj,gl,n=0;
@@ -2339,8 +2242,6 @@ int glXFreePixmap() {
    }
    return(1);
 }
-
-#endif
 
 /* Tesselator functions*/
 
