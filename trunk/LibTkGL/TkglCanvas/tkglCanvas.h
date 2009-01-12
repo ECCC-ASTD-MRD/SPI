@@ -16,6 +16,7 @@
 
 #ifndef _TKGLCANVAS
 #define _TKGLCANVAS
+#include "tkInt.h"
 #include "tkCanvas.h"   /* Pour garder les autres fonctions du Canvas */
 #include "glStuff.h"
 
