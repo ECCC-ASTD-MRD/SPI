@@ -924,18 +924,20 @@ void Vector_Swap(TVector *Vec,int IdxFrom,int IdxTo) {
 
 void Vector_QuickSort(TVector *Vec,int Comp,int start,int end) {
 
-   int     l=start+1;
+   int     l=start;
    int     r=end;
-   double *v;
+   double *v,p;
 
    v=Comp==-1?Vec->V:Vec->Cp[Comp]->V;
 
    if (end-start>=1) {
 
+      p=v[start];
+
       while (r>l) {
-         while (v[l]<=v[start] && l<=end && r>l)
+         while (v[l]<=p && l<=end && r>l)
             l++;
-         while (v[r]>v[start] && r>=start && r>=l)
+         while (v[r]>p && r>=start && r>=l)
             r--;
          if (r>l)
             Vector_Swap(Vec,l,r);

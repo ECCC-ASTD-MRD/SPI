@@ -2350,7 +2350,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    TDataSpec    *spec;
    EntryTableB  *eb;
    Vect3d        pix;
-   char          buf[256];
+   char          buf[128];
    double        z,val,dir,dx,dy,k;
    int           d,e,i,n,v,iy,idx,line,id,ne;
    double        alpha=1.0;
@@ -2543,15 +2543,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            if (!id) {
                               if (spec->RenderLabel && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                                  if (loc->No) {
-                                    snprintf(buf,"%s (%s)",256,loc->Id,loc->No);
+                                    snprintf(buf,"%s (%s)",128,loc->Id,loc->No);
                                  } else {
-                                    snprintf(buf,"%s",256,loc->Id);
+                                    snprintf(buf,"%s",128,loc->Id);
                                  }
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
                               }
 
                               if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                 sprintf(buf,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
+                                 snprintf(buf,"(%.4f,%.4f)",128,loc->Coord.Lat,loc->Coord.Lon);
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
                               }
                               id=1;
@@ -2644,7 +2644,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Value,ViewportItem *VP,Projection *Proj) {
 
    int    idx=-1;
-   char   buf[256];
+   char   buf[128];
 
    if (!Spec->Icon) {
       return(0);
