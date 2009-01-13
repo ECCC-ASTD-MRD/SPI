@@ -9,7 +9,7 @@ include ../Makefile.$(ARCH)
 GRAMMAR = Data_Calc
 
 INCLUDES  = $(INCLUDE)
-LIBS      = -L$(INSTALL_PATH)/Shared/$(ARCH) -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -L$(EER_PATH)/lib/$(ARCH) -leerUtils -lc
+LIBS      = -L$(INSTALL_PATH) -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -L$(EER_PATH)/lib/$(ARCH) -leerUtils -lc
 LIBTK     = -L$(TK_PATH)/lib -ltk8.4
 LIBTCL    = -L$(TCL_PATH)/lib -ltcl8.4
 LDFLAGS   = $(LIBS) $(LIBTCL) $(LIBTK) --warn-once --no-undefined 
@@ -34,10 +34,10 @@ all: $(OBJ)
 
 link:
 	$(LD) -o libTclData-$(LIB_VER).so $(OBJ) $(LDFLAGS)
-	cp libTclData-$(LIB_VER).so $(INSTALL_PATH)/Shared/$(ARCH)
-	rm -f libTclData.so $(INSTALL_PATH)/Shared/$(ARCH)/libTclData.so
+	cp libTclData-$(LIB_VER).so $(INSTALL_PATH)
+	rm -f libTclData.so $(INSTALL_PATH)/libTclData.so
 	ln -s libTclData-$(LIB_VER).so libTclData.so
-	ln -s libTclData-$(LIB_VER).so $(INSTALL_PATH)/Shared/$(ARCH)/libTclData.so
+	ln -s libTclData-$(LIB_VER).so $(INSTALL_PATH)/libTclData.so
 
 install: all link
 

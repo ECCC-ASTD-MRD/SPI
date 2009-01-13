@@ -21,10 +21,10 @@ all:$(OBJ)
 
 link:
 	$(LD) -o libTkglCanvas-$(TCLTK_VER).so $(OBJ) $(LIBGL) $(LIBTK)
-	cp libTkglCanvas-$(TCLTK_VER).so $(INSTALL_PATH)/Shared/$(ARCH)
-	rm -f libTkglCanvas.so $(INSTALL_PATH)/Shared/$(ARCH)/libTkglCanvas.so
+	cp libTkglCanvas-$(TCLTK_VER).so $(INSTALL_PATH)
+	rm -f libTkglCanvas.so $(INSTALL_PATH)/libTkglCanvas.so
 	ln -s libTkglCanvas-$(TCLTK_VER).so libTkglCanvas.so
-	ln -s libTkglCanvas-$(TCLTK_VER).so $(INSTALL_PATH)/Shared/$(ARCH)/libTkglCanvas.so
+	ln -s libTkglCanvas-$(TCLTK_VER).so $(INSTALL_PATH)/libTkglCanvas.so
 
 install: all link
 
