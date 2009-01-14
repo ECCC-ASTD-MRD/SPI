@@ -245,6 +245,8 @@ proc Watch::CreateTree { } {
 
          Watch::Extract Watch::TData $watch
          set name [string tolower $TData(Name)]
+         set nameU [string toupper $TData(Name)]
+         regsub -all "_WATCH" $nameU "" nameU
 
          if { $TData(CANERM) } {
 
@@ -263,7 +265,7 @@ proc Watch::CreateTree { } {
                   $canvas create text 50 $y -text $hour -font $GDefs(Font) -anchor w -tags "CANERM$name$hour TREE"
                   $canvas bind CANERM$name$hour <ButtonPress-1> "Watch::Extract Watch::Data \"$watch\" ; Watch::SelectSim CANERM$name$hour"
                   $canvas bind CANERM$name$hour <ButtonPress-3> "Watch::Extract Watch::Data \"$watch\" ; Watch::SelectSim CANERM$name$hour; \
-                     Watch::PopUpSim %X %Y CANERM \[lsort \[glob -nocomplain $Data(PathCANERM)/${name}_$hour\]\]"
+                  Watch::PopUpSim %X %Y CANERM \[lsort \[glob -nocomplain $Data(PathCANERM)/${nameU}_$hour\]\]"
                }
                $canvas create line 30 [expr $y0+20] 30 $y1 -tags TREE
             }
@@ -277,7 +279,7 @@ proc Watch::CreateTree { } {
             $canvas create text 40 $y -text TRAJECT -font $GDefs(Font) -anchor w -tags "TRAJECT$name TREE"
             $canvas bind TRAJECT$name <ButtonPress-1> "Watch::Extract Watch::Data \"$watch\" ; Watch::SelectSim TRAJECT$name"
             $canvas bind TRAJECT$name <ButtonPress-3> "Watch::Extract Watch::Data \"$watch\" ; Watch::SelectSim TRAJECT$name; \
-               Watch::PopUpSim %X %Y TRAJECT \[lsort \[glob -nocomplain $Data(PathTRAJECT)/*_${name}*.points\]\]"
+            Watch::PopUpSim %X %Y TRAJECT \[lsort \[glob -nocomplain $Data(PathTRAJECT)/${nameU}*.points\]\]"
          }
 
          if { $TData(SATDATA) } {
@@ -288,7 +290,7 @@ proc Watch::CreateTree { } {
             $canvas create text 40 $y -text SATDATA -font $GDefs(Font) -anchor w -tags "SATDATA$name TREE"
             $canvas bind SATDATA$name <ButtonPress-1> "Watch::Extract Watch::Data \"$watch\" ; Watch::SelectSim SATDATA$name"
             $canvas bind SATDATA$name <ButtonPress-3> "Watch::Extract Watch::Data \"$watch\" ; Watch::SelectSim SATDATA$name; \
-               Watch::PopUpSim %X %Y SATDATA \[lsort \[glob -nocomplain $Data(PathSATDATA)/${name}_*\]\]"
+            Watch::PopUpSim %X %Y SATDATA \[lsort \[glob -nocomplain $Data(PathSATDATA)/${nameU}_*_??\]\]"
          }
          $canvas create line 10 $y0 10 $y1 -tags TREE
       }
@@ -514,7 +516,8 @@ proc Watch::New { } {
    set Data(Lon)  [format "%2.6f" $Model::Data(Lon1)]
    set Data(Type) $Model::Data(Type)
 
-   regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "_" Data(Name)
+   regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "-" Data(Name)
+   set Data(Name) [string toupper $Data(Name)]
 
    #----- On verifie que le nom n'existe pas deja
 
@@ -1061,10 +1064,10 @@ proc Watch::Write { } {
 
    regsub -all "\[^a-zA-Z0-9\]"  $Data(Name) _ name
    set line "$name $Data(Lat) $Data(Lon)\
-      $Data(Type) $Data(SATDATA) $Data(TRAJECT) $Data(CANERM)\
-      $Data(SATC4) $Data(SATC45) $Data(SATCV)\
-      $Data(TRAJLevel1) $Data(TRAJLevel2) $Data(TRAJLevel3) $Data(TRAJUnit) $Data(CANERMElev)\
-      $species"
+   $Data(Type) $Data(SATDATA) $Data(TRAJECT) $Data(CANERM)\
+   $Data(SATC4) $Data(SATC45) $Data(SATCV)\
+   $Data(TRAJLevel1) $Data(TRAJLevel2) $Data(TRAJLevel3) $Data(TRAJUnit) $Data(CANERMElev)\
+   $species"
 
    #----- Retirer la source du fichier de source actives
 
