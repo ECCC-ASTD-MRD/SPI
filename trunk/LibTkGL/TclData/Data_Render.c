@@ -355,10 +355,10 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
          while (spd>=50.0) {
             glBegin(GL_TRIANGLES);
             glVertex2d(0.0,y);
-            glVertex2d(0.0,y+0.3);
+            glVertex2d(0.0,y+0.4);
             glVertex2d(0.7,y-0.2);
             spd-=50.0;
-            y+=0.4;
+            y+=0.5;
             glEnd();
          }
 
@@ -368,7 +368,7 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
             glVertex2d(0.0,y);
             glVertex2d(0.7,y-0.2);
             spd-=10.0;
-            y+=0.4;
+            y+=0.25;
          }
 
          /*Vitesse >5*/
@@ -376,7 +376,7 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 
             /*Positionner la ligne plus loin si c'est la seule*/
             if (Speed<10.0) {
-               y+=0.4;
+               y+=0.25;
             }
             glVertex2d(0.0,y);
             glVertex2d(0.4,y-0.15);

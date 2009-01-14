@@ -847,7 +847,7 @@ void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxi
    double   x0,y0;
    int      i,k;
    int      count, lcount;
-   double   p0,t0,th0,t,tp,th,lambda,lth,rdp;
+   double   p0,t0,th0,t,th,lambda,lth,rdp;
    double   pts[2][64][3];
 
    t = (double)((int)(tmin/4.0+1)*4.0);
@@ -886,8 +886,7 @@ void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxi
       p++;
 
 
-     while (t0>=tmin && p0>AxisP->Max) {
-         tp=t0;
+      while (t0>=tmin && p0>AxisP->Max) {
          rdp=(p0>150.0)?dp:((p0>30.0)?-10.0:-5.0) ;
          Thermo_eTHP(AxisTH,AxisT,AxisP,&th0,&p0,&t0,0.0,0.0,rdp,0.0);
          t0=t0<tmin?tmin:t0;
@@ -1166,16 +1165,40 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
       vspr=!vspr?vpres:vspr;
 
       if (vspd && vdir) {
-         GraphTephi_TP2XY(AxisTH,AxisT,AxisP,AxisT->T1,AxisP->T0,&v0[0],&v0[1]);
+         double th0,p0,t0,th,rdp,dh;
+
+         glDisable(GL_CULL_FACE);
+         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+
          for(i=0;i<vspd->N;i++) {
             if (vspd->V[i]!=vspd->NoData && vdir->V[i]!=vdir->NoData && vspr->V[i]!=vspr->NoData) {
+
+               /*Place barbule along wet adiabat*/
+               dh=log(vspr->V[i])/5.0;
+               p0=AxisP->T0;t0=60.0;
+               th=Thermo_PT2TH(AxisTH,AxisT,AxisP,p0,t0);
+               th0=th;
+
+               /*Iterate with Euler to get as close as possible*/
+               while ((p0-vspr->V[i])>dh) {
+                  rdp=(p0-vspr->V[i])/-10.0;
+                  Thermo_eTHP(AxisTH,AxisT,AxisP,&th0,&p0,&t0,0.0,0.0,rdp,0.0);
+               }
+
+               GraphTephi_TTH2XY(AxisTH,AxisT,AxisP,t0,th0,&v0[0],&v[1]);
+               Data_RenderBarbule(1,1,0.0,v0[0],v[1],0.0,vspd->V[i],vdir->V[i],Item->Size,NULL);
+
+               /*Place barbule along fixed Y*/
+/*
                y=Y0;
                t=GraphTephi_PX2T(AxisTH,AxisT,AxisP,vspr->V[i],v0[0],&y,&Y1);
                if (GraphTephi_TP2XY(AxisTH,AxisT,AxisP,t,vspr->V[i],&v[0],&v[1])) {
-                  Data_RenderBarbule(1,1,0.0,v0[0],v[1],0.0,vspd->V[i],vdir->V[i],Item->Size,NULL);
+                Data_RenderBarbule(1,1,0.0,v0[0],v[1],0.0,vspd->V[i],vdir->V[i],Item->Size,NULL);
                }
+*/
             }
          }
+         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
       }
    }
 
