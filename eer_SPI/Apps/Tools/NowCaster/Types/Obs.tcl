@@ -1128,7 +1128,15 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
          pack ${tab}.bar.wet ${tab}.bar.dew ${tab}.bar.wind ${tab}.bar.info -side left -pady 2 -ipadx 2
       pack ${tab}.bar -side top -fill x -padx 5 -pady 5
       glcanvas ${tab}.glcanvas -width 0 -height 0 -bg white -relief sunken -bd 1 -highlightthickness 0
-      pack ${tab}.glcanvas -fill both -expand true -padx 5 -pady 5
+      pack ${tab}.glcanvas -side left -fill both -expand true -padx 5 -pady 5
+
+      frame ${tab}.info -relief flat
+         text ${tab}.info.text -relief sunken -bd 1 -yscrollcommand "${tab}.info.scrolly set" \
+           -width 32 -height 1 -bg $GDefs(ColorLight) -wrap none
+         scrollbar ${tab}.info.scrolly -relief sunken -command "${tab}.info.text yview" -bd 1 -width 10
+         pack ${tab}.info.text -side left -expand true -fill both
+         pack ${tab}.info.scrolly -side left -fill y
+      pack ${tab}.info -side right -fill y -padx 5 -pady 5
 
       ${tab}.glcanvas create graph -x 0 -y 0 -width 1 -height 1 -anchor nw -xlegend 5 -ylegend 5 -command "gr" -legend True \
          -fg black -bg gray75 -fill white -tags "TEPHI" -font XFont12 -title "" -type TEPHI -tag TEPHI
@@ -1207,8 +1215,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
          .nowcasterinfo.tab.frame1.info.text insert end  "\n"
       }
 
-      #----- Tephi
-
+      #----- Get Tephi temp profile
       vector free TEPHIPROF
       vector create TEPHIPROF
       vector dim TEPHIPROF { PRES DRY WET DEW  }
@@ -1216,13 +1223,14 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
 
       foreach report [metobs define $Obs -REPORT $Tag $datev] {
          foreach pres [metreport define $report -ELEMENT 007004] temp [metreport define $report -ELEMENT { 012001 012101 }] wet [metreport define $report -ELEMENT 012102] dew [metreport define $report -ELEMENT { 012192 }] {
-            if { $pres!=-999.0 && $temp!=-999.0 } {
+            if { $pres!=-999.0 && $pres!="" && $temp!=-999.0 } {
                catch { vector append TEPHIPROF  [list [expr $pres/100.0] [expr $temp-273.15] -999 [expr $dew!=-999.0?($temp-$dew-273.15):-999]] }
             }
          }
       }
       vector sort TEPHIPROF PRES
 
+      #----- Get Tephi wind profile
       vector free TEPHIWIND
       vector create TEPHIWIND
       vector dim TEPHIWIND { PRES SPD DIR  }
@@ -1235,11 +1243,39 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       }
       vector sort TEPHIWIND PRES
 
+      #----- Display graph data
       if { ![graphitem is TEPHIITEM] } {
          graphitem create TEPHIITEM
       }
       graphitem configure TEPHIITEM -desc "Station $Id"
       NowCaster::Obs::Graph
+
+      #----- Display text data
+      .nowcasterinfo.tab.frame2.info.text delete 0.0 end
+      .nowcasterinfo.tab.frame2.info.text insert end "Pres(mb) Dry(°C) Wet(°C) Dew(°C)\n"
+      foreach pres [vector get TEPHIPROF.PRES] dry [vector get TEPHIPROF.DRY] wet [vector get TEPHIPROF.WET] dew [vector get TEPHIPROF.DEW] {
+         .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   " $pres]
+         if { $dry=="" } {
+            .nowcasterinfo.tab.frame2.info.text insert end "        "
+         } else {
+            .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry]
+         }
+         if { $wet=="" } {
+            .nowcasterinfo.tab.frame2.info.text insert end "        "
+         } else {
+            .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry]
+         }
+         if { $dew=="" } {
+            .nowcasterinfo.tab.frame2.info.text insert end "\n"
+         } else {
+            .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f\n" $dew]
+         }
+      }
+
+      .nowcasterinfo.tab.frame2.info.text insert end "\nPres(mb) Speed(Kt) Dir(Deg)\n"
+      foreach pres [vector get TEPHIWIND.PRES] spd [vector get TEPHIWIND.SPD] dir [vector get TEPHIWIND.DIR] {
+         catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   %5.1f     %5.1f\n" $pres $spd $dir] }
+      }
    }
 }
 
@@ -1253,6 +1289,7 @@ proc NowCaster::Obs::Graph { } {
       -type LINE -width 2 -outline blue -value $Tephi(Info) -font XFont12 -anchor w -size 15
 
    .nowcasterinfo.tab.frame2.glcanvas itemconfigure TEPHI -item { TEPHIITEM }
+   update idletasks
 }
 
 #-------------------------------------------------------------------------------
