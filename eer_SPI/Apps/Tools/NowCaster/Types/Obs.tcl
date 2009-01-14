@@ -1145,16 +1145,16 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
          graphaxis create TEPHIAXISMIX
 
          graphaxis configure TEPHIAXIST  -font TEPHIFONT -color black -gridcolor black -gridwidth 1 -position LL -width 1 -unit T \
-            -min -70 -max 72 -increment 10 -highlightwidth 2 -highlight { 0 } -format INTEGER
+            -min -70 -max 72 -increment 10 -intervals { -60 -50 -40 -30 -20 -10 0 10 20 30 40 50 60 70 } -highlightwidth 2 -highlight { 0 } -format INTEGER
          graphaxis configure TEPHIAXISP  -font TEPHIFONT -color black -gridcolor black -gridwidth 1 -position LL -width 1 -unit P \
             -min 1050 -max 10  -increment 50  -intervals { 1050 1000 950 900 850 800 750 700 650 600 550 500 450 400 350 300 250 200 150 100 50 40 30 20 } \
             -highlightwidth 2 -highlight { 1000 850 700 500 250 }
          graphaxis configure TEPHIAXISTH -font TEPHIFONT -color black -gridcolor black -gridwidth 1  -position LL -width 1 -unit TH \
             -min 220 -max 520 -increment 10 -format INTEGER -type LN -highlightwidth 2 -highlight { 300 }
          graphaxis configure TEPHIAXISMIX -font TEPHIFONT -color black -gridcolor gray75 -gridwidth 1 -position LL -width 2 -unit MIX \
-         -min 0.02 -max 50 -increment 10 -format FIT -intervals { 0.02 0.05 0.15 0.3 0.6 1.0 1.5 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 \
-            12.0 14.0 16.0 18.0 20.0 25.0 30.0 35.0 40.0 50.0 } -labels { 0.02 0.05 0.15 0.3 0.6 1 1.5 2 3 4 5 6 7 8 9 10 \
-            12 14 16 18 20 25 30 35 40 50 }
+            -min 0.02 -max 50 -increment 10 -format FIT \
+            -intervals { 0.02 0.05 0.15 0.3 0.6 1.0 1.5 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 12.0 14.0 16.0 18.0 20.0 25.0 30.0 35.0 40.0 50.0 } \
+            -labels { 0.02 0.05 0.15 0.3 0.6 1 1.5 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30 35 40 50 }
       }
 
       TabFrame::Select .nowcasterinfo.tab 0
@@ -1216,22 +1216,24 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
 
       foreach report [metobs define $Obs -REPORT $Tag $datev] {
          foreach pres [metreport define $report -ELEMENT 007004] temp [metreport define $report -ELEMENT { 012001 012101 }] wet [metreport define $report -ELEMENT 012102] dew [metreport define $report -ELEMENT { 012192 }] {
-            if { $pres!=-999.0 } {
-               catch { vector append TEPHIPROF [list [expr $pres/100.0] [expr $temp!=-999?($temp-273.15):$temp] -999 [expr $temp!=-999?($temp-$dew-273.15):-999]] }
+            if { $pres!=-999.0 && $temp!=-999.0 } {
+               catch { vector append TEPHIPROF  [list [expr $pres/100.0] [expr $temp-273.15] -999 [expr $dew!=-999.0?($temp-$dew-273.15):-999]] }
             }
          }
       }
       vector sort TEPHIPROF PRES
+
       vector free TEPHIWIND
       vector create TEPHIWIND
       vector dim TEPHIWIND { PRES SPD DIR  }
       foreach report [metobs define $Obs -REPORT $Tag $datev] {
          foreach pres [metreport define $report -ELEMENT 007004] spd [metreport define $report -ELEMENT 011002] dir [metreport define $report -ELEMENT 011001] {
-            if { $pres!=-999 && $spd!=-999 && $dir!=-999 } {
+            if { $pres!=-999.0 && $spd!=-999.0 && $dir!=-999.0 } {
                catch { vector append TEPHIWIND [list [expr $pres/100.0] [expr $spd*1.94384617179] $dir] }
             }
          }
       }
+      vector sort TEPHIWIND PRES
 
       if { ![graphitem is TEPHIITEM] } {
          graphitem create TEPHIITEM
