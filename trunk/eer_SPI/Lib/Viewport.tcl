@@ -2980,6 +2980,7 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Map(Lake)        [projection configure $Frame -maplake]"
       puts $File "   set Viewport::Map(River)       [projection configure $Frame -mapriver]"
       puts $File "   set Viewport::Map(Admin)       [projection configure $Frame -mapadmin]"
+      puts $File "   set Viewport::Map(City)        [projection configure $Frame -mapcity]"
       puts $File "   set Viewport::Map(Polit)       [projection configure $Frame -mappolit]"
       puts $File "   set Viewport::Map(Place)       [projection configure $Frame -mapplace]"
       puts $File "   set Viewport::Map(Road)        [projection configure $Frame -maproad]"
