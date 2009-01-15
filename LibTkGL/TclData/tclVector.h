@@ -81,7 +81,7 @@ int      Vector_Destroy(Tcl_Interp *Interp,char *Name);
 int      Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List);
 int      Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx);
 Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub);
-int      Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp);
+int      Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp,int Unique);
 int      Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len);
 int      Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem);
 void     Vector_Free(TVector *Vec);

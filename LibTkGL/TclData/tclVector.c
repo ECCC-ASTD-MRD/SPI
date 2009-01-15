@@ -339,20 +339,33 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case SORT:
-         if(Objc!=3 && Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"vector [dim]");
+         if(Objc!=3 && Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"[-unique] vector [dim]");
             return TCL_ERROR;
          }
-         vec=Vector_Get(Tcl_GetString(Objv[2]));
+
          c=NULL;
-         if (Objc==4) {
-            c=Tcl_GetString(Objv[3]);
+         if (!(vec=Vector_Get(Tcl_GetString(Objv[2])))) {
+            if (strcmp(Tcl_GetString(Objv[2]),"-unique")==0) {
+               e=1;
+               vec=Vector_Get(Tcl_GetString(Objv[3]));
+               if (Objc==5) {
+                 c=Tcl_GetString(Objv[4]);
+               }
+            } else {
+               Tcl_AppendResult(Interp,"Invalid option",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            if (Objc==4) {
+               c=Tcl_GetString(Objv[3]);
+            }
          }
          if (!vec) {
             Tcl_AppendResult(Interp,"Invalid vector",(char*)NULL);
             return(TCL_ERROR);
          } else {
-            return Vector_Sort(Interp,vec,c);
+            return(Vector_Sort(Interp,vec,c,e));
          }
          break;
 
@@ -897,6 +910,7 @@ int Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len) {
  *   <Interp>   : Interpreteur Tcl
  *   <Vec>      : Vecteur
  *   <Comp>     : Composante sur laquelle trie (NULL=aucune)
+ *   <Unique>   : Supprimer les composantes dont l'index est le meme
  *
  * Retour       : Code de retour standard TCL
  *
@@ -951,9 +965,9 @@ void Vector_QuickSort(TVector *Vec,int Comp,int start,int end) {
    }
 }
 
-int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp) {
+int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp,int Unique) {
 
-   int      n,end,c;
+   int      n,end,c,cn;
    double   tmp;
    Tcl_Obj *obj;
 
@@ -983,6 +997,27 @@ int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp) {
 
    /*Sort on the specific component*/
    Vector_QuickSort(Vec,c,0,end-1);
+
+   /*Check for repeted element*/
+   if (Unique) {
+      if (Comp) {
+         for(n=0;n<Vec->Cp[c]->N-1;n++) {
+            if (Vec->Cp[c]->V[n]==Vec->Cp[c]->V[n+1]) {
+               for(cn=0;cn<Vec->N;cn++) {
+                  memcpy(&Vec->Cp[cn]->V[n+1],&Vec->Cp[cn]->V[n+2],(Vec->Cp[cn]->N-(n+1))*sizeof(double));
+                  Vec->Cp[cn]->N--;
+            }
+            }
+         }
+      } else {
+         for(n=0;n<Vec->N-1;n++) {
+            if (Vec->V[n]==Vec->V[n+1]) {
+               memcpy(&Vec->V[n+1],&Vec->V[n+2],(Vec->N-(n+1))*sizeof(double));
+            }
+            Vec->N--;
+         }
+      }
+   }
 
    return(TCL_OK);
 }
