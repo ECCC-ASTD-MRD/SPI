@@ -1124,11 +1124,9 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
    }
 
    /*Recuperer le handle de l'image specifie*/
-
    handle=Tk_FindPhoto(Interp,Img);
 
    /*Definire les parametres du bock de donnees*/
-
    Tk_PhotoGetSize(handle,&data.width,&data.height);
 
    data.pitch=data.width*4;
@@ -1140,7 +1138,6 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
    data.pixelPtr=(unsigned char*)malloc(data.width*data.height*4*sizeof(unsigned char));
 
    /*Creer l'image de la palette*/
-
    if (data.height>data.width) {
       incr=(double)(CMap->NbPixels)/data.height;
 
@@ -1166,7 +1163,6 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
    }
 
    /*Envoyer le data dans l'image Tk*/
-
 //TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
