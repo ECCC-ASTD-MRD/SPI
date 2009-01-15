@@ -1165,7 +1165,7 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
       vspr=!vspr?vpres:vspr;
 
       if (vspd && vdir) {
-         double th0,p0,t0,th,rdp,dh;
+         double th0,p0,t0,th,rdp,dh,tt=60.0;
 
          glDisable(GL_CULL_FACE);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -1175,7 +1175,7 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
 
                /*Place barbule along wet adiabat*/
                dh=log(vspr->V[i])/5.0;
-               p0=AxisP->T0;t0=60.0;
+               p0=AxisP->T0;t0=tt=(tt==60.0?70.0:60.0);
                th=Thermo_PT2TH(AxisTH,AxisT,AxisP,p0,t0);
                th0=th;
 
