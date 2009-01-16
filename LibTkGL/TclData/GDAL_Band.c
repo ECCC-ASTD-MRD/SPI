@@ -637,8 +637,8 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
 */
 int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,n,nt,p,pt,pi,pj,len=-1,idx;
-   double       val0,val1,area;
+   int          i,j,n,nt,p,pt,pi,pj,len=-1,idx,wrap,w=0;
+   double       val0,val1,area,x,y,z;
    OGRGeometryH cell,ring;
    OGREnvelope  env;
    Tcl_Obj      *lst,*item=NULL;
@@ -712,11 +712,66 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       }
    } else {
 
-      /*Damn, we dont have it*/
+      /*Damn, we dont have the index, do the long run*/
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
 
-            OGR_GridCell(ring,ToRef,FromRef,i,j,Prec);
+            /*Project the source gridcell into the destination*/
+            wrap=OGR_GridCell(ring,ToRef,FromRef,i,j,Prec);
+
+            /*Are we crossing the wrap around*/
+            if (wrap<0) {
+
+               /*If so, move the wrapped points (assumed greater than NI/2) to the other side*/
+               for(p=0;p<-wrap;p++) {
+                  OGR_G_GetPoint(ring,p,&x,&y,&z);
+                  if (x>ToDef->NI>>1) {
+                     x-=ToDef->NI;
+                     OGR_G_SetPoint_2D(ring,p,x,y);
+                  }
+               }
+
+               /*Process the cell*/
+               OGR_G_Empty(cell);
+               OGR_G_AddGeometry(cell,ring);
+               area=OGR_G_GetArea(cell);
+
+               if (area>0.0) {
+                  Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
+                  if (isnan(val1) || val1==FromDef->NoData) {
+                     continue;
+                  }
+
+                  /*Use enveloppe limits to initialize the initial lookup range*/
+                  OGR_G_GetEnvelope(ring,&env);
+                  env.MaxX+=0.5;env.MaxY+=0.5;
+                  env.MinX=env.MinX<0?0:env.MinX;
+                  env.MinY=env.MinY<0?0:env.MinY;
+                  env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
+                  env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
+
+                  if (List)
+                     item=Tcl_NewListObj(0,NULL);
+
+                  nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Buffer,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                  if (List && n) {
+                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
+                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
+                     Tcl_ListObjAppendElement(Interp,List,item);
+                  }
+   #ifdef DEBUG
+                  fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+   #endif
+               }
+
+               /*We have to process the part that was out of the grid limits so translate everything NI points*/
+               for(p=0;p<-wrap;p++) {
+                  OGR_G_GetPoint(ring,p,&x,&y,&z);
+                  x+=ToDef->NI;
+                  OGR_G_SetPoint_2D(ring,p,x,y);
+               }
+            }
+
             OGR_G_Empty(cell);
             OGR_G_AddGeometry(cell,ring);
             area=OGR_G_GetArea(cell);
@@ -727,7 +782,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                   continue;
                }
 
-               /*Utilise les limites de l'enveloppe pour initialiser la selection*/
+               /*Use enveloppe limits to initialize the initial lookup range*/
                OGR_G_GetEnvelope(ring,&env);
                env.MaxX+=0.5;env.MaxY+=0.5;
                env.MinX=env.MinX<0?0:env.MinX;

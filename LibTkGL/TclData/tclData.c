@@ -137,7 +137,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       Tcl_InitHashTable(&TData_Table,TCL_STRING_KEYS);
    }
 
-   Tcl_PkgProvide(Interp,"TclData","LIB_VER");
+   Tcl_PkgProvide(Interp,"TclData",LIB_VER);
 
    return(TCL_OK);
 }

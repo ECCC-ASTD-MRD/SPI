@@ -1632,6 +1632,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
  *   <Seg>      : Facteur de sectionnement des segments
  *
  * Retour       : Code d'erreur standard TCL
+ *   <Nb>       : Nombre de points (negatif si ca passe le wrap)
  *
  * Remarques    :
  *
@@ -1640,16 +1641,21 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg) {
 
    double n,dn,df;
-   double x,y,la,lo;
+   double x0,x1,x,y,la,lo;
    int    pt=0;
 
    dn=1.0/Seg;
    df=dn*0.5;
 
-   /*Left Up */
+   x0=1e32;
+   x1=-1e32;
+
+   /*Top Left*/
    for(n=-0.5;n<(0.5+df);n+=dn) {
       RefFrom->Project(RefFrom,I-0.5,J+n,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x0=FMIN(x0,x);
+      x1=FMAX(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1657,13 +1663,17 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
    for(n=-0.5;n<(0.5+df);n+=dn) {
       RefFrom->Project(RefFrom,I+n,J+0.5,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x0=FMIN(x0,x);
+      x1=FMAX(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
-   /*Right Down*/
+   /*Right bottom*/
    for(n=0.5;n>-(0.5+df);n-=dn) {
       RefFrom->Project(RefFrom,I+0.5,J+n,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x0=FMIN(x0,x);
+      x1=FMAX(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1671,6 +1681,8 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
    for(n=0.5;n>-(0.5+df);n-=dn) {
       RefFrom->Project(RefFrom,I+n,J-0.5,&la,&lo,1,1);
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
+      x0=FMIN(x0,x);
+      x1=FMAX(x1,x);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1679,7 +1691,7 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
    RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
    OGR_G_SetPoint_2D(Geom,pt++,x,y);
 
-   return(pt);
+   return((RefTo->Type&GRID_WRAP && ((x1-x0)>((RefTo->X1-RefTo->X0)>>1)))?-pt:pt);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
