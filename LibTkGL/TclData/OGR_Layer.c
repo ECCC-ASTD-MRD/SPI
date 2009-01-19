@@ -1641,7 +1641,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg) {
 
    double n,dn,df;
-   double x0,x1,y0,y1,x,y,la,lo;
+   double x0,x1,x,y,la,lo;
    int    pt=0;
 
    dn=1.0/Seg;
@@ -1656,8 +1656,6 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
-      y0=FMIN(y0,y);
-      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1667,8 +1665,6 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
-      y0=FMIN(y0,y);
-      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1678,8 +1674,6 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
-      y0=FMIN(y0,y);
-      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1689,8 +1683,6 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
-      y0=FMIN(y0,y);
-      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
