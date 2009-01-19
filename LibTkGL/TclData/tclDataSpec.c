@@ -959,7 +959,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       Spec->Set=1;
 
    DataSpec_Define(Spec);
-fprintf(stderr,"11111------------- %f %f\n",Spec->Min,Spec->Max);
    return(TCL_OK);
 }
 
@@ -1439,7 +1438,6 @@ void DataSpec_IntervalsMod(TDataSpec *Spec,double Min,double Max) {
    Spec->InterNb=0;
    d=SPEC2VAL(Spec,Spec->InterModeParam);
    if (Spec->InterModeParam>0.0) {
-fprintf(stderr,"------------- %f %f\n",Min,Max);
       Min-=fmod(Min,d);
 
       for(v=Min;v<Max;v+=d) {
