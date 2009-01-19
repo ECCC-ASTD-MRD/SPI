@@ -959,6 +959,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       Spec->Set=1;
 
    DataSpec_Define(Spec);
+fprintf(stderr,"11111------------- %f %f\n",Spec->Min,Spec->Max);
    return(TCL_OK);
 }
 
@@ -1398,12 +1399,6 @@ void DataSpec_Define(TDataSpec *Spec){
    if (Spec->Map) {
       if (Spec->InterNb>0) {
          Spec->MapFactor=(double)Spec->Map->NbPixels/(Spec->InterNb+1);
-         for(i=0;i<Spec->InterNb;i++) {
-            if (Spec->Inter[i]>=Spec->Min) {
-               Spec->Min=Spec->Inter[i];
-               break;
-            }
-         }
 
          if (Spec->InterO<100) {
             for(i=0;i<Spec->InterNb;i++){
@@ -1444,6 +1439,7 @@ void DataSpec_IntervalsMod(TDataSpec *Spec,double Min,double Max) {
    Spec->InterNb=0;
    d=SPEC2VAL(Spec,Spec->InterModeParam);
    if (Spec->InterModeParam>0.0) {
+fprintf(stderr,"------------- %f %f\n",Min,Max);
       Min-=fmod(Min,d);
 
       for(v=Min;v<Max;v+=d) {
