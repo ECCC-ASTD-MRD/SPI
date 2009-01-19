@@ -45,6 +45,8 @@
 
 #include "gpc.h"
 
+#define OGR_G_EnvelopeIntersect(ENV0,ENV1) (ENV0.MinX<=ENV1.MaxX && ENV0.MaxX>=ENV1.MinX && ENV0.MinY<=ENV1.MaxY && ENV0.MaxY>=ENV1.MinY)
+
 typedef struct OGR_File {
    OGRDataSourceH  Data;
    OGRSFDriverH    Driver;
@@ -101,6 +103,7 @@ int        OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
 void       OGR_LayerFree(OGR_Layer *Layer);
 OGR_Layer* OGR_LayerGet(char *Name);
 int        OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom);
+int        OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates);
 int        OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx);
 int        OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
 int        OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer);

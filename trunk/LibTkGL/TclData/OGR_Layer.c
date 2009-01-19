@@ -1641,7 +1641,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg) {
 
    double n,dn,df;
-   double x0,x1,x,y,la,lo;
+   double x0,x1,y0,y1,x,y,la,lo;
    int    pt=0;
 
    dn=1.0/Seg;
@@ -1656,6 +1656,8 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
+      y0=FMIN(y0,y);
+      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1665,6 +1667,8 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
+      y0=FMIN(y0,y);
+      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1674,6 +1678,8 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
+      y0=FMIN(y0,y);
+      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1683,6 +1689,8 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
       x0=FMIN(x0,x);
       x1=FMAX(x1,x);
+      y0=FMIN(y0,y);
+      y1=FMAX(y1,y);
       OGR_G_SetPoint_2D(Geom,pt++,x,y);
    }
 
@@ -1919,6 +1927,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    int          i,j,f,n,p,pt,len=-1;
    double       val0,val1,area,*accum=NULL,r,rt,dp;
    OGRGeometryH cell,ring,inter;
+   OGREnvelope  env0,env1;
    Tcl_Obj      *lst,*item=NULL;
 
    if (!Layer) {
@@ -2001,46 +2010,51 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                   continue;
                }
 
+               OGR_G_GetEnvelope(ring,&env0);
+
                if (List)
                   item=Tcl_NewListObj(0,NULL);
 
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
-                  if (GPC_Intersect(cell,OGR_F_GetGeometryRef(Layer->Feature[f]))) {
-                     inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
-                     dp=OGR_G_GetArea(inter);
-                     r=dp/area;
-                     rt+=r;
-                     val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-                     switch(Mode) {
-                        case 'N': accum[f]+=r;
-                        case 'C': val0+=val1*r;
-                                  OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-                                  break;
-                        case 'W': if (r>0.999) {
-                                     val0+=val1;
-                                  } else {
-                                     r=0.0;
-                                  }
-                                  break;
-                        case 'I': val0+=val1;
-                                  break;
-                     }
-                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+                  OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1);
+                  if (OGR_G_EnvelopeIntersect(env0,env1)) {
+                     if (GPC_Intersect(cell,OGR_F_GetGeometryRef(Layer->Feature[f]))) {
+                        inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
+                        dp=OGR_G_GetArea(inter);
+                        r=dp/area;
+                        rt+=r;
+                        val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+                        switch(Mode) {
+                           case 'N': accum[f]+=r;
+                           case 'C': val0+=val1*r;
+                                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+                                     break;
+                           case 'W': if (r>0.999) {
+                                        val0+=val1;
+                                     } else {
+                                        r=0.0;
+                                     }
+                                     break;
+                           case 'I': val0+=val1;
+                                     break;
+                        }
+                        OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
-                     /*Append intersection info to the list*/
-                     if (List && r>0.0) {
-                        n++;
-                        Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
-                        Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
-                     }
+                        /*Append intersection info to the list*/
+                        if (List && r>0.0) {
+                           n++;
+                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
+                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
+                        }
 
-                     /*If its full, select next cell*/
-                     if (rt>0.999) {
-                        break;
+                        /*If its full, select next cell*/
+                        if (rt>0.999) {
+                           break;
+                        }
                      }
                   }
-              }
+               }
                if (List && n) {
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
