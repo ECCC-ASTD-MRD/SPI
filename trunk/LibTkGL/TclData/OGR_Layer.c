@@ -1916,10 +1916,10 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 */
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,f,n,p,pt,len=-1;
+   int          i,j,f,n,p,pt,len=-1,env=0;
    double       val0,val1,area,*accum=NULL,r,rt,dp;
    OGRGeometryH cell,ring,inter;
-   OGREnvelope  env0,env1;
+   OGREnvelope  env0,*env1=NULL;
    Tcl_Obj      *lst,*item=NULL;
 
    if (!Layer) {
@@ -1989,6 +1989,11 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       }
    } else {
 
+      if (!(env1=(OGREnvelope*)malloc(Layer->NFeature*sizeof(OGREnvelope)))) {
+         Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate envelope buffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+
       /*Damn, we dont have it*/
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
@@ -2009,8 +2014,11 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
-                  OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1);
-                  if (OGR_G_EnvelopeIntersect(env0,env1)) {
+                  /*If layer envelopes are not yet calculated*/
+                  if (!env)
+                     OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1[f]);
+
+                  if (OGR_G_EnvelopeIntersect(env0,env1[f])) {
                      if (GPC_Intersect(cell,OGR_F_GetGeometryRef(Layer->Feature[f]))) {
                         inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
                         dp=OGR_G_GetArea(inter);
@@ -2047,6 +2055,10 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      }
                   }
                }
+               /*Layer envelopes are now calculated*/
+               env=1;
+
+               /*Append this gridpoint intersections info to the list*/
                if (List && n) {
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
@@ -2055,7 +2067,8 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             }
          }
       }
-   }
+      free(env1);
+  }
 
    /*Finalize and reassign*/
    if (Final && Mode=='N') {
