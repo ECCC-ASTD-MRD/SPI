@@ -53,6 +53,7 @@
 #    CVMagnifier::Activate   { Canvas X Y }
 #    CVMagnifier::DeActivate { Canvas }
 #    CVMagnifier::Create     { Canvas }
+#    CVMagnifier::Destroy    { Canvas }
 #    CVMagnifier::Decrease   { Canvas X Y }
 #    CVMagnifier::Increase   { Canvas X Y }
 #    CVMagnifier::Move       { Canvas X Y }
@@ -1363,7 +1364,8 @@ namespace eval CVMagnifier {
    variable Param
    variable Data
 
-   set Param(Zoom) 2
+   set Param(Zoom)   2
+   set Param(Size)   256
    set Data(Zooming) 0
 }
 
@@ -1390,7 +1392,7 @@ proc CVMagnifier::Activate { Canvas X Y } {
 
    set Data(Zooming) 1
 
-   image create photo CANVASMAGNIFIER -width 256 -height 256
+   image create photo CANVASMAGNIFIER -width $Param(Size) -height $Param(Size)
    $Canvas magnify CANVASMAGNIFIER $X $Y $Param(Zoom)
    $Canvas create image $X $Y -image CANVASMAGNIFIER -tags CANVASMAGNIFIER
    update idletasks
@@ -1447,6 +1449,34 @@ proc CVMagnifier::Create { Canvas } {
    bind $Canvas <ButtonRelease-1> { CVMagnifier::DeActivate %W }
    bind $Canvas <ButtonPress-4>   { CVMagnifier::Increase   %W %x %y }
    bind $Canvas <ButtonPress-5>   { CVMagnifier::Decrease   %W %x %y }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::Destroy>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer une loupe de canvas en supprimant les bindings de controle
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::Destroy { Canvas } {
+   variable Param
+   variable Data
+
+   bind $Canvas <ButtonPress-1>   {}
+   bind $Canvas <B1-Motion>       {}
+   bind $Canvas <ButtonRelease-1> {}
+   bind $Canvas <ButtonPress-4>   {}
+   bind $Canvas <ButtonPress-5>   {}
 }
 
 #----------------------------------------------------------------------------
@@ -1526,10 +1556,16 @@ proc CVMagnifier::Move { Canvas X Y } {
    variable Data
    variable Param
 
+
    catch {
       $Canvas itemconf CANVASMAGNIFIER -state hidden
       $Canvas magnify CANVASMAGNIFIER $X $Y $Param(Zoom)
+
+      set s2 [expr $Param(Size)/2.0]
+      set X [expr ($X-$s2)<0?$s2:($X+$s2)>[winfo width $Canvas]?[winfo width $Canvas]-$s2:$X]
+      set Y [expr ($Y-$s2)<0?$s2:($Y+$s2)>[winfo height $Canvas]?[winfo height $Canvas]-$s2:$Y]
       $Canvas coords CANVASMAGNIFIER $X $Y
+
       $Canvas itemconf CANVASMAGNIFIER -state normal
       update idletasks
    }
