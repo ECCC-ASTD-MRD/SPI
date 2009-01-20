@@ -1447,10 +1447,6 @@ proc CVMagnifier::Create { Canvas } {
    bind $Canvas <ButtonRelease-1> { CVMagnifier::DeActivate %W }
    bind $Canvas <ButtonPress-4>   { CVMagnifier::Increase   %W %x %y }
    bind $Canvas <ButtonPress-5>   { CVMagnifier::Decrease   %W %x %y }
-
-   $Canvas create rectangle 10 10 50 50 -fill blue
-   $Canvas create oval 400 400 450 450 -fill green
-   $Canvas create text 310 310 -fill red  -text ABC--XYZ
 }
 
 #----------------------------------------------------------------------------
