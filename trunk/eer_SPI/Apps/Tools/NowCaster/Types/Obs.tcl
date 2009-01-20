@@ -1140,9 +1140,11 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
 
       ${tab}.glcanvas create graph -x 0 -y 0 -width 1 -height 1 -anchor nw -xlegend 5 -ylegend 5 -command "gr" -legend True \
          -fg black -bg gray75 -fill white -tags "TEPHI" -font XFont12 -title "" -type TEPHI -tag TEPHI
-
-      bind ${tab}.glcanvas <Configure> "update idletasks; ${tab}.glcanvas itemconfigure TEPHI -width \[winfo width ${tab}.glcanvas\] -height \[winfo height ${tab}.glcanvas\];"
       pack .nowcasterinfo.tab -side top -fill both -expand true -padx 5 -pady 5
+
+      CVMagnifier::Create ${tab}.glcanvas
+
+      bind ${tab}.glcanvas <Configure>       "update idletasks; ${tab}.glcanvas itemconfigure TEPHI -width \[winfo width ${tab}.glcanvas\] -height \[winfo height ${tab}.glcanvas\];"
 
       #----- Creation des unite de l'echelle
 
@@ -1228,7 +1230,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
             }
          }
       }
-      vector sort TEPHIPROF PRES
+      vector sort -unique TEPHIPROF PRES
 
       #----- Get Tephi wind profile
       vector free TEPHIWIND
@@ -1241,7 +1243,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
             }
          }
       }
-      vector sort TEPHIWIND PRES
+      vector sort -unique TEPHIWIND PRES
 
       #----- Display graph data
       if { ![graphitem is TEPHIITEM] } {
