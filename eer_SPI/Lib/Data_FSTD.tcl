@@ -497,7 +497,7 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } } {
    variable Data
 
    if { $Mode!="NONE" } {
-      set Param(Intervals)      {}
+#      set Param(Intervals)      {}
    }
    set Param(IntervalMode)   $Mode
    set Param(IntervalParam)  $Par
@@ -737,7 +737,6 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) " $Param(Max)\]"
       }
    }
-
    FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam)
 }
 
@@ -791,7 +790,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -step $Param(Step) -geovector $Param(Geo) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) \
-      -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) -intervals $inter
+      -intervals $inter -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 
    catch { $Data(ApplyButton) configure -state normal }
 
