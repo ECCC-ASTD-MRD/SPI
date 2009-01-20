@@ -1916,7 +1916,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 */
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,f,n,p,pt,len=-1,env=0;
+   int          i,j,f,n,p,pt,len=-1;
    double       val0,val1,area,*accum=NULL,r,rt,dp;
    OGRGeometryH cell,ring,inter;
    OGREnvelope  env0,*env1=NULL;
@@ -1989,7 +1989,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       }
    } else {
 
-      if (!(env1=(OGREnvelope*)malloc(Layer->NFeature*sizeof(OGREnvelope)))) {
+      if (!(env1=(OGREnvelope*)calloc(Layer->NFeature,sizeof(OGREnvelope)))) {
          Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate envelope buffer",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -2014,8 +2014,9 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
-                  /*If layer envelopes are not yet calculated*/
-                  if (!env)
+
+                  /*If layer envelopes is not yet calculated*/
+                  if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
                      OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1[f]);
 
                   if (OGR_G_EnvelopeIntersect(env0,env1[f])) {
@@ -2055,9 +2056,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      }
                   }
                }
-               /*Layer envelopes are now calculated*/
-               env=1;
-
                /*Append this gridpoint intersections info to the list*/
                if (List && n) {
                   Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
