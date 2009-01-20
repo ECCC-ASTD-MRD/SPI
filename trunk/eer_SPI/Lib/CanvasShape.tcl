@@ -50,6 +50,13 @@
 #    CVText::Paste         { Canvas { X {} } { Y {} } }
 #    CVText::Select        { Canvas }
 #
+#    CVMagnifier::Activate   { Canvas X Y }
+#    CVMagnifier::DeActivate { Canvas }
+#    CVMagnifier::Create     { Canvas }
+#    CVMagnifier::Decrease   { Canvas X Y }
+#    CVMagnifier::Increase   { Canvas X Y }
+#    CVMagnifier::Move       { Canvas X Y }
+#
 #    CVTree::Render        { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } }
 #    CVTRee::RenderBranch  { Canvas Tree Branch X Y }
 #    CVTree::Select        { Canvas Tree Branch { Open False } }
@@ -1350,6 +1357,186 @@ proc CVText::Select { Canvas } {
 
    $Canvas select from current 0
    $Canvas select to current end
+}
+
+namespace eval CVMagnifier {
+   variable Param
+   variable Data
+
+   set Param(Zoom) 2
+   set Data(Zooming) 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::Activate>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Activer l'affichage de la loupe
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::Activate { Canvas X Y } {
+   variable Data
+   variable Param
+
+   set Data(Zooming) 1
+
+   image create photo CANVASMAGNIFIER -width 256 -height 256
+   $Canvas magnify CANVASMAGNIFIER $X $Y $Param(Zoom)
+   $Canvas create image $X $Y -image CANVASMAGNIFIER -tags CANVASMAGNIFIER
+   update idletasks
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::DeActivate>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Deactiver l'affichage de la loupe
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::DeActivate { Canvas } {
+   variable Data
+   variable Param
+
+   set Data(Zooming) 0
+
+   $Canvas delete CANVASMAGNIFIER
+   image delete CANVASMAGNIFIER
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::Create>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer une loupe de canvas en initialisant les bindings de controle
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::Create { Canvas } {
+   variable Param
+   variable Data
+
+   bind $Canvas <ButtonPress-1>   { CVMagnifier::Activate   %W %x %y }
+   bind $Canvas <B1-Motion>       { CVMagnifier::Move       %W %x %y }
+   bind $Canvas <ButtonRelease-1> { CVMagnifier::DeActivate %W }
+   bind $Canvas <ButtonPress-4>   { CVMagnifier::Increase   %W %x %y }
+   bind $Canvas <ButtonPress-5>   { CVMagnifier::Decrease   %W %x %y }
+
+   $Canvas create rectangle 10 10 50 50 -fill blue
+   $Canvas create oval 400 400 450 450 -fill green
+   $Canvas create text 310 310 -fill red  -text ABC--XYZ
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::Decrease>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Reduire le facteur de zoom de la loupe
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::Decrease { Canvas X Y } {
+   variable Data
+   variable Param
+
+   if { $Data(Zooming) && $Param(Zoom)>2 } {
+      incr Param(Zoom) -1
+   }
+
+   CVMagnifier::Move $Canvas $X $Y
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::Increase>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Augmenter le facteur de zoom de la loupe
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::Increase { Canvas X Y } {
+   variable Data
+   variable Param
+
+   if { $Data(Zooming) } {
+      incr Param(Zoom) 1
+   }
+
+   CVMagnifier::Move $Canvas $X $Y
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVMagnifier::Move>
+# Creation : Janvier 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Deplacer la loupe
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X>       : Coordonnee en X
+#  <Y>       : Coordonnee en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVMagnifier::Move { Canvas X Y } {
+   variable Data
+   variable Param
+
+   catch {
+      $Canvas itemconf CANVASMAGNIFIER -state hidden
+      $Canvas magnify CANVASMAGNIFIER $X $Y $Param(Zoom)
+      $Canvas coords CANVASMAGNIFIER $X $Y
+      $Canvas itemconf CANVASMAGNIFIER -state normal
+      update idletasks
+   }
 }
 
 #-------------------------------------------------------------------------------
