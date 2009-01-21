@@ -582,8 +582,14 @@ proc Viewport::ConfigPut { Frame VP } {
 
    $Data(Frame).layer.vp.col configure -fg $Resources(Bkg)
 
-   set lst "zeroth.xbm mask1.xbm mask2.xbm"
-   $Data(Frame).left.ras.mask.sel configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst [expr $Map(Mask)<0?0:$Map(Mask)]]
+   set m zeroth.xbm
+   switch $Map(Mask) {
+      "LAND" { set m mask1.xbm }
+      "1"    { set m mask1.xbm }
+      "SEA"  { set m mask2.xbm }
+      "2"    { set m mask2.xbm }
+   }
+   $Data(Frame).left.ras.mask.sel configure -bitmap @$GDefs(Dir)/Resources/Bitmap/$m
 
    set lst "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm width6.xbm"
    $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coast)]
