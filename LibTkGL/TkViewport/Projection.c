@@ -914,9 +914,25 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
         case MASK:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Geo->Params.Mask));
+               switch(proj->Geo->Params.Mask) {
+                  case -1: Tcl_SetObjResult(Interp,Tcl_NewStringObj("DATA",0));break;
+                  case  0: Tcl_SetObjResult(Interp,Tcl_NewStringObj("NONE",0));break;
+                  case  1: Tcl_SetObjResult(Interp,Tcl_NewStringObj("LAND",0));break;
+                  case  2: Tcl_SetObjResult(Interp,Tcl_NewStringObj("SEA",0));break;
+               }
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->Geo->Params.Mask);
+               ++i;
+               if (strcmp(Tcl_GetString(Objv[i]),"NONE")==0) {
+                  proj->Geo->Params.Mask=0;
+               } else if (strcmp(Tcl_GetString(Objv[i]),"DATA")==0) {
+                  proj->Geo->Params.Mask=-1;
+               } else if (strcmp(Tcl_GetString(Objv[i]),"LAND")==0) {
+                  proj->Geo->Params.Mask=1;
+               } else if (strcmp(Tcl_GetString(Objv[i]),"SEA")==0) {
+                  proj->Geo->Params.Mask=2;
+               } else if (Tcl_GetIntFromObj(Interp,Objv[i],&proj->Geo->Params.Mask)==TCL_ERROR) {
+                  proj->Geo->Params.Mask=0;
+               }
             }
             break;
 
