@@ -63,7 +63,6 @@ void         GDB_TxtGet(int Type,float Lat,float Lon,char *Txt);
 void         GDB_TxtFree(GDB_Txt *Txt);
 void         GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point);
 void         GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
-int          GDB_TileResolution(GDB_Data *GDB,double Dist);
 
 GLint Texture_Read(char *File);
 
