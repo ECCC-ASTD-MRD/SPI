@@ -1624,7 +1624,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
 
    /*Calcul de la position centrale*/
    if (Proj->Type->Def==PROJGLOBE) {
-     gluProject(0.0,0.0,0.0,VP->GLModS,VP->GLProj,VP->GLView,&Proj->Params->ZPos[0],&Proj->Params->ZPos[1],&Proj->Params->ZPos[2]);
+      gluProject(0.0,0.0,0.0,VP->GLModS,VP->GLProj,VP->GLView,&Proj->Params->ZPos[0],&Proj->Params->ZPos[1],&Proj->Params->ZPos[2]);
    } else {
       Vect_Init(Proj->Params->ZPos,0.0,0.0,1e32);
    }

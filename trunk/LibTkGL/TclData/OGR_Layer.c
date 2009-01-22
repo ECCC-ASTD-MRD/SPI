@@ -2015,7 +2015,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
 
-                  /*If layer envelopes is not yet calculated*/
+                  /*If layer envelope is not yet calculated*/
                   if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
                      OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1[f]);
 
