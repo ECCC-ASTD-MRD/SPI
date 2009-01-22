@@ -1102,9 +1102,15 @@ proc Page::ModeSelect { Mode { Frames {} } } {
 
          foreach vp [Page::Registered $frame Viewport] {
 
-            $c bind $Data(Tag)$vp <B1-B2-ButtonPress>   ""
-            $c bind $Data(Tag)$vp <B1-B2-Motion>        ""
-            $c bind $Data(Tag)$vp <B1-B2-ButtonRelease> ""
+            $c bind $Data(Tag)$vp <Motion>                 ""
+            $c bind $Data(Tag)$vp <B1-Motion>              ""
+            $c bind $Data(Tag)$vp <ButtonPress-1>          ""
+            $c bind $Data(Tag)$vp <ButtonRelease-1>        ""
+            $c bind $Data(Tag)$vp <ButtonPress-2>          ""
+            $c bind $Data(Tag)$vp <ButtonRelease-2>        ""
+            $c bind $Data(Tag)$vp <B1-B2-ButtonPress>      ""
+            $c bind $Data(Tag)$vp <B1-B2-Motion>           ""
+            $c bind $Data(Tag)$vp <B1-B2-ButtonRelease>    ""
             $c bind $Data(Tag)$vp <Double-ButtonRelease-1> ""
 
             switch $Data(Mode) {
@@ -1114,9 +1120,13 @@ proc Page::ModeSelect { Mode { Frames {} } } {
                Cam   { Page::ModeCam   $frame $vp }
                Draw  { Page::ModeDraw  $frame $vp }
                None  { Page::ModeNone  $frame $vp }
+               default {}
             }
          }
          $c delete VERTEXFOLLOW
+      }
+      if { $Data(Mode)=="Mag" } {
+         CVMagnifier::Create $c
       }
    }
 }

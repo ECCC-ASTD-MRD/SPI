@@ -137,6 +137,8 @@ namespace eval SPI {
    set Bubble(LayoutSave)  { "Sauvegarder la mise-en-page courante" "Save the current page layout" }
    set Bubble(LayoutDel)   { "Supprimer la mise-en-page courante" "Delete the current page layout" }
    set Bubble(LayoutRun)   { "Exécuter un script sur la page courante" "Execute a script on the current page" }
+   set Bubble(LayoutMag)   { "Loupe de page, permet de visualiser un agrandissement localisé.\n\nBouton gauche: Loupe\nRoulette     : Augmenter/diminuer le zoom"
+                             "Page Magnifier. Use to mangify local spot\n\nLeft button: Loupe\nScroll     : Augmenter/diminuer le zoom" }
    set Bubble(ZoomBack)    { "Zoom arrière" "Zoom back" }
    set Bubble(ZoomClear)   { "Annuler le zoom" "Cancel zoom" }
    set Bubble(CamClear)    { "Réinitialiser la camera" "Reinitialize camera" }

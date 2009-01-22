@@ -148,6 +148,7 @@ proc IdIcons { Show } {
    image create photo MODEZOOM    -file $GDefs(Dir)/Resources/Image/Icon/Magnify.gif
    image create photo MODECAM     -file $GDefs(Dir)/Resources/Image/Icon/Camera.gif
    image create photo MODEFLY     -file $GDefs(Dir)/Resources/Image/Icon/Airplane.gif
+   image create photo MODEMAG     -file $GDefs(Dir)/Resources/Image/Icon/DocumentMag.gif
    image create photo BINOCULAR   -file $GDefs(Dir)/Resources/Image/Icon/Binocular.gif
    image create photo PARAMS      -file $GDefs(Dir)/Resources/Image/Icon/Parameters.gif
    image create photo GRAPH       -file $GDefs(Dir)/Resources/Image/Icon/Graph.gif
