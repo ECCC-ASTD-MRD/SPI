@@ -1205,6 +1205,33 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
  *
  *----------------------------------------------------------------------------
 */
+void ViewportOrtho(ViewportItem *VP){
+
+   int x,y,h;
+
+   if (GLRender->MagScale>1) {
+      h=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
+   } else {
+      h=Tk_Height(Tk_CanvasTkwin(VP->canvas));
+   }
+
+   x=(VP->header.x1-((TkCanvas*)(VP->canvas))->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
+   y=(h-(VP->header.y1-((TkCanvas*)(VP->canvas))->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2;
+
+   glMatrixMode(GL_PROJECTION);
+   glPushMatrix();
+   glLoadIdentity();
+
+//   trViewport(GLRender->TRCon,x,y,VP->Width*GLRender->MagScale,VP->Height*GLRender->MagScale);
+   gluOrtho2D(0,VP->Width,0,VP->Height);
+}
+
+void ViewportUnOrtho(ViewportItem *VP){
+
+   glMatrixMode(GL_PROJECTION);
+   glPopMatrix();
+}
+
 void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,int Height,int Tile,int Clear,int PS){
 
    double as,z,dl;
@@ -1272,7 +1299,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    ProjCam_Place(VP->Cam);
 
    /*Conserver les parametres pour les transformations*/
-   if (Clear) {
+   if (Clear && GLRender->MagScale<=1) {
       glGetDoublev(GL_MODELVIEW_MATRIX,VP->GLModS);
       glGetDoublev(GL_PROJECTION_MATRIX,VP->GLProj);
       glGetIntegerv(GL_VIEWPORT,VP->GLView);
