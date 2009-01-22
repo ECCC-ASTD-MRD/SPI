@@ -733,7 +733,22 @@ proc SPI::ToolBar { Frame } {
             -command { SPI::LayoutDelete }
          button $Frame.layout.run -image DOCRUN -relief flat -bd 0 -overrelief raised \
             -command { SPI::Execute [FileBox::Create . "" Load [list $FileBox::Type(TCL)]] }
-         pack $Frame.layout.sel $Frame.layout.save $Frame.layout.del $Frame.layout.run -side left -padx 2
+         radiobutton $Frame.layout.mag  -image MODEMAG -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -variable Page::Data(Mode) -value Mag -command {  SPI::ToolMode SPI Mag } -selectcolor $GDefs(ColorLight) -width 28 -anchor w
+         menubutton $Frame.layout.mag.opt -image OPTIONS -relief flat -bd 0 -menu $Frame.layout.mag.opt.menu
+            place $Frame.layout.mag.opt -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
+            menu $Frame.layout.mag.opt.menu
+               $Frame.layout.mag.opt.menu add radiobutton -label 128 -variable CVMagnifier::Param(Size) -value 128
+               $Frame.layout.mag.opt.menu add radiobutton -label 256 -variable CVMagnifier::Param(Size) -value 256
+               $Frame.layout.mag.opt.menu add radiobutton -label 512 -variable CVMagnifier::Param(Size) -value 512
+               $Frame.layout.mag.opt.menu add separator
+               $Frame.layout.mag.opt.menu add radiobutton -label 2x -variable CVMagnifier::Param(Zoom) -value 2
+               $Frame.layout.mag.opt.menu add radiobutton -label 4x -variable CVMagnifier::Param(Zoom) -value 4
+               $Frame.layout.mag.opt.menu add radiobutton -label 8x -variable CVMagnifier::Param(Zoom) -value 8
+               $Frame.layout.mag.opt.menu add radiobutton -label 16x -variable CVMagnifier::Param(Zoom) -value 16
+               $Frame.layout.mag.opt.menu add radiobutton -label 32x -variable CVMagnifier::Param(Zoom) -value 32
+
+         pack $Frame.layout.sel $Frame.layout.save $Frame.layout.del $Frame.layout.run $Frame.layout.mag -side left -padx 2
       pack $Frame.layout -side left -fill x
 
       frame $Frame.win -relief raised -bd 1
@@ -766,6 +781,7 @@ proc SPI::ToolBar { Frame } {
    Bubble::Create $Frame.layout.save [lindex $Bubble(LayoutSave) $GDefs(Lang)]
    Bubble::Create $Frame.layout.del  [lindex $Bubble(LayoutDel) $GDefs(Lang)]
    Bubble::Create $Frame.layout.run  [lindex $Bubble(LayoutRun) $GDefs(Lang)]
+   Bubble::Create $Frame.layout.mag  [lindex $Bubble(LayoutMag) $GDefs(Lang)]
    Bubble::Create $Frame.cam.zback   [lindex $Bubble(ZoomBack) $GDefs(Lang)]
    Bubble::Create $Frame.cam.zclr    [lindex $Bubble(ZoomClear) $GDefs(Lang)]
    Bubble::Create $Frame.cam.clr     [lindex $Bubble(CamClear) $GDefs(Lang)]

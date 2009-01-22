@@ -1421,6 +1421,7 @@ proc CVMagnifier::DeActivate { Canvas } {
 
    $Canvas delete CANVASMAGNIFIER
    image delete CANVASMAGNIFIER
+   update idletasks
 }
 
 #----------------------------------------------------------------------------
