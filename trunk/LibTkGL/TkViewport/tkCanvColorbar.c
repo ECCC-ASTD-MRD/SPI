@@ -417,6 +417,7 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
    GDAL_Band    *band=NULL;
 
    int          y0=0,y1,y2,yh=0,i,inc=0;
+   int          w,h,x,y;
 
    glShadeModel(GL_FLAT);
    glEnable(GL_SCISSOR_TEST);
@@ -433,9 +434,14 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
 
       y2=y1+inc-1;
 
-//      glScissor(cb->header.x1,Height-y2,cb->header.x2-cb->header.x1+1,y2-y1+1);
+      if (GLRender->MagScale>1)
+         Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
 
-      trScissor(GLRender->TRCon,cb->header.x1-((TkCanvas*)Canvas)->xOrigin-1,Height-(y2-((TkCanvas*)Canvas)->yOrigin)-1,cb->header.x2-cb->header.x1+2,y2-y1+2);
+      x=(cb->header.x1-((TkCanvas*)Canvas)->xOrigin-1-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
+      y=(Height-(y2-((TkCanvas*)Canvas)->yOrigin)-1)*GLRender->MagScale-GLRender->MagD/2;
+      w=(cb->header.x2-cb->header.x1+2)*GLRender->MagScale;
+      h=(y2-y1+2)*GLRender->MagScale;
+      trScissor(GLRender->TRCon,x,y,w,h);
 
       /*Effectuer le rendue de la colorbar*/
       if (cb->Alpha<100) {

@@ -1222,7 +1222,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    glMatrixMode(GL_PROJECTION);
 
    if (GLRender->MagScale>1)
-      Height=GLRender->MagY+GLRender->MagD-GLRender->MagD/2;
+      Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
 
    x=(VP->header.x1-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
    y=(Height-(VP->header.y1-((TkCanvas*)Canvas)->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2;
