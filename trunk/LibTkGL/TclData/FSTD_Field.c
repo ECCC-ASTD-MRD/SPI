@@ -184,10 +184,10 @@ int FSTD_FieldReadMesh(TData *Field) {
    int        key,ni,nj,nk;
 
 #ifdef LNK_FSTD
-   if (!head->FID || !Field->Ref || !(Field->Ref->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
+   if (!Field->Ref || !(Field->Ref->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
       return(0);
 
-   if (!Field->Ref->Lat || !Field->Ref->Lon) {
+   if ((!Field->Ref->Lat || !Field->Ref->Lon) && head->FID) {
       FSTD_FileSet(NULL,head->FID);
 
       switch(Field->Ref->Grid[0]) {
