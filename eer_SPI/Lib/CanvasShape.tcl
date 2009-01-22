@@ -1419,8 +1419,10 @@ proc CVMagnifier::DeActivate { Canvas } {
 
    set Data(Zooming) 0
 
-   $Canvas delete CANVASMAGNIFIER
-   image delete CANVASMAGNIFIER
+   catch {
+      $Canvas delete CANVASMAGNIFIER
+      image delete CANVASMAGNIFIER
+   }
    update idletasks
 }
 

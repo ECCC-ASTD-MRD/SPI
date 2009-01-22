@@ -738,15 +738,15 @@ proc SPI::ToolBar { Frame } {
          menubutton $Frame.layout.mag.opt -image OPTIONS -relief flat -bd 0 -menu $Frame.layout.mag.opt.menu
             place $Frame.layout.mag.opt -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
             menu $Frame.layout.mag.opt.menu
-               $Frame.layout.mag.opt.menu add radiobutton -label 128 -variable CVMagnifier::Param(Size) -value 128
-               $Frame.layout.mag.opt.menu add radiobutton -label 256 -variable CVMagnifier::Param(Size) -value 256
-               $Frame.layout.mag.opt.menu add radiobutton -label 512 -variable CVMagnifier::Param(Size) -value 512
+               $Frame.layout.mag.opt.menu add radiobutton -label " 128 Pixels" -variable CVMagnifier::Param(Size) -value 128
+               $Frame.layout.mag.opt.menu add radiobutton -label " 256 Pixels" -variable CVMagnifier::Param(Size) -value 256
+               $Frame.layout.mag.opt.menu add radiobutton -label " 512 Pixels" -variable CVMagnifier::Param(Size) -value 512
                $Frame.layout.mag.opt.menu add separator
-               $Frame.layout.mag.opt.menu add radiobutton -label 2x -variable CVMagnifier::Param(Zoom) -value 2
-               $Frame.layout.mag.opt.menu add radiobutton -label 4x -variable CVMagnifier::Param(Zoom) -value 4
-               $Frame.layout.mag.opt.menu add radiobutton -label 8x -variable CVMagnifier::Param(Zoom) -value 8
-               $Frame.layout.mag.opt.menu add radiobutton -label 16x -variable CVMagnifier::Param(Zoom) -value 16
-               $Frame.layout.mag.opt.menu add radiobutton -label 32x -variable CVMagnifier::Param(Zoom) -value 32
+               $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 2x" -variable CVMagnifier::Param(Zoom) -value 2
+               $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 4x" -variable CVMagnifier::Param(Zoom) -value 4
+               $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 8x" -variable CVMagnifier::Param(Zoom) -value 8
+               $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 16x" -variable CVMagnifier::Param(Zoom) -value 16
+               $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 32x" -variable CVMagnifier::Param(Zoom) -value 32
 
          pack $Frame.layout.sel $Frame.layout.save $Frame.layout.del $Frame.layout.run $Frame.layout.mag -side left -padx 2
       pack $Frame.layout -side left -fill x
