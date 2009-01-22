@@ -154,6 +154,8 @@ typedef struct GLParams  {
    GLboolean      Ext[32];          /*Liste des extensions*/
    GLboolean      Set;              /*Liste des extensions*/
    GLhandleARB    Prog[SHADER_MAX]; /*Liste des shaders*/
+
+   double MagScale,MagX,MagY,MagD;   /*Magnifying paameters*/
 } GLParams;
 
 typedef struct T_glBitmap {

@@ -507,22 +507,22 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
 //TK84   Tk_PhotoSetSize(Interp,handle,data.width,data.height);
    Tk_PhotoSetSize(handle,data.width,data.height);
 
-   data.pitch=data.width*3;
-   data.pixelSize=3;
+   data.pitch=data.width*4;
+   data.pixelSize=4;
    data.offset[0]=0;
    data.offset[1]=1;
    data.offset[2]=2;
-   data.offset[3]=0;
-   data.pixelPtr=(GLubyte*)malloc(data.width*data.height*3*sizeof(GLubyte));
+   data.offset[3]=3;
+   data.pixelPtr=(GLubyte*)malloc(data.width*data.height*4*sizeof(GLubyte));
 
    /*Recuperer le buffer OpenGL*/
    glReadBuffer(Buffer);
    if (data.pixelPtr) {
       for(i=0;i<data.height;i++) {
-         glReadPixels(X0,Height-(Y0+i),data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
+         glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*4]);
       }
    } else {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Envoyer le data dans l'image Tk*/
@@ -530,7 +530,7 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
    Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1969,6 +1969,10 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Set             = 1;
    GLRender->Soft            = NULL;
    GLRender->Delay           = 2000;
+
+   /*Magnifying paameters*/
+   GLRender->MagScale=1;
+   GLRender->MagX=GLRender->MagY=GLRender->MagD=0;
 
    gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
    gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glVertex3dv);

@@ -43,7 +43,7 @@ void   Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   Graph_RenderTexture(GraphItem *Gr,TData *Field,int Tile);
 void   Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
-void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int Clear,int PS);
+void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height);
 void   GraphUnSet(GraphItem *GR);
 int    Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
 
@@ -330,7 +330,7 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          glPickInit(x,Tk_Height(Tk_CanvasTkwin(gr->canvas))-y,2.0,2.0);
 
         /*Rendue des donnees vectorielle*/
-         GraphSet(gr->canvas,gr,Tk_Width(Tk_CanvasTkwin(gr->canvas)),Tk_Height(Tk_CanvasTkwin(gr->canvas)),0,0,0);
+         GraphSet(gr->canvas,gr,Tk_Width(Tk_CanvasTkwin(gr->canvas)),Tk_Height(Tk_CanvasTkwin(gr->canvas)));
          gr->ISide=0;
          for(idx=0;idx<gr->NItem;idx++) {
             glPushName(idx);
@@ -867,7 +867,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
          a=0;
          for(i=0;i<gr->NItem;i++) {
             item=GraphItem_Get(gr->Item[i]);
-            GraphSet(Canvas,gr,Width,Height,0,1,0);
+            GraphSet(Canvas,gr,Width,Height);
             GraphItem_Display(NULL,gr,item,0,0,gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1],GL_RENDER);
             GraphUnSet(gr);
             if (item->Type==WIDEBAR) gr->ISide++;
@@ -967,7 +967,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
          gr->Frame=(GLubyte*)malloc(gr->Width*gr->Height*4);
       }
 
-      if (!GLRender->TRCon) {
+      if (!GLRender->TRCon && GLRender->XExpose<=1) {
          glReadBuffer(GL_BACK);
          glReadPixels(gr->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-gr->header.y2+((TkCanvas*)Canvas)->yOrigin,gr->Width,gr->Height,GL_RGBA,GL_UNSIGNED_BYTE,gr->Frame);
       }
@@ -1011,33 +1011,28 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
  *
  *----------------------------------------------------------------------------
 */
-void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int Clear,int PS){
+void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height){
 
-   int w,h;
+   int w,h,x,y;
+
+   if (GLRender->MagScale>1)
+      Height=GLRender->MagY+GLRender->MagD-GLRender->MagD/2;
+
+   w=(GR->xg[1]-GR->xg[0]);
+   h=(GR->yg[0]-GR->yg[1]);
+   x=(GR->xg[0]-((TkCanvas *)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
+   y=(Height-(GR->yg[0]-((TkCanvas*)Canvas)->yOrigin))*GLRender->MagScale-GLRender->MagD/2;
 
    glPushAttrib(GL_VIEWPORT_BIT);
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
 
-   if (Clear) {
-      glLoadIdentity();
-   }
-
-   w=GR->xg[1]-GR->xg[0];
-   h=GR->yg[0]-GR->yg[1];
-
-   if (PS) {
-      glViewport(0,0,w,h);
-   } else {
-     trViewport(GLRender->TRCon,GR->xg[0]-((TkCanvas *)Canvas)->xOrigin,Height-(GR->yg[0]-((TkCanvas*)Canvas)->yOrigin),w,h);
-   }
+   glLoadIdentity();
+//   trViewport(GLRender->TRCon,x,y,w,h);
+   trViewport(GLRender->TRCon,x,y,w*GLRender->MagScale,h*GLRender->MagScale);
 
    /*Ajuster la projection pour garder un aspect correct*/
-   if (Tile) {
-      trOrtho(GLRender->TRCon,0,0,GR->Width,GR->Height,0.0,0.0);
-   } else {
-      glOrtho(0,w,0,h,-1,1);
-   }
+   glOrtho(0,w,0,h,-1,1);
 
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
@@ -1045,6 +1040,7 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int Tile,int C
 }
 
 void GraphUnSet(GraphItem *GR){
+
    glMatrixMode(GL_MODELVIEW);
    glPopMatrix();
    glMatrixMode(GL_PROJECTION);

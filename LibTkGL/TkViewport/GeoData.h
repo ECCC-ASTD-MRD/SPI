@@ -55,6 +55,7 @@
 #define GDB_MAP 3
 #define GDB_TXT 4
 
+#define GDB_DATA -1
 #define GDB_LAND 1
 #define GDB_SEA  2
 

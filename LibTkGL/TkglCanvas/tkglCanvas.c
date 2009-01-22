@@ -467,10 +467,6 @@ Tk_glCanvasObjCmd(clientData, interp, argc, argv)
       return TCL_ERROR;
    }
 
-#ifdef WIN32
-   Tk_MakeWindowExist(canvasPtr->tkwin);
-#endif
-
    Tcl_SetResult(interp, Tk_PathName(canvasPtr->tkwin), TCL_STATIC);
 
    return(glXCanvasInit(canvasPtr->interp,canvasPtr->tkwin));
@@ -544,7 +540,7 @@ glCanvasWidgetCmd(clientData, interp, argc, argv)
    "index", "insert",   "itemcget", "itemconfigure",
    "lower", "move",     "postscript",  "raise",
    "scale", "scan",     "select",   "type",
-   "xview", "yview",        "buffer",
+   "xview", "yview",        "buffer", "magnify",
    NULL
     };
     enum options {
@@ -555,7 +551,7 @@ glCanvasWidgetCmd(clientData, interp, argc, argv)
    CANV_INDEX, CANV_INSERT,   CANV_ITEMCGET, CANV_ITEMCONFIGURE,
    CANV_LOWER, CANV_MOVE,  CANV_POSTSCRIPT,CANV_RAISE,
    CANV_SCALE, CANV_SCAN,  CANV_SELECT,   CANV_TYPE,
-   CANV_XVIEW, CANV_YVIEW,     CANV_BUFFER
+   CANV_XVIEW, CANV_YVIEW,     CANV_BUFFER, CANV_MAGNIFY
     };
 
     if (argc < 2) {
@@ -1542,13 +1538,22 @@ glCanvasWidgetCmd(clientData, interp, argc, argv)
    break;
       }
       case CANV_BUFFER: {
-    int x0,y0,x1,y1;
+         int x0,y0,x1,y1;
          Tcl_GetIntFromObj(interp,argv[3],&x0);
          Tcl_GetIntFromObj(interp,argv[4],&y0);
          Tcl_GetIntFromObj(interp,argv[5],&x1);
          Tcl_GetIntFromObj(interp,argv[6],&y1);
          result=BufferglCanvas(interp,(ClientData)canvasPtr,Tcl_GetStringFromObj(argv[2],NULL),x0,y0,x1,y1);
-    break;
+         break;
+      }
+      case CANV_MAGNIFY: {
+         int x0,y0;
+         double zoom;
+         Tcl_GetIntFromObj(interp,argv[3],&x0);
+         Tcl_GetIntFromObj(interp,argv[4],&y0);
+         Tcl_GetDoubleFromObj(interp,argv[5],&zoom);
+         result=MagnifyglCanvas(interp,(ClientData)canvasPtr,Tcl_GetStringFromObj(argv[2],NULL),x0,y0,zoom);
+         break;
       }
       case CANV_RAISE: {
    Tk_Item *prevPtr;
@@ -2180,15 +2185,15 @@ static void glCanvasWorldChanged(instanceData)
  *    Description :
  *----------------------------------------------------------------------------
 */
-int SetupglCanvas(TkCanvas *canvasPtr) {
+int SetupglCanvas(TkCanvas *canvasPtr,int X,int Y,int Width,int Height) {
 
    /* Set the viewport */
-   glViewport(0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
+   glViewport(0,0,Width,Height);
 
    /* Set the projection matrix */
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   gluOrtho2D(0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin),0);
+   gluOrtho2D(X,Width,Height,Y);
 
    /* Set the modelview matrix */
    glMatrixMode(GL_MODELVIEW);
@@ -2227,10 +2232,6 @@ int SetupglCanvas(TkCanvas *canvasPtr) {
 */
 int SetglCanvas(TkCanvas *canvasPtr) {
 
-#ifdef WIN32
-   HDC hdc;
-#endif
-
    if (!canvasPtr->tkwin)
       return 0;
 
@@ -2239,15 +2240,6 @@ int SetglCanvas(TkCanvas *canvasPtr) {
       return 0;
 
    /* Make the context current if it is not already*/
-#ifdef WIN32
-   hdc=GetDC(Tk_GetHWND(Tk_WindowId(canvasPtr->tkwin)));
-   if (!wglMakeCurrent(hdc,GLRender->GLCon)) {
-      fprintf(stderr,"SetglCanvas: Could not make the rendering context current.\n");
-      return 0;
-   } else {
-      glDefineParams();
-   }
- #else
    if (Tk_WindowId(canvasPtr->tkwin)!=glXGetCurrentDrawable() || GLRender->GLCon!=glXGetCurrentContext()) {
       if (!glXMakeContextCurrent(canvasPtr->display,Tk_WindowId(canvasPtr->tkwin),Tk_WindowId(canvasPtr->tkwin),GLRender->GLCon)) {
          fprintf(stderr,"SetglCanvas: Could not make the rendering context current.\n");
@@ -2256,9 +2248,8 @@ int SetglCanvas(TkCanvas *canvasPtr) {
          glDefineParams();
       }
    }
-#endif
 
-   SetupglCanvas(canvasPtr);
+   SetupglCanvas(canvasPtr,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
 
    return 1;
 }
@@ -2270,6 +2261,7 @@ int SetglCanvas(TkCanvas *canvasPtr) {
  * But      : Initialiser le canvas OpenGL courant.
  *
  * Parametres   :
+ *  <Interp>:   : Interpreteur Tcl.
  *  <clientData>: Un pointeur sur le canvas a dessiner.
  *  <Img>       : Nom de l'image Tk a utiliser
  *  <X>         : Coordonnee X du coin superieur gauche
@@ -2305,7 +2297,7 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
       return(TCL_ERROR);
    }
 
-   SetupglCanvas(canvasPtr);
+   SetupglCanvas(canvasPtr,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
 
    /* Setup the tile rendering engine */
    GLRender->TRCon=trNew();
@@ -2339,6 +2331,114 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
    glXFreePBuffer();
 
   return(res);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <MagnifyglCanvas>
+ * Creation : Janvier 2009 - J.P. Gauthier
+ *
+ * But      : Creer une vue agrandie du canvas (Loupe).
+ *
+ * Parametres   :
+ *  <Interp>:   : Interpreteur Tcl.
+ *  <clientData>: Un pointeur sur le canvas a dessiner.
+ *  <Img>       : Nom de l'image Tk a utiliser
+ *  <X>         : Coordonnee X du pointeur
+ *  <Y>         : Coordonnee Y du pointeur
+ *  <Scale>     : Facteur d'agrandissement
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ * Modifications :
+ *
+ *    Nom         :
+ *    Date        :
+ *    Description :
+ *----------------------------------------------------------------------------
+*/
+static int MagnifyglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,double Scale) {
+
+   Tk_PhotoImageBlock data;
+   Tk_PhotoHandle     handle;
+   Tk_Item           *itemPtr;
+   int                i,xp;
+   double             w2,h2;
+
+   /*Create PBuffer to specified Tk image dimensions or whatever glX will give us*/
+   if (!(handle=Tk_FindPhoto(Interp,Img))) {
+      Tcl_AppendResult(Interp,"MagnifyglCanvas: Invalid image",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   Tk_PhotoGetSize(handle,&data.width,&data.height);
+
+   if (!glXGetPBuffer(canvasPtr->tkwin,&data.width,&data.height)) {
+      Tcl_AppendResult(Interp,"MagnifyglCanvas: Unable to allocate rendering PBuffer",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   w2=data.width/2.0;
+   h2=data.height/2.0;
+
+   /*Define view for specified zoom*/
+   SetupglCanvas(canvasPtr,0,0,data.width,data.height);
+   glMatrixMode(GL_PROJECTION);
+   glTranslated(-X*Scale+w2,-Y*Scale+h2,0.0);
+   glScaled(Scale,Scale,1.0);
+   glMatrixMode(GL_MODELVIEW);
+
+   /*Force rendering ob back-buffered items*/
+   xp=GLRender->XExpose;
+   GLRender->XExpose=2;
+   GLRender->MagScale=Scale;
+   GLRender->MagX=X;
+   GLRender->MagY=Y;
+   GLRender->MagD=data.width;
+
+   /*Render the items*/
+   for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL; itemPtr = itemPtr->nextPtr) {
+      if (itemPtr->state == TK_STATE_HIDDEN || (itemPtr->state == TK_STATE_NULL && canvasPtr->canvas_state == TK_STATE_HIDDEN))
+         continue;
+      (*itemPtr->typePtr->displayProc)((Tk_Canvas)canvasPtr,itemPtr,canvasPtr->display,Tk_WindowId(canvasPtr->tkwin),X,Y,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
+   }
+   GLRender->XExpose=xp;
+   GLRender->MagScale=1;
+   GLRender->MagX=GLRender->MagY=GLRender->MagD=0;
+
+   /*Draw the lens effect*/
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   gluOrtho2D(0,data.width,0,data.height);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA,GL_SRC_ALPHA);
+   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_TRUE);
+
+   glColor4f(1.0,1.0,1.0,0.0);
+   glBegin(GL_QUADS);
+      glVertex2i(0,0);
+      glVertex2i(0,data.height);
+      glVertex2i(data.width,data.height);
+      glVertex2i(data.width,0);
+   glEnd();
+
+   glMatrixMode(GL_MODELVIEW);
+   glTranslated(w2,h2,0.0);
+   glScaled(w2-2.0,h2-2.0,1.0);
+   glColor4f(0.0,0.0,0.0,1.0);
+   glDrawCircle(128,GL_POLYGON);
+
+   glDisable(GL_BLEND);
+   glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+   glLineWidth(2.0);
+   glDrawCircle(128,GL_LINE_STRIP);
+
+   /*Copy results in Tk image*/
+   i=glBuffer(Interp,Img,GL_BACK,0,0,data.width,data.height,data.height);
+   glXFreePBuffer();
+
+   return(i);
 }
 
 /*----------------------------------------------------------------------------
@@ -2406,11 +2506,6 @@ static void DisplayglCanvas(ClientData clientData) {
    TkCanvas *canvasPtr = (TkCanvas *) clientData;  /* Pointer on the Canvas to be displayed */
    Tk_Window tkwin = canvasPtr->tkwin;             /* Pointer on the tkwindow */
 
-#ifdef WIN32
-   HDC  hdc;
-   HWND hwnd=Tk_GetHWND(Tk_WindowId(tkwin));
-#endif
-
    if (!SetglCanvas(canvasPtr))
       goto done;
 
@@ -2419,13 +2514,7 @@ static void DisplayglCanvas(ClientData clientData) {
    GLRender->XExpose=GLRender->XExpose>=0?0:GLRender->XExpose;
 
    /* Swap the buffers to display the TkglItems */
-#ifdef WIN32
-   hdc=GetDC(hwnd);
-   SwapBuffers(hdc);
-   ReleaseDC(hwnd,hdc);
-#else
    glXSwapBuffers(canvasPtr->display,Tk_WindowId(canvasPtr->tkwin));
-#endif
    GLRender->RenderTime=(glGetProcInfo(&GLRender->MemRes)-GLRender->RenderTime)/(double)CLOCKS_PER_SEC;
 
    /* Draw the window borders, if needed. */
@@ -5561,6 +5650,6 @@ int Glcanvas_Init(Tcl_Interp* Interp) {
    Tcl_CreateObjCommand(Interp,"glcanvas",Tk_glCanvasObjCmd,(ClientData*)Tk_MainWindow(Interp),NULL);
    glInit(Interp);
 
-   Tcl_PkgProvide(Interp,"TkglCanvas","TCLTK_VER");
+   Tcl_PkgProvide(Interp,"TkglCanvas",TCLTK_VER);
    return TCL_OK;
 }

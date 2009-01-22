@@ -205,7 +205,7 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
 
    memset(ViewportTable,0x0,VPMAX*sizeof(ViewportItem*));
 
-   Tcl_PkgProvide(Interp,"TkViewport","LIB_VER");
+   Tcl_PkgProvide(Interp,"TkViewport",LIB_VER);
    return(TCL_OK);
 }
 
@@ -1133,7 +1133,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
                   }
                }
 
-               if (!GLRender->TRCon && vp->Frames[vp->Frame]) {
+               if (!GLRender->TRCon && GLRender->XExpose<=1 && vp->Frames[vp->Frame]) {
                   glReadBuffer(GL_BACK);
                   glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
                }
@@ -1208,6 +1208,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,int Height,int Tile,int Clear,int PS){
 
    double as,z,dl;
+   int x,y;
 
    if (!VP || !Proj)
       return;
@@ -1220,6 +1221,12 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
 
    glMatrixMode(GL_PROJECTION);
 
+   if (GLRender->MagScale>1)
+      Height=GLRender->MagY+GLRender->MagD-GLRender->MagD/2;
+
+   x=(VP->header.x1-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
+   y=(Height-(VP->header.y1-((TkCanvas*)Canvas)->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2;
+
    if (Clear) {
       glLoadIdentity();
    }
@@ -1227,7 +1234,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    if (PS) {
       glViewport(0,0,VP->Width,VP->Height);
    } else {
-      trViewport(GLRender->TRCon,VP->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-(VP->header.y1-((TkCanvas*)Canvas)->yOrigin+VP->Height),VP->Width,VP->Height);
+      trViewport(GLRender->TRCon,x,y,VP->Width*GLRender->MagScale,VP->Height*GLRender->MagScale);
    }
 
    if (Proj->Type->Def==PROJGLOBE) {
