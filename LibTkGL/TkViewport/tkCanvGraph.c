@@ -1016,11 +1016,11 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height){
    int w,h,x,y;
 
    if (GLRender->MagScale>1)
-      Height=GLRender->MagY+GLRender->MagD-GLRender->MagD/2;
+      Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
 
    w=(GR->xg[1]-GR->xg[0]);
    h=(GR->yg[0]-GR->yg[1]);
-   x=(GR->xg[0]-((TkCanvas *)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
+   x=(GR->xg[0]-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
    y=(Height-(GR->yg[0]-((TkCanvas*)Canvas)->yOrigin))*GLRender->MagScale-GLRender->MagD/2;
 
    glPushAttrib(GL_VIEWPORT_BIT);
