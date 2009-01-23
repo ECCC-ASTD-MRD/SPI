@@ -733,8 +733,8 @@ proc SPI::ToolBar { Frame } {
             -command { SPI::LayoutDelete }
          button $Frame.layout.run -image DOCRUN -relief flat -bd 0 -overrelief raised \
             -command { SPI::Execute [FileBox::Create . "" Load [list $FileBox::Type(TCL)]] }
-         radiobutton $Frame.layout.mag  -image MODEMAG -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-            -variable Page::Data(Mode) -value Mag -command {  SPI::ToolMode SPI Mag } -selectcolor $GDefs(ColorLight) -width 28 -anchor w
+         checkbutton $Frame.layout.mag  -image MODEMAG -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+            -variable Page::Data(Mode) -onvalue Mag -offvalue Zoom -command { SPI::ToolMode SPI $Page::Data(Mode) } -selectcolor $GDefs(ColorLight) -width 28 -anchor w
          menubutton $Frame.layout.mag.opt -image OPTIONS -relief flat -bd 0 -menu $Frame.layout.mag.opt.menu
             place $Frame.layout.mag.opt -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
             menu $Frame.layout.mag.opt.menu
