@@ -88,6 +88,13 @@ set ColorBar::Param(Border) 0                ;#Epaisseur de la bordure des inter
 set ColorBar::Param(Width)  15               ;#Largeur de la barre de couleur
 set ColorBar::Param(Side)   right            ;#Position des chiffres
 
+#----- Parametres de la loupe
+
+namespace eval CVMagnifier { }
+
+set CVMagnifier::Param(Zoom)   2             ;#Facteur de Zoom initial de la loupe
+set CVMagnifier::Param(Size)   256           ;#Dimension de la loupe en pixels
+
 #----- Parametres des champs
 
 set FSTD::Param(Interp)            LINEAR         ;#Type d'interpolation
