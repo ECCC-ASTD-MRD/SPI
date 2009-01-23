@@ -740,7 +740,6 @@ proc SPI::ToolBar { Frame } {
             menu $Frame.layout.mag.opt.menu
                $Frame.layout.mag.opt.menu add radiobutton -label " 128 Pixels" -variable CVMagnifier::Param(Size) -value 128
                $Frame.layout.mag.opt.menu add radiobutton -label " 256 Pixels" -variable CVMagnifier::Param(Size) -value 256
-               $Frame.layout.mag.opt.menu add radiobutton -label " 512 Pixels" -variable CVMagnifier::Param(Size) -value 512
                $Frame.layout.mag.opt.menu add separator
                $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 2x" -variable CVMagnifier::Param(Zoom) -value 2
                $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 4x" -variable CVMagnifier::Param(Zoom) -value 4
