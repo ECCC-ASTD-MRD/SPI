@@ -320,6 +320,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                   }
                }
             }
+
             if (d<1.0) {
                return(1);
             } else {

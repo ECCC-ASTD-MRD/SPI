@@ -755,7 +755,6 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                imode=Tcl_GetString(Objv[4])[6];
                itype='P';
             }
-
             return(Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x));
          }
 

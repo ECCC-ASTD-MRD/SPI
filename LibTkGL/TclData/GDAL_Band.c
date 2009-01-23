@@ -878,7 +878,8 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
    /*Creer la transformation*/
    if (Layer->Ref->Spatial && Ref->Spatial) {
-      tr=OCTNewCoordinateTransformation(Layer->Ref->Spatial,Ref->Spatial);
+      if (!(Ref->Type&GRID_SPARSE))
+         tr=OCTNewCoordinateTransformation(Layer->Ref->Spatial,Ref->Spatial);
    } else {
       if (Ref->Grid[0]=='W')
          fprintf(stderr,"(WARNING) Data_GridOGR: Unable to create coordinate transformation, assuming both referential are the same\n");
@@ -895,6 +896,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    for(f=0;f<Layer->NFeature;f++) {
 
       if (Layer->Select[f]) {
+
          geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f]));
 
          /*Get value to distribute*/
