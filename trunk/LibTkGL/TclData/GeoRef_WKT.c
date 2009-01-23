@@ -292,18 +292,26 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       if (Ref->Grid[1]=='Z') {
          s=Ref->X0;
          while(s<=Ref->X1 && *X>Ref->Lon[s]) s++;
-         if (s>Ref->X0 && s<=Ref->X1) {
-            *X=(*X-Ref->Lon[s-1])/(Ref->Lon[s]-Ref->Lon[s-1])+s-1;
+         if (s>Ref->X0) {
+             if (s<=Ref->X1) {
+                *X=(*X-Ref->Lon[s-1])/(Ref->Lon[s]-Ref->Lon[s-1])+s-1;
+             } else {
+                *X=Ref->X1+1.0;
+             }
          } else {
-            *X=-1;
+            *X=Ref->X0-1.0;
          }
 
          s=Ref->Y0;dx=Ref->X1-Ref->X0+1;
          while(s<=Ref->Y1 && *Y>Ref->Lat[s*dx]) s++;
-         if (s>Ref->Y0 && s<=Ref->Y1) {
-            *Y=(*Y-Ref->Lat[(s-1)*dx])/(Ref->Lat[s*dx]-Ref->Lat[(s-1)*dx])+s-1;
+         if (s>Ref->Y0) {
+            if (s<=Ref->Y1) {
+               *Y=(*Y-Ref->Lat[(s-1)*dx])/(Ref->Lat[s*dx]-Ref->Lat[(s-1)*dx])+s-1;
+             } else {
+                *Y=Ref->Y1+1.0;
+             }
          } else {
-            *Y=-1;
+            *Y=Ref->Y0-1.0;
          }
       }
 
