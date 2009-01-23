@@ -339,6 +339,8 @@ proc Bubble::Leave { Widget } {
 proc Bubble::Follow { Widget X Y } {
 
    if { [winfo viewable .bubble] } {
+      set X [expr ($X+10+[winfo width .bubble])>[winfo screenwidth .bubble]?$X-[winfo width .bubble]-20:$X]
+      set Y [expr ($Y+10+[winfo height .bubble])>[winfo screenheight .bubble]?$Y-[winfo height .bubble]-20:$Y]
       wm geometry .bubble +[expr $X + 10]+[expr $Y + 10]
    }
 
@@ -375,6 +377,9 @@ proc Bubble::Show { Widget X Y } {
 
    if { $state == 0 } {
       .bubble.hlp configure -text $hlp
+      update idletasks
+      set X [expr ($X+10+[winfo width .bubble])>[winfo screenwidth .bubble]?$X-[winfo width .bubble]-20:$X]
+      set Y [expr ($Y+10+[winfo height .bubble])>[winfo screenheight .bubble]?$Y-[winfo height .bubble]-20:$Y]
       wm geometry .bubble +[expr $X+10]+[expr $Y+10]
       wm state .bubble normal
       raise .bubble
