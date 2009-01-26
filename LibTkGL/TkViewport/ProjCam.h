@@ -53,6 +53,13 @@ typedef struct ProjCam {
 
 
 ProjCam* ProjCam_Get(char* Name);
-int ProjCam_Init(Tcl_Interp *Interp);
+
+int  ProjCam_Init(Tcl_Interp *Interp);
+void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta);
+void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta);
+void ProjCam_ParamsInit(ProjCam *Cam);
+void ProjCam_Fly(ProjCam *Cam);
+void ProjCam_Place(ProjCam *Cam);
+void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size);
 
 #endif

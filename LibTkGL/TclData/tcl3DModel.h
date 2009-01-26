@@ -52,7 +52,7 @@ typedef struct TMaterial {
    float  Shi;
    char   Path[256];
    char   Name[256];
-   GLint  Tex;
+   GLuint Tex;
 } TMaterial;
 
 typedef struct TFace {

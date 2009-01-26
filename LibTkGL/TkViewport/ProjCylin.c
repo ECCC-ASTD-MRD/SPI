@@ -128,8 +128,6 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    double  x,y,incr;
    char    buf[256];
-   Vect3d  vr;
-   Coord   co;
 
    if (!Interp) {
       Cylin_DrawGlobe(Interp,VP,Proj);
@@ -169,11 +167,10 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
 void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
-   double  x,y,incr;
    char    buf[16];
    Vect3d  vr;
    Coord   co;
-   double  ax[2];
+   double  incr,ax[2];
 
    /*Draw 3DAxis*/
    if (Proj->Params->TAxis && Proj->Params->ZAxis.Elev!=0.0) {

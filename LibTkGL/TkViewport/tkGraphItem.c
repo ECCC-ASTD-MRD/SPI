@@ -190,9 +190,8 @@ static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    TGraphItem *item;
-   Tcl_Obj    *obj;
    char        buf[256];
-   int         i,j,c,idx;
+   int         i,j,idx;
 
 
    static CONST char *sopt[] = { "-anchor","-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-windpres","-pressure","-drybulb","-wetbulb","-dewpoint","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
@@ -1353,13 +1352,11 @@ void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int
 void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    Tk_FontMetrics tkm;
-   Tcl_Obj       *obj;
    TVector       *vecx,*vecy,*vecs,*vecd,*val;
    Vect3d        *v,v0,v1,vt;
    char           buf[32];
    double        *vm,x,y,db,dh,x0,y0;
    int            i,j,n,vn,sz,px,py,pw;
-   XColor        *color=NULL;
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
@@ -1952,7 +1949,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
 */
 void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1){
 
-   int     dr,ri,rj,i,j;
+   int     i,j;
    Vect3d  g0,g1;
    float   min,rng;
    char   *ptr;
@@ -2574,7 +2571,6 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
 void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1) {
 
    TData      *data;
-   TVector    *vecx,*vecy,*vecz;
    TGraphAxis *axisx,*axisy,*axisz;
    int         w,h;
 
@@ -2628,9 +2624,6 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
    }
 
    if (Item->XData && Item->YData) {
-
-      vecx=Vector_Get(Item->XData);
-      vecy=Vector_Get(Item->YData);
 
       if (Item->Type==MINMAX)
          GraphItem_PostscriptMinMax(Interp,Graph,Item,axisx,axisy,NULL,X0,Y0,X1,Y1);

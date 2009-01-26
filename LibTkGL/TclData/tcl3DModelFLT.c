@@ -40,6 +40,10 @@ static T3DObject *GOBJ=NULL;
 static int        NVR,NFCE,NOBJ,NMT;
 static float      GCOL[4]={ 0.0,0.0,0.0,0.0 };
 
+int Model_LoadFLT(T3DModel *M,char *Path);
+int ModelFLT_NodeCount(FltNode *Node,int Type,int Nb);
+int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_LoadFLT>
  * Creation     : Aout 2007 J.P. Gauthier
@@ -123,7 +127,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    FltMaterial          *mat;
    FltMultiTexture      *tex,*mtex=(FltMultiTexture*)Node;
    char                  path[MAX_PATHLEN],file[MAX_PATHLEN];
-   int                   i,v,m,n;
+   int                   i,v,m;
    TMaterial             tmat;
 
    attr=Node->attr;
@@ -396,4 +400,3 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 
    return(1);
 }
-

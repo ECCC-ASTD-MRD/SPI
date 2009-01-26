@@ -41,8 +41,8 @@
 #include <glStuff.h>
 
 void GLShader_InfoLog(GLhandleARB Object);
-GLint GLShader_UniformGet(GLhandleARB Prog,const GLcharARB *Name);
-GLint GLShader_AttribGet(GLhandleARB Prog,const GLcharARB *Name);
-GLhandleARB GLShader_Load(GLcharARB *Path,GLcharARB *Name);
-GLhandleARB GLShader_Install(GLcharARB *VertSrc,GLcharARB *FragSrc);
+GLint GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name);
+GLint GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name);
+GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name);
+GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc);
 void GLShader_UnInstall(GLhandleARB Prog);

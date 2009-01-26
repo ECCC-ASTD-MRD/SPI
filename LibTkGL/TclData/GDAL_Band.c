@@ -2380,7 +2380,6 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    int         n,id;
    GLuint      tx;
    GLhandleARB prog;
-   TGeoTexTile *tile;
 
    if (!Band) {
       fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid band object\n");

@@ -61,7 +61,7 @@ int GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip) {
 
    OGRGeometryH line,point,ring;
    Vect3d       pt0,pt1,ppt0,ppt1,inter[16];
-   int          n,np,nr,nb,nbring,nbinter,in=0;
+   int          n,np,nr,nb,nbinter,in=0;
 
    for (n=0;n<OGR_G_GetGeometryCount(Line);n++) {
       line=OGR_G_GetGeometryRef(Line,n);
@@ -462,7 +462,7 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 double GPC_Length(OGRGeometryH Geom) {
 
    double length=0;
-   int    g,n;
+   int    g;
 
    /*Boucle recursive sur les sous geometrie*/
    for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {

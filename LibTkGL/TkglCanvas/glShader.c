@@ -49,13 +49,13 @@ void GLShader_InfoLog(GLhandleARB Object) {
       } else {
          glGetInfoLogARB(Object,len,chr,log);
          printf("(DEBUG) glInfoLog:\n%s\n",log);
-        free(log);
+         free(log);
       }
    }
    glErrorCheck(0);
 }
 
-GLint GLShader_UniformGet(GLhandleARB Prog,const GLcharARB *Name) {
+GLint GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name) {
 
    GLint loc;
 
@@ -68,7 +68,7 @@ GLint GLShader_UniformGet(GLhandleARB Prog,const GLcharARB *Name) {
    return(loc);
 }
 
-GLint GLShader_AttribGet(GLhandleARB Prog,const GLcharARB *Name) {
+GLint GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name) {
 
    GLint loc;
 
@@ -81,7 +81,7 @@ GLint GLShader_AttribGet(GLhandleARB Prog,const GLcharARB *Name) {
    return(loc);
 }
 
-GLhandleARB GLShader_Load(GLcharARB *Path,GLcharARB *Name) {
+GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name) {
 
    GLcharARB *vert=NULL,*frag=NULL,prog=0,file[256];
    FILE *f;
@@ -128,7 +128,7 @@ GLhandleARB GLShader_Load(GLcharARB *Path,GLcharARB *Name) {
 }
 
 
-GLhandleARB GLShader_Install(GLcharARB *VertSrc,GLcharARB *FragSrc) {
+GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc) {
 
    GLhandleARB vert,frag,prog;
    GLint       status;

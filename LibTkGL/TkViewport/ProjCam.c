@@ -44,14 +44,8 @@ static int  ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
 static int  ProjCam_Create(Tcl_Interp *Interp,char *Name);
 static int  ProjCam_Destroy(Tcl_Interp *Interp,char *Name);
 
-void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta);
-void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta);
-void ProjCam_ParamsInit(ProjCam *Cam);
 int  ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List);
-void ProjCam_Fly(ProjCam *Cam);
-void ProjCam_Place(ProjCam *Cam);
 void ProjCam_Project(ProjCam *Cam,Projection *Proj);
-void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size);
 
 /*----------------------------------------------------------------------------
  * Nom      : <ProjCam_Get>
@@ -635,7 +629,7 @@ void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta) {
 
 int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List) {
 
-   int      n,nc,np,i;
+   int      n,nc,i;
    Tcl_Obj *obj,*list,*param;
 
    Tcl_ListObjLength(Interp,List,&nc);

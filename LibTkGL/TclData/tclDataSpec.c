@@ -1319,7 +1319,7 @@ TDataSpec *DataSpec_New(){
    spec->RenderCoord=0;
    spec->RenderLabel=0;
    spec->RenderParticle=0;
-   spec->RenderVector=0;
+   spec->RenderVector=VNONE;
    spec->RenderValue=0;
    spec->RenderVol=0;
 

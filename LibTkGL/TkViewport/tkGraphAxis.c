@@ -584,8 +584,7 @@ TGraphAxis* GraphAxis_Get(char *Name) {
 */
 static int GraphAxis_Free(Tcl_Interp *Interp,char *Name) {
 
-   Tcl_HashEntry *entry;
-   TGraphAxis    *axis;
+   TGraphAxis *axis;
 
    if ((axis=(TGraphAxis*)TclY_HashDel(&GraphAxisTable,Name))) {
       GraphAxis_Clear(axis);
@@ -1345,7 +1344,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
 
    int    i,o,dx,dy,th,w=0,width,height;
    double inter,i0,i1,it,mk,x,y,xp=0,yp=0;
-   char   buf[128],lbl[128],*b;
+   char   buf[128],lbl[128];
    XColor *color;
    Tk_Font font;
    Tk_FontMetrics tkm;

@@ -305,7 +305,6 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    int         idx,in=0,x0,y0,x1,y1,n;
    TGeoRef    *ref0,*ref1;
    Tcl_Obj    *lst;
-   char       *buf;
 
    static CONST char *sopt[] = { "create","copy","free","define","project","unproject","limit","within","intersect","is","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,DEFINE,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ALL,WIPE };
@@ -327,12 +326,13 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             Tcl_WrongNumArgs(Interp,2,Objv,"georef [wkt string]");
             return(TCL_ERROR);
          }
-         if (Objc==4) {
-            buf=Tcl_GetString(Objv[3]);
-         }
 
          ref0=GeoRef_New();
          ref0->Id=-(++TGeoRef_TableNo);
+
+         if (Objc==4) {
+            GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL);
+         }
 
          if (!GeoRef_Put(Interp,Tcl_GetString(Objv[2]),ref0)) {
             Tcl_AppendResult(Interp,"\n   GeoRef_Cmd: Unable to create georef",(char*)NULL);

@@ -259,7 +259,7 @@ typedef struct TDataDef {
    TData_Type Type;          /*Type de donnees du champs*/
    int NI,NJ,NK,NC;          /*Dimensions du champs*/
 
-   char    CellDim;          /*Defined grid point coverage, point=1 or area=2*/
+   int     CellDim;          /*Defined grid point coverage, point=1 or area=2*/
    char    Container;        /*Container pointant sur d'autres donnees*/
    int     Level;            /*Niveau courant*/
    int     Limits[3][2];     /*Limites d'interet*/

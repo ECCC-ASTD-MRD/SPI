@@ -32,7 +32,14 @@
  */
 #include "tclData.h"
 
-/*--------------------------------------------------------------------------------------------------------------
+void     GeoRef_Expand(TGeoRef *Ref);
+double   GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
+int      GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY);
+int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
+int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
+TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
+
+   /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNDistance>
  * Creation     : Mars 2007 J.P. Gauthier - CMC/CMOE
  *

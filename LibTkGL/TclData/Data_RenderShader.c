@@ -65,7 +65,6 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    Vect3d *pos;
 
    GLuint      tx[3],att0;
-   GLfloat     atten[]={ 0.0, 0.1, 0.0 };
    GLhandleARB prog;
    Tk_PhotoImageBlock img;
 

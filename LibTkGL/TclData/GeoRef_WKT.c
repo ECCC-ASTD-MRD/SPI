@@ -1,5 +1,6 @@
 /*=========================================================
  * Environnement Canada
+double GeoRef_WKTDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
  * Centre Meteorologique Canadien
  * 2100 Trans-Canadienne
  * Dorval, Quebec
@@ -31,6 +32,12 @@
  *=========================================================
  */
 #include "tclData.h"
+
+int      GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY);
+int      GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
+int      GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
+void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_WKTDistance>

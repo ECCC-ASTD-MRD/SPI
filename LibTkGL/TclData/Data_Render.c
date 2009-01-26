@@ -1176,14 +1176,14 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
  *
  *----------------------------------------------------------------------------
 */
-int Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
+void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    int     n,idxk;
    Vect3d  b,p,p0,p1,p2;
    Vect3d *pos;
 
    if (!Field->Ref || !Field->Ref->Pos) {
-      return(0);
+      return;
    }
 
    /*Do we need transparency*/

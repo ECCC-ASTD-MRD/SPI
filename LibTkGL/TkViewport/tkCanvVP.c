@@ -1024,6 +1024,8 @@ int ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask) {
    ThreadEvent *ev=(ThreadEvent*)Event;
 
    ViewportRefresh((ViewportItem*)ev->ptr,0);
+
+   return(1);
 }
 
 /*----------------------------------------------------------------------------
@@ -1207,22 +1209,10 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 */
 void ViewportOrtho(ViewportItem *VP){
 
-   int x,y,h;
-
-   if (GLRender->MagScale>1) {
-      h=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
-   } else {
-      h=Tk_Height(Tk_CanvasTkwin(VP->canvas));
-   }
-
-   x=(VP->header.x1-((TkCanvas*)(VP->canvas))->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
-   y=(h-(VP->header.y1-((TkCanvas*)(VP->canvas))->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2;
-
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
    glLoadIdentity();
 
-//   trViewport(GLRender->TRCon,x,y,VP->Width*GLRender->MagScale,VP->Height*GLRender->MagScale);
    gluOrtho2D(0,VP->Width,0,VP->Height);
 }
 
@@ -1240,19 +1230,18 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    if (!VP || !Proj)
       return;
 
+   if (GLRender->MagScale>1)
+      Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
+
+   x=(VP->header.x1-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2.0;
+   y=(Height-(VP->header.y1-((TkCanvas*)Canvas)->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2.0;
+
    glDepthFunc(GL_LESS);
    glDepthMask(GL_TRUE);
    if (VP->BGColor)
       glClearColor(VP->BGColor->red/65535.0f,VP->BGColor->green/65535.0f,VP->BGColor->blue/65535.0f,1.0f);
    glEnable(GL_CULL_FACE);
-
    glMatrixMode(GL_PROJECTION);
-
-   if (GLRender->MagScale>1)
-      Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
-
-   x=(VP->header.x1-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
-   y=(Height-(VP->header.y1-((TkCanvas*)Canvas)->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2;
 
    if (Clear) {
       glLoadIdentity();
@@ -1809,7 +1798,6 @@ static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int O
 static int VP_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
 
    ViewportItem *vp  =(ViewportItem*)WidgRec;
-   Projection   *proj=NULL;
 
    if (vp->Data) {
       free(vp->DataStr);

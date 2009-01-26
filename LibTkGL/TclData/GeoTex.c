@@ -427,7 +427,7 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 */
 void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
-   double       nlx,nly,dx,dy,x0,y0,x,y,dr;
+   double       nlx,nly,dx,dy,x0,y0,x,y;
    int          j=0,handle=0,tlx,tly,t=2,ix,iy,xy;
    short        z;
    GDAL_Band   *tband=NULL;
@@ -469,7 +469,6 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
    nlx=(double)Tile->Rx/(Tile->Tlx-1);
    nly=(double)Tile->Ry/(Tile->Tly-1);
-   dr=1.0/Tile->Res;
 
    for(tlx=0;tlx<Tile->Tlx;tlx++) {
       x0=tlx*nlx-0.5;
@@ -707,7 +706,8 @@ TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0) {
    tile->Tlx=tile->Tly=tile->Tx=tile->Nx=tile->Ny=tile->Rx=tile->Ry=0;
    tile->Flag=GEOTEX_NEW;
    tile->Sub[0]=tile->Sub[1]=tile->Sub[2]=tile->Sub[3]=NULL;
-   tile->Data=tile->Tl=tile->Nr=NULL;
+   tile->Data=NULL;
+   tile->Tl=tile->Nr=NULL;
 
    /*Increment global tile count*/
    GeoTex_TileNb++;
