@@ -779,7 +779,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
             fgets(buf,512,Stream);
 
          /*Get starting height*/
-         sscanf(buf,"%i %f %f %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
+         sscanf(buf,"%i %lf %lf %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
 
          /*Loop on parcel positions*/
          traj->Spec=spec;

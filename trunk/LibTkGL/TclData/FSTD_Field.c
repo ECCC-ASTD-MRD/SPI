@@ -602,14 +602,14 @@ int FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,
 
    int   l,deet,ip1a,ip2a,ip3a,ig1a,ig2a,ig3a,ig4a,bit;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
-   int   npas,nia,nja,i,j,k,ierr,kind,flag=0,mode=-1;
+   int   npas,nia,nja,i,j,k,kind,flag=0,mode=-1;
    char  typ,grda,blk_S;
    char  var[5];
    char  labanl[13];
 
    l = c_fstinf(Unit,&i,&j,&k,DateV,Etiket,-1,IP2,IP3,"X",Var);
    if (l>=0) {
-       ierr= c_fstprm(l,&idayo,&deet,&npas,&nia,&nja,&k,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
+       l = c_fstprm(l,&idayo,&deet,&npas,&nia,&nja,&k,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
                     &ig1a,&ig2a,&ig3a,&ig4a,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
        f77name(convip)(&ip1a,PTop,&kind,&mode,&blk_S,&flag);
        *RCoef=ig2a/1000.0f;
@@ -2519,7 +2519,6 @@ int FSTD_ZGrid(Tcl_Interp *Interp,Tcl_Obj *Tic,Tcl_Obj *Tac,Tcl_Obj *Set) {
    int    debug=0;
    char   ns[3];
    int    i,j,ni,nila,nleft,nimax,nbelo,njmax,np,gauss=0,stag;
-   int    ig1,ig2,ig3,ig4;
    float  *xp,*yp;
    double *x_8,*y_8;
 

@@ -41,7 +41,6 @@
 /*Table contenant la liste des champs en memoire*/
 static Tcl_HashTable FSTD_FileTable;
 static int           FSTDInit=0;
-static int           FSTDId=1;
 
 static TFSTDVector FSTDVectorTable[256];
 static int         FSTDVectorTableSize=0;
@@ -1190,7 +1189,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
 
    Tcl_HashEntry *entry;
    FSTD_File     *file;
-   int            new,type;
+   int            new;
    char           buf[2048];
 
    /* Creer l'entree dans la liste table de fichiers standards */

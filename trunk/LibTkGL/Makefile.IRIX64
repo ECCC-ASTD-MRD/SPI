@@ -23,7 +23,7 @@ LIB_PATH = /data/cmoe/afsr005/Lib/$(ARCH)
 ARC_PATH = /data/cmoe/afsr005/Archive
 
 # Installation path of the binaries
-INSTALL_PATH  = /users/dor/afsr/005/eer_SPI/eer_SPI
+INSTALL_PATH  = /data/cmoex6/afsr005/Shared/$(LIB_VER)/$(ARCH)
 
 # RMN Path
 RMN_PATH = ${ARMNLIB}
@@ -33,10 +33,10 @@ EER_PATH = /home/binops/afse/eer
 
 # Tk Path
 TCL_SRC  = $(ARC_PATH)/tcl$(TCLTK_VER)
-TCL_PATH = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
+TCL_PATH = $(INSTALL_PATH)/TclTk
 
 TK_SRC   = $(ARC_PATH)/tk$(TCLTK_VER)
-TK_PATH  = $(INSTALL_PATH)/Shared/$(ARCH)/TclTk
+TK_PATH  = $(INSTALL_PATH)/TclTk
 
 # OpenGL librairies
 GL_PATH   = $(LIB_PATH)/Mesa-6.5.3

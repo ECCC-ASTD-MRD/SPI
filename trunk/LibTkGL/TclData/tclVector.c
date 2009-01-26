@@ -968,7 +968,6 @@ void Vector_QuickSort(TVector *Vec,int Comp,int start,int end) {
 int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp,int Unique) {
 
    int      n,end,c,cn;
-   double   tmp;
    Tcl_Obj *obj;
 
    if (!Vec) {

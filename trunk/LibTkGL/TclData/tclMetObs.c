@@ -1499,9 +1499,7 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int St,int Ne,
 
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data) {
 
-   TMetElemData *ptr=NULL;
-
-   if ((ptr=TMetElem_Add(Loc,Data,Time))) {
+   if (TMetElem_Add(Loc,Data,Time)) {
       TMetElem_Clean(Loc,Min);
    }
    return(Data);
@@ -1605,7 +1603,6 @@ int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float H
 int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    Tcl_Obj        *obj=NULL;
-   TMetLoc        *loc=NULL;
    TMetElemData   *data=NULL;
 
    FILE           *fpBufr;
@@ -1619,7 +1616,6 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    char            stnid[256],previd[256],multi=0;
    double          value,lat,lon,hgt=0.0;
    int             yyyy,mm,dd,hh,mn,ss;
-   time_t          time=0;
 
    obj=Tcl_NewStringObj("",0);
 
@@ -1670,17 +1666,14 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             if (bcv->descriptor>=300000 || bcv->descriptor>=100000)
                continue;
 
+            if (bcv->meta) {
+//               bufr_print_metadata(buf,bcv->meta);
+//               bufr_print_output(buf);
+            }
+
             if (bcv->flags & FLAG_SKIPPED) {
 //               printf("#  %.6d ",bcv->descriptor);
-               if (bcv->meta) {
-//                  bufr_print_metadata(buf,bcv->meta);
-//                  bufr_print_output(buf);
-               }
             } else {
-               if (bcv->meta) {
-//                  bufr_print_metadata( buf, bcv->meta );
-//                  bufr_print_output( buf );
-               }
 
                /*If this code has a value*/
                if (bcv->value) {
@@ -2052,11 +2045,10 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    TMetLoc  *loc;
-   TMetElem *elem;
 
    FILE    *stream;
    char    buf[256];
-   char    *bytes=NULL,**elems;
+   char    *bytes=NULL;
    int     sz,sk,nb,n,hd,k,sec;
    int     ntok,gntok,nltok;
    char    **tok,**gtok,**ltok;
@@ -2543,15 +2535,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            if (!id) {
                               if (spec->RenderLabel && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                                  if (loc->No) {
-                                    snprintf(buf,"%s (%s)",128,loc->Id,loc->No);
+                                    snprintf(buf,128,"%s (%s)",loc->Id,loc->No);
                                  } else {
-                                    snprintf(buf,"%s",128,loc->Id);
+                                    snprintf(buf,128,"%s",loc->Id);
                                  }
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
                               }
 
                               if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                 snprintf(buf,"(%.4f,%.4f)",128,loc->Coord.Lat,loc->Coord.Lon);
+                                 snprintf(buf,128,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
                               }
                               id=1;

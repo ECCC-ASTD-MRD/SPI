@@ -70,7 +70,7 @@ TFuncDef FuncD[] = {
   { "ddxysecond", ddxysecond, 1 , TD_Float32 },
   { "dprofcurve", dprofcurve, 1 , TD_Float32 },
   { "dtangcurve", dtangcurve, 1 , TD_Float32 },
-  { NULL    , NULL        , 0 }
+  { NULL        , NULL      , 0 , TD_Unknown }
 };
 
 /*Matrix to Float functions*/
@@ -108,7 +108,7 @@ TFuncDef FuncF[] = {
   { "snrmse", stat_nrmse  , 2 , TD_Float64 },
   { "sna"   , stat_na     , 2 , TD_Float64 },
   { "srna"  , stat_rna    , 2 , TD_Float64 },
-  { NULL    , NULL        , 0 ,0 }
+  { NULL    , NULL        , 0 , TD_Unknown }
 };
 
 /*Matrix to Matrix functions*/
@@ -142,7 +142,7 @@ TFuncDef FuncM[] = {
   { "ceil"  , (TFunc*)ceil  , 1 , TD_Unknown },
   { "floor" , (TFunc*)floor , 1 , TD_Unknown },
   { "round" , (TFunc*)rint  , 1 , TD_Unknown },
-  { NULL    , (TFunc*)NULL  , 0 , 0 }
+  { NULL    , (TFunc*)NULL  , 0 , TD_Unknown }
 };
 
 /**
@@ -290,7 +290,7 @@ double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
 
 double fcentile(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
 
-   double        *vs,va,vb,vc,d;
+   double        *vs,va,vb,vc;
    unsigned long i,j,fi,fj,idx;
    int           dm,dj,di,s;
 
@@ -447,6 +447,7 @@ double darea(TDataDef *Res,TDataDef *Def,int Mode) {
          Def_Set(Res,0,idx+i,mx*my);
       }
    }
+   return(1.0);
 }
 
 double dangle(TDataDef *Res,TDataDef *Def,int Mode) {
@@ -481,6 +482,7 @@ double dangle(TDataDef *Res,TDataDef *Def,int Mode) {
          Def_Set(Res,0,idx+i,d);
       }
    }
+   return(1.0);
 }
 
 double ddx(TDataDef *Res,TDataDef *Def,int Mode) {
@@ -509,6 +511,7 @@ double ddx(TDataDef *Res,TDataDef *Def,int Mode) {
          Def_Set(Res,0,idx+i,d);
       }
    }
+   return(1.0);
 }
 
 double ddy(TDataDef *Res,TDataDef *Def,int Mode) {
@@ -537,6 +540,7 @@ double ddy(TDataDef *Res,TDataDef *Def,int Mode) {
          Def_Set(Res,0,idx+i,d);
       }
    }
+   return(1.0);
 }
 
 /* Derived form GRASS */

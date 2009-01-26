@@ -702,9 +702,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
 GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
 
-   Tcl_HashEntry *entry;
    GDAL_Band* band;
-   int new;
 
    if (!(band=(GDAL_Band*)TclY_HashPut(Interp,&GDAL_BandTable,Name,sizeof(GDAL_Band)))) {
       return(NULL);

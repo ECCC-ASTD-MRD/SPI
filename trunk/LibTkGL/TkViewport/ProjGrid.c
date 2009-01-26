@@ -184,7 +184,7 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[16];
-   double  x,y,incr;
+   double  incr;
    Vect3d  vr;
    Coord   co;
    double  ax[2];

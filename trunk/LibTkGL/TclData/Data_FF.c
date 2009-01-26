@@ -263,7 +263,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
 
    TKrigging krig;
 
-   int i,j,k,idx0,idx1;
+   int i,j,idx0,idx1;
    double t,da;
 
    if (NPos) {

@@ -273,7 +273,6 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    TData    *fld;
    FILE     *fid;
    float     val,dx,dy,la0,lo0;
-   float     xg1,xg2,xg3,xg4;
    short     tmps;
    int       tmpi;
    int       n,nb,yyyy,mm,dd,h,m,s;

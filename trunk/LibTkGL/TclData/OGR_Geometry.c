@@ -933,9 +933,8 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 */
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned long Size) {
 
-   int           handle=0;
+   int           handle=0,z=2;
    unsigned long n,nv=0;
-   short         z=2,h;
    Vect3d        vr,*pvr;
    Coord         co;
 
@@ -955,8 +954,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          return(0);
       }
       pvr=Extrude!=0.0?&OGR_ArrayEx[Size]:&OGR_ArrayVr[Size];
-
-      h=OGR_G_GetCoordinateDimension(Geom)==3;
 
       /*If we need global topo info*/
       if (Layer && Layer->Topo==0)

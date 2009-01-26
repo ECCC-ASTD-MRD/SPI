@@ -1550,7 +1550,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
 
    Vect3d   pt;
-   GLdouble pc[3];
+//   GLdouble pc[3];
    GLdouble p0[4]={  0.0, -1.0, 0.0, 1.0001 };
    GLdouble p1[4]={  0.0,  1.0, 0.0, 1.0001 };
    GLdouble p2[4]={ -1.0,  0.0, 0.0, 1.0001 };

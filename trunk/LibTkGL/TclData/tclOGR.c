@@ -36,8 +36,6 @@
 #include "tclGDAL.h"
 #include "Projection.h"
 
-TCL_DECLARE_MUTEX(MUTEX_OGRFILE)
-
 /*Table contenant la liste des fichiers en memoire*/
 static Tcl_HashTable OGR_FileTable;
 static Tcl_HashTable OGR_LayerTable;
@@ -194,7 +192,6 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
    OGRGeometryH         g0,g1;
    OGRwkbGeometryType   t;
-   OGRSpatialReferenceH spatial;
    int                  idx,n;
    Tcl_Obj             *obj;
 
@@ -226,11 +223,6 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
          }
          g0=OGR_G_CreateGeometry(t);
          obj=OGR_GeometryPut(Interp,Tcl_GetString(Objv[2]),g0);
-/*
-         spatial=OSRNewSpatialReference(NULL);
-         OSRSetWellKnownGeogCS(spatial,"WGS84");
-         OGR_G_AssignSpatialReference(g0,spatial);
-*/
          if (!obj)
             return(TCL_ERROR);
          Tcl_SetObjResult(Interp,obj);

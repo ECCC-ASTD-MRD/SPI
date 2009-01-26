@@ -606,7 +606,7 @@ Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double
    Tcl_Obj    *obj;
    TGraphAxis *axis;
    TData      *data;
-   double      x,y,spd,dir;
+   double      x,y,spd;
    int         i;
 
    obj=Tcl_NewListObj(0,NULL);
@@ -1020,8 +1020,8 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height){
 
    w=(GR->xg[1]-GR->xg[0]);
    h=(GR->yg[0]-GR->yg[1]);
-   x=(GR->xg[0]-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2;
-   y=(Height-(GR->yg[0]-((TkCanvas*)Canvas)->yOrigin))*GLRender->MagScale-GLRender->MagD/2;
+   x=(GR->xg[0]-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2.0;
+   y=(Height-(GR->yg[0]-((TkCanvas*)Canvas)->yOrigin))*GLRender->MagScale-GLRender->MagD/2.0;
 
    glPushAttrib(GL_VIEWPORT_BIT);
    glMatrixMode(GL_PROJECTION);

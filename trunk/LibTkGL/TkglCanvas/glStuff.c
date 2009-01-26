@@ -1199,7 +1199,7 @@ void glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width) {
 */
 void glPickInit(double WinX,double WinY,double DX,double DY){
 
-   GLuint vp[4];
+   GLint vp[4];
 
    glSelectBuffer(512,GLRender->GLPick);
    glRenderMode(GL_SELECT);

@@ -64,7 +64,7 @@ void         GDB_TxtFree(GDB_Txt *Txt);
 void         GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point);
 void         GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
 
-GLint Texture_Read(char *File);
+GLuint Texture_Read(char *File);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GDB_ThreadProc>
@@ -315,7 +315,7 @@ int GDB_Init(GDB_Data *GDB) {
 
          GDB->Tile[x][y].Topo.Map=NULL;
          GDB->Tile[x][y].Topo.Vr=NULL;
-         GDB->Tile[x][y].Topo.Tex=-1;
+         GDB->Tile[x][y].Topo.Tex=0;
 
          GDB->Tile[x][y].TPlace=NULL;
          GDB->Tile[x][y].TCity=NULL;
@@ -614,9 +614,9 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
    Tile->Res=0;
 
    /*Donnees matricielles*/
-   if (Tile->Topo.Tex!=-1) {
+   if (Tile->Topo.Tex) {
       glDeleteTextures(1,&Tile->Topo.Tex);
-      Tile->Topo.Tex=-1;
+      Tile->Topo.Tex=0;
    }
    if (Tile->Topo.Map) {
       free(Tile->Topo.Map);
@@ -730,7 +730,7 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
             case GDB_TYPE_MAP  : if (tile->Topo.Map) { free(tile->Topo.Map); tile->Topo.Map=NULL; }
                                  if (tile->Topo.Vr) { free(tile->Topo.Vr); tile->Topo.Vr=NULL; }
                                  break;
-            case GDB_TYPE_TEXT : if (tile->Topo.Tex!=-1) { glDeleteTextures(1,&tile->Topo.Tex); tile->Topo.Tex=-1; }
+            case GDB_TYPE_TEXT : if (tile->Topo.Tex) { glDeleteTextures(1,&tile->Topo.Tex); tile->Topo.Tex=0; }
                                  break;
             case GDB_TYPE_COAST: if (tile->Coast)    { GDB_GeoFree(tile->Coast); tile->Coast=NULL; }
                                  if (tile->FCoast)   { GDB_GeoFree(tile->FCoast); tile->FCoast=NULL; }
@@ -948,14 +948,12 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 */
 void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *Proj) {
 
-   int n;
-
    Tile->Box.Co[0].Lat=Lat0;Tile->Box.Co[0].Lon=Lon0;Tile->Box.Co[0].Elev=0.0;
    Tile->Box.Co[1].Lat=Lat0;Tile->Box.Co[1].Lon=Lon0+Delta;Tile->Box.Co[1].Elev=0.0;
    Tile->Box.Co[2].Lat=Lat0+Delta;Tile->Box.Co[2].Lon=Lon0+Delta;Tile->Box.Co[2].Elev=0.0;
    Tile->Box.Co[3].Lat=Lat0+Delta;Tile->Box.Co[3].Lon=Lon0;Tile->Box.Co[3].Elev=0.0;
 
-   if (!(n=Proj->Type->Project(Proj->Params,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,4))) {
+   if (!(Proj->Type->Project(Proj->Params,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,4))) {
       Tile->Box.Nb=-1;
    } else {
       Tile->Box.Nb=1;
@@ -985,7 +983,7 @@ void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *P
 int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
 
    Vect3d dif,min,max;
-   double z,d,lat[2],lon[2];
+   double d,lat[2],lon[2];
 
    if (Box.Nb<=0)
       return(GDB_OUT);
@@ -1332,7 +1330,6 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    float  dx,dy;
    float  dtx,dty,tx,ty;
    float  d;
-   Vect3d nr;
 
    register int     x,y;
    register short  *map=Topo->Map;
@@ -1494,7 +1491,6 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
    int    dc,dr;
    float  dx,dy;
    float  dtx,dty,tx,ty;
-   float  d;
 
    GLuint      tex[2];
    GLhandleARB prog;
@@ -1640,10 +1636,8 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
    if (GDB->Params.Topo && GDB->Params.Bath && !Tile->Topo.Map)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_MAP,GDB_MAP_MSK);
 
-   if (GDB->Params.Text && Tile->Topo.Tex==-1) {
-
-      int w,h,t;
-      char  file[256],*buf;
+   if (GDB->Params.Text && !Tile->Topo.Tex) {
+      char  file[256];
 
       sprintf(file,"%s/ras/tex-%i.%i.%i.tif",getenv("GDB_PATH"),Tile->Res<4?4:(Tile->Res>64?64:Tile->Res),(int)(Tile->Box.Co[0].Lon+180.0)/GDB->DegT,(int)(Tile->Box.Co[0].Lat+90.0)/GDB->DegT);
       Tile->Topo.Tex=Texture_Read(file);
@@ -1654,9 +1648,8 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
 int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
    GDB_Tile *tile;
-   int       x,y,res=0,i,ras=0;
-   float     lat,lon,over;
-   short    *tmp;
+   int       x,y,res=0,ras=0;
+   float     lat,lon;
 
    if (GDB->Res<0) {
       return(0);
@@ -1688,7 +1681,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
       for(y=0;y<GDB->DegY;y++) {
          lat=y*GDB->DegT-90.0;
          lon=x*GDB->DegT-180.0;
-         over=1.0/MAX(1,res);
 
          tile=&GDB->Tile[x][y];
 
@@ -2069,14 +2061,14 @@ void GDB_StarRender(Tcl_Interp *Interp,Projection *Proj) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-GLint Texture_Read(char *File) {
+GLuint Texture_Read(char *File) {
 
    GDALDatasetH    set=NULL;
    GDALRasterBandH hband;
    GDALColorTableH hTable;
    GDALColorEntry  entry;
    GDALDataType    t;
-   GLint           id=-1;
+   GLuint          id=0;
    int             w,h,s,n,nc,i;
    char           *buf=NULL;
    char           *map=NULL;

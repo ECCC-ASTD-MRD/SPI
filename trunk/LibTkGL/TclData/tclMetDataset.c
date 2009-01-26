@@ -35,7 +35,6 @@ static Tcl_HashTable MetDatafileTable;
 static Tcl_HashTable MetDatasetTable;
 static Tcl_HashTable MetDatasubsetTable;
 static Tcl_HashTable MetTemplateTable;
-static long          MetDatasubsetNo=0;
 static long          MetDatasetNo=0;
 static long          MetTemplateNo=0;
 static int           MetDatasetInit=0;
@@ -904,7 +903,6 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
 Tcl_Obj* MetDataset_Code2Obj(Tcl_Interp *Interp,BufrDescriptor *BCV) {
 
    Tcl_Obj *obj;
-   int      len;
 
    obj=Tcl_NewListObj(0,NULL);
    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(BCV->descriptor));
@@ -951,8 +949,6 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
    Tcl_Obj *obj;
    int      n;
-   int      ival;
-   long     lval;
    double   dval;
 
    Tcl_ListObjLength(Interp,Obj,&n);

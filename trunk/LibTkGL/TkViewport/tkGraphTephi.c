@@ -475,7 +475,7 @@ void GraphTehpi_DisplayIsotherms(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
    Tk_Font       font;
    XColor       *color;
    char          buf[32];
-   int           width,height,dx,dy;
+   int           width,height;
    int           t;
 
    font=AxisT->Font?AxisT->Font:Graph->Font;
@@ -555,7 +555,7 @@ void GraphTehpi_DisplayIsotherms(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
 */
 void  GraphTehpi_DisplayIsobar(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,GLuint GLMode,double P,Tk_TextLayout Label,int Width,int Height) {
 
-   int           dx,dy,l;
+   int           l;
    double        x0,y0;
    double        t0,tmax;
    static double range[25][2] = {{10,-18.3},{20,-7.9},{30,-1.6},{40,3.3},{50,7.1},{100,18.7},{150,26.3},{200,32.2},{250,36.6},
@@ -755,7 +755,7 @@ void GraphTehpi_DisplayDryAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxi
    XColor       *color;
 
    char          buf[32];
-   int           width,height,dx,dy;
+   int           width,height;
    int           theta;
    int           i;
 
@@ -838,16 +838,15 @@ void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxi
    char          buf[32];
    XColor       *color;
    Tk_Font       font;
-   int           width,height,dx,dy;
+   int           width,height;
 
    int n=0,p;
 
    double   tmin=AxisT->T0+20;
    double   dp = -25.0;
    double   x0,y0;
-   int      i,k;
-   int      count, lcount;
-   double   p0,t0,th0,t,th,lambda,lth,rdp;
+   int      i;
+   double   p0,t0,th0,t,th,rdp;
    double   pts[2][64][3];
 
    t = (double)((int)(tmin/4.0+1)*4.0);
@@ -1001,7 +1000,7 @@ void GraphTehpi_DisplayMixRatios(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
    XColor       *color;
 
    char          buf[32];
-   int           width,height,dx,dy;
+   int           width,height;
    int           i;
    double        m;
 
@@ -1083,9 +1082,8 @@ void GraphTehpi_DisplayMixRatios(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
 void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisT,TGraphAxis *AxisP,TGraphAxis *AxisTH,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    Tk_FontMetrics tkm;
-   Tcl_Obj       *obj;
    TVector       *vdry,*vpres,*vwet,*vdew,*vspd,*vdir,*vspr;
-   double         v[2],val,v0[2],t;
+   double         v[2],val,v0[2];
    char           buf[32];
    int            i,vn,j,x,y,px,py,pw;
 

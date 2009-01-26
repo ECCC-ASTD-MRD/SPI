@@ -281,7 +281,6 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    double  incr;
    char    buf[15];
-   double  lat,lon;
    GeoVect vr,co;
    double  ax[2];
 
