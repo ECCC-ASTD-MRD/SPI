@@ -1051,7 +1051,7 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1) {
    if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)
       return(0);
 
-   if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->LevelType!=Ref1->LevelType)
+   if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1] || Ref0->LevelType!=Ref1->LevelType)
       return(0);
 
    if ((Ref0->LevelNb!=Ref1->LevelNb) || (Ref0->Levels && memcmp(Ref0->Levels,Ref1->Levels,Ref0->LevelNb*sizeof(float))!=0))

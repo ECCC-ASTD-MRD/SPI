@@ -529,7 +529,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           j,f,fop,fn,idx,nseg;
-   double        x,y,lat,lon,tol;
+   double        x,y,lat,lon,tol,val,min,max;
    long         *table,y0,y1;
    OGR_Layer    *layer,*layerop;
    TGeoRef      *ref,*ref0;
@@ -539,8 +539,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj      *lst,*obj;
    char          buf[32];
 
-   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-extent","-buffer","-difference","-intersection","-simplify",NULL };
-   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY };
+   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection","-simplify",NULL };
+   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -572,7 +572,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
       case TRANSFORM:
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"[georeffrom] georefto");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (Objc==3) {
             ref=GeoRef_Get(Tcl_GetString(Objv[2]));
@@ -583,21 +583,21 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             ref0=GeoRef_Get(Tcl_GetString(Objv[1]));
             if (!ref0 || !ref0->Spatial) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Georef name unknown or invalid spatial reference: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             tr=OCTNewCoordinateTransformation(ref0->Spatial,ref->Spatial);
          } else {
             ref=GeoRef_Get(Tcl_GetString(Objv[1]));
             if (!ref|| !ref->Spatial) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Georef name unknown or invalid spatial reference: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             tr=OCTNewCoordinateTransformation(layer->Ref->Spatial,ref->Spatial);
          }
 
          if (!tr) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Could not initiate transformation function",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          } else {
             for(f=0;f<layer->NFeature;f++) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
@@ -616,6 +616,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          layer->Ref->Project(layer->Ref,x,y,&lat,&lon,1,1);
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
+         Tcl_SetObjResult(Interp,lst);
          break;
 
       case UNPROJECT:
@@ -624,6 +625,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,1,1);
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
+         Tcl_SetObjResult(Interp,lst);
          break;
 
       case EXTENT:
@@ -632,6 +634,43 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MinY));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxX));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxY));
+         Tcl_SetObjResult(Interp,lst);
+         break;
+
+      case MIN:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"layer field");
+            return(TCL_ERROR);
+         }
+         j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[1]));
+         if (j==-1) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Invalid field",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         min=1e32;
+         for(f=0;f<layer->NFeature;f++) {
+            val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
+            min=min<val?min:val;
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(min));
+         break;
+
+      case MAX:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"layer field");
+            return(TCL_ERROR);
+         }
+         j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[1]));
+         if (j==-1) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Invalid field",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         max=-1e32;
+         for(f=0;f<layer->NFeature;f++) {
+            val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
+            max=max>val?max:val;
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(max));
          break;
 
       case BUFFER:
@@ -832,8 +871,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
    }
 
-   Tcl_SetObjResult(Interp,lst);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
