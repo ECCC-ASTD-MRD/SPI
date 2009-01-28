@@ -37,7 +37,6 @@ int      GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,dou
 int      GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
-TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_WKTDistance>
@@ -364,6 +363,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
 
    GeoRef_Clear(Ref,0);
    Ref->Grid[0]='W';
+   Ref->Grid[1]=Ref->Grid[2]='\0';
 
    if (Transform) {
       Ref->Transform=(double*)calloc(6,sizeof(double));

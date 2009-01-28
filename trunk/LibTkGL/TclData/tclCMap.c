@@ -776,7 +776,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
 static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj *obj,*item;
-   int     i,ii,index,idx,n,nn;
+   int     i,ii,index,idx,n,nn,nc;
    GLubyte cell[4]={ 0,0,0,0 };
 
    static CONST char *sopt[] = { "-add","-get","-list","-del","-move","-update",NULL };
@@ -839,7 +839,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
          case LIST:
             if (Objc!=1 && Objc!=2) {
                Tcl_WrongNumArgs(Interp,1,Objv,"[list]");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             if (Objc==1) {
                return(CMap_ColorList(Interp,CMap,0,0));
@@ -848,18 +848,21 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                for(ii=0;ii<n;ii++) {
                   Tcl_ListObjIndex(Interp,Objv[i],ii,&obj);
                   Tcl_ListObjLength(Interp,obj,&nn);
-                  if (nn!=4) {
+                  if (nn!=5) {
                      Tcl_AppendResult(Interp,"CMap_Control: Invalid number of items",(char*)NULL);
                      return(TCL_ERROR);
                   }
                   Tcl_ListObjIndex(Interp,obj,0,&item);
-                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[ii][0]=nn;
+                  Tcl_GetIntFromObj(Interp,item,&nc);
+
                   Tcl_ListObjIndex(Interp,obj,1,&item);
-                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[ii][1]=nn;
+                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[nc][0]=nn;
                   Tcl_ListObjIndex(Interp,obj,2,&item);
-                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[ii][2]=nn;
+                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[nc][1]=nn;
                   Tcl_ListObjIndex(Interp,obj,3,&item);
-                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[ii][3]=nn;
+                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[nc][2]=nn;
+                  Tcl_ListObjIndex(Interp,obj,4,&item);
+                  Tcl_GetIntFromObj(Interp,item,&nn);CMap->Control[nc][3]=nn;
                }
             }
             break;
@@ -873,7 +876,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                   memset(CMap->Control[index],0,4);
             } else {
                Tcl_WrongNumArgs(Interp,3,Objv,"[index]");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
 
             break;
@@ -884,7 +887,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
          case MOVE:
             if (Objc!=3) {
                Tcl_WrongNumArgs(Interp,1,Objv,"to from");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&index);
             Tcl_GetIntFromObj(Interp,Objv[++i],&ii);

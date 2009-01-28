@@ -213,8 +213,11 @@ int FSTD_FieldReadMesh(TData *Field) {
             break;
 
          case 'W':
-            if (Field->Ref->Grid[1]!='Y' && Field->Ref->Grid[1]!='Z')
-               break;
+            if (Field->Ref->Grid[1]=='Y' || Field->Ref->Grid[1]=='Z') {
+               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
+               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
+            }
+            break;
 
          case 'Y':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
@@ -277,7 +280,7 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
       fprintf(stderr,"(ERROR) FSTD_FieldGetMesh: Not enough memory to store projected locations");
       return(0);
    } else {
-      if (Field->Spec->Topo) {
+      if (Field->Spec->Topo && head->FID) {
          FSTD_FileSet(NULL,head->FID);
          EZLock_RPNField();
          idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
@@ -335,6 +338,7 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
          Proj->Type->Project(Proj->Params,Field->Ref->Pos,NULL,FSIZE3D(Field->Def));
       }
    }
+
    if (gz)
       free(gz);
    return(1);
@@ -1331,7 +1335,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
 
          case PROJECTION:
-             if (Objc==1) {
+            if (Objc==1) {
                if (Field->Ref && Field->Ref->String)
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->String,-1));
             } else {
@@ -1340,10 +1344,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                } else {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,Tcl_GetString(Objv[i]),tm,im,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,Tcl_GetString(Objv[i]),tm,im,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -1381,6 +1386,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   ref=Field->Ref;
                   if (ref) {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,Field->Ref->String,tm,im,NULL);
+                     Field->Ref->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,tm,im,NULL);
@@ -1415,30 +1421,35 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_WrongNumArgs(Interp,0,Objv,"Field FieldAX FieldAY");
                return(TCL_ERROR);
             } else {
-               fieldAX=Data_Get(Tcl_GetString(Objv[1]));
+               fieldAX=Data_Get(Tcl_GetString(Objv[++i]));
                if (!fieldAX) {
-                  Tcl_AppendResult(Interp,"invalid AX Axis field :",Tcl_GetString(Objv[1]),(char*)NULL);
+                  Tcl_AppendResult(Interp,"invalid AX Axis field :",Tcl_GetString(Objv[i]),(char*)NULL);
                   return(TCL_ERROR);
                }
-               fieldAY=Data_Get(Tcl_GetString(Objv[2]));
+               fieldAY=Data_Get(Tcl_GetString(Objv[++i]));
                if (!fieldAY) {
-                  Tcl_AppendResult(Interp,"invalid AY Axis field :",Tcl_GetString(Objv[2]),(char*)NULL);
+                  Tcl_AppendResult(Interp,"invalid AY Axis field :",Tcl_GetString(Objv[i]),(char*)NULL);
                   return(TCL_ERROR);
                }
-               if (Field->Ref->Grid[0]!='Z' && Field->Ref->Grid[0]!='Y')
-                  return(0);
 
-               head=(FSTD_Head*)fieldAX->Head;
                if (Field->Ref->Lat) free(Field->Ref->Lat);
                if (Field->Ref->Lon) free(Field->Ref->Lon);
 
                Field->Ref->Lat=(float*)malloc(FSIZE2D(fieldAY->Def)*sizeof(float));
                Field->Ref->Lon=(float*)malloc(FSIZE2D(fieldAX->Def)*sizeof(float));
+               if (!Field->Ref->Lat || !Field->Ref->Lon) {
+                  Tcl_AppendResult(Interp,"Unable to allocate memory for grid descriptors",(char*)NULL);
+                  return(TCL_ERROR);
+               }
                memcpy(Field->Ref->Lat,fieldAY->Def->Data[0],FSIZE2D(fieldAY->Def)*sizeof(float));
                memcpy(Field->Ref->Lon,fieldAX->Def->Data[0],FSIZE2D(fieldAX->Def)*sizeof(float));
-               EZLock_RPNInt();
-               Field->Ref->Id=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
-               EZUnLock_RPNInt();
+
+               if (Field->Ref->Grid[0]=='Z' || Field->Ref->Grid[0]=='Y') {
+                  head=(FSTD_Head*)fieldAX->Head;
+                  EZLock_RPNInt();
+                  Field->Ref->Id=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
+                  EZUnLock_RPNInt();
+               }
                GeoRef_Qualify(Field->Ref);
                Data_Clean(Field,1,1,1);
                return(TCL_OK);
@@ -1446,7 +1457,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
 
          case GRTYP:
-
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Grid,-1));
             } else {
@@ -1463,8 +1473,13 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   c_gdrls(ref->Id);
                   EZUnLock_RPNInt();
                }
-               if (grtyp[0]=='W') {
-                  Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->LevelType:LVL_UNDEF),(ref?ref->Levels:NULL),Tcl_GetString(Objv[++i]),NULL,NULL,NULL);
+               if (grtyp[0]=='W' || grtyp[1]=='W') {
+                  if (ref) {
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->String,ref->Transform,ref->InvTransform,NULL);
+                  } else {
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,NULL,NULL,NULL);
+                  }
+                  Field->Ref->Grid[1]=grtyp[1];
                } else {
                   if (grtyp[0]=='L' || grtyp[0]=='N' || grtyp[0]=='S') {
                      if (Objc>3 && (Tcl_GetDoubleFromObj(Interp,Objv[i+1],&dxg1)!=TCL_ERROR)) {
@@ -1595,7 +1610,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
        }
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
