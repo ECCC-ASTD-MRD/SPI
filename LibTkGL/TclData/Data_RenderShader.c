@@ -490,6 +490,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+//   glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_WRAP_S,GL_REPEAT);
+//   glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_WRAP_T,GL_REPEAT);
 
    /*Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix*/
    if (Field->Def->Type!=TD_Float32) {
@@ -527,6 +529,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       idx0=idxk+j*Field->Def->NI-ri;
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<Field->Def->NI && ri;i+=ri) {
+
          idx0+=ri;
          idx1=idx0+rj*Field->Def->NI;
 

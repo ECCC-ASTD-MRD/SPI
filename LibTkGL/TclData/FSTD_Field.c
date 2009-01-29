@@ -550,7 +550,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                   Vect_Init(Field->Ref->Pos[idxk],i,j,coord.Elev);
                } else {
                   if (Field->Ref->Id>-1) {
-                     coord.Lat=lat[idxi];
+                     coord.Lat=Field->Ref->Grid[0]=='G'?-lat[idxi]:lat[idxi];
                      coord.Lon=CLAMPLON(lon[idxi]);
                   } else {
                      Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
