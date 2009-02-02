@@ -2043,7 +2043,7 @@ proc Writer::FVCN::Write { Pad Sent } {
       if { !$Sent } {
          set file $Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]_${file}.msg
       } else {
-         set file $date_$Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]_${file}.msg
+         set file ${date}_$Data(No$Pad)-[lindex [split $Data(Advisory$Pad) /] end]_${file}.msg
       }
 
       if { $Data(Mode$Pad)=="RET" } {

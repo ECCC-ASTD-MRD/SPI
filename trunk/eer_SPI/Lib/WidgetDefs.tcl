@@ -565,8 +565,10 @@ proc IcoMenu::CreateDef { Frame Path Icons Values Var Command Def args } {
 
    menu $Frame.menu
 
+   set no 0
    foreach ico $Icons value $Values {
       eval set Data($value$Frame) @$Path/$ico
+      eval set Data($no$Frame) @$Path/$ico
       if { [file isfile $Path/$ico] } {
          $Frame.menu add radiobutton -bitmap @$Path/$ico -value $value -indicatoron false \
             -command "set $Var \"$value\" ; $Frame configure -bitmap \"@$Path/$ico\" ; $Command"
@@ -574,6 +576,7 @@ proc IcoMenu::CreateDef { Frame Path Icons Values Var Command Def args } {
          $Frame.menu add radiobutton -value $value -indicatoron false \
             -command "set $Var \"$value\" ; $Frame configure -bitmap \"@$Path/$ico\" ; $Command"
       }
+      incr no
    }
 
    catch { eval $Frame configure -bitmap $Data($Def$Frame) }
