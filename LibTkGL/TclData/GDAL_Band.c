@@ -1406,9 +1406,12 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 */
 int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
-   double lat,lon,i,j;
-   float  val,dir;
-   int x,y,z=0,idx;
+   double   lat,lon,i,j;
+   float    val,dir;
+   int      n,x,y,z=0,idx,dx;
+   TGeoScan scan;
+
+   memset(&scan,0x0,sizeof(TGeoScan));
 
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Invalid band",(char*)NULL);
@@ -1429,15 +1432,20 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
    }
 
-   for(x=0;x<Band->Def->NI;x++){
-      for(y=0;y<Band->Def->NJ;y++){
+   /*Check if we can reproject all in one shot, otherwise, do by scanline*/
+   dx=(Band->Def->NI*Band->Def->NJ)>4194304?1:Band->Def->NI;
+   for(x=0;x<Band->Def->NI;x+=dx) {
 
-         /*Get the latlon coordinate of the pixel*/
-         Band->Ref->Project(Band->Ref,x,y,&lat,&lon,0,1);
+      /*Reproject*/
+      if (!GeoScan_Init(&scan,Field->Ref,Band->Ref,x,0,x+(dx-1),Band->Def->NJ-1)) {
+         Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      GeoScan_Get(&scan,Band->Def,1);
 
+      for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/
-         if (Field->Ref->UnProject(Field->Ref,&i,&j,lat,lon,0,1)) {
-            Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,i,j,Field->Def->Level,&val,&dir);
+         if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,scan.X[n],scan.Y[n],Field->Def->Level,&val,&dir)) {
             if (Field->Spec->Map) {
                VAL2COL(idx,Field->Spec,val);
             }
@@ -1448,26 +1456,27 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
          if (Field->Spec->Map) {
             if (Band->Def->NC==1) {
-               Def_Set(Band->Def,0,FIDX2D(Band->Def,x,y),idx);
+               Def_Set(Band->Def,0,scan.V[n],idx);
             } else {
                for (z=0;z<Band->Def->NC;z++) {
                   if (idx>-1) {
-                     Def_Set(Band->Def,z,FIDX2D(Band->Def,x,y),Field->Spec->Map->Color[idx][z]);
+                     Def_Set(Band->Def,z,scan.V[n],Field->Spec->Map->Color[idx][z]);
                   } else {
-                     Def_Set(Band->Def,z,FIDX2D(Band->Def,x,y),0);
+                     Def_Set(Band->Def,z,scan.V[n],0);
                   }
                }
             }
          } else {
             if (Band->Def->NC>=1) {
-               Def_Set(Band->Def,0,FIDX2D(Band->Def,x,y),val);
+               Def_Set(Band->Def,0,scan.V[n],val);
             }
             if (Band->Def->NC>=2) {
-               Def_Set(Band->Def,1,FIDX2D(Band->Def,x,y),dir);
+               Def_Set(Band->Def,1,scan.V[n],dir);
             }
          }
       }
    }
+   GeoScan_Clear(&scan);
    return(TCL_OK);
 }
 
