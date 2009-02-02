@@ -677,7 +677,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
  * Nom          : <Data_GridInterpolate>
  * Creation     : Aout 2006 J.P. Gauthier - CMC/CMOE
  *
- * But          : Interpolate uneExporter bande raster dans un champs de donnees
+ * But          : Interpolate une bande raster dans un champs de donnees
  *
  * Parametres   :
  *   <Interp>   : L'interpreteur Tcl
@@ -694,11 +694,11 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
 */
 int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
 
-   double lat,lon,i,j;
-   float val,val1;
-   int x,y,x0,y0,x1,y1,idx,ex,grd=0;
+   float    val,dir;
+   int      x,y,x0,y0,x1,y1,idx,ex,dy;
+   TGeoScan scan;
 
-   ex=!isnan(ToDef->NoData);
+   memset(&scan,0x0,sizeof(TGeoScan));
 
    if (!ToRef || !FromRef) {
       if (Interp)
@@ -706,41 +706,50 @@ int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoR
       return(TCL_ERROR);
    }
 
+   /*If grids are the same, copy the data*/
+   if (GeoRef_Equal(ToRef,FromRef)) {
+      for(idx=0;idx<=FSIZE2D(FromDef);idx++){
+         Def_Get(FromDef,0,idx,val);
+         Def_Set(ToDef,0,idx,val);
+      }
+      return(TCL_OK);
+   }
+
+   /*Check for intersection limits*/
    if (!GeoRef_Intersect(FromRef,ToRef,&x0,&y0,&x1,&y1,0)) {
       return(TCL_OK);
    }
 
-   if (GeoRef_Equal(ToRef,FromRef)) {
-      grd=1;
-   }
+   ex=!isnan(ToDef->NoData);
 
-   for(x=x0;x<=x1;x++){
-      for(y=y0;y<=y1;y++){
+   /*Check if we can reproject all in one shot, otherwise, do by scanline*/
+   dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
+   for(y=y0;y<=y1;y+=(dy+1)) {
 
-         if (grd) {
-            idx=FIDX2D(ToDef,x,y);
-            Def_Get(FromDef,0,idx,val);
-            Def_Set(ToDef,0,idx,val);
-         } else {
-            /*Get the latlon coordinate of grid point*/
-            ToRef->Project(ToRef,x,y,&lat,&lon,0,1);
-            /*Get the value of the gdalband at this latlon coordinate*/
-            if (FromRef->UnProject(FromRef,&i,&j,lat,lon,0,1)) {
-               FromRef->Value(FromRef,FromDef,'L',0,i,j,0,&val,&val1);
-               if (val!=FromDef->NoData && !isnan(val)) {
-                  idx=FIDX2D(ToDef,x,y);
-                  Def_Set(ToDef,0,idx,val);
-               }
+      /*Reproject*/
+      if (!GeoScan_Init(&scan,FromRef,ToRef,x0,y,x1,y+dy)) {
+         Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      GeoScan_Get(&scan,ToDef,1);
+
+      for(idx=0;idx<scan.N;idx++){
+         /*Get the value of the data field at this latlon coordinate*/
+         if (FromRef->Value(FromRef,FromDef,'L',0,scan.X[idx],scan.Y[idx],FromDef->Level,&val,&dir)) {
+            if (val!=FromDef->NoData && !isnan(val)) {
+               Def_Set(ToDef,0,scan.V[idx],val);
             } else {
                /*Set as nodata
                if (ex) {
-                  Def_Set(ToDef,0,idx,ToDef->NoData);
+                  Def_Set(ToDef,0,scan.V[n],ToDef->NoData);
                }*/
             }
          }
       }
    }
-  return(TCL_OK);
+   GeoScan_Clear(&scan);
+
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
