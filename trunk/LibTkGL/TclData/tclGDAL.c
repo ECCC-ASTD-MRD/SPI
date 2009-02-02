@@ -1118,7 +1118,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (!(file=GDAL_FileGet(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,0));
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,-1));
          return(TCL_OK);
          break;
    }
