@@ -915,10 +915,10 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
         case MASK:
             if (Objc==1) {
                switch(proj->Geo->Params.Mask) {
-                  case -1: Tcl_SetObjResult(Interp,Tcl_NewStringObj("DATA",0));break;
-                  case  0: Tcl_SetObjResult(Interp,Tcl_NewStringObj("NONE",0));break;
-                  case  1: Tcl_SetObjResult(Interp,Tcl_NewStringObj("LAND",0));break;
-                  case  2: Tcl_SetObjResult(Interp,Tcl_NewStringObj("SEA",0));break;
+                  case -1: Tcl_SetObjResult(Interp,Tcl_NewStringObj("DATA",-1));break;
+                  case  0: Tcl_SetObjResult(Interp,Tcl_NewStringObj("NONE",-1));break;
+                  case  1: Tcl_SetObjResult(Interp,Tcl_NewStringObj("LAND",-1));break;
+                  case  2: Tcl_SetObjResult(Interp,Tcl_NewStringObj("SEA",-1));break;
                }
             } else {
                ++i;

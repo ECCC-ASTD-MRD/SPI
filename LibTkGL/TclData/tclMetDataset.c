@@ -864,7 +864,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
          case VALTYPE_INT32:
             ival=bufr_value_get_int32(V);
             if (ival==-1) {
-               obj=Tcl_NewStringObj("MSNG",0);
+               obj=Tcl_NewStringObj("MSNG",-1);
             } else {
                obj=Tcl_NewIntObj(ival);
             }
@@ -873,7 +873,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
          case VALTYPE_INT64  :
             lval=bufr_value_get_int64(V);
             if (lval==-1) {
-               obj=Tcl_NewStringObj("MSNG",0);
+               obj=Tcl_NewStringObj("MSNG",-1);
             } else {
                obj=Tcl_NewLongObj(lval);
             }
@@ -882,7 +882,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
          case VALTYPE_FLT32  :
             fval=bufr_value_get_float(V);
             if (bufr_is_missing_float(fval)) {
-               obj=Tcl_NewStringObj("MSNG",0);
+               obj=Tcl_NewStringObj("MSNG",-1);
             } else {
                obj=Tcl_NewDoubleObj(lval);
             }
@@ -891,7 +891,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
          case VALTYPE_FLT64  :
             dval=bufr_value_get_double(V);
             if (bufr_is_missing_double(dval)) {
-               obj=Tcl_NewStringObj("MSNG",0);
+               obj=Tcl_NewStringObj("MSNG",-1);
             } else {
                obj=Tcl_NewDoubleObj(lval);
             }

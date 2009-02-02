@@ -822,7 +822,7 @@ Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub) {
       } else {
          if (Idx>=0) {
             if (Vec->V[Idx]==Vec->NoData) {
-               obj=Tcl_NewStringObj("-",0);
+               obj=Tcl_NewStringObj("-",-1);
             } else {
                obj=Tcl_NewDoubleObj(Vec->V[Idx]);
             }
@@ -830,7 +830,7 @@ Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub) {
             obj=Tcl_NewListObj(0,NULL);
             for(n=0;n<Vec->N;n++) {
                if (Vec->V[n]==Vec->NoData) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",0));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
                } else {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Vec->V[n]));
                }
