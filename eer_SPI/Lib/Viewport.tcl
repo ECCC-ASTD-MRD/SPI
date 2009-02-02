@@ -582,14 +582,7 @@ proc Viewport::ConfigPut { Frame VP } {
 
    $Data(Frame).layer.vp.col configure -fg $Resources(Bkg)
 
-   set m zeroth.xbm
-   switch $Map(Mask) {
-      "LAND" { set m mask1.xbm }
-      "1"    { set m mask1.xbm }
-      "SEA"  { set m mask2.xbm }
-      "2"    { set m mask2.xbm }
-   }
-   $Data(Frame).left.ras.mask.sel configure -bitmap @$GDefs(Dir)/Resources/Bitmap/$m
+   IcoMenu::Set $Data(Frame).left.ras.mask.sel $Map(Mask)
 
    set lst "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm width6.xbm"
    $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coast)]
@@ -1725,8 +1718,12 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).left.ras.text.sel -side left -ipadx 1
          pack $Data(Frame).left.ras.text.lbl -side left -fill y
       frame $Data(Frame).left.ras.mask
-         IcoMenu::Create $Data(Frame).left.ras.mask.sel $GDefs(Dir)/Resources/Bitmap \
-            "zeroth.xbm mask1.xbm mask2.xbm" "0 1 2" Viewport::Map(Mask) "$Apply configure -state normal" $Viewport::Map(Mask) -relief groove -bd 2
+         IcoMenu::CreateDef $Data(Frame).left.ras.mask.sel $GDefs(Dir)/Resources/Bitmap \
+             { zeroth.xbm mask1.xbm mask2.xbm } { NONE LAND SEA } \
+             Viewport::Map(Mask) "$Apply configure -state normal" $Viewport::Map(Mask) -relief groove -bd 2
+
+#         IcoMenu::Create $Data(Frame).left.ras.mask.sel $GDefs(Dir)/Resources/Bitmap \
+#            "zeroth.xbm mask1.xbm mask2.xbm" "0 1 2" Viewport::Map(Mask) "$Apply configure -state normal" $Viewport::Map(Mask) -relief groove -bd 2
          label $Data(Frame).left.ras.mask.lbl -text " [lindex $Lbl(Mask) $GDefs(Lang)]"
          pack $Data(Frame).left.ras.mask.sel -side left -ipadx 1
          pack $Data(Frame).left.ras.mask.lbl -side left -fill y
@@ -2756,7 +2753,7 @@ proc Viewport::Setup { Frame } {
 
    projection create $Frame
    projection configure $Frame -location $Map(Lat) $Map(Lon) -type $Map(Type$Frame) -georef $Map(GeoRef$Frame) \
-      -mapres $Map(Res) -mask -$Map(Mask) -scale $Map(Elev) \
+      -mapres $Map(Res) -mask $Map(Mask) -scale $Map(Elev) \
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) -mapplace $Map(Place) \
       -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Seconds$Frame)
