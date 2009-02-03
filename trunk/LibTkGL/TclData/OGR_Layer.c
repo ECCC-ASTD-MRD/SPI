@@ -1857,12 +1857,13 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                for(f=0;f<nf;f++) {
                   if (field[f]->Spec->RenderVector && field[f]->Def->Data[1]) {
                      field[f]->Ref->Value(field[f]->Ref,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
-                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,spd);
+                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,VAL2SPEC(field[f]->Spec,spd));
                      df++;
                      OGR_F_SetFieldDouble(Layer->Feature[n],f+df,dir);
                   } else {
                      Def_GetMod(field[f]->Def,idx,spd);
-                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,spd);
+
+                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,VAL2SPEC(field[f]->Spec,spd));
                   }
                }
 

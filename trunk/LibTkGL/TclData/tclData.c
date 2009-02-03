@@ -2398,8 +2398,13 @@ int Data_WithinNb(TData *Field) {
 
    for(n=0;n<FSIZE2D(Field->Def);n++) {
       Def_GetMod(Field->Def,n,val);
-      if (val>=Field->Spec->Min && val<=Field->Spec->Max)
-         t++;
+      if (Field->Spec->InterNb) {
+         if (val>=Field->Spec->Inter[0] && val<=Field->Spec->Inter[Field->Spec->InterNb-1])
+            t++;
+      } else {
+         if (val>=Field->Spec->Min && val<=Field->Spec->Max)
+            t++;
+      }
    }
    return(t);
 }
