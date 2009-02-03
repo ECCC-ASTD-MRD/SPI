@@ -309,7 +309,7 @@ proc MLDP1::CreateLaunchInputFile { } {
    puts $file "localhost     : [format "%-15s" $GDefs(Host)] \[pollux, castor, linux_workstation\]"
    puts $file "localdir      : [format "%-15s" $Sim(Path)]"
    if { $Sim(IsUsingSoumet) } {
-      puts $file "remotehost    : [format "%-15s" $Sim(Host)] \[naos, maia, pollux, castor\]"
+      puts $file "remotehost    : [format "%-15s" $Sim(Host)] \[naos, maia, saiph, pollux, castor\]"
       puts $file "remotedir     : [format "%-15s" $Sim(RemotePath)]"
    }
    puts $file ""
@@ -2307,7 +2307,7 @@ proc MLDP1::SetArchVariables { } {
    #----- Set host architecture.
    if { $host == "pollux" || $host == "castor" } {
       set Sim(Arch) "IRIX64"
-   } elseif { $host == "naos" || $host == "maia" } {
+   } elseif { $host == "naos" || $host == "maia" || $host == "saiph" } {
       set Sim(Arch) "AIX"
    } else {
       set Sim(Arch) "Linux"
