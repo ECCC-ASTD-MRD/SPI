@@ -1110,19 +1110,17 @@ proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
 
    set Data(Name) ""
 
-   #----- Dans le cas grid et zoom null, on recentre
-
    if { $Viewport::Map(Type$Frame)=="grid" && $lens<=1 } {
       set ninj [projection configure $Frame -gridsize]
       set ext  [projection configure $Frame -gridextent]
       set Viewport::Map(GridI) [expr ([lindex $ninj 0]-1.0)*0.5+[lindex $ext 0]]
       set Viewport::Map(GridJ) [expr ([lindex $ninj 1]-1.0)*0.5+[lindex $ext 1]]
-      projection configure $Frame -gridpoint $Viewport::Map(GridI) $Viewport::Map(GridJ)
-      projcam configure $Cam -lens $cam(Lens)
-      Page::Update $Frame
-   } else {
-      Viewport::GoTo $Frame $lat $lon $lens
+      set ll [projection function $Frame -coordgrid $Viewport::Map(GridI) $Viewport::Map(GridJ)]
+      set lat [lindex $ll 0]
+      set lon [lindex $ll 1]
    }
+   Viewport::GoTo $Frame $lat $lon $lens
+
    $Frame.page.canvas config -cursor left_ptr
 }
 
