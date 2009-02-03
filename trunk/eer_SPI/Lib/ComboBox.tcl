@@ -51,8 +51,11 @@ namespace eval ComboBox {
    global  GDefs
    variable Resources
    variable Data
+   variable Param
 
    set Data(Grab) {}
+
+   set Param(Height) 0
 
    #----- Definitions des parametres du ComboBox
 
@@ -289,6 +292,7 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
    variable ${W}lst
    variable ${W}top
    variable Resources
+   variable Param
 
    upvar #0 $IVar Var
 
@@ -321,6 +325,8 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
       toplevel .$top
       wm withdraw .$top
       wm overrideredirect .$top 1
+
+      set Height [expr $Param(Height)>0?$Param(Height):$Height]
 
       listbox .$top.content -height $Height -width 0 -bg $Resources(Background) -selectmode single \
          -bd $Resources(Border) -relief sunken -yscrollcommand ".$top.scroll.bar set" \
