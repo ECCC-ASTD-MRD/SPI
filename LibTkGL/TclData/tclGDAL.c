@@ -113,7 +113,8 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TObs              *obs;
    GDALDataType       type;
 
-   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
+   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
+   static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
    static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","is","project","unproject","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,IS,PROJECT,UNPROJECT,ALL,WIPE };
 
@@ -238,8 +239,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_WrongNumArgs(Interp,2,Objv,"band layer type [field]");
                return TCL_ERROR;
             }
-            if (Tcl_GetString(Objv[4])[0]!='F' && Tcl_GetString(Objv[4])[0]!='C' && Tcl_GetString(Objv[4])[0]!='A' && Tcl_GetString(Objv[4])[0]!='W' && Tcl_GetString(Objv[4])[0]!='I' && Tcl_GetString(Objv[4])[0]!='L') {
-               Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : invalid rasterization type, must be, FAST, WITHIN, INTERSECT, CONSERVATIVE, NORMALIZED_CONSERVATIVE, ALIASED, LENGTH_CONSERVATIVE, LENGTH_NORMALIZED_CONSERVATIVE, or LENGTH_ALIASED",(char*)NULL);
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
                return(TCL_ERROR);
             }
             field=NULL;
@@ -249,11 +249,14 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   field=Tcl_GetString(Objv[5]);
                }
             }
-            imode=Tcl_GetString(Objv[4])[0];
+            imode=modeogr[n][0];
             itype='A';
             if (imode=='L') {
-               imode=Tcl_GetString(Objv[4])[7];
+               imode=modeogr[n][7];
                itype='L';
+            } else if (imode=='P') {
+               imode=modeogr[n][6];
+               itype='P';
             }
             return(Data_GridOGR(Interp,band->Def,band->Ref,layer,imode,itype,1,field,x));
          }
@@ -262,7 +265,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          field1=Data_Get(Tcl_GetString(Objv[3]));
          if (field1) {
             if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],mode,"mode",0,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -309,7 +312,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          comb=GDAL_BandGet(Tcl_GetString(Objv[3]));
          if (comb) {
             if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],mode,"mode",0,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -407,7 +410,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          /* If we get here, it has to be a NOP or ACCUM*/
          if (Objc>4) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],mode,"mode",0,&n)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
