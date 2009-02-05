@@ -1,0 +1,304 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet     : Interface pour la gestion des experiences.
+# Fichier    : TRAJECT.int
+# Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Description des interfaces et procedures relatives a
+#              celles-ci pour le module TRAJECTOIRE.
+#
+# Remarques  :
+#
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Nom      : <TRAJECT::New>
+# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creation d'une nouvelle simulation TRAJECTOIRE.
+#
+# Parametres :
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc TRAJECT::New { Parent } {
+   global GDefs
+   variable Lbl
+   variable Msg
+    variable Sim
+   variable Bubble
+
+   if { [winfo exists .trajectnew] } {
+      Dialog::CreateInfo .trajectnew "[lindex $Msg(Exist) $GDefs(Lang)]"
+      return
+   }
+
+   toplevel     .trajectnew
+   wm title     .trajectnew "[lindex $Lbl(Sim) $GDefs(Lang)]: $Exp::Data(Name)"
+   wm transient .trajectnew $Parent
+   wm resizable .trajectnew 0 0
+   wm geom      .trajectnew =340x260+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+30]
+   wm protocol  .trajectnew WM_DELETE_WINDOW { TRAJECT::Close }
+
+   TabFrame::Create .trajectnew.opt 1 TRAJECT::SimInitLaunch
+   pack .trajectnew.opt -side top -fill both -expand true -padx 5 -pady 5
+
+   #----- Selection des niveaux
+
+   set frame [TabFrame::Add .trajectnew.opt 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
+
+   frame $frame.l -relief sunken -bd 1
+      frame $frame.l.lbl -relief raised -bd 1
+         label $frame.l.lbl.l1 -text "[lindex $Lbl(Level) $GDefs(Lang)] 1"
+         label $frame.l.lbl.l2 -text "[lindex $Lbl(Level) $GDefs(Lang)] 2"
+         label $frame.l.lbl.l3 -text "[lindex $Lbl(Level) $GDefs(Lang)] 3"
+         pack $frame.l.lbl.l1 $frame.l.lbl.l2 $frame.l.lbl.l3 -side top -ipadx 4
+      pack $frame.l.lbl -side left
+
+      frame $frame.l.sel -relief raised -bd 1
+         EntryVar::Create $frame.l.sel.l1 TRAJECT::Sim(Level1) float "0" "" \
+            -relief sunken -bd 1 -width 9 -bg $GDefs(ColorLight) -justify right
+         EntryVar::Create $frame.l.sel.l2 TRAJECT::Sim(Level2) float "0" "" \
+            -relief sunken -bd 1 -width 9 -bg $GDefs(ColorLight) -justify right
+         EntryVar::Create $frame.l.sel.l3 TRAJECT::Sim(Level3) float "0" "" \
+            -relief sunken -bd 1 -width 9 -bg $GDefs(ColorLight) -justify right
+         pack $frame.l.sel.l1 $frame.l.sel.l2 $frame.l.sel.l3 -side top -fill y -expand true
+      pack $frame.l.sel -side left -fill y
+
+      scale $frame.l.bar -orient vertical -command "TRAJECT::LevelPack $frame" -relief raised -sliderlength 10 -width 10 -bd 1\
+         -highlightthickness 0 -showvalue false -length 50 -from 0 -to 22 -resolution 1
+      button $frame.l.type -relief raised -width 10 -bd 1 -highlightthickness 0 -textvariable TRAJECT::Sim(LevelUnit) \
+         -command "TRAJECT::SwitchElev"
+      pack $frame.l.bar -side left -fill both
+      pack $frame.l.type -side left -fill both -expand true
+   pack $frame.l -side top -padx 10 -pady 10 -fill x -expand true
+
+   Bubble::Create $frame.l.sel  [lindex $Bubble(Level) $GDefs(Lang)]
+   Bubble::Create $frame.l.type [lindex $Bubble(Type) $GDefs(Lang)]
+
+   #----- Selection des parametres de simulation
+
+   frame $frame.s -relief groove -bd 2
+      Option::Create $frame.s.method [lindex $Lbl(Method) $GDefs(Lang)] TRAJECT::Sim(Method) 0 -1 \
+         $TRAJECT::Sim(ListMethod) TRAJECT::ConfigDate
+      Option::Create $frame.s.time [lindex $Lbl(TimeStep) $GDefs(Lang)] TRAJECT::Sim(TimeStep) 0 -1 \
+         $TRAJECT::Sim(ListTimeStep) ""
+      Option::Create $frame.s.model [lindex $Lbl(Meteo) $GDefs(Lang)] TRAJECT::Sim(Meteo) 0 -1 \
+         $TRAJECT::Sim(ListMeteo) "TRAJECT::SetMetDataDir \$TRAJECT::Sim(Meteo)"
+      button $frame.s.model.path -image OPEN -relief flat -bd 0 -overrelief raised  \
+        -command "Model::GetMetPath .trajectnew TRAJECT::Sim(DBaseDiag) TRAJECT::Sim(DBaseProg)"
+      pack  $frame.s.model.path -side right -fill both
+      pack $frame.s.method $frame.s.time $frame.s.model -side top -fill x
+   pack $frame.s -side top -fill x -padx 10
+
+   set TRAJECT::Sim(Second) [clock seconds]
+   frame $frame.d -relief groove -bd 2
+   puts stderr "$frame.d.date"
+      Calendar::Create $frame.d.date [lindex [lindex $Lbl(Date) 0] $GDefs(Lang)] TRAJECT::Sim(Second) 25
+      Clock::Create $frame.d.time [lindex $Lbl(At) $GDefs(Lang)] TRAJECT::Sim(AccHour)
+      pack $frame.d.date -side left -fill x -expand true
+      pack $frame.d.time -side left
+   pack $frame.d -side top -fill x -padx 10 -pady 10
+
+   Bubble::Create $frame.s.method     [lindex $Bubble(Method) $GDefs(Lang)]
+   Bubble::Create $frame.s.time       [lindex $Bubble(Step) $GDefs(Lang)]
+   Bubble::Create $frame.s.model      [lindex $Bubble(Meteo) $GDefs(Lang)]
+   Bubble::Create $frame.s.model.path [lindex $Bubble(Path) $GDefs(Lang)]
+   Bubble::Create $frame.d.date       [lindex $Bubble(Date) $GDefs(Lang)]
+   Bubble::Create $frame.d.time       [lindex $Bubble(Time) $GDefs(Lang)]
+
+   set frame [TabFrame::Add .trajectnew.opt 1 [lindex $Lbl(Launch) $GDefs(Lang)] False]
+
+   #----- Fichiers disponibles
+
+   frame  $frame.d -relief sunken -bd 1
+      label $frame.d.b -relief raised -bd 1 -text "[lindex [lindex $Lbl(Date) 1] $GDefs(Lang)]"
+      label $frame.d.dur -relief raised -bd 1 -textvariable TRAJECT::Sim(Duration)
+
+      frame $frame.d.l -relief raised -bd 1
+         Option::Create $frame.d.l.delt  [lindex $Lbl(Delta) $GDefs(Lang)] TRAJECT::Sim(Delta) 0 2 \
+           { 1 3 6 } "TRAJECT::SimInitLaunch . 1"
+         listbox $frame.d.l.list -yscrollcommand [list $frame.d.l.bar set] -bd 1 -exportselection 0 \
+            -height 7 -width 12 -relief sunken -background $GDefs(ColorLight) -selectmode single
+         scrollbar $frame.d.l.bar -orient vertical -command [list $frame.d.l.list yview] -bd 1 -width 10
+         pack $frame.d.l.delt -side top -fill x
+         pack $frame.d.l.bar -side right -fill y
+         pack $frame.d.l.list -side left -fill both -expand true
+      pack $frame.d.b $frame.d.l $frame.d.dur -side top -fill both -expand true
+   pack  $frame.d -side left -padx 5 -pady 10 -fill y -expand true
+
+   bind $frame.d.l.list <ButtonRelease-1> "if { \$TRAJECT::Sim(Method)==\"Trajectoire\" } {
+      set TRAJECT::Sim(Duration) \"\[MetData::Duration \$TRAJECT::Sim(Data) 0 \[expr \[$frame.d.l.list curselection\]+1\]\] Hrs\"
+   } else {\
+      set TRAJECT::Sim(Duration) \"\[MetData::Duration \$TRAJECT::Sim(Data) end \[$frame.d.l.list curselection\]\] Hrs\"
+   }"
+
+   frame $frame.s -relief sunken -bd 1
+      frame $frame.s.t0 -relief raised -bd 1
+         label $frame.s.t0.lbl -text [lindex $Lbl(DeltaS) $GDefs(Lang)] -width 8  -anchor w
+         spinbox $frame.s.t0.ent -textvariable TRAJECT::Sim(DeltaS) -from 0 -to 24 -bd 1
+         pack $frame.s.t0.lbl -side left
+         pack $frame.s.t0.ent -side left -fill x -expand true
+      frame $frame.s.t1 -relief raised -bd 1
+         label $frame.s.t1.lbl -text [lindex $Lbl(DeltaL) $GDefs(Lang)] -width 8 -anchor w
+         spinbox $frame.s.t1.ent  -textvariable TRAJECT::Sim(DeltaL) -from 0 -to 240 -bd 1
+         pack $frame.s.t1.lbl -side left
+         pack $frame.s.t1.ent -side left -fill x -expand true
+      frame $frame.s.sel -relief raised -bd 1
+         Option::Create $frame.s.sel.host  [lindex $Lbl(Host) $GDefs(Lang)] TRAJECT::Sim(Host) 0 19 $TRAJECT::Sim(Hosts) "TRAJECT::SetQueue $frame.s.sel.queue"
+         Option::Create $frame.s.sel.queue [lindex $Lbl(Queue) $GDefs(Lang)] TRAJECT::Sim(Queue) 0 19 $GDefs(Queue) ""
+         pack $frame.s.sel.host $frame.s.sel.queue -side top -fill x
+      button $frame.s.launch -text [lindex $Lbl(Go) $GDefs(Lang)] -bd 1 -highlightthickness 0 \
+        -command "TRAJECT::SimLaunch"
+      pack $frame.s.sel $frame.s.t0 $frame.s.t1 -side top -fill x
+      pack $frame.s.launch  -side bottom -fill both -expand true
+   pack $frame.s -side right -padx 5 -pady 10 -fill both -expand true -anchor n
+
+   Bubble::Create $frame.d.l.list        [lindex $Bubble(List) $GDefs(Lang)]
+   Bubble::Create $frame.s.params.deltas [lindex $Bubble(T0) $GDefs(Lang)]
+   Bubble::Create $frame.s.params.deltal [lindex $Bubble(Tend) $GDefs(Lang)]
+   Bubble::Create $frame.s.launch        [lindex $Bubble(Launch) $GDefs(Lang)]
+
+   button .trajectnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "TRAJECT::Close"
+   pack .trajectnew.close -side bottom -anchor e -padx 5 -pady 5
+
+   set Sim(No) [set Sim(Last)  -1]
+   TRAJECT::SetQueue $frame.s.sel.queue
+   TRAJECT::InitNew
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TRAJECT::LevelPack>
+# Creation : Mars 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer un "scroll" de la liste de niveaux.
+#
+# Parametres    :
+#    <Frame>    : Identificateur du frame
+#    <Val>      : Position actuelle
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TRAJECT::LevelPack { Frame Val } {
+   global GDefs
+   variable Lbl
+
+   $Frame.l.lbl.l1 configure -text "[lindex $Lbl(Level) $GDefs(Lang)] [format "%02i" [expr $Val+1]]"
+   $Frame.l.lbl.l2 configure -text "[lindex $Lbl(Level) $GDefs(Lang)] [format "%02i" [expr $Val+2]]"
+   $Frame.l.lbl.l3 configure -text "[lindex $Lbl(Level) $GDefs(Lang)] [format "%02i" [expr $Val+3]]"
+
+   eval $Frame.l.sel.l1 configure -textvariable TRAJECT::Sim(Level[expr $Val+1])
+   eval $Frame.l.sel.l2 configure -textvariable TRAJECT::Sim(Level[expr $Val+2])
+   eval $Frame.l.sel.l3 configure -textvariable TRAJECT::Sim(Level[expr $Val+3])
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TRAJECT::Product>
+# Creation : Septembre 2005 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lire les donnees et initialiser le produit
+#
+# Parametres  :
+#    <Frame>  : Page
+#    <Type>   : Type de donnees
+#    <Layout> : Layout (produit)
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TRAJECT::CallProduct { Frame Type Layout } {
+
+   foreach box [FieldBox::Get] {
+      FieldBox::Close $box
+   }
+   foreach box [TrajBox::Get] {
+      TrajBox::Close $box
+   }
+
+   if { $Type!="" } {
+      TRAJECT::Result
+   }
+   SPI::LayoutLoad $Frame $Layout
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TRAJECT::PopUp>
+# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher le popup contextuel des simulations.
+#
+# Parametres    :
+#    <X>        : ...
+#    <Y>        : ...
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TRAJECT::PopUp { X Y } {
+   global GDefs
+   variable Lbl
+
+   if { ![winfo exists .trajectpopup] } {
+
+      menu .trajectpopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+         .trajectpopup add command -label "TRAJECT"  -command "" -background $GDefs(ColorHighLight) \
+            -activebackground $GDefs(ColorHighLight)
+         .trajectpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .trajectpopup.product
+         .trajectpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command "TRAJECT::Result"
+         .trajectpopup add separator
+         .trajectpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
+             -command "TRAJECT::SimSuppress True \$Exp::Data(SelectSim)"
+
+      menu .trajectpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+          .trajectpopup.product add command -label "TRAJ" -command {  TRAJECT::CallProduct $Page::Data(Frame) All TRAJ }
+          .trajectpopup.product add separator
+          .trajectpopup.product add command -label "SPI" -command { TRAJECT::CallProduct $Page::Data(Frame) "" SPI }
+   }
+
+   tk_popup .trajectpopup $X $Y 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TRAJECT::SetQueue>
+# Creation : Mars 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Selectionner la liste de queue selon l'hote.
+#
+# Parametres    :
+#    <Widget>   : Widget a modifier
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TRAJECT::SetQueue { Widget } {
+   global   GDefs
+   variable Sim
+
+   if { $Sim(Host)==$GDefs(Host) && $GDefs(Arch)=="Linux" } {
+      $Widget.b configure -state disabled
+      set Sim(Queue) none
+   } else {
+      $Widget.b configure -state normal
+   }
+}

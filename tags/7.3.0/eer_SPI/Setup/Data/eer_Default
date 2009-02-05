@@ -1,0 +1,180 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Description:
+#
+#    Fichier de configuration pour SPI
+#
+#===============================================================================
+
+#----- Activation des bulles d'aides
+
+Bubble::Activate True
+
+#----- Parametres de SPI
+
+set SPI::Param(Geom)           1024x768     ;#Geometrie de ;'interface
+set SPI::Param(Pages)          { "Page 1" } ;#Liste des pages
+set SPI::Param(Panes)          {}           ;#Liste des dimensions de sidepane (ex:200x200)
+set SPI::Param(PaneSide)       right        ;#Position des sidepane
+set SPI::Param(Exp)            False        ;#Affichage des experiences
+set SPI::Param(Layout)         SPI          ;#Layout courant
+
+#----- Parametres de la projection
+
+namespace eval Viewport { }
+
+set Viewport::Map(Lat)         41.0          ;#Latitude centrale de l'affichage
+set Viewport::Map(Lon)         -103.0        ;#Longitude centrale de l'affichage
+set Viewport::Map(Type)        orthographic  ;#Type de projection geographique (orthographic cylindric mercator grid)
+set Viewport::Map(Delay)       1000.0        ;#Temps de deplacement en millisecondes
+set Viewport::Map(Damping)     1.07          ;#Facteur de l'effet de ralentissement
+
+set Viewport::Map(Mask)        NONE          ;#Masque (NONE,SEA,LAND,DATA)
+set Viewport::Map(Coast)       1             ;#Cotes
+set Viewport::Map(Lake)        1             ;#Lacs
+set Viewport::Map(River)       0             ;#Rivieres
+set Viewport::Map(Polit)       1             ;#Bordures politiques
+set Viewport::Map(Admin)       0             ;#Bordures politiques internes
+set Viewport::Map(City)        0             ;#Villes
+set Viewport::Map(Road)        0             ;#Routes
+set Viewport::Map(Rail)        0             ;#Chemin de fer
+set Viewport::Map(Util)        0             ;#Utilitaires
+set Viewport::Map(Canal)       0             ;#Canal/Aqueduc
+set Viewport::Map(Topo)        0             ;#Topographie
+set Viewport::Map(Bath)        0             ;#Bathymetrie
+set Viewport::Map(Text)        0             ;#Texture
+set Viewport::Map(Coord)       1             ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+set Viewport::Map(CoordDef)    10            ;#Intervale entre les latlon en degres
+set Viewport::Map(CoordNum)    2             ;#Numerotation des latlon
+set Viewport::Map(Elev)        1.0           ;#Facteur d'expansion des elevations
+set Viewport::Map(TPolit)      1             ;#Identifications provinces
+
+set Viewport::Resources(Font)      [font create -family Helvetica -weight bold -size -10]   ;#Police de caractere de la vue
+set Viewport::Resources(Bkg)       white     ;#Couleur du font (background)
+set Viewport::Resources(Coast)     #000000   ;#Cotes
+set Viewport::Resources(Lake)      #0000ff   ;#Lacs
+set Viewport::Resources(River)     #0000ff   ;#Rivieres
+set Viewport::Resources(Polit)     #ff0000   ;#Bordures politiques
+set Viewport::Resources(Admin)     #ff0000   ;#Bordures politiques internes
+set Viewport::Resources(City)      #000000   ;#Villes
+set Viewport::Resources(Road)      #404040   ;#Routes
+set Viewport::Resources(Rail)      #ff1493   ;#Chemin de fer
+set Viewport::Resources(Util)      #ffff00   ;#Utilitaires
+set Viewport::Resources(Canal)     #00ffff   ;#Canal/Aqueduc
+set Viewport::Resources(Coord)     #000000   ;#Latlon
+set Viewport::Resources(FillCoast) #C2D74B   ;#Cotes (Polygones)
+set Viewport::Resources(FillLake)  #33C2FF   ;#Lacs (Polygones)
+
+#----- Parametres des Legende
+
+namespace eval DataBar { }
+
+set DataBar::Param(Title) "Title"            ;#Titre par defaut
+set DataBar::Param(Full)  1                  ;#Pleine largeur
+
+#----- Parametres des Colorbar
+
+namespace eval ColorBar { }
+
+set ColorBar::Param(Full)   0                ;#Pleine hauteur
+set ColorBar::Param(BG)     white            ;#Couleur du fond
+set ColorBar::Param(Alpha)  100              ;#Transparence
+set ColorBar::Param(Split)  0                ;#Separation des intervals
+set ColorBar::Param(Border) 0                ;#Epaisseur de la bordure des intervalles
+set ColorBar::Param(Width)  15               ;#Largeur de la barre de couleur
+set ColorBar::Param(Side)   right            ;#Position des chiffres
+
+#----- Parametres de la loupe
+
+namespace eval CVMagnifier { }
+
+set CVMagnifier::Param(Zoom)   2             ;#Facteur de Zoom initial de la loupe
+set CVMagnifier::Param(Size)   256           ;#Dimension de la loupe en pixels
+
+#----- Parametres des champs
+
+set FSTD::Param(Interp)            LINEAR         ;#Type d'interpolation
+
+dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
+   -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
+   -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -topography GZ -sample 2 \
+   -intervalmode NONE 0 -intervals {}
+
+#----- Parametres des Observations
+
+dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
+   -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
+   -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -mark 0 -intervalmode NONE 0
+
+#----- Parametres des trajectoires
+
+set Trajectory::Param(Size)      3              ;#Grandeur des icones
+set Trajectory::Param(Width)     1              ;#Grandeur des icones
+set Trajectory::Param(Fill)      2              ;#Remplir les icones
+set Trajectory::Param(Interval)  3              ;#Intervale de selection des donnees
+set Trajectory::Param(Speed)     0              ;#Afficher les vitesse lorsque disponible
+set Trajectory::Param(Style)     1              ;#Type d'affichage
+
+#----- Parametres des graphs
+
+namespace eval Graph { }
+
+set Graph::Color(Select) #FF0000
+set Graph::Color(Axis)   #000000
+set Graph::Color(Fill)   #FFFFFF
+set Graph::Color(BG)     #FFFFFF
+set Graph::Color(FG)     #000000
+
+set Graph::Grid(Color)   #000000
+set Graph::Grid(Width)   0
+set Graph::Grid(Dash)    ""
+
+set Graph::Font(Select)    [font create -family courier -size -8   -weight bold]
+set Graph::Font(Axis)      [font create -family courier -size -10  -weight bold]
+set Graph::Font(Graph)     [font create -family courier -size -14  -weight bold]
+set Graph::Font(Angle)     0
+
+#----- Parametres des outils
+
+set Console::Param(Geom)   { 200x400+[winfo rootx .]+[winfo rooty .] }
+set Console::Param(Dock)   True
+
+set Mapper::Param(Geom)    { 300x600+[winfo rootx .]+[winfo rooty .] }
+set Mapper::Param(Dock)    True
+set Mapper::Param(Paths)   { }
+
+set Macro::Param(Geom)     { 200x400+[winfo rootx .]+[winfo rooty .] }
+set Macro::Param(Dock)     True
+set Macro::Param(Paths)    { }
+
+set Drawing::Param(Geom)   { 200x600+[winfo rootx .]+[winfo rooty .] }
+set Drawing::Param(Dock)   True
+
+set Locator::Param(Geom)   { +[winfo rootx .]+[winfo rooty .] }
+
+set HFManager::Param(Geom) { 700x200+[winfo rootx .]+[winfo rooty .] }
+
+set FieldBox::Param(Geom)  { 415x200+[winfo rootx .]+[winfo rooty .] }
+set TrajBox::Param(Geom)   { 435x200+[winfo rootx .]+[winfo rooty .] }
+set ObsBox::Param(Geom)    { 315x200+[winfo rootx .]+[winfo rooty .] }
+set FieldCalc::Param(Geom) { 550x190+[winfo rootx .]+[winfo rooty .] }
+set Animator::Param(Geom)  { 275x275+[winfo rootx .]+[winfo rooty .] }
+
+set Exp::Param(Paths)      { }
+
+set NowCaster::Param(Geom) { 200x400+[winfo rootx .]+[winfo rooty .] }
+set NowCaster::Param(Dock) True
+set NowCaster::Radar::Param(Paths)    { }
+set NowCaster::Obs::Param(Table)      /home/binops/afsi/sio/datafiles/constants/table_b_bufr_e
+set NowCaster::Obs::Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/ozone /data/ade/dbase/surface/pm25 /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
+set NowCaster::Obs::Param(PathsUpper) { /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/airep }
+
+#----- Printing parameters
+
+set PrintBox::Print(Path)     $env(HOME)                            ;#Path par defaut du fichier d'impression
+set PrintBox::Print(Filename) output                                ;#Nom par defaut du fichier d'impression
+set PrintBox::Print(FileType) {Portable Network Graphics {*.png}}   ;#Format par defaut du fichier d'impression

@@ -1,0 +1,73 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet    : Interface de selection de source.
+# Fichier   : Locator.ctes
+# Creation  : Juin 1997 - J.P. Gauthier - CMC/CMOE
+#
+# Description:
+#
+#       Cette interface permet de rechercher et de selectionne une source de type
+#       Volcan, Nucleaire ou CTBT grace a une interface.
+#
+# Remarques :
+#
+#===============================================================================
+
+namespace eval Locator {
+   global   GDefs
+   variable Data
+   variable Param
+
+   set Param(Title)   { "Localisations" "Locations" }
+   set Param(Version) 2.1
+   set Param(Icon)    LOCATION                                    ;#Icone
+   set Param(Geom)    { +[winfo rootx .]+[winfo rooty .] }        ;#Geometry
+   set Param(Dock)    False                                       ;#Docking
+
+   set Data(Job)    ""                    ;#Texte de processus
+   set Data(Active) 0                     ;#Flag d'activation de l'outils
+   set Data(Canvas) ""                    ;#Canvas Actif
+   set Data(Frame)  ""                    ;#Frame actif
+   set Data(VP)     ""                    ;#Viewport actif
+
+   #----- Donnees utilisees
+
+   set Data(0)         ""
+   set Data(1)         ""
+   set Data(2)         ""
+   set Data(3)         ""
+   set Data(4)         ""
+   set Data(Coo)       ""
+   set Data(Current)   0
+   set Data(Icons)     [list SEL_VOLC SEL_NUCL SEL_CTBT SEL_STAT SEL_CITY]
+   set Data(Files)     [list "$GDefs(Dir)/Data/Volcano.src" "$GDefs(Dir)/Data/Nuclear.src" "$GDefs(Dir)/Data/CTBT.src" "$GDefs(Dir)/Data/Meteo.src" "$GDefs(Dir)/Data/City.src"]
+
+   #----- Variable de restriction et de selection
+
+   set Data(Sort)    ""
+
+   set Data(Inst)    0
+   set Data(No)      ""
+   set Data(Name)    ""
+   set Data(Area)    ""
+   set Data(Lat0)    ""
+   set Data(Lat1)    ""
+   set Data(Lon0)    ""
+   set Data(Lon1)    ""
+
+   image create photo SEL_VOLC -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_VOLCANO.gif
+   image create photo SEL_NUCL -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_NUCLEAR.gif
+   image create photo SEL_CTBT -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CTBT.gif
+   image create photo SEL_FIRE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_FIRE.gif
+   image create photo SEL_OTHE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_OTHER.gif
+   image create photo SEL_STAT -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_STATION.gif
+   image create photo SEL_CITY -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CITY.gif
+
+   set Data(Nb)        0
+}
+
+

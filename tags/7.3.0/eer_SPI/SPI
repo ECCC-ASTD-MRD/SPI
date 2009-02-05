@@ -1,0 +1,108 @@
+#!/bin/sh
+
+export SPI_PATH=${0%SPI}
+. ${SPI_PATH}/version
+
+SOFT=0
+HOST=`hostname`
+SCREEN=0
+X_GEO='1024x768'
+X_DEPTH='x24'
+PID_XVFB=0
+LIVE="";
+
+#----- Force unlimited limits
+
+ulimit -c 0 2>/dev/null
+ulimit -s unlimited 2>/dev/null
+ulimit -t unlimited 2>/dev/null
+ulimit -m unlimited 2>/dev/null
+ulimit -d unlimited 2>/dev/null
+
+#----- Parse the flags fo batch token
+
+for flag in $@
+do
+   if [[ $flag = "-batch" ]]
+   then
+
+      #----- Starts xvfb, best to use an absolute path
+
+      if [[ -f /software/cmc/bin/Xvfb ]]
+      then
+         XVFB="/software/cmc/bin/Xvfb"
+      elif [[ -f /usr/bin/X11/Xvfb ]]
+      then
+         XVFB="/usr/bin/X11/Xvfb"
+      else
+         XVFB="Xvfb"
+      fi
+
+      #----- Start Xvfb
+
+      while [[ (-z $LIVE) ]]
+      do
+         SERVER=$RANDOM
+         echo "Batch mode: Initializing Xvfb with :$SERVER"
+
+         ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} &
+         PID_XVFB=$!
+
+         LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
+      done
+
+      echo "Batch mode: Done initializing Xvfb"
+
+      #----- In case of problem with the whole script, kill Xvfb stuff
+
+      trap "(kill $PID_XVFB; rm -f /tmp/.X11-unix/X${SERVER}) 1> /dev/null 2>&1" 0 1 2 3 13 15
+
+      #----- Export virtual display
+
+      export DISPLAY=:${SERVER}.${SCREEN}
+
+      #----- Force software mode in batch mode
+
+      SOFT=1
+   fi
+
+   if [[ $flag = "-soft" ]]
+   then
+      SOFT=1
+   fi
+
+   if [[ $flag = "-tclsh" ]]
+   then
+      ${SPI_PATH}/Shared/${ARCH}/TclTk/bin/tclsh${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" $@
+      code=$?
+      exit $code
+   fi
+done
+
+#----- Testing hardware capabilities
+if [[ `${SPI_PATH}/Lib/System.tcl` -eq 0 ]]
+then
+   SOFT=1
+fi
+
+#----- check for software mode
+
+if [[ ($SOFT -eq 1) ]]
+then
+   export LD_LIBRARY_PATH=${SPI_PATH}/Shared/${ARCH}/GL:${LD_LIBRARY_PATH}
+   export LD_PRELOAD=${SPI_PATH}/Shared/${ARCH}/GL/libGL.so
+fi
+
+#----- Let's start up the software
+
+${SPI_PATH}/Shared/${ARCH}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
+code=$?
+
+if [[ ($PID_XVFB -ne 0) ]]
+then
+   kill $PID_XVFB 1> /dev/null 2>&1
+fi
+
+#----- Exit with SPI error code
+
+exit $code
