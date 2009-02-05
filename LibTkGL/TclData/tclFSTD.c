@@ -779,7 +779,6 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                case 'G':id=3;break;
                case 'L':id=4;break;
             }
-
             if ((pos=Obs_Grid(field0->Ref,obs,&npos,n))) {
                ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
                free(pos);

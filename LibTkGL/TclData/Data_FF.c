@@ -277,7 +277,11 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
       krig.Weight=(double*)malloc(krig.N*krig.N*sizeof(double));
       krig.V=(double*)malloc(krig.N*sizeof(double));
 
-      /* Calculate distance between known points*/
+      if (!krig.Matrix || !krig.Weight || !krig.V) {
+         fprintf(stderr,"(WARNING) FFKrigging: Unable to allocate calculation matrices\n");
+         return(0);
+      }
+     /* Calculate distance between known points*/
       for (j=0;j<NPos;j++) {
          for (i=0;i<NPos;i++) {
             idx0=i*krig.N+j;
