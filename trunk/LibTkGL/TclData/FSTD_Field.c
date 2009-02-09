@@ -644,57 +644,55 @@ int FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,
  *
  *----------------------------------------------------------------------------
  */
-int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom,TData *PField0,TData *PField1,double Top) {
+int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom) {
 
-   float  *gzfrom=NULL,*gzto=NULL,*p0=NULL,*p1=NULL,ptop,pref,rcoef;
-   int     gridfrom,gridto,i,id;
-   void   *pto,*pfrom;
+   float *from,*to;
+   int    gridfrom,gridto,i,id;
 
    FSTD_Head *headto=(FSTD_Head*)FieldTo->Head;
    FSTD_Head *headfrom=(FSTD_Head*)FieldFrom->Head;
 
    ThreadSpecificData *threadData=(ThreadSpecificData*)Tcl_GetThreadData((&threadKey),sizeof(ThreadSpecificData));
 
-   extern void* c_videfine();
-   extern void* c_viundefine(void*);
-   extern int c_viqkdef(void*,const int numLevel, const int gridType, float *levelList, float top, float pRef, float rCoef, float *gz);
-   extern int c_videfset (void*,const int ni, const int nj, int idGrdDest, int idGrdSrc,float *surf, float *top);
-   extern int c_visint(void*,float *stateOut, float *stateIn, float *derivOut,float *derivIn,float extrapGuideDown,float extrapGuideUp);
-   extern int c_visetopt(void*,const char *option, const char *value);
-
    if (FieldFrom->Def->Type!=TD_Float32 || FieldTo->Def->Type!=TD_Float32) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid Field data type, must be float",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (!FieldFrom) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Origin field not valid",(char*) NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (!FieldTo) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Destination field not valid",(char*) NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (FieldFrom->Def->NI!=FieldTo->Def->NI || FieldFrom->Def->NJ!=FieldTo->Def->NJ) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Grid sizes differ",(char*)NULL);
-      return TCL_ERROR;
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Horizontal grid sizes differ",(char*)NULL);
+      return(TCL_ERROR);
    }
 
-   if (FieldFrom->Ref->LevelType==LVL_SIGMA || FieldFrom->Ref->LevelType==LVL_HYBRID || FieldFrom->Ref->LevelType==LVL_ETA) {
-      if (FieldTo->Ref->LevelType==LVL_MAGL || FieldTo->Ref->LevelType==LVL_MASL ||  FieldTo->Ref->LevelType==LVL_GALCHEN) {
-         if (!ZFieldFrom) {
-            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Need GZ source field data",(char*)NULL);
-            return TCL_ERROR;
-         }
-      } else {
-         if (!PField0) {
-            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Need Pressure source field data",(char*)NULL);
-            return TCL_ERROR;
-         }
+   if (FieldFrom->Ref->LevelType==LVL_GALCHEN || FieldFrom->Ref->LevelType==LVL_MASL || FieldFrom->Ref->LevelType==LVL_MAGL ||
+      FieldTo->Ref->LevelType==LVL_GALCHEN || FieldTo->Ref->LevelType==LVL_MASL ||  FieldTo->Ref->LevelType==LVL_MAGL) {
+      if (!ZFieldFrom) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ source field data",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      if (!ZFieldTo) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ destination field data",(char*)NULL);
+         return(TCL_ERROR);
       }
    } else {
+      if (!ZFieldFrom) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 source field data",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      if (!ZFieldTo) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 destination field data",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
 
    /*Recuperer tout les niveaux disponibles*/
@@ -706,10 +704,9 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          ZFieldFrom->ReadCube(Interp,ZFieldFrom,0);
 
       if (ZFieldFrom->Def->NI!=FieldFrom->Def->NI || ZFieldFrom->Def->NJ!=FieldFrom->Def->NJ) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ source field dimensions",(char*)NULL);
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid source Z field dimensions",(char*)NULL);
          return TCL_ERROR;
       }
-      gzfrom=(float*)(ZFieldFrom->Def->Data[0]);
    }
 
    if (ZFieldTo) {
@@ -717,22 +714,9 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          ZFieldTo->ReadCube(Interp,ZFieldTo,0);
 
       if (ZFieldTo->Def->NI!=FieldTo->Def->NI || ZFieldTo->Def->NJ!=FieldTo->Def->NJ) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ destination field dimensions",(char*)NULL);
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid destination Z field dimensions",(char*)NULL);
          return TCL_ERROR;
       }
-      gzto=(float*)(ZFieldTo->Def->Data[0]);
-   }
-
-   if (PField0) {
-      p0=(float*)(PField0->Def->Data[0]);
-   } else {
-      p0=NULL;
-   }
-
-   if (PField1) {
-      p1=(float*)(PField1->Def->Data[0]);
-   } else {
-      p1=NULL;
    }
 
    /* Definition des grilles */
@@ -740,41 +724,52 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    if (!threadData->viInterp) {
       threadData->viInterp=c_videfine();
    }
-   ptop=Top;
-   pref=800.0f;
-   rcoef=1.0f;
 
    Tcl_MutexLock(&MUTEX_FSTDVI);
    c_visetopt(threadData->viInterp,"INTERP_DEGREE",FieldTo->Spec->InterpDegree);
    c_visetopt(threadData->viInterp,"VERBOSE","NO");
 
    /*Try to read HY for hybrid levels*/
-   if (FieldFrom->Ref->LevelType==LVL_HYBRID) {
-      i=-1;
-      id=(((FSTD_Head*)FieldFrom->Head)->FID->Id);
-      FSTD_FileSet(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
-      if (FSTD_DecodeHybrid(id,"HY   ",i,i,"             ",i,&ptop,&pref,&rcoef)<0) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find hybrid definition field HY",(char*) NULL);
+   if (FieldFrom->Ref->Top==0.0 && FieldFrom->Ref->Ref==0.0 && FieldFrom->Ref->LevelType==LVL_HYBRID) {
+      if (((FSTD_Head*)FieldFrom->Head)->FID) {
+         i=-1;
+         id=(((FSTD_Head*)FieldFrom->Head)->FID->Id);
+         FSTD_FileSet(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
+         if (FSTD_DecodeHybrid(id,"HY   ",i,i,"             ",i,&FieldFrom->Ref->Top,&FieldFrom->Ref->Ref,&FieldFrom->Ref->Coef)<0) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find hybrid definition field HY",(char*)NULL);
+         }
+         FSTD_FileUnset(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
       }
-      FSTD_FileUnset(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
    }
 
-   if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,ptop,pref,rcoef,gzfrom))<0) {
+   if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,FieldFrom->Ref->Top,FieldFrom->Ref->Ref,FieldFrom->Ref->Coef,(float*)(ZFieldFrom->Def->Data[0])))<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize source grid (c_viqkdef)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
       return(TCL_ERROR);
    }
 
-   if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,ptop,pref,rcoef,gzto))<0) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize destination grid (c_viqkdef)",(char*) NULL);
-      Tcl_MutexUnlock(&MUTEX_FSTDVI);
-      return TCL_ERROR;
+   if (FieldTo->Ref->Top==0.0 && FieldTo->Ref->Ref==0.0 && FieldTo->Ref->LevelType==LVL_HYBRID) {
+      if (((FSTD_Head*)FieldTo->Head)->FID) {
+         i=-1;
+         id=(((FSTD_Head*)FieldTo->Head)->FID->Id);
+         FSTD_FileSet(NULL,((FSTD_Head*)FieldTo->Head)->FID);
+         if (FSTD_DecodeHybrid(id,"HY   ",i,i,"             ",i,&FieldTo->Ref->Top,&FieldTo->Ref->Ref,&FieldTo->Ref->Coef)<0) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find hybrid definition field HY",(char*)NULL);
+         }
+         FSTD_FileUnset(NULL,((FSTD_Head*)FieldTo->Head)->FID);
+      }
    }
 
-   if (c_videfset(threadData->viInterp,FieldFrom->Def->NI,FieldFrom->Def->NJ,gridto,gridfrom,p0,p1)<0) {
+   if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,FieldTo->Ref->Top,FieldTo->Ref->Ref,FieldTo->Ref->Coef,(float*)(ZFieldTo->Def->Data[0])))<0) {
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize destination grid (c_viqkdef)",(char*) NULL);
+      Tcl_MutexUnlock(&MUTEX_FSTDVI);
+      return(TCL_ERROR);
+   }
+
+   if (!c_videfset(threadData->viInterp,FieldFrom->Def->NI,FieldFrom->Def->NJ,gridto,gridfrom)) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Incompatible grids (c_videfset)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /* Inter ET/OU Extrapolation */
@@ -785,16 +780,16 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
             if (!FieldTo->Def->Data[i]) {
                Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Not enough memory to allocate field",(char*)NULL);
                Tcl_MutexUnlock(&MUTEX_FSTDVI);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
          }
-         Def_Pointer(FieldFrom->Def,i,0,pfrom);
-         Def_Pointer(FieldTo->Def,i,0,pto);
+         Def_Pointer(FieldFrom->Def,i,0,from);
+         Def_Pointer(FieldTo->Def,i,0,to);
 
-         if (c_visint(threadData->viInterp,pto,pfrom,NULL,NULL,0,0)<0) {
+         if (!c_visint(threadData->viInterp,to,from,NULL,NULL,0,0)) {
            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Interpolation error (c_visint)",(char*)NULL);
            Tcl_MutexUnlock(&MUTEX_FSTDVI);
-           return TCL_ERROR;
+           return(TCL_ERROR);
          }
       } else {
          if (FieldTo->Def->Data[i]) {
@@ -813,7 +808,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       FieldTo->Stat=NULL;
    }
    Tcl_MutexUnlock(&MUTEX_FSTDVI);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

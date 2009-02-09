@@ -120,6 +120,7 @@ typedef struct TGeoRef {
 
    float *Levels;                                         /*Liste des niveaux*/
    int    LevelType,LevelNb;                              /*Type de niveaux*/
+   float  Top,Ref,Coef;                                   /*Hybrid level parametres*/
 
    Coord  Loc;                                            /*(Radar) Localisation du centre de reference*/
    double CTH,STH;                                        /*(Radar) sin and cos of sweep angle*/
