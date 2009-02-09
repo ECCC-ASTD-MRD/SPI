@@ -1257,20 +1257,14 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       .nowcasterinfo.tab.frame2.info.text insert end "Pres(mb) Dry(°C) Wet(°C) Dew(°C)\n"
       foreach pres [vector get TEPHIPROF.PRES] dry [vector get TEPHIPROF.DRY] wet [vector get TEPHIPROF.WET] dew [vector get TEPHIPROF.DEW] {
          .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   " $pres]
-         if { $dry=="" } {
+         if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry] } ] } {
             .nowcasterinfo.tab.frame2.info.text insert end "        "
-         } else {
-            .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry]
          }
-         if { $wet=="" } {
+         if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry] }] } {
             .nowcasterinfo.tab.frame2.info.text insert end "        "
-         } else {
-            .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry]
          }
-         if { $dew=="" } {
+         if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f\n" $dew] }] } {
             .nowcasterinfo.tab.frame2.info.text insert end "\n"
-         } else {
-            .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f\n" $dew]
          }
       }
 
