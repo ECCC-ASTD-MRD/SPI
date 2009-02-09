@@ -1167,6 +1167,9 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref->UnProject=Ref->UnProject;
    ref->Value=Ref->Value;
    ref->Type=Ref->Type;
+//   ref->Top=Ref->Top;
+//   ref->Ref=Ref->Ref;
+//   ref->Coef=Ref->Coef;
 
    switch(ref->Grid[0]) {
       case 'R' :
@@ -1275,6 +1278,8 @@ TGeoRef* GeoRef_New() {
    ref->Levels=NULL;
    ref->LevelType=LVL_UNDEF;
    ref->LevelNb=0;
+   ref->Top=ref->Ref=0.0;
+   ref->Coef=1.0;
 
    /*RDR Specific*/
    ref->Loc.Lat=-999;

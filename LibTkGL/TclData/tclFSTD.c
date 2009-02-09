@@ -852,15 +852,11 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          break;
 
       case VERTICALINTERP:
-         if(Objc!=8 && Objc!=9) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom GZTo GZFrom PSURF PTOP [TOP]");
+         if(Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [GZTo | P0To] [GZFrom | P0From]");
             return TCL_ERROR;
          }
-         tmpd=30000.0;
-         if (Objc==9) {
-            Tcl_GetDoubleFromObj(Interp,Objv[8],&tmpd);
-         }
-         return FSTD_FieldVertInterpolate(Interp,Data_Get(Tcl_GetString(Objv[2])),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4])),Data_Get(Tcl_GetString(Objv[5])),Data_Get(Tcl_GetString(Objv[6])),Data_Get(Tcl_GetString(Objv[7])),tmpd);
+         return(FSTD_FieldVertInterpolate(Interp,Data_Get(Tcl_GetString(Objv[2])),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4])),Data_Get(Tcl_GetString(Objv[5]))));
          break;
 
       case TIMEINTERP:
@@ -1451,8 +1447,8 @@ int FSTD_Level2IP(float Level,int Type) {
    } else {
 #ifdef LNK_FSTD
 
-      /*ETA | HYBRID | THETA -> SIGMA*/
-      if (Type==LVL_ETA || Type==LVL_THETA || Type==LVL_HYBRID) {
+      /*ETA | THETA -> SIGMA*/
+      if (Type==LVL_ETA || Type==LVL_THETA) {
          Type=LVL_SIGMA;
       }
 

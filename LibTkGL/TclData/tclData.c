@@ -1478,7 +1478,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    TData   *fld;
    int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex;
    int      nb,len,nobj;
-   double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv;
+   double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
    float    val,val1,levels[1024];
    char     buf[32];
 
@@ -1487,9 +1487,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix","-mask","-celldim",NULL };
+      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX,MASK,CELLDIM };
+      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2088,6 +2088,34 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetIntFromObj(Interp,Objv[++i],&Field->Def->CellDim);
             }
             break;
+
+         case TOP:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Top));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
+               Field->Ref->Top=tmpd;
+            }
+            break;
+
+         case REF:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Ref));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
+               Field->Ref->Ref=tmpd;
+            }
+            break;
+
+         case COEF:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Coef));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
+               Field->Ref->Coef=tmpd;
+            }
+            break;
+
       }
    }
    return(TCL_OK);

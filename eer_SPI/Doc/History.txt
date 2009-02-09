@@ -1,4 +1,4 @@
-Version 7.3.0 (Decembre 2008)
+Version 7.3.0 (Février 2009)
 - Nouveau modele trajectoire, intégré dans SPI (On voit les résultats pendant qu'il roule)
 - Ajout des intervalles de contours AEGL et ERPG
 - Ajout de la selection de la zone horaire dans l'horloge (Amérique du nord)
@@ -35,6 +35,10 @@ Version 7.3.0 (Decembre 2008)
 - Ajout du mode d'interpolation POINT_CONSERVATIVE
 - Ajout d'un masque binaire aux structures des champs de données
 - Ajout de la fonction autosave au FVCN dans l'outils Writer
+- Nouvelle interface d'exportation des données RPN en vecteur/raster
+- Ajout d'accès aux données PostGIS dans l'outils de données géographique.
+- Nouvelle loupe de page
+- Modifications aux methodes d'interpolations verticales.
 
 Version 7.2.4 (Mars 2008)
 - Ajout de la fonction zoom en utilisant le roulette de la souris.
