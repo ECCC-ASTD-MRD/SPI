@@ -1439,7 +1439,7 @@ double FSTD_IP2Level(int IP,int *Type) {
 */
 int FSTD_Level2IP(float Level,int Type) {
 
-   int    flag=0,ip=0;
+   int    flag=0,ip=0,mode;
    char   format;
 
    if (Type<0) {
@@ -1457,7 +1457,12 @@ int FSTD_Level2IP(float Level,int Type) {
          Type=LVL_MASL;
       }
       /*Convertir en niveau reel*/
-      f77name(convip)(&ip,&Level,&Type,&FSTDIP1Mode,&format,&flag);
+      if (Type==LVL_HYBRID) {
+         mode=2;
+      } else {
+         mode=FSTDIP1Mode;
+      }
+      f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
 #endif
       return(ip);
    }
