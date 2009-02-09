@@ -53,7 +53,7 @@ cp -Rp $path/eer_SPI/* $ipath/eer_SPI-$ver
 gdb=""
 while [ ${gdb}="" ]
 do
-   echo "Enter the geographical database (GDB) path: "
+   echo "Enter the geographical database (GDB) complete path (not relative): "
    read gdb
 
    if [ -d ${gdb}/data ]
