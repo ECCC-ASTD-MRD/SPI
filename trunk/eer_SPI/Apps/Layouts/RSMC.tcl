@@ -557,8 +557,6 @@ proc RSMC::PrintCommand { Frame } {
 
    #----- Pour toutes les heures selectionnees
 
-   FieldBox::Clear
-
    foreach field $Data(Fields) {
       foreach iso $Sim(IsoName) {
          foreach hour $Data(Hours) {
