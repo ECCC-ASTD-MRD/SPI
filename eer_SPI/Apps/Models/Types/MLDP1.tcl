@@ -2017,6 +2017,7 @@ proc MLDP1::KBytes2Human { Size } {
 #----------------------------------------------------------------------------
 
 proc MLDP1::LaunchJob { } {
+   global   GDefs
    variable Sim
 
    . config -cursor watch
