@@ -266,7 +266,7 @@ proc MLDP1::CreateDirectories { } {
       }
 
       #----- Create simulation directories on remote host.
-      set ErrorCode [catch { exec ssh -n -x $Sim(Host) mkdir -p $Sim(RemotePath) $Sim(RemoteMetDir) $Sim(RemoteResDir) $Sim(RemoteTmpDir) } Message]
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) mkdir -p $Sim(RemotePath) $Sim(RemoteMetDir) $Sim(RemoteResDir) $Sim(RemoteTmpDir) } Message]
       if { $ErrorCode != 0 } {
          Debug::TraceProc "MLDP1: Error! Unable to create simulation directories on $Sim(HostType) host $Sim(Host).\n\n$Message"
          return 0
@@ -305,11 +305,12 @@ proc MLDP1::CreateLaunchInputFile { } {
 
    puts $file "software      : [format "%-15s" SPI] \[SPI, ARGOS\]"
    puts $file "model         : [format "%-15s" $Sim(ModelName)] \[mldp0, mldp1\]"
+   puts $file "user name     : [format "%-15s" $GDefs(FrontEndUser)]"
    puts $file ""
    puts $file "localhost     : [format "%-15s" $GDefs(Host)] \[pollux, castor, linux_workstation\]"
    puts $file "localdir      : [format "%-15s" $Sim(Path)]"
    if { $Sim(IsUsingSoumet) } {
-      puts $file "remotehost    : [format "%-15s" $Sim(Host)] \[naos, maia, saiph, pollux, castor\]"
+      puts $file "remotehost    : [format "%-15s" $Sim(Host)] \[maia, saiph, pollux, castor\]"
       puts $file "remotedir     : [format "%-15s" $Sim(RemotePath)]"
    }
    puts $file ""
@@ -1208,7 +1209,7 @@ proc MLDP1::DeleteDirectories { } {
    if { $Sim(IsUsingSoumet) } { #----- Remote host.
 
       #----- Delete directories on remote host.
-      set ErrorCode [catch { exec ssh -n -x $Sim(Host) rm -rf $Sim(RemotePath) } Message]
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) rm -rf $Sim(RemotePath) } Message]
       if { $ErrorCode != 0 } {
          Debug::TraceProc "MLDP1: Error! Unable to remove simulation directory on $Sim(HostType) host $Sim(Host).\n\n$Message"
          return 0
@@ -2030,7 +2031,7 @@ proc MLDP1::LaunchJob { } {
       Debug::TraceProc "MLDP1: Submitting the launching of entire job on $Sim(HostType) host ($Sim(Host))."
 
       set script "$Sim(TmpDir)/[file tail $Sim(SubmitLaunchScript)]"
-      set ErrorCode [catch { exec ssh -n -x $Sim(Host) $script >& $Sim(SubmitLaunchOutFile) } Message]
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) $script >& $Sim(SubmitLaunchOutFile) } Message]
 
       if { $ErrorCode != 0 } {
          Debug::TraceProc "MLDP1: Error! Submitting the launching of entire job on $Sim(HostType) host ($Sim(Host)) failed.\n\n$Message"
@@ -2307,7 +2308,7 @@ proc MLDP1::SetArchVariables { } {
    #----- Set host architecture.
    if { $host == "pollux" || $host == "castor" } {
       set Sim(Arch) "IRIX64"
-   } elseif { $host == "naos" || $host == "maia" || $host == "saiph" } {
+   } elseif { $host == "maia" || $host == "saiph" } {
       set Sim(Arch) "AIX"
    } else {
       set Sim(Arch) "Linux"
@@ -2663,7 +2664,7 @@ proc MLDP1::SetQueues { Flag } {
       "AIX" {
          set Sim(Queue)  "development"
          set Sim(Queues) $Sim(Queue)
-         if { $Sim(Username) == "afseeer" && $Sim(Host) == "naos" } {
+         if { $Sim(Username) == "afseeer" && $Sim(Host) == "maia" } {
             lappend Sim(Queues) "production"
          }
       }
