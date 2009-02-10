@@ -305,7 +305,7 @@ proc MLDP1::CreateLaunchInputFile { } {
 
    puts $file "software      : [format "%-15s" SPI] \[SPI, ARGOS\]"
    puts $file "model         : [format "%-15s" $Sim(ModelName)] \[mldp0, mldp1\]"
-   puts $file "user name     : [format "%-15s" $GDefs(FrontEndUser)]"
+   puts $file "username      : [format "%-15s" $GDefs(FrontEndUser)]"
    puts $file ""
    puts $file "localhost     : [format "%-15s" $GDefs(Host)] \[pollux, castor, linux_workstation\]"
    puts $file "localdir      : [format "%-15s" $Sim(Path)]"
