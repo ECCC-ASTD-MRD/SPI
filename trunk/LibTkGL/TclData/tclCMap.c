@@ -754,6 +754,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->Interp));
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->Interp);
+               CMap_ControlDefine(CMap);
             }
             break;
       }
@@ -1300,7 +1301,7 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    }
 
    /*Parametres de la palette*/
-   sprintf(buf,"%i %i %i %i %i %i %s\n",CMap->RatioMin,CMap->RatioMax,CMap->Ratio[0],CMap->Ratio[1],CMap->Ratio[2],CMap->Ratio[3],CMap->Type[0]);
+   sprintf(buf,"%i %i %i %i %i %i %s %i\n",CMap->RatioMin,CMap->RatioMax,CMap->Ratio[0],CMap->Ratio[1],CMap->Ratio[2],CMap->Ratio[3],CMap->Type[0],CMap->Interp);
    fputs(buf,fp);
 
    /*Points de controle*/

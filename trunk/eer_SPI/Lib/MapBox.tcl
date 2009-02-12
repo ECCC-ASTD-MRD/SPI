@@ -12,9 +12,7 @@
 #              palettes de couleurs.
 #
 # Fonctions:
-#   MapBox::ConfigMM         { args }
-#   MapBox::ConfigCurve      { Curve }
-#   MapBox::ConfigRGBA       { args }
+#   MapBox::Config           { args }
 #   MapBox::ControlAdd       { Canvas X }
 #   MapBox::ControlBind      { Canvas X Idx Color }
 #   MapBox::ControlColor     { Canvas Id }
@@ -63,6 +61,7 @@ namespace eval MapBox {
    set Data(Min)      0        ;#Minimum dans la palette
    set Data(Max)      100      ;#Maximum dans la palette
    set Data(Curve)    LINEAR   ;#Courbe d'etendue des couleurs
+   set Data(Interp)   1        ;#Interpolation des couleurs
    set Data(List)     ""       ;#Liste des noms de palettes
 
    set Data(Map)      ""                            ;#Colormap a editer
@@ -95,6 +94,9 @@ namespace eval MapBox {
    set Lbl(Yes)     { "Oui" "Yes" }
    set Lbl(No)      { "Non" "No" }
    set Lbl(Warning) { "Attention" "Warning" }
+   set Lbl(Color)   { "Couleur" "Color" }
+   set Lbl(Smooth)  { "Lisse" "Smooth" }
+   set Lbl(Fix)     { "Fixe" "Fixed" }
 
    set Msg(Exist)   { "Cette palette existe deja, voulez vous la remplacer ?" "This colormap exists. Do yo wish to replace it ?" }
    set Msg(Saved)   { "La palette suivante a ete sauvegardee" "The following colormap has been saved" }
@@ -152,11 +154,10 @@ namespace eval MapBox {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <MapBox::ConfigMM>
+# Nom      : <MapBox::Config>
 # Creation : Aout 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Effectue les modifications des minimums et maximums de la palette
-#            courante.
+# But      : Effectue la configuration des palettes.
 #
 # Parametres :
 #   <args>   : Valeur passe par les "scale"
@@ -167,57 +168,11 @@ namespace eval MapBox {
 #
 #-------------------------------------------------------------------------------
 
-proc MapBox::ConfigMM { args } {
+proc MapBox::Config { args } {
    variable Data
 
-   colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max)
-   MapBox::Update
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <MapBox::ConfigCurve>
-# Creation : Aout 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectue les modifications des ration rouge vert et bleu dans la
-#            palette courante.
-#
-# Parametres :
-#   <Curve>  : Courbe selectionee"
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc MapBox::ConfigCurve { Curve } {
-   variable Data
-
-   set Data(Curve) $Curve
-   colormap configure $Data(Map) -curve rgba $Data(Curve)
-   MapBox::Update
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <MapBox::ConfigRGBA>
-# Creation : Mars 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectue les modifications des ration rouge vert et bleu dans la
-#            palette courante.
-#
-# Parametres :
-#   <args>   : Valeur passe par les "scale"
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc MapBox::ConfigRGBA { args } {
-   variable Data
-
-   colormap configure $Data(Map) -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)
+   colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
+      -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp)
    MapBox::Update
 }
 
@@ -559,7 +514,7 @@ proc MapBox::Create { Parent Apply Map args } {
    #----- Creer une fenetre sans frame en bas a gauche du parent
 
    toplevel     .mapbox
-   wm geom      .mapbox =300x330+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm geom      .mapbox =300x350+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
    wm transient .mapbox .
    wm resizable .mapbox 0 0
    wm title     .mapbox "MapBox 3.0"
@@ -589,57 +544,65 @@ proc MapBox::Create { Parent Apply Map args } {
 
    set fr .mapbox.fr.params
    labelframe $fr -text [lindex $Lbl(Params) $GDefs(Lang)]
-      frame $fr.min
-         label $fr.min.lbl -text [lindex $Lbl(Min) $GDefs(Lang)]
+       frame $fr.interp
+         label $fr.interp.lbl -text [lindex $Lbl(Color) $GDefs(Lang)] -width 7 -anchor w
+         radiobutton $fr.interp.sc1 -value 1 -variable MapBox::Data(Interp) -indicatoron False \
+            -relief sunken -bd 1 -overrelief raised -offrelief flat -command "MapBox::Config" -text [lindex $Lbl(Smooth) $GDefs(Lang)]
+         radiobutton $fr.interp.sc0 -value 0 -variable MapBox::Data(Interp) -indicatoron False \
+            -relief sunken -bd 1 -overrelief raised -offrelief flat -command "MapBox::Config" -text [lindex $Lbl(Fix) $GDefs(Lang)]
+         pack $fr.interp.lbl -side left
+         pack $fr.interp.sc1 $fr.interp.sc0  -side left -fill both -expand true
+     frame $fr.min
+         label $fr.min.lbl -text [lindex $Lbl(Min) $GDefs(Lang)] -width 7 -anchor w
          label $fr.min.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Min) -anchor w
          scale $fr.min.sc -from 0 -to 100 -resolution 1 -variable MapBox::Data(Min) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::ConfigMM"
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.min.lbl $fr.min.ent -side left
          pack $fr.min.sc -side left -fill both -expand true
       frame $fr.max
-         label $fr.max.lbl -text [lindex $Lbl(Max) $GDefs(Lang)]
+         label $fr.max.lbl -text [lindex $Lbl(Max) $GDefs(Lang)] -width 7 -anchor w
          label $fr.max.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Max) -anchor w
          scale $fr.max.sc -from 0 -to 100 -resolution 1 -variable MapBox::Data(Max) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::ConfigMM"
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.max.lbl $fr.max.ent -side left
          pack $fr.max.sc -side left -fill both -expand true
       frame $fr.red
-         label $fr.red.lbl -text [lindex $Lbl(Red) $GDefs(Lang)]
+         label $fr.red.lbl -text [lindex $Lbl(Red) $GDefs(Lang)] -width 7 -anchor w
          label $fr.red.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Red) -anchor w
          scale $fr.red.sc -from 0 -to 100 -resolution 1 -variable MapBox::Data(Red) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::ConfigRGBA"
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.red.lbl $fr.red.ent -side left
          pack $fr.red.sc -side left -fill both -expand true
       frame $fr.green
-         label $fr.green.lbl -text [lindex $Lbl(Green) $GDefs(Lang)]
+         label $fr.green.lbl -text [lindex $Lbl(Green) $GDefs(Lang)] -width 7 -anchor w
          label $fr.green.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Green) -anchor w
          scale $fr.green.sc -from 0 -to 100 -resolution 1 -variable MapBox::Data(Green) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::ConfigRGBA"
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.green.lbl $fr.green.ent -side left
          pack $fr.green.sc -side left -fill both -expand true
       frame $fr.blue
-         label $fr.blue.lbl -text [lindex $Lbl(Blue) $GDefs(Lang)]
+         label $fr.blue.lbl -text [lindex $Lbl(Blue) $GDefs(Lang)] -width 7 -anchor w
          label $fr.blue.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Blue) -anchor w
          scale $fr.blue.sc -from 0 -to 100 -resolution 1 -variable MapBox::Data(Blue) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::ConfigRGBA"
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.blue.lbl $fr.blue.ent -side left
          pack $fr.blue.sc -side left -fill both  -expand true
       frame $fr.alpha
-         label $fr.alpha.lbl -text [lindex $Lbl(Alpha) $GDefs(Lang)]
+         label $fr.alpha.lbl -text [lindex $Lbl(Alpha) $GDefs(Lang)] -width 7 -anchor w
          label $fr.alpha.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Alpha) -anchor w
          scale $fr.alpha.sc -from 0 -to 100 -resolution 1 -variable MapBox::Data(Alpha) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::ConfigRGBA"
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.alpha.lbl $fr.alpha.ent -side left
          pack $fr.alpha.sc -side left -fill both -expand true
       frame $fr.curve
-         label $fr.curve.lbl -text [lindex $Lbl(Curve) $GDefs(Lang)]
+         label $fr.curve.lbl -text [lindex $Lbl(Curve) $GDefs(Lang)] -width 7 -anchor w
          label $fr.curve.ent -width 11 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Curve) -anchor w
          scale $fr.curve.sc -from 0 -to 6 -resolution 1 -variable MapBox::Data(CurveIdx) -showvalue false \
             -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 \
-            -command { set MapBox::Data(Curve) [lindex $MapBox::Data(Curves) $MapBox::Data(CurveIdx)] ; MapBox::ConfigCurve $MapBox::Data(Curve) ; catch }
+            -command { set MapBox::Data(Curve) [lindex $MapBox::Data(Curves) $MapBox::Data(CurveIdx)] ; MapBox::Config }
          pack $fr.curve.lbl $fr.curve.ent -side left
          pack $fr.curve.sc -side left -fill both -expand true
-      pack  $fr.curve $fr.min $fr.max $fr.red $fr.green $fr.blue $fr.alpha -fill x -padx 2
+      pack $fr.interp $fr.curve $fr.min $fr.max $fr.red $fr.green $fr.blue $fr.alpha -fill x -padx 2
    pack .mapbox.fr.params -side top -fill both -padx 5 -pady 5 -ipady 2
 
       Bubble::Create $fr.min   [lindex $Bubble(Min)   $GDefs(Lang)]
@@ -824,14 +787,16 @@ proc MapBox::Select { Map } {
    }
 
    set list [colormap configure $Data(Map) -RGBAratio]
-   set Data(Red)   [lindex $list 0]
-   set Data(Green) [lindex $list 1]
-   set Data(Blue)  [lindex $list 2]
-   set Data(Alpha) [lindex $list 3]
+   set Data(Red)    [lindex $list 0]
+   set Data(Green)  [lindex $list 1]
+   set Data(Blue)   [lindex $list 2]
+   set Data(Alpha)  [lindex $list 3]
+
    set list [colormap configure $Data(Map) -MMratio]
-   set Data(Min)   [lindex $list 0]
-   set Data(Max)   [lindex $list 1]
-   set Data(Curve) [colormap configure $Data(Map) -curve rgba]
+   set Data(Min)    [lindex $list 0]
+   set Data(Max)    [lindex $list 1]
+   set Data(Curve)  [colormap configure $Data(Map) -curve rgba]
+   set Data(Interp) [colormap configure $Data(Map) -interp]
 
    MapBox::Update
 }
