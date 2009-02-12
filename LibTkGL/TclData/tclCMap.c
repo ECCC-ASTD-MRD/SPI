@@ -135,6 +135,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
       cmap->RatioMax = 100;
       cmap->RatioMin = 0;
       cmap->Alpha = 0;
+      cmap->Interp = 1;
       cmap->Ratio[0]=cmap->Ratio[1]=cmap->Ratio[2]=cmap->Ratio[3]=100;
       cmap->Min[0]=cmap->Min[1]=cmap->Min[2]=cmap->Min[3]=0.0;
       cmap->Max[0]=cmap->Max[1]=cmap->Max[2]=cmap->Max[3]=0.0;
@@ -454,8 +455,8 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
    int      i,ii,idx,index;
    double   val;
 
-   static CONST char *sopt[] = { "-RGBAratio","-MMratio","-curve","-curvepoint","-index","-min","-max","-invertx","-inverty",NULL };
-   enum                opt { RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,INVERTX,INVERTY };
+   static CONST char *sopt[] = { "-RGBAratio","-MMratio","-curve","-curvepoint","-index","-min","-max","-invertx","-inverty","-interp",NULL };
+   enum                opt { RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,INVERTX,INVERTY,INTERP };
 
    if (!CMap) {
       return TCL_ERROR;
@@ -745,6 +746,14 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                CMap->Color[index][3]=CMap->Table[index][3] = ii;
                return(TCL_OK);
+            }
+            break;
+
+          case INTERP:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->Interp));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->Interp);
             }
             break;
       }
@@ -1210,6 +1219,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
       memset(CMap->Control[idx],0,4);
 
    CMap->NbPixels=0;
+   CMap->Interp=1;
 
    fp = fopen(RGBAFile,"r");
    if (fp == NULL) {
@@ -1219,7 +1229,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
    /*Read parameters*/
    fgets(buf,256,fp);
-   sscanf(buf,"%i %i %i %i %i %i %s",&CMap->RatioMin,&CMap->RatioMax,&CMap->Ratio[0],&CMap->Ratio[1],&CMap->Ratio[2],&CMap->Ratio[3],CMap->Type[0]);
+   sscanf(buf,"%i %i %i %i %i %i %s %i",&CMap->RatioMin,&CMap->RatioMax,&CMap->Ratio[0],&CMap->Ratio[1],&CMap->Ratio[2],&CMap->Ratio[3],CMap->Type[0],&CMap->Interp);
    sprintf(CMap->Type[1],CMap->Type[0]);
    sprintf(CMap->Type[2],CMap->Type[0]);
    sprintf(CMap->Type[3],CMap->Type[0]);
@@ -1358,10 +1368,17 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
       delta=(i1-i0);
       for(i=i0+1;i<i1;i++) {
          r=(float)(i-i0)/delta;
-         CMap->Table[i][0]=ILIN(CMap->Control[i0][0],CMap->Control[i1][0],r);
-         CMap->Table[i][1]=ILIN(CMap->Control[i0][1],CMap->Control[i1][1],r);
-         CMap->Table[i][2]=ILIN(CMap->Control[i0][2],CMap->Control[i1][2],r);
-         CMap->Table[i][3]=ILIN(CMap->Control[i0][3],CMap->Control[i1][3],r);
+         if (CMap->Interp) {
+            CMap->Table[i][0]=ILIN(CMap->Control[i0][0],CMap->Control[i1][0],r);
+            CMap->Table[i][1]=ILIN(CMap->Control[i0][1],CMap->Control[i1][1],r);
+            CMap->Table[i][2]=ILIN(CMap->Control[i0][2],CMap->Control[i1][2],r);
+            CMap->Table[i][3]=ILIN(CMap->Control[i0][3],CMap->Control[i1][3],r);
+         } else {
+            CMap->Table[i][0]=CMap->Control[i0][0];
+            CMap->Table[i][1]=CMap->Control[i0][1];
+            CMap->Table[i][2]=CMap->Control[i0][2];
+            CMap->Table[i][3]=CMap->Control[i0][3];
+         }
       }
       ie=i0;
       i0=i1;
@@ -1371,7 +1388,6 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
    for(i=ie;i<CMap->NbPixels;i++) {
       memcpy(CMap->Table[i],CMap->Control[ie],4);
    }
-
 }
 
 /*----------------------------------------------------------------------------

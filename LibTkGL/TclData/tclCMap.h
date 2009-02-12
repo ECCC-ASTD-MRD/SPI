@@ -42,6 +42,7 @@
 typedef struct CMap_Rec {
    char         *Name;
    char          Type[4][16];
+   int           Interp;
    int           InvertX[4],InvertY[4];
    int           Ratio[4],RatioMin,RatioMax,Alpha;
    unsigned char Table[CR_MAX][4];
