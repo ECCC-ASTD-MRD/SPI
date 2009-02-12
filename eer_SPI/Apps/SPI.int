@@ -208,12 +208,13 @@ proc SPI::Params { } {
    } else {
       if { ![winfo ismapped .params] } {
          .params.command.apply configure -state disabled
-         wm geometry  .params 330x390+[winfo rootx .]+[winfo rooty .]
+         wm geometry .params 330x390+[winfo rootx .]+[winfo rooty .]
       }
       update idletasks
       wm deiconify .params
       wm transient .params .
       raise .params .
+      update idletasks
    }
 }
 
