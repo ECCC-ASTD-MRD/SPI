@@ -318,7 +318,12 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
       Geom1=OGR_G_GetGeometryRef(Geom1,0);
    }
 
-   /*Forcer les lignes refermer comm des polygones*/
+   /*Forcer les lignes referme comme des polygones*/
+   if ((n0=OGR_G_GetPointCount(Geom0))>2) {
+      OGR_G_GetPoint(Geom0,0,&v0[0],&v0[1],&v0[2]);
+      OGR_G_GetPoint(Geom0,n0-1,&v1[0],&v1[1],&v1[2]);
+      if (Vect_Equal(v0,v1)) t0=2;
+   }
    if ((n1=OGR_G_GetPointCount(Geom1))>2) {
       OGR_G_GetPoint(Geom1,0,&v0[0],&v0[1],&v0[2]);
       OGR_G_GetPoint(Geom1,n1-1,&v1[0],&v1[1],&v1[2]);
