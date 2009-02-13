@@ -764,11 +764,17 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   } else if (Objc==5) {
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                      Tcl_ListObjLength(Interp,Objv[++i],&nv);
-                     valf=(float*)malloc(nv*sizeof(float));
-                     for(v=0;v<nv;v++) {
-                        Tcl_ListObjIndex(Interp,Objv[i],v,&obj);
-                        Tcl_GetDoubleFromObj(Interp,obj,&val);
-                        valf[v]=val;
+                     if (nv==0) {
+                        nv=1;
+                        valf=(float*)malloc(nv*sizeof(float));
+                        valf[0]=-999.0;
+                     } else {
+                        valf=(float*)malloc(nv*sizeof(float));
+                        for(v=0;v<nv;v++) {
+                           Tcl_ListObjIndex(Interp,Objv[i],v,&obj);
+                           Tcl_GetDoubleFromObj(Interp,obj,&val);
+                           valf[v]=val;
+                        }
                      }
 
                      if (!(data=TMetElem_Insert(loc,0,time,0x0,1,nv,1,valf,&eb))) {
