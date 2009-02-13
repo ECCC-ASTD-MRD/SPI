@@ -123,10 +123,10 @@ proc ArgsParse { Argv Argc No Multi Must Cmd } {
 #
 #----------------------------------------------------------------------------
 
-proc CommandLine { } {
+proc CommandLine { { Args {} }} {
    global GDefs
 
-   puts stderr "(ERROR) SPI: Wrong arguments must be:"
+   puts stderr "(ERROR) SPI: Wrong arguments $Args, must be:"
    puts stderr "
       \[-tclsh ...\]                    : Launch a tcl script through SPI's environment (No Tk)
       \[-soft\]                         : Launch in software mode
@@ -175,7 +175,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "layout"   { set i [ArgsParse $argv $argc $i 0 1 ""] }
       "project"  { set i [ArgsParse $argv $argc $i 0 1 ""] }
       "tool"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
-      default    { CommandLine ; exit 1 }
+      default    { CommandLine [lindex $argv $i]; exit 1 }
    }
 }
 
