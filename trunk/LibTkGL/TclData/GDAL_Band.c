@@ -210,7 +210,10 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
          }
          band->Spec->Desc=strdup(GDALGetDescription(band->Band[i]));
          if (Full) {
-            GDALRasterIO(band->Band[i],GF_Read,X0,Y0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,type,0,0);
+            if (GDALRasterIO(band->Band[i],GF_Read,X0,Y0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,type,0,0)==CE_Failure) {
+               Tcl_AppendResult(Interp,"GDAL_BandRead: Unable to read band data",(char*)NULL);
+               return(TCL_ERROR);
+            }
          } else {
             fprintf(stderr,"(DEBUG) GDAL_BandRead: Delaying read\n");
          }
