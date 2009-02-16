@@ -374,6 +374,9 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    TData     *field;
    int        i;
 
+   if (!Field)
+      return(NULL);
+
    /* Verifier que le champs n'est pas lui-meme*/
    field=Data_Get(Name);
    if (field==Field) {
