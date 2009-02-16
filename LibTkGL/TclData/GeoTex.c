@@ -459,12 +459,12 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    Tile->Tly=Tile->Tlx=(tlx%2?tlx:tlx+1);
 
    if (!(tl=(Vect3d*)malloc(Tile->Tlx*Tile->Tly*sizeof(Vect3d)))) {
-      fprintf(stderr,"(ERROR) GeoTex_Sample: Unable to allocate sub tile coordinates matrix");
+      fprintf(stderr,"(ERROR) GeoTex_Sample: Unable to allocate sub tile coordinates matrix\n");
       return;
    }
 
    if (!(Tile->Nr=(Vect3d*)malloc(Tile->Tlx*Tile->Tly*sizeof(Vect3d)))) {
-      fprintf(stderr,"(ERROR) GeoTex_Sample: Unable to allocate sub tile normal coordinates matrix");
+      fprintf(stderr,"(ERROR) GeoTex_Sample: Unable to allocate sub tile normal coordinates matrix\n");
    }
 
    nlx=(double)Tile->Rx/(Tile->Tlx-1);
@@ -484,9 +484,15 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
             tl[j][1]=dy;
          } else {
             if (!Band->Ref->Project(Band->Ref,dx,dy,&tl[j][1],&tl[j][0],1,1)) {
-               fprintf(stderr,"(ERROR) GeoTex_Sample: Error transforming sub tile coordinates");
+               fprintf(stderr,"(ERROR) GeoTex_Sample: Error transforming sub tile coordinates\n");
             }
-
+            if (tl[j][1]>90.0 || tl[j][1]<-90.0 || tl[j][0]<-360 || tl[j][0]>360) {
+               fprintf(stderr,"(ERROR) GeoTex_Sample: Invalid transformation\nn");
+               free(tl);
+               free(Tile->Nr);Tile->Nr=NULL;
+               Tile->Tl=NULL;
+               return;
+            }
             if (Band->Spec->Topo) {
                if (tband) {
                   if (tband->Ref->UnProject(tband->Ref,&x,&y,tl[j][1],tl[j][0],0,1)) {
