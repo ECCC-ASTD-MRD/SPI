@@ -1171,14 +1171,12 @@ proc Exp::ProductRSMCJointData { } {
 
    set region [expr [ogrlayer pick RSMC "$Exp::Data(Lat) $Exp::Data(Lon) "] + 1]
 
-puts "region = $region"
-
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
-      catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+      catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
    } elseif { $region == "5" } {
       exec echo "345" > $path/leadrsmc.txt
-      catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+      catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
    } else {
       file delete -force $path/leadrsmc.txt
    }
@@ -1195,10 +1193,10 @@ puts "region = $region"
 
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 }
+   catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 }
 
    if { !$join } {
-      catch { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html }
+      catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html }
    }
 
    destroy .msgbox
@@ -1245,7 +1243,7 @@ proc Exp::ProductRSMCJointStatement { File } {
       return
    }
 
-   catch  { exec ssh $GDefs(FrontEnd) -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html }
+   catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html }
    . config -cursor left_ptr
 }
 

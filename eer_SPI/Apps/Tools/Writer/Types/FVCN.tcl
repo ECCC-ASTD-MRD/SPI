@@ -1501,23 +1501,23 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
 
    if { $Backup } {
       Debug::TraceProc "Writer::FVCN::Send: Sending via metmanager $name"
-      catch  { exec ssh metmgr1 -l $GDefs(FrontEndUser) ./usr/local/env/profile_ksh_usr\;export DISPLAY=$env(DISPLAY)\;export TERM=$env(TERM)\;/opt/mm/bin/amxmit -s ncp1lx $file & }
+      catch  { exec ssh -l $GDefs(FrontEndUser) -x -n metmgr1 ./usr/local/env/profile_ksh_usr\;export DISPLAY=$env(DISPLAY)\;export TERM=$env(TERM)\;/opt/mm/bin/amxmit -s ncp1lx $file & }
    } else {
       Debug::TraceProc "Writer::FVCN::Send: Sending via nanproc $name"
       if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-         catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) /usr/local/env/afsisio/scripts/usr/nanproc -bs -p b -f $file }
+         catch  { exec ssh -l $GDefs(FrontEndUser) -x -n $GDefs(FrontEnd) /usr/local/env/afsisio/scripts/usr/nanproc -bs -p b -f $file }
       } else {
          catch  { exec nanproc -bs -p b -f $file }
       }
    }
 
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.txt"  }
+   catch  { exec ssh -l $GDefs(FrontEndUser) -x -n  $GDefs(FrontEnd) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.txt"  }
 
    #----- Graphical product
    if { [winfo exists $Data(Page$Pad)] } {
       PrintBox::Image $Data(Page$Pad) png $file landscape
       exec chmod 644 $file.png
-      catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file.png -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.png"  }
+      catch  { exec ssh -l $GDefs(FrontEndUser) -x -n $GDefs(FrontEnd) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $file.png -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.png"  }
    }
 
    if { !$Backup } {
