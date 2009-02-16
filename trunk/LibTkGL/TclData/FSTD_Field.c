@@ -2177,14 +2177,13 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
 
 #ifdef LNK_FSTD
    if (FSTD_FileSet(Interp,head->FID)<0)
-      return TCL_ERROR;
+      return(TCL_ERROR);
 
    /*Recuperer les indexes de tout les niveaux*/
    EZLock_RPNField();
    c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,idxs,&nk,512);
 
-   if (nk<1) {
-      fprintf(stderr,"(WARNING) FSTD_FieldReadLevels: Could not find any other levels\n");
+   if (nk<=1) {
       FSTD_FileUnset(Interp,head->FID);
       EZUnLock_RPNField();
       return(0);
