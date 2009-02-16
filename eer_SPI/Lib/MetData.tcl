@@ -287,6 +287,7 @@ proc MetData::StampModulo { Stamp Sec } {
 #----------------------------------------------------------------------------
 
 proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
+   global GDefs
    variable Data
 
    set Mode [string index $Mode 0]
@@ -299,7 +300,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       if { [llength $lst]>1 } {
          set host [lindex $lst 0]
          set path [join [lrange $lst 1 end] :]
-         catch { set afile [exec ssh -n $host "ls $path/*_000"] }
+         catch { set afile [exec ssh -l $GDefs(FrontEndUser) -n $host "ls $path/*_000"] }
       } else {
          set afile [lsort -dictionary -increasing [glob -nocomplain $APath/*_000]]
       }
@@ -311,7 +312,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       if { [llength $lst]>1 } {
          set host [lindex $lst 0]
          set path [join [lrange $lst 1 end] :]
-         catch { set pfile [exec ssh -n $host "ls $path/*_???"] }
+         catch { set pfile [exec ssh -l $GDefs(FrontEndUser) -n $host "ls $path/*_???"] }
       } else {
          set pfile [lsort -dictionary -increasing [glob -nocomplain $PPath/*_???]]
       }
