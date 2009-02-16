@@ -609,7 +609,9 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Split [Final] [Index list variable]");
                   return(TCL_ERROR);
                }
-               Tcl_GetIntFromObj(Interp,Objv[5],&ni);
+               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
                nj=1;
                obj=NULL;
                if (Objc>6) {
@@ -922,12 +924,12 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case DEFINE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
          if (!field0) {
             Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          return FSTD_FieldDefine(Interp,field0,Objc-3,Objv+3);
@@ -936,12 +938,12 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case STATS:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
          if (!field0) {
             Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return Data_Stat(Interp,field0,Objc-3,Objv+3);
          break;
@@ -949,7 +951,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case COPY:
          if(Objc<4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1)) {
             return(TCL_ERROR);
@@ -961,7 +963,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case FREE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          for(n=2;n<Objc;n++) {
             Data_FreeHash(Interp,Tcl_GetString(Objv[n]));

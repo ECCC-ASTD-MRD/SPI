@@ -322,7 +322,9 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Split] [Final] [Index list variable]");
                   return(TCL_ERROR);
                }
-               Tcl_GetIntFromObj(Interp,Objv[5],&ni);
+               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
                nj=1;
                obj=NULL;
                if (Objc>6) {
