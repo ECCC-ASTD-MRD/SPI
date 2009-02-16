@@ -395,7 +395,7 @@ proc TRAJ::SATNET { Frame Mode } {
    Debug::TraceProc "Sending $file.gif over SATNET"
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" }
+   catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" }
 
    #----- envoyer sur les sites web.
 
@@ -403,7 +403,7 @@ proc TRAJ::SATNET { Frame Mode } {
    exec convert ${file}.gif ${file}.png
 
    set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png"  }
+   catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png"  }
 
    #----- supprimer les residus
 

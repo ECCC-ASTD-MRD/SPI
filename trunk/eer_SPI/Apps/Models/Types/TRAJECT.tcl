@@ -438,7 +438,7 @@ proc TRAJECT::SimLaunch { } {
       if { $Sim(Queue)!="none" } {
          exec soumet++ $Sim(Path)/traject.sh -cm 300M -t 3600 -mach $Sim(Host) -cl $Sim(Queue) -listing $Sim(Path)
       } else {
-         exec ssh -l $GDefs(FrontEndUser) -n $Sim(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
+         exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
       }
    } else {
       set id [Exp::Id $info]

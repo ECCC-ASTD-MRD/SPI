@@ -240,7 +240,7 @@ proc CANERM::Launch { Path Script Class Host } {
       if { $Sim(Host)!=$GDefs(Host) } {
          Debug::TraceProc "CANERM: Submitting model on : $Sim(Host) as $GDefs(FrontEndUser)"
          exec cp -p $Path/$Script [lindex $GDefs(BackEnd$Host) 0]/EER_ibm/$Script
-         catch { exec ssh -l $GDefs(FrontEndUser) -n $Host . ~/.profile\; soumet+++ [lindex $GDefs(BackEnd$Host) 0]/EER_ibm/$Script -cm 800M -t 3600 -mach $Host -cl $Class }
+         catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Host . ~/.profile\; soumet+++ [lindex $GDefs(BackEnd$Host) 0]/EER_ibm/$Script -cm 800M -t 3600 -mach $Host -cl $Class }
       } else {
          Debug::TraceProc "CANERM: Submitting model on : $Sim(Host)"
          catch { exec soumet++ $Path/$Script -cm 800M -t 3600 -mach $Host -cl $Class }
@@ -249,7 +249,7 @@ proc CANERM::Launch { Path Script Class Host } {
       Debug::TraceProc "CANERM: Launching model on : $Sim(Host)"
 
       if { $Sim(Host)!=$GDefs(Host) } {
-         exec ssh -l $GDefs(FrontEndUser) -n $Sim(Host) "$Path/$Script > $Path/exec_result.out 2>&1" &
+         exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) "$Path/$Script > $Path/exec_result.out 2>&1" &
       } else {
          Exp::Launch "$Path/$Script" "[Info::Code ::CANERM::Sim $Sim(Info) :]" \
             [expr 147+($Sim(FreqOut)/$Sim(ISauve))*95+($Sim(FreqOut)/$Sim(Dt))*156] \
@@ -378,7 +378,7 @@ proc CANERM::SimCreateMeteo { Path } {
    Debug::TraceProc "CANERM: Creating Meteo on : $GDefs(FrontEnd)"
 
    if { $Sim(Host)!=$GDefs(Host) } {
-      exec ssh -l $GDefs(FrontEndUser) -n $GDefs(FrontEnd) "$GDefs(Dir)/Script/InterpolateFieldsMulti.sh \
+      exec ssh -l $GDefs(FrontEndUser) -n -x $GDefs(FrontEnd) "$GDefs(Dir)/Script/InterpolateFieldsMulti.sh \
          $Path/tmp $GDefs(Dir)/Data/climato.fstd $Sim(Meteo) $Sim(FreqOut) 3" &
    } else {
       exec $GDefs(Dir)/Script/InterpolateFieldsMulti.sh $Path/tmp $GDefs(Dir)/Data/climato.fstd $Sim(Meteo) $Sim(FreqOut) 3 &

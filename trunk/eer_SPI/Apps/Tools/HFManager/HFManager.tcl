@@ -533,7 +533,7 @@ proc HFManager::HostPath { Id Y } {
             #----- Restriction des repertoires pour un acces ssh
 
             if { [lindex $params 1] == "ssh" } {
-               eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n $Host(Name$Id) \"cd $path\; pwd\" \]
+               eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n -x $Host(Name$Id) \"cd $path\; pwd\" \]
             } else {
                eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n $Host(Name$Id) \"cd $path \; pwd\" \]
             }
@@ -694,7 +694,7 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
    set idx [lsearch -exact $Host(List) $Host(Name$Id)]
 
    if { $idx == -1 } {
-      set home [split [exec ssh -n $Host(Name$Id) pwd] " "]
+      set home [split [exec ssh -n -x $Host(Name$Id) pwd] " "]
       if { [llength $home] == 1 } {
          lappend Host(List) $Host(Name$Id)
          eval set Host(\$Host(Name$Id)) \"- ssh scp \{\}\"
