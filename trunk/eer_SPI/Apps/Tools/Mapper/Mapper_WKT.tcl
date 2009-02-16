@@ -659,6 +659,7 @@ proc Mapper::WKT::Init  { Proj } {
    set Data(PRIMEM)     ""
    set Data(UNIT)       ""
    set Data(PROJECTION) ""
+   set Data(DatumTOWGS84) {}
 
    #----- Mettre la string WKT en list
 
