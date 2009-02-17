@@ -507,6 +507,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
  *   <Y0>       : Coin inferieur gauche
  *   <X1>       : Coin superieur droit
  *   <Y1>       : Coin superieur droit
+ *   <Z>        : Niveau
  *
  * Retour       : Code d'erreur standard TCL
  *
@@ -514,10 +515,10 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,double *Total,int X0,int Y0,int X1,int Y1) {
+int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,double *Total,int X0,int Y0,int X1,int Y1,int Z) {
 
    double        dx,dy,dp=0.0,val=0.0;
-   int           x,y,n=0,idx;
+   int           x,y,n=0,idx2,idx3;
    OGRGeometryH  inter=NULL;
 
 #ifdef GDAL126
@@ -540,7 +541,8 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
       /* If this is a single pixel */
       if (X0==X1 && Y0==Y1) {
 
-         idx=FIDX2D(Def,X0,Y0);
+         idx2=FIDX2D(Def,X0,Y0);
+         idx3=FIDX3D(Def,X0,Y0,Z);
 
          /* If we are computing areas */
          if (Area>0.0) {
@@ -569,7 +571,7 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
                   dp=1.0;
                   break;
             }
-            Def_Get(Def,0,idx,val);
+            Def_Get(Def,0,idx3,val);
             if (isnan(val) || val==Def->NoData)
                val=0.0;
             val+=Value*dp;
@@ -578,10 +580,10 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
 
          /* Are we within */
          if (Mode!='W' || (OGR_G_GetDimension(Geom)>=2 && OGR_G_Within(Geom,Def->Poly))) {
-            Def_Set(Def,0,idx,val);
+            Def_Set(Def,0,idx3,val);
 
             if (Mode=='N' && Total) {
-               Total[idx]+=dp;
+               Total[idx2]+=dp;
             }
             if (List) {
                Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(X0));
@@ -599,14 +601,14 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
          if (x==0 || y==0) {
             for (x=X0;x<=X1;x++) {
                for (y=Y0;y<=Y1;y++) {
-                  n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,x,y,x,y);
+                  n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,x,y,x,y,Z);
                }
             }
          } else {
-            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0,Y0,X0+x,Y0+y);
-            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0+x+1,Y0,X1,Y0+y);
-            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0,Y0+y+1,X0+x,Y1);
-            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0+x+1,Y0+y+1,X1,Y1);
+            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0,Y0,X0+x,Y0+y,Z);
+            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0+x+1,Y0,X1,Y0+y,Z);
+            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0,Y0+y+1,X0+x,Y1,Z);
+            n+=Data_GridOGRQuad(Interp,List,Def,Ref,Geom,Mode,Type,Area,Value,Total,X0+x+1,Y0+y+1,X1,Y1,Z);
          }
       }
    }
@@ -640,11 +642,11 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
 */
 int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,n,nt,p,pt,pi,pj,len=-1,idx,wrap,w=0;
+   int          i,j,n,nt,p,pt,pi,pj,len=-1,idx2,idx3,wrap,w=0,k=0;
    double       val0,val1,area,x,y,z;
    OGRGeometryH cell,ring;
    OGREnvelope  env;
-   Tcl_Obj      *lst,*item=NULL;
+   Tcl_Obj      *list=NULL,*lst,*item=NULL;
 
 #ifdef GDAL126
    cell=OGR_G_CreateGeometry(wkbPolygon);
@@ -659,88 +661,143 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
    }
 
    if (Mode=='N' && !ToDef->Buffer) {
-      ToDef->Buffer=(double*)calloc(FSIZE2D(ToDef),sizeof(double));
+      ToDef->Buffer=(double*)malloc(FSIZE2D(ToDef)*sizeof(double));
       if (!ToDef->Buffer) {
          Tcl_AppendResult(Interp,"Data_GridConservative: Unable to allocate accumulation buffer",(char*)NULL);
          return(TCL_ERROR);
       }
    }
 
-   /*Check for included index list*/
-   if (List) {
-      lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
-      if (!lst) {
-         item=Tcl_NewListObj(0,NULL);
-         List=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
-      } else {
-         List=lst;
-      }
-      Tcl_ListObjLength(Interp,List,&len);
+   /*Verifier la dimension verticale*/
+   if (ToDef->NK!=FromDef->NK) {
+      free(ToDef->Data[0]);
+      ToDef->NK=FromDef->NK;
+      ToDef->Data[0]=(char*)calloc(FSIZE3D(ToDef),TData_Size[ToDef->Type]);
+      ToRef=GeoRef_Resize(ToRef,ToDef->NI,ToDef->NJ,ToDef->NK,FromRef->LevelType,FromRef->Levels);
+   } else {
+      ToRef->LevelType=FromRef->LevelType;
    }
 
-   /*Wouou we have the index list*/
-   if (len>1) {
-      for(n=0;n<len;n+=3) {
-         Tcl_ListObjIndex(Interp,List,n,&lst);
-         Tcl_GetIntFromObj(Interp,lst,&i);
-         Tcl_ListObjIndex(Interp,List,n+1,&lst);
-         Tcl_GetIntFromObj(Interp,lst,&j);
+   for (k=0;k<FromDef->NK;k++) {
 
-         Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
-         if (isnan(val1) || val1==FromDef->NoData) {
-            continue;
+      memset(ToDef->Buffer,0x0,FSIZE2D(ToDef)*sizeof(double));
+
+      /*Check for included index list*/
+      if (List) {
+         lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
+         if (!lst) {
+            item=Tcl_NewListObj(0,NULL);
+            list=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
+         } else {
+            list=lst;
          }
+         Tcl_ListObjLength(Interp,list,&len);
+      }
 
-         Tcl_ListObjIndex(Interp,List,n+2,&lst);
-         Tcl_ListObjLength(Interp,lst,&pt);
-         for(p=0;p<pt;p+=3) {
-            Tcl_ListObjIndex(Interp,lst,p,&item);
-            Tcl_GetIntFromObj(Interp,item,&pi);
-            Tcl_ListObjIndex(Interp,lst,p+1,&item);
-            Tcl_GetIntFromObj(Interp,item,&pj);
-            Tcl_ListObjIndex(Interp,lst,p+2,&item);
-            Tcl_GetDoubleFromObj(Interp,item,&area);
+      /*Wouou we have the index list*/
+      if (len>1) {
+         for(n=0;n<len;n+=3) {
+            Tcl_ListObjIndex(Interp,list,n,&lst);
+            Tcl_GetIntFromObj(Interp,lst,&i);
+            Tcl_ListObjIndex(Interp,list,n+1,&lst);
+            Tcl_GetIntFromObj(Interp,lst,&j);
 
-            idx=FIDX2D(ToDef,pi,pj);
-            Def_Get(ToDef,0,idx,val0);
-            if (isnan(val0) || val0==ToDef->NoData)
-               val0=0.0;
-            val0+=val1*area;
-            Def_Set(ToDef,0,idx,val0);
+            Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
+            if (isnan(val1) || val1==FromDef->NoData) {
+               continue;
+            }
 
-            if (Mode=='N') {
-               ToDef->Buffer[idx]+=area;
+            Tcl_ListObjIndex(Interp,list,n+2,&lst);
+            Tcl_ListObjLength(Interp,lst,&pt);
+            for(p=0;p<pt;p+=3) {
+               Tcl_ListObjIndex(Interp,lst,p,&item);
+               Tcl_GetIntFromObj(Interp,item,&pi);
+               Tcl_ListObjIndex(Interp,lst,p+1,&item);
+               Tcl_GetIntFromObj(Interp,item,&pj);
+               Tcl_ListObjIndex(Interp,lst,p+2,&item);
+               Tcl_GetDoubleFromObj(Interp,item,&area);
+
+               idx2=FIDX2D(ToDef,pi,pj);
+               idx3=FIDX3D(ToDef,pi,pj,k);
+               Def_Get(ToDef,0,idx3,val0);
+               if (isnan(val0) || val0==ToDef->NoData)
+                  val0=0.0;
+               val0+=val1*area;
+               Def_Set(ToDef,0,idx3,val0);
+
+               if (Mode=='N') {
+                  ToDef->Buffer[idx2]+=area;
+               }
             }
          }
-      }
-   } else {
+      } else {
 
-      /*Damn, we dont have the index, do the long run*/
-      for(j=0;j<FromDef->NJ;j++) {
-         for(i=0;i<FromDef->NI;i++) {
+         /*Damn, we dont have the index, do the long run*/
+         for(j=0;j<FromDef->NJ;j++) {
+            for(i=0;i<FromDef->NI;i++) {
 
-            /*Project the source gridcell into the destination*/
-            wrap=OGR_GridCell(ring,ToRef,FromRef,i,j,Prec);
+               /*Project the source gridcell into the destination*/
+               wrap=OGR_GridCell(ring,ToRef,FromRef,i,j,Prec);
 
-            /*Are we crossing the wrap around*/
-            if (wrap<0) {
+               /*Are we crossing the wrap around*/
+               if (wrap<0) {
 
-               /*If so, move the wrapped points (assumed greater than NI/2) to the other side*/
-               for(p=0;p<-wrap;p++) {
-                  OGR_G_GetPoint(ring,p,&x,&y,&z);
-                  if (x>ToDef->NI>>1) {
-                     x-=ToDef->NI;
+                  /*If so, move the wrapped points (assumed greater than NI/2) to the other side*/
+                  for(p=0;p<-wrap;p++) {
+                     OGR_G_GetPoint(ring,p,&x,&y,&z);
+                     if (x>ToDef->NI>>1) {
+                        x-=ToDef->NI;
+                        OGR_G_SetPoint_2D(ring,p,x,y);
+                     }
+                  }
+
+                  /*Process the cell*/
+                  OGR_G_Empty(cell);
+                  OGR_G_AddGeometry(cell,ring);
+                  area=OGR_G_GetArea(cell);
+
+                  if (area>0.0) {
+                     Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
+                     if (isnan(val1) || val1==FromDef->NoData) {
+                        continue;
+                     }
+
+                     /*Use enveloppe limits to initialize the initial lookup range*/
+                     OGR_G_GetEnvelope(ring,&env);
+                     env.MaxX+=0.5;env.MaxY+=0.5;
+                     env.MinX=env.MinX<0?0:env.MinX;
+                     env.MinY=env.MinY<0?0:env.MinY;
+                     env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
+                     env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
+
+                     if (list)
+                        item=Tcl_NewListObj(0,NULL);
+
+                     nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Buffer,env.MinX,env.MinY,env.MaxX,env.MaxY,k);
+                     if (list && n) {
+                        Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(i));
+                        Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(j));
+                        Tcl_ListObjAppendElement(Interp,list,item);
+                     }
+      #ifdef DEBUG
+                     fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+      #endif
+                  }
+
+                  /*We have to process the part that was out of the grid limits so translate everything NI points*/
+                  for(p=0;p<-wrap;p++) {
+                     OGR_G_GetPoint(ring,p,&x,&y,&z);
+                     x+=ToDef->NI;
                      OGR_G_SetPoint_2D(ring,p,x,y);
                   }
                }
 
-               /*Process the cell*/
                OGR_G_Empty(cell);
                OGR_G_AddGeometry(cell,ring);
                area=OGR_G_GetArea(cell);
 
                if (area>0.0) {
-                  Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
+                  Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
                   if (isnan(val1) || val1==FromDef->NoData) {
                      continue;
                   }
@@ -753,73 +810,35 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                   env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
                   env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                  if (List)
+                  if (list)
                      item=Tcl_NewListObj(0,NULL);
 
-                  nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Buffer,env.MinX,env.MinY,env.MaxX,env.MaxY);
-                  if (List && n) {
-                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
-                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
-                     Tcl_ListObjAppendElement(Interp,List,item);
+                  nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Buffer,env.MinX,env.MinY,env.MaxX,env.MaxY,k);
+                  if (list && n) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(i));
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(j));
+                     Tcl_ListObjAppendElement(Interp,list,item);
                   }
-   #ifdef DEBUG
-                  fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
-   #endif
-               }
-
-               /*We have to process the part that was out of the grid limits so translate everything NI points*/
-               for(p=0;p<-wrap;p++) {
-                  OGR_G_GetPoint(ring,p,&x,&y,&z);
-                  x+=ToDef->NI;
-                  OGR_G_SetPoint_2D(ring,p,x,y);
-               }
-            }
-
-            OGR_G_Empty(cell);
-            OGR_G_AddGeometry(cell,ring);
-            area=OGR_G_GetArea(cell);
-
-            if (area>0.0) {
-               Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
-               if (isnan(val1) || val1==FromDef->NoData) {
-                  continue;
-               }
-
-               /*Use enveloppe limits to initialize the initial lookup range*/
-               OGR_G_GetEnvelope(ring,&env);
-               env.MaxX+=0.5;env.MaxY+=0.5;
-               env.MinX=env.MinX<0?0:env.MinX;
-               env.MinY=env.MinY<0?0:env.MinY;
-               env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
-               env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
-
-               if (List)
-                  item=Tcl_NewListObj(0,NULL);
-
-               nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,ToDef->Buffer,env.MinX,env.MinY,env.MaxX,env.MaxY);
-               if (List && n) {
-                  Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
-                  Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
-                  Tcl_ListObjAppendElement(Interp,List,item);
-               }
 #ifdef DEBUG
-               fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                  fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
 #endif
+               }
             }
          }
-      }
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
+         fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
 #endif
-   }
+      }
 
-   /*Finalize and reassign*/
-   if (Final && Mode=='N') {
-      for(n=0;n<FSIZE2D(ToDef);n++) {
-         Def_Get(ToDef,0,n,val0);
-         if (ToDef->Buffer[n]!=0.0) {
-            val0/=ToDef->Buffer[n];
-            Def_Set(ToDef,0,n,val0);
+      /*Finalize and reassign*/
+      idx3=ToDef->NI*ToDef->NJ*k;
+      if (Final && Mode=='N') {
+         for(n=0;n<FSIZE2D(ToDef);n++) {
+            Def_Get(ToDef,0,idx3+n,val0);
+            if (ToDef->Buffer[n]!=0.0) {
+               val0/=ToDef->Buffer[n];
+               Def_Set(ToDef,0,idx3+n,val0);
+            }
          }
       }
    }
@@ -951,7 +970,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
             /*Si le feature est dans le raster*/
             if (!(x1<0 || x0>Def->NI || y0>Def->NJ || y1<0)) {
-               nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,NULL,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1);
+               nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,NULL,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1,0);
 #ifdef DEBUG
                fprintf(stderr,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,x0,y0,x1,y1);
 #endif
