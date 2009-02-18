@@ -740,7 +740,7 @@ proc MLDP0::CreateScriptsLaunchJob { } {
       #----- Copy input file and script from temporary directory on local host to temporary directory on remote host.
       Debug::TraceProc "MLDP0: Copying launching input file and script on $Sim(HostType) host ($Sim(Host))."
 
-      set ErrorCode [catch { exec nrcp -p $Sim(LaunchInputFile) $Sim(SubmitLaunchScript) $Sim(Host):$Sim(TmpDir) } Message]
+      set ErrorCode [catch { exec scp -p $Sim(LaunchInputFile) $Sim(SubmitLaunchScript) $GDefs(FrontEndUser)@$Sim(Host):$Sim(TmpDir) } Message]
 
       if { $ErrorCode != 0 } {
          Debug::TraceProc "MLDP0: Error! Copying launching input file and script on $Sim(HostType) host ($Sim(Host)) has failed.\n\n$Message"
@@ -864,6 +864,7 @@ proc MLDP0::CreateScriptLaunchEncode { } {
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateScriptLaunchMeteo { } {
+   global   GDefs
    variable Sim
 
    Debug::TraceProc "MLDP0: Creating script for launching meteorological preprocessing."
@@ -901,7 +902,7 @@ proc MLDP0::CreateScriptLaunchMeteo { } {
       #----- Copy grid file, met data file and script from temporary directory on local host to temporary directory on remote host.
       Debug::TraceProc "MLDP0: Copying meteorological preprocessing input files and script on $Sim(HostType) host ($Sim(Host))."
 
-      set ErrorCode [catch { exec nrcp -p $Sim(GridInputFile) $Sim(MetInputFile) $Sim(MeteoScript) $Sim(Host):$Sim(TmpDir) } Message]
+      set ErrorCode [catch { exec scp -p $Sim(GridInputFile) $Sim(MetInputFile) $Sim(MeteoScript) $GDefs(FrontEndUser)@$Sim(Host):$Sim(TmpDir) } Message]
 
       if { $ErrorCode != 0 } {
          Debug::TraceProc "MLDP0: Error! Copying meteorological preprocessing input file and script on $Sim(HostType) host ($Sim(Host)) has failed.\n\n$Message"
@@ -936,6 +937,7 @@ proc MLDP0::CreateScriptLaunchMeteo { } {
 #----------------------------------------------------------------------------
 
 proc MLDP0::CreateScriptLaunchModel { } {
+   global   GDefs
    variable Sim
 
    Debug::TraceProc "MLDP0: Creating script for launching model."
@@ -983,7 +985,7 @@ proc MLDP0::CreateScriptLaunchModel { } {
       #----- Copy model input file and script from temporary directory on local host to temporary directory on remote host.
       Debug::TraceProc "MLDP0: Copying model input file and script on $Sim(HostType) host ($Sim(Host))."
 
-      set ErrorCode [catch { exec nrcp -p $Sim(ModelInputFile) $Sim(ModelScript) $Sim(Host):$Sim(TmpDir) } Message]
+      set ErrorCode [catch { exec scp -p $Sim(ModelInputFile) $Sim(ModelScript) $GDefs(FrontEndUser)@$Sim(Host):$Sim(TmpDir) } Message]
 
       if { $ErrorCode != 0 } {
          Debug::TraceProc "MLDP0: Error! Copying model input file and script on $Sim(HostType) host ($Sim(Host)) has failed.\n\n$Message"
