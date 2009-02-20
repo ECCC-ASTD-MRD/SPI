@@ -103,11 +103,11 @@ namespace eval Trajectory {
    #----- Definir les parametres par defaut standard (VAAC/RSMC)
 
    dataspec create 500.00
-   dataspec configure 500.00 -width $Param(Width) -fill white -color #0000ff -icon SQUARE \
+   dataspec configure 500.00 -width $Param(Width) -fill white -color #FF0000 -icon TRIANGLE \
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 
    dataspec create 1500.00
-   dataspec configure 1500.00 -width $Param(Width)  -fill white  -color #0000ff -icon SQUARE \
+   dataspec configure 1500.00 -width $Param(Width)  -fill white  -color #0000FF -icon SQUARE \
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 
    dataspec create 3000.00
@@ -115,7 +115,7 @@ namespace eval Trajectory {
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 
    dataspec create 700.00
-   dataspec configure 700.00 -width $Param(Width)  -fill white  -color #ff0000 -icon TRIANGLE \
+   dataspec configure 700.00 -width $Param(Width)  -fill white  -color #0000FF -icon SQUARE \
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 
    dataspec create 250.00

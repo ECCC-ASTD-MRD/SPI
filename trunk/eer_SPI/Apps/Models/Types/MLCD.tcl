@@ -2183,7 +2183,9 @@ proc MLCD::SimLaunchNew { } {
 
    if { [MLCD::SimInitLaunch] } {
 
-      set pool [Info::Code ::MLCD::Sim $Sim(Info) :]
+      destroy .mlcdnew
+
+set pool [Info::Code ::MLCD::Sim $Sim(Info) :]
 
       exec echo "$pool" >> $Sim(BasePath)/MLCD.pool
       exec echo "$pool" >> $Sim(Path)/sim.pool
@@ -2319,8 +2321,6 @@ proc MLCD::SimLaunchNew { } {
       #----- Launch model.
       Debug::TraceProc "MLCD: Launching short-range dispersion model."
       Exp::Launch "$ScriptFile" "$pool" $NbLines $OutputFile
-
-      destroy .mlcdnew
 
       #----- Relire les experiences
       Model::Check 0
