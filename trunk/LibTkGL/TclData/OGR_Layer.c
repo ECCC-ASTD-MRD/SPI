@@ -2172,17 +2172,18 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer) {
 
-   int     f,gen=0,idx,x,y;
+   int     f,gen=0,idx=-1,x,y;
    Vect3d  vr;
    char    lbl[256];
-   double  elev=0.0,extr=0.0,val;
+   double  elev=0.0,extr=0.0,val,sz;
 
    OGRFieldDefnH field;
    OGRGeometryH  geom;
    TDataSpec     *spec=Layer->Spec;
+
+   extern TIcon IconList[];
 
    if (!Layer) {
       fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid layer object\n");
@@ -2201,6 +2202,11 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    if (spec->Alpha<100 || (spec->Map && spec->Map->Alpha)) {
       glEnable(GL_BLEND);
+   }
+
+   if (spec->Icon) {
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glVertexPointer(2,GL_DOUBLE,0,IconList[spec->Icon].Co);
    }
 
    if (Layer->Mask || Layer->FMask) {
@@ -2264,32 +2270,75 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       }
    }
 
-   if (Layer->LFeature) {
+   if (!Layer->LFeature) {
+      return(0);
+   }
 
-      if (Layer->Extrude!=-1 || Layer->Topo!=-1) {
-         glEnable(GL_DEPTH_TEST);
+   if (Layer->Extrude!=-1 || Layer->Topo!=-1) {
+      glEnable(GL_DEPTH_TEST);
+      if (spec->Fill) {
+         glEnable(GL_POLYGON_OFFSET_FILL);
+         glPolygonOffset(1.0,1.0);
+      }
+   }
+   glCullFace(GL_FRONT_AND_BACK);
 
-         if (spec->Outline && spec->Width) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT_AND_BACK);
-            if (spec->Width<0) {
-               glStencilFunc(GL_ALWAYS,0x1,0x1);
-               glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-            }
-            glLineWidth(ABS(spec->Width));
-            glPointSize(ABS(spec->Width));
-            glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+   for(f=0;f<Layer->NFeature;f++) {
+      if (Layer->Select[f]) {
+         if (Layer->Map!=-1 && spec->Map) {
+            val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
+            VAL2COL(idx,spec,val);
+            if (idx<0) continue;
+         }
 
-            for(f=0;f<Layer->NFeature;f++) {
-               if (Layer->Select[f]) {
-                  if (Layer->Map!=-1 && Layer->Spec->Map && !spec->Fill) {
-                     val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
-                     VAL2COL(idx,Layer->Spec,val);
-                     if (idx<0) continue;
-                     glColor4ub(Layer->Spec->Map->Color[idx][0],Layer->Spec->Map->Color[idx][1],Layer->Spec->Map->Color[idx][2],Layer->Spec->Map->Color[idx][3]*spec->Alpha*0.01);
-                  }
-                  Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+         if (spec->Icon) {
+            glDisable(GL_CULL_FACE);
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
+            Proj->Type->Locate(Proj,Layer->Loc[f].Lat,Layer->Loc[f].Lon,1);
+            glTranslated(0.0,0.0,ZM(Proj,Layer->Loc[f].Elev));
+
+            sz=VP->Ratio*(spec->Size*0.5+spec->Width);
+            glScalef(sz,sz,1.0);
+
+            if (spec->Outline && spec->Width) {
+               glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+               if (idx>=0 && !spec->Fill) {
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               } else {
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
                }
+               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+            }
+
+            if (spec->Fill) {
+               glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+               if (idx>=0) {
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               } else {
+                  glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
+               }
+               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+            }
+            glPopMatrix();
+         }
+
+         if (Layer->Extrude!=-1) {
+            if (spec->Outline && spec->Width) {
+               glEnable(GL_CULL_FACE);
+               if (spec->Width<0) {
+                  glStencilFunc(GL_ALWAYS,0x1,0x1);
+                  glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+               }
+               glLineWidth(ABS(spec->Width));
+               glPointSize(ABS(spec->Width));
+               if (idx>=0 && !spec->Fill) {
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               } else {
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+               }
+
+               Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
             }
          }
 
@@ -2299,107 +2348,68 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                glEnable(GL_LIGHT0);
                glEnable(GL_COLOR_MATERIAL);
             }
-
-            glEnable(GL_POLYGON_OFFSET_FILL);
-            glPolygonOffset(0.5,1.0);
             glDisable(GL_CULL_FACE);
-            glLineWidth(0.0);
-            glPointSize(0.0);
-            glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
-            for(f=0;f<Layer->NFeature;f++) {
-               if (Layer->Select[f]) {
-                  if (Layer->Map!=-1 && Layer->Spec->Map) {
-                     val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
-                     VAL2COL(idx,Layer->Spec,val);
-                     if (idx<0) continue;
-                     glColor4ub(Layer->Spec->Map->Color[idx][0],Layer->Spec->Map->Color[idx][1],Layer->Spec->Map->Color[idx][2],Layer->Spec->Map->Color[idx][3]*spec->Alpha*0.01);
-                  }
-                  Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
-               }
+            glLineWidth(0.0001);
+            glPointSize(0.0001);
+
+            if (idx>=0) {
+                glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+            } else {
+               glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
             }
+            Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+
             glDisable(GL_LIGHTING);
             glDisable(GL_LIGHT0);
             glDisable(GL_COLOR_MATERIAL);
-            glDisable(GL_POLYGON_OFFSET_FILL);
          }
 
-         glDisable(GL_DEPTH_TEST);
-      } else {
-         if (spec->Fill) {
-            if (Proj->Sun || Layer->Extrude!=-1) {
-               glEnable(GL_LIGHTING);
-               glEnable(GL_LIGHT0);
-               glEnable(GL_COLOR_MATERIAL);
-            }
-
-            glDisable(GL_CULL_FACE);
-            glLineWidth(0.0);
-            glPointSize(0.0);
-            glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
-            for(f=0;f<Layer->NFeature;f++) {
-               if (Layer->Select[f]) {
-                  if (Layer->Map!=-1 && Layer->Spec->Map) {
-                     val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
-                     VAL2COL(idx,Layer->Spec,val);
-                     if (idx<0) continue;
-                     glColor4ub(Layer->Spec->Map->Color[idx][0],Layer->Spec->Map->Color[idx][1],Layer->Spec->Map->Color[idx][2],Layer->Spec->Map->Color[idx][3]*spec->Alpha*0.01);
-                  }
-                  Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+         if (Layer->Extrude==-1) {
+            if (spec->Outline && spec->Width) {
+               glEnable(GL_CULL_FACE);
+               if (spec->Width<0) {
+                  glStencilFunc(GL_ALWAYS,0x1,0x1);
+                  glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
                }
-            }
-            glDisable(GL_LIGHTING);
-            glDisable(GL_LIGHT0);
-            glDisable(GL_COLOR_MATERIAL);
-            glDisable(GL_POLYGON_OFFSET_FILL);
-         }
-         if (spec->Outline && spec->Width) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT_AND_BACK);
-            if (spec->Width<0) {
-               glStencilFunc(GL_ALWAYS,0x1,0x1);
-               glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-            }
-            glLineWidth(ABS(spec->Width));
-            glPointSize(ABS(spec->Width));
-            glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
-
-            for(f=0;f<Layer->NFeature;f++) {
-               if (Layer->Select[f]) {
-                  if (Layer->Map!=-1 && Layer->Spec->Map && !spec->Fill) {
-                     val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
-                     VAL2COL(idx,Layer->Spec,val);
-                     if (idx<0) continue;
-                     glColor4ub(Layer->Spec->Map->Color[idx][0],Layer->Spec->Map->Color[idx][1],Layer->Spec->Map->Color[idx][2],Layer->Spec->Map->Color[idx][3]*spec->Alpha*0.01);
-                  }
-                  Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               glLineWidth(ABS(spec->Width));
+               glPointSize(ABS(spec->Width));
+               if (idx>=0 && !spec->Fill) {
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               } else {
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
                }
+               Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
             }
          }
       }
+   }
 
-      if (Layer->SFeature) {
-         if (Layer->FMask) {
-            glStencilFunc(GL_ALWAYS,0x2,0xff);
-            glStencilFunc(GL_EQUAL,0x2,0xff);
-            glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
-         } else {
-            glStencilFunc(GL_EQUAL,0x0,0xff);
-            glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-         }
+   glDisable(GL_POLYGON_OFFSET_FILL);
+   glDisable(GL_DEPTH_TEST);
+   glStencilFunc(GL_EQUAL,0x0,0xff);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
 
+   if (Layer->SFeature) {
+      if (Layer->FMask) {
+         glStencilFunc(GL_ALWAYS,0x2,0xff);
+         glStencilFunc(GL_EQUAL,0x2,0xff);
+         glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
+      } else {
+         glStencilFunc(GL_EQUAL,0x0,0xff);
+         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+      }
+
+      for(f=0;f<Layer->NSFeature;f++) {
          if (spec->HighFill) {
-            glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
             glDisable(GL_CULL_FACE);
             glLineWidth(0.0);
             glPointSize(0.0);
-            for(f=0;f<Layer->NSFeature;f++) {
-               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
-            }
+            glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
+            Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
          }
 
          if (spec->HighLine && spec->Width) {
             glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT_AND_BACK);
             if (spec->Width<0) {
                glStencilFunc(GL_ALWAYS,0x1,0x1);
                glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
@@ -2407,17 +2417,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glLineWidth(ABS(spec->Width));
             glPointSize(ABS(spec->Width));
             glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
-
-            for(f=0;f<Layer->NSFeature;f++) {
-               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
-            }
+            Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
          }
       }
    }
-
-   glDisable(GL_DEPTH_TEST);
-   glStencilFunc(GL_EQUAL,0x0,0xff);
-   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
 
    if (Layer->Label && GLRender->Resolution<=1) {
       Projection_UnClip(Proj);
@@ -2489,10 +2492,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glDisable(GL_BLEND);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_LINE_STIPPLE);
+   glDisableClientState(GL_VERTEX_ARRAY);
 
    return(1);
 }
-
 int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All) {
 
    Tcl_Obj     *obj;
