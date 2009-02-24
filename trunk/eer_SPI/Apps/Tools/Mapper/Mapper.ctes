@@ -54,6 +54,7 @@ namespace eval Mapper { } {
    set Data(Frame5) ""
    set Data(RefVP)  ""
 
+   set Data(Icons)        { NONE TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON LIGHTNING X + }
    set Data(Intervals)     ""                                     ;#Liste de niveaux
    set Data(Colors)       { RED GREEN BLUE ALPHA }
    set Data(Topos)        { NONE INTERNAL }

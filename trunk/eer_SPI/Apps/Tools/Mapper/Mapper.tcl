@@ -785,6 +785,9 @@ proc Mapper::ParamsOGRGet { Object } {
 
 #   set Data(Font)        [ogrlayer configure $Object -font]
    set Data(Dash)        [ogrlayer configure $Object -dash]
+   set Data(Icon)        [ogrlayer configure $Object -icon]
+   set Data(Size)        [ogrlayer configure $Object -size]
+   set Data(Dash)        [ogrlayer configure $Object -dash]
    set Data(ColorMap)    [ogrlayer configure $Object -colormap]
    set Data(Color)       [ogrlayer configure $Object -outline]
    set Data(Highlight)   [ogrlayer configure $Object -activeoutline]
@@ -879,7 +882,8 @@ proc Mapper::ParamsOGRSet { Object } {
 #   ogrlayer configure $Object -font OGRFONT
 
    ogrlayer configure $Object -dash $Data(Dash) -colormap $Data(ColorMap) -outline $Data(Color) -activeoutline $Data(Highlight) \
-      -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) -min $min -max $max -intervals $inter -value $Data(Order) $Data(Mantisse)
+      -icon $Data(Icon) -size $Data(Size) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
+      -min $min -max $max -intervals $inter -value $Data(Order) $Data(Mantisse)
 
    if { $Data(FillSel) } {
       ogrlayer configure $Object -fill $Data(Fill)

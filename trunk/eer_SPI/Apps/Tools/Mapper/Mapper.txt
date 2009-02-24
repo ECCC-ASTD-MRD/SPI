@@ -110,6 +110,7 @@ namespace eval Mapper { } {
    set Lbl(Histo)        { "Histogramme" "Histogram" }
    set Lbl(Burn)         { "Persistance" "Persistance" }
 
+   set Lbl(Icon)         { "Icone" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }
    set Lbl(SysCoord)     { "Système de coordonnées" "Coordinate system" }
    set Lbl(MeridianPM)   { "Méridien" "Meridian" }
