@@ -394,7 +394,7 @@ proc Writer::FVCN::GraphUpdate { Pad { Location False } } {
 #    <Pad>   : Identificateur du pad
 #
 # Remarques :
-#
+#           : Pas de niveaux= pas de couleur donc pas de region affichee
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::GraphAreaColor { Pad } {
@@ -409,6 +409,8 @@ proc Writer::FVCN::GraphAreaColor { Pad } {
          set text [$Pad.ash$h get 0.0 end]
          set Data(LVL$h) {}
          set l 0
+
+         #----- find all level string occurence (FLnnn...)
          foreach { lvl i } [regexp -all -nocase -inline {([A-Z]|[0-9]){3,5}/FL+[0-9]{2,3} [NS][0-9]{4}} $text] {
             if { [lsearch -exact $lvls [set lvl [lindex $lvl 0]]]==-1 } {
                lappend lvls $lvl
@@ -418,6 +420,7 @@ proc Writer::FVCN::GraphAreaColor { Pad } {
          }
       }
 
+      #----- Assign color and filling to each level
       set i 0
       foreach lvl $lvls {
          set Data(Color$lvl) [lindex $Data(Colors) $i]
@@ -1013,7 +1016,7 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    bind $Pad.details <Any-KeyRelease> "set Writer::FVCN::Data(HDetails$Pad) \[Writer::TextExpand %W 47 64\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.info    <Any-KeyRelease> "set Writer::FVCN::Data(HInfo$Pad)    \[Writer::TextExpand %W 47 32\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash00   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh00$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash00   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh00$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date00$Pad) \[$Pad.ash00  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.ash06   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh06$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date06$Pad) \[$Pad.ash06  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date12$Pad) \[$Pad.ash12  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date18$Pad) \[$Pad.ash18  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
@@ -1963,14 +1966,22 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
 
       set f $Data(Page$Pad)
       $Data(Page$Pad).page.canvas delete ICOVAAC
+
+      #----- Loop on each hours with the associated label
       foreach h { 00 06 12 18 } l [list "$Data(Obs$Pad)" $Data(FCST06) $Data(FCST12) $Data(FCST18)] {
+
+         #----- configure the label
          $Data(Page$Pad).page.canvas itemconfigure DATE$h -text "$l $Data(Date$h$Pad)"
          $Data(Page$Pad).page.canvas delete FVCN$h
+
+         #----- Loop on all known flight level layer for this hour
          set no 0
          set va 0
          foreach lvl $Data(LVL$h)  {
             set i -1
             set coords {}
+
+            #----- Figure out index of this area within the known layer for color and filling
             foreach l { L0 L1 L2 } {
                if { [llength [set coords $Data($l$h$Pad)]] } {
                   incr i
@@ -1979,6 +1990,8 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
                   break
                }
             }
+
+            #----- If the area is valid, draw it
             if  { [llength $coords)]>=4 } {
                Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $coords "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN$h FVCN" FVCN$no$h \
                   $Data(Color$lvl) $Data(Color$lvl) $Data(Stipple$lvl) False 2
@@ -1988,7 +2001,6 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
          }
 
          #----- Set no ash label if area is not defined
-
          if { $va } {
             $Data(Page$Pad).page.canvas itemconfigure NOVA$h -text ""
          } else {
