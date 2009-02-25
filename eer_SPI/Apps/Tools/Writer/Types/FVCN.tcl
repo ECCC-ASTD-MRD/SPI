@@ -1068,7 +1068,8 @@ proc Writer::FVCN::LayoutInit { Pad } {
    menubutton $Pad.optobs -bg white -bd 0 -menu $Pad.optobs.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
    menu $Pad.optobs.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
       foreach lbl [list $Data(OBS) $Data(EST)] {
-         $Pad.optobs.menu add radiobutton -indicatoron false -label $lbl -variable Writer::FVCN::Data(Obs$Pad) -value $lbl
+         $Pad.optobs.menu add radiobutton -indicatoron false -label $lbl -variable Writer::FVCN::Data(Obs$Pad) -value $lbl \
+            -command "Writer::FVCN::UpdateGraphItems $Pad"
       }
 
    radiobutton $Pad.optash00 -variable Writer::FVCN::Data(Hour$Pad) -value 00 -indicatoron false -image box -selectimage check \
