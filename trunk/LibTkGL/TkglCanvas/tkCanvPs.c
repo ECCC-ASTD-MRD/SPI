@@ -14,6 +14,7 @@
  * RCS: @(#) $Id: tkCanvPs.c,v 1.13 2003/02/18 21:54:18 hobbs Exp $
  */
 
+#include <strings.h>
 #include "tkInt.h"
 #include "tkCanvas.h"
 #include "tkPort.h"
