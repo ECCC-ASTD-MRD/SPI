@@ -121,7 +121,7 @@ namespace eval Animator {
    set Bubble(Stop)        { "Stop" "Stop" }
    set Bubble(StepForward) { "Une image vers l'avant" "Step one frame forward" }
    set Bubble(PlayForward) { "Jouer vers l'avant" "Play forward" }
-   set Bubble(Delai)       { "Delai entre les images (millisecondes)" "Delai between frames (milliseconds)" }
+   set Bubble(Delai)       { "Delai entre les images (millisecondes)" "Delay between frames (milliseconds)" }
    set Bubble(Idx0)        { "Index de depart de l'animation" "Animation starting index" }
    set Bubble(Idx1)        { "Index de fin de l'animation" "Animation's ending index" }
    set Bubble(State)       { "Action en cours" "Current action" }
