@@ -283,6 +283,8 @@ static double     GridAlign _ANSI_ARGS_((double coord, double spacing));
 static char**     GetStringsFromObjs _ANSI_ARGS_((int argc,
              Tcl_Obj *CONST *objv));
 static void    InitglCanvas _ANSI_ARGS_((void));
+static int     MagnifyglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,
+                               char* Img,int X,int Y,double Scale);
 #ifdef USE_OLD_TAG_SEARCH
 static Tk_Item *  NextItem _ANSI_ARGS_((TagSearch *searchPtr));
 #endif /* USE_OLD_TAG_SEARCH */
