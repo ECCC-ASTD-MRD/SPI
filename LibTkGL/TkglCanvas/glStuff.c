@@ -31,7 +31,7 @@
  *==============================================================================
  */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include <string.h>
 #include "glStuff.h"
@@ -669,13 +669,19 @@ int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *V
    int             new;
    T_glBitmap    **pbitmap=(T_glBitmap**)(WidgRec+Offset);
    T_glBitmap     *bitmap=NULL;
+   int             len = strlen(Value);
 
-   if (strlen(Value)>0) {
+   if (len > 0) {
       entry=Tcl_CreateHashEntry(&glBitmapTable,Value,&new);
 
       if (new) {
          bitmap=(T_glBitmap*)malloc(sizeof(T_glBitmap));
-         bitmap->Name=strdup(Value);
+
+         /* Copy string the long way since "strdup" isn't C99 conformant. */
+         len = (len + 1) * sizeof(char);
+         bitmap->Name = (char*) malloc(len);
+         memcpy(bitmap->Name, Value, len);
+
          bitmap->Data=(char*)TkGetBitmapData(Interp,NULL,++Value,&bitmap->Width,&bitmap->Height,&bitmap->HotX,&bitmap->HotY);
          DataFlip(bitmap->Data,NULL,bitmap->Width,bitmap->Height,0);
 
