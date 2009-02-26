@@ -107,6 +107,7 @@ typedef struct TDataSpec {
    Tk_PhotoHandle SpriteImg;
    char       *Desc;                /*Descripteur des donnees*/
    char       *Unit;                /*Unite des donnees*/
+   char       *ZType;               /*Type de coordonnees verticale*/
    char       *Topo;                /*Modulateur 3D*/
    double      TopoFactor;          /*Facteur du modulateur 3D*/
    int         Interp;              /*Interpolation GL*/

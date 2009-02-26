@@ -227,12 +227,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    static CONST char *sopt[] = { "-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
-                                 "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step",
+                                 "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step","-ztype",
                                  "-geovector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
-                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
+                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,ZTYPE,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE };
 
    if (Objc==1)  s=0;
@@ -381,6 +381,21 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      Spec->Max=max;
                      smax=1;
                   }
+               }
+            }
+            break;
+
+         case ZTYPE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->ZType,-1));
+            } else {
+               ++i;
+               if ((!Spec->ZType && strlen(Tcl_GetString(Objv[i]))) || (Spec->ZType && strcmp(Tcl_GetString(Objv[i]),Spec->ZType)!=0)) {
+                  if (Spec->ZType) free(Spec->ZType);
+                  Spec->ZType=NULL;
+                  if (strlen(Tcl_GetString(Objv[i])) && strcmp("NONE",Tcl_GetString(Objv[i]))!=0)
+                     Spec->ZType=(char*)strdup(Tcl_GetString(Objv[i]));
+                  DataSpec_Clean(Spec,0,1,0);
                }
             }
             break;
@@ -1121,6 +1136,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       }
    }
 
+   if (to->ZType)     free(to->ZType);
    if (to->Topo)      free(to->Topo);
    if (to->Desc)      free(to->Desc);
    if (to->Unit)      free(to->Unit);
@@ -1189,6 +1205,10 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->RenderValue=from->RenderValue;
    to->RenderVol=from->RenderVol;
    to->GeoVector=from->GeoVector;
+
+   to->ZType=NULL;
+   if (from->ZType)
+      to->ZType=strdup(from->ZType);
 
    to->Topo=NULL;
    if (from->Topo)
@@ -1308,6 +1328,7 @@ TDataSpec *DataSpec_New(){
    spec->Cube[3]=10;spec->Cube[4]=1;spec->Cube[5]=1;
    spec->Axis='X';
 
+   spec->ZType=NULL;
    spec->Topo=NULL;
    spec->TopoFactor=1.0;
    spec->InterpDegree=(char*)strdup("LINEAR");
@@ -1348,6 +1369,7 @@ int DataSpec_Free(TDataSpec *Spec){
    }
 
    if (Spec->Name)        free(Spec->Name);
+   if (Spec->ZType)       free(Spec->ZType);
    if (Spec->Topo)        free(Spec->Topo);
    if (Spec->Desc)        free(Spec->Desc);
    if (Spec->Unit)        free(Spec->Unit);

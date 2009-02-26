@@ -2057,11 +2057,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case PRESSURELEVELS:
             if (Objc==1) {
                if (Field->Ref && Field->Ref->Hgt) {
-                  nb=(Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
-
                   obj=Tcl_NewListObj(0,NULL);
-                  for (index=0;index<nb;index++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                  if (Field->Ref->Grid[0]=='V') {
+                     for (index=0;index<Field->Def->NI*Field->Def->NJ;index+=Field->Def->NI) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                     }
+                  } else {
+                     for (index=0;index<Field->Def->NK;index++) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                     }
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
