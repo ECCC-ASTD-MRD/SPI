@@ -304,7 +304,9 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(axis->Incr));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Incr);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Incr)==TCL_ERROR) {
+                  axis->Incr=0.0;
+               }
                axis->Incr=fabs(axis->Incr);
             }
             break;
@@ -313,7 +315,9 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(axis->Min));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Min);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Min)==TCL_ERROR) {
+                  axis->Min=0.0;
+               }
             }
             break;
 
@@ -321,7 +325,9 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(axis->Max));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Max);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&axis->Max)==TCL_ERROR) {
+                  axis->Max=0.0;
+               }
             }
             break;
 
@@ -538,6 +544,8 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Pos[1]='L';
    axis->Pos[2]='\0';
 
+   axis->T0=0.0;
+   axis->T1=0.0;
    axis->Order=0;
    axis->Mark=0.0;
    axis->Incr=0.0;
@@ -632,6 +640,8 @@ void GraphAxis_Clear(TGraphAxis *Axis) {
    Axis->UnitItem=NULL;
    Axis->Type='I';
 
+   Axis->T0=0.0;
+   Axis->T1=0.0;
    Axis->Min=0.0;
    Axis->Max=0.0;
    Axis->Mark=0.0;
@@ -722,6 +732,7 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
       if (Axis->T0==Axis->T1)                 Axis->T0=Axis->T0-1.0;
       if (Axis->T1<Axis->T0 && Axis->T0==0.0) Axis->T1=Axis->T1-1.0;
    }
+#define ORDERS(VAL) (VAL==0.0?1.0:ceil(log10(ABS(VAL))))
 
    Axis->Order=ORDER(Axis->T1-Axis->T0);
    for(i=1;i<Axis->InterNb;i++) {
@@ -732,6 +743,16 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
    Axis->Delta=(double)(Delta-(Axis->Offset[0]+Axis->Offset[1]))/(Axis->T1-Axis->T0);
    Axis->DT0=AXISVALUE(Axis,Axis->Min);
    Axis->DT1=AXISVALUE(Axis,Axis->Max);
+}
+
+double GraphAxis_Incr(TGraphAxis *Axis) {
+
+   double d;
+
+   d=pow(10,Axis->Order-1);
+
+//fprintf(stderr,"--- %f %f %i \n",incr,Axis->Incr,Axis->Order);
+   return(d*ceil(floor(ABS(Axis->T1-Axis->T0)/d)/10));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1021,7 +1042,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
 void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side) {
 
    int    i,o,dx,dy,th,w=0,width,height;
-   double inter,i0,i1,it,mk,x,y,yp,xp=0;
+   double inter,incr,i0,i1,it,mk,x,y,yp,xp=0;
    char   buf[32];
    XColor *color;
    Tk_Font font;
@@ -1208,8 +1229,9 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          i1=Axis->T1;
       }
 
-      inter=i0-fmod(i0,Axis->Incr);
-      if (inter<i0) inter+=Axis->Incr;
+      incr=Axis->Incr!=0.0?Axis->Incr:GraphAxis_Incr(Axis);
+      inter=i0-fmod(i0,incr);
+      if (inter<i0) inter+=incr;
 
       while(Axis->T0!=Axis->T1 && inter<=i1) {
          it=Axis->Type=='O'?pow(10,inter):inter;
@@ -1220,7 +1242,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             x=X0+AXISVALUE(Axis,it); y=Y0;
 
             if (!Axis->All && x<xp+5+(Axis->Angle==0?w:tkm.linespace)) {
-               inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
+               inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
                continue;
             }
             xp=x;
@@ -1246,7 +1268,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             y=Y0-AXISVALUE(Axis,it); x=X0;
 
             if (!Axis->All && y<yp+tkm.linespace && y>yp-tkm.linespace) {
-               inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
+               inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
                continue;
             }
             yp=y;
@@ -1273,7 +1295,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
          glDisplayTextLayout(text,(int)-Axis->Angle,(int)(x+dx),(int)(y-dy),0,-1);
          Tk_FreeTextLayout(text);
-         inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
+         inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
       }
    }
 

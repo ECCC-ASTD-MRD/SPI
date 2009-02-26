@@ -1858,7 +1858,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
          /*Is the quad valid ???*/
          if (c0>-1 || c1>-1 || c2>-1 || c3>-1) {
 
-            vf=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[j]:j;
+            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[j*Data->Def->NI+i]:Data->Ref->Levels[j]):j;
             g0[0]=X0+AXISVALUE(AxisX,(i));
             g0[1]=Y0+AXISVALUE(AxisY,vf);
             g0[2]=0.0;
@@ -1866,7 +1866,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
             g1[1]=Y0+AXISVALUE(AxisY,vf);
             g1[2]=0.0;
 
-            vf=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[j+1]:j+1;
+            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[(j+1)*Data->Def->NI+i]:Data->Ref->Levels[j+1]):j+1;
             g2[0]=X0+AXISVALUE(AxisX,(i+1));
             g2[1]=Y0+AXISVALUE(AxisY,vf);
             g2[2]=0.0;
@@ -2022,12 +2022,12 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    for(j=0;j<Data->Def->NJ-1;j++) {
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<Data->Def->NI;i++) {
-         vf=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[j]:j;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[j*Data->Def->NI+i]:Data->Ref->Levels[j]):j;
          g0[0]=X0+AXISVALUE(AxisX,(i));
          g0[1]=Y0+AXISVALUE(AxisY,vf);
          g0[2]=0.0;
 
-         vf=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[j+1]:j+1;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[(j+1)*Data->Def->NI+i]:Data->Ref->Levels[j+1]):j+1;
          g1[0]=X0+AXISVALUE(AxisX,(i));
          g1[1]=Y0+AXISVALUE(AxisY,vf);
          g1[2]=0.0;
@@ -2074,13 +2074,16 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
 */
 void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut){
 
-   int    d;
+   int    d[2];
    double y,v[2];
 
-   d=floor(VIn[1]);
-   v[0]=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[d]:d;
-   v[1]=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[d+1]:d+1;
-   y=ILIN(v[0],v[1],VIn[1]-d);
+   d[0]=floor(VIn[0]);
+   d[1]=floor(VIn[1]);
+   v[0]=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]]:Data->Ref->Levels[d[1]]):d[1];
+//   v[0]=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[d]:d;
+   v[1]=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+d[0]]:Data->Ref->Levels[d[1]+1]):d[1]+1;
+//   v[1]=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[d+1]:d+1;
+   y=ILIN(v[0],v[1],VIn[1]-d[1]);
 
    VOut[0]=X0+AXISVALUE(AxisX,VIn[0]);
    VOut[1]=Y0+AXISVALUE(AxisY,y);
