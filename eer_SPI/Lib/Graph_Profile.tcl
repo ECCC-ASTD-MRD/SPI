@@ -42,6 +42,8 @@ namespace eval Graph::Profile { } {
    variable Msg
 
    set Lbl(Title)     { "Profil vertical" "Vertical profile" }
+   set Lbl(Grid)      { "Grille" "Grid" }
+   set Lbl(Pres)      { "Pression" "Pressure" }
 
    set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
@@ -284,15 +286,15 @@ proc Graph::Profile::Graph { GR } {
    }
 
    #----- Recalculer les valeurs
-
    set data(XMin)  1e200
    set data(XMax) -1e200
    set data(YMin)  1e200
    set data(YMax) -1e200
    set data(Levels) {}
+   set yincr  0
+   set xincr  0
 
-   #----- Afficher le graph
-
+   #----- Extraire les limites des valeurs
    foreach item $data(Items) {
       set min [vector stats $item.X -min]
       set max [vector stats $item.X -max]
@@ -312,7 +314,8 @@ proc Graph::Profile::Graph { GR } {
       eval set data(Levels) \[lsort -unique -real $data(Order) \$data(Levels)\]
    }
 
-   if { ![llength $graph(YInter)] } {
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(YInter)]] } {
       set data(YMin) [lindex $data(Levels) 0]
       set data(YMax) [lindex $data(Levels) end]
 
@@ -321,25 +324,30 @@ proc Graph::Profile::Graph { GR } {
          set yincr 1
       } else {
          set yinter $data(Levels)
-         set yincr  ""
       }
    } else {
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
-      set yinter $graph(YInter)
-      set yincr  ""
+      if { $l==2 } {
+         set yinter {}
+      } else {
+         set yinter $graph(YInter)
+      }
    }
 
-   if { ![llength $graph(XInter)] } {
+   if { ![set l [llength $graph(XInter)]] } {
       set xinter ""
-      set xincr  [Graph::ValIncr $data(XMin) $data(XMax) 10 $graph(XScale)]
    } else {
       set data(XMin) [lindex $graph(XInter) 0]
       set data(XMax) [lindex $graph(XInter) end]
-      set xinter $graph(XInter)
-      set xincr  ""
+      if { $l==2 } {
+         set xinter {}
+      } else {
+         set xinter $graph(XInter)
+      }
   }
 
+   #----- Verifier le zoom
    if { [llength $graph(ZXInter)] } {
       set data(XMin) [lindex $graph(ZXInter) 0]
       set data(XMax) [lindex $graph(ZXInter) 1]
@@ -362,6 +370,7 @@ proc Graph::Profile::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
+
    graphaxis configure axisy$GR -type $graph(YScale) -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
@@ -412,6 +421,7 @@ proc Graph::Profile::Init { Frame } {
       set Graph(YInter)   ""                                                  ;#Liste des niveau specifie par l'usager
       set Graph(ZXInter)  ""                                                  ;#Liste des Niveaux (Mode Zoom)
       set Graph(ZYInter)  ""                                                  ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZType)    GRID                                                ;#Type de niveaux (GRID,PRESSSURE)
    }
    return $gr
 }
@@ -432,6 +442,7 @@ proc Graph::Profile::Init { Frame } {
 
 proc Graph::Profile::Params { Parent GR } {
    global   GDefs
+   variable Lbl
 
    Graph::ParamsPos  $Parent
    Graph::ParamsItem $Parent
@@ -456,6 +467,13 @@ proc Graph::Profile::Params { Parent GR } {
          pack $Parent.scale.valy.list -side left -fill x  -expand true
          pack $Parent.scale.valy.scale -side left -fill y
       pack $Parent.scale.valx $Parent.scale.valy -side top -padx 2 -pady 2 -fill x
+      frame $Parent.scale.type -relief sunken -bd 1
+         radiobutton $Parent.scale.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Profile::Update \$Graph::Profile::Profile${GR}::Data(FrameData) $GR" -bd 1 -variable Graph::Profile::Profile${GR}::Graph(ZType) -value GRID
+         radiobutton $Parent.scale.type.pres -text [lindex $Lbl(Pres) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Profile::Update \$Graph::Profile::Profile${GR}::Data(FrameData) $GR" -bd 1 -variable Graph::Profile::Profile${GR}::Graph(ZType) -value PRESSURE
+         pack $Parent.scale.type.grid $Parent.scale.type.pres -side left -fill x -expand True
+      pack $Parent.scale.type -side top -padx 2 -fill x
    pack $Parent.scale -side top -fill x -padx 5 -pady 5
 
    Graph::ParamsObs $Parent Profile $GR
@@ -490,7 +508,7 @@ proc Graph::Profile::ItemAdd { GR Item } {
       vector create $Item
       vector dim    $Item { X Y }
 
-      set id [$data(Canvas) create text -100 -100  -tags "$Page::Data(Tag)$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
+      set id [$data(Canvas) create text -100 -100 -tags "$Page::Data(Tag)$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem create $Item
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -xdata $Item.X -ydata $Item.Y -orient Y -desc $id
@@ -670,11 +688,29 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
       if { [fstdfield is $Data] } {
          fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
 
+         #----- Configure info label if allowed
+         if { $Graph::Data(Update) } {
+            set obj [graphitem configure $Item -desc]
+            set type [fstdfield stats GRAPHPROFILE -leveltype]
+            switch $type {
+               "HYBRID" { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR] [fstdfield stats GRAPHPROFILE -leveltype] (ptop=[format %.2f [fstdfield stats GRAPHPROFILE -top]] pref=[format %.2f [fstdfield stats GRAPHPROFILE -ref]] rcoef=[format %.2f [fstdfield stats GRAPHPROFILE -coef]])" }
+               "ETA"    { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR] [fstdfield stats GRAPHPROFILE -leveltype] (ptop=[format %.2f [fstdfield stats GRAPHPROFILE -top]])" }
+               default  { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR]" }
+            }
+         }
+
+         #----- Check for vertical coordinate selection
+         if { $graph(ZType)=="PRESSURE" } {
+            vector set $Item.Y [fstdfield stats GRAPHPROFILE -pressurelevels]
+            set graph(UnitY) Pressure
+         } else {
+            vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
+            set graph(UnitY) [fstdfield stats $Data -leveltype]
+         }
+
          vector set $Item.X [fstdfield define GRAPHPROFILE -DATA]
-         vector set $Item.Y [fstdfield stats $Data -levels]
 
          set graph(UnitX) [fstdfield configure $Data -unit]
-         set graph(UnitY) [fstdfield stats $Data -leveltype]
       } elseif { [observation is $Data] } {
 
          set lst {}

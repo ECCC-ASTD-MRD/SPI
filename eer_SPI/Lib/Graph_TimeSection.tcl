@@ -43,6 +43,8 @@ namespace eval Graph::TimeSection { } {
    variable Msg
 
    set Lbl(Title)     { "Profil temporel" "Time profile" }
+   set Lbl(Grid)      { "Grille" "Grid" }
+   set Lbl(Pres)      { "Pression" "Pressure" }
 
    set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
@@ -328,21 +330,28 @@ proc Graph::TimeSection::Graph { GR } {
    update idletasks
 
    #----- Recalculer les valeurs
-
    set data(XMin)   1e200
    set data(XMax)  -1e200
    set data(YMin)   1e200
    set data(YMax)  -1e200
    set data(Dates)  {}
    set data(Levels) {}
+   set yincr  0
+   set xincr  0
 
-   #----- Afficher le graph
-
+   #----- Extraire les limites des valeurs
    foreach item $data(Items) {
       set data(Dates) [concat $data(Dates) [vector get $item.X]]
 
       if { [fstdfield is TIMECUT$item] } {
-         set data(Levels) [fstdfield stats TIMECUT$item -levels]
+         #----- Check for vertical coordinate selection
+         if { $graph(ZType)=="PRESSURE" } {
+            set data(Levels) [fstdfield stats TIMECUT$item -pressurelevels]
+            fstdfield configure TIMECUT$item -ztype PRESSURE
+         } else {
+            set data(Levels) [fstdfield stats TIMECUT$item -levels]
+            fstdfield configure TIMECUT$item -ztype NONE
+         }
       } else {
          return
       }
@@ -363,7 +372,8 @@ proc Graph::TimeSection::Graph { GR } {
       set data(XMax) [clock scan $data(Date1) -gmt True]
    }
 
-   if { ![llength $graph(YInter)] } {
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(YInter)]] } {
       set data(YMin) [lindex $data(Levels) 0]
       set data(YMax) [lindex $data(Levels) end]
 
@@ -372,13 +382,15 @@ proc Graph::TimeSection::Graph { GR } {
          set yincr 1
       } else {
          set yinter $data(Levels)
-         set yincr  ""
       }
    } else {
-      set yinter $graph(YInter)
-         set yincr  ""
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
+      if { $l==2 } {
+         set yinter {}
+      } else {
+         set yinter $graph(YInter)
+      }
    }
 
    if { [llength $graph(XInter)] } {
@@ -511,6 +523,7 @@ proc Graph::TimeSection::Init { Frame } {
       set Graph(YInter)   ""                                              ;#Liste des niveau specifie par l'usager
       set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
       set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZType)    GRID             ;#Type de niveaux (GRID,PRESSSURE)
    }
    return $gr
 }
@@ -533,29 +546,21 @@ proc Graph::TimeSection::Init { Frame } {
 
 proc Graph::TimeSection::Params { Parent GR } {
    global   GDefs
+   variable Lbl
 
    upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
 
    Graph::ParamsPos  $Parent
 
    labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.type -relief sunken -bd 1
-         checkbutton $Parent.scale.type.ip3 -text [lindex $Graph::Lbl(IP3) $GDefs(Lang)] -indicatoron false \
+      frame $Parent.scale.time -relief sunken -bd 1
+         checkbutton $Parent.scale.time.ip3 -text [lindex $Graph::Lbl(IP3) $GDefs(Lang)] -indicatoron false \
             -command "Graph::TimeSection::Update $data(FrameData) $GR" -bd 1 \
             -variable Graph::TimeSection::TimeSection${GR}::Data(IP3) -onvalue True -offvalue False
-         checkbutton $Parent.scale.type.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
+         checkbutton $Parent.scale.time.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
             -command "Graph::TimeSection::Graph $GR" -bd 1 \
             -variable Graph::TimeSection::TimeSection${GR}::Data(DateF) -onvalue False -offvalue True
-         pack $Parent.scale.type.ip3 $Parent.scale.type.date -side top -fill x
-      frame $Parent.scale.valy -relief sunken -bd 1
-         label $Parent.scale.valy.lbl -text "Y"
-         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::TimeSection::Graph $GR" -bd 1 \
-            -variable Graph::TimeSection::TimeSection${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::TimeSection::TimeSection${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-         pack $Parent.scale.valy.scale -side left -fill y
+         pack $Parent.scale.time.ip3 $Parent.scale.time.date -side top -fill x
       frame $Parent.scale.date0
          entry $Parent.scale.date0.ent -textvariable Graph::TimeSection::TimeSection${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
          label $Parent.scale.date0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)]
@@ -566,7 +571,22 @@ proc Graph::TimeSection::Params { Parent GR } {
          label $Parent.scale.date1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)]
          pack  $Parent.scale.date1.lbl -side left -fill y
          pack $Parent.scale.date1.ent -side left -fill both  -expand true
-      pack $Parent.scale.type $Parent.scale.valy $Parent.scale.date0 $Parent.scale.date1 -side top -padx 2 -pady 2 -fill x
+      frame $Parent.scale.valy -relief sunken -bd 1
+         label $Parent.scale.valy.lbl -text "Y"
+         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
+            -command "Graph::TimeSection::Graph $GR" -bd 1 \
+            -variable Graph::TimeSection::TimeSection${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
+         entry $Parent.scale.valy.list -textvariable Graph::TimeSection::TimeSection${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
+         pack $Parent.scale.valy.lbl -side left -fill y
+         pack $Parent.scale.valy.list -side left -fill x  -expand true
+         pack $Parent.scale.valy.scale -side left -fill y
+      frame $Parent.scale.type -relief sunken -bd 1
+         radiobutton $Parent.scale.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::TimeSection::Graph $GR" -bd 1 -variable Graph::TimeSection::TimeSection${GR}::Graph(ZType) -value GRID
+         radiobutton $Parent.scale.type.pres -text [lindex $Lbl(Pres) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::TimeSection::Graph $GR" -bd 1 -variable Graph::TimeSection::TimeSection${GR}::Graph(ZType) -value PRESSURE
+         pack $Parent.scale.type.grid $Parent.scale.type.pres -side left -fill x -expand True
+      pack $Parent.scale.time $Parent.scale.date0 $Parent.scale.date1 $Parent.scale.valy $Parent.scale.type -side top -padx 2 -pady 2 -fill x
    pack $Parent.scale -side top -fill x -padx 5
 
    Bubble::Create $Parent.scale.type.date [lindex $Graph::Bubble(Date) $GDefs(Lang)]

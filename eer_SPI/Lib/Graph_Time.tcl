@@ -328,6 +328,8 @@ proc Graph::Time::Graph { GR } {
    set data(YMin)  1e200
    set data(YMax) -1e200
    set data(Dates) {}
+   set yincr 0
+   set xincr 0
 
    #----- Afficher le graph
 
@@ -354,14 +356,17 @@ proc Graph::Time::Graph { GR } {
       set data(XMax) [clock scan $data(Date1) -gmt True]
    }
 
-   if { ![llength $graph(YInter)] } {
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(YInter)]] } {
       set yinter ""
-      set yincr  [Graph::ValIncr $data(YMin) $data(YMax) 10 $graph(YScale)]
    } else {
-      set yinter $graph(YInter)
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
-      set yincr  ""
+      if { $l==2 } {
+         set yinter {}
+      } else {
+         set yinter $graph(YInter)
+      }
    }
 
    if { ![llength $graph(XInter)] } {

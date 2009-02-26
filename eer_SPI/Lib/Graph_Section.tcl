@@ -42,6 +42,8 @@ namespace eval Graph::Section { } {
    variable Msg
 
    set Lbl(Title)     { "Coupe verticale" "Vertical cross-section" }
+   set Lbl(Grid)      { "Grille" "Grid" }
+   set Lbl(Pres)      { "Pression" "Pressure" }
 
    set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
@@ -273,24 +275,32 @@ proc Graph::Section::Graph { GR { Pos False } } {
    update idletasks
 
    #----- Recalculer les valeurs
-
    set data(XMin)   1e200
    set data(XMax)  -1e200
    set data(YMin)   1e200
    set data(YMax)  -1e200
    set data(Levels) {}
+   set yincr  0
+   set xincr  0
 
-   #----- Afficher le graph
-
+   #----- Extraire les limites des valeurs
    foreach item $data(Items) {
       if { [fstdfield is GRAPHSECTION$item] } {
-         set data(Levels) [fstdfield stats GRAPHSECTION$item -levels]
+         #----- Check for vertical coordinate selection
+         if { $graph(ZType)=="PRESSURE" } {
+            set data(Levels) [fstdfield stats GRAPHSECTION$item -pressurelevels]
+            fstdfield configure GRAPHSECTION$item -ztype PRESSURE
+         } else {
+            set data(Levels) [fstdfield stats GRAPHSECTION$item -levels]
+            fstdfield configure GRAPHSECTION$item -ztype NONE
+         }
          set data(XMin)   0
          set data(XMax)   [expr [fstdfield define GRAPHSECTION$item -NI]-1]
       }
    }
 
-   if { ![llength $graph(YInter)] } {
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(YInter)]] } {
       set data(YMin) [lindex $data(Levels) 0]
       set data(YMax) [lindex $data(Levels) end]
 
@@ -299,13 +309,15 @@ proc Graph::Section::Graph { GR { Pos False } } {
          set yincr 1
       } else {
          set yinter $data(Levels)
-         set yincr  ""
       }
    } else {
-      set yinter $graph(YInter)
-      set yincr  ""
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
+      if { $l==2 } {
+         set yinter {}
+      } else {
+         set yinter $graph(YInter)
+      }
    }
 
    set graph(XInter) $data(DCoords)
@@ -395,6 +407,7 @@ proc Graph::Section::Init { Frame } {
       set Graph(YInter)   ""               ;#Liste des niveau specifie par l'usager
       set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
       set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZType)    GRID             ;#Type de niveaux (GRID,PRESSSURE)
    }
    return $gr
 }
@@ -414,6 +427,7 @@ proc Graph::Section::Init { Frame } {
 
 proc Graph::Section::Params { Parent GR } {
    global   GDefs
+   variable Lbl
 
    labelframe $Parent.disp -text [lindex $Graph::Lbl(Disp) $GDefs(Lang)]
       frame $Parent.disp.mode -relief sunken -bd 1
@@ -444,6 +458,13 @@ proc Graph::Section::Params { Parent GR } {
          pack $Parent.scale.valy.list -side left -fill x  -expand true
          pack $Parent.scale.valy.scale -side left -fill y
       pack $Parent.scale.valy -side top -padx 2 -pady 2 -fill x
+      frame $Parent.scale.type -relief sunken -bd 1
+         radiobutton $Parent.scale.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Section::Graph $GR" -bd 1 -variable Graph::Section::Section${GR}::Graph(ZType) -value GRID
+         radiobutton $Parent.scale.type.pres -text [lindex $Lbl(Pres) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Section::Graph $GR" -bd 1 -variable Graph::Section::Section${GR}::Graph(ZType) -value PRESSURE
+         pack $Parent.scale.type.grid $Parent.scale.type.pres -side left -fill x -expand True
+      pack $Parent.scale.type -side top -padx 2 -fill x
    pack $Parent.scale -side top -fill x -padx 5 -pady 5
 
    Bubble::Create $Parent.disp.mode       [lindex $Graph::Bubble(Viewport) $GDefs(Lang)]
@@ -659,7 +680,7 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
    upvar #0 Graph::Section::Section${GR}::Graph graph
 
   if { [graphitem is $Item] } {
-      if { [fstdfield is $Data]  && [llength $data(Pos$Pos)] } {
+      if { [fstdfield is $Data] && [llength $data(Pos$Pos)] } {
 
          fstdfield vertical GRAPHSECTION$Item $Data $data(Pos$Pos)
          set graph(UnitY) [fstdfield stats GRAPHSECTION$Item -leveltype]

@@ -375,6 +375,8 @@ proc Graph::Scatter::Graph { GR } {
    set data(XMax) -1e200
    set data(YMin)  1e200
    set data(YMax) -1e200
+   set xincr 0
+   set yincr 0
 
    foreach item $data(Items) {
       set min [vector stats $item.X -min]
@@ -390,24 +392,30 @@ proc Graph::Scatter::Graph { GR } {
       graphitem configure $item -fit $graph(Fit)
    }
 
-   if { ![llength $graph(YInter)] } {
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(YInter)]] } {
       set yinter ""
-      set yincr [Graph::ValIncr $data(YMin) $data(YMax) 10 $graph(YScale)]
    } else {
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
-      set yinter $graph(YInter)
-      set yincr  ""
+      if { $l==2 } {
+         set yinter {}
+      } else {
+         set yinter $graph(YInter)
+      }
    }
 
-   if { ![llength $graph(XInter)] } {
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(XInter)]] } {
       set xinter ""
-      set xincr  [Graph::ValIncr $data(XMin) $data(XMax) 10 $graph(XScale)]
    } else {
       set data(XMin) [lindex $graph(XInter) 0]
       set data(XMax) [lindex $graph(XInter) end]
-      set xinter $graph(XInter)
-      set xincr  ""
+      if { $l==2 } {
+         set xinter {}
+      } else {
+         set xinter $graph(XInter)
+      }
    }
 
    if { [llength $graph(ZXInter)] } {
@@ -421,7 +429,6 @@ proc Graph::Scatter::Graph { GR } {
 
    set data(Min) [expr $data(XMin)<$data(YMin)?$data(XMin):$data(YMin)]
    set data(Max) [expr $data(XMax)>$data(YMax)?$data(XMax):$data(YMax)]
-   set incr      [Graph::ValIncr $data(Min) $data(Max) 10]
 
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
@@ -435,9 +442,9 @@ proc Graph::Scatter::Graph { GR } {
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
 
    if { $graph(Uniform) } {
-      graphaxis configure axisx$GR -type $graph(XScale) -min $data(Min) -max $data(Max) -intervals $xinter -increment $incr -angle $Graph::Font(Angle) \
+      graphaxis configure axisx$GR -type $graph(XScale) -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
-      graphaxis configure axisy$GR -type $graph(XScale) -min $data(Min) -max $data(Max) -intervals $xinter -increment $incr -angle $Graph::Font(Angle) \
+      graphaxis configure axisy$GR -type $graph(XScale) -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
    } else {
       graphaxis configure axisx$GR -type $graph(XScale) -min $data(XMin) -max $data(XMax) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
