@@ -47,8 +47,6 @@
 #    Graph::Update             { Frame }
 #    Graph::UpdateItems        { Frame }
 #    Graph::TimeScan           { Sec Mode { From 0 } }
-#    Graph::ValOrder           { Val }
-#    Graph::ValIncr            { Min Max Nb { Type LINEAR } }
 #    Graph::ValFormat          { Order Val }
 #    Graph::Write              { Frame File }
 #    Graph::Zoom               { Type GR }
@@ -87,19 +85,19 @@ namespace eval Graph {
 
    set Color(Select) #FF0000
    set Color(Axis)   #000000
-   set Color(Fill)   #FFFFFF
+   set Color(Fill)   #EEEEEE
    set Color(BG)     #FFFFFF
    set Color(FG)     #000000
-   set Color(Scale)  #000000
+   set Color(Scale)  #FFFFFF
    set Color(Footer) #000000
    set Color(Header) #000000
    set Color(Unit)   #000000
    set Color(Graph)  #FFFFFF
    set Color(Frame)  #FFFFFF
 
-   set Grid(Color)   #000000
-   set Grid(Width)   0
-   set Grid(Dash)    ""
+   set Grid(Color)   #C7C7C7
+   set Grid(Width)   1
+   set Grid(Dash)    "."
 
    set Width(Frame)  1
 
@@ -1562,62 +1560,6 @@ proc Graph::TimeScan { Sec Mode { From 0 } } {
       "D"     { return [expr int($Sec-$From)/86400] }
       default { return [clock format [expr int($Sec)] -format $Mode -gmt true] }
    }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Graph::ValOrder>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Determine l'ordre de grandeur d'une valeur
-#
-# Parametres :
-#   <Val>    : Valeur
-#
-# Retour     :
-#   <Time>   : Temps formatte
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Graph::ValOrder { Val } {
-
-   if { $Val==0.0 } {
-      return 1.0
-   } else {
-      return [expr floor(log10(abs($Val)))]
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Graph::ValIncr>
-# Creation : Aout 2005 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Determine l'increment seleon le nombre de niveau maximum
-#
-# Parametres :
-#   <Min>    : Minimum
-#   <Max>    : Maximum
-#   <Nb>     : Nombre de niveau maximum
-#
-# Retour     :
-#   <Time>   : Temps formatte
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Graph::ValIncr { Min Max Nb { Type LINEAR } } {
-
-   if { $Type=="LOGARITHMIC" } {
-      set Max [expr $Max>0?log($Max):0.0]
-      set Min [expr $Min>0?log($Min):0.0]
-
-      return 1
-   }
-
-   set d  [expr pow(10,[Graph::ValOrder [expr $Max-$Min]]-1)]
-   return [expr $d*ceil(int((($Max-$Min)/$d))/$Nb)]
 }
 
 #-------------------------------------------------------------------------------

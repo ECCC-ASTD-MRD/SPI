@@ -285,6 +285,7 @@ proc Graph::Compare::Graph { GR } {
 
    set data(YMin)  1e200
    set data(YMax) -1e200
+   set yincr 0
 
    #----- Afficher le graph
 
@@ -305,15 +306,17 @@ proc Graph::Compare::Graph { GR } {
    set data(XMin)  -1
    set data(XMax)  [llength $graph(XInter)]
 
-   if { ![llength $graph(YInter)] } {
-      set yinter [list $data(YMin) $data(YMax)]
+   #----- Verifier la selection de l'usager
+   if { ![set l [llength $graph(YInter)]] } {
       set yinter ""
-      set yincr  [Graph::ValIncr $data(YMin) $data(YMax) 10 $graph(YScale)]
    } else {
-      set yinter $graph(YInter)
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
-      set yincr  ""
+      if { $l==2 } {
+         set yinter {}
+      } else {
+         set yinter $graph(YInter)
+      }
    }
 
    if { [llength $graph(ZYInter)] } {
