@@ -254,6 +254,7 @@ typedef struct TDataDef {
    char   *Mask;             /*Masque a appliquer au traitement sur le champs*/
    char   *Data[4];          /*Composantes du champs*/
    char   *Mode;             /*Module des champs Data is vectoriel*/
+   char   *Pres;             /*Pression au sol*/
    OGRGeometryH *Pick,*Poly; /*Geometry used in various interpolation method*/
 
    TData_Type Type;          /*Type de donnees du champs*/
@@ -328,5 +329,6 @@ int       Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);
 int       Data_DefTile(TDataDef *DefTo,TDataDef *DefTile,int X0,int Y0);
 
 double    Data_Level2Meter(int Type,double Level);
+double    Data_Level2Pressure(const int Type,const double Level,const double P0,const double P1,const double PRef,const double RCoef);
 
 #endif

@@ -131,7 +131,7 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
  *  <Head>    : Entete de la donnee
  *  <Ptr>     : Pointeur sur le vecteur a allouer
  *  <Var>     : Variable a lire
- *  <Grid>    : Utiliser les standard grille
+ *  <Grid>    : Utiliser les standard grille (1=IP<->IG,0=IP<->IP,-1=IP<->-1);
  *
  * Retour:
  *
@@ -144,13 +144,16 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
    int key,ni,nj,nk;
 
    if (!*Ptr) {
-      if (Grid) {
+      if (Grid==1) {
          key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
-      } else {
+      } else if (Grid==0) {
          key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
+      } else {
+         key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,-1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
       }
+
       if (key<0) {
-         fprintf(stderr,"(WARNING) FSTD_FieldReadComp: Could not find component field field %s (c_fstinf failed)\n",Var);
+         fprintf(stderr,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
          return(0);
       } else {
          if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
@@ -512,7 +515,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                    fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
                    idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
                 }
-                if (ni!=Field->Def->NI || nj!=Field->Def->NJ || nk!=Field->Def->NK) {
+                if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
                    idx=-1;
                 }
             } else {
@@ -623,6 +626,58 @@ int FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FSTD_ReadDecodeLevelParams>
+ * Creation : Fevrier 2009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Lite le champs de definitions des niveaux hybrides
+ *
+ * Parametres   :
+ *  <Field>     : Champ
+ *
+ * Retour:
+ *  <OK...>     : 0 ou 1
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+ */
+int FSTD_ReadDecodeLevelParams(TData *Field) {
+
+   FSTD_File *fid;
+   int        i=1;
+   float     *data=NULL;
+
+   /*Try to read HY for hybrid levels*/
+   if (Field->Ref->LevelType==LVL_HYBRID && Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
+      if ((fid=((FSTD_Head*)Field->Head)->FID)) {
+         i=-1;
+         FSTD_FileSet(NULL,fid);
+         if (FSTD_DecodeHybrid(fid->Id,"HY   ",i,i,"             ",i,&Field->Ref->Top,&Field->Ref->Ref,&Field->Ref->Coef)<0) {
+            i=0;
+         } else {
+            i=1;
+         }
+         FSTD_FileUnset(NULL,fid);
+      }
+   } else  if (Field->Ref->LevelType==LVL_ETA && Field->Ref->Top==0.0) {
+      if ((fid=((FSTD_Head*)Field->Head)->FID)) {
+         FSTD_FileSet(NULL,fid);
+         FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&data,"PT",-1);
+         FSTD_FileUnset(NULL,fid);
+         if (data) {
+            Field->Ref->Top=data[0];
+            free(data);
+            i=1;
+         }  else {
+            i=0;
+         }
+      }
+   }
+
+   return(i);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldVertInterpolate>
  * Creation : Avril 2003 - S. Gaudreault - CMC/CMOE
  *
@@ -730,16 +785,8 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    c_visetopt(threadData->viInterp,"VERBOSE","NO");
 
    /*Try to read HY for hybrid levels*/
-   if (FieldFrom->Ref->Top==0.0 && FieldFrom->Ref->Ref==0.0 && FieldFrom->Ref->LevelType==LVL_HYBRID) {
-      if (((FSTD_Head*)FieldFrom->Head)->FID) {
-         i=-1;
-         id=(((FSTD_Head*)FieldFrom->Head)->FID->Id);
-         FSTD_FileSet(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
-         if (FSTD_DecodeHybrid(id,"HY   ",i,i,"             ",i,&FieldFrom->Ref->Top,&FieldFrom->Ref->Ref,&FieldFrom->Ref->Coef)<0) {
-            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find hybrid definition field HY",(char*)NULL);
-         }
-         FSTD_FileUnset(NULL,((FSTD_Head*)FieldFrom->Head)->FID);
-      }
+   if (!FSTD_ReadDecodeLevelParams(FieldFrom)) {
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find source hybrid definition field HY",(char*)NULL);
    }
 
    if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,FieldFrom->Ref->Top,FieldFrom->Ref->Ref,FieldFrom->Ref->Coef,(float*)(ZFieldFrom->Def->Data[0])))<0) {
@@ -748,16 +795,8 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       return(TCL_ERROR);
    }
 
-   if (FieldTo->Ref->Top==0.0 && FieldTo->Ref->Ref==0.0 && FieldTo->Ref->LevelType==LVL_HYBRID) {
-      if (((FSTD_Head*)FieldTo->Head)->FID) {
-         i=-1;
-         id=(((FSTD_Head*)FieldTo->Head)->FID->Id);
-         FSTD_FileSet(NULL,((FSTD_Head*)FieldTo->Head)->FID);
-         if (FSTD_DecodeHybrid(id,"HY   ",i,i,"             ",i,&FieldTo->Ref->Top,&FieldTo->Ref->Ref,&FieldTo->Ref->Coef)<0) {
-            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find hybrid definition field HY",(char*)NULL);
-         }
-         FSTD_FileUnset(NULL,((FSTD_Head*)FieldTo->Head)->FID);
-      }
+   if (!FSTD_ReadDecodeLevelParams(FieldTo)) {
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find destination hybrid definition field HY",(char*)NULL);
    }
 
    if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,FieldTo->Ref->Top,FieldTo->Ref->Ref,FieldTo->Ref->Coef,(float*)(ZFieldTo->Def->Data[0])))<0) {
@@ -799,8 +838,14 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
    }
 
-   if (!FieldTo->Ref || FieldTo->Ref->Id!=FieldFrom->Ref->Id)
-      FieldTo->Ref=GeoRef_Resize(FieldFrom->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels);
+   if (FieldTo->Ref->Id!=FieldFrom->Ref->Id) {
+      FieldTo->Ref->Grid[0]=FieldFrom->Ref->Grid[0];
+      FieldTo->Ref->Project=FieldFrom->Ref->Project;
+      FieldTo->Ref->UnProject=FieldFrom->Ref->UnProject;
+      FieldTo->Ref->Value=FieldFrom->Ref->Value;
+      FieldTo->Ref->Type=FieldFrom->Ref->Type;
+      FieldTo->Ref->Id=FieldFrom->Ref->Id;
+   }
    memcpy(headto,headfrom,sizeof(FSTD_Head));
 
    if (FieldTo->Stat) {
@@ -2056,8 +2101,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       c_fstluk(field->Def->Data[0],h.KEY,&ni,&nj,&nk);
    }
 
-   /*Recuperer les type de niveaux*/
+   /*Recuperer les type de niveaux et forcer ETA pour SIGMA*/
    lvl=FSTD_IP2Level(h.IP1,&type);
+   type=type==LVL_SIGMA?LVL_ETA:type;
 
    /*Override le type de niveaux pour ZH is ip1=0*/
    if (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H' && h.IP1==0){
@@ -2200,6 +2246,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
 
       /*Verifier que l'on garde le meme type de niveau*/
       FSTD_IP2Level(tmp[k],&type);
+      type=type==LVL_SIGMA?LVL_ETA:type;
       if (type==Field->Ref->LevelType) {
 
         /*Verifier que l'on a pas deja ce niveau (niveau en double)*/
@@ -2283,6 +2330,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
       }
    }
 
+   type=type==LVL_SIGMA?LVL_ETA:type;
    ref=Field->Ref;
    if (Field->Ref->Grid[0]=='W') {
        Field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,levels,Field->Ref->String,Field->Ref->Transform,Field->Ref->InvTransform,NULL);
