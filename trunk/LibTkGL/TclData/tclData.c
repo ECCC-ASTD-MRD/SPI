@@ -442,7 +442,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    TData *cut;
    unsigned int  n,k,f;
    unsigned long idx;
-   double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij;
+   double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij,p0;
 
    /*Recuperer la grille dans l'espace des champs de base*/
    for(f=0;f<NbF;f++) {
@@ -452,6 +452,11 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       }
       if (Field[f]->ReadCube)
          Field[f]->ReadCube(Interp,Field[f],0);
+
+      /*Try to read HY for hybrid levels*/
+      if (!FSTD_ReadDecodeLevelParams(Field[f])) {
+         Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
+      }
    }
 
    cut=Data_Valid(Interp,Cut,NbF*NbC,Field[0]->Def->NK,1,DSIZE(Field[0]->Def->Data),Field[0]->Def->Type);
@@ -460,6 +465,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    cut->Ref=GeoRef_Reference(Field[0]->Ref);
    cut->Ref->Grid[0]='V';
    cut->Ref->LevelType=Field[0]->Ref->LevelType;
+   cut->Ref->Top=Field[0]->Ref->Top;
+   cut->Ref->Ref=Field[0]->Ref->Ref;
+   cut->Ref->Coef=Field[0]->Ref->Coef;
 
    cut->Ref->Levels=(float*)malloc(Field[0]->Def->NK*sizeof(float));
    memcpy(cut->Ref->Levels,Field[0]->Ref->Levels,Field[0]->Def->NK*sizeof(float));
@@ -477,26 +485,37 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
    cut->Ref->Lat=(float*)malloc(NbC*sizeof(float));
    cut->Ref->Lon=(float*)malloc(NbC*sizeof(float));
+   cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Def->NK*sizeof(float));
 
    if (!cut->Ref->Lat || !cut->Ref->Lon) {
       Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for coordinate caching",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   /*Recuperer la grille dans l'espace*/
+   /*Loop on coordinates*/
    for(n=0;n<NbC;n++) {
 
-      /*Figure out the grid coordinates*/
+      /*If coordinates are valid*/
       if (Lat[n]!=-999.0 && Lon[n]!=-999.0) {
 
+         /*Keep coordinate for later use*/
          cut->Ref->Lat[n]=Lat[n];
          cut->Ref->Lon[n]=Lon[n];
 
+         /*Loop on fields*/
          for(f=0;f<NbF;f++) {
 
+            /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
+            if (!Field[f]->Def->Pres) {
+               FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID);
+               FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1);
+               FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
+            }
+
+            /*Get the grid cordinate*/
             Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1);
 
-            /*Vectorial data needs to be referenced along the cut*/
+            /*Vectorial data needs to be referenced along the cut so calculate angle*/
             if (cut->Def->Data[1]) {
                if (i0==-1.0) {
                   Field[f]->Ref->UnProject(Field[f]->Ref,&i0,&j0,Lat[n+1],Lon[n+1],0,1);
@@ -506,12 +525,19 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                }
             }
 
+            /*Loop on vertical levels*/
             for(k=0;k<Field[0]->Def->NK;k++) {
 
                idx=k*NbF*NbC+n*NbF+f;
 
-               if (cut->Def->Data[1]) {
+               /*Convert level to pressure*/
+               if (Field[f]->Def->Pres) {
+                  p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
+                  cut->Ref->Hgt[idx]=Data_Level2Pressure(Field[f]->Ref->LevelType,Field[f]->Ref->Levels[k],p0,Field[f]->Ref->Top,Field[f]->Ref->Ref,Field[f]->Ref->Coef);
+               }
 
+               /*If it is vectors, reproject along xsection axis*/
+               if (cut->Def->Data[1]) {
                   vi=VertexValN(Field[f]->Ref,Field[f]->Def,0,i,j,k);
                   vj=VertexValN(Field[f]->Ref,Field[f]->Def,1,i,j,k);
                   vij=hypot(vi,vj);
@@ -1029,6 +1055,7 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Buffer=NULL;
    def->Accum=NULL;
    def->Mask=NULL;
+   def->Pres=NULL;
    def->Pick=def->Poly=NULL;
 
    for(i=0;i<Dim;i++) {
@@ -1099,6 +1126,7 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       if (Def->Buffer)     free(Def->Buffer); Def->Buffer=NULL;
       if (Def->Accum)      free(Def->Accum);  Def->Accum=NULL;
       if (Def->Mask)       free(Def->Mask);   Def->Mask=NULL;
+      if (Def->Pres)       free(Def->Pres);   Def->Pres=NULL;
    }
    return(Def);
 }
@@ -1132,6 +1160,7 @@ void Data_DefFree(TDataDef *Def){
       if (Def->Buffer)     free(Def->Buffer);
       if (Def->Accum)      free(Def->Accum);
       if (Def->Mask)       free(Def->Mask);
+      if (Def->Pres)       free(Def->Pres);
       if (Def->Poly)       OGR_G_DestroyGeometry(Def->Poly);
 //      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 
@@ -1174,6 +1203,7 @@ TDataDef *Data_DefCopy(TDataDef *Def){
       def->Buffer=NULL;
       def->Accum=NULL;
       def->Mask=NULL;
+      def->Pres=NULL;
       def->Pick=def->Poly=NULL;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
@@ -1217,6 +1247,7 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
       def->Buffer=NULL;
       def->Accum=NULL;
       def->Mask=NULL;
+      def->Pres=NULL;
       def->Pick=def->Poly=NULL;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
@@ -1490,9 +1521,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-limits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-pressurelevels","-limits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,LIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2023,6 +2054,20 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
+         case PRESSURELEVELS:
+            if (Objc==1) {
+               if (Field->Ref && Field->Ref->Hgt) {
+                  nb=(Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
+
+                  obj=Tcl_NewListObj(0,NULL);
+                  for (index=0;index<nb;index++) {
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                  }
+                  Tcl_SetObjResult(Interp,obj);
+               }
+            }
+            break;
+
          case MATRIX:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"matrix var");
@@ -2162,6 +2207,33 @@ double Data_Level2Meter(int Type,double Level) {
    }
 
    return(0.0);
+}
+
+double Data_Level2Pressure(const int Type,const double Level,const double P0,const double P1,const double PRef,const double RCoef) {
+
+   double pres=-1.0;
+
+   switch(Type) {
+      case LVL_PRES:
+         pres=Level;
+         break;
+
+      case LVL_SIGMA:
+         pres=P0*Level;
+         break;
+
+      case LVL_ETA:
+         pres=P1+(P0-P1)*Level;
+         break;
+
+      case LVL_HYBRID:
+         pres=PRef*Level+(P0-PRef)*pow((Level-P1/PRef)/(1.0-P1/PRef),RCoef);
+         break;
+
+      default:
+         fprintf(stderr,"(ERROR) FSTD_Level2Pressure: invalid type entry");
+   }
+   return(pres);
 }
 
 void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {

@@ -94,6 +94,7 @@ int    FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *
 int    FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var);
 int    FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char *Eticket,int DIP1,int IP2,int IP3,char *TypVar,char *NomVar);
 int    FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key);
+int    FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid);
 int    FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert);
 int    FSTD_FieldReadMesh(TData *Field);
 int    FSTD_FieldStat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
@@ -105,6 +106,9 @@ double  FSTD_IP2Meter(int IP);
 double  FSTD_IP2Level(int IP,int *Type);
 int     FSTD_Level2IP(float Level,int Type);
 void    FSTD_DataMap(TData *Field,int Idx);
+
+int    FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,float *PTop,float *PRef,float *RCoef);
+int    FSTD_ReadDecodeLevelParams(TData *Field);
 
 Vect3d* FSTD_Grid(TData *Field,void *Proj);
 void    FSTD_HeadCopy(void *To,void *From);
