@@ -377,6 +377,7 @@ proc Graph::Scatter::Graph { GR } {
    set data(YMax) -1e200
    set xincr 0
    set yincr 0
+   set mod True
 
    foreach item $data(Items) {
       set min [vector stats $item.X -min]
@@ -421,10 +422,12 @@ proc Graph::Scatter::Graph { GR } {
    if { [llength $graph(ZXInter)] } {
       set data(XMin) [lindex $graph(ZXInter) 0]
       set data(XMax) [lindex $graph(ZXInter) 1]
+      set mod False
    }
    if { [llength $graph(ZYInter)] } {
       set data(YMin) [lindex $graph(ZYInter) 0]
       set data(YMax) [lindex $graph(ZYInter) 1]
+      set mod False
    }
 
    set data(Min) [expr $data(XMin)<$data(YMin)?$data(XMin):$data(YMin)]
@@ -442,14 +445,14 @@ proc Graph::Scatter::Graph { GR } {
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
 
    if { $graph(Uniform) } {
-      graphaxis configure axisx$GR -type $graph(XScale) -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
+      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
-      graphaxis configure axisy$GR -type $graph(XScale) -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
+      graphaxis configure axisy$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
    } else {
-      graphaxis configure axisx$GR -type $graph(XScale) -min $data(XMin) -max $data(XMax) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
+      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
-      graphaxis configure axisy$GR -type $graph(YScale) -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
+      graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
    }
 

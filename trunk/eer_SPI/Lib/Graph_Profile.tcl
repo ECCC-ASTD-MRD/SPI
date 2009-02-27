@@ -293,6 +293,7 @@ proc Graph::Profile::Graph { GR } {
    set data(Levels) {}
    set yincr  0
    set xincr  0
+   set mod    True
 
    #----- Extraire les limites des valeurs
    foreach item $data(Items) {
@@ -351,10 +352,12 @@ proc Graph::Profile::Graph { GR } {
    if { [llength $graph(ZXInter)] } {
       set data(XMin) [lindex $graph(ZXInter) 0]
       set data(XMax) [lindex $graph(ZXInter) 1]
+      set mod False
    }
    if { [llength $graph(ZYInter)] } {
       set data(YMin) [lindex $graph(ZYInter) 0]
       set data(YMax) [lindex $graph(ZYInter) 1]
+      set mod False
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -362,7 +365,7 @@ proc Graph::Profile::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale)  -min $data(XMin) -max $data(XMax) -intervals $xinter  -increment $xincr -angle $Graph::Font(Angle) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter  -increment $xincr -angle $Graph::Font(Angle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [graphaxis configure axisy$GR -unit]
@@ -371,7 +374,7 @@ proc Graph::Profile::Graph { GR } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
 
-   graphaxis configure axisy$GR -type $graph(YScale) -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [lindex [$data(Canvas) itemconfigure GRAPH$GR -title] end]
