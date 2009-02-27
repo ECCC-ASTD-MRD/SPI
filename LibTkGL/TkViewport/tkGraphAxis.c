@@ -89,7 +89,6 @@ int TclGraphAxis_Init(Tcl_Interp *Interp) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
    int         idx;
@@ -175,8 +174,8 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    char        buf[256];
    int         i,j,idx;
 
-   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-all",NULL };
-   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,ALL, };
+   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-all",NULL };
+   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,ALL, };
 
    axis=GraphAxis_Get(Name);
    if (!axis) {
@@ -355,6 +354,14 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case MODULO:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(axis->Mod));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&axis->Mod);
+            }
+            break;
+
          case TYPE:
             if (Objc==1) {
                switch(axis->Type) {
@@ -504,7 +511,6 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
 static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
 
    TGraphAxis *axis;
@@ -544,6 +550,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Pos[1]='L';
    axis->Pos[2]='\0';
 
+   axis->Mod=1;
    axis->T0=0.0;
    axis->T1=0.0;
    axis->Order=0;
@@ -640,6 +647,7 @@ void GraphAxis_Clear(TGraphAxis *Axis) {
    Axis->UnitItem=NULL;
    Axis->Type='I';
 
+   Axis->Mod=1;
    Axis->T0=0.0;
    Axis->T1=0.0;
    Axis->Min=0.0;
@@ -677,6 +685,31 @@ void GraphAxis_Wipe() {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphAxis_Incr>
+ * Creation     : Fevrier 2009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Definir l'incremnent par defaut.
+ *
+ * Parametres   :
+ *   <Axis>     : Axe
+ *
+ * Retour       :
+ *   <Incr>     : Increment
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+double GraphAxis_Incr(TGraphAxis *Axis) {
+
+   double d;
+
+   d=pow(10,Axis->Order-1);
+
+   return(d);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GraphAxis_Define>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
@@ -695,7 +728,8 @@ void GraphAxis_Wipe() {
 */
 void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
 
-   int i,o;
+   int    i,o;
+   double d;
 
    if (!Axis)
       return;
@@ -732,27 +766,29 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
       if (Axis->T0==Axis->T1)                 Axis->T0=Axis->T0-1.0;
       if (Axis->T1<Axis->T0 && Axis->T0==0.0) Axis->T1=Axis->T1-1.0;
    }
-#define ORDERS(VAL) (VAL==0.0?1.0:ceil(log10(ABS(VAL))))
 
-   Axis->Order=ORDER(Axis->T1-Axis->T0);
+#define ORDERS(VAL) (VAL==0.0?1.0:ceil(log10(ABS(VAL))-0.25))
+
+   Axis->Order=ORDERS(Axis->T1-Axis->T0);
    for(i=1;i<Axis->InterNb;i++) {
-      o=ORDER(Axis->Inter[i]-Axis->Inter[i-1]);
+      o=ORDERS(Axis->Inter[i]-Axis->Inter[i-1]);
       Axis->Order=abs(Axis->Order)>abs(o)?Axis->Order:o;
+   }
+
+   if (Axis->Mod && !Axis->InterNb && Axis->Incr==0.0) {
+      d=GraphAxis_Incr(Axis);
+      if (Axis->T0<Axis->T1) {
+         Axis->T0=floor(Axis->T0/d)*d;
+         Axis->T1=ceil(Axis->T1/d)*d;
+      } else {
+         Axis->T0=ceil(Axis->T0/d)*d;
+         Axis->T1=floor(Axis->T1/d)*d;
+      }
    }
 
    Axis->Delta=(double)(Delta-(Axis->Offset[0]+Axis->Offset[1]))/(Axis->T1-Axis->T0);
    Axis->DT0=AXISVALUE(Axis,Axis->Min);
    Axis->DT1=AXISVALUE(Axis,Axis->Max);
-}
-
-double GraphAxis_Incr(TGraphAxis *Axis) {
-
-   double d;
-
-   d=pow(10,Axis->Order-1);
-
-//fprintf(stderr,"--- %f %f %i \n",incr,Axis->Incr,Axis->Order);
-   return(d*ceil(floor(ABS(Axis->T1-Axis->T0)/d)/10));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -995,6 +1031,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
                   snprintf(String,32,"%.0f",Value);
                } else {
                   switch(Axis->Order+DOrder) {
+                     case   4: snprintf(String,32,"%.2f",Value);break;
                      case   3: snprintf(String,32,"%.2f",Value);break;
                      case   2: snprintf(String,32,"%.2f",Value);break;
                      case   1: snprintf(String,32,"%.2f",Value);break;
@@ -1233,6 +1270,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
       inter=i0-fmod(i0,incr);
       if (inter<i0) inter+=incr;
 
+fprintf(stderr,"%f - %f -> %f  --- %f\n",Axis->T0,Axis->T1,incr,inter);
       while(Axis->T0!=Axis->T1 && inter<=i1) {
          it=Axis->Type=='O'?pow(10,inter):inter;
          GraphAxis_Print(Axis,buf,it,0);

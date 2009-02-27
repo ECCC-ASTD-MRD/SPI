@@ -97,6 +97,7 @@ typedef struct TGraphAxis {
    int            Numbered;      /*Numerotation de l'axe*/
    int            All;           /*Verification des overlap de label*/
    int            Format;        /*Format de l'axe*/
+   int            Mod;           /*Forcer les limites modulo l'increment*/
 
    int            Order;         /*Ordre de grandeur des valeurs*/
    char           Done;          /*Flag de completion de process*/
@@ -119,9 +120,10 @@ int TclGraphAxis_Init(Tcl_Interp *Interp);
 
 TGraphAxis* GraphAxis_Get(char *Name);
 
-void GraphAxis_Clear(TGraphAxis *Axis);
-void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta);
-int  GraphAxis_Displacement(TGraphAxis *Axis,Tk_Font Font,Tk_FontMetrics TKM,int Side,char *String,int *DX,int *DY);
-void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder);
-void GraphAxis_Wipe();
+void   GraphAxis_Clear(TGraphAxis *Axis);
+void   GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta);
+double GraphAxis_Incr(TGraphAxis *Axis);
+int    GraphAxis_Displacement(TGraphAxis *Axis,Tk_Font Font,Tk_FontMetrics TKM,int Side,char *String,int *DX,int *DY);
+void   GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder);
+void   GraphAxis_Wipe();
 #endif
