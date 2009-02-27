@@ -440,7 +440,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC) {
 
    TData *cut;
-   unsigned int  n,k,f;
+   unsigned int  n,k,f,p=1;
    unsigned long idx;
    double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij,p0;
 
@@ -456,6 +456,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       /*Try to read HY for hybrid levels*/
       if (!FSTD_ReadDecodeLevelParams(Field[f])) {
          Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
+      }
+
+      if (Field[f]->Ref->LevelType==LVL_PRES || Field[f]->Ref->LevelType==LVL_GALCHEN || Field[f]->Ref->LevelType==LVL_MASL || Field[f]->Ref->LevelType==LVL_MAGL || Field[f]->Ref->LevelType==LVL_UNDEF) {
+         p=0;
       }
    }
 
@@ -485,11 +489,19 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
    cut->Ref->Lat=(float*)malloc(NbC*sizeof(float));
    cut->Ref->Lon=(float*)malloc(NbC*sizeof(float));
-   cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Def->NK*sizeof(float));
 
    if (!cut->Ref->Lat || !cut->Ref->Lon) {
       Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for coordinate caching",(char*)NULL);
       return(TCL_ERROR);
+   }
+
+   /*If we are in pressure coordinates, allocate pressure array*/
+   if (p) {
+      cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Def->NK*sizeof(float));
+      if (!cut->Ref->Hgt) {
+         Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for pressure correspondance",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
 
    /*Loop on coordinates*/
@@ -506,7 +518,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          for(f=0;f<NbF;f++) {
 
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
-            if (!Field[f]->Def->Pres) {
+            if (!Field[f]->Def->Pres && cut->Ref->Hgt) {
                FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID);
                FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1);
                FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
@@ -531,7 +543,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                idx=k*NbF*NbC+n*NbF+f;
 
                /*Convert level to pressure*/
-               if (Field[f]->Def->Pres) {
+               if (Field[f]->Def->Pres && cut->Ref->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
                   cut->Ref->Hgt[idx]=Data_Level2Pressure(Field[f]->Ref->LevelType,Field[f]->Ref->Levels[k],p0,Field[f]->Ref->Top,Field[f]->Ref->Ref,Field[f]->Ref->Coef);
                }
