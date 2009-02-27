@@ -58,7 +58,7 @@ typedef struct GraphItem  {
    int            Width,Height;    /*Dimensions du viewport*/
    int            xg[2],yg[2];     /*Coordinates of graph inside*/
    int            ax[32],ay[32],ah[32];
-   int            xi,yi;           /*Coordinates of item header*/
+   int            xi,yi,wi,hi;     /*Coordinates of item header*/
    int            BDLegend;        /*Bordure de la legende*/
    int            Legend;          /*Affichage de la legende*/
    int            BDWidth;         /*Largeur de la bordure*/
