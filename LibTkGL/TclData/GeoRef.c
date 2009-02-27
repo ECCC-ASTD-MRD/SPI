@@ -1423,6 +1423,26 @@ int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1
    return(in);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_Limits>
+ * Creation     : Aout 2006 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Calculer les limites en latlon de la couverture d'une georeference.
+ *
+ * Parametres  :
+ *   <Ref>     : Pointeur sur la reference geographique
+ *   <Lat0>    : Latitude inferieure
+ *   <Lon0>    : Longitude inferieure
+ *   <Lat1>    : Latitude superieure
+ *   <Lon1>    : Longitude superieure
+ *
+ * Retour       :
+ *   <valid>    : Booleen indiquant la validite
+ *
+ * Remarques   :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int GeoRef_Limits(TGeoRef *Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1) {
 
    int x,y;
@@ -1579,4 +1599,32 @@ int GeoRef_WithinRange(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double L
    if (FWITHIN(dl,lat[0],lon[0],lat[1],lon[1],Lat1,Lon0)) return(1);
 
    return(0);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_Valid>
+ * Creation     : Fevrier 2009. Gauthier - CMC/CMOE
+ *
+ * But          : Verifier la validite d'une georeference.
+ *
+ * Parametres  :
+ *   <Ref>      : Pointeur sur la reference
+ *
+ * Retour       :
+ *   <valid>    : Booleen indiquant la validite
+ *
+ * Remarques   :
+ *    - On projete la bounding box et si les latitudes sont en dehors de -90 90 alors c'est pas bon
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int GeoRef_Valid(TGeoRef *Ref) {
+
+   Coord co[2];
+
+   Ref->Project(Ref,Ref->X0,Ref->Y0,&co[0].Lat,&co[0].Lon,1,1);
+   Ref->Project(Ref,Ref->X1,Ref->Y1,&co[1].Lat,&co[1].Lon,1,1);
+   if (co[0].Lat<-90 || co[0].Lat>90.0 || co[1].Lat<-90 || co[1].Lat>90.0) {
+      return(0);
+   }
+   return(1);
 }
