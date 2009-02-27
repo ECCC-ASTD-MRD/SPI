@@ -2421,6 +2421,12 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       return(1);
    }
 
+   /*Check for invalid georeference*/
+   if (!GeoRef_Valid(Band->Ref)) {
+      fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid georeference\n");
+      return(0);
+   }
+
    /*Calculer les statistiques si elle ne le sont pas deja*/
    if (!Band->Stat)
       GDAL_BandGetStat(Band);

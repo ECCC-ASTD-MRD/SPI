@@ -2176,7 +2176,6 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    int     f,gen=0,idx=-1,x,y;
    Vect3d  vr;
-   Coord   co[2];
    char    lbl[256];
    double  elev=0.0,extr=0.0,val,sz;
 
@@ -2191,16 +2190,14 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       return(0);
    }
 
-   /*Check for invalid georeference*/
-   Layer->Ref->Project(Layer->Ref,Layer->Ref->X0,Layer->Ref->Y0,&co[0].Lat,&co[0].Lon,1,1);
-   Layer->Ref->Project(Layer->Ref,Layer->Ref->X1,Layer->Ref->Y1,&co[1].Lat,&co[1].Lon,1,1);
-   if (co[0].Lat<-90 || co[0].Lat>90.0 || co[1].Lat<-90 || co[1].Lat>90.0) {
-      fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid georeference\n");
-      return(0);
-   }
-
    if (!Layer->Active) {
       return(1);
+   }
+
+   /*Check for invalid georeference*/
+   if (!GeoRef_Valid(Layer->Ref)) {
+      fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid georeference\n");
+      return(0);
    }
 
    OGR_LayerPreInit(Layer);
