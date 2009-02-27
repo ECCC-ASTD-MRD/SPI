@@ -1200,7 +1200,8 @@ proc FieldBox::Restrict { No args } {
    if { $data(Var)=="" } {
       set svar ".+"
    } else {
-      set svar ([join $data(Var) |])
+      set svar ([join [string map { + \\\\+ } $data(Var)] |])
+      puts $svar
    }
    if { $data(Type)=="" } {
       set styp ".+"
@@ -1225,7 +1226,7 @@ proc FieldBox::Restrict { No args } {
    if { $data(Eticket)=="" } {
       set seti ".+"
    } else {
-      set seti ([join $data(Eticket) |])
+      set seti ([join [string map { + \\\\+ } $data(Eticket)] |])
    }
    if { $data(Date)=="" } {
       set sdat "\\d+"
