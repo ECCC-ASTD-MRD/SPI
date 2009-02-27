@@ -40,6 +40,7 @@ Version 7.3.0 (Février 2009)
 - Nouvelle loupe de page
 - Modifications aux methodes d'interpolations verticales.
 - Profiles , coupes verticales et profils temporels peuvent maintenant être affichés en coordonnées de pression.
+- Legend des graphs peut maintenant déplacée interactivement.
 
 Version 7.2.4 (Mars 2008)
 - Ajout de la fonction zoom en utilisant le roulette de la souris.
