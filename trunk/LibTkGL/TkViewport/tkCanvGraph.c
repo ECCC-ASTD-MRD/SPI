@@ -215,6 +215,8 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
    gr->y          = 0;
    gr->xi         = 0;
    gr->yi         = 0;
+   gr->hi         = 0;
+   gr->wi         = 0;
    gr->Legend     = 1;
    gr->BDLegend   = 1;
    gr->BDWidth    = 1;
@@ -278,8 +280,8 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    int          idx,ex,ok;
    double       x,y,z=0.0;
 
-   static CONST char *sopt[] = { "-unproject","-project","-pick",NULL };
-   enum                opt { UNPROJECT,PROJECT,PICK };
+   static CONST char *sopt[] = { "-unproject","-project","-pick","-header",NULL };
+   enum                opt { UNPROJECT,PROJECT,PICK,HEADER };
 
    Tcl_ResetResult(Interp);
 
@@ -316,6 +318,24 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case PROJECT:
+         break;
+
+      case HEADER:
+         if(Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"x y");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
+         Tcl_GetDoubleFromObj(Interp,Objv[3],&y);
+
+         x-=(gr->xg[0]+gr->xi);
+         y-=(gr->yg[1]+gr->yi);
+
+         if (x>0 && x<gr->wi && y>0 && y<gr->hi) {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
+         } else {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
+         }
          break;
 
       case PICK:
@@ -907,14 +927,16 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
       }
 
       if (gr->Legend) {
-         width=0;
-         height=0;
+         gr->wi=0;
+         gr->hi=0;
          for(i=0;i<gr->NItem;i++) {
             item=GraphItem_Get(gr->Item[i]);
             GraphItem_Dim(Canvas,item,gr,&x,&y);
-            height+=y+5;
-            width=width<x?x:width;
+            gr->hi+=y+5;
+            gr->wi=gr->wi<x?x:gr->wi;
          }
+         gr->wi+=55;
+         gr->hi+=5;
 
          x=gr->xg[0]+gr->xi;
          y=gr->yg[1]+gr->yi;
@@ -924,9 +946,9 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             glColor4us(gr->BGColor->red,gr->BGColor->green,gr->BGColor->blue,gr->AlphaLegend*gr->Alpha*0.01*655);
             glBegin(GL_QUADS);
                glVertex2i(x,y);
-               glVertex2i(x,y+height+5);
-               glVertex2i(x+width+55,y+height+5);
-               glVertex2i(x+width+55,y);
+               glVertex2i(x,y+gr->hi);
+               glVertex2i(x+gr->wi,y+gr->hi);
+               glVertex2i(x+gr->wi,y);
             glEnd();
 
             glLineWidth(gr->BDLegend);
@@ -934,16 +956,16 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             glColor4us(gr->FGColor->red,gr->FGColor->green,gr->FGColor->blue,gr->AlphaLegend*gr->Alpha*0.01*655);
             glBegin(GL_QUADS);
                glVertex2i(x,y);
-               glVertex2i(x,y+height+5);
-               glVertex2i(x+width+55,y+height+5);
-               glVertex2i(x+width+55,y);
+               glVertex2i(x,y+gr->hi);
+               glVertex2i(x+gr->wi,y+gr->hi);
+               glVertex2i(x+gr->wi,y);
             glEnd();
          }
 
          x+=5;y+=5;
          for(i=0;i<gr->NItem;i++) {
             item=GraphItem_Get(gr->Item[i]);
-            y=GraphItem_Header(NULL,gr,item,x,y,x+width+5);
+            y=GraphItem_Header(NULL,gr,item,x,y,x+gr->wi-50);
          }
       }
 

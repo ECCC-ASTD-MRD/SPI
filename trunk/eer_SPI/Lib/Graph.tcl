@@ -610,11 +610,9 @@ proc Graph::Mode { Type GR { Zoom False } } {
 
       #----- Evenements de rotation
 
-      $data(Canvas) bind GRAPH$GR <ButtonPress-1>   "Graph::Activate $data(Frame) $GR $Type;\
-                                                 Graph::TranslateInit $data(Frame) $Type $GR \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]; \
-                                                 $data(Canvas) config -cursor hand1"
-      $data(Canvas) bind GRAPH$GR <B1-Motion>       "Graph::Translate $data(Frame) $Type $GR \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind GRAPH$GR <ButtonRelease-1> "Graph::TranslateDone $data(Frame) $Type $GR; $data(Canvas) config -cursor left_ptr"
+      $data(Canvas) bind GRAPH$GR <ButtonPress-1>   "Graph:LegendMoveInit $data(Frame) $data(Canvas) $GR $Type %x %y"
+      $data(Canvas) bind GRAPH$GR <B1-Motion>       "Graph:LegendMove $data(Frame) $data(Canvas) $GR $Type %x %y"
+      $data(Canvas) bind GRAPH$GR <ButtonRelease-1> "Graph:LegendMoveDone $data(Frame) $data(Canvas) $GR $Type"
    }
 }
 
@@ -1486,6 +1484,96 @@ proc Graph::TranslateInit { Frame Type GR X Y } {
    set Data(Y0) [lindex $coords 1]
 
    Graph::Resolution $Frame $Type $OpenGL::Param(Res)
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <LegendMoveInit>
+# Creation : Fevrier 2009 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Initialiser les fonctions de deplacement de la legende ou dans le graph
+#
+# Parametres :
+#   <Frame>  : Identificateur de page
+#   <Canvas> : Identificateur de canvas
+#   <GR>     : Identificateur du graph
+#   <Type>   : Type de graph
+#   <X>      : Coordonne X du pointeur
+#   <Y>      : Coordonne Y du pointeur
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph:LegendMoveInit { Frame Canvas GR Type X Y } {
+   variable Data
+
+   if { [set Data(Legend) [$GR -header $X $Y]] } {
+
+      set Data(XLegend) [lindex [$Canvas itemconfigure GRAPH$GR -xlegend] end]
+      set Data(YLegend) [lindex [$Canvas itemconfigure GRAPH$GR -ylegend] end]
+
+      set Data(X) $X
+      set Data(Y) $Y
+   } else {
+      Graph::Activate $Frame $GR $Type;
+      Graph::TranslateInit $Frame $Type $GR [$Canvas canvasx $X] [$Canvas canvasy $Y]
+   }
+   $Canvas config -cursor hand1
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <LegendMove>
+# Creation : Fevrier 2009 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Effectuer les fonctions de deplacement de la legende ou dans le graph
+#
+# Parametres :
+#   <Frame>  : Identificateur de page
+#   <Canvas> : Identificateur de canvas
+#   <GR>     : Identificateur du graph
+#   <Type>   : Type de graph
+#   <X>      : Coordonne X du pointeur
+#   <Y>      : Coordonne Y du pointeur
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph:LegendMove { Frame Canvas GR Type X Y } {
+   variable Data
+
+   if { $Data(Legend) } {
+      $Canvas itemconfigure GRAPH$GR -xlegend [expr $Data(XLegend)+($X-$Data(X))] -ylegend [expr $Data(YLegend)+($Y-$Data(Y))]
+   } else {
+      Graph::Translate $Frame $Type $GR [$Canvas canvasx $X] [$Canvas canvasy $Y]
+   }
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <LegendMoveDone>
+# Creation : Fevrier 2009 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Finaliser les fonctions de deplacement de la legende ou dans le graph
+#
+# Parametres :
+#   <Frame>  : Identificateur de page
+#   <Canvas> : Identificateur de canvas
+#   <GR>     : Identificateur du graph
+#   <Type>   : Type de graph
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph:LegendMoveDone { Frame Canvas GR Type } {
+   variable Data
+
+   if { $Data(Legend) } {
+      set Data(Legend) False
+   } else {
+      Graph::TranslateDone $Frame $Type $GR;
+   }
+   $Canvas config -cursor left_ptr
 }
 
 #-------------------------------------------------------------------------------
