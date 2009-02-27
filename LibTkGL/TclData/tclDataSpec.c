@@ -395,7 +395,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->ZType=NULL;
                   if (strlen(Tcl_GetString(Objv[i])) && strcmp("NONE",Tcl_GetString(Objv[i]))!=0)
                      Spec->ZType=(char*)strdup(Tcl_GetString(Objv[i]));
-                  DataSpec_Clean(Spec,0,1,0);
                }
             }
             break;
