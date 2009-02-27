@@ -286,6 +286,7 @@ proc Graph::Compare::Graph { GR } {
    set data(YMin)  1e200
    set data(YMax) -1e200
    set yincr 0
+   set mod True
 
    #----- Afficher le graph
 
@@ -322,16 +323,17 @@ proc Graph::Compare::Graph { GR } {
    if { [llength $graph(ZYInter)] } {
       set data(YMin) [lindex $graph(ZYInter) 0]
       set data(YMax) [lindex $graph(ZYInter) 1]
+      set mod False
    }
 
    set id [graphaxis configure axisx$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $data(DescPos) -angle $Graph::Font(Angle)  \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $data(DescPos) -angle $Graph::Font(Angle)  \
       -lowoffset 0.1 -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [graphaxis configure axisy$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
+   graphaxis configure axisy$GR -type $graph(YScale)-modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
       -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [lindex [$data(Canvas) itemconfigure GRAPH$GR -title] end]

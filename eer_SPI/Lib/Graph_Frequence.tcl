@@ -371,6 +371,7 @@ proc Graph::Frequence::Graph { GR } {
    set data(XMax) -1e200
    set data(YMin)  1e200
    set data(YMax) -1e200
+   set mod True
 
    foreach item $data(Items) {
       set i 0
@@ -398,21 +399,23 @@ proc Graph::Frequence::Graph { GR } {
    if { [llength $graph(ZXInter)] } {
       set data(XMin) [lindex $graph(ZXInter) 0]
       set data(XMax) [lindex $graph(ZXInter) 1]
+      set mod False
    }
    if { [llength $graph(ZYInter)] } {
       set data(YMin) [lindex $graph(ZYInter) 0]
       set data(YMax) [lindex $graph(ZYInter) 1]
+      set mod False
    }
 
    set id [graphaxis configure axisx$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -angle $Graph::Font(Angle) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -angle $Graph::Font(Angle) \
       -lowoffset 0.05 -highoffset 0.05 -font $Graph::Font(Axis) \
       -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [graphaxis configure axisy$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -min $data(YMin) -max $data(YMax) -increment $yincr -angle $Graph::Font(Angle) -highoffset 0.05 \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -increment $yincr -angle $Graph::Font(Angle) -highoffset 0.05 \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [lindex [$data(Canvas) itemconfigure GRAPH$GR -title] end]
