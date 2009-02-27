@@ -1270,7 +1270,6 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
       inter=i0-fmod(i0,incr);
       if (inter<i0) inter+=incr;
 
-fprintf(stderr,"%f - %f -> %f  --- %f\n",Axis->T0,Axis->T1,incr,inter);
       while(Axis->T0!=Axis->T1 && inter<=i1) {
          it=Axis->Type=='O'?pow(10,inter):inter;
          GraphAxis_Print(Axis,buf,it,0);
