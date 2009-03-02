@@ -937,38 +937,11 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       return(TCL_ERROR);
    }
 
-   if (FieldTo->Def->Mode && FieldTo->Def->Mode!=FieldTo->Def->Data[0]) {
-      free(FieldTo->Def->Mode);
-   }
-   FieldTo->Def->Mode=NULL;
-
-   /*Verifier la dimension verticale*/
-   if (FieldTo->Def->NK!=FieldFrom->Def->NK) {
-      if (FieldTo->Def->Data[1]) {
-         free(FieldTo->Def->Data[1]);
-         FieldTo->Def->Data[1]=NULL;
-      }
-      free(FieldTo->Def->Data[0]);
-      FieldTo->Def->NK=FieldFrom->Def->NK;
-      FieldTo->Def->Data[0]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
+   /*Verifier la compatibilite entre source et destination*/
+   if (!Data_DefCompat(FieldTo->Def,FieldFrom->Def)) {
       FieldTo->Ref=GeoRef_Resize(FieldTo->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldTo->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels);
-   } else {
-      FieldTo->Ref->LevelType=FieldFrom->Ref->LevelType;
    }
-
-   /*Verifier la 2ieme composantes*/
-   if (FieldFrom->Def->Data[1]) {
-      if (!FieldTo->Def->Data[1]) {
-         FieldTo->Def->Data[1]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
-      }
-      FieldTo->Def->NC=2;
-   } else{
-     if (FieldTo->Def->Data[1]) {
-         free(FieldTo->Def->Data[1]);
-         FieldTo->Def->Data[1]=NULL;
-      }
-      FieldTo->Def->NC=1;
-   }
+   FieldTo->Ref->LevelType=FieldFrom->Ref->LevelType;
 
    if (FieldFrom->Def->Type!=TD_Float32) {
       ez=0;
@@ -1061,7 +1034,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    }
    EZUnLock_RPNInt();
 #endif
-   FieldTo->Def->Mode=NULL;
+
    /*In case of vectorial field, we have to recalculate the module*/
    if (FieldTo->Def->NC>1) {
       Data_GetStat(FieldTo);
@@ -2430,7 +2403,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       if (Field->Def->Data[1]) {
          if ((uvw=FSTD_VectorTableCheck(head->NOMVAR,&idx))) {
             /*Inscription du champs complementaire 2D*/
-            fprintf(stderr,"1----- %s %s\n",uvw->UU,uvw->VV);
             if (uvw->VV) {
                Def_Pointer(Field->Def,1,idx,p);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
@@ -2444,7 +2416,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
                            ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW,head->ETIKET,
                            (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
             }
-            fprintf(stderr,"2----- %s %s\n",uvw->UU,uvw->VV);
          }
       }
    }
