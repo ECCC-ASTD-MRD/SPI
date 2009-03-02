@@ -703,8 +703,8 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
          }
 
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" } {
-            vector set $Item.Y [fstdfield stats GRAPHPROFILE -pressurelevels]
+         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats GRAPHPROFILE -pressurelevels]]] } {
+            vector set $Item.Y $levels
             set graph(UnitY) Pressure
          } else {
             vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
