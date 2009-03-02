@@ -288,8 +288,8 @@ proc Graph::Section::Graph { GR { Pos False } } {
    foreach item $data(Items) {
       if { [fstdfield is GRAPHSECTION$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" } {
-            set data(Levels) [fstdfield stats GRAPHSECTION$item -pressurelevels]
+         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats GRAPHSECTION$item -pressurelevels]]] } {
+            set data(Levels) $levels
             fstdfield configure GRAPHSECTION$item -ztype PRESSURE
          } else {
             set data(Levels) [fstdfield stats GRAPHSECTION$item -levels]

@@ -346,8 +346,8 @@ proc Graph::TimeSection::Graph { GR } {
 
       if { [fstdfield is TIMECUT$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" } {
-            set data(Levels) [fstdfield stats TIMECUT$item -pressurelevels]
+         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats TIMECUT$item -pressurelevels]]] } {
+            set data(Levels) $levels
             fstdfield configure TIMECUT$item -ztype PRESSURE
          } else {
             set data(Levels) [fstdfield stats TIMECUT$item -levels]
