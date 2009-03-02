@@ -404,7 +404,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    field->Ref=GeoRef_Copy(Field->Ref);
    field->Spec->Map=Field->Spec->Map;
 
-   if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
+  if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
    if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);
 
    if (Def) {
@@ -413,7 +413,6 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
             memcpy(field->Def->Data[i],Field->Def->Data[i],FSIZE3D(Field->Def)*sizeof(float));
       }
    }
-
    return(field);
 }
 
@@ -1082,6 +1081,87 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    return(def);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <Data_DefCompat>
+ * Creation : Mars 2009- J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Verifier les dimensiont entre 2 Def et les ajuster en consequence.
+ *
+ * Parametres :
+ *  <DefTo>   : Definition a redimensionner
+ *  <DefTFrom>: Definition de laquelle redimensionner
+ *
+ * Retour:
+ *  <Compat>  : Compatibles?
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Data_DefCompat(TDataDef *DefTo,TDataDef *DefFrom) {
+
+   int ch=1;
+
+   if (DefTo->Mode && DefTo->Mode!=DefTo->Data[0]) {
+      free(DefTo->Mode);
+   }
+   DefTo->Mode=NULL;
+
+   /*Verifier la dimension verticale*/
+   if (DefTo->NK!=DefFrom->NK) {
+      if (DefTo->Data[1]) {
+         free(DefTo->Data[1]);
+         DefTo->Data[1]=NULL;
+      }
+      if (DefTo->Data[2]) {
+         free(DefTo->Data[2]);
+         DefTo->Data[2]=NULL;
+      }
+      if (DefTo->Data[1]) {
+         free(DefTo->Data[1]);
+         DefTo->Data[1]=NULL;
+      }
+      if (DefTo->Data[0]) {
+         free(DefTo->Data[0]);
+      }
+      DefTo->NK=DefFrom->NK;
+      DefTo->Data[0]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
+      ch=0;
+   }
+
+   /*Verifier la 2ieme composantes*/
+   if (DefFrom->Data[1]) {
+      if (!DefTo->Data[1]) {
+         DefTo->Data[1]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
+      }
+
+      /*Verifier la 3ieme composantes*/
+      if (DefFrom->Data[2]) {
+         if (!DefTo->Data[2]) {
+            DefTo->Data[2]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
+         }
+         DefTo->NC=3;
+      } else {
+         if (DefTo->Data[2]) {
+            free(DefTo->Data[2]);
+            DefTo->Data[2]=NULL;
+         }
+         DefTo->NC=2;
+      }
+   } else {
+     if (DefTo->Data[1]) {
+         free(DefTo->Data[1]);
+         DefTo->Data[1]=NULL;
+      }
+      if (DefTo->Data[2]) {
+         free(DefTo->Data[2]);
+         DefTo->Data[2]=NULL;
+      }
+      DefTo->NC=1;
+   }
+
+   return(ch);
+}
 
 /*----------------------------------------------------------------------------
  * Nom      : <Data_DefResize>

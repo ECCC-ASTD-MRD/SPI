@@ -668,15 +668,11 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       }
    }
 
-   /*Verifier la dimension verticale*/
-   if (ToDef->NK!=FromDef->NK) {
-      free(ToDef->Data[0]);
-      ToDef->NK=FromDef->NK;
-      ToDef->Data[0]=(char*)calloc(FSIZE3D(ToDef),TData_Size[ToDef->Type]);
+   /*Verifier la compatibilite entre source et destination*/
+   if (!Data_DefCompat(ToDef,FromDef)) {
       ToRef=GeoRef_Resize(ToRef,ToDef->NI,ToDef->NJ,ToDef->NK,FromRef->LevelType,FromRef->Levels);
-   } else {
-      ToRef->LevelType=FromRef->LevelType;
    }
+   ToRef->LevelType=FromRef->LevelType;
 
    for (k=0;k<FromDef->NK;k++) {
 
