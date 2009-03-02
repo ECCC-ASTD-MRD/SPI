@@ -2377,11 +2377,12 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
 */
 int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress){
 
-   FSTD_File *file;
-   FSTD_Head *head=(FSTD_Head*)Field->Head;
-   int        ok=-1,k,idx,ip1,datyp;
-   char       nv[5];
-   void      *p;
+   FSTD_File   *file;
+   FSTD_Head   *head=(FSTD_Head*)Field->Head;
+   TFSTDVector *uvw;
+   int          ok=-1,k,idx,ip1,datyp;
+   char         nv[5];
+   void        *p;
 
 #ifdef LNK_FSTD
    /*Verifier l'existence du champs*/
@@ -2425,18 +2426,26 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
                   ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,head->ETIKET,
                   (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
 
-      /*Inscription du champs complementaire*/
+      /*Inscription des champs complementaires*/
       if (Field->Def->Data[1]) {
-         if (strncmp(head->NOMVAR,"UU",2)==0) {
-            strcpy(nv,"VV");
-         } else if (strncmp(head->NOMVAR,"UD",2) == 0) {
-            strcpy(nv,"VD");
+         if ((uvw=FSTD_VectorTableCheck(head->NOMVAR,&idx))) {
+            /*Inscription du champs complementaire 2D*/
+            fprintf(stderr,"1----- %s %s\n",uvw->UU,uvw->VV);
+            if (uvw->VV) {
+               Def_Pointer(Field->Def,1,idx,p);
+               ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
+                           ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV,head->ETIKET,
+                           (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
+            }
+            /*Inscription du champs complementaire 3D*/
+            if (Field->Def->Data[2] && uvw->WW) {
+               Def_Pointer(Field->Def,2,idx,p);
+               ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
+                           ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW,head->ETIKET,
+                           (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
+            }
+            fprintf(stderr,"2----- %s %s\n",uvw->UU,uvw->VV);
          }
-
-         Def_Pointer(Field->Def,1,idx,p);
-         ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
-                     ip1,head->IP2,head->IP3,head->TYPVAR,nv,head->ETIKET,
-                     (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
       }
    }
 
