@@ -1309,7 +1309,7 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    fputs(buf,fp);
 
    for(i=1;i<CMap->NbPixels-1;i++) {
-      if (CMap->Control[i][0]!=0 || CMap->Control[i][1]!=0 || CMap->Control[2][0]!=0 || CMap->Control[3][0]!=0) {
+      if (CMap->Control[i][0]!=0 || CMap->Control[i][1]!=0 || CMap->Control[i][2]!=0 || CMap->Control[i][3]!=0) {
          sprintf(buf,"%03i %03i %03i %03i %03i\n",i,CMap->Control[i][0],CMap->Control[i][1],CMap->Control[i][2],CMap->Control[i][3]);
          fputs(buf,fp);
       }
