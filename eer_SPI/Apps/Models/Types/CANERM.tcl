@@ -508,7 +508,7 @@ proc CANERM::SimInitNew { } {
       set Sim(EmHeight)   10000.0
       set Sim(EmDuration) 1
    } else {
-      set iso [IsoBox::Get  137-Cs]
+      set iso [IsoBox::Get  Cs-137]
       set Sim(FnVertDesc) CONSTANT
       set Sim(FnVert)     0.0
       set Sim(ISauve)     3
@@ -1214,18 +1214,28 @@ proc CANERM::SpeciesFormat { Frame Line } {
 
    #----- Verification de nombre de parametres inclus dans la ligne
 
-   if { [llength $Line] == 7 } {
+   if { [llength $Line] == 11 } {
 
       if { [ComboBox::Add $Frame.type.entry.polluant [lindex $Line 0]] != -1 } {
-         set Sim(Intensity) [lindex $Line 1]
          set Sim(Iso)       [lindex $Line 0]
+         set Sim(Intensity) 1.00e+00
+         if { $Sim(Iso) == "VOLCAN" || [regexp "TRACER" $Sim(Iso)] } {
+            set Sim(Intensity) 1.00e+18
+         }
 
+         set IsoUnit "BQ"
+         if { $Sim(Iso) == "VOLCAN" } {
+            set IsoUnit "MICRO_G"
+         } elseif { [regexp "TRACER" $Sim(Iso)] } {
+            set IsoUnit "UNITS"
+         }
+         lappend Sim(IsoUnit)    $IsoUnit
          lappend Sim(IsoName)    $Sim(Iso)
          lappend Sim(IsoRelease) $Sim(Intensity)
-         lappend Sim(IsoHalf)    [lindex $Line 2]
-         lappend Sim(IsoDry)     [lindex $Line 3]
-         lappend Sim(IsoWet)     [lindex $Line 4]
-         lappend Sim(IsoUnit)    [lindex $Line 6]
+         lappend Sim(IsoHalf)    [lindex $Line 5]
+         lappend Sim(IsoDry)     [lindex $Line 6]
+         lappend Sim(IsoWet)     [lindex $Line 7]
+
          $Frame.type.entry.intensity config -state normal
 
          if { [incr Sim(IsoNb)] == $Sim(MaxIso) } {

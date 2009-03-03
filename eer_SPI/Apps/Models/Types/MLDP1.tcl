@@ -431,7 +431,7 @@ proc MLDP1::CreateModelInputFile { } {
    set file [open $Sim(ModelInputFile) w]
 
    #----- Set output files.
-   set name "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000"
+   set name "$Sim(SimDateTime)_000"
    set Sim(PositionsOutputFile)        "$Sim(ResDir)/$name.pos"
    set Sim(ConcentrationsOutputFile)   "$Sim(ResDir)/$name.con"
    set Sim(SettlingVelocityOutputFile) "$Sim(ResDir)/$name.sv"
@@ -1357,12 +1357,12 @@ proc MLDP1::EmissionRead { } {
 
       } elseif { $Sim(SrcType) == "volcano" } {
 
-         set Sim(EmIso.$name) { "VOLCAN 1.00E+38 1.00E-03 3.00E-05" }
+         set Sim(EmIso.$name) { "VOLCAN 1.00e+38 1.00e-03 3.00e-05" }
 
       } elseif { $Sim(SrcType) == "virus" } {
 
          set Sim(EmIso.$name) {}
-         lappend Sim(EmIso.$name) [list $Sim(VirusSymbol) 1.00E+38 1.00E-03 3.00E-05]
+         lappend Sim(EmIso.$name) [list $Sim(VirusSymbol) 1.00e+38 1.00e-03 3.00e-05]
 
       }
 
@@ -1719,6 +1719,8 @@ proc MLDP1::ExtractMetFiles { } {
    }
 
    #----- Compute effective simulation duration.
+   #----- Effective simulation duration starts from the beginning of release scenario (corresponding to the
+   #----- accident date-time) and ends at the date-time of last available met data file.
    set Sim(EffectiveDurationMin) [expr int([fstdstamp diff $laststamp $Sim(AccDateTimeStamp)]*60 + 0.5)] ; #----- [min].
    set Sim(EffectiveDurationSec) [expr $Sim(EffectiveDurationMin)*60]                                    ; #----- [s].
 
@@ -1758,10 +1760,11 @@ proc MLDP1::ExtractMetFiles { } {
    }
 
    #----- Set simulation date-time.
-   set Sim(SimYear)  [string range $SimDateTime 0 3] ; #----- Year.
-   set Sim(SimMonth) [string range $SimDateTime 4 5] ; #----- Month.
-   set Sim(SimDay)   [string range $SimDateTime 6 7] ; #----- Day.
-   set Sim(SimHour)  [string range $SimDateTime 8 9] ; #----- Hour.
+   set Sim(SimYear)     [string range $SimDateTime 0 3] ; #----- Year.
+   set Sim(SimMonth)    [string range $SimDateTime 4 5] ; #----- Month.
+   set Sim(SimDay)      [string range $SimDateTime 6 7] ; #----- Day.
+   set Sim(SimHour)     [string range $SimDateTime 8 9] ; #----- Hour.
+   set Sim(SimDateTime) "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)"
 
    #----- Validate emission time according to available meteorological data files.
    set first [lindex [lindex $Sim(Data) 0] 0]
@@ -3218,28 +3221,28 @@ proc MLDP1::SpeciesFormat { Line } {
    variable Warning
    variable Lbl
 
-   if { [llength $Line]==7 } {
+   if { [llength $Line] == 11 } {
 
-      set name        [lindex $Line 0]                 ;# Isotope Name.
-      set halflife    [format "%.2E" [lindex $Line 2]] ;# Half-Life [s].
-      set wetscavrate [lindex $Line 4]                 ;# Wet Scavenging Rate [s^-1].
-      set drydepvel   [lindex $Line 5]                 ;# Dry Deposition Velocity [m/s].
+      set symbol      [lindex $Line 0] ; #----- Isotope Symbol.
+      set halflife    [lindex $Line 5] ; #----- Half-Life [s].
+      set wetscavrate [lindex $Line 7] ; #----- Wet Scavenging Rate [s-1].
+      set drydepvel   [lindex $Line 8] ; #----- Dry Deposition Velocity [m/s].
 
-      if { [llength $Tmp(Iso)] < $Sim(EmMaxIso) && [lsearchsub $Tmp(Iso) $name 0] == -1 } {
+      if { [llength $Tmp(Iso)] < $Sim(EmMaxIso) && [lsearchsub $Tmp(Iso) $symbol 0] == -1 } {
 
          if { $halflife >= 900 } {
             #----- Verify if isotope's radioactive half-life is long enough
             #----- ( >= 15 minutes ) to generate relevant simulation results.
-            set Tmp(Iso[llength $Tmp(Iso)]) $name
-            lappend Tmp(Iso) "$name $halflife $drydepvel $wetscavrate"
+            set Tmp(Iso[llength $Tmp(Iso)]) $symbol
+            lappend Tmp(Iso) "$symbol $halflife $drydepvel $wetscavrate"
 
             MLDP1::UpdateEmissionDurationsTotalQuantityAccident
          } else {
             #----- Display warning message if radioactive half-life is less than 15 minutes.
-            Dialog::CreateDefault .mldp1new 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $name." warning 0 "OK"
+            Dialog::CreateDefault .mldp1new 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $symbol." warning 0 "OK"
 
             puts stderr ""
-            puts stderr "WARNING: Isotope $name has a radioactive half-life too short (less than 15 minutes) to generate relevant simulation results."
+            puts stderr "WARNING: Isotope $symbol has a radioactive half-life too short (less than 15 minutes) to generate relevant simulation results."
             puts stderr "         This isotope will be ignored."
             puts stderr "         Half-life: $halflife s."
          }
@@ -3381,82 +3384,6 @@ proc MLDP1::ValidateDensity { } {
       return 0
    } elseif { $number== 0 || $Sim(EmDensity)<=0 } {
       Dialog::CreateError .mldp1new "[lindex $Error(EmDensity) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]" $GDefs(Lang) 600
-      return 0
-   }
-
-   return 1
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP1::ValidateEffectiveSimDuration>
-# Creation   : 26 March 2004 - A. Malo - CMC/CMOE
-#
-# But        : Validate effective simulation duration according to
-#              output time step.
-#
-# Parametres :
-#  <MetData> : Available meteo data files.
-#
-# Retour     :
-#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
-#
-# Remarques  :
-#    - Effective simulation duration starts from the beginning of
-#      release scenario (which corresponds to the accident date) and
-#      ends at the selected ending date.
-#    - Simulation duration starts from the first available met data file
-#      date (simulation date) and ends at the selected ending date.
-#
-#                        |<- Output ->|<- Output ->|<- Output ->|
-#                        |  Time Step |  Time Step |  Time Step |
-#                        |            |            |            |
-#       |<---------------- Simulation Duration ---------------->|
-#       |                                                       |
-#       |                |<--- Effective Simulation Duration -->|
-#       |                |                                      |
-#       [----------------X------------O------------O------------]------> time
-#       ^                ^            ^            ^            ^
-#  First Available    Accident      First       Second       Selected
-#   Met Data File   Release Date    Output      Output      Ending Date
-# (Simulation Date)
-#                                                             Third
-#                                                             Output
-#
-#----------------------------------------------------------------------------
-
-proc MLDP1::ValidateEffectiveSimDuration { MetData } {
-   global   GDefs
-   variable Sim
-   variable Error
-
-   set SimDate   "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)"
-   set FirstDate [string range [lindex [lindex $MetData 0] 1] 0 9]
-
-   #----- Verify if first available met data file date-time is corresponding to simulation date-time.
-   if { "$FirstDate" != "$SimDate" } {
-      puts stderr "*** Error! First available meteo data file date-time is inconsistent according to simulation date-time."
-      puts stderr "    First Met File Date : $FirstDate"
-      puts stderr "    Simulation Date     : $SimDate"
-      return 0
-   }
-
-   set LastDate [lindex [lindex $MetData end] 1]
-   set year     [string range $LastDate 0 3]
-   set month    [string range $LastDate 4 5]
-   set day      [string range $LastDate 6 7]
-   set hour     [string range $LastDate 8 9]
-   set min      [string range $LastDate 10 11]
-   set sec      [string range $LastDate 12 13]
-
-   set AccDateStamp  [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
-   set LastDateStamp [fstdstamp fromdate ${year}${month}${day} ${hour}${min}${sec}00]
-
-   #----- Compute effective simulation duration [min].
-   set Sim(EffectiveDurationMin) [expr int([fstdstamp diff $LastDateStamp $AccDateStamp]*60 + 0.5)]
-
-   #----- Verify if effective simulation duration is greater or equal than output time step.
-   if { $Sim(EffectiveDurationMin) < $Sim(OutputTimeStepMin) } {
-      Dialog::CreateError .mldp1new "[lindex $Error(EffectiveSimDuration) $GDefs(Lang)] [lindex $Error(EffectiveSimDuration2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours) ([expr $Sim(Duration)*60] $Error(UnitMinutes))\n[lindex $Error(EffectiveSimDuration3) $GDefs(Lang)] $Sim(EffectiveDurationMin) $Error(UnitMinutes)\n[lindex $Error(EffectiveSimDuration4) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       return 0
    }
 
@@ -3965,9 +3892,9 @@ proc MLDP1::ValidateReflectionLevel { } {
       return 0
    }
 
-   #----- Verify if reflection level falls within the range [0.9900, 1.0000].
+   #----- Verify if reflection level falls within the range [0.9900, 0.9999].
 
-   if { $Sim(ReflectionLevel) > 1.0 || $Sim(ReflectionLevel) < 0.99 } {
+   if { $Sim(ReflectionLevel) > 0.9999 || $Sim(ReflectionLevel) < 0.9900 } {
       Dialog::CreateError .mldp1new "[lindex $Error(ReflectionLevel2) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
       return 0
    }
