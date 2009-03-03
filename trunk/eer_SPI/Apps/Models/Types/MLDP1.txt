@@ -244,8 +244,8 @@ namespace eval MLDP1 {
                                                   "Error! The value of the Lagrangian time scale (specified in s) under/overflows the memory capacity of a float number.\n\n\tTime scale :" }
    set Error(ReflectionLevel)                   { "Erreur! Le niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) doit être un nombre réel positif.\n\n\tNiveau de réflexion :" \
                                                   "Error! The bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) must be a positive float number.\n\n\tReflection level :" }
-   set Error(ReflectionLevel2)                  { "Erreur! Le niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) doit être compris dans l'intervalle \[0.9900, 1.0000\].\n\n\tNiveau de réflexion :" \
-                                                  "Error! The bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) must fall within the range \[0.9900, 1.0000\].\n\n\tReflection level :" }
+   set Error(ReflectionLevel2)                  { "Erreur! Le niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) doit être compris dans l'intervalle \[0.9900, 0.9999\].\n\n\tNiveau de réflexion :" \
+                                                  "Error! The bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) must fall within the range \[0.9900, 0.9999\].\n\n\tReflection level :" }
    set Error(ReflectionLevelRange)              { "Erreur! La valeur du niveau inférieur de réflexion des particules dans l'atmosphère (spécifiée en hyb|eta|sig) déborde la capacité mémoire d'un nombre réel.\n\n\tNiveau de réflexion :" \
                                                   "Error! The value of the bottom reflection level of particles in the atmosphere (specified in hyb|eta|sig) under/overflows the memory capacity of a float number.\n\n\tReflection level :" }
 

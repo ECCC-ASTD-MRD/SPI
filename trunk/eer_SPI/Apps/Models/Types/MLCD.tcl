@@ -1085,10 +1085,10 @@ proc MLCD::InitNew { } {
    set Sim(EmDurationMin)     360             ; #----- Emission duration [min].
    set Sim(EmNumberParticles) 50000           ; #----- Number of particles.
    set Sim(EmTotMass)         1.0             ; #----- Total mass released [arbitrary mass unit].
-   set Sim(EmIsoName)         "137-Cs"        ; #----- Isotope name.
-   set Sim(EmDepVel)          1.00E-03        ; #----- Deposition velocity [m/s].
-   set Sim(EmHalfLife)        9.47E+08        ; #----- Radioactive half-life [s].
-   set Sim(EmWetScav)         1.00E+05        ; #----- Wet scavenging coefficient [dimensionless].
+   set Sim(EmIsoName)         "Cs-137"        ; #----- Isotope name.
+   set Sim(EmDepVel)          1.00e-03        ; #----- Deposition velocity [m/s].
+   set Sim(EmHalfLife)        9.47e+08        ; #----- Radioactive half-life [s].
+   set Sim(EmWetScav)         1.00e+05        ; #----- Wet scavenging coefficient [dimensionless].
    set Sim(EmBottom)          0.0             ; #----- Emission bottom [m].
    set Sim(EmTop)             1.0             ; #----- Emission top [m].
    set Sim(EmRadius)          1.0             ; #----- Emission radius [m].
@@ -2185,7 +2185,7 @@ proc MLCD::SimLaunchNew { } {
 
       destroy .mlcdnew
 
-set pool [Info::Code ::MLCD::Sim $Sim(Info) :]
+      set pool [Info::Code ::MLCD::Sim $Sim(Info) :]
 
       exec echo "$pool" >> $Sim(BasePath)/MLCD.pool
       exec echo "$pool" >> $Sim(Path)/sim.pool
@@ -2400,26 +2400,26 @@ proc MLCD::SpeciesFormat { Line } {
    variable Warning
    variable Lbl
 
-   if { [llength $Line]==7 } {
+   if { [llength $Line] == 11 } {
 
-      set name        [lindex $Line 0]                 ; #----- Isotope Name.
-      set halflife    [format "%.2E" [lindex $Line 2]] ; #----- Half-Life [s].
-      set drydepvel   [lindex $Line 5]                 ; #----- Dry Deposition Velocity [m/s].
-      #----- Here, we ignore the wet scavenging rate [s^-1] since
-      #----- MLCD takes into account the wet scavenging coefficient (1.00E+05).
+      set symbol      [lindex $Line 0] ; #----- Isotope Symbol.
+      set halflife    [lindex $Line 5] ; #----- Half-Life [s].
+      set drydepvel   [lindex $Line 8] ; #----- Dry Deposition Velocity [m/s].
+      #----- Here, we ignore the wet scavenging rate [s-1] since
+      #----- MLCD takes into account the wet scavenging coefficient (1.00e+05).
 
       if { $halflife > 0 } {
          #----- Verify that the isotope's radioactive half-life is positive.
-         set Sim(EmIsoName)  $name
+         set Sim(EmIsoName)  $symbol
          set Sim(EmHalfLife) $halflife
          set Sim(EmDepVel)   $drydepvel
 
       } else {
          #----- Display warning message if radioactive half-life is negative or zero.
-         Dialog::CreateDefault .mlcdnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $name." warning 0 "OK"
+         Dialog::CreateDefault .mlcdnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $symbol." warning 0 "OK"
 
          puts stderr ""
-         puts stderr "WARNING: Isotope $name has a null or negative radioactive half-life value."
+         puts stderr "WARNING: Isotope $symbol has a null or negative radioactive half-life value."
          puts stderr "         This isotope will be ignored."
          puts stderr "         Half-life: $halflife s."
       }

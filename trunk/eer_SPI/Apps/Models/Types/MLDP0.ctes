@@ -74,11 +74,11 @@ namespace eval MLDP0 {
                                       "1 50 100 1000" }
 
    #----- List of horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-   set Sim(ListVarMesoscale)    { 0.00 0.10 0.50 1.00 2.00 3.00 5.00 }
+   set Sim(ListVarMesoscale)    { 0.00 0.01 0.10 0.50 1.00 2.00 3.00 5.00 }
    #----- List of Lagrangian timescale for mesoscale fluctuations [s].
    set Sim(ListTimescale)       { 1800 2700 3600 10800 21600 }
    #----- List of reflection levels [hyb|eta|sig].
-   set Sim(ListReflectionLevel) { 0.9950 0.9970 0.9980 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
+   set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
 
    set Sim(Model)                "MLDP0"                       ; #----- Model name.
    set Sim(Preprocessor)         "METFLD0"                     ; #----- Meteorological preprocessor name.
@@ -99,7 +99,7 @@ namespace eval MLDP0 {
    set Sim(EmMaxIso)             5                             ; #----- Maximum number of isotopes.
    set Sim(EmMaxInterval)        10                            ; #----- Maximum number of emission intervals.
    set Sim(EmDir)                "$GDefs(DirEER)/eer_Scenario" ; #----- Directory containing emission scenario files.
-   set Sim(EmEpsilon)            1.0e-5                        ; #----- Small value.
+   set Sim(EmEpsilon)            1.0e-05                       ; #----- Small value.
 
    #----- Set variables for pool info.
 

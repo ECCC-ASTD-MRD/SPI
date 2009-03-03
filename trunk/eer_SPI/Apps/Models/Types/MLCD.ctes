@@ -67,10 +67,10 @@ namespace eval MLCD {
    set Sim(EmDurationMin)     360      ; #----- Emission duration [min].
    set Sim(EmNumberParticles) 50000    ; #----- Number of released particles.
    set Sim(EmTotMass)         1.0      ; #----- Total mass released [arbitrary mass unit].
-   set Sim(EmIsoName)         "137-Cs" ; #----- Isotope name.
-   set Sim(EmDepVel)          1.00E-03 ; #----- Deposition velocity [m/s].
-   set Sim(EmHalfLife)        9.47E+08 ; #----- Radioactive half-life [s].
-   set Sim(EmWetScav)         1.00E+05 ; #----- Wet scavenging coefficient [dimensionless].
+   set Sim(EmIsoName)         "Cs-137" ; #----- Isotope name.
+   set Sim(EmDepVel)          1.00e-03 ; #----- Deposition velocity [m/s].
+   set Sim(EmHalfLife)        9.47e+08 ; #----- Radioactive half-life [s].
+   set Sim(EmWetScav)         1.00e+05 ; #----- Wet scavenging coefficient [dimensionless].
    set Sim(EmBottom)          0.0      ; #----- Emission bottom [m].
    set Sim(EmTop)             1.0      ; #----- Emission top [m].
    set Sim(EmRadius)          1.0      ; #----- Emission radius [m].
