@@ -34,16 +34,18 @@ namespace eval IsoBox {
    variable Lbl
    variable Data
 
-   set Lbl(Title)     { "Sélecteur d'isotopes" "Isotope selector" }
-
-   set Lbl(Name)      { "Nom"                                "Name" }
-   set Lbl(Intensity) { "Intensité"                          "Intensity" }
-   set Lbl(HalfLife)  { "Demi-vie\n(s)"                      "Half-life\n(s)" }
-   set Lbl(Dry)       { "Taux de\nlessivage\nsec\n(s -1)"    "Dry\nScavenging\nRate\n(s -1)" }
-   set Lbl(Wet)       { "Taux de\nlessivage\nhumide\n(s -1)" "Wet\nScavenging\nRate\n(s -1)" }
-   set Lbl(DryDep)    { "Vitesse\nde dépôt\n(m/s)"           "Deposition\nVelocity\n(m/s)" }
-   set Lbl(Unit)      { "Unité"                              "Unit" }
-   set Lbl(Close)     { "Fermer"                             "Close" }
+   set Lbl(Title)        { "Sélecteur d'isotopes"              "Isotope selector" }
+   set Lbl(Symbol)       { "Symbole"                           "Symbol" }
+   set Lbl(Name)         { "Nom"                               "Name" }
+   set Lbl(AtomicNumber) { "Numéro\natomique\n(Z)"             "Atomic\nNumber\n(Z)" }
+   set Lbl(NbNeutrons)   { "Nb. de\nneutrons\n(N)"             "Nb. of\nNeutrons\n(N)" }
+   set Lbl(MassNumber)   { "Nb. de\nmasse\n(A=Z+N)"            "Mass\nNumber\n(A=Z+N)" }
+   set Lbl(HalfLife)     { "Demi-vie\n(s)"                     "Half-life\n(s)" }
+   set Lbl(Dry)          { "Taux de\nlessivage\nsec\n(s-1)"    "Dry\nScavenging\nRate\n(s-1)" }
+   set Lbl(Wet)          { "Taux de\nlessivage\nhumide\n(s-1)" "Wet\nScavenging\nRate\n(s-1)" }
+   set Lbl(DryDep)       { "Vitesse\nde dépôt\n(m/s)"          "Deposition\nVelocity\n(m/s)" }
+   set Lbl(EDRC)         { "Coefficients de débit de dose externe\n\nPanache            Sol  \n(Sv m3 Bq-1 s-1)  (Sv m2 Bq-1 s-1)"  "External Dose Rate Coefficients\n\nCloudshine        Groundshine\n(Sv m3 Bq-1 s-1)  (Sv m2 Bq-1 s-1)" }
+   set Lbl(Close)        { "Fermer"                            "Close" }
 }
 
 #-------------------------------------------------------------------------------
@@ -81,22 +83,24 @@ proc IsoBox::Create { Parent { Command "" } } {
 
    #----- Creer le frame des bouttons entetes.
    frame .isobox.hd
-      label .isobox.hd.espece    -bd 1 -text "[lindex $Lbl(Name) $GDefs(Lang)]"      -width 8  -height 5 -relief raised
-      label .isobox.hd.intensite -bd 1 -text "[lindex $Lbl(Intensity) $GDefs(Lang)]" -width 11 -height 5 -relief raised
-      label .isobox.hd.demi      -bd 1 -text "[lindex $Lbl(HalfLife) $GDefs(Lang)]"  -width 11 -height 5 -relief raised
-      label .isobox.hd.sec       -bd 1 -text "[lindex $Lbl(Dry) $GDefs(Lang)]"       -width 11 -height 5 -relief raised
-      label .isobox.hd.hum       -bd 1 -text "[lindex $Lbl(Wet) $GDefs(Lang)]"       -width 11 -height 5 -relief raised
-      label .isobox.hd.depvel    -bd 1 -text "[lindex $Lbl(DryDep) $GDefs(Lang)]"    -width 11 -height 5 -relief raised
-      label .isobox.hd.unit      -bd 1 -text "[lindex $Lbl(Unit) $GDefs(Lang)]"      -width 10 -height 5 -relief raised
+      label .isobox.hd.symbol    -bd 1 -text "[lindex $Lbl(Symbol) $GDefs(Lang)]"       -width 8  -height 5 -relief raised
+      label .isobox.hd.name      -bd 1 -text "[lindex $Lbl(Name) $GDefs(Lang)]"         -width 13 -height 5 -relief raised
+      label .isobox.hd.z         -bd 1 -text "[lindex $Lbl(AtomicNumber) $GDefs(Lang)]" -width 9  -height 5 -relief raised
+      label .isobox.hd.n         -bd 1 -text "[lindex $Lbl(NbNeutrons) $GDefs(Lang)]"   -width 9  -height 5 -relief raised
+      label .isobox.hd.a         -bd 1 -text "[lindex $Lbl(MassNumber) $GDefs(Lang)]"   -width 9  -height 5 -relief raised
+      label .isobox.hd.demi      -bd 1 -text "[lindex $Lbl(HalfLife) $GDefs(Lang)]"     -width 11 -height 5 -relief raised
+      label .isobox.hd.sec       -bd 1 -text "[lindex $Lbl(Dry) $GDefs(Lang)]"          -width 11 -height 5 -relief raised
+      label .isobox.hd.hum       -bd 1 -text "[lindex $Lbl(Wet) $GDefs(Lang)]"          -width 11 -height 5 -relief raised
+      label .isobox.hd.depvel    -bd 1 -text "[lindex $Lbl(DryDep) $GDefs(Lang)]"       -width 11 -height 5 -relief raised
+      label .isobox.hd.edrc      -bd 1 -text "[lindex $Lbl(EDRC) $GDefs(Lang)]"         -width 38 -height 5 -relief raised
 
-      pack .isobox.hd.espece .isobox.hd.intensite .isobox.hd.demi .isobox.hd.sec .isobox.hd.hum .isobox.hd.depvel -side left -fill y
-      pack .isobox.hd.unit -side left -fill x -fill y -expand true
+      pack .isobox.hd.symbol .isobox.hd.name .isobox.hd.z .isobox.hd.n .isobox.hd.a .isobox.hd.demi .isobox.hd.sec .isobox.hd.hum .isobox.hd.depvel .isobox.hd.edrc -side left -fill x -fill y -expand true
    pack .isobox.hd -side top -anchor w -fill x
 
    #----- Creer le frame du bas qui va contenir le listbox.
    frame .isobox.bas
       listbox .isobox.bas.box -relief sunken -bd 1 -exportselection false  -highlightthickness 0 \
-         -yscrollcommand ".isobox.bas.scroll set" -height 10 -width 70 -background $GDefs(ColorLight)
+         -yscrollcommand ".isobox.bas.scroll set" -height 25 -width 100 -background $GDefs(ColorLight)
       pack .isobox.bas.box -side left -expand true -fill both
 
       scrollbar .isobox.bas.scroll -command ".isobox.bas.box yview" -bd 1 -width 10  -highlightthickness 0
@@ -185,10 +189,13 @@ proc IsoBox::Insert { } {
 
    set f [open $GDefs(Dir)/Data/Specie.src]
 
+   set idxname [expr 18 + $GDefs(Lang)]
+
    while { [gets $f ligne]>=0 } {
-      if {[string index $ligne 0]!= "C" && [string length $ligne]>90} {
-         .isobox.bas.box insert end [format "%-9s %-11s %-10s %-11s %-10s %-10s %-5s"  \
-            [lindex $ligne 0] [lindex $ligne 10] [lindex $ligne 1] [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 14]]
+      if {[string index $ligne 0]!= "c" && [string length $ligne]>90} {
+         .isobox.bas.box insert end [format "%-8s %-13s %5s %8s %9s %12s %11s %11s %10s %15s %17s"  \
+            [lindex $ligne 0] [lindex $ligne $idxname] [lindex $ligne 15] [lindex $ligne 17] [lindex $ligne 16] [lindex $ligne 1] \
+            [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 8] [lindex $ligne 9]]
       }
    }
    close $f
