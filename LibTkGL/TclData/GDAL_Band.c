@@ -533,8 +533,6 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    TRANSFORM(Ref,dx,dy,X1+0.5,Y0-0.5);
    OGR_G_SetPoint(Def->Pick,3,dx,dy,0);
 
-   val=Value;
-
    /* Test for intersection */
    if ((Area>0.0 || Mode!='C' || Mode!='N' || Mode!='A') && GPC_Intersect(Geom,Def->Pick)) {
 
@@ -754,8 +752,13 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
                   if (area>0.0) {
                      Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
+                     /*If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results*/
                      if (isnan(val1) || val1==FromDef->NoData) {
-                        continue;
+                        if (list) {
+                           val1=0.0;
+                        } else {
+                           continue;
+                        }
                      }
 
                      /*Use enveloppe limits to initialize the initial lookup range*/
@@ -795,7 +798,12 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                if (area>0.0) {
                   Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
                   if (isnan(val1) || val1==FromDef->NoData) {
-                     continue;
+                     /*If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results*/
+                     if (list) {
+                        val1=0.0;
+                     } else {
+                        continue;
+                     }
                   }
 
                   /*Use enveloppe limits to initialize the initial lookup range*/
