@@ -141,7 +141,7 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
 */
 int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
 
-   int key,ni,nj,nk;
+   int key,ni=0,nj=0,nk=0;
 
    if (!*Ptr) {
       if (Grid==1) {
