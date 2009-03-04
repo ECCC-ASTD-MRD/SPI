@@ -622,6 +622,11 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                if (Objc>7) {
                   obj=Objv[7];
                }
+               /*Check compatibility between source and destination*/
+               if (!Data_DefCompat(field0->Def,field1->Def)) {
+                  field0->Ref=GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->LevelType,field1->Ref->Levels);
+               }
+               field0->Ref->LevelType=field1->Ref->LevelType;
                FSTD_FieldSetTo(field0,field1);
                return(Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
             } else if (n>=5 && n<=18) {
