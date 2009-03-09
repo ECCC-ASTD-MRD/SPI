@@ -1623,7 +1623,7 @@ int GeoRef_Valid(TGeoRef *Ref) {
 
    Ref->Project(Ref,Ref->X0,Ref->Y0,&co[0].Lat,&co[0].Lon,1,1);
    Ref->Project(Ref,Ref->X1,Ref->Y1,&co[1].Lat,&co[1].Lon,1,1);
-   if (co[0].Lat<-90 || co[0].Lat>90.0 || co[1].Lat<-90 || co[1].Lat>90.0) {
+   if (co[0].Lat<-91 || co[0].Lat>91.0 || co[1].Lat<-91 || co[1].Lat>91.0) {
       return(0);
    }
    return(1);
