@@ -486,7 +486,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
             if (!Band->Ref->Project(Band->Ref,dx,dy,&tl[j][1],&tl[j][0],1,1)) {
                fprintf(stderr,"(ERROR) GeoTex_Sample: Error transforming sub tile coordinates\n");
             }
-            if (tl[j][1]>90.0 || tl[j][1]<-90.0 || tl[j][0]<-360 || tl[j][0]>360) {
+            if (tl[j][1]>91.0 || tl[j][1]<-91.0 || tl[j][0]<-361 || tl[j][0]>361) {
                fprintf(stderr,"(ERROR) GeoTex_Sample: Invalid transformation\nn");
                free(tl);
                free(Tile->Nr);Tile->Nr=NULL;
@@ -1039,60 +1039,62 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
 */
 TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
 
-   TGeoTexTile *next,*best=NULL,*tile=NULL;
+   TGeoTexTile *next=NULL,*best=NULL,*tile=NULL;
 
    /*Parse the tree to find best resolution tile*/
-   tile=next=Tex->Tile;
-   if (!tile->Flag&GEOTEX_DATA || (*X<0 || *X>=Tex->Nx || *Y<0 || *Y>=Tex->Ny)) {
-      next=tile=best=NULL;
-   }
+   if ((tile=next=Tex->Tile)) {
 
-   while(next) {
-      /*Keep last best resolution available*/
-      if (next->Flag&GEOTEX_DATA) {
-         best=next;
+      if (!tile->Flag&GEOTEX_DATA || (*X<0 || *X>=Tex->Nx || *Y<0 || *Y>=Tex->Ny)) {
+         next=tile=best=NULL;
       }
 
-      /*If lower thant current resolution, finish*/
-      if (next->Res<=Res) {
-         break;
-      }
+      while(next) {
+         /*Keep last best resolution available*/
+         if (next->Flag&GEOTEX_DATA) {
+            best=next;
+         }
 
-      /*Check for the next best subtile*/
-      tile=next->Sub[0];
-      if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
-         next=tile;
-      } else {
-         tile=next->Sub[1];
+         /*If lower thant current resolution, finish*/
+         if (next->Res<=Res) {
+            break;
+         }
+
+         /*Check for the next best subtile*/
+         tile=next->Sub[0];
          if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
             next=tile;
          } else {
-            tile=next->Sub[2];
+            tile=next->Sub[1];
             if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
                next=tile;
             } else {
-               tile=next->Sub[3];
+               tile=next->Sub[2];
                if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
                   next=tile;
                } else {
-                  break;
+                  tile=next->Sub[3];
+                  if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
+                     next=tile;
+                  } else {
+                     break;
+                  }
                }
             }
          }
       }
-   }
 
-   /*If the tile is empty, use the best previous resolution*/
-   if (!(next->Flag&GEOTEX_DATA)) {
-         next=best;
-   }
+      /*If the tile is empty, use the best previous resolution*/
+      if (!(next->Flag&GEOTEX_DATA)) {
+            next=best;
+      }
 
-   /*Calculate local tile coordinates*/
-   if (!next) {
-      *X=*Y=-1;
-   } else {
-      *X=(*X-next->Dx)/next->Res;
-      *Y=(*Y-next->Dy)/next->Res;
+      /*Calculate local tile coordinates*/
+      if (!next) {
+         *X=*Y=-1;
+      } else {
+         *X=(*X-next->Dx)/next->Res;
+         *Y=(*Y-next->Dy)/next->Res;
+      }
    }
    return(next);
 }
@@ -1126,6 +1128,7 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
 
    x=X;
    y=Y;
+
    tile=GeoTex_Pick(Tex,0,&x,&y);
 
    if (tile && tile->Ny) {
