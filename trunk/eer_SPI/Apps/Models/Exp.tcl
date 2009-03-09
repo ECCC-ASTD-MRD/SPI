@@ -31,6 +31,7 @@ namespace eval Exp {
 
    set Data(Models)    "SATDATA CANERM TRAJECT MLDP0 MLDP1 MLCD"  ;#Liste des modeles disponibles
 
+   set Data(ParsingTree) 0
    set Data(Branch)    ""                                 ;#Liste des branches d'experiences ouvertes
    set Data(BranchSim) ""                                 ;#Liste des branches de simulation d'experiences ouvertes
    set Data(Frame)     ""                                 ;#Container
@@ -382,6 +383,11 @@ proc Exp::CreateTree { } {
    variable Data
    variable Param
 
+   if { $Data(ParsingTree) } {
+      return
+   }
+
+   set Data(ParsingTree) 1
    set canvas $Data(Frame).info.exp.canvas
    set y 15
 
@@ -482,6 +488,8 @@ proc Exp::CreateTree { } {
 
    $canvas bind SIGN <Enter> "$canvas config -cursor hand1"
    $canvas bind SIGN <Leave> "$canvas config -cursor left_ptr"
+
+   set Data(ParsingTree) 0
 }
 
 #-------------------------------------------------------------------------------
@@ -630,10 +638,7 @@ proc Exp::LaunchUpdate { Id Read } {
       }
 
       catch { close $Data(Job$Id) }
-
-      if { $Data(File$Id)!="" } {
-         catch { close $Data(File$Id) }
-      }
+      catch { close $Data(File$Id) }
 
       catch {
          unset Data(Job$Id)
