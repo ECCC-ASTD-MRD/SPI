@@ -278,7 +278,7 @@ typedef struct TData {
    Tcl_Obj      *Tag;
    void         *Head;      /*Entete de l'enregistrement*/
 
-   TGeoRef      *Ref;       /*Reference geographique*/
+   TGeoRef      *Ref;       /*Reference geographique horizontale*/
    TDataDef     *Def;       /*Definition des donnees*/
    TDataSpec    *Spec;      /*Specification des donnees*/
    TDataStat    *Stat;      /*Statistiques de l'enregistrement*/
@@ -330,6 +330,6 @@ int       Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);
 int       Data_DefTile(TDataDef *DefTo,TDataDef *DefTile,int X0,int Y0);
 
 double    Data_Level2Meter(int Type,double Level);
-double    Data_Level2Pressure(const int Type,const double Level,const double P0,const double P1,const double PRef,const double RCoef);
+double    Data_Level2Pressure(TGeoRef *Ref,const double Level,double P0,int K);
 
 #endif

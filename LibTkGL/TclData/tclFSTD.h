@@ -107,8 +107,9 @@ double  FSTD_IP2Level(int IP,int *Type);
 int     FSTD_Level2IP(float Level,int Type);
 void    FSTD_DataMap(TData *Field,int Idx);
 
-int    FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,float *PTop,float *PRef,float *RCoef);
-int    FSTD_ReadDecodeLevelParams(TData *Field);
+int    ZRef_DecodeRPNLevelParams(TData *Field);
+int    ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref);
+int    ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref);
 
 Vect3d* FSTD_Grid(TData *Field,void *Proj);
 void    FSTD_HeadCopy(void *To,void *From);

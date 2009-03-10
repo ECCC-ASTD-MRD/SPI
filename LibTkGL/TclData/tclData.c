@@ -453,7 +453,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          Field[f]->ReadCube(Interp,Field[f],0);
 
       /*Try to read HY for hybrid levels*/
-      if (!FSTD_ReadDecodeLevelParams(Field[f])) {
+      if (!ZRef_DecodeRPNLevelParams(Field[f])) {
          Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
       }
 
@@ -468,9 +468,11 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    cut->Ref=GeoRef_Reference(Field[0]->Ref);
    cut->Ref->Grid[0]='V';
    cut->Ref->LevelType=Field[0]->Ref->LevelType;
+   cut->Ref->ETop=Field[0]->Ref->ETop;
    cut->Ref->Top=Field[0]->Ref->Top;
    cut->Ref->Ref=Field[0]->Ref->Ref;
-   cut->Ref->Coef=Field[0]->Ref->Coef;
+   cut->Ref->Coef[0]=Field[0]->Ref->Coef[0];
+   cut->Ref->Coef[1]=Field[0]->Ref->Coef[1];
 
    cut->Ref->Levels=(float*)malloc(Field[0]->Def->NK*sizeof(float));
    memcpy(cut->Ref->Levels,Field[0]->Ref->Levels,Field[0]->Def->NK*sizeof(float));
@@ -519,7 +521,12 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
             if (!Field[f]->Def->Pres && cut->Ref->Hgt) {
                FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID);
-               FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1);
+               /*In case of hybrid staggered, read !!SF, otherwise, use P0*/
+               if (cut->Ref->RefFrom->A) {
+                  FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1);
+               } else {
+                  FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1);
+               }
                FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
             }
 
@@ -544,7 +551,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                /*Convert level to pressure*/
                if (Field[f]->Def->Pres && cut->Ref->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
-                  cut->Ref->Hgt[idx]=Data_Level2Pressure(Field[f]->Ref->LevelType,Field[f]->Ref->Levels[k],p0,Field[f]->Ref->Top,Field[f]->Ref->Ref,Field[f]->Ref->Coef);
+                  cut->Ref->Hgt[idx]=Data_Level2Pressure(Field[f]->Ref,Field[f]->Ref->Levels[k],p0,k);
                }
 
                /*If it is vectors, reproject along xsection axis*/
@@ -2253,10 +2260,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case COEF:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Coef));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Coef[0]));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->Coef=tmpd;
+               Field->Ref->Coef[0]=tmpd;
             }
             break;
 
@@ -2305,11 +2312,11 @@ double Data_Level2Meter(int Type,double Level) {
    return(0.0);
 }
 
-double Data_Level2Pressure(const int Type,const double Level,const double P0,const double P1,const double PRef,const double RCoef) {
+double Data_Level2Pressure(TGeoRef *Ref,const double Level,double P0,int K) {
 
    double pres=-1.0;
 
-   switch(Type) {
+   switch(Ref->LevelType) {
       case LVL_PRES:
          pres=Level;
          break;
@@ -2319,11 +2326,15 @@ double Data_Level2Pressure(const int Type,const double Level,const double P0,con
          break;
 
       case LVL_ETA:
-         pres=P1+(P0-P1)*Level;
+         pres=Ref->Top+(P0-Ref->Top)*Level;
          break;
 
       case LVL_HYBRID:
-         pres=PRef*Level+(P0-PRef)*pow((Level-P1/PRef)/(1.0-P1/PRef),RCoef);
+         if (Ref->A && Ref->B) {
+            pres=exp(Ref->A[K]+Ref->B[K]*P0)/100.0;
+         } else {
+            pres=Ref->Ref*Level+(P0-Ref->Ref)*pow((Level-Ref->Top/Ref->Ref)/(1.0-Ref->Top/Ref->Ref),Ref->Coef[0]);
+         }
          break;
 
       default:

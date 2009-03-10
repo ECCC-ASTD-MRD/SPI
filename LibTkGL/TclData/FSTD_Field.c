@@ -605,28 +605,83 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
  *
  *----------------------------------------------------------------------------
  */
-int FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,float *PTop,float *PRef,float *RCoef) {
+int ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref) {
 
    int   l,deet,ip1a,ip2a,ip3a,ig1a,ig2a,ig3a,ig4a,bit;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
-   int   npas,nia,nja,i,j,k,kind,flag=0,mode=-1;
+   int   npas,ni,nj,nk,kind,flag=0,mode=-1;
    char  typ,grda,blk_S;
    char  var[5];
    char  labanl[13];
 
-   l = c_fstinf(Unit,&i,&j,&k,DateV,Etiket,-1,IP2,IP3,"X",Var);
+   l = c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","HY   ");
    if (l>=0) {
-       l = c_fstprm(l,&idayo,&deet,&npas,&nia,&nja,&k,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
+       l = c_fstprm(l,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
                     &ig1a,&ig2a,&ig3a,&ig4a,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
-       f77name(convip)(&ip1a,PTop,&kind,&mode,&blk_S,&flag);
-       *RCoef=ig2a/1000.0f;
-       *PRef=ig1a;
+       f77name(convip)(&ip1a,&Ref->Top,&kind,&mode,&blk_S,&flag);
+       Ref->Coef[0]=ig2a/1000.0f;
+       Ref->Coef[1]=0.0f;
+       Ref->Ref=ig1a;
+   } else {
+      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).");
+   }
+   return(l);
+}
+
+int ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref) {
+
+   int   key,l,deet,ip1a,ip2a,ip3a,ig1a,ig2a,ig3a,ig4a,bit;
+   int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
+   int   npas,j,ni,nj,nk,k;
+   char  typ,grda;
+   char  var[5];
+   char  labanl[13];
+   double *buf;
+
+   key=l=c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","!!  ");
+   if (l>=0) {
+       l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
+                    &ig1a,&ig2a,&ig3a,&ig4a,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
+       if (l>=0) {
+         Ref->Ref=1000.0;
+         Ref->Top=ig2a/100.0;
+         Ref->ETop=0.0;
+         Ref->Coef[0]=ig3a/1000.0f;
+         Ref->Coef[1]=ig4a/1000.0f;
+
+         buf=(double*)malloc(ni*nj*sizeof(double));
+         if (!Ref->A) Ref->A=(float*)malloc(Ref->LevelNb*sizeof(float));
+         if (!Ref->B) Ref->B=(float*)malloc(Ref->LevelNb*sizeof(float));
+
+         l=c_fstluk(buf,key,&ni,&nj,&nk);
+         if (l>=0) {
+            for(k=0;k<Ref->LevelNb;k++) {
+               for(j=0;j<nj;j++) {
+                  if (buf[j*ni]==FSTD_Level2IP(Ref->Levels[k],Ref->LevelType)) {
+                     Ref->A[k]=buf[j*ni+1];
+                     Ref->B[k]=buf[j*ni+2];
+                     break;
+                  }
+               }
+               if (j==nj) {
+                  fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %i in lookup table.",Ref->Levels[k]);
+               }
+            }
+         } else {
+            fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not read !! field (c_fstluk).");
+         }
+         free(buf);
+      } else {
+         fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not get info on !! field (c_fstprm).");
+      }
+   } else {
+      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).");
    }
    return(l);
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_ReadDecodeLevelParams>
+ * Nom      : <ZRef_DecodeRPNLevelParams>
  * Creation : Fevrier 2009 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Lite le champs de definitions des niveaux hybrides
@@ -641,7 +696,7 @@ int FSTD_DecodeHybrid(int Unit,char* Var,int IP2,int IP3,char *Etiket,int DateV,
  *
  *----------------------------------------------------------------------------
  */
-int FSTD_ReadDecodeLevelParams(TData *Field) {
+int ZRef_DecodeRPNLevelParams(TData *Field) {
 
    FSTD_File *fid;
    int        i=1;
@@ -652,10 +707,12 @@ int FSTD_ReadDecodeLevelParams(TData *Field) {
       if ((fid=((FSTD_Head*)Field->Head)->FID)) {
          i=-1;
          FSTD_FileSet(NULL,fid);
-         if (FSTD_DecodeHybrid(fid->Id,"HY   ",i,i,"             ",i,&Field->Ref->Top,&Field->Ref->Ref,&Field->Ref->Coef)<0) {
-            i=0;
-         } else {
+         if (ZRef_DecodeRPNHybrid(fid->Id,i,i,"             ",i,Field->Ref)>=0) {
             i=1;
+         } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,i,i,"             ",i,Field->Ref)>=0) {
+            i=1;
+         } else {
+            i=0;
          }
          FSTD_FileUnset(NULL,fid);
       }
@@ -785,21 +842,21 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    c_visetopt(threadData->viInterp,"VERBOSE","NO");
 
    /*Try to read HY for hybrid levels*/
-   if (!FSTD_ReadDecodeLevelParams(FieldFrom)) {
+   if (!ZRef_DecodeRPNLevelParams(FieldFrom)) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find source hybrid definition field HY",(char*)NULL);
    }
 
-   if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,FieldFrom->Ref->Top,FieldFrom->Ref->Ref,FieldFrom->Ref->Coef,(float*)(ZFieldFrom->Def->Data[0])))<0) {
+   if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,FieldFrom->Ref->Top,FieldFrom->Ref->Ref,FieldFrom->Ref->Coef[0],(float*)(ZFieldFrom->Def->Data[0])))<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize source grid (c_viqkdef)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
       return(TCL_ERROR);
    }
 
-   if (!FSTD_ReadDecodeLevelParams(FieldTo)) {
+   if (!ZRef_DecodeRPNLevelParams(FieldTo)) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find destination hybrid definition field HY",(char*)NULL);
    }
 
-   if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,FieldTo->Ref->Top,FieldTo->Ref->Ref,FieldTo->Ref->Coef,(float*)(ZFieldTo->Def->Data[0])))<0) {
+   if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,FieldTo->Ref->Top,FieldTo->Ref->Ref,FieldTo->Ref->Coef[0],(float*)(ZFieldTo->Def->Data[0])))<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize destination grid (c_viqkdef)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
       return(TCL_ERROR);
