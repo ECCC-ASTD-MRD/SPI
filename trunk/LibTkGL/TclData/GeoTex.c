@@ -487,7 +487,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                fprintf(stderr,"(ERROR) GeoTex_Sample: Error transforming sub tile coordinates\n");
             }
             if (tl[j][1]>91.0 || tl[j][1]<-91.0 || tl[j][0]<-361 || tl[j][0]>361) {
-               fprintf(stderr,"(ERROR) GeoTex_Sample: Invalid transformation\nn");
+               fprintf(stderr,"(ERROR) GeoTex_Sample: Invalid transformation\n");
                free(tl);
                free(Tile->Nr);Tile->Nr=NULL;
                Tile->Tl=NULL;
@@ -1061,19 +1061,19 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
 
          /*Check for the next best subtile*/
          tile=next->Sub[0];
-         if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
+         if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
             next=tile;
          } else {
             tile=next->Sub[1];
-            if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
+            if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
                next=tile;
             } else {
                tile=next->Sub[2];
-               if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
+               if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
                   next=tile;
                } else {
                   tile=next->Sub[3];
-                  if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<=(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<=(tile->Dy+tile->Ny*tile->Res)) {
+                  if (tile>(TGeoTexTile*)0x1 && *X>=tile->Dx && *X<(tile->Dx+tile->Nx*tile->Res) && *Y>=tile->Dy && *Y<(tile->Dy+tile->Ny*tile->Res)) {
                      next=tile;
                   } else {
                      break;
@@ -1094,6 +1094,10 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
       } else {
          *X=(*X-next->Dx)/next->Res;
          *Y=(*Y-next->Dy)/next->Res;
+         if (*X>=next->Nx)
+            *X=next->Nx-1;
+         if (*Y>=next->Ny)
+            *Y=next->Ny-1;
       }
    }
    return(next);
