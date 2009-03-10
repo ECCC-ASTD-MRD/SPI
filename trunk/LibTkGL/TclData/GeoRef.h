@@ -109,18 +109,34 @@ typedef int    (TGeoRef_Value)     (struct TGeoRef *Ref,void *Def,char Mode,int 
 typedef double (TGeoRef_Distance)  (struct TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
 typedef int    (TGeoRef_Check)     (struct TGeoRef *Ref);
 
+typedef struct THeightRef {
+   float *Levels;       /*Levels list*/
+   int    LevelType;    /*Type of levels*/
+   int    LevelNb;      /*Number of Levels*/
+   float  PTop;         /*Pressure at top of atmosphere*/
+   float  PRef;         /*Refference pressure*/
+   float  RCoef[2];     /*Hybrid level coefficient*/
+   float  ETop;         /*Eta coordinate a top*/
+   float  *A,*B;        /*Pressure calculation factors*/
+} TZRef;
+
 typedef struct TGeoRef {
-   char*  Name;
-   int    Id;                                             /*Id de la georeference (>=0 = ezscint)*/
-   int    NRef;                                           /*Nombre de reference a la georeference*/
-   int    Type;                                           /*Type de grille*/
-   int    BD;                                             /*Bordure*/
-   int    X0,Y0,Z0,X1,Y1,Z1;                              /*Grid limits*/
+   char*   Name;
+   int     Id;                                            /*Id de la georeference (>=0 = ezscint)*/
+   int     NRef;                                          /*Nombre de reference a la georeference*/
+   int     Type;                                          /*Type de grille*/
+   int     BD;                                            /*Bordure*/
+   int     X0,Y0,Z0,X1,Y1,Z1;                             /*Grid limits*/
    Vect3d *Pos;                                           /*Coordonnees des points de grilles (World)*/
 
-   float *Levels;                                         /*Liste des niveaux*/
-   int    LevelType,LevelNb;                              /*Type de niveaux*/
-   float  Top,Ref,Coef;                                   /*Hybrid level parametres*/
+   float *Levels;       /*Levels list*/
+   int    LevelType;    /*Type of levels*/
+   int    LevelNb;      /*Number of Levels*/
+   float  Top;         /*Pressure at top of atmosphere*/
+   float  Ref;         /*Refference pressure*/
+   float  Coef[2];     /*Hybrid level coefficient*/
+   float  ETop;         /*Eta coordinate a top*/
+   float  *A,*B;        /*Pressure calculation factors*/
 
    Coord  Loc;                                            /*(Radar) Localisation du centre de reference*/
    double CTH,STH;                                        /*(Radar) sin and cos of sweep angle*/
