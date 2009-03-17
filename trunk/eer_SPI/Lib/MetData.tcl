@@ -172,7 +172,7 @@ proc MetData::Duration { List Idx0 Idx1 } {
 
 proc MetData::GetLatestRun { Path } {
 
-   return [lindex [split [lindex [lsort -dictionary -increasing [glob -nocomplain $Path/*_???]] end] _] 0]
+   return [lindex [split [lindex [lsort -dictionary -increasing [glob -nocomplain $Path/\[1-2\]*_???]] end] _] 0]
 }
 
 #----------------------------------------------------------------------------
@@ -193,7 +193,7 @@ proc MetData::GetLatestRun { Path } {
 
 proc MetData::GetLatestStamp { Path } {
 
-   set file  [lindex [lsort -dictionary [glob -tails -directory $Path *_???]] end]
+   set file  [lindex [lsort -dictionary [glob -tails -directory $Path \[1-2\]*_???]] end]
    set stamp [fstdstamp fromseconds [clock scan "[string range $file 0 7] [string range $file 8 9]"]]
    return $stamp
 }
@@ -300,9 +300,9 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       if { [llength $lst]>1 } {
          set host [lindex $lst 0]
          set path [join [lrange $lst 1 end] :]
-         catch { set afile [exec ssh -l $GDefs(FrontEndUser) -n -x $host "ls $path/*_000"] }
+         catch { set afile [exec ssh -l $GDefs(FrontEndUser) -n -x $host "ls $path/\[1-2\]*_000"] }
       } else {
-         set afile [lsort -dictionary -increasing [glob -nocomplain $APath/*_000]]
+         set afile [lsort -dictionary -increasing [glob -nocomplain $APath/\[1-2\]*_000]]
       }
    }
 
@@ -312,9 +312,9 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       if { [llength $lst]>1 } {
          set host [lindex $lst 0]
          set path [join [lrange $lst 1 end] :]
-         catch { set pfile [exec ssh -l $GDefs(FrontEndUser) -n -x $host "ls $path/*_???"] }
+         catch { set pfile [exec ssh -l $GDefs(FrontEndUser) -n -x $host "ls $path/\[1-2\]*_???"] }
       } else {
-         set pfile [lsort -dictionary -increasing [glob -nocomplain $PPath/*_???]]
+         set pfile [lsort -dictionary -increasing [glob -nocomplain $PPath/\[1-2\]*_???]]
       }
    }
 
