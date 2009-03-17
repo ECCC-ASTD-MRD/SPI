@@ -1852,7 +1852,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    TMetLoc      *loc;
    TMetElemData *data;
 
-   int      e,sz1=0,sz2=0;
+   int      e,sz1=0,sz2=0,c;
 
    int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0;
    int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp;
@@ -1905,6 +1905,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
   /*Start reading reports*/
    handle=0;
    while((handle=c_mrfloc(Obs->FId,handle,"*********",-1,-1,-1,-1,-1,-1,0))>0) {
+
      *buf=sz;
       err=c_mrfget(handle,buf);
       if (err<0) {
@@ -1999,20 +2000,29 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
 
          /*Get the elements code list and cache it within obs object*/
+         c=0;
          for(e=0;e<nelem;e++) {
+            c=((int*)eb)[e];
+
             /*Patch the Geopotential height since there is multiple definition for it, use the first one*/
-            if (((int*)eb)[e]==10194 || ((int*)eb)[e]==10009 || ((int*)eb)[e]==7194)
-               ((int*)eb)[e]=7009;
+            if (c==10194 || c==10009 || c==7194)
+               c=7009;
 
-            eb[e]=MetObs_BUFRFindTableCode(((int*)eb)[e]);
-
-            Tcl_SetIntObj(obj,eb[e]->descriptor);
-            if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
-               Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
+            if (eb[e]=MetObs_BUFRFindTableCode(c)) {
+               Tcl_SetIntObj(obj,eb[e]->descriptor);
+               if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
+                  Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));
+               }
+               c=1;
+            } else {
+               fprintf(stdout,"(WARNING) MetObs_LoadBURP: Found invalid code (%i)\n",c);
+               c=0;
+               break;
             }
          }
 
-         data=TMetElem_Insert(loc,dt,time,bfam,nelem,nval,nt,tblvalf,eb);
+         /*if the elements where ok, add the dataset*/
+         if (c) data=TMetElem_Insert(loc,dt,time,bfam,nelem,nval,nt,tblvalf,eb);
       }
    }
 
