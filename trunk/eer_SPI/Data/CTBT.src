@@ -22,7 +22,7 @@ RN020   :Beijing                       :China               :39.750000:N:116.200
 RN021   :Lanzhou                       :China               :35.800000:N:103.300000:E:     0
 RN022   :Guangzhou                     :China               :23.000000:N:113.300000:E:     0
 CKP23   :Islands Rarotonga             :Cook                :21.200000:S:159.800000:W:     0
-RN024   :San Cristobal                 :Ecuador             :21.200000:N:159.800000:E:     0
+RN024   :San Cristobal                 :Ecuador             : 1.000000:S: 89.200000:W:     0
 RN025   :Filtu                         :Ethiopia            : 5.500000:N: 42.700000:E:     0
 FJP26   :Nandi                         :Fiji                :17.760000:S:177.440000:E:     0
 FRP27   :Papeete                       :France              :17.580000:S:149.570000:W:     0
@@ -63,7 +63,7 @@ RN062   :Marion Islands                :South Africa        :46.500000:S: 37.000
 SEP63   :Stockholm                     :Sweden              :59.230000:N: 17.570000:E:     0
 TZP64   :Dar es Salaam                 :Tanzania            : 6.780000:S: 39.200000:E:     0
 RN065   :Bangkok                       :Thailand            :13.750000:N:100.500000:E:     0
-GBP66   :Diego                         :United Kingdom      :13.750000:N:100.500000:E:     0
+GBP66   :Diego                         :United Kingdom      : 7.300000:S: 72.400000:E:     0
 GBP67   :St Helena                     :United Kingdom      :15.940000:S:  5.670000:W:     0
 GBP68   :Tristan Da Cunha              :United Kingdom      :37.000000:S: 12.330000:W:     0
 RN069   :Halley                        :United Kingdom      :76.000000:S: 28.000000:W:     0
