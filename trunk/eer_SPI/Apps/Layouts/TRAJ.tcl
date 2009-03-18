@@ -354,6 +354,7 @@ proc TRAJ::SATNET { Frame Mode } {
    variable Lbl
    variable Msg
    variable OCXNO
+   variable Page
 
    set transmit [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Transmit) $GDefs(Lang)] \
       warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
@@ -400,7 +401,7 @@ proc TRAJ::SATNET { Frame Mode } {
    #----- envoyer sur les sites web.
 
    set name "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]"
-   exec convert ${file}.gif ${file}.png
+   exec convert ${file}.gif -resize $Page(Width)x$Page(Height) ${file}.png
 
    set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
    catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png"  }
