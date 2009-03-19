@@ -82,7 +82,7 @@ typedef struct FSTD_Head {
 int  TclFSTD_Init(Tcl_Interp *Interp);
 TFSTDVector *FSTD_VectorTableCheck(char *Var,int *Idx);
 
-TData* FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Type);
+TData* FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData_Type Type);
 void   FSTD_FieldDataGet(Tcl_Interp *Interp,TData *Field);
 int    FSTD_FieldDataPut(Tcl_Interp *Interp,TData *Field,char* ValueList);
 int    FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
@@ -111,8 +111,9 @@ int    ZRef_DecodeRPNLevelParams(TData *Field);
 int    ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref);
 int    ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref);
 
-Vect3d* FSTD_Grid(TData *Field,void *Proj);
-void    FSTD_HeadCopy(void *To,void *From);
+Vect3d*    FSTD_Grid(TData *Field,void *Proj);
+void       FSTD_HeadCopy(void *To,void *From);
+TData_Type FSTD_TypeCheck(int Type,int Size);
 
 int         FSTD_FileClose(Tcl_Interp *Interp,char *Id);
 int         FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name);

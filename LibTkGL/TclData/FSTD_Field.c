@@ -46,6 +46,32 @@ static Tcl_ThreadDataKey threadKey;
 static int FSTD_Type[]={ 1,10,6,2,7,10,10 };
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FSTD_TypeCheckt>
+ * Creation : Mars 2009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Determiner le type (TData_Type) de donnees RPN.
+ *
+ * Parametres   :
+ *  <Type>      : DATYP
+ *  <Size>      : NBIT
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+TData_Type FSTD_TypeCheck(int Type,int Size) {
+
+   switch(FSTD_Type[Type]) {
+      case TD_Float32: Type=Size>32?TD_Float64:TD_Float32;                    break;
+      case TD_UInt32:  Type=Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt32;  break;
+      case TD_Int32:   Type=Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int32;     break;
+   }
+   return(Type);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldSet>
  * Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
  *
@@ -623,7 +649,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef
        Ref->Coef[1]=0.0f;
        Ref->Ref=ig1a;
    } else {
-      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).");
+      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).\n");
    }
    return(l);
 }
@@ -664,18 +690,18 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int Date
                   }
                }
                if (j==nj) {
-                  fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %i in lookup table.",Ref->Levels[k]);
+                  fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %i in lookup table.\n",Ref->Levels[k]);
                }
             }
          } else {
-            fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not read !! field (c_fstluk).");
+            fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not read !! field (c_fstluk).\n");
          }
          free(buf);
       } else {
-         fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not get info on !! field (c_fstprm).");
+         fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not get info on !! field (c_fstprm).\n");
       }
    } else {
-      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).");
+      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).\n");
    }
    return(l);
 }
@@ -788,11 +814,11 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
    if (FieldFrom->Ref->LevelType==LVL_GALCHEN || FieldFrom->Ref->LevelType==LVL_MASL || FieldFrom->Ref->LevelType==LVL_MAGL ||
       FieldTo->Ref->LevelType==LVL_GALCHEN || FieldTo->Ref->LevelType==LVL_MASL ||  FieldTo->Ref->LevelType==LVL_MAGL) {
-      if (!ZFieldFrom) {
+      if (!ZFieldFrom && FieldFrom->Ref->LevelType!=LVL_MASL) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ source field data",(char*)NULL);
          return(TCL_ERROR);
       }
-      if (!ZFieldTo) {
+      if (!ZFieldTo && FieldTo->Ref->LevelType!=LVL_MASL) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ destination field data",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -846,7 +872,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find source hybrid definition field HY",(char*)NULL);
    }
 
-   if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,FieldFrom->Ref->Top,FieldFrom->Ref->Ref,FieldFrom->Ref->Coef[0],(float*)(ZFieldFrom->Def->Data[0])))<0) {
+   if ((gridfrom=c_viqkdef(threadData->viInterp,FieldFrom->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels,FieldFrom->Ref->Top,FieldFrom->Ref->Ref,FieldFrom->Ref->Coef[0],ZFieldFrom?(float*)(ZFieldFrom->Def->Data[0]):NULL,FieldFrom->Ref->A,FieldFrom->Ref->B))<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize source grid (c_viqkdef)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
       return(TCL_ERROR);
@@ -856,7 +882,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find destination hybrid definition field HY",(char*)NULL);
    }
 
-   if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,FieldTo->Ref->Top,FieldTo->Ref->Ref,FieldTo->Ref->Coef[0],(float*)(ZFieldTo->Def->Data[0])))<0) {
+   if ((gridto=c_viqkdef(threadData->viInterp,FieldTo->Def->NK,FieldTo->Ref->LevelType,FieldTo->Ref->Levels,FieldTo->Ref->Top,FieldTo->Ref->Ref,FieldTo->Ref->Coef[0],ZFieldTo?(float*)(ZFieldTo->Def->Data[0]):NULL,FieldTo->Ref->A,FieldTo->Ref->B))<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Could not initialize destination grid (c_viqkdef)",(char*) NULL);
       Tcl_MutexUnlock(&MUTEX_FSTDVI);
       return(TCL_ERROR);
@@ -1191,7 +1217,7 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
 
    if (field->Ref)
       GeoRef_Destroy(Interp,field->Ref->Name);
-  field->Ref=GeoRef_Copy(Field0->Ref);
+   field->Ref=GeoRef_Copy(Field0->Ref);
 #endif
    return TCL_OK;
 }
@@ -1729,19 +1755,35 @@ void FSTD_FieldFree(TData *Field){
  *
  *----------------------------------------------------------------------------
 */
-TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Type){
+TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData_Type Type){
 
-   TData  *field;
+   TData      *field;
+   TData_Type  type;
+   int         datyp,nbit;
 
-   field=Data_Valid(Interp,Name,NI,NJ,NK,1,TD_Float32);
+   switch(Type) {
+      case TD_Binary:  datyp=0;nbit=1;type=TD_Byte; break;
+      case TD_UByte:
+      case TD_Byte:    datyp=3;nbit=8;type=TD_Byte;break;
+      case TD_UInt16:  datyp=2;nbit=16;type=TD_UInt32;break;
+      case TD_Int16:   datyp=4;nbit=16;type=TD_Int32;break;
+      case TD_UInt32:  datyp=2;nbit=32;type=TD_UInt32;break;
+      case TD_Int32:   datyp=4;nbit=32;type=TD_Int32;break;
+      case TD_UInt64:  datyp=2;nbit=64;type=TD_UInt64;break;
+      case TD_Int64:   datyp=4;nbit=64;type=TD_Int64;break;
+      case TD_Float32: datyp=1;nbit=32;type=TD_Float32;break;
+      case TD_Float64: datyp=1;nbit=64;type=TD_Float64;break;
+   }
+
+   field=Data_Valid(Interp,Name,NI,NJ,NK,1,type);
 
    if (!field)
      return(NULL);
 
    FSTD_FieldSet(field);
 
-   field->Def->Type=FSTD_Type[Type];
-   ((FSTD_Head*)field->Head)->DATYP=Type;
+   ((FSTD_Head*)field->Head)->DATYP=datyp;
+   ((FSTD_Head*)field->Head)->NBITS=nbit;
 
    return field;
 }
@@ -2005,7 +2047,8 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar){
 
    FSTD_File  *file;
-   TData *field=NULL;
+   TData      *field=NULL;
+   TData_Type  dtype;
    FSTD_Head   h;
    TFSTDVector *uvw;
    int         ok,ni,nj,nk,i,type,idx;
@@ -2046,6 +2089,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 //   h.DATYP=h.DATYP>=5?1:h.DATYP;
    h.DATYP=h.DATYP>128?h.DATYP-128:h.DATYP;
 
+   dtype=FSTD_TypeCheck(h.DATYP,h.NBITS);
+
    if (ok<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not get field information for ",Name," (c_fstprm failed)",(char*)NULL);
       FSTD_FileUnset(Interp,file);
@@ -2069,7 +2114,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    /*Champs vectoriel ???*/
    if ((uvw=FSTD_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
-      field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),TD_Float32);
+      field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),dtype);
       if (!field) {
          FSTD_FileUnset(Interp,file);
          EZUnLock_RPNField();
@@ -2121,7 +2166,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
    } else {
       /*Verifier si le champs existe et est valide*/
-      field=Data_Valid(Interp,Name,ni,nj,nk,1,TD_Float32);
+      field=Data_Valid(Interp,Name,ni,nj,nk,1,dtype);
       if (!field) {
          EZUnLock_RPNField();
          return(TCL_ERROR);
@@ -2426,8 +2471,8 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       return TCL_ERROR;
 
    head->FID=file;
-   datyp=NPack==-32?5:head->DATYP;
-   NPack=NPack==0?-head->NBITS:NPack;
+   datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
+   NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);
 
    /*Check for compression flag and adjust datyp accordingly*/
    if (Compress) {
@@ -2438,6 +2483,8 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          case 1: datyp=134; break;
       }
    }
+
+   if (NPack==-64) datyp=801;
 
    EZLock_RPNField();
 
@@ -2608,6 +2655,7 @@ int FSTD_ZGrid(Tcl_Interp *Interp,Tcl_Obj *Tic,Tcl_Obj *Tac,Tcl_Obj *Set) {
    int Grd_ni=0,Grd_nj=0,Grd_nila=0,Grd_njla=0,Grd_iref=0,Grd_jref=0,Grd_roule=0,Grd_uniform_L=0;
    float Grd_latr=0.0f,Grd_lonr=0.0f,Grd_dx=0.0f,Grd_dy=0.0f,Grd_dxmax=360.0f,Grd_dymax=180.0f,Grd_phir=22.5f,Grd_dgrw=10.0f;
    float Grd_xlat1=0.0f,Grd_xlon1=180.0f,Grd_xlat2=0.0f,Grd_xlon2=270.0f,Grd_x0=0.0f,Grd_y0=0.0f,Grd_xl=0.0f,Grd_yl=0.0f;
+   float xg1,xg2,xg3,xg4;
 
    float  stretch=-1.0;
    int    debug=0;
@@ -2810,7 +2858,8 @@ int FSTD_ZGrid(Tcl_Interp *Interp,Tcl_Obj *Tic,Tcl_Obj *Tac,Tcl_Obj *Set) {
          phidg_8=Grd_dgrw;
          ns[0]  =Grd_proj_S[0];
          f77name(xpyp_p)(x_8,y_8,&Grd_iref,&Grd_jref,&Grd_latr,&Grd_lonr,&dx_8,&Grd_dgrw,ns,&Grd_ni,&Grd_nj);
-         f77name(cxgaig)(ns,&h.IG1,&h.IG2,&h.IG3,&h.IG4,0.0,0.0,1000.0,&Grd_dgrw);
+         xg1=0.0f;xg2=0.0f;xg3=1000.0f;
+         f77name(cxgaig)(ns,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&xg1,&xg2,&xg3,&Grd_dgrw);
       } else if (Grd_proj_S[0]=='L') {
          if ((Grd_dx*Grd_ni-360.0-Grd_dx)>epsilon) {
             Tcl_AppendResult(Interp,"FSTD_ZGrid: Given grid resolution, it would be wiser to run a globalgrid",(char*)NULL);
