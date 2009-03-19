@@ -214,7 +214,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
          FieldBox::${spc}::Data(IP3) "" 4 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.eticket "ETICKET"  \
          FieldBox::${spc}::Data(Eticket) "" 12 10 FieldBox::Restrict $no
-      SelectBox::Create $id.header.date "DATE"  \
+      SelectBox::Create $id.header.date "DATEV"  \
          FieldBox::${spc}::Data(Date) "" 11 10 FieldBox::Restrict $no
       button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "FieldBox::RestrictClear $no"
@@ -908,7 +908,8 @@ proc FieldBox::InfoCommand { No Index } {
    #----- Date de validite
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
    if { $type=="fstdfield" } {
-      catch { set date [DateStuff::StringDateFromSeconds [fstdstamp toseconds $date] $GDefs(Lang)] }
+#      catch { set date [DateStuff::StringDateFromSeconds [fstdstamp toseconds $date] $GDefs(Lang)] }
+      catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -gmt True] $GDefs(Lang)] }
    } else {
       catch { set date [DateStuff::StringDateFromSeconds $date $GDefs(Lang)] }
    }
@@ -1023,11 +1024,9 @@ proc FieldBox::Insert { No } {
          set level   [lrange [fstdgrid convip [lindex $field 4]] 0 1]
 
          if { $type=="fstdfield" } {
-            set date    [join [lrange [fstdstamp todate [lindex $field 8]] 0 4] ""]
-            set stmp    [lindex $field 9]
+            set date    [join [lrange [fstdstamp todate [lindex $field 9]] 0 4] ""]
          } else {
-            set date    [clock format [lindex $field 8] -format "%Y%m%d%H%M" -gmt True]
-            set stmp    [lindex $field 9]
+            set date    [clock format [lindex $field 9] -format "%Y%m%d%H%M" -gmt True]
          }
 
          #----- Determiner la liste de selection
@@ -1042,7 +1041,7 @@ proc FieldBox::Insert { No } {
 
          #----- Inserer les donnees dans la liste
 
-         $id.data.list insert end [format "%-4s %-2s   %9s %5i %4i %-12s %-12s %9s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $stmp $fid $idx]
+         $id.data.list insert end [format "%-4s %-2s   %9s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
       }
       incr data(NbRead) [llength $fields]
    }
@@ -1258,13 +1257,11 @@ proc FieldBox::Restrict { No args } {
 
          set level   [lrange [fstdgrid convip [lindex $field 4]] 0 1]
          if { $type=="fstdfield" } {
-            set date    [join [lrange [fstdstamp todate [lindex $field 8]] 0 4] ""]
-            set stmp    [lindex $field 9]
+            set date    [join [lrange [fstdstamp todate [lindex $field 9]] 0 4] ""]
          } else {
-            set date    [clock format [lindex $field 8] -format "%Y%m%d%H%M" -gmt True]
-            set stmp    [lindex $field 9]
+            set date    [clock format [lindex $field 9] -format "%Y%m%d%H%M" -gmt True]
          }
-         set line [format "%-4s %-2s   %9s %5i %4i %-12s %-12s %9s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $stmp $fid $idx]
+         set line [format "%-4s %-2s   %9s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
 
          if { [regexp $str $line] } {
             .fieldbox$No.data.list insert end $line
