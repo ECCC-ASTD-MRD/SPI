@@ -482,7 +482,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case CREATE:
          if(Objc!=6 && Objc!=7) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ni nj nk [type]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld ni nj nk [Binary Byte UInt16 Int16 Uint32 Int32 Float32 Float64]");
             return(TCL_ERROR);
          }
          ni=nj=nk=-1;
@@ -498,28 +498,34 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
          if (Objc==7) {
             if (strcmp(Tcl_GetString(Objv[6]),"Binary")==0) {
-               npack=0;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Float32")==0) {
                npack=1;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"UInt32")==0) {
+            } else if (strcmp(Tcl_GetString(Objv[6]),"UByte")==0) {
                npack=2;
             } else if (strcmp(Tcl_GetString(Objv[6]),"Byte")==0) {
                npack=3;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"UByte")==0) {
-               npack=3;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Int32")==0) {
+            } else if (strcmp(Tcl_GetString(Objv[6]),"UInt16")==0) {
                npack=4;
+            } else if (strcmp(Tcl_GetString(Objv[6]),"Int16")==0) {
+               npack=5;
+            } else if (strcmp(Tcl_GetString(Objv[6]),"UInt32")==0) {
+               npack=6;
+            } else if (strcmp(Tcl_GetString(Objv[6]),"Int32")==0) {
+               npack=7;
+            } else if (strcmp(Tcl_GetString(Objv[6]),"Float32")==0) {
+               npack=10;
+            } else if (strcmp(Tcl_GetString(Objv[6]),"Float64")==0) {
+               npack=11;
             } else {
-               Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid data type must be Binary, Float32, UInt32, Int32, UByte or Byte",(char *)NULL);
-               return TCL_ERROR;
+               Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid data type must be Binary Byte UInt16 Int16 Uint32 Int32 Float32 Float64",(char*)NULL);
+               return(TCL_ERROR);
             }
          } else {
-            npack=1;
+            npack=10;
          }
          if (!FSTD_FieldCreate(Interp,Tcl_GetString(Objv[2]),ni,nj,nk,npack))
-            return TCL_ERROR;
+            return(TCL_ERROR);
          else
-            return TCL_OK;
+            return(TCL_OK);
          break;
 
       case VERTICAL:

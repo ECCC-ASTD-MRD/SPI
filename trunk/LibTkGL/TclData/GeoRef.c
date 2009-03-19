@@ -1169,9 +1169,10 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref->UnProject=Ref->UnProject;
    ref->Value=Ref->Value;
    ref->Type=Ref->Type;
-//   ref->Top=Ref->Top;
-//   ref->Ref=Ref->Ref;
-//   ref->Coef=Ref->Coef;
+
+   ref->Top=ref->Ref=ref->ETop=0.0;
+   ref->Coef[0]=ref->Coef[1]=1.0;
+   ref->A=ref->B=NULL;
 
    switch(ref->Grid[0]) {
       case 'R' :
