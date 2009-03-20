@@ -390,19 +390,23 @@ namespace eval CVClock {
    set Data(Zone) 0
 
    set Data(Zones) {
-      { "UTC Coordinated Universal Time" 0 }
-      { "PDT Pacific Daylight Time" -7 }
-      { "PST Pacific Standard Time" -8 }
-      { "MDT Mountain Daylight Time" -6 }
-      { "MST Mountain Standard Time" -7 }
-      { "CDT Central Daylight Time" -5 }
-      { "CST Central Standard Time" -6 }
-      { "EDT Eastern Daylight Time" -4 }
-      { "EST Eastern Standard Time" -5 }
-      { "ADT Atlantic Daylight Time" -3 }
-      { "AST Atlantic Standard Time" -4 }
-      { "NDT Newfoundland Daylight Time" -2.5 }
-      { "NST Newfoundland Standard Time" -3.5 }
+      { "UTC  Coordinated Universal Time" 0 }
+      { "HADT Hawaii-Aleutian Daylight Time" -9 }
+      { "HAST Hawaii-Aleutian Standard Time" -10 }
+      { "AKDT Alaska Daylight Time" -8 }
+      { "AKST Alaska Standard Time" -9 }
+      { "PDT  Pacific Daylight Time" -7 }
+      { "PST  Pacific Standard Time" -8 }
+      { "MDT  Mountain Daylight Time" -6 }
+      { "MST  Mountain Standard Time" -7 }
+      { "CDT  Central Daylight Time" -5 }
+      { "CST  Central Standard Time" -6 }
+      { "EDT  Eastern Daylight Time" -4 }
+      { "EST  Eastern Standard Time" -5 }
+      { "ADT  Atlantic Daylight Time" -3 }
+      { "AST  Atlantic Standard Time" -4 }
+      { "NDT  Newfoundland Daylight Time" -2.5 }
+      { "NST  Newfoundland Standard Time" -3.5 }
    }
 }
 
