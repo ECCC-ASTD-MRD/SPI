@@ -1,6 +1,5 @@
 /*=========================================================
  * Environnement Canada
-double GeoRef_WKTDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
  * Centre Meteorologique Canadien
  * 2100 Trans-Canadienne
  * Dorval, Quebec
