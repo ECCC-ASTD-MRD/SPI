@@ -437,7 +437,9 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   axis->Inter=(double*)malloc(axis->InterNb*sizeof(double));
                   for (j=0;j<axis->InterNb;j++){
                      Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
-                     Tcl_GetDoubleFromObj(Interp,obj,&axis->Inter[j]);
+                     if (Tcl_GetDoubleFromObj(Interp,obj,&axis->Inter[j])==TCL_ERROR) {
+                        return(TCL_ERROR);
+                     }
                   }
                }
             }
@@ -460,7 +462,7 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_Free((char*)axis->Label);
                   axis->Label=NULL;
                   Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis label length, must be the same as intervals",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
             }
             break;
@@ -735,11 +737,16 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
       return;
 
    if (Axis->Min==Axis->Max) {
+      if (Axis->InterNb) {
+         Axis->Min=Axis->Inter[0];
+         Axis->Max=Axis->Inter[Axis->InterNb-1];
+      }
       if (Vec) {
          VECTORMIN(Vec,Axis->Min)
          VECTORMAX(Vec,Axis->Max)
       }
    }
+
    if (Axis->Min==Axis->Max) {
       Axis->Max+=1.0;
    }
