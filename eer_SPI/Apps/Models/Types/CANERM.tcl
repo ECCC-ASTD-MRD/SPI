@@ -384,8 +384,8 @@ proc CANERM::SimCreateMeteo { Path } {
       exec $GDefs(Dir)/Script/InterpolateFieldsMulti.sh $Path/tmp $GDefs(Dir)/Data/climato.fstd $Sim(Meteo) $Sim(FreqOut) 3 &
    }
 
-   exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Path/tmp \
-      $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) &
+   exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Path/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) \
+                                                 $Path/tmp/data_std_sim.pres &
 }
 
 #-------------------------------------------------------------------------------
@@ -711,6 +711,9 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
       set Sim(SimHour) [Convert::Set2Digit [expr $hour/$Sim(Delta)*$Sim(Delta)]]
    }
 
+   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
+   set Sim(DateTimeSim) "$Sim(SimYear)-$Sim(SimMonth)-$Sim(SimDay), $Sim(SimHour)00 UTC"           ; #----- Date-time of simulation [UTC].
+
    #----- On verifie les parametres de l'usager
 
    if { ![Exp::Params . CANERM $Sim(Info)] } {
@@ -729,12 +732,26 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
 
    #----- Creer le fichier de donnees meteo
 
-   set l ""
+   set Sim(MeteoDataFiles) ""
    foreach file $data {
-      lappend l [lindex $file 2]
+      lappend Sim(MeteoDataFiles) [lindex $file 2]
    }
    set f [open $Sim(Path)/tmp/data_std_sim.eta w 0644]
-   puts $f $l
+   puts $f $Sim(MeteoDataFiles)
+   close $f
+
+   #----- Create meteorological data file for RSMC response.
+
+   if { $Sim(Meteo) == "reg" } {
+      regsub -all "/regeta/" $Sim(MeteoDataFiles) "/regpres/" Sim(MeteoDataFilesRSMC)
+   } elseif { $Sim(Meteo) == "glb" } {
+      regsub -all "/glbeta/" $Sim(MeteoDataFiles) "/glbpres/" Sim(MeteoDataFilesRSMC)
+   } else {
+      regsub -all "eta/" $Sim(MeteoDataFiles) "pres/" Sim(MeteoDataFilesRSMC)
+   }
+
+   set f [open $Sim(Path)/tmp/data_std_sim.pres w 0644]
+   puts $f $Sim(MeteoDataFilesRSMC)
    close $f
 
    set Sim(Duration)    [lindex $Sim(Duration) 0]

@@ -53,7 +53,7 @@ namespace eval MLDP1 {
 #                                  { "Foot-and-Mouth Disease" "Avian Influenza" } }
    set Sim(ListVirusType)       { "fmd" "avian" }                            ; #----- List of types of virus.
    set Sim(ListVirusSymbol)     { "FMD-VIRUS" "AVIAN-VIRUS" }                ; #----- List of virus symbols.
-   set Sim(NotAvailable)        { "N/D" "N/A" }                              ; # Not available.
+   set Sim(NotAvailable)        { "N/D" "N/A" }                              ; #----- Not available.
    set Sim(ListOptOnOff)        { { "Option désactivée" "Option activée" } \
                                   { "Option disabled" "Option enabled" } } ; #----- List of flags relative to option enabled/disabled.
 
@@ -101,10 +101,10 @@ namespace eval MLDP1 {
    #----- Set variables for pool info.
 
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration EffectiveDurationMin OutputTimeStepMin ModelTimeStepMin \
-                   AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour \
+                   DateTimeAcc AccYear AccMonth AccDay AccHour AccMin DateTimeSim SimYear SimMonth SimDay SimHour \
                    Mode Meteo Delta Scale GridResolution GridSize Grid \
-                   Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel NbSpecies Species \
+                   Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel \
                    EmNumberParticles EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
-                   EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration \
+                   EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity \
                    Host Queue NbCPUsMeteo NbMPItasks NbOMPthreads OMPthreadFact FlagEmailAddress EmailAddress }
 }

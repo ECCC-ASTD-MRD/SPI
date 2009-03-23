@@ -124,7 +124,7 @@ namespace eval MLCD {
    set Sim(ListModelTimeStep)       { 2 5 10 15 20 30 60 }                 ; #----- List of internal model time step [min].
    set Sim(ListEmDuration)          { 10 15 20 30 60 120 180 240 300 360 } ; #----- List of emission durations [min].
 
-   set Sim(Epsilon) 1.0e-5 ; #----- Epsilon value.
+   set Sim(Epsilon) 1.0e-05 ; #----- Epsilon value.
 
    set Sim(Model)   MLCD
    set Sim(State)   1
@@ -133,7 +133,7 @@ namespace eval MLCD {
 
    #----- Set variables for pool info.
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon DurMin \
-                   AccYear AccMonth AccDay AccHour AccMin \
+                   DateTimeAcc AccYear AccMonth AccDay AccHour AccMin \
                    OutputTimeStepMin ModelTimeStepMin \
                    IsConcS GridTypeS GridAlgoS GridDomain VerticalLevels IsSigmaS \
                    EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav \

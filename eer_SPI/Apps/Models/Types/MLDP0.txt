@@ -62,7 +62,6 @@ namespace eval MLDP0 {
 
    set Lbl(Scenario)            { "Scénario d'émission"  "Emission scenario" }
    set Lbl(ScenarioName)        { "Nom du scénario     " "Scenario name         " }
-   set Lbl(Species)             { "Espèces" "Species" }
    set Lbl(NbIntervals)         { "Nombre d'intervalles" "Number of intervals   " }
    set Lbl(NbIsotopes)          { "Nombre d'isotopes   " "Number of isotopes    " }
    set Lbl(TotalDuration)       { "Durée totale     (s)" "Total duration     (s)" }
@@ -152,8 +151,8 @@ namespace eval MLDP0 {
    set Bubble(EditScenario)           { "Éditer le scénario d'émission sélectionné." "Edit the selected release scenario." }
    set Bubble(DeleteScenario)         { "Supprimer le scénario d'émission sélectionné." "Delete the selected release scenario." }
 
-   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et\nle modèle seront exécutés.\n\nmaia   : grappe dorsale opérationnelle du superordinateur IBM (avec préemption) ;\nsaiph  : grappe dorsale développement du superordinateur IBM (sans préemption) ;\ncastor : grappe frontale opérationnelle ;\npollux : grappe frontale développement." \
-                                        "Host where meteorological preprocessing\nand model will be executed.\n\nmaia   : back-end operational cluster of IBM supercomputer (with preemption) ;\nsaiph  : back-end development cluster of IBM supercomputer (without preemption) ;\ncastor : operational front-end cluster ;\npollux : development front-end cluster." }
+   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et le modèle seront exécutés.\n\nmaia   : grappe dorsale opérationnelle du superordinateur IBM (avec préemption) ;\nsaiph  : grappe dorsale développement du superordinateur IBM (sans préemption) ;\ncastor : grappe frontale opérationnelle ;\npollux : grappe frontale développement." \
+                                        "Host where meteorological preprocessing and model will be executed.\n\nmaia   : back-end operational cluster of IBM supercomputer (with preemption) ;\nsaiph  : back-end development cluster of IBM supercomputer (without preemption) ;\ncastor : operational front-end cluster ;\npollux : development front-end cluster." }
    set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
    set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
    set Bubble(IsEmailAddress)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
@@ -349,8 +348,8 @@ namespace eval MLDP0 {
    set Error(Previous)                          { "Les résultats d'une simulation précédente sont manquants. Les calculs de concentrations, dépôts et doses seront donc invalides." "Previous simulation results missing. The concentrations, deposition and dosage calculations will be wrong." }
    set Error(MetDBase)                          { "Erreur! Les répertoires des bases de données météorologiques diagnostiques et pronostiques ne sont pas définis. Veuillez spécifier les répertoires de ces bases de données." \
                                                   "Error! The directories for diagnostic and prognostic meteorological databases are undefined. Please specify the path for these databases." }
-   set Error(MetFiles)                          { "Erreur! Le nombre de fichiers disponibles dans la base de données météorologique est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
-                                                  "Error! The number of available files in the meteorological database is not enough to run the model according to accident release date-time. Please modify the accident release date-time." }
+   set Error(MetFiles)                          { "Erreur! Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veuillez modifier la date et/ou le temps d'émission de l'accident ou l'hôte." \
+                                                  "Error! The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time. Please modify the accident release date-time or the host." }
    set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
    set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
@@ -364,11 +363,11 @@ namespace eval MLDP0 {
    set Warning(SimDuration2)      { "\tAncienne durée de simulation :" "\tOld simulation duration :" }
    set Warning(SimDuration3)      { "\tNouvelle durée de simulation :" "\tNew simulation duration :" }
    set Warning(SimDuration4)      { "Avertissement! La durée de simulation est supérieure à 72 hrs et le pas de temps de sortie des données est inférieur (ou égal) à 60 min. Ces paramètres d'entrée produiront des fichiers de résultats de grande taille.\n\nVoulez-vous modifier ces paramètres?" \
-                                    "Warning! The simulation duration is grerater than 72 hrs and the data output time step is lower than (or equal to) 60 min. These input parameters will generate large results file size.\n\nWould you like to modify these parameters?" }
+                                    "Warning! The simulation duration is greater than 72 hrs and the data output time step is lower than (or equal to) 60 min. These input parameters will generate large results file size.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration5)      { "\tDurée de simulation    :" "\tSimulation duration :" }
    set Warning(SimDuration6)      { "\tPas de temps de sortie :" "\tOutput time step    :" }
-   set Warning(SimDuration7)      { "Avertissement! La durée de simulation est supérieure à 72 hrs et l'intervalle de temps entre les fichiers de données météorologiques est inférieur à 6 hrs. Ces paramètres d'entrée produiront beaucoup de fichiers de données météo pour nourrir le modèle de dispersion. Ceci nécessitera alors beaucoup d'espace disque.\n\nVoulez-vous modifier ces paramètres?" \
-                                    "Warning! The simulation duration is grerater than 72 hrs and the time interval between meteorological data files is lower than 6 hrs. These input parameters will generate many meteorological data files to feed the dispersion model. Thus, this will require large disk space.\n\nWould you like to modify these parameters?" }
+   set Warning(SimDuration7)      { "Avertissement! La durée de simulation est supérieure à 72 hrs et l'intervalle de temps entre les fichiers de données météorologiques est inférieur à 3 hrs. Ces paramètres d'entrée produiront beaucoup de fichiers de données météo pour nourrir le modèle de dispersion. Ceci nécessitera alors beaucoup d'espace disque.\n\nVoulez-vous modifier ces paramètres?" \
+                                    "Warning! The simulation duration is greater than 72 hrs and the time interval between meteorological data files is lower than 3 hrs. These input parameters will generate many meteorological data files to feed the dispersion model. Thus, this will require large disk space.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration8)      { "\tDurée de simulation     :" "\tSimulation duration :" }
    set Warning(SimDuration9)      { "\tInterval de temps météo :" "\tMeteo time interval :" }
 

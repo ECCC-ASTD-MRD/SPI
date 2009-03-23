@@ -2039,6 +2039,8 @@ proc MLCD::SimInitLaunch { } {
    set Sim(Duration)      [expr int($Sim(DurMin)*60)]              ; #----- Simulation duration [s].
    set Sim(EmDurationSec) [expr int($Sim(EmDurationMin)*60)]       ; #----- Emission duration [s].
 
+   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
+
    #----- Create simulation directory.
    set Sim(Path) "$Sim(BasePath)/MLCD.$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)"
    file mkdir $Sim(Path)

@@ -348,7 +348,7 @@ proc CANERM::PopUp { X Y } {
       menu .canermpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
           .canermpopup.product add command -label "VAAC" -command { CANERM::CallProduct $Page::Data(Frame) result VAAC }
           .canermpopup.product add command -label "RSMC" -command { CANERM::CallProduct $Page::Data(Frame) all    RSMC }
-          .canermpopup.product add command -label "INFO" -command { CANERM::CallProduct $Page::Data(Frame) result INFO }
+          .canermpopup.product add command -label "INFO" -command { CANERM::CallProduct $Page::Data(Frame) all    INFO }
           .canermpopup.product add command -label "METF" -command { CANERM::CallProduct $Page::Data(Frame) metf   METF }
           .canermpopup.product add separator
           .canermpopup.product add command -label "SPI" -command { CANERM::CallProduct $Page::Data(Frame) "" SPI }
@@ -358,7 +358,7 @@ proc CANERM::PopUp { X Y } {
          .canermpopup.res add separator
          .canermpopup.res add command -label "Standard" -command "CANERM::Result result"
          .canermpopup.res add command -label "Post" -command "CANERM::Result post"
-         .canermpopup.res add command -label "MetField" -command "CANERM::Result metf"
+         .canermpopup.res add command -label "MetFields" -command "CANERM::Result metf"
          .canermpopup.res add separator
          .canermpopup.res add command -label "Meteo" -command "CANERM::Result meteo"
    }
