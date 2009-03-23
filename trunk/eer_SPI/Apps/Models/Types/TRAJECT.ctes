@@ -46,5 +46,5 @@ namespace eval TRAJECT {
    set Sim(NoPrev) -1
    set Sim(NoSim)  -1
 
-   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit DeltaS DeltaL }
+   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration DateTimeAcc AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit DeltaS DeltaL }
 }

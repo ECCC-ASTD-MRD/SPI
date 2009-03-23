@@ -376,6 +376,49 @@ proc MLDP1::CreateMeteoInputFiles { } {
    puts $file $Sim(MeteoDataFiles)
    close $file
 
+   #----- Create ASCII file containing list of meteorological files for RSMC response.
+   if { $Sim(SrcType) == "accident" } {
+
+      if { $Sim(Meteo) == "reg" } {
+
+         if { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta" } {
+            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles)     "/data"     Sim(MeteoDataFilesRSMC)
+            regsub -all "/regeta/"    $Sim(MeteoDataFilesRSMC) "/regpres/" Sim(MeteoDataFilesRSMC)
+         } elseif { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta" } {
+            regsub -all "/fs/ops/cmo/eer/afse" $Sim(MeteoDataFiles) "/data/cmod8/afseeer" Sim(MeteoDataFilesRSMC)
+         } elseif { $Sim(DBaseProg) == "/data/gridpt/dbase/prog/regeta" } {
+            regsub -all "/regeta/" $Sim(MeteoDataFiles) "/regpres/" Sim(MeteoDataFilesRSMC)
+         } else {
+            set CurrentDir [pwd]
+            cd $Sim(LocalTmpDir)
+            file link [file tail $Sim(MetInputFileRSMC)] $Sim(MetInputFile)
+            cd $CurrentDir
+         }
+
+      } elseif { $Sim(Meteo) == "glb" } {
+
+         if { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta" } {
+            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles)     "/data"     Sim(MeteoDataFilesRSMC)
+            regsub -all "/glbeta/"    $Sim(MeteoDataFilesRSMC) "/glbpres/" Sim(MeteoDataFilesRSMC)
+         } elseif { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/glbeta" } {
+            regsub -all "/fs/ops/cmo/eer/afse" $Sim(MeteoDataFiles) "/data/cmod8/afseeer" Sim(MeteoDataFilesRSMC)
+         } elseif { $Sim(DBaseProg) == "/data/gridpt/dbase/prog/glbeta" } {
+            regsub -all "/glbeta/" $Sim(MeteoDataFilesRSMC) "/glbpres/" Sim(MeteoDataFilesRSMC)
+         } else {
+            set CurrentDir [pwd]
+            cd $Sim(LocalTmpDir)
+            file link [file tail $Sim(MetInputFileRSMC)] $Sim(MetInputFile)
+            cd $CurrentDir
+         }
+
+      }
+
+      set file [open $Sim(MetInputFileRSMC) w 0644]
+      puts $file $Sim(MeteoDataFilesRSMC)
+      close $file
+
+   }
+
    #----- Create trace information output file.
    set file [open $Sim(TraceInfoFile) w 0644]
    set    TraceInfo "$Sim(InfoMet)"
@@ -1055,11 +1098,15 @@ proc MLDP1::DefineDirFiles { } {
    set SimName          "$Sim(Model).$Sim(NoSim).$Date.$Time"     ; #----- Simulation name: Model.No.YYYYMMDD.HHmm.
    set Sim(Path)        "$ExpDir/$SimName"                        ; #----- Simulation directory on local host.
 
+   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
+   set Sim(DateTimeSim) "$Sim(SimYear)-$Sim(SimMonth)-$Sim(SimDay), $Sim(SimHour)00 UTC"           ; #----- Date-time of simulation [UTC].
+
    set Sim(LocalMetDir)         "$Sim(Path)/meteo"                                        ; #----- Meteo directory of simulation on local host.
    set Sim(LocalResDir)         "$Sim(Path)/results"                                      ; #----- Results directory of simulation on local host.
    set Sim(LocalTmpDir)         "$Sim(Path)/tmp"                                          ; #----- Temporary directory of simulation on local host.
    set Sim(PoolFile)            "$Sim(LocalTmpDir)/sim.pool"                              ; #----- Pool information file of simulation.
    set Sim(MetInputFile)        "$Sim(LocalTmpDir)/data_std_sim.eta"                      ; #----- Input file containing list of met files for simulation.
+   set Sim(MetInputFileRSMC)    "$Sim(LocalTmpDir)/data_std_sim.pres"                     ; #----- Input file containing list of met files for simulation for RSMC response.
    set Sim(TraceInfoFile)       "$Sim(LocalTmpDir)/out.trace_info.txt"                    ; #----- Trace information output file.
    set Sim(GridInputFile)       "$Sim(LocalTmpDir)/griddef"                               ; #----- Input file containing grid parameters for simulation.
    set Sim(ModelInputFile)      "$Sim(LocalTmpDir)/input_$Sim(ModelName).txt"             ; #----- Model input file.
@@ -1083,6 +1130,8 @@ proc MLDP1::DefineDirFiles { } {
    set Sim(LaunchScript)        "$Sim(ScriptDir)/launch_mldp.ksh"                      ; #----- Launch script.
    set Sim(StateSimDoneScript)  "$Sim(ScriptDir)/SimDone.sh"                           ; #----- Simulation state script.
    set Sim(InterpMeteoScript)   "$Sim(ScriptDir)/InterpolateMeteoFields$Sim(Model).sh" ; #----- Interpolation meteorological preprocessing script.
+   set Sim(MetfieldsScript)     "$Sim(ScriptDir)/GenerateMetfields.tcl"                ; #----- RSMC meteorological fields script.
+   set Sim(MetfieldsOutFile)    "$Sim(LocalTmpDir)/out.GenerateMetfields.txt"          ; #----- Std output error file for RSMC metfields script.
    set Sim(MeteoPreprocBin)     "$Sim(BinDir)/$Sim(Arch)/metfields_$Sim(ModelName)"    ; #----- Meteo preprocessing binary.
    set Sim(ModelBin)            "$Sim(BinDir)/$Sim(Arch)/$Sim(ModelName)"              ; #----- Model binary.
    set Sim(CodeInfoBin)         "$Sim(BinDir)/$GDefs(Arch)/CodeInfo"                   ; #----- Encode pool information binary.
@@ -1150,6 +1199,7 @@ proc MLDP1::DefineDirFiles { } {
    append Sim(InfoVar) "\nSim(TmpDir)              : $Sim(TmpDir)"
    append Sim(InfoVar) "\nSim(PoolFile)            : $Sim(PoolFile)"
    append Sim(InfoVar) "\nSim(MetInputFile)        : $Sim(MetInputFile)"
+   append Sim(InfoVar) "\nSim(MetInputFileRSMC)    : $Sim(MetInputFileRSMC)"
    append Sim(InfoVar) "\nSim(TraceInfoFile)       : $Sim(TraceInfoFile)"
    append Sim(InfoVar) "\nSim(GridInputFile)       : $Sim(GridInputFile)"
    append Sim(InfoVar) "\nSim(ModelInputFile)      : $Sim(ModelInputFile)"
@@ -1171,6 +1221,8 @@ proc MLDP1::DefineDirFiles { } {
    append Sim(InfoVar) "\nSim(LaunchScript)        : $Sim(LaunchScript)"
    append Sim(InfoVar) "\nSim(StateSimDoneScript)  : $Sim(StateSimDoneScript)"
    append Sim(InfoVar) "\nSim(InterpMeteoScript)   : $Sim(InterpMeteoScript)"
+   append Sim(InfoVar) "\nSim(MetfieldsScript)     : $Sim(MetfieldsScript)"
+   append Sim(InfoVar) "\nSim(MetfieldsOutFile)    : $Sim(MetfieldsOutFile)"
    append Sim(InfoVar) "\nSim(MeteoPreprocBin)     : $Sim(MeteoPreprocBin)"
    append Sim(InfoVar) "\nSim(ModelBin)            : $Sim(ModelBin)"
    append Sim(InfoVar) "\nSim(CodeInfoBin)         : $Sim(CodeInfoBin)"
@@ -1635,24 +1687,24 @@ proc MLDP1::ExtractMetFiles { } {
 
    #----- Set starting simulation date-time associated to date-time of
    #----- first meteorological file available in the database.
-   set data [lindex $Sim(Data) 0]
+   set data             [lindex $Sim(Data) 0]
    set SimDateTimeStamp [lindex $data 0] ; #----- CMC date-time stamp.
    set SimDateTime      [lindex $data 1] ; #----- Date-time.
 
-   #----- Get last met file.
-   set list      [lindex $Sim(Data) end]
-   set laststamp [lindex $list 0]        ; #----- Date-time stamp for last met file.
-   set lastdate  [lindex $list 1]        ; #----- Date-time for last met file.
+   #----- Get last meteorological file.
+   set data      [lindex $Sim(Data) end]
+   set laststamp [lindex $data 0]        ; #----- Date-time stamp for last met file.
+   set lastdate  [lindex $data 1]        ; #----- Date-time for last met file.
 
    #----- Compute simulation duration [hr].
    set simdur [expr int([fstdstamp diff $laststamp $SimDateTimeStamp] + 0.5)]
 
    if { $simdur <= 0 } {
       puts stdout ""
-      Debug::TraceProc "MLDP1: Error! Not enough available meteorological data files in database according to emission date-time."
-      Debug::TraceProc "MLDP1:        - Emission date-time (stamp)   : $Sim(AccDateTime) ($Sim(AccDateTimeStamp))"
-      Debug::TraceProc "MLDP1:        - Simulation date-time (stamp) : $SimDateTime ($SimDateTimeStamp)"
-      Debug::TraceProc "MLDP1:        - Last date-time (stamp)       : $lastdate ($laststamp)"
+      Debug::TraceProc "MLDP1: Error! Not enough available meteorological data files in database according to emission date-time to run the model."
+      Debug::TraceProc "MLDP1:        - Emission date-time (stamp)       : $Sim(AccDateTime) ($Sim(AccDateTimeStamp))"
+      Debug::TraceProc "MLDP1:        - Simulation date-time (stamp)     : $SimDateTime ($SimDateTimeStamp)"
+      Debug::TraceProc "MLDP1:        - Last available date-time (stamp) : $lastdate ($laststamp)"
 
       set emission [FormatDateTime $Sim(AccDateTime)]
       set first    [FormatDateTime $SimDateTime]
@@ -1708,7 +1760,7 @@ proc MLDP1::ExtractMetFiles { } {
             lappend MeteoStamp [lindex $data 0]
          }
 
-         #----- Redefine list of available meteorological data files.
+         #----- Redefine list of available meteorological data files according to simulation duration set as input parameter.
          set idx [lsearch -exact $MeteoStamp $laststamp]
          if { $idx != -1 } {
             set Sim(Data) [lrange $Sim(Data) 0 $idx]
@@ -1820,12 +1872,16 @@ proc MLDP1::File { Info Path Type Back } {
    set file "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_000"
    set std  ""
 
-   set metfiles [glob -nocomplain $simpath/meteo/*] ; #----- Get all required meteorological files for model.
+   set pos       "$simpath/results/${file}.pos"      ; #----- Particle positions result output file.
+   set con       "$simpath/results/${file}.con"      ; #----- Concentrations/Depositions result output file.
+   set metfields "$simpath/results/${file}m"         ; #----- Meteorological fields for RSMC response.
+   set metfiles  [glob -nocomplain $simpath/meteo/*] ; #----- Meteorological files required for launching model.
 
    switch $Type {
-      "all"    { set std "$simpath/results/$file.pos $simpath/results/$file.con $metfiles" }
-      "result" { set std "$simpath/results/$file.pos $simpath/results/$file.con" }
-      "meteo"  { set std "$metfiles" }
+      "all"     { set std "$pos $con $metfields $metfiles" }
+      "result"  { set std "$pos $con" }
+      "meteo"   { set std "$metfiles" }
+      "metf"    { set std "$metfields" }
    }
 
    return $std
@@ -1879,6 +1935,9 @@ proc MLDP1::GetMetData { } {
    variable Error
    variable Sim
 
+   #----- Set flag indicating if meteorological data were retrieve successfully (1) or not (0).
+   set Sim(IsMetDataOK) 0
+
    #----- Set accident release date-time.
    set Sim(AccDateTime)      "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)00"
    set Sim(AccDateTimeStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
@@ -1905,7 +1964,7 @@ proc MLDP1::GetMetData { } {
    #----- Verify if number of meteo data files is greater than 0.
    if { [llength $Sim(Data)] < 1 } {
       puts stdout ""
-      Debug::TraceProc "MLDP1: Error! Not enough available meteorological data files in database according to emission date-time."
+      Debug::TraceProc "MLDP1: Error! Not enough available meteorological data files in database (on host $Sim(Host)) according to emission date-time."
       Debug::TraceProc "MLDP1:        - Emission date-time (stamp) : $Sim(AccDateTime) ($Sim(AccDateTimeStamp))"
 
       Dialog::CreateError .mldp1new "[lindex $Error(MetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
@@ -1919,6 +1978,8 @@ proc MLDP1::GetMetData { } {
    if { ![MLDP1::ExtractMetFiles] } {
       return False
    }
+
+   set Sim(IsMetDataOK) 1
 
    return True
 }
@@ -2030,6 +2091,13 @@ proc MLDP1::LaunchJob { } {
 
    set Sim(State) 2
    Info::Set $Sim(PoolFileExp) [Info::Code ::MLDP1::Sim $Sim(Info) :]
+
+   if { $Sim(SrcType) == "accident" && [regexp "/gridpt/" $Sim(DBaseProg)] && [regexp "/gridpt/" $Sim(DBaseDiag)] } {
+      #----- Launch meteorological fields script for RSMC response.
+      Debug::TraceProc "MLDP1: Launching RSMC meteorological fields script on local host ($GDefs(Host))."
+
+      set ErrorCode [catch { exec $Sim(MetfieldsScript) $Sim(LocalTmpDir) $Sim(SimDateTime) $Sim(SimDateTime) $Sim(MetInputFileRSMC) >& $Sim(MetfieldsOutFile) & } Message]
+   }
 
    if { $Sim(IsUsingSoumet) } {
 
@@ -2445,6 +2513,71 @@ proc MLDP1::SetHosts { Flag } {
 }
 
 #----------------------------------------------------------------------------
+# Nom        : <MLDP1::SetIsotopesInfo>
+# Creation   : 9 March 2009 - A. Malo - CMC/CMOE
+#
+# But        : Set isotopes information for pool simulation.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP1::SetIsotopesInfo { } {
+   variable Sim
+   variable Duration
+   variable ReleaseRate
+   variable Quantity
+
+   if { $Sim(SrcType) == "volcano" } {
+      return
+   }
+
+   #----- Build list of isotopes.
+   set Sim(EmIsoSymbol) {}
+   foreach iso $Sim(EmIso.$Sim(EmScenario)) {
+      lappend Sim(EmIsoSymbol) [lindex $iso 0]
+   }
+
+   for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } { #----- Loop over number of release time intervals.
+
+      set interval [lindex $Sim(EmInter.$Sim(EmScenario)) $i]
+      set Duration($i) [lindex $interval 0]
+
+      for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } { #----- Loop over isotopes.
+         set k [expr $j + 1]
+         set ReleaseRate($i.$j) [lindex $interval $k]
+      }
+
+   }
+
+   #----- Initialize total release quantity.
+   for { set i 0 } { $i < $Sim(EmNbIso) } { incr i } { #----- Loop over isotopes.
+      set Quantity($i) 0
+   }
+
+   for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } { #----- Loop over number of release time intervals.
+
+      for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {    #----- Loop over isotopes.
+
+         #----- Compute total release quantity for each isotope.
+         set Quantity($j) [expr $Quantity($j) + double($Duration($i))/3600.0 * double($ReleaseRate($i.$j))]
+      }
+
+   }
+
+   #----- Build list of total release quantity for each isotope.
+   set Sim(EmIsoQuantity) {}
+   for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } { #----- Loop over isotopes.
+      lappend Sim(EmIsoQuantity) [format "%.7e" $Quantity($j)]
+   }
+
+}
+
+#----------------------------------------------------------------------------
 # Nom        : <MLDP1::SetMetDataDir>
 # Creation   : 28 August 2007 - A. Malo - CMC/CMOE
 #
@@ -2774,9 +2907,6 @@ proc MLDP1::SimInitNew { } {
    set Sim(IsResFileSizeChecked) 0                                   ; #----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ; #----- Flag indicating if met data file size has been checked (1) or not (0).
    set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
-   if { $Sim(SrcType) == "volcano" } {
-      set Sim(Duration)          72
-   }
    set Tmp(Duration)             $Sim(Duration)                      ; #----- Temporary variable for simulation duration.
    set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
    set Tmp(OutputTimeStepMin)    $Sim(OutputTimeStepMin)             ; #----- Temporary variable for output time step.
@@ -2806,32 +2936,34 @@ proc MLDP1::SimInitNew { } {
    set Sim(EmEffectiveDuration)  0.0                                 ; #----- Effective emission duration, only release periods [s].
    set Sim(EmTotalDuration)      0.0                                 ; #----- Total emission duration, including release and lull periods [s].
    set Sim(EmNumberParticles)    100000                              ; #----- Number of particles.
-   set Sim(NbSpecies)            0                                   ; #----- Number of species involved.
-   set Sim(Species)              ""                                  ; #----- Species involved.
+   set Sim(EmNbIso)              0                                   ; #----- Number of isotopes.
+   set Sim(EmIsoSymbol)          ""                                  ; #----- List of isotopes.
+   set Sim(EmIsoQuantity)        ""                                  ; #----- Total release quantity for each isotope.
    set Tmp(EmDensity)            2.500e+12                           ; #----- Density of a particle [microgram/m3].
 
    #----- Initialize maximum plume height [m] and column radius [m].
    if { $Sim(SrcType) == "volcano" } {        #----- Volcano source type.
-      set Sim(EmHeight)  10000.0
-      set Sim(EmRadius)  1000.0
-      set Sim(Species)   TRACER
-      set Sim(NbSpecies) 1
+      set Sim(EmHeight)    10000.0
+      set Sim(EmRadius)    1000.0
+      set Sim(EmIsoSymbol) TRACER
+      set Sim(EmNbIso)     1
    } elseif { $Sim(SrcType) == "accident" } { #----- Accident source type.
-      set Sim(EmHeight) 1000.0
+      set Sim(EmHeight) 500.0
       set Sim(EmRadius) 100.0
    } elseif { $Sim(SrcType) == "virus" } {    #----- Virus source type.
       set Sim(EmHeight)    100.0
       set Sim(EmRadius)    100.0
-      set Sim(Species)     [lindex [lindex $Sim(ListVirusName) $GDefs(Lang)] 0]
-      set Sim(NbSpecies)   1
+      set Sim(EmIsoSymbol) [lindex [lindex $Sim(ListVirusName) $GDefs(Lang)] 0]
+      set Sim(EmNbIso)     1
       set Sim(VirusType)   [lindex $Sim(ListVirusType) 0]
       set Sim(VirusSymbol) [lindex $Sim(ListVirusSymbol) 0]
       set Sim(Scale)       "EFINE"
    }
 
+   set NA [lindex $Sim(NotAvailable) $GDefs(Lang)]
+
    #----- Initialize unused variables to "not available" for pool information.
    if { $Sim(SrcType)=="accident" || $Sim(SrcType)=="virus" } {
-      set NA              [lindex $Sim(NotAvailable) $GDefs(Lang)]
       set Sim(EmDensity)  $NA
       set Sim(EmMass)     $NA
       set Sim(EmSizeDist) $NA
@@ -2839,13 +2971,14 @@ proc MLDP1::SimInitNew { } {
 
    if { $Sim(SrcType) == "volcano" } {
       set Sim(EmDensity)       $Tmp(EmDensity) ; #----- Particle density [microgram/m3].
-      set Sim(EmSizeDist)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 0] ; #----- Particle size distribution.
-      set Sim(EmSizeDistValue) 0         ; #----- Particle size distribution flag.
+      set Sim(EmSizeDist)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3] ; #----- Particle size distribution.
+      set Sim(EmSizeDistValue) 3         ; #----- Particle size distribution flag.
       set Sim(EmMassMode)      0         ; #----- Total released mass mode
                                            #----- 0: Empirical Formula of Sparks et al. (1997). For this mode, mass cannot
                                            #-----    be modified manually. ;
                                            #----- 1: Edition. For this mode, mass can be modified manually for specific purposes.
       set Sim(EmMassModeOld)   $Sim(EmMassMode)
+      set Sim(EmIsoQuantity)   $NA
    }
 
    set Sim(EmVerticalDist)      [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0] ; #----- Plume vertical distribution.
@@ -2908,6 +3041,13 @@ proc MLDP1::SimInitNew { } {
 proc MLDP1::SimLaunchCheck { } {
    global   GDefs
    variable Sim
+
+   #----- Check if meteorological data files were retrieve successfully.
+   if { !$Sim(IsMetDataOK) } {
+      if { ![MLDP1::GetMetData] } {
+         return 0
+      }
+   }
 
    #----- Validate launching queue type.
    if { ![MLDP1::ValidateQueue] } {
@@ -3023,18 +3163,12 @@ proc MLDP1::SimLaunchInit { Tab No } {
          }
       }
 
-      #----- Set species information for pool of simulation.
-      if { $Sim(SrcType) == "accident" } {
-         set Sim(NbSpecies) $Sim(EmNbIso)
-         set Sim(Species)   {}
-         foreach iso $Sim(EmIso.$Sim(EmScenario)) {
-            lappend Sim(Species) [lindex $iso 0]
-         }
-      }
-
+      #----- Set isotopes information for pool of simulation.
+      MLDP1::SetIsotopesInfo
+      
       #----- Get meteorological data according to met database, time interval between files, release accident date-time.
       if { ![MLDP1::GetMetData] } {
-         TabFrame::Select $Tab 0
+         .mldp1new config -cursor left_ptr
          return 0
       }
 

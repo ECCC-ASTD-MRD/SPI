@@ -121,7 +121,7 @@ proc MLDP0::New { Parent } {
 
          #----- Virus Source Type.
          if { $Sim(SrcType) == "virus" } {
-            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDP0::Sim(Species) MLDP0::Sim(VirusID) } 0 -1 [lindex $MLDP0::Sim(ListVirusName) $GDefs(Lang)] "set MLDP0::Sim(VirusType) \[lindex \$MLDP0::Sim(ListVirusType) \$MLDP0::Sim(VirusID)\] ; MLDP0::UpdateListVerticalLevels"
+            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDP0::Sim(EmIsoSymbol) MLDP0::Sim(VirusID) } 0 -1 [lindex $MLDP0::Sim(ListVirusName) $GDefs(Lang)] "set MLDP0::Sim(VirusType) \[lindex \$MLDP0::Sim(ListVirusType) \$MLDP0::Sim(VirusID)\] ; MLDP0::UpdateListVerticalLevels"
             pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
             Bubble::Create $tabframe.others.opt.virus "[lindex $Bubble(Virus) $GDefs(Lang)]"
          }
@@ -1056,7 +1056,9 @@ proc MLDP0::CallProduct { Frame Type Layout } {
    foreach box [TrajBox::Get] {
       TrajBox::Close $box
    }
-   MLDP0::Result $Type
+   if { $Type !="" } {
+      MLDP0::Result $Type
+   }
    SPI::LayoutLoad $Frame $Layout
 }
 
@@ -1094,17 +1096,18 @@ proc MLDP0::PopUp { X Y } {
 
       menu .mldp0popup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
           .mldp0popup.product add command -label "VAAC" -command { MLDP0::CallProduct $Page::Data(Frame) result VAAC }
-          .mldp0popup.product add command -label "RSMC" -command { MLDP0::CallProduct $Page::Data(Frame) all    RSMC }
+          .mldp0popup.product add command -label "RSMC" -command { MLDP0::CallProduct $Page::Data(Frame) result RSMC }
           .mldp0popup.product add command -label "INFO" -command { MLDP0::CallProduct $Page::Data(Frame) result INFO }
           .mldp0popup.product add command -label "METF" -command { MLDP0::CallProduct $Page::Data(Frame) metf   METF }
+          .mldp0popup.product add separator
+          .mldp0popup.product add command -label "SPI" -command { MLDP0::CallProduct $Page::Data(Frame) "" SPI }
 
       menu .mldp0popup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mldp0popup.res add command -label "All" -command "MLDP0::Result all"
          .mldp0popup.res add separator
          .mldp0popup.res add command -label "Dispersion" -command "MLDP0::Result result"
-#         .mldp0popup.res add command -label "Post" -command "MLDP0::Result post"
-#         .mldp0popup.res add command -label "MetField" -command "MLDP0::Result metf"
-#         .mldp0popup.res add separator
+         .mldp0popup.res add command -label "MetFields" -command "MLDP0::Result metf"
+         .mldp0popup.res add separator
          .mldp0popup.res add command -label "Meteo" -command "MLDP0::Result meteo"
    }
 
@@ -2544,9 +2547,9 @@ proc MLDP0::ValidateSimulationDuration { } {
       }
    }
 
-   #----- Display warning if simulation duration > 72 hrs and time interval between met data files < 6.
+   #----- Display warning if simulation duration > 72 hrs and time interval between met data files < 3.
    if { !$Sim(IsMetFileSizeChecked) } {
-      if { $Sim(Duration) > 72 && $Sim(Delta) < 6 } {
+      if { $Sim(Duration) > 72 && $Sim(Delta) < 3 } {
          set yes [Dialog::CreateDefault .mldp0new 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration7) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration8) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration9) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
          if { $yes } {
             focus $Sim(SimDurationEnt)
