@@ -1,4 +1,4 @@
-Version 7.3.0 (Février 2009)
+Version 7.3.0 (Mars 2009)
 - Nouveau modele trajectoire, intégré dans SPI (On voit les résultats pendant qu'il roule)
 - Ajout des intervalles de contours AEGL et ERPG
 - Ajout de la selection de la zone horaire dans l'horloge (Amérique du nord)
@@ -40,7 +40,10 @@ Version 7.3.0 (Février 2009)
 - Nouvelle loupe de page
 - Modifications aux methodes d'interpolations verticales.
 - Profiles , coupes verticales et profils temporels peuvent maintenant être affichés en coordonnées de pression.
+- Interpolation verticale décode maintenant les niveaux hybride "staggered".
 - La légende des graphs peut maintenant être déplacée interactivement.
+- Support pour les champs RPN en double précision
+- Le date dans les boites de champs (FieldBox) est maintenant le date de validitée plutôt que d'origine.
 
 Version 7.2.4 (Mars 2008)
 - Ajout de la fonction zoom en utilisant le roulette de la souris.
