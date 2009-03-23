@@ -36,7 +36,7 @@ namespace eval VAAC {
 
    #----- Definitions des messages d'erreurs
 
-   set Error(Hours) { "Aucune heure m'a été sélectionnée." "You did not select any hour." }
+   set Error(Hours) { "Aucune heure n'a été sélectionnée." "You did not select any hour." }
 
    #---- Definitions des entetes et textes de la carte
 
@@ -56,10 +56,10 @@ namespace eval VAAC {
    set Lbl(LEFT1)   "CMC"
    set Lbl(LEFT2)   ""
    set Lbl(MID3)    "CONCENTRATIONS"
-   set Lbl(SCALEHD) { "LGT-BAS" "MDT-MOYEN" "HVY-ELEVE" }
+   set Lbl(SCALEHD) { "LGT-BAS" "MDT-MOYEN" "HVY-ÉLEVÉ" }
 
    set Lbl(HD1)     "FORECAST OF VISUAL VOLCANIC ASH PLUME"
-   set Lbl(HD2)     "PREVISION DU PANACHE VISIBLE DE CENDRES VOLCANIQUES"
+   set Lbl(HD2)     "PRÉVISION DU PANACHE VISIBLE DE CENDRES VOLCANIQUES"
    set Lbl(FT1)     "SOURCE       :"
    set Lbl(FT2)     "ERUPTION     :"
    set Lbl(FT3)     "DURATION     :"
@@ -251,24 +251,28 @@ proc VAAC::DataInit { Frame } {
    variable Page
    variable Sim
 
-   set Data(Index)     ""
+   set Data(Index)          ""
 
-   set Sim(AccYear)    0
-   set Sim(AccMonth)   01
-   set Sim(AccDay)     01
-   set Sim(AccHour)    00
-   set Sim(SimYear)    0
-   set Sim(SimMonth)   01
-   set Sim(SimDay)     01
-   set Sim(SimHour)    00
-   set Sim(Lat)        0
-   set Sim(Lon)        0
-   set Sim(Name)       ""
-   set Sim(IsoRelease) 0
-   set Sim(FnTime)     0
-   set Sim(FnVert)     0
-   set Sim(EmHeight)   0
-   set Sim(EmDuration) 0
+   set Sim(AccYear)         0
+   set Sim(AccMonth)        01
+   set Sim(AccDay)          01
+   set Sim(AccHour)         00
+   set Sim(AccMin)          00
+   set Sim(SimYear)         0
+   set Sim(SimMonth)        01
+   set Sim(SimDay)          01
+   set Sim(SimHour)         00
+   set Sim(Lat)             0
+   set Sim(Lon)             0
+   set Sim(Name)            ""
+   set Sim(IsoRelease)      0
+   set Sim(FnTime)          0
+   set Sim(FnVert)          0
+   set Sim(EmHeight)        0
+   set Sim(EmDuration)      0
+   set Sim(EmMass)          0
+   set Sim(EmTotalDuration) 0
+   set Sim(EmVerticalDist)  ""
 
    if { ![FieldBox::Exist $Data(FieldBox)] } {
       return
@@ -285,11 +289,13 @@ proc VAAC::DataInit { Frame } {
    }
    eval Info::Decode ::VAAC::Sim \$[Info::Strip $info Model]::Sim(Info) \$info
 
+   set Sim(model) [string tolower $Sim(Model)] ; #----- Dispersion model name in lower case.
+
    #----- Definir la date de l'eruption
 
    set secsim [clock scan "$Sim(SimMonth)/$Sim(SimDay)/$Sim(SimYear) $Sim(SimHour)00" -gmt true]
    set secacc [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true]
-   set Data(Eruption) [clock format $secacc -format "%a %b %d %Y, %H%MZ" -gmt true]
+   set Data(Eruption) [clock format $secacc -format "%a %b %d %Y, %H:%M UTC" -gmt true]
 
 #----- Initialiser la liste des heures disponibles (On arrondit a l'heure la plus proche)
 
@@ -301,7 +307,7 @@ proc VAAC::DataInit { Frame } {
    set Sim(StampS) [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
    set Data(HourD) [fstdstamp diff $Sim(Stamp0) $Sim(StampS)]
 
-   Debug::TraceProc  "Difference bettween Simulation and accident hour: $Data(HourD)"
+   Debug::TraceProc "Difference between Simulation and accident hour: $Data(HourD)"
 
    set hours [MetData::ListIP2 $Data(Index) AV $Sim(StampS)]
 
@@ -627,9 +633,9 @@ proc VAAC::LayoutUpdate { Frame } {
    #----- Afficher les parametres de la premiere heure
 
    if { $hre0!=-1 } {
-      $canvas itemconf MID1$Page(VP1) -text "${hre0}H FORECAST - PREVISION ${hre0}H"
-      $canvas itemconf MID1$Page(VP3) -text "${hre0}H FORECAST - PREVISION ${hre0}H"
-      $canvas itemconf MID1$Page(VP5) -text "${hre0}H FORECAST - PREVISION ${hre0}H"
+      $canvas itemconf MID1$Page(VP1) -text "${hre0}h FORECAST - PRÉVISION ${hre0}h"
+      $canvas itemconf MID1$Page(VP3) -text "${hre0}h FORECAST - PRÉVISION ${hre0}h"
+      $canvas itemconf MID1$Page(VP5) -text "${hre0}h FORECAST - PRÉVISION ${hre0}h"
       $canvas itemconf MID2$Page(VP1) -text [MetData::FormatDATEV $fld0]
       $canvas itemconf MID2$Page(VP3) -text [MetData::FormatDATEV $fld0]
       $canvas itemconf MID2$Page(VP5) -text [MetData::FormatDATEV $fld0]
@@ -645,9 +651,9 @@ proc VAAC::LayoutUpdate { Frame } {
    #----- Afficher les parametres de la deuxieme heure
 
    if { $hre1!=-1 } {
-      $canvas itemconf MID1$Page(VP2) -text "${hre1}H FORECAST - PREVISION ${hre1}H"
-      $canvas itemconf MID1$Page(VP4) -text "${hre1}H FORECAST - PREVISION ${hre1}H"
-      $canvas itemconf MID1$Page(VP6) -text "${hre1}H FORECAST - PREVISION ${hre1}H"
+      $canvas itemconf MID1$Page(VP2) -text "${hre1}h FORECAST - PRÉVISION ${hre1}h"
+      $canvas itemconf MID1$Page(VP4) -text "${hre1}h FORECAST - PRÉVISION ${hre1}h"
+      $canvas itemconf MID1$Page(VP6) -text "${hre1}h FORECAST - PRÉVISION ${hre1}h"
       $canvas itemconf MID2$Page(VP2) -text [MetData::FormatDATEV $fld1]
       $canvas itemconf MID2$Page(VP4) -text [MetData::FormatDATEV $fld1]
       $canvas itemconf MID2$Page(VP6) -text [MetData::FormatDATEV $fld1]
@@ -664,33 +670,66 @@ proc VAAC::LayoutUpdate { Frame } {
 
    set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) MIN]
 
+   $canvas itemconf FT1 -text ""
+   $canvas itemconf FT2 -text ""
+   $canvas itemconf FT3 -text ""
+   $canvas itemconf FT4 -text ""
+   $canvas itemconf FT5 -text ""
+
    $canvas itemconf FT1 -text "$Lbl(FT1) $Sim(Name) $coord"
    $canvas itemconf FT2 -text "$Lbl(FT2) $Data(Eruption)"
    $canvas itemconf FT4 -text "$Lbl(FT4) FL[expr round($Sim(EmHeight)*0.032808398950131)]"
    $canvas itemconf MDL -text "$Sim(Model)"
 
    if { $Sim(Model)=="CANERM" } {
-      $canvas itemconf FT3 -text "$Lbl(FT3) $Sim(EmDuration) Hour(s)"
-      set elev [format "%2.1f" [expr $Sim(EmHeight)/1000.0]]
-      set mg   [expr int(log10($Sim(IsoRelease)))]
-      set time [string range $Sim(FnTime) 0 0]
+      set ReleaseDuration $Sim(EmDuration)         ; #----- Release duration [h].
+      set mg   [expr int(log10($Sim(IsoRelease)))] ; #----- Total release mass [micrograms/m3].
+      set time [string range $Sim(FnTime) 0 0]     ; #----- Release time function.
 
+      #----- Inital vertical distribution.
       if { $Sim(FnVert) == 0.0 } {
-         set vert "C"
+         set vert "Co"
       }
       if { $Sim(FnVert) < 0.0 } {
-         set vert "G"
+         set vert "Ga"
       }
       if { $Sim(FnVert) > 0.0 } {
-         set vert "E"
+         set vert "Em"
       }
 
-      $canvas itemconf FT5 -text "$Lbl(FT5) ($elev,$mg,T$time,V$vert)"
    }
 
    if { $Sim(Model)=="MLDP0" } {
-      $canvas itemconf FT3 -text "$Lbl(FT3) [expr $Sim(EmTotalDuration)/3600.0] Hour(s)"
+      set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ; #----- Convert total release duration from [s] to [h].
+      set mg   [expr int(log10($Sim(EmMass)))] ; #----- Total release mass [micrograms/m3].
+      set time "C"                             ; #----- Release time function. C: Constant.
+
+      #----- Initial vertical distribution.
+      if { [regexp Uniform $Sim(EmVerticalDist)] } {
+         set vert "Un"
+      } elseif { [regexp Exponenti $Sim(EmVerticalDist)] } {
+         set vert "Ex"
+      } elseif { $Sim(EmVerticalDist) == "Poisson" } {
+         set vert "Po"
+      } elseif { [regexp Coni $Sim(EmVerticalDist)] } {
+         set vert "Co"
+      } elseif { $Sim(EmVerticalDist) == "Champignon" || $Sim(EmVerticalDist) == "Umbrella" } {
+         set vert "Um"
+      }
    }
+
+   #----- Format release duration.
+   set ReleaseDuration [format "%.2f" $ReleaseDuration]
+   set TmpRelDur [string trimright $ReleaseDuration "0"]
+   if { [string range $TmpRelDur end end] == "." } {
+      set indx [expr [string length $TmpRelDur] - 2]
+      set ReleaseDuration [string range $TmpRelDur 0 $indx]
+   }
+
+   set elev [format "%2.1f" [expr $Sim(EmHeight)/1000.0]] ; #----- Convert maximum initial plume height from [m] to [km].
+
+   $canvas itemconf FT3 -text "$Lbl(FT3) $ReleaseDuration h"
+   $canvas itemconf FT5 -text "$Lbl(FT5) ($elev,$mg,T$time,V$vert)"
 
    VAAC::DrawScale $Frame
 }
@@ -792,7 +831,7 @@ proc VAAC::Transmit { Frame } {
                #----- envoyer sur les sites web.
 
                exec convert ${file}.pbm -resize 680x880 ${file}.png
-               catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_canerm_${hour}.png"  }
+               catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png"  }
             }
          }
          if { $Data(SendSAT)==1 } {
@@ -802,7 +841,7 @@ proc VAAC::Transmit { Frame } {
             #----- envoyer sur les sites web.
 
             exec convert ${file}.pbm -resize 680x880 ${file}.png
-            catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_canerm_${hour}.png"  }
+            catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png"  }
          }
       }
    }
@@ -1025,7 +1064,7 @@ proc VAAC::PrintWidget { Frame } {
 
    #----- Constantes pour l'impression par PrintBox
 
-   set PrintBox::Print(Filename) "$Sim(Name)_canerm"
+   set PrintBox::Print(Filename) "$Sim(Name)_[string tolower $Sim(Model)]"
    set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)"
 }
 
