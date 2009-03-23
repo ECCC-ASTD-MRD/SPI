@@ -861,17 +861,18 @@ proc Page::Destroy { Frame } {
 
    Viewport::UnSetup $Frame
 
-   set idx [lsearch -exact $Data(Frames) $Frame]
-   if { $idx<0 } {
+   if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
       return
    }
-
    set Data(Frames) [lreplace $Data(Frames) $idx $idx]
 
+   #----- Activer la page precedente
    if { $Data(Frame)==$Frame } {
-      set Data(Frame)   ""
       set Data(Canvas)  ""
+      set Data(Frame)  ""
+      Page::Activate [lindex $Data(Frames) end] True
    }
+
 
    unset Data(Scale$Frame)
    unset Data(Full$Frame)
