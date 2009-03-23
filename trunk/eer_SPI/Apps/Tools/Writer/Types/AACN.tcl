@@ -240,9 +240,10 @@ proc Writer::AACN::FormatCoord { Lat Lon } {
    } else {
       set dir "N"
    }
+
    set latm "[Convert::Decimal2Minute $Lat 0 True] $dir"
    set latm "[format "%02i" [lindex $latm 0]][lindex $latm 1]$dir"
-   set latd "[format "%.2f" $Lat]$dir"
+   set latd "[format "%6.2f" $Lat]$dir"
 
    if { $Lon < 0 } {
       set Lon [expr -$Lon]
@@ -250,9 +251,9 @@ proc Writer::AACN::FormatCoord { Lat Lon } {
    } else {
       set dir "E"
    }
-   set lonm "[Convert::Decimal2Minute 0 $Lon True] $dir"
+   set lonm "[Convert::Decimal2Minute $Lon 0 True] $dir"
    set lonm "[format "%03i" [lindex $lonm 0]][lindex $lonm 1]$dir"
-   set lond "[format "%.2f" $Lon]$dir"
+   set lond "[format "%7.2f" $Lon]$dir"
 
    return "($latd $lond DECIMAL) ($latm $lonm DEGREES,MINUTES)"
 }
