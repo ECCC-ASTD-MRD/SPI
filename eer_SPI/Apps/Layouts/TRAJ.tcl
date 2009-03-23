@@ -35,12 +35,12 @@ namespace eval TRAJ {
 
    #----- Definitions des messages
 
-   set Msg(Transmit)     { "Desirez-vous reellement transferer cette carte"
-                           "Do you really want to transmit this map" }
-   set Msg(Join)         { "Etes-vous certain de vouloir generer les cartes de formats RSMC commun ?" \
-                           "Do you really want to generate the RSMC joint format maps ?" }
-   set Msg(SATNET)       { "Transfert sur SATNET en cours ..." "Transfering on SATNET" }
-   set Msg(FTP)          { "Transfert sur site FTP en cours ..." "Transfering on FTP site" }
+   set Msg(Transmit)     { "Voulez-vous vraiment transmettre cette carte ?"
+                           "Do you really want to transmit this map ?" }
+   set Msg(Join)         { "Voulez-vous produire la carte des trajectoires en format RSMC ?" \
+                           "Do you want to generate the trajectories map in RSMC format ?" }
+   set Msg(SATNET)       { "Transfert sur SATNET en cours ..." "Transferring on SATNET" }
+   set Msg(FTP)          { "Transfert sur site FTP en cours ..." "Transferring on FTP site" }
 
    #----- Constantes
 

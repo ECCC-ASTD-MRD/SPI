@@ -38,8 +38,8 @@ namespace eval RSMC {
 
    #----- Definitions des messages
 
-   set Msg(Join)        { "Etes-vous certain de vouloir generer les cartes de formats RSMC commun ?" \
-                          "Do you really want to generate the RSMC joint format maps ?" }
+   set Msg(Join)        { "Voulez-vous produire les cartes des concentrations et des dépôts en format RSMC ?" \
+                          "Do you want to generate the concentration and deposition maps in RSMC format ?" }
 
    #----- Definitions des textes des bulles d'aides
 
@@ -57,7 +57,7 @@ namespace eval RSMC {
    set Data(FieldList)  ""
    set Data(Fields)     { FM MF DD DI WD WI IT DOSE }
    set Data(Units)      { "/m³" "*s/m³" "/m²" "/m²" "/m²" "/m²" "/m²" }
-   set Data(Desc)       { "Surface to 500 M mean concentration" "24-hr time integrated 0 to 500 M layer concentrations" \
+   set Data(Desc)       { "Surface to 500 m mean concentration" "Time integrated surface to 500 m layer concentrations" \
                           "6 hours dry deposition" "Total dry deposition" "6 hours wet deposition" "Total wet deposition" "Total deposition" }
 
    set Data(DoseFields) { CI CC CG CT }
@@ -66,19 +66,6 @@ namespace eval RSMC {
                           "Hrs time integrated dose for cloudshine"
                           "Hrs time integrated dose for groundshine"
                           "Hrs total integrated dose" }
-
-   #---- Definitions des entetes et textes de la carte
-
-   set Data(FT1)     "Isotope                :"
-   set Data(FT2)     "Time function          :"
-   set Data(FT3)     "Duration               :"
-   set Data(FT4)     "Horizontal distribution:"
-   set Data(FT5)     "Grid length            :"
-   set Data(FT8)     "Total release           :"
-   set Data(FT9)     "Height of release       :"
-   set Data(FT10)    "Vertical distribution   :"
-   set Data(FT11)    "Standard deviation (Hor):"
-   set Data(FT12)    "Maximum value at o      :"
 
    #----- 8.5x11 (80dpi)
 
@@ -287,20 +274,22 @@ proc RSMC::LayoutInit { Frame } {
 
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+670] -font XFont20 -anchor s -text "" -tags HD1
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+690] -font XFont20 -anchor s -text "" -tags HD2
-   $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+720] -font XFont20 -anchor s -text "Release scenario" -tags HD3
+   $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+720] -font XFont20 -anchor s -text "" -tags HD3
 
-   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+740]  -font XFont12 -anchor sw -text "$Data(FT1)"  -tags FT1
-   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+752]  -font XFont12 -anchor sw -text "$Data(FT2)"  -tags FT2
-   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+764]  -font XFont12 -anchor sw -text "$Data(FT3)"  -tags FT3
-   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+776]  -font XFont12 -anchor sw -text "$Data(FT4)"  -tags FT4
-   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+788]  -font XFont12 -anchor sw -text "$Data(FT5)"  -tags FT5
-   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+800]  -font XFont12 -anchor sw -text ""            -tags FT6
-   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+740] -font XFont12 -anchor sw -text "$Data(FT8)"  -tags FT8
-   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+752] -font XFont12 -anchor sw -text "$Data(FT9)"  -tags FT9
-   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+764] -font XFont12 -anchor sw -text "$Data(FT10)" -tags FT10
-   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+776] -font XFont12 -anchor sw -text "$Data(FT11)" -tags FT11
-   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+788] -font XFont12 -anchor sw -text "$Data(FT12)" -tags FT12
-   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+800] -font XFont12 -anchor sw -text ""            -tags FT13
+   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+740]  -font XFont12 -anchor sw -tags FT1
+   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+752]  -font XFont12 -anchor sw -tags FT2
+   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+764]  -font XFont12 -anchor sw -tags FT3
+   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+776]  -font XFont12 -anchor sw -tags FT4
+   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+788]  -font XFont12 -anchor sw -tags FT5
+   $canvas create text [expr $Page(Border)+10] [expr $Page(Border)+800]  -font XFont12 -anchor sw -tags FT6
+   $canvas create text [expr $Page(Border)-5]   [expr $Page(Height)-1]   -font XFont12 -anchor sw -tags FT7
+   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+740] -font XFont12 -anchor sw -tags FT8
+   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+752] -font XFont12 -anchor sw -tags FT9
+   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+764] -font XFont12 -anchor sw -tags FT10
+   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+776] -font XFont12 -anchor sw -tags FT11
+   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+788] -font XFont12 -anchor sw -tags FT12
+   $canvas create text [expr $Page(Border)+365] [expr $Page(Border)+800] -font XFont12 -anchor sw -tags FT13
+   $canvas create text [expr $Page(Width)/2]    [expr $Page(Height)-1]   -font XFont12 -anchor s  -tags FT14
 
    $canvas create text [expr $Page(Width)-1] [expr $Page(Height)-1] -font XFont10 -anchor se -text "[clock format [clock seconds] -format "%H%M %d/%m/%Y" -gmt true]" -tags FTID
 
@@ -352,22 +341,32 @@ proc RSMC::LayoutUpdate { Frame } {
 
    #----- Recuperer la description de l'experience
 
-   set Sim(Lat)            0
-   set Sim(Lon)            0
-   set Sim(Name)           ""
-   set Sim(AccYear)        0
-   set Sim(AccMonth)       01
-   set Sim(AccDay)         01
-   set Sim(AccHour)        00
-   set Sim(IsoName)        ""
-   set Sim(IsoRelease)     0
-   set Sim(Scale)          0
-   set Sim(FnTime)         0
-   set Sim(FnVert)         0
-   set Sim(Event)          ""
-   set Sim(EmHeight)       0
-   set Sim(EmDuration)     0
-   set Sim(EmVerticalDist) ""
+   set Sim(Lat)               0
+   set Sim(Lon)               0
+   set Sim(Name)              ""
+   set Sim(AccYear)           0
+   set Sim(AccMonth)          01
+   set Sim(AccDay)            01
+   set Sim(AccHour)           00
+   set Sim(AccMin)            00
+   set Sim(IsoName)           ""
+   set Sim(IsoRelease)        0
+   set Sim(Scale)             0
+   set Sim(FnTime)            0
+   set Sim(FnVert)            0
+   set Sim(Event)             ""
+   set Sim(Meteo)             ""
+   set Sim(GridResolution)    0
+   set Sim(VarMesoscale)      0
+   set Sim(EmDuration)        0
+   set Sim(EmTotalDuration)   0
+   set Sim(EmIsoSymbol)       ""
+   set Sim(EmIsoQuantity)     ""
+   set Sim(EmHeight)          0
+   set Sim(EmRadius)          0
+   set Sim(EmVerticalDist)    ""
+   set Sim(EmNumberParticles) 0
+   set Sim(Model)             ""
 
    if { [set info [Info::Read [fstdfield define $field -FID]]]=="" } {
       return
@@ -375,9 +374,62 @@ proc RSMC::LayoutUpdate { Frame } {
 
    eval set Sim(Info) \$[Info::Strip $info Model]::Sim(Info)
    Info::Decode ::RSMC::Sim $Sim(Info) $info
-   set Sim(Path)    [Info::Path $Sim(Info) $info]
+   set Sim(Path) [Info::Path $Sim(Info) $info]
 
-   set Sim(IsoName) [string toupper $Sim(IsoName)]
+   set DispModel $Sim(Model)
+   switch $Sim(Model) {
+      "MLDP0" { set DispModel MLDP }
+      "MLDP1" { set DispModel MLDP }
+   }
+
+   #---- Definitions des entetes et textes de la carte
+   switch $DispModel {
+
+      "MLDP" {
+         set Data(FT1)  "Isotope                       :"
+         set Data(FT2)  "Total release duration        :"
+         set Data(FT3)  "Horiz. wind velocity variance :"
+         set Data(FT4)  "NWP meteorological input model:"
+         set Data(FT5)  "Output grid resolution        :"
+         set Data(FT6)  "Atmospheric dispersion model  :"
+         set Data(FT8)  "Total release quantity      :"
+         set Data(FT9)  "Initial maximum plume height:"
+         set Data(FT10) "Initial column radius       :"
+         set Data(FT11) "Vertical distribution       :"
+         set Data(FT12) "Number of particles         :"
+         set Data(FT13) "Maximum value at o          :"
+         set ListIsoSymbol $Sim(EmIsoSymbol)
+         set ListIsoQuant  $Sim(EmIsoQuantity)
+      }
+      "CANERM" {
+         set Data(FT1)  "Isotope                :"
+         set Data(FT2)  "Time function          :"
+         set Data(FT3)  "Duration               :"
+         set Data(FT4)  "Horizontal distribution:"
+         set Data(FT5)  "Grid length            :"
+         set Data(FT6)  "Dispersion model       :"
+         set Data(FT8)  "Total release           :"
+         set Data(FT9)  "Height of release       :"
+         set Data(FT10) "Vertical distribution   :"
+         set Data(FT11) "Standard deviation (Hor):"
+         set Data(FT12) "Maximum value at o      :"
+         set ListIsoSymbol   $Sim(IsoName)
+         set ListIsoQuant    $Sim(IsoRelease)
+         set ReleaseDuration $Sim(EmDuration)
+         
+         if { $Sim(EmHeight) == 0.0 } {
+            set Sim(EmHeight) 500.0 ; #----- 0 m is equivalent to 500 m in CANERM.
+         }
+      }
+
+   }
+
+   set DefaultDuration 6.0      ; #----- Default release duration [h].
+   set DefaultQuantity 1.0      ; #----- Default release quantity [Bq].
+   set DefaultHeight   500.0    ; #----- Default initial maximum release plume height [m].
+   set DefaultIsotope  "Cs-137" ; #----- Default isotope.
+
+   set Sim(ListIsoSymbol) [string toupper $ListIsoSymbol]
 
    #----- Position de recentrage
 
@@ -386,74 +438,109 @@ proc RSMC::LayoutUpdate { Frame } {
 
    #----- Update de la page
 
-   switch $Sim(Scale) {
-      "MESO"  { set lgrille "50 km" }
-      "FINE"  { set lgrille "25 km" }
-      "VFINE" { set lgrille "10 km" }
-      "EFINE" { set lgrille "5 km" }
-      default { set lgrille "150 km" }
-   }
+   switch $DispModel {
 
-   switch $Sim(FnTime) {
-      "GAUSS"       { set fonction "GAUSSIAN"    ; set duree "Standard Deviation     :" }
-      "EXPONENTIAL" { set fonction "EXPONENTIAL" ; set duree "Duration               :" }
-      default       { set fonction "CONSTANT"    ; set duree "Duration               :" }
-   }
+      "MLDP" {
+         #----- Convert total release duration from [s] to [h].
+         set ReleaseDuration [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]]
+         set TmpRelDur [string trimright $ReleaseDuration "0"]
+         if { [string range $TmpRelDur end end] == "." } {
+            set indx [expr [string length $TmpRelDur] - 2]
+            set ReleaseDuration [string range $TmpRelDur 0 $indx]
+         }
 
-   if { $Sim(EmVerticalDist)=="" } {
-      if { $Sim(FnVert) == 0.0 } {
-         set Sim(EmVerticalDist) "UNIFORM 0-500M"
+         #----- NWP Model.
+         set NWPModel $Sim(Meteo)
+         switch $Sim(Meteo) {
+            "glb" { set NWPModel "GEM Global" }
+            "reg" { set NWPModel "GEM Regional" }
+         }
+
+         #----- Vertical Distribution.
+         set VertDist $Sim(EmVerticalDist)
+         switch $Sim(EmVerticalDist) {
+            "Uniforme"      { set VertDist "Uniform" }
+            "Champignon"    { set VertDist "Umbrella" }
+            "Exponentielle" { set VertDist "Exponential" }
+            "Poisson"       { set VertDist "Poisson" }
+            "Conique"       { set VertDist "Conical" }
+         }
+
+         #----- Number of particles.
+         set NbParticles "[expr int(double($Sim(EmNumberParticles))/1000.0)]K"
       }
-      if  { $Sim(FnVert) < 0.0 } {
-         set Sim(EmVerticalDist) "GAUSSIAN"
+      "CANERM" {
+         
+         switch $Sim(Scale) {
+            "MESO"  { set lgrille "50 km" }
+            "FINE"  { set lgrille "25 km" }
+            "VFINE" { set lgrille "10 km" }
+            "EFINE" { set lgrille "5 km" }
+            default { set lgrille "150 km" }
+         }
+
+         switch $Sim(FnTime) {
+            "GAUSS"       { set fonction "GAUSSIAN"    ; set duree "Standard Deviation     :" }
+            "EXPONENTIAL" { set fonction "EXPONENTIAL" ; set duree "Duration               :" }
+            default       { set fonction "CONSTANT"    ; set duree "Duration               :" }
+         }
+
+         if { $Sim(EmVerticalDist)=="" } {
+            if { $Sim(FnVert) == 0.0 } {
+               set Sim(EmVerticalDist) "UNIFORM"
+            }
+            if  { $Sim(FnVert) < 0.0 } {
+               set Sim(EmVerticalDist) "GAUSSIAN"
+            }
+            if  { $Sim(FnVert) > 0.0 } {
+               set Sim(EmVerticalDist) "EMPIRICAL"
+            }
+         }
+
       }
-      if  { $Sim(FnVert) > 0.0 } {
-         set Sim(EmVerticalDist) "EMPIRICAL"
-      }
+
    }
 
    #----- Calculer la date d'accident(release)
 
-   set seconds     [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)00" -gmt true]
-   set daterelease [clock format $seconds -format "%a %b %d %Y, %H UTC" -gmt true]
+   set seconds     [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true]
+   set daterelease [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -gmt true]
 
-   #----- Updater les informations
+   #----- Convert source coordinates.
 
    set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
 
-   $canvas itemconf RSMCSOURCE  -text "Source name     : $Sim(Name)"
-   $canvas itemconf RSMCLOC     -text "Source location : $coord"
-   $canvas itemconf RSMCRELEASE -text "Date of release : $daterelease"
-
-   $canvas itemconf FT2 -text "$Data(FT2) ${fonction}"
-   $canvas itemconf FT3 -text "${duree} $Sim(EmDuration) h"
-   $canvas itemconf FT4 -text "$Data(FT4) GAUSSIAN"
-   $canvas itemconf FT5 -text "$Data(FT5) ${lgrille}"
-   $canvas itemconf FT6 -text "$Sim(Event)"
-   $canvas itemconf FT9 -text "$Data(FT9) $Sim(EmHeight) METRES"
-   $canvas itemconf FT10 -text "$Data(FT10) $Sim(EmVerticalDist)"
-   $canvas itemconf FT11 -text "$Data(FT11) 1 Grid Length"
-
-   #----- Definir le scenario
-
-   if { $Sim(EmHeight)==0.0 && $Sim(FnVert)==0.0 && $Data(ETICKET)=="137-CS" && [lindex $Sim(IsoRelease) [lsearch -exact $Sim(IsoName) $Data(ETICKET)]]==1.0 } {
-      $canvas itemconf FT13 -text "RESULTS BASED ON DEFAULT VALUES"
+   #----- Search index in list of isotopes for selected current isotope.
+   set indx     [lsearch -exact $Sim(ListIsoSymbol) $Data(ETICKET)]
+   if { $indx != -1 } {
+      set Isotope  [lindex $ListIsoSymbol $indx]
+      set Quantity [lindex $ListIsoQuant $indx]
    } else {
-      $canvas itemconf FT13 -text ""
+      set Isotope $Data(ETICKET)
+      set Quantity 0.0
    }
 
-   set Data(Unit) ""
-
-   if { $Data(ETICKET) == "TRACER1" || $Data(ETICKET) == "TRACER2" || $Data(ETICKET) == "TRACER3" } {
-      set Data(Unit) "Units"
-   } else {
-      set Data(Unit) "Bq"
+   set Data(UnitQuant) "Bq"
+   if { $Isotope == "TRACER1" || $Isotope == "TRACER2" || $Isotope == "TRACER3" } {
+      set Data(UnitQuant) "Units"
    }
 
-   set datev     [fstdstamp todate [fstdfield define $field -DATEV]]
-   set secv      [clock scan "[lindex $datev 1]/[lindex $datev 2]/[lindex $datev 0] [lindex $datev 3]:[lindex $datev 4]:[lindex $datev 5]" -gmt true]
+   if { $idx != -1 } {
+      $canvas itemconf HD1  -text "[lindex $Data(Desc) $idx]"
+      set Data(Unit) "$Data(UnitQuant)[lindex $Data(Units) $idx]"
+   } elseif { $idxdose != -1 } {
+      $canvas itemconf HD1  -text "$Data(IP2) [lindex $Data(DoseDesc) $idxdose] ([lindex $Data(DoseGroups) $Data(IP3)])"
+      set Data(Unit) "Sv"
+   } else {
+      $canvas itemconf HD1  -text "$Data(NOMVAR)"
+      set Data(Unit) ""
+   }
+
+   set datev [fstdstamp todate [fstdfield define $field -DATEV]]
+   set secv  [clock scan "[lindex $datev 1]/[lindex $datev 2]/[lindex $datev 0] [lindex $datev 3]:[lindex $datev 4]:[lindex $datev 5]" -gmt true]
 
    if { $Data(NOMVAR) == "IT" } {
+
       if { $Sim(AccHour) < "12" } {
          set secondsrelease [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) 0000" -gmt true]
       } else {
@@ -463,31 +550,80 @@ proc RSMC::LayoutUpdate { Frame } {
       set date0 [clock format $secondsrelease -format "%a %b %d %Y, %H UTC" -gmt true]
       set date1 [clock format $secv -format "%a %b %d %Y, %H UTC" -gmt true]
       $canvas itemconf HD2  -text "from $date0 to $date1"
+
    } elseif { $Data(NOMVAR) == "MF" } {
 
       set date0 [clock format [expr $secv-(24*3600)] -format "%a %b %d %Y, %H UTC" -gmt true]
       set date1 [clock format $secv -format "%a %b %d %Y, %H UTC" -gmt true]
-
       $canvas itemconf HD2  -text "from $date0 to $date1"
+
    } else {
+
       $canvas itemconf HD2  -text "valid [clock format $secv -format "%a %b %d %Y, %H UTC" -gmt true]"
+
    }
 
-   $canvas itemconf FT1  -text "$Data(FT1) $Data(ETICKET)"
-   $canvas itemconf FT8  -text "$Data(FT8) [lindex $Sim(IsoRelease) [lsearch -exact $Sim(IsoName) $Data(ETICKET)]] $Data(Unit)"
+   $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+720] -font XFont20 -anchor s -text "Release scenario and dispersion model details" -tags HD3
 
-   if { $idx != -1 } {
-      $canvas itemconf HD1  -text "[lindex $Data(Desc) $idx]"
-      set Data(Unit) "$Data(Unit)[lindex $Data(Units) $idx]"
-   } elseif { $idxdose != -1 } {
-      $canvas itemconf HD1  -text "$Data(IP2) [lindex $Data(DoseDesc) $idxdose] ([lindex $Data(DoseGroups) $Data(IP3)])"
-      set Data(Unit) "Sv"
+   $canvas itemconf RSMCSOURCE  -text "Source name     : $Sim(Name)"
+   $canvas itemconf RSMCLOC     -text "Source location : $coord"
+   $canvas itemconf RSMCRELEASE -text "Date of release : $daterelease"
+
+   $canvas itemconf FT1  -text ""
+   $canvas itemconf FT2  -text ""
+   $canvas itemconf FT3  -text ""
+   $canvas itemconf FT4  -text ""
+   $canvas itemconf FT5  -text ""
+   $canvas itemconf FT6  -text ""
+   $canvas itemconf FT7  -text ""
+   $canvas itemconf FT8  -text ""
+   $canvas itemconf FT9  -text ""
+   $canvas itemconf FT10 -text ""
+   $canvas itemconf FT11 -text ""
+   $canvas itemconf FT12 -text ""
+   $canvas itemconf FT13 -text ""
+   $canvas itemconf FT14 -text ""
+
+   switch $DispModel {
+
+      "MLDP" {
+         $canvas itemconf FT1  -text "$Data(FT1) $Isotope"
+         $canvas itemconf FT2  -text "$Data(FT2) $ReleaseDuration h"
+         $canvas itemconf FT3  -text "$Data(FT3) [format "%.2f" $Sim(VarMesoscale)] m²/s²"
+         $canvas itemconf FT4  -text "$Data(FT4) $NWPModel"
+         $canvas itemconf FT5  -text "$Data(FT5) $Sim(GridResolution) km"
+         $canvas itemconf FT6  -text "$Data(FT6) $Sim(Model)"
+         $canvas itemconf FT7  -text "$Sim(Event)"
+         $canvas itemconf FT8  -text "$Data(FT8) [format "%.2e" $Quantity] $Data(UnitQuant)"
+         $canvas itemconf FT9  -text "$Data(FT9) $Sim(EmHeight) m"
+         $canvas itemconf FT10 -text "$Data(FT10) $Sim(EmRadius) m"
+         $canvas itemconf FT11 -text "$Data(FT11) $VertDist"
+         $canvas itemconf FT12 -text "$Data(FT12) $NbParticles"
+         $canvas itemconf FT13 -text "$Data(FT13) [format "%1.2e" [lindex $Data(Max) 0]] $Data(Unit)"
+      }
+      "CANERM" {
+         $canvas itemconf FT1  -text "$Data(FT1) $Isotope"
+         $canvas itemconf FT2  -text "$Data(FT2) ${fonction}"
+         $canvas itemconf FT3  -text "${duree} $ReleaseDuration h"
+         $canvas itemconf FT4  -text "$Data(FT4) GAUSSIAN"
+         $canvas itemconf FT5  -text "$Data(FT5) ${lgrille}"
+         $canvas itemconf FT6  -text "$Data(FT6) $Sim(Model)"
+         $canvas itemconf FT7  -text "$Sim(Event)"
+         $canvas itemconf FT8  -text "$Data(FT8) [format "%.2e" $Quantity] $Data(UnitQuant)"
+         $canvas itemconf FT9  -text "$Data(FT9) $Sim(EmHeight) m"
+         $canvas itemconf FT10 -text "$Data(FT10) $Sim(EmVerticalDist)"
+         $canvas itemconf FT11 -text "$Data(FT11) 1 Grid Length"
+         $canvas itemconf FT12 -text "$Data(FT12) [format "%1.2e" [lindex $Data(Max) 0]] $Data(Unit)"
+      }
+
+   }
+
+   #----- Definir le scenario
+   if { $ReleaseDuration==$DefaultDuration && $Sim(EmHeight)==$DefaultHeight && $Isotope==$DefaultIsotope && $Quantity==$DefaultQuantity } {
+      $canvas itemconf FT14 -text "RESULTS BASED ON DEFAULT INITIAL VALUES"
    } else {
-      $canvas itemconf HD1  -text "$Data(NOMVAR)"
-      set Data(Unit) ""
+      $canvas itemconf FT14 -text ""
    }
-
-   $canvas itemconf FT12 -text "$Data(FT12) [format "%1.2e" [lindex $Data(Max) 0]] $Data(Unit)"
 
    #----- Afficher les informations complementaires
 
@@ -543,7 +679,7 @@ proc RSMC::PrintCommand { Frame } {
       }
    }
    set maxiso 0
-   foreach iso $Sim(IsoName) {
+   foreach iso $Sim(ListIsoSymbol) {
       if { $Print($iso) } {
          incr maxiso
       }
@@ -558,7 +694,7 @@ proc RSMC::PrintCommand { Frame } {
    #----- Pour toutes les heures selectionnees
 
    foreach field $Data(Fields) {
-      foreach iso $Sim(IsoName) {
+      foreach iso $Sim(ListIsoSymbol) {
          foreach hour $Data(Hours) {
 
             if { $Print($field) && $Print($hour) && $Print($iso) } {
@@ -705,9 +841,9 @@ proc RSMC::PrintWidget { Frame } {
       frame .printbox.par.map.isos -relief  sunken -bd 1
          checkbutton .printbox.par.map.isos.lbl -text [lindex $Lbl(Specie) $GDefs(Lang)] -bd 1 \
             -variable RSMC::Print(Isos) -indicatoron false -bg $GDefs(ColorHighLight) \
-            -command { foreach iso $Sim(IsoName) { set RSMC::Print($iso) $RSMC::Print(Isos) }}
+            -command { foreach iso $Sim(ListIsoSymbol) { set RSMC::Print($iso) $RSMC::Print(Isos) }}
          pack .printbox.par.map.isos.lbl -side top -fill both -ipady 4
-         foreach iso $Sim(IsoName) {
+         foreach iso $Sim(ListIsoSymbol) {
             set Print($iso) 0
             checkbutton .printbox.par.map.isos.s$iso -variable RSMC::Print($iso) -text $iso \
                -indicatoron false -bd 1
