@@ -84,11 +84,13 @@ namespace eval Info {
    set Lbl(Lat)                  { "Latitude" "Latitude" }
    set Lbl(Lon)                  { "Longitude" "Longitude" }
    set Lbl(Elev)                 { "Élévation" "Elevation" }
+   set Lbl(DateTimeAcc)          { "Date et temps de l'accident" "Accident date-time" }
    set Lbl(AccYear)              { "Année de l'accident" "Accident year" }
    set Lbl(AccMonth)             { "Mois de l'accident" "Accident month" }
    set Lbl(AccDay)               { "Jour de l'accident" "Accident day" }
    set Lbl(AccHour)              { "Heure de l'accident" "Accident hour" }
    set Lbl(AccMin)               { "Minute de l'accident" "Accident minute" }
+   set Lbl(DateTimeSim)          { "Date et temps de simulation" "Simulation date-time" }
    set Lbl(SimYear)              { "Année de simulation" "Simulation year" }
    set Lbl(SimMonth)             { "Mois de simulation" "Simulation month" }
    set Lbl(SimDay)               { "Jour de simulation" "Simulation day" }
@@ -147,6 +149,8 @@ namespace eval Info {
    set Lbl(EmScenario)           { "Nom du scénario d'émission" "Name of the release scenario" }
    set Lbl(EmNbIntervals)        { "Nombre d'intervalles" "Number of intervals" }
    set Lbl(EmNbIso)              { "Nombre d'isotopes" "Number of isotopes" }
+   set Lbl(EmIsoSymbol)          { "Isotopes" "Isotopes" }
+   set Lbl(EmIsoQuantity)        { "Quantité totale relâchée" "Total release quantity" }
    set Lbl(EmTotalDuration)      { "Durée totale d'émission (s)" "Total release duration (s)" }
    set Lbl(EmEffectiveDuration)  { "Durée effective d'émission (s)" "Effective release duration (s)" }
    set Lbl(EmDuration)           { "Durée d'émission" "Emission duration" }
