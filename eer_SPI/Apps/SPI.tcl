@@ -287,6 +287,13 @@ proc Page::Activate { Frame { Force 0 } } {
       set ProjCam::Data(Name) $name
    }
 
+   #----- Place previous page at end of list
+   if { $Page::Data(Frame)!="" && [set idx [lsearch -exact $Page::Data(Frames) $Page::Data(Frame)]]>-1 } {
+      set Page::Data(Frames) [lreplace $Page::Data(Frames) $idx $idx]
+      lappend Page::Data(Frames) $Page::Data(Frame)
+   }
+
+   #----- Initial acitve page variables
    set Page::Data(Frame)   $Frame
    set Page::Data(Canvas)  $Frame.page.canvas
    set Page::Data(Scale)   $Page::Data(Scale$Frame)
@@ -1581,12 +1588,6 @@ proc SPI::PageDel { { Page "" } { All False } } {
          if { $no!=-1 } {
             TabFrame::Delete $frame 1 $no
          }
-
-         #----- Activer la page suivante si elle existe
-
-         if { [TabFrame::Is $frame] && [set no [TabFrame::Current $frame]]!=-1 } {
-            Page::Activate $frame.frame$no.frame
-         }
       }
    }
 }
@@ -1653,7 +1654,7 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
          wm protocol $frame WM_DELETE_WINDOW "SPI::PageDel $page True"
       } else {
          set page $frame.page[incr Data(Page)]
-#         wm protocol $frame WM_DELETE_WINDOW "SPI::PageDel $page False"
+ #        wm protocol $frame WM_DELETE_WINDOW "SPI::PageDel $page False"
       }
    } else {
       set frame [join [lrange [split $Page::Data(Frame) .] 0 1] .]
