@@ -34,8 +34,14 @@ namespace eval Writer::FVCN {
    set Data(Info8)  "MET PROG, "
    set Data(Info9)  "SOUNDING, "
    set Data(Info10) "MWO REYKJAVIK, "
+   set Data(Info11) "VA TEST, "
+   set Data(Info12) "VA EXERCISE, "
 
    set Data(Prev2)  "THIS STATEMENT UPDATES MESSAGE"
+
+   set Data(Details1)  "UNKNOWN"
+   set Data(Details2)  "VA TEST"
+   set Data(Details3)  "VA EXERCISE"
 
    set Data(Next1)  "WILL BE ISSUED BY"
    set Data(Next2)  "NO LATHER THAN"
@@ -56,6 +62,8 @@ namespace eval Writer::FVCN {
    set Data(Rem1)  "RESPONSIBILITY FOR THIS EVENT HAS BEEN TRANSFERRED BY THE"
    set Data(Rem2)  "RESPONSIBILITY FOR THIS EVENT IS BEING TRANSFERRED TO THE"
    set Data(Rem3)  "WE ARE INVESTIGATING THIS REPORT. AN UPDATED ADVISORY WILL BE ISSUED AS SOON AS POSSIBLE"
+   set Data(Rem4)  "VA TEST VA TEST VA TEST VA TEST VA TEST"
+   set Data(Rem5)  "VA EXERCISE VA EXERCISE VA EXERCISE"
    set Data(Rem12) "THIS STATEMENT UPDATES MESSAGE"
    set Data(Rem22) "THE NEXT STATEMENT WILL BE ISSUED BY THE"
    set Data(Rem23) "BY __/__ UTC UNDER THE HEADER"
@@ -915,7 +923,7 @@ proc Writer::FVCN::SetInfo { Pad Text } {
 
    #----- Creer la ligne de texte avec les options selectionee
 
-   foreach src { 1 2 3 4 5 6 7 8 9 10 } {
+   foreach src { 1 2 3 4 5 6 7 8 9 10 11 12 } {
 
       if { $Data(InfoSel${src}$Pad) } {
 
@@ -957,7 +965,7 @@ proc Writer::FVCN::Clear { Pad } {
    destroy $Pad.fvcn $Pad.code $Pad.volcano $Pad.advisory $Pad.issued $Pad.no $Pad.date $Pad.corid
    destroy $Pad.location $Pad.area $Pad.elev $Pad.ash $Pad.vaac $Pad.details
    destroy $Pad.info $Pad.ash00 $Pad.ash06 $Pad.ash12 $Pad.ash18 $Pad.remarks $Pad.next
-   destroy $Pad.optvolcano $Pad.optcode $Pad.optinfo $Pad.optvaac $Pad.optnext $Pad.optrem $Pad.optobs $Pad.optash00 $Pad.optash06 $Pad.optash12 $Pad.optash18
+   destroy $Pad.optvolcano $Pad.optcode $Pad.optdetails $Pad.optinfo $Pad.optvaac $Pad.optnext $Pad.optrem $Pad.optobs $Pad.optash00 $Pad.optash06 $Pad.optash12 $Pad.optash18
 
    if { $Writer::Data(Canvas)!="" } {
       $Writer::Data(Canvas) delete FVCN
@@ -1040,11 +1048,20 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    menubutton $Pad.optinfo -bg white -bd 0 -menu $Pad.optinfo.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
    menu $Pad.optinfo.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
-      foreach idx { 1 2 3 4 5 6 7 8 9 } {
+      foreach idx { 1 2 3 4 5 6 7 8 9 10 11 12} {
          set Data(InfoSel$idx$Pad) 0
+         if { $idx==11 } {
+             $Pad.optinfo.menu add separator
+         }
          $Pad.optinfo.menu add checkbutton -label $Data(Info$idx) -variable Writer::FVCN::Data(InfoSel$idx$Pad) \
             -command "Writer::FVCN::SetInfo $Pad $Pad.info"
       }
+
+   menubutton $Pad.optdetails -bg white -bd 0 -menu $Pad.optdetails.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
+   menu $Pad.optdetails.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
+      $Pad.optdetails.menu add command -label $Data(Details1) -command "Writer::FVCN::SetDetails $Pad $Pad.details 1 FVCN"
+      $Pad.optdetails.menu add command -label $Data(Details2) -command "Writer::FVCN::SetDetails $Pad $Pad.details 2 FVCN"
+      $Pad.optdetails.menu add command -label $Data(Details3) -command "Writer::FVCN::SetDetails $Pad $Pad.details 3 FVCN"
 
    menubutton $Pad.optnext -bg white -bd 0 -menu $Pad.optnext.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
    menu $Pad.optnext.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
@@ -1058,7 +1075,10 @@ proc Writer::FVCN::LayoutInit { Pad } {
       $Pad.optrem.menu add cascade -label $Data(Rem2) -menu $Pad.optrem.menu.to
       $Pad.optrem.menu add command -label $Data(Rem3) -command "Writer::FVCN::SetRem $Pad $Pad.remarks 3 NONE"
       $Pad.optrem.menu add separator
-      $Pad.optrem.menu add command -label NIL -command "Writer::FVCN::SetRem $Pad $Pad.remarks 4 NONE"
+      $Pad.optrem.menu add command -label $Data(Rem4) -command "Writer::FVCN::SetRem $Pad $Pad.remarks 4 NONE"
+      $Pad.optrem.menu add command -label $Data(Rem5) -command "Writer::FVCN::SetRem $Pad $Pad.remarks 5 NONE"
+      $Pad.optrem.menu add separator
+      $Pad.optrem.menu add command -label NIL -command "Writer::FVCN::SetRem $Pad $Pad.remarks 6 NONE"
 
    menu $Pad.optrem.menu.from -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
    menu $Pad.optrem.menu.to -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
@@ -1185,6 +1205,37 @@ proc Writer::FVCN::PrintCommand { Canvas } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::SetDetails>
+# Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Inserer les details pre-defini.
+#
+# Parametres :
+#    <Pad>   : Identificateur du Pad
+#    <Text>  : Identificateur du widget.
+#    <No>    : Nuomero du type d'advisory.
+#    <FV>    : Id du FV.
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::SetDetails { Pad Text No FV } {
+   variable Data
+
+   $Text delete 0.0 end
+
+   switch $No {
+      1 { $Text insert 0.0 "$Data(Details1)" }
+      2 { $Text insert 0.0 "$Data(Details2)" }
+      3 { $Text insert 0.0 "$Data(Details3)" }
+   }
+
+   set Data(HDetails$Pad) [Writer::TextExpand $Text 47 64]
+   Writer::FVCN::PageInit $Pad
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Writer::FVCN::SetNext>
 # Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -1241,7 +1292,9 @@ proc Writer::FVCN::SetRem { Pad Text No FV } {
       1 { $Text insert 0.0 "$Data(Rem1) $Data(Id$FV). $Data(Rem12) ${no}___" }
       2 { $Text insert 0.0 "$Data(Rem2) $Data(Id$FV). $Data(Rem22) $Data(Id$FV) $Data(Rem23) ${no}___" }
       3 { $Text insert 0.0 "$Data(Rem3)" }
-      4 { $Text insert 0.0 "NIL" }
+      4 { $Text insert 0.0 "$Data(Rem4)" }
+      5 { $Text insert 0.0 "$Data(Rem5)" }
+      default { $Text insert 0.0 "NIL" }
    }
 
    set Data(HRemarks$Pad) [Writer::TextExpand $Text 47 256]
@@ -1340,6 +1393,7 @@ proc Writer::FVCN::PageInit { Pad } {
       incr y $Writer::Data(Height)
 
       $Pad.canvas create text 2 $y -anchor nw -font XFont12 -tags INFO -text "ERUPTION DETAILS:"
+      $Pad.canvas create window $x $y -anchor ne -tags WIN -window $Pad.optdetails
       $Pad.canvas create window $x $y -anchor nw -tags WIN -window $Pad.details
       set y [expr $y+$Writer::Data(Height)*$Data(HDetails$Pad)]
 
