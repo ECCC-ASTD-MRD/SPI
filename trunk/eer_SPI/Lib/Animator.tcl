@@ -842,7 +842,7 @@ proc Animator::Play { } {
       if { $Play(File) } {
 
          if { $Play(Type)=="DATE" && $info!="" && !$Fly(Length) } {
-            set id [clock format $info -format "%Y%m%d_%H.%M.%S" -gmt true]
+            set id [clock format $info -format "%Y%m%d_%H%M%S" -gmt true]
          } else {
             set id [format "%04i" $no]
          }
