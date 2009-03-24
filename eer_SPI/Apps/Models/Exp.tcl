@@ -311,7 +311,7 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
    #----- Construire les branches
 
    foreach sim $List {
-      ${Model}::PoolInfo $sim
+      Exp::PoolFormat ${Model} $sim
 
       if { $Data(NoPrev)==$Prev } {
 
@@ -490,6 +490,47 @@ proc Exp::CreateTree { } {
    $canvas bind SIGN <Leave> "$canvas config -cursor left_ptr"
 
    set Data(ParsingTree) 0
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Exp::PoolFormat>
+# Creation   : Octobre 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Recuperer l'information descriptive d'une ligne pool.
+#
+# Parametres :
+#   <Model>  : Modele en cause
+#   <Info>   : Ligne non modifiee du fichier pool
+#
+# Retour     :
+#
+# Remarques  :
+#----------------------------------------------------------------------------
+
+proc Exp::PoolFormat { Model Info } {
+   variable Data
+
+   if { $Model=="SATDATA" } {
+      set Data(NoSim)  0
+      set Data(NoPrev) -1
+      set Data(State)  0
+      set Data(Desc)   SATDATA
+   } else {
+      set Data(NoSim)  [Info::Strip $Info NoSim]
+      set Data(NoPrev) [Info::Strip $Info NoPrev]
+      set Data(State)  [Info::Strip $Info State]
+
+      if { [set dur [Info::Strip $Info Duration]]!="" } {
+         set unit Hrs
+      } else {
+         set dur [Info::Strip $Info DurMin]
+         set unit Min
+      }
+      set date  "[Info::Strip $Info AccYear]-[Info::Strip $Info AccMonth]-[Info::Strip $Info AccDay] [Info::Strip $Info AccHour]:[Info::Strip $Info AccMin]"
+      set model "[Info::Strip $Info Meteo][Info::Strip $Info Mode]"
+
+      set Data(Desc)   "$dur $unit $date $model ($Exp::Data(NoSim))"
+   }
 }
 
 #-------------------------------------------------------------------------------

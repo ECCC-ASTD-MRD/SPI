@@ -133,7 +133,7 @@ namespace eval MLCD {
 
    #----- Set variables for pool info.
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon DurMin \
-                   DateTimeAcc AccYear AccMonth AccDay AccHour AccMin \
+                   AccYear AccMonth AccDay AccHour AccMin \
                    OutputTimeStepMin ModelTimeStepMin \
                    IsConcS GridTypeS GridAlgoS GridDomain VerticalLevels IsSigmaS \
                    EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav \

@@ -1073,9 +1073,6 @@ proc MLDP0::DefineDirFiles { } {
    set SimName          "$Sim(Model).$Sim(NoSim).$Date.$Time"     ; #----- Simulation name: Model.No.YYYYMMDD.HHmm.
    set Sim(Path)        "$ExpDir/$SimName"                        ; #----- Simulation directory on local host.
 
-   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
-   set Sim(DateTimeSim) "$Sim(SimYear)-$Sim(SimMonth)-$Sim(SimDay), $Sim(SimHour)00 UTC"           ; #----- Date-time of simulation [UTC].
-
    set Sim(LocalMetDir)         "$Sim(Path)/meteo"                                        ; #----- Meteo directory of simulation on local host.
    set Sim(LocalResDir)         "$Sim(Path)/results"                                      ; #----- Results directory of simulation on local host.
    set Sim(LocalTmpDir)         "$Sim(Path)/tmp"                                          ; #----- Temporary directory of simulation on local host.
@@ -1803,7 +1800,7 @@ proc MLDP0::ExtractMetFiles { } {
       return False
 
    }
-   
+
    puts stdout ""
    Debug::TraceProc "MLDP0: Meteorological data files have been extracted successfully."
 
@@ -2155,29 +2152,6 @@ proc MLDP0::MoveInit { Canvas VP } { }
 proc MLDP0::DrawDone { Canvas VP } { }
 proc MLDP0::Draw     { Canvas VP } { }
 proc MLDP0::DrawInit { Canvas VP } { }
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP0::PoolInfo>
-# Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Extrait les parametres d'une ligne pool dans une structure.
-#
-# Parametres :
-#   <Info>   : Ligne non modifiee du fichier pool
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP0::PoolInfo { Info } {
-
-   set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
-   set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
-   set Exp::Data(State)  [Info::Strip $Info State]
-   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo][Info::Strip $Info Mode] [Info::Strip $Info Scale] ($Exp::Data(NoSim))"
-}
 
 #----------------------------------------------------------------------------
 # Nom        : <MLDP0::ReloadLaunchParams>

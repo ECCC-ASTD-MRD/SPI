@@ -60,8 +60,8 @@ namespace eval CANERM {
    #----- Definition des parametres de grilles modifiables
 
    set Sim(Model) CANERM
-   set Sim(Info)  { Model State NoExp NoSim NoPrev Name Lat Lon Duration DateTimeAcc AccYear AccMonth AccDay AccHour AccMin \
-                    DateTimeSim SimYear SimMonth SimDay SimHour Mode Meteo Scale Grid \
+   set Sim(Info)  { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
+                    SimYear SimMonth SimDay SimHour Mode Meteo Scale Grid \
                     FreqOut EmHeight Event NbPer Dt ISauve DTIN DTIS FnVert FnTime EmDuration Delai \
                     IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
 }

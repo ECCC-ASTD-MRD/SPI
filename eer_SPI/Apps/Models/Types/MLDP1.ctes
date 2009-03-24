@@ -101,7 +101,7 @@ namespace eval MLDP1 {
    #----- Set variables for pool info.
 
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration EffectiveDurationMin OutputTimeStepMin ModelTimeStepMin \
-                   DateTimeAcc AccYear AccMonth AccDay AccHour AccMin DateTimeSim SimYear SimMonth SimDay SimHour \
+                   AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour \
                    Mode Meteo Delta Scale GridResolution GridSize Grid \
                    Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel \
                    EmNumberParticles EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
