@@ -164,13 +164,14 @@ proc FileBox::GetContent { Path } {
    variable Msg
    variable Data
 
-   set Data(Width) [expr [winfo width .filebox.header.file]/[font measure [lindex [.filebox.header.file configure -font] 4] "m"]-2]
-
-   #----- Verifier le path
-
+   #----- Check path
    if { $Path=="" } {
       set Path .
    }
+
+   set Data(Width)     [expr [winfo width .filebox.header.file]/[font measure [lindex [.filebox.header.file configure -font] 4] "m"]-2]
+   set Data(Filename)  ""
+   set Data(Path)      [file normalize $Path]
 
    .filebox.files.list configure -bg $GDefs(ColorLight)
 
@@ -183,11 +184,6 @@ proc FileBox::GetContent { Path } {
          Dialog::CreateInfo .filebox "[lindex $Msg(Right) $GDefs(Lang)]\n\n\t$Path"
       }
    }
-
-   cd $Path
-
-   set Data(Filename)     ""
-   set Data(Path)         [pwd]
 
    .filebox config -cursor watch
    update idletasks
@@ -209,8 +205,7 @@ proc FileBox::GetContent { Path } {
       }
    }
 
-   #----- Recuperer les fichiers
-
+   #----- Cleanup de la boite
    .filebox.files.list delete 0 end
 
    set Data(Size) 0.0
@@ -228,15 +223,15 @@ proc FileBox::GetContent { Path } {
       }
    }
 
-   foreach file [glob -nocomplain $pattern] {
-
-      if { [catch { set size [file size $file] } ] } {
+   #----- Recuperer les fichiers
+   foreach file [glob -nocomplain -directory $Data(Path) -tails $pattern] {
+      if { [catch { set size [file size $Data(Path)/$file] } ] } {
          continue
       }
 
       set d 0
 
-      if { [file isdirectory $file] } {
+      if { [file isdirectory $Data(Path)/$file] } {
          set d 1
          set file "$file/"
       } else {
@@ -249,7 +244,7 @@ proc FileBox::GetContent { Path } {
       }
 
       if { $d && [string first \" $file]==-1 } {
-         catch { lappend lines [format "%-$Data(Width)s %8s %10i" $file [file attributes $file -owner] $size] }
+         catch { lappend lines [format "%-$Data(Width)s %8s %10i" $file [file attributes $Data(Path)/$file -owner] $size] }
          set Data(Size) [expr $Data(Size)+$size]
          incr Data(Nb)
       }
@@ -943,7 +938,6 @@ proc FileBox::SelectList { { Exec True } } {
    variable Data
 
    #----- Extraire le nom selectionne
-
    set idx [.filebox.files.list curselection]
 
    if { [llength $idx]==0 } {
@@ -953,17 +947,16 @@ proc FileBox::SelectList { { Exec True } } {
    set files ""
    set size  0.0
 
+   #----- Get the total selection file size
    foreach id $idx {
       set line [.filebox.files.list get $id]
-
-#      lappend files "[string trim [string range $line 0 $Data(Width)]]"
       lappend files "[string trim [lindex $line 0]]"
       catch { set size [expr $size+[lindex $line end]] }
    }
 
-   if { [file isdirectory [lindex $files 0]] } {
+   if { [file isdirectory [lindex $Data(Path)/$files 0]] } {
       if { $Exec } {
-         FileBox::GetContent [lindex $files 0]
+         FileBox::GetContent $Data(Path)/[lindex $files 0]
       } else {
          set Data(Filename) ""
       }
