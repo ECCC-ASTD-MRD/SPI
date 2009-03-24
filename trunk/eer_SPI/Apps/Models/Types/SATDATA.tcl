@@ -23,31 +23,6 @@ namespace eval SATDATA {
    set Msg(Suppress) { "Supprimer les donnees satellites de" "Delete satellite data from" }
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <SATDATA::PoolInfo>
-# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Simuler l'extraction des parametres d'une ligne pool
-#            pour la boite d'experience.
-#
-# Parametres :
-#   <Line>   : Ligne non modifiee du fichier pool
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc SATDATA::PoolInfo { Line } {
-   variable Ind
-
-   set Exp::Data(NoSim)  0
-   set Exp::Data(NoPrev) -1
-   set Exp::Data(State)  0
-   set Exp::Data(Desc)   SATDATA
-}
-
 #-------------------------------------------------------------------------------
 # Nom      : <SATDATA::New>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE

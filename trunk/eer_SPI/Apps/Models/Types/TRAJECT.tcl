@@ -134,29 +134,6 @@ proc TRAJECT::InitNew { } {
    }
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <TRAJECT::PoolInfo>
-# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Extrait les parametres d'une ligne  pool dans une structure.
-#
-# Parametres :
-#   <Pool>   : Ligne non modifiee du fichier pool
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc TRAJECT::PoolInfo { Info } {
-
-   set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
-   set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
-   set Exp::Data(State)  [Info::Strip $Info State]
-   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo][Info::Strip $Info Mode] ($Exp::Data(NoSim))"
-}
-
 #---------------------------------------------------------------------------
 # Nom      : <TRAJECT::Result>
 # Creation : Novembre 1999 - J.P. Gauthier - CMC/CMOE

@@ -711,9 +711,6 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
       set Sim(SimHour) [Convert::Set2Digit [expr $hour/$Sim(Delta)*$Sim(Delta)]]
    }
 
-   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
-   set Sim(DateTimeSim) "$Sim(SimYear)-$Sim(SimMonth)-$Sim(SimDay), $Sim(SimHour)00 UTC"           ; #----- Date-time of simulation [UTC].
-
    #----- On verifie les parametres de l'usager
 
    if { ![Exp::Params . CANERM $Sim(Info)] } {
@@ -1260,27 +1257,4 @@ proc CANERM::SpeciesFormat { Frame Line } {
          }
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <CANERM::PoolInfo>
-# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Extrait les parametres d'une ligne  pool dans une structure.
-#
-# Parametres :
-#   <Info>   : Ligne non modifiee du fichier pool
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CANERM::PoolInfo { Info } {
-
-   set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
-   set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
-   set Exp::Data(State)  [Info::Strip $Info State]
-   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo] [Info::Strip $Info Scale] ($Exp::Data(NoSim))"
 }

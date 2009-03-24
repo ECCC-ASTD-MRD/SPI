@@ -1153,8 +1153,6 @@ proc MLCD::InitObservationTimes { } {
    set Sim(ObsMaxNb)     [expr int(double($sec)/3600.0) + 1]
    set Sim(ObsNb)        $Sim(ObsMaxNb)
 
-#   puts stdout "\nMaximum number of observations : $Sim(ObsMaxNb)"
-
    #----- Initialize observation times according to 1-hour time interval between following observations.
    for { set i 1 } { $i < $Sim(ObsMaxNb) } { incr i } {
 
@@ -1179,8 +1177,6 @@ proc MLCD::InitObservationTimes { } {
       lappend Sim(ObsTime) "$year$month$day$hour$min"
 
    }
-
-#   puts stdout "Sim(ObsTime): $Sim(ObsTime)"
 
    #----- Get current observation time according to (selected) observation index.
    MLCD::GetCurrentObservationTime
@@ -1225,9 +1221,6 @@ proc MLCD::InitWindProfile { } {
 
    #----- Save wind profile for future verification.
    set Sim(OldWindProfile) $Sim(WindProfile)
-
-#   puts stderr "Sim(WindProfile): $Sim(WindProfile)"
-
 }
 
 #-------------------------------------------------------------------------------
@@ -1266,7 +1259,6 @@ proc MLCD::Max { args } {
    }
 
    return $max
-
 }
 
 #-------------------------------------------------------------------------------
@@ -1336,9 +1328,7 @@ proc MLCD::MeteoParametersModified { } {
          if { $height != $origheight || $velocity != $origvelocity || $direction != $origdirection } {
             return 1
          }
-
       }
-
    }
 
    return 0
@@ -1412,27 +1402,6 @@ proc MLCD::ObukhovFunc { Sc Z0 } {
    set Length [expr 1.0/($sgn * pow((0.216586 * log(1.2 + 10.0/$Z0)), 2) * pow(10, $fs))]
 
    return $Length
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLCD::PoolInfo>
-# Creation   : Octobre 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Recuperer l'information descriptive d'une ligne pool.
-#
-# Parametres :
-#   <Info>   : Ligne non modifiee du fichier pool
-#
-# Retour     :
-#
-# Remarques  :
-#----------------------------------------------------------------------------
-proc MLCD::PoolInfo { Info } {
-
-   set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
-   set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
-   set Exp::Data(State)  [Info::Strip $Info State]
-   set Exp::Data(Desc)   "[Info::Strip $Info DurMin] Min [Info::Strip $Info AccYear][Info::Strip $Info AccMonth][Info::Strip $Info AccDay] [Info::Strip $Info AccHour]:[Info::Strip $Info AccMin] ($Exp::Data(NoSim))"
 }
 
 #-------------------------------------------------------------------------------
@@ -1517,10 +1486,6 @@ proc MLCD::SelectObs { No } {
    if { $Sim(ObsNo) != $No } {
       set Sim(ObsNo) $No
    }
-
-#    puts stdout "\nSim(ObsPrevIdx) : $Sim(ObsPrevIdx)"
-#    puts stdout "Sim(ObsIdx)     : $Sim(ObsIdx)"
-#    puts stdout "Sim(ObsNo)      : $Sim(ObsNo)"
 
    #----- Set previous observation.
    MLCD::SetPreviousObs $Sim(ObsPrevIdx)
@@ -1897,7 +1862,6 @@ proc MLCD::SetPreviousObs { Idx } {
 
    set time "$year$month$day$hour$min"
    set Sim(ObsTime) [lreplace $Sim(ObsTime) $Idx $Idx $time]
-#   puts stderr "Sim(ObsTime): $Sim(ObsTime)"
 
    #----- Set local parameters.
    set rough   $Sim(ObsRough)
@@ -1906,7 +1870,6 @@ proc MLCD::SetPreviousObs { Idx } {
 
    set params "$rough $obukhov $precip"
    set Sim(LocalParameters) [lreplace $Sim(LocalParameters) $Idx $Idx $params]
-#   puts stderr "Sim(LocalParameters): $Sim(LocalParameters)"
 
    #----- Set wind profile.
    set profile {}
@@ -1918,8 +1881,6 @@ proc MLCD::SetPreviousObs { Idx } {
    }
 
    set Sim(WindProfile) [lreplace $Sim(WindProfile) $Idx $Idx $profile]
-#   puts stderr "Sim(WindProfile): $Sim(WindProfile)"
-
 }
 
 #-------------------------------------------------------------------------------
@@ -2039,8 +2000,6 @@ proc MLCD::SimInitLaunch { } {
    set Sim(Duration)      [expr int($Sim(DurMin)*60)]              ; #----- Simulation duration [s].
    set Sim(EmDurationSec) [expr int($Sim(EmDurationMin)*60)]       ; #----- Emission duration [s].
 
-   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
-
    #----- Create simulation directory.
    set Sim(Path) "$Sim(BasePath)/MLCD.$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)"
    file mkdir $Sim(Path)
@@ -2149,10 +2108,6 @@ proc MLCD::SimInitLaunch { } {
    }
 
    close $file
-
-#   puts stderr "NewObsTime         : $NewObsTime"
-#   puts stderr "NewLocalParameters : $NewLocalParameters"
-#   puts stderr "NewWindProfile     : $NewWindProfile"
 
    set Sim(ObsTime)         $NewObsTime
    set Sim(LocalParameters) $NewLocalParameters
@@ -2864,8 +2819,6 @@ proc MLCD::ValidateLocalParameters { } {
 proc MLCD::ValidateMeteoTab { { Check 0 } } {
    variable Sim
 
-#   puts stderr "-->> Validate meteo tab parameters"
-
    #----- Validate current observation (local parameters + wind profile).
    if { ![MLCD::ValidateCurrentObservation] } {
       return 0
@@ -2916,8 +2869,6 @@ proc MLCD::ValidateModelTab { } {
    variable Sim
    variable Data
    variable Error
-
-#   puts stderr "-->> Validate model tab parameters"
 
    #----- Update release date-time.
    MLCD::SetReleaseDateTime

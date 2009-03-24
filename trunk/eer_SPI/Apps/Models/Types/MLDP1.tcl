@@ -1098,9 +1098,6 @@ proc MLDP1::DefineDirFiles { } {
    set SimName          "$Sim(Model).$Sim(NoSim).$Date.$Time"     ; #----- Simulation name: Model.No.YYYYMMDD.HHmm.
    set Sim(Path)        "$ExpDir/$SimName"                        ; #----- Simulation directory on local host.
 
-   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)$Sim(AccMin) UTC" ; #----- Date-time of accident [UTC].
-   set Sim(DateTimeSim) "$Sim(SimYear)-$Sim(SimMonth)-$Sim(SimDay), $Sim(SimHour)00 UTC"           ; #----- Date-time of simulation [UTC].
-
    set Sim(LocalMetDir)         "$Sim(Path)/meteo"                                        ; #----- Meteo directory of simulation on local host.
    set Sim(LocalResDir)         "$Sim(Path)/results"                                      ; #----- Results directory of simulation on local host.
    set Sim(LocalTmpDir)         "$Sim(Path)/tmp"                                          ; #----- Temporary directory of simulation on local host.
@@ -2186,29 +2183,6 @@ proc MLDP1::Draw     { Canvas VP } { }
 proc MLDP1::DrawInit { Canvas VP } { }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP1::PoolInfo>
-# Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Extrait les parametres d'une ligne pool dans une structure.
-#
-# Parametres :
-#   <Info>   : Ligne non modifiee du fichier pool
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP1::PoolInfo { Info } {
-
-   set Exp::Data(NoSim)  [Info::Strip $Info NoSim]
-   set Exp::Data(NoPrev) [Info::Strip $Info NoPrev]
-   set Exp::Data(State)  [Info::Strip $Info State]
-   set Exp::Data(Desc)   "[Info::Strip $Info Duration] Hrs [Info::Strip $Info Meteo][Info::Strip $Info Mode] [Info::Strip $Info Scale] ($Exp::Data(NoSim))"
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <MLDP1::ReloadLaunchParams>
 # Creation   : 4 October 2007 - A. Malo - CMC/CMOE
 #
@@ -3165,7 +3139,7 @@ proc MLDP1::SimLaunchInit { Tab No } {
 
       #----- Set isotopes information for pool of simulation.
       MLDP1::SetIsotopesInfo
-      
+
       #----- Get meteorological data according to met database, time interval between files, release accident date-time.
       if { ![MLDP1::GetMetData] } {
          .mldp1new config -cursor left_ptr

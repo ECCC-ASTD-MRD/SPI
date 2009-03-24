@@ -416,7 +416,7 @@ proc RSMC::LayoutUpdate { Frame } {
          set ListIsoSymbol   $Sim(IsoName)
          set ListIsoQuant    $Sim(IsoRelease)
          set ReleaseDuration $Sim(EmDuration)
-         
+
          if { $Sim(EmHeight) == 0.0 } {
             set Sim(EmHeight) 500.0 ; #----- 0 m is equivalent to 500 m in CANERM.
          }
@@ -470,7 +470,7 @@ proc RSMC::LayoutUpdate { Frame } {
          set NbParticles "[expr int(double($Sim(EmNumberParticles))/1000.0)]K"
       }
       "CANERM" {
-         
+
          switch $Sim(Scale) {
             "MESO"  { set lgrille "50 km" }
             "FINE"  { set lgrille "25 km" }
