@@ -66,6 +66,28 @@ namespace eval INFO {
                           "Total deposition map(s)"
                           "Trajectory(ies)" }
    set Data(Situations) { "--- EXERCISE ONLY !!! ---" "--- THIS IS NOT AN EXERCISE !!! ---" }
+   set Data(BlaBla) "PLEASE FIND ENCLOSED THE SET OF MAPS FOR THIS SCENARIO.
+THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:
+(username: eerca99 password: emerg1)
+
+http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
+http://www.arl.noaa.gov/rsmc-bin/jntrsmc.pl
+http://www.bom.gov.au/cgi-bin/reg/EER/jntrsmc.pl
+
+
+THE METEROLOGICAL FIELDS WILL NOT BE FAXED TO YOU BUT CAN BE RETRIEVED ON
+THE INTERNET AT THE FOLLOWING WEB PAGE:
+(username: eerca99 password: emerg1)
+
+http://eer.cmc.ec.gc.ca/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/meteo
+(These will not be faxed to you)
+
+
+PLEASE DO NOT DISTRIBUTE THE USERNAME AND PASSWORD INFORMATION
+OUTSIDE OF YOUR RESPECTIVE ORGANIZATIONS.
+
+KIND REGARDS,
+RSMC MONTRÉAL SHIFT SUPERVISOR"
 
    set Page(Border) 40
    set Page(Width)  680
@@ -218,8 +240,6 @@ proc INFO::LayoutInit { Frame } {
 
    text $Frame.blabla -height 30 -width 97 -bg white -relief flat -wrap word -highlightthickness 1 \
       -yscrollcommand "$Frame.blabla yview moveto 0.0 ; catch " -font XFont10
-#   text $Frame.blabla -height 5 -width 10 -bg white -relief flat -wrap word -highlightthickness 1 \
-#      -yscrollcommand "$Frame.blabla yview moveto 0.0 ; catch " -font XFont10
 }
 
 #----------------------------------------------------------------------------
@@ -429,7 +449,6 @@ proc INFO::Detail { Frame } {
          "Poisson"       { set Sim(EmVerticalDist) "Poisson" }
          "Conique"       { set Sim(EmVerticalDist) "Conical" }
       }
-
    }
 
    set Sim(EmVerticalDist) "$Sim(EmVerticalDist) between surface and $Sim(EmHeight) m AGL"
@@ -437,40 +456,18 @@ proc INFO::Detail { Frame } {
    $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+440] -text "Vertical distribution: $Sim(EmVerticalDist)" \
       -fill black -tags DETAIL -font XFont10 -anchor w
 
-   if { $Sim(Model) == "CANERM" || ([regexp MLDP $Sim(Model)] && $Sim(SrcType) == "accident") } {
-      
-      $Frame.blabla delete 0.0 end
-      $Frame.blabla insert 0.0 "PLEASE FIND ENCLOSED THE SET OF MAPS FOR THIS SCENARIO.
-THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:
-(username: eerca99 password: emerg1)
-
-http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
-http://www.arl.noaa.gov/rsmc-bin/jntrsmc.pl
-http://www.bom.gov.au/cgi-bin/reg/EER/jntrsmc.pl
-
-
-THE METEROLOGICAL FIELDS WILL NOT BE FAXED TO YOU BUT CAN BE RETRIEVED ON
-THE INTERNET AT THE FOLLOWING WEB PAGE:
-(username: eerca99 password: emerg1)
-
-http://eer.cmc.ec.gc.ca/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/meteo
-(These will not be faxed to you)
-
-
-PLEASE DO NOT DISTRIBUTE THE USERNAME AND PASSWORD INFORMATION
-OUTSIDE OF YOUR RESPECTIVE ORGANIZATIONS.
-
-KIND REGARDS,
-RSMC MONTRÉAL SHIFT SUPERVISOR" 
-
-   }
-
    #---- Options variables
-
    $canvas create window [expr $Page(Width)/2] [expr $Page(Border)+290] -window $Frame.situ -tags "DETAIL NOPRINT" -anchor c
 
    $canvas create window [expr $Page(Border)+5]  [expr $Page(Border)+455] -window $Frame.blabla -tags "DETAIL NOPRINT" -anchor nw
    $canvas create text   [expr $Page(Border)+20] [expr $Page(Border)+460] -fill black -tags TEXT -font XFont10 -anchor nw
+
+   #---- Insert default blabla
+   if { $Sim(Model)=="CANERM" || ([regexp MLDP $Sim(Model)] && $Sim(SrcType)=="accident") } {
+      $Frame.blabla delete 0.0 end
+      $Frame.blabla insert 0.0 $Data(BlaBla)
+      $canvas itemconfigure TEXT -text $Data(BlaBla)
+   }
 
    bind $Frame.blabla <Any-KeyRelease> "$canvas itemconfigure TEXT -text \[$Frame.blabla get 0.0 end\]"
    bind $Frame.blabla <FocusIn> "$canvas itemconfigure TEXT -text \[$Frame.blabla get 0.0 end\]"
@@ -508,6 +505,8 @@ proc INFO::LayoutUpdate { Frame } {
    set Sim(AccMin)            00
    set Sim(IsoName)           ""
    set Sim(IsoRelease)        0
+   set Sim(Isotope)           ""
+   set Sim(Quantity)          0.0
    set Sim(FnTime)            0
    set Sim(FnVert)            0
    set Sim(Meteo)             ""
@@ -537,7 +536,7 @@ proc INFO::LayoutUpdate { Frame } {
       set ListIsoSymbol $Sim(EmIsoSymbol)
       set ListIsoQuant  $Sim(EmIsoQuantity)
 
-      if { $Sim(Model) == "CANERM" } {
+      if { $Sim(Model)=="CANERM" } {
 
          set ListIsoSymbol $Sim(IsoName)
          set ListIsoQuant  $Sim(IsoRelease)
