@@ -2242,6 +2242,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case TOP:
             if (Objc==1) {
+               if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
+                  ZRef_DecodeRPNLevelParams(Field);
+               }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Top));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
@@ -2251,6 +2254,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case REF:
             if (Objc==1) {
+               if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
+                  ZRef_DecodeRPNLevelParams(Field);
+               }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Ref));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
@@ -2260,6 +2266,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case COEF:
             if (Objc==1) {
+               if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
+                  ZRef_DecodeRPNLevelParams(Field);
+               }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Coef[0]));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
