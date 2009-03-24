@@ -84,13 +84,11 @@ namespace eval Info {
    set Lbl(Lat)                  { "Latitude" "Latitude" }
    set Lbl(Lon)                  { "Longitude" "Longitude" }
    set Lbl(Elev)                 { "Élévation" "Elevation" }
-   set Lbl(DateTimeAcc)          { "Date et temps de l'accident" "Accident date-time" }
    set Lbl(AccYear)              { "Année de l'accident" "Accident year" }
    set Lbl(AccMonth)             { "Mois de l'accident" "Accident month" }
    set Lbl(AccDay)               { "Jour de l'accident" "Accident day" }
    set Lbl(AccHour)              { "Heure de l'accident" "Accident hour" }
    set Lbl(AccMin)               { "Minute de l'accident" "Accident minute" }
-   set Lbl(DateTimeSim)          { "Date et temps de simulation" "Simulation date-time" }
    set Lbl(SimYear)              { "Année de simulation" "Simulation year" }
    set Lbl(SimMonth)             { "Mois de simulation" "Simulation month" }
    set Lbl(SimDay)               { "Jour de simulation" "Simulation day" }
