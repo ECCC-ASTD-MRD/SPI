@@ -191,7 +191,7 @@ proc HFManager::FileCommand { Id Command } {
             if { $del } {
                if { [lindex $params 1]=="wget" } {
                   #----- send a file to pds
-                  exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file
+                  exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser)
                } else {
                   HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "rm -f" $file
                }
@@ -424,14 +424,15 @@ proc HFManager::HostFiles { Id } {
       }
 
       if { [lindex $params 1]=="wget" } {
-         exec $GDefs(Dir)/Script/HFwget.ksh $Host(Name$Id) $Host(Path$Id)
+         exec $GDefs(Dir)/Script/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res
 
          if { $Host(Wild$Id) != "" } {
-            puts stderr "egrep $Host(Wild$Id) /tmp/index.res "
-            catch { eval set Host(File$Id) \[split \[exec egrep $Host(Wild$Id) /tmp/index.res ] \\n\] }
+            puts stderr "egrep $Host(Wild$Id) /tmp/index[pid].res"
+            catch { eval set Host(File$Id) \[split \[exec egrep $Host(Wild$Id) /tmp/index[pid].res ] \\n\] }
          } else {
-            catch { eval set Host(File$Id) \[split \[exec cat /tmp/index.res ] \\n\] }
+            catch { eval set Host(File$Id) \[split \[exec cat /tmp/index[pid].res ] \\n\] }
          }
+         file delete -force /tmp/index[pid].res
       } else {
          if { $Host(Wild$Id) != "" } {
             set path  $Host(Path$Id)/$Host(Wild$Id)
