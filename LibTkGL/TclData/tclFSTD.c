@@ -397,12 +397,12 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case READCUBE:
          if(Objc!=3 && Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id [invert]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
          if (!field0) {
             Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          n=0;
          if (Objc==4) {
@@ -410,22 +410,22 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          }
          if (field0->ReadCube)
             field0->ReadCube(Interp,field0,n);
-         return TCL_OK;
+         return(TCL_OK);
          break;
 
       case HEAD:
          if(Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id index");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetIntFromObj(Interp,Objv[3],&key);
-         return FSTD_FieldReadHead(Interp,Tcl_GetString(Objv[2]),key);
+         return(FSTD_FieldReadHead(Interp,Tcl_GetString(Objv[2]),key));
          break;
 
       case FIND:
          if(Objc!=10 && Objc!=11) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id datev eticket ip1 ip2 ip3 typvar nomvar [max]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[3],&datev);
          Tcl_GetIntFromObj(Interp,Objv[5],&ip1);
@@ -435,13 +435,13 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          if (Objc==11) {
             Tcl_GetIntFromObj(Interp,Objv[10],&n);
          }
-         return FSTD_FieldFind(Interp,Tcl_GetString(Objv[2]),n,datev,Tcl_GetString(Objv[4]),ip1,ip2,ip3,Tcl_GetString(Objv[8]),Tcl_GetString(Objv[9]));
+         return(FSTD_FieldFind(Interp,Tcl_GetString(Objv[2]),n,datev,Tcl_GetString(Objv[4]),ip1,ip2,ip3,Tcl_GetString(Objv[8]),Tcl_GetString(Objv[9])));
          break;
 
       case WRITE:
          if(Objc!=6 && Objc!=7) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld id npack rewrite [compress]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetIntFromObj(Interp,Objv[4],&npack);
          Tcl_GetBooleanFromObj(Interp,Objv[5],&rewrite);
@@ -449,14 +449,14 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_GetBooleanFromObj(Interp,Objv[6],&compress);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
-         return FSTD_FieldWrite(Interp,Tcl_GetString(Objv[3]),field0,npack,rewrite,compress);
+         return(FSTD_FieldWrite(Interp,Tcl_GetString(Objv[3]),field0,npack,rewrite,compress));
          break;
 
       case EXPORT:
          if (strcmp(Tcl_GetString(Objv[2]),"HIRLAM")==0) {
             if (Objc!=10 && Objc!=14) {
                Tcl_WrongNumArgs(Interp,2,Objv,"HIRLAM fld filename desc info factor (mode [INT|EXP]) (grid [boolean]) ?I0 J0 I1 J1?");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             } else {
                if (Objc==14) {
                    Tcl_GetIntFromObj(Interp,Objv[10],&i0);
@@ -465,18 +465,18 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                    Tcl_GetIntFromObj(Interp,Objv[13],&j1);
                }
                Tcl_GetDoubleFromObj(Interp,Objv[7],&tmpd);
-               return HIRLAM_Export(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[5]),Tcl_GetString(Objv[6]),Tcl_GetString(Objv[4]),tmpd,Tcl_GetString(Objv[8]),Tcl_GetString(Objv[9]),i0,j0,i1,j1);
+               return(HIRLAM_Export(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[5]),Tcl_GetString(Objv[6]),Tcl_GetString(Objv[4]),tmpd,Tcl_GetString(Objv[8]),Tcl_GetString(Objv[9]),i0,j0,i1,j1));
             }
          } else if (strcmp(Tcl_GetString(Objv[2]),"WIX")==0) {
             if (Objc!=5 && Objc!=9) {
                Tcl_WrongNumArgs(Interp,2,Objv,"WIX { FLDS } filename ?I0 J0 I1 J1?");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             } else {
-               return WIX_Export(Interp,Objv[3],Tcl_GetString(Objv[4]),i0,j0,i1,j1);
+               return(WIX_Export(Interp,Objv[3],Tcl_GetString(Objv[4]),i0,j0,i1,j1));
             }
          } else {
             Tcl_AppendResult(Interp,"FSTD_FieldCmd: wrong export type, must be HIRLAM or WIX",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          break;
 
@@ -1539,7 +1539,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case KEY:
         if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[bit lenght list]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          pkey1=pkey2=0;
@@ -1567,33 +1567,34 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          }
          Tcl_SetObjResult(Interp,list);
          break;
+
       case TOSECONDS:
 
         if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
          Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_Stamp2Seconds(stamp)));
-         return TCL_OK;
+         return(TCL_OK);
          break;
 
       case FROMSECONDS:
 
          if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"seconds");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetLongFromObj(Interp,Objv[2],&sec);
          sprintf(buf,"%09i",System_Seconds2Stamp(sec));
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-         return TCL_OK;
+         return(TCL_OK);
          break;
 
       case TODATE:
          if(Objc!=3 && Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp [format]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
 
@@ -1605,7 +1606,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             sprintf(buf,"%i %02i %02i %02i %02i %02i",yyyy,mm,dd,hh,nn,ss);
          }
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-         return TCL_OK;
+         return(TCL_OK);
          break;
 
       case FROMDATE:
@@ -1621,13 +1622,13 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
          sprintf(buf,"%09i",stamp);
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-         return TCL_OK;
+         return(TCL_OK);
          break;
 
       case INCR:
          if(Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp hours");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&tmpf);
@@ -1636,13 +1637,13 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
          sprintf(buf,"%09i",op);
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-         return TCL_OK;
+         return(TCL_OK);
          break;
 
       case DIFF:
          if(Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"stamp1 stamp2");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
          TclY_Get0IntFromObj(Interp,Objv[3],&time);
@@ -1650,11 +1651,11 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          f77name(difdatr)(&stamp,&time,&tmpf);
 
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(tmpf));
-         return TCL_OK;
+         return(TCL_OK);
          break;
    }
 #endif
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

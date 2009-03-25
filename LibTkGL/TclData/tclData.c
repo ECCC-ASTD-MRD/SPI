@@ -685,7 +685,11 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       field->Free(field);                                   field->Head=NULL;
       if (field->Tag)         Tcl_DecrRefCount(field->Tag); field->Tag=NULL;
       if (field->Stat)        free(field->Stat);            field->Stat=NULL;
-      GeoRef_Destroy(NULL,field->Ref->Name);                field->Ref=NULL;
+
+      /*Normally we would free the georef but if the field is being overwritten, chances are it's the same grid so we just keep
+        the object alive to be reused if needed*/
+//      GeoRef_Destroy(NULL,field->Ref->Name);
+      field->Ref=NULL;
    }
 
    /*Allouer la memoire pour les structures*/
