@@ -804,6 +804,7 @@ proc VAAC::Transmit { Frame } {
             -rotate false -colormode color -pageheight 2157p -file $file.ps
          SPI::Progress +$n "Converting to portable bitmap format (1728x2157)"
          exec grep -v showpage $file.ps | convert -density 72 -geometry 1728x2157! - $file.pbm
+         catch { exec chmod 644 ${file}.pbm }
 
          #----- Obtenir le bon numero de transmission
 
@@ -826,22 +827,42 @@ proc VAAC::Transmit { Frame } {
             if { $no!="ca0281c" && $no!="ca0282c" && $no!="ca0287c" && $no!="ca0288c" } {
                SPI::Progress +0 "Sending over WAFS"
 
-               catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" }
+               set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" } MsgCatch]
+
+               if { $ErrCatch != 0 } {
+                  Debug::TraceProc "Error : Unable to send the $file.pbm over WAFS.\n\n$MsgCatch"
+               }
 
                #----- envoyer sur les sites web.
 
                exec convert ${file}.pbm -resize 680x880 ${file}.png
-               catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png"  }
+               catch { exec chmod 644 ${file}.png }
+               set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png" } MsgCatch]
+
+               if { $ErrCatch != 0 } {
+                  Debug::TraceProc "Error : Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+               }
+
             }
          }
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
-            catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " }
+            set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " } MsgCatch]
+
+            if { $ErrCatch != 0 } {
+               Debug::TraceProc "Error : Unable to send the $file.pbm over SATNET.\n\n$MsgCatch"
+            }
 
             #----- envoyer sur les sites web.
 
             exec convert ${file}.pbm -resize 680x880 ${file}.png
-            catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png"  }
+            catch { exec chmod 644 ${file}.png }
+            set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png" } MsgCatch]
+
+            if { $ErrCatch != 0 } {
+               Debug::TraceProc "Error : Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+            }
+
          }
       }
    }

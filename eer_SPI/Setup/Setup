@@ -46,7 +46,7 @@ proc GetPrevious { } {
    }
 
    set GDefs(Printer) [lindex $GDefs(Printers) 0]
-   set GDefs(BackEnd) { naos maia }
+   set GDefs(BackEnd) { maia saiph }
 
    if { $GDefs(Lang) } {
       set GDefs(Langue) English
@@ -347,9 +347,9 @@ set GDefs(FrontEndUser)   $GDefs(FrontEndUser)
 #----- Definitions pour les BackEnd
 
 set GDefs(Queue)          { development production none }
-set GDefs(BackEnd)        { naos maia }
-set GDefs(BackEndnaos)    { /home/binops/afse/eer $GDefs(BackEndnaos) }
+set GDefs(BackEnd)        { maia saiph }
 set GDefs(BackEndmaia)    { /home/binops/afse/eer $GDefs(BackEndmaia) }
+set GDefs(BackEndsaiph)   { /home/binops/afse/eer $GDefs(BackEndsaiph) }
 
 #----- Constantes diverses relatives a toutes les applications
 
@@ -438,12 +438,13 @@ set GDefs(Ver)           [regsub \[:alpha:\]+ [lindex [split [lindex [split [fil
 set GDefs(DefFile)       .eer_Defs-$GDefs(Ver)
 set GDefs(FrontEnd)      pollux
 set GDefs(FrontEndUser)  $env(USER)
+set GDefs(TransmitUser)  afsiops
 set GDefs(Model)         False
 
-set GDefs(Queue)       { user op none }
-set GDefs(BackEnd)     { naos maia }
-set GDefs(BackEndnaos) { /home/binops/afse/eer "" }
-set GDefs(BackEndmaia) { /home/binops/afse/eer "" }
+set GDefs(Queue)        { user op none }
+set GDefs(BackEnd)      { maia saiph }
+set GDefs(BackEndmaia)  { /home/binops/afse/eer "" }
+set GDefs(BackEndsaiph) { /home/binops/afse/eer "" }
 
 set GDefs(DirData)        ""
 set GDefs(DirCFSArch)     ""
