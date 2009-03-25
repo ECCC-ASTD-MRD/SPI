@@ -455,13 +455,28 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
 
    if { $Backup } {
       Debug::TraceProc "Writer::AACN::Send: Sending via metmanager $name"
-      catch  { exec ssh metmgr1 -l $GDefs(FrontEndUser) ./usr/local/env/profile_ksh_usr\s;export DISPLAY=$env(DISPLAY)\;export TERM=$env(TERM)\;/opt/mm/bin/amxmit -s $file }
+      set ErrCatch [catch  { exec ssh metmgr1 -l $GDefs(TransmitUser) -n -x ". ~/.profile; export DISPLAY=$env(DISPLAY); export TERM=$env(TERM); /opt/mm/bin/amxmit -s $file " } MsgCatch]
+
+      if { $ErrCatch != 0 } {
+         Debug::TraceProc "Error : Unable to sent the $file via metmanager.\n\n$MsgCatch"
+      }
+
    } else {
       Debug::TraceProc "Writer::AACN::Send: Sending via nanproc $name"
       if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-         catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(FrontEndUser) /usr/local/env/afsisio/scripts/usr/nanproc -bs -p b -f $file }
+         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; nanproc -bs -p b -f $file " } MsgCatch]
+
+         if { $ErrCatch != 0 } {
+            Debug::TraceProc "Error : Unable to sent the $file via nanproc.\n\n$MsgCatch"
+         }
+
       } else {
-         catch  { exec nanproc -bs -p b -f $file }
+         set ErrCatch [catch  { exec nanproc -bs -p b -f $file } MsgCatch]
+
+         if { $ErrCatch != 0 } {
+            Debug::TraceProc "Error : Unable to sent the $file via nanproc.\n\n$MsgCatch"
+         }
+
       }
    }
    file delete -force $file

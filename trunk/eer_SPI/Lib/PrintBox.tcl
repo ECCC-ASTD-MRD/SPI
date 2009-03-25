@@ -669,7 +669,12 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
          if { $Print(WEBSite)=="WEATHEROFFICE_VAAC" } {
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt True]
-            catch { exec ssh -l $GDefs(FrontEndUser) -n -x $GDefs(FrontEnd) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f $Print(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/${prefix}_[file tail $Print(FullName)].$Print(Device)" }
+            set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f $Print(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/${prefix}_[file tail $Print(FullName)].$Print(Device)" } MsgCatch]
+
+			if { $ErrCatch != 0 } {
+               Debug::TraceProc "Error : Unable to transfert the $Print(FullName).$Print(Device) on weatheroffice.\n\n$MsgCatch"
+            }
+			
          } else {
             eval exec scp $Print(FullName).$Print(Device) ${site}/[file tail $Print(FullName)].$Print(Device) > /dev/null
          }

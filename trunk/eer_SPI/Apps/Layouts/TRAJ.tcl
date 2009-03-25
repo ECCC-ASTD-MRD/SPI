@@ -380,6 +380,7 @@ proc TRAJ::SATNET { Frame Mode } {
    SPI::Progress 30 "Converting to GIF File"
 
    catch { exec grep -v showpage $file.ps | convert -density 100 - $file.gif }
+   catch { exec chmod 644 ${file}.gif }
 
    #----- Transferer le fichier image sur SATNET
    #      No pour test                        : ca0493c
@@ -396,15 +397,24 @@ proc TRAJ::SATNET { Frame Mode } {
    Debug::TraceProc "Sending $file.gif over SATNET"
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) "export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; /software/pub/bin/udo afsiops /usr/local/env/afsisio/scripts/op/ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" }
+   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
+
+   if { $ErrCatch != 0 } {
+      Debug::TraceProc "Error : Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"
+   }
 
    #----- envoyer sur les sites web.
 
    set name "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]"
    exec convert ${file}.gif -resize $Page(Width)x$Page(Height) ${file}.png
+   catch { exec chmod 644 ${file}.png }
 
    set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
-   catch  { exec ssh $GDefs(FrontEnd) -l -x $GDefs(FrontEndUser) ". ~/.profile; /software/pub/bin/udo afsiadm webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png"  }
+   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png" } MsgCatch ] 
+
+   if { $ErrCatch != 0 } {
+      Debug::TraceProc "Error : Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+   }
 
    #----- supprimer les residus
 
