@@ -1889,7 +1889,7 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
 
    if (ok!=0) {
       Tcl_AppendResult(Interp,"FSTD_FieldReadHead: Could not get field information (c_fstprm failed)",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Supprimer les espaces inutiles*/
@@ -1904,7 +1904,7 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
       h.LNG,h.DLTF,h.UBC,h.EX1,h.EX2,h.EX3);
    Tcl_AppendResult(Interp,buf,(char*)NULL);
 #endif
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -2252,6 +2252,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 //   if (grtyp[0]!='X' || (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H')){
       GeoRef_Qualify(field->Ref);
 //   }
+
+   if (field->Spec->Desc)
+      free(field->Spec->Desc);
    field->Spec->Desc=strdup(h.NOMVAR);
    field->Def->Type=FSTD_Type[h.DATYP];
    memcpy(field->Head,&h,sizeof(FSTD_Head));
