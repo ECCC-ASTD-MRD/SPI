@@ -1142,7 +1142,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
    }
 
 #ifdef DEBUG
-         fprintf(stderr,"(DEBUG) GeoRef_Find: New georef\n");
+   fprintf(stderr,"(DEBUG) GeoRef_Find: New georef\n");
 #endif
    /*Otherwise, create a new one*/
    ref=Ref;
