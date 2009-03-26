@@ -343,6 +343,7 @@ set GDefs(DBMet)           $GDefs(DBMet)
 
 set GDefs(FrontEnd)       $GDefs(FrontEnd)
 set GDefs(FrontEndUser)   $GDefs(FrontEndUser)
+set GDefs(TransmitUser)   $GDefs(TransmitUser)
 
 #----- Definitions pour les BackEnd
 

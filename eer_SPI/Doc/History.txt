@@ -43,7 +43,7 @@ Version 7.3.0 (Mars 2009)
 - Interpolation verticale décode maintenant les niveaux hybride "staggered".
 - La légende des graphs peut maintenant être déplacée interactivement.
 - Support pour les champs RPN en double précision
-- Le date dans les boites de champs (FieldBox) est maintenant le date de validitée plutôt que d'origine.
+- La date dans les boites de champs (FieldBox) est maintenant le date de validitée plutôt que d'origine.
 
 Version 7.2.4 (Mars 2008)
 - Ajout de la fonction zoom en utilisant le roulette de la souris.
