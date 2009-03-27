@@ -99,14 +99,14 @@ set CVMagnifier::Param(Size)   256           ;#Dimension de la loupe en pixels
 
 set FSTD::Param(Interp)            LINEAR         ;#Type d'interpolation
 
-dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
+dataspec configure FLDDEFAULT -factor 1.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
    -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
    -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -topography GZ -sample 2 \
    -intervalmode NONE 0 -intervals {}
 
 #----- Parametres des Observations
 
-dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
+dataspec configure OBSDEFAULT -factor 1.0 -value AUTO 0 -size 10 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
    -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
    -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -mark 0 -intervalmode NONE 0
 
