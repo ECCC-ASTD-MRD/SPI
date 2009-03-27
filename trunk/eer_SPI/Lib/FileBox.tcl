@@ -791,7 +791,7 @@ proc FileBox::New { } {
 
    frame .fileboxnew.com
       button .fileboxnew.com.ok -text [lindex $Lbl(Create) $GDefs(Lang)] \
-         -relief raised -bd 1 -command { file mkdir $FileBox::Data(New) ; destroy .fileboxnew ; FileBox::GetContent $FileBox::Data(Path) }
+         -relief raised -bd 1 -command { file mkdir $FileBox::Data(Path)/$FileBox::Data(New) ; destroy .fileboxnew ; FileBox::GetContent $FileBox::Data(Path) }
       button .fileboxnew.com.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)]\
          -relief raised -bd 1 -command { destroy .fileboxnew }
       pack .fileboxnew.com.ok .fileboxnew.com.cancel -side left -fill x -expand true
