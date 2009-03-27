@@ -43,7 +43,7 @@ void   Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   Graph_RenderTexture(GraphItem *Gr,TData *Field,int Tile);
 void   Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
-void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height);
+void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY);
 void   GraphUnSet(GraphItem *GR);
 int    Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
 
@@ -346,12 +346,9 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&y);
 
-         trViewport(GLRender->TRCon,(int)gr->xg[0],Tk_Height(Tk_CanvasTkwin(gr->canvas))-gr->yg[0],gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1]);
-         glPickInit(x,Tk_Height(Tk_CanvasTkwin(gr->canvas))-y,2.0,2.0);
-
         /*Rendue des donnees vectorielle*/
-         GraphSet(gr->canvas,gr,Tk_Width(Tk_CanvasTkwin(gr->canvas)),Tk_Height(Tk_CanvasTkwin(gr->canvas)));
          gr->ISide=0;
+         GraphSet(gr->canvas,gr,Tk_Width(Tk_CanvasTkwin(gr->canvas)),Tk_Height(Tk_CanvasTkwin(gr->canvas)),x,Tk_Height(Tk_CanvasTkwin(gr->canvas))-y);
          for(idx=0;idx<gr->NItem;idx++) {
             glPushName(idx);
             item=GraphItem_Get(gr->Item[idx]);
@@ -885,13 +882,13 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
       /*Process items*/
       if (gr->xg[1]>gr->xg[0] && gr->yg[0]>gr->yg[1]) {
          a=0;
+         GraphSet(Canvas,gr,Width,Height,0,0);
          for(i=0;i<gr->NItem;i++) {
             item=GraphItem_Get(gr->Item[i]);
-            GraphSet(Canvas,gr,Width,Height);
             GraphItem_Display(NULL,gr,item,0,0,gr->xg[1]-gr->xg[0],gr->yg[0]-gr->yg[1],GL_RENDER);
-            GraphUnSet(gr);
             if (item->Type==WIDEBAR) gr->ISide++;
          }
+         GraphUnSet(gr);
 
          /*if graph type is XY(Z)*/
          if (gr->Type[0]=='X') {
@@ -1023,17 +1020,16 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
  *  <Proj>    : Parametres de la projection
  *  <Width>   : Largeur du canvas
  *  <Height>  : Hauteur du canvas
- *  <Tile>    : Utilisation du mode Tile
- *  <Clear>   : Reinitialiser avant de faire le setup
- *  <PS>      : Mode Postscript
+ *  <PickX>   : Coordonnee du Pick
+ *  <PixkY>   : Coordonnee du Pick
  *
  * Retour:
  *
  * Remarques :
- *
+ *     - Si les deux coordonnes (x,y) du pick sont different de 0 on pick
  *----------------------------------------------------------------------------
 */
-void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height){
+void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY){
 
    int w,h,x,y;
 
@@ -1050,9 +1046,12 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height){
    glPushMatrix();
 
    glLoadIdentity();
-//   trViewport(GLRender->TRCon,x,y,w,h);
    trViewport(GLRender->TRCon,x,y,w*GLRender->MagScale,h*GLRender->MagScale);
 
+   /*If pick coordinates are specified*/
+   if (PickX || PickY) {
+      glPickInit(PickX-((TkCanvas*)Canvas)->xOrigin,PickY+((TkCanvas*)Canvas)->yOrigin,2.0,2.0);
+   }
    /*Ajuster la projection pour garder un aspect correct*/
    glOrtho(0,w,0,h,-1,1);
 
