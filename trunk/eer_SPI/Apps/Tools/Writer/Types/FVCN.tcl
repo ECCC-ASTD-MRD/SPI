@@ -436,7 +436,6 @@ proc Writer::FVCN::GraphAreaColor { Pad } {
          $Data(Page$Pad).page.canvas itemconfigure LVL$i -text $lvl
          $Data(Page$Pad).page.canvas itemconfigure CVL$i -fill $Data(Color$lvl) -outline $Data(Color$lvl) -stipple $Data(Stipple$lvl)
          incr i
-         puts stderr "$i $lvl $Data(Color$lvl)"
       }
       for { } { $i<5 } { incr i } {
          $Data(Page$Pad).page.canvas itemconfigure LVL$i -text ""
@@ -1022,12 +1021,13 @@ proc Writer::FVCN::LayoutInit { Pad } {
 
    #----- Auto resizing des text widgets
 
+   bind $Pad.ash     <Any-KeyRelease> "Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.details <Any-KeyRelease> "set Writer::FVCN::Data(HDetails$Pad) \[Writer::TextExpand %W 47 64\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.info    <Any-KeyRelease> "set Writer::FVCN::Data(HInfo$Pad)    \[Writer::TextExpand %W 47 32\] ; Writer::FVCN::PageInit $Pad"
-   bind $Pad.ash00   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh00$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date00$Pad) \[$Pad.ash00  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
-   bind $Pad.ash06   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh06$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date06$Pad) \[$Pad.ash06  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
-   bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date12$Pad) \[$Pad.ash12  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
-   bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; set Writer::FVCN::Data(Date18$Pad) \[$Pad.ash18  get 1.0 1.8\]; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash00   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh00$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash06   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh06$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::AshHourExtract $Pad 06 \[$Pad.ash06  get 0.0 end\]; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::AshHourExtract $Pad 12 \[$Pad.ash12  get 0.0 end\]; Writer::FVCN::UpdateGraphItems $Pad"
+   bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::AshHourExtract $Pad 18 \[$Pad.ash18  get 0.0 end\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.remarks <Any-KeyRelease> "set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 [expr 256-[string length $Data(WWW)]]\] ; Writer::FVCN::PageInit $Pad"
    bind $Pad.next    <Any-KeyRelease> "set Writer::FVCN::Data(HNext$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
 
@@ -1107,6 +1107,31 @@ proc Writer::FVCN::LayoutInit { Pad } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::AshHourExtract>
+# Creation : Mars 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Extraire la date du texte de definitions de la region
+#
+# Parametres :
+#  <Pad>     : Identificateur du Pad
+#  <Hour>    : Heure
+#  <Text>    : Texte de la prevision des regions
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::AshHourExtract { Pad Hour Text } {
+   variable Data
+
+   if { [string match "\[0-9\]\[0-9\]/\[0-9\]\[0-9\]\[0-9\]\[0-9\]Z" [set hour [lindex $Text 0]]] } {
+      set Data(Date$Hour$Pad) $hour
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Writer::FVCN::AshUpdate>
 # Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -1155,6 +1180,10 @@ proc Writer::FVCN::AshUpdate { Pad Hour { Text "" } } {
             }
          } else {
             set Text "NO VA EXP"
+         }
+      } else {
+         if { $Hour!="00" } {
+            set Text "$Data(Date$Hour$Pad) $Text"
          }
       }
    }
