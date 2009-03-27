@@ -967,7 +967,7 @@ proc Writer::FVCN::Clear { Pad } {
    destroy $Pad.info $Pad.ash00 $Pad.ash06 $Pad.ash12 $Pad.ash18 $Pad.remarks $Pad.next
    destroy $Pad.optvolcano $Pad.optcode $Pad.optdetails $Pad.optinfo $Pad.optvaac $Pad.optnext $Pad.optrem $Pad.optobs $Pad.optash00 $Pad.optash06 $Pad.optash12 $Pad.optash18
 
-   if { $Writer::Data(Canvas)!="" } {
+   if { [winfo exists $Writer::Data(Canvas)] } {
       $Writer::Data(Canvas) delete FVCN
    }
 }
@@ -2030,7 +2030,7 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
    global GDefs
    variable Data
 
-   if { [winfo exists $Data(Page$Pad)] } {
+   if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
 
       Writer::FVCN::GraphAreaColor $Pad
 
@@ -2183,7 +2183,7 @@ proc Writer::FVCN::Write { Pad Sent } {
    }
 
    #----- Save graphical FVCN view
-   if { [winfo exists $Data(Page$Pad)] } {
+   if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
       puts $f [ProjCam::Mem $Data(Page$Pad) _____]
    }
 
