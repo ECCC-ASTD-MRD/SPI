@@ -1685,17 +1685,19 @@ proc Writer::FVCN::ToolBar { Pad } {
 proc Writer::FVCN::Test { Pad } {
    variable Data
 
-   if { $Data(Test$Pad) } {
-      set x 800
-      set y 20
-      for { set i 0 } { $i < 5 } { incr i } {
-         $Data(Page$Pad).page.canvas create image $x $y -image TEST -tags "TEST" -anchor ne
-         incr x -128
-         incr y 128
+   if { [winfo exist $Data(Page$Pad)] } {
+      if { $Data(Test$Pad) } {
+         set x 800
+         set y 20
+         for { set i 0 } { $i < 5 } { incr i } {
+            $Data(Page$Pad).page.canvas create image $x $y -image TEST -tags "TEST" -anchor ne
+            incr x -128
+            incr y 128
+         }
+         Shape::BindMove $Data(Page$Pad).page.canvas TEST
+      } else {
+         $Data(Page$Pad).page.canvas delete TEST
       }
-      Shape::BindMove $Data(Page$Pad).page.canvas TEST
-   } else {
-      $Data(Page$Pad).page.canvas delete TEST
    }
 }
 
@@ -2028,7 +2030,7 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
    global GDefs
    variable Data
 
-   if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
+   if { [winfo exists $Data(Page$Pad)] } {
 
       Writer::FVCN::GraphAreaColor $Pad
 
@@ -2181,7 +2183,7 @@ proc Writer::FVCN::Write { Pad Sent } {
    }
 
    #----- Save graphical FVCN view
-   if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
+   if { [winfo exists $Data(Page$Pad)] } {
       puts $f [ProjCam::Mem $Data(Page$Pad) _____]
    }
 
