@@ -771,6 +771,7 @@ proc Exp::ThreadUpdate { Id Path { Objs { } } } {
          Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) $Objs True
          Page::UpdateCommand $Page::Data(Frame)
          simulation destroy $Id
+         trajectory free $Objs
       } else {
          #----- If we have associated data objects
          if { $pc<100 && [llength $Objs] } {
