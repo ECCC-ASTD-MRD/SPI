@@ -33,7 +33,7 @@ set Viewport::Map(Type)        orthographic  ;#Type de projection geographique (
 set Viewport::Map(Delay)       1000.0        ;#Temps de deplacement en millisecondes
 set Viewport::Map(Damping)     1.07          ;#Facteur de l'effet de ralentissement
 
-set Viewport::Map(Mask)        NONE          ;#Masque (NONE,SEA,LAND,DATA)
+#set Viewport::Map(Mask)        NONE          ;#Masque (NONE,SEA,LAND,DATA)
 set Viewport::Map(Coast)       1             ;#Cotes
 set Viewport::Map(Lake)        1             ;#Lacs
 set Viewport::Map(River)       0             ;#Rivieres

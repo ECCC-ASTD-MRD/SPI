@@ -85,7 +85,7 @@ namespace eval Trajectory {
    set Param(Width)     1                                                           ;#Grandeur des icones
    set Param(Mark)      24                                                          ;#Remplir les icones
    set Param(Interval)  3                                                           ;#Intervale de selection des donnees
-   set Param(Idx)       -1                                                          ;#Index de config
+   set Param(Idx)       2                                                           ;#Index de config
 
    set Param(Modes)     { LEVEL PARCEL ALL }                                        ;#Mode de selection des parametres
    set Param(Mode)      LEVEL                                                       ;#Mode de selection des parametres
@@ -455,7 +455,7 @@ proc Trajectory::ParamSet { { Spec "" } } {
    }
 
    foreach t [trajectory all] {
-      trajectory configure $t -width $Param(Width) -style $Param(Style) -fill white \
+      trajectory configure $t -width $Param(Width) -style $Param(Style) -fill #FFFFFF \
             -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
    }
    catch { $Data(ApplyButton) configure -state normal }
