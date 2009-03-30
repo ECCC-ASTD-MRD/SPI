@@ -250,7 +250,9 @@ proc Drawing::Close { } {
    SPI::ToolMode SPI Zoom
 
    destroy .drawing
-   $Page::Data(Canvas) config -cursor left_ptr
+   if { [winfo exists $Page::Data(Canvas)] } {
+      $Page::Data(Canvas) config -cursor left_ptr
+   }
 
    if { !$SPI::Param(Window) } { SPI::Quit }
 }
