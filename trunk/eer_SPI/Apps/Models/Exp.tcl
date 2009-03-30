@@ -769,6 +769,7 @@ proc Exp::ThreadUpdate { Id Path { Objs { } } } {
       if { [set pc [simulation define $Id -percent]]==100 } {
          Info::Set $Path [simulation define $Id -tag] 1
          Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) $Objs True
+         Page::UpdateCommand $Page::Data(Frame)
          simulation destroy $Id
       } else {
          #----- If we have associated data objects
