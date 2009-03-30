@@ -296,8 +296,6 @@ proc TRAJECT::SimLaunch { } {
    }
    set Sim(Duration) [lindex $Sim(Duration) 0]
 
-   set Sim(DateTimeAcc) "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay), $Sim(AccHour)00 UTC" ; #----- Date-time of accident [UTC].
-
    #----- Creation du repertoire.
    set Sim(NoSim) [Info::Request $Sim(BasePath)/TRAJECT.pool]
    set Sim(Path)  "$Sim(BasePath)/TRAJECT.$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)00"
