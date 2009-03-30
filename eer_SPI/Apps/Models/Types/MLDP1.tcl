@@ -2881,21 +2881,13 @@ proc MLDP1::SimInitNew { } {
    set Sim(IsResFileSizeChecked) 0                                   ; #----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ; #----- Flag indicating if met data file size has been checked (1) or not (0).
    set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
-   set Tmp(Duration)             $Sim(Duration)                      ; #----- Temporary variable for simulation duration.
    set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
-   set Tmp(OutputTimeStepMin)    $Sim(OutputTimeStepMin)             ; #----- Temporary variable for output time step.
-   set Sim(OutputTimeStepSec)    [expr $Sim(OutputTimeStepMin)*60]   ; #----- Output time step [s].
    set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
-   set Sim(ModelTimeStepSec)     [expr $Sim(ModelTimeStepMin)*60]    ; #----- Internal model time step [s].
    set Sim(Event)                [lindex $Sim(ListEvent) 0]          ; #----- Type of event.
    set Sim(Scale)                "VFINE"                             ; #----- Grid resolution string.
-   set Sim(NI)                   229                                 ; #----- Number of X-grid points.
-   set Sim(NJ)                   229                                 ; #----- Number of Y-grid points.
    set Sim(NK)                   25                                  ; #----- Number of vertical levels in the model.
    set Sim(Meteo)                reg                                 ; #----- Meteorological model.
-   set Tmp(Meteo)                $Sim(Meteo)                         ; #----- Temporary variable for meteorological model.
    set Sim(Delta)                1                                   ; #----- Time interval for meteorological data files [hr].
-   set Tmp(Delta)                $Sim(Delta)                         ; #----- Temporary variable for time interval between met data files.
    set Sim(ListVerticalLevels)   $Sim(OrigListVerticalLevels)        ; #----- List of vertical levels [m].
    set Sim(VerticalLevels)       [lindex $Sim(ListVerticalLevels) 0] ; #----- Vertical levels [m].
    set Sim(VarMesoscale)         1.00                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
@@ -2913,7 +2905,6 @@ proc MLDP1::SimInitNew { } {
    set Sim(EmNbIso)              0                                   ; #----- Number of isotopes.
    set Sim(EmIsoSymbol)          ""                                  ; #----- List of isotopes.
    set Sim(EmIsoQuantity)        ""                                  ; #----- Total release quantity for each isotope.
-   set Tmp(EmDensity)            2.500e+12                           ; #----- Density of a particle [microgram/m3].
 
    #----- Initialize maximum plume height [m] and column radius [m].
    if { $Sim(SrcType) == "volcano" } {        #----- Volcano source type.
@@ -2922,8 +2913,8 @@ proc MLDP1::SimInitNew { } {
       set Sim(EmIsoSymbol) TRACER
       set Sim(EmNbIso)     1
    } elseif { $Sim(SrcType) == "accident" } { #----- Accident source type.
-      set Sim(EmHeight) 500.0
-      set Sim(EmRadius) 100.0
+      set Sim(EmHeight)    500.0
+      set Sim(EmRadius)    100.0
    } elseif { $Sim(SrcType) == "virus" } {    #----- Virus source type.
       set Sim(EmHeight)    100.0
       set Sim(EmRadius)    100.0
@@ -2937,14 +2928,14 @@ proc MLDP1::SimInitNew { } {
    set NA [lindex $Sim(NotAvailable) $GDefs(Lang)]
 
    #----- Initialize unused variables to "not available" for pool information.
-   if { $Sim(SrcType)=="accident" || $Sim(SrcType)=="virus" } {
+   if { $Sim(SrcType) == "accident" || $Sim(SrcType) == "virus" } {
       set Sim(EmDensity)  $NA
       set Sim(EmMass)     $NA
       set Sim(EmSizeDist) $NA
    }
 
    if { $Sim(SrcType) == "volcano" } {
-      set Sim(EmDensity)       $Tmp(EmDensity) ; #----- Particle density [microgram/m3].
+      set Sim(EmDensity)       2.500e+12 ; #----- Particle density [microgram/m3].
       set Sim(EmSizeDist)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3] ; #----- Particle size distribution.
       set Sim(EmSizeDistValue) 3         ; #----- Particle size distribution flag.
       set Sim(EmMassMode)      0         ; #----- Total released mass mode
@@ -2960,10 +2951,19 @@ proc MLDP1::SimInitNew { } {
 
    set Sim(Username)         $env(USER)                ; #----- Define username.
    set Sim(EmailAddress)     "$Sim(Username)@ec.gc.ca" ; #----- Username email address.
-   set Tmp(EmailAddress)     $Sim(EmailAddress)        ; #----- Default username email address.
    set Sim(ListEmailAddress) $Sim(EmailAddress)        ; #----- List of email addresses.
    set Sim(IsEmailAddress)   0                         ; #----- Flag indicating if sending email to user for monitoring entire job (1) or not (0).
    set Sim(FlagEmailAddress) [lindex [lindex $Sim(ListOptOnOff) $GDefs(Lang)] $Sim(IsEmailAddress)] ; #----- Flag indicating if sending email to user for monitoring entire job (on) or not (off).
+
+   set Tmp(Duration)          $Sim(Duration)          ; #----- Temporary variable for simulation duration.
+   set Tmp(OutputTimeStepMin) $Sim(OutputTimeStepMin) ; #----- Temporary variable for output time step.
+   set Tmp(Meteo)             $Sim(Meteo)             ; #----- Temporary variable for meteorological model.
+   set Tmp(Delta)             $Sim(Delta)             ; #----- Temporary variable for time interval between met data files.
+   set Tmp(EmDensity)         2.500e+12               ; #----- Density of a particle [microgram/m3].
+   set Tmp(EmailAddress)      $Sim(EmailAddress)      ; #----- Default username email address.
+
+   set Sim(OutputTimeStepSec) [expr $Sim(OutputTimeStepMin)*60]   ; #----- Output time step [s].
+   set Sim(ModelTimeStepSec)  [expr $Sim(ModelTimeStepMin)*60]    ; #----- Internal model time step [s].
 
    #----- Set grid scale resolution.
    MLDP1::SetGridScaleRes
