@@ -89,10 +89,14 @@ proc Meteo::Tree { } {
          Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/dbase/prog/regdiag 12 *} "{regdiag 0}"
       Tree::Add Meteo::Data(Tree) {regeta 0}  "{prog 0}"
          Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/dbase/prog/regeta 00 *} "{regeta 0}"
+         Tree::Add Meteo::Data(Tree) {06Z fstdfield /data/gridpt/dbase/prog/regeta 06 *} "{regeta 0}"
          Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/dbase/prog/regeta 12 *} "{regeta 0}"
+         Tree::Add Meteo::Data(Tree) {18Z fstdfield /data/gridpt/dbase/prog/regeta 18 *} "{regeta 0}"
       Tree::Add Meteo::Data(Tree) {regpres 0}  "{prog 0}"
          Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/dbase/prog/regpres 00 *} "{regpres 0}"
+         Tree::Add Meteo::Data(Tree) {06Z fstdfield /data/gridpt/dbase/prog/regpres 06 *} "{regpres 0}"
          Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/dbase/prog/regpres 12 *} "{regpres 0}"
+         Tree::Add Meteo::Data(Tree) {18Z fstdfield /data/gridpt/dbase/prog/regpres 18 *} "{regpres 0}"
       Tree::Add Meteo::Data(Tree) {lameta 0}  "{prog 0}"
          Tree::Add Meteo::Data(Tree) {east fstdfield /data/gridpt/dbase/prog/lam/east.eta 12 *} "{lameta 0}"
          Tree::Add Meteo::Data(Tree) {west fstdfield /data/gridpt/dbase/prog/lam/west.eta 12 *} "{lameta 0}"
@@ -106,12 +110,11 @@ proc Meteo::Tree { } {
          Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/dbase/prog/chronos 00 *} "{chronos 0}"
          Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/dbase/prog/chronos 12 *} "{chronos 0}"
 
-   Tree::Add Meteo::Data(Tree) {par 0}
-      Tree::Add Meteo::Data(Tree) {progpar 0} "{par 0}"
-         Tree::Add Meteo::Data(Tree) {mach 0}  "{progpar 0}"
-            Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/par/dbase/prog/mach 00 *} "{mach 0}"
-            Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/par/dbase/prog/mach 12 *} "{mach 0}"
-
+#   Tree::Add Meteo::Data(Tree) {par 0}
+#      Tree::Add Meteo::Data(Tree) {progpar 0} "{par 0}"
+#         Tree::Add Meteo::Data(Tree) {mach 0}  "{progpar 0}"
+#            Tree::Add Meteo::Data(Tree) {00Z fstdfield /data/gridpt/par/dbase/prog/mach 00 *} "{mach 0}"
+#            Tree::Add Meteo::Data(Tree) {12Z fstdfield /data/gridpt/par/dbase/prog/mach 12 *} "{mach 0}"
 
    Tree::Add Meteo::Data(Tree) {anal 0}
       Tree::Add Meteo::Data(Tree) {glbeta1 fstdfield /data/gridpt/dbase/anal/glbeta1 * *_???}  "{anal 0}"
