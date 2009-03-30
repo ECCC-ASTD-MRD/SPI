@@ -133,7 +133,7 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
 
       case DESTROY:
       case FREE:
-         if(Objc!=3) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"traj");
             return(TCL_ERROR);
          }
@@ -574,7 +574,8 @@ static int Traj_FreeHash(Tcl_Interp *Interp,char *Name) {
    TTraj *traj=NULL;
 
    if ((traj=(TTraj*)TclY_HashDel(&TrajTable,Name))) {
-      DataSpec_FreeHash(Interp,traj->Spec->Name);
+      if (traj->Spec)
+         DataSpec_FreeHash(Interp,traj->Spec->Name);
       Traj_Free(traj);
    }
    return(TCL_OK);
