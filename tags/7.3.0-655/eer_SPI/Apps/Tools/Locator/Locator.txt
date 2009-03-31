@@ -1,0 +1,75 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet    : Interface de selection de source.
+# Fichier   : Locator.txt
+# Creation  : Juin 1997 - J.P. Gauthier - CMC/CMOE
+#
+# Description:
+#
+#       Cette interface permet de rechercher et de selectionne une source de type
+#       Volcan, Nucleaire ou CTBT grace a une interface.
+#
+# Remarques :
+#
+#===============================================================================
+
+namespace eval Locator {
+   variable Lbl
+   variable Msg
+   variable Title
+   variable Bubble
+
+   #----- Definitions des labels
+
+   set Lbl(Area)    { "Sous-Region" " Sub-Area  " }
+   set Lbl(Close)   { "Ok / Fermer" "Ok / Close" }
+   set Lbl(Elev)    { "Hauteur(m)" "Height(m)" }
+   set Lbl(Export)  { "Exporter (ICO)" "Export (ICO)" }
+   set Lbl(Lat)     { "Latitude" "Latitude" }
+   set Lbl(Lon)     { "Longitude" "Longitude" }
+   set Lbl(Name)    { "Nom " "Name" }
+   set Lbl(No)      { "Id" "Id" }
+   set Lbl(Quit)    { "Quitter" "Quit" }
+   set Lbl(File)    { "Fichier" "File" }
+   set Lbl(Print)   { "Impression" "Print" }
+   set Lbl(Nb)      { " Nombre de sources " " Number of sources " }
+   set Lbl(AllSrc)  { "Liste de toutes les sources" "List of all sources" }
+   set Lbl(Result)  { "Sources de la sous-region tracee" "Sources of the drawn sub-area" }
+   set Lbl(Select)  { " Selection " " Selection " }
+   set Lbl(Upper)   { "Majuscule seulement" "Uppercase only" }
+
+   set Lbl(PrintList) { "Liste de sources" "Source list" }
+   set Lbl(PrintType) { "Volcanique Nucleaire CTBT Stations Villes" "Volcanic Nuclear CTBT Stations City" }
+   set Lbl(PrintNb)   { "Nombre de sources    :" "Number of sources :" }
+   set Lbl(PrintCrit) { "Criteres de selection:" "Selection criteria:" }
+   set Lbl(PrintHead) { "Numero   Nom                           Sous-Region          Latitude Longitude  Hauteur (m)" \
+                        "Number   Name                          Sub_Area             Latitude Longitude  Height  (m)" }
+
+   #----- Differents textes pour les bulles d'aides
+
+   set Bubble(Volcanic)   { "Type de localisation volcanique" "Volcanic localisation type" }
+   set Bubble(Nuclear)    { "Type de localisation nucleaire" "Nuclear localisation type" }
+   set Bubble(CTBT)       { "Type de localisation CTBT" "CTBT localisation type" }
+   set Bubble(City)       { "Type de localisation Ville" "City localisation type" }
+   set Bubble(Meteo)      { "Type de localisation Stations meteorologiques" "Meteorological stations localisation type" }
+
+   set Bubble(SearchNum)  { "Recherche interactive selon le numero" "Interactive search by number" }
+   set Bubble(SearchName) { "Recherche interactive selon le nom"    "Interactive search by name" }
+   set Bubble(SearchArea) { "Recherche interactive selon la region" "Interactive search by area" }
+   set Bubble(Sort)       { "Tri selon l'entete" "Header sort" }
+   set Bubble(List)       { "Liste des sources a l'interieur des paramtetres de selection" "Source list within parameter selection" }
+   set Bubble(Nb)         { "Nombre de sources affichees" "Number of displayed sources" }
+   set Bubble(Desc)       { "Description de la selection" "Selection description" }
+   set Bubble(Close)      { "Fermer le selecteur de sources" "Close the source selector" }
+
+   #----- Messages
+
+   set Msg(Read)     { "Lecture ..." "Reading ..." }
+   set Msg(Insert)   { "Selection ..." "Selecting ..." }
+   set Msg(Sort)     { "Triage ..." "Sorting ..." }
+   set Msg(Search)   { "Recherche ..." "Searching ..." }
+}

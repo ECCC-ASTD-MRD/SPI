@@ -1,0 +1,132 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie de "Widget" Tk.
+# Fichier  : Macro.int
+# Creation : Juillet 2005 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Interface de gestion de macros.
+#
+# Remarques :
+#
+#===============================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <Macro::Window>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche une boite permettant de selectionner des fichiers geotiff.
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Macro::Window { } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Data
+   variable Param
+
+   set Data(Active) 1
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Page::Data(Frame)
+
+   set Param(Window) .macro
+
+   if { ![winfo exists .macro] } {
+
+      if { $Param(Dock) } {
+         frame .macro
+         SPI::Dock .macro
+      } else {
+         toplevel         .macro
+         wm title         .macro "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+         eval wm geometry .macro $Param(Geom)
+         wm resizable     .macro 1 1
+         wm protocol      .macro WM_DELETE_WINDOW { Macro::Close }
+
+         if { $SPI::Param(Window) } { wm transient .macro . }
+      }
+
+      TabFrame::Create .macro.tab 1 ""
+      set Data(Tab) [TabFrame::Add .macro.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+      pack .macro.tab -side top -fill both -expand true
+
+      frame .macro.dock -relief raised -bd 1
+         button .macro.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Macro }
+         button .macro.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Macro::Close
+         label .macro.dock.info -textvariable Macro::Data(Job) -relief sunken -bd 1 -anchor w -width 21 -bg $GDefs(ColorLight)
+         pack .macro.dock.sel .macro.dock.del -side left
+         pack .macro.dock.info -side left -fill x -expand true
+      pack .macro.dock -side bottom -fill x
+
+      frame $Data(Tab).head
+         button $Data(Tab).head.start -image DOCRUN -bd 0 -relief flat -overrelief raised -command { if { [llength [$Macro::Data(Tab).desc.data.list curselection]] } { Macro::Execute [Macro::Current] } }
+         button $Data(Tab).head.new -image DOCNEW -bd 0 -relief flat -overrelief raised -command { Macro::New [FileBox::Create .macro $GDefs(DirEER)/Macro Save [list $FileBox::Type(TCL)]]}
+         button $Data(Tab).head.load -image DOCLOAD -bd 0 -relief flat -overrelief raised -command { Macro::Load [FileBox::Create .macro "" Load [list $FileBox::Type(TCL)]]}
+         button $Data(Tab).head.save -image DOCSAVE -bd 0 -relief flat -overrelief raised -command { Macro::Save [Macro::Current] } -state disabled
+         button $Data(Tab).head.del -image DOCDEL -bd 0 -relief flat -overrelief raised -command { Macro::Delete [Macro::Current] ; update idletasks; Macro::Select [Macro::Current]}
+         button $Data(Tab).head.reset -image WORLDRESET -bd 0 -relief flat -overrelief raised -command { Macro::Reset }
+         pack $Data(Tab).head.start $Data(Tab).head.reset $Data(Tab).head.new $Data(Tab).head.load $Data(Tab).head.save $Data(Tab).head.del -side left -padx 2
+      pack $Data(Tab).head -side top -fill x
+
+      panedwindow $Data(Tab).desc -orient vertical -showhandle False -opaqueresize True -bd 0
+      pack $Data(Tab).desc -side top -fill both -expand true
+
+      frame $Data(Tab).desc.data
+         listbox $Data(Tab).desc.data.list -relief sunken -bd 1 -yscrollcommand "$Data(Tab).desc.data.scroll set" -bg white -listvariable Macro::Data(List) -exportselection False
+         scrollbar $Data(Tab).desc.data.scroll -relief sunken -command "$Data(Tab).desc.data.list yview" -bd 1 -width 10
+         pack $Data(Tab).desc.data.list -side left -fill both -expand true
+         pack $Data(Tab).desc.data.scroll -side left -fill y
+      pack $Data(Tab).desc.data -side top -fill both -expand true
+
+      frame $Data(Tab).desc.text
+         text $Data(Tab).desc.text.list -relief sunken -bd 1 -yscrollcommand "$Data(Tab).desc.text.scroll set" -bg white -wrap none -undo True
+         scrollbar $Data(Tab).desc.text.scroll -relief sunken -command "$Data(Tab).desc.text.list yview" -bd 1 -width 10
+         pack $Data(Tab).desc.text.list -side left -fill both -expand true
+         pack $Data(Tab).desc.text.scroll -side left -fill y
+      pack $Data(Tab).desc.text -side top -fill both -expand true
+
+      $Data(Tab).desc add $Data(Tab).desc.data -height 400
+      $Data(Tab).desc add $Data(Tab).desc.text
+
+      bind $Data(Tab).desc.data.list <Double-ButtonPress-1> { Macro::Execute [$Macro::Data(Tab).desc.data.list get [$Macro::Data(Tab).desc.data.list nearest %y]] }
+      bind $Data(Tab).desc.data.list <ButtonPress-1>        { Macro::Select [$Macro::Data(Tab).desc.data.list get [$Macro::Data(Tab).desc.data.list nearest %y]] }
+
+      Bubble::Create $Data(Tab).head.start [lindex $Bubble(Start) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.new   [lindex $Bubble(New) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.load  [lindex $Bubble(Load) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.save  [lindex $Bubble(Save) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.del   [lindex $Bubble(Del) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.reset [lindex $Bubble(Clean) $GDefs(Lang)]
+      Bubble::Create .macro.dock.sel [lindex $Bubble(Dock) $GDefs(Lang)]
+      Bubble::Create .macro.dock.del [lindex $Bubble(Close) $GDefs(Lang)]
+
+      ListboxBubble::Create $Data(Tab).desc.data.list 0 Macro::Bubble
+   }
+
+   #----- Lire les macros
+
+   foreach path $Param(Paths) {
+      foreach macro [glob nocomplain $path/*.tcl] {
+         Macro::Load $macro
+      }
+   }
+
+   if { ![file exists $GDefs(DirEER)/Macro] } {
+      file mkdir $GDefs(DirEER)/Macro
+   }
+   foreach macro [glob -nocomplain $GDefs(DirEER)/Macro/*.tcl] {
+      Macro::Load $macro
+   }
+   raise .macro
+}

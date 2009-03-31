@@ -1,0 +1,63 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : SatData.txt
+# Creation : Octobre 2000
+#
+# Description:
+#    Permet l'obtention de donnees satellitaires
+#
+#===============================================================================
+
+namespace eval SatData {
+   variable Lbl
+   variable Msg
+   variable Bubble
+
+   #----- Definitions des labels
+
+   set Lbl(Close)    { "Fermer" "Close" }
+   set Lbl(Cmd)      { "Actions" "Actions" }
+   set Lbl(Data)     { "Donnees" "Data   " }
+   set Lbl(Domain)   { "Domaine" "Domain " }
+   set Lbl(Yes)      { "Oui" "Yes" }
+   set Lbl(No)       { "Non" "No" }
+   set Lbl(CnV)      { "Canaux" "Channels" }
+   set Lbl(Extract)  { "Extraire" "Extract" }
+   set Lbl(Out)      { "Fichier" "File   " }
+   set Lbl(User)     { "Autres fichiers" "Other files" }
+   set Lbl(Path)     { "Repertoire" "Directory " }
+   set Lbl(GOES11)   { " GOES Ouest / GOES 11 " " GOES West / GOES 11 " }
+   set Lbl(GOES12)   { " GOES Est / GOES 12 " " GOES East / GOES 12 " }
+
+   set Msg(Del)        { "Voulez-vous vraiment supprimer le domaine" \
+                         "Do you really want to delete the domain" }
+   set Msg(Domain)     { "Un domaine avec ce nom existe deja, veuillez donner un nom unique" \
+                         "A domain by this name already exists, rename this domain to save it" }
+   set Msg(Extract)    { "Extraction du canal" \
+                         "Extracting channel" }
+   set Msg(45)         { "Soustration des canaux 4-5 pour" \
+                         "Calculating 4-5 channel for" }
+   set Msg(Data)       { "Aucune donnees a extraire" \
+                         "No data to extract" }
+   set Msg(Range)      { "Aucun domaine selectionee" \
+                         "No domain selected" }
+
+   set Bubble(Sat)     { "Ouvre la liste des fichiers disponibles pour ce satellite"
+                         "Open up the available file list for this satellite" }
+   set Bubble(User)    { "Selection de fichiers d'un autre emplacement"
+                         "Select files from another location" }
+   set Bubble(Domain)  { "Liste des domaines sauvegardes" "Saved domain list" }
+   set Bubble(SelFile) { "Selection d'un fichier de sortie" "Select an output file" }
+   set Bubble(File)    { "Fichier de sortie" "Output file" }
+   set Bubble(Extract) { "Lancer l'extraction des donnees" "Start data extraction" }
+   set Bubble(Resol)   { "Resolution du domaine" "Domain resolution" }
+   set Bubble(Save)    { "Sauvegarde du domaine specifie" "Saves the specified domain" }
+   set Bubble(Del)     { "Suppression du domaine specifie" "Delete the specified domain" }
+   set Bubble(Mode)    { "Entre dans le mode selection (SatData)\n   Bouton gauche: Selection d'une region\n   Bouton droit : Deplacement de la region"
+                         "Enter selection mode (SatData)\n   Left button : Select an area\n   Right button: Move the selected area" }
+}

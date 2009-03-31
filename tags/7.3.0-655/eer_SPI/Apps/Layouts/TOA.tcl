@@ -1,0 +1,445 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : SPI (Layouts)
+# Fichier  : TOA.tcl
+# Creation : Fevrier 2001 - J.P. Gauthier - CMC/CMOE
+#
+# Description:
+#    Modeles de carte au format TOA (Time of Arrival)
+#
+#===============================================================================
+
+namespace eval TOA {
+   variable Lbl
+   variable Error
+   variable Msg
+   variable Bubble
+   variable Data
+   variable Ico
+   variable Sim
+
+   #----- Definition des labels
+
+   set Lbl(Warning)     { "Attention" "Warning" }
+
+   #----- Definitions des textes des bulles d'aides
+
+   set Sim(Lat)          0
+   set Sim(Lon)          0
+   set Sim(Name)         ""
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <TOA::DrawScale>
+# Creation : Mars 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche l'echelle des valeurs du champs courant.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc TOA::DrawScale { Frame } {
+   variable Data
+
+   $Frame.page.canvas delete TOASCALE
+
+   if { [fstdfield is TOAFIELD] && [set n [llength [set inters [fstdfield configure TOAFIELD -intervals]]]] } {
+
+      set x0 360
+      set x1 790
+      set y0 515
+      set y1 540
+
+      set x $x0
+      set dx [expr ($x1-$x0-5*($n-1))/$n]
+      puts stderr $dx
+      foreach inter $inters {
+
+         $Frame.page.canvas create rectangle $x $y0 [incr x $dx] $y1 \
+            -fill "#[fstdfield configure TOAFIELD -val2map $inter]" -outline black -tags "TOASCALE TOACOLORMAP"
+         $Frame.page.canvas create text [expr $x-$dx+5] [expr $y1+25] \
+            -text [format %.0f $inter] -font XFont16 -fill black -tags "TOASCALE" -anchor ne -angle -45
+         incr x 5
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::Layout>
+# Creation : Fevrier 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser le modele TOA
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TOA::Layout { Frame } {
+   global GDefs
+   variable Data
+
+   #----- Initialisations des constantes relatives aux projections
+
+   set Viewport::Resources(FillCoast) ""
+   set Viewport::Resources(FillLake)  ""
+   set Viewport::Resources(Coast)     #000000      ;#Cotes
+   set Viewport::Resources(Lake)      #0000ff      ;#Lacs
+   set Viewport::Resources(Polit)     #8C8C8C      ;#Bordures politiques
+   set Viewport::Resources(Admin)     #8C8C8C      ;#Bordures politiques
+   set Viewport::Resources(Coord)     #000000      ;#Latlon
+
+   set Viewport::Map(Coast)       1           ;#Cotes
+   set Viewport::Map(Lake)        1           ;#Lacs
+   set Viewport::Map(River)       0           ;#Rivieres
+   set Viewport::Map(Polit)       1           ;#Bordures politiques
+   set Viewport::Map(Admin)       1           ;#Bordures politiques internes
+   set Viewport::Map(City)        0           ;#Villes
+   set Viewport::Map(Road)        0           ;#Routes
+   set Viewport::Map(Rail)        0           ;#Chemin de fer
+   set Viewport::Map(Util)        0           ;#Utilitaires
+   set Viewport::Map(Canal)       0           ;#Canal/Aqueduc
+   set Viewport::Map(Topo)        0           ;#Topographie
+   set Viewport::Map(Bath)        0           ;#Bathymetrie
+   set Viewport::Map(Text)        0           ;#Texture
+   set Viewport::Map(Coord)       0           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Viewport::Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
+   set Viewport::Map(CoordNum)    2           ;#Numerotation des latlon
+
+   Page::Size $Frame 800 630
+
+   set Data(VP) [Viewport::Create $Frame 5 5 790 500 0 0]
+
+   SPI::IcoClear
+
+   set canvas $Frame.page.canvas
+   $canvas create rectangle 5 510 795 625 -outline black
+   $canvas create rectangle 5 510 350 545 -outline black
+   $canvas create bitmap  10 515 -bitmap @$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm  -foreground red  -anchor nw -tags "FIX RED"
+   $canvas create bitmap 260 515 -bitmap @$GDefs(Dir)/Resources/Bitmap/RSMC_hor_small.xbm -foreground red  -anchor nw -tags "FIX RED"
+
+   #----- Afficher l'identification de la source
+
+   $canvas create bitmap -100 -100 -bitmap @$GDefs(Dir)/Resources/Bitmap/nucleaire.ico -foreground black -tags TOAFIX
+   $canvas create text 10 555 -font XFont12 -anchor w -text "" -tags TOASOURCE
+   $canvas create text 10 570 -font XFont12 -anchor w -text "" -tags TOALOC
+   $canvas create text 10 585 -font XFont12 -anchor w -text "" -tags TOARELEASEISO
+   $canvas create text 10 600 -font XFont12 -anchor w -text "" -tags TOARELEASEQT
+   $canvas create text 10 615 -font XFont12 -anchor w -text "" -tags TOARELEASEDUR
+
+   $canvas create text 360 600 -font XFont16 -anchor w -text "" -justify center -tags TOATITLE
+#   TOA::LayoutToolBar $Frame
+
+   FSTD::VarMode VAR
+
+   FSTD::Params TOAH REC_Col.std1 -factor [expr 1.0/3600.0] -intervals "0 24 48 72 96 120 144 168 192 216 240 264 288" -rendertexture 1 \
+      -interpdegree NEAREST -value INTEGER 0  -font XFont12 -rendercontour 0 -rendervector NONE -rendergrid 0 -renderlabel 0 -rendervalue 0 \
+      -color #000000 -dash "" -desc "Time of Arrival" -unit "Hour"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::LayoutClear>
+# Creation : Fevrier 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer tout ce qui a trait au "layout" precedent
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TOA::LayoutClear { Frame } {
+
+   Viewport::Destroy $Frame
+
+   fstdfield free TOATMP TOAFIELD
+   destroy $Frame.bar
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::LayoutToolBar>
+# Creation : Fevrier 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer la barre d'outils VAAC
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TOA::LayoutToolBar { Frame } {
+   global   GDefs
+   variable Lbl
+   variable Data
+
+   frame $Frame.bar -relief raised -bd 1
+      label $Frame.bar.id -text " TOA " -relief sunken -bd 1
+      menubutton $Frame.bar.prod -bd 1 -text [lindex $Lbl(Products) $GDefs(Lang)] -menu $Frame.bar.prod.menu
+      menu $Frame.bar.prod.menu -tearoff 0 -bd 1 -activeborderwidth 1
+         $Frame.bar.prod.menu add command -label [lindex $Lbl(Join) $GDefs(Lang)] \
+            -command "TOA::JoinTransfert $Frame"
+      pack $Frame.bar.id $Frame.bar.prod -side left -fill y
+   pack $Frame.bar -side top -fill x -before $Frame.page
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::LayoutUpdate>
+# Creation : Fevrier 20001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue les changements des informations relatives a l'experience.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TOA::Process { Field } {
+
+   Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
+
+   set tags [fstdfield stats $Field -tag]
+   set box  [lindex $tags 2]
+
+   #----- Make a copy of the fields
+
+   set t0     [fstdstamp toseconds [fstdfield define $Field -DATEV]]
+   set ip1    [fstdfield define $Field -IP1]
+   set ip3    [fstdfield define $Field -IP3]
+   set etiket [fstdfield define $Field -ETIKET]
+   set var    [fstdfield define $Field -NOMVAR]
+
+   fstdfield copy TOAFIELD $Field
+   fstdfield stats TOAFIELD -nodata 0
+   fstdfield clear TOAFIELD
+   fstdfield define TOAFIELD -NOMVAR TOAH
+
+   set fields [FieldBox::GetContent $box]
+   set n 0
+   set nx [llength $fields]
+   foreach field $fields {
+
+      set fid     [lindex $field 0]
+      set idx     [lindex $field 1]
+      set tvar    [lindex $field 2]
+      set tip1    [lindex $field 4]
+      set tip3    [lindex $field 6]
+      set tetiket [string trim [lindex $field 7]]
+
+      SPI::Progress [expr double([incr n])/$nx*100] "Processing fields ($idx)"
+
+      if { $var==$tvar && $ip1==$tip1 && $ip3==$tip3 && $etiket==$tetiket } {
+         fstdfield read TOATMP $fid $idx
+
+         set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$t0)]
+
+         vexpr TOAFIELD ifelse(TOAFIELD==0.0 && TOATMP>0.0,$t,TOAFIELD)
+      }
+   }
+   set dt [vexpr dt smin(TOAFIELD)]
+   vexpr TOAFIELD ifelse(TOAFIELD!=0.0,TOAFIELD-$dt,TOAFIELD)
+   vexpr (Float32)TOAFIELD ifelse(TOAFIELD==0.0,-1,TOAFIELD)
+
+#   fstdfield configure TOAFIELD -rendertexture 1 -rendercontour 0 -mapall False -value INTEGER 0 \
+#      -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 -intervals "24 48 72 96 120 144 168 192 216 240 264 288" -color black -interpdegree NEAREST
+
+   SPI::Progress 0 ""
+   Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD
+}
+
+proc TOA::LayoutUpdate { Frame } {
+   global   env
+   variable Sim
+   variable Data
+   variable Error
+
+   Viewport::UnAssign $Frame $Data(VP) TOAFIELD
+   set field [lindex [Viewport::Assigned $Frame $Data(VP) fstdfield] 0]
+
+puts stderr $field
+   if { $field=="" } {
+      return
+   }
+
+   TOA::Process $field
+
+   set canvas $Frame.page.canvas
+
+   #----- Recuperer les informations sur le champs selectionne
+
+   set Data(FieldList) [FieldBox::GetContent -1]
+   set Data(NOMVAR)    [string trim [fstdfield define $field -NOMVAR]]
+   set Data(IP2)       [fstdfield define $field -IP2]
+   set Data(IP3)       [fstdfield define $field -IP3]
+   set Data(ETICKET)   [string trim [fstdfield define $field -ETIKET]]
+   set Data(Max)       [fstdfield stats $field -max]
+
+   #----- Recuperer la description de l'experience
+
+   set Sim(Lat)            0
+   set Sim(Lon)            0
+   set Sim(Name)           ""
+   set Sim(AccYear)        0
+   set Sim(AccMonth)       01
+   set Sim(AccDay)         01
+   set Sim(AccHour)        00
+   set Sim(IsoName)        ""
+   set Sim(IsoRelease)     0
+   set Sim(Scale)          0
+   set Sim(FnTime)         0
+   set Sim(FnVert)         0
+   set Sim(Event)          ""
+   set Sim(EmHeight)       0
+   set Sim(EmDuration)     0
+   set Sim(EmVerticalDist) ""
+
+   if { [set info [Info::Read [fstdfield define $field -FID]]]=="" } {
+      return
+   }
+
+   eval set Sim(Info) \$[Info::Strip $info Model]::Sim(Info)
+   Info::Decode ::TOA::Sim $Sim(Info) $info
+   set Sim(Path)    [Info::Path $Sim(Info) $info]
+
+   #----- Position de recentrage
+
+   set Viewport::Map(LatReset) $Sim(Lat)
+   set Viewport::Map(LonReset) $Sim(Lon)
+
+   #----- Calculer la date d'accident(release)
+
+   set seconds [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)00" -gmt true]
+
+   set unit ""
+   if { $Data(ETICKET) == "TRACER1" || $Data(ETICKET) == "TRACER2" || $Data(ETICKET) == "TRACER3" } {
+      set unit "Units"
+   } else {
+      set unit "Bq"
+   }
+
+   #----- Updater les informations
+
+   set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
+   $canvas itemconf TOASOURCE      -text "Source           : $Sim(Name)"
+   $canvas itemconf TOALOC         -text "Location         : $coord"
+   $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(IsoName)"
+   $canvas itemconf TOARELEASEQT   -text "Total release    : [lindex $Sim(IsoRelease) [lsearch -exact [string toupper $Sim(IsoName)] $Data(ETICKET)]] $unit"
+   $canvas itemconf TOARELEASEDUR  -text "Release duration : $Sim(EmDuration) Hour(s)"
+   $canvas itemconf TOATITLE       -text "Plume arrival time from initial release\n[DateStuff::StringDateFromSeconds $seconds 1]"
+
+   #----- Afficher les informations complementaires
+
+   TOA::UpdateItems $Frame
+   TOA::DrawScale   $Frame
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::PrintCommand>
+# Creation : Mars 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer la commande d'impression "plugin" pour les cas TOA a l'interieur
+#            de la PrintBox.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#   Cette fonction est appelee par PrintBox pour effectuer l'impression selon les
+#   parametres du PrintBox lui-meme et du "Widget PlugIn" PrintBox::PlugInCommand
+#   definit ci-haut.
+#
+#----------------------------------------------------------------------------
+
+#proc TOA::PrintCommand { Frame } {
+#}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::PrintWidget>
+# Creation : Fevrier 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialise un "widget" "plugin" pour les cas TOA a l'interieur
+#            de la PrintBox.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+#proc TOA::PrintWidget { Frame } {
+#}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::JoinTransfert>
+# Creation : Avril 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Sortie au format TOA commun.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TOA::JoinTransfert { Frame } {
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <TOA::UpdateItems>
+# Creation : Fevrier 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche les icones sur la carte.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc TOA::UpdateItems { Frame } {
+   variable Ico
+   variable Sim
+   variable Data
+
+   if { [set xy [$Data(VP) -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
+      $Frame.page.canvas coords TOAFIX [lindex $xy 0] [lindex $xy 1]
+   } else {
+      $Frame.page.canvas coords TOAFIX -100 -100
+   }
+}

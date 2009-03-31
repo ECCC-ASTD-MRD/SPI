@@ -1,0 +1,99 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet     : Interface pour la gestion des experiences.
+# Fichier    : TRAJECT.txt
+# Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Description des textes et labels relatives au module TRAJECTOIRE.
+#
+# Remarques  :
+#
+#===============================================================================
+
+namespace eval TRAJECT {
+   variable Lbl
+   variable Error
+
+   #----- Defintitions des labels
+
+   set Lbl(Activate)   { "Activer" "Activate" }
+   set Lbl(At)         { "A " "At " }
+   set Lbl(Batch)      { "Batch" "Batch" }
+   set Lbl(Close)      { "Fermer" "Close" }
+   set Lbl(Date)       { { "Depart " "Start  " } { "Arrivee" "Arrival" } }
+   set Lbl(Launch)     { "Lancement" "Launching" }
+   set Lbl(Go)         { "Lancer" "Launch" }
+   set Lbl(Level)      { "Niveau" "Level" }
+   set Lbl(No)         { "Non" "No " }
+   set Lbl(Params)     { "Parametres" "Parameters" }
+   set Lbl(Sim)        { "Trajectoire" "Trajectory" }
+   set Lbl(Suppress)   { "Supprimer" "Delete" }
+   set Lbl(Result)     { "Resultats" "Results" }
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(TimeStep)   { "Pas (s)  " "Step (s)" }
+   set Lbl(Method)     { "Methode  " "Method  " }
+   set Lbl(Mode)       { "Mode     " "Mode    " }
+   set Lbl(Meteo)      { "Meteo    " "Meteo   " }
+   set Lbl(Start)      { "Depart   " "Start   " }
+   set Lbl(Arrival)    { "Arrivee  " "Arrival " }
+   set Lbl(Host)       { "Hôte  " "Host  " }
+   set Lbl(Queue)      { "Queue " "Queue " }
+   set Lbl(Delta)      { "Delta (HR)" "Delta (HR)" }
+   set Lbl(DeltaS)     { "T0+ " "T0+ " }
+   set Lbl(DeltaL)     { "Tend" "Tend" }
+   set Lbl(Warning)    { "Attention" "Warning" }
+   set Lbl(Product)    { "Produits" "Products" }
+
+   #----- Definitions des messages
+
+   set Msg(Dates)        { "Il y a erreur sur la date, selon le mode et la methode, les limites inferieures et \
+                            superieures sont " \
+                           "There is a problem with the date. In relation to the mode and method you selected, the \
+                            date should be in the following range " }
+   set Msg(Files)        { "Il n'y a pas assez de donnees disponibles pour une execution." \
+                           "There is a not enough data to proceed." }
+   set Msg(Suffisamment) { "Attention il ne semble pas y avoir suffisamment d'analyses \
+                            ou de previsions disponibles pour executer ce que vous avez demande. \
+                            Veuillez verifier la consistance des heures d'arrivee ou d'origine." \
+                           "Warning ! It seems there is not enough analyses or forecasts available \
+                            for what you asked. Check arrival or origin time consistancy." }
+   set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation ?" \
+                           "Do you really want to delete this simulation ?" }
+   set Msg(Exist)        { "Veuillez completer le lancement de la trajectoire en cours avant de proceder a une autre"
+                           "Please complete the current trajectory launch before proceeding with another one" }
+
+   #----- Definitions de erreurs
+
+   set Error(EndDate)    { "Auncune date de fin n'a été sélectionnée" "No simulation end date has been selected" }
+
+   #----- Definitions des bulles d'aides
+
+   set Bubble(T0)        { "Selection du delai de demarrage en mode\nde traitement par lot. La valeur 0 implique une seule trajectoire."
+                           "Select the start delai for batch mode. A 0 value indicate no batch mode." }
+   set Bubble(Tend)      { "Selection de la duree des trajectoires en mode\nde traitement par lot (T0+ > 0)."
+                           "Select the trajectory duration for batch mode." }
+   set Bubble(Launch)    { "Lancement du calcul de la trajectoire."
+                           "Launch the trajectory calculations." }
+   set Bubble(List)      { "Selection de la date de terminaison de la trajectoire parmi les donnees disponibles."
+                           "Select the ending trajectory date among the available data." }
+   set Bubble(Date)      { "Selection de la date de depart/arrivee de la trajectoire."
+                           "Select the starting/ending date for the trajectory." }
+   set Bubble(Time)      { "Selection de l'heure de depart/arrivee de la trajectoire."
+                           "Select the starting/ending hour for the trajectory." }
+   set Bubble(Method)    { "Selection du mode de calcul avant ou arriere."
+                           "Select the calculation mode forward ou backward." }
+   set Bubble(Step)      { "Selection du pas de temps interne du modele en secondes"
+                           "Select the internal model time lapse in seconds." }
+   set Bubble(Meteo)     { "Selection du modele de donnees a utiliser.\nAttention: Aucune verification n'est faite sur les\n           limites du domaine."
+                           "Select data to be used.\nWarning: No check is made on the domain restriction" }
+   set Bubble(Level)     { "Entree les trois niveaux de depart/arrivee."
+                           "Enter the three starting/ending levels" }
+   set Bubble(Type)      { "Specification/conversion du type de niveaux (metres ou millibars)"
+                           "Select/convert the level type (meters or millibars)" }
+   set Bubble(Path)      { "Specification des repertoires de donnees (Donnees archivees)"
+                           "Specify the data path (Archived data)" }
+}

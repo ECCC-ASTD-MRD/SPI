@@ -1,0 +1,243 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : MetInfo.int
+# Creation : Octobre 200
+#
+# Description:
+#    Permet l'obtention de messages meteorologiques
+#
+#===============================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <MetInfo::Window>
+# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialise le package des messages d'information
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetInfo::Window { } {
+   global GDefs
+   variable Lbl
+   variable Data
+   variable Param
+
+   if { ![winfo exists .metinfo] } {
+
+      toplevel .metinfo
+
+      wm title         .metinfo "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+      eval wm geometry .metinfo $Param(Geom)
+      wm protocol      .metinfo WM_DELETE_WINDOW { MetInfo::Close }
+
+      if { $SPI::Param(Window) } { wm transient .metinfo . }
+
+      .metinfo configure -menu .time.menu
+
+      MetInfo::WinDef
+      MetInfo::FileGet
+
+      set Data(Active) 1
+      trace variable SPI::Src(Info) w { MetInfo::Source  }
+
+      #----- Ouvrir le dictionnaire des stations
+
+      Locator::Window 3 1
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetInfo::WinDef>
+# Creation : Octobre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialise l'affichage de la fenetre
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetInfo::WinDef { } {
+   global GDefs
+   variable Bubble
+   variable Data
+   variable Lbl
+
+   set MetInfo::Data(Stat) ""
+   set MetInfo::Data(Msg)  ""
+   set MetInfo::Data(Station) ""
+
+   frame .metinfo.sel -relief raised -bd 1
+      ComboBox::Create .metinfo.sel.stat MetInfo::Data(Station) noedit sorted double -1 \
+      "" 30 5 "MetInfo::MsgGet"
+      ComboBox::Create .metinfo.sel.type MetInfo::Data(Type) noedit sorted nodouble -1 \
+      $Data(LType) 10 5 "MetInfo::FileGet ; MetInfo::MsgGet"
+      ComboBox::Create .metinfo.sel.file MetInfo::Data(File) noedit sorted nodouble -1 \
+      "" 14 5 "MetInfo::MsgGet"
+      pack .metinfo.sel.stat -side left -fill x -expand true
+      pack .metinfo.sel.type .metinfo.sel.file -side left -fill x -expand true
+   pack .metinfo.sel -side top -fill x
+
+   frame .metinfo.info -relief raised -bd 1
+      listbox .metinfo.info.list -relief sunken -bd 1 -yscrollcommand ".metinfo.info.scroll set" \
+         -width 1 -height 5 -background $GDefs(ColorLight)
+      scrollbar .metinfo.info.scroll -relief sunken -command ".metinfo.info.list yview" -bd 1 -width 10
+      pack .metinfo.info.list -side left -fill both -expand true
+      pack .metinfo.info.scroll -side left -fill y
+   pack .metinfo.info -side top -fill both -expand true
+
+   frame .metinfo.status
+      checkbutton .metinfo.status.mode -variable Page::Data(ToolMode) -onvalue Locator \
+         -offvalue SPI -image ARROW -indicatoron 0 -bd 1 -selectcolor $GDefs(ColorFrame) -width 50 \
+         -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+      frame .metinfo.status.info -relief raised -bd 1
+         label .metinfo.status.info.stat -textvariable MetInfo::Data(Stat) -bd 1 -relief sunken \
+            -bg $GDefs(ColorLight) -anchor w
+         label .metinfo.status.info.msg -textvariable MetInfo::Data(Msg) -bd 1 -relief sunken \
+            -bg $GDefs(ColorLight) -anchor w
+      button .metinfo.status.generate -command "MetInfo::Export" -text "[lindex $Lbl(Generate) $GDefs(Lang)]" -bd 1
+      pack .metinfo.status.mode .metinfo.status.generate -side left -fill y
+      pack .metinfo.status.info.stat .metinfo.status.info.msg -side left -fill both -expand true
+      pack .metinfo.status.info -side left -fill both -expand true
+   pack .metinfo.status -side top -fill x
+
+   Bubble::Create .metinfo.sel.stat.select [lindex $Bubble(Station) $GDefs(Lang)]
+   Bubble::Create .metinfo.sel.type.select [lindex $Bubble(Type)    $GDefs(Lang)]
+   Bubble::Create .metinfo.sel.file.select [lindex $Bubble(File)    $GDefs(Lang)]
+   Bubble::Create .metinfo.info.list       [lindex $Bubble(List)    $GDefs(Lang)]
+   Bubble::Create .metinfo.status.msg      [lindex $Bubble(Msg)     $GDefs(Lang)]
+   Bubble::Create .metinfo.status.stat     [lindex $Bubble(Stat)    $GDefs(Lang)]
+   Bubble::Create .metinfo.status.mode     [lindex $Bubble(Mode)    $GDefs(Lang)]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetInfo::Export>
+# Creation : Mars 2003 - S. Gaudreault - CMC/CMOE
+#
+# But      : Initialise l'affichage de la fenetre d'exportation
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetInfo::Export { } {
+   global GDefs
+   variable Data
+   variable Param
+   variable Lbl
+   variable Msg
+
+   if { [winfo exists .export] == 1 } {
+      return;
+   }
+
+   toplevel     .export
+   wm title     .export "SPI $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version)) (Export)"
+   wm geometry  .export 500x250+[winfo rootx .]+[winfo rooty .]
+
+   frame .export.mid
+      frame .export.mid.typefrm -relief raised -bd 1
+         listbox .export.mid.typefrm.type -bd 1  -relief sunken -width 12 \
+         -bg $GDefs(ColorLight) -exportselection false -selectmode  extended
+         label .export.mid.typefrm.lbl -text "[lindex $Lbl(Type) $GDefs(Lang)]"
+         pack .export.mid.typefrm.lbl  -side top
+         pack .export.mid.typefrm.type -side left -fill y -expand true
+      pack .export.mid.typefrm -side left -fill y
+
+      frame .export.mid.stationfrm  -relief raised -bd 1
+         label .export.mid.stationfrm.lbl -text "[lindex $Lbl(Station) $GDefs(Lang)]"
+         listbox .export.mid.stationfrm.station -bd 1  -relief sunken -yscrollcommand ".export.mid.stationfrm.stationscroll set" \
+           -width 20 -bg $GDefs(ColorLight)  -exportselection false -selectmode  extended
+         scrollbar .export.mid.stationfrm.stationscroll -command ".export.mid.stationfrm.station yview" -bd 1 -width 10
+         pack .export.mid.stationfrm.lbl -side top  -fill x
+         pack .export.mid.stationfrm.station -side left -fill both -expand true
+         pack .export.mid.stationfrm.stationscroll  -side left -fill y
+      pack .export.mid.stationfrm -side left -fill both -expand true
+
+      frame .export.mid.filesfrm  -relief raised -bd 1
+         label .export.mid.filesfrm.lbl -text "[lindex $Lbl(Fichier) $GDefs(Lang)]"
+         listbox .export.mid.filesfrm.files -bd 1  -relief sunken -yscrollcommand ".export.mid.filesfrm.filesscroll set" \
+            -width 14 -bg $GDefs(ColorLight)  -exportselection false  -selectmode  extended
+         scrollbar .export.mid.filesfrm.filesscroll -command ".export.mid.filesfrm.files yview" -bd 1 -width 10
+         pack .export.mid.filesfrm.lbl -side top
+         pack .export.mid.filesfrm.files -side left -fill y -expand true
+         pack .export.mid.filesfrm.filesscroll  -side left -fill y
+      pack .export.mid.filesfrm -side left -fill y
+   pack .export.mid  -side top -anchor w -expand true -fill both
+
+   frame .export.status
+      button .export.status.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 \
+         -command "destroy .export"
+      button .export.status.export -text [lindex $Lbl(Convert) $GDefs(Lang)] -bd 1 \
+         -command "MetInfo::SaveAs"
+      pack .export.status.close .export.status.export -side left -fill x -expand true
+   pack .export.status -side top -fill x
+
+   foreach type $Data(LType) {
+      if { "$type" != "sa" } {
+         .export.mid.typefrm.type insert end $type
+      }
+   }
+
+   foreach station [lsort $SPI::Src(Info)] {
+      .export.mid.stationfrm.station insert end "[lindex $station 1] [lindex $station 2] [lindex $station 3]"
+   }
+
+   MetInfo::ExportFileGet
+
+   grab .export
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetInfo::SaveAs>
+# Creation : Mars 2003 - S. Gaudreault - CMC/CMOE
+#
+# But      : Initialise l'affichage de la fenetre "Save as" qui est utilisé
+#            lors de l'export pour scipuff
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetInfo::SaveAs { } {
+   global env
+   global GDefs
+   global Rapport
+   variable Dia
+   variable Msg
+
+   if { ("[.export.mid.typefrm.type curselection]" == "" ) || \
+        ("[.export.mid.stationfrm.station curselection]" == "") || \
+        ("[.export.mid.filesfrm.files  curselection]" == "") } {
+      Dialog::CreateDefault .export 300 [lindex $Dia $GDefs(Lang)] \
+         "[lindex $Msg(SelectVide)  $GDefs(Lang)]" warning 0 Ok
+      return;
+   }
+
+   set savedFile [FileBox::Create . $env(HOME) Save ""]
+   if { "$savedFile" != ""} {
+      MetInfo::ExportFile $savedFile
+   }
+}

@@ -1,0 +1,67 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : Writer.txt
+# Creation : Mai 2000
+#
+# Description:
+#    Permet d'ecrire des messages (FVCN, AACN, ...) en utilisant SPI pour faire
+#    de l'entree de parametres
+#
+#===============================================================================
+
+namespace eval Writer {
+   variable Lbl
+   variable Msg
+   variable Bubble
+
+   #----- Definitions des labels
+
+   set Lbl(Cancel)     { "Annuler" "Cancel" }
+   set Lbl(Close)      { "Fermer" "Close" }
+   set Lbl(Open)       { "Ouvrir" "Open" }
+   set Lbl(Quit)       { "Quitter" "Quit" }
+   set Lbl(Consult)    { "Consulter" "Consult" }
+   set Lbl(Continue)   { "Continuer" "Carry on" }
+   set Lbl(Correct)    { "Corriger" "Correct" }
+   set Lbl(File)       { "Fichier" "File" }
+   set Lbl(Msg)        { "Messages" "Messages" }
+   set Lbl(New)        { "Nouveau" "New" }
+   set Lbl(NEW)        { "Standard" "Standard" }
+   set Lbl(RET)        { "Retransmission" "Retransmission" }
+   set Lbl(EXP)        { "Expéditif" "Expeditive" }
+   set Lbl(Print)      { "Imprimer ..." "Print ..." }
+   set Lbl(Save)       { "Sauvegarder" "Save" }
+   set Lbl(Send)       { "Transmettre" "Transmit" }
+   set Lbl(SendBackup) { "Transmettre (METMANAGER)" "Transmit (METMANAGER)" }
+   set Lbl(Update)     { "Mettre a jour" "Update" }
+   set Lbl(Warning)    { "Attention" "Warning" }
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(No)         { "Non" "No" }
+   set Lbl(Edit)       { "Edition" "Edit" }
+   set Lbl(Test)       { "Mode Test" "Test Mode" }
+
+   #----- Definitions des messages
+
+   set Msg(Send)       { "Ce message va etre transmis sur les circuits" "This message will be transmitted over the circuits" }
+   set Msg(Sent)       { "Le message e ete transmis" "The message has been transmitted" }
+   set Msg(Save)       { "Voulez-vous sauvegarder ce message ?" "Do you want to save this message ?" }
+   set Msg(Exist)      { "Ce fichier existe deja, voulez vous le reecrire ?" "This file exists, do you want to overwrite it ?" }
+   set Msg(Handle)     { "Ce message ne peut etre sauvegader" "This message cannot be saved" }
+   set Msg(RET)        { "La mise a jour d'une retransmission n'est pas permise" "Update of retransmission is not allowed" }
+   set Msg(NEW)        { "La mise a jour ou la correction d'un nouveau message n'est pas permise" "Update or correction of a new message is not allowed" }
+
+   #----- Definitions des textes des bulles d'aides
+
+   set Bubble(Select)     { "Mode de sélection de région" "Area selection mode" }
+   set Bubble(Save)       { "Sauvegarder le message" "Save the message" }
+   set Bubble(Print)      { "Imprimer le message" "Print the message" }
+   set Bubble(Send)       { "Transmettre le message" "Transmit the message" }
+   set Bubble(SendBackup) { "Transmettre le message\npar METMANAGER (Backup)" "Transmit the message\nthrough METMANAGER (Backup)" }
+   set Bubble(Close)      { "Fermer le message" "Close the message" }
+
+}

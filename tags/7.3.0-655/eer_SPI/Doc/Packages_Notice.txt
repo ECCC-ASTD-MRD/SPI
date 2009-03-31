@@ -1,0 +1,5 @@
+GDAL - Geospatial Data Abstraction Library / OGR Simple Feature Library
+   is distributed under X/MIT License and can be dowloaded from http://remotesensing.org/gdal/index.html
+
+Tcl/Tk
+   is distributed under BSD License and GNU General Public License and can be dowloaded from http://www.tcl.tk/software/tcltk/

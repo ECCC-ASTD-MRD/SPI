@@ -1,0 +1,308 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet     : Interface du modele MLCD.
+# Fichier    : MLCD.txt
+# Creation   : Mars 2001 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Description des interfaces et procedures relatives a
+#              celles-ci pour le module MLCD.
+#
+# Remarques  :
+#
+#===============================================================================
+
+namespace eval MLCD {
+   variable Lbl
+   variable Msg
+   variable Error
+   variable Warning
+   variable Bubble
+
+   #----- Labels definitions
+
+   set Lbl(IDate)      { "Date      : " "Date     : " }
+   set Lbl(IDur)       { "Durée     : " "Duration : " }
+   set Lbl(IOut)       { "Sortie    : " "Output   : " }
+   set Lbl(IETime)     { "Émission  : " "Emission : " }
+   set Lbl(IENb)       { "Nombre    : " "Number   : " }
+   set Lbl(IEMass)     { "Masse     : " "Mass     : " }
+   set Lbl(IEVel)      { "Vitesse   : " "Velocity : " }
+   set Lbl(IESpc)      { "Espèce    : " "Specie   : " }
+   set Lbl(IECyl)      { "Cylindre  : " "Cylinder : " }
+   set Lbl(ICst)       { "Constantes: " "Constants: " }
+
+   set Lbl(Sim)            { "MLCD" "MLCD" }
+   set Lbl(Em)             { "Émission" "Emission" }
+   set Lbl(Src)            { "Source" "Source" }
+   set Lbl(Sit)            { "Météo" "Meteo" }
+   set Lbl(ParamLoc)       { "Paramètres locaux" "Local Parameters" }
+   set Lbl(NbLevel)        { "Nombre de niveaux" "Number of level" }
+   set Lbl(Exec)           { "Intégration" "Integration" }
+   set Lbl(Launch)         { "Lancer" "Launch" }
+   set Lbl(Close)          { "Fermer" "Close" }
+   set Lbl(Model)          { "Modèle" "Model" }
+   set Lbl(Start)          { "Temps de départ (UTC)" "Starting Time (UTC)" }
+   set Lbl(Date)           { "Date" "Date" }
+   set Lbl(At)             { "A " "At " }
+   set Lbl(Hour)           { "Heure " "Hour  " }
+   set Lbl(Dur)            { "Durée de simulation    (min)" "Simulation Duration (min)" }
+   set Lbl(OutputTimeStep) { "Pas de temps de sortie (min)" "Output Time Step    (min)" }
+   set Lbl(ModelTimeStep)  { "Pas de temps du modèle (min)" "Model Time Step     (min)" }
+   set Lbl(Other)          { "Autre option" "Other option" }
+
+   set Lbl(IsSigma)        { "Fluctuations des vitesses  \nà méso-échelle             " "Mesoscale velocity fluctuations" }
+   set Lbl(IsRanVar)       { "Générateur variable de nom-\nbres gaussiens aléatoires  " "Variable generator of      \nrandom gaussians numbers   " }
+   set Lbl(IsDiag)         { "Fichier sortie diagnostique" "Diagnostics output file" }
+   set Lbl(Conc)           { "Concentrations" "Concentrations" }
+   set Lbl(IsConc)         { "Calcul des concentrations" "Compute concentrations" }
+   set Lbl(GridType)       { "Grille      " "Grid       " }
+   set Lbl(GridAlgo)       { "Algorithme  " "Algorithm  " }
+   set Lbl(GridDomain)     { "Domaine (km)" "Domain (km)" }
+   set Lbl(VerticalLevels) { "Niveaux  (m)" "Levels  (m)" }
+
+   set Lbl(EmPart)     { "Particules"         "Particles" }
+   set Lbl(EmCol)      { "Colonne d'émission" "Emission column" }
+
+   set Lbl(EmNumberParticles) { "Nombre de particules      " "Number of particles       " }
+   set Lbl(EmTotMass)         { "Masse totale relâchée     " "Total Released Mass       " }
+   set Lbl(EmIsoName)         { "Isotope radioactif        " "Radioactive Isotope       " }
+   set Lbl(EmDepVel)          { "Vitesse de dépôt     (m/s)" "Deposition Velocity  (m/s)" }
+   set Lbl(EmHalfLife)        { "Période de demi-vie    (s)" "Half-Life Period       (s)" }
+   set Lbl(EmWetScav)         { "Facteur lessivage humide  " "Wet Scavenging Coefficient" }
+   set Lbl(EmDuration)        { "Durée  (min)"         "Duration  (min)" }
+   set Lbl(EmBottom)          { "Bas      (m)"         "Bottom      (m)" }
+   set Lbl(EmTop)             { "Haut     (m)"         "Top         (m)" }
+   set Lbl(EmRadius)          { "Rayon    (m)"         "Radius      (m)" }
+
+   set Lbl(ObsAuto)       { "Automatisation"          "Automation" }
+   set Lbl(ObsEdit)       { "Édition"                 "Editing" }
+   set Lbl(ObsNbLevels)   { "Nb niveaux  "            "Nb of levels" }
+   set Lbl(ObsMetModel)   { "Météorologie"            "Meteorology " }
+   set Lbl(ObsRetrieve)   { "Récupérer"               "Retrieve" }
+   set Lbl(Obs)           { "Obser."                  "Obser." }
+   set Lbl(ObsNo)         { "\#"                      "\#" }
+   set Lbl(ObsTime)       { "Date et Temps (UTC)"     "Date and Time (UTC)" }
+   set Lbl(ObsParams)     { "Paramètres locaux"       "Local Parameters" }
+   set Lbl(ObsRoughLen)   { "Rugosité\n(m)"           "Roughness\n(m)" }
+   set Lbl(ObsObukhovLen) { "Obukhov\n(m)"            "Obukhov\n(m)" }
+   set Lbl(ObsPrecipRate) { "Précip.\n(mm/h)"         "Precip.\n(mm/h)" }
+   set Lbl(ObsWindProf)   { "Profil des vents"        "Wind Profile" }
+   set Lbl(ObsHeight)     { "Hauteur\n(m)"            "Height\n(m)" }
+   set Lbl(ObsVelocity)   { "Vitesse\n(m/s)"          "Velocity\n(m/s)" }
+   set Lbl(ObsDirection)  { "Direction\n(deg)"        "Direction\n(deg)" }
+
+   set Lbl(Suppress)   { "Supprimer" "Delete" }
+   set Lbl(Result)     { "Résultats" "Results" }
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(No)         { "Non" "No " }
+   set Lbl(Warning)    { "Avertissement" "Warning" }
+
+   #-----Messages definitions
+
+   set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" \
+                           "Do you really want to delete this simulation?" }
+   set Msg(Exist)        { "Veuillez compléter le lancement du modèle MLCD en cours avant de procéder à une autre."
+                           "Please complete the current MLCD launch before proceeding with another one." }
+
+   #----- Error definitions
+
+   set Error(UnitSeconds)              "s."
+   set Error(UnitMinutes)              "min."
+   set Error(UnitHours)                "h."
+   set Error(UnitMeters)               "m."
+   set Error(UnitKilometers)           "km."
+   set Error(UnitPrecip)               "mm/h."
+   set Error(UnitVelocity)             "m/s."
+   set Error(UnitDirection)            "deg."
+   set Error(UnitMass)                 { "unité." "unit." }
+   set Error(UnitDay)                  { "jours." "days." }
+
+   set Error(SimDuration)              { "Erreur! La durée de simulation (spécifiée en minutes) doit être un entier positif.\n\n\tDurée de simulation :" "Error! The simulation duration (specified in minutes) must be a positive integer.\n\n\tSimulation Duration :" }
+   set Error(SimDurationRange)         { "Erreur! La valeur de la durée de simulation (spécifiée en minutes) déborde la capacité mémoire d'un nombre entier.\n\n\tDurée de simulation :" "Error! The simulation duration value (specified in minutes) under/overflows the memory capacity of an integer number.\n\n\tSimulation Duration :" }
+   set Error(ModelTimeStep1)           { "Erreur! Le pas de temps du modèle (spécifié en minutes) doit être un entier positif.\n\n\tPas de temps du modèle :" "Error! The model time step (specified in minutes) must be a positive integer.\n\n\tModel Time Step :" }
+   set Error(ModelTimeStepRange)       { "Erreur! La valeur du pas de temps du modèle (spécifiée en minutes) déborde la capacité mémoire d'un nombre entier.\n\n\tPas de temps du modèle :" "Error! The model time step value (specified in minutes) under/overflows the memory capacity of an integer number.\n\n\tModel Time Step :" }
+   set Error(OutputTimeStep1)          { "Erreur! Le pas de temps de sortie (spécifié en minutes) doit être un entier positif.\n\n\tPas de temps de sortie :" "Error! The output time step (specified in minutes) must be a positive integer.\n\n\tOutput Time Step :" }
+   set Error(OutputTimeStepRange)      { "Erreur! La valeur du pas de temps de sortie (spécifiée en minutes) déborde la capacité mémoire d'un nombre entier.\n\n\tPas de temps de sortie :" "Error! The output time step value (specified in minutes) under/overflows the memory capacity of an integer number.\n\n\tOutput Time Step :" }
+   set Error(ModelTimeStep2)           { "Erreur! Le pas de temps du modèle doit être inférieur ou égal à la durée d'émission.\n\n" "Error! The model time step must be lower or equal to the emission duration.\n\n" }
+   set Error(ModelTimeStep3)           { "\tPas de temps du modèle :" "\tModel Time Step   :" }
+   set Error(ModelTimeStep4)           { "\tDurée d'émission       :" "\tEmission Duration :" }
+   set Error(ModelTimeStep5)           { "Erreur! Le pas de temps du modèle doit être inférieur ou égal à la durée de simulation.\n\n" "Error! The model time step must be lower or equal to the simulation duration.\n\n" }
+   set Error(ModelTimeStep6)           { "\tPas de temps du modèle :" "\tModel Time Step     :" }
+   set Error(ModelTimeStep7)           { "\tDurée de simulation    :" "\tSimulation Duration :" }
+   set Error(OutputTimeStep2)          { "Erreur! Le pas de temps de sortie doit être inférieur ou égal à la durée de simulation.\n\n" "Error! The output time step must be lower or equal to the simulation duration.\n\n" }
+   set Error(OutputTimeStep3)          { "\tPas de temps de sortie :" "\tOutput Time Step    :" }
+   set Error(OutputTimeStep4)          { "\tDurée de simulation    :" "\tSimulation Duration :" }
+   set Error(ModelTimeStep8)           { "Erreur! Le pas de temps du modèle doit être inférieur ou égal au pas de temps de sortie.\n\n" "Error! The model time step must be lower or equal to the output time step.\n\n" }
+   set Error(ModelTimeStep9)           { "\tPas de temps du modèle :" "\tModel Time Step  :" }
+   set Error(ModelTimeStep10)          { "\tPas de temps de sortie :" "\tOutput Time Step :" }
+   set Error(OutputTimeStep5)          { "Erreur! Le pas de temps de sortie doit être un multiple entier du pas de temps du modèle.\n\n" "Error! The output time step must be an integer multiple of the model time step.\n\n" }
+   set Error(ModelTimeStep11)          { "Erreur! Le pas de temps du modèle doit être supérieur ou égal à 1 minute et inférieur ou égal à 60 minutes.\n\n" "Error! The model time step must be greater or equal to 1 minute and lower or equal to 60 minutes.\n\n" }
+   set Error(ModelTimeStep12)          { "Erreur! Le pas de temps du modèle doit être un diviseur entier de 60 minutes.\n\n" "Error! The model time step must be an integer divisor of 60 minutes.\n\n" }
+   set Error(ModelTimeStep13)          { "Erreur! Le pas de temps du modèle doit être un multiple entier d'une minute.\n\n" "Error! The model time step must be an integer multiple of one minute.\n\n" }
+   set Error(OutputTimeStep6)          { "Erreur! Le pas de temps de sortie doit être supérieur ou égal à 1 minute et inférieur ou égal à 1440 minutes.\n\n" "Error! The output time step must greater or equal to 1 minute and lower or equal to 1440 minutes.\n\n" }
+   set Error(OutputTimeStep7)          { "Erreur! Le pas de temps de sortie doit être un diviseur entier de 60 minutes.\n\n" "Error! The output time step must be an integer divisor of 60 minutes.\n\n" }
+   set Error(OutputTimeStep8)          { "Erreur! Le pas de temps de sortie doit être un multiple entier d'une minute.\n\n" "Error! The output time step must be an integer multiple of one minute.\n\n" }
+   set Error(OutputTimeStep9)          { "Erreur! Le pas de temps de sortie doit être un diviseur entier de 1440 minutes.\n\n" "Error! The output time step must be an integer divisor of 1440 minutes.\n\n" }
+   set Error(OutputTimeStep10)         { "Erreur! Le pas de temps de sortie doit être un multiple entier de 60 minutes.\n\n" "Error! The output time step must be an integer multiple of 60 minutes.\n\n" }
+   set Error(VerticalLevels1)          { "Erreur! Le nombre de niveaux verticaux pour le calcul des concentrations à l'intérieur des couches doit être supérieur à 1.\n\n" "Error! The number of vertical levels for concentration calculations inside layers must be greater than 1.\n\n" }
+   set Error(VerticalLevels2)          { "\tNombre de niveaux verticaux :" "\tNumber of vertical levels :" }
+   set Error(VerticalLevels3)          { "\tNiveaux verticaux (m)       :" "\tVertical levels (m)       :" }
+   set Error(VerticalLevels4)          { "Erreur! Les niveaux verticaux (spécifiés en mètres) doivent être des nombres réels supérieurs ou égal à 0.\n\n\tNiveau vertical :" "Error! The vertical levels (specified in meters) must be float numbers greater or equal to 0.\n\n\tVertical level :" }
+   set Error(VerticalLevels5)          { "Erreur! Les niveaux verticaux (spécifiés en mètres) doivent être ordonnés en ordre croissants.\n\n\tNiveaux verticaux :" "Error! The vertical levels (specified in meters) must be sorted in increasing order.\n\n\tVertical levels :" }
+   set Error(VerticalLevelsRange)      { "Erreur! Une valeur dans la liste des niveaux verticaux déborde la capacité mémoire d'un nombre réel.\n\n\tNiveau vertical :" "Error! A value in the list of vertical levels under/overflows the memory capacity of a float number.\n\n\tVertical Level :" }
+   set Error(GridDomainRange)          { "Erreur! La valeur du domaine de la grille pour le calcul des concentrations déborde la capacité mémoire d'un nombre réel.\n\n\tDomaine de la grille :" "Error! The grid domain value for concentration calculations under/overflows the memory capacity of a float number.\n\n\tGrid domain :" }
+   set Error(GridDomain)               { "Erreur! Le domaine de la grille pour le calcul des concentrations doit être un nombre réel positif, supérieur à 0.1 km (100 m) et inférieur ou égal à 200 km.\n\n\tDomaine de la grille :" "Error! The grid domain for concentration calculations must be a positive float number, greater than 0.1 km (100 m) and lower or equal to 200 km.\n\n\tGrid domain :" }
+
+   set Error(EmNbPart)                 { "Erreur! Le nombre de particules doit être un entier positif.\n\n\tNombre de particules :" "Error! The number of particles must be a positive integer.\n\n\tNumber of particles :" }
+   set Error(EmNbPartRange)            { "Erreur! La valeur du nombre de particules déborde la capacité mémoire d'un nombre entier.\n\n\tNombre de particules :" "Error! The value of the number of particles under/overflows the memory capacity of an integer number.\n\n\tNumber of particles :" }
+   set Error(EmTotMass)                { "Erreur! La masse totale relâchée (spécifiée en unité arbitraire) doit être un nombre positif.\n\n\tMasse totale relâchée :" "Error! The total mass released (specified in arbitrary unit) must be a positive number.\n\n\tTotal mass released :" }
+   set Error(EmTotMassRange)           { "Erreur! La valeur de la masse totale relâchée (spécifiée en unité arbitraire) déborde la capacité mémoire d'un nombre réel.\n\n\tMasse totale relâchée :" "Error! The value of total mass released (specified in arbitrary unit) under/overflows the memory capacity of a float number.\n\n\tTotal mass released :" }
+   set Error(EmDepVel)                 { "Erreur! La vitesse de dépôt (spécifiée en m/s) doit être un nombre supérieur ou égal à 0.\n\n\tVitesse de dépôt :" "Error! The deposition velocity (specified in m/s) must be greater or equal to 0.\n\n\tDeposition velocity :" }
+   set Error(EmDepVelRange)            { "Erreur! La valeur de la vitesse de dépôt (spécifiée en m/s) déborde la capacité mémoire d'un nombre réel.\n\n\tVitesse de dépôt :" "Error! The value of deposition velocity (specified in m/s) under/overflows the memory capacity of a float number.\n\n\tDeposition velocity :" }
+   set Error(EmHalfLife)               { "Erreur! La demie-vie radioactive (spécifiée en s) doit être un nombre positif.\n\n\tDemie-vie :" "Error! The radioactive half-life (specified in s) must be a positive number.\n\n\tRadioactive half-Life :" }
+   set Error(EmHalfLifeRange)          { "Erreur! La valeur de la demie-vie radioactive (spécifiée en s) déborde la capacité mémoire d'un nombre réel.\n\n\tDemie-vie :" "Error! The value of the radioactive half-life (specified in s) under/overflows the memory capacity of a float number.\n\n\tRadioactive Half-Life :" }
+   set Error(EmWetScav)                { "Erreur! Le facteur de lessivage doit être un nombre supérieur ou égal à 0.\n\n\tFacteur de lessivage :" "Error! The wet scavenging coefficient must be greater or equal to 0.\n\n\tWet scavenging coefficient :" }
+   set Error(EmWetScavRange)           { "Erreur! La valeur du facteur de lessivage déborde la capacité mémoire d'un nombre réel.\n\n\tFacteur de lessivage :" "Error! The value of the wet scavenging coefficient under/overflows the memory capacity of a float number.\n\n\tWet scavenging coefficient :" }
+
+   set Error(EmDuration)               { "Erreur! La durée d'émission (spécifiée en minutes) doit être un entier positif.\n\n\tDurée d'émission :" "Error! The emission duration (specified in minutes) must be a positive integer.\n\n\tEmission Duration :" }
+   set Error(EmDurationRange)          { "Erreur! La valeur de la durée d'émission (spécifiée en minutes) déborde la capacité mémoire d'un nombre entier.\n\n\tDurée d'émission :" "Error! The emission duration value (specified in minutes) under/overflows the memory capacity of an integer number.\n\n\tEmission Duration :" }
+   set Error(EmDuration2)              { "Erreur! La durée d'émission doit être supérieure ou égale au pas de temps du modèle.\n\n" "Error! The emission duration must be greater or equal to the model time step.\n\n" }
+   set Error(EmDuration3)              { "\tDurée d'émission       :" "\tEmission Duration :" }
+   set Error(EmDuration4)              { "\tPas de temps du modèle :" "\tModel Time Step   :" }
+   set Error(EmBottom)                 { "Erreur! Le bas de la colonne d'émission (spécifié en mètres) doit être un nombre supérieur ou égal à 0.\n\n\tBas de la colonne d'émission :" "Error! The bottom of emission column (specified in meters) must be greater or equal to 0.\n\n\tBottom of emission column :" }
+   set Error(EmBottomRange)            { "Erreur! La valeur du bas de la colonne d'émission (spécifié en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tBas de la colonne d'émission :" "Error! The value of bottom of emission column (specified in meters) under/overflows the memory capacity of a float number.\n\n\tBottom of emission column :" }
+   set Error(EmTop)                    { "Erreur! Le haut de la colonne d'émission (spécifié en mètres) doit être un nombre supérieur au bas de la colonne.\n\n\tHaut de la colonne d'émission :" "Error! The top of emission column (specified in meters) must be greater than bottom of column.\n\n\tTop of emission column :" }
+   set Error(EmTopRange)               { "Erreur! La valeur du haut de la colonne d'émission (spécifié en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tHaut de la colonne d'émission :" "Error! The value of top of emission column (specified in meters) under/overflows the memory capacity of a float number.\n\n\tTop of emission column :" }
+   set Error(EmRadius)                 { "Erreur! Le rayon de la colonne d'émission (spécifié en mètres) doit être un nombre supérieur ou égal à 0.\n\n\tRayon de la colonne d'émission :" "Error! The radius of emission column (specified in meters) must be greater or equal to 0.\n\n\tRadius of emission column :" }
+   set Error(EmRadiusRange)            { "Erreur! La valeur du rayon de la colonne d'émission (spécifié en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tRayon de la colonne d'émission :" "Error! The value of emission column radius (specified in meters) under/overflows the memory capacity of a float number.\n\n\tEmission column radius :" }
+
+   set Error(ObsRoughnessLength)       { "Erreur! La longueur de rugosité (spécifiée en mètres) doit être un nombre positif.\n\n\tLongueur de rugosité :" "Error! The roughness length (specified in meters) must be a positive number.\n\n\tRoughness Length :" }
+   set Error(ObsRoughnessLengthRange)  { "Erreur! La valeur de la longueur de rugosité (spécifiée en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tLongueur de rugosité :" "Error! The roughness length value (specified in meters) under/overflows the memory capacity of a float number.\n\n\tRoughness Length :" }
+   set Error(ObsObukhovLength)         { "Erreur! La longueur d'Obukhov (spécifiée en mètres) doit être un nombre réel.\n\n\tLongueur d'Obukhov :" "Error! The Obukhov length (specified in meters) must be a float number.\n\n\tObukhov Length :" }
+   set Error(ObsObukhovLengthRange)    { "Erreur! La valeur de la longueur d'Obukhov (spécifiée en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tLongueur d'Obukhov :" "Error! The Obukhov length value (specified in meters) under/overflows the memory capacity of a float number.\n\n\tObukhov Length :" }
+   set Error(ObsPrecipRate)            { "Erreur! Le taux de précipitation (spécifié en mm/h) doit être un nombre supérieur ou égal à 0.\n\n\tTaux de précipitation :" "Error! The precipitation rate (specified in mm/h) must be greater or equal to 0.\n\n\tPrecipitation Rate :" }
+   set Error(ObsPrecipRateRange)       { "Erreur! La valeur du taux de précipitation (spécifiée en mm/h) déborde la capacité mémoire d'un nombre réel.\n\n\tTaux de précipitation :" "Error! The precipitation rate value (specified in mm/h) under/overflows the memory capacity of a float number.\n\n\tPrecipitation Rate :" }
+
+   set Error(ObsHeight)                { "Erreur! La hauteur (spécifiée en mètres) doit être un nombre positif.\n\n\tHauteur :" "Error! The height (specified in meters) must be a positive number.\n\n\tHeight :" }
+   set Error(ObsHeightRange)           { "Erreur! La valeur de la hauteur (spécifiée en mètres) déborde la capacité mémoire d'un nombre réel.\n\n\tHauteur :" "Error! The height value (specified in meters) under/overflows the memory capacity of a float number.\n\n\tHeight :" }
+   set Error(ObsVelocity)              { "Erreur! La vitesse (spécifiée en m/s) doit être un nombre supérieur ou égal à 0.\n\n\tVitesse :" "Error! The velocity (specified in m/s) must be a greater or equal to 0.\n\n\tVelocity :" }
+   set Error(ObsVelocityRange)         { "Erreur! La valeur de la vitesse (spécifiée en m/s) déborde la capacité mémoire d'un nombre réel.\n\n\tVitesse :" "Error! The velocity value (specified in m/s) under/overflows the memory capacity of a float number.\n\n\tVelocity :" }
+   set Error(ObsDirection)             { "Erreur! La direction (spécifiée en degrés) doit être un nombre compris dans l'interval [0, 360[.\n\n\tDirection :" "Error! The direction (specified in degrees) must be a number falling within the range [0, 360[.\n\n\tDirection :" }
+   set Error(ObsDirectionRange)        { "Erreur! La valeur de la direction (spécifiée en degrés) déborde la capacité mémoire d'un nombre réel.\n\n\tDirection :" "Error! The direction value (specified in degrees) under/overflows the memory capacity of a float number.\n\n\tDirection :" }
+   set Error(ObsEmptyField)            { "Erreur! Le profil de vents est invalide. Veuillez remplir les champs appropriés vides." "Error! The wind profile is invalid. Please fill up the appropriate empty fields." }
+
+   set Error(ObsNbValidWindProfiles)   { "Erreur! Aucun profil de vents n'est valide. Veuillez fournir au moins un profil de vents à un ou plusieurs niveaux dans la verticale pour lancer le modèle." "Error! No wind profile is valid. Please provide at least one wind profile for one or more vertical levels to launch the model." }
+   set Error(ObsTimes)                 { "Erreur! Incohérence entre les temps d'observation. Les observations doivent se suivre temporellement.\n\n" "Error! Inconsistency between observation times. Observations must follow in time.\n\n" }
+   set Error(ObsTimes2)                { "Erreur! Incohérence entre le temps de départ de la simulation (temps d'émission) et les temps d'observation. Le temps de départ doit tomber entre la première et la dernière observation météorologique. Veillez modifier le temps de départ ou réinitialiser les données météorologiques.\n\n" "Error! Inconsistency between simulation starting time (release time) and observation times. Starting time must fall between first and last meteorological observation. Please modify starting time or reinitialize meteorological data.\n\n" }
+   set Error(MetData)                  { "Erreur! Aucune donnée météorologique n'est disponible pour ce temps départ de la simulation. Veuillez modifier la date et/ou l'heure du temps de départ." "Error! No meteorological data is available for this simulation starting time. Please modify the date and/or the hour of the starting time." }
+   set Error(MetData2)                 { "Temps de départ invalide     :" "Invalid Starting Time :" }
+   set Error(MetData3)                 { "Intervalle de temps possible :" "Valid Time Range      :" }
+
+   #----- Warning definitions
+
+   set Warning(HalfLife)               { "Avertissement! L'isotope sélectionné a une demi-vie radioactive nulle ou négative. Cette simulation ne produira pas de résultats pertinents et intéressants. Par conséquent, veuillez sélectionner un isotope différent de" \
+                                         "Warning! The selected radionclide has a null or negative radioactive half-life. This simulation will not generate relevant and interesting results. Therefore, please select a radionuclide different than" }
+
+   set Warning(SimDuration)            { "Avertissement! La durée de simulation définie dans l'interface est supérieure (ou égale) à la durée de simulation calculée en fonction des données météorologiques disponibles dans la base de données. Par conséquent, la durée de la simulation sera réinitialisée." \
+                                         "Warning! The simulation duration defined within the interface is greater than (or equal to) the simulation duration computed according to available meteorological data in the database. Therefore, the simulation duration will be reinitialized." }
+   set Warning(SimDuration2)           { "Nouvelle durée de simulation :" "New Simulation Duration :" }
+   set Warning(SimDuration3)           { "Ancienne durée de simulation :" "Old Simulation Duration :" }
+
+   set Warning(EmDuration)             { "Avertissement! La durée d'émission définie dans l'interface est supérieure à la durée de simulation. Par conséquent, la durée d'émission sera réinitialisée (égale à la durée de simulation)." \
+                                         "Warning! The emission duration defined within the interface is greater than the simulation duration. Therefore, emission duration will be reinitialized (equal to simulation duration)." }
+   set Warning(EmDuration2)            { "Nouvelle durée d'émission :" "New Emission Duration :" }
+   set Warning(EmDuration3)            { "Ancienne durée d'émission :" "Old Emission Duration :" }
+
+   set Warning(WindProfData)           { "Avertissement! Aucun profil de vents n'est disponible pour cette observation.\n\n\t" "Warning! No wind profile is available for this observation.\n\n\t" }
+   set Warning(WindProfData2)          { "\n\nVoulez-vous poursuivre la récupération des données météorologiques?" "\n\nDo you wish to continue retrieving the meteorological data?" }
+
+   set Warning(ChangeReleaseDateTimeSimDur)  { "Avertissement! Le temps de départ de la simulation (temps d'émission) et la durée de simulation (durée d'intégration) ont été modifiés. Ces modifications entraînent la réinitialisation des données météorologiques (date et temps d'observations, paramètres locaux et profil de vents)." "Warning! The simulation starting time (release time) and simulation duration (integration duration) have been modified. These changes involve reinitializing the meteorological data (observation dates and times, local parameters and wind profile)." }
+   set Warning(ChangeReleaseDateTimeSimDur2) { "Nouveau temps de départ :" "New Starting Time :" }
+   set Warning(ChangeReleaseDateTimeSimDur3) { "Ancien temps de départ  :" "Old Starting Time :" }
+   set Warning(ChangeReleaseDateTimeSimDur4) { "Nouvelle durée de simulation :" "New Simulation Duration :" }
+   set Warning(ChangeReleaseDateTimeSimDur5) { "Ancienne durée de simulation :" "Old Simulation Duration :" }
+   set Warning(ChangeReleaseDateTimeSimDur6) { "\n\nVoulez-vous mettre à jour le temps de départ et la durée de simulation et, par conséquent, réinitialiser les données météorologiques?" "\n\nDo you wish to update the starting time and the simulation duration and, consequently, reinitialize the meteorological data?" }
+
+   set Warning(ChangeReleaseDateTime)  { "Avertissement! Le temps de départ de la simulation (temps d'émission) a été modifié alors que des données météorologiques (date et temps d'observations, paramètres locaux et profil de vents) ont été préalablement saisies." "Warning! The simulation starting time (release time) has been modified while meteorological data (observation dates and times, local parameters and wind profile) were input." }
+   set Warning(ChangeReleaseDateTime2) { "Nouveau temps de départ :" "New Starting Time :" }
+   set Warning(ChangeReleaseDateTime3) { "Ancien temps de départ  :" "Old Starting Time :" }
+   set Warning(ChangeReleaseDateTime4) { "\n\nVoulez-vous réinitialiser les données météorologiques?" "\n\nDo you wish to reinitialize the meteorological data?" }
+
+   set Warning(ChangeSimDuration)      { "Avertissement! La durée de simulation (durée d'intégration) a été modifiée. Cette modification entraîne la réinitialisation des données météorologiques (date et temps d'observations, paramètres locaux et profil de vents)." "Warning! The simulation duration (integration duration) has been modified. This change involve reinitializing the meteorological data (observation dates and times, local parameters and wind profile)." }
+   set Warning(ChangeSimDuration2)     { "Nouvelle durée de simulation :" "New Simulation Duration :" }
+   set Warning(ChangeSimDuration3)     { "Ancienne durée de simulation :" "Old Simulation Duration :" }
+   set Warning(ChangeSimDuration4)     { "\n\nVoulez-vous mettre à jour la durée de simulation et, par conséquent, réinitialiser les données météorologiques?" "\n\nDo you wish to update the simulation duration and, consequently, reinitialize the meteorological data?" }
+
+   #----- Bubble definitions
+
+   set Bubble(Source)            { "Nom de la source." "Name of the source." }
+   set Bubble(SelectSource)      { "Sélection de la source." "Select the source." }
+   set Bubble(StartTime)         { "Temps de départ (UTC) de la simulation." "Simulation starting time (UTC)." }
+   set Bubble(StartDate)         { "Date du début de la simulation." "Date of beginning of simulation." }
+   set Bubble(StartHour)         { "Heure et minutes du début de la simulation." "Hour and minutes of simulation date." }
+   set Bubble(SimIntegration)    { "Intégration du modèle." "Model integration." }
+   set Bubble(SimIntegTime)      { "Durée de la simulation (intégration) (min)." "Simulation (integration) duration (min)." }
+   set Bubble(SimOutputTimeStep) { "Pas de temps de sortie (min) des données." "Data output time step (min)." }
+   set Bubble(SimModelTimeStep)  { "Pas de temps interne du modèle (min)." "Internal model time step (min)." }
+   set Bubble(Conc)              { "Calcul des concentrations." "Concentrations calculations." }
+   set Bubble(ConcOpt)           { "Permettre d'activer ou de désactiver\nle calcul des concentrations." "Allow the activation or desactivation\nof concentrations calculations." }
+   set Bubble(GridType1)         { "Type de grille utilisée pour calculer les concentrations.\n\nNote: La grille est centrée sur la source pour les types\nde grille fixe temporellement." "Type of grid used for the concentration calculations.\n\nNote: The grid is centered on the source for time-fixed grid types." }
+   set Bubble(GridType2)       { { "Grille polaire stéréographique fixe temporellement\nà resolution spatiale constante."
+                                   "Grille cylindrique équidistante (Lat-Lon) variable temporellement\nà résolution spatiale constante."
+                                   "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale constante."
+                                   "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale constante avec un coeur à résolution fine constante."
+                                   "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale variable." }
+                                 { "Polar Stereographic time-fixed grid\nat constant spatial resolution."
+                                   "Cylindrical Equidistant (Lat-Lon) time-variable grid\nat constant spatial resolution."
+                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat constant spatial resolution."
+                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat constant spatial resolution with a\nfine constant resolution core."
+                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat variable spatial resolution." } }
+   set Bubble(GridAlgo1)         { "Type d'algorithme utilisé pour calculer la contribution de la masse\nd'une particule à la concentration de chaque point de grille.\n\nNote: L'algorithme '4 points de grille' lisse davantage les\nconcentrations à chaque point de grille." "Type of algorithm used to compute the contribution\nof the mass of a particle to the concentration\nat each grid point.\n\nNote: The algorithm '4 grid points' generates smoother\nconcentrations than '1 grid point' algorithm." }
+   set Bubble(GridAlgo2)       { { "Le point de grille le plus près." "Les 4 points de grille les plus près." }
+                                 { "The nearest grid point." "The 4 nearest grid points." } }
+   set Bubble(GridDomain)        { "Domaine (km) de la grille fixe temporellement." "Domain (km) for the time-fixed grid."}
+   set Bubble(VerticalLevels)    { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
+   set Bubble(Option)            { "Autre option." "Other option." }
+   set Bubble(Sigma)             { "Permettre d'activer ou de désactiver\nles fluctuations des vitesses à méso-échelle." "Allow the activation or desactivation\nof mesoscale velocity fluctuations." }
+
+   set Bubble(EmParticles)       { "Propriétés des particules." "Particles' properties." }
+   set Bubble(EmColumn)          { "Propriétés de la colonne d'émission." "Emission column's properties." }
+   set Bubble(EmNumberParticles) { "Nombre de particules." "Number of particles." }
+   set Bubble(EmTotMass)         { "Masse totale relâchée (unité arbitraire, e.g.: Bq, kg, g, ...)." "Total mass released (arbitrary unit, e.g.: Bq, kg, g, ...)." }
+   set Bubble(EmIsoName)         { "Sélectionner un nouvel isotope radioactif." "Select a new radionuclide." }
+   set Bubble(EmDepVel)          { "Vitesse de dépôt (m/s)." "Deposition velocity (m/s)." }
+   set Bubble(EmHalfLife)        { "Période de demi-vie radioactive (s)." "Radioactive half-life period (s)." }
+   set Bubble(EmWetScav)         { "Facteur de lessivage humide." "Wet scavenging coefficient." }
+   set Bubble(EmDuration)        { "Durée de l'émission des particules (min)." "Emission duration (min)." }
+   set Bubble(EmColBottom)       { "Bas de la colonne d'émission (m)." "Bottom of emission column (m)." }
+   set Bubble(EmColTop)          { "Haut de la colonne d'émission (m)." "Top of emission column (m)." }
+   set Bubble(EmColRadius)       { "Rayon de la colonne d'émission (m)." "Radius of emission column (m)." }
+
+   set Bubble(ObsAuto)        { "Récupérer les données météorologiques\nautomatiquement à partir de la base de données." "Get meteorological data\nautomatically from database." }
+   set Bubble(ObsEdit)        { "Éditer les données météorologiques\nmanuellement." "Edit meteorological data manually." }
+   set Bubble(ObsNb)          { "Nombre d'observations." "Number of observations." }
+   set Bubble(ObsNbLevels)    { "Nombre de niveaux verticaux." "Number of vertical levels." }
+   set Bubble(ObsMetModel)    { "Type de modèle météorologique." "Type of meteorological model." }
+   set Bubble(ObsMetPath)     { "Permettre de modifier les répertoires des\nbases de données du modèle météorologique." "Allow to modify the directories of\nmeteorological model databases." }
+   set Bubble(ObsRetrieve)    { "Récupérer les données météorologiques automatiquement\nà partir de la base de données sélectionnée." "Retrieve meteorological data\nautomatically from selected database." }
+   set Bubble(ObsNo)          { "Numéro de l'observation." "Observation Number." }
+   set Bubble(ObsDateTime)    { "Date et temps (UTC) de\nl'observation sélectionnée." "Date and time (UTC) of\ncurrent observation." }
+   set Bubble(ObsDate)        { "Date (UTC) de l'observation sélectionnée." "Date (UTC) of current observation." }
+   set Bubble(ObsTime)        { "Temps (heure et minutes UTC)\nde l'observation sélectionnée." "Time (hour and minutes UTC)\nof current observation." }
+   set Bubble(ObsLocalParams) { "Paramètres locaux." "Local Parameters." }
+   set Bubble(ObsRoughness)   { "Longueur de rugosité (m)." "Roughness lenght (m)." }
+   set Bubble(ObsObukhov)     { "Longueur d'Obukhov (m)." "Obukhov lenght (m)." }
+   set Bubble(ObsPrecip)      { "Taux de précipitation (mm/h)." "Precipitation rate (mm/h)." }
+   set Bubble(ObsWindProfile) { "Profil des vents." "Wind Profile." }
+   set Bubble(ObsHeight)      { "Hauteur observée des vents (m)." "Observed wind height (m)." }
+   set Bubble(ObsVelocity)    { "Vitesse observée des vents (m/s)." "Observed wind speed (m/s)." }
+   set Bubble(ObsDirection)   { "Direction observée des vents (degrés\np.r. au Nord dans le sens horaire)." "Observed wind direction (degrees with reference\nto North in clockwise direction)." }
+
+   set Bubble(Launch) { "Lancer le modèle." "Launch the model." }
+   set Bubble(Cancel) { "Annuler le modèle." "Cancel the model." }
+
+}

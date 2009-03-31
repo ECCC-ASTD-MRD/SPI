@@ -1,0 +1,166 @@
+#=============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadien
+# Dorval, Quebec
+#
+# Projet     : Boite a outils
+# Nom        : <Bull_Volc.int>
+# Creation   : Janvier 1997 - S. Trudel - CMC/CMOE
+#
+# Description:
+#
+#        Permettre d'affiche un bulletin relatif a une
+#        presence de cendres volcaniques.
+#
+# Remarques  :
+#     Aucune.
+#
+#===========================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <Bulletin::Window>
+# Creation : Fevrier 1997 - S. Trudel - CMC/CMOE - 421 7201
+#
+# But      : creer les widgets.
+#
+# Parametres :
+#
+# Remarques :
+#    - par defaut, on affiche le dernier bulletin.
+#
+#----------------------------------------------------------------------------
+
+proc Bulletin::Window { } {
+   global GDefs
+   variable Param
+   variable Bul
+   variable Data
+   variable Lbl
+   variable Bubble
+
+   set Data(Active) 1
+
+   if { ![winfo exists .bulletin] } {
+
+      toplevel          .bulletin
+      wm title          .bulletin "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+      wm protocol       .bulletin WM_DELETE_WINDOW { Bulletin::Close }
+      eval wm geometry  .bulletin $Param(Geom)
+      wm minsize        .bulletin 229 96
+
+      #----- Creation du frame du haut pour le menu principal.
+
+      frame .bulletin.menu -relief raised -bd 1
+      pack .bulletin.menu -side top -fill x
+
+      menubutton .bulletin.menu.fichier -text [lindex $Lbl(File) $GDefs(Lang)] -menu .bulletin.menu.fichier.menu -bd 1 -underline 0
+      menubutton .bulletin.menu.bulletin -text [lindex $Lbl(Bulletin) $GDefs(Lang)] -menu .bulletin.menu.bulletin.menu -bd 1 -underline 0
+      pack .bulletin.menu.fichier -side left
+
+      menu .bulletin.menu.fichier.menu -tearoff 0 -bd 1
+         .bulletin.menu.fichier.menu add command -label [lindex $Lbl(Print) $GDefs(Lang)] -command "PrintBox::Create .bulletin PRINT Bulletin"
+         .bulletin.menu.fichier.menu add separator
+         .bulletin.menu.fichier.menu add command -label [lindex $Lbl(Quit) $GDefs(Lang)] -underline 0 -command { Bulletin::Close }
+
+      menu .bulletin.menu.bulletin.menu -tearoff 0 -bd 1
+         .bulletin.menu.bulletin.menu add command -label [lindex $Lbl(Recherche) $GDefs(Lang)] -underline 0 \
+            -command { Bulletin::SearchInterface . .mid.t }
+         .bulletin.menu.bulletin.menu add separator
+         .bulletin.menu.bulletin.menu add command -label [lindex $Lbl(Courant) $GDefs(Lang)] -underline 0 \
+            -command { Bulletin::ReadCurrent }
+
+      #----- fonctions de recherche
+
+      frame .bulletin.bar -relief flat
+         frame .bulletin.bar.search -relief raised -bd 1
+            label .bulletin.bar.search.label -text [lindex $Lbl(Search) $GDefs(Lang)]
+            entry .bulletin.bar.search.entry -textvariable Bulletin::Search(Token) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 20
+            pack .bulletin.bar.search.label .bulletin.bar.search.entry -side left -fill y -padx 2
+
+            button .bulletin.bar.search.next  -relief flat -bd 0 -overrelief raised -image VCRFRAMEF \
+               -command "set Bulletin::Search(Handle) 1; Bulletin::SearchNext .bulletin.mid.t forwards"
+            button .bulletin.bar.search.previous  -relief flat -bd 0 -overrelief raised -image VCRFRAMEB \
+               -command "set Bulletin::Search(Handle) 1; Bulletin::SearchNext .bulletin.mid.t backwards"
+            button .bulletin.bar.search.stop  -relief flat -bd 0 -overrelief raised -image VCRSTOP \
+               -command "set Bulletin::Search(Handle) 0"
+            pack .bulletin.bar.search.previous .bulletin.bar.search.stop .bulletin.bar.search.next  -side left
+
+            radiobutton .bulletin.bar.search.local -variable Bulletin::Search(Mode) -value 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+               -text [lindex $Lbl(Local) $GDefs(Lang)]
+            radiobutton .bulletin.bar.search.global -variable Bulletin::Search(Mode) -value 1 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+               -text [lindex $Lbl(Global) $GDefs(Lang)]
+            pack .bulletin.bar.search.local .bulletin.bar.search.global -side left -fill both -padx 2
+         pack .bulletin.bar.search -side left -fill x -ipadx 2 -expand True
+
+         frame .bulletin.bar.draw -relief raised -bd 1
+            button .bulletin.bar.draw.loc -image FINGER -bd 0 -relief flat -overrelief raised \
+               -command { Bulletin::Draw $Bulletin::Data(Draw) False }
+            button .bulletin.bar.draw.zoom -image MODEZOOM -bd 0 -relief flat -overrelief raised \
+               -command { Bulletin::Draw $Bulletin::Data(Draw) True }
+            radiobutton .bulletin.bar.draw.line -image LINE -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Bulletin::Data(Draw) -value line
+            radiobutton .bulletin.bar.draw.poly -image POLY -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Bulletin::Data(Draw) -value poly
+            pack .bulletin.bar.draw.loc .bulletin.bar.draw.zoom .bulletin.bar.draw.line .bulletin.bar.draw.poly -side left -padx 2
+         pack .bulletin.bar.draw -side left -fill x -ipadx 2
+
+      pack .bulletin.bar  -side top -fill x
+
+      # ----- Cree un "Frame" et un "ListBox".
+
+      frame .bulletin.mid -relief raised -bd 1
+      pack .bulletin.mid -side top -fill both -expand true
+
+      frame .bulletin.mid.frm
+
+      listbox .bulletin.mid.frm.scrllist -bd 1 -bg white -exportselection false -yscrollcommand [list .bulletin.mid.frm.sy set] -height 1
+      scrollbar .bulletin.mid.frm.sy -orient vertical -command [list .bulletin.mid.frm.scrllist yview] -width 10 -bd 1
+
+      pack .bulletin.mid.frm -side left -fill y
+      pack .bulletin.mid.frm.sy -side left -fill y
+      pack .bulletin.mid.frm.scrllist -side left -fill y
+
+      bind .bulletin.mid.frm.scrllist <ButtonPress-1> { Bulletin::SelectBull %W %y 1 }
+
+      # ----- Cree un "Text" qui contiendra le(s) bulletin(s).
+
+      text .bulletin.mid.t -bg white -relief sunken -bd 1 -yscrollcommand ".bulletin.mid.s set" -height 0
+      scrollbar .bulletin.mid.s -relief sunken -command ".bulletin.mid.t yview" -width 10 -bd 1
+
+      pack .bulletin.mid.s -side right -fill y
+      pack .bulletin.mid.t -side right -expand true -fill both -anchor w
+
+      frame .bulletin.bas -relief raised -bd 1
+         button .bulletin.bas.current -text [lindex $Lbl(Courant) $GDefs(Lang)] -bd 0 -command "Bulletin::ReadCurrent"
+         label .bulletin.bas.for_rec -text [lindex $Lbl(Pour) $GDefs(Lang)] -relief sunken -bd 1
+         menubutton .bulletin.bas.for -textvariable Bulletin::Bul(Date) -relief groove -menu .bulletin.bas.for.menu -relief sunken \
+            -bd 1 -bg $GDefs(ColorLight) -width 10
+         label .bulletin.bas.doing -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Bulletin::Bul(Doing) -anchor w
+         pack .bulletin.bas.current .bulletin.bas.for_rec .bulletin.bas.for -side left -fill y
+         pack .bulletin.bas.doing -side left -fill both -expand true
+      pack .bulletin.bas -side top -fill x -anchor s
+
+      Bubble::Create .bulletin.mid.frm.scrllist    [lindex $Bubble(List) $GDefs(Lang)]
+      Bubble::Create .bulletin.mid.t               [lindex $Bubble(Msg) $GDefs(Lang)]
+      Bubble::Create .bulletin.bas.current         [lindex $Bubble(Current) $GDefs(Lang)]
+      Bubble::Create .bulletin.bas.for             [lindex $Bubble(Date) $GDefs(Lang)]
+      Bubble::Create .bulletin.bas.doing           [lindex $Bubble(Bar) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.next     [lindex $Bubble(Forward) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.previous [lindex $Bubble(Backward) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.stop     [lindex $Bubble(Stop) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.searche.local   [lindex $Bubble(Local) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.global   [lindex $Bubble(Global) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.search.entry    [lindex $Bubble(Predicat) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.line       [lindex $Bubble(Line) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.poly       [lindex $Bubble(Poly) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.loc        [lindex $Bubble(Locate) $GDefs(Lang)]
+      Bubble::Create .bulletin.bar.draw.zoom       [lindex $Bubble(Zoom) $GDefs(Lang)]
+  }
+
+   #----- Initialiser l'evenement de blinking
+
+   set id [Bulletin::CommandToggle ".bulletin.mid.t tag configure found -background gray50 -foreground black " 300 \
+               ".bulletin.mid.t tag configure found -background $GDefs(ColorLight) -foreground black " 300]
+   # ----- Affiche le contenu du dernier fichier disponible.
+
+   Bulletin::InsertBull
+   Bulletin::DatesMenu
+}

@@ -1,0 +1,232 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Boite a Outils.
+# Fichier  : HFManager.int
+# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Permettre de gerer des fichiers sur diverses machines.
+#
+#===============================================================================
+
+proc HFManager::Window { } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Data
+   variable Param
+
+   set Data(Active) 1
+
+   if { ![winfo exists .hfman] } {
+
+      if { $Param(Dock) } {
+         frame .hfman
+         SPI::Dock .hfman
+      } else {
+         toplevel         .hfman
+         wm title         .hfman "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+         eval wm geometry .hfman $Param(Geom)
+         wm resizable     .hfman 1 1
+         wm protocol      .hfman WM_DELETE_WINDOW { HFManager::Close }
+      }
+
+      .hfman configure -menu .menubar
+
+      frame .hfman.menubar -bd 1 -relief raised
+         menubutton .hfman.menubar.file -text [lindex $Lbl(File) $GDefs(Lang)] -menu .hfman.menubar.file.menu -underline 0 -bd 1
+         pack .hfman.menubar.file -side left
+      pack .hfman.menubar -side top -fill x
+
+      menu .hfman.menubar.file.menu
+         .hfman.menubar.file.menu add command -label [lindex $Lbl(Open) $GDefs(Lang)] \
+            -command "HFManager::HostOpen"
+         .hfman.menubar.file.menu add command -label [lindex $Lbl(RefAll) $GDefs(Lang)] \
+            -command { foreach id $HFManager::Host(Ids) { HFManager::HostFiles $id } }
+         .hfman.menubar.file.menu add separator
+         .hfman.menubar.file.menu add command -label [lindex $Lbl(Quit) $GDefs(Lang)] -underline 0 \
+            -command "HFManager::Close"
+
+      panedwindow .hfman.host -orient vertical -opaqueresize True -relief raised -bd 1 -showhandle False -sashrelief raised
+      pack .hfman.host -side top -fill both -expand true
+   }
+
+   HFManager::HostRead
+   HFManager::HostSelect [HFManager::HostOpen] $GDefs(Host)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <HFManager::CreatePopup>
+# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer le menu de commande sur les fichiers.
+#
+# Parametres:
+#  <Id>     : Identificateur de la boite
+#
+# Retour    :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc HFManager::CreatePopup { Id } {
+   global GDefs
+   variable Lbl
+
+   if { [winfo exists .hfmanpopup$Id] } {
+      return
+   }
+
+   menu .hfmanpopup$Id -tearoff 0 -activeborderwidth 1 -bd 1
+
+   .hfmanpopup$Id add command -label [lindex $Lbl(Refresh) $GDefs(Lang)] -command "HFManager::HostFiles $Id"
+   .hfmanpopup$Id add cascade -label "Action" -menu .hfmanpopup$Id.action
+   .hfmanpopup$Id add separator
+   .hfmanpopup$Id add command -label [lindex $Lbl(Copy) $GDefs(Lang)]   -command "HFManager::FileCommand $Id COPY"
+   .hfmanpopup$Id add command -label [lindex $Lbl(Paste) $GDefs(Lang)]  -command "HFManager::FileCommand $Id PASTE"
+   .hfmanpopup$Id add command -label "[lindex $Lbl(Paste) $GDefs(Lang)] (tgz)"  -command "HFManager::FileCommand $Id PASTETGZ"
+   .hfmanpopup$Id add command -label "[lindex $Lbl(Paste) $GDefs(Lang)] (cmcarc)"  -command "HFManager::FileCommand $Id PASTECMC"
+   .hfmanpopup$Id add separator
+   .hfmanpopup$Id add command -label [lindex $Lbl(Open) $GDefs(Lang)] -command "HFManager::HostOpen"
+   .hfmanpopup$Id add command -label [lindex $Lbl(Close) $GDefs(Lang)] -command "HFManager::HostClose $Id"
+
+   menu .hfmanpopup$Id.action -tearoff 0 -activeborderwidth 1 -bd 1
+   .hfmanpopup$Id.action add command -label "chmod"  -command "HFManager::FileCommand $Id CHMOD"
+   .hfmanpopup$Id.action add command -label "chown"  -command "HFManager::FileCommand $Id CHOWN"
+   .hfmanpopup$Id.action add command -label "chgrp"  -command "HFManager::FileCommand $Id CHGRP"
+   .hfmanpopup$Id.action add separator
+   .hfmanpopup$Id.action add command -label "rm"     -command "HFManager::FileCommand $Id RM"
+   .hfmanpopup$Id.action add command -label "rmdir"  -command "HFManager::FileCommand $Id RMDIR"
+   .hfmanpopup$Id.action add command -label "rename" -command "HFManager::FileCommand $Id RENAME"
+   .hfmanpopup$Id.action add command -label "mkdir"  -command "HFManager::FileCommand $Id MKDIR"
+   .hfmanpopup$Id.action add separator
+   .hfmanpopup$Id.action add command -label "stat"   -command "HFManager::FileCommand $Id STAT"
+   .hfmanpopup$Id.action add separator
+   .hfmanpopup$Id.action add command -label "fstd open"   -command "HFManager::FileCommand $Id FSTD"
+
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <HFManager::CreateHost>
+# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer une fenetre dur un hote.
+#
+# Parametres:
+#  <Id>     : Identificateur de la boite
+#
+# Retour    :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc HFManager::CreateHost { Id } {
+   global GDefs
+   variable Host
+   variable Lbl
+   variable Bubble
+
+   set Host(Name$Id) ""
+   set Host(Path$Id) ""
+   set Host(File$Id) ""
+
+   frame .hfman.host.$Id
+
+      frame .hfman.host.$Id.host -relief raised -bd 1
+         label .hfman.host.$Id.host.lbl -text [lindex $Lbl(Host) $GDefs(Lang)]
+         ComboBox::Create .hfman.host.$Id.host.sel HFManager::Host(Name$Id) edit sorted double -1 $Host(List) 30 5 " HFManager::HostSelect $Id"
+         pack .hfman.host.$Id.host.lbl -side left -fill y
+         pack .hfman.host.$Id.host.sel -side left -fill x -expand true
+      pack .hfman.host.$Id.host -side top -fill x
+
+      frame .hfman.host.$Id.path -relief raised -bd 1
+         label .hfman.host.$Id.path.lbl -text [lindex $Lbl(Path) $GDefs(Lang)]
+         entry .hfman.host.$Id.path.wild -bd 1 -width 8 -bg $GDefs(ColorLight) -textvariable HFManager::Host(Wild$Id)
+         ComboBox::Create .hfman.host.$Id.path.sel HFManager::Host(Path$Id) edit sorted double -1 "" 30 5 "HFManager::HostFiles $Id"
+         button .hfman.host.$Id.path.save -image FOLDIN  -command "HFManager::HostPathSave $Id" -relief flat -bd 0 -overrelief raised
+         button .hfman.host.$Id.path.del -image FOLDOUT -command "HFManager::HostPathDel $Id" -relief flat -bd 0 -overrelief raised
+         pack .hfman.host.$Id.path.lbl .hfman.host.$Id.path.wild .hfman.host.$Id.path.sel -side left -fill y
+         pack .hfman.host.$Id.path.lbl -side left -fill y
+         pack .hfman.host.$Id.path.sel -side left -fill x -expand true
+         pack .hfman.host.$Id.path.save .hfman.host.$Id.path.del -side left -fill y
+      pack .hfman.host.$Id.path -side top -fill x
+
+      frame .hfman.host.$Id.file -relief raised -bd 1
+         label .hfman.host.$Id.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)]
+         frame .hfman.host.$Id.file.sel
+            listbox .hfman.host.$Id.file.sel.list -listvar HFManager::Host(File$Id) -relief sunken -bd 1 -bg $GDefs(ColorLight) \
+               -yscrollcommand ".hfman.host.$Id.file.sel.scroll set" -width 1 -height 5 -selectmode extended
+            scrollbar .hfman.host.$Id.file.sel.scroll -relief sunken -bd 1 -command ".hfman.host.$Id.file.sel.list yview" -width 10
+            pack .hfman.host.$Id.file.sel.list -side left -fill both -expand true
+            pack .hfman.host.$Id.file.sel.scroll -side left -fill y
+         pack .hfman.host.$Id.file.lbl  -side left -anchor n
+         pack .hfman.host.$Id.file.sel -side left -fill both -expand true
+      pack .hfman.host.$Id.file -side top -fill both -expand true
+
+      frame .hfman.host.$Id.info -relief raised -bd 1
+      pack .hfman.host.$Id.info -side top -fill x
+
+   HFManager::CreatePopup $Id
+
+   Bubble::Create .hfman.host.$Id.path.wild     [lindex $Bubble(Wild) $GDefs(Lang)]
+   Bubble::Create .hfman.host.$Id.host.sel      [lindex $Bubble(Host) $GDefs(Lang)]
+   Bubble::Create .hfman.host.$Id.path.sel      [lindex $Bubble(Path) $GDefs(Lang)]
+   Bubble::Create .hfman.host.$Id.path.save     [lindex $Bubble(Save) $GDefs(Lang)]
+   Bubble::Create .hfman.host.$Id.path.del      [lindex $Bubble(Del) $GDefs(Lang)]
+   Bubble::Create .hfman.host.$Id.file.sel.list [lindex $Bubble(File) $GDefs(Lang)]
+
+   bind .hfman.host.$Id.file.sel.list <ButtonPress-3>        "HFManager::FilePopup $Id %X %Y"
+   bind .hfman.host.$Id.file.sel.list <Double-ButtonPress-1> "HFManager::HostPath $Id %y"
+   bind .hfman.host.$Id.path.wild <Key-Return>               "HFManager::HostFiles $Id"
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <HFManager::GetInfo>
+# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer un champ de l'usager.
+#
+# Parametres:
+#  <Id>     : Identificateur de la boite
+#
+# Retour    :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc HFManager::GetInfo { Title Txt } {
+   global GDefs
+   variable Host
+   variable Lbl
+
+   set Host(QOk) 0
+
+   toplevel .hfmanq -relief raised -bd 1
+   wm title .hfmanq [lindex $Title $GDefs(Lang)]
+   wm geom  .hfmanq +[expr [winfo rootx .hfman]+10]+[expr [winfo rooty .hfman]+10]
+
+   frame .hfmanq.f -relief raised -bd 1
+      label  .hfmanq.lbl -text [lindex $Txt $GDefs(Lang)]
+      entry  .hfmanq.txt -relief sunken -width 20 -bd 1 -textvariable HFManager::Host(QInfo) -bg $GDefs(ColorLight)
+      button .hfmanq.ok  -text [lindex $Lbl(Do) $GDefs(Lang)] -command "set HFManager::Host(QOk) 1" -bd 1
+      button .hfmanq.cl  -text [lindex $Lbl(Dont) $GDefs(Lang)] -command "set HFManager::Host(QOk) 0" -bd 1
+      pack .hfmanq.lbl .hfmanq.txt .hfmanq.ok .hfmanq.cl -side left -fill y
+   pack .hfmanq.f -side top
+
+   grab .hfmanq
+   tkwait variable HFManager::Host(QOk)
+   destroy .hfmanq
+   update idletasks
+
+   if { $HFManager::Host(QOk) } {
+      return $HFManager::Host(QInfo)
+   } else {
+      return ""
+   }
+}

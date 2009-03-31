@@ -1,0 +1,31 @@
+#!/bin/sh
+
+ARCH=`uname -s`
+MAKE=make
+
+if [ $ARCH = "IRIX64" ]
+then
+   MAKE=gmake
+fi
+
+echo ""
+echo "----- Architecture Found : $ARCH -----"
+echo ""
+
+echo ""
+echo "----- Cleaning OpenGL Renderer Library  Object -----"
+echo ""
+cd TkglCanvas
+$MAKE clean
+
+echo ""
+echo "----- Cleaning EER Data Library Object -----"
+echo ""
+cd ../TclData
+$MAKE clean
+
+echo ""
+echo "----- MCleaning Tk Viewport Library Object -----"
+echo ""
+cd ../TkViewport
+$MAKE clean

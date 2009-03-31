@@ -1,0 +1,1 @@
+The Generic Polygon Clipper (GPC) has been develloped by Alan Murta at the University of Manchester and is free for non-commercial use.

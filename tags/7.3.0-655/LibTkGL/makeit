@@ -1,0 +1,31 @@
+#!/bin/sh
+
+ARCH=`uname -s`
+MAKE=make
+
+if [ $ARCH = "IRIX64" ]
+then
+   MAKE=gmake
+fi
+
+echo ""
+echo "----- Architecture Found : $ARCH -----"
+echo ""
+
+echo ""
+echo "----- Making OpenGL Canvas Library  Object -----"
+echo ""
+cd TkglCanvas
+$MAKE install
+
+echo ""
+echo "----- Making EER Data Library Object -----"
+echo ""
+cd ../TclData
+$MAKE install
+
+echo ""
+echo "----- Making Tk Viewport Library Object -----"
+echo ""
+cd ../TkViewport
+$MAKE install

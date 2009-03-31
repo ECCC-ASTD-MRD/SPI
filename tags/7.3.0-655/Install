@@ -1,0 +1,87 @@
+#!/bin/sh
+
+umask 022
+
+ipath=$1
+
+if [ $# = 0 ]
+then
+   echo "Error: You did not specify an installation path (ex: Install /software/cmc)"
+   exit 0
+fi
+
+if [ ! -d $ipath ]
+then
+   echo "Error: Installation path does not exist"
+   exit 0
+fi
+
+ver=7.3.0
+mach=`uname -n`
+arch=`uname`
+user=`whoami`
+path=$0
+path=${path%Install}
+
+echo "EER Installer for version $ver"
+
+echo ""
+echo "Host: $mach"
+echo "Arch: $arch"
+echo ""
+echo "Installing to: $ipath"
+echo ""
+
+if [ -d $ipath/eer_SPI-$ver ]
+then
+   echo "   Found previous installation, cleaning it up"
+   echo ""
+   rm -f -r $ipath/eer_SPI-$ver/* $ipath/eer_SPI-$ver/.*
+fi
+
+echo "   Copying data ..."
+echo ""
+if [ ! -d $ipath/eer_SPI-$ver ]
+then
+   mkdir $ipath/eer_SPI-$ver
+fi
+
+cp -Rp $path/eer_SPI/* $ipath/eer_SPI-$ver
+
+#----- Get the GDB path
+
+gdb=""
+while [ ${gdb}="" ]
+do
+   echo "Enter the geographical database (GDB) complete path (not relative): "
+   read gdb
+
+   if [ -d ${gdb}/data ]
+   then
+      break
+   else
+      gdb=""
+      echo "Wrong path, could not find the data"
+   fi
+done
+
+
+echo "   Creating setup script"
+echo ""
+
+sed -e 's,SED_GEOPATH,'${gdb}/data',g' $path/eer_SPI/Setup/Setup > $ipath/eer_SPI-$ver/Setup/Setup
+
+cd $ipath
+
+chmod -R a+r eer_SPI-$ver
+
+#----- Test the linking
+
+if [ $# -gt 1 ]
+then
+   echo "   Forcing linking"
+   cd $ipath/eer_SPI-$ver/Shared/$arch
+   sh=`ls -1 libTkglCanvas-*`
+   rm libTkglCanvas.so
+   ld -rpath=$ipath/eer_SPI-$ver/Shared/$arch/GL --allow-shlib-undefined -shared -o libTkglCanvas.so $sh
+fi
