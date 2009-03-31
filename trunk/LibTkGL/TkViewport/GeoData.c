@@ -1960,7 +1960,11 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
 
    Tk_FontMetrics tkm;
    Vect3d         pos,pix;
-   int            len,dx,dy;
+   int            len,dx,dy,x,y;
+
+   /*Translation deltas related to canvas/viewport location*/
+   x=(Proj->Params->VP->header.x1-((TkCanvas*)Proj->Params->VP->canvas)->xOrigin);
+   y=Tk_Height(((TkCanvas*)Proj->Params->VP->canvas)->tkwin)-(Proj->Params->VP->header.y1-((TkCanvas*)Proj->Params->VP->canvas)->yOrigin+Proj->Params->VP->Height);
 
    if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->Params->VP->tkfont || GLRender->Resolution>1)
       return;
@@ -2004,7 +2008,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             dx=Tk_TextWidth(Proj->Params->VP->tkfont,Txt->String,len);
 
             /*If clear, print the label*/
-            if (!glStencilMaskCheck(pix[0],pix[1],dx,dy,0x80)) {
+            if (!glStencilMaskCheck(pix[0]+x,pix[1]+y,dx,dy,0x80)) {
                if (Point) {
                   glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
                }
