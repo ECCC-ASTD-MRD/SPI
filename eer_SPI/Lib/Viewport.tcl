@@ -2029,10 +2029,13 @@ proc Viewport::Resolution { Frame Res } {
 
       if { $Res==1 } {
          foreach vp [Page::Registered $Frame Viewport] {
-            if { [info exists $Frame.page.canvas] } {
+puts stderr 2222233333
+            if { [winfo exists $Frame.page.canvas] } {
                $Frame.page.canvas itemconf $vp -update True
+puts stderr 33333
             }
          }
+puts stderr 3333344444
 
          if { [info exists Miniport::Data(Mini$Frame)] } {
             $Frame.page.canvas itemconf MINI$Frame -update True
