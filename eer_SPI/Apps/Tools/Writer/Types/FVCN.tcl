@@ -1028,7 +1028,13 @@ proc Writer::FVCN::LayoutInit { Pad } {
    bind $Pad.ash06   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh06$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::AshHourExtract $Pad 06 \[$Pad.ash06  get 0.0 end\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.ash12   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh12$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::AshHourExtract $Pad 12 \[$Pad.ash12  get 0.0 end\]; Writer::FVCN::UpdateGraphItems $Pad"
    bind $Pad.ash18   <Any-KeyRelease> "set Writer::FVCN::Data(HAsh18$Pad)   \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad; Writer::FVCN::AshHourExtract $Pad 18 \[$Pad.ash18  get 0.0 end\]; Writer::FVCN::UpdateGraphItems $Pad"
-   bind $Pad.remarks <Any-KeyRelease> "set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 [expr 256-[string length $Data(WWW)]]\] ; Writer::FVCN::PageInit $Pad"
+
+   bind $Pad.remarks <Any-KeyRelease> "if { \$Writer::FVCN::Data(Mode$Pad)==\"RET\" } {
+                                          set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 256\]
+                                       } else {
+                                          set Writer::FVCN::Data(HRemarks$Pad) \[Writer::TextExpand %W 47 [expr 256-[string length $Data(WWW)]]\]
+                                       }
+                                       Writer::FVCN::PageInit $Pad"
    bind $Pad.next    <Any-KeyRelease> "set Writer::FVCN::Data(HNext$Pad)    \[Writer::TextExpand %W 47\] ; Writer::FVCN::PageInit $Pad"
 
    #----- Menu d'options

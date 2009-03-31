@@ -443,15 +443,39 @@ proc Writer::TextExpand { Text Len { Max 0 } } {
    }
 
    set nb [lindex [split [$Text index end] .] 0]
-   set he 0
+   set he 1
 
    for { set i 1 } { $i <$nb } { incr i } {
       set len [lindex [split [$Text index $i.end] .] 1]
-      incr he [expr 1+int($len/$Len)]
+      set he [expr $he+double(($len-1)/$Len)]
    }
 
-   $Text configure -height $he
+   $Text configure -height [set he [expr int($he)]]
    return $he
+}
+
+proc Writer::TextExpandNew { Text Len { Max 0 } } {
+   variable Data
+
+   if { $Max } {
+      set text [$Text get 0.0 end]
+      set len  [string length $text]
+      if { $len>$Max } {
+         bell
+         set insert [$Text index insert]
+         $Text delete 0.0 end
+         $Text insert 0.0 [string range $text 0 [expr $Max-1]]
+         $Text mark set insert $insert
+      }
+   }
+         set insert [$Text index insert]
+
+   set he [llength [set txt [Writer::TextExtract word $Len "" $Text]]]
+   $Text configure -height $he
+   $Text delete 0.0 end
+   $Text insert 0.0 [join $txt \n]
+         $Text mark set insert $insert
+  return $he
 }
 
 #-------------------------------------------------------------------------------
