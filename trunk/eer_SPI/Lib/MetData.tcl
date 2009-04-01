@@ -612,20 +612,20 @@ proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
    set ni [expr int(ceil(($Lon1-$Lon0)/$DLon))]
    set nj [expr int(ceil(($Lat1-$Lat0)/$DLat))]
 
-   fstdfield create GRIDTIC $ni 1 1
-   fstdfield create GRIDTAC 1 $nj 1
+   fstdfield create GRIDLLTIC $ni 1 1
+   fstdfield create GRIDLLTAC 1 $nj 1
 
-   fstdfield define GRIDTIC -GRTYP L 0 0 1.0 1.0
-   fstdfield define GRIDTAC -GRTYP L 0 0 1.0 1.0
+   fstdfield define GRIDLLTIC -GRTYP L 0 0 1.0 1.0
+   fstdfield define GRIDLLTAC -GRTYP L 0 0 1.0 1.0
 
-   fstdfield define GRIDTIC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR ">>" -TYPVAR X
-   fstdfield define GRIDTAC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR "^^" -TYPVAR X
+   fstdfield define GRIDLLTIC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR ">>" -TYPVAR X
+   fstdfield define GRIDLLTAC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR "^^" -TYPVAR X
 
    #----- Compute tictic grid coordinates.
 
    set lon $Lon0
    for { set i 0 } { $i < $ni } { incr i } {
-      fstdfield stats GRIDTIC -gridvalue $i 0 $lon
+      fstdfield stats GRIDLLTIC -gridvalue $i 0 $lon
       set lon [expr $lon+$DLon]
    }
 
@@ -633,33 +633,15 @@ proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
 
    set lat $Lat0
    for { set j 0 } { $j < $nj } { incr j } {
-      fstdfield stats GRIDTAC -gridvalue 0 $j $lat
+      fstdfield stats GRIDLLTAC -gridvalue 0 $j $lat
       set lat [expr $lat+$DLat]
    }
 
-   #----- Write tictic and tactac fields.
+   fstdfield create GRIDLLMEM $ni $nj 1
+   fstdfield define GRIDLLMEM -ETIKET $ETIKET -NOMVAR "GRID" -TYPVAR X -IG1 0 -IG2 0 -IG3 0 -IG4 0 -GRTYP Z
+   fstdfield define GRIDLLMEM -positional GRIDLLTIC GRIDLLTAC
 
-   fstdfile open GRIDDEF write /tmp/[pid].fstd
-   fstdfield write GRIDTIC GRIDDEF -32 True
-   fstdfield write GRIDTAC GRIDDEF -32 True
-
-   fstdfield create NEW_GRID $ni $nj 1
-   fstdfield define NEW_GRID -ETIKET $ETIKET -NOMVAR "GRID" -TYPVAR X -IG1 0 -IG2 0 -IG3 0 -IG4 0 -GRTYP Z
-
-   #----- Write grid value field.
-
-   fstdfield write NEW_GRID GRIDDEF -32 True
-
-   #----- Close standard output file.
-
-   fstdfile close GRIDDEF
-
-   fstdfile open GRIDDEF read /tmp/[pid].fstd
-   fstdfield read GRID GRIDDEF -1 "" -1 -1 -1 "" GRID
-   fstdfile close GRIDDEF
-
-   file delete /tmp/[pid].fstd
-   return GRID
+   return GRIDLLMEM
 }
 
 #-------------------------------------------------------------------------------
