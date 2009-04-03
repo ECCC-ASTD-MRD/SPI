@@ -51,6 +51,9 @@ proc SPI::Splash { { Msg "" } } {
          wm geometry .splash +$x+$y
          pack .splash.img -side top -fill x
          pack .splash.info -side top -fill x -padx 2
+
+         wm withdraw .
+         update idletasks
       }
    } else {
       destroy .splash
@@ -276,6 +279,7 @@ proc SPI::Window { } {
    variable Bubble
 
    wm protocol   . WM_DELETE_WINDOW { SPI::Quit }
+   wm deiconify .
 
    label .active -image MOUSE -relief raised -bd 1
 
