@@ -2466,12 +2466,12 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    /*Verifier l'existence du champs*/
    if (!Field) {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    file=FSTD_FileGet(Interp,Id);
    if (FSTD_FileSet(Interp,file)<0)
-      return TCL_ERROR;
+      return(TCL_ERROR);
 
    head->FID=file;
    datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
@@ -2533,10 +2533,10 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 #endif
 
    if (ok>=0){
-      return TCL_OK;
+      return(TCL_OK);
    } else {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Could not write field (c_fstecr failed)",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 }
 
