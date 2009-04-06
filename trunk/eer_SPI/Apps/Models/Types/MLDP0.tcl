@@ -376,6 +376,8 @@ proc MLDP0::CreateMeteoInputFiles { } {
    #----- Create ASCII file containing list of meteorological files for RSMC response.
    if { $Sim(SrcType) == "accident" } {
 
+      set Sim(MeteoDataFilesRSMC) {}
+
       if { $Sim(Meteo) == "reg" } {
 
          if { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta" } {
@@ -385,11 +387,6 @@ proc MLDP0::CreateMeteoInputFiles { } {
             regsub -all "/fs/ops/cmo/eer/afse" $Sim(MeteoDataFiles) "/data/cmod8/afseeer" Sim(MeteoDataFilesRSMC)
          } elseif { $Sim(DBaseProg) == "/data/gridpt/dbase/prog/regeta" } {
             regsub -all "/regeta/" $Sim(MeteoDataFiles) "/regpres/" Sim(MeteoDataFilesRSMC)
-         } else {
-            set CurrentDir [pwd]
-            cd $Sim(LocalTmpDir)
-            file link [file tail $Sim(MetInputFileRSMC)] $Sim(MetInputFile)
-            cd $CurrentDir
          }
 
       } elseif { $Sim(Meteo) == "glb" } {
@@ -400,19 +397,16 @@ proc MLDP0::CreateMeteoInputFiles { } {
          } elseif { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/glbeta" } {
             regsub -all "/fs/ops/cmo/eer/afse" $Sim(MeteoDataFiles) "/data/cmod8/afseeer" Sim(MeteoDataFilesRSMC)
          } elseif { $Sim(DBaseProg) == "/data/gridpt/dbase/prog/glbeta" } {
-            regsub -all "/glbeta/" $Sim(MeteoDataFilesRSMC) "/glbpres/" Sim(MeteoDataFilesRSMC)
-         } else {
-            set CurrentDir [pwd]
-            cd $Sim(LocalTmpDir)
-            file link [file tail $Sim(MetInputFileRSMC)] $Sim(MetInputFile)
-            cd $CurrentDir
+            regsub -all "/glbeta/" $Sim(MeteoDataFiles) "/glbpres/" Sim(MeteoDataFilesRSMC)
          }
 
       }
 
-      set file [open $Sim(MetInputFileRSMC) w 0644]
-      puts $file $Sim(MeteoDataFilesRSMC)
-      close $file
+      if { [llength $Sim(MeteoDataFilesRSMC)] } {
+         set file [open $Sim(MetInputFileRSMC) w 0644]
+         puts $file $Sim(MeteoDataFilesRSMC)
+         close $file
+      }
 
    }
 
