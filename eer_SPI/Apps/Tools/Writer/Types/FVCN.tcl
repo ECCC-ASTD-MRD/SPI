@@ -1963,7 +1963,12 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
       return
    }
 
-   # ----- Ajustement le numero associe a l'entete FVCN du message.
+   if  { [string index $No end]=="-" || [string index $No end]=="=" } {
+      set No [string range $No 0 end-1]
+   }
+   puts stderr $No
+
+   #----- Ajustement le numero associe a l'entete FVCN du message.
 
    set Data(Lat$Writer::Data(Pad)) $Lat
    set Data(Lon$Writer::Data(Pad)) $Lon
