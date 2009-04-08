@@ -1963,10 +1963,10 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
       return
    }
 
+   #----- Trim last char if it is a - or =
    if  { [string index $No end]=="-" || [string index $No end]=="=" } {
       set No [string range $No 0 end-1]
    }
-   puts stderr $No
 
    #----- Ajustement le numero associe a l'entete FVCN du message.
 
