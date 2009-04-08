@@ -369,6 +369,7 @@ proc MLDP0::CreateMeteoInputFiles { } {
    Debug::TraceProc "MLDP0: Creating meteorological input files."
 
    #----- Create ASCII file containing list of meteorological files.
+   file delete -force $Sim(MetInputFile)
    set file [open $Sim(MetInputFile) w 0644]
    puts $file $Sim(MeteoDataFiles)
    close $file
@@ -376,41 +377,41 @@ proc MLDP0::CreateMeteoInputFiles { } {
    #----- Create ASCII file containing list of meteorological files for RSMC response.
    if { $Sim(SrcType) == "accident" } {
 
-      set Sim(MeteoDataFilesRSMC) {}
+      if { [regexp "/gridpt/" $Sim(DBaseProg)] && [regexp "/gridpt/" $Sim(DBaseDiag)] } {
 
-      if { $Sim(Meteo) == "reg" } {
+         set Sim(MeteoDataFilesRSMC) {}
 
-         if { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta" } {
-            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles)     "/data"     Sim(MeteoDataFilesRSMC)
-            regsub -all "/regeta/"    $Sim(MeteoDataFilesRSMC) "/regpres/" Sim(MeteoDataFilesRSMC)
-         } elseif { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta" } {
-            regsub -all "/fs/ops/cmo/eer/afse" $Sim(MeteoDataFiles) "/data/cmod8/afseeer" Sim(MeteoDataFilesRSMC)
-         } elseif { $Sim(DBaseProg) == "/data/gridpt/dbase/prog/regeta" } {
-            regsub -all "/regeta/" $Sim(MeteoDataFiles) "/regpres/" Sim(MeteoDataFilesRSMC)
+         if { $Sim(Meteo) == "reg" } { #----- Regional NWP met model.
+
+            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles)     "/data"      Sim(MeteoDataFilesRSMC)
+            regsub -all "/regeta/"    $Sim(MeteoDataFilesRSMC) "/regpres/"  Sim(MeteoDataFilesRSMC)
+            regsub -all "/reghyb/"    $Sim(MeteoDataFilesRSMC) "/regpres/"  Sim(MeteoDataFilesRSMC)
+            regsub -all "/regeta2/"   $Sim(MeteoDataFilesRSMC) "/regpres2/" Sim(MeteoDataFilesRSMC)
+            regsub -all "/reghyb2/"   $Sim(MeteoDataFilesRSMC) "/regpres2/" Sim(MeteoDataFilesRSMC)
+
+         } elseif { $Sim(Meteo) == "glb" } { #----- Global NWP met model.
+
+            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles)     "/data"      Sim(MeteoDataFilesRSMC)
+            regsub -all "/glbeta/"    $Sim(MeteoDataFilesRSMC) "/glbpres/"  Sim(MeteoDataFilesRSMC)
+            regsub -all "/glbhyb/"    $Sim(MeteoDataFilesRSMC) "/glbpres/"  Sim(MeteoDataFilesRSMC)
+            regsub -all "/glbeta2/"   $Sim(MeteoDataFilesRSMC) "/glbpres2/" Sim(MeteoDataFilesRSMC)
+            regsub -all "/glbhyb2/"   $Sim(MeteoDataFilesRSMC) "/glbpres2/" Sim(MeteoDataFilesRSMC)
+
          }
 
-      } elseif { $Sim(Meteo) == "glb" } {
-
-         if { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta" } {
-            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles)     "/data"     Sim(MeteoDataFilesRSMC)
-            regsub -all "/glbeta/"    $Sim(MeteoDataFilesRSMC) "/glbpres/" Sim(MeteoDataFilesRSMC)
-         } elseif { $Sim(DBaseProg) == "$Sim(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/glbeta" } {
-            regsub -all "/fs/ops/cmo/eer/afse" $Sim(MeteoDataFiles) "/data/cmod8/afseeer" Sim(MeteoDataFilesRSMC)
-         } elseif { $Sim(DBaseProg) == "/data/gridpt/dbase/prog/glbeta" } {
-            regsub -all "/glbeta/" $Sim(MeteoDataFiles) "/glbpres/" Sim(MeteoDataFilesRSMC)
+         if { [llength $Sim(MeteoDataFilesRSMC)] } {
+            file delete -force $Sim(MetInputFileRSMC)
+            set file [open $Sim(MetInputFileRSMC) w 0644]
+            puts $file $Sim(MeteoDataFilesRSMC)
+            close $file
          }
 
-      }
-
-      if { [llength $Sim(MeteoDataFilesRSMC)] } {
-         set file [open $Sim(MetInputFileRSMC) w 0644]
-         puts $file $Sim(MeteoDataFilesRSMC)
-         close $file
       }
 
    }
 
    #----- Create trace information output file.
+   file delete -force $Sim(TraceInfoFile)
    set file [open $Sim(TraceInfoFile) w 0644]
    set    TraceInfo "$Sim(InfoMet)"
    append TraceInfo "$Sim(InfoLaunch)"
@@ -2054,7 +2055,7 @@ proc MLDP0::LaunchJob { } {
    set Sim(State) 2
    Info::Set $Sim(PoolFileExp) [Info::Code ::MLDP0::Sim $Sim(Info) :]
 
-   if { $Sim(SrcType) == "accident" } {
+   if { $Sim(SrcType) == "accident" && [file exists $Sim(MetInputFileRSMC)] } {
       #----- Launch meteorological fields script for RSMC response.
       Debug::TraceProc "MLDP0: Launching RSMC meteorological fields script on local host ($GDefs(Host))."
 
