@@ -959,7 +959,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
       set date0   [lindex [lindex $parcels 0]   0]
       set date1   [lindex [lindex $parcels end] 0]
       set color   [trajectory configure $t -color]
-      set size    [expr [trajectory configure $t -size]+[trajectory configure $t -width]]
+      set size    [trajectory configure $t -size]
       set icon    [trajectory configure $t -icon]
       set mark    [expr int([trajectory configure $t -mark]/3600)]
       set inter   [expr int([trajectory configure $t -intervals]/3600)]
@@ -996,7 +996,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
 
                if { $size>0 && $icon!="NONE"} {
                   if { $mark && [expr (($mark==24 && $hour==0) || $hour%$mark==0)] } {
-                     Shape::Draw$icon $canvas "[expr $X1-10] $y" "TRAJHEIGHT" $color $size 1
+                     Shape::Draw$icon $canvas "[expr $X1-10] $y" "TRAJHEIGHT" $color 4 1
                   }
                }
             } else {
@@ -1172,8 +1172,7 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
       set parcel [trajectory define $t -PARCEL 0]
       set color  [trajectory configure $t -color]
       set shape  [trajectory configure $t -icon]
-      set size   [expr [trajectory configure $t -size]+[trajectory configure $t -width]]
-      set width  [trajectory configure $t -width]
+      set size   [trajectory configure $t -size]
       set Pixel1 "$str $y"
       set Pixel2 "$end $y"
 
@@ -1183,11 +1182,11 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
          set lbl [format "%.2f" [lindex $parcel 5]]
       }
 
-      $canvas create line $str $y $end $y -fill $color -width $width -tag "TRAJLEGEND"
+      $canvas create line $str $y $end $y -fill $color -width 1 -tag "TRAJLEGEND"
 
       if { $size>0 } {
-         Shape::Draw$shape $canvas $Pixel1 "TRAJLEGEND" $color $size 0
-         Shape::Draw$shape $canvas $Pixel2 "TRAJLEGEND" $color $size 0
+         Shape::Draw$shape $canvas $Pixel1 "TRAJLEGEND" $color 4 0
+         Shape::Draw$shape $canvas $Pixel2 "TRAJLEGEND" $color 4 0
       }
 
       $canvas create text [expr $end+8] [expr $y+1] -text "$lbl $txt_elev" -font XFont10 -tags TRAJLEGEND -fill $color -anchor w
