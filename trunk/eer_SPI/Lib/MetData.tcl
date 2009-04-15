@@ -206,6 +206,7 @@ proc MetData::GetLatestStamp { Path } {
 #
 # Parametres :
 #  <Files>   : Liste des fichiers
+#  <Mixed>   : Mode mixte possible
 #
 # Retour     :
 #  <Mode>    : mode (prog, diag ou mixte)
@@ -214,7 +215,7 @@ proc MetData::GetLatestStamp { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc MetData::GetMode { Files } {
+proc MetData::GetMode { Files { Mixed True } } {
 
    #----- Count number of diagnostics and prognostics met files.
    set trials 0
@@ -233,7 +234,7 @@ proc MetData::GetMode { Files } {
 
    #----- Figure out mode.
    if { $trials } {
-      if { $progs } {
+      if { $progs && $Mixed } {
          return "mixte"
       } else {
          return "diag"
