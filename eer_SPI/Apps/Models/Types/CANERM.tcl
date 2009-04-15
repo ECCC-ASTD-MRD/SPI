@@ -411,7 +411,7 @@ proc CANERM::SimGetData { } {
    set dacc [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
 
    set Sim(Data) [MetData::File $dacc $Sim(DBaseDiag) $Sim(DBaseProg) F 0 $Sim(Delta)]
-   set Sim(Mode) [MetData::GetMode $Sim(Data)]
+   set Sim(Mode) [MetData::GetMode $Sim(Data) False]
 
    if { $Sim(Mode)=="diag" } {
       set Sim(Delta) 6
