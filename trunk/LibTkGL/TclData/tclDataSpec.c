@@ -235,6 +235,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,ZTYPE,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE };
 
+   if (!Spec) {
+      Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
    if (Objc==1)  s=0;
 
    for(i=0;i<Objc;i++) {
@@ -690,7 +695,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->InterO=102;
                } else {
                   Tcl_AppendResult(Interp,"DataSpec_Config: wrong value, must be [ AUTO | INTEGER | FLOAT | EXPONENTIAL ]",(char*) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->InterM);
                if (Spec->InterM>0)
@@ -706,7 +711,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],INTERS,"mode",0,&new)!=TCL_OK) {
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
 
@@ -728,24 +733,23 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
+               if (nobj>DATASPEC_MAX) {
+                  Tcl_AppendResult(Interp,"DataSpec_Config: too many levels, maximum is DATASPEC_MAX",(char*) NULL);
+                  return(TCL_ERROR);
+               }
 
                /*Determine si ils sont nouveaux*/
                new=0;
                for (ii=0;ii<nobj;ii++){
                   Tcl_ListObjIndex(Interp,Objv[i],ii,&obj);
                   Tcl_GetDoubleFromObj(Interp,obj,&tmp);
-                  if (((float)(SPEC2VAL(Spec,tmp)))!=Spec->Inter[ii]) {
-                      new=1;
-                      break;
+                  tmp=SPEC2VAL(Spec,tmp);
+                  if (nobj!=Spec->InterNb || tmp!=Spec->Inter[ii]) {
+                     new=1;
+                     Spec->Inter[ii]=tmp;
                   }
                }
-
-               if (nobj!=Spec->InterNb || new) {
-                  for (ii=0;ii<nobj;ii++){
-                     Tcl_ListObjIndex(Interp,Objv[i],ii,&obj);
-                     Tcl_GetDoubleFromObj(Interp,obj,&tmp);
-                     Spec->Inter[ii]=SPEC2VAL(Spec,tmp);
-                  }
+               if (new) {
                   Spec->InterNb=nobj;
                   DataSpec_Clean(Spec,1,0,1);
                }
