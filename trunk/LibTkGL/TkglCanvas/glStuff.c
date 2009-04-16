@@ -1113,6 +1113,7 @@ void DashPrint(char *String,Tk_Dash *Dash) {
       memcpy(String,p,(unsigned int)i);
       String[i]=0;
    } else if (!i) {
+      String[0]='\0';
       return;
    }
    p=(i>sizeof(char*))?Dash->pattern.pt:Dash->pattern.array;
