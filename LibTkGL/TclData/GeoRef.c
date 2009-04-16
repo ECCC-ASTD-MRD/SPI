@@ -46,14 +46,26 @@ TGeoScan GScan;
 
 int GeoRef_Init(Tcl_Interp *Interp) {
 
-   Tcl_InitHashTable(&GeoRef_Table,TCL_STRING_KEYS);
    Tcl_CreateObjCommand(Interp,"georef",GeoRef_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
    if (!GeoRefInit++) {
+      Tcl_InitHashTable(&GeoRef_Table,TCL_STRING_KEYS);
       TGeoRef_TableNo=1;
    }
 
    return(TCL_OK);
+}
+
+void GeoRef_Incr(TGeoRef *Ref) {
+   Tcl_MutexLock(&MUTEX_GEOREF);
+   Ref->NRef++;
+   Tcl_MutexUnlock(&MUTEX_GEOREF);
+}
+
+void GeoRef_Decr(TGeoRef *Ref) {
+   Tcl_MutexLock(&MUTEX_GEOREF);
+   Ref->NRef--;
+   Tcl_MutexUnlock(&MUTEX_GEOREF);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -150,6 +162,10 @@ void GeoScan_Clear(TGeoScan *Scan) {
    if (Scan->Y) free(Scan->Y);
    if (Scan->V) free(Scan->V);
 
+   if (Scan->ToRef)   GeoRef_Free(Scan->ToRef);
+   if (Scan->FromRef) GeoRef_Free(Scan->FromRef);
+
+   Scan->FromRef=Scan->ToRef=NULL;
    Scan->X=Scan->Y=NULL;
    Scan->V=NULL;
 }
@@ -282,7 +298,7 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TeoRef_Cmd>
+ * Nom          : <GeoRef_Cmd>
  * Creation     : Juillet 2005 J.P. Gauthier - CMC/CMOE
  *
  * But          : Effectuer les commandes du package
@@ -846,12 +862,12 @@ int GeoRef_Destroy(Tcl_Interp *Interp,char *Name) {
    TGeoRef       *ref;
 
    if (Name) {
-      entry=Tcl_FindHashEntry(&GeoRef_Table,Name);
+      entry=TclY_FindHashEntry(&GeoRef_Table,Name);
 
       if (entry) {
          ref=(TGeoRef*)Tcl_GetHashValue(entry);
          if (GeoRef_Free(ref))
-            Tcl_DeleteHashEntry(entry);
+            TclY_DeleteHashEntry(entry);
       }
    }
    return(TCL_OK);
@@ -1124,6 +1140,8 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
       Ref=GeoRef_New();
    }
 
+   TclY_LockHash();
+
    /*Look for an already existing object that could match*/
    entry=Tcl_FirstHashEntry(&GeoRef_Table,&ptr);
 
@@ -1136,10 +1154,12 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 #endif
          GeoRef_Free(Ref);
          GeoRef_Incr(ref);
+         TclY_UnlockHash();
          return(ref);
       }
       entry=Tcl_NextHashEntry(&ptr);
    }
+   TclY_UnlockHash();
 
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) GeoRef_Find: New georef\n");

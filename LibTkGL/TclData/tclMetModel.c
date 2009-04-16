@@ -193,7 +193,7 @@ static int MetModel_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case WIPE:
-         MetModel_Wipe();
+         TclY_HashWipe(&MetModelTable,(TclY_HashFreeEntryDataFunc*)MetModel_Free);
          break;
    }
    return TCL_OK;
@@ -413,14 +413,14 @@ int MetModel_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    Tcl_HashEntry *entry;
 
-   entry=Tcl_FindHashEntry(&MetModelTable,Name);
+   entry=TclY_FindHashEntry(&MetModelTable,Name);
 
    if(!entry) {
       Tcl_AppendResult(Interp,"\n   MetModel_FreeHash:  Observation name unknown: \"",Name,"\"",(char*)NULL);
       return TCL_ERROR;
    } else {
       if (MetModel_Free((TMetModel*)Tcl_GetHashValue(entry))) {
-         Tcl_DeleteHashEntry(entry);
+         TclY_DeleteHashEntry(entry);
       }
    }
    return TCL_OK;
@@ -461,34 +461,4 @@ int MetModel_Free(TMetModel *Model) {
    free(Model);
 
   return(1);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <MetModel_Wipe>
- * Creation : Juin 2006 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void MetModel_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&MetModelTable,&ptr);
-
-   while (entry) {
-      MetModel_Free((TMetModel*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&MetModelTable,&ptr);
-   }
-
-   Tcl_DeleteHashTable(&MetModelTable);
 }

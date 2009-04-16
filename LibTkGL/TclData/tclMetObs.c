@@ -238,7 +238,8 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case WIPE:
-         MetObs_Wipe();
+         TclY_HashWipe(&MetObsTable,(TclY_HashFreeEntryDataFunc*)MetObs_Free);
+         TclY_HashWipe(&MetRepTable,(TclY_HashFreeEntryDataFunc*)TMetElemData_Free);
    }
    return(TCL_OK);
 }
@@ -2826,45 +2827,6 @@ static int MetObs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
       }
    }
    return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <MetObs_Wipe>
- * Creation : Juin 2006 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void MetObs_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&MetObsTable,&ptr);
-
-   while (entry) {
-      MetObs_Free((TMetObs*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&MetObsTable,&ptr);
-   }
-
-   entry=Tcl_FirstHashEntry(&MetRepTable,&ptr);
-
-   while (entry) {
-      TMetElemData_Free((TMetElemData*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&MetRepTable,&ptr);
-   }
-
-   Tcl_DeleteHashTable(&MetRepTable);
-   Tcl_DeleteHashTable(&MetObsTable);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

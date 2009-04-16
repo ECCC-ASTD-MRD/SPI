@@ -40,6 +40,7 @@
 #include "tcl3DModel.h"
 
 static Tcl_HashTable ModelTable;
+static int ModelInit=0;
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_Cmd>
@@ -850,7 +851,9 @@ void Model_ObjFree(T3DObject *Obj) {
 */
 int Model_Init(Tcl_Interp *Interp) {
 
-   Tcl_InitHashTable(&ModelTable,TCL_STRING_KEYS);
+   if (!ModelInit++) {
+      Tcl_InitHashTable(&ModelTable,TCL_STRING_KEYS);
+   }
    Tcl_CreateObjCommand(Interp,"model",Model_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
    return(TCL_OK);

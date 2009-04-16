@@ -386,7 +386,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          break;
 
       case WIPE:
-         Vector_Wipe();
+         TclY_HashWipe(&VectorTable,(TclY_HashFreeEntryDataFunc*)Vector_Free);
    }
    return(TCL_OK);
 }
@@ -540,7 +540,7 @@ int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
    int            new,i;
    char           buf[256];
 
-   entry=Tcl_CreateHashEntry(&VectorTable,Name,&new);
+   entry=TclY_CreateHashEntry(&VectorTable,Name,&new);
 
    if (!new) {
       vec=(TVector*)Tcl_GetHashValue(entry);
@@ -1265,35 +1265,4 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
       Vec->N+=nobj;
    }
    return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Vector_Wipe>
- * Creation : Fevrier 2005 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Vector_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&VectorTable,&ptr);
-
-   while (entry) {
-      Vector_Free((TVector*)Tcl_GetHashValue(entry));
-      free((TVector*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&VectorTable,&ptr);
-   }
-
-   Tcl_DeleteHashTable(&VectorTable);
 }

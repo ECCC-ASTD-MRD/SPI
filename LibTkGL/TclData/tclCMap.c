@@ -206,7 +206,7 @@ int CMap_Create(Tcl_Interp *Interp,char *Name){
    int           new;
 
    /*Allouer l'espace pour la structure*/
-   entry=Tcl_CreateHashEntry(&CMapTable,Name,&new);
+   entry=TclY_CreateHashEntry(&CMapTable,Name,&new);
    if (!new) {
       Tcl_AppendResult(Interp,"\n   CMap_Create: Colormap name already used: \"",Name, "\"",(char *)NULL);
       return TCL_ERROR;
@@ -222,7 +222,7 @@ int CMap_Create(Tcl_Interp *Interp,char *Name){
    Tcl_SetHashValue(entry,cmap);
    Tcl_SetObjResult(Interp,Tcl_NewStringObj(Name,-1));
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

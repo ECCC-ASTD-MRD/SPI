@@ -38,6 +38,8 @@
 #include "tclData.h"
 #include "tclGDAL.h"
 
+TCL_DECLARE_MUTEX(MUTEX_DATASPEC)
+
 static Tcl_HashTable TDataSpec_Table;
 static int           TDataSpecInit=0;
 static long          TDataSpecNo=0;
@@ -190,7 +192,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case WIPE:
-         DataSpec_Wipe();
+         TclY_HashWipe(&TDataSpec_Table,(TclY_HashFreeEntryDataFunc*)DataSpec_Free);
          break;
    }
    return TCL_OK;
@@ -245,7 +247,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
@@ -315,7 +317,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(VECTORS[Spec->RenderVector],-1));
             } else {
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",0,&Spec->RenderVector)!=TCL_OK) {
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
             }
             break;
@@ -440,7 +442,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->InterpDegree=(char*)strdup(Tcl_GetString(Objv[i]));
                } else {
                   Tcl_AppendResult(Interp,Interp,"DataSpec_Config: (-interpdegree) wrong value, must be \" NEAREST | LINEAR | CUBIC \" ",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
             }
             break;
@@ -454,7 +456,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->ExtrapDegree=(char*)strdup(Tcl_GetString(Objv[i]));
                } else {
                   Tcl_AppendResult(Interp,Interp,"DataSpec_Config: (-extrapdegree) wrong value, must be \" NEUTRAL | MAXIMUM | MINIMUM | VALUE | ABORT \" ",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
             }
             break;
@@ -808,7 +810,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_ListObjLength(Interp,Objv[++i],&n);
                if (n<6) {
                   Tcl_AppendResult(Interp,"DataSpec_Config: wrong value number of coordinates",(char*) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
                Tcl_GetIntFromObj(Interp,obj,&Spec->Cube[0]);
@@ -1029,14 +1031,18 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
    int            new;
 
   if (!Name) {
+      Tcl_MutexLock(&MUTEX_DATASPEC);
       sprintf(buf,"DATASPEC_____%li",TDataSpecNo++);
+      Tcl_MutexUnlock(&MUTEX_DATASPEC);
       Name=buf;
    }
-   entry=Tcl_CreateHashEntry(&TDataSpec_Table,Name,&new);
+   entry=TclY_CreateHashEntry(&TDataSpec_Table,Name,&new);
 
    if (!new) {
       Tcl_AppendResult(Interp,"\n   DataSpec_Create: Configuration object name already used: \"",Name, "\"",(char*)NULL);
-      ((TDataSpec*)Tcl_GetHashValue(entry))->NRef++;
+      Tcl_MutexLock(&MUTEX_DATASPEC);
+     ((TDataSpec*)Tcl_GetHashValue(entry))->NRef++;
+      Tcl_MutexUnlock(&MUTEX_DATASPEC);
       return((TDataSpec*)Tcl_GetHashValue(entry));
    }
 
@@ -1091,14 +1097,14 @@ int DataSpec_FreeHash(Tcl_Interp *Interp,char *Name) {
 
    Tcl_HashEntry *entry;
 
-   entry=Tcl_FindHashEntry(&TDataSpec_Table,Name);
+   entry=TclY_FindHashEntry(&TDataSpec_Table,Name);
 
    if (!entry) {
       Tcl_AppendResult(Interp,"\n   DataSpec_FreeHash:  Configuration object name unknown: \"",Name,"\"",(char*)NULL);
       return(TCL_ERROR);
    } else {
       if (DataSpec_Free((TDataSpec*)Tcl_GetHashValue(entry))) {
-         Tcl_DeleteHashEntry(entry);
+         TclY_DeleteHashEntry(entry);
       }
    }
    return TCL_OK;
@@ -1367,9 +1373,12 @@ TDataSpec *DataSpec_New(){
 */
 int DataSpec_Free(TDataSpec *Spec){
 
+  Tcl_MutexLock(&MUTEX_DATASPEC);
   if (!Spec || --Spec->NRef) {
+      Tcl_MutexUnlock(&MUTEX_DATASPEC);
       return(0);
    }
+   Tcl_MutexUnlock(&MUTEX_DATASPEC);
 
    if (Spec->Name)        free(Spec->Name);
    if (Spec->ZType)       free(Spec->ZType);
@@ -1641,36 +1650,6 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
       default: sprintf(Str,"%.0f",rint(Val));
          break;
    }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <DataSpec_Wipe>
- * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void DataSpec_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&TDataSpec_Table,&ptr);
-
-   while (entry) {
-      DataSpec_Free((TDataSpec*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&TDataSpec_Table,&ptr);
-   }
-
-   Tcl_DeleteHashTable(&TDataSpec_Table);
 }
 
 /*----------------------------------------------------------------------------

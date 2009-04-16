@@ -87,8 +87,6 @@
 
 #define GeoRef_ScanX(X) (((float*)GeoScanX)[X]-1.0)
 #define GeoRef_ScanY(X) (((float*)GeoScanY)[X]-1.0)
-#define GeoRef_Incr(R)  (R->NRef++);
-#define GeoRef_Decr(R)  (R->NRef--);
 
 /*Structure pour les coordonees latlon*/
 typedef struct Coord {
@@ -176,6 +174,8 @@ typedef struct TGeoScan {
 
 TGeoRef* GeoRef_Get(char *Name);
 Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref);
+void     GeoRef_Incr(TGeoRef *Ref);
+void     GeoRef_Decr(TGeoRef *Ref);
 int      GeoRef_Destroy(Tcl_Interp *Interp,char *Name);
 int      GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 int      GeoRef_Within(TGeoRef *Ref0,TGeoRef *Ref1);

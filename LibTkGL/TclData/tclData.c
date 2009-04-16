@@ -163,8 +163,8 @@ int Data_FreeHash(Tcl_Interp *Interp,char *Name) {
    TData *data;
 
    if ((data=(TData*)TclY_HashDel(&TData_Table,Name))) {
-      Data_Free(data);
       DataSpec_FreeHash(Interp,data->Spec->Name);
+      Data_Free(data);
    }
    return(TCL_OK);
 }
@@ -215,7 +215,7 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
    Tcl_HashEntry  *entry;
    int             new;
 
-   entry=Tcl_CreateHashEntry(&TData_Table,Name,&new);
+   entry=TclY_CreateHashEntry(&TData_Table,Name,&new);
 
    if (!new) {
       Tcl_AppendResult(Interp,"Data_GetShell: Field already exist",(char *)NULL);
@@ -366,13 +366,13 @@ int Data_Free(TData *Field) {
 
       free(Field);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 
-   TData     *field;
-   int        i;
+   TData *field;
+   int    i;
 
    if (!Field)
       return(NULL);
@@ -394,7 +394,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
       field=Data_Valid(Interp,Name,0,0,0,0,Field->Def->Type);
    }
 
-   if (!field)
+  if (!field)
       return(NULL);
 
    /*Copier le champs par bloc de memoire*/
@@ -402,15 +402,19 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    Field->Copy(field->Head,Field->Head);
 
    field->Ref=GeoRef_Copy(Field->Ref);
-   field->Spec->Map=Field->Spec->Map;
 
-  if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
-   if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);
+   if (field->Spec && Field->Spec) {
+      field->Spec->Map=Field->Spec->Map;
+
+      if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
+      if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);
+   }
 
    if (Def) {
       for(i=0;i<4;i++) {
-         if (Field->Def->Data[i])
-            memcpy(field->Def->Data[i],Field->Def->Data[i],FSIZE3D(Field->Def)*sizeof(float));
+         if (Field->Def->Data[i]) {
+            memcpy(field->Def->Data[i],Field->Def->Data[i],FSIZE3D(field->Def)*TData_Size[field->Def->Type]);
+         }
       }
    }
    return(field);
@@ -648,7 +652,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
    Tcl_HashEntry  *entry;
    int             new,i;
 
-   entry=Tcl_CreateHashEntry(&TData_Table,Name,&new);
+   entry=TclY_CreateHashEntry(&TData_Table,Name,&new);
 
    if (!new) {
       field=(TData*)Tcl_GetHashValue(entry);
@@ -818,18 +822,7 @@ int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoR
  *----------------------------------------------------------------------------
 */
 void Data_Wipe() {
-
-   Tcl_HashSearch  ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
-
-   while (entry) {
-      Data_Free((TData*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
-   }
-//   Tcl_DeleteHashTable(&TData_Table);
+   TclY_HashWipe(&TData_Table,(TclY_HashFreeEntryDataFunc*)Data_Free);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -925,6 +918,7 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
    Tcl_HashSearch  ptr;
    Tcl_HashEntry  *entry=NULL;
 
+   TclY_LockHash();
    entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
    while (entry) {
       data=Tcl_GetHashValue(entry);
@@ -934,6 +928,7 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
       }
       entry=Tcl_NextHashEntry(&ptr);
    }
+   TclY_UnlockHash();
 }
 
 void Data_Clean(TData *Data,int Map,int Pos,int Seg){
@@ -1217,7 +1212,7 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
-            Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*sizeof(float));
+            Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*TData_Size[Def->Type]);
             if (!Def->Data[i]) {
                free(Def);
                return(NULL);
@@ -1616,7 +1611,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex;
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
-   float    val,val1,levels[1024];
+   float    val,val1,*levels;
    char     buf[32];
 
    extern Vect3d GDB_VBuf[];
@@ -2115,13 +2110,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_AppendResult(Interp,"Data_Stat: Too many levels",(char*)NULL);
                   return(TCL_ERROR);
                }
-               for (index=0;index<nobj;index++) {
+               if (!(levels=(float*)malloc(nobj*sizeof(float)))) {
+                  Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate level buffer",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               for(index=0;index<nobj;index++) {
                   Tcl_ListObjIndex(Interp,Objv[i],index,&obj);
                   Tcl_GetDoubleFromObj(Interp,obj,&dv);
                   levels[index]=dv;
                }
                ((FSTD_Head*)Field->Head)->IP1=-1;
                Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->LevelType:LVL_UNDEF),levels);
+               free(levels);
             }
             break;
 
