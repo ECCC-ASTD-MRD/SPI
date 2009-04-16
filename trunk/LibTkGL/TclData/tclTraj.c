@@ -214,7 +214,7 @@ static int Traj_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
          break;
 
       case WIPE:
-         Traj_Wipe();
+         TclY_HashWipe(&TrajTable,(TclY_HashFreeEntryDataFunc*)Traj_Free);
    }
    return TCL_OK;
 }
@@ -1115,35 +1115,4 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
    glDisable(GL_DEPTH_TEST);
 
    return(1);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Traj_Wipe>
- * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Traj_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&TrajTable,&ptr);
-
-   while (entry) {
-      /*Because of the data sharing with the Traj model, dont Free the data*/
-//      Traj_Free((TTraj*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&TrajTable,&ptr);
-   }
-
-   Tcl_DeleteHashTable(&TrajTable);
 }

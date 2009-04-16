@@ -96,15 +96,7 @@ int TclOGR_Init(Tcl_Interp *Interp) {
 */
 OGRGeometryH* OGR_GeometryGet(char *Name) {
 
-   Tcl_HashEntry *entry;
-
-   /* Recherche du nom dans la table */
-   entry=Tcl_FindHashEntry(&OGR_GeometryTable,Name);
-
-   if (!entry)
-      return(NULL);
-
-   return((OGRGeometryH)Tcl_GetHashValue(entry));
+   return((OGRGeometryH)TclY_HashGet(&OGR_GeometryTable,Name));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -617,7 +609,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case WIPE:
-         OGR_Wipe();
+         TclY_HashWipe(&OGR_LayerTable,(TclY_HashFreeEntryDataFunc*)OGR_LayerFree);
+         TclY_HashWipe(&OGR_GeometryTable,(TclY_HashFreeEntryDataFunc*)OGR_G_DestroyGeometry);
          break;
    }
    return TCL_OK;
@@ -970,18 +963,14 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
 */
 OGR_File* OGR_FileGet(Tcl_Interp *Interp,char *Id){
 
-   Tcl_HashEntry *entry;
+   OGR_File *file;
 
-   if (Id && strlen(Id)>0) {
-      entry=Tcl_FindHashEntry(&OGR_FileTable,Id);
-      if (!entry) {
-        if (Interp) Tcl_AppendResult(Interp,"OGR_FileGet: Unknown file",(char *)NULL);
-        return(NULL);
-      } else {
-         return((OGR_File*)(Tcl_GetHashValue(entry)));
+   if (!(file=(OGR_File*)TclY_HashGet(&OGR_FileTable,Id))) {
+      if (Interp) {
+         Tcl_AppendResult(Interp,"OGR_FileGet: Unknown file",(char *)NULL);
       }
    }
-   return NULL;
+   return(file);
 }
 
 int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
@@ -989,7 +978,7 @@ int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
    Tcl_HashEntry *entry;
    int            new;
 
-   entry=Tcl_CreateHashEntry(&OGR_FileTable,File->Id,&new);
+   entry=TclY_CreateHashEntry(&OGR_FileTable,File->Id,&new);
 
    if (!new) {
       Tcl_AppendResult(Interp,"\n   OGR_FilePut: File already openned",(char *)NULL);
@@ -1106,41 +1095,3 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
 
    return(TCL_OK);
 }
-
-/*----------------------------------------------------------------------------
- * Nom      : <OGR_Wipe>
- * Creation : Aout 2004 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void OGR_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&OGR_LayerTable,&ptr);
-
-   while (entry) {
-      OGR_LayerFree((OGR_Layer*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&OGR_LayerTable,&ptr);
-   }
-
-   entry=Tcl_FirstHashEntry(&OGR_GeometryTable,&ptr);
-
-   while (entry) {
-      OGR_G_DestroyGeometry((OGRGeometryH*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&OGR_GeometryTable,&ptr);
-   }
-//   Tcl_DeleteHashTable(&FSTD_FieldTable);
-}
-

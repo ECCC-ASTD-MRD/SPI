@@ -17,6 +17,7 @@
 */
 #include "tclGRIB.h"
 
+static int           GRIBInit=0;
 static Tcl_HashTable GRIB_FileTable;
 
 static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -241,7 +242,7 @@ GRIB_File* GRIB_FileGet(char *Id){
    Tcl_HashEntry *entry;
 
    if (Id && strlen(Id)>0) {
-      entry=Tcl_FindHashEntry(&GRIB_FileTable,Id);
+      entry=TclY_FindHashEntry(&GRIB_FileTable,Id);
       if (entry) {
          return (GRIB_File*)(Tcl_GetHashValue(entry));
       }
@@ -254,7 +255,7 @@ int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
    Tcl_HashEntry *entry;
    int            new;
 
-   entry=Tcl_CreateHashEntry(&GRIB_FileTable,File->Id,&new);
+   entry=TclY_CreateHashEntry(&GRIB_FileTable,File->Id,&new);
 
    if (!new) {
       Tcl_AppendResult(Interp,"\n   GRIB_FilePut: File already open: \"",File->Path, "\"",(char *)NULL);
@@ -373,8 +374,9 @@ int TclGRIB_Init(Tcl_Interp *Interp) {
    Tcl_CreateObjCommand(Interp,"gribfile",GRIB_FileCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
    Tcl_CreateObjCommand(Interp,"gribfield",GRIB_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
-   Tcl_InitHashTable(&GRIB_FileTable,TCL_STRING_KEYS);
-
+   if (!GRIBInit++) {
+      Tcl_InitHashTable(&GRIB_FileTable,TCL_STRING_KEYS);
+   }
    return(TCL_OK);
 }
 

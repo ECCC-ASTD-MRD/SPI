@@ -269,7 +269,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
          break;
 
       case WIPE:
-         Obs_Wipe();
+         TclY_HashWipe(&ObsTable,(TclY_HashFreeEntryDataFunc*)Obs_Free);
    }
    return(TCL_OK);
 }
@@ -2361,34 +2361,4 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    }
 
    return TCL_OK;
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Obs_Wipe>
- * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Obs_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   entry=Tcl_FirstHashEntry(&ObsTable,&ptr);
-
-   while (entry) {
-      Obs_Free((TObs*)Tcl_GetHashValue(entry));
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&ObsTable,&ptr);
-   }
-
-   Tcl_DeleteHashTable(&ObsTable);
 }

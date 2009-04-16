@@ -348,15 +348,14 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 Radar_File* Radar_FileGet(Tcl_Interp *Interp,char *Id){
 
-   Tcl_HashEntry *entry;
+   Radar_File *file;
 
-   entry=Tcl_FindHashEntry(&Radar_FileTable,Id);
-   if (!entry) {
-      if (Interp) Tcl_AppendResult(Interp,"Radar_FileGet: Unknown file",(char *)NULL);
-      return(NULL);
+   if (!(file=(Radar_File*)TclY_HashGet(&Radar_FileTable,Id))) {
+      if (Interp) {
+         Tcl_AppendResult(Interp,"Radar_FileGet: Unknown file",(char *)NULL);
+      }
    }
-
-   return((Radar_File*)(Tcl_GetHashValue(entry)));
+   return(file);
 }
 
 /*----------------------------------------------------------------------------
@@ -394,7 +393,7 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
 
    /* Creer l'entree dans la liste table de fichiers standards */
-   entry=Tcl_CreateHashEntry(&Radar_FileTable,Id,&new);
+   entry=TclY_CreateHashEntry(&Radar_FileTable,Id,&new);
    if (!new) {
       Tcl_AppendResult(Interp,"   Radar_FileOpen: File already opened, cannot reuse openned file identificator ",Id,(char*)NULL);
       return(TCL_ERROR);

@@ -1203,7 +1203,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    char           buf[2048];
 
    /* Creer l'entree dans la liste table de fichiers standards */
-   entry=Tcl_CreateHashEntry(&FSTD_FileTable,Id,&new);
+   entry=TclY_CreateHashEntry(&FSTD_FileTable,Id,&new);
    if (!new) {
       Tcl_AppendResult(Interp,"FSTD_FileOpen: File already opened, cannot reuse openned file identificator ",Id,(char*)NULL);
       return(TCL_ERROR);
@@ -1247,7 +1247,7 @@ FSTD_File* FSTD_FileGet(Tcl_Interp *Interp,char *Id){
 
    Tcl_HashEntry *entry;
 
-   entry=Tcl_FindHashEntry(&FSTD_FileTable,Id);
+   entry=TclY_FindHashEntry(&FSTD_FileTable,Id);
    if (!entry) {
       if (Interp) Tcl_AppendResult(Interp,"FSTD_FileGet: Unknown file",(char *)NULL);
       return(NULL);

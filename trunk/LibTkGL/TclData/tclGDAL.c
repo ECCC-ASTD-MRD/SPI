@@ -465,7 +465,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case WRITE:
          if (Objc<4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band set [options]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          if (Objc==5) {
@@ -681,7 +681,8 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case WIPE:
-         GDAL_Wipe();
+         TclY_HashWipe(&GDAL_FileTable,(TclY_HashFreeEntryDataFunc*)NULL);
+         TclY_HashWipe(&GDAL_BandTable,(TclY_HashFreeEntryDataFunc*)NULL);
          break;
    }
 
@@ -779,6 +780,7 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
    Tcl_HashSearch  ptr;
    Tcl_HashEntry  *entry=NULL;
 
+   TclY_LockHash();
    entry=Tcl_FirstHashEntry(&GDAL_BandTable,&ptr);
    while (entry) {
       band=Tcl_GetHashValue(entry);
@@ -792,6 +794,7 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
       }
       entry=Tcl_NextHashEntry(&ptr);
    }
+   TclY_UnlockHash();
 }
 
 GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
@@ -1187,7 +1190,7 @@ GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id){
    Tcl_HashEntry *entry;
 
    if (Id && strlen(Id)>0) {
-      entry=Tcl_FindHashEntry(&GDAL_FileTable,Id);
+      entry=TclY_FindHashEntry(&GDAL_FileTable,Id);
       if (!entry) {
          if (Interp) Tcl_AppendResult(Interp,"GDAL_FileGet: Unknown file",(char *)NULL);
          return(NULL);
@@ -1203,11 +1206,11 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
    Tcl_HashEntry *entry;
    int            new;
 
-   entry=Tcl_CreateHashEntry(&GDAL_FileTable,File->Id,&new);
+   entry=TclY_CreateHashEntry(&GDAL_FileTable,File->Id,&new);
 
    if (!new) {
       Tcl_AppendResult(Interp,"\n   GDAL_FilePut: File already openned",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    Tcl_SetHashValue(entry,File);
@@ -1330,6 +1333,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    realpath(Name,buf);
    file->Name=strdup(buf);
    file->Set=set;
+   file->Ref=NULL;
 
    /* Get the georeference */
    if (band && Mode!='w' && Mode!='W') {
@@ -1338,50 +1342,9 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       file->Ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band),1,LVL_UNDEF,NULL,(char*)GDALGetProjectionRef(file->Set),tran,inv,NULL);
       GeoRef_Size(file->Ref,0,0,0,GDALGetRasterBandXSize(band)-1,GDALGetRasterBandYSize(band)-1,0,0);
       GeoRef_Qualify(file->Ref);
-   } else {
-      file->Ref=NULL;
    }
 
    GDAL_FilePut(Interp,file);
 
    return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <GDAL_Wipe>
- * Creation : Aout 2004 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer toutes la memoire allouee par ce package.
- *
- * Parametres     :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void GDAL_Wipe() {
-
-   Tcl_HashSearch ptr;
-   Tcl_HashEntry  *entry=NULL;
-   GDAL_File      *file;
-
-   entry=Tcl_FirstHashEntry(&GDAL_FileTable,&ptr);
-
-   while (entry) {
-      file=(GDAL_File*)Tcl_GetHashValue(entry);
-//      GDAL_FileClose(Interp,file->Name);
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&GDAL_FileTable,&ptr);
-   }
-   Tcl_DeleteHashTable(&GDAL_FileTable);
-
-   entry=Tcl_FirstHashEntry(&GDAL_BandTable,&ptr);
-
-   while (entry) {
-      Tcl_DeleteHashEntry(entry);
-      entry=Tcl_FirstHashEntry(&GDAL_BandTable,&ptr);
-   }
-   Tcl_DeleteHashTable(&GDAL_BandTable);
 }
