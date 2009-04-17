@@ -901,7 +901,7 @@ proc FileBox::Select { Mode Ok } {
              #----- Si le path est bon
 
              } else {
-                if { [file writable [file dirname $Data(Filename)]] } {
+                if { [file writable [file dirname $Data(Path)/$Data(Filename)]] } {
                    set Data(Result) [FileBox::Filename $Data(Path)/$Data(Filename)]
                 } else {
                    Dialog::CreateError .filebox [lindex $Error(Right) $GDefs(Lang)] $GDefs(Lang)
@@ -913,7 +913,7 @@ proc FileBox::Select { Mode Ok } {
           if { [file isdirectory $Data(Path)] } {
              set Data(Result) $Data(Path)
           } else {
-             FileBox::GetContent $Data(Filename)
+             FileBox::GetContent $Data(Path)/$Data(Filename)
           }
       }
    }
