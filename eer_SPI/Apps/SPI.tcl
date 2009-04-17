@@ -1977,7 +1977,7 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
    variable Error
 
    set new [Dialog::CreateDefault . 300 [lindex $Lbl(Question) $GDefs(Lang)] [lindex $Msg(Page) $GDefs(Lang)] \
-         info 0 [lindex $Lbl(Current) $GDefs(Lang)] [lindex $Lbl(Page) $GDefs(Lang)] [lindex $Lbl(Window) $GDefs(Lang)]]
+         info 2 [lindex $Lbl(Current) $GDefs(Lang)] [lindex $Lbl(Page) $GDefs(Lang)] [lindex $Lbl(Window) $GDefs(Lang)]]
 
    switch $new {
       0 { if { ![winfo exists $Page::Data(Canvas)] } { Dialog::CreateError . [lindex $Error(Page) $GDefs(Lang)] $GDefs(Lang); return } }
@@ -2227,13 +2227,13 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
             set tab [lindex $tabs 0]
             puts $f "set Frame \[SPI::PageNew True \"[TabFrame::GetLabel $win.mdi $tab]\" [wm geom $win]\]"
             if { $Layout } {
-               SPI::ProjectSaveLayout $win.mdi.frame$tab.frame $Cam True
+               SPI::ProjectSaveLayout $f $win.mdi.frame$tab.frame $Cam True
             }
             set tabs [lrange $tabs 1 end]
             foreach tab $tabs {
                puts $f "set Frame \[SPI::PageNew False \"[TabFrame::GetLabel $win.mdi $tab]\"\]"
                if { $Layout } {
-                  SPI::ProjectSaveLayout $win.mdi.frame$tab.frame $Cam True
+                  SPI::ProjectSaveLayout $f  $win.mdi.frame$tab.frame $Cam True
                }
             }
          }
