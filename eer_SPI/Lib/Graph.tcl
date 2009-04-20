@@ -907,7 +907,10 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
          if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
             set x [lindex $xy 0]
             set y [lindex $xy 1]
-            $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+            #----- Check close to cursor position cause it breaks in follow mode
+            if { [expr hypot($x-$Viewport::Map(X),$y-$Viewport::Map(Y))]>2 } {
+               $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+            }
          }
       }
    }

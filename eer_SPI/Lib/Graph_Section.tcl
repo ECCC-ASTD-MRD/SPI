@@ -399,6 +399,7 @@ proc Graph::Section::Init { Frame } {
       set Data(Levels)   {}           ;#Liste des niveaux
       set Data(FCoords)  {}           ;#Liste des coordonnees de coupe (Follow mode)
       set Data(Coords)   {}           ;#Liste des coordonnees de coupe
+      set Data(Field)    ""           ;#Champs de coupe
 
       #----- Constantes relatives au Graph
 
@@ -987,12 +988,16 @@ proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
    global GDefs
    variable Lbl
 
-   if { $VP==-1 } {
-      return
-   }
-
    set GR $Graph::Data(Graph)
    upvar #0 Graph::Section::Section${GR}::Data  data
+
+   if { $VP==-1 } {
+      if { $data(VP)=="" } {
+         return
+      } else {
+         set VP $data(VP)
+      }
+   }
 
    if { $data(FrameData)!="" && [llength $data(Items$Graph::Data(Pos))] } {
       set data(FCoords) $data(Coords)
@@ -1000,7 +1005,6 @@ proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
       if { $Viewport::Map(LatCursor) < 999 && $Viewport::Map(LonCursor) < 999 } {
          lappend data(FCoords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
       }
-
 
       $Frame.page.canvas delete GRAPHSECTION$Graph::Data(Graph)
       set coords [lrange [Graph::Section::Sample $Graph::Data(Graph) $VP $data(FCoords)] 0 end-4]
