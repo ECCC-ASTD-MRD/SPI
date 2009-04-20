@@ -197,7 +197,7 @@ namespace eval Graph {
    set Lbl(Points)     { "Points" "Vertex" }
    set Lbl(Pos)        { "Position" "Position" }
    set Lbl(Proj)       { "Projection" "Projection" }
-   set Lbl(Res)        { "Résolution (m)" "Resolution (m)" }
+   set Lbl(Res)        { "Résolution" "Resolution" }
    set Lbl(Same)       { "Uniforme" "Uniform" }
    set Lbl(Scale)      { "Echelle" "Scale" }
    set Lbl(Sec)        { "Sec"   "Sec" }
@@ -905,8 +905,8 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
 
       foreach { lat lon } $Coords {
          if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
-         set x [lindex $xy 0]
-         set y [lindex $xy 1]
+            set x [lindex $xy 0]
+            set y [lindex $xy 1]
             $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
          }
       }
