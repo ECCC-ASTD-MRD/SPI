@@ -870,9 +870,14 @@ proc Graph::Section::Resolution { } {
       if { [fstdfield define $data(Field) -GRTYP]=="R" } {
          set data(Res) 1000
       } else {
-         set c0 [fstdfield stats $data(Field) -gridpoint $i $j]
-         set c1 [fstdfield stats $data(Field) -gridpoint [incr i] $j]
-         eval set data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
+         #----- Calculate distances in gridpoint for grid projection otherwise, use meters
+         if { [projection configure $data(FrameData) -type]=="grid" } {
+            set data(Res) 1
+         } else {
+            set c0 [fstdfield stats $data(Field) -gridpoint $i $j]
+            set c1 [fstdfield stats $data(Field) -gridpoint [incr i] $j]
+            eval set data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
+         }
       }
       set data(Res) [format "%0.0f" $data(Res)]
    }
