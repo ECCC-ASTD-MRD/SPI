@@ -295,7 +295,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
    Coord      coord;
-   int        i,j,k,sz,idx;
+   int        i,j,k,idx;
    double     z;
    float     *gz=NULL;
 
@@ -332,7 +332,6 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
       FSTD_FileUnset(NULL,head->FID);
    }
 
-   sz=FSIZE2D(Field->Def);
    /*Precalculer les tableaux de particules dans l'espace*/
    if (Field->Ref->Lat && Field->Ref->Lon) {
       z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level]);
@@ -364,7 +363,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
             if (coord.Lat<-900.0 || coord.Lon<-900.0) {
                coord.Elev=1e32;
             }
-            Vect_Init(Field->Ref->Pos[Level][sz+idx],coord.Lon,coord.Lat,coord.Elev);
+            Vect_Init(Field->Ref->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
          }
       }
       Proj->Type->Project(Proj->Params,Field->Ref->Pos[Level],NULL,FSIZE3D(Field->Def));
@@ -372,6 +371,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    if (gz)
       free(gz);
+
    return(1);
 }
 
