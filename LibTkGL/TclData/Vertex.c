@@ -322,7 +322,7 @@ void VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int
 */
 int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
 
-   Vect3d v00,v01,v10,v11,vt0,vt1,*pos;
+   Vect3d v00,v01,v10,v11,vt0,vt1,**pos;
    int    i,j,k,idxj,idxj1,idxk,idxk1;
    int    idx0,idx1,idx2,idx3;
 
@@ -358,18 +358,18 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    if (Z>0) {
       k=floor(Z);Z-=k;
 
-      idxk=Def->NI*Def->NJ*k;
+      idxk=k;
       if (Z<TINY_VALUE) {
          idxk1=idxk;
       } else {
-         idxk1=Def->NI*Def->NJ*(k+1);
+         idxk1=k+1;
       }
 
       /*Interpolate over X*/
-      Vect_InterpC(v00,pos[idx0+idxk],pos[idx1+idxk],X);
-      Vect_InterpC(v01,pos[idx3+idxk],pos[idx2+idxk],X);
-      Vect_InterpC(v10,pos[idx0+idxk1],pos[idx1+idxk1],X);
-      Vect_InterpC(v11,pos[idx3+idxk1],pos[idx2+idxk1],X);
+      Vect_InterpC(v00,pos[idxk][idx0],pos[idxk][idx1],X);
+      Vect_InterpC(v01,pos[idxk][idx3],pos[idxk][idx2],X);
+      Vect_InterpC(v10,pos[idxk1][idx0],pos[idxk1][idx1],X);
+      Vect_InterpC(v11,pos[idxk1][idx3],pos[idxk1][idx2],X);
 
       /*Interpolate over Y*/
       Vect_InterpC(vt0,v00,v01,Y);
@@ -380,8 +380,8 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    } else {
 
       /*Interpolate over X*/
-      Vect_InterpC(v00,pos[idx0],pos[idx1],X);
-      Vect_InterpC(v01,pos[idx3],pos[idx2],X);
+      Vect_InterpC(v00,pos[Def->Level][idx0],pos[Def->Level][idx1],X);
+      Vect_InterpC(v01,pos[Def->Level][idx3],pos[Def->Level][idx2],X);
 
       /*Interpolate over Y*/
       Vect_InterpC(Vr,v00,v01,Y);

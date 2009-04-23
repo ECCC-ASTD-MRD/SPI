@@ -72,7 +72,7 @@ void GRIB_HeadCopy(void *To,void *From) {
  *
  *----------------------------------------------------------------------------
 */
-Vect3d* GRIB_Grid(TData *Field,void *Proj) {
+Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
 
    GRIB_Head *head=(GRIB_Head*)Field->Head;
    Coord      coord;
@@ -80,67 +80,6 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj) {
    int        i,j,k,idx,ni,nj,nk,ip1;
    int        idxi,idxk;
 
-   /*Verifier la validite de la grille*/
-   if (!Field->Ref)
-      return(NULL);
-
-   if (Field->Ref->Pos)
-      return(Field->Ref->Pos);
-
-   if (Field->Ref->Grid[0]=='V') {
-      /*Localiser les point de grille dans l'espace*/
-      Field->Ref->Pos=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
-      if (!Field->Ref->Pos) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
-         return(NULL);
-      }
-
-      for (j=0;j<Field->Def->NJ;j++) {
-
-         for (i=0;i<Field->Def->NI;i++) {
-            flat=coord.Lat=Field->Ref->Lat[i];
-            flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
-            idx=j*Field->Def->NI+i;
-            coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
-
-            if (Proj) {
-               ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Field->Ref->Pos[idx],1);
-            } else {
-               Vect_Init(Field->Ref->Pos[idx],Field->Ref->Lat[i],Field->Ref->Lon[i],coord.Elev);
-            }
-         }
-      }
-   } else {
-
-      /*Localiser les point de grille dans l'espace*/
-      Field->Ref->Pos=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
-      if (!Field->Ref->Pos) {
-         fprintf(stderr,"(ERROR) GRIB_Grid: Not enough memory to calculate gridpoint location");
-         return(NULL);
-      }
-
-      for (k=0;k<Field->Def->NK;k++) {
-
-         /*For every gridpoints*/
-         for (j=0;j<Field->Def->NJ;j++) {
-            for (i=0;i<Field->Def->NI;i++) {
-
-               /*Figure out table plane indexes*/
-               idxi=j*Field->Def->NI+i;
-               idxk=k*Field->Def->NI*Field->Def->NJ+idxi;
-
-               Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
-               coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
-               Vect_Init(Field->Ref->Pos[idxk],coord.Lon,coord.Lat,coord.Elev);
-            }
-         }
-      }
-      if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
-         FSTD_Project(((Projection*)Proj),Field->Ref->Pos,NULL,FSIZE3D(Field->Def));
-      } else {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos,NULL,FSIZE3D(Field->Def));
-      }
-   }
    return(Field->Ref->Pos);
 }
 /*----------------------------------------------------------------------------

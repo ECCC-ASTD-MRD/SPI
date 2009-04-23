@@ -125,7 +125,7 @@ typedef struct TGeoRef {
    int     Type;                                          /*Type de grille*/
    int     BD;                                            /*Bordure*/
    int     X0,Y0,Z0,X1,Y1,Z1;                             /*Grid limits*/
-   Vect3d *Pos;                                           /*Coordonnees des points de grilles (World)*/
+   Vect3d **Pos;                                          /*Coordonnees des points de grilles (World)*/
 
    float *Levels;       /*Levels list*/
    int    LevelType;    /*Type of levels*/

@@ -291,7 +291,7 @@ int FSTD_FieldReadMesh(TData *Field) {
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
+Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
    Coord      coord;
@@ -302,70 +302,72 @@ int FSTD_FieldGetMesh(TData *Field,Projection *Proj) {
    if (!FSTD_FieldReadMesh(Field))
       return(0);
 
-   /*Allouer les tableau de localisations et couleurs*/
-   Field->Ref->Pos=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
+   /*Allocate memory for various levels*/
+   if (!Field->Ref->Pos)
+      Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->LevelNb,sizeof(Vect3d*));
 
-   if (!Field->Ref->Pos) {
-      fprintf(stderr,"(ERROR) FSTD_FieldGetMesh: Not enough memory to store projected locations");
-      return(0);
-   } else {
-      if (Field->Spec->Topo && head->FID) {
-         FSTD_FileSet(NULL,head->FID);
-         EZLock_RPNField();
-         idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
-         if (idx<0) {
-            fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
-            idx=c_fstinf(head->FID->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
-         }
-         if (idx<0) {
-            fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (GZ)\n");
-         } else {
-            if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
-            c_fstluk(gz,idx,&i,&j,&k);
-         }
-         EZUnLock_RPNField();
-         FSTD_FileUnset(NULL,head->FID);
+   if (!Field->Ref->Pos[Level]) {
+      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
+      if (!Field->Ref->Pos[Level]) {
+         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+         return(NULL);
       }
+   }
 
-      sz=FSIZE2D(Field->Def);
-      /*Precalculer les tableaux de particules dans l'espace*/
-      if (Field->Ref->Lat && Field->Ref->Lon) {
-         for (k=0;k<Field->Def->NK;k++) {
-            z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
-            for (i=0;i<Field->Def->NI;i++) {
-               for (j=0;j<Field->Def->NJ;j++) {
+   if (Field->Spec->Topo && head->FID) {
+      FSTD_FileSet(NULL,head->FID);
+      EZLock_RPNField();
+      idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
+      if (idx<0) {
+         fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+         idx=c_fstinf(head->FID->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
+      }
+      if (idx<0) {
+         fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (GZ)\n");
+      } else {
+         if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
+         c_fstluk(gz,idx,&i,&j,&k);
+      }
+      EZUnLock_RPNField();
+      FSTD_FileUnset(NULL,head->FID);
+   }
 
-                  idx=j*Field->Def->NI+i;
-                  coord.Elev=0.0;
+   sz=FSIZE2D(Field->Def);
+   /*Precalculer les tableaux de particules dans l'espace*/
+   if (Field->Ref->Lat && Field->Ref->Lon) {
+      z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level]);
+      for (i=0;i<Field->Def->NI;i++) {
+         for (j=0;j<Field->Def->NJ;j++) {
 
-                  /*Reproject coordinates if needed*/
-                  if (Field->Ref->Grid[1]=='Z') {
-                     Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
-                     if (gz) coord.Elev=gz[idx];
-                  } else if (Field->Ref->Grid[1]=='Y') {
-                     Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
-                  } else {
-                     coord.Lat=Field->Ref->Lat[idx];
-                     coord.Lon=Field->Ref->Lon[idx];
-                  }
+            idx=j*Field->Def->NI+i;
+            coord.Elev=0.0;
 
-                  if (Field->Ref->Hgt) {
-                     coord.Elev+=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Hgt[idx]);
-                  } else {
-                     coord.Elev+=z;
-                  }
-                  coord.Elev*=Field->Spec->TopoFactor;
-
-                  /*Si les positions sont hors domaine, outter space*/
-                  if (coord.Lat<-900.0 || coord.Lon<-900.0) {
-                     coord.Elev=1e32;
-                  }
-                  Vect_Init(Field->Ref->Pos[k*sz+idx],coord.Lon,coord.Lat,coord.Elev);
-               }
+            /*Reproject coordinates if needed*/
+            if (Field->Ref->Grid[1]=='Z') {
+               Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
+               if (gz) coord.Elev=gz[idx];
+            } else if (Field->Ref->Grid[1]=='Y') {
+               Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
+            } else {
+               coord.Lat=Field->Ref->Lat[idx];
+               coord.Lon=Field->Ref->Lon[idx];
             }
+
+            if (Field->Ref->Hgt) {
+               coord.Elev+=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Hgt[idx]);
+            } else {
+               coord.Elev+=z;
+            }
+            coord.Elev*=Field->Spec->TopoFactor;
+
+            /*Si les positions sont hors domaine, outter space*/
+            if (coord.Lat<-900.0 || coord.Lon<-900.0) {
+               coord.Elev=1e32;
+            }
+            Vect_Init(Field->Ref->Pos[Level][sz+idx],coord.Lon,coord.Lat,coord.Elev);
          }
-         Proj->Type->Project(Proj->Params,Field->Ref->Pos,NULL,FSIZE3D(Field->Def));
       }
+      Proj->Type->Project(Proj->Params,Field->Ref->Pos[Level],NULL,FSIZE3D(Field->Def));
    }
 
    if (gz)
@@ -423,6 +425,7 @@ void FSTD_DataMap(TData *Field,int Idx) {
  * Parametres   :
  *  <Field>     : Champs de donnees
  *  <Proj>      : Projection
+ *  <Level>     : Niveau a calculer
  *
  * Retour:
  *  <Vect3d*>   : Pointeur sur les positions (NULL si invalide)
@@ -431,7 +434,7 @@ void FSTD_DataMap(TData *Field,int Idx) {
  *
  *----------------------------------------------------------------------------
 */
-Vect3d* FSTD_Grid(TData *Field,void *Proj) {
+Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
    Coord      coord;
@@ -444,25 +447,30 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
    if (!Field->Ref || Field->Ref->Type==GRID_NONE)
       return(NULL);
 
-   if (Field->Ref->Pos)
-      return(Field->Ref->Pos);
+   if (Field->Ref->Pos && Field->Ref->Pos[Level])
+      return(Field->Ref->Pos[Level]);
 
    if (Field->Ref->Type&GRID_SPARSE) {
-      FSTD_FieldGetMesh(Field,Proj);
-      return(Field->Ref->Pos);
+      FSTD_FieldGetMesh(Field,Proj,Level);
+      return(Field->Ref->Pos[Level]);
+   }
+
+   /*Allocate memory for various levels*/
+   if (!Field->Ref->Pos)
+      Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->LevelNb,sizeof(Vect3d*));
+
+   if (!Field->Ref->Pos[Level]) {
+      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
+      if (!Field->Ref->Pos[Level]) {
+         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+         return(NULL);
+      }
    }
 
    if (Field->Ref->Grid[0]=='V') {
       FSTD_FieldReadMesh(Field);
       if (!Field->Ref->Lat || !Field->Ref->Lon) {
          fprintf(stderr,"(ERROR) FSTD_Grid: Section coordinates not defined");
-         return(NULL);
-      }
-
-      /*Localiser les point de grille dans l'espace*/
-      Field->Ref->Pos=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
-      if (!Field->Ref->Pos) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
          return(NULL);
       }
 
@@ -484,6 +492,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
             EZUnLock_RPNField();
          }
 
+         coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j])*Field->Spec->TopoFactor;
          for (i=0;i<Field->Def->NI;i++) {
             flat=coord.Lat=Field->Ref->Lat[i];
             flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
@@ -493,15 +502,12 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
                c_gdllsval(Field->Ref->RefFrom->Id,&fele,gz,&flat,&flon,1);
                EZUnLock_RPNInt();
                coord.Elev=fele*10.0*Field->Spec->TopoFactor;
-            } else {
-               coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]);
             }
-            coord.Elev*=Field->Spec->TopoFactor;
-            Vect_Init(Field->Ref->Pos[idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.Elev);
+            Vect_Init(Field->Ref->Pos[Level][idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.Elev);
          }
       }
       if (Proj) {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos,NULL,FSIZE2D(Field->Def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
       }
       FSTD_FileUnset(NULL,head->FID);
    } else {
@@ -513,87 +519,76 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj) {
 
          if (!lat || !lon) {
             fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to process gridpoint location");
-            return(NULL);
+            free(Field->Ref->Pos[Level]);
+            return(Field->Ref->Pos[Level]=NULL);
          }
          EZLock_RPNInt();
          c_gdll(Field->Ref->Id,lat,lon);
          EZUnLock_RPNInt();
       }
 
-      /*Localiser les point de grille dans l'espace*/
-      Field->Ref->Pos=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
-      if (!Field->Ref->Pos) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
-         return(NULL);
+      FSTD_FileSet(NULL,head->FID);
+
+      /*Essayer de recuperer le GZ*/
+      if (head->FID && Field->Spec->Topo) {
+
+         ip1=FSTD_Level2IP(Field->Ref->Levels[Level],Field->Ref->LevelType);
+         EZLock_RPNField();
+         if (Field->Spec->Topo) {
+            idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
+            if (idx<0) {
+                fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+                idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
+             }
+             if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
+                idx=-1;
+               }
+         } else {
+            idx=-1;
+         }
+         if (idx<0) {
+            if (gz) { free(gz); gz=NULL; };
+            fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[k],ip1);
+         } else {
+            if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
+            c_fstluk(gz,idx,&ni,&nj,&nk);
+         }
+         EZUnLock_RPNField();
       }
 
-      FSTD_FileSet(NULL,head->FID);
-      for (k=0;k<Field->Def->NK;k++) {
+      coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level])*Field->Spec->TopoFactor;
+      /*For every gridpoints*/
+      for (j=0;j<Field->Def->NJ;j++) {
+         for (i=0;i<Field->Def->NI;i++) {
 
-         /*Essayer de recuperer le GZ*/
-         if (head->FID && Field->Spec->Topo) {
+            /*Figure out table plane indexes*/
+            idxi=j*Field->Def->NI+i;
 
-            ip1=FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
-            EZLock_RPNField();
-            if (Field->Spec->Topo) {
-               idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
-               if (idx<0) {
-                   fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
-                   idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
-                }
-                if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
-                   idx=-1;
-                }
-            } else {
-               idx=-1;
-            }
-            if (idx<0) {
-               if (gz) { free(gz); gz=NULL; };
-               fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[k],ip1);
-            } else {
-               if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
-               c_fstluk(gz,idx,&ni,&nj,&nk);
-            }
-            EZUnLock_RPNField();
-         }
-
-         /*For every gridpoints*/
-         for (j=0;j<Field->Def->NJ;j++) {
-            for (i=0;i<Field->Def->NI;i++) {
-
-               /*Figure out table plane indexes*/
-               idxi=j*Field->Def->NI+i;
-               idxk=k*Field->Def->NI*Field->Def->NJ+idxi;
-
-               if (gz) {
-                  coord.Elev=gz[idxi]*Field->Spec->TopoFactor;
-                  if (Field->Spec->Topo[0]=='G' && Field->Spec->Topo[1]=='Z' ) {
-                     coord.Elev*=10.0;
-                  }
-               } else {
-                  coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[k]);
+            /*Get height from topographic field*/
+            if (gz) {
+               coord.Elev=gz[idxi]*Field->Spec->TopoFactor;
+               if (Field->Spec->Topo[0]=='G' && Field->Spec->Topo[1]=='Z' ) {
+                  coord.Elev*=10.0;
                }
-               coord.Elev*=Field->Spec->TopoFactor;
+            }
 
-               if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
-                  Vect_Init(Field->Ref->Pos[idxk],i,j,coord.Elev);
+            if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
+               Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
+            } else {
+              if (Field->Ref->Id>-1) {
+                  coord.Lat=Field->Ref->Grid[0]=='G'?-lat[idxi]:lat[idxi];
+                  coord.Lon=CLAMPLON(lon[idxi]);
                } else {
-                  if (Field->Ref->Id>-1) {
-                     coord.Lat=Field->Ref->Grid[0]=='G'?-lat[idxi]:lat[idxi];
-                     coord.Lon=CLAMPLON(lon[idxi]);
-                  } else {
-                     Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
-                  }
-
-                  Vect_Init(Field->Ref->Pos[idxk],coord.Lon,coord.Lat,coord.Elev);
+                 Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
                }
+               Vect_Init(Field->Ref->Pos[Level][idxi],coord.Lon,coord.Lat,coord.Elev);
             }
          }
       }
       if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
-         FSTD_Project(((Projection*)Proj),Field->Ref->Pos,FSIZE3D(Field->Def));
+         FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(Field->Def));
       } else {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos,NULL,FSIZE3D(Field->Def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
       }
 
       FSTD_FileUnset(NULL,head->FID);

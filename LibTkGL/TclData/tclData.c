@@ -461,7 +461,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
       }
 
-      if (Field[f]->Ref->LevelType==LVL_PRES || Field[f]->Ref->LevelType==LVL_GALCHEN || Field[f]->Ref->LevelType==LVL_MASL || Field[f]->Ref->LevelType==LVL_MAGL || Field[f]->Ref->LevelType==LVL_UNDEF) {
+      if (Field[f]->Ref->LevelType==LVL_PRES || Field[f]->Ref->LevelType==LVL_ANGLE || Field[f]->Ref->LevelType==LVL_GALCHEN || Field[f]->Ref->LevelType==LVL_MASL || Field[f]->Ref->LevelType==LVL_MAGL || Field[f]->Ref->LevelType==LVL_UNDEF) {
          p=0;
       }
    }
@@ -508,6 +508,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          return(TCL_ERROR);
       }
    }
+fprintf(stderr,"------14\n");
 
    /*Loop on coordinates*/
    for(n=0;n<NbC;n++) {
@@ -586,6 +587,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          }
       }
    }
+fprintf(stderr,"------15\n");
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
 #endif

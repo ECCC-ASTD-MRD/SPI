@@ -151,20 +151,42 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
  *
  *----------------------------------------------------------------------------
 */
+int Data_Grid3D(TData *Field,Projection* Proj) {
+
+   int k,nk;
+
+   if (Field->Ref->LevelNb==1) {
+      if (Field->ReadCube) Field->ReadCube(NULL,Field,0);
+      Data_PreInit(Field);
+   }
+
+   nk=0;
+   for(k=0;k<Field->Ref->LevelNb;k++) {
+      if (Field->Ref->Pos && Field->Ref->Pos[k]) {
+         nk++;
+      } else {
+         if (Field->Grid(Field,Proj,k)) {
+            nk++;
+         }
+      }
+   }
+   return(nk==Field->Ref->LevelNb);
+}
+
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
 
    int nras=0;
 
    /*Verifier l'existence du champs*/
    if (!Field || !Field->Ref || !Field->Spec || !Field->Def->Data[0]) {
-      return 0;
+      return(0);
    }
 
    Data_PreInit(Field);
 
-   if (!Field->Ref->Pos)
-      if (!Field->Grid(Field,Proj))
-         return 0;
+   if (!Field->Ref->Pos || !Field->Ref->Pos[Field->Def->Level])
+      if (!Field->Grid(Field,Proj,Field->Def->Level))
+         return(0);
 
    glPushName(PICK_FSTDFIELD);
 
@@ -215,7 +237,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       /*Verifier la presence d'une palette de couleur si elle est necessaire*/
       if (Field->Spec->Map) {
 
-         if (Field->Spec->RenderTexture && Field->Ref->Pos && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
+         if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
             if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
                if (GLRender->ShaderAvailable) {
                   nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
@@ -225,25 +247,22 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
             }
          }
 
-         if (Field->Spec->RenderVector==STREAMLINE && Field->Ref->Pos) {
+         if (Field->Spec->RenderVector==STREAMLINE) {
             nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
          }
 
-         if (Field->Spec->RenderVector==STREAMLINE3D && Field->Ref->Pos) {
+         if (Field->Spec->RenderVector==STREAMLINE3D) {
             if (Field->Def->Data[2]) {
-               if (Field->ReadCube) {
-                  Field->ReadCube(Interp,Field,0);
-                  Data_PreInit(Field);
+               if (Data_Grid3D(Field,Proj)) {
+                  nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
                }
-               nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
             }
          }
 
          if (Field->Spec->RenderVol) {
             if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='V') {
                /*Recuperer les niveaux disponibles*/
-               if (Field->ReadCube) Field->ReadCube(NULL,Field,0);
-               if (Field->Ref->Pos || Field->Grid(Field,Proj)) {
+               if (Data_Grid3D(Field,Proj)) {
                   nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
                }
             }
@@ -532,7 +551,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    Tk_FontMetrics tkm;
    GLuint s;
 
-   if (GLRender->Resolution>1 || !Field->Ref || !Field->Ref->Pos || !Field->Spec->Font || (!Field->Spec->Outline && !Field->Spec->MapAll) || !Field->Spec->InterNb) {
+   if (GLRender->Resolution>1 || !Field->Ref || !Field->Spec->Font || (!Field->Spec->Outline && !Field->Spec->MapAll) || !Field->Spec->InterNb) {
       return;
    }
 
@@ -695,7 +714,6 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 */
 void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int     idxk;
    char    buf[128];
 
    if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Outline)
@@ -708,15 +726,12 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    }
 
-   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
    glPointSize(Field->Spec->RenderGrid+0.1);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
-//   Proj->Type->Render(Proj,0,&Field->Ref->Pos[idxk],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),NULL,NULL);
-   Proj->Type->Render(Proj,0,Field->Ref->Pos,NULL,NULL,NULL,GL_POINTS,FSIZE3D(Field->Def),NULL,NULL);
+   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],NULL,NULL,NULL,GL_POINTS,FSIZE3D(Field->Def),NULL,NULL);
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
@@ -724,7 +739,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    if (Field->Ref->Grid[0]=='M') {
       glPolygonMode(GL_FRONT,GL_LINE);
       glLineWidth(1.0);
-      Proj->Type->Render(Proj,0,&Field->Ref->Pos[idxk],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,NULL,NULL);
+      Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,NULL,NULL);
    }
    glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -816,7 +831,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Projeter les particules*/
    glPointSize(Field->Spec->RenderParticle+0.1);
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,Field->Ref->Pos,Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,NULL,NULL);
+   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,NULL,NULL);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_TEXTURE_1D);
    glDisable(GL_BLEND);
@@ -912,7 +927,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (pi!=(int)i ||  pj!=(int)j) {
                pi=i;
                pj=j;
-               step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[FIDX2D(Field->Def,pi+1,pj+1)]);
+               step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi+1,pj+1)]);
             }
             /*Get the streamline */
             b=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,0);
@@ -1080,76 +1095,76 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    Field->Spec->Cube[2]=Field->Spec->Cube[2]<Field->Ref->Z0?Field->Ref->Z0:Field->Spec->Cube[2]>Field->Ref->Z1?Field->Ref->Z1:Field->Spec->Cube[2];
    Field->Spec->Cube[5]=Field->Spec->Cube[5]<Field->Ref->Z0?Field->Ref->Z0:Field->Spec->Cube[5]>Field->Ref->Z1?Field->Ref->Z1:Field->Spec->Cube[5];
 
-   k0=Field->Spec->Cube[2]*FSIZE2D(Field->Def);
-   k1=Field->Spec->Cube[5]*FSIZE2D(Field->Def);
+   k0=Field->Spec->Cube[2];
+   k1=Field->Spec->Cube[5];
    glBegin(GL_QUADS);
 
       /*Bottom*/
-      idx=k0+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-      glVertex3dv(Field->Ref->Pos[idx]);
-      idx=k0+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-      glVertex3dv(Field->Ref->Pos[idx]);
-      idx=k0+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-      glVertex3dv(Field->Ref->Pos[idx]);
-      idx=k0+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-      glVertex3dv(Field->Ref->Pos[idx]);
+      idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
+      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
+      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
+      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
+      glVertex3dv(Field->Ref->Pos[k0][idx]);
 
       if (k0!=k1) {
          if (Field->Spec->Cube[1]!=Field->Spec->Cube[4]) {
             /*Left*/
-            idx=k0+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k0+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
 
             /*Right*/
-            idx=k0+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k0+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
          }
 
 
          if (Field->Spec->Cube[0]!=Field->Spec->Cube[3]) {
             /*Up*/
-            idx=k0+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k0+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
 
             /*Down*/
-            idx=k0+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k0+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
          }
 
          /*Top*/
          if (Field->Spec->Cube[0]!=Field->Spec->Cube[3] && Field->Spec->Cube[1]!=Field->Spec->Cube[4]) {
-            idx=k1+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
-            idx=k1+Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
+            glVertex3dv(Field->Ref->Pos[k1][idx]);
          }
       }
    glEnd();
@@ -1198,8 +1213,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
    glEnable(GL_TEXTURE_1D);
 
-   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-   pos=&Field->Ref->Pos[idxk];
+   pos=Field->Ref->Pos[Field->Def->Level];
 
    if (!Field->Map)
       FSTD_DataMap(Field,False);
@@ -1310,14 +1324,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glEnable(GL_BLEND);
    }
 
-   pos=Field->Ref->Pos;
-   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
+   pos=Field->Ref->Pos[Field->Def->Level];
 
    if (Field->Spec->InterNb || Proj->Type->Def==PROJPLANE || Field->Ref->Grid[0]=='W') {
       ri=1;
       rj=1;
    } else {
-      rj=ceil(2.0/FFCellResolution(VP,Proj,pos[idxk+Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2],pos[idxk+(Field->Def->NJ/2+1)*Field->Def->NI+Field->Def->NI/2]));
+      rj=ceil(2.0/FFCellResolution(VP,Proj,pos[Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2],pos[(Field->Def->NJ/2+1)*Field->Def->NI+Field->Def->NI/2]));
       rj=rj>7?7:rj;
    }
 
@@ -1348,20 +1361,20 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       for(i=0;i<Field->Def->NI-ri+ox;i+=ri) {
 
          oi=(i+ri)%Field->Def->NI;
-         idx0=idxk+j*Field->Def->NI+i;
-         idx3=idxk+(j+rj)*Field->Def->NI+i;
+         idx0=j*Field->Def->NI+i;
+         idx3=(j+rj)*Field->Def->NI+i;
 
          /*Si l'increment fait manquer le dernier point*/
          if ((i+ri)>=(Field->Def->NI-ri+ox)) {
             oi=(Field->Def->NI+ox-1)%Field->Def->NI;
          }
-         idx1=idxk+j*Field->Def->NI+oi;
-         idx2=idxk+(j+rj)*Field->Def->NI+oi;
+         idx1=j*Field->Def->NI+oi;
+         idx2=(j+rj)*Field->Def->NI+oi;
 
-         Def_GetMod(Field->Def,idx0,val0);
-         Def_GetMod(Field->Def,idx1,val1);
-         Def_GetMod(Field->Def,idx2,val2);
-         Def_GetMod(Field->Def,idx3,val3);
+         Def_GetMod(Field->Def,idxk+idx0,val0);
+         Def_GetMod(Field->Def,idxk+idx1,val1);
+         Def_GetMod(Field->Def,idxk+idx2,val2);
+         Def_GetMod(Field->Def,idxk+idx3,val3);
 
          VAL2COL(col0,Field->Spec,val0);
          VAL2COL(col1,Field->Spec,val1);
@@ -1446,10 +1459,10 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    int    ip,jp,ik,jk;
 
    int    idx;
-   Vect3d pos,g;
+   Vect3d pos,g,*posa;
    char   lbl[10];
 
-   if (GLRender->Resolution>1 || !Field->Spec->Font || !Field->Spec->Outline) {
+   if (GLRender->Resolution>1 || !Field->Ref->Pos || !Field->Spec->Font || !Field->Spec->Outline) {
       return;
    }
 
@@ -1467,6 +1480,8 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glDisable(GL_STENCIL_TEST);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
    glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
+
+   posa=Field->Ref->Pos[Field->Def->Level];
 
    /*Min Max case*/
    if (Tile==1) {
@@ -1523,9 +1538,9 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
             /* an extrema was found */
             idx=jp*Field->Def->NI+ip;
-            Vect_Assign(g,Field->Ref->Pos[idx]);
+            Vect_Assign(g,posa[idx]);
             PROJCHECK(Proj,g[0]);
-            gluProject(g[0],Field->Ref->Pos[idx][1],Field->Ref->Pos[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pos[0],&pos[1],&pos[2]);
+            gluProject(g[0],posa[idx][1],posa[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pos[0],&pos[1],&pos[2]);
             if (VIN(pos[0],1,Proj->Params->VP->Width) && VIN(pos[1],1,Proj->Params->VP->Height) && VIN(pos[2],0,1)) {
                DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,zm),lbl);
                if (high) {
@@ -1966,17 +1981,17 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
       glDisable(GL_BLEND);
       glBegin(GL_LINE_STRIP);
       for(i=0;i<Field->Def->NI;i++) {
-         glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,i,j,Field->Def->Level)]);
+         glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,i,j)]);
       }
-      glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,0,j,Field->Def->Level)]);
+      glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,0,j)]);
       glEnd();
 
       if (Field->Spec->RenderVol) {
          glBegin(GL_LINE_STRIP);
          for(i=0;i<Field->Def->NI;i++) {
-            glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,i,j,0)]);
+            glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,i,j)]);
          }
-         glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,0,j,0)]);
+         glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,0,j)]);
          glEnd();
 
          glEnable(GL_BLEND);
@@ -1984,11 +1999,11 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
 
          glBegin(GL_QUAD_STRIP);
          for(i=0;i<Field->Def->NI;i++) {
-            glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,i,j,Field->Def->Level)]);
-            glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,i,j,0)]);
+            glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,i,j)]);
+            glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,i,j)]);
          }
-         glVertex3dv(Field->Ref->Pos[FIDX3D(Field->Def,0,j,Field->Def->Level)]);
-         glVertex3dv(Field->Ref->Pos[FIDX2D(Field->Def,0,j)]);
+         glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,0,j)]);
+         glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,0,j)]);
          glEnd();
       }
    }

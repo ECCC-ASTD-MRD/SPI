@@ -48,7 +48,7 @@ int     GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key);
 void    GRIB_FieldFree(TData *Data);
 void    GRIB_FieldSet(TData *Data);
 void    GRIB_HeadCopy(void *To,void *From);
-Vect3d* GRIB_Grid(TData *Field,void *Proj);
+Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level);
 #endif
 
 

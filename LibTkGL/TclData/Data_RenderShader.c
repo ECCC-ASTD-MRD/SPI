@@ -80,7 +80,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos;
+   pos=Field->Ref->Pos[Field->Def->Level];
    prog=GLRender->Prog[PROG_FIELD];
 
    glUseProgramObjectARB(prog);
@@ -133,7 +133,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Projeter les particules*/
    glBegin(GL_POINTS);
    glEnable(GL_TEXTURE_2D);
-   for(n=0;n<FSIZE3D(Field->Def);n++) {
+   for(n=0;n<FSIZE2D(Field->Def);n++) {
       Def_Get(Field->Def,0,n,val);
       glVertexAttrib1fARB(att0,val);
       glVertex3dv(pos[n]);
@@ -194,7 +194,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos;
+   pos=Field->Ref->Pos[Field->Def->Level];
    prog=GLRender->Prog[PROG_FIELD];
 
    glUseProgramObjectARB(prog);
@@ -368,7 +368,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (pi!=(int)i ||  pj!=(int)j) {
                pi=i;
                pj=j;
-               step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[FIDX2D(Field->Def,pi+1,pj+1)]);
+               step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi+1,pj+1)]);
             }
 
 
@@ -459,7 +459,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos;
+   pos=Field->Ref->Pos[Field->Def->Level];
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    Def_PointerMode(Field->Def,idxk,ptr);
 
@@ -526,7 +526,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    for(j=0;j<Field->Def->NJ-rj && rj;j+=rj) {
 
       ri=dr;
-      idx0=idxk+j*Field->Def->NI-ri;
+      idx0=j*Field->Def->NI-ri;
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<Field->Def->NI && ri;i+=ri) {
 

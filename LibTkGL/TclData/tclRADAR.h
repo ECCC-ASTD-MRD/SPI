@@ -89,7 +89,7 @@ void        Radar_FileParse(RADAR_DATA *Data);
 
 int     Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan);
 void    Radar_Free(TData *Rad);
-Vect3d* Radar_Grid(TData *Rad,void *Proj);
+Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level);
 void    Radar_HeadCopy(void *To,void *From);
 void    Radar_Set(TData *Data);
 

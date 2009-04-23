@@ -111,7 +111,7 @@ int    ZRef_DecodeRPNLevelParams(TData *Field);
 int    ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref);
 int    ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref);
 
-Vect3d*    FSTD_Grid(TData *Field,void *Proj);
+Vect3d*    FSTD_Grid(TData *Field,void *Proj,int Level);
 void       FSTD_HeadCopy(void *To,void *From);
 TData_Type FSTD_TypeCheck(int Type,int Size);
 
