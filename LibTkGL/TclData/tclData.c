@@ -935,8 +935,13 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 
 void Data_Clean(TData *Data,int Map,int Pos,int Seg){
 
+   int n;
+
    if (Data) {
       if (Data->Ref && Data->Ref->Pos && Pos) {
+         for(n=0;n<Data->Ref->LevelNb;n++) {
+            if (Data->Ref->Pos[n]) free(Data->Ref->Pos[n]);
+         }
          free(Data->Ref->Pos);
          Data->Ref->Pos=NULL;
      }
