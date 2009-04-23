@@ -294,7 +294,7 @@ void GeoRef_Expand(TGeoRef *Ref) {
 */
 int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   float  i,j,lat,lon,d,dx=1.0;
+   float  i,j,lat,lon,d=1e32,dx=1.0;
    int    n,di,dj,idx;
    Vect3d b;
 
