@@ -222,7 +222,8 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj  *obj,*lst;
-   int       idx,i,ii,n,s=1,smin=0,smax=0,nobj,new;
+   int       idx,i,ii,n,s=1,nobj,new;
+   int       cminmax=0,cmap=0,cpos=0,cseg=0;
    char      buf[64];
    double    tmp,min=0.0,max=0.0;
 
@@ -275,7 +276,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                n=Spec->RenderParticle;
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderParticle);
                if (n!=Spec->RenderParticle && (n==0 || Spec->RenderParticle==0)) {
-                  DataSpec_Clean(Spec,1,1,1);
+                  cmap=cpos=cseg=1;
                }
             }
             break;
@@ -336,7 +337,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                if (ii!=Spec->RenderVol && ii==0) {
-                  DataSpec_Clean(Spec,1,0,1);
+                  cmap=cseg=1;
                }
                Spec->RenderVol=ii;
             }
@@ -354,14 +355,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (strlen(Tcl_GetString(Objv[i]))==0) {
                   Spec->MinMax&=~DATASPEC_MINSET;
                   Spec->Min=nanf("NaN");
-                  smin=1;
+                  cminmax=1;
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&min);
                   Spec->MinMax|=DATASPEC_MINSET;
                   min=SPEC2VAL(Spec,min);
                   if (Spec->Min!=min) {
                      Spec->Min=min;
-                     smin=1;
+                     cminmax=1;
                   }
                }
             }
@@ -379,14 +380,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (strlen(Tcl_GetString(Objv[i]))==0) {
                   Spec->MinMax&=~DATASPEC_MAXSET;
                   Spec->Max=nanf("NaN");
-                  smax=1;
+                  cminmax=1;
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&max);
                   Spec->MinMax|=DATASPEC_MAXSET;
                   max=SPEC2VAL(Spec,max);
                   if (Spec->Max!=max) {
                      Spec->Max=max;
-                     smax=1;
+                     cminmax=1;
                   }
                }
             }
@@ -416,7 +417,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->Topo=NULL;
                   if (strlen(Tcl_GetString(Objv[i])) && strcmp("NONE",Tcl_GetString(Objv[i]))!=0)
                      Spec->Topo=(char*)strdup(Tcl_GetString(Objv[i]));
-                  DataSpec_Clean(Spec,0,1,0);
+                  cpos=1;
                }
             }
             break;
@@ -427,7 +428,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
                if (tmp!=Spec->TopoFactor) {
-                  DataSpec_Clean(Spec,0,1,0);
+                  cpos=1;
                   Spec->TopoFactor=tmp;
                }
             }
@@ -646,7 +647,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                new=new<2?2:new>256?256:new;
                if (Spec->TexSample!=new) {
                   Spec->TexSample=new;
-                  DataSpec_Clean(Spec,0,1,0);
+                  cpos=1;
                }
             }
             break;
@@ -662,7 +663,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
                if (Spec->TexSize!=new) {
                   Spec->TexSize=new;
-                  DataSpec_Clean(Spec,1,1,1);
+                  cmap=cpos=cseg=1;
                }
             }
             break;
@@ -721,7 +722,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->InterNb=0;
                   Spec->InterMode=new;
                   Spec->InterModeParam=tmp;
-                  DataSpec_Clean(Spec,1,0,1);
+                  cmap=cseg=1;
                }
             }
             break;
@@ -751,9 +752,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      Spec->Inter[ii]=tmp;
                   }
                }
-               if (new) {
+               if (new || nobj!=Spec->InterNb) {
                   Spec->InterNb=nobj;
-                  DataSpec_Clean(Spec,1,0,1);
+                  cmap=cseg=1;
                }
             }
             break;
@@ -968,11 +969,16 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    }
 
    /*Assigner les limites d'affichage*/
-   if (smin || smax) {
+   if (cminmax) {
       if (Spec->Min==Spec->Max) {
          Spec->MinMax=DATASPEC_NOTSET;
       }
-      DataSpec_Clean(Spec,1,0,0);
+      cmap=1;
+   }
+
+   /*Cleanup des tableaux*/
+   if (cmap || cpos || cseg) {
+      DataSpec_Clean(Spec,cmap,cpos,cseg);
    }
 
    if (s)
