@@ -522,7 +522,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"georef");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (GeoRef_Get(Tcl_GetString(Objv[2]))) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -958,6 +958,8 @@ int GeoRef_Free(TGeoRef *Ref) {
 */
 void GeoRef_Clear(TGeoRef *Ref,int New) {
 
+   int n;
+
    if (New) {
       if (Ref->Name)         free(Ref->Name);         Ref->Name=NULL;
       if (Ref->Levels)       free(Ref->Levels);       Ref->Levels=NULL;
@@ -968,13 +970,20 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    if (Ref->String)       free(Ref->String);       Ref->String=NULL;
    if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
    if (Ref->InvTransform) free(Ref->InvTransform); Ref->InvTransform=NULL;
-   if (Ref->Pos)          free(Ref->Pos);          Ref->Pos=NULL;
    if (Ref->Lat)          free(Ref->Lat);          Ref->Lat=NULL;
    if (Ref->Lon)          free(Ref->Lon);          Ref->Lon=NULL;
    if (Ref->Hgt)          free(Ref->Hgt);          Ref->Hgt=NULL;
    if (Ref->Idx)          free(Ref->Idx);          Ref->Idx=NULL; Ref->NIdx=0;
    if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
    if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
+
+   if (Ref->Pos) {
+      for(n=0;n<Ref->LevelNb;n++) {
+         if (Ref->Pos[n]) free(Ref->Pos[n]);
+      }
+      free(Ref->Pos);
+      Ref->Pos=NULL;
+   }
 
 // Due to ezscint bugs, I cannot release the grid (gdaxes)
    if (Ref->Id>-1) {

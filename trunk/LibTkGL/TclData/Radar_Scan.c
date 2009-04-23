@@ -401,14 +401,16 @@ int Radar_DataParse(TData *Rad) {
  * Parametres   :
  *  <Rad>       : Structure de donnees de radar scan
  *  <Proj>      : Projection
+ *  <Level>     : Niveau a calculer
  *
  * Retour       :
+ *  <Vect3d*>   : Pointeur sur les positions (NULL si invalide)
  *
  * Remarques :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-Vect3d* Radar_Grid(TData *Rad,void *Proj) {
+Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
 
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
@@ -416,10 +418,19 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
    double     az,dt,th,cth,sth;
    int        i,j,k,idxi,idxk,dk;
 
-   Rad->Ref->Pos=(Vect3d*)malloc(FSIZE3D(Rad->Def)*sizeof(Vect3d));
-   if (!Rad->Ref->Pos) {
-      fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
-      return(NULL);
+   if (Rad->Ref->Pos && Rad->Ref->Pos[Level])
+      return(Rad->Ref->Pos[Level]);
+
+   /*Allocate memory for various levels*/
+   if (!Rad->Ref->Pos)
+      Rad->Ref->Pos=(Vect3d**)calloc(Rad->Ref->LevelNb,sizeof(Vect3d*));
+
+   if (!Rad->Ref->Pos[Level]) {
+      Rad->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Rad->Def)*sizeof(Vect3d));
+      if (!Rad->Ref->Pos[Level]) {
+         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+         return(NULL);
+      }
    }
    vol=head->Data->volScan[0];
 
@@ -435,37 +446,32 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj) {
             Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
             coord.Elev=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
             if (Proj) {
-               ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Rad->Ref->Pos[idxi],1);
+               ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Rad->Ref->Pos[Level][idxi],1);
             } else {
-               Vect_Init(Rad->Ref->Pos[idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.Elev);
+               Vect_Init(Rad->Ref->Pos[Level][idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.Elev);
             }
             idxi++;
          }
       }
    } else {
-      for (k=0;k<Rad->Def->NK;k++) {            /*Loop on the Sweeps*/
-         th=DEG2RAD(vol->sweep[k]->elevationAngle);
-         Rad->Ref->CTH=cos(th);
-         Rad->Ref->STH=sin(th);
-         dk=k*Rad->Def->NI*Rad->Def->NJ;
-         for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
-            idxi=j*Rad->Def->NI;
-            for (i=0;i<Rad->Def->NI;i++,idxi++) {           /*Loop on the Azimuths*/
+      th=DEG2RAD(vol->sweep[Level]->elevationAngle);
+      Rad->Ref->CTH=cos(th);
+      Rad->Ref->STH=sin(th);
+      for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
+         idxi=j*Rad->Def->NI;
+         for (i=0;i<Rad->Def->NI;i++,idxi++) {           /*Loop on the Azimuths*/
 
-               /*Figure out table plane indexes*/
-               idxk=dk+idxi;
-
-               if (i==Rad->Def->NI-1) {
-                  Vect_Assign(Rad->Ref->Pos[idxk],Rad->Ref->Pos[dk+j*Rad->Def->NI]);
-               } else {
-                  dt=j*head->Data->binResolutionKM*1000;
-                  Rad->Ref->Pos[idxk][2]=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
-                  Rad->Ref->Project(Rad->Ref,i,j,&Rad->Ref->Pos[idxk][1],&Rad->Ref->Pos[idxk][0],0,1);
-               }
+            /*Figure out table plane indexes*/
+            if (i==Rad->Def->NI-1) {
+               Vect_Assign(Rad->Ref->Pos[Level][idxi],Rad->Ref->Pos[Level][j*Rad->Def->NI]);
+            } else {
+               dt=j*head->Data->binResolutionKM*1000;
+               Rad->Ref->Pos[Level][idxi][2]=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
+               Rad->Ref->Project(Rad->Ref,i,j,&Rad->Ref->Pos[Level][idxi][1],&Rad->Ref->Pos[Level][idxi][0],0,1);
             }
          }
       }
-      ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Rad->Ref->Pos,NULL,FSIZE3D(Rad->Def));
+      ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Rad->Ref->Pos[Level],NULL,FSIZE3D(Rad->Def));
    }
 
    th=DEG2RAD(vol->sweep[Rad->Def->Level]->elevationAngle);

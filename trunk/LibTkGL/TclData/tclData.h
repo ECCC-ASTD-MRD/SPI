@@ -268,7 +268,7 @@ typedef struct TDataDef {
 
 struct TData;
 
-typedef Vect3d* (TData_Grid)     (struct TData *Field,void *Proj);
+typedef Vect3d* (TData_Grid)     (struct TData *Field,void *Proj,int Level);
 typedef void    (TData_Free)     (struct TData *Field);
 typedef void    (TData_Copy)     (void *To, void *From);
 typedef int     (TData_ReadCube) (Tcl_Interp *Interp,struct TData *Field,int Invert);
