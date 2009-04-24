@@ -398,8 +398,6 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
          Ref->Function=OCTNewCoordinateTransformation(Ref->Spatial,llref);
          Ref->InvFunction=OCTNewCoordinateTransformation(llref,Ref->Spatial);
          OSRDestroySpatialReference(llref);
-      } else {
-         fprintf(stderr,"(WARNING) GeoRef_WKTSet: Unable to create latlon spatial reference\n");
       }
    } else {
       fprintf(stderr,"(WARNING) GeoRef_WKTSet: Unable to get spatial reference\n");
