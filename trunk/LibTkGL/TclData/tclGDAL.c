@@ -785,12 +785,8 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
    while (entry) {
       band=Tcl_GetHashValue(entry);
 
-      if (band->Spec && band->Spec==Spec) {
-         if (Seg || (Map && !GLRender->ShaderAvailable)) {
-              GeoTex_Clear(&band->Tex,NULL);
-         } else if (Pos) {
-            GeoTex_ClearCoord(&band->Tex,NULL);
-         }
+      if (band && band->Spec && band->Spec==Spec) {
+//         GDAL_BandClean(band,Map,Pos,Seg);
       }
       entry=Tcl_NextHashEntry(&ptr);
    }
@@ -863,6 +859,8 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
    if ((band=(GDAL_Band*)TclY_HashDel(&GDAL_BandTable,Name))) {
 
+      DataSpec_FreeHash(Interp,band->Spec->Name);
+
       /* Liberation de la memoire allouee pour les textures*/
       band->Tex.Res=0;
       GDAL_BandClean(band,1,1,1);
@@ -872,8 +870,6 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
       if (band->GCPs)      free(band->GCPs);
       if (band->Def)       Data_DefFree(band->Def);
       if (band->Ref)       GeoRef_Destroy(Interp,band->Ref->Name);
-
-      DataSpec_FreeHash(Interp,band->Spec->Name);
 
       free(band);
    }
