@@ -885,6 +885,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
             } else {
                Spec->Map=CMap_Get(Tcl_GetString(Objv[++i]));
+               cmap=1;
             }
             break;
 
@@ -1113,7 +1114,7 @@ int DataSpec_FreeHash(Tcl_Interp *Interp,char *Name) {
          TclY_DeleteHashEntry(entry);
       }
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

@@ -508,7 +508,6 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          return(TCL_ERROR);
       }
    }
-fprintf(stderr,"------14\n");
 
    /*Loop on coordinates*/
    for(n=0;n<NbC;n++) {
@@ -587,7 +586,6 @@ fprintf(stderr,"------14\n");
          }
       }
    }
-fprintf(stderr,"------15\n");
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
 #endif
@@ -914,37 +912,18 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
  *
  *----------------------------------------------------------------------------
 */
-void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
-
-   TData          *data;
-   Tcl_HashSearch  ptr;
-   Tcl_HashEntry  *entry=NULL;
-
-   TclY_LockHash();
-   entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
-   while (entry) {
-      data=Tcl_GetHashValue(entry);
-
-      if (data->Spec && data->Spec==Spec) {
-         Data_Clean(data,Map,Pos,Seg);
-      }
-      entry=Tcl_NextHashEntry(&ptr);
-   }
-   TclY_UnlockHash();
-}
-
 void Data_Clean(TData *Data,int Map,int Pos,int Seg){
 
    int n;
 
    if (Data) {
-      if (Data->Ref && Data->Ref->Pos && Pos) {
+      if (Pos && Data->Ref && Data->Ref->Pos) {
          for(n=0;n<Data->Ref->LevelNb;n++) {
             if (Data->Ref->Pos[n]) free(Data->Ref->Pos[n]);
          }
          free(Data->Ref->Pos);
          Data->Ref->Pos=NULL;
-     }
+      }
 
       if (Map && Data->Map) {
          free(Data->Map);
@@ -956,6 +935,25 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          Data->Segments=NULL;
       }
    }
+}
+
+void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
+
+   TData          *data;
+   Tcl_HashSearch  ptr;
+   Tcl_HashEntry  *entry=NULL;
+
+   TclY_LockHash();
+   entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
+   while (entry) {
+      data=Tcl_GetHashValue(entry);
+
+      if (data && data->Spec && data->Spec==Spec) {
+         Data_Clean(data,Map,Pos,Seg);
+      }
+      entry=Tcl_NextHashEntry(&ptr);
+   }
+   TclY_UnlockHash();
 }
 
 /*----------------------------------------------------------------------------
