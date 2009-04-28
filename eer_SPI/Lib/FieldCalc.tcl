@@ -24,10 +24,9 @@
 #   FieldCalc::InsertDigit    { Digit }
 #   FieldCalc::InsertFunc     { Func Argc Trigo }
 #   FieldCalc::InsertOperator { Op }
-#   FieldCalc::Macro          { VP Id Fields }
+#   FieldCalc::Operand        { VP Id Fields }
 #   FieldCalc::Paste          { File Field }
 #   FieldCalc::Save           { File }
-#   FieldCalc::Select         { }
 #   FieldCalc::WidgetCond     { Frame }
 #   FieldCalc::WidgetConst    { Frame }
 #   FieldCalc::WidgetConv     { Frame }
@@ -63,13 +62,10 @@ namespace eval FieldCalc {
 
    set Param(Geom)     { 620x190+[winfo rootx $Parent]+[winfo rooty $Parent] }
    set Param(Title)    { "Calculatrice" "Calculator" }
-   set Param(Version)  2.0
+   set Param(Version)  2.1
 
    set Data(FieldNo)  0
-   set Data(Render)   0
    set Data(Formulas) {}
-   set Data(Macro)    ""
-   set Data(Edit)     .fieldcalc.expr.op.select
 
    #----- Textes et labels
 
@@ -88,7 +84,7 @@ namespace eval FieldCalc {
 
    #----- Erreurs
 
-   set Error(Macro)  { "FieldCalc macro : Champs resultants invalide" "FieldCalc macro : Invalid result field" }
+   set Error(Operand)  { "FieldCalc Operand : Champs resultants invalide" "FieldCalc Operand : Invalid result field" }
 
    #----- Messagess
 
@@ -102,14 +98,12 @@ namespace eval FieldCalc {
    set Bubble(Formula) { "Nom de la formule courante" "Current formula name" }
    set Bubble(Save)    { "Sauvegarde de la formule courante" "Save the current formula" }
    set Bubble(Del)     { "Suppression de la formule courante de la liste des formules sauvegardees" "Suppress the current formula from the saved list" }
-   set Bubble(Macro)   { "Formule macro appliquee automatiquement" "Automated macro" }
    set Bubble(Info)    { "Mantisse\nTapper la formule ou utiliser les boutons de la calculatrice.\nPour inserer un champs,\
                           selectionne le dans une boite de champs avec le bouton central de la souris."
                          "Mantisse\nType in the formula or use the calculator buttons\nTo insert a field,\
                           click on it with the middle mouse button in a fieldbox." }
    set Bubble(List)  { "Liste des operations effectuees" "Past operations made" }
    set Bubble(Field) { "Sauvegarder le champs resultant" "Save the result field" }
-   set Bubble(Draw)  { "Afficher le champs resultant" "Display the result field" }
 
    set Bubble(STO)   { "Memoriser le resultat" "Memorize the result" }
    set Bubble(RCL)   { "Rappeler le resultat memorise" "Recall memorized result" }
@@ -490,8 +484,7 @@ proc FieldCalc::Calculate { } {
    variable Data
 
    #----- Y a-t-il une expression a calculer ???
-
-   if { $Data(Operand) != "" } {
+   if { $Data(Operand)!="" } {
       ComboBox::Add .fieldcalc.expr.op $Data(Operand)
       set Data(Operand) [vexpr CALC[incr Data(FieldNo)] $Data(Operand)]
 
@@ -505,9 +498,11 @@ proc FieldCalc::Calculate { } {
          .fieldcalc.expr.param configure -state disabled
       }
       .fieldcalc.expr.op.select icursor end
-
-      FieldCalc::Select
    }
+   focus .fieldcalc.expr.op
+
+   Viewport::UpdateData $Page::Data(Frame)
+   Page::UpdateCommand $Page::Data(Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -527,10 +522,6 @@ proc FieldCalc::Calculate { } {
 
 proc FieldCalc::Close { } {
    variable Data
-
-   #----- Nettoyer l'affichage
-   set Data(Render) 0
-   FieldCalc::Select
 
    #----- Liberer les champs allouer pendant les calculs
    for { set i 1 } { $i<=$Data(FieldNo) } { incr i } {
@@ -629,82 +620,58 @@ proc FieldCalc::Window { { Parent .} } {
 
    FieldCalc::FormulaLoad
 
-   #----- Mantisse
-
    frame .fieldcalc.expr -relief raised -bd 1
-      radiobutton .fieldcalc.expr.lbl -text "Calc " -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-         -variable FieldCalc::Data(Edit) -value .fieldcalc.expr.op.select -selectcolor $GDefs(ColorHighLight)
-      ComboBox::Create .fieldcalc.expr.op FieldCalc::Data(Operand) editclose unsorted nodouble -1 "" 40 3 { }
+      entry .fieldcalc.expr.op -textvariable FieldCalc::Data(Operand) -bd 1 -bg $GDefs(ColorLight)
       button .fieldcalc.expr.save -image FOLDIN -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is $FieldCalc::Data(Operand)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is $FieldCalc::Data(Operand)] } { FieldParams::Window $FieldCalc::Data(Operand) } }
-      checkbutton .fieldcalc.expr.draw -image DOCSEL -relief sunken -onvalue 1 -offvalue 0 -overrelief raised -offrelief flat \
-        -command { FieldCalc::Select } -indicatoron false -variable FieldCalc::Data(Render) -bd 1
-      pack .fieldcalc.expr.lbl -side left -fill both
+      ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
+      button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaSave
+      button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
       pack .fieldcalc.expr.op -side left -fill both -expand true
-      pack .fieldcalc.expr.save .fieldcalc.expr.param .fieldcalc.expr.draw -side left -fill both
+      pack .fieldcalc.expr.param .fieldcalc.expr.save -side left
+      pack .fieldcalc.expr.sel -side left -fill both
+      pack .fieldcalc.expr.fsave .fieldcalc.expr.fdel -side left -fill both
    pack .fieldcalc.expr -side top -anchor e -padx 2 -pady 2 -fill x
 
-   frame .fieldcalc.form -relief raised -bd 1
-      radiobutton .fieldcalc.form.lbl -text "Macro" -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
-         -variable FieldCalc::Data(Edit) -value .fieldcalc.form.op -selectcolor $GDefs(ColorHighLight)
-      entry .fieldcalc.form.op -textvariable FieldCalc::Data(Macro) -bd 1 -bg $GDefs(ColorLight)
-      ComboBox::Create .fieldcalc.form.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
-      button .fieldcalc.form.save -image CALCSAVE -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaSave
-      button .fieldcalc.form.del  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
-      pack .fieldcalc.form.lbl -side left -fill both
-      pack .fieldcalc.form.op -side left -fill both -expand true
-      pack .fieldcalc.form.sel -side left -fill both
-      pack .fieldcalc.form.save .fieldcalc.form.del -side left -fill both
-   pack .fieldcalc.form -side top -anchor e -padx 2 -pady 2 -fill x
-
-   Bubble::Create .fieldcalc.expr.op.box    [lindex $Bubble(List) $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.op.select [lindex $Bubble(Info) $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.save      [lindex $Bubble(Field) $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.param     [lindex $Bubble(Param) $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.draw      [lindex $Bubble(Draw) $GDefs(Lang)]
-
-   Bubble::Create .fieldcalc.form.op        [lindex $Bubble(Macro)   $GDefs(Lang)]
-   Bubble::Create .fieldcalc.form.sel       [lindex $Bubble(Formula) $GDefs(Lang)]
-   Bubble::Create .fieldcalc.form.save      [lindex $Bubble(Save)    $GDefs(Lang)]
-   Bubble::Create .fieldcalc.form.del       [lindex $Bubble(Del)     $GDefs(Lang)]
+   Bubble::Create .fieldcalc.expr.sel       [lindex $Bubble(Formula) $GDefs(Lang)]
+   Bubble::Create .fieldcalc.expr.save      [lindex $Bubble(Field)   $GDefs(Lang)]
+   Bubble::Create .fieldcalc.expr.param     [lindex $Bubble(Param)   $GDefs(Lang)]
+   Bubble::Create .fieldcalc.expr.fsave     [lindex $Bubble(Save)    $GDefs(Lang)]
+   Bubble::Create .fieldcalc.expr.fdel      [lindex $Bubble(Del)     $GDefs(Lang)]
 
    #----- Creation des fonctions
 
    TabFrame::Create .fieldcalc.func 2 ""
    pack .fieldcalc.func -side right -fill both -expand true -padx 2 -pady 2
 
-   FieldCalc::WidgetMem    [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Mem) $GDefs(Lang)] False ""]
-   FieldCalc::WidgetConv   [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Conv) $GDefs(Lang)] False ""]
+   FieldCalc::WidgetMem    [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Mem)   $GDefs(Lang)] False ""]
+   FieldCalc::WidgetConv   [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Conv)  $GDefs(Lang)] False ""]
    FieldCalc::WidgetConst  [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Const) $GDefs(Lang)] False ""]
    FieldCalc::WidgetTrigo  [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Trigo) $GDefs(Lang)] False ""]
-   FieldCalc::WidgetMath   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Math) $GDefs(Lang)] False ""]
-   FieldCalc::WidgetStat   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Stat) $GDefs(Lang)] False ""]
-   FieldCalc::WidgetCond   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Cond) $GDefs(Lang)] False ""]
+   FieldCalc::WidgetMath   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Math)  $GDefs(Lang)] False ""]
+   FieldCalc::WidgetStat   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Stat)  $GDefs(Lang)] False ""]
+   FieldCalc::WidgetCond   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Cond)  $GDefs(Lang)] False ""]
    FieldCalc::WidgetOps    .fieldcalc
 
-   bind .fieldcalc <Return>   { FieldCalc::Calculate ; focus .fieldcalc.expr.op.select }
-   bind .fieldcalc <KP_Enter> { FieldCalc::Calculate ; focus .fieldcalc.expr.op.select }
+#   bind .fieldcalc <Return>   { FieldCalc::Calculate }
+#   bind .fieldcalc <KP_Enter> { FieldCalc::Calculate }
 
-   bind .fieldcalc.form.op <KeyRelease> { set FieldCalc::Data(Formula) ""; FieldCalc::FormulaSet }
-   bind .fieldcalc.form.op <Return>     { focus . ; Viewport::UpdateData $Page::Data(Frame) ; Page::UpdateCommand $Page::Data(Frame) }
-
-   bind .fieldcalc.expr.op.select <FocusIn> { set FieldCalc::Data(Edit) .fieldcalc.expr.op.select }
-   bind .fieldcalc.form.op        <FocusIn> { set FieldCalc::Data(Edit) .fieldcalc.form.op }
+   bind .fieldcalc.expr.op <KeyRelease> { set FieldCalc::Data(Formula) ""; FieldCalc::FormulaSet }
+   bind .fieldcalc.expr.op <Return>     { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
 
    wm resizable .fieldcalc True False
 
    TabFrame::Select .fieldcalc.func 0
 
-   focus $Data(Edit)
-   $Data(Edit) icursor 0
+   focus .fieldcalc.expr.op
+   .fieldcalc.expr.op icursor 0
 
    #----- Reset internal variable
 
    set Data(Operand) ""
    set Data(FieldNo) 0
-   set Data(Render)  0
 }
 
 #----------------------------------------------------------------------------
@@ -734,10 +701,9 @@ proc FieldCalc::FormulaDel { } {
 
       if { $del } {
 
-         ComboBox::Del .fieldcalc.form.sel $Data(Formula)
+         ComboBox::Del .fieldcalc.expr.sel $Data(Formula)
          set Data(Formulas) [lreplace $Data(Formulas) $idx $idx]
          set Data(Formula) ""
-         set Data(Macro) ""
 
          file rename -force $GDefs(DirEER)/eer_FieldCalc $GDefs(DirEER)/eer_FieldCalc.old
 
@@ -835,9 +801,9 @@ proc FieldCalc::FormulaSave { } {
 
    if { $add } {
       lappend Data(Formulas) $Data(Formula)
-      ComboBox::Add .fieldcalc.form.sel $Data(Formula)
+      ComboBox::Add .fieldcalc.expr.sel $Data(Formula)
    }
-   set Data(Formula$Data(Formula)) $Data(Macro)
+   set Data(Formula$Data(Formula)) $Data(Operand)
 
    if { [file exist $GDefs(DirEER)/eer_FieldCalc] } {
       file rename -force $GDefs(DirEER)/eer_FieldCalc $GDefs(DirEER)/eer_FieldCalc.old
@@ -873,11 +839,11 @@ proc FieldCalc::FormulaSet { { Formula False } } {
 
    catch {
       if { $Formula } {
-         set Data(Macro) $Data(Formula$Data(Formula))
+         set Data(Operand) $Data(Formula$Data(Formula))
       }
 
-      set Viewport::Data(Macro$Viewport::Data(VP))     $Data(Macro)
-      set Viewport::Data(MacroName$Viewport::Data(VP)) $Data(Formula)
+      set Viewport::Data(Operand$Viewport::Data(VP))   $Data(Operand)
+      set Viewport::Data(OperandName$Viewport::Data(VP)) $Data(Formula)
    }
 }
 #----------------------------------------------------------------------------
@@ -900,10 +866,10 @@ proc FieldCalc::FormulaSet { { Formula False } } {
 proc FieldCalc::InsertDigit { Digit } {
    variable Data
 
-   if { [$Data(Edit) selection present] } {
-      $Data(Edit) delete sel.first sel.last
+   if { [.fieldcalc.expr.op selection present] } {
+      .fieldcalc.expr.op delete sel.first sel.last
    }
-   $Data(Edit) insert insert $Digit
+   .fieldcalc.expr.op insert insert $Digit
 }
 
 #----------------------------------------------------------------------------
@@ -941,16 +907,16 @@ proc FieldCalc::InsertFunc { Func Argc Trigo } {
 
    #----- Si il y a selection, s'en servir pour le premier argument de la fonction
 
-   if { [$Data(Edit) selection present] } {
-      $Data(Edit) insert sel.first "${Func}("
+   if { [.fieldcalc.expr.op selection present] } {
+      .fieldcalc.expr.op insert sel.first "${Func}("
 
       set virg ""
 
       while { [incr Argc -1] } {
          append virg ","
       }
-      $Data(Edit) insert sel.last "${virg})"
-      $Data(Edit) icursor [expr [$Data(Edit) index sel.last] +1]
+      .fieldcalc.expr.op insert sel.last "${virg})"
+      .fieldcalc.expr.op icursor [expr [.fieldcalc.expr.op index sel.last] +1]
 
   } else {
 
@@ -961,11 +927,11 @@ proc FieldCalc::InsertFunc { Func Argc Trigo } {
          append virg ","
       }
 
-      $Data(Edit) insert inser "${virg})"
-      $Data(Edit) icursor [expr [$Data(Edit) index insert] -$idx]
+      .fieldcalc.expr.op insert inser "${virg})"
+      .fieldcalc.expr.op icursor [expr [.fieldcalc.expr.op index insert] -$idx]
   }
 
-   $Data(Edit) selection clear
+   .fieldcalc.expr.op selection clear
 }
 
 #----------------------------------------------------------------------------
@@ -986,11 +952,11 @@ proc FieldCalc::InsertFunc { Func Argc Trigo } {
 proc FieldCalc::InsertOperator { Op } {
    variable Data
 
-   $Data(Edit) insert insert $Op
+   .fieldcalc.expr.op insert insert $Op
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <FieldCalc::Macro>
+# Nom      : <FieldCalc::Operand>
 # Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Appliquer le calcul MACRO a la liste de champs disponibles.
@@ -1011,7 +977,7 @@ proc FieldCalc::InsertOperator { Op } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::Macro { VP Id Fields } {
+proc FieldCalc::Operand { VP Id Fields } {
    global   GDefs
    variable Error
 
@@ -1028,7 +994,7 @@ proc FieldCalc::Macro { VP Id Fields } {
       FSTD::UnRegister $Id False
    }
 
-   if { [string trim $Viewport::Data(Macro$VP)]=="" } {
+   if { [string trim $Viewport::Data(Operand$VP)]=="" } {
       return $Fields
    }
 
@@ -1051,8 +1017,8 @@ proc FieldCalc::Macro { VP Id Fields } {
    #----- Replace the expression tokens with the fields
 
    set expr ""
-   for { set i 0 } { $i < [string length $Viewport::Data(Macro$VP)] } { incr i } {
-      set c [string index $Viewport::Data(Macro$VP) $i]
+   for { set i 0 } { $i < [string length $Viewport::Data(Operand$VP)] } { incr i } {
+      set c [string index $Viewport::Data(Operand$VP) $i]
       set idx [lsearch -exact $ids $c]
       if { $idx>=0 } {
          if { $idx<$lfield } {
@@ -1075,7 +1041,7 @@ proc FieldCalc::Macro { VP Id Fields } {
    if { !$nout && $expr!="" } {
       set res [vexpr $Id $expr]
       if { ![fstdfield is $res] } {
-         Dialog::CreateError . "[lindex $Error(Macro) $GDefs(Lang)]\n\n$res" $GDefs(Lang)
+         Dialog::CreateError . "[lindex $Error(Operand) $GDefs(Lang)]\n\n$res" $GDefs(Lang)
          set data $Fields
       } else {
          FSTD::Register $res
@@ -1116,9 +1082,9 @@ proc FieldCalc::Paste { File Field } {
    }
 
    if { !$File } {
-     $Data(Edit) insert insert "$Field"
+     .fieldcalc.expr.op insert insert "$Field"
    } else {
-     $Data(Edit) insert insert "field($File,$Field)"
+     .fieldcalc.expr.op insert insert "field($File,$Field)"
    }
 }
 
@@ -1149,41 +1115,6 @@ proc FieldCalc::Save { File } {
    fstdfile open CALCFILE write $File
    fstdfield write $Data(Operand) CALCFILE 0 True
    fstdfile close CALCFILE
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::Select>
-# Creation : Jullet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajouter le champs a la liste d'affichage.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::Select { } {
-   variable Data
-
-   foreach fld [lsearch -all -inline -glob $FSTD::Data(ListTool) CALC*] {
-      Viewport::AssignedTo $fld page vp
-      Viewport::UnAssign $page $vp $fld -1
-   }
-
-   foreach fld [lsearch -all -inline -glob $Obs::Data(ListTool) CALC*] {
-      Viewport::AssignedTo $fld page vp
-      Viewport::UnAssign $page $vp $fld -1
-   }
-
-   if { $Data(Render) } {
-      if { [fstdfield is $Data(Operand)] || [observation is $Data(Operand)] } {
-         Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) $Data(Operand) -1
-      }
-   }
-   Viewport::UpdateData $Page::Data(Frame) $Viewport::Data(VP)
 }
 
 #----------------------------------------------------------------------------
@@ -1524,7 +1455,7 @@ proc FieldCalc::WidgetOps { Frame } {
 
    frame $Frame.cmd
       button $Frame.cmd.equal -text "   =  "  -bd 1 -command { FieldCalc::Calculate }
-      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) "" ; FieldCalc::Select }
+      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) "" }
       button $Frame.cmd.int2  -text "<<" -command "FieldCalc::InsertOperator <<" -bd 1
       button $Frame.cmd.int3  -text "<<<" -command "FieldCalc::InsertOperator <<<" -bd 1
       button $Frame.cmd.idx   -text "\[\]" -command "FieldCalc::InsertOperator \\\[\\\]" -bd 1
