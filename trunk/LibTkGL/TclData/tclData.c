@@ -276,7 +276,6 @@ void Data_GetStat(TData *Field){
       Field->Def->Mode=Field->Def->Data[0];
    }
 
-
    /*Initialiser la structure*/
    if (!Field->Stat)
       Field->Stat=(TDataStat*)malloc(sizeof(TDataStat));
@@ -1212,13 +1211,14 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       Def->Limits[2][0]=0;
       Def->Limits[2][1]=NK-1;
 
-      if (Def->Mode && Def->Mode!=Def->Data[0])
+      if (Def->Mode && Def->Mode!=Def->Data[0]) {
          free(Def->Mode);
+         Def->Mode=NULL;
+      }
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
-            Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*TData_Size[Def->Type]);
-            if (!Def->Data[i]) {
+            if (!(Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*TData_Size[Def->Type]))) {
                free(Def);
                return(NULL);
             }
@@ -1372,7 +1372,7 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
  * Nom      : <Data_DefTile>
  * Creation : Novembre 2007- J.P. Gauthier - CMC/CMOE
  *
- * But      : Copier les donnees d'un TDataDef ands un autres (Tiling).
+ * But      : Copier les donnees d'un TDataDef dans un autres (Tiling).
  *
  * Parametres :
  *  <DefTo>   : Destination
