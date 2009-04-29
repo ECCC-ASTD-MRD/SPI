@@ -43,7 +43,7 @@ typedef struct ThreadSpecificData {
 static Tcl_ThreadDataKey threadKey;
 
 /*0=binary 1=real 2=unsigned integer 3=character 4=signed integer 5=IEEE style representation 6=whatever RPN comes with*/
-static int FSTD_Type[]={ 1,10,6,2,7,10,10 };
+static int FSTD_Type[]={ 1,10,6,2,7,10,10,3 };
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_TypeCheckt>
@@ -2046,13 +2046,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    TData_Type  dtype;
    FSTD_Head   h;
    TFSTDVector *uvw;
-   int         ok,ni,nj,nk,i,type,idx;
+   int         ok,ni,nj,nk,i,type,idx,datyp;
    float       lvl;
    char        nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
    double      nhour;
 
 #ifdef LNK_FSTD
-
    file=FSTD_FileGet(Interp,Id);
    if(FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
@@ -2080,11 +2079,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          &grtyp,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
 
-   h.DATYP=h.DATYP<=0?1:h.DATYP;
-//   h.DATYP=h.DATYP>=5?1:h.DATYP;
-   h.DATYP=h.DATYP>128?h.DATYP-128:h.DATYP;
-
-   dtype=FSTD_TypeCheck(h.DATYP,h.NBITS);
+   datyp=h.DATYP<=0?1:h.DATYP;
+   datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
+   dtype=FSTD_TypeCheck(datyp,h.NBITS);
 
    if (ok<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not get field information for ",Name," (c_fstprm failed)",(char*)NULL);
@@ -2251,7 +2248,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    if (field->Spec->Desc)
       free(field->Spec->Desc);
    field->Spec->Desc=strdup(h.NOMVAR);
-   field->Def->Type=FSTD_Type[h.DATYP];
+   field->Def->Type=FSTD_Type[datyp];
    memcpy(field->Head,&h,sizeof(FSTD_Head));
 
 #endif
@@ -2286,10 +2283,10 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
    FSTD_Head   *head=(FSTD_Head*)Field->Head;
    TFSTDVector *uvw;
    TGeoRef     *ref;
-   int          idxs[512],tmp[512],i,k,k2,idx,ok,idump,ni,nj,nk,type;
+   int          idxs[1024],tmp[1024],i,k,k2,idx,ok,idump,ni,nj,nk,type,ip1;
    char         cdump[16];
-   void        *p;
-   float        levels[512];
+   char        *p;
+   float        levels[1024];
 
    if (Field->Def->NK>1 || Field->Ref->Grid[0]=='V')
       return(1);
@@ -2372,28 +2369,28 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
 
       /*Recuperer le data seulement*/
       ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
-         &idump,&i,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
+         &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
          &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
 
       /*Champs vectoriel ???*/
       if (uvw) {
          if (uvw->VV) {
-            ok=c_fstinf(head->FID->Id,&idump,&idump,&idump,head->DATEV,head->ETIKET,i,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
             Def_Pointer(Field->Def,1,idx,p);
-            c_fstluk(p,ok,&idump,&idump,&idump);
+            ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
+            c_fstluk(p,ok,&ni,&nj,&idump);
          }
          if (uvw->WW) {
-            ok=c_fstinf(head->FID->Id,&idump,&idump,&idump,head->DATEV,head->ETIKET,i,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
             Def_Pointer(Field->Def,2,idx,p);
-            c_fstluk(p,ok,&idump,&idump,&idump);
+            ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
+            c_fstluk(p,ok,&ni,&nj,&idump);
          }
       }
 
       /*Assigner le niveaux courant*/
-      if (i==head->IP1) {
+      if (ip1==head->IP1) {
          Field->Def->Level=tmp[k];
       }
-      levels[tmp[k]]=FSTD_IP2Level(i,&type);
+      levels[tmp[k]]=FSTD_IP2Level(ip1,&type);
 
       if (ok<0) {
          fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
