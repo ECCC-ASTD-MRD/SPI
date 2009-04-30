@@ -814,6 +814,7 @@ proc Graph::ParamsScaleUniform { Type GR { Update True }  } {
    variable Data
 
    upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
 
    if { $graph(Uniform) } {
       pack forget $Data(Tab).graph.scale.valy
@@ -821,6 +822,9 @@ proc Graph::ParamsScaleUniform { Type GR { Update True }  } {
       pack $Data(Tab).graph.scale.valy -side top -padx 2 -pady 2 -fill x
    }
 
+   if { $Update } {
+      Graph::${Type}::Update $data(FrameData) $GR
+   }
    Graph::${Type}::Graph $GR
 }
 
