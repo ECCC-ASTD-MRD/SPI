@@ -28,12 +28,7 @@
 
 package provide Convert 1.0
 
-proc IdConvert { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE package Convert Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Package Convert 1.0" }
 
 namespace eval Convert { } {
    variable Lbl

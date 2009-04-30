@@ -41,12 +41,7 @@
 
 package provide TrajBox 1.2
 
-proc IdTrajBox { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package TrajBox Version 1.2"
-   }
-}
+catch { SPI::Splash "Loading Widget Package TrajBox 1.2" }
 
 namespace eval TrajBox {
    variable Lbl

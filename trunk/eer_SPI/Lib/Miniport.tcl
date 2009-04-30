@@ -25,12 +25,7 @@
 
 package provide Miniport 2.1
 
-proc IdMiniport { show } {
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package Miniport Version 2.1"
-   }
-}
+catch { SPI::Splash "Loading Canvas Package Miniport 2.1" }
 
 namespace eval Miniport { } {
    variable Params

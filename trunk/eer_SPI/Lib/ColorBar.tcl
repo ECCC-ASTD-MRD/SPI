@@ -28,13 +28,7 @@
 
 package provide ColorBar 1.1
 
-proc IdColorBar { show } {
-   global GDefs
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package ColorBar Version 1.1"
-   }
-}
+catch { SPI::Splash "Loading Canvas Package ColorBar 1.1" }
 
 namespace eval ColorBar {
    variable Data

@@ -26,12 +26,7 @@
 
 package provide Areas 4.0
 
-proc IdAreas { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Data package Areas Version 4.0"
-   }
-}
+catch { SPI::Splash "Loading Data Package Areas 4.0" }
 
 namespace eval Areas {
    variable Lbl

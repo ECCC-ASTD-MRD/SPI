@@ -43,12 +43,7 @@
 
 package provide ObsBox 1.2
 
-proc IdObsBox { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package ObsBox Version 1.2"
-   }
-}
+catch { SPI::Splash "Loading Widget Package ObsBox 1.2" }
 
 namespace eval ObsBox {
    variable Lbl

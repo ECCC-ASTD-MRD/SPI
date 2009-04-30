@@ -25,13 +25,7 @@
 
 package provide FontBox 1.1
 
-proc IdFontBox { show } {
-   global GDefs
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget package FontBox Version 1.1"
-   }
-}
+catch { SPI::Splash "Loading Widget Package FontBox 1.1" }
 
 namespace eval FontBox {
    global GDefs
@@ -56,7 +50,7 @@ namespace eval FontBox {
    font create fontsel -family $Data(Family) -weight $Data(Weight) -size -$Data(Size) \
       -slant $Data(Slant) -underline $Data(Underline) -overstrike $Data(Overstrike)
 
-   package require ComboBox    ; IdComboBox False
+   package require ComboBox
 }
 
 #------------------------------------------------------------------------------

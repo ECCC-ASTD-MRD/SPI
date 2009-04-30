@@ -58,13 +58,7 @@
 
 package provide Graph 2.0
 
-proc IdGraph { show } {
-   global GDefs
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package Graph Version 2.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Graph 2.0" }
 
 namespace eval Graph {
    variable Font

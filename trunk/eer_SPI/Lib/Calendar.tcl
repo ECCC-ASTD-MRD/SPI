@@ -31,12 +31,7 @@
 
 package provide Calendar 1.0
 
-proc IdCalendar { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package Calendar Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Calendar 1.0" }
 
 namespace eval Calendar {
    global GDefs

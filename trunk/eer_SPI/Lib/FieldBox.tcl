@@ -51,19 +51,14 @@
 
 package provide FieldBox 2.2
 
-proc IdFieldBox { Show } {
+catch { SPI::Splash "Loading Widget Package FieldBox 2.2" }
 
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package FieldBox Version 2.2"
-   }
-
-   package require Bubble        ; IdBubble        false
-   package require ListboxBubble ; IdListboxBubble false
-   package require SelectBox     ; IdSelectBox     false
-   package require DateStuff     ; IdDateStuff     false
-   package require FileBox       ; IdFileBox       false
-   package require Info          ; IdInfo          false
-}
+package require Bubble
+package require ListboxBubble
+package require SelectBox
+package require DateStuff
+package require FileBox
+package require Info
 
 namespace eval FieldBox {
    variable Lbl

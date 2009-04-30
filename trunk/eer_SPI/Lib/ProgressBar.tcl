@@ -38,6 +38,7 @@
 package require Tk 8.0
 package provide ProgressBar 1.0
 
+catch { SPI::Splash "Loading Widget Package ProgressBar 1.0" }
 
 namespace eval ::ProgressBar {
    # this is the public interface

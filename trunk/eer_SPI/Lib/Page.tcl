@@ -117,30 +117,23 @@
 
 package provide Page 5.0
 
-proc IdPage { show } {
-   global GDefs
+catch { SPI::Splash "Loading Canvas Package Page 5.0" }
 
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package Page Version 5.0"
-   }
+package require OpenGL
 
-   package require OpenGL  ; IdOpenGL  True
+#----- Inclusion de la librairie de projection
+load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkViewport$GDefs(Ext)
+load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim
 
-   #----- Inclusion de la librairie de projection
-
-   load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkViewport$GDefs(Ext)
-   load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim
-
-   package require PrintBox  ; IdPrintBox  False
-   package require ProjCam   ; IdProjCam   False
-   package require Convert   ; IdConvert   False
-   package require FrameDefs ; IdFrameDefs False
-   package require ColorBox  ; IdColorBox  False
-   package require ColorBar  ; IdColorBar  False
-   package require DataBar   ; IdDataBar   False
-   package require FontBox   ; IdFontBox   True
-   package require MapBox    ; IdMapBox    True
-}
+package require PrintBox
+package require ProjCam
+package require Convert
+package require FrameDefs
+package require ColorBox
+package require ColorBar
+package require DataBar
+package require FontBox
+package require MapBox
 
 namespace eval Page {
    variable Data

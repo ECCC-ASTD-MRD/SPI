@@ -32,12 +32,7 @@
 
 package provide ListboxBubble 1.2
 
-proc IdListboxBubble { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package ListboxBubble Version 1.2"
-   }
-}
+catch { SPI::Splash "Loading Widget Package ListboxBubble 1.2" }
 
 namespace eval ListboxBubble {
    variable Data

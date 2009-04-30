@@ -34,17 +34,12 @@
 
 package provide FileBox 3.1
 
-proc IdFileBox { Show } {
+catch { SPI::Splash "Loading Widget Package FileBox 3.1" }
 
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget package FileBox Version 3.1"
-   }
-
-   package require Dialog     ; IdDialog     False
-   package require ComboBox   ; IdComboBox   False
-   package require WidgetDefs ; IdWidgetDefs False
-   package require Bubble     ; IdBubble     False
-}
+package require Dialog
+package require ComboBox
+package require WidgetDefs
+package require Bubble
 
 namespace eval FileBox {
    global env

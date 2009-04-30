@@ -35,12 +35,7 @@
 
 package provide MetData 1.0
 
-proc IdMetData { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Package MetData Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package MetData 1.0" }
 
 namespace eval MetData { } {
    variable Data

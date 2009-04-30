@@ -13,7 +13,6 @@
 #
 # Fonctions:
 #
-#   FieldCalc::Calculate      { }
 #   FieldCalc::Close          { }
 #   FieldCalc::ConvertFactor  { }
 #   FieldCalc::ConvertList    { Frame }
@@ -42,11 +41,7 @@
 
 package provide FieldCalc 2.1
 
-proc IdFieldCalc { Show } {
-  if { $Show } {
-    puts "(INFO) Loading Standard CMC/CMOE Widget Package FieldCalc Version 2.1"
-  }
-}
+catch { SPI::Splash "Loading Widget Package FieldCalc 2.1" }
 
 namespace eval FieldCalc {
    variable Lbl
@@ -467,45 +462,6 @@ namespace eval FieldCalc {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <FieldCalc::Calculate>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer le calcul de l'expression mathematique.
-#
-# Parametres   :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::Calculate { } {
-   variable Data
-
-   #----- Y a-t-il une expression a calculer ???
-   if { $Data(Operand)!="" } {
-      ComboBox::Add .fieldcalc.expr.op $Data(Operand)
-      set Data(Operand) [vexpr CALC[incr Data(FieldNo)] $Data(Operand)]
-
-      #----- Le resultat est-il un champs ???
-
-      if { [fstdfield is $Data(Operand)] } {
-         .fieldcalc.expr.save configure -state normal
-         .fieldcalc.expr.param configure -state normal
-      } else {
-         .fieldcalc.expr.save configure -state disabled
-         .fieldcalc.expr.param configure -state disabled
-      }
-      .fieldcalc.expr.op.select icursor end
-   }
-   focus .fieldcalc.expr.op
-
-   Viewport::UpdateData $Page::Data(Frame)
-   Page::UpdateCommand $Page::Data(Frame)
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <FieldCalc::Close>
 # Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -522,11 +478,6 @@ proc FieldCalc::Calculate { } {
 
 proc FieldCalc::Close { } {
    variable Data
-
-   #----- Liberer les champs allouer pendant les calculs
-   for { set i 1 } { $i<=$Data(FieldNo) } { incr i } {
-      fstdfield free CALC$i
-   }
 
    destroy .fieldcalc
 }
@@ -623,9 +574,9 @@ proc FieldCalc::Window { { Parent .} } {
    frame .fieldcalc.expr -relief raised -bd 1
       entry .fieldcalc.expr.op -textvariable FieldCalc::Data(Operand) -bd 1 -bg $GDefs(ColorLight)
       button .fieldcalc.expr.save -image FOLDIN -relief flat -state disabled -overrelief raised -bd 1 \
-         -command { if { [fstdfield is $FieldCalc::Data(Operand)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
+         -command { if { [fstdfield is CALC$Viewport::Data(VP)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
-         -command { if { [fstdfield is $FieldCalc::Data(Operand)] } { FieldParams::Window $FieldCalc::Data(Operand) } }
+         -command { if { [fstdfield is CALC$Viewport::Data(VP)] } { FieldParams::Window CALC$Viewport::Data(VP) } }
       ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
       button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaSave
       button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
@@ -654,9 +605,6 @@ proc FieldCalc::Window { { Parent .} } {
    FieldCalc::WidgetStat   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Stat)  $GDefs(Lang)] False ""]
    FieldCalc::WidgetCond   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Cond)  $GDefs(Lang)] False ""]
    FieldCalc::WidgetOps    .fieldcalc
-
-#   bind .fieldcalc <Return>   { FieldCalc::Calculate }
-#   bind .fieldcalc <KP_Enter> { FieldCalc::Calculate }
 
    bind .fieldcalc.expr.op <KeyRelease> { set FieldCalc::Data(Formula) ""; FieldCalc::FormulaSet }
    bind .fieldcalc.expr.op <Return>     { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
@@ -842,8 +790,8 @@ proc FieldCalc::FormulaSet { { Formula False } } {
          set Data(Operand) $Data(Formula$Data(Formula))
       }
 
-      set Viewport::Data(Operand$Viewport::Data(VP))   $Data(Operand)
-      set Viewport::Data(OperandName$Viewport::Data(VP)) $Data(Formula)
+      set Viewport::Data(Operand$Viewport::Data(VP)) $Data(Operand)
+      set Viewport::Data(Formula$Viewport::Data(VP)) $Data(Formula)
    }
 }
 #----------------------------------------------------------------------------
@@ -963,7 +911,6 @@ proc FieldCalc::InsertOperator { Op } {
 #
 # Parametres :
 #   <VP>     : Identificateur du viewport
-#   <Id>     : Identificateur du champs resultants
 #   <Fields> : Liste des champs disponibles
 #
 # Retour:
@@ -977,9 +924,22 @@ proc FieldCalc::InsertOperator { Op } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::Operand { VP Id Fields } {
+proc FieldCalc::Operand { VP Fields } {
    global   GDefs
    variable Error
+
+   #----- Cleanup existing operand result
+   if { [fstdfield is CALC$VP] } {
+      fstdfield free CALC$VP
+      FSTD::UnRegister CALC$VP False
+   }
+
+   catch { .fieldcalc.expr.save configure -state disabled; .fieldcalc.expr.param configure -state disabled }
+
+   #----- If no operand vailable, do nothing
+   if { [string trim $Viewport::Data(Operand$VP)]=="" } {
+      return $Fields
+   }
 
    set data   ""
    set others {}
@@ -989,17 +949,7 @@ proc FieldCalc::Operand { VP Id Fields } {
    set vert   False
    set ids    { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
 
-   if { [fstdfield is $Id] } {
-      fstdfield free $Id
-      FSTD::UnRegister $Id False
-   }
-
-   if { [string trim $Viewport::Data(Operand$VP)]=="" } {
-      return $Fields
-   }
-
    #----- Separate the fields from the rest
-
    foreach fld $Fields {
       if { [fstdfield is $fld] && [fstdfield define $fld -GRTYP]!="V" } {
          if { [fstdfield define $fld -NK]>1 } {
@@ -1015,7 +965,6 @@ proc FieldCalc::Operand { VP Id Fields } {
    }
 
    #----- Replace the expression tokens with the fields
-
    set expr ""
    for { set i 0 } { $i < [string length $Viewport::Data(Operand$VP)] } { incr i } {
       set c [string index $Viewport::Data(Operand$VP) $i]
@@ -1039,7 +988,7 @@ proc FieldCalc::Operand { VP Id Fields } {
    #----- Check that we have enough fields
 
    if { !$nout && $expr!="" } {
-      set res [vexpr $Id $expr]
+      set res [vexpr CALC$VP $expr]
       if { ![fstdfield is $res] } {
          Dialog::CreateError . "[lindex $Error(Operand) $GDefs(Lang)]\n\n$res" $GDefs(Lang)
          set data $Fields
@@ -1047,6 +996,7 @@ proc FieldCalc::Operand { VP Id Fields } {
          FSTD::Register $res
          lappend data $res
          fstdfield stats $res -tag [fstdfield stats [lindex $fields 0] -tag]
+         catch { .fieldcalc.expr.save configure -state normal; .fieldcalc.expr.param configure -state normal }
       }
    } else {
        return $Fields
@@ -1106,14 +1056,14 @@ proc FieldCalc::Paste { File Field } {
 proc FieldCalc::Save { File } {
    variable Data
 
-   if { $File == "" } {
+   if { $File=="" } {
       return
    }
 
-   FieldParams::Window $Data(Operand)
+   FieldParams::Window CALC$Viewport::Data(VP)
 
    fstdfile open CALCFILE write $File
-   fstdfield write $Data(Operand) CALCFILE 0 True
+   fstdfield write CALC$Viewport::Data(VP) CALCFILE 0 True
    fstdfile close CALCFILE
 }
 
@@ -1454,8 +1404,8 @@ proc FieldCalc::WidgetOps { Frame } {
    pack $Frame.ops -side top -pady 2
 
    frame $Frame.cmd
-      button $Frame.cmd.equal -text "   =  "  -bd 1 -command { FieldCalc::Calculate }
-      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) "" }
+      button $Frame.cmd.equal -text "   =  "  -bd 1 -command { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
+      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
       button $Frame.cmd.int2  -text "<<" -command "FieldCalc::InsertOperator <<" -bd 1
       button $Frame.cmd.int3  -text "<<<" -command "FieldCalc::InsertOperator <<<" -bd 1
       button $Frame.cmd.idx   -text "\[\]" -command "FieldCalc::InsertOperator \\\[\\\]" -bd 1

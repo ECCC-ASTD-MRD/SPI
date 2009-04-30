@@ -23,13 +23,7 @@
 
 package provide ColorBox 2.0
 
-proc IdColorBox { show } {
-   global GDefs
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package ColorBox Version 2.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package ColorBox 2.0" }
 
 namespace eval ColorBox {
    global GDefs

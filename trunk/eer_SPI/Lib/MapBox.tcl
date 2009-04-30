@@ -32,14 +32,7 @@
 
 package provide MapBox 3.0
 
-proc IdMapBox { show } {
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package MapBox Version 3.0"
-   }
-
-   package require Bubble ; IdBubble False
-}
+catch { SPI::Splash "Loading Widget Package MapBox 3.0" }
 
 namespace eval MapBox {
    variable Data

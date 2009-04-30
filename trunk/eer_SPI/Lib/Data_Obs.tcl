@@ -31,12 +31,7 @@
 
 package provide Obs 3.4
 
-proc IdObs { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Data package Obs Version 3.4"
-   }
-}
+catch { SPI::Splash "Loading Data Package Obs 3.4" }
 
 namespace eval Obs {
    global GDefs

@@ -19,12 +19,7 @@
 
 package provide Clock 1.0
 
-proc IdClock { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package Clock Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Clock 1.0" }
 
 namespace eval Clock {
    global GDefs

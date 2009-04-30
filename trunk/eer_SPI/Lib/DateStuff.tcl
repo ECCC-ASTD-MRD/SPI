@@ -29,12 +29,7 @@
 
 package provide DateStuff 1.0
 
-proc IdDateStuff { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE package DateStuff Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Package DateStuff 1.0" }
 
 namespace eval DateStuff {
    variable Data

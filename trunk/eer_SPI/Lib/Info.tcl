@@ -31,12 +31,7 @@
 
 package provide Info 1.0
 
-proc IdInfo { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package Info Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Info 1.0" }
 
 namespace eval Info {
    variable Lbl

@@ -28,12 +28,7 @@
 
 package provide Debug 1.1
 
-proc IdDebug { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Package Debug Version 1.1"
-   }
-}
+catch { SPI::Splash "Loading Package Debug 1.1" }
 
 namespace eval Debug {
    variable Defs

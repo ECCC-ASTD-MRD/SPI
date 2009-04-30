@@ -63,12 +63,7 @@
 
 package provide Viewport 5.0
 
-proc IdViewport { show } {
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package Viewport Version 5.0"
-   }
-}
+catch { SPI::Splash "Loading Canvas Package Viewport 5.0" }
 
 namespace eval Viewport {
    variable Data
@@ -267,14 +262,12 @@ proc Viewport::Activate { Frame { VP "" } } {
    if { $Data(VP)!="" && [llength [$Frame.page.canvas find withtag $Data(VP)]] } {
 
       #----- Recuperer et instaurer ses parametres
-
       Viewport::ConfigGet $Frame $Data(VP)
       Viewport::ConfigPut $Frame $Data(VP)
 
-      #----- Macro de la calculatrice
-
-      set FieldCalc::Data(Macro)   $Data(Macro$Data(VP))
-      set FieldCalc::Data(Formula) $Data(MacroName$Data(VP))
+      #----- Operande de la calculatrice
+      set FieldCalc::Data(Operand) $Data(Operand$Data(VP))
+      set FieldCalc::Data(Formula) $Data(Formula$Data(VP))
    }
 }
 
@@ -1144,8 +1137,8 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
    set Data(Height$vp)    $Height    ;#Hauteur de la projection
    set Data(Data$vp)      ""         ;#Donnees associees
    set Data(Frame$vp)     $Frame     ;#Frame
-   set Data(Macro$vp)     ""         ;#Calcul Macro
-   set Data(MacroName$vp) ""         ;#Calcul Macro
+   set Data(Operand$vp)   ""         ;#Operande de calcul
+   set Data(Formula$vp)   ""         ;#Nom de la formule de calcul
    set Data(Link$vp)      ""         ;#Lien a un autre Viewport
    set Data(Linked$vp)    ""         ;#Viewport liees
 
@@ -1242,8 +1235,8 @@ proc Viewport::Destroy { Frame { VP {} } } {
          unset Data(Height$vp)
          unset Data(Data$vp)
          unset Data(Frame$vp)
-         unset Data(Macro$vp)
-         unset Data(MacroName$vp)
+         unset Data(Operand$vp)
+         unset Data(Formula$vp)
 
          #----- Clear le lien source si c'est le vp courant
          if { [lindex $Data(Link) 1]=="$vp" } {
@@ -2933,7 +2926,7 @@ proc Viewport::UpdateData { Frame { VP { } } } {
             $Frame.page.canvas itemconf $vp -data {}
          }
       } else {
-         $Frame.page.canvas itemconf $vp -data [FieldCalc::Macro $vp $vp $Data(Data$vp)]
+         $Frame.page.canvas itemconf $vp -data [FieldCalc::Operand $vp $Data(Data$vp)]
       }
    }
    Miniport::UpdateData $Frame $VP

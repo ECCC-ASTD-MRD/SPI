@@ -28,12 +28,7 @@
 
 package provide CanvasBubble 1.2
 
-proc IdCanvasBubble { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package CanvasBubble Version 1.2"
-   }
-}
+catch { SPI::Splash "Loading Widget PackageCanvasBubble 1.2" }
 
 namespace eval CanvasBubble {
    variable Data
