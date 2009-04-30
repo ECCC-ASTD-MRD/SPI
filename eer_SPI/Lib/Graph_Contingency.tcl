@@ -42,7 +42,6 @@
 #    Graph::Contingency::DrawScale      { GR }
 #    Graph::Contingency::Select         { GR  I J }
 #    Graph::Contingency::Stat           { GR }
-#    Graph::Contingency::Uniform        { GR { Update True } }
 #
 #===============================================================================
 
@@ -516,7 +515,7 @@ proc Graph::Contingency::Params { Parent GR } {
    labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
       frame $Parent.scale.equiv -relief sunken -bd 1
          checkbutton $Parent.scale.equiv.same -text [lindex $Graph::Lbl(Same) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Contingency::Uniform $GR" -bd 1 -onvalue True -offvalue False \
+            -command "Graph::ParamsScaleUniform Contingency $GR" -bd 1 -onvalue True -offvalue False \
             -variable Graph::Contingency::Contingency${GR}::Graph(Uniform)
          pack $Parent.scale.equiv.same -side top -fill x
       frame $Parent.scale.valx -relief sunken -bd 1
@@ -531,7 +530,7 @@ proc Graph::Contingency::Params { Parent GR } {
          pack $Parent.scale.valy.list -side left -fill x  -expand true
       pack $Parent.scale.equiv $Parent.scale.valx -side top -padx 2 -pady 2 -fill x
 
-   Graph::Contingency::Uniform $GR False
+   Graph::ParamsScaleUniform Contingency $GR
 
    Bubble::Create $Parent.scale.equiv     [lindex $Graph::Bubble(Uniform) $GDefs(Lang)]
    Bubble::Create $Parent.scale.valx      [lindex $Graph::Bubble(ScaleX) $GDefs(Lang)]
@@ -1403,34 +1402,4 @@ proc Graph::Contingency::Stat { GR } {
    }
 
    set data(PC)  [expr 100.0*$data(PC)/$data(TIJ)]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Graph::Contingency::Uniform>
-# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Desactiver certains widgets dnas le cas d'echelle uniforme
-#
-# Parametres :
-#   <GR>     : Indentificateur du Graph
-#   <Update> : Mettre a jour le graph
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Graph::Contingency::Uniform { GR { Update True } } {
-
-   upvar #0 Graph::Contingency::Contingency${GR}::Data  data
-   upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
-
-   if { $graph(Uniform) } {
-      pack forget .graphparams.graph.scale.valy
-
-      if { $Update } {
-         Graph::Contingency::Update $data(FrameData) $GR
-      }
-   } else {
-      pack .graphparams.graph.scale.valy -side top -padx 2 -pady 2 -fill x
-   }
 }
