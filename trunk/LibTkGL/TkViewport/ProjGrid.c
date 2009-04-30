@@ -600,7 +600,7 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
       Proj->Params->Ref->UnProject(Proj->Params->Ref,&p0[0],&p0[1],loc0.Lat,loc0.Lon,1,1);
       Proj->Params->Ref->UnProject(Proj->Params->Ref,&p1[0],&p1[1],loc1.Lat,loc1.Lon,1,1);
 
-      ed=id=1.0/(sqrt(pow(p1[1]-p0[1],2)+pow(p1[0]-p0[0],2))/Dist);
+      ed=id=1.0/(hypot(p1[1]-p0[1],p1[0]-p0[0])/Dist);
 
       /* Iterate on the grid course at the specified step*/
       while(ed<1.0) {
