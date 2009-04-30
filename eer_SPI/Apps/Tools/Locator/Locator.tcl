@@ -18,14 +18,7 @@
 #
 #===============================================================================
 
-#----- Inclusion de librairie
-
-package require Bubble  ; IdBubble  false
-package require FileBox ; IdFileBox false
-package require Areas   ; IdAreas   false
-
 #----- Lire les sources d'execution
-
 source $GDefs(Dir)/Apps/Tools/Locator/Locator.ctes
 source $GDefs(Dir)/Apps/Tools/Locator/Locator.txt
 source $GDefs(Dir)/Apps/Tools/Locator/Locator.int

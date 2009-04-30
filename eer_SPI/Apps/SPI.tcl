@@ -188,27 +188,27 @@ package require xml
 package require dom
 package require struct::tree
 
-package require Icons       ; IdIcons       true
-package require Page        ; IdPage        true
-package require Viewport    ; IdViewport    true
-package require Miniport    ; IdMiniport    true
-package require Graph       ; IdGraph       true
-package require FSTD        ; IdFSTD        true
-package require Obs         ; IdObs         true
-package require Trajectory  ; IdTrajectory  true
-package require FieldBox    ; IdFieldBox    true
-package require ObsBox      ; IdObsBox      true
-package require TrajBox     ; IdTrajBox     true
-package require Dialog      ; IdDialog      true
-package require FileBox     ; IdFileBox     true
-package require CanvasShape ; IdCanvasShape true
-package require Areas       ; IdAreas       true
-package require FrameDefs   ; IdFrameDefs   true
-package require Debug       ; IdDebug       true
-package require InfoFrame   ; IdInfoFrame   true
-package require FieldCalc   ; IdFieldCalc   true
-package require Animator    ; IdAnimator    true
-package require Info        ; IdInfo        true
+package require Icons
+package require Page
+package require Viewport
+package require Miniport
+package require Graph
+package require FSTD
+package require Obs
+package require Trajectory
+package require FieldBox
+package require ObsBox
+package require TrajBox
+package require Dialog
+package require FileBox
+package require CanvasShape
+package require Areas
+package require FrameDefs
+package require Debug
+package require InfoFrame
+package require FieldCalc
+package require Animator
+package require Info
 package require ProgressBar
 
 #----- Liste des outils

@@ -410,7 +410,7 @@ proc TRAJ::SATNET { Frame Mode } {
    catch { exec chmod 644 ${file}.png }
 
    set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
-   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png" } MsgCatch ] 
+   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png" } MsgCatch ]
 
    if { $ErrCatch != 0 } {
       Debug::TraceProc "Error : Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
