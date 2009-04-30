@@ -40,12 +40,7 @@
 
 package provide ComboBox 3.1
 
-proc IdComboBox { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package ComboBox Version 3.1"
-   }
-}
+catch { SPI::Splash "Loading Widget Package ComboBox 3.1" }
 
 namespace eval ComboBox {
    global  GDefs

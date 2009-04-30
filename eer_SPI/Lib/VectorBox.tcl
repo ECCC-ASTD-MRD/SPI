@@ -28,12 +28,7 @@
 
 package provide VectorBox 1.0
 
-proc IdVectorBox { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package VectorBox Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package VectorBox 1.0" }
 
 namespace eval VectorBox {
    variable Lbl

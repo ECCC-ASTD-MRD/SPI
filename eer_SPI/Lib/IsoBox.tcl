@@ -22,12 +22,7 @@
 
 package provide IsoBox 1.0
 
-proc IdIsoBox { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package IsoBox Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package IsoBox 1.0" }
 
 namespace eval IsoBox {
    global GDefs

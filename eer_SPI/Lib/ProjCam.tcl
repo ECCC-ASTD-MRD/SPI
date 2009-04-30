@@ -44,15 +44,10 @@
 
 package provide ProjCam 2.2
 
-proc IdProjCam { Show } {
+catch { SPI::Splash "Loading Canvas Package ProjCam 2.2" }
 
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package ProjCam Version 2.2"
-   }
-
-   package require Bubble ; IdBubble False
-   package require Dialog ; IdDialog False
-}
+package require Bubble
+package require Dialog
 
 #----- Definitions des constantes
 

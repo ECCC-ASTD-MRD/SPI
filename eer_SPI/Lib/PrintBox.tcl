@@ -31,17 +31,12 @@
 
 package provide PrintBox 3.2
 
-proc IdPrintBox { Show } {
+catch { SPI::Splash "Loading Widget Package PrintBox 3.2" }
 
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package PrintBox Version 3.2"
-   }
-
-   package require FileBox    ; IdFileBox    False
-   package require ComboBox   ; IdComboBox   False
-   package require FrameDefs  ; IdFrameDefs  False
-   package require InfoFrame  ; IdInfoFrame  False
-}
+package require FileBox
+package require ComboBox
+package require FrameDefs
+package require InfoFrame
 
 namespace eval PrintBox {
    global  env GDefs
@@ -674,7 +669,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 			if { $ErrCatch != 0 } {
                Debug::TraceProc "Error : Unable to transfert the $Print(FullName).$Print(Device) on weatheroffice.\n\n$MsgCatch"
             }
-			
+
          } else {
             eval exec scp $Print(FullName).$Print(Device) ${site}/[file tail $Print(FullName)].$Print(Device) > /dev/null
          }

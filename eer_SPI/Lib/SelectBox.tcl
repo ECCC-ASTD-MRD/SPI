@@ -28,12 +28,7 @@
 
 package provide SelectBox 1.0
 
-proc IdSelectBox { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package SelectBox Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package SelectBox 1.0" }
 
 namespace eval SelectBox {
    global GDefs

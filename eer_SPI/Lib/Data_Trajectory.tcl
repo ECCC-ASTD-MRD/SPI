@@ -41,14 +41,9 @@
 
 package provide Trajectory 4.1
 
-proc IdTrajectory { Show } {
+catch { SPI::Splash "Loading Data Package Trajectory 4.1" }
 
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Data package Trajectory Version 4.1"
-   }
-
-   package require DateStuff ; IdDateStuff False
-}
+package require DateStuff
 
 #----- Definitions des constantes
 

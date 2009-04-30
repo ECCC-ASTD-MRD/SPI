@@ -19,13 +19,7 @@
 
 package provide Tree 1.0
 
-proc IdTree { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Package Tree Version 1.0"
-   }
-}
-
+catch { SPI::Splash "Loading Widget Package Tree 1.0" }
 
 namespace eval Tree { } {
    variable Data

@@ -38,12 +38,7 @@
 
 package provide WidgetDefs 1.0
 
-proc IdWidgetDefs { show } {
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package WidgetDefs Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package WidgetDefs 1.0" }
 
 namespace eval EntryVar { }
 namespace eval EntryMenu { }

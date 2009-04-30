@@ -37,12 +37,7 @@
 
 package provide Animator 4.0
 
-proc IdAnimator { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package Animator Version 4.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Animator 4.0" }
 
 #----- Definitions des constantes
 
@@ -804,7 +799,7 @@ proc Animator::Play { } {
             #----- Applique la macro de calcul
 
             set Play(Data$vp) $Play($vp$info)
-            set Play(Data)    [FieldCalc::Macro $vp ANI$vp $Play($vp$info)]
+            set Play(Data)    [FieldCalc::Operand $vp $Play($vp$info)]
 
             if { $Play(Cache) && !$Play(File) } {
                $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data) -backbuffer True

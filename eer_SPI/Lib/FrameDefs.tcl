@@ -41,12 +41,7 @@
 
 package provide FrameDefs 1.6
 
-proc IdFrameDefs { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package FrameDefs Version 1.6"
-   }
-}
+catch { SPI::Splash "Loading Widget Package FrameDefs 1.6" }
 
 namespace eval TabFrame {
    global   GDefs

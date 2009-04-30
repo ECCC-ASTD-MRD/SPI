@@ -98,21 +98,15 @@
 
 package provide CanvasShape 1.3
 
-proc IdCanvasShape { Show } {
-   global GDefs
+catch { SPI::Splash "Loading Canvas Package CanvasShape 1.3" }
 
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package CanvasShape Version 1.3"
-   }
-
-   image create photo COMPASSFRAME   -file $GDefs(Dir)/Resources/Image/System/CompassFrame.gif
-   image create photo COMPASSDIR     -file $GDefs(Dir)/Resources/Image/System/CompassDir.gif
-   image create photo COMPASSDIST    -file $GDefs(Dir)/Resources/Image/System/CompassDist.gif
-   image create photo COMPASSHEADING -file $GDefs(Dir)/Resources/Image/System/CompassHeading.gif
-   image create photo CLOCKFRAME     -file $GDefs(Dir)/Resources/Image/System/ClockFrame.gif
-   image create photo CLOCKTIME      -file $GDefs(Dir)/Resources/Image/System/ClockTime.gif
-   image create photo CLOCKDATE      -file $GDefs(Dir)/Resources/Image/System/ClockDate.gif
-}
+image create photo COMPASSFRAME   -file $GDefs(Dir)/Resources/Image/System/CompassFrame.gif
+image create photo COMPASSDIR     -file $GDefs(Dir)/Resources/Image/System/CompassDir.gif
+image create photo COMPASSDIST    -file $GDefs(Dir)/Resources/Image/System/CompassDist.gif
+image create photo COMPASSHEADING -file $GDefs(Dir)/Resources/Image/System/CompassHeading.gif
+image create photo CLOCKFRAME     -file $GDefs(Dir)/Resources/Image/System/ClockFrame.gif
+image create photo CLOCKTIME      -file $GDefs(Dir)/Resources/Image/System/ClockTime.gif
+image create photo CLOCKDATE      -file $GDefs(Dir)/Resources/Image/System/ClockDate.gif
 
 namespace eval CVCompass { }
 

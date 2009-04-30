@@ -21,18 +21,10 @@
 
 package provide OpenGL 1.2
 
-proc IdOpenGL { show } {
-   global GDefs
-   global env
+catch { SPI::Splash "Loading Canvas Package OpenGL 1.2" }
 
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package OpenGL Version 1.2"
-   }
-
-   load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkglCanvas$GDefs(Ext) glCanvas
-
-   puts stderr "(INFO) System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
-}
+load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkglCanvas$GDefs(Ext) glCanvas
+puts stderr "(INFO) System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
 
 namespace eval OpenGL {
    variable Param

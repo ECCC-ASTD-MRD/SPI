@@ -30,12 +30,7 @@
 
 package provide Dialog 2.1
 
-proc IdDialog { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget package Dialog Version 2.1"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Dialog 2.1" }
 
 namespace eval Dialog { }
 

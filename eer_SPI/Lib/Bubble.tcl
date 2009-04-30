@@ -24,31 +24,6 @@
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
 #
-# Modification:
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 1998
-#   Description : Possibilite de mettre des messages de plusieurs lignes
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Fevrier 1999
-#   Description : -Possibilite d'activation et de desactivation
-#                 -Certains parametres peuvent maintenant etre modifies par
-#                  l'entremise de la structure Bubble::Defs(...)
-#                 -Refonte des variables en une seule structure.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Mai 1999
-#   Description : -Correction d'un bug lorqu'il y a plusieurs "toplevel" qui s'ouvre
-#                  et se ferme.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Juillet 1999
-#   Description : -Uniformisation des variables internes.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Septembre 2002
-#   Description : -Utilisation de toplevel plutot que de menu.
 #===============================================================================
 
 namespace eval Grab {
@@ -118,12 +93,7 @@ proc Grab::Put { Widget Type X Y } {
 
 package provide Bubble 2.2
 
-proc IdBubble { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package Bubble Version 2.2"
-   }
-}
+catch { SPI::Splash "Loading Widget Package Bubble 2.2" }
 
 namespace eval Bubble {
    variable Resources

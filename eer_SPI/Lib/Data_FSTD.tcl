@@ -35,17 +35,12 @@
 
 package provide FSTD 3.5
 
-proc IdFSTD { show } {
+catch { SPI::Splash "Loading Data Package FSTD 3.5" }
 
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Data package FSTD Version 3.5"
-   }
-
-   package require Bubble   ; IdBubble    False
-   package require MapBox   ; IdMapBox    False
-   package require VectorBox; IdVectorBox False
-   package require MetStat  ; IdMetStat   False
-}
+package require Bubble
+package require MapBox
+package require VectorBox
+package require MetStat
 
 namespace eval FSTD {
    global   GDefs

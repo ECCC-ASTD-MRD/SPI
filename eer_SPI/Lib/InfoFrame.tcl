@@ -22,12 +22,7 @@
 
 package provide InfoFrame 1.0
 
-proc IdInfoFrame { Show } {
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Widget Package InfoFrame Version 1.0"
-   }
-}
+catch { SPI::Splash "Loading Widget Package InfoFrame 1.0" }
 
 namespace eval InfoFrame {
    global GDefs

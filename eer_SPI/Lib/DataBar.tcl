@@ -27,13 +27,7 @@
 
 package provide DataBar 1.1
 
-proc IdDataBar { show } {
-   global GDefs
-
-   if { $show } {
-      puts "(INFO) Loading Standard CMC/CMOE Canvas Package DataBar Version 1.1"
-   }
-}
+catch { SPI::Splash "Loading Canvas Package DataBar 1.1" }
 
 namespace eval DataBar {
    global GDefs
@@ -202,11 +196,11 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
 
    #----- Memo quelle est la formule ???
 
-   if { [string trim $Viewport::Data(Macro$VP)]!="" } {
+   if { [string trim $Viewport::Data(Operand$VP)]!="" } {
       set h  [font metrics XFont14 -linespace]
       set y [expr $y+$h]
       if { $y<=$Y1 } {
-         $Frame.page.canvas create text $x $y -text "$Viewport::Data(Macro$VP)" -tags "$Page::Data(Tag) DB$VP" -anchor sw -font XFont14
+         $Frame.page.canvas create text $x $y -text "$Viewport::Data(Operand$VP)" -tags "$Page::Data(Tag) DB$VP" -anchor sw -font XFont14
          $Frame.page.canvas create text [expr $X0+10] $y -text "=" -tags "$Page::Data(Tag) DB$VP" -anchor s -font XFont14
       }
    }

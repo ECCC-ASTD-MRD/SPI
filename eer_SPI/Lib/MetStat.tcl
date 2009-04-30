@@ -30,21 +30,10 @@
 
 package provide MetStat 1.0
 
-proc IdMetStat { Show } {
-   global env
-   global GDefs
-
-   if { $Show } {
-      puts "(INFO) Loading Standard CMC/CMOE Package MetStat Version 1.0"
-   }
-
-   if { [info exist env(ARMNLIB)] } {
-      MetStat::RECRCLoad $env(ARMNLIB)/data/dict_rec.[lindex { f e } $GDefs(Lang)]
-   }
-   MetStat::RECRCLoad $env(HOME)/.recrc
-}
+catch { SPI::Splash "Loading Widget Package MetStat 1.0" }
 
 namespace eval MetStat { } {
+   global env GDefs
    variable Data
    variable Stat
    variable Rec
@@ -726,3 +715,8 @@ proc MetStat::Calculate { X Y { Factor -1 } } {
 
    return 1
 }
+
+if { [info exist env(ARMNLIB)] } {
+   MetStat::RECRCLoad $env(ARMNLIB)/data/dict_rec.[lindex { f e } $GDefs(Lang)]
+}
+MetStat::RECRCLoad $env(HOME)/.recrc
