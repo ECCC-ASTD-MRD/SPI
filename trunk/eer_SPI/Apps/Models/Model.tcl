@@ -16,12 +16,12 @@
 #
 #===============================================================================
 
-package require Dialog        ; IdDialog        false
-package require CanvasBubble  ; IdCanvasBubble  false
-package require Calendar      ; IdCalendar      true
-package require Clock         ; IdClock         true
-package require MetData       ; IdMetData       true
-package require Tree          ; IdTree          true
+package require Dialog
+package require CanvasBubble
+package require Calendar
+package require Clock
+package require MetData
+package require Tree
 
 #----- Inclure les type d'experiences
 

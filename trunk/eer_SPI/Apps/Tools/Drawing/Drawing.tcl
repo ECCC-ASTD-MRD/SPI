@@ -72,13 +72,9 @@
 #===============================================================================
 
 #----- Lire les sources d'execution
-
 source $GDefs(Dir)/Apps/Tools/Drawing/Drawing.ctes
 source $GDefs(Dir)/Apps/Tools/Drawing/Drawing.txt
 source $GDefs(Dir)/Apps/Tools/Drawing/Drawing.int
-
-package require FontBox  ; IdFontBox True
-package require ColorBox ; IdColorBox True
 
 proc Drawing::PageActivate { Frame } {
    variable Data
