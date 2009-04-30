@@ -1262,7 +1262,7 @@ proc Mapper::ParamsOGR { Object Tab } {
    ComboBox::AddList  $Data(Frame2).pos.topo.sel [concat $Mapper::Data(Topos) $Data(Fields)]
 
    IcoMenu::Set $Data(Frame2).shape.out.width $Data(Width)
-   catch {   IcoMenu::Set $Data(Frame2).shape.out.dash  $Data(Dash) }
+   catch { IcoMenu::Set $Data(Frame2).shape.out.dash  $Data(Dash) }
 
    catch { colormap image $Mapper::Data(Object) OGRMAPImg }
 
