@@ -1858,7 +1858,6 @@ proc FieldParams::SetMatrix { I J Value } {
    catch { fstdfield stats $Data(Field) -gridvalue [expr $I-1] [expr $J-1] $Value }
 
    foreach frame $Page::Data(Frames) {
-      Viewport::UpdateData    $frame
       Page::Update            $frame
       Page::UpdateCommand     $frame
    }
