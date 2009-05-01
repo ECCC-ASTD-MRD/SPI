@@ -181,7 +181,7 @@ int      GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 int      GeoRef_Within(TGeoRef *Ref0,TGeoRef *Ref1);
 int      GeoRef_WithinRange(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double Lon1,int In);
 int      GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1,int Border);
-int      GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1);
+int      GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim);
 TGeoRef* GeoRef_New();
 TGeoRef* GeoRef_Copy(TGeoRef *Ref);
 TGeoRef *GeoRef_HardCopy(TGeoRef *Ref);

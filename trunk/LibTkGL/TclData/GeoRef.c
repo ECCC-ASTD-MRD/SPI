@@ -95,7 +95,7 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
 
    /*Check for geoscan validity, so we can use the same as previous*/
 //   if (Scan->ToRef==To && Scan->FromRef==From && From->Grid[0]!='Y' && From->Grid[0]!='#' && Scan->X0==X0 && Scan->Y0==Y0 && Scan->X1==X1 && Scan->Y1==Y1) {
-   if (GeoRef_Equal(Scan->ToRef,To) && GeoRef_Equal(Scan->FromRef,From) && Scan->X0==X0 && Scan->Y0==Y0 && Scan->X1==X1 && Scan->Y1==Y1) {
+   if (GeoRef_Equal(Scan->ToRef,To,3) && GeoRef_Equal(Scan->FromRef,From,3) && Scan->X0==X0 && Scan->Y0==Y0 && Scan->X1==X1 && Scan->Y1==Y1) {
       Scan->Valid=1;
    } else {
       Scan->X0=X0;
@@ -322,8 +322,8 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    TGeoRef    *ref0,*ref1;
    Tcl_Obj    *lst;
 
-   static CONST char *sopt[] = { "create","copy","free","define","project","unproject","limit","within","intersect","is","all","wipe",NULL };
-   enum                opt { CREATE,COPY,FREE,DEFINE,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","copy","free","define","project","unproject","limit","within","intersect","is","isequal","all","wipe",NULL };
+   enum                opt { CREATE,COPY,FREE,DEFINE,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ISEQUAL,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -529,6 +529,14 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
          }
+         break;
+
+      case ISEQUAL:
+         if (Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"georef1 georef2");
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GeoRef_Equal(GeoRef_Get(Tcl_GetString(Objv[2])),GeoRef_Get(Tcl_GetString(Objv[3])),2)));
          break;
 
       case ALL:
@@ -1062,7 +1070,7 @@ void GeoRef_Qualify(TGeoRef *Ref) {
    }
 }
 
-int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1) {
+int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
 
    if (!Ref0 || !Ref1) {
       return(0);
@@ -1078,10 +1086,10 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1) {
    if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)
       return(0);
 
-   if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1] || Ref0->LevelType!=Ref1->LevelType)
+   if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1] || (Dim==3 && Ref0->LevelType!=Ref1->LevelType))
       return(0);
 
-   if ((Ref0->LevelNb!=Ref1->LevelNb) || (Ref0->Levels && memcmp(Ref0->Levels,Ref1->Levels,Ref0->LevelNb*sizeof(float))!=0))
+   if (Dim==3 && ((Ref0->LevelNb!=Ref1->LevelNb) || (Ref0->Levels && memcmp(Ref0->Levels,Ref1->Levels,Ref0->LevelNb*sizeof(float))!=0)))
       return(0);
 
    if (Ref0->Id>-1 && Ref1->Id>-1 && Ref0->Id!=Ref1->Id)
@@ -1157,7 +1165,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
    while (entry) {
       ref=(TGeoRef*)Tcl_GetHashValue(entry);
 
-      if (GeoRef_Equal(ref,Ref)) {
+      if (GeoRef_Equal(ref,Ref,3)) {
 #ifdef DEBUG
          fprintf(stderr,"(DEBUG) GeoRef_Find: Found existing georef\n");
 #endif

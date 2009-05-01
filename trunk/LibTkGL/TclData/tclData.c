@@ -761,7 +761,7 @@ int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoR
    }
 
    /*If grids are the same, copy the data*/
-   if (GeoRef_Equal(ToRef,FromRef)) {
+   if (GeoRef_Equal(ToRef,FromRef,3)) {
       for(idx=0;idx<=FSIZE2D(FromDef);idx++){
          Def_Get(FromDef,0,idx,val);
          Def_Set(ToDef,0,idx,val);
