@@ -82,7 +82,7 @@ namespace eval Graph {
    set Color(Fill)   #EEEEEE
    set Color(BG)     #FFFFFF
    set Color(FG)     #000000
-   set Color(Scale)  #FFFFFF
+   set Color(Scale)  #000000
    set Color(Footer) #000000
    set Color(Header) #000000
    set Color(Unit)   #000000
@@ -200,6 +200,7 @@ namespace eval Graph {
    set Lbl(To)         { "A " "To  " }
    set Lbl(Val)        { "Valeur" "Value" }
    set Lbl(Values)     { "Valeurs aux points" "Local values" }
+   set Lbl(TimeMatch)  { "Valider les temps" "Validate time" }
 
    #----- Bulles d'aides
 

@@ -111,6 +111,7 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
 
    set data(Canvas)    $Frame.page.canvas
    set data(Frame)     $Frame
+   set data(TimeMatch) True
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -513,6 +514,11 @@ proc Graph::Contingency::Params { Parent GR } {
    global GDefs
 
    labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
+      frame $Parent.scale.time -relief sunken -bd 1
+         checkbutton $Parent.scale.time.same -text [lindex $Graph::Lbl(TimeMatch) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Contingency::Update $Page::Data(Frame) $GR" -bd 1 -onvalue True -offvalue False \
+            -variable Graph::Contingency::Contingency${GR}::Data(TimeMatch)
+         pack $Parent.scale.time.same -side top -fill x
       frame $Parent.scale.equiv -relief sunken -bd 1
          checkbutton $Parent.scale.equiv.same -text [lindex $Graph::Lbl(Same) $GDefs(Lang)] -indicatoron false \
             -command "Graph::ParamsScaleUniform Contingency $GR" -bd 1 -onvalue True -offvalue False \
@@ -528,7 +534,7 @@ proc Graph::Contingency::Params { Parent GR } {
          label $Parent.scale.valy.lbl -text "Y"
          pack $Parent.scale.valy.lbl -side left -fill y
          pack $Parent.scale.valy.list -side left -fill x  -expand true
-      pack $Parent.scale.equiv $Parent.scale.valx -side top -padx 2 -pady 2 -fill x
+      pack $Parent.scale.time $Parent.scale.equiv $Parent.scale.valx -side top -padx 2 -pady 2 -fill x
 
    Graph::ParamsScaleUniform Contingency $GR
 
@@ -1051,8 +1057,7 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
 # Nom      : <Graph::Contingency::Data>
 # Creation : Mars 2003 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Recupere les valeurs aux localisations specifees parmi tous
-#            les champs correspondants disponibles.
+# But      : Creer les couples de donnees a evaluer
 #
 # Parametres :
 #   <GR>     : Identificateur du Graph
@@ -1071,12 +1076,38 @@ proc Graph::Contingency::Data { GR { Data { } } } {
 
    set data(Data)   {}
 
-   #----- Pour tout les couples de donnees
+   if { $data(TimeMatch) } {
+      for { set i 0 } { $i<[llength $Data] } { incr i } {
+         set dataa [lindex $Data $i]
 
-   foreach { a b }  $Data {
+         if { [fstdfield is $dataa] } {
+            set dateva [fstdstamp toseconds [fstdfield define $dataa -DATEV]]
+         }
+         if { [observation is $dataa] } {
+            set dateva [observation define $dataa -DATE]
+         }
 
-      if { $a!=$b } {
-         lappend data(Data) [list $a $b]
+         for { set j [expr $i+1] } { $j<[llength $Data] } { incr j } {
+            set datab [lindex $Data $j]
+
+            if { [fstdfield is $datab] } {
+               set datevb [fstdstamp toseconds [fstdfield define $datab -DATEV]]
+            }
+            if { [observation is $datab] } {
+               set datevb [observation define $datab -DATE]
+            }
+
+            if { $dateva==$datevb } {
+               lappend data(Data) [list $dataa $datab]
+            }
+         }
+      }
+   } else {
+      foreach { a b }  $Data {
+
+         if { $a!=$b } {
+            lappend data(Data) [list $a $b]
+         }
       }
    }
 }
@@ -1176,7 +1207,6 @@ proc Graph::Contingency::DrawScale { GR } {
    set tag $Page::Data(Tag)$GR
 
    #----- Aficher les boites
-
    if { [set rx [expr [llength $graph(RXList)]-1]]>0 } {
 
       for { set i 0 } { $i < $rx } { incr i } {
