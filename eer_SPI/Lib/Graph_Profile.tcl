@@ -894,7 +894,7 @@ proc Graph::Profile::Data { GR Data } {
 
    #----- Applique le calcul MACRO au cubes de donnees
 
-   set data(Data) [FieldCalc::Macro $data(VP) PROFILE$GR $data(Data)]
+   set data(Data) [FieldCalc::Operand $data(VP) $data(Data)]
 
    SPI::Progress 0
 }
