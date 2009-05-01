@@ -837,7 +837,7 @@ proc Graph::Section::Data { GR Data } {
 
    #----- Applique le calcul MACRO au cubes de donnees
 
-   set data(Data) [FieldCalc::Macro $data(VP) GRAPHSECTION$GR $fields]
+   set data(Data) [FieldCalc::Operand $data(VP) $fields]
    SPI::Progress 0
 }
 
@@ -925,7 +925,7 @@ proc Graph::Section::VertexAdd { Frame VP X Y } {
    #----- Si la grille et le vertex est valide on l'ajoute a la liste
 
    set grtyp [fstdfield define $data(Field) -GRTYP]
-   if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)<999 && $Viewport::Map(LonCursor)<999 } {
+   if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
 
       Graph::Section::Resolution
       lappend data(Coords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
@@ -1002,7 +1002,7 @@ proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
    if { $data(FrameData)!="" && [llength $data(Items$Graph::Data(Pos))] } {
       set data(FCoords) $data(Coords)
 
-      if { $Viewport::Map(LatCursor) < 999 && $Viewport::Map(LonCursor) < 999 } {
+      if { $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
          lappend data(FCoords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
       }
 
@@ -1017,6 +1017,24 @@ proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
       }
    }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::Section::Sample>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calculer le path de coupe et points intermediaire selon la resolution.
+#
+# Parametres :
+#  <GR>      : Identificateur du graph
+#  <VP>      : Identificateur du Viewport
+#  <Coord>   : Liste des coordonnee
+#  <Res>     : Resolution des points intermediaire (Defaut 0 = aucun)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Graph::Section::Sample  { GR VP Coord { Res 0 } } {
 
