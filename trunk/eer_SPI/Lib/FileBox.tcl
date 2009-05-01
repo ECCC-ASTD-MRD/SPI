@@ -207,29 +207,35 @@ proc FileBox::GetContent { { Path "" } } {
    set lines ""
 
    set pattern $Data(Pattern)
+   set dpattern *
    if { $Data(All) } {
       lappend pattern ".*"
+      lappend dpattern ".*"
+   }
+
+   if { "$Data(Path)"!="/" && !$Data(All) } {
+     .filebox.files.list insert end "../"
+   }
+
+   #----- Recuperer les repertoires
+   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory $Data(Path) -types d -tails  $dpattern\]\]
+   foreach dir $dirs {
+      if { [catch { file stat $Data(Path)/$dir info } ] } {
+         continue
+      }
+      .filebox.files.list insert end [format "%-$Data(Width)s %8s %10i" ${dir}/ [file attributes $Data(Path)/$dir -owner] $info(size)]
+      set Data(Size) [expr $Data(Size)+$info(size)]
+      incr Data(Nb)
    }
 
    #----- Recuperer les fichiers
-   eval set files \[glob -nocomplain -directory $Data(Path) -tails $pattern\]
+   eval set files \[glob -nocomplain -directory $Data(Path) -types f -tails $pattern\]
    foreach file $files {
       if { [catch { set size [file stat $Data(Path)/$file info] } ] } {
          continue
       }
 
-      set d 1
-      if { $info(type)=="directory" } {
-         set file "$file/"
-      } else {
-         if { $Data(Spec)!="" } {
-            if { ![string match -nocase $Data(Spec) $file] } {
-               set d 0
-            }
-         }
-      }
-
-      if { $d && $file!="./" && $file!="../" } {
+      if { $Data(Spec)=="" || [string match -nocase $Data(Spec) $file] } {
          catch {
             lappend lines [format "%-$Data(Width)s %8s %10i" $file [file attributes $Data(Path)/$file -owner] $info(size)]
             set Data(Size) [expr $Data(Size)+$info(size)]
@@ -242,10 +248,6 @@ proc FileBox::GetContent { { Path "" } } {
       "File"  { set lines [lsort -dictionary -index 0 $lines ] }
       "Owner" { set lines [lsort -dictionary -index 1 $lines ] }
       "Size"  { set lines [lsort -decreasing -integer -index end $lines ] }
-   }
-
-   if { "$Data(Path)"!="/" } {
-     .filebox.files.list insert end "../"
    }
    eval .filebox.files.list insert end $lines
 
