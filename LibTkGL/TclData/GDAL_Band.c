@@ -71,7 +71,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALRasterBandH hband;
    GDALColorTableH hTable;
    GDALColorEntry  entry;
-   GDALDataType    type;
+   GDALDataType    type=0;
    GDALRPCInfo     rpcinfo;
    int             c;
    double          tra[6],inv[6];
@@ -84,10 +84,25 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       return(TCL_ERROR);
    }
 
-   for(i=0;i<NIdx;i++) { if ((file=GDAL_FileGet(Interp,FileId[i]))) break; }
-   if (!file) {
-      Tcl_AppendResult(Interp,"GDAL_BandRead: Invalid file handle",(char*)NULL);
-      return(TCL_ERROR);
+   /*Get info on all requested bands*/
+   for(i=0;i<NIdx;i++) {
+      if ((file=GDAL_FileGet(Interp,FileId[i]))) {
+         /*Get the band type and promote to higher type among all*/
+         hband=GDALGetRasterBand(file->Set,Idxs[i]);
+         type=GDALGetRasterDataType(hband)>type?GDALGetRasterDataType(hband):type;
+
+         /*Check for size compatibility*/
+         nx=GDALGetRasterBandXSize(hband);
+         ny=GDALGetRasterBandYSize(hband);
+         if (i>0 && rx!=nx && ry!=ny) {
+            Tcl_AppendResult(Interp,"GDAL_BandRead: Dimensions don't match",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         rx=nx;ry=ny;
+      } else {
+         Tcl_AppendResult(Interp,"GDAL_BandRead: Invalid file handle",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
 
    band=GDAL_BandGet(Name);
@@ -115,13 +130,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    }
 
-   hband=GDALGetRasterBand(file->Set,Idxs[i]);
-   type=GDALGetRasterDataType(hband);
-
    /*Figure out dimensions to read , if passed in limits are 0, read the whole thing*/
    rx=ry=1;
-   nx=GDALGetRasterBandXSize(hband);
-   ny=GDALGetRasterBandYSize(hband);
 
    /*Add border to dimensions to read*/
    X0-=BD;X1+=BD;
@@ -149,6 +159,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    if (band->Def)
       Data_DefFree(band->Def);
+
    if (!(band->Def=Data_DefNew(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: Could not allocate memory",(char*)NULL);
       return(TCL_ERROR);
