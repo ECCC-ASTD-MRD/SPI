@@ -1352,6 +1352,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
    }
+   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
 
    /*Process gridpoints*/
    for(j=0;j<Field->Def->NJ-rj;j+=rj) {
