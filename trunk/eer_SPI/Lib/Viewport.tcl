@@ -35,7 +35,7 @@
 #    Viewport::DrawArea       { Frame VP Coords Tags SingleTag Color Outline Stipple Smooth BD }
 #    Viewport::DrawLine       { Frame VP Coords Tags Color BD }
 #    Viewport::DrawRange      { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } }
-#    Viewport::ForceGrid      { Frame { Reset False } }
+#    Viewport::ForceGrid      { Frame }
 #    Viewport::GoAlong        { Frame Speed Bearing Lat Lon { Damping True } }
 #    Viewport::GoARound       { Frame Speed Lat Lon { Damping True } }
 #    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
@@ -45,7 +45,7 @@
 #    Viewport::UnLink         { }
 #    Viewport::ParamFrame     { Frame Apply }
 #    Viewport::ParamSet       { }
-#    Viewport::Reset          { Frame }
+#    Viewport::Reset          { Frame { Fast False } }
 #    Viewport::Resolution     { Frame Res }
 #    Viewport::Rotate         { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 #    Viewport::RotateDo       { Frame VP X Y }
@@ -1441,7 +1441,7 @@ proc Viewport::DrawRange { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } { 
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::ForceGrid { Frame { Reset False } } {
+proc Viewport::ForceGrid { Frame } {
    variable Map
 
    if { $Map(Type$Frame)=="grid" } {
@@ -1449,7 +1449,13 @@ proc Viewport::ForceGrid { Frame { Reset False } } {
          if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
             if { [set fld [lindex [Viewport::Assigned $Frame $vp fstdfield] 0]]!="" } {
                if { [set georef [fstdfield define $fld -georef]]!="" } {
+                  set pref  [projection configure $Frame -georef]
                   projection configure $Frame -georef $georef
+
+                  #----- If georef is different, reset projection
+                  if { ![georef isequal $georef $pref] } {
+                     Viewport::Reset $Frame True
+                  }
                }
             }
          }
@@ -1460,10 +1466,6 @@ proc Viewport::ForceGrid { Frame { Reset False } } {
 
       set Map(GridI) [lindex $ij 0]
       set Map(GridJ) [lindex $ij 1]
-
-      if { $Reset } {
-         Viewport::Reset $Frame
-      }
    }
 }
 
@@ -1968,6 +1970,7 @@ proc Viewport::ParamSet { } {
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
+#  <Fast>    : Immediat ou avec mouvement
 #
 # Retour:
 #
@@ -1975,7 +1978,7 @@ proc Viewport::ParamSet { } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::Reset { Frame } {
+proc Viewport::Reset { Frame { Fast False } } {
    variable Map
    variable Data
 
@@ -1993,7 +1996,11 @@ proc Viewport::Reset { Frame } {
       set Map(LonReset) [lindex $ll 1]
    }
 
-   Viewport::GoTo $Page::Data(Frame) $Map(LatReset) $Map(LonReset) 1.0 { 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 }
+   if { $Fast } {
+      Viewport::Rotate $Page::Data(Frame) $Map(LatReset) $Map(LonReset) 1.0 { 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 }
+   } else {
+      Viewport::GoTo $Page::Data(Frame) $Map(LatReset) $Map(LonReset) 1.0 { 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 }
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -2115,23 +2122,27 @@ proc Viewport::RotateDo { Frame VP X Y } {
 
    upvar #0 ProjCam::Data${Frame}::Cam cam
 
-   set latlon [$VP -unproject $X $Y]
-   set lat [lindex $latlon 0]
-   set lon [lindex $latlon 1]
-
-   #----- Si le pointeur est sur le globe
-
-   if { $lat==-999.00 || $lon==-999.00 || $Map(LonRot)==-999.0 || $Map(LatRot)==-999.0 } {
-      return
-   }
-
    if { $Map(Type$Frame)=="grid" } {
       set ij [$VP -ungrid $X $Y]
-      set Map(GridI)  [expr $Map(GridI) + ($Map(GridIRot)-[lindex $ij 0])]
-      set Map(GridJ)  [expr $Map(GridJ) + ($Map(GridJRot)-[lindex $ij 1])]
+      set i [lindex $ij 0]
+      set j [lindex $ij 1]
+
+      if { $i==-1 || $j==-1 } {
+         return
+      }
+      set Map(GridI)  [expr $Map(GridI) + ($Map(GridIRot)-$i)]
+      set Map(GridJ)  [expr $Map(GridJ) + ($Map(GridJRot)-$j)]
 
       projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
    } else {
+      set latlon [$VP -unproject $X $Y]
+      set lat [lindex $latlon 0]
+      set lon [lindex $latlon 1]
+
+      #----- Si le pointeur est sur le globe
+      if { $lat==-999.00 || $lon==-999.00 || $Map(LonRot)==-999.0 || $Map(LatRot)==-999.0 } {
+         return
+      }
       set Map(Lat0) $Map(Lat)
       set Map(Lon0) $Map(Lon)
 
@@ -2163,7 +2174,6 @@ proc Viewport::RotateDo { Frame VP X Y } {
    set ProjCam::Data(Name)  ""
 
    #----- On update le tout
-
    Page::Update $Frame
 }
 
@@ -2915,7 +2925,6 @@ proc Viewport::UpdateData { Frame { VP { } } } {
    }
 
    #----- Faire un update de tous les viewports
-
    foreach vp $VP {
       if { [llength $Data(Link$vp)] } {
          set frame [lindex $Data(Link$vp) 0]
@@ -2933,7 +2942,6 @@ proc Viewport::UpdateData { Frame { VP { } } } {
    update idletasks
 
    #----- Dans le cas d'une projection "GRID", reevaluer
-
    Viewport::ForceGrid $Frame
 }
 
