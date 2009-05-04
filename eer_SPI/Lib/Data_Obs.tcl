@@ -54,7 +54,6 @@ namespace eval Obs {
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
    #----- Lecture des tables BUFR
-
    set code [ catch {
       if { $GDefs(Lang)==0 } {
          metobs table -readmaster B $GDefs(Dir)/Data/table_b_bufr_f
