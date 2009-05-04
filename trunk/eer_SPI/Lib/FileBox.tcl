@@ -245,7 +245,7 @@ proc FileBox::GetContent { { Path "" } } {
    }
 
    switch $Data(Sort) {
-      "File"  { set lines [lsort -dictionary -index 0 $lines ] }
+      "File"  { set lines [lsort -unique -dictionary -index 0 $lines ] }
       "Owner" { set lines [lsort -dictionary -index 1 $lines ] }
       "Size"  { set lines [lsort -decreasing -integer -index end $lines ] }
    }
