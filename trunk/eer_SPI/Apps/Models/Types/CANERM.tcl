@@ -728,7 +728,6 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
    file mkdir $Sim(Path)/tmp
 
    #----- Creer le fichier de donnees meteo
-
    set Sim(MeteoDataFiles) ""
    foreach file $data {
       lappend Sim(MeteoDataFiles) [lindex $file 2]
@@ -738,15 +737,7 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
    close $f
 
    #----- Create meteorological data file for RSMC response.
-
-   if { $Sim(Meteo) == "reg" } {
-      regsub -all "/regeta/" $Sim(MeteoDataFiles) "/regpres/" Sim(MeteoDataFilesRSMC)
-   } elseif { $Sim(Meteo) == "glb" } {
-      regsub -all "/glbeta/" $Sim(MeteoDataFiles) "/glbpres/" Sim(MeteoDataFilesRSMC)
-   } else {
-      regsub -all "eta/" $Sim(MeteoDataFiles) "pres/" Sim(MeteoDataFilesRSMC)
-   }
-
+   regsub -all "eta" $Sim(MeteoDataFiles) "pres" Sim(MeteoDataFilesRSMC)
    set f [open $Sim(Path)/tmp/data_std_sim.pres w 0644]
    puts $f $Sim(MeteoDataFilesRSMC)
    close $f
