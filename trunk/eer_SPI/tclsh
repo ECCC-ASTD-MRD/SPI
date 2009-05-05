@@ -1,6 +1,6 @@
 #!/bin/sh
 
 export SPI_PATH=${0%tclsh}
-. ${SPI_PATH}/version
+. ${SPI_PATH}/version soft
 
 exec ${SHARED}/TclTk/bin/tclsh${TCL_VERSION} $@
