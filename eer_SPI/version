@@ -8,7 +8,15 @@ SHARED=${SPI_PATH}/Shared/${ARCH}
 export SPI_VERSION
 export SPI_PATH
 export ARCH
+
 export LD_LIBRARY_PATH=${SHARED}:${SHARED}/TclTk/lib:$LD_LIBRARY_PATH
+
+#----- Force  software GL, usefull for tclsh only script
+if [ ! $# = 0 ]
+then
+   export LD_LIBRARY_PATH=${SHARED}/GL:$LD_LIBRARY_PATH
+fi
+
 export TCLLIBPATH="${SHARED} ${SHARED}/TclTk/lib ${SHARED}/TclTk/lib/tcl${TCL_VERSION} ${SHARED}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/Lib"
 export TCL_LIBRARY="${SHARED}/TclTk/lib/tcl${TCL_VERSION}"
 
