@@ -486,11 +486,11 @@ option add *font       $GDefs(Font)
 
 #----- Include needed packages
 
-package require Icons     ; IdIcons     True;
-package require FrameDefs ; IdFrameDefs True;
-package require ComboBox  ; IdComboBox  True;
-package require Dialog    ; IdDialog    True;
-package require FileBox   ; IdFileBox   True;
+package require Icons
+package require FrameDefs
+package require ComboBox
+package require Dialog
+package require FileBox
 
 #----- Crank it up
 
