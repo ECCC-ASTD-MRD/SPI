@@ -455,7 +455,27 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } } {
 
    if { ![llength $Bands] } {
       set Data(Band$File) $bands
-      set Bands [lrange $bands 0 $Nb]
+
+      #----- Check for band size compatibility
+      set x 0
+      set y 0
+      for { set b 0 } { $b<=$Nb } { incr b } {
+         if { $x==0 } {
+            set x [lindex [lindex $bands $b] end-1]
+            set y [lindex [lindex $bands $b] end]
+         } else {
+            if { $x!=[lindex [lindex $bands $b] end-1] || $y!=[lindex [lindex $bands $b] end] } {
+               set x 0
+               set y 0
+               break;
+            }
+         }
+      }
+      if { $x } {
+         set Bands [lrange $bands 0 $Nb]
+      } else {
+         set Bands [list [lindex $bands 0]]
+      }
    }
 
    set Data(Band0$File) ""
