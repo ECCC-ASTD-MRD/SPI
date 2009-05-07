@@ -517,6 +517,7 @@ proc Watch::New { } {
    set Data(Type) $Model::Data(Type)
 
    regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "-" Data(Name)
+   regsub -all "\[-\]\[-\]*" $Data(Name) "-" Data(Name)
    set Data(Name) [string toupper $Data(Name)]
 
    #----- On verifie que le nom n'existe pas deja
@@ -1062,8 +1063,7 @@ proc Watch::Write { } {
 
    #----- Formater la ligne de description
 
-   regsub -all "\[^a-zA-Z0-9\]"  $Data(Name) _ name
-   set line "$name $Data(Lat) $Data(Lon)\
+   set line "$Data(Name) $Data(Lat) $Data(Lon)\
    $Data(Type) $Data(SATDATA) $Data(TRAJECT) $Data(CANERM)\
    $Data(SATC4) $Data(SATC45) $Data(SATCV)\
    $Data(TRAJLevel1) $Data(TRAJLevel2) $Data(TRAJLevel3) $Data(TRAJUnit) $Data(CANERMElev)\
@@ -1072,7 +1072,7 @@ proc Watch::Write { } {
    #----- Retirer la source du fichier de source actives
 
    file rename -force $Data(File) $Data(File).old
-   catch { exec grep -i -v $name.* $Data(File).old > $Data(File) }
+   catch { exec grep -i -v $Data(Name).* $Data(File).old > $Data(File) }
 
    #----- Ajouter la ligne de description
 
