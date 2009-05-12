@@ -430,8 +430,13 @@ proc Graph::Scatter::Graph { GR } {
       set mod False
    }
 
-   set data(Min) [expr $data(XMin)<$data(YMin)?$data(XMin):$data(YMin)]
-   set data(Max) [expr $data(XMax)>$data(YMax)?$data(XMax):$data(YMax)]
+   if { $l } {
+      set data(Min) $data(XMin)
+      set data(Max) $data(XMax)
+   } else {
+      set data(Min) [expr $data(XMin)<$data(YMin)?$data(XMin):$data(YMin)]
+      set data(Max) [expr $data(XMax)>$data(YMax)?$data(XMax):$data(YMax)]
+   }
 
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
