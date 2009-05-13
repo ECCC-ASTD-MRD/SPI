@@ -826,7 +826,6 @@ void GraphItem_Clear(TGraphItem *Item) {
    if (Item->YAxis)       free(Item->YAxis);
    if (Item->ZAxis)       free(Item->ZAxis);
    if (Item->Tag)         free(Item->Tag);
-
 }
 
 /*----------------------------------------------------------------------------
@@ -1825,54 +1824,58 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       glEnable(GL_BLEND);
    }
 
-   i0=0;
-   j0=0;
-   ni=Data->Def->NI-1;
-   nj=Data->Def->NJ-1;
-
    if (Data->Spec->InterNb) {
       VAL2COL(base,Data->Spec,Data->Spec->Inter[0]);
    }
 
    /*Process gridpoints*/
-   for(j=j0;j<nj;j++) {
+   for(j=0;j<Data->Def->NJ-1;j++) {
 
       glBegin(GL_QUADS);
 
-      for(i=i0;i<ni;i++) {
+      for(i=0;i<Data->Def->NI-1;i++) {
          idx0=j*Data->Def->NI+i;
-         idx1=idx0+1;
-         idx3=(j+1)*Data->Def->NI+i;
-         idx2=idx3+1;
+         idx3=idx0+Data->Def->NI;
 
-         Def_GetMod(Data->Def,idx0,v0);
-         Def_GetMod(Data->Def,idx1,v1);
-         Def_GetMod(Data->Def,idx2,v2);
-         Def_GetMod(Data->Def,idx3,v3);
+         if (i>0) {
+            c1=c0;
+            c2=c3;
+            Vect_Assign(g1,g0);
+            Vect_Assign(g2,g3);
+         } else {
+            idx1=idx0+1;
+            idx2=idx3+1;
+            Def_GetMod(Data->Def,idx1,v1);
+            Def_GetMod(Data->Def,idx2,v2);
+            VAL2COL(c1,Data->Spec,v1);
+            VAL2COL(c2,Data->Spec,v2);
 
-         VAL2COL(c0,Data->Spec,v0);
-         VAL2COL(c1,Data->Spec,v1);
-         VAL2COL(c2,Data->Spec,v2);
-         VAL2COL(c3,Data->Spec,v3);
-
-         /*Is the quad valid ???*/
-         if (c0>-1 || c1>-1 || c2>-1 || c3>-1) {
-
-            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[j*Data->Def->NI+i]:Data->Ref->Levels[j]):j;
-            g0[0]=X0+AXISVALUE(AxisX,(i));
-            g0[1]=Y0+AXISVALUE(AxisY,vf);
-            g0[2]=0.0;
+            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx1]:Data->Ref->Levels[j]):j;
             g1[0]=X0+AXISVALUE(AxisX,(i+1));
             g1[1]=Y0+AXISVALUE(AxisY,vf);
             g1[2]=0.0;
-
-            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[(j+1)*Data->Def->NI+i]:Data->Ref->Levels[j+1]):j+1;
+            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx2]:Data->Ref->Levels[j+1]):j+1;
             g2[0]=X0+AXISVALUE(AxisX,(i+1));
             g2[1]=Y0+AXISVALUE(AxisY,vf);
             g2[2]=0.0;
-            g3[0]=X0+AXISVALUE(AxisX,(i));
-            g3[1]=Y0+AXISVALUE(AxisY,vf);
-            g3[2]=0.0;
+         }
+
+         Def_GetMod(Data->Def,idx0,v0);
+         Def_GetMod(Data->Def,idx3,v3);
+         VAL2COL(c0,Data->Spec,v0);
+         VAL2COL(c3,Data->Spec,v3);
+
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx0]:Data->Ref->Levels[j]):j;
+         g0[0]=X0+AXISVALUE(AxisX,(i));
+         g0[1]=Y0+AXISVALUE(AxisY,vf);
+         g0[2]=0.0;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx3]:Data->Ref->Levels[j+1]):j+1;
+         g3[0]=X0+AXISVALUE(AxisX,(i));
+         g3[1]=Y0+AXISVALUE(AxisY,vf);
+         g3[2]=0.0;
+
+         /*Is the quad valid ???*/
+         if (c0>-1 || c1>-1 || c2>-1 || c3>-1) {
 
             /* Is the quad visible ???*/
             Vect_Assign(min,g0);
@@ -1918,7 +1921,6 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       }
       glEnd();
    }
-
    glDisable(GL_BLEND);
 }
 
