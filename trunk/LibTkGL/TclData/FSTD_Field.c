@@ -439,7 +439,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    FSTD_Head *head=(FSTD_Head*)Field->Head;
    Coord      coord;
    float     *lat,*lon,*gz=NULL,flat,flon,fele;
-   int        i,j,k,idx,ni,nj,nk,ip1;
+   int        i,j,idx,ni,nj,nk,ip1;
    int        idxi,idxk;
 
 #ifdef LNK_FSTD
@@ -548,7 +548,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          }
          if (idx<0) {
             if (gz) { free(gz); gz=NULL; };
-            fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[k],ip1);
+            fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[Level],ip1);
          } else {
             if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
             c_fstluk(gz,idx,&ni,&nj,&nk);
