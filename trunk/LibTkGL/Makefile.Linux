@@ -55,7 +55,7 @@ GRIB_PATH = $(LIB_PATH)/grib_api-0.9.31
 #GRIB_PATH = $(LIB_PATH)/grib_api-1.6.4
 
 # BUFR libecbufr path
-BUFR_PATH=  $(LIB_PATH)/libecbufr-0.7.3
+BUFR_PATH=  $(LIB_PATH)/libecbufr
 
 # Geographical database localisation
 GDB_PATH = /data/cmoe/afsr005/DBGeo/
