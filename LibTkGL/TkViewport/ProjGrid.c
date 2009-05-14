@@ -289,7 +289,7 @@ int Grid_Init(Tcl_Interp *Interp){
       Grid_ProjectPoint,
       Grid_ProjectLine);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -372,7 +372,6 @@ void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
    }
 
    Vect_Assign(Prev,Pix);
-   return;
 }
 
 /*----------------------------------------------------------------------------

@@ -522,13 +522,17 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          for(f=0;f<NbF;f++) {
 
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
-            if (!Field[f]->Def->Pres && cut->Ref->Hgt) {
+            if (p && !Field[f]->Def->Pres && cut->Ref->Hgt) {
                FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID);
                /*In case of hybrid staggered, read !!SF, otherwise, use P0*/
                if (cut->Ref->RefFrom->A) {
-                  FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1);
+                  if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1))) {
+                     p=0;
+                  }
                } else {
-                  FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1);
+                  if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
+                     p=0;
+                  }
                }
                FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
             }
@@ -918,7 +922,10 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
    if (Data) {
       if (Pos && Data->Ref && Data->Ref->Pos) {
          for(n=0;n<Data->Ref->LevelNb;n++) {
-            if (Data->Ref->Pos[n]) free(Data->Ref->Pos[n]);
+            if (Data->Ref->Pos[n]) {
+               free(Data->Ref->Pos[n]);
+               Data->Ref->Pos[n]=NULL;
+            }
          }
          free(Data->Ref->Pos);
          Data->Ref->Pos=NULL;
