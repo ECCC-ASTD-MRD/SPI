@@ -44,7 +44,7 @@ namespace eval Writer::FVCN {
    set Data(Details3)  "VA EXERCISE"
 
    set Data(Next1)  "WILL BE ISSUED BY"
-   set Data(Next2)  "NO LATHER THAN"
+   set Data(Next2)  "NO LATER THAN"
    set Data(Next3)  "NO FURTHER ADVISORIES"
 
    set Data(NoVA00)  "VA NOT IDENTIFIABLE FROM SATELLITE DATA"
