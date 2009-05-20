@@ -101,8 +101,8 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile) {
       } else {
          read(lfp,buf,32);
          pid=atoi(buf);
-         sprintf(buf,"%i",pid);
          if (!kill(pid,0)) {
+            sprintf(buf,"%i",pid);
             Tcl_AppendResult(Interp,"System_Daemonize: Process already exists with pid ",buf,(char*)NULL);
             return(TCL_ERROR);
          } else {
@@ -112,6 +112,7 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile) {
             }
          }
       }
+      sprintf(buf,"%i",getpid());
       write(lfp,buf,strlen(buf));
       close(lfp);
    }
@@ -265,7 +266,7 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    struct rlimit lim;
    int           i,idx,ival;
-   static CONST char *sopt[] = { "-VMEM","-CORE","-CPU","-DATA","-FILESIZE","-LOCKS","-MSGQUEUE","-NICE",
+   static CONST char *sopt[] = { "-VMEM","-CORE","-CPU","-DATA","-FILESIZE","-LOCK","-MSGQUEUE","-NICE",
                                  "-FILENO","-NPROC","-RMEM","-RTPRIO","-SIGPENDING","-STACK",NULL };
    enum        opt { VMEM,CORE,CPU,DATA,FILESIZE,LOCKS,MSGQUEUE,NICE,FILENO,NPROC,RMEM,RTPRIO,SIGPENDING,STACK };
 
@@ -404,7 +405,7 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
 
    Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
-   Tcl_PkgProvide(Interp,"TclSystem",LIB_VER);
+   Tcl_PkgProvide(Interp,"TclSystem",VERSION);
    return(TCL_OK);
 }
 
