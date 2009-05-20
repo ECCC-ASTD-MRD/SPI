@@ -13,9 +13,15 @@ echo "----- Architecture Found : $ARCH -----"
 echo ""
 
 echo ""
+echo "----- Making System Call Library  Object -----"
+echo ""
+cd TclSystem
+$MAKE install
+
+echo ""
 echo "----- Making OpenGL Canvas Library  Object -----"
 echo ""
-cd TkglCanvas
+cd ../TkglCanvas
 $MAKE install
 
 echo ""
