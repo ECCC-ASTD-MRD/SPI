@@ -2500,7 +2500,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 
       /*Inscription des champs complementaires*/
       if (Field->Def->Data[1]) {
-         if ((uvw=FSTD_VectorTableCheck(head->NOMVAR,&idx))) {
+         if ((uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL))) {
             /*Inscription du champs complementaire 2D*/
             if (uvw->VV) {
                Def_Pointer(Field->Def,1,idx,p);
@@ -2518,7 +2518,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          }
       }
    }
-
    EZUnLock_RPNField();
 
    FSTD_FileUnset(Interp,file);
