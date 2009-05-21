@@ -60,7 +60,7 @@ namespace eval FSTD {
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
    dataspec create FLDDEFAULT
-   dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
+   dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -topography GZ -sample 2 \
       -intervals {}
@@ -114,6 +114,7 @@ namespace eval FSTD {
    set Param(Step)          0.25           ;#Step de calcul des streamlines
    set Param(Size)          10.0           ;#Facteur de dimensionnemenr
    set Param(Geo)           1              ;#Reference geographique
+   set Param(Width)         1              ;#Largeur des segments
 
    set Param(Factor)        0              ;#Facteur d'ajustement
    set Param(Delta)         0              ;#Facteur d'ajustement
@@ -266,7 +267,7 @@ proc FSTD::ParamFrame { Frame Apply } {
                label $Data(Frame).def.l.val.order.lbl -text [lindex $Lbl(Value) $GDefs(Lang)]
                ComboBox::Create $Data(Frame).def.l.val.order.sel FSTD::Param(Order) noedit unsorted nodouble -1 \
                   $FSTD::Param(Orders) 6 4 { FSTD::ParamSet }
-               spinbox $Data(Frame).def.l.val.order.prec -textvariable FSTD::Param(Mantisse) -width 2 -from 0 -to 10 -wrap 1 -bd 1 \
+               spinbox $Data(Frame).def.l.val.order.prec -textvariable FSTD::Param(Mantisse) -width 1 -from 0 -to 10 -wrap 1 -bd 1 \
                   -command { FSTD::ParamSet } -bg $GDefs(ColorLight)
                button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame).def.l.val.order.font FSTD::ParamSet \$FSTD::Param(Font)"
@@ -323,10 +324,13 @@ proc FSTD::ParamFrame { Frame Apply } {
             IcoMenu::CreateDef $Data(Frame).def.r.disp.p.st $GDefs(Dir)/Resources/Bitmap \
              { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
                FSTD::Param(Dash) "FSTD::ParamSet" 0 -relief groove -bd 2
+            IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/Resources/Bitmap \
+               "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+               FSTD::Param(Width) "FSTD::ParamSet" 0 -relief groove -bd 2
             ColorBox::CreateSel $Data(Frame).def.r.disp.p.col FSTD::Param(Color) FSTD::ParamSet
             checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable FSTD::Param(MapAll) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false
-            pack $Data(Frame).def.r.disp.p.col $Data(Frame).def.r.disp.p.map -side left
+            pack $Data(Frame).def.r.disp.p.map $Data(Frame).def.r.disp.p.col $Data(Frame).def.r.disp.p.width -side left
             pack $Data(Frame).def.r.disp.p.st -side left -fill x -expand true
 
          frame $Data(Frame).def.r.disp.cont
@@ -694,6 +698,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Size)      [dataspec configure $Spec -size]
    set Param(Color)     [dataspec configure $Spec -color]
    set Param(Dash)      [dataspec configure $Spec -dash]
+   set Param(Width)     [dataspec configure $Spec -width]
    set Param(Contour)   [dataspec configure $Spec -rendercontour]
    set Param(Texture)   [dataspec configure $Spec -rendertexture]
    set Param(Volume)    [dataspec configure $Spec -rendervolume]
@@ -780,7 +785,7 @@ proc FSTD::ParamSet { { Spec "" } } {
    }
 
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -font $Param(Font) -colormap $Param(Map) \
-      -color $Param(Color) -dash $Param(Dash) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -mapall $Param(MapAll) \
+      -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -mapall $Param(MapAll) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -step $Param(Step) -geovector $Param(Geo) \
@@ -817,6 +822,7 @@ proc FSTD::ParamPut { } {
    IcoMenu::Set $Data(Frame).def.r.disp.part.sel   $Param(Particle)
 
    IcoMenu::Set $Data(Frame).def.r.disp.p.st      $Param(Dash)
+   IcoMenu::Set $Data(Frame).def.r.disp.p.width   $Param(Width)
    IcoMenu::Set $Data(Frame).def.r.disp.label.sel $Param(Label)
    IcoMenu::Set $Data(Frame).def.r.disp.val.sel   $Param(Value)
 
