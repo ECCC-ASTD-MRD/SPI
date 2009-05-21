@@ -325,7 +325,7 @@ proc FSTD::ParamFrame { Frame Apply } {
              { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
                FSTD::Param(Dash) "FSTD::ParamSet" 0 -relief groove -bd 2
             IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+               "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
                FSTD::Param(Width) "FSTD::ParamSet" 0 -relief groove -bd 2
             ColorBox::CreateSel $Data(Frame).def.r.disp.p.col FSTD::Param(Color) FSTD::ParamSet
             checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable FSTD::Param(MapAll) -onvalue 1 -offvalue 0 \
