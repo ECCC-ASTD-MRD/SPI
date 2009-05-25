@@ -47,16 +47,8 @@
 #include "Vector.h"
 #include "glStuff.h"
 
-#define DSIZE(D)                          (D[0]?(D[1]?(D[2]?3:2):1):0)
-#define FSIZE2D(D)                        (D->NI*D->NJ)
-#define FSIZE3D(D)                        (D->NI*D->NJ*D->NK)
-#define FSIZECHECK(D0,D1)                 (D0->NI==D1->NI && D0->NJ==D1->NJ && D0->NK==D1->NK)
-#define FIDX2D(D,I,J)                     ((J)*D->NI+(I))
-#define FIDX3D(D,I,J,K)                   ((K)*D->NI*D->NJ+(J)*D->NI+(I))
-#define FIN2D(D,I,J)                      (J>=0 && J<D->NJ && I>=0 && I<D->NI)
-#define FIN25D(D,I,J)                     (J>-0.5 && J<D->NJ-0.5 && I>-0.5 && I<D->NI-0.5)
-#define TDTYPE(A,B)                       (A->Type>B->Type?A:B)
-#define DEFCLAMP(D,X,Y)                   X=(X>D->NI-1?D->NI-1:(X<0?0:X));Y=(Y>D->NJ-1?D->NJ-1:(Y<0?0:Y))
+#define TDTYPE(A,B)         (A->Type>B->Type?A:B)
+#define DEFCLAMP(D,X,Y)      X=(X>D->NI-1?D->NI-1:(X<0?0:X));Y=(Y>D->NJ-1?D->NJ-1:(Y<0?0:Y))
 
 #define REF_PROJ  0
 #define REF_COOR  1

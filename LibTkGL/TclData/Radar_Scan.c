@@ -338,13 +338,13 @@ int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
 
    rad->Spec->Desc=strdup(Radar_GetTypeString(file->Data.volScan[Scan]->dataType));
 
-   Radar_DataParse(rad);
+   Radar_Parse(rad);
 
    return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Radar_DataParse>
+ * Nom          : <Radar_Parse>
  * Creation     : Avril 2006 J.P. Gauthier
  *
  * But          : Parcourir les donnees d'un scan de radar et les inserer dans notre structure TData.
@@ -358,7 +358,7 @@ int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Radar_DataParse(TData *Rad) {
+int Radar_Parse(TData *Rad) {
 
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
