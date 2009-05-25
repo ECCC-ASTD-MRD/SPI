@@ -36,6 +36,30 @@
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclSystem_Init>
+ * Creation     : Mai 2009 J.P. Gauthier
+ *
+ * But          : Initialisation des commandes Tcl pour les appels systeme
+  *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *
+ * Retour       : Code de retour Tcl
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int Tclsystem_Init(Tcl_Interp *Interp) {
+
+   Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+
+   Tcl_PkgProvide(Interp,"TclSystem",VERSION);
+   return(TCL_OK);
+}
 
 /*----------------------------------------------------------------------------
  * Nom      : <System_Daemonize>
@@ -165,8 +189,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid;
 
-   static CONST char *sopt[] = { "daemonize","fork","limit",NULL };
-   enum               opt { DAEMONIZE,FORK,LIMIT,UMASK };
+   static CONST char *sopt[] = { "daemonize","fork","limit","process",NULL };
+   enum               opt { DAEMONIZE,FORK,LIMIT,PROCESS };
 
    Tcl_ResetResult(Interp);
 
@@ -180,6 +204,10 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    }
 
    switch ((enum opt)idx) {
+      case PROCESS:
+         return(System_Process(Interp,Objc-2,Objv+2));
+         break;
+
       case DAEMONIZE:
          return(System_Deamon(Interp,Objc-2,Objv+2));
          break;
@@ -202,10 +230,10 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <System_Limit>
+ * Nom      : <System_Deamon>
  * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Effectue la configuration des parametres de limites system.
+ * But      : Effectue la configuration des parametres de deamonisation.
  *
  * Parametres     :
  *  <Interp>      : Interpreteur TCL
@@ -386,26 +414,46 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    return(TCL_OK);
 }
 
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TclSystem_Init>
- * Creation     : Mai 2009 J.P. Gauthier
+/*----------------------------------------------------------------------------
+ * Nom      : <System_Process>
+ * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
  *
- * But          : Initialisation des commandes Tcl pour les appels systeme
-  *
- * Parametres   :
- *   <Interp>   : Interpreteur Tcl
+ * But      : Effectue la configuration des parametres des process.
  *
- * Retour       : Code de retour Tcl
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
  *
- * Remarques    :
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
  *
- *---------------------------------------------------------------------------------------------------------------
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
 */
-int Tclsystem_Init(Tcl_Interp *Interp) {
+static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+   int   i,idx,fork=0;
+   char *file;
+   static CONST char *sopt[] = { "-title",NULL };
+   enum               opt { TITLE };
 
-   Tcl_PkgProvide(Interp,"TclSystem",VERSION);
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case TITLE:
+            if (Objc==1) {
+//               Tcl_SetObjResult(Interp,Tcl_NewStringObj(argv[0],-1));
+            } else {
+//               snprintf(argv[0],"%s",Tcl_GetString(Objv[++i]),strlen(argv[0]));
+            }
+            break;
+         }
+   }
    return(TCL_OK);
 }
-
