@@ -61,6 +61,7 @@ namespace eval FieldCalc {
 
    set Data(FieldNo)  0
    set Data(Formulas) {}
+   set Data(Mem)      {}
 
    #----- Textes et labels
 
@@ -611,8 +612,6 @@ proc FieldCalc::Window { { Parent .} } {
 
    wm resizable .fieldcalc True False
 
-   TabFrame::Select .fieldcalc.func 0
-
    focus .fieldcalc.expr.op
    .fieldcalc.expr.op icursor 0
 
@@ -927,6 +926,7 @@ proc FieldCalc::InsertOperator { Op } {
 proc FieldCalc::Operand { VP Fields } {
    global   GDefs
    variable Error
+   variable Data
 
    #----- Cleanup existing operand result
    if { [fstdfield is CALC$VP] } {
@@ -948,6 +948,7 @@ proc FieldCalc::Operand { VP Fields } {
    set nout   0
    set vert   False
    set ids    { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+   set nids   0
 
    #----- Separate the fields from the rest
    foreach fld $Fields {
@@ -961,6 +962,7 @@ proc FieldCalc::Operand { VP Fields } {
       }
    }
    if { ![set lfield [llength $fields]] } {
+      catch { set Data(Operand) [vexpr CALC$Data(FieldNo) $Viewport::Data(Operand$VP)] }
       return $Fields
    }
 
@@ -970,6 +972,7 @@ proc FieldCalc::Operand { VP Fields } {
       set c [string index $Viewport::Data(Operand$VP) $i]
       set idx [lsearch -exact $ids $c]
       if { $idx>=0 } {
+         incr nids
          if { $idx<$lfield } {
             set fld [lindex $fields $idx]
             if { $vert } {
@@ -983,6 +986,12 @@ proc FieldCalc::Operand { VP Fields } {
       } else {
          append expr $c
       }
+   }
+
+   if { !$nids } {
+      catch { set Data(Operand) [vexpr CALC$Data(FieldNo) $Viewport::Data(Operand$VP)] }
+      set Viewport::Data(Operand$VP) ""
+      return $Fields
    }
 
    #----- Check that we have enough fields
@@ -1305,16 +1314,16 @@ proc FieldCalc::WidgetMem { Frame } {
 
    frame $Frame.fun -relief sunken -bd 1
       button $Frame.fun.sto -text "STO" -bd 1 \
-         -command "$Frame.mem.list insert end \$FieldCalc::Data(Operand)"
+         -command "if { \[fstdfield is \$FieldCalc::Data(Operand)\] } { incr FieldCalc::Data(FieldNo) }; $Frame.mem.list insert end \$FieldCalc::Data(Operand)"
       button $Frame.fun.rcl -text "RCL" -bd 1 \
          -command "catch { FieldCalc::InsertDigit \[$Frame.mem.list get \[$Frame.mem.list curselection]\] }"
       button $Frame.fun.del -text "DEL" -bd 1 \
-         -command "catch { $Frame.mem.list delete \[$Frame.mem.list curselection\] }"
+         -command "catch { $Frame.mem.list delete \[set fld \[$Frame.mem.list curselection\]\]; if { \[fstdfield is \$fld\] } { fstdfield free \$fld } }"
       pack  $Frame.fun.sto $Frame.fun.rcl $Frame.fun.del -side top
    pack $Frame.fun -side left -pady 10 -padx 5
 
    frame $Frame.mem
-      listbox $Frame.mem.list -bg $GDefs(ColorLight) -width 17 -bd 1 -yscrollcommand "$Frame.mem.scroll set" -exportselection false
+      listbox $Frame.mem.list -bg $GDefs(ColorLight) -width 17 -bd 1 -yscrollcommand "$Frame.mem.scroll set" -exportselection false -listvar FieldCalc::Data(Mem)
       scrollbar $Frame.mem.scroll -orient vertical -bd 1 -width 10 -command "$Frame.mem.list yview"
       pack $Frame.mem.list -side left -fill both -expand true
       pack $Frame.mem.scroll -side left -fill y
