@@ -20,6 +20,5 @@ export GDAL_DATA=${SPI_PATH}/Data/epsg_csv/
 export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/Data/table_b_bufr
 
 #----- Force GRIB Tables
-
-export GRIB_TEMPLATE_PATH=/data/cmoe/afsr005/Lib/Linux/grib_api-0.9.31/share/grib_api/templates
-export GRIB_DEFINITION_PATH=/data/cmoe/afsr005/Lib/Linux/grib_api-0.9.31/share/grib_api/definitions
+export GRIB_TEMPLATE_PATH==${SPI_PATH}/Data/templates
+export GRIB_DEFINITION_PATH==${SPI_PATH}/Data/definitions
