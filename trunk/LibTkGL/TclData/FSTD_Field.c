@@ -600,7 +600,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
    if (gz) free(gz);
 #endif
-   return(Field->Ref->Pos);
+   return(Field->Ref->Pos[Level]);
 }
 
 /*----------------------------------------------------------------------------

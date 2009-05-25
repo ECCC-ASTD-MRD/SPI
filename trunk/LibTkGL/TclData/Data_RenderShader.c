@@ -299,7 +299,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   double i,j,width,dt;
+   double i,j,dt;
    int    b,f,len,pi,pj,dz;
    float  step;
    Vect3d pix;
@@ -352,8 +352,6 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    dz=Field->Spec->Sample*10;
    dt=0.0;
 
-   width=Field->Spec->RenderTexture?Field->Spec->Size*0.2:Field->Spec->Size*0.1;
-
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
       for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
@@ -380,11 +378,11 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             glPushMatrix();
             glTranslatef(-Field->Spec->TexStep-(dt+=0.15),0.0,0.0);
             if (b+f>2) {
-               glLineWidth(width);
+               glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
                Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
 
-               glLineWidth(8*width);
+               glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
                Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
             }

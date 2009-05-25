@@ -949,9 +949,9 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
 */
 void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y2){
 
-   int        size,o0,o1,od,xt,x0;
-   char       buf[64];
-   double     inter[5];
+   int        size,xt,x0;
+   char       buf[32];
+   double     inter[5],r1,r0,od,d;
    float      jps,jan;
    Tk_Justify just;
 
@@ -965,19 +965,26 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       inter[3]=50;
       inter[4]=100;
    } else {
-      o0=floor(log10(Spec->Min));
-      o1=floor(log10(Spec->Max));
+      if (Spec->InterNb) {
+         r0=Spec->Inter[0];
+         r1=Spec->Inter[Spec->InterNb-1];
+      } else {
+         r0=Spec->Min;
+         r1=Spec->Max;
+      }
+      r1=r0==r1?r1+1:r1;
 
-      if (o0<0 && o1>0) o0=0;
-      if (o0==o1)       o1++;
+      od=RANGE_ORDER(r1-r0);
+      od=RANGE_INCR(od);
 
-      od=o1-o0;
-
-      inter[0]=pow(10.0,o0);
-      inter[1]=pow(10.0,o0+(od/2)+0.397940008672038);
-      inter[2]=pow(10.0,o0+(od/2)+0.698970004336019);
-      inter[3]=pow(10.0,o0+(od/2)+0.8750612633917);
-      inter[4]=pow(10.0,o1);
+      r0=floor(r0/od)*od;
+      r1=ceil(r1/od)*od;
+      d=(r1-r0)/4.0;
+      inter[0]=r0==0.0?od/10.0:r0;
+      inter[4]=r1;
+      inter[1]=r0+d;
+      inter[2]=r0+d*2;
+      inter[3]=r0+d*3;
    }
 
    /*De quel cote est le texte*/
@@ -1009,6 +1016,8 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-70),0,Spec->Outline,jan,1.0,jps);
       DataSpec_Format(Spec,inter[4],buf);
       glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-90),0,Spec->Outline,jan,1.0,jps);
+      sprintf(buf,"%i\n",Spec->Width-1);
+      Tcl_AppendResult(Interp,buf," setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
    } else {
       glLineWidth(1.0);
       glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,CB->Alpha*655);
@@ -1039,6 +1048,7 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    if (Interp)
       glFeedbackInit(200,GL_2D);
 
+   glLineWidth(Spec->Width);
    size=VECTORSIZE(Spec,inter[0]);
    Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-13.0,0.0,inter[0],270.0,size,NULL);
    size=VECTORSIZE(Spec,inter[1]);

@@ -47,7 +47,7 @@
 #define DATASPEC_MAXSET 0x02
 #define DATASPEC_ALLSET 0x03
 
-#define VECTORSIZE(SPEC,VAL) ((SPEC->RenderVector==ARROW?SPEC->Size*0.5+SPEC->Size*((VAL-SPEC->Min)/(SPEC->Max-SPEC->Min)):SPEC->Size))
+#define VECTORSIZE(SPEC,VAL) ((SPEC->RenderVector==ARROW?SPEC->Size*0.5+SPEC->Size*(SPEC->InterNb?((VAL-SPEC->Inter[0])/(SPEC->Inter[SPEC->InterNb-1]-SPEC->Inter[0])):((VAL-SPEC->Min)/(SPEC->Max-SPEC->Min))):SPEC->Size+2*SPEC->Width))
 #define SPEC2VAL(SPEC,VAL)    (SPEC?VAL/SPEC->ValFactor-SPEC->ValDelta:VAL)
 #define VAL2SPEC(SPEC,VAL)    (SPEC?(VAL+SPEC->ValDelta)*SPEC->ValFactor:VAL)
 

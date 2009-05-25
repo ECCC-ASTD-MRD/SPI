@@ -858,7 +858,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   double i,j,width,dt;
+   double i,j,dt;
    int    b,f,len,pi,pj,dz;
    float  step;
    Vect3d pix;
@@ -911,8 +911,6 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    dz=Field->Spec->Sample*10;
    dt=0.0;
 
-   width=Field->Spec->RenderTexture?Field->Spec->Size*0.2:Field->Spec->Size*0.1;
-
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
       for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
@@ -937,11 +935,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             glPushMatrix();
             glTranslatef(-Field->Spec->TexStep-(dt+=0.15),0.0,0.0);
             if (b+f>2) {
-               glLineWidth(width);
+               glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
                Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
 
-               glLineWidth(8*width);
+               glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
                Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
             }
@@ -1012,7 +1010,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 
    len=STREAMLEN;
    dz=Field->Spec->Sample;
-   glLineWidth((float)Field->Spec->Size*0.2);
+   glLineWidth((float)Field->Spec->Width);
    glMatrixMode(GL_TEXTURE);
 
    /*Recuperer les latlon des pixels sujets*/
@@ -1590,6 +1588,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    Vect3d  pix;
    Coord   coo;
    int     n=0,mem,i,j,idx,dz;
+   char    buf[32];
 
    if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Outline)
       return;
@@ -1602,7 +1601,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    glMatrixMode(GL_MODELVIEW);
    glDisable(GL_CULL_FACE);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-   glLineWidth(1.0);
+   glLineWidth(Field->Spec->Width);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
    if (Field->Spec->MapAll && Field->Spec->Map->Alpha) {
@@ -1610,7 +1609,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    }
 
    if (Interp) {
-      Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n0 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
+      sprintf(buf,"%i\n",Field->Spec->Width-1);
+      Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n",buf," setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    }
 

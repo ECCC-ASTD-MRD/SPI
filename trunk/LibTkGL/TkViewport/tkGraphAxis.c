@@ -687,31 +687,6 @@ void GraphAxis_Wipe() {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GraphAxis_Incr>
- * Creation     : Fevrier 2009 - J.P. Gauthier - CMC/CMOE
- *
- * But          : Definir l'incremnent par defaut.
- *
- * Parametres   :
- *   <Axis>     : Axe
- *
- * Retour       :
- *   <Incr>     : Increment
- *
- * Remarques :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-double GraphAxis_Incr(TGraphAxis *Axis) {
-
-   double d;
-
-   d=pow(10,Axis->Order-1);
-
-   return(d);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GraphAxis_Define>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
@@ -774,16 +749,14 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
       if (Axis->T1<Axis->T0 && Axis->T0==0.0) Axis->T1=Axis->T1-1.0;
    }
 
-#define ORDERS(VAL) (VAL==0.0?1.0:ceil(log10(ABS(VAL))-0.25))
-
-   Axis->Order=ORDERS(Axis->T1-Axis->T0);
+   Axis->Order=RANGE_ORDER(Axis->T1-Axis->T0);
    for(i=1;i<Axis->InterNb;i++) {
-      o=ORDERS(Axis->Inter[i]-Axis->Inter[i-1]);
+      o=RANGE_ORDER(Axis->Inter[i]-Axis->Inter[i-1]);
       Axis->Order=abs(Axis->Order)>abs(o)?Axis->Order:o;
    }
 
    if (Axis->Mod && !Axis->InterNb && Axis->Incr==0.0) {
-      d=GraphAxis_Incr(Axis);
+      d=RANGE_INCR(Axis->Order);
       if (Axis->T0<Axis->T1) {
          Axis->T0=floor(Axis->T0/d)*d;
          Axis->T1=ceil(Axis->T1/d)*d;
@@ -1273,7 +1246,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          i1=Axis->T1;
       }
 
-      incr=Axis->Incr!=0.0?Axis->Incr:GraphAxis_Incr(Axis);
+      incr=Axis->Incr!=0.0?Axis->Incr:RANGE_INCR(Axis->Order);
       inter=i0-fmod(i0,incr);
       if (inter<i0) inter+=incr;
 

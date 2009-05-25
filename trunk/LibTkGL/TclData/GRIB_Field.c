@@ -80,7 +80,7 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
    int        i,j,k,idx,ni,nj,nk,ip1;
    int        idxi,idxk;
 
-   return(Field->Ref->Pos);
+   return(Field->Ref->Pos[Level]);
 }
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldFree>
