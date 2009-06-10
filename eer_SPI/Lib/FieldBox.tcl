@@ -1457,12 +1457,10 @@ proc FieldBox::Select { } {
          if { $lidx==-1 } {
             eval $type read $fld $fid $fidx
 
-            catch {
             set nv [fstdfield define $fld -NOMVAR]
             if { $nv=="INFO" || $nv=="META" || $nv=="TEXT" || $nv=="PROJ" || ($nv=="OL" && [fstdfield define $fld -TYPVAR]=="X") } {
                FieldBox::Show $fld
                continue
-            }
             }
             #----- Si le champs n'etait pas deja selectionnee
 
