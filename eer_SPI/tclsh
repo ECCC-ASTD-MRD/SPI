@@ -1,9 +1,9 @@
 #!/bin/sh
 
 export SPI_PATH=${0%tclsh}
-. ${SPI_PATH}/version
+. ${SPI_PATH}/.profile_spi
 
 #----- Force  software GL, usefull for tclsh only script
-export LD_LIBRARY_PATH=${SHARED}/GL:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${SPI_SHARED}/GL:$LD_LIBRARY_PATH
 
-exec ${SHARED}/TclTk/bin/tclsh${TCL_VERSION} $@
+exec ${SPI_SHARED}/TclTk/bin/tclsh${TCL_VERSION} $@

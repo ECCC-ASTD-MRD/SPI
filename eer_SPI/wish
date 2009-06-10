@@ -1,6 +1,6 @@
 #!/bin/sh
 
 export SPI_PATH=${0%wish}
-. ${SPI_PATH}/version
+. ${SPI_PATH}/.profile_spi
 
-exec ${SHARED}/TclTk/bin/wish${TCL_VERSION} $@
+exec ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} $@
