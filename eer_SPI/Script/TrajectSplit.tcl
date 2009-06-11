@@ -13,13 +13,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Description:
 #    Separer une execution en plusieurs trajectoires.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 proc WriteParcel { FI FO P } {

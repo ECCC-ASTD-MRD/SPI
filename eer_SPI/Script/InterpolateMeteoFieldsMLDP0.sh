@@ -35,47 +35,41 @@
 #              - WW (vertical motion)               [Pa/s]
 #              - Z0 (roughness length)              [m]
 #
-# Script(s) Appelant(s) :
-#   MLDP0.tcl
-#
 # Remarques  :
-#   - Adaptation du script d'interpolation deja existant pour CANERM.
-#
+#   Aucune.
 #===============================================================================
 
 #----- Source user's profile.
 . ~/.profile >/dev/null 2>&1
+export SPI_PATH=/home/afsr/005/eer_SPI/eer_SPI
+. ${SPI_PATH}/.profile_spi > /dev/null 2>&1
 
 #----- Load standard functions
-. ${SPI_PATH}/Logger.sh
+. ${EER_DIRSCRIPT}/Logger.sh
 
-Log::Start $0 1.19
+Log_Start InterpolateMeteoFieldsMLDP0.sh 2.0
 
 #----- Get arguments.
-BinMetFields="${1}"
-DirTmp="${2}"
-Model="${3}"
-NbProc="${4}"
-GridSize="${5}"
-Debug="${6}"
+DirTmp="${1}"
+Model="${2}"
+NbProc="${3}"
+GridSize="${4}"
+Debug="${5}"
 
-Log::Print INFO "MLDP0 pre-processors : ${BinMetFields}"
-Log::Print INFO "Temporary directory  : ${DirTmp}"
-Log::Print INFO "Meteorological model : ${Model}"
-Log::Print INFO "Number of processes  : ${NbProc}"
-Log::Print INFO "Printing debug level : ${Debug}"
+Log_Print INFO "Temporary directory  : ${DirTmp}"
+Log_Print INFO "Meteorological model : ${Model}"
+Log_Print INFO "Number of processes  : ${NbProc}"
+Log_Print INFO "Printing debug level : ${Debug}"
 
 #----- Define grid parameters.
 if [[ ${GridSize} = "" ]] ; then
    GridSize="229x229x25"
-   Log::Print WARNING "Grid size not defined, using default grid size : ${GridSize}"
+   Log_Print WARNING "Grid size not defined, using default grid size : ${GridSize}"
 else
-   Log::Print INFO "Grid size parameters : ${GridSize}"
+   Log_Print INFO "Grid size parameters : ${GridSize}"
 fi
 
 cd ${DirTmp}
-
-echo "doing" > sim.meteo
 echo ${DirTmp} > tmpdir
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
@@ -252,8 +246,8 @@ C
 EOF_PGSM_METEOr24
 
 else
-    Log::Print ERROR "Wrong type of meteorological model. Available met models: reg, glb, reg24, glb100."
-    Log::End 1
+    Log_Print ERROR "Wrong type of meteorological model. Available met models: reg, glb, reg24, glb100."
+    Log_End 1
 fi
 
 #----- Read the list of all standard meteorological files.
@@ -263,17 +257,16 @@ set -A ArrayStdFiles ${stdfiles}
 nbfiles=${#ArrayStdFiles[@]}
 
 #----- Print number of processes and all standard files to process.
-Log::Print INFO "Number of processes: ${NbProc}"
-Log::Print INFO "Number of standard files to process: ${nbfiles}"
+Log_Print INFO "Number of processes: ${NbProc}"
+Log_Print INFO "Number of standard files to process: ${nbfiles}"
 
 #----- PGSM.
 export FST_OPTIONS="DATATYPE_REMAP=1,134 5,133"
 
 idx=0
 nbproc=0
-sec0=$SECONDS
+Log_Print INFO "Executing PGSM: Interpolating met fields on the specified grid for standard files ..."
 
-Log::Print INFO "Executing PGSM: Interpolating met fields on the specified grid for standard files ..."
 #----- Erase old file.
 rm -f ../meteo/*.std
 
@@ -286,29 +279,30 @@ while [ ${idx} -lt ${nbfiles} ] ; do
 
    #----- Verify if standard file exists and is readable.
    if [ ! -r ${file} ] ; then
-     Log::Print ERROR "   This standard file is not readable : ${file}."
-     Log::End 1
+     Log_Print ERROR "   This standard file is not readable : ${file}."
+     Log_End 1
    fi
 
    #----- Interpolate meteorological fields for the specified grid and standard file using PGSM.
-   Log::Print INFO "   Processing standard file ${file} (${idx}/${nbfiles}) ..."
+   Log_Print INFO "   Processing standard file ${file} (${idx}/${nbfiles}) ..."
    pgsm+ -iment ${file} \
       -ozsrt ../meteo/${filename}.std \
-      -i pgsm.dir >pgsm.${filename}.out 2>pgsm.${filename}.err &
+      -i pgsm.dir \
+      >pgsm.${filename}.out 2>pgsm.${filename}.err &
 
    nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
    if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
 
-      Log::Print INFO "   Waiting until all background processes are completed ..."
+      Log_Print INFO "   Waiting until all background processes are completed ..."
       wait
       nbproc=0 #----- Reset number of processes.
 
       #----- Verify if PGSM has terminated successfully.
-      nbline=`grep "ABORT" pgsm.*.out | wc -l`
-      if [[ ${nbline} -gt 0 ]] ; then
-         Log::Print ERROR "   PGSM has encountered an errors."
-         Log::End 1
+      nbline=`grep "PGSM.*OK" pgsm.*.out | wc -l`
+      if [[ ${nbline} -lt ${idx} ]] ; then
+         Log_Print ERROR "   PGSM has encountered an errors."
+         Log_End 1
       fi
    fi
 done
@@ -316,18 +310,14 @@ done
 wait
 export FST_OPTIONS=""
 
-Log::TimeFormat `expr ${SECONDS}-${sec0}` "   PGSM done! Elapsed real time:"
-
 #----- MLDP0 pre-processor.
-
 idx=0
 nbproc=0
-sec0=$SECONDS
 NI=`echo ${GridSize} | cut -d"x" -f1`
 NJ=`echo ${GridSize} | cut -d"x" -f2`
 NK=`echo ${GridSize} | cut -d"x" -f3`
 
-Log::Print INFO "Executing MLDP0 pre-processor: Computing other meteorological fields required by the model ..."
+Log_Print INFO "Executing MLDP0 pre-processor: Computing other meteorological fields required by the model ..."
 
 while [ ${idx} -lt ${nbfiles} ] ; do
 
@@ -347,32 +337,70 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    #-----   - 'SU' : [3D] Wind speed X-component ('UU') variance [kt2],
    #-----   - 'SV' : [3D] Wind speed Y-component ('VV') variance [kt2],
    #-----   - 'TH' : [3D] Virtual potential temperature [K].
-   Log::Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
-   ${DIRBIN}/${ARCH}/metfields_mldp0 \
-      -iment ./meteo/${filename}.std \
-      -ozsrt ./meteo/${filename}.std \
+   Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
+   ${EER_DIRBIN}/metfields_mldp0 \
+      -iment ../meteo/${filename}.std \
+      -ozsrt ../meteo/${filename}.met.std \
       -print ${Debug} \
       -ni ${NI} \
       -nj ${NJ} \
-      -nk ${NK} >metfields.${filename}.out 2>metfields.${filename}.err &
+      -nk ${NK} \
+      >metfields.${filename}.out 2>metfields.${filename}.err &
 
    nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
    if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
 
-      Log::Print INFO "   Waiting until all background processes are completed ..."
+      Log_Print INFO "   Waiting until all background processes are completed ..."
       wait
       nbproc=0 #----- Reset number of processes.
 
       #----- Verify if Metfields has terminated successfully.
-      nbline=`grep "ABORT" metfields.*.out | wc -l`
-      if [[ ${nbline} -gt 0 ]] ; then
-         Log::Print ERROR "   ${BinMetFields} has encountered an errors."
-         Log::End 1
+      nbline=`grep "METFLD0.*FIN" metfields.*.out | wc -l`
+      if [[ ${nbline} -lt ${idx} ]] ; then
+         Log_Print ERROR "   ${EER_DIRBIN}/metfields_mldp0 has encountered an errors."
+         Log_End 1
       fi
     fi
 done
 
 wait
-echo "done" > sim.meteo
-Log::End 0
+
+#----- EDITFST.
+idx=0
+nbproc=0
+
+Log_Print INFO "Executing EDITFST: Merging the two meteorological files (PGSM + metfields) into one standard file for MLDP0 ..."
+
+while [ ${idx} -lt ${nbfiles} ] ; do
+   #----- Initialize output filenames.
+   filename=`basename ${ArrayStdFiles[${idx}]}`
+   idx=`expr ${idx} + 1`
+
+   #----- Merge the two meteorological files (PGSM + Metfields) into one standard file for MLDP0.
+   Log_Print INFO "   Processing standard file ${filename}.std (${idx}/${nbfiles}) ..."
+   editfst+ \
+      -s ../meteo/${filename}.met.std \
+      -d ../meteo/${filename}.std \
+      -i 0 \
+      >editfst.${filename}.out 2>editfst.${filename}.err
+
+   nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
+
+   if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
+
+      Log_Print INFO "   Waiting until all background processes are completed ..."
+      wait
+      nbproc=0 #----- Reset number of processes.
+
+      #----- Verify if EDITFST has terminated successfully.
+      nbline=`grep "EDITFST.*NORMAL" editfst.*.out | wc -l`
+      if [[ ${nbline} -lt ${idx} ]] ; then
+         Log_Print ERROR "   EDITFST has encountered an errors."
+         Log_End 1
+      fi
+   fi
+done
+
+wait
+Log_End 0

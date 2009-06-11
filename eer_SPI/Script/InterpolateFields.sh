@@ -1,5 +1,5 @@
 #!/bin/sh
-#=============================================================================== 
+#===============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadien
 # Dorval, Quebec
@@ -7,7 +7,7 @@
 # Projet     : Interface pour le modele CANERM.
 # Nom        : <InterpolateFields.sh>
 # Creation   : Septembre 1997 - S. Trudel - CMC/CMOE
-#   
+#
 # Description: Generer le fichier standard pour la climatologie et le fichier
 #              standard pour les previsions/analyses.  Ces fichiers seront
 #              crees a l'aide de PGSM pour une grille de dimension variable
@@ -17,7 +17,7 @@
 #   ${1}     : Le repertoire temporaire de travail.
 #   ${2}     : Le fichier de climatologie .
 #   ${3}     : Le type de modele ( glb ou reg ).
-#   
+#
 # Retour     : un premier fichier standard (tape20) pour les champs suivant :
 #
 #                  MN (montagne (NCAR)                 - valeur: metre),
@@ -45,21 +45,7 @@
 #   - generalement, on s'attend a retrouver les donnees relatif a la
 #     climatologie dans le fichier <tape20>; alors que les donnees relatif
 #     aux previsions/analyses se retrouveront dans le fichier <tape30>.
-#
-# Modifications :
-#
-#   Nom         : E. Bilodeau
-#   Date        : Mars 1997
-#   Description : Optimisation du code.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Janvier 1999
-#   Description : Suppression des trois premier niveaux pour le modele
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Octobre 1999
-#   Description : Nouveau modele donc, nouveaux besoins
-#=============================================================================== 
+#===============================================================================
 
 # ----- Recupere les arguments.
 

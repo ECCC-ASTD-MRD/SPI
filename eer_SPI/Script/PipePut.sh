@@ -7,14 +7,14 @@
 #   Projet     : Gestion des "filesystems".
 #   Nom        : <PipePut>
 #   Creation   : Mai 1997 S. Trudel - CMC/CMOE
-#   
+#
 #   But        : Creer des fichiers 'tar' a archiver de maniere efficace
 #
 #   Parametres :
 #     ${1}     : nom du fichier a considerer.
 #     ${2}     : nom de la machine de destination.
 #     ${3}     : nom du fichier de sortie ( path compris ).
-#   
+#
 #   Retour     :
 #     Aucun.
 #
@@ -23,15 +23,7 @@
 #
 #     - le premier argument peut-etre egalement un repertoire.
 #       Le mot fichier doit etre considerer au sens large.
-#
-#   Modifications :
-#
-#     Nom         : -
-#     Date        : -
-#     Description : -
-#
 #------------------------------------------------------------------------------
-#set -x
 
 JOB_ID=$$
 

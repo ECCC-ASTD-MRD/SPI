@@ -7,25 +7,18 @@
 # Projet     : Interface pour le modele CANERM.
 # Nom        : <SimTraceCANERM.sh>
 # Creation   : Mars 2000 - J.P. Gauthier - CMC/CMOE
-#   
+#
 # Description: Recupere une trace des resultats de la simulation.
 #
-# Parametres : 
+# Parametres :
 #    ${1}    : Path de la simulation
 #    ${2}    : Path des traces
 #    ${3}    : Nom de la job
-#   
+#
 # Retour     :
 #    Aucun.
 #
 # Remarques  :
-#
-# Modifications  :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
 #=============================================================================
 
 SimPath="${1}"

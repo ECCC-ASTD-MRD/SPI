@@ -16,13 +16,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Remarques  :
 #   Aucune.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 #----- Definitions des donnees

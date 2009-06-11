@@ -16,13 +16,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Parametres :
 #
 # Remarques  :
-#
-# Modifications  :
-#
-#    Nom         :
-#    Date        :
-#    Description :
-#
 #===============================================================================================
 
 #----- Recuperer les arguments.

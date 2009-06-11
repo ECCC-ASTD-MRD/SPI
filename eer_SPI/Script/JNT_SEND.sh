@@ -41,29 +41,6 @@
 #     NOTE IMPORTANTE : lorsque vous copiez ce fichier ( jntreg34.html ),
 #                       assurez-vous d'avoir la bonne permission pour
 #                       ce fichier, soit 644.
-#
-# Modifications :
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Juin 2006
-#   Description : Changements des serveurs externes.
-#                 ( www/ftp --> collaboration/depot )
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Mai 2007
-#   Description : Changements pour le transfert du fichier 'joint statement'
-#                 sur notre site externe.
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Septembre 2007
-#   Description : Changements pour le transfert du fichier 'leadrsmc.txt'.
-#                 Attention, ce fichier n'est pas toujours present, voir la
-#                 remarque ci-haut.
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Novembre 2007
-#   Description : Ajouts pour les transferts de fichiers pour RSMC Obninsk.
-#
 #===============================================================================
 
 . $HOME/.eer_ToolDefs/.password

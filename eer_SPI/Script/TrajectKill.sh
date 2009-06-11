@@ -7,22 +7,15 @@
 # Projet     : Modele Trajectoire.
 # Nom        : <TrajectKill.sh>
 # Creation   : Mars 2000 - J.P. Gauthier- CMC/CMOE
-#   
-# But        : Permet de nettoyer les repertoires lors d'une annulation. 
+#
+# But        : Permet de nettoyer les repertoires lors d'une annulation.
 #
 # Parametres :
 #   ${1}     : repertoire temporaire.
-#   
+#
 # Retour        :
 #
 # Remarques  :
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 #----- Recuperer les arguments obligatoires.

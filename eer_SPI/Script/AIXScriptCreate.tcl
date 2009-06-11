@@ -19,18 +19,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #    ExperimentManager.tcl.
 #
 # Remarques  :
-#
-# Modifications  :
-#
-#    Nom         : J.P. Gauthier
-#    Date        : Janvier 2001
-#    Description : -Transformations du script en Tcl
-#                  -Adaptation pour les divers types de BackEnd.
-#
-#    Nom         : S. Trudel - CMC/CMOE
-#    Date        : Janvier 2004
-#    Description : Changements pour le AZUR.
-#
+#    Aucune.
 #===============================================================================================
 
 source $env(HOME)/.eer_ToolDefs/.eer_Defs-$env(SPI_VERSION)

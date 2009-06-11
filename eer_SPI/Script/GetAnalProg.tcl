@@ -13,13 +13,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Description:
 #    Determine la date de passage des analyses aux prognostiques.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 set DirTmp  [lindex $argv 0]

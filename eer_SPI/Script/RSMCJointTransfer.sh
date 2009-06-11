@@ -45,36 +45,6 @@
 #
 #   - pour la page "Resume d'experience", le nom utilise pour l'impression
 #     est toujours la meme CVRCA.gif.
-#
-# Modifications :
-#
-#   Nom         : J.P. Gauthier - CMC/CMOE
-#   Date        : Decembre 2000
-#   Description : Transfert de fichiers postscript pour Washington
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Juin 2001
-#   Description : Creation d'un fichier postscript unique pour Washington et
-#                 notre provoyeur de fax.
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Mai 2002
-#   Description : Creation de fichiers *_04 pour couvrir les scenarios 4 et 8.
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Juin 2006
-#   Description : Changements des serveurs externes.
-#                 ( www/ftp --> collaboration/depot )
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Aout 2007
-#   Description : Changements pour le transfert du fichier 'leadrsmc.txt',
-#                 le transfert se fait maintenant via le script JNT_SEND.sh.
-#
-#   Nom         : S. Trudel - CMC/CMOE
-#   Date        : Novembre 2007
-#   Description : Ajouts pour les transferts de fichiers pour RSMC Obninsk.
-#
 #===============================================================================
 
 . /usr/local/env/profile_ksh_usr

@@ -47,32 +47,6 @@
 #   - generalement, on s'attend a retrouver les donnees relatif a la
 #     climatologie dans le fichier <tape20>; alors que les donnees relatif
 #     aux previsions/analyses se retrouveront dans des fichiers YYYYMMDDHH_hhh.
-#
-# Modifications :
-#
-#   Nom         : E. Bilodeau
-#   Date        : Mars 1997
-#   Description : Optimisation du code.
-#
-#   Nom         : J.P. Gauthier
-#   Date        : Janvier 1999
-#   Description : Suppression des trois premier niveaux pour le modele
-#
-#   Nom         : K. MacGillivray
-#   Date        : Mai 1999
-#   Description : Modifications majeur du code afin d'executer des PGSM en
-#                 parallel.
-#
-#   Nom         : A. Malo - CMC/CMOE
-#   Date        : 14 May 2004
-#   Description : Modify the IP1 vertical levels for interpolation of meteo
-#                 fields coming from new 15 km GEM REGIONAL model.
-#
-#   Nom         : N. Ek - CMC/CMOE
-#   Date        : 19 June 2006
-#   Description : Single, unified list of IP1 vertical levels for interpolated
-#                 fields from GEM Regional or Meso-global model (hybrid eta, Rcoef=1).
-#                 Input variable $Model is no longer used.
 #===============================================================================
 
 . ${HOME}/.profile > /dev/null

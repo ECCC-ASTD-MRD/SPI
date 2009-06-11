@@ -20,13 +20,6 @@
 #
 # Remarques  :
 #   - IMPORTANT: modifier la sortie du modele pour une sortie propre.
-#
-# Modifications :
-#
-#   Nom         : -
-#   Date        : -
-#   Description : -
-#
 #===============================================================================
 
 #----- Recuperer les arguments obligatoires.
