@@ -254,7 +254,7 @@ fi
 
 #----- Changer l'etat de la simulation sur le serveur.
 
-\${DIR_SCRIPT}/SimDone.sh ../tmp/sim.pool ../../CANERM.pool &
+\${DIR_SCRIPT}/SimDone.sh ../../CANERM.pool ../tmp/sim.pool 0 &
 \${DIR_SCRIPT}/SimTraceCANERM.sh \${PathSim} \${PathSim}/../../trace $JobFile &
 
 #----- Cleanup

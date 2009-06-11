@@ -382,7 +382,7 @@ rcp -p  *.post     \${FRONTEND}:\${PathSim}/tmp
 
 ##----- Changer l'etat de la simulation sur le serveur.
 
-rsh \${FRONTEND} -n \${PathScript}/SimDone.sh ${PathSim}/tmp/sim.pool ${PathSim}/../CANERM.pool &
+rsh \${FRONTEND} -n \${PathScript}/SimDone.sh ${PathSim}/../CANERM.pool ${PathSim}/tmp/sim.pool 0 &
 rsh \${FRONTEND} -n \${PathScript}/SimTraceCANERM.sh \${PathSim} \${PathSim}/../../trace $JobFile &
 
 ##--------------------------------------------------------------------------------
