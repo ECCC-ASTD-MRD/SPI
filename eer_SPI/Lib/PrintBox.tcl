@@ -543,18 +543,18 @@ proc PrintBox::Postscript { Frame File X Y Width Height { Angle portrait } { For
 
       if { $Angle=="portrait" } {
          if { [expr double($Width)/double($Height)]>=$ratio } {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false \
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex 0 -pagey 0 -pageanchor sw \
                -colormode color -pagewidth ${width}i -file $File.ps -fontmap PrintBox::Map
          } else {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false \
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex 0 -pagey 0  -pageanchor sw \
                -colormode color -pageheight ${height}i -file $File.ps -fontmap PrintBox::Map
          }
       } else {
          if { [expr double($Height)/double($Width)]<=$ratio } {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true \
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true -pagex 0 -pagey 0 -pageanchor sw \
                -colormode color -pagewidth ${height}i -file $File.ps -fontmap PrintBox::Map
          } else {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true \
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true -pagex 0 -pagey 0 -pageanchor sw \
                -colormode color -pageheight ${width}i -file $File.ps -fontmap PrintBox::Map
          }
       }
