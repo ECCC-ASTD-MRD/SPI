@@ -6,16 +6,16 @@
 # H9P 1J3
 #
 # Projet     : Interface pour la gestion des experiences.
-# Fichier    : <MLDP0.txt>
+# Fichier    : <MLDP.txt>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Description des textes et labels relatives au module MLDP0.
+# Description: Description des textes et labels relatives au module MLDP.
 #
 # Remarques  :
 #
 #============================================================================
 
-namespace eval MLDP0 {
+namespace eval MLDP {
    variable Lbl
    variable Msg
    variable Error
@@ -23,6 +23,13 @@ namespace eval MLDP0 {
    variable Bubble
 
    #----- Definitions des labels
+
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(No)         { "Non" "No " }
+   set Lbl(Warning)    { "Avertissement" "Warning" }
+   set Lbl(DiskPath)   { "Répertoire              " "directory           " }
+   set Lbl(DiskNeed)   { "Espace disque critique  " "Critical disk space " }
+   set Lbl(DiskAvail)  { "Espace disque disponible" "Available disk space" }
 
    set Lbl(Product)             { "Produits"  "Products" }
    set Lbl(Result)              { "Résultats" "Results" }
@@ -82,12 +89,15 @@ namespace eval MLDP0 {
    set Lbl(Warning)             { "Avertissement" "Warning" }
 
    set Lbl(Params)              { "Paramètres" "Parameters" }
-   set Lbl(Host)                { "Nom de l'hôte " "Host name     " }
-   set Lbl(Queue)               { "Type de queue " "Queue type    " }
-   set Lbl(MetCPU)              { "Nb CPUs météo " "Nb CPUs meteo " }
+   set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
+   set Lbl(Queue)               { "Type de queue  " "Queue type     " }
+   set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
+   set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
+   set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
+   set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
    set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
-   set Lbl(Email)               { "   Adresse    " "   Address    " }
-   set Lbl(EmailAddress)        { "Courriel      " "E-mail        " }
+   set Lbl(Email)               { "   Adresse     " "   Address     " }
+   set Lbl(EmailAddress)        { "Courriel       " "E-mail         " }
    set Lbl(Launch)              { "Lancement" "Launch" }
    set Lbl(LaunchModel)         { "Lancer" "Launch" }
    set Lbl(Overwrite)           { "Remplacer" "Overwrite" }
@@ -124,7 +134,7 @@ namespace eval MLDP0 {
    set Bubble(EmHeight)               { "Hauteur maximale du panache (m)." "Maximum plume height (m)." }
    set Bubble(MassMode)               { "Sélectionner le mode pour le calcul de la masse totale relâchée (µg).\n\n - Formule empirique de Sparks et al. (1997): La masse totale relâchée ne peut pas être éditée;\n   elle dépend de la densité d'une particule, de la hauteur du panache et de la durée effective d'émission.\n - Édition: La masse totale relâchée peut être éditée." "Select the mode for total released mass calculation (µg).\n\n - Empirical formula of Sparks et al. (1997): Total mass released cannot be edited;\n   it is a function of particle density, plume height and effective emission duration.\n - Edit: Total mass released can be edited." }
    set Bubble(Radius)                 { "Rayon de la colonne d'émission (m)." "Emission column radius (m)." }
-   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet du dépôt gravitationnel selon la loi de Stokes." "Select the type of particle size distribution\nto model the effect of gravitational settling according to Stokes' law." }
+   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet de la vitesse de sédimentation et pour MLDP0, l'effet du dépôt gravitationnel selon la loi de Stokes et ." "Select the type of particle size distribution\nto model the effect of particle settling velocity and for MLDP0, the effect of gravitational settling according to Stokes' law." }
    set Bubble(EmVerticalDist)         { "Sélectionner le type de distribution verticale\npour modéliser le panache d'émission." "Select the type of vertical distribution\nto model the released plume." }
 
    set Bubble(Scenario)               { "Scénario d'émission." "Release scenario." }
@@ -155,14 +165,19 @@ namespace eval MLDP0 {
                                         "Host where meteorological preprocessing and model will be executed.\n\nmaia   : back-end operational cluster of IBM supercomputer (with preemption) ;\nsaiph  : back-end development cluster of IBM supercomputer (without preemption) ;\ncastor : operational front-end cluster ;\npollux : development front-end cluster." }
    set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
    set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
+   set Bubble(NbMPItasks)             { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                                        "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(NbOMPthreads)           { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                                        "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(OMPthreadFact)          { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
    set Bubble(IsEmailAddress)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
    set Bubble(EmailAddress)           { "Adresse de courrier électronique." "E-mail address." }
-   set Bubble(LaunchModel)            { "Lancer le modèle MLDP0." "Launch MLDP0 model." }
+   set Bubble(LaunchModel)            { "Lancer le modèle MLDP." "Launch MLDP model." }
 
    #----- Definitions des messages
 
    set Msg(Meteo)        { "Création des données météo en cours" "Creating meteorological data" }
-   set Msg(Exist)        { "Veuillez compléter le lancement de MLDP0 en cours avant de procéder à un autre." "Please complete the current MLDP0 launch before proceeding with another one." }
+   set Msg(Exist)        { "Veuillez compléter le lancement de MLDP en cours avant de procéder à un autre." "Please complete the current MLDP launch before proceeding with another one." }
    set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
    set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" "Do you really wish to delete this simulation?" }
    set Msg(Suppressing)  { "Suppression des données" "Suppressing data" }
@@ -179,6 +194,12 @@ namespace eval MLDP0 {
    set Error(UnitDensity)                       { "µg/m³." "µg/m³." }
    set Error(UnitMass)                          { "µg." "µg." }
    set Error(UnitRate)                          { "unité/h." "unit/h." }
+
+   set Error(MetFiles)                          { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
+                                                  "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
+   set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
+   set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
+   set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
 
    set Error(EndDate)                           { "Erreur! Auncune date de fin n'a été sélectionnée" "Error! No simulation end date has been selected" }
    set Error(SimDuration)                       { "Erreur! La durée de simulation (spécifiée en heures) doit être un nombre entier positif.\n\n\tDurée de simulation :" \
@@ -371,6 +392,11 @@ namespace eval MLDP0 {
    set Warning(SimDuration8)      { "\tDurée de simulation     :" "\tSimulation duration :" }
    set Warning(SimDuration9)      { "\tInterval de temps météo :" "\tMeteo time interval :" }
 
+   set Warning(VerticalLevels1)   { "Avertissement! Le premier niveau vertical dans la liste n'est pas égal à 0 m. Cette liste sera réinitialisée afin de considérer les particules dans la couche de surface non-résolue." \
+                                    "Warning! The first vertical level in the list is not equal to 0 m. This list will be re-initialized in order to take into account particles within the unresolved surface layer." }
+   set Warning(VerticalLevels2)   { "\tAnciens niveaux verticaux  :" "\tOld vertical levels :" }
+   set Warning(VerticalLevels3)   { "\tNouveaux niveaux verticaux :" "\tNew vertical levels :" }
+
    set Warning(NbSrc1)            { "Avertissement! Le nombre de sources associées à cette expérience doit être inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n\tNombre de sources         :" \
                                     "Warning! The number of sources associated to this experiment must be less than (or equal to) maximum limit value declared in the program.\n\n\tNumber of sources         :" }
    set Warning(NbSrc2)            { "\tNombre maximum de sources :" "\tMaximum number of sources :" }
@@ -389,20 +415,12 @@ namespace eval MLDP0 {
                                     "Warning! Deleting the default emission scenario is prohibited. Please delete a different scenario." }
    set Warning(HalfLife)          { "Avertissement! L'isotope sélectionné a une demi-vie radioactive inférieure à 15 minutes. Cette simulation ne produira pas de résultats pertinents et intéressants. Par conséquent, veuillez sélectionner un isotope différent de" \
                                     "Warning! The selected radionclide has a radioactive half-life less than 15 minutes. This simulation will not generate relevant and interesting results. Therefore, please select a radionuclide different than" }
-   set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle MLDP0 en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
-                                    "Warning! You are about to launch MLDP0 model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
+   set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle MLDP en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
+                                    "Warning! You are about to launch MLDP model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
    set Warning(EmailAddress)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
                                     "Warning! The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
    set Warning(EmailAddress2)     { "\tNouveau courriel    :" "\tNew email     :" }
    set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
-   set Warning(DiskSpace)         { "Avertissement! L'espace disque disponible associé au répertoire principal de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle MLDP0?" \
-                                    "Warning! The available disk space associated to the main experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute MLDP0 model?" }
-   set Warning(DiskSpace2)        { "\tRépertoire principal    " "\tMain directory      " }
-   set Warning(DiskSpace3)        { "\tSystème de fichier      " "\tFile system         " }
-   set Warning(DiskSpace4)        { "\tDisque monté sur        " "\tDisk mounted on     " }
-   set Warning(DiskSpace5)        { "\tEspace disque critique  " "\tCritical disk space " }
-   set Warning(DiskSpace6)        { "\tEspace disque disponible" "\tAvailable disk space" }
-   set Warning(DiskSpace7)        { "\tEspace disque utilisé   " "\tUsed disk space     " }
-   set Warning(DiskSpace8)        { "\tEspace disque total     " "\tTotal disk space    " }
-
+   set Warning(DiskSpace)         { "L'espace disque disponible dans le répertoire de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle ?" \
+                                    "The available disk space ino the  experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute the model ?" }
 }

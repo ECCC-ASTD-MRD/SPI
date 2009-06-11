@@ -1,0 +1,655 @@
+#============================================================================
+# Environnement Canada - Service meteorologique du Canada
+# Centre meteorologique canadien
+# 2121 Route Trans-canadienne
+# Dorval, Quebec
+# H9P 1J3
+#
+# Projet     : Interface pour la gestion des experiences.
+# Fichier    : <MLDP.int>
+# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Description des interfaces et procedures relatives a
+#              celles-ci pour le module MLDP.
+#
+# Remarques  :
+#
+#============================================================================
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::New>
+# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE -
+#
+# But        : Creation d'une nouvelle simulation MLDP.
+#
+# Parametres :
+#   <Parent> : Identificateur de la fenetre parent.
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+namespace eval MLDP0 { }
+namespace eval MLDP1 { }
+
+proc MLDP0::New { Parent } {
+
+   set MLDP::Sim(Model) MLDP0
+   MLDP::New $Parent
+
+}
+proc MLDP1::New { Parent } {
+
+   set MLDP::Sim(Model) MLDP1
+   MLDP::New $Parent
+}
+
+proc MLDP::New { Parent } {
+   global GDefs
+   variable Sim
+   variable Msg
+   variable Lbl
+   variable Bubble
+
+   if { [winfo exists .mldpnew] } {
+      Dialog::CreateInfo .mldpnew "[lindex $Msg(Exist) $GDefs(Lang)]"
+      return
+   }
+
+   toplevel     .mldpnew
+   wm title     .mldpnew "MLDPn: $Exp::Data(Name)"
+   wm transient .mldpnew $Parent
+   wm resizable .mldpnew 0 0
+   wm geom      .mldpnew =320x380+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+30]
+   wm protocol  .mldpnew WM_DELETE_WINDOW { }
+
+   MLDP::SimInitNew
+   MLDP::GridDef
+
+   TabFrame::Create .mldpnew.opt 1 "MLDP::SimLaunchInit"
+   pack .mldpnew.opt -side top -fill both -expand true -padx 5 -pady 5
+
+   #----- Model Tab.
+
+   set tabframe [TabFrame::Add .mldpnew.opt 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
+
+   #----- Simulation Starting Time.
+
+   labelframe $tabframe.time -text "[lindex $Lbl(Start) $GDefs(Lang)]"
+
+      #----- Simulation Date Hour and minutes.
+
+      Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDP::Sim(AccSeconds) 24 "MLDP::SetAccidentDate"
+      Clock::Create $tabframe.time.hour "" MLDP::Sim(AccHour) MLDP::Sim(AccMin)
+      pack $tabframe.time.date -side left -anchor w -padx 2 -fill x
+      pack $tabframe.time.hour -side left -padx 2
+
+      Bubble::Create $tabframe.time.date "[lindex $Bubble(StartDate) $GDefs(Lang)]"
+      Bubble::Create $tabframe.time.hour "[lindex $Bubble(StartHour) $GDefs(Lang)]"
+
+   pack $tabframe.time -side top -padx 5 -pady 5 -fill x
+   Bubble::Create $tabframe.time "[lindex $Bubble(StartTime) $GDefs(Lang)]"
+
+   #----- Model Integration (data output time step and model time step).
+
+   labelframe $tabframe.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
+      frame $tabframe.integ.opt
+
+      #----- Simulation duration [hr].
+
+      Option::Create $tabframe.integ.opt.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] MLDP::Sim(Duration) 1 -1 $MLDP::Sim(ListSimDuration) "MLDP::CheckFileSize; MLDP::UpdateListVerticalLevels"
+      pack $tabframe.integ.opt.dur -side top -fill x
+      Bubble::Create $tabframe.integ.opt.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
+      set MLDP::Sim(SimDurationEnt) $tabframe.integ.opt.dur.e
+
+      #----- Data output time step [min].
+
+      Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDP::Sim(OutputTimeStepMin) 1 -1 $MLDP::Sim(ListOutputTimeStep) "MLDP::CheckFileSize ; MLDP::UpdateListVerticalLevels" ; # "puts stderr \$MLDP::Sim(OutputTimeStepMin)"
+      pack $tabframe.integ.opt.ots -side top -fill x
+      Bubble::Create $tabframe.integ.opt.ots "[lindex $Bubble(OutputTimeStepMin) $GDefs(Lang)]"
+      set MLDP::Sim(OutputTimeStepEnt) $tabframe.integ.opt.ots.e
+
+      #----- Model time step [min].
+
+      Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDP::Sim(ModelTimeStepMin) 1 -1 $MLDP::Sim(ListModelTimeStep) "set Sim(IsScenarioValid) 0 ; MLDP::UpdateListVerticalLevels" ; # "puts stderr \$MLDP::Sim(ModelTimeStepMin)"
+      pack $tabframe.integ.opt.mts -side top -fill x
+      Bubble::Create $tabframe.integ.opt.mts "[lindex $Bubble(ModelTimeStepMin) $GDefs(Lang)]"
+      set MLDP::Sim(ModelTimeStepEnt) $tabframe.integ.opt.mts.e
+
+      pack $tabframe.integ.opt -side top -fill x -padx 2
+   pack $tabframe.integ -side top -padx 5 -fill x
+   Bubble::Create $tabframe.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+
+
+   #----- Other parameters.
+
+   labelframe $tabframe.others -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
+      frame $tabframe.others.opt
+
+         #----- Event Type.
+         Option::Create $tabframe.others.opt.event [lindex $Lbl(Event) $GDefs(Lang)] MLDP::Sim(Event) 1 -1 $MLDP::Sim(ListEvent) "MLDP::UpdateListVerticalLevels"
+         pack $tabframe.others.opt.event -side top -ipady 1 -fill x
+         bind $tabframe.others.opt.event.e <Key-Tab>  "MLDP::UpdateListVerticalLevels"
+         bind $tabframe.others.opt.event.e <Button-1> "MLDP::UpdateListVerticalLevels"
+
+         #----- Virus Source Type.
+         if { $Sim(SrcType) == "virus" } {
+            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDP::Sim(EmIsoSymbol) MLDP::Sim(VirusID) } 0 -1 [lindex $MLDP::Sim(ListVirusName) $GDefs(Lang)] "set MLDP::Sim(VirusType) \[lindex \$MLDP::Sim(ListVirusType) \$MLDP::Sim(VirusID)\] ; MLDP::UpdateListVerticalLevels"
+            pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
+            Bubble::Create $tabframe.others.opt.virus "[lindex $Bubble(Virus) $GDefs(Lang)]"
+         }
+
+         #----- Grid Resolution.
+         frame $tabframe.others.opt.grid
+         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDP::Sim(Scale) 0 7 $MLDP::Sim(ListScale) "MLDP::SetGridScaleRes ; MLDP::GridDef ; MLDP::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.grid.src "" MLDP::Sim(Src) 0 14 $MLDP::Sim(Names) "MLDP::SetSrc ; MLDP::UpdateListVerticalLevels"
+         checkbutton $tabframe.others.opt.grid.sel -variable Page::Data(ToolMode) -onvalue MLDP -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat \
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True; MLDP::UpdateListVerticalLevels } -selectcolor $GDefs(ColorFrame)
+         pack $tabframe.others.opt.grid.res -side left -ipady 1
+         pack $tabframe.others.opt.grid.src -side left -ipady 1
+         pack $tabframe.others.opt.grid.sel -side left
+         pack $tabframe.others.opt.grid     -side top -fill x
+
+         #----- Meteorological Model.
+         frame $tabframe.others.opt.met
+         Option::Create $tabframe.others.opt.met.model [lindex $Lbl(Meteo) $GDefs(Lang)] MLDP::Sim(Meteo) 0 7 $MLDP::Sim(ListMeteoModel) "MLDP::ReloadLaunchParams ; MLDP::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.met.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] MLDP::Sim(Delta) 0 6 $MLDP::Sim(ListMeteoDelta) "MLDP::CheckFileSize ; MLDP::UpdateListVerticalLevels"
+         button $tabframe.others.opt.met.path -image OPEN -relief flat -bd 0 -overrelief raised \
+                -command "Model::GetMetPath .mldpnew MLDP::Sim(DBaseDiag) MLDP::Sim(DBaseProg) ; MLDP::UpdateListVerticalLevels"
+         pack $tabframe.others.opt.met.model -side left -ipady 1
+         pack $tabframe.others.opt.met.delta -side left -ipady 1
+         pack $tabframe.others.opt.met.path  -side left
+         pack $tabframe.others.opt.met       -side top -fill x
+
+         #----- Vertical levels [m].
+         Option::Create $tabframe.others.opt.levels [lindex $Lbl(VerticalLevels) $GDefs(Lang)] MLDP::Sim(VerticalLevels) 1 -1 $MLDP::Sim(ListVerticalLevels) "MLDP::UpdateListVerticalLevels"
+         set MLDP::Sim(VerticalLevelsFrm) $tabframe.others.opt.levels
+         set MLDP::Sim(VerticalLevelsEnt) $tabframe.others.opt.levels.e
+         pack $tabframe.others.opt.levels -side top -ipady 1 -fill x
+         bind $tabframe.others.opt.levels.e <Key-Tab>  "MLDP::UpdateListVerticalLevels"
+         bind $tabframe.others.opt.levels.e <Button-1> "MLDP::UpdateListVerticalLevels"
+
+         #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+         Option::Create $tabframe.others.opt.varmesoscale [lindex $Lbl(VarMesoscale) $GDefs(Lang)] MLDP::Sim(VarMesoscale) 1 -1 $MLDP::Sim(ListVarMesoscale) "MLDP::UpdateListVerticalLevels"
+         set MLDP::Sim(VarMesoscaleEnt) $tabframe.others.opt.varmesoscale.e
+         pack $tabframe.others.opt.varmesoscale -side top -ipady 1 -fill x
+         bind $tabframe.others.opt.varmesoscale.e <Key-Tab>  "MLDP::UpdateListVerticalLevels"
+         bind $tabframe.others.opt.varmesoscale.e <Button-1> "MLDP::UpdateListVerticalLevels"
+
+         #----- Lagrangian time scale for mesoscale fluctuations [s].
+         Option::Create $tabframe.others.opt.timescale [lindex $Lbl(Timescale) $GDefs(Lang)] MLDP::Sim(Timescale) 1 -1 $MLDP::Sim(ListTimescale) "MLDP::UpdateListVerticalLevels"
+         set MLDP::Sim(TimescaleEnt) $tabframe.others.opt.timescale.e
+         pack $tabframe.others.opt.timescale -side top -ipady 1 -fill x
+         bind $tabframe.others.opt.timescale.e <Key-Tab>  "MLDP::UpdateListVerticalLevels"
+         bind $tabframe.others.opt.timescale.e <Button-1> "MLDP::UpdateListVerticalLevels"
+
+         #----- Reflection level [hyb|eta|sig].
+         Option::Create $tabframe.others.opt.reflect [lindex $Lbl(ReflectionLevel) $GDefs(Lang)] MLDP::Sim(ReflectionLevel) 1 -1 $MLDP::Sim(ListReflectionLevel) "MLDP::UpdateListVerticalLevels"
+         set MLDP::Sim(ReflectionLevelEnt) $tabframe.others.opt.reflect.e
+         pack $tabframe.others.opt.reflect -side top -ipady 1 -fill x
+         bind $tabframe.others.opt.reflect.e <Key-Tab>  "MLDP::UpdateListVerticalLevels"
+         bind $tabframe.others.opt.reflect.e <Button-1> "MLDP::UpdateListVerticalLevels"
+
+      pack $tabframe.others.opt -side top -fill x -padx 2
+   pack $tabframe.others -side top -padx 5 -pady 5 -fill x
+
+   Bubble::Create $tabframe.others                    "[lindex $Bubble(OtherParameters) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.event          "[lindex $Bubble(Event) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.grid.res       "[lindex $Bubble(Scale) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.grid.src       "[lindex $Bubble(MoveGrid1) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.grid.sel       "[lindex $Bubble(MoveGrid2) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.met.model      "[lindex $Bubble(Meteo) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.met.delta      "[lindex $Bubble(MeteoDelta) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.met.path       "[lindex $Bubble(ModifyPath) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.levels         "[lindex $Bubble(VerticalLevels) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.varmesoscale   "[lindex $Bubble(VarMesoscale) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.timescale      "[lindex $Bubble(Timescale) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others.opt.reflect        "[lindex $Bubble(ReflectionLevel) $GDefs(Lang)]"
+
+   #----- Emission Tab.
+
+   set tabframe [TabFrame::Add .mldpnew.opt 1 "[lindex $Lbl(Emission) $GDefs(Lang)]" False]
+
+   #----- Emission column.
+
+   labelframe $tabframe.column -text "[lindex $Lbl(Column) $GDefs(Lang)]"
+
+   set MLDP::Sim(EmissionColumnFrame) $tabframe.column
+
+   #----- Number of particles.
+
+   frame $tabframe.column.nbpart
+      label $tabframe.column.nbpart.lbl -relief flat -anchor w -text "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)]"
+      entry $tabframe.column.nbpart.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Sim(EmNumberParticles) -width 60
+      bind $tabframe.column.nbpart.ent <Button-1> "MLDP::ComputeMass"
+      pack $tabframe.column.nbpart.lbl $tabframe.column.nbpart.ent -side left
+   pack $tabframe.column.nbpart -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.column.nbpart "[lindex $Bubble(EmNumberParticles) $GDefs(Lang)]"
+
+   #----- Density [microgram/m3].
+
+   if { $MLDP::Sim(SrcType) == "volcano" } {
+      frame $tabframe.column.density
+         label $tabframe.column.density.lbl -relief flat -anchor w -text "[lindex $Lbl(EmDensity) $GDefs(Lang)]"
+         entry $tabframe.column.density.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Sim(EmDensity) -width 60
+         bind $tabframe.column.density.ent <Key-Tab> "MLDP::ComputeMass"
+         bind $tabframe.column.density.ent <Button-1> "MLDP::ComputeMass"
+         pack $tabframe.column.density.lbl $tabframe.column.density.ent -side left
+      pack $tabframe.column.density -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.column.density "[lindex $Bubble(EmDensity) $GDefs(Lang)]"
+   }
+
+   #----- Maximum plume height [m].
+
+   frame $tabframe.column.height
+      label $tabframe.column.height.lbl -relief flat -anchor w -text "[lindex $Lbl(EmHeight) $GDefs(Lang)]"
+      entry $tabframe.column.height.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Sim(EmHeight) -width 60
+      if { $MLDP::Sim(SrcType) == "volcano" } {
+         bind $tabframe.column.height.ent <Key-Tab> "MLDP::ComputeMass"
+         bind $tabframe.column.height.ent <Button-1> "MLDP::ComputeMass"
+      }
+      pack $tabframe.column.height.lbl $tabframe.column.height.ent -side left
+   pack $tabframe.column.height -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.column.height "[lindex $Bubble(EmHeight) $GDefs(Lang)]"
+
+   #----- Total released mass [microgram].
+   if { $MLDP::Sim(SrcType) == "volcano" } {
+      set Sim(EmMassOld) $Sim(EmMass)
+      Option::Create  $tabframe.column.mass [lindex $Lbl(EmMass) $GDefs(Lang)] { MLDP::Sim(EmMass) MLDP::Sim(EmMassMode) } \
+          0 -1 [lindex $MLDP::Sim(ListEmMassMode) $GDefs(Lang)] "MLDP::EnableDisableMass"
+      #----- Configure background and foreground entry wigdet when disabled.
+      $tabframe.column.mass.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
+      bind $tabframe.column.mass.e <Button-1> "MLDP::ComputeMass"
+      bind $tabframe.column.mass.b <Button-1> "MLDP::ComputeMass"
+      pack $tabframe.column.mass -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.column.mass  "[lindex $Bubble(MassMode) $GDefs(Lang)]"
+   }
+
+   #----- Column radius [m].
+   frame $tabframe.column.radius
+      label $tabframe.column.radius.lbl -relief flat -anchor w -text "[lindex $Lbl(EmRadius) $GDefs(Lang)]"
+      entry $tabframe.column.radius.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Sim(EmRadius) -width 60
+      bind $tabframe.column.radius.ent <Button-1> "MLDP::ComputeMass"
+      pack $tabframe.column.radius.lbl $tabframe.column.radius.ent -side left
+   pack $tabframe.column.radius -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.column.radius "[lindex $Bubble(Radius) $GDefs(Lang)]"
+
+   #----- Particles size distribution.
+   if { $MLDP::Sim(SrcType) == "volcano" } {
+      Option::Create  $tabframe.column.size [lindex $Lbl(EmSizeDist) $GDefs(Lang)] { MLDP::Sim(EmSizeDist) MLDP::Sim(EmSizeDistValue) } \
+         0 -1 [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)] ""
+      bind $tabframe.column.size.e <Button-1> "MLDP::ComputeMass"
+      bind $tabframe.column.size.b <Button-1> "MLDP::ComputeMass"
+      pack $tabframe.column.size -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.column.size  "[lindex $Bubble(EmSizeDist) $GDefs(Lang)]"
+   }
+
+   #----- Plume vertical distribution.
+   Option::Create  $tabframe.column.vertical [lindex $Lbl(EmVerticalDist) $GDefs(Lang)] { MLDP::Sim(EmVerticalDist) MLDP::Sim(EmVerticalDistValue) } \
+      0 -1 [lindex $MLDP::Sim(ListEmVerticalDist) $GDefs(Lang)] ""
+   bind $tabframe.column.vertical.e <Button-1> "MLDP::ComputeMass"
+   bind $tabframe.column.vertical.b <Button-1> "MLDP::ComputeMass"
+   pack $tabframe.column.vertical -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.column.vertical  "[lindex $Bubble(EmVerticalDist) $GDefs(Lang)]"
+
+   pack $tabframe.column -side top -padx 5 -pady 5 -fill x
+   Bubble::Create $tabframe.column "[lindex $Bubble(Column) $GDefs(Lang)]"
+
+   #----- Emission scenario.
+   labelframe $tabframe.scenario -text "[lindex $Lbl(Scenario) $GDefs(Lang)]"
+
+   set MLDP::Sim(ScenarioFrame) $tabframe.scenario
+
+   #----- Release scenario name.
+   frame $tabframe.scenario.name
+      label $tabframe.scenario.name.lbl -relief flat -anchor w -text "[lindex $Lbl(ScenarioName) $GDefs(Lang)]"
+      ComboBox::Create $tabframe.scenario.name.ent MLDP::Sim(EmScenario) noedit sorted nodouble -1 $MLDP::Sim(EmList) 10 3 "MLDP::EmissionSelect"
+   bind $tabframe.scenario.name.ent <Button-1> "MLDP::ComputeMass"
+   pack $tabframe.scenario.name.lbl -side left -padx 2
+   pack $tabframe.scenario.name.ent -side left -padx 2 -fill x -expand true
+   pack $tabframe.scenario.name -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.scenario.name.lbl "[lindex $Bubble(ScenarioName) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.name.ent "[lindex $Bubble(ScenarioSelect) $GDefs(Lang)]"
+
+   #----- Number of intervals.
+   frame $tabframe.scenario.nbint
+      label $tabframe.scenario.nbint.lbl -relief flat -anchor w -text "[lindex $Lbl(NbIntervals) $GDefs(Lang)]"
+      entry $tabframe.scenario.nbint.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmNbIntervals) -width 60 -state disabled
+      pack $tabframe.scenario.nbint.lbl $tabframe.scenario.nbint.ent -side left -padx 2
+   pack $tabframe.scenario.nbint -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.scenario.nbint "[lindex $Bubble(NbIntervals) $GDefs(Lang)]"
+
+   #----- Number of isotopes.
+   if { $MLDP::Sim(SrcType) == "accident" } {
+      frame $tabframe.scenario.nbiso
+         label $tabframe.scenario.nbiso.lbl -relief flat -anchor w -text "[lindex $Lbl(NbIsotopes) $GDefs(Lang)]"
+         entry $tabframe.scenario.nbiso.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmNbIso) -width 60 -state disabled
+         pack $tabframe.scenario.nbiso.lbl $tabframe.scenario.nbiso.ent -side left -padx 2
+      pack $tabframe.scenario.nbiso -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.scenario.nbiso "[lindex $Bubble(NbIsotopes) $GDefs(Lang)]"
+   }
+
+   #----- Total emission duration [s].
+   frame $tabframe.scenario.totdur
+      label $tabframe.scenario.totdur.lbl -relief flat -anchor w -text "[lindex $Lbl(TotalDuration) $GDefs(Lang)]"
+      entry $tabframe.scenario.totdur.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmTotalDuration) -width 60 -state disabled
+      pack $tabframe.scenario.totdur.lbl $tabframe.scenario.totdur.ent -side left -padx 2
+   pack $tabframe.scenario.totdur -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.scenario.totdur "[lindex $Bubble(TotalDuration) $GDefs(Lang)]"
+
+   #----- Effective emission duration [s].
+   frame $tabframe.scenario.effdur
+      label $tabframe.scenario.effdur.lbl -relief flat -anchor w -text "[lindex $Lbl(EffectiveDuration) $GDefs(Lang)]"
+      entry $tabframe.scenario.effdur.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmEffectiveDuration) -width 60 -state disabled
+      pack $tabframe.scenario.effdur.lbl $tabframe.scenario.effdur.ent -side left -padx 2
+   pack $tabframe.scenario.effdur -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.scenario.effdur "[lindex $Bubble(EffectiveDuration) $GDefs(Lang)]"
+
+   #----- Buttons.
+   frame $tabframe.scenario.button
+      button $tabframe.scenario.button.edit -text "[lindex $Lbl(Edit) $GDefs(Lang)]" -bd 1 -command "MLDP::ScenarioNew .mldpnew"
+      button $tabframe.scenario.button.delete -text "[lindex $Lbl(Suppress) $GDefs(Lang)]" -bd 1 -command "MLDP::EmissionDelete"
+      pack $tabframe.scenario.button.edit $tabframe.scenario.button.delete -side right
+   pack $tabframe.scenario.button -side top -anchor w -padx 5 -pady 10 -fill x -expand true
+   Bubble::Create $tabframe.scenario.button.edit "[lindex $Bubble(EditScenario) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.button.delete "[lindex $Bubble(DeleteScenario) $GDefs(Lang)]"
+
+
+   pack $tabframe.scenario -side top -padx 5 -fill x
+   Bubble::Create $tabframe.scenario "[lindex $Bubble(Scenario) $GDefs(Lang)]"
+
+   #----- Launching Tab.
+
+   set tabframe [TabFrame::Add .mldpnew.opt 1 "[lindex $Lbl(Launch) $GDefs(Lang)]" False]
+
+   labelframe $tabframe.params -text "[lindex $Lbl(Params) $GDefs(Lang)]"
+
+   #----- Host.
+   Option::Create $tabframe.params.host [lindex $Lbl(Host) $GDefs(Lang)] MLDP::Sim(Host) 0 -1 $MLDP::Sim(Hosts) "MLDP::ReloadMetData ; MLDP::UpdateListNbCPUsMeteo"
+   pack $tabframe.params.host -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.params.host "[lindex $Bubble(Host) $GDefs(Lang)]"
+   set MLDP::Sim(HostFrm) $tabframe.params.host
+
+   #----- Queue.
+   Option::Create $tabframe.params.queue [lindex $Lbl(Queue) $GDefs(Lang)] MLDP::Sim(Queue) 0 -1 $MLDP::Sim(Queues) ""
+   pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.params.queue "[lindex $Bubble(Queue) $GDefs(Lang)]"
+   set MLDP::Sim(QueueFrm) $tabframe.params.queue
+
+   #----- Nb CPUs for meteorological preprocessing.
+   Option::Create $tabframe.params.metcpu [lindex $Lbl(MetCPU) $GDefs(Lang)] MLDP::Sim(NbCPUsMeteo) 0 -1 $MLDP::Sim(ListNbCPUsMeteo) ""
+   pack $tabframe.params.metcpu -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.params.metcpu "[lindex $Bubble(MetCPU) $GDefs(Lang)]"
+   set MLDP::Sim(NbCPUsMeteoFrm) $tabframe.params.metcpu
+
+   #----- Enabling/Disabling email monitoring option.
+   checkbutton $tabframe.params.emonitor -anchor w -text "[lindex $Lbl(IsEmailAddress) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
+       -variable MLDP::Sim(IsEmailAddress) -indicatoron true -command "MLDP::UpdateEmail"
+   pack $tabframe.params.emonitor -side top -anchor w
+   Bubble::Create $tabframe.params.emonitor "[lindex $Bubble(IsEmailAddress) $GDefs(Lang)]"
+
+   #----- Email address.
+   Option::Create $tabframe.params.email [lindex $Lbl(Email) $GDefs(Lang)] MLDP::Sim(EmailAddress) 1 -1 $MLDP::Sim(ListEmailAddress) ""
+   if { $Sim(IsEmailAddress) } {
+      pack $tabframe.params.email -side top -anchor w -padx 2 -fill x
+   }
+   Bubble::Create $tabframe.params.email "[lindex $Bubble(EmailAddress) $GDefs(Lang)]"
+   set MLDP::Sim(EmailFrm) $tabframe.params.email
+   set MLDP::Sim(EmailEnt) $tabframe.params.email.e
+
+   #----- Button.
+   frame $tabframe.params.button
+      button $tabframe.params.button.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "MLDP::SimLaunchCheck"
+      pack $tabframe.params.button.launch -side right
+   pack $tabframe.params.button -side top -anchor w -padx 5 -pady 10 -fill x -expand true
+   Bubble::Create $tabframe.params.button.launch "[lindex $Bubble(LaunchModel) $GDefs(Lang)]"
+   set MLDP::Sim(LaunchFrm) $tabframe.params.button
+
+   pack $tabframe.params -side top -padx 5 -pady 5 -fill x
+
+   #----- Button "Close"
+
+   button .mldpnew.close -text "[lindex $Lbl(Close) $GDefs(Lang)]" -bd 1 -command { destroy .mldpnew ; MLDP::ModeLeave }
+   pack .mldpnew.close -side right -padx 5 -pady 5
+
+   TabFrame::Select .mldpnew.opt 0
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::EnableDisableMass>
+# Creation   : 27 September 2005 - A. Malo - CMC/CMOE
+#
+# But        : Enable or disable total mass released entry widget according
+#              on which mode is selected for mass calculation.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::EnableDisableMass { } {
+   global GDefs
+   variable Sim
+
+   if { $Sim(EmMassMode) == 0 } {
+
+      #----- Total released mass is calculated according to empirical
+      #----- formula of Sparks et al. (1997), so disable entry widget.
+      $Sim(EmissionColumnFrame).mass.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
+
+   } elseif { $Sim(EmMassMode) == 1 } {
+
+      #----- Total released mass can be edited so enable entry widget.
+      set Sim(EmMass) $Sim(EmMassOld)        ; #----- Update mass with temporary one.
+      focus $Sim(EmissionColumnFrame).mass.e ; #----- Focus on this entry widget.
+      $Sim(EmissionColumnFrame).mass.e configure -state normal -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
+
+   }
+
+   #----- Compute total mass according to empirical formula of Sparks et al. (1997).
+   MLDP::ComputeMass
+
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MLDP::Product>
+# Creation : Septembre 2005 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lire les donnees et initialiser le produit
+#
+# Parametres  :
+#    <Frame>  : Page
+#    <Type>   : Type de donnees
+#    <Layout> : Layout (produit)
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::CallProduct { Frame Type Layout } {
+
+   foreach box [FieldBox::Get] {
+      FieldBox::Close $box
+   }
+   foreach box [TrajBox::Get] {
+      TrajBox::Close $box
+   }
+   if { $Type !="" } {
+      MLDP::Result $Type
+   }
+   SPI::LayoutLoad $Frame $Layout
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::PopUp>
+# Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Afficher le popup contextuel des simulations.
+#
+# Parametres :
+#    <X>        : ...
+#    <Y>        : ...
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP0::PopUp { X Y } {
+   set MLDP::Sim(Model) MLDP0
+   MLDP::PopUp $X $Y
+}
+proc MLDP1::PopUp { X Y } {
+   set MLDP::Sim(Model) MLDP1
+   MLDP::PopUp $X $Y
+}
+proc MLDP::PopUp { X Y } {
+   global   GDefs
+   variable Sim
+   variable Tmp
+   variable Lbl
+
+   if { ![winfo exists .mldppopup] } {
+      menu .mldppopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+         .mldppopup add command -label MLDP -background $GDefs(ColorHighLight) \
+            -activebackground $GDefs(ColorHighLight)
+         .mldppopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .mldppopup.product
+         .mldppopup add cascade -label [lindex $Lbl(Result) $GDefs(Lang)] -menu .mldppopup.res
+         .mldppopup add separator
+         .mldppopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
+             -command "MLDP::SimSuppress True \$Exp::Data(SelectSim)"
+
+      menu .mldppopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+          .mldppopup.product add command -label "VAAC" -command { MLDP::CallProduct $Page::Data(Frame) result VAAC }
+          .mldppopup.product add command -label "RSMC" -command { MLDP::CallProduct $Page::Data(Frame) result RSMC }
+          .mldppopup.product add command -label "INFO" -command { MLDP::CallProduct $Page::Data(Frame) result INFO }
+          .mldppopup.product add command -label "METF" -command { MLDP::CallProduct $Page::Data(Frame) metf   METF }
+          .mldppopup.product add separator
+          .mldppopup.product add command -label "SPI" -command { MLDP::CallProduct $Page::Data(Frame) "" SPI }
+
+      menu .mldppopup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+         .mldppopup.res add command -label "All" -command "MLDP::Result all"
+         .mldppopup.res add separator
+         .mldppopup.res add command -label "Dispersion" -command "MLDP::Result result"
+         .mldppopup.res add command -label "MetFields" -command "MLDP::Result metf"
+         .mldppopup.res add separator
+         .mldppopup.res add command -label "Meteo" -command "MLDP::Result meteo"
+   }
+
+   Info::Decode ::MLDP::Tmp $Sim(Info) $Exp::Data(SelectSim)
+
+   #----- Verifier l'etat de la simulation et
+   #      configurer le menu en consequence
+
+   switch -- $Tmp(State) {
+
+      -1 {                                             #----- Probleme
+         .mldppopup entryconfigure 1 -state disabled   ;#Product
+         .mldppopup entryconfigure 2 -state disabled   ;#Data
+         .mldppopup entryconfigure 4 -state disabled   ;#Launch
+         .mldppopup entryconfigure 6 -state normal     ;#Suppress
+      }
+      0 {                                              #----- Continuable
+         .mldppopup entryconfigure 1 -state normal     ;#Product
+         .mldppopup entryconfigure 2 -state normal     ;#Data
+         .mldppopup entryconfigure 4 -state disabled   ;#Launch
+         .mldppopup entryconfigure 6 -state normal     ;#Suppress
+      }
+      1 {                                              #----- Etat Termine
+         .mldppopup entryconfigure 1 -state normal     ;#Product
+         .mldppopup entryconfigure 2 -state normal     ;#Data
+         .mldppopup entryconfigure 4 -state disabled   ;#Launch
+         .mldppopup entryconfigure 6 -state normal     ;#Suppress
+      }
+      2 {                                              #----- Etat d'execution
+         .mldppopup entryconfigure 1 -state disabled   ;#Product
+         .mldppopup entryconfigure 2 -state disabled   ;#Data
+         .mldppopup entryconfigure 4 -state disabled   ;#Launch
+         .mldppopup entryconfigure 6 -state normal     ;#Suppress
+      }
+      3 {                                              #----- Etat suspendu
+         .mldppopup entryconfigure 1 -state disabled   ;#Product
+         .mldppopup entryconfigure 2 -state disabled   ;#Data
+         .mldppopup entryconfigure 1 -state disabled   ;#Map
+         .mldppopup entryconfigure 4 -state normal     ;#Launch
+         .mldppopup entryconfigure 6 -state normal     ;#Suppress
+      }
+   }
+
+   tk_popup .mldppopup $X $Y 0
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::UpdateEmail>
+# Creation   : 2 November 2007 - A. Malo - CMC/CMOE
+#
+# But        : Update email option interface.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::UpdateEmail { } {
+   global GDefs
+   variable Sim
+
+   if { $Sim(IsEmailAddress) } {
+      pack forget $Sim(LaunchFrm).launch
+      pack forget $Sim(LaunchFrm)
+      pack $Sim(EmailFrm) -side top -anchor w -padx 2 -fill x
+      pack $Sim(LaunchFrm).launch -side right
+      pack $Sim(LaunchFrm) -side top -anchor w -padx 5 -pady 10 -fill x -expand true
+   } else {
+      pack forget $Sim(EmailFrm)
+      set Sim(EmailAddress) [lindex $Sim(ListEmailAddress) 0]
+   }
+
+   set Sim(FlagEmailAddress) [lindex [lindex $Sim(ListOptOnOff) $GDefs(Lang)] $Sim(IsEmailAddress)]
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::UpdateEmissionStartingTime>
+# Creation   : 22 March 2004 - A. Malo - CMC/CMOE
+#
+# But        : Update emission starting time.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::UpdateEmissionStartingTime { } {
+   variable Sim
+
+   set sec [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt true]
+
+   set min [string trimleft $Sim(AccMin) 0]
+   if { $min == "" } {
+      set min 0
+   }
+   set min [expr int(double($min)/double($Sim(ModelTimeStepMin))+0.5) * $Sim(ModelTimeStepMin)]
+
+   set Sim(AccSeconds) [expr $sec + $min*60]
+   set Sim(AccMin)     [clock format $Sim(AccSeconds) -format "%M" -gmt true]
+   set Sim(AccHour)    [clock format $Sim(AccSeconds) -format "%H" -gmt true]
+   set Sim(AccDay)     [clock format $Sim(AccSeconds) -format "%d" -gmt true]
+   set Sim(AccMonth)   [clock format $Sim(AccSeconds) -format "%m" -gmt true]
+   set Sim(AccYear)    [clock format $Sim(AccSeconds) -format "%Y" -gmt true]
+}
+
