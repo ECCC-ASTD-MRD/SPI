@@ -1167,6 +1167,7 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
    if ((file=(FSTD_File*)TclY_HashDel(&FSTD_FileTable,Id))) {
       file->Open=file->Open<0?1:file->Open;
       FSTD_FileUnset(Interp,file);
+      cs_fstunlockid(file->Id);
 
       free(file->Name);
       free(file->CId);
@@ -1212,7 +1213,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    file=(FSTD_File*)malloc(sizeof(FSTD_File));
    file->Mode=Mode;
    file->CId=strdup(Id);
-   file->Id=cs_fnomid();
+   file->Id=cs_fstlockid();
    file->Open=file->Id<1?-1:0;
 
    if (realpath(Name,buf)) {
@@ -1291,7 +1292,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       if (File->Mode=='w' ||  File->Mode=='W') {                /*Write Mode*/
           if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W+REMOTE",0);
-         else
+          else
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W",0);
       } else if (File->Mode=='a' ||  File->Mode=='A') {         /*Append Mode*/
          if (rem)

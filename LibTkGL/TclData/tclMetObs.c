@@ -1865,7 +1865,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    Tcl_MutexLock(&MUTEX_BURPFILE);
 
    if (Obs->FId==-1)
-      Obs->FId=cs_fnomid();
+      Obs->FId=cs_fstlockid();
 
    dt=Obs->Time-Obs->Cache;
    dt=Obs->Time-60;
@@ -1886,6 +1886,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    if (err<0) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Could not open observation file ",File,(char*)NULL);
       c_fclos(Obs->FId);
+      cs_fstunlockid(Obs->FId);
       Tcl_MutexUnlock(&MUTEX_BURPFILE);
       return(TCL_ERROR);
    }
@@ -1897,6 +1898,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Could not allocate memory",(char*)NULL);
       c_mrfcls(Obs->FId);
       c_fclos(Obs->FId);
+      cs_fstunlockid(Obs->FId);
       Tcl_MutexUnlock(&MUTEX_BURPFILE);
       return(TCL_ERROR);
    }
@@ -2037,6 +2039,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    /*Close the file*/
    c_mrfcls(Obs->FId);
    c_fclos(Obs->FId);
+   cs_fstunlockid(Obs->FId);
 
    Tcl_MutexUnlock(&MUTEX_BURPFILE);
    return(code);
