@@ -222,16 +222,6 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
 
           n=-1;
-         /*Interpolate a field*/
-         data=Data_Get(Tcl_GetString(Objv[3]));
-         if (data) {
-            if (Objc!=4) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"band field");
-               return(TCL_ERROR);
-            }
-            return(GDAL_BandFSTDImport(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),data));
-         }
-
          /*Interpolate a layer*/
          layer=OGR_LayerGet(Tcl_GetString(Objv[3]));
          if (layer) {
@@ -259,6 +249,16 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                itype='P';
             }
             return(Data_GridOGR(Interp,band->Def,band->Ref,layer,imode,itype,1,field,x));
+         }
+
+         /*Interpolate a field*/
+         data=Data_Get(Tcl_GetString(Objv[3]));
+         if (data) {
+            if (Objc!=4) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"band field");
+               return(TCL_ERROR);
+            }
+            return(GDAL_BandFSTDImport(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),data));
          }
 
          /*Interpolate a field

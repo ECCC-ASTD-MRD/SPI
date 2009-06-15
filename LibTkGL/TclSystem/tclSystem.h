@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/vfs.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <syslog.h>

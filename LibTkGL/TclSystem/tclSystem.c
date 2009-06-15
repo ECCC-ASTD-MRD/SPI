@@ -35,6 +35,7 @@
 
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
@@ -189,8 +190,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid;
 
-   static CONST char *sopt[] = { "daemonize","fork","limit","process",NULL };
-   enum               opt { DAEMONIZE,FORK,LIMIT,PROCESS };
+   static CONST char *sopt[] = { "daemonize","fork","limit","process","filesystem",NULL };
+   enum               opt { DAEMONIZE,FORK,LIMIT,PROCESS,FILESYSTEM };
 
    Tcl_ResetResult(Interp);
 
@@ -225,6 +226,11 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          }
          return(System_Limit(Interp,Objc-2,Objv+2));
          break;
+
+      case FILESYSTEM:
+         return(System_FileSystem(Interp,Objc-2,Objv+2));
+         break;
+
    }
    return(TCL_OK);
 }
@@ -273,6 +279,118 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <System_FileSystem>
+ * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la configuration des parametres de filesystem.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   struct statfs fs;
+   int           i,idx;
+   Tcl_Obj      *obj;
+
+   static CONST char *sopt[] = { "-type","-size","-free","-used","-blocksize","-blocks","-blockfree","-blockused","-files",NULL };
+   enum               opt { TYPE,SIZE,FREE,USED,BLOCKSIZE,BLOCKS,BLOCKFREE,BLOCKUSED,FILES };
+
+#ifdef _IRIX64_
+   if ((statfs(Tcl_GetString(Objv[0]),&fs,sizeof(statfs),0))) {
+#else
+   if ((statfs(Tcl_GetString(Objv[0]),&fs))) {
+#endif
+      Tcl_AppendResult(Interp,"System_FileSystem: Unable to get filesystem info for ",Tcl_GetString(Objv[0]),(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   for(i=1;i<Objc;i++) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case TYPE:
+#ifdef _IRIX64_
+            switch(fs.f_fstyp) {
+#else
+            switch(fs.f_type) {
+#endif
+               case 0xADFF:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("AFFS",-1)); break;
+               case 0x00414A53: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("EFS",-1)); break;
+               case 0x137D:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("EXT",-1)); break;
+               case 0xEF51:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("EXT2_OLD",-1)); break;
+               case 0xEF53:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("EXT2",-1)); break;
+               case 0xF995E849: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("HPFS",-1)); break;
+               case 0x9660:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("ISOFS",-1)); break;
+               case 0x137F:
+               case 0x138F:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MINIX",-1)); break;
+               case 0x2468:
+               case 0x2478:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MINIX2",-1)); break;
+               case 0x4d44:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("MSDOS",-1)); break;
+               case 0x564c:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("NCP",-1)); break;
+               case 0x6969:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("NFS",-1)); break;
+               case 0x9fa0:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("PROC",-1)); break;
+               case 0x517B:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("SMB",-1)); break;
+               case 0x012FF7B4: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("XENIX",-1)); break;
+               case 0x012FF7B5: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("SYSV4",-1)); break;
+               case 0x012FF7B6: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("SYSV2",-1)); break;
+               case 0x012FF7B7: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("COH",-1)); break;
+               case 0x00011954: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("UFS",-1)); break;
+               case 0x58465342: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("XFS",-1)); break;
+               case 0x012FD16D: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("XIAFS",-1)); break;
+            }
+            break;
+
+         case SIZE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_blocks*(fs.f_bsize/1024.0))));
+            break;
+
+         case FREE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_bfree*(fs.f_bsize/1024))));
+            break;
+
+         case USED:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_blocks-fs.f_bfree)*(fs.f_bsize/1024)));
+            break;
+
+         case BLOCKSIZE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(fs.f_bsize));
+            break;
+
+         case BLOCKS:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(fs.f_blocks));
+            break;
+
+         case BLOCKFREE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(fs.f_bfree));
+            break;
+
+         case BLOCKUSED:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(fs.f_blocks-fs.f_bfree));
+            break;
+
+         case FILES:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(fs.f_files));
+            break;
+      }
+   }
+   Tcl_SetObjResult(Interp,obj);
+   return(TCL_OK);
+}
+/*----------------------------------------------------------------------------
  * Nom      : <System_Limit>
  * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
  *
@@ -290,10 +408,36 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
  *
  *----------------------------------------------------------------------------
 */
-static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+int System_LimitGet(Tcl_Interp *Interp,int Resource,int Factor) {
 
    struct rlimit lim;
-   int           i,idx,ival;
+
+   getrlimit(Resource,&lim);
+   if (lim.rlim_cur==RLIM_INFINITY) {
+      Tcl_SetObjResult(Interp,Tcl_NewStringObj("unlimited",-1));
+   } else {
+      lim.rlim_cur/=Factor;
+      Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+   }
+}
+
+int System_LimitSet(Tcl_Interp *Interp,int Resource,int Factor,Tcl_Obj *Value) {
+
+   struct rlimit lim;
+   int           val;
+
+   if (Tcl_GetString(Value)[0]=='u') {
+      lim.rlim_cur=RLIM_INFINITY;
+   } else {
+      Tcl_GetIntFromObj(Interp,Value,&val);
+      lim.rlim_cur=val*Factor;
+   }
+   setrlimit(Resource,&lim);
+}
+
+static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   int           i,idx;
    static CONST char *sopt[] = { "-VMEM","-CORE","-CPU","-DATA","-FILESIZE","-LOCK","-MSGQUEUE","-NICE",
                                  "-FILENO","-NPROC","-RMEM","-RTPRIO","-SIGPENDING","-STACK",NULL };
    enum        opt { VMEM,CORE,CPU,DATA,FILESIZE,LOCKS,MSGQUEUE,NICE,FILENO,NPROC,RMEM,RTPRIO,SIGPENDING,STACK };
@@ -308,105 +452,73 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
          case VMEM:
             if (Objc==1) {
-               getrlimit(RLIMIT_AS,&lim);
-               lim.rlim_cur/=1024;
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_AS,1024);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival*1024;
-               setrlimit(RLIMIT_AS,&lim);
+               System_LimitSet(Interp,RLIMIT_AS,1024,Objv[++i]);
             }
             break;
 
          case STACK:
             if (Objc==1) {
-               getrlimit(RLIMIT_STACK,&lim);
-               lim.rlim_cur/=1024;
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_STACK,1024);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival*1024;
-               setrlimit(RLIMIT_STACK,&lim);
+               System_LimitSet(Interp,RLIMIT_STACK,1024,Objv[++i]);
             }
             break;
 
           case DATA:
             if (Objc==1) {
-               getrlimit(RLIMIT_DATA,&lim);
-               lim.rlim_cur/=1024;
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_DATA,1024);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival*1024;
-               setrlimit(RLIMIT_DATA,&lim);
+               System_LimitSet(Interp,RLIMIT_DATA,1024,Objv[++i]);
             }
             break;
 
           case RMEM:
             if (Objc==1) {
-               getrlimit(RLIMIT_RSS,&lim);
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_RSS,1);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival;
-               setrlimit(RLIMIT_RSS,&lim);
+               System_LimitSet(Interp,RLIMIT_RSS,1,Objv[++i]);
             }
             break;
 
           case FILESIZE:
             if (Objc==1) {
-               getrlimit(RLIMIT_FSIZE,&lim);
-               lim.rlim_cur/=1024;
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_FSIZE,1024);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival*1024;
-               setrlimit(RLIMIT_FSIZE,&lim);
+               System_LimitSet(Interp,RLIMIT_FSIZE,1024,Objv[++i]);
             }
             break;
 
           case FILENO:
             if (Objc==1) {
-               getrlimit(RLIMIT_NOFILE,&lim);
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_NOFILE,1);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival;
-               setrlimit(RLIMIT_NOFILE,&lim);
+               System_LimitSet(Interp,RLIMIT_NOFILE,1,Objv[++i]);
             }
             break;
 
         case CORE:
             if (Objc==1) {
-               getrlimit(RLIMIT_CORE,&lim);
-               lim.rlim_cur/=1024;
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_CORE,1024);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival*1024;
-               setrlimit(RLIMIT_CORE,&lim);
+               System_LimitSet(Interp,RLIMIT_CORE,1024,Objv[++i]);
             }
             break;
 
          case CPU:
             if (Objc==1) {
-               getrlimit(RLIMIT_CPU,&lim);
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_CPU,1);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival;
-               setrlimit(RLIMIT_CPU,&lim);
+               System_LimitSet(Interp,RLIMIT_CPU,1,Objv[++i]);
             }
             break;
 
          case NPROC:
             if (Objc==1) {
-               getrlimit(RLIMIT_NPROC,&lim);
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(lim.rlim_cur));
+               System_LimitGet(Interp,RLIMIT_NPROC,1);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ival);
-               lim.rlim_cur=ival;
-               setrlimit(RLIMIT_NPROC,&lim);
+               System_LimitSet(Interp,RLIMIT_NPROC,1,Objv[++i]);
             }
             break;
        }
