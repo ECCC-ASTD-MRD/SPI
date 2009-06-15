@@ -199,9 +199,9 @@ function LaunchMeteo {
       return 0
    fi
 
-   Log_Print INFO "Launching meteorological preprocessing on ${hosttype} (${runhost})."
+   Log_Print INFO "Launching meteorological preprocessing for ${model} on ${hosttype} (${runhost})."
 
-   ${EER_DIRSCRIPT}/InterpolateMeteoFieldsMLDP0.sh ${tmpdir} ${meteo} ${runmeteo} ${griddef} ${debug} >${tmpdir}/InterpolateMeteoFieldsMLDP0.out 2>${tmpdir}/InterpolateMeteoFieldsMLDP0.err
+   ${EER_DIRSCRIPT}/InterpolateMeteoFields_${model}.sh ${tmpdir} ${meteo} ${runmeteo} ${griddef} ${debug} >${tmpdir}/InterpolateMeteoFields_${model}.out 2>${tmpdir}/InterpolateMeteoFields_${model}.err
    taskstatus=$?
    exitstatus=$((exitstatus+$taskstatus))
 
@@ -238,10 +238,11 @@ function LaunchModel {
 
    Log_Print INFO "Launching model ${model} on ${hosttype} (${runhost})."
    export MLDP0_PARAMS=""
+   export MLDP1_MPI_OMP_PARAMS=""
 
    #----- Check for MPI params.
    if [[ ${EER_ARCH} = "Linux" && ${isremote} -eq 0 && ${model} = "mldp1" ]] ;then
-      export PATH=/home/dormrb02/ssm-mpich2-pgi6/mpich2_1.0.6_linux24-i386/bin:\${PATH}
+      export PATH=/home/dormrb02/ssm-mpich2-pgi6/mpich2_1.0.6_linux24-i386/bin:${PATH}
       export OMP_NUM_THREADS=${nbompthreads}
       Log_Print DEBUG "Version of r.mpiexec: `which r.mpiexec`"
       ${timing} r.mpiexec \
@@ -337,7 +338,7 @@ if [[ $? -eq 0 ]] ; then
 fi
 
 #----- Job finished
-ssh ${user}@${localhost} ${EER_DIRSCRIPT}/SimDone.sh ${localdir}/../MLDP0.pool ${localdir}/tmp/sim.pool ${exitstatus}
+ssh ${user}@${localhost} ${EER_DIRSCRIPT}/SimDone.sh ${localdir}/../`echo ${model} | tr [a-z] [A-Z]`.pool ${localdir}/tmp/sim.pool ${exitstatus}
 CleanUp
 
 Log_End ${exitstatus}

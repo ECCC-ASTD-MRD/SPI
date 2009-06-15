@@ -4,24 +4,21 @@
 # Centre Meteorologique Canadien
 # Dorval, Quebec
 #
-# Projet     : Interface pour le modele MLDP0.
-# Nom        : <InterpolateMeteoFieldsMLDP0.sh>
+# Projet     : Interface pour le modele MLDP1.
+# Nom        : <InterpolateMeteoFields_mldp1.sh>
 # Creation   : 11 March 2005 - A. Malo - CMC/CMOE
 #
 # Description: Generate one standard file for trials and prognostics
 #              meteorological data required for driving MLDP1 model.
 #
 # Parametres :
-#   ${1}     : Name of metfields binary file in pre-processor for
-#              generating required fields for launching MLDP1
-#              (including path).
-#   ${2}     : Temporary working directory.
-#   ${3}     : Type of meteorological model (reg).
-#   ${4}     : Number of processes.
+#   ${1}     : Temporary working directory.
+#   ${2}     : Type of meteorological model (reg).
+#   ${3}     : Number of processes.
+#   ${4}     : Grid size (NIxNJxNK).
 #   ${5}     : Printing debug level (low|moderate|high).
 #
 # Retour     : one standard file (tape30) for the following fields :
-#
 #              - ES (dew point deviation)           [deg C]
 #              - HU (specific humidity)             [kg/kg]
 #              - GZ (geopotential height)           [dam]
@@ -45,7 +42,7 @@
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh
 
-Log_Start InterpolateMeteoFieldsMLDP1.sh 2.0
+Log_Start InterpolateMeteoFields_mldp1.sh 2.0
 
 #----- Get arguments.
 DirTmp="${1}"
@@ -311,7 +308,7 @@ wait
 idx=0
 nbproc=0
 
-Log_Print INFO "Executing EDITFST: Merging the two meteorological files (PGSM + metfields) into one standard file for MLDP0 ..."
+Log_Print INFO "Executing EDITFST: Merging the two meteorological files (PGSM + metfields) into one standard file for MLDP1 ..."
 
 #----- Create editfst directives file.
 cat <<EOF_EDITFST > editfst.dir

@@ -5,24 +5,20 @@
 # Dorval, Quebec
 #
 # Projet     : Interface pour le modele MLDP0.
-# Nom        : <InterpolateMeteoFieldsMLDP0.sh>
+# Nom        : <InterpolateMeteoFields_mldp0.sh>
 # Creation   : Avril 2000 - S. Trudel - CMC/CMOE
 #
 # Description: Generate one standard file for trials and prognostics
 #              meteorological data required for driving MLDP0 model.
 #
 # Parametres :
-#   ${1}     : Name of metfields binary file in pre-processor for
-#              generating required fields for launching MLDP0
-#              (including path).
-#   ${2}     : Temporary working directory.
-#   ${3}     : Type of meteorological model (glb|reg).
-#   ${4}     : Number of processes.
-#   ${5}     : Grid size (NIxNJxNK).
-#   ${6}     : Printing debug level (low|moderate|high).
+#   ${1}     : Temporary working directory.
+#   ${2}     : Type of meteorological model (glb|reg).
+#   ${3}     : Number of processes.
+#   ${4}     : Grid size (NIxNJxNK).
+#   ${5}     : Printing debug level (low|moderate|high).
 #
 # Retour     : one standard file (tape30) for the following fields :
-#
 #              - ES (dew point deviation)           [deg C]
 #              - HU (specific humidity)             [kg/kg]
 #              - GZ (geopotential height)           [dam]
@@ -47,7 +43,7 @@ export SPI_PATH=/home/afsr/005/eer_SPI/eer_SPI
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh
 
-Log_Start InterpolateMeteoFieldsMLDP0.sh 2.0
+Log_Start InterpolateMeteoFields_mldp0.sh 2.0
 
 #----- Get arguments.
 DirTmp="${1}"
