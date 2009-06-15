@@ -2007,17 +2007,21 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             /*Get length in pixel and max it to pixel buffer size (1024)*/
             dx=Tk_TextWidth(Proj->Params->VP->tkfont,Txt->String,len);
 
-            /*If clear, print the label*/
-            if (!glStencilMaskCheck(pix[0]+x,pix[1]+y,dx,dy,0x80)) {
-               if (Point) {
-                  glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
-               }
-               glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0],pix[1],0);
+            /*If within the viewport limits*/
+            if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->Params->VP->Width && (pix[1]+y+dy+5)<Proj->Params->VP->Height) {
 
-               /*Write the label coverage to the stencil buffer*/
-               glStencilMask(0x80);
-               glStencilMaskQuad(pix[0],pix[1],dx,dy,0,10,10);
-               glStencilMask(0xff);
+              /*If cnot overlapping another label*/
+              if (!glStencilMaskCheck(pix[0]+x,pix[1]+y,dx,dy,0x80)) {
+                  if (Point) {
+                     glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
+                  }
+                  glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0],pix[1],0);
+
+                  /*Write the label coverage to the stencil buffer*/
+                  glStencilMask(0x80);
+                  glStencilMaskQuad(pix[0],pix[1],dx,dy,0,10,10);
+                  glStencilMask(0xff);
+               }
             }
          }
       }
