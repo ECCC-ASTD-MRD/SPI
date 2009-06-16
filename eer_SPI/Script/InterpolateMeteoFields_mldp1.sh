@@ -37,7 +37,7 @@
 
 #----- Source user's profile.
 . ~/.profile >/dev/null 2>&1
-. ~/.profile_mdl > /dev/null 2>&1
+. ~/.profile_eer >/dev/null 2>&1
 
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh
@@ -56,19 +56,8 @@ Log_Print INFO "Meteorological model : ${Model}"
 Log_Print INFO "Number of processes  : ${NbProc}"
 Log_Print INFO "Printing debug level : ${Debug}"
 
-#----- Define other variables.
-MaxNbProc=64
-TokenOutMeteoFields="metfields_mldp1"
-DirMeteo="../${TokenMeteo}"
-OutMeteo="../meteo/tape30"
-OutMeteoFields="../meteo/metfields_mldp1"
-OutMetSim="sim.meteo"
-OutTmpDir="${DirTmp}/tmpdir"
-DirectivesEDITFST="editfst_meteo.dir"
-OutStatus="out.meteo_status.txt"
-
 cd ${DirTmp}
-echo ${DirTmp} > ${OutTmpDir}
+echo ${DirTmp} > ${DirTmp}/tmpdir
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
 read < griddef grid
@@ -281,7 +270,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    ${EER_DIRBIN}/metfields_mldp1 \
       -iment ../meteo/${filename}.std \
       -ozsrt ../meteo/${filename}.met.std \
-      -print ${Debug}) \
+      -print ${Debug} \
       >metfields.${filename}.out 2>metfields.${filename}.err &
       > ${OutFile} 2>&1 &
 

@@ -25,8 +25,7 @@
 #===============================================================================
 
 . ~/.profile >/dev/null 2>&1
-export SPI_PATH=/home/afsr/005/eer_SPI/eer_SPI
-. ${SPI_PATH}/.profile_spi > /dev/null 2>&1
+. ~/.profile_eer >/dev/null 2>&1
 
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh
@@ -115,7 +114,7 @@ function Initialize {
    if [[ ${runmodel} -eq 1 ]] ; then
       Log_Print INFO "Model parameters"
       Log_Print INFO "   Model name                                           : ${model}"
-      Log_Print INFO "   Model directives input file                          : ${tmpdir}/input_${model}.txt"
+      Log_Print INFO "   Model directives input file                          : ${tmpdir}/${model}.in"
    else
       Log_Print INFO "Model run not requested"
    fi
@@ -138,7 +137,7 @@ function CopyMetData {
 
    if [[ ${status} -eq 0 ]] ; then
       Log_Print INFO "Meteorological data files have been copied successfully to meteo directory on local host (${localhost})."
-      Log_Print INFO "Elapsed time copying meteo:" `expr {SECONDS}-${sec}`
+      Log_Print INFO "Elapsed time copying meteo:" `expr ${SECONDS}-${sec}`
    else
       Log_Print ERROR "'scp' command has encountered an error while copying meteorological data files to meteo directory on local host (${localhost})."
    fi
@@ -221,11 +220,12 @@ function LaunchMeteo {
             Log_Print ERROR "'scp' command has encountered an error while copying meteorological output files to temporary directory on local host (${localhost})."
          fi
       fi
+      Log_Mail "Meteorological preprocessing (NORMAL)" ${tmpdir}/InterpolateMeteoFields_${model}.out
    else
       Log_Print ERROR "Problems in metfield calculations."
+      Log_Mail "Meteorological preprocessing (ERROR)" ${tmpdir}/InterpolateMeteoFields_${model}.err
    fi
 
-   Log_Mail "Meteorological preprocessing" ${tmpdir}/InterpolateMeteoFieldsMLDP0.out
 
    return ${taskstatus}
 }
@@ -301,11 +301,11 @@ function LaunchModel {
          fi
          Log_Print INFO "Elapsed time copying reults:" `expr ${SECONDS}-${sec}`
       fi
+      Log_Mail "Atmospheric transport/dispersion model (NORMAL)" ${tmpdir}/${model}_email.out
    else
       Log_Print ERROR "${model} has encountered an error."
+      Log_Mail "Atmospheric transport/dispersion model (ERROR)" ${tmpdir}/${model}.err
    fi
-
-   Log_Mail "Atmospheric transport/dispersion model" ${tmpdir}/${model}_email.out
 
    return ${taskstatus}
 }

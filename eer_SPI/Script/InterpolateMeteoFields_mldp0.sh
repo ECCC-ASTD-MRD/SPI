@@ -37,8 +37,7 @@
 
 #----- Source user's profile.
 . ~/.profile >/dev/null 2>&1
-export SPI_PATH=/home/afsr/005/eer_SPI/eer_SPI
-. ${SPI_PATH}/.profile_spi > /dev/null 2>&1
+. ~/.profile_eer >/dev/null 2>&1
 
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh

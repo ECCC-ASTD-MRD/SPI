@@ -44,7 +44,7 @@ fi
 
 #----- Replace pool info.
 cp ${Pool} ${Pool}.exec
-grep -v "${start}:.*2:${end}" ${Pool}.exec > ${Pool}
+grep -v "${start}:.*:${end}" ${Pool}.exec > ${Pool}
 echo "${start}:${state}:${end}" >> ${Pool}
 
 

@@ -160,7 +160,11 @@ function Log_End {
    Log_Print MUST "Total running time  : $(Log_Time `expr ${LogSecEnd} - ${LogSecStart}`)"
    Log_Print MUST "-------------------------------------------------------------------------------\n"
 
-   Log_Mail "Job finished" ${LogFile}
+   if [[ ${status} -eq 0 ]] ; then
+      Log_Mail "Job finished (NORMAL)" ${LogFile}
+   else
+      Log_Mail "Job finished (ERROR)" ${LogFile}
+   fi
 
    exit $status
 }
