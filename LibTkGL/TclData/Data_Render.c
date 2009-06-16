@@ -1941,38 +1941,40 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
    glDisable(GL_CULL_FACE);
    glDisable(GL_STENCIL_TEST);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-   glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
    glLineWidth(2.0);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
    /*Affichage des labels*/
-   for(r=0;r<Field->Spec->RangeNb;r++) {
-      glPushMatrix();
-      Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r]/Field->Ref->ResR,&loc.Lat,&loc.Lon,1,1);
-      Proj->Type->Locate(Proj,loc.Lat,loc.Lon,1);
+   if (Field->Spec->Font) {
+      glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
+      for(r=0;r<Field->Spec->RangeNb;r++) {
+         glPushMatrix();
+         Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r]/Field->Ref->ResR,&loc.Lat,&loc.Lon,1,1);
+         Proj->Type->Locate(Proj,loc.Lat,loc.Lon,1);
 
-      h=sin(DEG2RAD(Field->Ref->Levels[0]))*Field->Spec->Range[r];
+         h=sin(DEG2RAD(Field->Ref->Levels[0]))*Field->Spec->Range[r];
 
-      glTranslated(0.0,0.0,ZM(Proj,h));
-      glScalef(VP->Ratio,VP->Ratio,1.0);
-      sprintf(buf,"%.0f Km",Field->Spec->Range[r]/1000.0);
-      glTranslated(0.0,5.0,0.0);
-      glPrint(NULL,VP->canvas,buf,0,0,0);
-      glPopMatrix();
+         glTranslated(0.0,0.0,ZM(Proj,h));
+         glScalef(VP->Ratio,VP->Ratio,1.0);
+         sprintf(buf,"%.0f Km",Field->Spec->Range[r]/1000.0);
+         glTranslated(0.0,5.0,0.0);
+         glPrint(NULL,VP->canvas,buf,0,0,0);
+         glPopMatrix();
 
-/*
-      glPushMatrix();
-      Field->Ref->Project(Field->Ref,1,-Field->Spec->Range[r],&loc.lat,&loc.lon,1,1);
-      Proj->Type->Locate(Proj,loc.lat,loc.lon,1);
+   /*
+         glPushMatrix();
+         Field->Ref->Project(Field->Ref,1,-Field->Spec->Range[r],&loc.lat,&loc.lon,1,1);
+         Proj->Type->Locate(Proj,loc.lat,loc.lon,1);
 
-      h=sin(DEG2RAD(Field->Ref->Levels[Field->Def->Level]))*Field->Spec->Range[r];
-      glTranslated(0.0,0.0,ZM(Proj,h));
-      glScalef(VP->Ratio,VP->Ratio,Proj->Params->ZFactor);
-      sprintf(buf,"%.0f m",h);
-      glTranslated(0.0,-5.0,0.0);
-      glPrint(NULL,VP->canvas,buf,0,0,0);
-      glPopMatrix();
-*/
+         h=sin(DEG2RAD(Field->Ref->Levels[Field->Def->Level]))*Field->Spec->Range[r];
+         glTranslated(0.0,0.0,ZM(Proj,h));
+         glScalef(VP->Ratio,VP->Ratio,Proj->Params->ZFactor);
+         sprintf(buf,"%.0f m",h);
+         glTranslated(0.0,-5.0,0.0);
+         glPrint(NULL,VP->canvas,buf,0,0,0);
+         glPopMatrix();
+   */
+      }
    }
 
    /*Affichage des cercles de ranges*/
