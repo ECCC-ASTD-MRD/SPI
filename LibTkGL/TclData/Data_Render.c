@@ -1948,7 +1948,7 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
    /*Affichage des labels*/
    for(r=0;r<Field->Spec->RangeNb;r++) {
       glPushMatrix();
-      Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r],&loc.Lat,&loc.Lon,1,1);
+      Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r]/Field->Ref->ResR,&loc.Lat,&loc.Lon,1,1);
       Proj->Type->Locate(Proj,loc.Lat,loc.Lon,1);
 
       h=sin(DEG2RAD(Field->Ref->Levels[0]))*Field->Spec->Range[r];
