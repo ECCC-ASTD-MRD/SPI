@@ -452,7 +452,8 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 //      glEnable(GL_LINE_SMOOTH);
 
       glStencilMask(0x10);
-      glStencilFunc(GL_NOTEQUAL,0x31,0x20);
+//      glStencilFunc(GL_NOTEQUAL,0x31,0x20);
+      glStencilFunc(GL_EQUAL,0x00,0xff);
       glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
       if (Interp) {
@@ -573,8 +574,8 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glPolygonMode(GL_FRONT,GL_FILL);
    glReadBuffer(GL_STENCIL);
    glEnable(GL_STENCIL_TEST);
-   glStencilFunc(GL_ALWAYS,0xff,0xff);
-   glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+   glStencilFunc(GL_GEQUAL,0xf0,0x0f);
+   glStencilOp(GL_KEEP,GL_REPLACE,GL_REPLACE);
 
    if (Field->Segments) {
 
@@ -1960,20 +1961,6 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
          glTranslated(0.0,5.0,0.0);
          glPrint(NULL,VP->canvas,buf,0,0,0);
          glPopMatrix();
-
-   /*
-         glPushMatrix();
-         Field->Ref->Project(Field->Ref,1,-Field->Spec->Range[r],&loc.lat,&loc.lon,1,1);
-         Proj->Type->Locate(Proj,loc.lat,loc.lon,1);
-
-         h=sin(DEG2RAD(Field->Ref->Levels[Field->Def->Level]))*Field->Spec->Range[r];
-         glTranslated(0.0,0.0,ZM(Proj,h));
-         glScalef(VP->Ratio,VP->Ratio,Proj->Params->ZFactor);
-         sprintf(buf,"%.0f m",h);
-         glTranslated(0.0,-5.0,0.0);
-         glPrint(NULL,VP->canvas,buf,0,0,0);
-         glPopMatrix();
-   */
       }
    }
 
