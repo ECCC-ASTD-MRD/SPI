@@ -1269,13 +1269,16 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,
    glEnable(GL_STENCIL_TEST);
 
    if (MaskIn==0x0) {
+      /*Clear before mask*/
       glStencilFunc(GL_EQUAL,0x2,0xf);
       glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
    } else if (MaskIn==0x2) {
+      /*Mask */
       glStencilFunc(GL_ALWAYS,0x2,0xf);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
    } else {
-      glStencilFunc(GL_EQUAL,0x0,0xf);
+      /*No mask*/
+      glStencilFunc(GL_NOTEQUAL,0x1,0xf);
       glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    }
 
