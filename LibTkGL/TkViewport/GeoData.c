@@ -1670,11 +1670,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
       res=1;
    }
 
-   /*If we do postscript, we have to draw the globe first*/
-   if ((Mode & GDB_FILL) && Interp) {
-      Proj->Type->DrawGlobe(Interp,Proj->Params->VP,Proj);
-   }
-
    if (!res)
       return(0);
 
@@ -1686,7 +1681,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
          lon=x*GDB->DegT-180.0;
 
          tile=&GDB->Tile[x][y];
-
          if (tile->Res!=res)
             GDB_TileFree(tile,GDB_FORCE);
 
@@ -1696,11 +1690,12 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
          if (tile->Box.Nb==-1)
             continue;
 
-         if (GDB_Loc(tile->Box,Proj,1,Proj->Params->VP->Width,1,Proj->Params->VP->Height)!=GDB_OUT) {
+         /*Check for visibility when not doing outputs*/
+         if (GLRender->TRCon || GDB_Loc(tile->Box,Proj,1,Proj->Params->VP->Width,1,Proj->Params->VP->Height)!=GDB_OUT) {
 
-            /*Si la resolution a change on libere la tuile*/
+            /*If resolution has changed en we're not doing outputs, reload data*/
             tile->Res=res;
-            if (GLRender->Resolution<=2) {
+            if (!GLRender->TRCon && GLRender->Resolution<=2) {
                GDB_TileGetData(tile,GDB,Proj);
             }
 
@@ -1778,15 +1773,15 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             }
 
             if ((Mode & GDB_RASTER) && (GDB->Params.Text || GDB->Params.Topo || GDB->Params.Bath)) {
-               if (GLRender->GLDebug)
+               if (GLRender->GLDebug) {
                   glPolygonMode(GL_FRONT,GL_LINE);
-               else
+               } else {
                   glPolygonMode(GL_FRONT,GL_FILL);
                   glEnable(GL_LIGHTING);
                   glEnable(GL_LIGHT0);
                   glEnable(GL_COLOR_MATERIAL);
                   glEnable(GL_DEPTH_TEST);
-
+               }
                GDB_MapRender(Proj,&tile->Topo,lat,lon,GDB->DegT);
 //               GDB_MapRenderShader(Proj,&tile->Topo,lat,lon,GDB->DegT);
                   ras++;
@@ -1874,7 +1869,6 @@ int GDB_TileResolution(GDB_Data *GDB,double Dist) {
       GDB->DegT=tile;
       GDB_TileFreeAll(GDB,GDB_FORCE);
    }
-
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) GDB_TileResolution: Current GDB resolution: (%i,%i)\n",GDB->DegT,res);
 #endif

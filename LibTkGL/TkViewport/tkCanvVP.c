@@ -1336,11 +1336,6 @@ void ViewportClear(ViewportItem *VP,int Page) {
 void ViewportSet(ViewportItem *VP,Projection *Proj) {
 
    glPushAttrib(GL_ALL_ATTRIB_BITS);
-   glMatrixMode(GL_PROJECTION);
-   glPushMatrix();
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-
    glEnable(GL_STENCIL_TEST);
    glStencilMask(0xff);
 
@@ -1361,6 +1356,11 @@ void ViewportSet(ViewportItem *VP,Projection *Proj) {
    ViewportClear(VP,1);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_STENCIL_TEST);
+
+   glMatrixMode(GL_PROJECTION);
+   glPushMatrix();
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
 }
 
 /*----------------------------------------------------------------------------
@@ -1633,13 +1633,13 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    /* Render the polygonized geographical data */
    ViewportSetup(Canvas,vp,proj,0,0,0,1,1);
    Projection_Setup(vp,proj,1);
+   proj->Type->DrawGlobe(Interp,vp,proj);
    GDB_TileRender(Interp,proj,proj->Geo,GDB_FILL);
 
    ViewportSetup(Canvas,vp,proj,Tk_Width(Tk_CanvasTkwin(Canvas)),Tk_Height(Tk_CanvasTkwin(Canvas)),1,1,0);
    Projection_Setup(vp,proj,1);
 
    /* Render the tiles */
-
    do {
       trBeginTile(GLRender->TRCon);
 
@@ -1647,9 +1647,16 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       glGetDoublev(GL_MODELVIEW_MATRIX,vp->GLModS);
       glGetDoublev(GL_PROJECTION_MATRIX,vp->GLProj);
       glGetIntegerv(GL_VIEWPORT,vp->GLView);
+
+      if (proj->Geo->Params.Mask==1 || proj->Geo->Params.Mask==-1) {
+         glClearStencil(0x2);
+      } else {
+         glClearStencil(0x0);
+      }
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
       /*Generation des donnees raster*/
+      ViewportSet(vp,proj);
       ras+=Projection_Render(Interp,vp,proj,GL_RASTER);
       for (i=0;i<vp->NbData;i++) {
          fld=Data_Get(vp->Data[i]);
@@ -1657,6 +1664,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
             ras+=Data_Render(Interp,fld,vp,proj,GL_RENDER,GL_RASTER);
          }
       }
+      ViewportUnset(vp);
 
       /*Sortie des donnees raster*/
       if (ras) {

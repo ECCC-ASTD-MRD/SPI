@@ -1494,9 +1494,10 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
       if (Proj->Params->Geographic) {
          if (Interp) {
+//           Proj->Type->DrawGlobe(NULL,Proj->Params->VP,Proj);
             GDB_TileRender(NULL,Proj,Proj->Geo,GDB_FILL);
          }
-         ras+=GDB_TileRender(Interp,Proj,Proj->Geo,GDB_MASK | GDB_RASTER);
+         ras+=GDB_TileRender(NULL,Proj,Proj->Geo,GDB_MASK | GDB_RASTER);
 
          if (ras && !GLRender->GLZBuf) {
             glClear(GL_DEPTH_BUFFER_BIT);
