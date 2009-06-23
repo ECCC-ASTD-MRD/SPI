@@ -4,16 +4,16 @@
 # Centre Meteorologique Canadien
 # Dorval, Quebec
 #
-# Projet     : Interface pour le modele MLDP0.
-# Nom        : <InterpolateMeteoFields_mldp0.sh>
-# Creation   : Avril 2000 - S. Trudel - CMC/CMOE
+# Projet     : Interface pour le modele MLDP1.
+# Nom        : <Model_MeteoMLDP1.sh>
+# Creation   : 11 March 2005 - A. Malo - CMC/CMOE
 #
 # Description: Generate one standard file for trials and prognostics
-#              meteorological data required for driving MLDP0 model.
+#              meteorological data required for driving MLDP1 model.
 #
 # Parametres :
 #   ${1}     : Temporary working directory.
-#   ${2}     : Type of meteorological model (glb|reg).
+#   ${2}     : Type of meteorological model (reg).
 #   ${3}     : Number of processes.
 #   ${4}     : Grid size (NIxNJxNK).
 #   ${5}     : Printing debug level (low|moderate|high).
@@ -42,7 +42,7 @@
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh
 
-Log_Start InterpolateMeteoFields_mldp0.sh 2.0
+Log_Start Model_MeteoMLDP1.sh 2.0
 
 #----- Get arguments.
 DirTmp="${1}"
@@ -56,16 +56,8 @@ Log_Print INFO "Meteorological model : ${Model}"
 Log_Print INFO "Number of processes  : ${NbProc}"
 Log_Print INFO "Printing debug level : ${Debug}"
 
-#----- Define grid parameters.
-if [[ ${GridSize} = "" ]] ; then
-   GridSize="229x229x25"
-   Log_Print WARNING "Grid size not defined, using default grid size : ${GridSize}"
-else
-   Log_Print INFO "Grid size parameters : ${GridSize}"
-fi
-
 cd ${DirTmp}
-echo ${DirTmp} > tmpdir
+echo ${DirTmp} > ${DirTmp}/tmpdir
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
 read < griddef grid
@@ -73,9 +65,10 @@ read < griddef grid
 #----- Create configuration input file for PGSM according to type of meteorological model.
 
 #----- Interpolate met fields over a polar stereographic grid.
-#----- Set lower boundary value to 100 m for 'H' (boundary layer height).
+#----- Set lower boudary value to 100 m for 'H' (boundary layer height).
 #----- Set lower boundary value to 0.0 m/s for 'RT' (precipitation rate).
 #----- Set lower boundary value to 0.01 m for 'Z0' (roughness length).
+#----- Set lower boundary value to 0.0001 m for 'EN' (turbulent kinetic energy).
 #----- Clamp 'HR' (relative humidity) in the range [0,1].
 #----- Clamp 'FN' (cloud fraction) in the range [0,1].
 
@@ -90,87 +83,20 @@ C
  CONV(FN,0.0,1.0,0.0,1.0)
  CONV(RT,0.0,1.0,0.0)
  CONV(Z0,0.0,1.0,0.01)
+ CONV(EN,0.0,1.0,0.0001)
  CHAMP(H ,TOUT)
  CHAMP(P0,TOUT)
  CHAMP(PT,TOUT)
- CHAMP(PR,TOUT)
- CHAMP(OL,TOUT)
- CHAMP(RT,TOUT)
+ CHAMP(TG,TOUT)
  CHAMP(UE,TOUT)
+ CHAMP(IO,1195)
+ CHAMP(J9,1195)
  CHAMP(Z0,1195)
+ CHAMP(RT,TOUT)
+ CHAMP(EN,TOUT)
 EOF_PGSM_METEO
 
-if [ "${Model}" = "glb" ] ; then #----- Meteorological fields from GEM Meso-Global 33 km.
-
-   cat <<EOF_PGSM_METEOg33 >> pgsm.dir
-C
-C Meteorological fields from GEM Meso-Global 33 km.
-C
- CHAMP(ES,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(HU,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(HR,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(FN,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(GZ,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(TT,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(UV,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(WE,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
- CHAMP(WW,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
-  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
-  11467,11733,11850,11950,12000)
-EOF_PGSM_METEOg33
-
-elif [ "${Model}" = "glb100" ] ; then #----- Meteorological fields from GEM Global 100 km.
-
-   cat <<EOF_PGSM_METEOg100 >> pgsm.dir
-C
-C Meteorological fields from GEM Global 100 km.
-C
- CHAMP(ES,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(HU,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(HR,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(FN,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(GZ,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(TT,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(UV,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(WE,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
- CHAMP(WW,2510,2750,3010,3270,3550,3850,4190,4580,5020,5510,
-  6050,6600,7160,7740,8310,8880,9440,9960,10420,10840,
-  11220,11550,11800,11930,12000)
-EOF_PGSM_METEOg100
-
-elif [ "${Model}" = "reg" ] ; then #----- Meteorological fields from GEM Regional 15 km.
+if [ "${Model}" = "reg" ] ; then #----- Meteorological fields from GEM Regional 15 km.
 
    cat <<EOF_PGSM_METEOr15 >> pgsm.dir
 C
@@ -205,43 +131,43 @@ C
   11467,11733,11850,11950,12000)
 EOF_PGSM_METEOr15
 
-elif [ "${Model}" = "reg24" ] ; then #----- Meteorological fields from GEM Regional 24 km.
+elif [ "${Model}" = "glb" ] ; then #----- Meteorological fields from GEM Meso-Global 33 km.
 
-   cat <<EOF_PGSM_METEOr24 >> pgsm.dir
+   cat <<EOF_PGSM_METEOg33 >> pgsm.dir
 C
-C Meteorological fields from GEM Regional 24 km.
+C Meteorological fields from GEM Meso-Global 33 km.
 C
- CHAMP(ES,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(HU,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(HR,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(FN,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(GZ,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(TT,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(UV,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(WE,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
- CHAMP(WW,2400,2610,2910,3310,3770,4220,4730,5280,5840,6440,
-  7000,7550,8110,8660,9220,9730,10180,10590,10940,11250,
-  11500,11700,11850,11950,12000)
-EOF_PGSM_METEOr24
+ CHAMP(ES,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(HU,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(HR,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(FN,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(GZ,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(TT,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(UV,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(WE,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+ CHAMP(WW,2374,2720,2897,3044,3248,3541,3976,4522,5144,5843,
+  6348,6612,7446,8034,8646,9272,9845,10346,10780,11151,
+  11467,11733,11850,11950,12000)
+EOF_PGSM_METEOg33
 
 else
-    Log_Print ERROR "Wrong type of meteorological model. Available met models: reg, glb, reg24, glb100."
+    Log_Print ERROR "Wrong type of meteorological model. Available met models: reg, glb."
     Log_End 1
 fi
 
@@ -285,7 +211,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       -i pgsm.dir \
       >pgsm.${filename}.out 2>pgsm.${filename}.err &
 
-   nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
+    nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
    if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
 
@@ -305,14 +231,11 @@ done
 wait
 export FST_OPTIONS=""
 
-#----- MLDP0 pre-processor.
+#----- MLDP1 pre-processor.
 idx=0
 nbproc=0
-NI=`echo ${GridSize} | cut -d"x" -f1`
-NJ=`echo ${GridSize} | cut -d"x" -f2`
-NK=`echo ${GridSize} | cut -d"x" -f3`
 
-Log_Print INFO "Executing MLDP0 pre-processor: Computing other meteorological fields required by the model ..."
+Log_Print INFO "Executing MLDP1 pre-processor: Computing other meteorological fields required by the model ..."
 
 while [ ${idx} -lt ${nbfiles} ] ; do
 
@@ -320,29 +243,38 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    filename=`basename ${ArrayStdFiles[${idx}]}`
    idx=`expr ${idx} + 1` #----- Increment index of current standard file.
 
-   #----- Launch MLDP0 pre-processor to compute other meteorological fields required by the model:
-   #-----   - 'H'  : [2D] Boundary layer height [m] (if missing field),
+   #----- Launch MLDP1 pre-processor to compute other meteorological fields required by the model:
+   #-----   - 'H'  : [2D] Boundary layer height [m],
+   #-----   - 'IO' : [2D] Inverse of Monin-Obukhov length [m -1],
+   #-----   - 'P0' : [2D] Surface pressure [mb],
+   #-----   - 'PT' : [2D] Pressure at top of atmosphere [mb],
    #-----   - 'RA' : [2D] Atmospheric resistance for the momentum [s/m],
    #-----   - 'RP' : [2D] Precipitation rate [mm/h],
+   #-----   - 'UE' : [2D] Friction velocity at the surface [m/s],
    #-----   - 'Z0' : [2D] Roughness length [m],
+   #-----   - 'ZS' : [2D] Geopotential height at surface [dam],
    #-----   - 'FN' : [3D] Cloud fraction [dimensionless],
+   #-----   - 'GZ' : [3D] Geopotential height [dam],
    #-----   - 'HR' : [3D] Relative humidity [dimensionless],
-   #-----   - 'KT' : [3D] Vertical diffusion coefficient [m2/s],
+   #-----   - 'HU' : [3D] Specific humidity [kg/kg],
    #-----   - 'RI' : [3D] Richardson number [dimensionless],
    #-----   - 'SU' : [3D] Wind speed X-component ('UU') variance [kt2],
    #-----   - 'SV' : [3D] Wind speed Y-component ('VV') variance [kt2],
-   #-----   - 'TH' : [3D] Virtual potential temperature [K].
+   #-----   - 'TH' : [3D] Virtual potential temperature [K],
+   #-----   - 'TK' : [3D] Turbulent kinetic energy [m2/s2],
+   #-----   - 'TT' : [3D] Temperature [C],
+   #-----   - 'UU' : [3D] Wind speed X-component [kt],
+   #-----   - 'VV' : [3D] Wind speed Y-component [kt],
+   #-----   - 'WE' : [3D] Vertical Motion [s -1].
    Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
-   ${EER_DIRBIN}/metfields_mldp0 \
+   ${EER_DIRBIN}/metfields_mldp1 \
       -iment ../meteo/${filename}.std \
       -ozsrt ../meteo/${filename}.met.std \
       -print ${Debug} \
-      -ni ${NI} \
-      -nj ${NJ} \
-      -nk ${NK} \
       >metfields.${filename}.out 2>metfields.${filename}.err &
+      > ${OutFile} 2>&1 &
 
-   nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
+    nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
    if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
 
@@ -351,7 +283,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       nbproc=0 #----- Reset number of processes.
 
       #----- Verify if Metfields has terminated successfully.
-      nbline=`grep "METFLD0.*FIN" metfields.*.out | wc -l`
+      nbline=`grep "METFLD1.*FIN" metfields.*.out | wc -l`
       if [[ ${nbline} -lt ${idx} ]] ; then
          Log_Print ERROR "   ${EER_DIRBIN}/metfields_mldp0 has encountered an errors."
          Log_End 1
@@ -365,37 +297,26 @@ wait
 idx=0
 nbproc=0
 
-Log_Print INFO "Executing EDITFST: Merging the two meteorological files (PGSM + metfields) into one standard file for MLDP0 ..."
+Log_Print INFO "Executing EDITFST: Merging the two meteorological files (PGSM + metfields) into one standard file for MLDP1 ..."
 
-while [ ${idx} -lt ${nbfiles} ] ; do
-   #----- Initialize output filenames.
-   filename=`basename ${ArrayStdFiles[${idx}]}`
-   idx=`expr ${idx} + 1`
+#----- Create editfst directives file.
+cat <<EOF_EDITFST > editfst.dir
+ DESIRE(-1,['HY'],-1,-1,-1,-1,-1)
+EOF_EDITFST
 
-   #----- Merge the two meteorological files (PGSM + Metfields) into one standard file for MLDP0.
-   Log_Print INFO "   Processing standard file ${filename}.std (${idx}/${nbfiles}) ..."
-   editfst+ \
-      -s ../meteo/${filename}.met.std \
-      -d ../meteo/${filename}.std \
-      -i 0 \
-      >editfst.${filename}.out 2>editfst.${filename}.err
+for file in ${ArrayStdFiles[@]} ; do
 
-   nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
+    #----- Initialize output filenames.
+    filename=`basename ${file}`
 
-   if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
-
-      Log_Print INFO "   Waiting until all background processes are completed ..."
-      wait
-      nbproc=0 #----- Reset number of processes.
-
-      #----- Verify if EDITFST has terminated successfully.
-      nbline=`grep "EDITFST.*NORMAL" editfst.*.out | wc -l`
-      if [[ ${nbline} -lt ${idx} ]] ; then
-         Log_Print ERROR "   EDITFST has encountered an errors."
-         Log_End 1
-      fi
-   fi
+    #----- Merge the 'HY' record with meteorological file (metfields) into one standard file for MLDP1.
+    Log_Print INFO "Processing standard file ${filename}.std ..."
+    editfst+ \
+       -s ../meteo/${filename}.std \
+       -d ../meteo/${filename}.met.std \
+       -i editfst.dir \
+       >editfst.${filename}.out 2>editfst.${filename}.err
+    mv -f ../meteo/${filename}.met.std ../meteo/${filename}.std
 done
 
-wait
 Log_End 0

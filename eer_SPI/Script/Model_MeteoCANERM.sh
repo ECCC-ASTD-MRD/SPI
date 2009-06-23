@@ -15,7 +15,6 @@
 #
 # Parametres :
 #   ${1}     : Le repertoire temporaire de travail.
-#   ${2}     : Le fichier de climatologie .
 #   ${3}     : Le type de modele ( glb ou reg ).
 #   ${4}     : La frequence des donnees de sorties.
 #   ${5}     : Nombre de processus.
@@ -58,23 +57,18 @@
 
 Log_Start Model_MeteoCANERM.sh 2.0
 
-# ----- Recupere les arguments.
-
+#----- Recupere les arguments.
 DirTmp="${1}"
-Climato="${2}"
-Model=${3}
-FreqOut=${4}
-Process=${5}
+Model=${2}
+FreqOut=${3}
+Process=${4}
 
 cd ${DirTmp}
 
 echo "doing" > sim.meteo
 
-# ----- Lecture des parametres pour la directive GRILLE
-
+#----- Lecture des parametres pour la directive GRILLE
 read < griddef grid
-
-echo "DWJOB Extraction des champs de climatologie"
 
 # ----- Mise-a-jour des directives de PGSM_CLIMATO (climatologie).
 #       les champs sont :
@@ -93,7 +87,7 @@ cat <<EOF_PGSM_CLIMATO > ${DirTmp}/pgsm_climato.dir
  CHAMP('ZP',TOUT)
 EOF_PGSM_CLIMATO
 
-pgsm2000 -iment ${Climato} \
+pgsm2000 -iment ${EER_DIRDATA}/climato.fstd \
      -ozsrt ../meteo/tape20 \
      -i pgsm_climato.dir \
      -l pgsm_climato.out 2> pgsm_climato.err &
@@ -221,11 +215,9 @@ EOF_PGSM_METEOr24
 fi
 
 #-----On lis la liste de fichier a traiter.
-
 read < data_std_sim.eta stdfiles
 
 #-----On Patch pour le GEMDM ( sortie aux heures ).
-
 file1=`echo $stdfiles | cut -d " " -f1`
 file1=`basename $file1`
 base1=`echo $file1 | cut -d"_" -f1`
@@ -243,7 +235,6 @@ file2=`r.date $base2 +${ext2}`
 FreqIn=`r.date $file2 $file1`
 
 #-----On obtient la date de simulation a partie du premier fichier dans la liste.
-
 first=`echo $stdfiles | cut -d " " -f1 | tr '/' '\n' | tail -1`
 date=`echo $first | cut -d "_" -f1`
 hour=`echo $first | cut -d "_" -f2`
@@ -251,23 +242,19 @@ hour=`echo $first | cut -d "_" -f2`
 date=`r.date $date +$hour | cut -c0-10`
 
 #-----On lance le PGSM a 0 heure.
-
 pgsm2000  -iment `echo ${stdfiles} | cut -d" " -f1` \
       -ozsrt ../meteo/${date}_000 \
       -i pgsm_meteo.dir \
       -l pgsm_meteo_000.out 2> pgsm_meteo_000.err &
 
 #-----On determine le nombre de fichier a traiter.
-
 nbfiles=`echo ${stdfiles} | wc -w`
 #nbfiles=`expr ${nbfiles} - 1`
 
 #-----On determine le nombre de fichier qui serons passes a chaque PGSM.
-
 nbfilesinput=`expr $FreqOut \/ $FreqIn`
 
 #-----On determine le nombre d'execution de PGSM au totale.
-
 nbfilesoutput=`expr $nbfiles \/ $nbfilesinput`
 nbfilesmod=`expr $nbfiles \% $nbfilesinput`
 if [ $nbfilesmod -ne 0 ]
@@ -275,9 +262,7 @@ then
    nbfilesoutput=`expr $nbfilesoutput + 1`
 fi
 
-#-----On boucle sur le nombre totale de PGSM suivi de sur chaque fichier par
-#     PGSM.
-
+#-----On boucle sur le nombre totale de PGSM suivi de sur chaque fichier par PGSM.
 k=2
 loop=1
 hour=0
@@ -297,8 +282,7 @@ do
 
       hour=`expr $hour + $FreqIn`
 
-#-----On formatte l'extension correctement.
-
+      #-----On formatte l'extension correctement.
        if [ $hour -lt 10 ]; then
           hour3="00${hour}"
        elif [ $hour -lt 100 ]; then
@@ -307,25 +291,22 @@ do
           hour3="${hour}"
        fi
 
-#-----On tient compte du nom du deuxieme fichier car on devras inclure
-#     les resultats du premier PGSM a la fin. Cela n'est vraiment
-#     necessaire que l'orsque le premier fichier contient plus d'une
-#     heure de donnees a l'intereur.
-
+      #-----On tient compte du nom du deuxieme fichier car on devras inclure
+      #     les resultats du premier PGSM a la fin. Cela n'est vraiment
+      #     necessaire que l'orsque le premier fichier contient plus d'une
+      #     heure de donnees a l'intereur.
       i=`expr $i + 1`
       k=`expr $k + 1`
 
    done
 
-#-----On lance le PGSM.
-
+   #-----On lance le PGSM.
    pgsm2000 -iment ${filelist} \
         -ozsrt ../meteo/${date}_${hour3} \
         -i pgsm_meteo.dir \
         -l pgsm_meteo_${hour3}.out 2> pgsm_meteo_${hour3}.err &
 
-#-----On incremente le process actuel.
-
+   #-----On incremente le process actuel.
    process=`expr $process + 1`
    loop=`expr $loop + 1`
 
@@ -336,7 +317,7 @@ do
 done
 
 #-----On attend que toutes les procedures soit terminees.
-
 wait
-
 echo "done" > sim.meteo
+
+Log_End 0

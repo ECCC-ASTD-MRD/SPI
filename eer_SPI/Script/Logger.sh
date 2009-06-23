@@ -12,12 +12,12 @@
 # Description: Functions to generalize the loggin mechanism amongs various jobs:
 #
 # Global Settings
-#   LogLevel      Logging level (MUST,ERROR,WARNING,INFO,DEBUG)
-#   LogMail       EMail address for mail reports
-#   LogMailTitle  Title to include in mail reports
-#   LogJobID      Job Identificator
-#   LogFile       File to use for log (stdout if undefined)
-#   LogTime       Include dates in log
+#   LOG_LEVEL      Logging level (MUST,ERROR,WARNING,INFO,DEBUG)
+#   LOG_MAIL       EMail address for mail reports
+#   LOG_MAILTITLE Title to include in mail reports
+#   LOG_JOBID      Job Identificator
+#   LOG_FILE       File to use for log (stdout if undefined)
+#   LOG_TIME       Include dates in log
 #
 # Functions:
 #   Log_Start     $Job $Version [$Paramfile]
@@ -33,12 +33,12 @@
 #===============================================================================
 
 #----- Check for environment settings
-LogLevel=${LogLevel:=INFO}
-LogMail=${LogMail:=""}
-LogMailTitle=${LogMailTitle:="Job Info"}
-LogJobID=${LogJobID:=""}
-LogFile=${LogFile:=""}
-LogTime=${LogTime:=0}
+LOG_LEVEL=${LOG_LEVEL:=INFO}
+LOG_MAIL=${LOG_MAIL:=""}
+LOG_MAILTITLE=${LOG_MAILTITLE:="Job Info"}
+LOG_JOBID=${LOG_JOBID:=""}
+LOG_FILE=${LOG_FILE:=""}
+LOG_TIME=${LOG_TIME:=0}
 
 #----- Logger internal variables
 LogSecTime=`date +%s`
@@ -77,7 +77,7 @@ function Log_Mail {
    subject=${1}
    file=${2}
 
-   if [[ ${LogMail} = "" ]] ; then
+   if [[ ${LOG_MAIL} = "" ]] ; then
       return 0
    fi
 
@@ -86,9 +86,9 @@ function Log_Mail {
    fi
 
    if [[ ${EER_ARCH} = IRIX64 ]] ; then
-      mailx -s "${LogMailTitle}: ${subject} (${LogJobID})" ${LogMail} < ${file}
+      mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
    else
-      mail -s "${LogMailTitle}: ${subject} (${LogJobID})" ${LogMail} < ${file}
+      mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
    fi
 }
 
@@ -100,13 +100,13 @@ function Log_Start {
    in=${3}
 
   #----- Simulation run time ID.
-   if [[ ${LogJobID} = "" ]] ; then
+   if [[ ${LOG_JOBID} = "" ]] ; then
       #----- Define run time ID if not defined.
-      LogJobID=`date +%Y%m%d%H%M%S`
+      LOG_JOBID=`date +%Y%m%d%H%M%S`
    fi
 
-   if [[ ! ${LogFile} = "" ]] ; then
-      rm -f ${LogFile}
+   if [[ ! ${LOG_FILE} = "" ]] ; then
+      rm -f ${LOG_FILE}
    fi
 
    Log_Print MUST "-------------------------------------------------------------------------------"
@@ -114,10 +114,10 @@ function Log_Start {
    Log_Print MUST "Version             : ${LogVersion}"
    Log_Print MUST "Hostname            : `hostname`"
    Log_Print MUST "Architecture        : `uname -s`"
-   Log_Print MUST "Run ID              : ${LogJobID}"
+   Log_Print MUST "Run ID              : ${LOG_JOBID}"
 
-   if [[ ${LogMail} != "" ]] ; then
-      Log_Print MUST "E-mail Address      : ${LogMail}"
+   if [[ ${LOG_MAIL} != "" ]] ; then
+      Log_Print MUST "E-mail Address      : ${LOG_MAIL}"
    fi
 
    #----- Queue stuff
@@ -142,7 +142,7 @@ function Log_Start {
    Log_Print MUST "Start time          : `date +\"%c %Z\"`"
    Log_Print MUST "-------------------------------------------------------------------------------\n"
 
-   Log_Mail "Job started" ${LogFile}
+   Log_Mail "Job started" ${LOG_FILE}
 }
 
 function Log_End {
@@ -161,9 +161,9 @@ function Log_End {
    Log_Print MUST "-------------------------------------------------------------------------------\n"
 
    if [[ ${status} -eq 0 ]] ; then
-      Log_Mail "Job finished (NORMAL)" ${LogFile}
+      Log_Mail "Job finished (NORMAL)" ${LOG_FILE}
    else
-      Log_Mail "Job finished (ERROR)" ${LogFile}
+      Log_Mail "Job finished (ERROR)" ${LOG_FILE}
    fi
 
    exit $status
@@ -177,7 +177,7 @@ function Log_Print {
 
    #----- Levels are MUST,ERROR,WARNING,INFO,DEBUG
    eval lvl=\$\{Log$level\}
-   eval LogLevelNo=\$\{Log${LogLevel}\}
+   eval LogLevelNo=\$\{Log${LOG_LEVEL}\}
 
    #----- Format the time if it is specified
    if [[ ${time} != "" ]]; then
@@ -186,7 +186,7 @@ function Log_Print {
 
    #----- Check for event time
    datetime=" "
-   if [[ ${LogTime} -eq 1 ]]; then
+   if [[ ${LOG_TIME} -eq 1 ]]; then
       datetime=" ($(date)) "
    fi
 
@@ -197,10 +197,10 @@ function Log_Print {
          levels="(${level})"
       fi
 
-      if [[ ${LogFile} = "" ]] ; then
+      if [[ ${LOG_FILE} = "" ]] ; then
          echo "${levels}${datetime}${msg} ${time}"
       else
-         echo "${levels}${datetime}${msg} ${time}" >> ${LogFile}
+         echo "${levels}${datetime}${msg} ${time}" >> ${LOG_FILE}
       fi
       if [[ $level = "ERROR" ]] ; then
          echo "${levels}${datetime}${msg} ${time}" 1>&2
