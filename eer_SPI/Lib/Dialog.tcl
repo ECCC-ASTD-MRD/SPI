@@ -325,7 +325,8 @@ proc Dialog::CreateWait { Master Text { Percent 1000 } } {
       }
 
       message .dlgwait.txt -aspect 1000 -text $Text -relief raised -bd 1
-      pack .dlgwait.txt -padx 20 -pady 20
+      pack .dlgwait.txt -ipadx 20 -ipady 20
+      update idletasks
 
       grab .dlgwait
    }
@@ -348,6 +349,7 @@ proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 proc Dialog::DestroyWait { } {
 
    destroy .dlgwait
+   update idletasks
 }
 
 #----------------------------------------------------------------------------
