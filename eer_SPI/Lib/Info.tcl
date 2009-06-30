@@ -51,7 +51,6 @@ namespace eval Info {
    set Lbl(BatchStart)           { "Délai de démarrage     (h)" "Batch start delay   (h)" }
    set Lbl(Duration)             { "Durée de simulation (h)" "Simulation duration (h)" }
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
-   set Lbl(EffectiveDurationMin) { "Durée effective de simulation (min)" "Effective simulation duration (min)" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
    set Lbl(EmTotMass)            { "Masse totale relâchée (unité)" "Total released mass (unit)" }

@@ -155,7 +155,7 @@ proc MLDP::CreateLaunchInputFile { } {
    set file [open $Sim(Path)/tmp/Model_MLDP.in w 0644]
 
    puts $file "#----- Logger specific parameters"
-   puts $file "LOG_MAIL=$Sim(EmailAddress)"
+   puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
    puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLDP.out"
    puts $file "LOG_LEVEL=INFO"
@@ -175,6 +175,10 @@ proc MLDP::CreateLaunchInputFile { } {
    puts $file "MODEL_CLEAN=1"
    puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
    puts $file ""
+   puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
+   puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
+   puts $file "MODEL_OMPTHREADFACT=$Model::Param(OMPthreadFact)  #\[1, 2\]"
+   puts $file ""
    puts $file "#----- Model specific parameters"
    puts $file "MLDP_METEO=glb"
    puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
@@ -193,10 +197,6 @@ proc MLDP::CreateLaunchInputFile { } {
       }
    }
    puts $file "MLDP_OUTMODE=cmc"
-   puts $file ""
-   puts $file "MLDP_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
-   puts $file "MLDP_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
-   puts $file "MLDP_OMPTHREADFACT=$Model::Param(OMPthreadFact)  #\[1, 2\]"
 
    close $file
 
@@ -230,10 +230,10 @@ proc MLDP::LaunchInit { } {
 
    if { $Model::Param(IsUsingSoumet) } {
 
-      set token "$Sim(Host)_${ExpName}_${SimName}_[clock seconds]"
+      set token "$Model::Param(Host)_${ExpName}_${SimName}_[clock seconds]"
 
       if { $Model::Param(Arch) == "AIX" } {
-         set Sim(PathRun) "[lindex $GDefs(BackEnd$Sim(Host)) 1]/eer_Experiment/$token"
+         set Sim(PathRun) "[lindex $GDefs(BackEnd$Model::Param(Host)) 1]/eer_Experiment/$token"
       } else {
          set Sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/$token"
       }
@@ -308,19 +308,19 @@ proc MLDP::Launch { } {
       }
 
       #----- Create simulation directories on remote host.
-      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
       if { $ErrorCode != 0 } {
-         Debug::TraceProc "(ERROR) Unable to create simulation directories on $Sim(Host).\n\n$Message"
+         Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
          return False
       }
 
       #----- Copy needed files on remote host.
-      set ErrorCode [catch { exec scp -p  $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/Model_MLDP.in $Sim(Path)/tmp/$Sim(Model).in $Sim(Path)/tmp/griddef $Sim(Path)/tmp/data_std_sim.eta $GDefs(FrontEndUser)@$Sim(Host):$Sim(PathRun)/tmp } Message]
+      set ErrorCode [catch { exec scp -p  $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/Model_MLDP.in $Sim(Path)/tmp/$Sim(Model).in $Sim(Path)/tmp/griddef $Sim(Path)/tmp/data_std_sim.eta $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
       if { $ErrorCode != 0 } {
-         Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Sim(Host)) has failed.\n\n$Message"
+         Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
          return False
       }
-      Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Sim(Host)) successfully."
+      Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
 
       set memory ""
       set mem    ""
@@ -341,26 +341,26 @@ proc MLDP::Launch { } {
       }
 #TODO $GDefs(Dir)/Script/launch_mldp.sh
       if { $Sim(Model)=="MLDP1" } {
-         exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Sim(Host) \
+         exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
             -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
-         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Sim(Host) \
+         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
             -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
       } else {
-         exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Sim(Host) \
+         exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
             -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbCPUsMeteo) -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
-         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Sim(Host) \
+         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
             -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbCPUsMeteo) -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
       }
 
       if { $ErrorCode } {
-         Debug::TraceProc "(ERROR) Submitting the job on $Sim(Host) failed.\n\n$Message"
+         Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
          return False
       }
-      Debug::TraceProc "(INFO) Job has been submitted successfully on $Sim(Host)."
+      Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
 
    } else {
       Exp::Launch "$GDefs(Dir)/Script/Model.sh $Sim(Path)/tmp/Model_MLDP.in" "[Info::Code ::MLDP::Sim $Sim(Info) :]" 10000 $Sim(Path)/tmp/Model_MLDP.out
-      Debug::TraceProc "(INFO) Job launched on $Sim(Host)."
+      Debug::TraceProc "(INFO) Job launched on $Model::Param(Host)."
    }
    . config -cursor left_ptr
 }
@@ -398,7 +398,7 @@ proc MLDP::CreateModelInputFile { Model } {
    set len [expr [string length $Sim(PathRun)/meteo] + [string length [file tail [lindex $Sim(MeteoDataFiles) 0]]] + 10]
    puts $file "\nInput files:"
    puts $file "[format "%-${len}s" [llength $Sim(Data)]]]     nb_metfiles       Number of meteorological input standard files."
-   for { set i 0 } { $i < [llength $sim(Data)] } { incr i } {
+   for { set i 0 } { $i < [llength $Sim(Data)] } { incr i } {
       set filename [lindex $Sim(MeteoDataFiles) $i]
       set metfile  "$Sim(PathRun)/meteo/[file tail $filename].std"
       if { $i > 0 } {
