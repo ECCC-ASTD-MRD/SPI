@@ -1050,7 +1050,6 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 
             FSTD::ParamInit $fld $var
          }
-
          if { "$var"=="$current" } {
              set Param(Spec) $current
              set exist 1
@@ -1060,6 +1059,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          ComboBox::Add $Data(Frame).var.sel $var
       }
    }
+
    if { !$exist && $var!="" } {
       set Param(Spec) $var
       FSTD::ParamGet

@@ -299,24 +299,23 @@ proc Viewport::Assign { Frame VP Ids { Force 0 } } {
       foreach id $Ids {
          if { [set idx [lsearch -exact $Data(Data$VP) $id]]==-1 } {
             lappend Data(Data$VP) $id
-
-            #----- Definir les tags aux emplacements
-
-            if { [fstdfield is $id] } {
-               fstdfield stats $id -tag "$Frame $VP -1"
-               FSTD::Register $id
-            } elseif { [observation is $id] } {
-               observation stats $id -tag "$Frame $VP -1"
-               Obs::Register $id
-            } elseif { [metobs is $id] } {
-               metobs stats $id -tag "$Frame $VP -1"
-               Obs::Register $id
-            } elseif { [trajectory is $id] } {
-               trajectory stats $id -tag "$Frame $VP -1"
-               Trajectory::Register $id
-            }
-            set Force [expr $Force==-1?0:1]
          }
+
+         #----- Definir les tags aux emplacements
+         if { [fstdfield is $id] } {
+            fstdfield stats $id -tag "$Frame $VP -1"
+            FSTD::Register $id
+         } elseif { [observation is $id] } {
+            observation stats $id -tag "$Frame $VP -1"
+            Obs::Register $id
+         } elseif { [metobs is $id] } {
+            metobs stats $id -tag "$Frame $VP -1"
+            Obs::Register $id
+         } elseif { [trajectory is $id] } {
+            trajectory stats $id -tag "$Frame $VP -1"
+            Trajectory::Register $id
+         }
+         set Force [expr $Force==-1?0:1]
       }
       if { $Force } {
          Viewport::UpdateData $Frame $VP
