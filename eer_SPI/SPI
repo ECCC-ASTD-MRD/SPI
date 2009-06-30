@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export SPI_PATH=${0%SPI}
+#export SPI_PATH=$(cd -P $(dirname ${0%tclsh}) 2>/dev/null && pwd -P)
 . ${SPI_PATH}/.profile_spi
 
 SOFT=0

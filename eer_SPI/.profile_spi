@@ -23,4 +23,4 @@ export GRIB_DEFINITION_PATH==${SPI_PATH}/Data/definitions
 #----- EER Modeling variables
 export EER_ARCH=`uname -s`
 export EER_DIRBIN=${SPI_PATH}/Bin/${EER_ARCH}
-export EER_DIRSCRIPT={SPI_PATH}/Script
+export EER_DIRSCRIPT=${SPI_PATH}/Script
