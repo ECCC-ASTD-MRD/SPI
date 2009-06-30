@@ -26,20 +26,17 @@ namespace eval CANERM {
 
    #----- Definition des constantes generale aux simulations
 
-   set Sim(DBaseDiag)     ""                          ;#Path des fichiers de diagnostiques
-   set Sim(DBaseProg)     ""                          ;#Path des fichiers de prognostiques
-
    set Sim(Delta)         3                           ;#Delta des fichiers meteo
    set Sim(Descript)      ""                          ;#Descriptif des donnees affichees
    set Sim(FreqIn)        12                          ;#Frequence des fichiers d'entree au modele
    set Sim(FreqOut)       12                          ;#Frequence des fichiers de sortie au modele
+   set Sim(Duration)      72                          ;#Duree de la simulation
    set Sim(MaxIso)        5                           ;#Nombre maximum de polluants
    set Sim(Iso)           ""                          ;#Nom du polluant selectionne
    set Sim(Intensity)     ""                          ;#Intensite du polluant selectionne
    set Sim(Scale)         "FINE (25 km)"              ;#Echelle de la grille
    set Sim(Path)          ""                          ;#Repertoire de la simulation
    set Sim(NTST)          ""                          ;#
-   set Sim(JobFile)       ""                          ;#Nom du script "eer[seconds]
    set Sim(Restart)       "_"                         ;#Nom du fichier "restart" a creer
    set Sim(PrevRestart)   "_"                         ;#Nom du fichier "restart" a utiliser pour continuer
    set Sim(ListScale)     { "HEMI (150 km)" "MESO (50 km)"  "FINE (25 km)"  "VFINE (10 km)" "EFINE (5 km)" }
@@ -48,14 +45,20 @@ namespace eval CANERM {
    set Sim(ListISauve)    { 1 3 6 }
    set Sim(ListMode)      { prog diag }
    set Sim(ListMeteo)     { glb reg glb100 reg24 }
+   set Sim(ListSimDuration)     { 6 12 18 24 48 72 96 120 144 168 }          ; #----- List of simulation durations [hr].
+   set Sim(Retro)         False
 
-   set Sim(Queue)         [lindex $GDefs(Queue) 0]
-   set Sim(Host)          [lindex $GDefs(BackEnd) 0]
-   set Sim(Hosts)         $GDefs(BackEnd)
+   #----- Define list of available hosts.
+   set Sim(Hosts) $GDefs(Host)
 
-   if { $Sim(Host)!=$GDefs(FrontEnd) } {
-      lappend Sim(Hosts) $GDefs(FrontEnd) $GDefs(Host)
+   #----- Add front-end machine to list of available hosts.
+   if { [lsearch -exact $Sim(Hosts) $GDefs(FrontEnd)]==-1 } {
+      lappend Sim(Hosts) $GDefs(FrontEnd)
    }
+
+   #----- Add back-end machines to list of hosts.
+   set Sim(Hosts) [concat $GDefs(BackEnd) $Sim(Hosts)]
+   set Model::Param(Host) [lindex $Sim(Hosts) 0]
 
    #----- Definition des parametres de grilles modifiables
 

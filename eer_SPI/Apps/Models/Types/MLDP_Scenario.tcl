@@ -46,10 +46,6 @@ proc MLDP::ScenarioValidate { } {
       return False
    }
 
-   if { ![MLDP::ScenarioValidate] } {
-      return False
-   }
-
    switch $Sim(SrcType) {
       "accident" {
          if { ![MLDP::ValidateReleaseRatesAccident] } {
@@ -64,7 +60,7 @@ proc MLDP::ScenarioValidate { } {
             return False
          }
 
-         MLDP::UpdateEmissionDurationsTotalQuantityAccident
+         MLDP::ScenarioAccidentUpdateEmission
 
          if { ![MLDP::ScenarioAccidentValidateTotalReleasedQuantity] } {
             return False
@@ -72,7 +68,6 @@ proc MLDP::ScenarioValidate { } {
          if { ![MLDP::ValidateLullPeriodsStartAccident] } {
             return False
          }
-
          if { ![MLDP::ValidateLullPeriodsEndAccident] } {
             return False
          }
@@ -81,12 +76,11 @@ proc MLDP::ScenarioValidate { } {
          if { ![MLDP::ValidateDurationsReleasesVolcano] } {
             return False
          }
-         MLDP::UpdateEmissionDurationsVolcano
+         MLDP::ScenarioVolcanUpdateEmission
 
          if { ![MLDP::ValidateLullPeriodsStartVolcan] } {
             return False
          }
-
          if { ![MLDP::ValidateLullPeriodsEndVolcan] } {
             return False
          }
@@ -95,12 +89,11 @@ proc MLDP::ScenarioValidate { } {
          if { ![MLDP::ValidateReleaseRatesVirus] } {
             return False
          }
-
          if { ![MLDP::ValidateDurationsRatesVirus] } {
             return False
          }
 
-         MLDP::UpdateEmissionDurationsTotalQuantityVirus
+         MLDP::ScenarioVirusUpdateEmission
 
          if { ![MLDP::ScenarioVirusValidateTotalReleasedQuantity] } {
             return False
@@ -108,7 +101,6 @@ proc MLDP::ScenarioValidate { } {
          if { ![MLDP::ValidateLullPeriodsStartVirus] } {
             return False
          }
-
          if { ![MLDP::ValidateLullPeriodsEndVirus] } {
             return False
          }
@@ -118,7 +110,7 @@ proc MLDP::ScenarioValidate { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::ScenariValidateNameo>
+# Nom        : <MLDP::ScenarioValidateNameo>
 # Creation   : 22 March 2004 - A. Malo - CMC/CMOE
 #
 # But        : Validate name of release scenario.
@@ -449,7 +441,6 @@ proc MLDP::ScenarioAccidentUpdateEmission { } {
 
                #----- Compute total released quantity.
                set Quant($j) [expr $Quant($j) + double($Tmp(Duration$i))/3600.0 * double($Tmp(ReleaseRate$i.$j))]
-
             }
          }
       }
@@ -546,12 +537,10 @@ proc MLDP::ScenarioVirusNew { Parent } {
    pack .newscenario.emint.fr.box1.data -side left
    pack .newscenario.emint.fr.box1 -side top
 
-
    frame .newscenario.emint.fr.box2 -bd 1 -relief sunken
    set MLDP::Sim(ReleaseRatesFrame) .newscenario.emint.fr.box2
 
    #----- Headers.
-
    frame .newscenario.emint.fr.box2.header
       label .newscenario.emint.fr.box2.header.dur -relief raised -width 20 -bd 1 -text "[lindex $Lbl(Duration) $GDefs(Lang)]"
       pack .newscenario.emint.fr.box2.header.dur -side left -fill x -fill y
@@ -563,8 +552,7 @@ proc MLDP::ScenarioVirusNew { Parent } {
    pack .newscenario.emint.fr.box2.header -side top -anchor w -fill x -expand true
 
    #----- Entries.
-
-    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
+   for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
 
        frame .newscenario.emint.fr.box2.entry$i
           entry .newscenario.emint.fr.box2.entry$i.dur -relief sunken -width 20 -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Duration$i)
@@ -623,7 +611,6 @@ proc MLDP::ScenarioVirusInit { } {
    variable Sim
 
    #----- Reset variables.
-
    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
       set Tmp(Duration$i)     ""
       set Tmp(ReleaseRate$i)  ""
@@ -631,7 +618,6 @@ proc MLDP::ScenarioVirusInit { } {
    set Tmp(ReleaseQuantity) ""
 
    #----- Initialize variables.
-
    set Tmp(Scenario)          $Sim(EmScenario)
    set Tmp(NbIntervals)       $Sim(EmNbIntervals)
    set Tmp(TotalDuration)     $Sim(EmTotalDuration)
@@ -773,7 +759,6 @@ proc MLDP::ScenarioVolcanNew { Parent } {
    pack .newscenario.emint.fr.box1.data -side left
    pack .newscenario.emint.fr.box1 -side top
 
-
    frame .newscenario.emint.fr.box2 -bd 1 -relief sunken
    set MLDP::Sim(ReleaseRatesFrame) .newscenario.emint.fr.box2
 
@@ -838,7 +823,6 @@ proc MLDP::ScenarioVolcanInit { } {
    variable Sim
 
    #----- Reset variables.
-
    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
       set Tmp(Duration$i) ""
       set Tmp(Label$i)    ""
@@ -846,7 +830,6 @@ proc MLDP::ScenarioVolcanInit { } {
    }
 
    #----- Initialize variables.
-
    set Tmp(Scenario)          $Sim(EmScenario)
    set Tmp(NbIntervals)       $Sim(EmNbIntervals)
    set Tmp(TotalDuration)     $Sim(EmTotalDuration)
@@ -898,7 +881,6 @@ proc MLDP::ScenarioVolcanUpdateEmission { } {
    set nbint     0
 
    #----- Update emission durations.
-
    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
 
       if { $Tmp(Duration$i) != "" && $Tmp(Duration$i) > 0 } {
@@ -1022,7 +1004,6 @@ proc MLDP::ValidateDurationValue { Duration Parent { Idx -1 } } {
    variable Tmp
 
    #----- Verify if duration is positive.
-
    set number [string is integer -failindex idx $Duration]
 
    if { $number == 0 && $idx == -1 } {
@@ -1097,7 +1078,6 @@ proc MLDP::ValidateDurationsRatesAccident { } {
    variable hasFoundRate
 
    #----- Verify if emission durations and release rate fields are filled simultaneously.
-
    for { set j 0 } { $j < [llength $Tmp(Iso)] } { incr j } {    #----- Loop over isotopes.
       for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } { #----- Loop over emission durations.
 
@@ -1116,7 +1096,6 @@ proc MLDP::ValidateDurationsRatesAccident { } {
    }
 
    #----- Verify if there is no empty fields (Number of intervals > 0).
-
    set hasFoundDuration 0
    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
       if { $Tmp(Duration$i) != "" } {
@@ -1140,6 +1119,7 @@ proc MLDP::ValidateDurationsRatesAccident { } {
 
    for { set j 0 } { $j < [llength $Tmp(Iso)] } { incr j } {
       if { !$hasFoundDuration && !$hasFoundRate($j) } {
+
          #----- Emission duration and release rate for this isotope fields are both empty.
          Dialog::CreateError .newscenario "[lindex $Error(Scenario) $GDefs(Lang)]" $GDefs(Lang) 600
          focus $MLDP::Sim(ReleaseRatesFrame).entry0.dur
@@ -1264,7 +1244,6 @@ proc MLDP::ValidateDurationsReleasesVolcano { } {
    }
 
    #----- Verify if there is no empty fields (Number of intervals > 0).
-
    set hasFoundDuration 0
    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
       if { $Tmp(Duration$i) != "" } {
@@ -1309,7 +1288,7 @@ proc MLDP::ValidateDurationsReleasesVolcano { } {
 proc MLDP::ValidateDurationsVsModelTimeStep { } {
    variable Sim
 
-   foreach interval $Sim(EmInter.$Sim(EmScenario)) { #----- Loop over emission intervals.
+   foreach interval $Sim(EmInter.$Sim(EmScenario)) {
       set duration [lindex $interval 0]
 
       #----- Validate emission duration value.
@@ -1342,7 +1321,6 @@ proc MLDP::ValidateNbIsotopes { } {
    variable Error
 
    #----- Verify if number of isotopes is greater than 0.
-
    if { [llength $Tmp(Iso)] < 1 } {
 
       Dialog::CreateError .newscenario "[lindex $Error(NbIsotopes) $GDefs(Lang)]" $GDefs(Lang) 600
@@ -1379,8 +1357,8 @@ proc MLDP::ValidateReleaseRatesAccident { } {
    variable Sim
    variable Tmp
 
-   for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {    #----- Loop over emission intervals.
-      for { set j 0 } { $j < [llength $Tmp(Iso)] } { incr j } { #----- Loop over isotopes.
+   for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
+      for { set j 0 } { $j < [llength $Tmp(Iso)] } { incr j } {
 
          #----- Validate release rate value for each interval and each isotope.
          if { [MLDP::ValidateReleaseRateValue $i $j] } {
@@ -1593,10 +1571,8 @@ proc MLDP::ValidateTimeSteps { } {
       return 0
    }
 
-   #----- Compute output time step [s].
+   #----- Compute output and model time step [s].
    set MLDP::Sim(OutputTimeStepSec) [expr $MLDP::Sim(OutputTimeStepMin)*60]
-
-   #----- Compute model time step [s].
    set MLDP::Sim(ModelTimeStepSec) [expr $MLDP::Sim(ModelTimeStepMin)*60]
 
    #----- Verify if model time step is lower or equal to an hour (60 minutes).
@@ -1659,7 +1635,6 @@ proc MLDP::ValidateLullPeriodsEndAccident { } {
    for { set i [expr $Sim(EmMaxInterval) - 1] } { $i >= 0 } { incr i -1 } {
 
       if { $Tmp(Duration$i) != "" } {
-
          for { set j 0 } { $j < [llength $Tmp(Iso)] } { incr j } {
             if { $Tmp(ReleaseRate$i.$j) > 0 } {
                return 1 ; #----- No lull periods.
@@ -1700,7 +1675,6 @@ proc MLDP::ValidateLullPeriodsEndVirus { } {
    for { set i [expr $Sim(EmMaxInterval) - 1] } { $i >= 0 } { incr i -1 } {
 
       if { $Tmp(Duration$i) != "" } {
-
          if { $Tmp(ReleaseRate$i) > 0 } {
             return 1 ; #----- No lull periods.
          }
@@ -1739,7 +1713,6 @@ proc MLDP::ValidateLullPeriodsEndVolcan { } {
    for { set i [expr $Sim(EmMaxInterval) - 1] } { $i >= 0 } { incr i -1 } {
 
       if { $Tmp(Duration$i) != "" } {
-
          if { $Tmp(Value$i) == 1 } {
             return 1 ; #----- No lull periods.
          }
@@ -1778,7 +1751,6 @@ proc MLDP::ValidateLullPeriodsStartAccident { } {
    for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
 
       if { $Tmp(Duration$i) != "" } {
-
          for { set j 0 } { $j < [llength $Tmp(Iso)] } { incr j } {
             if { $Tmp(ReleaseRate$i.$j) > 0 } {
                return 1 ; #----- No lull periods.

@@ -88,18 +88,6 @@ namespace eval MLDP {
    set Lbl(No)                  { "Non" "No " }
    set Lbl(Warning)             { "Avertissement" "Warning" }
 
-   set Lbl(Params)              { "Paramètres" "Parameters" }
-   set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
-   set Lbl(Queue)               { "Type de queue  " "Queue type     " }
-   set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
-   set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
-   set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
-   set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
-   set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
-   set Lbl(Email)               { "   Adresse     " "   Address     " }
-   set Lbl(EmailAddress)        { "Courriel       " "E-mail         " }
-   set Lbl(Launch)              { "Lancement" "Launch" }
-   set Lbl(LaunchModel)         { "Lancer" "Launch" }
    set Lbl(Overwrite)           { "Remplacer" "Overwrite" }
 
    #----- Definitions des bulles d'aides
@@ -161,21 +149,9 @@ namespace eval MLDP {
    set Bubble(EditScenario)           { "Éditer le scénario d'émission sélectionné." "Edit the selected release scenario." }
    set Bubble(DeleteScenario)         { "Supprimer le scénario d'émission sélectionné." "Delete the selected release scenario." }
 
-   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et le modèle seront exécutés.\n\nmaia   : grappe dorsale opérationnelle du superordinateur IBM (avec préemption) ;\nsaiph  : grappe dorsale développement du superordinateur IBM (sans préemption) ;\ncastor : grappe frontale opérationnelle ;\npollux : grappe frontale développement." \
-                                        "Host where meteorological preprocessing and model will be executed.\n\nmaia   : back-end operational cluster of IBM supercomputer (with preemption) ;\nsaiph  : back-end development cluster of IBM supercomputer (without preemption) ;\ncastor : operational front-end cluster ;\npollux : development front-end cluster." }
-   set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
-   set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
-   set Bubble(NbMPItasks)             { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
-                                        "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
-   set Bubble(NbOMPthreads)           { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
-                                        "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
-   set Bubble(OMPthreadFact)          { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
-   set Bubble(IsEmailAddress)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
-   set Bubble(EmailAddress)           { "Adresse de courrier électronique." "E-mail address." }
-   set Bubble(LaunchModel)            { "Lancer le modèle MLDP." "Launch MLDP model." }
-
    #----- Definitions des messages
 
+   set Msg(MetGet)       { "Vérification de la disponibilitée des données météo en cours..." "Checking for meteorological data availability..." }
    set Msg(Meteo)        { "Création des données météo en cours" "Creating meteorological data" }
    set Msg(Exist)        { "Veuillez compléter le lancement de MLDP en cours avant de procéder à un autre." "Please complete the current MLDP launch before proceeding with another one." }
    set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
@@ -195,11 +171,6 @@ namespace eval MLDP {
    set Error(UnitMass)                          { "µg." "µg." }
    set Error(UnitRate)                          { "unité/h." "unit/h." }
 
-   set Error(MetFiles)                          { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
-                                                  "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
-   set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
-   set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
-   set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
 
    set Error(EndDate)                           { "Erreur! Auncune date de fin n'a été sélectionnée" "Error! No simulation end date has been selected" }
    set Error(SimDuration)                       { "Erreur! La durée de simulation (spécifiée en heures) doit être un nombre entier positif.\n\n\tDurée de simulation :" \
@@ -374,15 +345,7 @@ namespace eval MLDP {
    set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
    set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
-   set Error(DateTimeMetFiles)                  { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
-                                                  "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
 
-   set Error(EmailAddress)                      { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
-
-   set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
-                                    "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
-   set Warning(SimDuration2)      { "\tAncienne durée de simulation :" "\tOld simulation duration :" }
-   set Warning(SimDuration3)      { "\tNouvelle durée de simulation :" "\tNew simulation duration :" }
    set Warning(SimDuration4)      { "Avertissement! La durée de simulation est supérieure à 72 hrs et le pas de temps de sortie des données est inférieur (ou égal) à 60 min. Ces paramètres d'entrée produiront des fichiers de résultats de grande taille.\n\nVoulez-vous modifier ces paramètres?" \
                                     "Warning! The simulation duration is greater than 72 hrs and the data output time step is lower than (or equal to) 60 min. These input parameters will generate large results file size.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration5)      { "\tDurée de simulation    :" "\tSimulation duration :" }
@@ -391,7 +354,6 @@ namespace eval MLDP {
                                     "Warning! The simulation duration is greater than 72 hrs and the time interval between meteorological data files is lower than 3 hrs. These input parameters will generate many meteorological data files to feed the dispersion model. Thus, this will require large disk space.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration8)      { "\tDurée de simulation     :" "\tSimulation duration :" }
    set Warning(SimDuration9)      { "\tInterval de temps météo :" "\tMeteo time interval :" }
-
    set Warning(VerticalLevels1)   { "Avertissement! Le premier niveau vertical dans la liste n'est pas égal à 0 m. Cette liste sera réinitialisée afin de considérer les particules dans la couche de surface non-résolue." \
                                     "Warning! The first vertical level in the list is not equal to 0 m. This list will be re-initialized in order to take into account particles within the unresolved surface layer." }
    set Warning(VerticalLevels2)   { "\tAnciens niveaux verticaux  :" "\tOld vertical levels :" }
@@ -415,12 +377,6 @@ namespace eval MLDP {
                                     "Warning! Deleting the default emission scenario is prohibited. Please delete a different scenario." }
    set Warning(HalfLife)          { "Avertissement! L'isotope sélectionné a une demi-vie radioactive inférieure à 15 minutes. Cette simulation ne produira pas de résultats pertinents et intéressants. Par conséquent, veuillez sélectionner un isotope différent de" \
                                     "Warning! The selected radionclide has a radioactive half-life less than 15 minutes. This simulation will not generate relevant and interesting results. Therefore, please select a radionuclide different than" }
-   set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle MLDP en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
-                                    "Warning! You are about to launch MLDP model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
-   set Warning(EmailAddress)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
-                                    "Warning! The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
-   set Warning(EmailAddress2)     { "\tNouveau courriel    :" "\tNew email     :" }
-   set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
    set Warning(DiskSpace)         { "L'espace disque disponible dans le répertoire de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle ?" \
                                     "The available disk space ino the  experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute the model ?" }
 }

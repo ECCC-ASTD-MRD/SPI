@@ -54,24 +54,6 @@ namespace eval MLDP {
    set Sim(ListVirusType)       { "fmd" "avian" }                            ; #----- List of types of virus.
    set Sim(ListVirusSymbol)     { "FMD-VIRUS" "AVIAN-VIRUS" }                ; #----- List of virus symbols.
    set Sim(NotAvailable)        { "N/D" "N/A" }                              ; #----- Not available.
-   set Sim(ListOptOnOff)        { { "Option désactivée" "Option activée" } \
-                                  { "Option disabled" "Option enabled" } } ; #----- List of flags relative to option enabled/disabled.
-
-   #----- List of vertical levels [m].
-   set Sim(OrigListVerticalLevels)  { "1 200 400 600 2000 4000" \
-                                      "1 500 1000 1500 2000 3000 4000 5000" \
-                                      "1 500 1000 1500 2000 2500 3000 3500 4000 4500 5000" \
-                                      "1 500 1000" \
-                                      "1 1000" \
-                                      "1 1000 2000 5000 10000" \
-                                      "1 1000 2000 5000 10000 15000" \
-                                      "1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000" \
-                                      "1 100 200 300 400 500 600 700 800 900 1000" \
-                                      "1 100 1000" \
-                                      "1 100 500 1000" \
-                                      "1 50 100" \
-                                      "1 50 100 500 1000" \
-                                      "1 50 100 1000" }
 
    #----- List of horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
    set Sim(ListVarMesoscale)    { 0.00 0.01 0.10 0.50 1.00 2.00 3.00 5.00 }
@@ -100,13 +82,39 @@ namespace eval MLDP {
    set Sim(EmMaxInterval)        10                            ; #----- Maximum number of emission intervals.
    set Sim(EmDir)                "$GDefs(DirEER)/eer_Scenario" ; #----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-05                       ; #----- Small value.
+   set Sim(Retro)                False
 
    #----- Set variables for pool info.
 
-   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration EffectiveDurationMin OutputTimeStepMin ModelTimeStepMin \
+   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
                    AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour \
-                   Mode Meteo Delta Scale GridResolution GridSize Grid \
+                   Mode Meteo Delta Scale GridSize Grid \
                    Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel \
                    EmNumberParticles EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                    EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
+
+
+   #----- Define list of available hosts.
+   set Sim(Hosts) $GDefs(Host)
+
+   #----- Add front-end machine to list of available hosts.
+   if { $Sim(Model)=="MDLP0" && [lsearch -exact $Sim(Hosts) $GDefs(FrontEnd)]==-1 } {
+      lappend Sim(Hosts) $GDefs(FrontEnd)
+   }
+
+   #----- Add back-end machines to list of hosts.
+   set Sim(Hosts) [concat $GDefs(BackEnd) $Sim(Hosts)]
+   set Model::Param(Host) [lindex $Sim(Hosts) 0]
+}
+
+namespace eval MLDP0 {
+  variable Sim
+
+  set Sim(Info) $MLDP::Sim(Info)
+}
+
+namespace eval MLDP1 {
+  variable Sim
+
+  set Sim(Info) $MLDP::Sim(Info)
 }

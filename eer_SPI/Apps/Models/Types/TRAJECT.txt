@@ -20,6 +20,13 @@ namespace eval TRAJECT {
 
    #----- Defintitions des labels
 
+   set Lbl(Start)           { "Temps de départ (UTC)" "Starting Time (UTC)" }
+   set Lbl(Integration)     { "Intégration" "Integration" }
+   set Lbl(SimDuration)     { "Durée de simulation  (h)" "Simulation duration (h)" }
+   set Lbl(SimBatchStart)   { "Délai de démarrage   (h)" "Batch start delay   (h)" }
+   set Lbl(TimeStep)        { "Pas de temps interne (s)" "Internal time step  (s)" }
+   set Lbl(MeteoDelta)      { "Dt (h)"          "Dt (h)" }
+   set Lbl(OtherParameters) { "Autres paramètres" "Other Parameters" }
    set Lbl(Activate)   { "Activer" "Activate" }
    set Lbl(At)         { "A " "At " }
    set Lbl(Batch)      { "Batch" "Batch" }
@@ -34,28 +41,18 @@ namespace eval TRAJECT {
    set Lbl(Suppress)   { "Supprimer" "Delete" }
    set Lbl(Result)     { "Resultats" "Results" }
    set Lbl(Yes)        { "Oui" "Yes" }
-   set Lbl(TimeStep)   { "Pas (s)  " "Step (s)" }
    set Lbl(Method)     { "Methode  " "Method  " }
    set Lbl(Mode)       { "Mode     " "Mode    " }
-   set Lbl(Meteo)      { "Meteo    " "Meteo   " }
-   set Lbl(Start)      { "Depart   " "Start   " }
-   set Lbl(Arrival)    { "Arrivee  " "Arrival " }
+   set Lbl(Meteo)      { "Meteo" "Meteo" }
    set Lbl(Host)       { "Hôte  " "Host  " }
    set Lbl(Queue)      { "Queue " "Queue " }
    set Lbl(Delta)      { "Delta (HR)" "Delta (HR)" }
-   set Lbl(DeltaS)     { "T0+ " "T0+ " }
-   set Lbl(DeltaL)     { "Tend" "Tend" }
    set Lbl(Warning)    { "Attention" "Warning" }
    set Lbl(Product)    { "Produits" "Products" }
+   set Lbl(Parcels)    { "Particules" "Parcels" }
 
    #----- Definitions des messages
 
-   set Msg(Dates)        { "Il y a erreur sur la date, selon le mode et la methode, les limites inferieures et \
-                            superieures sont " \
-                           "There is a problem with the date. In relation to the mode and method you selected, the \
-                            date should be in the following range " }
-   set Msg(Files)        { "Il n'y a pas assez de donnees disponibles pour une execution." \
-                           "There is a not enough data to proceed." }
    set Msg(Suffisamment) { "Attention il ne semble pas y avoir suffisamment d'analyses \
                             ou de previsions disponibles pour executer ce que vous avez demande. \
                             Veuillez verifier la consistance des heures d'arrivee ou d'origine." \
@@ -65,17 +62,12 @@ namespace eval TRAJECT {
                            "Do you really want to delete this simulation ?" }
    set Msg(Exist)        { "Veuillez completer le lancement de la trajectoire en cours avant de proceder a une autre"
                            "Please complete the current trajectory launch before proceeding with another one" }
+   set Msg(MetGet)       { "Vérification de la disponibilitée des données météo en cours..." "Checking for meteorological data availability..." }
 
    #----- Definitions de erreurs
 
-   set Error(EndDate)    { "Auncune date de fin n'a été sélectionnée" "No simulation end date has been selected" }
+  #----- Definitions des bulles d'aides
 
-   #----- Definitions des bulles d'aides
-
-   set Bubble(T0)        { "Selection du delai de demarrage en mode\nde traitement par lot. La valeur 0 implique une seule trajectoire."
-                           "Select the start delai for batch mode. A 0 value indicate no batch mode." }
-   set Bubble(Tend)      { "Selection de la duree des trajectoires en mode\nde traitement par lot (T0+ > 0)."
-                           "Select the trajectory duration for batch mode." }
    set Bubble(Launch)    { "Lancement du calcul de la trajectoire."
                            "Launch the trajectory calculations." }
    set Bubble(List)      { "Selection de la date de terminaison de la trajectoire parmi les donnees disponibles."
@@ -96,4 +88,9 @@ namespace eval TRAJECT {
                            "Select/convert the level type (meters or millibars)" }
    set Bubble(Path)      { "Specification des repertoires de donnees (Donnees archivees)"
                            "Specify the data path (Archived data)" }
+   set Bubble(SimIntegration) { "Intégration du modèle." "Model integration." }
+   set Bubble(SimBatchStart)  { "Selection du delai de demarrage en mode\nde traitement par lot. La valeur 0 implique une seule trajectoire."
+                                "Select the start delai for batch mode. A 0 value indicate no batch mode." }
+   set Bubble(SimDuration)    { "Selection de la duree des trajectoires"
+                                "Select the trajectory duration." }
 }

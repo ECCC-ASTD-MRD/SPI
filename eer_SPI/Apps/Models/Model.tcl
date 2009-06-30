@@ -22,30 +22,20 @@ package require Calendar
 package require Clock
 package require MetData
 package require Tree
-
-#----- Inclure les type d'experiences
-
-source $GDefs(Dir)/Apps/Models/Meteo.tcl
-source $GDefs(Dir)/Apps/Models/Exp.tcl
-source $GDefs(Dir)/Apps/Models/Watch.tcl
-
-#----- Inclure les types de modeles
-
-source $GDefs(Dir)/Apps/Models/Types/CANERM.tcl
-source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
-source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
-source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
-source $GDefs(Dir)/Apps/Models/Types/MLDP0.tcl
-source $GDefs(Dir)/Apps/Models/Types/MLDP1.tcl
+package require IsoBox
 
 namespace eval Model {
-   global   GDefs
+   global GDefs
+   global env
    variable Lbl
+   variable Error
+   variable Warning
    variable Bubble
    variable Title
    variable Data
    variable Param
    variable Resources
+   variable Param
 
    set Param(Dock) True
    set Param(Geom) { 350x630+[winfo rootx .]+[winfo rooty .] }
@@ -60,6 +50,22 @@ namespace eval Model {
 
    #----- Labels
 
+   set Lbl(Launch)              { "Lancement" "Launch" }
+   set Lbl(LaunchModel)         { "Lancer" "Launch" }
+   set Lbl(Params)              { "Paramètres" "Parameters" }
+   set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
+   set Lbl(Queue)               { "Type de queue  " "Queue type     " }
+   set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
+   set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
+   set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
+   set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
+   set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
+   set Lbl(EmailAddress)        { "   Adresse     " "   Address     " }
+
+   set Param(EmailAddress)     "$env(USER)@ec.gc.ca"     ; #----- Username email address.
+   set Param(ListEmailAddress) $Param(EmailAddress)        ; #----- List of email addresses.
+   set Param(IsEmailAddress)   0                         ; #----- Flag indicating if sending email to user for monitoring entire job (1) or not (0).
+
    set Lbl(Name)       { "Nom" "Name" }
    set Lbl(Diag)       { "Diagnostiques" "Diagnostics" }
    set Lbl(Prog)       { "Prognostiques" "Prognostics" }
@@ -72,11 +78,24 @@ namespace eval Model {
    set Lbl(Cancel)     { "Annuler" "Cancel" }
    set Lbl(Checked)    { "Pool vérifié à" "Checked pool at" }
    set Lbl(Select)     { "Sélectionner" "Select" }
-   set Lbl(Warning)    { "Attention" "Warning" }
+   set Lbl(Warning)    { "Avertissement" "Warning" }
    set Lbl(Watch)      { "Veilles" "Watch" }
    set Lbl(MetPath)    { "Répertoire des données météorologiques" "Meteorological data path" }
 
    #----- Bulles d'aide
+
+   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et le modèle seront exécutés.\n\nmaia   : grappe dorsale opérationnelle du superordinateur IBM (avec préemption)\nsaiph  : grappe dorsale développement du superordinateur IBM (sans préemption)\ncastor : grappe frontale opérationnelle\npollux : grappe frontale développement" \
+                                        "Host where meteorological preprocessing and model will be executed.\n\nmaia   : back-end operational cluster of IBM supercomputer (with preemption)\nsaiph  : back-end development cluster of IBM supercomputer (without preemption)\ncastor : operational front-end cluster\npollux : development front-end cluster" }
+   set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
+   set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
+   set Bubble(NbMPItasks)             { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                                        "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(NbOMPthreads)           { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                                        "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(OMPthreadFact)          { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
+   set Bubble(IsEmailAddress)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
+   set Bubble(EmailAddress)           { "Adresse de courrier électronique." "E-mail address." }
+   set Bubble(LaunchModel)            { "Lancer le modèle" "Launch model" }
 
    set Bubble(PathSel) { "Liste des dépots d'experiences disponibles" "List of experiments available" }
    set Bubble(PathAdd) { "Ajouter un repertoire a la liste\ndes dépots d'experiences disponibles" "Add a path to the list of experiments available" }
@@ -101,6 +120,28 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
+   set Error(EmailAddress)                      { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+
+   set Error(MetFiles)                          { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
+                                                  "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
+   set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
+   set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
+   set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
+   set Error(DateTimeMetFiles)                  { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
+                                                  "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
+
+   set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
+                                    "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
+   set Warning(SimDuration2)      { "\tAncienne durée de simulation :" "\tOld simulation duration :" }
+   set Warning(SimDuration3)      { "\tNouvelle durée de simulation :" "\tNew simulation duration :" }
+
+   set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
+                                    "Warning! You are about to launch model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
+   set Warning(EmailAddress)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
+                                    "Warning! The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
+   set Warning(EmailAddress2)     { "\tNouveau courriel    :" "\tNew email     :" }
+   set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
+
    image create photo ICO_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_VOLCANO.gif
    image create photo ICO_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_NUCLEAR.gif
    image create photo ICO_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_CTBT.gif
@@ -122,6 +163,636 @@ namespace eval Model {
 
    set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
    set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
+}
+
+#----- Inclure les type d'experiences
+source $GDefs(Dir)/Apps/Models/Meteo.tcl
+source $GDefs(Dir)/Apps/Models/Exp.tcl
+source $GDefs(Dir)/Apps/Models/Watch.tcl
+
+#----- Inclure les types de modeles
+source $GDefs(Dir)/Apps/Models/Types/CANERM.tcl
+source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
+source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
+source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
+source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsMetData>
+# Creation   : 27 August 2007 - A. Malo - CMC/CMOE
+#
+# But        : Extract relevant met files according to available
+#              meteorological data files and simulation duration.
+#
+# Parametres :
+#  <Model>   : Model
+#
+# Retour     :
+#  <Bool>    : True ou False.
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsMetData { Model } {
+   global GDefs
+   variable Error
+   variable Warning
+   variable Lbl
+   variable Param
+
+   upvar ${Model}::Sim sim
+
+   if { ![llength $sim(Data)] } {
+      Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]" $GDefs(Lang)
+      return False
+   }
+   set accdate $sim(AccYear)$sim(AccMonth)$sim(AccDay)$sim(AccHour)$sim(AccMin)
+
+   #----- Set starting simulation date-time using first meteorological file available in the database.
+   set firststamp [lindex [lindex $sim(Data) 0] 0]
+   set firstdate  [fstdstamp toseconds $firststamp]
+
+   #----- Get last meteorological file
+   set laststamp [lindex [lindex $sim(Data) end] 0]
+   set lastdate  [fstdstamp toseconds $laststamp]
+
+   #----- Compute simulation duration [hr].
+   set simdur [expr int([fstdstamp diff $laststamp $firststamp] + 0.5)]
+
+   if { $simdur<=0 } {
+      Debug::TraceProc "(ERROR) Not enough available meteorological data files in database according to emission date-time to run the model."
+      Debug::TraceProc "             - Emission date-time (stamp)       : $accdate ($sim(AccStamp))"
+      Debug::TraceProc "             - First available date-time (stamp): $firstdate ($firststamp)"
+      Debug::TraceProc "             - Last available date-time (stamp) : $lastdate ($laststamp)"
+
+      set first [clock format $firstdate -format "%Y-%m-%d %T UTC" -gmt True]
+      set last  [clock format $lastdate -format "%Y-%m-%d %T UTC" -gmt True]
+      Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]\n\n[lindex $Error(DateTimeEmission) $GDefs(Lang)] $accdate.\n[lindex $Error(FirstMetDateTime) $GDefs(Lang)] $first.\n[lindex $Error(LastMetDateTime) $GDefs(Lang)] $last." $GDefs(Lang) 600
+      return False
+   }
+
+   if { $sim(Duration) == 0 } {
+
+      #----- Define simulation duration [hr] according to available met files.
+      set sim(Duration) $simdur
+
+   } else {
+
+      if { $sim(Duration) > $simdur } {
+
+         #----- Here, simulation duration set as input parameter is greater than (or equal to) simulation duration
+         #----- computed according to available met files. Thus, simulation duration will be re-initialized.
+         set oldsimdur     $sim(Duration)
+         set sim(Duration) $simdur
+         Debug::TraceProc "(WARNING) Re-initializing simulation duration according to available met files in database."
+         Debug::TraceProc "               - Old simulation duration : $oldsimdur hr."
+         Debug::TraceProc "               - New simulation duration : $sim(Duration) hr."
+         Dialog::CreateDefault . 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration1) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration2) $GDefs(Lang)] $oldsimdur h.\n[lindex $Warning(SimDuration3) $GDefs(Lang)] $sim(Duration) h." warning 0 "OK"
+
+      } else {
+
+         #----- Here, simulation duration set as input parameter is less than simulation duration
+         #----- computed according to available met files.
+
+         #----- Compute new ending simulation date-time [s] according to starting simulation date-time and simulation duration.
+         #----- Redefine list of available meteorological data files according to simulation duration set as input parameter.
+         if { $sim(Retro) } {
+            set stamp [fstdstamp fromseconds [expr $lastdate-$sim(Duration)*3600]]
+         } else {
+            set stamp [fstdstamp fromseconds [expr $firstdate+$sim(Duration)*3600]]
+         }
+
+         set idx 0
+         foreach data $sim(Data) {
+            if { $stamp<=[lindex $data 0] } {
+               break
+            }
+            incr idx
+         }
+         if { $sim(Retro) } {
+            set sim(Data) [lrange $sim(Data) $idx end]
+         } else {
+            set sim(Data) [lrange $sim(Data) 0 $idx]
+         }
+      }
+   }
+
+   #----- List of met data files.
+   set sim(MeteoDataFiles) {}
+   foreach data $sim(Data) {
+      lappend sim(MeteoDataFiles) [lindex $data 2]
+   }
+
+   if { [llength $sim(Data)]<2 } {
+      Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
+      return False
+   }
+
+   #----- Set simulation date-time.
+   if { $sim(Retro) } {
+      set simdate   $lastdate
+   } else {
+      set simdate   $firstdate
+   }
+   set sim(SimYear)     [clock format $simdate -format "%Y" -gmt True]
+   set sim(SimMonth)    [clock format $simdate -format "%m" -gmt True]
+   set sim(SimDay)      [clock format $simdate -format "%d" -gmt True]
+   set sim(SimHour)     [clock format $simdate -format "%H" -gmt True]
+
+   #----- Validate emission time according to available meteorological data files.
+   set first [lindex [lindex $sim(Data) 0] 0]
+   set last  [lindex [lindex $sim(Data) end] 0]
+
+   if { $sim(AccStamp) < $first || $sim(AccStamp) > $last } {
+      Debug::TraceProc "(ERROR) Emission date-time is not consistent according to available meteorological data files."
+      Debug::TraceProc "             - Emission date-time (stamp) : $accdate ($sim(AccStamp))"
+      Debug::TraceProc "             - Available meteo files      : $sim(MeteoDataFiles)"
+      Dialog::CreateError . "[lindex $Error(DateTimeMetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
+      return False
+   }
+
+   Debug::TraceProc "(INFO) Selected meteorological data files:\n\t[join $sim(MeteoDataFiles) \n\t]"
+   return True
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsCheck>
+# Creation   : 27 August 2007 - A. Malo - CMC/CMOE
+#
+# But        : Check launch parameters.
+#
+# Parametres :
+#  <Model>   : Model
+#  <Get>     : Extraire les donnees meteo
+#
+# Retour     :
+#  <Bool>    : True ou False.
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsCheck { Model { Get True } } {
+   global   GDefs
+   variable Param
+
+   #----- Set host architecture.
+   set Param(Arch) [exec ssh $Param(Host) exec uname -s]
+
+   #----- Set flag indicating if using 'soumet' command or not.
+   set Param(IsUsingSoumet) 1
+   if { $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
+      set Param(IsUsingSoumet) 0
+   }
+
+   Model::ParamsQueues
+   Model::ParamsCPUMeteo
+   Model::ParamsCPUModel
+   Model::ParamsMetDataDir $Model
+
+   if { $Get } {
+      if { ![${Model}::GetMetData] } {
+         return False
+      }
+   }
+   return True
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsMetDataDir>
+# Creation   : 28 August 2007 - A. Malo - CMC/CMOE
+#
+# But        : Set (diagnostics and prognostics) meteorological data
+#              directories.
+#
+# Parametres :
+#  <Model>   : Model
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsMetDataDir { Model } {
+   global GDefs
+   variable Param
+
+   upvar ${Model}::Sim sim
+
+   #----- Set met database by default.
+   MetData::Path eta $sim(Meteo) Param(DBaseDiag) Param(DBaseProg)
+
+   if { $sim(Meteo) == "reg" } {
+
+      if { [lsearch -exact $GDefs(BackEnd) $Param(Host)] != -1 } {
+         #----- Set met database on back-end.
+         if { $sim(Model)=="MLDP1" } {
+            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
+            set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
+         } else {
+            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/regeta2"
+            set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta"
+         }
+      } else {
+         #----- Set met database on host.
+         if { $sim(Model)=="MLDP1" } {
+            set Param(DBaseDiag) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
+            set Param(DBaseProg) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
+         } else {
+            set Param(DBaseDiag) "/data/gridpt/dbase/trial/regeta2"
+            set Param(DBaseProg) "/data/gridpt/dbase/prog/regeta"
+         }
+      }
+
+   } elseif { $sim(Meteo) == "glb" } {
+
+      if { [lsearch -exact $GDefs(BackEnd) $Param(Host)] != -1 } {
+         #----- Set met database on back-end.
+         if { $sim(Model)=="MLDP1" } {
+            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
+         } else {
+            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/glbeta2"
+         }
+         set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
+      } else {
+         #----- Set met database on host.
+         if { $sim(Model)=="MLDP1" } {
+            set Param(DBaseDiag) "/data/gridpt/dbase/prog/glbeta"
+         } else {
+            set Param(DBaseDiag) "/data/gridpt/dbase/trial/glbeta2"
+         }
+         set Param(DBaseProg) "/data/gridpt/dbase/prog/glbeta"
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsCPUMeteo>
+# Creation   : 4 October 2007 - A. Malo - CMC/CMOE
+#
+# But        : Set default number of processes (CPUs) for meteorological
+#              preprocessing and list of available number of CPUs.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsCPUMeteo { } {
+   variable Param
+
+   #----- Set number of CPUs for meteorological preprocessing according to architecture.
+   switch $Param(Arch) {
+      "Linux"  {
+         set ErrorCode [catch { set Param(NbCPUsMeteo) [lindex [exec grep "processor" /proc/cpuinfo | wc -l] 0] } Message]
+         if { $ErrorCode != 0 } {
+            Debug::TraceProc "(WARNING) Unable to find number of avaible CPUs on $Param(Host).\n\n$Message"
+            set Param(NbCPUsMeteo) 1
+         }
+         set Param(ListNbCPUsMeteo) 1
+         for { set i 2 } { $i <= $Param(NbCPUsMeteo) } { incr i } {
+            lappend Param(ListNbCPUsMeteo) $i
+         }
+      }
+      "IRIX64" {
+         set Param(NbCPUsMeteo)     1
+         set Param(ListNbCPUsMeteo) { 1 }
+      }
+      "AIX"    {
+         set Param(NbCPUsMeteo)     16
+         set Param(ListNbCPUsMeteo) { 1 2 4 8 16 }
+      }
+   }
+
+   #----- Update list of available number of CPUs for meteorological preprocessing.
+   catch { Option::Set $Param(Frame).params.metcpu $Param(ListNbCPUsMeteo) }
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsCPUModel>
+# Creation   : 22 October 2007 - A. Malo - CMC/CMOE
+#
+# But        : Set default CPU configuration (number of MPI tasks and number
+#              of OMP threads per MPI task) for model and list of available
+#              CPU configurations.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsCPUModel { } {
+   variable Param
+
+   #----- Set CPU configuration for model according to architecture.
+   switch $Param(Arch) {
+      "Linux"  {
+         set Param(NbMPItasks)        1
+         set Param(ListNbMPItasks)    { 1 }
+         set Param(NbOMPthreads)      $Param(NbCPUsMeteo)
+         set Param(ListNbOMPthreads)  $Param(ListNbCPUsMeteo)
+         set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
+         set Param(ListOMPthreadFact) { 1 }
+      }
+      "IRIX64" {
+         set Param(NbMPItasks)        1
+         set Param(ListNbMPItasks)    { 1 }
+         set Param(NbOMPthreads)      1
+         set Param(ListNbOMPthreads)  { 1 }
+         set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
+         set Param(ListOMPthreadFact) { 1 }
+      }
+      "AIX"    {
+         set Param(NbMPItasks)        2
+         set Param(ListNbMPItasks)    { 1 2 3 4 5 8 10 16 }
+         set Param(NbOMPthreads)      16
+         set Param(ListNbOMPthreads)  { 16 }
+         set Param(OMPthreadFact)     2 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
+         set Param(ListOMPthreadFact) { 1 2 }
+      }
+   }
+
+   if { $Param(IsUsingSoumet) } {
+
+      if { $Param(NbCPUsMeteo) > $Param(NbOMPthreads) } {
+
+         #----- Update number of OMP threads for model.
+         set Param(NbOMPthreads) $Param(NbCPUsMeteo)
+      }
+
+      #----- Update list of available number of OMP threads.
+      set idx [lsearch -exact $Param(ListNbCPUsMeteo) $Param(NbCPUsMeteo)]
+      set Param(ListNbOMPthreads) [lrange $Param(ListNbCPUsMeteo) $idx end]
+   }
+
+   #----- Update list of available MPI tasks, OMP threads and OMP factor for model.
+   catch {
+      Option::Set $Param(Launch).params.mpi $Param(ListNbMPItasks)
+      Option::Set $Param(Launch).params.omp $Param(ListNbOMPthreads)
+      Option::Set $Param(Launch).params.smt $Param(ListOMPthreadFact)
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsQueues>
+# Creation   : 2 October 2007 - A. Malo - CMC/CMOE
+#
+# But        : Set default queue and list of available queues.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsQueues { } {
+   global GDefs
+   variable Param
+
+   if { [info exists GDefs(Queues$Param(Host))] } {
+      set Param(Queues) $GDefs(Queues$Param(Host))
+   } else {
+      set Param(Queues)  "none"
+   }
+   set Param(Queue) [lindex $Param(Queues) 0]
+
+   catch {
+      Option::Set $Param(Frame).params.queue $Param(Queues)
+
+      if { $Param(Queue)=="none" } {
+         Option::Disable $Param(Frame).params.queue
+      } else {
+         Option::Enable $Param(Frame).params.queue
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsFrame>
+# Creation   : 2 October 2007 - A. Malo - CMC/CMOE
+#
+# But        : Interface de lancement des modeles.
+#
+# Parametres :
+#  <Model>   : Model
+#  <Frame>   : Fenetre parent
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsFrame { Model Frame } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+
+   upvar ${Model}::Sim sim
+
+   Model::ParamsCheck $Model False
+   Model::ParamsMetDataDir $Model
+
+   #----- Launching Tab.
+   set Model::Param(Frame) [set tabframe [TabFrame::Add $Frame 1 "[lindex $Lbl(Launch) $GDefs(Lang)]" False]]
+
+   labelframe $tabframe.params -text "[lindex $Lbl(Params) $GDefs(Lang)]"
+
+   #----- Host.
+   Option::Create $tabframe.params.host [lindex $Lbl(Host) $GDefs(Lang)] Model::Param(Host) 0 -1 $sim(Hosts) "Model::ParamsCheck $Model"
+   pack $tabframe.params.host -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.params.host "[lindex $Bubble(Host) $GDefs(Lang)]"
+
+   #----- Queue.
+   Option::Create $tabframe.params.queue [lindex $Lbl(Queue) $GDefs(Lang)] Model::Param(Queue) 0 -1 $Model::Param(Queues) ""
+   pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.params.queue "[lindex $Bubble(Queue) $GDefs(Lang)]"
+
+   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" || $sim(Model)=="CANERM" } {
+      #----- Nb CPUs for meteorological preprocessing.
+      Option::Create $tabframe.params.metcpu [lindex $Lbl(MetCPU) $GDefs(Lang)] Model::Param(NbCPUsMeteo) 0 -1 $Model::Param(ListNbCPUsMeteo) ""
+      pack $tabframe.params.metcpu -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.params.metcpu "[lindex $Bubble(MetCPU) $GDefs(Lang)]"
+   }
+
+   if { $sim(Model)=="MLDP1" } {
+
+      #----- Nb MPI tasks for model.
+      Option::Create $tabframe.params.mpi [lindex $Lbl(NbMPItasks) $GDefs(Lang)] Model::Param(NbMPItasks) 0 -1 $Model::Param(ListNbMPItasks) ""
+      pack $tabframe.params.mpi -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.params.mpi "[lindex $Bubble(NbMPItasks) $GDefs(Lang)]"
+
+      #----- Nb OMP threads for model.
+      Option::Create $tabframe.params.omp [lindex $Lbl(NbOMPthreads) $GDefs(Lang)] Model::Param(NbOMPthreads) 0 -1 $Model::Param(ListNbOMPthreads) ""
+      pack $tabframe.params.omp -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.params.omp "[lindex $Bubble(NbOMPthreads) $GDefs(Lang)]"
+
+      #----- OMP thread factor.
+      Option::Create $tabframe.params.smt [lindex $Lbl(OMPthreadFact) $GDefs(Lang)] Model::Param(OMPthreadFact) 0 -1 $Model::Param(ListOMPthreadFact) ""
+      pack $tabframe.params.smt -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.params.smt "[lindex $Bubble(OMPthreadFact) $GDefs(Lang)]"
+   }
+
+   #----- Enabling/Disabling email monitoring option.
+   checkbutton $tabframe.params.emonitor -anchor w -text "[lindex $Lbl(IsEmailAddress) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
+       -variable Model::Param(IsEmailAddress) -indicatoron true \
+      -command "if { \$Model::Param(IsEmailAddress) } {
+                   pack $tabframe.params.email -after $tabframe.params.emonitor -side top -anchor w -padx 2 -fill x
+                } else {
+                   pack forget $tabframe.params.email
+                }"
+   pack $tabframe.params.emonitor -side top -anchor w
+   Bubble::Create $tabframe.params.emonitor "[lindex $Bubble(IsEmailAddress) $GDefs(Lang)]"
+
+   #----- Email address.
+   Option::Create $tabframe.params.email [lindex $Lbl(EmailAddress) $GDefs(Lang)] Model::Param(EmailAddress) 1 -1 $Model::Param(ListEmailAddress) ""
+   if { $Model::Param(IsEmailAddress) } {
+      pack $tabframe.params.email -side top -anchor w -padx 2 -fill x
+   }
+   Bubble::Create $tabframe.params.email "[lindex $Bubble(EmailAddress) $GDefs(Lang)]"
+
+   #----- Button.
+   button $tabframe.params.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::ParamValidate ${Model}"
+   pack $tabframe.params.launch -side top -anchor w -padx 2 -pady 2 -anchor e
+   Bubble::Create $tabframe.params.launch "[lindex $Bubble(LaunchModel) $GDefs(Lang)] ${Model}."
+
+   pack $tabframe.params -side top -padx 5 -pady 5 -fill x
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamValidate>
+# Creation   : Juin 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Validate and launch model run.
+#
+# Parametres :
+#
+# Retour     :
+#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamValidate { Model } {
+
+   if { ![Model::ParamValidateQueue] } {
+      return 0
+   }
+   if { ![Model::ParamValidateEmail] } {
+      return 0
+   }
+
+   ${Model}::LaunchInit
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamValidateEmail>
+# Creation   : 2 November 2007 - A. Malo - CMC/CMOE
+#
+# But        : Validate email address.
+#
+# Parametres :
+#
+# Retour     :
+#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamValidateEmail { } {
+   global GDefs
+   global env
+   variable Error
+   variable Param
+   variable Lbl
+   variable Warning
+
+   if { $Param(IsEmailAddress) } {
+
+      set err 0
+
+      if { $Param(EmailAddress)=="" } {
+         set err 1
+      }
+
+      if { [set idx [string last "@" $Param(EmailAddress)]]==-1 } {
+         set err 1
+      } else {
+         set name [string range $Param(EmailAddress) 0 [expr $idx-1]]
+         foreach char { \  , ; : ~ ` ! @ \# $ % ^ & * ? \( \) + / = < > \" \\ [ ] \{ \} | é è ê ë à â ä ì î ï ç É È Ê Ë À Â Ä Ì Î Ï Ç } {
+            if { [string last "${char}" $name]!=-1 } {
+               set err 1
+               break
+            }
+         }
+         if { $name=="" } {
+            set err 1
+         }
+      }
+
+      if { $err } {
+         Dialog::CreateError $Param(Frame) "[lindex $Error(EmailAddress) $GDefs(Lang)] $Param(EmailAddress)" $GDefs(Lang) 600
+         focus $Param(Frame).params.email.e
+         return 0
+      }
+
+      #----- Display warning if email is different than default one.
+      if { $Param(EmailAddress) != "$env(USER)@ec.gc.ca" } {
+         set answer [Dialog::CreateDefault $Param(Frame) 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(EmailAddress) $GDefs(Lang)]\n\n[lindex $Warning(EmailAddress2) $GDefs(Lang)] $Param(EmailAddress)\n[lindex $Warning(EmailAddress3) $GDefs(Lang)] $env(USER)@ec.gc.ca" \
+                     warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+
+         if { $answer } {
+            focus $Param(Frame).params.email.e
+            return 0
+         }
+      }
+   }
+   return 1
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamValidateQueue>
+# Creation   : 7 February 2008 - A. Malo - CMC/CMOE
+#
+# But        : Validate type of submitting queue/class.
+#
+# Parametres :
+#
+# Retour     :
+#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamValidateQueue { } {
+   global GDefs
+   variable Param
+   variable Lbl
+   variable Warning
+
+   if { $Param(Queue) == "production" } {
+      set answer [Dialog::CreateDefault $Param(Frame) 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(Queue) $GDefs(Lang)]" \
+                      warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+
+      if { $answer } {
+         set Param(Queue) "development"
+         return 0
+      }
+   }
+   return 1
 }
 
 #-------------------------------------------------------------------------------
@@ -328,8 +999,6 @@ proc Model::Destroy { } {
 #
 # Parametres :
 #   <Parent> : Identificateur de la fenetre parent
-#   <DiagVar>: Variable contenant le repertoires des fichiers diagnostiques
-#   <ProgVar>: Variable contenant le repertoire des donnees prognostiques
 #
 # Retour     :
 #   <Valid>  : True ou False.
@@ -338,8 +1007,9 @@ proc Model::Destroy { } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::GetMetPath { Parent DiagVar ProgVar } {
+proc Model::GetMetPath { Parent } {
    global GDefs
+   variable Param
    variable Lbl
 
    set Data(ShowPath) 0
@@ -353,14 +1023,14 @@ proc Model::GetMetPath { Parent DiagVar ProgVar } {
 
    frame .metpath.diag -relief raised -bd 1
      button .metpath.diag.select -text [lindex $Lbl(Diag) $GDefs(Lang)] -relief groove -bd 2 \
-        -command "set path \[FileBox::Create . \$$DiagVar Path \"\" \]; if { \$path != \"\" } { set $DiagVar \$path }"
-     entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable $DiagVar -relief sunken -bd 1 -width 40
+        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set $Model::Param(DBaseDiag) $path } }
+     entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseDiag) -relief sunken -bd 1 -width 40
      pack .metpath.diag.select .metpath.diag.path -side left -fill y
 
    frame .metpath.prog -relief raised -bd 1
      button .metpath.prog.select -text [lindex $Lbl(Prog) $GDefs(Lang)] -relief groove -bd 2 \
-        -command "set path \[FileBox::Create . \$$ProgVar Path \"\" \]; if { \$path != \"\" } { set $ProgVar \$path }"
-     entry .metpath.prog.path -bg $GDefs(ColorLight) -textvariable $ProgVar -relief sunken -bd 1 -width 40
+        -command { set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]; if { $path != "" } { set Model::Param(DBaseProg) $path } }
+     entry .metpath.prog.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseProg) -relief sunken -bd 1 -width 40
      pack .metpath.prog.select .metpath.prog.path -side left -fill y
 
    frame .metpath.command

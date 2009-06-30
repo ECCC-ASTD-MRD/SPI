@@ -130,6 +130,7 @@ namespace eval MLCD {
    set Sim(State)   1
    set Sim(NoPrev) -1
    set Sim(NoSim)  -1
+   set Sim(Retro)   False
 
    #----- Set variables for pool info.
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon DurMin \

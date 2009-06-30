@@ -40,34 +40,6 @@ proc TRAJECT::Close { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::ConfigDate>
-# Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Modifie le label de date d'arrivee/depart selon le cas.
-#
-# Parametres :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc TRAJECT::ConfigDate { } {
-   global GDefs
-   variable Sim
-   variable Lbl
-
-   if { $Sim(Method) == "Trajectoire" } {
-      .trajectnew.opt.frame0.d.date.l config -text "[lindex [lindex $Lbl(Date) 0] $GDefs(Lang)]"
-      .trajectnew.opt.frame1.d.b config -text "[lindex [lindex $Lbl(Date) 1] $GDefs(Lang)]"
-   } else {
-      .trajectnew.opt.frame0.d.date.l config -text "[lindex [lindex $Lbl(Date) 1] $GDefs(Lang)]"
-      .trajectnew.opt.frame1.d.b config -text "[lindex [lindex $Lbl(Date) 0] $GDefs(Lang)]"
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <TRAJECT::InitNew>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
@@ -86,16 +58,13 @@ proc TRAJECT::InitNew { } {
 
    TabFrame::Select .trajectnew.opt 0
 
-   set Sim(BasePath)          [Exp::Path]
-   set Sim(Meteo)             glb
-
-   TRAJECT::SetMetDataDir $Sim(Meteo)
-
    set Sim(NoExp)  $Exp::Data(No)
    set Sim(Name)   $Exp::Data(Name)
    set Sim(Lat)    $Exp::Data(Lat)
    set Sim(Lon)    $Exp::Data(Lon)
    set Sim(Pos)    $Exp::Data(Pos)
+   set Sim(No)     -1
+   set Sim(Last)   -1
 
    set Sim(Second)  [clock seconds]
    set Sim(Date)    [clock format $Sim(Second) -format "%a %b %d %Y" -gmt true]
@@ -106,24 +75,20 @@ proc TRAJECT::InitNew { } {
    set Sim(TimeStep) "3600.0"
    set Sim(DateEnd)  ""
 
-   set Sim(DeltaS)   0
-   set Sim(DeltaL)   0
+   set Sim(BatchStart) 0
+   set Sim(Duration)   72
 
    if { $Exp::Data(Type) == 0 } {
 
-      # ----- Ajuster les fonctions de niveau selon le type volcan.
-
+      #----- Ajuster les fonctions de niveau selon le type volcan.
       set Sim(LevelUnit)   "MILLIBARS"
-
       set Sim(Level1)        700.0
       set Sim(Level2)        500.0
       set Sim(Level3)        250.0
    } else {
 
-      # ----- Ajuster les fonctions de niveau selon tout autre type.
-
+      #----- Ajuster les fonctions de niveau selon tout autre type.
       set Sim(LevelUnit)   "METRES"
-
       set Sim(Level1)       500.0
       set Sim(Level2)       1500.0
       set Sim(Level3)       3000.0
@@ -132,6 +97,8 @@ proc TRAJECT::InitNew { } {
    for { set i 4 } { $i <= 25 } { incr i } {
        set Sim(Level$i)     ""
    }
+
+   set Model::Param(Host) [lindex $Sim(Hosts) 0]
 }
 
 #---------------------------------------------------------------------------
@@ -152,33 +119,48 @@ proc TRAJECT::Result { } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.
-
    SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path $Sim(Info) $Exp::Data(SelectSim)]/traject.points
 }
 
-#----------------------------------------------------------------------------
-# Nom        : <TRAJECT::SetMetDataDir>
-# Creation   : 14 May 2004 - A. Malo - CMC/CMOE
+#-------------------------------------------------------------------------------
+# Nom        : <TRAJECT::GetMetData>
+# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But        : Set (diagnostics and prognostics) meteorological data
-#              directories.
+# But        : Creation de la liste des fichiers standards pour la meteo.
 #
 # Parametres :
 #
 # Retour     :
+#   <Bool>   : True ou False.
 #
 # Remarques  :
 #
-#----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-proc TRAJECT::SetMetDataDir { MetModel } {
+proc TRAJECT::GetMetData { } {
+   global   GDefs
+   variable Error
    variable Sim
+   variable Msg
 
-   MetData::Path eta $MetModel TRAJECT::Sim(DBaseDiag) TRAJECT::Sim(DBaseProg)
+   Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+
+   set Sim(AccStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
+
+   if { $Sim(Method) == "Trajectoire" } {
+      set Sim(Data) [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
+   } else {
+      set Sim(Data) [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
+   }
+   set Sim(Mode) [MetData::GetMode $Sim(Data) False]
+   Dialog::DestroyWait
+
+   #----- Extract relevant met files according to available meteorological data files and simulation duration.
+   return [Model::ParamsMetData TRAJECT]
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::SimInitLaunch>
+# Nom      : <TRAJECT::LaunchParams>
 # Creation : Avril 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Initialiser le lancement en recuperant les dates limites et en verifiant
@@ -194,79 +176,32 @@ proc TRAJECT::SetMetDataDir { MetModel } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::SimInitLaunch { Path No } {
+proc TRAJECT::LaunchParams { Path No } {
    global   GDefs
    variable Lbl
    variable Msg
    variable Sim
 
    if { $No==0 } {
-      return
+      return True
    }
-
-   .trajectnew config -cursor watch
-   update idletasks
-
-   .trajectnew.opt.frame1.d.l.list delete 0 end
 
    set Sim(AccYear)  [clock format $Sim(Second) -format "%Y" -gmt true]
    set Sim(AccMonth) [clock format $Sim(Second) -format "%m" -gmt true]
    set Sim(AccDay)   [clock format $Sim(Second) -format "%d" -gmt true]
    set Sim(Second)   [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt True]
 
-   #----- Determine les fichiers necessaires a la simulation.
-
-   set dacc [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
-   Debug::TraceProc "TRAJECT: Starting date: $dacc"
-
    if { $Sim(Method) == "Trajectoire" } {
-      set Sim(Data) [MetData::File $dacc $Sim(DBaseDiag) $Sim(DBaseProg) F 1 $Sim(Delta)]
+      set Sim(Retro) False
    } else {
-      set Sim(Data) [MetData::File $dacc $Sim(DBaseDiag) $Sim(DBaseProg) B 1 $Sim(Delta)]
+      set Sim(Retro) True
    }
 
-   if { [llength $Sim(Data)] <=1 } {
-      Dialog::CreateError . "[lindex $Msg(Files) $GDefs(Lang)]" $GDefs(Lang)
-      .trajectnew config -cursor left_ptr
-      TabFrame::Select .trajectnew.opt 0
-      return
+   #----- Get meteorological data according to met database, time interval between files, release accident date-time.
+   if { ![GetMetData] } {
+      return False
    }
-
-   set dmin [lindex [lindex $Sim(Data) 0] 1]
-   set dmax [lindex [lindex $Sim(Data) end] 1]
-
-   Debug::TraceProc "TRAJECT: MetData from $dmin to $dmax"
-
-   #----- On s'assure que la date de l'accident est bien bornee
-   #      avec les bornes ci-haut.
-
-   if { $dacc < [lindex [lindex $Sim(Data) 0] 0] || $dacc > [lindex [lindex $Sim(Data) end] 0] } {
-      Dialog::CreateError . "[lindex $Msg(Dates) $GDefs(Lang)]\
-         [lindex [lindex $Sim(Data) 0] 1] - [lindex [lindex $Sim(Data) end] 1]" $GDefs(Lang)
-      .trajectnew config -cursor left_ptr
-      TabFrame::Select .trajectnew.opt 0
-      return
-   }
-
-   #----- Selection de la date de fin.
-
-   if { $Sim(Method) == "Trajectoire" } {
-      set datasel  [lrange $Sim(Data) 1 end]
-      foreach item $datasel {
-          .trajectnew.opt.frame1.d.l.list insert end [lindex $item 1]
-      }
-      .trajectnew.opt.frame1.d.l.list see end
-   } else {
-      set datasel [lrange $Sim(Data) 0 [expr [llength $Sim(Data)]-2]]
-      foreach item $datasel {
-          .trajectnew.opt.frame1.d.l.list insert end [lindex $item 1]
-      }
-      .trajectnew.opt.frame1.d.l.list see 0
-   }
-   .trajectnew.opt.frame1.d.l.list selection clear 0 end
-   set TRAJECT::Sim(Duration) "??? Hrs"
-
-   .trajectnew config -cursor left_ptr
+   return True
 }
 
 #-------------------------------------------------------------------------------
@@ -283,47 +218,28 @@ proc TRAJECT::SimInitLaunch { Path No } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::SimLaunch { } {
-   global GDefs
-   variable Lbl
-   variable Msg
-   variable Error
+proc TRAJECT::LaunchInit { } {
+   global   GDefs
    variable Sim
 
-   if { [lindex $Sim(Duration) 0]=="???" } {
-      Dialog::CreateError . [lindex $Error(EndDate) $GDefs(Lang)] $GDefs(Lang)
-      return
-   }
-   set Sim(Duration) [lindex $Sim(Duration) 0]
+   #----- Definir le repertoire de l'experience
+   set Sim(NoSim) [Info::Request $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool]
+   set ExpName    "$Sim(NoExp)_$Sim(Name)"
+   set SimName    "$Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)"
+   set Sim(Path)  "$GDefs(DirData)/$ExpName/$SimName"
 
-   #----- Creation du repertoire.
-   set Sim(NoSim) [Info::Request $Sim(BasePath)/TRAJECT.pool]
-   set Sim(Path)  "$Sim(BasePath)/TRAJECT.$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)00"
    file mkdir $Sim(Path)
 
-   #----- Recuperer le range de fichier selon la selection de l'usager
-   set end [.trajectnew.opt.frame1.d.l.list curselection]
-
-   if { $Sim(Method) == "Trajectoire" } {
-
-      #----- On s'assure d'incrementer l'indice associe a la
-      #      selection afin de reajuster l'element choisi avec la
-      #      'vrai' liste ( $Sim(Data) ) et non ( $datasel ).
-
-      set Sim(Data) [lrange $Sim(Data) 0 [incr end]]
-      set Sim(Retro) True
+   if { $Sim(Retro) } {
+      set mode BACKWARD
    } else {
-      set Sim(Data) [lrange $Sim(Data) $end end]
-      set Sim(Retro) False
+      set mode FORWARD
    }
-   set Sim(Mode) [MetData::GetMode $Sim(Data)]
 
-   #----- Get the metdata files
-   set files {}
-   foreach file $Sim(Data) {
-      lappend files [lindex $file 2]
-   }
-   exec echo [join $files "\n"] > $Sim(Path)/data_std_sim
+   #----- Creer le fichier de donnees meteo
+   set f [open $Sim(Path)/data_std_sim w 0644]
+   puts $f $Sim(MeteoDataFiles)
+   close $f
 
    #----- Get the levels
    set Sim(Level) ""
@@ -345,33 +261,21 @@ proc TRAJECT::SimLaunch { } {
       }
    }
 
-   if { $Sim(Retro) } {
-      set mode FORWARD
-   } else {
-      set mode BACKWARD
-   }
-
    if { $Sim(LevelUnit)=="METRES" } {
       set unit MAGL
    } else {
       set unit PRESSURE
    }
 
-   set Sim(State) 2
-   set info [Info::Code ::TRAJECT::Sim $Sim(Info) :]
-   Info::Set $Sim(BasePath)/TRAJECT.pool $info
-
-   Debug::TraceProc "TRAJECT: Launching model on : $Sim(Host)"
-
    #----- Creation du fichier de directives
-   set f [open $Sim(Path)/entre w 0644]
+   set f [open $Sim(Path)/Traj.in w 0644]
 
    puts $f "'[string toupper $Sim(Name)] '"
 
    if { $Sim(Retro) } {
-      puts $f ".FALSE.  Mode retro-trajectoire ?"
-   } else {
       puts $f ".TRUE.   Mode retro-trajectoire ?"
+   } else {
+      puts $f ".FALSE.  Mode retro-trajectoire ?"
    }
 
    if { $Sim(LevelUnit) == "METRES" } {
@@ -392,9 +296,13 @@ proc TRAJECT::SimLaunch { } {
 
    close $f
 
-   if { $Sim(Host)!=$GDefs(Host) } {
+   destroy .trajectnew
 
-      Info::Set $Sim(Path)/sim.pool $info 1
+   set Sim(State) 2
+   set info [Info::Code ::TRAJECT::Sim $Sim(Info) :]
+   Info::Set $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool $info
+
+   if { $Model::Param(Host)!=$GDefs(Host) } {
 
       #----- Creation du script de lancement
       set f [open $Sim(Path)/traject.sh w 0755]
@@ -407,32 +315,33 @@ proc TRAJECT::SimLaunch { } {
       puts $f "ulimit -m unlimited"
       puts $f "ulimit -d unlimited"
       puts $f "cd $Sim(Path)"
-      puts $f "$GDefs(Dir)/Bin/\${arch}/Traj -i entre -fich10 `cat data_std_sim` -tinc $Sim(DeltaS) -tlen $Sim(DeltaL) -o traject.points"
-      puts $f "exec $GDefs(Dir)/Script/SimDone.sh sim.pool ../TRAJECT.pool"
+      puts $f "$GDefs(Dir)/Bin/\${arch}/Traj -i Traj.in -fich10 `cat data_std_sim` -tinc $Sim(BatchStart) -tlen $Sim(Duration) -o traject.points"
+      puts $f "exec $GDefs(Dir)/Script/SimDone.sh $Sim(Path)/../TRAJECT.pool $Sim(Path)/sim.pool \$?"
 
       close $f
 
-      if { $Sim(Queue)!="none" } {
-         exec soumet++ $Sim(Path)/traject.sh -cm 300M -t 3600 -mach $Sim(Host) -cl $Sim(Queue) -listing $Sim(Path)
+      if { $Model::Param(IsUsingSoumet) } {
+         exec soumet++ $Sim(Path)/traject.sh -cm 300M -t 3600 -mach $Model::Param(Host) -cl $Model::Param(Queue) -listing $Sim(Path)
       } else {
-         exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
+         exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
       }
+      Info::Set $Sim(Path)/sim.pool $info 1
+
    } else {
       set id [Exp::Id $info]
       simulation create $id -type trajectory
       simulation param $id -title $Sim(Name) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
-         -mode $mode -unit $unit -date $Sim(Second) -particles $parts -data $files -output $Sim(Path)/traject.points \
-         -tinc $Sim(DeltaS) -tlen $Sim(DeltaL)
+         -mode $mode -unit $unit -date $Sim(Second) -particles $parts -data $Sim(MeteoDataFiles) -output $Sim(Path)/traject.points \
+         -tinc $Sim(BatchStart) -tlen $Sim(Duration)
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/traject.log
 
       #----- Launch simulation within a new thread
       eval set tid1 \[thread::create \{ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim\; simulation run $id\}\]
 
-      Exp::ThreadUpdate $id $Sim(BasePath)/TRAJECT.pool [simulation param $id -result]
+      Exp::ThreadUpdate $id $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool [simulation param $id -result]
    }
 
    #----- Relire les experiences
-      destroy .trajectnew
    Model::Check 0
 }
 

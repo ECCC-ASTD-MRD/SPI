@@ -15,12 +15,9 @@
 #============================================================================
 
 #----- Fichiers complementaires
-
 source $GDefs(Dir)/Apps/Models/Types/CANERM.txt
 source $GDefs(Dir)/Apps/Models/Types/CANERM.ctes
 source $GDefs(Dir)/Apps/Models/Types/CANERM.int
-
-package require IsoBox
 
 #-------------------------------------------------------------------------------
 # Nom      : <CANERM::CheckIntensity>
@@ -122,7 +119,6 @@ proc CANERM::File { Info Path Type Back } {
       }
 
       #----- On ajoute a premiere heure 00 de toute la serie de simulation
-
       if { $Type=="result" || $Type=="all" } {
          set expstd "$simpath/results/${simprec}_000c $expstd"
       }
@@ -214,76 +210,11 @@ proc CANERM::ModeLeave { } {
    Viewport::UnAssign $Data(Frame) $Data(VP) GRID
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <CANEMR::Launch>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lancer un script d'execution sur le backend.
-#
-# Parametres :
-#   <Path>   : Path du script
-#   <Script> : Path complet du script a lancer
-#   <Class>  : Nom de la classe
-#   <Host>   : Nom de la machine
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CANERM::Launch { Path Script Class Host } {
-   global GDefs
-   variable Sim
-
-   if { $Sim(Queue)!="none" } {
-      if { $Sim(Host)!=$GDefs(Host) } {
-         Debug::TraceProc "CANERM: Submitting model on : $Sim(Host) as $GDefs(FrontEndUser)"
-         exec cp -p $Path/$Script [lindex $GDefs(BackEnd$Host) 0]/EER_ibm/$Script
-         catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Host . ~/.profile\; soumet+++ [lindex $GDefs(BackEnd$Host) 0]/EER_ibm/$Script -cm 800M -t 3600 -mach $Host -cl $Class }
-      } else {
-         Debug::TraceProc "CANERM: Submitting model on : $Sim(Host)"
-         catch { exec soumet++ $Path/$Script -cm 800M -t 3600 -mach $Host -cl $Class }
-      }
-   } else {
-      Debug::TraceProc "CANERM: Launching model on : $Sim(Host)"
-
-      if { $Sim(Host)!=$GDefs(Host) } {
-         exec ssh -l $GDefs(FrontEndUser) -n -x $Sim(Host) "$Path/$Script > $Path/exec_result.out 2>&1" &
-      } else {
-         Exp::Launch "$Path/$Script" "[Info::Code ::CANERM::Sim $Sim(Info) :]" \
-            [expr 147+($Sim(FreqOut)/$Sim(ISauve))*95+($Sim(FreqOut)/$Sim(Dt))*156] \
-            $Path/exec_result.out
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <CANERM::SetMetDataDir>
-# Creation   : 14 May 2004 - A. Malo - CMC/CMOE
-#
-# But        : Set (diagnostics and prognostics) meteorological data
-#              directories.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc CANERM::SetMetDataDir { MetModel } {
-   variable Sim
-
-   MetData::Path eta $MetModel CANERM::Sim(DBaseDiag) CANERM::Sim(DBaseProg)
-}
-
 #-------------------------------------------------------------------------------
 # Nom        : <CANERM::SimCreateErsinp>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But        : Creer le fichier "ersinp" contenant les parametres pour CANERM.
+# But        : Creer le fichier "CANERM.in" contenant les parametres pour CANERM.
 #
 # Parametres :
 #    <Path>  : Path du repertoire "tmp" de la simulation ou creer le "ersinp".
@@ -314,7 +245,7 @@ proc CANERM::SimCreateErsinp { Path } {
    #       de blanc apres le signe "=".
 
    Debug::TraceProc "CANERM: Creating ersinp file: (DT:$Sim(Dt) NbPer:$Sim(NbPer))"
-   set f [open $Path/tmp/ersinp w]
+   set f [open $Path/tmp/CANERM.in w]
 
    puts $f "ITYPE1 =$Sim(IType1)"
    puts $f "ITYPE2 =$Sim(IType2)"
@@ -350,46 +281,8 @@ proc CANERM::SimCreateErsinp { Path } {
    close $f
 }
 
-#------------------------------------------------------------------------------
-# Nom        : <CANERM::SimCreateMeteo>
-# Creation   : Octobre 1999 - J.P.Gauthier- CMC/CMOE
-#
-# But        : Construire les donnees meteo sur le serveur.
-#              De cette facon, on se donne une securite advenant
-#              le cas ou les donnees meteorologique ne sont pas
-#              disponible sur le backend.
-#
-# Parametres :
-#    <Path>  : Path de la simulation
-#
-# Retour     :
-#
-# Remarques  :
-#
-#------------------------------------------------------------------------------
-
-proc CANERM::SimCreateMeteo { Path } {
-   global   GDefs
-   variable Sim
-   variable Msg
-
-   exec echo "doing" > $Path/tmp/sim.meteo
-
-   Debug::TraceProc "CANERM: Creating Meteo on : $GDefs(FrontEnd)"
-
-   if { $Sim(Host)!=$GDefs(Host) } {
-      exec ssh -l $GDefs(FrontEndUser) -n -x $GDefs(FrontEnd) "$GDefs(Dir)/Script/InterpolateFieldsMulti.sh \
-         $Path/tmp $GDefs(Dir)/Data/climato.fstd $Sim(Meteo) $Sim(FreqOut) 3" &
-   } else {
-      exec $GDefs(Dir)/Script/InterpolateFieldsMulti.sh $Path/tmp $GDefs(Dir)/Data/climato.fstd $Sim(Meteo) $Sim(FreqOut) 3 &
-   }
-
-   exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Path/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) \
-                                                 $Path/tmp/data_std_sim.pres &
-}
-
 #-------------------------------------------------------------------------------
-# Nom        : <CANERM::SimGetData>
+# Nom        : <CANERM::GetMetData>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Creation de la liste des fichiers standards pour la meteo.
@@ -403,39 +296,27 @@ proc CANERM::SimCreateMeteo { Path } {
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::SimGetData { } {
+proc CANERM::GetMetData { } {
    global   GDefs
    variable Error
    variable Sim
+   variable Msg
 
-   set dacc [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
+   Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
 
-   set Sim(Data) [MetData::File $dacc $Sim(DBaseDiag) $Sim(DBaseProg) F 0 $Sim(Delta)]
-   set Sim(Mode) [MetData::GetMode $Sim(Data) False]
+   #----- Get available meteorological files.
+   set Sim(AccStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
+   set Sim(Data)     [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 0 $Sim(Delta)]
+   set Sim(Mode)     [MetData::GetMode $Sim(Data) False]
 
    if { $Sim(Mode)=="diag" } {
       set Sim(Delta) 6
+      set Sim(Data) [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 0 $Sim(Delta)]
    }
+   Dialog::DestroyWait
 
-   if { [llength $Sim(Data)] <=1 } {
-      Dialog::CreateError . "[lindex $Error(Files) $GDefs(Lang)]" $GDefs(Lang)
-      return False
-   }
-
-   #----- Verifier le range de date
-
-   set dmin [lindex [lindex $Sim(Data) 0] 1]
-   set dmax [lindex [lindex $Sim(Data) end] 1]
-
-   Debug::TraceProc "CANERM: MetData from $dmin to $dmax"
-
-   if { $dacc < [lindex [lindex $Sim(Data) 0] 0] || $dacc > [lindex [lindex $Sim(Data) end] 0] } {
-      Dialog::CreateError . "[lindex $Error(Date) $GDefs(Lang)]\n\n\
-         [lindex [lindex $Sim(Data) 0] 1] - [lindex [lindex $Sim(Data) end] 1]" $GDefs(Lang)
-      return False
-   } else {
-      return True
-   }
+   #----- Extract relevant met files according to available meteorological data files and simulation duration.
+   return [Model::ParamsMetData CANERM]
 }
 
 #----------------------------------------------------------------------------
@@ -475,8 +356,6 @@ proc CANERM::SimInitCont { } {
    set grid [fstdfield stats GRID -gridpoint [expr $Sim(NI)/2+1] [expr $Sim(NJ)/2+1]]
    set Sim(GridLat) [lindex $grid 0]
    set Sim(GridLon) [lindex $grid 1]
-
-   CANERM::SetMetDataDir $Sim(Meteo)
 }
 
 #----------------------------------------------------------------------------
@@ -499,7 +378,6 @@ proc CANERM::SimInitNew { } {
    variable Sim
 
    #-----Cas nucleaire ou volcanique
-
    if { $Exp::Data(Type) == 0 } {
       set iso [IsoBox::Get VOLCAN]
       set Sim(FnVertDesc) CONSTANT
@@ -570,105 +448,94 @@ proc CANERM::SimInitNew { } {
    set Sim(Intensity)    $Sim(IsoRelease)
    set Sim(First)        True
 
-   CANERM::SetMetDataDir $Sim(Meteo)
    fstdfield free GRID
 }
 
-#-------------------------------------------------------------------------------
-# Nom        : <CANERM::SimLaunch>
-# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#----------------------------------------------------------------------------
+# Nom      : <CANEMR::Launch>
+# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But        : Lancer les scripts de generations des donnes et soumettre la job
-#              au backend.
+# But      : Lancer un script d'execution sur le backend.
 #
-# Parametres  :
-#    <Path>   : Repertoire de la simulation
-#    <GoGoGo> : Go for launch (Houston, we have a go)
+# Parametres :
 #
-# Retour     :
+# Retour:
 #
-# Remarques  :
+# Remarques :
 #
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 
-proc CANERM::SimLaunch { Path GoGoGo } {
+proc CANERM::Launch { } {
    global GDefs
-   global SPI
    variable Sim
-   variable Msg
-   variable Lbl
 
-   set Sim(JobFile) "eer[clock seconds]"
-
-   destroy .canermnew .canermcont
-   CANERM::ModeLeave
-
-  . config -cursor watch
+   . config -cursor watch
    update idletasks
-   puts stderr $Sim(IsoName)
 
-   if { [lsearch -exact $GDefs(BackEnd) $Sim(Host)]!=-1 } {
-      exec $GDefs(Dir)/Script/AIXScriptCreate.tcl $Sim(Host) $GDefs(FrontEnd) $Sim(JobFile) $Sim(Meteo) $Sim(NoPrev) \
-         $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) \
-         $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour) \
-         $Path $GDefs(Dir)/Script $Sim(Dt) $Sim(Restart) $Sim(PrevRestart) \
-         $Sim(GridChanged) $Sim(FreqIn) $Sim(FreqOut) $Sim(IsoName)
-   } else {
-      if { [string first $Sim(Host) "pollux"]!=-1 || [string first $Sim(Host) "castor"]!=-1 } {
-         set arch IRIX64
-      } else {
-         set arch Linux
+   set Sim(Remote) [catch { [exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) ls -l $Sim(Path)] }]
+
+   if { $Sim(Remote) } {
+
+      #----- Create simulation directories on remote host.
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
+      if { $ErrorCode != 0 } {
+         Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
+         return False
       }
-      exec $GDefs(Dir)/Script/SVScriptCreate.tcl $Path $GDefs(Dir) $arch $Sim(JobFile) \
-         $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) \
-         $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour) \
-         $Sim(Dt) $Sim(Meteo) $Sim(GridChanged) $Sim(NoPrev) \
-         $Sim(FreqIn) $Sim(FreqOut) $Sim(Restart) $Sim(PrevRestart) $Sim(IsoName)
+
+      #----- Copy needed files on remote host.
+      set ErrorCode [catch { exec scp -p  $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/Model_CANERM.in $Sim(Path)/tmp/CANERM.in $Sim(Path)/tmp/griddef $Sim(Path)/tmp/data_std_sim.eta $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
+      if { $ErrorCode != 0 } {
+         Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
+         return False
+      }
+      Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
    }
 
-   if { $GoGoGo } {
-
-      Debug::TraceProc "CANERM: Launching simulation request: $Sim(JobFile) $Sim(Queue) $Sim(Host) $Path"
-
-      #----- On construit les donnees meteo sur le serveur.
-      #      De cette facon, on se donne une securite advenant
-      #      le cas ou les donnees meteorologique ne sont pas
-      #      disponible sur le backend.
-
-      set Sim(State) 2
-      Info::Set $Path/../CANERM.pool [Info::Code ::CANERM::Sim $Sim(Info) :]
-      CANERM::SimCreateMeteo $Path
-      Launch $Path/tmp $Sim(JobFile) $Sim(Queue) $Sim(Host)
-   } else {
-
-      Debug::TraceProc "CANERM: Standby on simulation request: $Sim(JobFile) $Path"
-      set Sim(State) 3
-      Info::Set $Path/../CANERM.pool [Info::Code ::CANERM::Sim $Sim(Info) :]
-
-      #----- Construit tout de meme le fichier tape30 de la meteorologie sur
-      #      le serveur dans l'eventualite de lancer la job ulterieurement.
-
-      set answer [Dialog::CreateDefault . 400 "Message" [lindex $Msg(JobSusp) $GDefs(Lang)] \
-                  info 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $answer == 0 } {
-         CANERM::SimCreateMeteo $Path
+   if { $Model::Param(Queue)!="none" } {
+      #----- Create listing directory.
+      if { ![file isdirectory $env(HOME)/listings/eer_Experiment] } {
+         file mkdir $env(HOME)/listings/eer_Experiment
       }
+
+      #----- Launching with soumet.
+      exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+         -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $$Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+         -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $$Model::Param(Queue)" >>$Sim(Path)/tmp/soumet.out" }]
+
+      if { $ErrorCode } {
+         Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         return False
+      }
+      Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
+   } else {
+      Debug::TraceProc "CANERM: Launching model on : $Model::Param(Host)"
+      Exp::Launch "/home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh $Sim(Path)/tmp/Model_CANERM.in" "[Info::Code ::CANERM::Sim $Sim(Info) :]" \
+         [expr 147+($Sim(FreqOut)/$Sim(ISauve))*95+($Sim(FreqOut)/$Sim(Dt))*156] \
+         $Sim(Path)/tmp/Model_CANERM.out
    }
+
+   Debug::TraceProc "CANERM: Launching simulation request: $$Model::Param(Queue) $Model::Param(Host) $Path"
+
+   set Sim(State) 2
+   Info::Set $Path/../CANERM.pool [Info::Code ::CANERM::Sim $Sim(Info) :]
+
+   exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Path/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) \
+                                                 $Path/tmp/data_std_sim.pres &
 
    . config -cursor left_ptr
+   return True
 }
 
 #-------------------------------------------------------------------------------
-# Nom        : <CANERM::SimLaunchCheck>
+# Nom        : <CANERM::LaunchInit>
 # Creation   : Ocotbre 1999 - J.P.Gauthier - CMC/CMOE
 #
 # But        : Effectuer tout les checks et preteitements et lancer la simulation.
 #
 # Parametres :
 #   <Idx>    : Idex de la selection dans la liste
-#   <New>    : Mode nouvelle simulation ???
-#   <Launch> : Lancement ???
 #
 # Retour     :
 #
@@ -676,62 +543,48 @@ proc CANERM::SimLaunch { Path GoGoGo } {
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::SimLaunchCheck { Idx New Launch } {
+proc CANERM::LaunchInit { } {
    global   GDefs
    variable Sim
    variable Error
 
-   if { $Idx=="" } {
-      Dialog::CreateError . [lindex $Error(EndDate) $GDefs(Lang)] $GDefs(Lang)
-      return
-   }
-
-   set data    [lrange $Sim(Data) 0 [expr $Idx+1]]
-   set t0      [lindex [lindex $data 0] 0]
-
    #----- Determiner le Dt
-
-   set t1      [lindex [lindex $data 1] 0]
+   set t0      [lindex [lindex $Sim(Data) 0] 0]
+   set t1      [lindex [lindex $Sim(Data) 1] 0]
    set Sim(Dt) [expr int([fstdstamp diff $t1 $t0])]
 
    #----- Determiner le nombre de periode
-
-   set t1         [lindex [lindex $data end] 0]
+   set t1         [lindex [lindex $Sim(Data) end] 0]
    set Sim(NbPer) [expr int([fstdstamp diff $t1 $t0])/$Sim(Dt)]
 
-   #----- In case of new sim and mode diag, make sure simhour is in 6 hour increment
-
-   if { $New && $Sim(Mode)=="diag" } {
-      set Sim(Delta) 6
-      if { $Sim(SimHour) == "00" } {
-         set hour 0
-      } else {
-         set hour [string trimleft $Sim(SimHour) 0]
-      }
-      set Sim(SimHour) [Convert::Set2Digit [expr $hour/$Sim(Delta)*$Sim(Delta)]]
-   }
-
    #----- On verifie les parametres de l'usager
-
    if { ![Exp::Params . CANERM $Sim(Info)] } {
-      return
+      return False
    }
 
    #----- Definir le repertoire de l'experience
-
    set Sim(NoSim) [Info::Request $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/CANERM.pool]
-   set Sim(Path)  "$GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/CANERM.$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)00"
+   set ExpName    "$Sim(NoExp)_$Sim(Name)"
+   set SimName    "$Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)"
+   set Sim(Path)  "$GDefs(DirData)/$ExpName/$SimName"
 
-   file mkdir $Sim(Path)
-   file mkdir $Sim(Path)/results
-   file mkdir $Sim(Path)/meteo
-   file mkdir $Sim(Path)/tmp
+   if { $Model::Param(IsUsingSoumet) } {
+
+      set token "$Sim(Host)_${ExpName}_${SimName}_[clock seconds]"
+
+      if { $Model::Param(Arch) == "AIX" } {
+         set Sim(PathRun) "[lindex $GDefs(BackEnd$Sim(Host)) 1]/eer_Experiment/$token"
+      } elseif {
+         set Sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/$token"
+      }
+   } else { #----- Local host.
+      set Sim(PathRun) $Sim(Path)
+   }
+
+   file mkdir $Sim(Path) $Sim(Path)/results $Sim(Path)/meteo $Sim(Path)/tmp
+   exec echo "[Info::Code ::CANERM::Sim $Sim(Info) :]" > $Sim(Path)/tmp/sim.pool
 
    #----- Creer le fichier de donnees meteo
-   set Sim(MeteoDataFiles) ""
-   foreach file $data {
-      lappend Sim(MeteoDataFiles) [lindex $file 2]
-   }
    set f [open $Sim(Path)/tmp/data_std_sim.eta w 0644]
    puts $f $Sim(MeteoDataFiles)
    close $f
@@ -742,44 +595,42 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
    puts $f $Sim(MeteoDataFilesRSMC)
    close $f
 
-   set Sim(Duration)    [lindex $Sim(Duration) 0]
    set Sim(GridChanged) 0
    set Sim(State)       0
 
    CANERM::SimResultName
    CANERM::SimCreateErsinp $Sim(Path)
 
-   if { !$New } {
+   #----- Continuation
+   if { $Sim(NoPrev)!=-1 } {
       CANERM::SimPrevious $Sim(Path)
 
       #----- On verifie si la grille a changee
-
       if { $Sim(Grid)!=$Sim(PGrid) } {
          set Sim(GridChanged) 1
       }
    }
 
-   exec echo "[Info::Code ::CANERM::Sim $Sim(Info) :]" > $Sim(Path)/tmp/sim.pool
    exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
     [lindex $Sim(Grid) 1]  [lindex $Sim(Grid) 2] [lindex $Sim(Grid) 3] [lindex $Sim(Grid) 4]\
          [lindex $Sim(Grid) 5] [lindex $Sim(Grid) 6] [lindex $Sim(Grid) 0]] > $Sim(Path)/tmp/griddef
 
-   CANERM::SimLaunch $Sim(Path) $Launch
+   destroy .canermnew .canermcont
+   CANERM::ModeLeave
+   CANERM::Launch
 
    #----- Relire les experiences
-
    Model::Check 0
 }
 
 #-------------------------------------------------------------------------------
-# Nom        : <CANERM::SimLaunchInit>
+# Nom        : <CANERM::LaunchParams>
 # Creation   : Juin 2001 - J.P.Gauthier - CMC/CMOE
 #
 # But        : Effectuer toutes les verifications de parametres et recuperer les donnees
 #              meteorologiques disponibles pour la simulation.
 #
 # Parametres :
-#   <List>   : Listbox
 #   <New>    : Nouvelle simulation ???
 #   <Tab>    : Frame parent de l'onglet
 #   <No>     : Numero de l'onglet
@@ -790,97 +641,58 @@ proc CANERM::SimLaunchCheck { Idx New Launch } {
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
+proc CANERM::LaunchParams { New Tab No } {
    global   GDefs
    variable Sim
    variable Error
 
-   if { $Check } {
-      if { $New } {
-         if { $No!=2 } {
-            return
-         }
-
-         if { $Sim(IsoNb)==0 } {
-            Debug::TraceProc "CANERM: Not enough pollutants"
-            Dialog::CreateError .canermnew [lindex $Error(NbIso) $GDefs(Lang)] $GDefs(Lang)
-            TabFrame::Select $Tab 0
-            return
-         }
-
-         if { $Sim(EmHeight)>30000 } {
-            Debug::TraceProc "CANERM: Height over 30000 meters"
-            Dialog::CreateError .canermnew [lindex $Error(Height) $GDefs(Lang)] $GDefs(Lang)
-            TabFrame::Select $Tab 0
-            return
-         }
-
-         #----- On Determine la date de simulation propice
-
-         set Sim(SimYear)  [set Sim(AccYear)  [clock format $Sim(AccSeconds) -format %Y -gmt true]]
-         set Sim(SimMonth) [set Sim(AccMonth) [clock format $Sim(AccSeconds) -format %m -gmt true]]
-         set Sim(SimDay)   [set Sim(AccDay)   [clock format $Sim(AccSeconds) -format %d -gmt true]]
-
-         if { $Sim(AccHour) == "00" } {
-            set hour 0
-         } else {
-            set hour [string trimleft $Sim(AccHour) 0]
-         }
-
-         set Sim(SimHour) [Convert::Set2Digit [expr $hour/$Sim(Delta)*$Sim(Delta)]]
-      } else {
-         if { $No!=1 } {
-            return
-         }
-
-         #----- On Determine la date de simulation propice
-
-         set nbhour  [expr [string trimleft $Sim(NbPer) 0] * $Sim(Dt)]
-         set sec    [clock scan "$nbhour hours" -base [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour):00" -gmt True] -gmt True]
-
-         set Sim(SimYear)  [clock format $sec -format "%Y" -gmt True]
-         set Sim(SimMonth) [clock format $sec -format "%m" -gmt True]
-         set Sim(SimDay)   [clock format $sec -format "%d" -gmt True]
-         set Sim(SimHour)  [clock format $sec -format "%H" -gmt True]
-      }
-   }
-
-   $List delete 0 end
-   $Tab config -cursor watch
-   update idletasks
-
-   #----- Recuperer les donnees meteo
-
-   if { [SimGetData] } {
-
-     #----- En mode diag, on force le DeltaT a 6hrs et on descative la selection du DelatT
-
-     if { $Sim(Mode)=="diag" } {
-        Option::Disable $Tab.frame$No.d.l.delt
-     } else {
-        Option::Enable $Tab.frame$No.d.l.delt
-     }
-
-     #----- Selectionner une date par defaut
-
-      set datasel  [lrange $Sim(Data) 1 end]
-      foreach item $datasel {
-         $List insert end [lindex $item 1]
+   if { $New } {
+      if { $No!=2 } {
+         return True
       }
 
-      $List see end
-      $List selection clear 0 end
-      set CANERM::Sim(Duration) "??? Hrs"
-      $Tab config -cursor left_ptr
+      if { $Sim(IsoNb)==0 } {
+         Debug::TraceProc "CANERM: Not enough pollutants"
+         Dialog::CreateError .canermnew [lindex $Error(NbIso) $GDefs(Lang)] $GDefs(Lang)
+         TabFrame::Select $Tab 0
+         return False
+      }
+
+      if { $Sim(EmHeight)>30000 } {
+         Debug::TraceProc "CANERM: Height over 30000 meters"
+         Dialog::CreateError .canermnew [lindex $Error(Height) $GDefs(Lang)] $GDefs(Lang)
+         TabFrame::Select $Tab 0
+         return False
+      }
+
+      #----- On Determine la date de simulation propice
+      set Sim(AccYear)  [clock format $Sim(AccSeconds) -format %Y -gmt true]
+      set Sim(AccMonth) [clock format $Sim(AccSeconds) -format %m -gmt true]
+      set Sim(AccDay)   [clock format $Sim(AccSeconds) -format %d -gmt true]
    } else {
-      TabFrame::Select $Tab 0
-      $Tab config -cursor left_ptr
-      return
+      if { $No!=1 } {
+         return True
+      }
+
+      #----- On Determine la date de simulation propice
+      set nbhour [expr [string trimleft $Sim(NbPer) 0] * $Sim(Dt)]
+      set sec    [clock scan "$nbhour hours" -base [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour):00" -gmt True] -gmt True]
+
+      set Sim(SimYear)  [clock format $sec -format "%Y" -gmt True]
+      set Sim(SimMonth) [clock format $sec -format "%m" -gmt True]
+      set Sim(SimDay)   [clock format $sec -format "%d" -gmt True]
+      set Sim(SimHour)  [clock format $sec -format "%H" -gmt True]
    }
+
+   #----- Get meteorological data according to met database, time interval between files, release accident date-time.
+   if { ![GetMetData] } {
+      return False
+   }
+   return True
 }
 
 #---------------------------------------------------------------------------
-# Nom      : <CANERM::SimLaunchSuspended>
+# Nom      : <CANERM::SimRelaunch>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Lance une job suspendue.
@@ -893,7 +705,7 @@ proc CANERM::SimLaunchInit { List New Tab No { Check 1 } } {
 #
 #----------------------------------------------------------------------------
 
-proc CANERM::SimLaunchSuspended { } {
+proc CANERM::SimRelaunch { } {
    global GDefs
    variable Sim
    variable Msg
@@ -902,12 +714,10 @@ proc CANERM::SimLaunchSuspended { } {
    SPI::Progress 0
 
    #----- Extraire les informations sur l'experience.
-
    SPI::Progress 10 [lindex $Msg(JobInfo) $GDefs(Lang)] Model::Data(Job)
    Info::Decode ::CANERM::Sim $Sim(Info) $Exp::Data(SelectSim)
 
    #----- Determiner la localisation du fichier
-
    set simpath [Exp::Path]/[Info::Path $Sim(Info) $Exp::Data(SelectSim)]
    set script  [FileBox::Create . $simpath/tmp Load [list {CANERM Launch Script {eer*}}]]
 
@@ -926,10 +736,9 @@ proc CANERM::SimLaunchSuspended { } {
       set Sim(State) 2
       Info::Set $simpath/../CANERM.pool [Info::Code ::CANERM::Sim $Sim(Info) :]
       SPI::Progress 100 "" Model::Data(Job)
-      Launch $simpath/tmp $script $Sim(Queue) $Sim(Host)
+      CANERM::Launch $simpath/tmp $script $$Model::Param(Queue) $Model::Param(Host)
 
       #----- Relire les experiences
-
       Model::Check 0
       SPI::Progress 0 "[lindex $Msg(LaunchDone) $GDefs(Lang)] ($script)" Model::Data(Job)
    } else {
@@ -969,7 +778,6 @@ proc CANERM::SimPrevious { Path } {
    set Sim(PrevRestart) "$res/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000r"
 
    #----- Parcourir les simulations precedentes pour en obtenir les fichiers resultats
-
    set Tmp(NoPrev) $Sim(NoPrev)
 
    while { $info!="" && $Tmp(NoPrev)!=-1 } {
@@ -987,7 +795,6 @@ proc CANERM::SimPrevious { Path } {
    }
 
    #----- Inscrire la liste des resultats precedent dans le repertoire temporaire.
-
    exec echo "$resultlist" > $Path/tmp/previous
    Debug::TraceProc "CANERM: Previous files: $resultlist"
 }
@@ -1014,7 +821,6 @@ proc CANERM::SimResultName { } {
    set Sim(Tape40)   $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)
 
    #----- Determine le nom du fichier 'restart'.
-
    set nbhour [expr $Sim(NbPer) * $Sim(Dt)]
    set sec    [clock scan "$nbhour hours" -base [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour):00" -gmt True] -gmt True]
    set Sim(Restart) [clock format $sec -format "%Y%m%d%H" -gmt True]
@@ -1040,7 +846,6 @@ proc CANERM::Result { Type } {
    variable Tmp
 
    #----- Recuperer les noms de fichiers resultats avec retour sur les precedentes
-
    set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]
 
    Info::Decode ::CANERM::Tmp $Sim(Info) $Exp::Data(SelectSim)
@@ -1073,8 +878,8 @@ proc CANERM::SimSuppress { Confirm Info } {
    update idletasks
 
    if { $Confirm } {
-      #----- Verifier la validitee des parametres
 
+      #----- Verifier la validitee des parametres
       set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressSim) $GDefs(Lang)]\n\n" \
         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
@@ -1084,7 +889,6 @@ proc CANERM::SimSuppress { Confirm Info } {
    }
 
    #----- Supprimer la simulation et ses descendants
-
    set path [Exp::Path]
 
    while { $Info!="" } {
@@ -1094,7 +898,6 @@ proc CANERM::SimSuppress { Confirm Info } {
    }
 
    #----- Relire les experiences
-
    Model::Check 0
    . config -cursor left_ptr
 }
@@ -1126,15 +929,12 @@ proc CANERM::SimSuppressResults { Path Info } {
    Exp::Kill $Info
 
    #----- Extraire les informations sur l'experience.
-
    Info::Decode ::CANERM::Sim $Sim(Info) $Info
 
    #----- Determiner la localisation du fichier
-
    set path [Info::Path $Sim(Info) $Info]
 
    #----- Supprimer les donnees sur le serveur.
-
    Debug::TraceProc "CANERM: Suppressing simulation $path"
    SPI::Progress 50 "[lindex $Msg(Suppressing) $GDefs(Lang)] (FrontEnd)" Model::Data(Job)
 
@@ -1145,7 +945,6 @@ proc CANERM::SimSuppressResults { Path Info } {
    Info::Delete $Path/CANERM.pool $Info
 
    #----- Retour du numero de simulation que l'on vient de supprimer
-
    SPI::Progress 0 "" Model::Data(Job)
    return $Sim(NoSim)
 }
@@ -1172,7 +971,6 @@ proc CANERM::SpeciesDelete { Frame } {
    set index [ComboBox::Del $Frame.type.entry.polluant $Sim(Iso)]
 
    #----- Verifier si l'item a bien ete supprimer
-
    if { $index != -1 } {
       set Sim(IsoName)    [lreplace $Sim(IsoName) $index $index]
       set Sim(IsoRelease) [lreplace $Sim(IsoRelease) $index $index]
@@ -1182,13 +980,11 @@ proc CANERM::SpeciesDelete { Frame } {
       set Sim(IsoWet)     [lreplace $Sim(IsoWet) $index $index]
 
       #----- Si on est pas au maximum de polluant
-
       if { [incr Sim(IsoNb) -1] < $CANERM::Sim(MaxIso) } {
          $Frame.type.entry.nb config -bg $GDefs(ColorLight)
       }
 
       #----- Afficher le premier element de la liste.
-
       if { !$Sim(IsoNb) } {
          $Frame.type.entry.intensity config -state disabled
       }
@@ -1218,7 +1014,6 @@ proc CANERM::SpeciesFormat { Frame Line } {
    variable Sim
 
    #----- Verification de nombre de parametres inclus dans la ligne
-
    if { [llength $Line] == 11 } {
 
       if { [ComboBox::Add $Frame.type.entry.polluant [lindex $Line 0]] != -1 } {

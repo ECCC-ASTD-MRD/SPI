@@ -20,31 +20,27 @@ namespace eval TRAJECT {
 
    #----- Definition des constantes generale aux simulations
 
-   set Sim(Bin)           ""              ;#Type de modele
-   set Sim(DBaseDiag)     ""              ;#Path des fichiers de diagnostiques
-   set Sim(DBaseProg)     ""              ;#Path des fichiers de prognostiques
+   set Sim(Model)           TRAJECT
+   set Sim(State)           1
+   set Sim(NoPrev)          -1
+   set Sim(NoSim)           -1
+   set Sim(Delta)           3               ;#Delta des fichiers meteo
+   set Sim(BatchStart)      0               ;#Delta de demarrage en mode batch
+   set Sim(Duration)        72              ;#Duree de simulation
+   set Sim(Meteo)           glb
+   set Sim(Path)            ""
+   set Sim(ListMeteo)       { "glb" "reg" }
+   set Sim(ListMethod)      { "Trajectoire" "Retro-trajectoire" }
+   set Sim(ListTimeStep)    { 1200.0 3600.0 }
+   set Sim(ListSimDuration) { 6 12 18 24 48 72 96 120 144 168 }  ;#----- List of simulation durations [hr].
 
-   set Sim(Delta)         3               ;#Delta des fichiers meteo
-   set Sim(DeltaS)        0               ;#Delta de demarrage en mode batch
-   set Sim(DeltaL)        0               ;#Delta de duree en mode batch
-   set Sim(Meteo)         glb
-   set Sim(Path)          ""
-   set Sim(ListMeteo)     { "glb" "reg" }
-   set Sim(ListMethod)    { "Trajectoire" "Retro-trajectoire" }
-   set Sim(ListTimeStep)  { 1200.0 3600.0 }
+   #----- Define list of available hosts.
+   set Sim(Hosts) $GDefs(Host)
 
-   set Sim(Queue)         none
-   set Sim(Host)          $GDefs(Host)
-   set Sim(Hosts)         $GDefs(Host)
-
-   if { $Sim(Host)!=$GDefs(FrontEnd) } {
+   #----- Add front-end machine to list of available hosts.
+   if { [lsearch -exact $Sim(Hosts) $GDefs(FrontEnd)]==-1 } {
       lappend Sim(Hosts) $GDefs(FrontEnd)
    }
 
-   set Sim(Model)  TRAJECT
-   set Sim(State)  1
-   set Sim(NoPrev) -1
-   set Sim(NoSim)  -1
-
-   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit DeltaS DeltaL }
+   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit BatchStart }
 }
