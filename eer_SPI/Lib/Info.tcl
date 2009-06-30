@@ -48,8 +48,7 @@ namespace eval Info {
    set Lbl(Arrival)              { "Arrivee" "Arrival" }
    set Lbl(Level)                { "Niveau" "Level" }
    set Lbl(LevelUnit)            { "Unite" "Unit" }
-   set Lbl(DeltaS)               { "T0+" "T0+" }
-   set Lbl(DeltaL)               { "Tend" "Tend" }
+   set Lbl(BatchStart)           { "Délai de démarrage     (h)" "Batch start delay   (h)" }
    set Lbl(Duration)             { "Durée de simulation (h)" "Simulation duration (h)" }
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
    set Lbl(EffectiveDurationMin) { "Durée effective de simulation (min)" "Effective simulation duration (min)" }
