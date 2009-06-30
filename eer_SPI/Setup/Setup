@@ -347,10 +347,13 @@ set GDefs(TransmitUser)   $GDefs(TransmitUser)
 
 #----- Definitions pour les BackEnd
 
-set GDefs(Queue)          { development production none }
 set GDefs(BackEnd)        { maia saiph }
-set GDefs(BackEndmaia)    { /home/binops/afse/eer $GDefs(BackEndmaia) }
-set GDefs(BackEndsaiph)   { /home/binops/afse/eer $GDefs(BackEndsaiph) }
+set GDefs(Queue)          { development }
+set GDefs(Queues)         { development production }
+set GDefs(Queuesmaia)     { development }
+set GDefs(Queuesaiph)     { development }
+set GDefs(BackEndmaia)    { $GDefs(BackEndmaia) }
+set GDefs(BackEndsaiph)   { $GDefs(BackEndsaiph) }
 
 #----- Constantes diverses relatives a toutes les applications
 
@@ -442,10 +445,13 @@ set GDefs(FrontEndUser)  $env(USER)
 set GDefs(TransmitUser)  afsiops
 set GDefs(Model)         False
 
-set GDefs(Queue)        { user op none }
-set GDefs(BackEnd)      { maia saiph }
-set GDefs(BackEndmaia)  { /home/binops/afse/eer "" }
-set GDefs(BackEndsaiph) { /home/binops/afse/eer "" }
+set GDefs(BackEnd)        { maia saiph }
+set GDefs(Queue)          { development }
+set GDefs(Queues)         { development production }
+set GDefs(Queuesmaia)     { development }
+set GDefs(Queuesaiph)     { development }
+set GDefs(BackEndmaia)    { /home/binops/afse/eer "" }
+set GDefs(BackEndsaiph)   { /home/binops/afse/eer "" }
 
 set GDefs(DirData)        ""
 set GDefs(DirCFSArch)     ""

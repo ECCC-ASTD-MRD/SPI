@@ -52,12 +52,19 @@ function Model_PoolEncode {
    return 0
 }
 
-function Model_PoolDone {
+function Model_PoolSet {
+
+   POOL[ERROR]=-1;
+   POOL[NEW]=0;
+   POOL[DONE]=1;
+   POOL[RUN]=2;
+   POOL[SUSPEND]=3;
 
    if [[ -f ${MODEL_TMPDIR}/sim.pool ]]; then
 
       master=${MODEL_LOCALDIR}/../${MODEL_NAME}${MODEL_TYPE}.pool
-      status=${1}
+      mode=${1}
+      status=${2}
 
       line=`cat ${MODEL_TMPDIR}/sim.pool`
 
@@ -66,12 +73,11 @@ function Model_PoolDone {
       end=`echo ${line} | cut -d: -f3-`
       state=`echo ${line} | cut -d: -f2`
 
-      #----- Set Simulation state
       token=`echo ${state} | cut -d= -f1`
       if [[ $status -eq 0 ]]; then
-         state="${token}=1"
+         state="${token}=${POOL[${mode}]}"
       else
-         state="${token}=-1"
+         state="${token}=${POOL[ERROR]}"
       fi
 
       #----- Replace pool info.
@@ -214,7 +220,7 @@ function Model_CopyTrace {
    #----- Exit function if running locally or not doing meteo.
    if [[ ${MODEL_NEEDCOPY} -eq 0 ]] ; then
       ssh ${MODEL_USER}@${MODEL_LOCALHOST} "mkdir -p ${MODEL_TRACE}"
-      scp -p ${trace} ${user}@${MODEL_LOCALHOST}:${MODEL_TRACE}
+      scp -p ${trace} ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_TRACE}
    else
       mkdir -p ${MODEL_TRACE}
       mv ${trace} ${MODEL_TRACE}
@@ -251,11 +257,11 @@ function Model_CopyMeteo {
       return 0
    fi
 
-   Log_Print INFO "Copying following meteorological data files to meteo directory on local host (${MODEL_LOCALHOST}): \n`ls -la ${MODEL_RUNDIR}/meteo/*.std`"
+   Log_Print INFO "Copying following meteorological data files to meteo directory on local host (${MODEL_LOCALHOST}): \n`ls -l ${MODEL_RUNDIR}/meteo/*`"
 
    sec=${SECONDS}
 
-   scp -p ${MODEL_RUNDIR}/meteo/*.std ${user}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo
+   scp -p ${MODEL_RUNDIR}/meteo/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo
    status=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
 
@@ -302,6 +308,7 @@ MODEL_RUN=1
 MODEL_POST=1
 MODEL_CLEAN=1
 
+#----- Initialize internal variables.
 MODEL_RUNTYPE="local"
 MODEL_TMPDIR=""
 MODEL_TIMER=time
@@ -343,7 +350,7 @@ if [[ ${status} -eq 0 ]] ; then
 fi
 
 #----- Job finished
-Model_PoolDone ${MODEL_EXITSTATUS}
+Model_PoolSet DONE ${MODEL_EXITSTATUS}
 Model_CopyLog
 Model_CopyTrace
 Model_CleanUp

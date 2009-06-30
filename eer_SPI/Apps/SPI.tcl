@@ -15,11 +15,11 @@
 #
 #============================================================================
 
-#----- Lire la liste des definitions communes
 
 set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end]
 set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
 
+#----- Lire la liste des definitions communes
 if { ![file exists [set defs $env(HOME)/.eer_ToolDefs/.eer_Defs-[regsub \[:alpha:\]+ $GDefs(Version) ""]]] } {
    exec $GDefs(Dir)/Setup/Setup
 }
@@ -40,6 +40,8 @@ if { [lindex $argv 0]=="-tclsh" } {
    source $scr
    exit 0
 }
+
+package require TclSystem
 
 #----- Fichiers complementaires
 
@@ -398,11 +400,9 @@ proc Page::UpdateItems { Frame } {
    }
 
    #----- Data types
-
    Trajectory::UpdateItems $Frame
 
    #----- Update des Objects
-
    SPI::IcoDraw        $Frame
    Graph::UpdateItems  $Frame
    Export::UpdateItems $Frame
@@ -435,8 +435,8 @@ proc Page::UpdateItems { Frame } {
             }
             CVGeoLegend::Update $Frame $items
          }
-         #----- Update des Layouts
 
+         #----- Update des Layouts
          if { $SPI::Data(Layout$Frame)!= "SPI" } {
             eval set proc \[info procs ::$SPI::Data(Layout$Frame)::UpdateItems\]
             if { $proc!="" } {
@@ -446,7 +446,6 @@ proc Page::UpdateItems { Frame } {
       }
 
       #----- Update des outils
-
       foreach tool $SPI::Param(Tools) {
          upvar #0 ${tool}::Data(Active) active
          if { $active } {
