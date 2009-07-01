@@ -165,14 +165,14 @@ proc MLDP::Launch { } {
       if { $Model::Param(Remote) } {
          #----- Create simulation directories on remote host.
          set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
-         if { $ErrorCode != 0 } {
+         if { $ErrorCode } {
             Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
             return False
          }
 
          #----- Copy needed files on remote host.
-         set ErrorCode [catch { exec scp -p $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/*.in $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
-         if { $ErrorCode != 0 } {
+         set ErrorCode [catch { eval exec scp -p $Sim(Path)/tmp/sim.pool [glob $Sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
+         if { $ErrorCode } {
             Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
             return False
          }

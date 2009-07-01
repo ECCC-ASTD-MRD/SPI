@@ -512,7 +512,7 @@ proc CANERM::Launch { } {
          }
 
          #----- Copy needed files on remote host.
-         set ErrorCode [catch { exec scp -p  $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/*.in $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
+         set ErrorCode [catch { eval exec scp -p  $Sim(Path)/tmp/sim.pool [glob $Sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
          if { $ErrorCode != 0 } {
             Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
             return False
