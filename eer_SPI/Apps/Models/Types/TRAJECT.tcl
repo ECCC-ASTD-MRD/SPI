@@ -119,7 +119,7 @@ proc TRAJECT::Result { } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.
-   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path $Sim(Info) $Exp::Data(SelectSim)]/traject.points
+   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path $Sim(Info) $Exp::Data(SelectSim)]/results/traject.points
 }
 
 #-------------------------------------------------------------------------------
@@ -154,6 +154,16 @@ proc TRAJECT::GetMetData { } {
    }
    set Sim(Mode) [MetData::GetMode $Sim(Data) False]
    Dialog::DestroyWait
+
+   #----- Get the levels
+   set Sim(Level) ""
+   for { set i 1 } { $i<=25 } { incr i } {
+      if { $Sim(Level$i)!="" } {
+         lappend Sim(Level) "$Sim(Level$i)"
+      } else {
+         break
+      }
+   }
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    return [Model::ParamsMetData TRAJECT]
@@ -205,7 +215,7 @@ proc TRAJECT::LaunchParams { Path No } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::SimLaunch>
+# Nom      : <TRAJECT::Launch>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Executer les scripts permettant de lancer le modele.
@@ -218,17 +228,10 @@ proc TRAJECT::LaunchParams { Path No } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::LaunchInit { } {
+proc TRAJECT::Launch { } {
    global   GDefs
+   global   env
    variable Sim
-
-   #----- Definir le repertoire de l'experience
-   set Sim(NoSim) [Info::Request $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool]
-   set ExpName    "$Sim(NoExp)_$Sim(Name)"
-   set SimName    "$Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)"
-   set Sim(Path)  "$GDefs(DirData)/$ExpName/$SimName"
-
-   file mkdir $Sim(Path)
 
    if { $Sim(Retro) } {
       set mode BACKWARD
@@ -237,21 +240,9 @@ proc TRAJECT::LaunchInit { } {
    }
 
    #----- Creer le fichier de donnees meteo
-   set f [open $Sim(Path)/data_std_sim w 0644]
+   set f [open $Sim(Path)/tmp/data_std_eta.in w 0644]
    puts $f $Sim(MeteoDataFiles)
    close $f
-
-   #----- Get the levels
-   set Sim(Level) ""
-   set nblvl 0
-   for { set i 1 } { $i<=25 } { incr i } {
-      if { $Sim(Level$i)!="" } {
-         lappend Sim(Level) "$Sim(Level$i)"
-         incr nblvl
-      } else {
-         break
-      }
-   }
 
    #----- Get the particles list
    set parts {}
@@ -268,81 +259,102 @@ proc TRAJECT::LaunchInit { } {
    }
 
    #----- Creation du fichier de directives
-   set f [open $Sim(Path)/Traj.in w 0644]
+   set f [open $Sim(Path)/tmp/TRAJECT.in w 0644]
+      puts $f "'[string toupper $Sim(Name)] '"
 
-   puts $f "'[string toupper $Sim(Name)] '"
+      if { $Sim(Retro) } {
+         puts $f ".TRUE.   Mode retro-trajectoire ?"
+      } else {
+         puts $f ".FALSE.  Mode retro-trajectoire ?"
+      }
 
-   if { $Sim(Retro) } {
-      puts $f ".TRUE.   Mode retro-trajectoire ?"
-   } else {
-      puts $f ".FALSE.  Mode retro-trajectoire ?"
-   }
+      if { $Sim(LevelUnit) == "METRES" } {
+         puts $f "'H'      Niveaux en metres"
+      } else {
+         puts $f "'P'      Niveaux en millibars"
+      }
 
-   if { $Sim(LevelUnit) == "METRES" } {
-      puts $f "'H'      Niveaux en metres"
-   } else {
-      puts $f "'P'      Niveaux en millibars"
-   }
-
-   puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-   puts $f "[expr $nblvl*[llength $Sim(Pos)]]        Nombre de position de parcelles"
-   foreach part $parts {
-      puts $f "$part"
-   }
-   puts $f "$Sim(AccYear)     Annee de l'accident"
-   puts $f "$Sim(AccMonth)       Mois de l'accident"
-   puts $f "$Sim(AccDay)       Jour de l'accident"
-   puts $f "$Sim(AccHour)       Heure de l'accident"
-
+      puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
+      puts $f "[expr [llength $Sim(Level)]*[llength $Sim(Pos)]]        Nombre de position de parcelles"
+      foreach part $parts {
+         puts $f "$part"
+      }
+      puts $f "$Sim(AccYear)     Annee de l'accident"
+      puts $f "$Sim(AccMonth)       Mois de l'accident"
+      puts $f "$Sim(AccDay)       Jour de l'accident"
+      puts $f "$Sim(AccHour)       Heure de l'accident"
    close $f
 
-   destroy .trajectnew
+   if { $Model::Param(IsUsingSoumet) } {
+      if { $Model::Param(Remote) } {
 
-   set Sim(State) 2
-   set info [Info::Code ::TRAJECT::Sim $Sim(Info) :]
-   Info::Set $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool $info
+         #----- Create simulation directories on remote host.
+         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
+         if { $ErrorCode != 0 } {
+            Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
+            return False
+         }
 
-   if { $Model::Param(Host)!=$GDefs(Host) } {
-
-      #----- Creation du script de lancement
-      set f [open $Sim(Path)/traject.sh w 0755]
-
-      puts $f "#!/bin/ksh"
-      puts $f ". ~/.profile"
-      puts $f "set -x"
-      puts $f "arch=`uname -s`"
-      puts $f "ulimit -s 500000"
-      puts $f "ulimit -m unlimited"
-      puts $f "ulimit -d unlimited"
-      puts $f "cd $Sim(Path)"
-      puts $f "$GDefs(Dir)/Bin/\${arch}/Traj -i Traj.in -fich10 `cat data_std_sim` -tinc $Sim(BatchStart) -tlen $Sim(Duration) -o traject.points"
-      puts $f "exec $GDefs(Dir)/Script/SimDone.sh $Sim(Path)/../TRAJECT.pool $Sim(Path)/sim.pool \$?"
-
-      close $f
-
-      if { $Model::Param(IsUsingSoumet) } {
-         exec soumet++ $Sim(Path)/traject.sh -cm 300M -t 3600 -mach $Model::Param(Host) -cl $Model::Param(Queue) -listing $Sim(Path)
-      } else {
-         exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) "$Sim(Path)/traject.sh > $Sim(Path)/traject.out 2>&1" &
+         #----- Copy needed files on remote host.
+         set ErrorCode [catch { exec scp -p  $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/*.in $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
+         if { $ErrorCode != 0 } {
+            Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
+            return False
+         }
+         Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
       }
-      Info::Set $Sim(Path)/sim.pool $info 1
 
+      set file [open $Sim(Path)/tmp/Model_TRAJECT.in w 0644]
+
+      puts $file "#----- Logger specific parameters"
+      puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
+      puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
+      puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJ.out"
+      puts $file "LOG_LEVEL=INFO"
+      puts $file ""
+      puts $file "#----- Job general parameters"
+      puts $file "MODEL_SOFTWARE=SPI"
+      puts $file "MODEL_NAME=$Sim(Model)"
+      puts $file "MODEL_TYPE=\"\""
+      puts $file "MODEL_USER=$GDefs(FrontEndUser)"
+      puts $file ""
+      puts $file "MODEL_LOCALHOST=$GDefs(Host)"
+      puts $file "MODEL_LOCALDIR=$Sim(Path)"
+      puts $file "MODEL_RUNDIR=$Sim(PathRun)"
+      puts $file "MODEL_PRE=0"
+      puts $file "MODEL_RUN=1"
+      puts $file "MODEL_POST=0"
+      puts $file "MODEL_CLEAN=1"
+      puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+      puts $file ""
+      puts $file "#----- Model specific parameters"
+      puts $file "TRAJECT_METEO=\"$Sim(MeteoDataFiles)\""
+      puts $file "TRAJECT_INC=$Sim(BatchStart)"
+      puts $file "TRAJECT_LEN=$Sim(Duration)"
+      puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
+      puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
+      puts $file "TRAJECT_LOGLEVEL=INFO"
+
+      close $file
+
+      exec echo "soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
+         -t 3600 -cm !G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
+      set ErrorCode [catch { exec soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
+         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
    } else {
       set id [Exp::Id $info]
       simulation create $id -type trajectory
       simulation param $id -title $Sim(Name) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
-         -mode $mode -unit $unit -date $Sim(Second) -particles $parts -data $Sim(MeteoDataFiles) -output $Sim(Path)/traject.points \
+         -mode $mode -unit $unit -date $Sim(Second) -particles $parts -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration)
-      simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/traject.log
+      simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
 
       #----- Launch simulation within a new thread
       eval set tid1 \[thread::create \{ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim\; simulation run $id\}\]
 
       Exp::ThreadUpdate $id $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool [simulation param $id -result]
    }
-
-   #----- Relire les experiences
-   Model::Check 0
+   return True
 }
 
 #-------------------------------------------------------------------------------

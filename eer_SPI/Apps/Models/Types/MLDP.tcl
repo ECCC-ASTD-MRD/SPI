@@ -23,39 +23,6 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP.int
 source $GDefs(Dir)/Apps/Models/Types/MLDP_Scenario.tcl
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::KBytes2Human>
-# Creation   : 16 January 2008 - A. Malo - CMC/CMOE
-#
-# But        : Convert KBytes to human readable format.
-#
-# Parametres :
-#   <Size>   : Size in KBytes.
-#
-# Retour     :
-#   <Size>   : New size [KBytes|MBytes|GBytes|TBytes].
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::KBytes2Human { Size } {
-
-   if { $Size>1024.0 } {
-      if { [set Size [expr $Size/1024.0]]>1024.0 } {
-         if { [set Size [expr $Size/1024.0]]>1024.0 } {
-            if { [set Size [expr $Size/1024.0]]>1024.0 } {
-               return [format "%.1f PB" $Size]
-            }
-            return [format "%.1f TB" $Size]
-         }
-         return [format "%.1f GB" $Size]
-      }
-      return [format "%.1f MB" $Size]
-   }
-   return [format "%.1f KB" $Size]
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <MLDP::CheckFileSize>
 # Creation   : 28 August 2007 - A. Malo - CMC/CMOE
 #
@@ -90,47 +57,6 @@ proc MLDP::CheckFileSize { } {
       set Sim(IsMetFileSizeChecked) 0
       set Tmp(Delta)                $Sim(Delta)
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::CheckDiskSpace>
-# Creation   : 16 January 2008 - A. Malo - CMC/CMOE
-#
-# But        : Display warning message if available disk space if lower
-#              than critical value.
-#
-# Parametres :
-#   <Path>   : Repertoire
-#   <Max>    : Espace disque (en K)
-#
-# Retour     :
-#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::CheckDiskSpace { Path Max } {
-   global   GDefs
-   variable Warning
-   variable Lbl
-
-   #----- Get disk space information.
-   set fsinfo [system filesystem $Path -free -used]
-
-   set free [lindex $fsinfo 0]
-   set used [lindex $fsinfo 1]
-
-   if { [expr $free/(1024.0*1024.0)]<$Max } {
-
-      set info "\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskNeed) $GDefs(Lang)] : [MLDP::KBytes2Human $Max]\n[lindex $Warning(DiskAvail) $GDefs(Lang)] :[MLDP::KBytes2Human $free]"
-      set answer [Dialog::CreateDefault .mldp1new 700 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DiskSpace) $GDefs(Lang)]\n$Info" warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $answer } {
-         return False
-      }
-   }
-   return True
 }
 
 #----------------------------------------------------------------------------
@@ -173,7 +99,7 @@ proc MLDP::CreateLaunchInputFile { } {
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_CLEAN=1"
-   puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+   puts $file "MODEL_TRACE=\"\""
    puts $file ""
    puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
    puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
@@ -183,7 +109,7 @@ proc MLDP::CreateLaunchInputFile { } {
    puts $file "MLDP_METEO=glb"
    puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
    puts $file "MLDP_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
-   puts $file "MLDP_DEBUG=low"
+   puts $file "MLDP_LOGLEVEL=low"
    puts $file "MLDP_SEED=variable"
 
    #----- Type of source.
@@ -201,72 +127,6 @@ proc MLDP::CreateLaunchInputFile { } {
    close $file
 
    return 1
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::LaunchInit>
-# Creation   : Octobre 1999 - J.P.Gauthier - CMC/CMOE
-#
-# But        : Effectuer tout les checks et pretraitements et lancer
-#              la simulation.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::LaunchInit { } {
-   global   GDefs
-   variable Sim
-
-   #----- Define variables.
-   set Sim(NoSim)     [Info::Request $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/$Sim(Model).pool]
-   set ExpName        "$Sim(NoExp)_$Sim(Name)"
-   set SimName        "$Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)"
-   set Sim(Path)      "$GDefs(DirData)/$ExpName/$SimName"
-
-   if { $Model::Param(IsUsingSoumet) } {
-
-      set token "$Model::Param(Host)_${ExpName}_${SimName}_[clock seconds]"
-
-      if { $Model::Param(Arch) == "AIX" } {
-         set Sim(PathRun) "[lindex $GDefs(BackEnd$Model::Param(Host)) 1]/eer_Experiment/$token"
-      } else {
-         set Sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/$token"
-      }
-   } else { #----- Local host.
-      set Sim(PathRun) $Sim(Path)
-   }
-
-   if { ![MLDP::CheckDiskSpace $GDefs(DirData) $Sim(CriticalDiskSpace)] } {
-      return 0
-   }
-
-   #----- Verify input parameters set by the user before launching the model.
-   if { [Exp::Params . MLDP $Sim(Info)] } {
-
-      #----- Destroy interface.
-      destroy .mldpnew;
-
-      #----- Close MLDP mode.
-      MLDP::ModeLeave
-
-      #----- Create simulation directories on local host.
-      file mkdir $Sim(Path) $Sim(Path)/meteo $Sim(Path)/results $Sim(Path)/tmp
-
-      #----- Create ASCII input files for :
-      #-----   - meteorological preprocessing script ;
-      #-----   - model script ;
-      #-----   - launch script.
-      if { [MLDP::MeteoCreateInputFiles] && [MLDP::CreateModelInputFile $Sim(Model)] && [MLDP::CreateLaunchInputFile] } {
-         MLDP::Launch
-      }
-      #----- Relire les experiences
-      Model::Check 0
-   }
 }
 
 #----------------------------------------------------------------------------
@@ -288,39 +148,36 @@ proc MLDP::Launch { } {
    global   env
    variable Sim
 
-   . config -cursor watch
-   update idletasks
+   #----- Create input files for meteorological preprocessing script, model script, launch script.
+   if { ![MLDP::CreateModelInputFile $Sim(Model)] || ![MLDP::CreateLaunchInputFile] } {
+      return False
+   }
+   Model::ParamsMeteoInput MLDP
 
-   set Sim(State) 2
-   Info::Set $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/$Sim(Model).pool [Info::Code ::MLDP::Sim $Sim(Info) :]
-
-   if { $Sim(SrcType)=="accident" && [file exists $Sim(Path)/tmp/data_std_sim.pres] } {
-      #----- Launch meteorological fields script for RSMC response.
+   #----- Launch meteorological fields script for RSMC response.
+   if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Debug::TraceProc "(INFO) Launching RSMC meteorological fields script on local host ($GDefs(Host))."
-      set ErrorCode [catch { exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_sim.pres >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
+      set ErrorCode [catch { exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
    if { $Model::Param(IsUsingSoumet) } {
 
-      #----- Create listing directory.
-      if { ![file isdirectory $env(HOME)/listings/eer_Experiment] } {
-         file mkdir $env(HOME)/listings/eer_Experiment
-      }
+      if { $Model::Param(Remote) } {
+         #----- Create simulation directories on remote host.
+         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
+         if { $ErrorCode != 0 } {
+            Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
+            return False
+         }
 
-      #----- Create simulation directories on remote host.
-      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
-      if { $ErrorCode != 0 } {
-         Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
-         return False
+         #----- Copy needed files on remote host.
+         set ErrorCode [catch { exec scp -p $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/*.in $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
+         if { $ErrorCode != 0 } {
+            Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
+            return False
+         }
+         Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
       }
-
-      #----- Copy needed files on remote host.
-      set ErrorCode [catch { exec scp -p  $Sim(Path)/tmp/sim.pool $Sim(Path)/tmp/Model_MLDP.in $Sim(Path)/tmp/$Sim(Model).in $Sim(Path)/tmp/griddef $Sim(Path)/tmp/data_std_sim.eta $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
-      if { $ErrorCode != 0 } {
-         Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
-         return False
-      }
-      Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
 
       set memory ""
       set mem    ""
@@ -339,7 +196,7 @@ proc MLDP::Launch { } {
             set mem "1280M"
          }
       }
-#TODO $GDefs(Dir)/Script/launch_mldp.sh
+
       if { $Sim(Model)=="MLDP1" } {
          exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
             -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
@@ -354,7 +211,7 @@ proc MLDP::Launch { } {
 
       if { $ErrorCode } {
          Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
-         return False
+#         return False
       }
       Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
 
@@ -362,7 +219,74 @@ proc MLDP::Launch { } {
       Exp::Launch "$GDefs(Dir)/Script/Model.sh $Sim(Path)/tmp/Model_MLDP.in" "[Info::Code ::MLDP::Sim $Sim(Info) :]" 10000 $Sim(Path)/tmp/Model_MLDP.out
       Debug::TraceProc "(INFO) Job launched on $Model::Param(Host)."
    }
-   . config -cursor left_ptr
+   return True
+}
+
+##----------------------------------------------------------------------------
+# Nom        : <MLDP::LaunchParams>
+# Creation   : Juin 2001 - J.P.Gauthier - CMC/CMOE
+#
+# But        : Effectuer toutes les verifications de parametres et recuperer
+#              les donnees meteorologiques disponibles pour la simulation.
+#
+# Parametres :
+#   <Tab>    : Frame parent de l'onglet
+#   <No>     : Numero de l'onglet
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::LaunchParams { Tab No } {
+   global   GDefs
+   variable Sim
+
+   .mldpnew config -cursor watch
+
+   if { $No != 0 && $Sim(TabPrevNo) == 0 } {
+      #----- Validate output and model time steps.
+      if { ![MLDP::ValidateNbSrc] || ![MLDP::ValidateTimeSteps] || ![MLDP::ValidateSimulationDuration] || ![MLDP::ValidateOtherParams] } {
+         TabFrame::Select $Tab 0
+         return 0
+      }
+   }
+
+   if { $No != 1 && $Sim(TabPrevNo) == 1 } {
+      #----- Validate emission column parameters.
+      if { ![MLDP::ValidateEmissionColumn] } {
+         TabFrame::Select $Tab 1
+         return 0
+      }
+   }
+
+   if { $No == 2 && $Sim(TabPrevNo) != 2 } {
+
+      .mldpnew config -cursor watch
+
+      #----- Validate emission scenario if not validated yet.
+      if { !$Sim(IsScenarioValid) } {
+         if { ![MLDP::ValidateDurationsVsModelTimeStep] } {
+            TabFrame::Select $Tab 1
+            return 0
+         }
+      }
+
+      #----- Set isotopes information for pool of simulation.
+      MLDP::SetIsotopesInfo
+
+      #----- Get meteorological data according to met database, time interval between files, release accident date-time.
+      if { ![MLDP::GetMetData] } {
+         .mldpnew config -cursor left_ptr
+         return 0
+      }
+   }
+
+   .mldpnew config -cursor left_ptr
+
+   #----- Set previous tab no.
+   set Sim(TabPrevNo) $No
 }
 
 #----------------------------------------------------------------------------
@@ -594,80 +518,6 @@ proc MLDP::CreateModelInputFile { Model } {
       puts $file $string
    }
    close $file;
-
-   return True
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::CreateMeteoInputFiles>
-# Creation   : 30 August 2007 - A. Malo - CMC/CMOE
-#
-# But        : Create meteorological input files.
-#                - Input file containing list of meteorological files.
-#                - Trace information output file containing list of meteorological standard files for simulation.
-#                - Input file containing grid parameters.
-#
-# Parametres :
-#  <Model>   : Model
-#
-# Retour     :
-#  <Bool>    : True ou False.
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::MeteoCreateInputFiles { } {
-   variable Sim
-
-   set file [open $Sim(Path)/tmp/data_std_sim.eta w 0644]
-   puts $file $Sim(MeteoDataFiles)
-   close $file
-
-   #----- Create ASCII file containing list of meteorological files for RSMC response.
-   if { $Sim(SrcType) == "accident" } {
-
-      if { [regexp "/gridpt/" $Model::Param(DBaseProg)] && [regexp "/gridpt/" $Model::Param(DBaseDiag)] } {
-
-         set files {}
-
-         if { $Sim(Meteo)=="reg" } { #----- Regional NWP met model.
-            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles) "/data"      files
-            regsub -all "/regeta/"    $files               "/regpres/"  files
-            regsub -all "/reghyb/"    $files               "/regpres/"  files
-            regsub -all "/regeta2/"   $files               "/regpres2/" files
-            regsub -all "/reghyb2/"   $files               "/regpres2/" files
-         } elseif { $Sim(Meteo) == "glb" } { #----- Global NWP met model.
-            regsub -all "/fs/ops/cmo" $Sim(MeteoDataFiles) "/data"      files
-            regsub -all "/glbeta/"    $files               "/glbpres/"  files
-            regsub -all "/glbhyb/"    $files               "/glbpres/"  files
-            regsub -all "/glbeta2/"   $files               "/glbpres2/" files
-            regsub -all "/glbhyb2/"   $files               "/glbpres2/" files
-         }
-
-         if { [llength $files] } {
-            set file [open $Sim(Path)/tmp/data_std_sim.pres w 0644]
-            puts $file $files
-            close $file
-         }
-      }
-   }
-
-   #----- Create ASCII file containing grid parameters.
-   set ErrorCode [catch { exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
-                                         [lindex $Sim(Grid) 1] [lindex $Sim(Grid) 2] [lindex $Sim(Grid) 3] [lindex $Sim(Grid) 4] \
-                                         [lindex $Sim(Grid) 5] [lindex $Sim(Grid) 6] [lindex $Sim(Grid) 0]] > $Sim(Path)/tmp/griddef } Message]
-   if { $ErrorCode } {
-      Debug::TraceProc "(ERROR) Unable to create grid parameters input file.\n\n$Message"
-      return False
-   }
-
-   #----- Save simulation pool information.
-   set ErrorCode [catch { exec echo "[Info::Code ::MLDP::Sim $Sim(Info) :]" > $Sim(Path)/tmp/sim.pool } Message]
-   if { $ErrorCode } {
-      Debug::TraceProc "(ERROR) Unable to save pool information.\n\n$Message"
-      return False
-   }
 
    return True
 }
@@ -1521,73 +1371,6 @@ proc MLDP::SimInitNew { } {
    #----- Initialize coordinates of center of grid according to selected source and
    #----- define polar stereographic grid.
    MLDP::SetSrc
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::LaunchParams>
-# Creation   : Juin 2001 - J.P.Gauthier - CMC/CMOE
-#
-# But        : Effectuer toutes les verifications de parametres et recuperer
-#              les donnees meteorologiques disponibles pour la simulation.
-#
-# Parametres :
-#   <Tab>    : Frame parent de l'onglet
-#   <No>     : Numero de l'onglet
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::LaunchParams { Tab No } {
-   global   GDefs
-   variable Sim
-
-   .mldpnew config -cursor watch
-
-   if { $No != 0 && $Sim(TabPrevNo) == 0 } {
-      #----- Validate output and model time steps.
-      if { ![MLDP::ValidateNbSrc] || ![MLDP::ValidateTimeSteps] || ![MLDP::ValidateSimulationDuration] || ![MLDP::ValidateOtherParams] } {
-         TabFrame::Select $Tab 0
-         return 0
-      }
-   }
-
-   if { $No != 1 && $Sim(TabPrevNo) == 1 } {
-      #----- Validate emission column parameters.
-      if { ![MLDP::ValidateEmissionColumn] } {
-         TabFrame::Select $Tab 1
-         return 0
-      }
-   }
-
-   if { $No == 2 && $Sim(TabPrevNo) != 2 } {
-
-      .mldpnew config -cursor watch
-
-      #----- Validate emission scenario if not validated yet.
-      if { !$Sim(IsScenarioValid) } {
-         if { ![MLDP::ValidateDurationsVsModelTimeStep] } {
-            TabFrame::Select $Tab 1
-            return 0
-         }
-      }
-
-      #----- Set isotopes information for pool of simulation.
-      MLDP::SetIsotopesInfo
-
-      #----- Get meteorological data according to met database, time interval between files, release accident date-time.
-      if { ![MLDP::GetMetData] } {
-         .mldpnew config -cursor left_ptr
-         return 0
-      }
-   }
-
-   .mldpnew config -cursor left_ptr
-
-   #----- Set previous tab no.
-   set Sim(TabPrevNo) $No
 }
 
 #----------------------------------------------------------------------------

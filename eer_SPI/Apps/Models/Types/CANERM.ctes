@@ -26,6 +26,7 @@ namespace eval CANERM {
 
    #----- Definition des constantes generale aux simulations
 
+   set Sim(Model)         CANERM                      ;#Identificateur du modele
    set Sim(Delta)         3                           ;#Delta des fichiers meteo
    set Sim(Descript)      ""                          ;#Descriptif des donnees affichees
    set Sim(FreqIn)        12                          ;#Frequence des fichiers d'entree au modele
@@ -48,21 +49,17 @@ namespace eval CANERM {
    set Sim(ListSimDuration)     { 6 12 18 24 48 72 96 120 144 168 }          ; #----- List of simulation durations [hr].
    set Sim(Retro)         False
 
-   #----- Define list of available hosts.
-   set Sim(Hosts) $GDefs(Host)
-
    #----- Add front-end machine to list of available hosts.
-   if { [lsearch -exact $Sim(Hosts) $GDefs(FrontEnd)]==-1 } {
-      lappend Sim(Hosts) $GDefs(FrontEnd)
+   set Sim(Hosts) $GDefs(FrontEnds)
+   if { [lsearch -exact $Sim(Hosts) $GDefs(Host)]==-1 } {
+      lappend Sim(Hosts) $GDefs(Host)
    }
 
    #----- Add back-end machines to list of hosts.
-   set Sim(Hosts) [concat $GDefs(BackEnd) $Sim(Hosts)]
+   set Sim(Hosts) [concat $GDefs(BackEnds) $Sim(Hosts)]
+
    set Model::Param(Host) [lindex $Sim(Hosts) 0]
 
-   #----- Definition des parametres de grilles modifiables
-
-   set Sim(Model) CANERM
    set Sim(Info)  { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                     SimYear SimMonth SimDay SimHour Mode Meteo Scale Grid \
                     FreqOut EmHeight Event NbPer Dt ISauve DTIN DTIS FnVert FnTime EmDuration Delai \

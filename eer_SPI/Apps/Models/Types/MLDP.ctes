@@ -29,7 +29,6 @@ namespace eval MLDP {
    set Sim(DBaseDiag)     ""                          ; #----- Directory path of diagnostics met files.
    set Sim(DBaseProg)     ""                          ; #----- Directory path of prognostics met files.
    set Sim(Path)          ""                          ; #----- Simulation directory.
-   set Sim(CriticalDiskSpace)   5.0                   ; #----- Critical disk space value [Gbytes].
 
    set Sim(ListEvent)           { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" } ; #----- List of type of events.
    set Sim(ListScale)           { "HEMI  (50 km, 687x687)" "MESO  (33 km, 229x229)" "FINE  (15 km, 503x503)" "VFINE (10 km, 229x229)" "EFINE (5 km,  457x457)" } ; #----- List of grid resolutions [km].
@@ -84,27 +83,23 @@ namespace eval MLDP {
    set Sim(EmEpsilon)            1.0e-05                       ; #----- Small value.
    set Sim(Retro)                False
 
-   #----- Set variables for pool info.
+   #----- Add front-end machine to list of available hosts.
+   set Sim(Hosts) $GDefs(FrontEnds)
+   if { [lsearch -exact $Sim(Hosts) $GDefs(Host)]==-1 } {
+      lappend Sim(Hosts) $GDefs(Host)
+   }
 
+   #----- Add back-end machines to list of hosts.
+   set Sim(Hosts) [concat $GDefs(BackEnds) $Sim(Hosts)]
+   set Model::Param(Host) [lindex $Sim(Hosts) 0]
+
+   #----- Set variables for pool info.
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
                    AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour \
                    Mode Meteo Delta Scale GridSize Grid \
                    Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel \
                    EmNumberParticles EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                    EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
-
-
-   #----- Define list of available hosts.
-   set Sim(Hosts) $GDefs(Host)
-
-   #----- Add front-end machine to list of available hosts.
-   if { $Sim(Model)=="MDLP0" && [lsearch -exact $Sim(Hosts) $GDefs(FrontEnd)]==-1 } {
-      lappend Sim(Hosts) $GDefs(FrontEnd)
-   }
-
-   #----- Add back-end machines to list of hosts.
-   set Sim(Hosts) [concat $GDefs(BackEnd) $Sim(Hosts)]
-   set Model::Param(Host) [lindex $Sim(Hosts) 0]
 }
 
 namespace eval MLDP0 {

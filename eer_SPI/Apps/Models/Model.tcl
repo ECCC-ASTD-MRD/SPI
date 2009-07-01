@@ -335,15 +335,23 @@ proc Model::ParamsMetData { Model } {
 
 proc Model::ParamsCheck { Model { Get True } } {
    global   GDefs
+   global   env
    variable Param
+
 
    #----- Set host architecture.
    set Param(Arch) [exec ssh $Param(Host) exec uname -s]
 
    #----- Set flag indicating if using 'soumet' command or not.
-   set Param(IsUsingSoumet) 1
    if { $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
       set Param(IsUsingSoumet) 0
+   } else {
+      set Param(IsUsingSoumet) 1
+
+      #----- Create listing directory.
+      if { ![file isdirectory $env(HOME)/listings/eer_Experiment] } {
+         file mkdir $env(HOME)/listings/eer_Experiment
+      }
    }
 
    Model::ParamsQueues
@@ -559,17 +567,17 @@ proc Model::ParamsQueues { } {
    global GDefs
    variable Param
 
-   if { [info exists GDefs(Queues$Param(Host))] } {
-      set Param(Queues) $GDefs(Queues$Param(Host))
+   if { [info exists GDefs(BackEnd$Param(Host))] } {
+      set Param(Queues) [lindex $GDefs(BackEnd$Param(Host)) 0]
    } else {
-      set Param(Queues)  "none"
+      set Param(Queues)  ""
    }
    set Param(Queue) [lindex $Param(Queues) 0]
 
    catch {
       Option::Set $Param(Frame).params.queue $Param(Queues)
 
-      if { $Param(Queue)=="none" } {
+      if { $Param(Queue)=="" } {
          Option::Disable $Param(Frame).params.queue
       } else {
          Option::Enable $Param(Frame).params.queue
@@ -662,7 +670,7 @@ proc Model::ParamsFrame { Model Frame } {
    Bubble::Create $tabframe.params.email "[lindex $Bubble(EmailAddress) $GDefs(Lang)]"
 
    #----- Button.
-   button $tabframe.params.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::ParamValidate ${Model}"
+   button $tabframe.params.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::Launch ${Model}"
    pack $tabframe.params.launch -side top -anchor w -padx 2 -pady 2 -anchor e
    Bubble::Create $tabframe.params.launch "[lindex $Bubble(LaunchModel) $GDefs(Lang)] ${Model}."
 
@@ -670,7 +678,7 @@ proc Model::ParamsFrame { Model Frame } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <Model::ParamValidate>
+# Nom        : <Model::Launch>
 # Creation   : Juin 2009 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Validate and launch model run.
@@ -684,16 +692,179 @@ proc Model::ParamsFrame { Model Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::ParamValidate { Model } {
+proc Model::Launch { Model } {
+   variable Param
+
+   upvar ${Model}::Sim sim
 
    if { ![Model::ParamValidateQueue] } {
-      return 0
+      return False
    }
    if { ![Model::ParamValidateEmail] } {
-      return 0
+      return False
    }
 
-   ${Model}::LaunchInit
+   #----- Check user params
+   if { ![Exp::Params . ${Model} $sim(Info)] } {
+      return False
+   }
+
+   #----- Define simulations paths
+   Model::ParamsPath ${Model}
+
+   if { ![Model::ParamsCheckDiskSpace $sim(Path) 5.0] } {
+      return False
+   }
+
+   . config -cursor watch
+   update idletasks
+
+   #----- Try to lauch the model
+   if { [${Model}::Launch] } {
+      destroy [winfo toplevel $Param(Frame)]
+      set sim(State) 2
+      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ::${Model}::Sim $sim(Info) :]
+      Model::Check 0
+
+      catch { ${Model}::ModeLeave }
+   }
+
+   . config -cursor left_ptr
+   return True
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsCheckDiskSpace>
+# Creation   : 16 January 2008 - A. Malo - CMC/CMOE
+#
+# But        : Display warning message if available disk space if lower
+#              than critical value.
+#
+# Parametres :
+#   <Path>   : Repertoire
+#   <Max>    : Espace disque (en K)
+#
+# Retour     :
+#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsCheckDiskSpace { Path Max } {
+   global   GDefs
+   variable Warning
+   variable Lbl
+
+   #----- Get disk space information.
+   set fsinfo [system filesystem $Path -free -used]
+
+   set free [lindex $fsinfo 0]
+   set used [lindex $fsinfo 1]
+
+   if { [expr $free/(1024.0*1024.0)]<$Max } {
+
+      set info "\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskNeed) $GDefs(Lang)] : [Convert::KBytes2Human $Max]\n[lindex $Warning(DiskAvail) $GDefs(Lang)] :[Convert::KBytes2Human $free]"
+      set answer [Dialog::CreateDefault .mldp1new 700 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DiskSpace) $GDefs(Lang)]\n$Info" warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+
+      if { $answer } {
+         return False
+      }
+   }
+   return True
+}
+
+proc Model::ParamsPath { Model } {
+   global GDefs
+   variable Param
+
+   upvar ${Model}::Sim sim
+
+   #----- Define variables.
+   set sim(NoSim)     [Info::Request $GDefs(DirData)/$sim(NoExp)_$sim(Name)/$sim(Model).pool]
+   set ExpName        "$sim(NoExp)_$sim(Name)"
+   set SimName        "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
+   set sim(Path)      "$GDefs(DirData)/$ExpName/$SimName"
+
+   file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
+
+   set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
+   if { $Param(Remote) } {
+      #----- Remote path
+      set token "$Param(Host)_${ExpName}_${SimName}_[clock seconds]"
+
+      if { $Param(Arch) == "AIX" } {
+         set sim(PathRun) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/$token"
+      } else {
+         set sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/$token"
+      }
+   } else {
+      #----- Local path
+      set sim(PathRun) $sim(Path)
+   }
+
+   #----- Save simulation pool information.
+   exec echo "[Info::Code ::${Model}::Sim $sim(Info) :]" > $sim(Path)/tmp/sim.pool
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsMeteoInput>
+# Creation   : 30 August 2007 - A. Malo - CMC/CMOE
+#
+# But        : Create meteorological input files.
+#                - Input file containing list of meteorological files.
+#                - Trace information output file containing list of meteorological standard files for simulation.
+#                - Input file containing grid parameters.
+#
+# Parametres :
+#  <Model>   : Model
+#
+# Retour     :
+#  <Bool>    : True ou False.
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsMeteoInput { Model } {
+   variable Param
+
+   upvar ${Model}::Sim sim
+
+   set file [open $sim(Path)/tmp/data_std_eta.in w 0644]
+   puts $file $sim(MeteoDataFiles)
+   close $file
+
+   #----- Create ASCII file containing list of meteorological files for RSMC response.
+   if { [regexp "/gridpt/" $Param(DBaseProg)] && [regexp "/gridpt/" $Param(DBaseDiag)] } {
+
+      set files {}
+
+      if { $sim(Meteo)=="reg" } { #----- Regional NWP met model.
+         regsub -all "/fs/ops/cmo" $sim(MeteoDataFiles) "/data"      files
+         regsub -all "/regeta/"    $files               "/regpres/"  files
+         regsub -all "/reghyb/"    $files               "/regpres/"  files
+         regsub -all "/regeta2/"   $files               "/regpres2/" files
+         regsub -all "/reghyb2/"   $files               "/regpres2/" files
+      } elseif { $sim(Meteo) == "glb" } { #----- Global NWP met model.
+         regsub -all "/fs/ops/cmo" $sim(MeteoDataFiles) "/data"      files
+         regsub -all "/glbeta/"    $files               "/glbpres/"  files
+         regsub -all "/glbhyb/"    $files               "/glbpres/"  files
+         regsub -all "/glbeta2/"   $files               "/glbpres2/" files
+         regsub -all "/glbhyb2/"   $files               "/glbpres2/" files
+      }
+
+      if { [llength $files] } {
+         set file [open $sim(Path)/tmp/data_std_pres.in w 0644]
+         puts $file $files
+         close $file
+      }
+   }
+
+   #----- Create ASCII file containing grid parameters.
+   exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
+     [lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
+     [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]] > $sim(Path)/tmp/griddef.in
 }
 
 #----------------------------------------------------------------------------
@@ -882,7 +1053,6 @@ proc Model::Window { { Show "" } } {
    }
 
    #----- Preparer la liste.
-
    Model::Check $Data(Delay)
 
    TabFrame::Select .model.tab 1
@@ -952,7 +1122,6 @@ proc Model::Check { MS } {
    }
 
    #----- Instauration de l'evenement de verification de repertoires.
-
    if { $MS != 0 } {
       set Data(Handle) [after $MS [list Model::Check $MS]]
    }
@@ -976,16 +1145,13 @@ proc Model::Destroy { } {
    variable Data
 
    #----- Ajuster la geometrie
-
    TabFrame::Destroy .model.tab
    destroy .model
 
    #----- Supprimer le refresh.
-
    after cancel $Data(Handle)
 
    #----- Supprimer l'affichage des icones
-
    SPI::IcoDel WATCH
    SPI::IcoDel EXPERIMENT
 }
@@ -1040,7 +1206,6 @@ proc Model::GetMetPath { Parent } {
    pack .metpath.diag .metpath.prog .metpath.command -side top -fill x
 
    #----- Attendre la selection
-
    grab .metpath
    tkwait variable Model::Data(ShowPath)
    destroy .metpath
@@ -1082,7 +1247,6 @@ proc Model::New { Parent Command Label Single } {
    wm title     .expnew "$Label"
 
    #----- Initialiser les variables de localisations
-
    set Data(Type)  0
    set Data(Name)  "New experiment"
    set Data(Pos)   1
@@ -1412,13 +1576,7 @@ proc Model::Draw { Frame VP } {
    set Data(Lon$Data(Pos))   $Viewport::Map(LonCursor)
 }
 
-proc Model::DrawDone { Frame VP } {
-}
-
-proc Model::MoveInit { Frame VP } {
-}
-
-proc Model::Move { Frame VP } {
-}
-proc Model::MoveDone { Frame VP } {
-}
+proc Model::DrawDone { Frame VP } { }
+proc Model::MoveInit { Frame VP } { }
+proc Model::Move     { Frame VP } { }
+proc Model::MoveDone { Frame VP } { }

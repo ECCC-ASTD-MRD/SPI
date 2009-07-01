@@ -68,7 +68,7 @@ cd ${DirTmp}
 echo "doing" > sim.meteo
 
 #----- Lecture des parametres pour la directive GRILLE
-read < griddef grid
+read < griddef.in grid
 
 # ----- Mise-a-jour des directives de PGSM_CLIMATO (climatologie).
 #       les champs sont :
@@ -215,7 +215,7 @@ EOF_PGSM_METEOr24
 fi
 
 #-----On lis la liste de fichier a traiter.
-read < data_std_sim.eta stdfiles
+read < data_std_eta.in stdfiles
 
 #-----On Patch pour le GEMDM ( sortie aux heures ).
 file1=`echo $stdfiles | cut -d " " -f1`

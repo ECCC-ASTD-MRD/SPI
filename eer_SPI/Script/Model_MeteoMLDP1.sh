@@ -60,7 +60,7 @@ cd ${DirTmp}
 echo ${DirTmp} > ${DirTmp}/tmpdir
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
-read < griddef grid
+read < griddef.in grid
 
 #----- Create configuration input file for PGSM according to type of meteorological model.
 
@@ -172,7 +172,7 @@ else
 fi
 
 #----- Read the list of all standard meteorological files.
-read < data_std_sim.eta stdfiles
+read < data_std_eta.in stdfiles
 
 set -A ArrayStdFiles ${stdfiles}
 nbfiles=${#ArrayStdFiles[@]}

@@ -54,11 +54,11 @@ function Model_PoolEncode {
 
 function Model_PoolSet {
 
-   POOL[ERROR]=-1;
-   POOL[NEW]=0;
-   POOL[DONE]=1;
-   POOL[RUN]=2;
-   POOL[SUSPEND]=3;
+   POOL_ERROR=-1;
+   POOL_NEW=0;
+   POOL_DONE=1;
+   POOL_RUN=2;
+   POOL_SUSPEND=3;
 
    if [[ -f ${MODEL_TMPDIR}/sim.pool ]]; then
 
@@ -75,9 +75,9 @@ function Model_PoolSet {
 
       token=`echo ${state} | cut -d= -f1`
       if [[ $status -eq 0 ]]; then
-         state="${token}=${POOL[${mode}]}"
+         eval state=\"\$\{token\}=\${POOL_${mode}\}\"
       else
-         state="${token}=${POOL[ERROR]}"
+         state="${token}=${POOL_ERROR}"
       fi
 
       #----- Replace pool info.
@@ -196,25 +196,25 @@ function Model_CopyTrace {
 
    trace="${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_`echo ${MODEL_RUNDIR} | tr "/" "\n" | tail -2 | tr "\n" "."`"
 
-   echo "\n###----- Fichier meteo (data_std_sim)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/data_std_sim.eta >> ${trace}
+   echo "\n##### Fichier meteo (data_std_eta.in)\n" >> ${trace}
+   cat  ${MODEL_TMPDIR}/data_std_eta.in >> ${trace}
 
-   echo "\n###----- Parametres du script lancement (.in)\n" >> ${trace}
+   echo "\n##### Parametres du script lancement (.in)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}.in >> ${trace}
 
-   echo "\n###----- Output du script lancement (.out)\n" >> ${trace}
+   echo "\n##### Output du script lancement (.out)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}.out >> ${trace}
 
-   echo "\n###----- Erreur du script lancement (.err)\n" >> ${trace}
+   echo "\n##### Erreur du script lancement (.err)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}.err >> ${trace}
 
-   echo "\n###----- Parametres du modele (.in)\n" >> ${trace}
+   echo "\n##### Parametres du modele (.in)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
 
-   echo "\n###----- Sortie du modele (.out)\n" >> ${trace}
+   echo "\n##### Sortie du modele (.out)\n" >> ${trace}
    head -3000 ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out >> ${trace}
 
-   echo "\n###-----  Erreur du modele (.err)\n" >> ${trace}
+   echo "\n#####  Erreur du modele (.err)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
 
    #----- Exit function if running locally or not doing meteo.
@@ -233,7 +233,7 @@ function Model_CopyTrace {
 function Model_CleanUp {
 
    #----- Exit function if not remote or erasing.
-   if [[ ${MODEL_ISREMOTE} -eq 0 || ${MODEL_CLEAN} -eq 0 ]] ; then
+   if [[ ${MODEL_ISREMOTE} -eq 0 || ${MODEL_NEEDCOPY} -eq 0 || ${MODEL_CLEAN} -eq 0 ]] ; then
       return 0
    fi
 
@@ -281,7 +281,7 @@ function Model_CopyLog {
       Log_Print INFO "Copying log files (output and error) to temporary directory on local host (${MODEL_LOCALHOST})"
 
       #----- Copy relevant log files to local results directory.
-      scp -p *.err *.out ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp
+      scp -p ${MODEL_TMPDIR}/*.err ${MODEL_TMPDIR}/*.out ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp
       status=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
 
@@ -331,6 +331,7 @@ MODEL_EXITSTATUS=0
 Log_Start Model.sh 1.0 ${1}
 
 Model_Init
+
 if [[ ${MODEL_PRE} -gt 0 ]] ; then
    Log_Print INFO "Launching preprocessing for ${MODEL_NAME}${MODEL_TYPE} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
    ${MODEL_NAME}_Pre

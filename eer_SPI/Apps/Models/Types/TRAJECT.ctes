@@ -34,12 +34,10 @@ namespace eval TRAJECT {
    set Sim(ListTimeStep)    { 1200.0 3600.0 }
    set Sim(ListSimDuration) { 6 12 18 24 48 72 96 120 144 168 }  ;#----- List of simulation durations [hr].
 
-   #----- Define list of available hosts.
-   set Sim(Hosts) $GDefs(Host)
-
    #----- Add front-end machine to list of available hosts.
-   if { [lsearch -exact $Sim(Hosts) $GDefs(FrontEnd)]==-1 } {
-      lappend Sim(Hosts) $GDefs(FrontEnd)
+   set Sim(Hosts) $GDefs(FrontEnds)
+   if { [lsearch -exact $Sim(Hosts) $GDefs(Host)]==-1 } {
+      set Sim(Hosts) [linsert $Sim(Hosts) 0 $GDefs(Host)]
    }
 
    set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit BatchStart }
