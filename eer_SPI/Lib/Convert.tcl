@@ -240,6 +240,39 @@ proc Convert::FormatGrid { I J { Prec 4 } } {
    return $coord
 }
 
+#----------------------------------------------------------------------------
+# Nom        : <Convert::KBytes2Human>
+# Creation   : 16 January 2008 - A. Malo - CMC/CMOE
+#
+# But        : Convert KBytes to human readable format.
+#
+# Parametres :
+#   <Size>   : Size in KBytes.
+#
+# Retour     :
+#   <Size>   : New size [KBytes|MBytes|GBytes|TBytes].
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Convert::KBytes2Human { Size } {
+
+   if { $Size>1024.0 } {
+      if { [set Size [expr $Size/1024.0]]>1024.0 } {
+         if { [set Size [expr $Size/1024.0]]>1024.0 } {
+            if { [set Size [expr $Size/1024.0]]>1024.0 } {
+               return [format "%.1f PB" $Size]
+            }
+            return [format "%.1f TB" $Size]
+         }
+         return [format "%.1f GB" $Size]
+      }
+      return [format "%.1f MB" $Size]
+   }
+   return [format "%.1f KB" $Size]
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Convert::Decimal2Minute>
 # Creation : Juillet 1996 - E. Bilodeau - CMC/CMOE - 421 4642
