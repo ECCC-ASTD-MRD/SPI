@@ -39,6 +39,7 @@ LOG_MAILTITLE=${LOG_MAILTITLE:="Job Info"}
 LOG_JOBID=${LOG_JOBID:=""}
 LOG_FILE=${LOG_FILE:=""}
 LOG_TIME=${LOG_TIME:=0}
+LOG_OC=""
 
 #----- Logger internal variables
 LogSecTime=`date +%s`
@@ -204,6 +205,9 @@ function Log_Print {
       fi
       if [[ $level = "ERROR" ]] ; then
          echo "${levels}${datetime}${msg} ${time}" 1>&2
+         if [[ ${LOG_OC} != "" ]]; then
+            oclog x "${LOG_OC}\n\n${levels}${datetime}${msg} ${time}"
+         fi
       fi
    fi
 }
