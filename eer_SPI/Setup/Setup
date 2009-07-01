@@ -339,21 +339,19 @@ set GDefs(DirCFSArch)     \"$GDefs(DirCFSArch)\"
 set GDefs(DirMsg)         \"$GDefs(DirMsg)\"
 set GDefs(DBMet)           $GDefs(DBMet)
 
-#----- Definitions pour les Frontaux
+#----- Definitions pour les Frontends / Backends
 
 set GDefs(FrontEnd)       $GDefs(FrontEnd)
 set GDefs(FrontEndUser)   $GDefs(FrontEndUser)
 set GDefs(TransmitUser)   $GDefs(TransmitUser)
 
-#----- Definitions pour les BackEnd
+set GDefs(Queue)            { }
+set GDefs(BackEnd)          { }
 
-set GDefs(BackEnd)        { maia saiph }
-set GDefs(Queue)          { development }
-set GDefs(Queues)         { development production }
-set GDefs(Queuesmaia)     { development }
-set GDefs(Queuesaiph)     { development }
-set GDefs(BackEndmaia)    { $GDefs(BackEndmaia) }
-set GDefs(BackEndsaiph)   { $GDefs(BackEndsaiph) }
+set GDefs(FrontEnds)        { $GDefs(FrontEnds) }
+set GDefs(BackEnds)         { $GDefs(BackEnds) }
+set GDefs(BackEndmaia)      { $GDefs(BackEndmaia) }
+set GDefs(BackEndsaiph)     { $GDefs(BackEndsaiph) }
 
 #----- Constantes diverses relatives a toutes les applications
 
@@ -445,13 +443,10 @@ set GDefs(FrontEndUser)  $env(USER)
 set GDefs(TransmitUser)  afsiops
 set GDefs(Model)         False
 
-set GDefs(BackEnd)        { maia saiph }
-set GDefs(Queue)          { development }
-set GDefs(Queues)         { development production }
-set GDefs(Queuesmaia)     { development }
-set GDefs(Queuesaiph)     { development }
-set GDefs(BackEndmaia)    { /home/binops/afse/eer "" }
-set GDefs(BackEndsaiph)   { /home/binops/afse/eer "" }
+set GDefs(FrontEnds)        { alef dorval-ib pollux castor }
+set GDefs(BackEnds)         { maia saiph }
+set GDefs(BackEndmaia)      { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+set GDefs(BackEndsaiph)     { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 
 set GDefs(DirData)        ""
 set GDefs(DirCFSArch)     ""
