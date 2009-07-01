@@ -173,7 +173,7 @@ function Model_Init {
    if [[ ${MODEL_PRE} -ge 1 ]] ; then
       Log_Print INFO "Meteorological preprocessing parameters"
       Log_Print INFO "   Number of processes for meteorological preprocessing : ${MODEL_PRE}"
-      Log_Print INFO "   Number of meteorological files                       : `wc -w ${MODEL_TMPDIR}/data_std_sim.eta | awk '{print $1}'`"
+      Log_Print INFO "   Number of meteorological files                       : `wc -w ${MODEL_TMPDIR}/data_std_eta.in | awk '{print $1}'`"
    else
       Log_Print INFO "Meteorological preprocessing not requested"
    fi
