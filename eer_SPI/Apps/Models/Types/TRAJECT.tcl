@@ -286,16 +286,18 @@ proc TRAJECT::Launch { } {
    close $f
 
    if { $Model::Param(IsUsingSoumet) } {
+
+      #----- Run will be remote, setup what's needed on remote host.
       if { $Model::Param(Remote) } {
 
-         #----- Create simulation directories on remote host.
+         #----- Create simulation directories .
          set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
          if { $ErrorCode != 0 } {
             Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
             return False
          }
 
-         #----- Copy needed files on remote host.
+         #----- Copy needed files.
          set ErrorCode [catch { eval exec scp -p $Sim(Path)/tmp/sim.pool [glob $Sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
          if { $ErrorCode != 0 } {
             Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
@@ -337,9 +339,9 @@ proc TRAJECT::Launch { } {
 
       close $file
 
-      exec echo "soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
+      exec echo "soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
          -t 3600 -cm !G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
-      set ErrorCode [catch { exec soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
+      set ErrorCode [catch { exec soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
          -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
    } else {
       set id [Exp::Id $info]

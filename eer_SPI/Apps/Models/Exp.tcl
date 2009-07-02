@@ -822,7 +822,7 @@ proc Exp::ThreadKill { Id } {
 
    if { [simulation is $Id] } {
 
-      set ::Model::Data(Job) "[lindex $Msg(Kill) $GDefs(Lang)]"
+      set ::Model::Param(Job) "[lindex $Msg(Kill) $GDefs(Lang)]"
       Dialog::CreateWait $Data(Frame) [lindex $Msg(Kill) $GDefs(Lang)]
       update idletasks
 
@@ -831,7 +831,7 @@ proc Exp::ThreadKill { Id } {
       while { [simulation define $Id -percent]!=100 } { }
       simulation destroy $Id
 
-      set ::Model::Data(Job) ""
+      set ::Model::Param(Job) ""
       Dialog::DestroyWait
 
       #----- Suppression de la barre d'execution

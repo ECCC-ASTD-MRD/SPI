@@ -152,7 +152,8 @@ namespace eval MLDP {
    #----- Definitions des messages
 
    set Msg(MetGet)       { "Vérification de la disponibilitée des données météo en cours..." "Checking for meteorological data availability..." }
-   set Msg(Meteo)        { "Création des données météo en cours" "Creating meteorological data" }
+   set Msg(MetProcess)   { "Interpolation des données météo en cours ..." "Processing meteorological data ..." }
+   set Msg(Meteo)        { "Création des données météo en cours ..." "Creating meteorological data ..." }
    set Msg(Exist)        { "Veuillez compléter le lancement de MLDP en cours avant de procéder à un autre." "Please complete the current MLDP launch before proceeding with another one." }
    set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
    set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" "Do you really wish to delete this simulation?" }
@@ -346,6 +347,8 @@ namespace eval MLDP {
    set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
 
+   set Warning(MetLocal)          { "La météo n'est pas disponible sur l'hôte d'exécution alors elle sera interpolée localement, ceci peut prendre quelques minutes. Voulez-vous continuer ?" \
+                                    "Meteorological data is not available on the running host, it will be interpolated locally, this can take a few minutes, do you want to continue ?" }
    set Warning(SimDuration4)      { "Avertissement! La durée de simulation est supérieure à 72 hrs et le pas de temps de sortie des données est inférieur (ou égal) à 60 min. Ces paramètres d'entrée produiront des fichiers de résultats de grande taille.\n\nVoulez-vous modifier ces paramètres?" \
                                     "Warning! The simulation duration is greater than 72 hrs and the data output time step is lower than (or equal to) 60 min. These input parameters will generate large results file size.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration5)      { "\tDurée de simulation    :" "\tSimulation duration :" }

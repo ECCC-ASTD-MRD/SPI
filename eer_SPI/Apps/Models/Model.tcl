@@ -40,15 +40,34 @@ namespace eval Model {
    set Param(Dock) True
    set Param(Geom) { 350x630+[winfo rootx .]+[winfo rooty .] }
 
-   set Data(Delay)   60000                       ;#Delai de refresh des experiences (millisecondes)
-   set Data(Handle)  ""                          ;#Numero de tache du refresh (Pour la cancellation)
-   set Data(Unit)    "DDD.CC"                    ;#Unite des coordonnees de l'experience selectionnee
-   set Data(Show)    False
-   set Data(Job)     ""
+   set Param(Delay)   60000                            ;#Delai de refresh des experiences (millisecondes)
+   set Param(Handle)  ""                               ;#Numero de tache du refresh (Pour la cancellation)
+   set Param(Unit)    "DDD.CC"                         ;#Unite des coordonnees de l'experience selectionnee
+   set Param(Show)    False
+   set Param(Job)     ""                               ;#Current processing
 
-   set Title           { "Modélisation" "Modeling" }
+   set Param(Arch) ""                                  ;#Host architecture
+   set Param(Host) ""                                  ;#Host
+   set Para(Queue) ""                                  ;#Queue
+   set Param(EmailAddress)     ""                      ;#Username email address.
+   set Param(EmailAddressSet)  "$env(USER)@ec.gc.ca"   ;#Username email address.
+   set Param(ListEmailAddress) $Param(EmailAddressSet) ;#List of email addresses.
+   set Param(IsEmailAddress)   0                       ;#Flag indicating if sending email to user for monitoring entire job (1) or not (0).
+   set Param(DBaseType) "eta"                          ;#Type od metdata
+   set Param(DBaseLocal) False                         ;#Is the metdata local
+   set Param(DBaseDiag) ""                             ;#Path for diag metdata
+   set Param(DBaseProg) ""                             ;#Path for prog metdata
+   set Param(NbCPUsMeteo)       1
+   set Param(ListNbCPUsMeteo)   { 1 }
+   set Param(NbMPItasks)        1
+   set Param(ListNbMPItasks)    { 1 }
+   set Param(NbOMPthreads)      1
+   set Param(ListNbOMPthreads)  { 1 }
+   set Param(OMPthreadFact)     1                     ;#Integer multiplicative factor to apply to number of OpenMP threads [1|2].
+   set Param(ListOMPthreadFact) { 1 }
 
    #----- Labels
+   set Title           { "Modélisation" "Modeling" }
 
    set Lbl(Launch)              { "Lancement" "Launch" }
    set Lbl(LaunchModel)         { "Lancer" "Launch" }
@@ -61,10 +80,6 @@ namespace eval Model {
    set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
    set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
    set Lbl(EmailAddress)        { "   Adresse     " "   Address     " }
-
-   set Param(EmailAddress)     "$env(USER)@ec.gc.ca"     ; #----- Username email address.
-   set Param(ListEmailAddress) $Param(EmailAddress)        ; #----- List of email addresses.
-   set Param(IsEmailAddress)   0                         ; #----- Flag indicating if sending email to user for monitoring entire job (1) or not (0).
 
    set Lbl(Name)       { "Nom" "Name" }
    set Lbl(Diag)       { "Diagnostiques" "Diagnostics" }
@@ -176,6 +191,60 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsCheck>
+# Creation   : 27 August 2007 - A. Malo - CMC/CMOE
+#
+# But        : Check launch parameters.
+#
+# Parametres :
+#  <Model>   : Model
+#  <Get>     : Extraire les donnees meteo
+#
+# Retour     :
+#  <Bool>    : True ou False.
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsCheck { Model { Get True } } {
+   global   GDefs
+   global   env
+   variable Param
+
+   #----- Set host architecture.
+   if { $Param(Host)==$GDefs(Host) } {
+      set Param(Arch) $GDefs(Arch)
+   } else {
+      set Param(Arch) [exec ssh $Param(Host) exec uname -s]
+   }
+
+   #----- Set flag indicating if using 'soumet' command or not.
+   if { $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
+      set Param(IsUsingSoumet) 0
+   } else {
+      set Param(IsUsingSoumet) 1
+
+      #----- Create listing directory.
+      if { ![file isdirectory $env(HOME)/listings/eer_Experiment] } {
+         file mkdir $env(HOME)/listings/eer_Experiment
+      }
+   }
+
+   Model::ParamsQueues
+   Model::ParamsCPUMeteo
+   Model::ParamsCPUModel
+   Model::ParamsMetDataDir $Model
+
+   if { $Get } {
+      if { ![${Model}::GetMetData] } {
+         return False
+      }
+   }
+   return True
+}
 
 #----------------------------------------------------------------------------
 # Nom        : <Model::ParamsMetData>
@@ -313,57 +382,7 @@ proc Model::ParamsMetData { Model } {
    }
 
    Debug::TraceProc "(INFO) Selected meteorological data files:\n\t[join $sim(MeteoDataFiles) \n\t]"
-   return True
-}
 
-#----------------------------------------------------------------------------
-# Nom        : <Model::ParamsCheck>
-# Creation   : 27 August 2007 - A. Malo - CMC/CMOE
-#
-# But        : Check launch parameters.
-#
-# Parametres :
-#  <Model>   : Model
-#  <Get>     : Extraire les donnees meteo
-#
-# Retour     :
-#  <Bool>    : True ou False.
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc Model::ParamsCheck { Model { Get True } } {
-   global   GDefs
-   global   env
-   variable Param
-
-
-   #----- Set host architecture.
-   set Param(Arch) [exec ssh $Param(Host) exec uname -s]
-
-   #----- Set flag indicating if using 'soumet' command or not.
-   if { $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
-      set Param(IsUsingSoumet) 0
-   } else {
-      set Param(IsUsingSoumet) 1
-
-      #----- Create listing directory.
-      if { ![file isdirectory $env(HOME)/listings/eer_Experiment] } {
-         file mkdir $env(HOME)/listings/eer_Experiment
-      }
-   }
-
-   Model::ParamsQueues
-   Model::ParamsCPUMeteo
-   Model::ParamsCPUModel
-   Model::ParamsMetDataDir $Model
-
-   if { $Get } {
-      if { ![${Model}::GetMetData] } {
-         return False
-      }
-   }
    return True
 }
 
@@ -389,51 +408,50 @@ proc Model::ParamsMetDataDir { Model } {
 
    upvar ${Model}::Sim sim
 
-   #----- Set met database by default.
-   MetData::Path eta $sim(Meteo) Param(DBaseDiag) Param(DBaseProg)
+   if { $Param(DBaseType)=="user" } {
+      #----- Check for remote path
+      set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $Param(DBaseDiag) }]
+   } else {
+      #----- Set met database by default.
+      MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
 
-   if { $sim(Meteo) == "reg" } {
+      if { $sim(Meteo)=="reg" } {
 
-      if { [lsearch -exact $GDefs(BackEnd) $Param(Host)] != -1 } {
-         #----- Set met database on back-end.
-         if { $sim(Model)=="MLDP1" } {
-            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
-            set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
+         if { [lsearch -exact $GDefs(BackEnds) $Param(Host)] != -1 } {
+            #----- Set met database on back-end.
+            if { $sim(Model)=="MLDP1" } {
+               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
+               set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
+            } else {
+               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/regeta2"
+               set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta"
+            }
          } else {
-            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/regeta2"
-            set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta"
+            #----- Set met database on host.
+            if { $sim(Model)=="MLDP1" } {
+               set Param(DBaseDiag) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
+               set Param(DBaseProg) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
+            }
          }
-      } else {
-         #----- Set met database on host.
-         if { $sim(Model)=="MLDP1" } {
-            set Param(DBaseDiag) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
-            set Param(DBaseProg) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
-         } else {
-            set Param(DBaseDiag) "/data/gridpt/dbase/trial/regeta2"
-            set Param(DBaseProg) "/data/gridpt/dbase/prog/regeta"
-         }
-      }
+      } elseif { $sim(Meteo)=="glb" } {
 
-   } elseif { $sim(Meteo) == "glb" } {
-
-      if { [lsearch -exact $GDefs(BackEnd) $Param(Host)] != -1 } {
-         #----- Set met database on back-end.
-         if { $sim(Model)=="MLDP1" } {
-            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
+         if { [lsearch -exact $GDefs(BackEnds) $Param(Host)] != -1 } {
+            #----- Set met database on back-end.
+            if { $sim(Model)=="MLDP1" } {
+               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
+            } else {
+               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/glbeta2"
+            }
+            set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
          } else {
-            set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/glbeta2"
+            #----- Set met database on host.
+            if { $sim(Model)=="MLDP1" } {
+               set Param(DBaseDiag) "/data/gridpt/dbase/prog/glbeta"
+            }
          }
-         set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
-      } else {
-         #----- Set met database on host.
-         if { $sim(Model)=="MLDP1" } {
-            set Param(DBaseDiag) "/data/gridpt/dbase/prog/glbeta"
-         } else {
-            set Param(DBaseDiag) "/data/gridpt/dbase/trial/glbeta2"
-         }
-         set Param(DBaseProg) "/data/gridpt/dbase/prog/glbeta"
       }
    }
+   set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $Param(DBaseDiag) }]
 }
 
 #----------------------------------------------------------------------------
@@ -663,7 +681,7 @@ proc Model::ParamsFrame { Model Frame } {
    Bubble::Create $tabframe.params.emonitor "[lindex $Bubble(IsEmailAddress) $GDefs(Lang)]"
 
    #----- Email address.
-   Option::Create $tabframe.params.email [lindex $Lbl(EmailAddress) $GDefs(Lang)] Model::Param(EmailAddress) 1 -1 $Model::Param(ListEmailAddress) ""
+   Option::Create $tabframe.params.email [lindex $Lbl(EmailAddress) $GDefs(Lang)] Model::Param(EmailAddressSet) 1 -1 $Model::Param(ListEmailAddress) ""
    if { $Model::Param(IsEmailAddress) } {
       pack $tabframe.params.email -side top -anchor w -padx 2 -fill x
    }
@@ -905,15 +923,14 @@ proc Model::ParamValidateEmail { } {
    if { $Param(IsEmailAddress) } {
 
       set err 0
-
-      if { $Param(EmailAddress)=="" } {
+      if { $Param(EmailAddressSet)=="" } {
          set err 1
       }
 
-      if { [set idx [string last "@" $Param(EmailAddress)]]==-1 } {
+      if { [set idx [string last "@" $Param(EmailAddressSet)]]==-1 } {
          set err 1
       } else {
-         set name [string range $Param(EmailAddress) 0 [expr $idx-1]]
+         set name [string range $Param(EmailAddressSet) 0 [expr $idx-1]]
          foreach char { \  , ; : ~ ` ! @ \# $ % ^ & * ? \( \) + / = < > \" \\ [ ] \{ \} | é è ê ë à â ä ì î ï ç É È Ê Ë À Â Ä Ì Î Ï Ç } {
             if { [string last "${char}" $name]!=-1 } {
                set err 1
@@ -926,13 +943,13 @@ proc Model::ParamValidateEmail { } {
       }
 
       if { $err } {
-         Dialog::CreateError $Param(Frame) "[lindex $Error(EmailAddress) $GDefs(Lang)] $Param(EmailAddress)" $GDefs(Lang) 600
+         Dialog::CreateError $Param(Frame) "[lindex $Error(EmailAddress) $GDefs(Lang)] $Param(EmailAddressSet)" $GDefs(Lang) 600
          focus $Param(Frame).params.email.e
          return 0
       }
 
       #----- Display warning if email is different than default one.
-      if { $Param(EmailAddress) != "$env(USER)@ec.gc.ca" } {
+      if { $Param(EmailAddressSet) != "$env(USER)@ec.gc.ca" } {
          set answer [Dialog::CreateDefault $Param(Frame) 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(EmailAddress) $GDefs(Lang)]\n\n[lindex $Warning(EmailAddress2) $GDefs(Lang)] $Param(EmailAddress)\n[lindex $Warning(EmailAddress3) $GDefs(Lang)] $env(USER)@ec.gc.ca" \
                      warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
@@ -941,6 +958,9 @@ proc Model::ParamValidateEmail { } {
             return 0
          }
       }
+      set Param(EmailAddress) $Param(EmailAddressSet)
+   } else {
+      set Param(EmailAddress) ""
    }
    return 1
 }
@@ -1025,7 +1045,7 @@ proc Model::Window { { Show "" } } {
    variable Param
 
    if { $Show!="" } {
-      set Data(Show) $Show
+      set Param(Show) $Show
    }
 
    if { ![winfo exists .model] } {
@@ -1038,13 +1058,13 @@ proc Model::Window { { Show "" } } {
          wm title          .model "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Title $GDefs(Lang)])"
          wm transient      .model .
          eval wm geometry  .model $Param(Geom)
-         wm protocol       .model WM_DELETE_WINDOW { set Model::Data(Show) False; Model::Destroy }
+         wm protocol       .model WM_DELETE_WINDOW { set Model::Param(Show) False; Model::Destroy }
       }
 
       frame .model.dock -relief raised -bd 1
          button .model.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command Model::Dock
-         button .model.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command { set Model::Data(Show) False; Model::Destroy }
-         label .model.dock.info -textvariable Model::Data(Job) -relief sunken -bd 1 -anchor w -width 21 -bg $GDefs(ColorLight)
+         button .model.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command { set Model::Param(Show) False; Model::Destroy }
+         label .model.dock.info -textvariable Model::Param(Job) -relief sunken -bd 1 -anchor w -width 21 -bg $GDefs(ColorLight)
          pack .model.dock.sel .model.dock.del -side left
          pack .model.dock.info -side left -fill x -expand true
       pack .model.dock -side bottom -fill x
@@ -1060,12 +1080,12 @@ proc Model::Window { { Show "" } } {
       Watch::Create [TabFrame::Add .model.tab 1 [lindex $Lbl(Watch) $GDefs(Lang)] False]
    }
 
-   if { !$Data(Show) } {
+   if { !$Param(Show) } {
       Model::Destroy
    }
 
    #----- Preparer la liste.
-   Model::Check $Data(Delay)
+   Model::Check $Param(Delay)
 
    TabFrame::Select .model.tab 1
 
@@ -1114,7 +1134,7 @@ proc Model::Dock { } {
 
 proc Model::Check { MS } {
    global GDefs
-   variable Data
+   variable Param
    variable Lbl
 
    if { [winfo exists .model] } {
@@ -1128,14 +1148,14 @@ proc Model::Check { MS } {
       Watch::Read
       Watch::CreateTree
 
-      set Data(Job) "[lindex $Lbl(Checked) $GDefs(Lang)] [clock format [clock seconds] -format %T -gmt true]"
+      set Param(Job) "[lindex $Lbl(Checked) $GDefs(Lang)] [clock format [clock seconds] -format %T -gmt true]"
 
       .model config -cursor left_ptr
    }
 
    #----- Instauration de l'evenement de verification de repertoires.
    if { $MS != 0 } {
-      set Data(Handle) [after $MS [list Model::Check $MS]]
+      set Param(Handle) [after $MS [list Model::Check $MS]]
    }
 }
 
@@ -1154,14 +1174,14 @@ proc Model::Check { MS } {
 #----------------------------------------------------------------------------
 
 proc Model::Destroy { } {
-   variable Data
+   variable Param
 
    #----- Ajuster la geometrie
    TabFrame::Destroy .model.tab
    destroy .model
 
    #----- Supprimer le refresh.
-   after cancel $Data(Handle)
+   after cancel $Param(Handle)
 
    #----- Supprimer l'affichage des icones
    SPI::IcoDel WATCH
@@ -1201,7 +1221,7 @@ proc Model::GetMetPath { Parent } {
 
    frame .metpath.diag -relief raised -bd 1
      button .metpath.diag.select -text [lindex $Lbl(Diag) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set $Model::Param(DBaseDiag) $path } }
+        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set Model::Param(DBaseDiag) $path } }
      entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseDiag) -relief sunken -bd 1 -width 40
      pack .metpath.diag.select .metpath.diag.path -side left -fill y
 
@@ -1317,7 +1337,7 @@ proc Model::New { Parent Command Label Single } {
          scale .expnew.info.sc -orient vertical -command "Model::Scroll" -relief flat -sliderlength 10 -width 10 -bd 1\
             -showvalue false -length 50 -from 1 -to 48 -resolution 1
       }
-      button .expnew.info.coord -relief groove -bd 2 -textvariable Model::Data(Unit)\
+      button .expnew.info.coord -relief groove -bd 2 -textvariable Model::Param(Unit)\
          -command "Model::SwitchCoord"
 
       if { $Single } {
@@ -1477,9 +1497,10 @@ proc Model::Scroll { Val } {
 
 proc Model::SwitchCoord { } {
    variable Data
+   variable Param
 
-   if { "$Data(Unit)" == "DDD MM" } {
-      set Data(Unit) "DDD.CC"
+   if { "$Param(Unit)" == "DDD MM" } {
+      set Param(Unit) "DDD.CC"
       for { set i 1 } { $i <= 50 } { incr i } {
          if { $Data(Lat$i)!="" } {
             set Data(Lat$i) [Convert::Minute2Decimal $Data(Lat$i)]
@@ -1489,7 +1510,7 @@ proc Model::SwitchCoord { } {
          }
       }
    } else {
-      set Data(Unit) "DDD MM"
+      set Param(Unit) "DDD MM"
       for { set i 1 } { $i <= 50 } { incr i } {
       if { $Data(Lat$i)!="" } {
             set Data(Lat$i) [Convert::Decimal2Minute $Data(Lat$i) 5]

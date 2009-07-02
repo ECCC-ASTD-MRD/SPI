@@ -480,6 +480,7 @@ proc CANERM::SimInitNew { } {
 
 proc CANERM::Launch { } {
    global GDefs
+   global env
    variable Sim
 
    Model::ParamsMeteoInput CANERM
@@ -502,16 +503,31 @@ proc CANERM::Launch { } {
 
    if { $Model::Param(IsUsingSoumet) } {
 
+      #----- Meteo is local, launch it's processing and wait for it.
+      if { $Model::Param(DBaseLocal) } {
+         set proceed [Dialog::CreateDefault .mldpnew 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Warning(MetLocal) $GDefs(Lang)] \
+            warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+
+         if { !$proceed } {
+            return
+         }
+
+         Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+         exec $env(EER_DIRSCRIPT)/Model_MeteoCANERM.sh $Sim(Path)/tmp $Sim(Meteo) $Sim(ISauve) 1
+         Dialog::DestroyWait
+      }
+
+      #----- Run will be remote, setup what's needed on remote host.
       if { $Model::Param(Remote) } {
 
-         #----- Create simulation directories on remote host.
+         #----- Create simulation directories.
          set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
          if { $ErrorCode != 0 } {
             Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
             return False
          }
 
-         #----- Copy needed files on remote host.
+         #----- Copy needed files.
          set ErrorCode [catch { eval exec scp -p  $Sim(Path)/tmp/sim.pool [glob $Sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
          if { $ErrorCode != 0 } {
             Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
@@ -521,9 +537,9 @@ proc CANERM::Launch { } {
       }
 
       #----- Launching with soumet.
-      exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+      exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
          -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $$Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
-      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  /home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
          -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $$Model::Param(Queue)" >>$Sim(Path)/tmp/soumet.out" }]
 
       if { $ErrorCode } {
@@ -533,14 +549,13 @@ proc CANERM::Launch { } {
       Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
    } else {
       Debug::TraceProc "CANERM: Launching model on : $Model::Param(Host)"
-      Exp::Launch "/home/afsr/005/eer_SPI/eer_SPI/Script/Model.sh $Sim(Path)/tmp/Model_CANERM.in" "[Info::Code ::CANERM::Sim $Sim(Info) :]" \
-         [expr 147+($Sim(FreqOut)/$Sim(ISauve))*95+($Sim(FreqOut)/$Sim(Dt))*156] \
-         $Sim(Path)/tmp/Model_CANERM.out
+      Exp::Launch "$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_CANERM.in" "[Info::Code ::CANERM::Sim $Sim(Info) :]" \
+         [expr 147+($Sim(FreqOut)/$Sim(ISauve))*95+($Sim(FreqOut)/$Sim(Dt))*156] $Sim(Path)/tmp/Model_CANERM.out
    }
 
    Debug::TraceProc "CANERM: Launching simulation request: $$Model::Param(Queue) $Model::Param(Host) $Path"
 
-   exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Path/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Path/tmp/data_std_pres.in &
+   exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Path/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Path/tmp/data_std_pres.in &
 
    return True
 }
@@ -636,7 +651,7 @@ proc CANERM::SimRelaunch { } {
    SPI::Progress 0
 
    #----- Extraire les informations sur l'experience.
-   SPI::Progress 10 [lindex $Msg(JobInfo) $GDefs(Lang)] Model::Data(Job)
+   SPI::Progress 10 [lindex $Msg(JobInfo) $GDefs(Lang)] Model::Param(Job)
    Info::Decode ::CANERM::Sim $Sim(Info) $Exp::Data(SelectSim)
 
    #----- Determiner la localisation du fichier
@@ -644,7 +659,7 @@ proc CANERM::SimRelaunch { } {
    set script  [FileBox::Create . $simpath/tmp Load [list {CANERM Launch Script {eer*}}]]
 
    if { $script=="" } {
-      SPI::Progress 0 [lindex $Msg(JobCancel) $GDefs(Lang)] Model::Data(Job)
+      SPI::Progress 0 [lindex $Msg(JobCancel) $GDefs(Lang)] Model::Param(Job)
       return
    }
    set script [lindex [split $script /] end]
@@ -654,17 +669,17 @@ proc CANERM::SimRelaunch { } {
       #----- Lancer le script
 
       Debug::TraceProc "CANERM: Launching $script"
-      SPI::Progress 70 "[lindex $Msg(Launch) $GDefs(Lang)] $script" Model::Data(Job)
+      SPI::Progress 70 "[lindex $Msg(Launch) $GDefs(Lang)] $script" Model::Param(Job)
       set Sim(State) 2
       Info::Set $simpath/../CANERM.pool [Info::Code ::CANERM::Sim $Sim(Info) :]
-      SPI::Progress 100 "" Model::Data(Job)
+      SPI::Progress 100 "" Model::Param(Job)
       CANERM::Launch $simpath/tmp $script $$Model::Param(Queue) $Model::Param(Host)
 
       #----- Relire les experiences
       Model::Check 0
-      SPI::Progress 0 "[lindex $Msg(LaunchDone) $GDefs(Lang)] ($script)" Model::Data(Job)
+      SPI::Progress 0 "[lindex $Msg(LaunchDone) $GDefs(Lang)] ($script)" Model::Param(Job)
    } else {
-      SPI::Progress 0 "[lindex $Msg(JobCancel) $GDefs(Lang)] ($script)" Model::Data(Job)
+      SPI::Progress 0 "[lindex $Msg(JobCancel) $GDefs(Lang)] ($script)" Model::Param(Job)
    }
    . config -cursor left_ptr
 }
@@ -858,16 +873,16 @@ proc CANERM::SimSuppressResults { Path Info } {
 
    #----- Supprimer les donnees sur le serveur.
    Debug::TraceProc "CANERM: Suppressing simulation $path"
-   SPI::Progress 50 "[lindex $Msg(Suppressing) $GDefs(Lang)] (FrontEnd)" Model::Data(Job)
+   SPI::Progress 50 "[lindex $Msg(Suppressing) $GDefs(Lang)] (FrontEnd)" Model::Param(Job)
 
-   SPI::Progress 100 [lindex $Msg(SuppressDone) $GDefs(Lang)] Model::Data(Job)
+   SPI::Progress 100 [lindex $Msg(SuppressDone) $GDefs(Lang)] Model::Param(Job)
    file delete -force $Path/$path
    Debug::TraceProc "CANERM: Suppressed data on Server."
 
    Info::Delete $Path/CANERM.pool $Info
 
    #----- Retour du numero de simulation que l'on vient de supprimer
-   SPI::Progress 0 "" Model::Data(Job)
+   SPI::Progress 0 "" Model::Param(Job)
    return $Sim(NoSim)
 }
 
