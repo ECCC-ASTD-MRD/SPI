@@ -21,16 +21,29 @@
 
 function MLDP_Pre {
 
-   ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} \
-      >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
-   taskstatus=$?
-   MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
+   taskstatus=0
 
-   if [[ ${taskstatus} -eq 0 ]] ; then
-      Log_Mail "Meteorological preprocessing (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out
+   #----- Check for pre-calculated meteo.
+   if [[ ${#MLDP_METEO} -gt 10 ]] ; then
+      Log_Print INFO "Metfields are pre-calculated."
+      if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
+         scp -p ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo/*  ${MODEL_RUNDIR}/meteo
+         if [[ ! ${taskstatus} -eq 0 ]] ; then
+            Log_Print ERROR "Could not copy pre-calculated metfields."
+         fi
+      fi
    else
-      Log_Print ERROR "Problems in metfield calculations."
-      Log_Mail "Meteorological preprocessing (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
+      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} \
+         >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
+      taskstatus=$?
+      MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
+
+      if [[ ${taskstatus} -eq 0 ]] ; then
+         Log_Mail "Meteorological preprocessing (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out
+      else
+         Log_Print ERROR "Problems in metfield calculations."
+         Log_Mail "Meteorological preprocessing (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
+      fi
    fi
 
    return ${taskstatus}

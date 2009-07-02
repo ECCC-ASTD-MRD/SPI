@@ -311,11 +311,11 @@ for file in ${ArrayStdFiles[@]} ; do
     #----- Merge the 'HY' record with meteorological file (metfields) into one standard file for MLDP1.
     Log_Print INFO "Processing standard file ${filename}.std ..."
     editfst+ \
-       -s ../meteo/${filename}.std \
-       -d ../meteo/${filename}.met.std \
+       -s ../meteo/${filename}.met..std \
+       -d ../meteo/${filename}.std \
        -i editfst.dir \
        >editfst.${filename}.out 2>editfst.${filename}.err
-    mv -f ../meteo/${filename}.met.std ../meteo/${filename}.std
+    rm -f ../meteo/${filename}.met.std
 done
 
 Log_End 0

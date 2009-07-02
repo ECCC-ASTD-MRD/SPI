@@ -379,6 +379,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       -i 0 \
       >editfst.${filename}.out 2>editfst.${filename}.err
 
+   rm -f ../meteo/${filename}.met.std
    nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
    if [ \( ${nbproc} -eq ${NbProc} \) -o \( ${idx} -eq ${nbfiles} \) ] ; then
