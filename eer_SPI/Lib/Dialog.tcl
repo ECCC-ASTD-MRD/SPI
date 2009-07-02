@@ -321,7 +321,7 @@ proc Dialog::CreateWait { Master Text { Percent 1000 } } {
       wm overrideredirect .dlgwait true
       if { [winfo exists $Master] } {
          wm transient .dlgwait $Master
-         wm geom .dlgwait +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+         wm geom .dlgwait +[expr [winfo rootx $Master]+[winfo width $Master]/2-300]+[expr [winfo rooty $Master]+[winfo height $Master]/2-50]
       }
 
       message .dlgwait.txt -aspect 1000 -text $Text -relief raised -bd 1
@@ -558,4 +558,3 @@ proc Text::Search { Widget String Tag args } {
 proc Dialog::SearchText { Path String Tag args } {
    eval Text::Search \$Path \$String \$Tag $args
 }
-
