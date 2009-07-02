@@ -57,7 +57,6 @@ Log_Print INFO "Number of processes  : ${NbProc}"
 Log_Print INFO "Printing debug level : ${Debug}"
 
 cd ${DirTmp}
-echo ${DirTmp} > ${DirTmp}/tmpdir
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
 read < griddef.in grid

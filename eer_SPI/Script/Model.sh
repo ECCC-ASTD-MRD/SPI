@@ -275,6 +275,31 @@ function Model_CopyMeteo {
    return ${status}
 }
 
+function Model_CopyResult {
+
+   if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
+
+      Log_Print INFO "Copying model output files to local host (${MODEL_LOCALHOST}):"
+
+      sec=${SECONDS}
+
+      #----- Copy model results to local directory.
+      scp -p ${MODEL_RUNDIR}/results/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/results
+      status=${?}
+      MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
+
+      if [[ ${status} -eq 0 ]] ; then
+         Log_Print INFO "Model results have been copied successfully local host (${MODEL_LOCALHOST})."
+      else
+         Log_Print ERROR "Problems while copying model results to local host (${MODEL_LOCALHOST})."
+      fi
+
+      Log_Print INFO "Elapsed time copying reults:" `expr ${SECONDS}-${sec}`
+   fi
+
+   return ${status}
+}
+
 function Model_CopyLog {
 
    if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
@@ -344,7 +369,6 @@ if [[ ${status} -eq 0 ]] ; then
       ${MODEL_NAME}_Run
       status=$?
    fi
-   Model_CopyMeteo
 fi
 
 if [[ ${status} -eq 0 ]] ; then
@@ -355,6 +379,8 @@ if [[ ${status} -eq 0 ]] ; then
 fi
 
 #----- Job finished
+Model_CopyResult
+Model_CopyMeteo
 Model_PoolSet DONE ${MODEL_EXITSTATUS}
 Model_CopyLog
 Model_CopyTrace

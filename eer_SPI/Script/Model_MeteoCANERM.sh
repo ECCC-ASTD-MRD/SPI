@@ -65,8 +65,6 @@ Process=${4}
 
 cd ${DirTmp}
 
-echo "doing" > sim.meteo
-
 #----- Lecture des parametres pour la directive GRILLE
 read < griddef.in grid
 
@@ -318,6 +316,5 @@ done
 
 #-----On attend que toutes les procedures soit terminees.
 wait
-echo "done" > sim.meteo
 
 Log_End 0

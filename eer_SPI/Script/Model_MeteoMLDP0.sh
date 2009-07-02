@@ -65,7 +65,6 @@ else
 fi
 
 cd ${DirTmp}
-echo ${DirTmp} > tmpdir
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
 read < griddef.in grid

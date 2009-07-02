@@ -43,31 +43,10 @@ function TRAJECT_Run {
 
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
-
-      #----- Copy results file to local directory.
-      if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
-
-         Log_Print INFO "Copying following model output files to temporary directory on local host (${MODEL_LOCALHOST}):"
-
-         sec=${SECONDS}
-
-         #----- Copy model results to local directory.
-         scp -p ${MODEL_RUNDIR}/results/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/results
-         status=${?}
-         MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
-
-         if [[ ${status} -eq 0 ]] ; then
-            Log_Print INFO "Model results have been copied successfully to results directory on local host (${MODEL_LOCALHOST})."
-         else
-            Log_Print ERROR "Problems while copying model results to results directory on local host (${MODEL_LOCALHOST})."
-         fi
-
-         Log_Print INFO "Elapsed time copying reults:" `expr ${SECONDS}-${sec}`
-      fi
-      Log_Mail "Atmospheric transport/dispersion model (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
+      Log_Mail "Atmospheric dispersion model (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
    else
       Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
-      Log_Mail "Atmospheric transport/dispersion model (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Mail "Atmospheric dispersion model (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}
