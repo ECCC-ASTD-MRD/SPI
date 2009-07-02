@@ -157,7 +157,7 @@ proc CommandLine { { Args {} }} {
 
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
-      "setup"    { exec $GDefs(Dir)/Setup/Setup; source $env(HOME)/.eer_ToolDefs/.eer_Defs-[regsub \[:alpha:\]+ $GDefs(Version) ""] }
+      "setup"    { }
       "soft"     { }
       "pipe"     { wm withdraw . ; fconfigure stdin -blocking false ; fileevent stdin readable SPI::PipeGet }
       "batch"    { }

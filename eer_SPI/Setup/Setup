@@ -46,16 +46,11 @@ proc GetPrevious { } {
    }
 
    set GDefs(Printer) [lindex $GDefs(Printers) 0]
-   set GDefs(BackEnd) { maia saiph }
 
    if { $GDefs(Lang) } {
       set GDefs(Langue) English
    } else {
       set GDefs(Langue) Francais
-   }
-
-   foreach backend $GDefs(BackEnd) {
-     catch { set GDefs(BackEnd$backend)   [lindex $GDefs(BackEnd$backend) 1] }
    }
 }
 
@@ -344,9 +339,6 @@ set GDefs(DBMet)           $GDefs(DBMet)
 set GDefs(FrontEnd)       $GDefs(FrontEnd)
 set GDefs(FrontEndUser)   $GDefs(FrontEndUser)
 set GDefs(TransmitUser)   $GDefs(TransmitUser)
-
-set GDefs(Queue)            { }
-set GDefs(BackEnd)          { }
 
 set GDefs(FrontEnds)        { $GDefs(FrontEnds) }
 set GDefs(BackEnds)         { $GDefs(BackEnds) }
