@@ -35,7 +35,7 @@ set MetDataFile [lindex $argv 3]
 cd $DirTmp
 
 set stmp [exec r.date $Date0]
-set grid [split [exec cat griddef] ","]
+set grid [split [exec cat griddef.in] ","]
 set file [open $MetDataFile r]
 gets $file files
 close $file
