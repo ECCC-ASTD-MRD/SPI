@@ -159,8 +159,8 @@ for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "setup"    { }
       "soft"     { }
-      "pipe"     { wm withdraw . ; fconfigure stdin -blocking false ; fileevent stdin readable SPI::PipeGet }
       "batch"    { }
+      "pipe"     { wm withdraw . ; fconfigure stdin -blocking false ; fileevent stdin readable SPI::PipeGet }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { set SPI::Param(Window) False }
       "geom"     { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
