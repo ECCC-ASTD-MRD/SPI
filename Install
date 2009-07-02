@@ -16,7 +16,7 @@ then
    exit 0
 fi
 
-ver=7.3.0
+ver=7.3.1
 mach=`uname -n`
 arch=`uname`
 user=`whoami`
@@ -46,7 +46,7 @@ then
    mkdir $ipath/eer_SPI-$ver
 fi
 
-cp -Rp $path/eer_SPI/* $ipath/eer_SPI-$ver
+cp -Rp $path/eer_SPI/* $path/eer_SPI/.profile_spi $ipath/eer_SPI-$ver
 
 #----- Get the GDB path
 
