@@ -1392,7 +1392,6 @@ proc Exp::Select { Pool } {
    set Data(Lon)  [lindex [lindex [lindex $Pool 3] 0] 2]
 
    #----- Selectionner la nouvelle experience
-
    set Data(Select) $Pool
 }
 

@@ -774,13 +774,28 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
    return True
 }
 
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsPath>
+# Creation   : Juillet 2009 - A. Malo - CMC/CMOE
+#
+# But        : Construire les paths locaux et remote pour la simulation courante.
+#
+# Parametres :
+#  <Model>   : Model
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
 proc Model::ParamsPath { Model } {
    global GDefs
    variable Param
 
    upvar ${Model}::Sim sim
 
-   #----- Define variables.
+   #----- Define simulation path.
    set sim(NoSim)     [Info::Request $GDefs(DirData)/$sim(NoExp)_$sim(Name)/$sim(Model).pool]
    set ExpName        "$sim(NoExp)_$sim(Name)"
    set SimName        "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
@@ -788,18 +803,15 @@ proc Model::ParamsPath { Model } {
 
    file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
 
+   #----- Check for remote path
    set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
    if { $Param(Remote) } {
-      #----- Remote path
-      set token "$Param(Host)_${ExpName}_${SimName}_[clock seconds]"
-
       if { $Param(Arch) == "AIX" } {
-         set sim(PathRun) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/$token"
+         set sim(PathRun) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${ExpName}_${SimName}"
       } else {
-         set sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/$token"
+         set sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${ExpName}_${SimName}"
       }
    } else {
-      #----- Local path
       set sim(PathRun) $sim(Path)
    }
 
