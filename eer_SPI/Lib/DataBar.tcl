@@ -277,7 +277,7 @@ proc DataBar::IdTraj { Traj } {
        append lbl " AGL"
    }
 
-   append lbl " [lindex $info $GDefs(Lang)] [lindex $pr 0]"
+   append lbl " [lindex $info $GDefs(Lang)] [clock format [lindex $pr 0] -format "%H:%M %Y%m%d" -gmt true]]"
 
    return $lbl
 }
