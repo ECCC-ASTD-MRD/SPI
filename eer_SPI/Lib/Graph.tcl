@@ -718,6 +718,18 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
    }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::DataSheet>
+# Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      :Afficher les donnees du graph
+#
+# Parametres :
+#   <Type>   : Type de graph
+#   <GR>     : Identificateur du Graph
+#
+#-------------------------------------------------------------------------------
+
 proc Graph::DataSheet { Type GR } {
    global GDefs
    variable Lbl
@@ -734,11 +746,12 @@ proc Graph::DataSheet { Type GR } {
       if { [graphitem is $item] } {
 
          $text insert end "Item  : [lindex [$data(Canvas) itemconfigure [graphitem configure $item -desc] -text] end]\n"
+         set pos [lindex [split $item _] 0]
+         $text insert end "Coordinates: $data(Pos$pos)\n"
          $text insert end "Unit X: $graph(UnitX)\n"
          $text insert end "Unit Y: $graph(UnitY)\n"
 
          #----- Graph Raster
-
          set ditem [graphitem configure $item -data]
          if { $ditem!="" } {
             for { set j 0 } { $j < [fstdfield define $ditem -NJ] } { incr j } {
@@ -747,18 +760,21 @@ proc Graph::DataSheet { Type GR } {
                   $text insert end [format "%-20e" [fstdfield stats $ditem -gridvalue $i $j]]
                }
             }
-         }
-
-         #----- Graph 2D
-
-         set xitem [graphitem configure $item -xdata]
-         set yitem [graphitem configure $item -ydata]
-         if { $xitem!="" && $yitem!="" } {
-            $text insert end [format "%-20s %-20s" X Y]\n
-            foreach x [vector get $xitem] y [vector get $yitem] {
-               $text insert end [format "%-20.8e %-20.8e" $x $y]\n
+         } else {
+            #----- Graph 2D
+            set xitem [graphitem configure $item -xdata]
+            set yitem [graphitem configure $item -ydata]
+            set t ""
+            if { $xitem!="" && $yitem!="" } {
+               $text insert end [format "%-20s %-20s" X Y]\n
+               foreach x [vector get $xitem] y [vector get $yitem] {
+                  if { $Type=="Time" } {
+                     set t [Graph::Time::Format $GR $x]
+                  }
+                  $text insert end [format "%-20.8e %-20.8e $t" $x $y]\n
+               }
+               $text insert end "\n"
             }
-            $text insert end "\n"
          }
       }
    }

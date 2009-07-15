@@ -293,6 +293,36 @@ proc Graph::Time::Move { Frame VP } { }
 proc Graph::Time::MoveDone { Frame VP } { }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Graph::Time::Format>
+# Creation : Mai 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Formattage des dates.
+#
+# Parametres :
+#   <GR>     : Indentificateur du Graph
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::Time::Format { GR Date } {
+   variable Data
+
+   upvar #0 Graph::Time::Time${GR}::Data  data
+
+   switch $data(Time) {
+      S    { set date [expr int($date-$data(XMin))] }
+      M    { set date [expr int($Date-$data(XMin))/60] }
+      H    { set date [expr int($Date-$data(XMin))/3600] }
+      D    { set date [expr int($Date-$data(XMin))/86400] }
+      DATE { set date [clock format [expr int($Date)] -format "%d/%m %H:%M" -gmt True] }
+   }
+   return $date
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Graph::Time::Graph>
 # Creation : Fevrier 1999 - J.P. Gauthier - CMC/CMOE
 #
@@ -406,13 +436,7 @@ proc Graph::Time::Graph { GR } {
    set xdates {}
 
    foreach date $dates {
-      switch $data(Time) {
-         S    { lappend xdates [expr int($date-$data(XMin))] }
-         M    { lappend xdates [expr int($date-$data(XMin))/60] }
-         H    { lappend xdates [expr int($date-$data(XMin))/3600] }
-         D    { lappend xdates [expr int($date-$data(XMin))/86400] }
-         DATE { lappend xdates [clock format [expr int($date)] -format "%d/%m %H:%M" -gmt True] }
-      }
+      lappend xdates [Graph::Time::Format $GR $date]
       lappend xinter $date
    }
 
