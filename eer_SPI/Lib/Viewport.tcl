@@ -79,6 +79,7 @@ namespace eval Viewport {
    set Data(Link)       {}           ;#Lien source
    set Data(Data)       {}           ;#Liste des donnees
 
+   set Map(MinSize)     5            ;#Dimension minimale
    set Map(Sun)         0            ;#Affichage du Soleil
    set Map(Res)         0            ;#Resolution geographique (0=Auto,2,4,8,16,32,64,128)
    set Map(Mask)        0            ;#Masque (Tout=0,Terre=1,Mer=2)
@@ -184,6 +185,7 @@ namespace eval Viewport {
    set Lbl(Sea)            { "Mer" "Sea" }
    set Lbl(Show)           { "Afficher" "Show" }
    set Lbl(Text)           { "Texture" "Texture" }
+   set Lbl(MinSize)        { "Minimum"   "Minimum" }
 
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Close)          { "Fermer" "Close" }
@@ -520,6 +522,7 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(CoordDef)    [lindex $coo 1]
    set Map(CoordNum)    [lindex $coo 2]
 
+   set Map(MinSize)     [projection configure $Frame -minsize]
    set Map(Sun)         [projection configure $Frame -sun]
    set Map(Res)         [projection configure $Frame -mapres]
    set Map(Mask)        [projection configure $Frame -mask]
@@ -629,7 +632,7 @@ proc Viewport::ConfigSet { Frame } {
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
-      -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] \
+      -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) \
       -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
 
    set ll [projection configure $Frame -location]
@@ -647,7 +650,7 @@ proc Viewport::ConfigSet { Frame } {
       projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
-         -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
+         -sun $Map(Sun) -size $Map(MinSize) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
      $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
@@ -1284,7 +1287,8 @@ proc Viewport::Do { Frame } {
    projection configure $Frame -type $Map(Type) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
       -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
       -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
-      -mapplace $Map(Place) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) -data $Data(Data$Frame)
+      -mapplace $Map(Place) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
+      -data $Data(Data$Frame) -minsize $Map(MinSize)
 
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
 
@@ -1859,9 +1863,15 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.ll.col $Data(Frame).layer.ll.sz $Data(Frame).layer.ll.opt -side left
          pack $Data(Frame).layer.ll.lbl -side right
 
+      frame $Data(Frame).layer.min
+         scale $Data(Frame).layer.min.sc -orient horizontal -from 0 -to 100 \
+            -showvalue false -variable Viewport::Map(MinSize) -relief flat \
+            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -sliderlength 8  -bd 1 -resolution 1
+         label $Data(Frame).layer.min.lbl -text [format "%-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
+#         pack $Data(Frame).layer.min.sc $Data(Frame).layer.min.lbl -side left
       pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
          $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.place $Data(Frame).layer.road $Data(Frame).layer.rail \
-         $Data(Frame).layer.ll -side top -anchor sw -padx 2 -fill x
+         $Data(Frame).layer.ll $Data(Frame).layer.min -side top -anchor sw -padx 2 -fill x
 
    #----- LatLon
 
