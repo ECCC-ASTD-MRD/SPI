@@ -73,6 +73,7 @@ namespace eval Info {
    set Lbl(NoExp)                { "Numéro de l'expérience" "Experience number" }
    set Lbl(NoSim)                { "Numéro de la simulation" "Simulation number" }
    set Lbl(NoPrev)               { "Simulation précédente" "Previous simulation" }
+   set Lbl(NameExp)              { "Nom de l'experience" "Experiment name" }
    set Lbl(Name)                 { "Nom de l'emplacement" "Location name" }
    set Lbl(Lat)                  { "Latitude" "Latitude" }
    set Lbl(Lon)                  { "Longitude" "Longitude" }
@@ -90,12 +91,13 @@ namespace eval Info {
    set Lbl(GridResolution)       { "Résolution de la grille (km)" "Grid resolution (km)" }
    set Lbl(GridSize)             { "Taille de la grille (NIxNJ)" "Grid size (NIxNJ)" }
    set Lbl(Grid)                 { "Définition de grille" "Grid definition" }
-   set Lbl(IsConcS)              { "Calcul des concentrations" "Concentrations calculations" }
-   set Lbl(GridTypeS)            { "Type de grille" "Type of grid" }
-   set Lbl(GridAlgoS)            { "Type d'algorithme" "Type of algorithm" }
+
+   set Lbl(IsConc)               { "Calcul des concentrations" "Concentrations calculations" }
+   set Lbl(GridType)             { "Type de grille" "Type of grid" }
+   set Lbl(GridAlgo)             { "Type d'algorithme" "Type of algorithm" }
    set Lbl(GridDomain)           { "Domaine (km)" "Domain (km)" }
    set Lbl(VerticalLevels)       { "Niveaux verticaux (m)" "Vertical Levels (m)" }
-   set Lbl(IsSigmaS)             { "Fluctuations des vitesses à méso-échelle" "Mesoscale velocity fluctuations" }
+   set Lbl(IsSigma)              { "Fluctuations des vitesses à méso-échelle" "Mesoscale velocity fluctuations" }
 
    set Lbl(FreqOut)              { "Fréquence des fichiers" "File frequency" }
    set Lbl(SrcType)              { "Type de source" "Type of source" }
