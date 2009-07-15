@@ -137,8 +137,8 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
             break;
          }
 
-         if (qdata->Proj && qdata->Proj->Params->VP) {
-            vp=qdata->Proj->Params->VP;
+         if (qdata->Proj && qdata->Proj->VP) {
+            vp=qdata->Proj->VP;
             proj=qdata->Proj;
             qdata->Proj->Loading++;
          }
@@ -456,10 +456,10 @@ void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
    while(Geo) {
 
       /*Projeter tout les vecteurs*/
-      Geo->Box.Nb=Proj->Type->Project(Proj->Params,(GeoVect*)Geo->Loc,NULL,Geo->Box.Nb);
+      Geo->Box.Nb=Proj->Type->Project(Proj,(GeoVect*)Geo->Loc,NULL,Geo->Box.Nb);
 
       /*Calculer les limites de la boite*/
-      if (!Proj->Type->Project(Proj->Params,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,4)) {
+      if (!Proj->Type->Project(Proj,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,4)) {
          Geo->Box.Nb=-1;
       }
 
@@ -953,7 +953,7 @@ void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *P
    Tile->Box.Co[2].Lat=Lat0+Delta;Tile->Box.Co[2].Lon=Lon0+Delta;Tile->Box.Co[2].Elev=0.0;
    Tile->Box.Co[3].Lat=Lat0+Delta;Tile->Box.Co[3].Lon=Lon0;Tile->Box.Co[3].Elev=0.0;
 
-   if (!(Proj->Type->Project(Proj->Params,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,4))) {
+   if (!(Proj->Type->Project(Proj,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,4))) {
       Tile->Box.Nb=-1;
    } else {
       Tile->Box.Nb=1;
@@ -994,41 +994,41 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    lon[0]=FMIN(Box.Co[0].Lon,Box.Co[2].Lon);
    lon[1]=FMAX(Box.Co[0].Lon,Box.Co[2].Lon);
 
-   if (Proj->Params->Lat>=lat[0] && Proj->Params->Lat<=lat[1] && Proj->Params->Lon>=lon[0] && Proj->Params->Lon<=lon[1]) {
+   if (Proj->Lat>=lat[0] && Proj->Lat<=lat[1] && Proj->Lon>=lon[0] && Proj->Lon<=lon[1]) {
       return(GDB_VIS);
    }
 
    /*Test for projected coordinates*/
    if (Proj->Type->Def==PROJCYLIN) {
-      d=Box.Vr[0][0]-Proj->Params->L;
+      d=Box.Vr[0][0]-Proj->L;
       CYLCHECK(d,Box.Vr[0][0]);
-      d=Box.Vr[1][0]-Proj->Params->L;
+      d=Box.Vr[1][0]-Proj->L;
       CYLCHECK(d,Box.Vr[1][0]);
-      d=Box.Vr[2][0]-Proj->Params->L;
+      d=Box.Vr[2][0]-Proj->L;
       CYLCHECK(d,Box.Vr[2][0]);
-      d=Box.Vr[3][0]-Proj->Params->L;
+      d=Box.Vr[3][0]-Proj->L;
       CYLCHECK(d,Box.Vr[3][0]);
    }
 
    /*Project box coordinates*/
-   gluProject(Box.Vr[0][0],Box.Vr[0][1],Box.Vr[0][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   gluProject(Box.Vr[0][0],Box.Vr[0][1],Box.Vr[0][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
    Vect_Assign(min,dif);
    Vect_Assign(max,dif);
-   gluProject(Box.Vr[1][0],Box.Vr[1][1],Box.Vr[1][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   gluProject(Box.Vr[1][0],Box.Vr[1][1],Box.Vr[1][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
-   gluProject(Box.Vr[2][0],Box.Vr[2][1],Box.Vr[2][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   gluProject(Box.Vr[2][0],Box.Vr[2][1],Box.Vr[2][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
-   gluProject(Box.Vr[3][0],Box.Vr[3][1],Box.Vr[3][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   gluProject(Box.Vr[3][0],Box.Vr[3][1],Box.Vr[3][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
 
    /*Is it visible (in X,Y and Z)???*/
-   if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->Params->ZPos[2]) {
+   if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->ZPos[2]) {
 
       /*Is the box too small*/
-      if (Vect_Weight(min,max)<GDB_MIN) {
+      if (Vect_Weight(min,max)<Proj->MinSize) {
          return(GDB_LOW);
       } else {
          return(GDB_VIS);
@@ -1093,7 +1093,7 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
    for(i=0;i<=VP->Height;i++) {
 
       pix[1]=i;
-      if (Proj->Type->UnProject(VP,Proj->Params,&coord,pix)) {
+      if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
         cmod=fmod(coord.Lat,GDB->Params.CoordNum*GDB->Params.CoordDef);
          if (ABS(cmod)<tolerance) {
 
@@ -1129,7 +1129,7 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
    for(i=0;i<=VP->Width;i++) {
 
       pix[0]=i;
-      if (Proj->Type->UnProject(VP,Proj->Params,&coord,pix)) {
+      if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
          cmod=fmod(coord.Lon,GDB->Params.CoordNum*GDB->Params.CoordDef);
          if (ABS(cmod)<tolerance) {
 
@@ -1198,7 +1198,7 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
       return;
 
    if (Interp) {
-      Tk_CanvasPsColor(Interp,Proj->Params->VP->canvas,Color);
+      Tk_CanvasPsColor(Interp,Proj->VP->canvas,Color);
       sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Width-1);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
    } else {
@@ -1214,7 +1214,7 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
          if (Interp)
             glFeedbackInit(Geo->Box.Nb*8,GL_2D);
 
-         state=GDB_Loc(Geo->Box,Proj,1,Proj->Params->VP->Width,1,Proj->Params->VP->Height);
+         state=GDB_Loc(Geo->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height);
          if (state==GDB_LOW) {
             if (!Low) {
                Proj->Type->Render(Proj,0,Geo->Loc,NULL,NULL,NULL,GL_LINE_STRIP,Geo->Box.Nb,Geo->Box.Vr[0],Geo->Box.Vr[2]);
@@ -1257,6 +1257,8 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
 
 void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,GDB_Geo *Geo,XColor *Color,GLuint MaskIn) {
 
+   int state;
+
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_CULL_FACE);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -1284,13 +1286,14 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,
 
    if (Interp) {
       if (Color) {
-         Tk_CanvasPsColor(Interp,Proj->Params->VP->canvas,Color);
+         Tk_CanvasPsColor(Interp,Proj->VP->canvas,Color);
       }
       Tcl_AppendResult(Interp,"0.5 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
       GDB_GeoTess(Interp,Geo);
    } else {
-      if (List)
+      if (List) {
          Proj->Type->Render(Proj,List,NULL,NULL,NULL,NULL,0,0,Box.Vr[0],Box.Vr[2]);
+      }
    }
 
    if (MaskIn==0xff) {
@@ -1365,7 +1368,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       for(tx=-dtx,x=0;x<=Delta;x+=dc,tx+=dtx) {
 
          if (Proj->Type->Def==PROJCYLIN) {
-            d=CYLFLIP(Proj->Params->L,GDB_VBuf[x][0]);
+            d=CYLFLIP(Proj->L,GDB_VBuf[x][0]);
             glTranslated(d,0.0,0.0);
          }
          glBegin(GL_QUAD_STRIP);
@@ -1383,7 +1386,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
 
             loc.Lat=Lat0+Delta-y;
             loc.Lon=Lon0+x;
-            Proj->Type->Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&GDB_VBuf[y],1);
+            Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&GDB_VBuf[y],1);
 
             if (x) {
                glTexCoord2f(tx+dtx,ty);
@@ -1417,7 +1420,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                loc.Lat=Lat0+Delta-(y*dy);
                loc.Lon=Lon0+(x*dx);
                loc.Elev=map[dc];
-               Proj->Type->Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
+               Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
             }
          }
       }
@@ -1429,7 +1432,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       for(tx=0,x=1;x<=width-2;x+=dt,tx+=dtx*dt) {
 
          if (Proj->Type->Def==PROJCYLIN) {
-            d=CYLFLIP(Proj->Params->L,Topo->Vr[(x-1)][0]);
+            d=CYLFLIP(Proj->L,Topo->Vr[(x-1)][0]);
             glTranslated(d,0.0,0.0);
          }
 
@@ -1522,7 +1525,7 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
                loc.Lat=Lat0+Delta-(y*dy);
                loc.Lon=Lon0+(x*dx);
                loc.Elev=map[dc];
-               Proj->Type->Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
+               Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
             }
          }
       }
@@ -1542,7 +1545,7 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
    glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R16_NV,Topo->Width,Topo->Height,0,GL_RED,GL_SHORT,Topo->Map);
 
    glUniform1iARB(GLShader_UniformGet(prog,"Data"),0);
-   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->Params->L:-999.0));
+   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
 
    glNormal3dv(Proj->Nr);
    glColor3ub(128,128,128);
@@ -1592,7 +1595,7 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
       return(0);
    }
 
-   if (GDB->Params.Mask || Proj->Params->VP->ColorFCoast || Proj->Params->VP->ColorFLake) {
+   if (GDB->Params.Mask || Proj->VP->ColorFCoast || Proj->VP->ColorFLake) {
       if (!Tile->FCoast)
          GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_FIL,GDB_FIL_LAND);
       if (!Tile->FCoastIn)
@@ -1673,7 +1676,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    if (!res)
       return(0);
 
-   res=GDB_TileResolution(GDB,Proj->Params->VP->Cam->Pix);
+   res=GDB_TileResolution(GDB,Proj->VP->Cam->Pix);
 
    for(x=0;x<GDB->DegX;x++) {
       for(y=0;y<GDB->DegY;y++) {
@@ -1691,7 +1694,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             continue;
 
          /*Check for visibility when not doing outputs*/
-         if (GLRender->TRCon || GDB_Loc(tile->Box,Proj,1,Proj->Params->VP->Width,1,Proj->Params->VP->Height)!=GDB_OUT) {
+         if (GLRender->TRCon || GDB_Loc(tile->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height)!=GDB_OUT) {
 
             /*If resolution has changed en we're not doing outputs, reload data*/
             tile->Res=res;
@@ -1716,59 +1719,59 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             }
 
             if (Mode & GDB_FILL) {
-               if (Proj->Params->VP->ColorFCoast && tile->FCoast) {
+               if (Proj->VP->ColorFCoast && tile->FCoast) {
                   if (!tile->FLand1) tile->FLand1=GDB_GeoTess(NULL,tile->FCoast);
-                  GDB_FillRender(Interp,Proj,tile->FLand1,tile->Box,tile->FCoast,Proj->Params->VP->ColorFCoast,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FLand1,tile->Box,tile->FCoast,Proj->VP->ColorFCoast,0xff);
                }
-               if (Proj->Params->VP->ColorFLake && tile->FLake) {
+               if (Proj->VP->ColorFLake && tile->FLake) {
                  if (!tile->FWater1) tile->FWater1=GDB_GeoTess(NULL,tile->FLake);
-                  GDB_FillRender(Interp,Proj,tile->FWater1,tile->Box,tile->FLake,Proj->Params->VP->ColorFLake,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FWater1,tile->Box,tile->FLake,Proj->VP->ColorFLake,0xff);
                }
-               if (Proj->Params->VP->ColorFCoast && tile->FCoastIn) {
+               if (Proj->VP->ColorFCoast && tile->FCoastIn) {
                   if (!tile->FLand2) tile->FLand2=GDB_GeoTess(NULL,tile->FCoastIn);
-                  GDB_FillRender(Interp,Proj,tile->FLand2,tile->Box,tile->FCoastIn,Proj->Params->VP->ColorFCoast,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FLand2,tile->Box,tile->FCoastIn,Proj->VP->ColorFCoast,0xff);
                }
-               if (Proj->Params->VP->ColorFLake && tile->FLakeIn) {
+               if (Proj->VP->ColorFLake && tile->FLakeIn) {
                  if (!tile->FWater2) tile->FWater2=GDB_GeoTess(NULL,tile->FLakeIn);
-                  GDB_FillRender(Interp,Proj,tile->FWater2,tile->Box,tile->FLakeIn,Proj->Params->VP->ColorFLake,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FWater2,tile->Box,tile->FLakeIn,Proj->VP->ColorFLake,0xff);
                }
             }
 
             if (Mode & GDB_VECTOR) {
                if (GDB->Params.Coast && tile->Coast) {
-                  GDB_GeoRender(Interp,Proj,tile->Coast,ABS(GDB->Params.Coast),Proj->Params->VP->ColorCoast,1);
+                  GDB_GeoRender(Interp,Proj,tile->Coast,ABS(GDB->Params.Coast),Proj->VP->ColorCoast,1);
                }
 
                if (GDB->Params.Lake && tile->Lake) {
-                  GDB_GeoRender(Interp,Proj,tile->Lake,ABS(GDB->Params.Lake),Proj->Params->VP->ColorLake,1);
+                  GDB_GeoRender(Interp,Proj,tile->Lake,ABS(GDB->Params.Lake),Proj->VP->ColorLake,1);
                }
 
                if (GDB->Params.River && tile->River) {
-                  GDB_GeoRender(Interp,Proj,tile->River,ABS(GDB->Params.River),Proj->Params->VP->ColorRiver,0);
+                  GDB_GeoRender(Interp,Proj,tile->River,ABS(GDB->Params.River),Proj->VP->ColorRiver,0);
                }
 
                if (GDB->Params.Polit && tile->Polit) {
-                  GDB_GeoRender(Interp,Proj,tile->Polit,ABS(GDB->Params.Polit),Proj->Params->VP->ColorPolit,0);
+                  GDB_GeoRender(Interp,Proj,tile->Polit,ABS(GDB->Params.Polit),Proj->VP->ColorPolit,0);
                 }
 
                if (GDB->Params.Admin && tile->Admin) {
-                  GDB_GeoRender(Interp,Proj,tile->Admin,ABS(GDB->Params.Admin),Proj->Params->VP->ColorAdmin,0);
+                  GDB_GeoRender(Interp,Proj,tile->Admin,ABS(GDB->Params.Admin),Proj->VP->ColorAdmin,0);
                }
 
                if (GDB->Params.Road && tile->Road) {
-                  GDB_GeoRender(Interp,Proj,tile->Road,ABS(GDB->Params.Road),Proj->Params->VP->ColorRoad,0);
+                  GDB_GeoRender(Interp,Proj,tile->Road,ABS(GDB->Params.Road),Proj->VP->ColorRoad,0);
                }
 
                if (GDB->Params.Rail && tile->Rail) {
-                  GDB_GeoRender(Interp,Proj,tile->Rail,ABS(GDB->Params.Rail),Proj->Params->VP->ColorRail,0);
+                  GDB_GeoRender(Interp,Proj,tile->Rail,ABS(GDB->Params.Rail),Proj->VP->ColorRail,0);
                }
 
                if (GDB->Params.City && tile->TCity) {
-                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->Params->VP->ColorCity,6);
+                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->VP->ColorCity,6);
                }
 
                if (GDB->Params.Place && tile->TPlace) {
-                  GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->Params->VP->ColorPlace,0);
+                  GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->VP->ColorPlace,0);
                }
             }
 
@@ -1792,7 +1795,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
    if (Mode & GDB_TEXT) {
       if (GDB->Params.CoordLoc && GDB->Params.CoordNum) {
-         GDB_CoordRender(Interp,Proj->Params->VP,Proj,GDB);
+         GDB_CoordRender(Interp,Proj->VP,Proj,GDB);
       }
    }
 
@@ -1960,22 +1963,22 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
    int            len,dx,dy,x,y;
 
    /*Translation deltas related to canvas/viewport location*/
-   x=(Proj->Params->VP->header.x1-((TkCanvas*)Proj->Params->VP->canvas)->xOrigin);
-   y=Tk_Height(((TkCanvas*)Proj->Params->VP->canvas)->tkwin)-(Proj->Params->VP->header.y1-((TkCanvas*)Proj->Params->VP->canvas)->yOrigin+Proj->Params->VP->Height);
+   x=(Proj->VP->header.x1-((TkCanvas*)Proj->VP->canvas)->xOrigin);
+   y=Tk_Height(((TkCanvas*)Proj->VP->canvas)->tkwin)-(Proj->VP->header.y1-((TkCanvas*)Proj->VP->canvas)->yOrigin+Proj->VP->Height);
 
-   if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->Params->VP->tkfont || GLRender->Resolution>1)
+   if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->VP->tkfont || GLRender->Resolution>1)
       return;
 
-   Tk_GetFontMetrics(Proj->Params->VP->tkfont,&tkm);
+   Tk_GetFontMetrics(Proj->VP->tkfont,&tkm);
    dy=tkm.ascent;
 
    if (Interp) {
-      Tk_CanvasPsColor(Interp,Proj->Params->VP->canvas,Color);
+      Tk_CanvasPsColor(Interp,Proj->VP->canvas,Color);
    } else {
       glColor3us(Color->red,Color->green,Color->blue);
    }
 
-   glFontUse(Tk_Display(Tk_CanvasTkwin(Proj->Params->VP->canvas)),Proj->Params->VP->tkfont);
+   glFontUse(Tk_Display(Tk_CanvasTkwin(Proj->VP->canvas)),Proj->VP->tkfont);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glStencilFunc(GL_ALWAYS,0x81,0x81);
 
@@ -1986,7 +1989,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
    glMatrixMode(GL_PROJECTION);
    glPushMatrix();
    glLoadIdentity();
-   gluOrtho2D(0,Proj->Params->VP->Width,0,Proj->Params->VP->Height);
+   gluOrtho2D(0,Proj->VP->Width,0,Proj->VP->Height);
 
    Projection_UnClip(Proj);
 
@@ -1995,24 +1998,24 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
       len=strlen(Txt->String);
 
       if (len>1 && (Proj->PixDist<500 || isupper(Txt->String[strlen(Txt->String)-2]))) {
-         if (Proj->Type->Project(Proj->Params,(GeoVect*)&Txt->Co,(GeoVect*)&pos,1)) {
-            gluProject(pos[0],pos[1],pos[2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&pix[0],&pix[1],&pix[2]);
+         if (Proj->Type->Project(Proj,(GeoVect*)&Txt->Co,(GeoVect*)&pos,1)) {
+            gluProject(pos[0],pos[1],pos[2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&pix[0],&pix[1],&pix[2]);
 
             pix[0]+=Point;
             pix[1]+=Point;
 
             /*Get length in pixel and max it to pixel buffer size (1024)*/
-            dx=Tk_TextWidth(Proj->Params->VP->tkfont,Txt->String,len);
+            dx=Tk_TextWidth(Proj->VP->tkfont,Txt->String,len);
 
             /*If within the viewport limits*/
-            if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->Params->VP->Width && (pix[1]+y+dy+5)<Proj->Params->VP->Height) {
+            if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->VP->Width && (pix[1]+y+dy+5)<Proj->VP->Height) {
 
               /*If cnot overlapping another label*/
               if (!glStencilMaskCheck(pix[0]+x,pix[1]+y,dx,dy,0x80)) {
                   if (Point) {
-                     glPrint(Interp,Proj->Params->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
+                     glPrint(Interp,Proj->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
                   }
-                  glPrint(Interp,Proj->Params->VP->canvas,Txt->String,pix[0],pix[1],0);
+                  glPrint(Interp,Proj->VP->canvas,Txt->String,pix[0],pix[1],0);
 
                   /*Write the label coverage to the stencil buffer*/
                   glStencilMask(0x80);

@@ -446,7 +446,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
             Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
             coord.Elev=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
             if (Proj) {
-               ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,&coord,&Rad->Ref->Pos[Level][idxi],1);
+               ((Projection*)Proj)->Type->Project(((Projection*)Proj),&coord,&Rad->Ref->Pos[Level][idxi],1);
             } else {
                Vect_Init(Rad->Ref->Pos[Level][idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.Elev);
             }
@@ -471,7 +471,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
             }
          }
       }
-      ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Rad->Ref->Pos[Level],NULL,FSIZE3D(Rad->Def));
+      ((Projection*)Proj)->Type->Project(((Projection*)Proj),Rad->Ref->Pos[Level],NULL,FSIZE3D(Rad->Def));
    }
 
    th=DEG2RAD(vol->sweep[Rad->Def->Level]->elevationAngle);

@@ -1799,8 +1799,8 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
-         Proj->Type->Project(Proj->Params,&Obs->Loc->Coord[i],&pix[0],1);
-         Proj->Type->Project(Proj->Params,&co,&pix[1],1);
+         Proj->Type->Project(Proj,&Obs->Loc->Coord[i],&pix[0],1);
+         Proj->Type->Project(Proj,&co,&pix[1],1);
          glVertex3dv(pix[0]);
          glVertex3dv(pix[1]);
       }
@@ -1815,7 +1815,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
-         Proj->Type->Project(Proj->Params,&co,&pix[1],1);
+         Proj->Type->Project(Proj,&co,&pix[1],1);
          glVertex3dv(pix[1]);
       }
       glEnd();
@@ -1834,8 +1834,8 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
-         Proj->Type->Project(Proj->Params,&Obs->Loc->Coord[i],&pix[0],1);
-         Proj->Type->Project(Proj->Params,&co,&pix[1],1);
+         Proj->Type->Project(Proj,&Obs->Loc->Coord[i],&pix[0],1);
+         Proj->Type->Project(Proj,&co,&pix[1],1);
          glColor4ubv(Obs->Spec->Map->Color[idx]);
          glVertex3dv(pix[0]);
          glVertex3dv(pix[1]);
@@ -1849,7 +1849,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       val=((float*)Obs->Def->Data[0])[i];
       VAL2COL(idx,Obs->Spec,val);
 
-      Proj->Type->Project(Proj->Params,&Obs->Loc->Coord[i],&pix[0],1);
+      Proj->Type->Project(Proj,&Obs->Loc->Coord[i],&pix[0],1);
       glColor4ubv(Obs->Spec->Map->Color[idx]);
       glVertex3dv(pix[0]);
    }
@@ -1982,9 +1982,9 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
             if (Obs->Spec->RenderVol && OBSVALID(val)) {
                if (Obs->Spec->RenderVol==-1) {
-                  z=Proj->Params->ZFactor*Proj->Params->Scale*sz*fabs(val)*10/Obs->Spec->Max;
+                  z=Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;
                } else {
-                  z=Proj->Params->ZFactor*Proj->Params->Scale*sz*val*10/Obs->Spec->Max;
+                  z=Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;
                }
                glDisable(GL_STENCIL_TEST);
                glBegin(GL_QUAD_STRIP);

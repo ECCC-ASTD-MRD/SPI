@@ -50,13 +50,13 @@ int  Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 
 /*Fonctions de transformations*/
 
-unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
-int           Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
+unsigned long Cylin_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
+int           Cylin_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 Tcl_Obj*      Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
 Tcl_Obj*      Cylin_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NCo);
 int           Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pix00,Vect3d Pix01,Vect3d Pix10,Vect3d Pix11);
-unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
-int           Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
+unsigned long Merca_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
+int           Merca_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 
 /*----------------------------------------------------------------------------
  * Nom      : <Cylin_DrawFirst>
@@ -97,11 +97,11 @@ void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          glDisable(GL_STENCIL_TEST);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glBegin(GL_POLYGON);
-            glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
-            glVertex3d(2.0+Proj->Params->L,-1.0,1.0);
-            glVertex3d(2.0+Proj->Params->L,1.0,1.0);
-            glVertex3d(-2.0+Proj->Params->L,1.0,1.0);
-            glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
+            glVertex3d(-2.0+Proj->L,-1.0,1.0);
+            glVertex3d(2.0+Proj->L,-1.0,1.0);
+            glVertex3d(2.0+Proj->L,1.0,1.0);
+            glVertex3d(-2.0+Proj->L,1.0,1.0);
+            glVertex3d(-2.0+Proj->L,-1.0,1.0);
          glEnd();
          glEnable(GL_STENCIL_TEST);
 
@@ -112,11 +112,11 @@ void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
       glLineWidth(ABS(Proj->Geo->Params.Coast));
       glBegin(GL_LINE_STRIP);
-         glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
-         glVertex3d(2.0+Proj->Params->L,-1.0,1.0);
-         glVertex3d(2.0+Proj->Params->L,1.0,1.0);
-         glVertex3d(-2.0+Proj->Params->L,1.0,1.0);
-         glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
+         glVertex3d(-2.0+Proj->L,-1.0,1.0);
+         glVertex3d(2.0+Proj->L,-1.0,1.0);
+         glVertex3d(2.0+Proj->L,1.0,1.0);
+         glVertex3d(-2.0+Proj->L,1.0,1.0);
+         glVertex3d(-2.0+Proj->L,-1.0,1.0);
       glEnd();
 
       if (Interp)
@@ -148,14 +148,14 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       glBegin(GL_LINES);
          incr=4.0*(Proj->Geo->Params.CoordDef/360.0);
-         for(x=-2.0+Proj->Params->L-fmod(Proj->Params->L,incr);x<=2.0+Proj->Params->L;x+=incr){
+         for(x=-2.0+Proj->L-fmod(Proj->L,incr);x<=2.0+Proj->L;x+=incr){
             glVertex3d(x,-1.0,1.0);
             glVertex3d(x,1.0,1.0);
          }
 
          for(y=-1.0;y<=1.0;y+=incr){
-            glVertex3d(-2.0+Proj->Params->L,y,1.0);
-            glVertex3d(2.0+Proj->Params->L,y,1.0);
+            glVertex3d(-2.0+Proj->L,y,1.0);
+            glVertex3d(2.0+Proj->L,y,1.0);
 
          }
       glEnd();
@@ -173,7 +173,7 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  incr,ax[2];
 
    /*Draw 3DAxis*/
-   if (Proj->Params->TAxis && Proj->Params->ZAxis.Elev!=0.0) {
+   if (Proj->TAxis && Proj->ZAxis.Elev!=0.0) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
@@ -184,20 +184,20 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glMatrixMode(GL_MODELVIEW);
       glLineWidth(1.0);
 
-      incr=pow(10,ORDER(Proj->Params->ZAxis.Elev)-1);
-      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2.5:incr;
-      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
-      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=pow(10,ORDER(Proj->ZAxis.Elev)-1);
+      incr=(Proj->ZAxis.Elev/incr)>10?incr*2.5:incr;
+      incr=(Proj->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=(Proj->ZAxis.Elev/incr)>10?incr*2:incr;
 
-      co.Lat=Proj->Params->ZAxis.Lat;
-      co.Lon=Proj->Params->ZAxis.Lon;
-      co.Elev=Proj->Params->ZAxis.Elev;
-      Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
+      co.Lat=Proj->ZAxis.Lat;
+      co.Lon=Proj->ZAxis.Lon;
+      co.Elev=Proj->ZAxis.Elev;
+      Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
       PROJCHECK(Proj,vr[0])
 
-      switch(Proj->Params->TAxis) {
+      switch(Proj->TAxis) {
          case 1: ax[0]=vr[0]; ax[1]=vr[1]; break;
-         case 2: ax[0]=-2.0+Proj->Params->L; ax[1]=1.0; break;
+         case 2: ax[0]=-2.0+Proj->L; ax[1]=1.0; break;
       }
 
       /*Draw Z axis planes*/
@@ -212,21 +212,21 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          glColor3us(0xDDDD,0xDDDD,0xDDDD);
          glVertex3d(ax[0],vr[1],1.0);
          glVertex3d(ax[0],vr[1],vr[2]);
-         glVertex3d(2.0+Proj->Params->L,vr[1],vr[2]);
-         glVertex3d(2.0+Proj->Params->L,vr[1],1.0);
+         glVertex3d(2.0+Proj->L,vr[1],vr[2]);
+         glVertex3d(2.0+Proj->L,vr[1],1.0);
       glEnd();
       glDisable(GL_POLYGON_OFFSET_FILL);
 
       /*Draw Z axis increments*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
+      for(co.Elev=0;co.Elev<=Proj->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINES);
-            Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
+            Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
             PROJCHECK(Proj,vr[0])
             glVertex3d(vr[0],-1.0,vr[2]);
             glVertex3d(vr[0],ax[1],vr[2]);
             glVertex3d(ax[0],vr[1],vr[2]);
-            glVertex3d(2.0+Proj->Params->L,vr[1],vr[2]);
+            glVertex3d(2.0+Proj->L,vr[1],vr[2]);
          glEnd();
 
          glPushMatrix();
@@ -309,17 +309,17 @@ int Cylin_Init(Tcl_Interp *Interp){
 int Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 
    if (Undo) {
-      if ((Lon-Proj->Params->Lon)<180.0) {
+      if ((Lon-Proj->Lon)<180.0) {
          Lon+=360.0;
       }
-      if ((Lon-Proj->Params->Lon)>180.0) {
+      if ((Lon-Proj->Lon)>180.0) {
          Lon-=360.0;
       }
       glTranslated(Lon/90.0,Lat/90.0,0.0);
    } else {
       glTranslated(-Lon/90.0,-Lat/90.0,0.0);
    }
-   Proj->Params->L=Proj->Params->Lon/90.0;
+   Proj->L=Proj->Lon/90.0;
 
    return 1;
 }
@@ -391,9 +391,9 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
          glBegin(Mode);
             if (Col) glColor4ubv(&Col[i*4]);
             if (Tex) glTexCoord1f(Tex[i]);
-            Cylin_Vertex(Data[i],p0,Proj->Params->L,Mode);
+            Cylin_Vertex(Data[i],p0,Proj->L,Mode);
             i++;
-            Cylin_Vertex(Data[i],Data[i-1],Proj->Params->L,Mode);
+            Cylin_Vertex(Data[i],Data[i-1],Proj->L,Mode);
          glEnd();
        }
    } else if (Mode==GL_POINTS) {
@@ -401,19 +401,19 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
          for(i=0;i<Nb;i+=stride) {
              if (Col) glColor4ubv(&Col[i*4]);
              if (Tex) glTexCoord1f(Tex[i]);
-             Cylin_Vertex(Data[i],p0,Proj->Params->L,Mode);
+             Cylin_Vertex(Data[i],p0,Proj->L,Mode);
          }
       glEnd();
    } else {
       glBegin(Mode);
-         Cylin_Vertex(Data[0],p0,Proj->Params->L,Mode);
+         Cylin_Vertex(Data[0],p0,Proj->L,Mode);
          for(i=stride;i<Nb;i+=stride) {
             if (Col) glColor4ubv(&Col[i*4]);
             if (Tex) glTexCoord1f(Tex[i]);
-            Cylin_Vertex(Data[i],Data[i-stride],Proj->Params->L,Mode);
+            Cylin_Vertex(Data[i],Data[i-stride],Proj->L,Mode);
          }
          if (stride>1)
-            Cylin_Vertex(Data[Nb-1],Data[Nb-1-stride],Proj->Params->L,Mode);
+            Cylin_Vertex(Data[Nb-1],Data[Nb-1-stride],Proj->L,Mode);
       glEnd();
    }
 }
@@ -475,8 +475,8 @@ void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,ch
    }
 
    /*On verifie si les donnees depasse d'un cote*/
-   if (V0) f0=CYLFLIP(Proj->Params->L,V0[0]);
-   if (V1) f1=CYLFLIP(Proj->Params->L,V1[0]);
+   if (V0) f0=CYLFLIP(Proj->L,V0[0]);
+   if (V1) f1=CYLFLIP(Proj->L,V1[0]);
 
    if (f0!=0)    glTranslated(f0,0.0,0.0);
    if (Data)     { if (Idx) { glDrawElements(Mode,Nb,GL_UNSIGNED_INT,Idx); } else { glDrawArrays(Mode,0,Nb);} }
@@ -620,9 +620,9 @@ Tcl_Obj* Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
 
    obj=Tcl_NewListObj(0,NULL);
 
-   Proj->Type->Project(Proj->Params,(GeoVect*)&Pt1,(GeoVect*)&in,1);
+   Proj->Type->Project(Proj,(GeoVect*)&Pt1,(GeoVect*)&in,1);
 
-   d=in[0]-Proj->Params->L;   /*Test le depassement*/
+   d=in[0]-Proj->L;   /*Test le depassement*/
    CYLCHECK(d,in[0]);
 
    gluProject(in[0],in[1],in[2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
@@ -677,35 +677,35 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
    CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
-   Proj->Type->Project(Proj->Params,(GeoVect*)co,(GeoVect*)in,2);
+   Proj->Type->Project(Proj,(GeoVect*)co,(GeoVect*)in,2);
 
    m=DELTA(in[0],in[1]);
 
-   d=in[0][0]-Proj->Params->L;        /*Test le depassement*/
+   d=in[0][0]-Proj->L;        /*Test le depassement*/
    CYLCHECK(d,in[0][0]);
 
-   d=in[1][0]-Proj->Params->L;        /*Test le depassement*/
+   d=in[1][0]-Proj->L;        /*Test le depassement*/
    CYLCHECK(d,in[1][0]);
 
    /*Si on change de cote +-*/
    if (fabs(in[1][0]-in[0][0])>2.0) {
 
-      x=(in[1][0]-Proj->Params->L)<0.0?2.0:-2.0;
+      x=(in[1][0]-Proj->L)<0.0?2.0:-2.0;
 
       gluProject(in[0][0],in[0][1],in[0][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix00[0],&Pix00[1],&Pix00[2]);
-      Pix00[1]=Proj->Params->VP->Height-Pix00[1];
-      gluProject(Proj->Params->L+x,in[0][1]+(((Proj->Params->L+x)-in[0][0])*m),in[0][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix01[0],&Pix01[1],&Pix01[2]);
-      Pix01[1]=Proj->Params->VP->Height-Pix01[1];
-      gluProject(Proj->Params->L-x,in[1][1]+(((Proj->Params->L-x)-in[1][0])*m),in[1][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix10[0],&Pix10[1],&Pix10[2]);
-      Pix10[1]=Proj->Params->VP->Height-Pix10[1];
+      Pix00[1]=Proj->VP->Height-Pix00[1];
+      gluProject(Proj->L+x,in[0][1]+(((Proj->L+x)-in[0][0])*m),in[0][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix01[0],&Pix01[1],&Pix01[2]);
+      Pix01[1]=Proj->VP->Height-Pix01[1];
+      gluProject(Proj->L-x,in[1][1]+(((Proj->L-x)-in[1][0])*m),in[1][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix10[0],&Pix10[1],&Pix10[2]);
+      Pix10[1]=Proj->VP->Height-Pix10[1];
       gluProject(in[1][0],in[1][1],in[1][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix11[0],&Pix11[1],&Pix11[2]);
-      Pix11[1]=Proj->Params->VP->Height-Pix11[1];
+      Pix11[1]=Proj->VP->Height-Pix11[1];
       return(1);
    } else {
       gluProject(in[0][0],in[0][1],in[0][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix00[0],&Pix00[1],&Pix00[2]);
-      Pix00[1]=Proj->Params->VP->Height-Pix00[1];
+      Pix00[1]=Proj->VP->Height-Pix00[1];
       gluProject(in[1][0],in[1][1],in[1][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix01[0],&Pix01[1],&Pix01[2]);
-      Pix01[1]=Proj->Params->VP->Height-Pix01[1];
+      Pix01[1]=Proj->VP->Height-Pix01[1];
       return(0);
    }
 }
@@ -717,7 +717,7 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
  * But      : Transforme les coordonnes lat-lon en projection cylindrique.
  *
  * Parametres :
- *  <Params>  : Parametres de la projection
+ *  <Proj>    : Parametres de la projection
  *  <Loc>     : Coordonnees lat lon du point
  *  <Pix>     : Coordonnees cartesienne du point
  *  <Nb>      : Nombre de coordonnees a transformer
@@ -728,7 +728,7 @@ int Cylin_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d P
  *
  *----------------------------------------------------------------------------
 */
-unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long Cylin_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
    Coord    loc;
    GeoVect *out;
@@ -736,7 +736,7 @@ unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc
    double   r;
 
    out=Pix?Pix:Loc;
-   r=Params->Scale*Params->ZFactor;
+   r=Proj->Scale*Proj->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
 
@@ -765,7 +765,7 @@ unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc
  *
  * Parametres :
  *  <VP>      : Parametres du viewport
- *  <Params>  : Parametres de la projection
+ *  <Proj>    : Parametres de la projection
  *  <Loc>     : Coordonne lat lon du point
  *  <Pix>     : Coordonee cartesienne du point
  *
@@ -776,7 +776,7 @@ unsigned long Cylin_Project(const ProjParams* restrict const Params,GeoVect *Loc
  *
  *----------------------------------------------------------------------------
 */
-int Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
+int Cylin_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    Vect3d obj;
    double depth=1.0;
@@ -785,10 +785,10 @@ int Cylin_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
 
-      Loc->Lon=Params->Lon+obj[0]*90.0;
-      Loc->Lat=Params->Lat+obj[1]*90.0;
+      Loc->Lon=Proj->Lon+obj[0]*90.0;
+      Loc->Lat=Proj->Lat+obj[1]*90.0;
 
-      if (Loc->Lon<=(180.0+Params->Lon) && Loc->Lon>=(-180.0+Params->Lon) && Loc->Lat<=90.0 && Loc->Lat>=-90.0) {
+      if (Loc->Lon<=(180.0+Proj->Lon) && Loc->Lon>=(-180.0+Proj->Lon) && Loc->Lat<=90.0 && Loc->Lat>=-90.0) {
          return 1;
       }
    }
@@ -837,11 +837,11 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          glDisable(GL_STENCIL_TEST);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glBegin(GL_POLYGON);
-            glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
-            glVertex3d(2.0+Proj->Params->L,-1.0,1.0);
-            glVertex3d(2.0+Proj->Params->L,1.0,1.0);
-            glVertex3d(-2.0+Proj->Params->L,1.0,1.0);
-            glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
+            glVertex3d(-2.0+Proj->L,-1.0,1.0);
+            glVertex3d(2.0+Proj->L,-1.0,1.0);
+            glVertex3d(2.0+Proj->L,1.0,1.0);
+            glVertex3d(-2.0+Proj->L,1.0,1.0);
+            glVertex3d(-2.0+Proj->L,-1.0,1.0);
          glEnd();
          glEnable(GL_STENCIL_TEST);
 
@@ -852,11 +852,11 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
       glLineWidth(ABS(Proj->Geo->Params.Coast));
       glBegin(GL_LINE_STRIP);
-         glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
-         glVertex3d(2.0+Proj->Params->L,-1.0,1.0);
-         glVertex3d(2.0+Proj->Params->L,1.0,1.0);
-         glVertex3d(-2.0+Proj->Params->L,1.0,1.0);
-         glVertex3d(-2.0+Proj->Params->L,-1.0,1.0);
+         glVertex3d(-2.0+Proj->L,-1.0,1.0);
+         glVertex3d(2.0+Proj->L,-1.0,1.0);
+         glVertex3d(2.0+Proj->L,1.0,1.0);
+         glVertex3d(-2.0+Proj->L,1.0,1.0);
+         glVertex3d(-2.0+Proj->L,-1.0,1.0);
       glEnd();
 
       if (Interp)
@@ -876,7 +876,7 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
       glBegin(GL_LINES);
          incr=4.0*(Proj->Geo->Params.CoordDef/360.0);
-         for(x=-2.0+Proj->Params->L-fmod(Proj->Params->L,incr);x<=2.0+Proj->Params->L;x+=incr){
+         for(x=-2.0+Proj->L-fmod(Proj->L,incr);x<=2.0+Proj->L;x+=incr){
             glVertex3d(x,-1.0,1.0);
             glVertex3d(x,1.0,1.0);
          }
@@ -884,8 +884,8 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          for(y=-80;y<=80;y+=Proj->Geo->Params.CoordDef){
             if (y>=-78 && y<=78) {
                incr=log(tan(M_PI4 + y/180.0));
-               glVertex3d(-2.0+Proj->Params->L,incr,1.0);
-               glVertex3d(2.0+Proj->Params->L,incr,1.0);
+               glVertex3d(-2.0+Proj->L,incr,1.0);
+               glVertex3d(2.0+Proj->L,incr,1.0);
             }
          }
       glEnd();
@@ -916,17 +916,17 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 int Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 
    if (Undo) {
-      if ((Lon-Proj->Params->Lon)<180.0) {
+      if ((Lon-Proj->Lon)<180.0) {
          Lon+=360.0;
       }
-      if ((Lon-Proj->Params->Lon)>180.0) {
+      if ((Lon-Proj->Lon)>180.0) {
          Lon-=360.0;
       }
       glTranslated(Lon/90.0,log(tan(M_PI4 + Lat/180.0)),0.0);
    } else {
       glTranslated(-Lon/90.0,-log(tan(M_PI4 + Lat/180.0)),0.0);
    }
-   Proj->Params->L=Proj->Params->Lon/90.0;
+   Proj->L=Proj->Lon/90.0;
 
    return 1;
 }
@@ -938,7 +938,7 @@ int Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  * But      : Transforme les coordonnes lat-lon en projection mercator.
  *
  * Parametres :
- *  <Params>  : Parametres de la projection
+ *  <Proj>    : Parametres de la projection
  *  <Loc>     : Coordonnees lat lon du point
  *  <Pix>     : Coordonnees cartesienne du point
  *  <Nb>      : Nombre de coordonnees a transformer
@@ -949,7 +949,7 @@ int Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  *----------------------------------------------------------------------------
 */
-unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long Merca_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
    Coord    loc;
    GeoVect *out;
@@ -957,7 +957,7 @@ unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc
    double   r;
 
    out=Pix?Pix:Loc;
-   r=Params->Scale*Params->ZFactor;
+   r=Proj->Scale*Proj->ZFactor;
 
    for(n=0;n<ABS(Nb);n++) {
 
@@ -987,7 +987,7 @@ unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc
  * Parametres :
  *  <Loc>     : Coordonne lat lon du point
  *  <Pix>     : Coordonee cartesienne du point
- *  <Params>  : Parametres de la projection
+ *  <Proj>       : Parametres de la projection
  *
  * Retour:
  *  <int>     : Coordonee Valide ou non
@@ -996,7 +996,7 @@ unsigned long Merca_Project(const ProjParams* restrict const Params,GeoVect *Loc
  *
  *----------------------------------------------------------------------------
 */
-int Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
+int Merca_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    Vect3d obj;
    double depth=1.0;
@@ -1005,10 +1005,10 @@ int Merca_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
 
-      Loc->Lon=Params->Lon+obj[0]*90.0;
-      Loc->Lat=(atan(exp(obj[1]+log(tan(M_PI4 + Params->Lat/180.0))))-M_PI4)*180.0;
+      Loc->Lon=Proj->Lon+obj[0]*90.0;
+      Loc->Lat=(atan(exp(obj[1]+log(tan(M_PI4 + Proj->Lat/180.0))))-M_PI4)*180.0;
 
-      if (Loc->Lon<=(180.0+Params->Lon) && Loc->Lon>=(-180.0+Params->Lon) && Loc->Lat<=78.0 && Loc->Lat>=-78.0) {
+      if (Loc->Lon<=(180.0+Proj->Lon) && Loc->Lon>=(-180.0+Proj->Lon) && Loc->Lat<=78.0 && Loc->Lat>=-78.0) {
          return(1);
       }
    }

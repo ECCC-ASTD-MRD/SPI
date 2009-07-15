@@ -133,17 +133,17 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
 
    for (n=0;n<Nb;n++) {
 
-      if (Proj->Params->Ref->AX) {
-         Grid[n][0]=Proj->Params->Ref->AX[(int)Grid[n][0]]-Proj->Params->Ref->AX[0];
-         Grid[n][1]=Proj->Params->Ref->AY[(int)Grid[n][1]]-Proj->Params->Ref->AY[0];
-         d=Proj->Params->L*0.5;
+      if (Proj->Ref->AX) {
+         Grid[n][0]=Proj->Ref->AX[(int)Grid[n][0]]-Proj->Ref->AX[0];
+         Grid[n][1]=Proj->Ref->AY[(int)Grid[n][1]]-Proj->Ref->AY[0];
+         d=Proj->L*0.5;
       } else {
-         d=(Proj->Params->L-1)*0.5;
+         d=(Proj->L-1)*0.5;
       }
 
-      Grid[n][0]=Grid[n][0]/d-Proj->Params->LI;
-      Grid[n][1]=Grid[n][1]/d-Proj->Params->LJ;
-      Grid[n][2]=1.0+Grid[n][2]*Proj->Params->Scale*Proj->Params->ZFactor;
+      Grid[n][0]=Grid[n][0]/d-Proj->LI;
+      Grid[n][1]=Grid[n][1]/d-Proj->LJ;
+      Grid[n][2]=1.0+Grid[n][2]*Proj->Scale*Proj->ZFactor;
    }
 }
 
@@ -366,7 +366,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
             Vect_Init(Field->Ref->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
          }
       }
-      Proj->Type->Project(Proj->Params,Field->Ref->Pos[Level],NULL,FSIZE3D(Field->Def));
+      Proj->Type->Project(Proj,Field->Ref->Pos[Level],NULL,FSIZE3D(Field->Def));
    }
 
    if (gz)
@@ -507,7 +507,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          }
       }
       if (Proj) {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
       }
       FSTD_FileUnset(NULL,head->FID);
    } else {
@@ -572,7 +572,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                }
             }
 
-            if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
+            if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Id==Field->Ref->Id) {
                Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
             } else {
               if (Field->Ref->Id>-1) {
@@ -585,10 +585,10 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             }
          }
       }
-      if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Params->Ref && ((Projection*)Proj)->Params->Ref->Id==Field->Ref->Id) {
+      if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Id==Field->Ref->Id) {
          FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(Field->Def));
       } else {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj)->Params,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
       }
 
       FSTD_FileUnset(NULL,head->FID);
@@ -830,11 +830,11 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
    /*Recuperer tout les niveaux disponibles*/
    if (FieldFrom->ReadCube)
-      FieldFrom->ReadCube(Interp,FieldFrom,0);
+      FieldFrom->ReadCube(Interp,FieldFrom,0,0,0);
 
    if (ZFieldFrom) {
       if (ZFieldFrom->ReadCube)
-         ZFieldFrom->ReadCube(Interp,ZFieldFrom,0);
+         ZFieldFrom->ReadCube(Interp,ZFieldFrom,0,0,0);
 
       if (ZFieldFrom->Def->NI!=FieldFrom->Def->NI || ZFieldFrom->Def->NJ!=FieldFrom->Def->NJ) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid source Z field dimensions",(char*)NULL);
@@ -844,7 +844,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
    if (ZFieldTo) {
       if (ZFieldTo->ReadCube)
-         ZFieldTo->ReadCube(Interp,ZFieldTo,0);
+         ZFieldTo->ReadCube(Interp,ZFieldTo,0,0,0);
 
       if (ZFieldTo->Def->NI!=FieldTo->Def->NI || ZFieldTo->Def->NJ!=FieldTo->Def->NJ) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid destination Z field dimensions",(char*)NULL);
@@ -2278,12 +2278,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
+int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFrom,int LevelTo){
 
    FSTD_Head   *head=(FSTD_Head*)Field->Head;
    TFSTDVector *uvw;
    TGeoRef     *ref;
-   int          idxs[1024],tmp[1024],i,k,k2,idx,ok,idump,ni,nj,nk,type,ip1;
+   int          idxs[1024],tmp[1024],i,k,k0,k1,k2,idx,ok,idump,ni,nj,nk,type,ip1;
    char         cdump[16];
    char        *p;
    float        levels[1024];
@@ -2350,6 +2350,14 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
       }
    }
 
+   /*Verifier les limites*/
+   k0=0;
+   k1=nk;
+   if (LevelFrom!=LevelTo) {
+      nk=LevelTo-LevelFrom+1;
+      k0=LevelFrom;
+      k1=LevelTo;
+   }
    /*Augmenter la dimension du tableau*/
    if (!Data_DefResize(Field->Def,ni,nj,nk)) {
       fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
@@ -2363,40 +2371,42 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert){
 #endif
    /*Recuperer le data*/
    for(k=0;k<Field->Def->NK;k++) {
-      idx=FSIZE2D(Field->Def)*tmp[k];
-      Def_Pointer(Field->Def,0,idx,p);
-      c_fstluk(p,idxs[k],&ni,&nj,&idump);
+      if (tmp[k]>=k0 && tmp[k]<=k1) {
+         idx=FSIZE2D(Field->Def)*(tmp[k]-k0);
+         Def_Pointer(Field->Def,0,idx,p);
+         c_fstluk(p,idxs[k],&ni,&nj,&idump);
 
-      /*Recuperer le data seulement*/
-      ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
-         &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
-         &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
+         /*Recuperer le data seulement*/
+         ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
+            &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
+            &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
 
-      /*Champs vectoriel ???*/
-      if (uvw) {
-         if (uvw->VV) {
-            Def_Pointer(Field->Def,1,idx,p);
-            ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
-            c_fstluk(p,ok,&ni,&nj,&idump);
+         /*Champs vectoriel ???*/
+         if (uvw) {
+            if (uvw->VV) {
+               Def_Pointer(Field->Def,1,idx,p);
+               ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
+               c_fstluk(p,ok,&ni,&nj,&idump);
+            }
+            if (uvw->WW) {
+               Def_Pointer(Field->Def,2,idx,p);
+               ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
+               c_fstluk(p,ok,&ni,&nj,&idump);
+            }
          }
-         if (uvw->WW) {
-            Def_Pointer(Field->Def,2,idx,p);
-            ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
-            c_fstluk(p,ok,&ni,&nj,&idump);
+
+         /*Assigner le niveaux courant*/
+         if (ip1==head->IP1) {
+            Field->Def->Level=tmp[k]-k0;
          }
-      }
+         levels[tmp[k]-k0]=FSTD_IP2Level(ip1,&type);
 
-      /*Assigner le niveaux courant*/
-      if (ip1==head->IP1) {
-         Field->Def->Level=tmp[k];
-      }
-      levels[tmp[k]]=FSTD_IP2Level(ip1,&type);
-
-      if (ok<0) {
-         fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
-         FSTD_FileUnset(Interp,head->FID);
-         EZUnLock_RPNField();
-         return(0);
+         if (ok<0) {
+            fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
+            FSTD_FileUnset(Interp,head->FID);
+            EZUnLock_RPNField();
+            return(0);
+         }
       }
    }
 

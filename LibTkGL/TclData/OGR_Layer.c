@@ -1284,7 +1284,7 @@ void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
 
    Layer->Ref->Project(Layer->Ref,Layer->Vr[0][0],Layer->Vr[0][1],&co[0].Lat,&co[0].Lon,0,1);
    Layer->Ref->Project(Layer->Ref,Layer->Vr[1][0],Layer->Vr[1][1],&co[1].Lat,&co[1].Lon,0,1);
-   Proj->Type->Project(Proj->Params,co,Layer->Vr,2);
+   Proj->Type->Project(Proj,co,Layer->Vr,2);
 }
 
 /*----------------------------------------------------------------------------

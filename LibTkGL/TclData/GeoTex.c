@@ -82,7 +82,7 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
 
       band->Tex.ThreadId=(Tcl_ThreadId)0x1;
 
-      GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->Params->VP,band->Tex.ResN,0,0,5);
+      GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->VP,band->Tex.ResN,0,0,5);
 
       proj->Loading=0;
       band->Tex.ThreadId=(Tcl_ThreadId)0x0;
@@ -382,7 +382,7 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    Tile->Box.Co[2].Elev=0.0;
    Tile->Box.Co[3].Elev=0.0;
 
-   if (!Proj->Params->Geographic) {
+   if (!Proj->Geographic) {
       Tile->Box.Co[0].Lat=y0;Tile->Box.Co[0].Lon=x0;
       Tile->Box.Co[1].Lat=y1;Tile->Box.Co[1].Lon=x0;
       Tile->Box.Co[2].Lat=y1;Tile->Box.Co[2].Lon=x1;
@@ -395,7 +395,7 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
   }
 
    /*Projection des coins de la texture*/
-   Proj->Type->Project(Proj->Params,Tile->Box.Co,Tile->Box.Vr,-4);
+   Proj->Type->Project(Proj,Tile->Box.Co,Tile->Box.Vr,-4);
    Tile->Box.Nb=4;
 
    /*Test for overflow on raster limits*/
@@ -479,7 +479,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
          dy=Tile->Dy+y0;
 
          tl[j][2]=0.0;
-         if (!Proj->Params->Geographic) {
+         if (!Proj->Geographic) {
             tl[j][0]=dx;
             tl[j][1]=dy;
          } else {
@@ -552,7 +552,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
       }
    }
 
-   Proj->Type->Project(Proj->Params,tl,NULL,-j);
+   Proj->Type->Project(Proj,tl,NULL,-j);
 
    /*Overwrite limits with sampling coordinates (In case there is height)*/
    Vect_Assign(Tile->Box.Vr[0],tl[0]);
@@ -852,17 +852,17 @@ int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
    Coord co[2];
    unsigned int res,pres,d;
 
-   if (Proj->Params->VP->Secondary) {
+   if (Proj->VP->Secondary) {
       return(0);
    }
 
    /*Figure out geographical resolution*/
-   if (Proj->Params->Geographic) {
+   if (Proj->Geographic) {
       Band->Ref->Project(Band->Ref,Band->Def->NI/2,Band->Def->NJ/2,&co[0].Lat,&co[0].Lon,1,1);
       Band->Ref->Project(Band->Ref,Band->Def->NI/2+1,Band->Def->NJ/2,&co[1].Lat,&co[1].Lon,1,1);
       res=Proj->PixDist/DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
    } else {
-      res=Proj->PixDist*MAX((float)Band->Def->NI/Proj->Params->VP->Width,(float)Band->Def->NJ/Proj->Params->VP->Height);
+      res=Proj->PixDist*MAX((float)Band->Def->NI/Proj->VP->Width,(float)Band->Def->NJ/Proj->VP->Height);
    }
    d=MAX(Band->Def->NI,Band->Def->NJ);
    Band->Tex.ResN=pow(2,ceil(log10(d)/log10(2)))/Band->Spec->TexSize;
@@ -927,7 +927,7 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
       return(0);
 
    /*Check visibility*/
-   if ((Tile->Res==Band->Tex.ResN && Band->Ref->Type&GRID_WRAP) || GDB_Loc(Tile->Box,Proj,1,Proj->Params->VP->Width,1,Proj->Params->VP->Height)!=GDB_OUT) {
+   if ((Tile->Res==Band->Tex.ResN && Band->Ref->Type&GRID_WRAP) || GDB_Loc(Tile->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height)!=GDB_OUT) {
 
       tl[0]=Tile->Sub[0]==(TGeoTexTile*)0x1?1:GeoTex_Render(Band,Tile->Sub[0],Proj,VP);
       tl[1]=Tile->Sub[1]==(TGeoTexTile*)0x1?(tl[0]?1:0):GeoTex_Render(Band,Tile->Sub[1],Proj,VP);

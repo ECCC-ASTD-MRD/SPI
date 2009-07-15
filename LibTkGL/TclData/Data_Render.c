@@ -156,7 +156,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
    int k,nk;
 
    if (Field->Ref->LevelNb==1) {
-      if (Field->ReadCube) Field->ReadCube(NULL,Field,0);
+      if (Field->ReadCube) Field->ReadCube(NULL,Field,0,0,0);
       Data_PreInit(Field);
    }
 
@@ -623,10 +623,10 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             gluProject(array->Data[n][0],array->Data[n][1],array->Data[n][2],VP->GLModR,VP->GLProj,VP->GLView,&p1[0],&p1[1],&p1[2]);
 
             /* Test for insidness within viewport */
-            if (!VIN(p0[0],dx+5,Proj->Params->VP->Width-dx-5) || !VIN(p0[1],dx+5,Proj->Params->VP->Height-dx-5) || !VIN(p0[2],0,1)) {
+            if (!VIN(p0[0],dx+5,Proj->VP->Width-dx-5) || !VIN(p0[1],dx+5,Proj->VP->Height-dx-5) || !VIN(p0[2],0,1)) {
                continue;
             }
-            if (!VIN(p1[0],dx+5,Proj->Params->VP->Width-dx-5) || !VIN(p1[1],dx+5,Proj->Params->VP->Height-dx-5) || !VIN(p1[2],0,1)) {
+            if (!VIN(p1[0],dx+5,Proj->VP->Width-dx-5) || !VIN(p1[1],dx+5,Proj->VP->Height-dx-5) || !VIN(p1[2],0,1)) {
                continue;
             }
 
@@ -916,7 +916,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
       for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
-         Proj->Type->UnProject(VP,Proj->Params,&coo,pix);
+         Proj->Type->UnProject(VP,Proj,&coo,pix);
          if (coo.Lat==-999.0) {
             continue;
          }
@@ -1541,7 +1541,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             Vect_Assign(g,posa[idx]);
             PROJCHECK(Proj,g[0]);
             gluProject(g[0],posa[idx][1],posa[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pos[0],&pos[1],&pos[2]);
-            if (VIN(pos[0],1,Proj->Params->VP->Width) && VIN(pos[1],1,Proj->Params->VP->Height) && VIN(pos[2],0,1)) {
+            if (VIN(pos[0],1,Proj->VP->Width) && VIN(pos[1],1,Proj->VP->Height) && VIN(pos[2],0,1)) {
                DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,zm),lbl);
                if (high) {
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"H",lbl);
@@ -1692,7 +1692,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
             for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
-               Proj->Type->UnProject(VP,Proj->Params,&coo,pix);
+               Proj->Type->UnProject(VP,Proj,&coo,pix);
                if (coo.Lat!=-999.0) {
                   lat[n]=coo.Lat;
                   lon[n]=(coo.Lon<0?coo.Lon+360:coo.Lon);

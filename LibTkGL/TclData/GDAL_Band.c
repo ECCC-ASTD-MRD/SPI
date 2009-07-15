@@ -2548,7 +2548,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       }
       glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),1);
       glUniform1iARB(GLShader_UniformGet(prog,"Data"),0);
-      glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->Params->L:-999.0));
+      glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
       glUniform4fvARB(GLShader_UniformGet(prog,"Sc"),1,Band->Tex.Scale);
       glUniform4fvARB(GLShader_UniformGet(prog,"Bc"),1,Band->Tex.Bias);
       glActiveTexture(GL_TEXTURE0);

@@ -2616,13 +2616,13 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               break;
 
                            /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
-                           if (!eb || Proj->Params->Scale==1.0) {
+                           if (!eb || Proj->Scale==1.0) {
                               break;
                            }
                         }
                      }
                      /*Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway*/
-                     if (ne>=0 && (!eb || Proj->Params->Scale==1.0)) {
+                     if (ne>=0 && (!eb || Proj->Scale==1.0)) {
                         break;
                      }
                   }

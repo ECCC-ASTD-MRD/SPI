@@ -44,7 +44,6 @@
 #define GDB_DEGY 36
 
 #define GDB_RES 64
-#define GDB_MIN 5
 #define GDB_VIS 1
 #define GDB_LOW 0
 #define GDB_OUT -1

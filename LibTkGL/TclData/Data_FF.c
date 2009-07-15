@@ -1066,7 +1066,7 @@ int FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G
    Vect_Max(max,max,pix);
 
    /*Is the quad visible ???*/
-   if (!VOUT(min[0],max[0],0,Proj->Params->VP->Width) && !VOUT(min[1],max[1],0,Proj->Params->VP->Height) && !VOUT(min[2],max[2],0,1)) {
+   if (!VOUT(min[0],max[0],0,Proj->VP->Width) && !VOUT(min[1],max[1],0,Proj->VP->Height) && !VOUT(min[2],max[2],0,1)) {
       if (Dim) {
          Vect_Substract(Dim,max,min);
       }

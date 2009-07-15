@@ -136,7 +136,7 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          if (strcmp(proj->Type->Name,"grid")==0) {
             Grid_Setup(Interp,proj);
          } else {
-            ViewportClean(proj->Params->VP,1,1);
+            ViewportClean(proj->VP,1,1);
             Projection_Clean(Interp,proj,GDB_FORCE);
          }
          break;
@@ -248,8 +248,8 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&y);
-         if (proj->Params->Ref) {
-            proj->Params->Ref->Project(proj->Params->Ref,x,y,&loc0.Lat,&loc0.Lon,1,1);
+         if (proj->Ref) {
+            proj->Ref->Project(proj->Ref,x,y,&loc0.Lat,&loc0.Lon,1,1);
          } else {
             loc0.Lat=y;
             loc0.Lon=x;
@@ -267,8 +267,8 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
-         if (proj->Params->Ref) {
-            proj->Params->Ref->UnProject(proj->Params->Ref,&x,&y,loc0.Lat,loc0.Lon,1,1);
+         if (proj->Ref) {
+            proj->Ref->UnProject(proj->Ref,&x,&y,loc0.Lat,loc0.Lon,1,1);
          } else {
             y=loc0.Lat;
             x=loc0.Lon;
@@ -550,8 +550,8 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
 #endif
 
    GDB_TileFreeAll(Proj->Geo,Mode);
-   if (Proj->Params->VP && Proj->Params->VP->Cam)
-      Proj->Params->VP->Cam->Update=1;
+   if (Proj->VP && Proj->VP->Cam)
+      Proj->VP->Cam->Update=1;
 
    for (i=0;i<Proj->NbData;i++) {
       Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
@@ -602,9 +602,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    double      lat,lon,ni,nj,tmp;
 
    static CONST char *sopt[] = { "-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
-                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis",NULL };
+                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis","-minsize",NULL };
    enum                opt { LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
-                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS };
+                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS,MINSIZE };
 
    proj=Projection_Get(Name);
    if (!proj) {
@@ -622,35 +622,35 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
          case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->Lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Lon));
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat);
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon);
 
-               if (proj->Params->Geographic) {
+               if (proj->Geographic) {
                   if (lat>-90.0 && lat<90.0 || lon>-360.0 && lon<360.0) {
-                     proj->Params->Lat=lat;
-                     proj->Params->Lon=lon;
+                     proj->Lat=lat;
+                     proj->Lon=lon;
 
                      if (proj->Type && proj->Type->Def==PROJSPHERE) {
-                        ViewportClean(proj->Params->VP,1,1);
+                        ViewportClean(proj->VP,1,1);
                         Projection_Clean(Interp,proj,GDB_FORCE);
                      }
-                     if (proj->Params->Ref) {
-                        proj->Params->Ref->UnProject(proj->Params->Ref,&ni,&nj,proj->Params->Lat,proj->Params->Lon,1,1);
-                        proj->Params->I=ni;
-                        proj->Params->J=nj;
+                     if (proj->Ref) {
+                        proj->Ref->UnProject(proj->Ref,&ni,&nj,proj->Lat,proj->Lon,1,1);
+                        proj->I=ni;
+                        proj->J=nj;
                      }
                   }
                } else {
-                  proj->Params->I=proj->Params->Lon=lon;
-                  proj->Params->J=proj->Params->Lat=lat;
+                  proj->I=proj->Lon=lon;
+                  proj->J=proj->Lat=lat;
                }
-               if (proj->Params->VP) {
-                  ViewportSetup(proj->Params->VP->canvas,proj->Params->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->Params->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->Params->VP->canvas)),0,1,0);
-                  Projection_Setup(proj->Params->VP,proj,0);
+               if (proj->VP) {
+                  ViewportSetup(proj->VP->canvas,proj->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->VP->canvas)),0,1,0);
+                  Projection_Setup(proj->VP,proj,0);
               }
             }
             break;
@@ -658,24 +658,24 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
          case GRIDPOINT:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->I));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->J));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->I));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->J));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->I);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->J);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->I);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->J);
 
-               if (proj->Params->Ref && proj->Params->Geographic) {
-                  proj->Params->Ref->Project(proj->Params->Ref,proj->Params->I,proj->Params->J,&lat,&lon,1,1);
-                  proj->Params->Lat=lat;
-                  proj->Params->Lon=lon;
+               if (proj->Ref && proj->Geographic) {
+                  proj->Ref->Project(proj->Ref,proj->I,proj->J,&lat,&lon,1,1);
+                  proj->Lat=lat;
+                  proj->Lon=lon;
                } else {
-                  proj->Params->Lat=proj->Params->J;
-                  proj->Params->Lon=proj->Params->I;
+                  proj->Lat=proj->J;
+                  proj->Lon=proj->I;
                }
-               if (proj->Params->VP) {
-                  ViewportSetup(proj->Params->VP->canvas,proj->Params->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->Params->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->Params->VP->canvas)),0,1,0);
-                  Projection_Setup(proj->Params->VP,proj,0);
+               if (proj->VP) {
+                  ViewportSetup(proj->VP->canvas,proj->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->VP->canvas)),0,1,0);
+                  Projection_Setup(proj->VP,proj,0);
                }
             }
             break;
@@ -683,9 +683,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
         case GRIDSIZE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               if (proj->Params->Ref) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Params->Ref->X1-proj->Params->Ref->X0));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Params->Ref->Y1-proj->Params->Ref->Y0));
+               if (proj->Ref) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Ref->X1-proj->Ref->X0));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Ref->Y1-proj->Ref->Y0));
                 } else {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
@@ -698,11 +698,11 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
         case GRIDEXTENT:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               if (proj->Params->Ref) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Params->Ref->X0));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Params->Ref->Y0));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Params->Ref->X1));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Params->Ref->Y1));
+               if (proj->Ref) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Ref->X0));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Ref->Y0));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Ref->X1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(proj->Ref->Y1));
                 } else {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
@@ -879,12 +879,12 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
         case SCALE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(proj->Params->Scale));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(proj->Scale));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
-               if (tmp!=proj->Params->Scale) {
-                  proj->Params->Scale=tmp;
-                  ViewportClean(proj->Params->VP,1,1);
+               if (tmp!=proj->Scale) {
+                  proj->Scale=tmp;
+                  ViewportClean(proj->VP,1,1);
                   Projection_Clean(Interp,proj,GDB_RASTER);
                }
             }
@@ -893,22 +893,22 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
         case AXISCOORD:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.Lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.Lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->Params->ZAxis.Elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->ZAxis.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->ZAxis.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->ZAxis.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.Lat);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.Lon);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->Params->ZAxis.Elev);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->ZAxis.Lat);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->ZAxis.Lon);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->ZAxis.Elev);
             }
             break;
 
         case AXIS:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Params->TAxis));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->TAxis));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->Params->TAxis);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->TAxis);
             }
             break;
 
@@ -951,8 +951,8 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
        case GEOREF:
             if (Objc==1) {
-               if (proj->Params->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(proj->Params->Ref->Name,-1));
+               if (proj->Ref)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(proj->Ref->Name,-1));
             } else {
                if (!strlen(Tcl_GetString(Objv[++i]))) {
                   ref=NULL;
@@ -960,11 +960,11 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   Tcl_AppendResult(Interp,"\n   Projection_Config: Georeference unknown (",Tcl_GetString(Objv[i]),")",(char*)NULL);
                   return TCL_ERROR;
                }
-               if (ref!=proj->Params->Ref) {
-                  if (proj->Params->Ref)
-                     GeoRef_Destroy(Interp,proj->Params->Ref->Name);
-                  proj->Params->Ref=ref;
-                  GeoRef_Incr(proj->Params->Ref);
+               if (ref!=proj->Ref) {
+                  if (proj->Ref)
+                     GeoRef_Destroy(Interp,proj->Ref->Name);
+                  proj->Ref=ref;
+                  GeoRef_Incr(proj->Ref);
                   if (strcmp(proj->Type->Name,"grid")==0) {
                      Grid_Setup(Interp,proj);
                   }
@@ -974,9 +974,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
        case GEOGRAPHIC:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(proj->Params->Geographic));
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(proj->Geographic));
             } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&proj->Params->Geographic);
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&proj->Geographic);
                if (strcmp(proj->Type->Name,"grid")==0) {
                   Grid_Setup(Interp,proj);
                }
@@ -994,17 +994,27 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                } else {
                   if (type!=proj->Type) {
                      proj->Type=type;
-                     proj->Params->L=proj->Params->LI=proj->Params->LJ=1.0;
+                     proj->L=proj->LI=proj->LJ=1.0;
                      if (strcmp(Tcl_GetString(Objv[i]),"grid")==0) {
                         Grid_Setup(Interp,proj);
                      } else {
-                        ViewportClean(proj->Params->VP,1,1);
+                        ViewportClean(proj->VP,1,1);
                         Projection_Clean(Interp,proj,GDB_FORCE);
                     }
                   }
                }
             }
             break;
+
+       case MINSIZE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->MinSize));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&proj->MinSize);
+               proj->MinSize=proj->MinSize<0?0:proj->MinSize;
+            }
+            break;
+
       }
    }
    return(TCL_OK);
@@ -1044,27 +1054,27 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
    proj->Date      = 0;
    proj->Sun       = 0;
    proj->Loading   = 0;
+   proj->MinSize   = 5;
 
    /*Parametres commun*/
-   proj->Params = (ProjParams*)malloc(sizeof(ProjParams));
-   proj->Params->Scale        = 1;
-   proj->Params->ZFactor      = 1.0;
-   proj->Params->TAxis        = 1;
-   proj->Params->ZAxis.Lat    = 0.0;
-   proj->Params->ZAxis.Lon    = 0.0;
-   proj->Params->ZAxis.Elev   = 0.0;
-   proj->Params->Lat          = 0.0;
-   proj->Params->Lon          = 0.0;
-   proj->Params->VP           = NULL;
+   proj->Scale        = 1;
+   proj->ZFactor      = 1.0;
+   proj->TAxis        = 1;
+   proj->ZAxis.Lat    = 0.0;
+   proj->ZAxis.Lon    = 0.0;
+   proj->ZAxis.Elev   = 0.0;
+   proj->Lat          = 0.0;
+   proj->Lon          = 0.0;
+   proj->VP           = NULL;
 
    /*Parametres de projections sur grille*/
-   proj->Params->Ref          = NULL;
-   proj->Params->Geographic   = 1;
-   proj->Params->I            = 0.0;
-   proj->Params->J            = 0.0;
-   proj->Params->L            = 0.0;
-   proj->Params->LI           = 1.0;
-   proj->Params->LJ           = 1.0;
+   proj->Ref          = NULL;
+   proj->Geographic   = 1;
+   proj->I            = 0.0;
+   proj->J            = 0.0;
+   proj->L            = 0.0;
+   proj->LI           = 1.0;
+   proj->LJ           = 1.0;
 
    /*Initialisation de la base de donnees geographique*/
    proj->Geo=(GDB_Data*)malloc(sizeof(GDB_Data));
@@ -1137,8 +1147,8 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
    Projection *proj;
 
    if ((proj=(Projection*)TclY_HashDel(&ProjectionTable,Name))) {
-      if (proj->Params->Ref)
-         GeoRef_Destroy(Interp,proj->Params->Ref->Name);
+      if (proj->Ref)
+         GeoRef_Destroy(Interp,proj->Ref->Name);
 
       if (proj->Geo) {
          Projection_Clean(Interp,proj,GDB_FORCE);
@@ -1149,7 +1159,6 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
          Tcl_DecrRefCount(proj->Data);
       }
 
-      free(proj->Params);
       free(proj);
    }
    return(TCL_OK);
@@ -1408,9 +1417,9 @@ int Projection_Pixel(Projection *Proj,ViewportItem *VP,Coord Co,Vect3d Pix) {
    double d;
    Vect3d vr;
 
-   Proj->Type->Project(Proj->Params,(GeoVect*)&Co,(GeoVect*)&vr,1);
+   Proj->Type->Project(Proj,(GeoVect*)&Co,(GeoVect*)&vr,1);
    if (Proj->Type->Def==PROJCYLIN) {
-      d=vr[0]-Proj->Params->L;
+      d=vr[0]-Proj->L;
       CYLCHECK(d,vr[0]);
    }
    gluProject(vr[0],vr[1],vr[2],VP->GLModR,VP->GLProj,VP->GLView,&Pix[0],&Pix[1],&Pix[2]);
@@ -1451,7 +1460,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    OGR_Layer *layer;
 #endif
 
-   if (Proj->Type->Def==PROJPLANE && !Proj->Params->Ref) {
+   if (Proj->Type->Def==PROJPLANE && !Proj->Ref) {
       return(0);
    }
 
@@ -1463,7 +1472,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    if (Mode==GL_ALL || Mode==GL_VECTOR) {
 
-      if (Proj->Params->Geographic) {
+      if (Proj->Geographic) {
    //   GDB_StarRender(Interp,Proj);
 
          /*Initialiser le mask des donnees vectorielles*/
@@ -1492,9 +1501,9 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    if (Mode==GL_ALL || Mode==GL_RASTER) {
 
-      if (Proj->Params->Geographic) {
+      if (Proj->Geographic) {
          if (Interp) {
-//           Proj->Type->DrawGlobe(NULL,Proj->Params->VP,Proj);
+//           Proj->Type->DrawGlobe(NULL,Proj->VP,Proj);
             GDB_TileRender(NULL,Proj,Proj->Geo,GDB_FILL);
          }
          ras+=GDB_TileRender(NULL,Proj,Proj->Geo,GDB_MASK | GDB_RASTER);
@@ -1566,34 +1575,34 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
    long   sec;
    Coord  co[2];
 
-   Proj->Params->VP=VP;
+   Proj->VP=VP;
 
-   if (Proj->Type->Def==PROJPLANE && !Proj->Params->Ref) {
+   if (Proj->Type->Def==PROJPLANE && !Proj->Ref) {
       return;
    }
 
    /*Rotation sur les axes lat-lon*/
-   Proj->Type->Locate(Proj,Proj->Params->Lat,Proj->Params->Lon,0);
+   Proj->Type->Locate(Proj,Proj->Lat,Proj->Lon,0);
 
    /*Parametres de position*/
-   Proj->Params->SLat=sin(DEG2RAD(Proj->Params->Lat));
-   Proj->Params->CLat=cos(DEG2RAD(Proj->Params->Lat));
+   Proj->SLat=sin(DEG2RAD(Proj->Lat));
+   Proj->CLat=cos(DEG2RAD(Proj->Lat));
 
    /*Sauvegarde de la matrice de rotation*/
    glGetDoublev(GL_MODELVIEW_MATRIX,VP->GLModR);
 
    /*Distance en metres d'un pixel*/
    if (VP && !GLRender->TRCon) {
-      if (Proj->Params->Geographic) {
+      if (Proj->Geographic) {
          pt[0]=(VP->Width*0.5)-0.5;
          pt[1]=VP->Height*0.5;
          pt[2]=0;
-         Proj->Type->UnProject(VP,Proj->Params,&co[0],pt);
+         Proj->Type->UnProject(VP,Proj,&co[0],pt);
 
          pt[0]=(VP->Width*0.5)+0.5;
          pt[1]=VP->Height*0.5;
          pt[2]=0;
-         Proj->Type->UnProject(VP,Proj->Params,&co[1],pt);
+         Proj->Type->UnProject(VP,Proj,&co[1],pt);
 
          co[0].Lat=DEG2RAD(co[0].Lat);
          co[0].Lon=DEG2RAD(co[0].Lon);
@@ -1614,26 +1623,26 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
 
    /*Calcul du facteur en Z*/
    if (Proj->Type->Def==PROJPLANE) {
-      if (Proj->Params->Ref->Spatial && OSRIsProjected(Proj->Params->Ref->Spatial)) {
-         Proj->Params->ZFactor=1.0/((Proj->Params->L-1.0)*0.5);
+      if (Proj->Ref->Spatial && OSRIsProjected(Proj->Ref->Spatial)) {
+         Proj->ZFactor=1.0/((Proj->L-1.0)*0.5);
       } else {
-         Proj->Params->ZFactor=1.0/((Proj->Params->L-1.0)*2000.0);
+         Proj->ZFactor=1.0/((Proj->L-1.0)*2000.0);
       }
    } else {
-      Proj->Params->ZFactor=1.0/EARTHRADIUS;
+      Proj->ZFactor=1.0/EARTHRADIUS;
    }
 
    /*Calcul de la position centrale*/
    if (Proj->Type->Def==PROJGLOBE) {
-      gluProject(0.0,0.0,0.0,VP->GLModS,VP->GLProj,VP->GLView,&Proj->Params->ZPos[0],&Proj->Params->ZPos[1],&Proj->Params->ZPos[2]);
+      gluProject(0.0,0.0,0.0,VP->GLModS,VP->GLProj,VP->GLView,&Proj->ZPos[0],&Proj->ZPos[1],&Proj->ZPos[2]);
    } else {
-      Vect_Init(Proj->Params->ZPos,0.0,0.0,1e32);
+      Vect_Init(Proj->ZPos,0.0,0.0,1e32);
    }
 
    if (GL) {
       if (Proj->Type->Def==PROJPLANE) {
-         p0[3]=p1[3]=Proj->Params->LJ+0.0001;
-         p2[3]=p3[3]=Proj->Params->LI+0.0001;
+         p0[3]=p1[3]=Proj->LJ+0.0001;
+         p2[3]=p3[3]=Proj->LI+0.0001;
          glClipPlane(GL_CLIP_PLANE0,p0);
          glClipPlane(GL_CLIP_PLANE1,p1);
          glClipPlane(GL_CLIP_PLANE2,p2);
@@ -1643,8 +1652,8 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
          glEnable(GL_CLIP_PLANE2);
          glEnable(GL_CLIP_PLANE3);
       } else if (Proj->Type->Def==PROJCYLIN) {
-         p2[3]=Proj->Params->L+2+0.0001;
-         p3[3]=-Proj->Params->L+2+0.0001;
+         p2[3]=Proj->L+2+0.0001;
+         p3[3]=-Proj->L+2+0.0001;
          glClipPlane(GL_CLIP_PLANE2,p2);
          glClipPlane(GL_CLIP_PLANE3,p3);
          glEnable(GL_CLIP_PLANE2);
@@ -1663,7 +1672,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
          sec=Proj->Date>86400?Proj->Date:time(NULL)+Proj->Date;
          Astro_SunPos(sec,&Proj->SunPos.Lat,&Proj->SunPos.Lon);
          Proj->SunPos.Elev=146000.0;
-         Proj->Type->Project(Proj->Params,(GeoVect*)&Proj->SunPos,(GeoVect*)&pt,1);
+         Proj->Type->Project(Proj,(GeoVect*)&Proj->SunPos,(GeoVect*)&pt,1);
          Proj->LightPos[0]=pt[0];Proj->LightPos[1]=pt[1];Proj->LightPos[2]=pt[2];Proj->LightPos[3]=0.0;
       } else {
          Proj->LightPos[0]=0.0;Proj->LightPos[1]=0.943158;Proj->LightPos[2]=0.3;Proj->LightPos[3]=0.0;

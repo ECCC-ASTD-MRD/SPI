@@ -351,7 +351,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    }
 
    /*Si la projection n'a pas encore initialise ses dimensions*/
-   if (!proj->Params->VP) {
+   if (!proj->VP) {
       obj=Tcl_NewListObj(0,NULL);
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
@@ -379,17 +379,17 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                return(TCL_ERROR);
             }
             h=0.0;
-            if (proj->Params->Ref) {
+            if (proj->Ref) {
                Tcl_GetDoubleFromObj(Interp,Objv[2],&pt0[0]);
                Tcl_GetDoubleFromObj(Interp,Objv[3],&pt0[1]);
                pt0[0]-=vp->x;
                pt0[1]-=vp->y;
-               proj->Type->UnProject(vp,proj->Params,&loc0,pt0);
-               if (proj->Params->Geographic) {
+               proj->Type->UnProject(vp,proj,&loc0,pt0);
+               if (proj->Geographic) {
                   CLAMPLON(loc0.Lon);
                   h=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
 
-                  proj->Params->Ref->UnProject(proj->Params->Ref,&pt0[0],&pt0[1],loc0.Lat,loc0.Lon,0,1);
+                  proj->Ref->UnProject(proj->Ref,&pt0[0],&pt0[1],loc0.Lat,loc0.Lon,0,1);
                } else {
                   pt0[0]=loc0.Lon;
                   pt0[1]=loc0.Lat;
@@ -417,9 +417,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                bool=0;
             }
 
-            if (proj->Params->Ref) {
-               if (proj->Params->Geographic) {
-                  proj->Params->Ref->Project(proj->Params->Ref,pt0[0],pt0[1],&loc0.Lat,&loc0.Lon,0,1);
+            if (proj->Ref) {
+               if (proj->Geographic) {
+                  proj->Ref->Project(proj->Ref,pt0[0],pt0[1],&loc0.Lat,&loc0.Lon,0,1);
                } else {
                   loc0.Lat=pt0[1];
                   loc0.Lon=pt0[0];
@@ -440,9 +440,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             Tcl_GetDoubleFromObj(Interp,Objv[3],&pt0[1]);
             pt0[0]-=vp->x;
             pt0[1]-=vp->y;
-            proj->Type->UnProject(vp,proj->Params,&loc0,pt0);
+            proj->Type->UnProject(vp,proj,&loc0,pt0);
             loc0.Elev=0.0;
-            if (proj->Params->Geographic) {
+            if (proj->Geographic) {
                CLAMPLON(loc0.Lon);
                loc0.Elev=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
             }
@@ -488,7 +488,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             Tcl_GetDoubleFromObj(Interp,Objv[4],&pt1[0]);
             Tcl_GetDoubleFromObj(Interp,Objv[5],&pt1[1]);
 
-            if (proj->Type->UnProject(vp,proj->Params,&loc0,pt0) && proj->Type->UnProject(vp,proj->Params,&loc1,pt1)) {
+            if (proj->Type->UnProject(vp,proj,&loc0,pt0) && proj->Type->UnProject(vp,proj,&loc1,pt1)) {
                loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
                loc1.Lat=DEG2RAD(loc1.Lat);loc1.Lon=DEG2RAD(loc1.Lon);
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(DIST(0.0,loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon)));
@@ -836,8 +836,8 @@ static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
    if (vp->Projection) {
       proj=Projection_Get(vp->Projection);
       if (proj) {
-         if (proj->Params->VP==vp) {
-            proj->Params->VP=NULL;
+         if (proj->VP==vp) {
+            proj->VP=NULL;
          }
       }
       free(vp->Projection);
@@ -1260,9 +1260,9 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    }
 
    /*Ajuster la projection pour garder un aspect correct*/
-   if ((VP->Width/Proj->Params->LI)>(VP->Height/Proj->Params->LJ)) {
+   if ((VP->Width/Proj->LI)>(VP->Height/Proj->LJ)) {
       as=(double)VP->Width/VP->Height;
-      dl=Proj->Params->LJ;
+      dl=Proj->LJ;
       if (Tile) {
          trOrtho(GLRender->TRCon,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect,z);
       } else {
@@ -1271,7 +1271,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       }
    } else {
       as=(double)VP->Height/VP->Width;
-      dl=Proj->Params->LI;
+      dl=Proj->LI;
       if (Tile) {
          trOrtho(GLRender->TRCon,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
       } else {

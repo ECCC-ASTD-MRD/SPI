@@ -453,7 +453,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          return(TCL_ERROR);
       }
       if (Field[f]->ReadCube)
-         Field[f]->ReadCube(Interp,Field[f],0);
+         Field[f]->ReadCube(Interp,Field[f],0,0,0);
 
       /*Try to read HY for hybrid levels*/
       if (!ZRef_DecodeRPNLevelParams(Field[f])) {
@@ -1980,7 +1980,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         }
                      }
                   }
-                     Tcl_SetObjResult(Interp,obj);
+                  Tcl_SetObjResult(Interp,obj);
                }
             }
             break;

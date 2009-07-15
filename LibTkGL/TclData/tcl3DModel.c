@@ -1088,18 +1088,18 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
    M->Ref->Project(M->Ref,ex[1][0],ex[1][1],&ex[1][1],&ex[1][0],1,0);
    M->Ref->Project(M->Ref,ex[2][0],ex[2][1],&ex[2][1],&ex[2][0],1,0);
    M->Ref->Project(M->Ref,ex[3][0],ex[3][1],&ex[3][1],&ex[3][0],1,0);
-   Proj->Type->Project(Proj->Params,ex,NULL,4);
+   Proj->Type->Project(Proj,ex,NULL,4);
 
-   gluProject(ex[0][0],ex[0][1],ex[0][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&lim[0],&lim[1],&lim[2]);
+   gluProject(ex[0][0],ex[0][1],ex[0][2],VP->GLModR,VP->GLProj,VP->GLView,&lim[0],&lim[1],&lim[2]);
    Vect_Assign(min,lim);
    Vect_Assign(max,lim);
-   gluProject(ex[1][0],ex[1][1],ex[1][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&lim[0],&lim[1],&lim[2]);
+   gluProject(ex[1][0],ex[1][1],ex[1][2],VP->GLModR,VP->GLProj,VP->GLView,&lim[0],&lim[1],&lim[2]);
    Vect_Min(min,min,lim);
    Vect_Max(max,max,lim);
-   gluProject(ex[2][0],ex[2][1],ex[2][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&lim[0],&lim[1],&lim[2]);
+   gluProject(ex[2][0],ex[2][1],ex[2][2],VP->GLModR,VP->GLProj,VP->GLView,&lim[0],&lim[1],&lim[2]);
    Vect_Min(min,min,lim);
    Vect_Max(max,max,lim);
-   gluProject(ex[3][0],ex[3][1],ex[3][2],Proj->Params->VP->GLModR,Proj->Params->VP->GLProj,Proj->Params->VP->GLView,&lim[0],&lim[1],&lim[2]);
+   gluProject(ex[3][0],ex[3][1],ex[3][2],VP->GLModR,VP->GLProj,VP->GLView,&lim[0],&lim[1],&lim[2]);
    Vect_Min(min,min,lim);
    Vect_Max(max,max,lim);
 
@@ -1156,7 +1156,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    if (!M->Ref) {
       Proj->Type->Locate(Proj,M->Pos[0],M->Pos[1],1);
       /*Positionner le modele*/
-      glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Params->Scale+EARTHRADIUS)/EARTHRADIUS);
+      glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Scale+EARTHRADIUS)/EARTHRADIUS);
       /*On suppose que le modele est en metres alors on scale par rapport a la terre*/
       glScalef(1.0/EARTHRADIUS,1.0/EARTHRADIUS,1.0/EARTHRADIUS);
    }
@@ -1214,7 +1214,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                      M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
                      M->Co.Elev=obj->Vr[idx][2];
 
-                     Proj->Type->Project(Proj->Params,&M->Co,&vr,1);
+                     Proj->Type->Project(Proj,&M->Co,&vr,1);
                      Vect_Assign(vrf,vr);
                      glVertex3fv(vrf);
                   } else {

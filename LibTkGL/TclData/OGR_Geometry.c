@@ -981,7 +981,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          pvr[n][2]=co.Elev+Extrude;
          OGR_ArrayNr[(n+Size)]=&GDB_NMap[(int)co.Lat+90][(int)co.Lon+180];
       }
-      Proj->Type->Project(Proj->Params,pvr,NULL,nv);
+      Proj->Type->Project(Proj,pvr,NULL,nv);
 
       if (handle)
          gdb_mapclose(handle);

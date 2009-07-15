@@ -124,7 +124,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    }
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
-   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->Params->L:-999.0));
+   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
    glUniform1fARB(GLShader_UniformGet(prog,"Min"),min);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),rng);
    glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Field->Spec->InterNb);
@@ -218,7 +218,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    }
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
-   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->Params->L:-999.0));
+   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
    glUniform1fARB(GLShader_UniformGet(prog,"Min"),min);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),rng);
    glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Field->Spec->InterNb);
@@ -356,7 +356,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
       for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
-         Proj->Type->UnProject(VP,Proj->Params,&coo,pix);
+         Proj->Type->UnProject(VP,Proj,&coo,pix);
          if (coo.Lat==-999.0) {
             continue;
          }
@@ -507,7 +507,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
    glUniform1iARB(GLShader_UniformGet(prog,"Data"),2);
-   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->Params->L:-999.0));
+   glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
    glUniform1fARB(GLShader_UniformGet(prog,"Min"),min);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),rng);
    glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Field->Spec->InterNb);

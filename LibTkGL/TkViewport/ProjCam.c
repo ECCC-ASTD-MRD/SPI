@@ -834,7 +834,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
    glColor3f(1.0f,0.0f,0.0f);
 
    /* Set To vector position */
-   Proj->Type->Locate(Proj,Proj->Params->Lat,Proj->Params->Lon,1);
+   Proj->Type->Locate(Proj,Proj->Lat,Proj->Lon,1);
 
    /* Draw de Path */
    glBegin(GL_LINE_STRIP);

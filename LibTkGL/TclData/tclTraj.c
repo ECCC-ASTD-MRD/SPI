@@ -994,8 +994,8 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                co.Lat=Traj->Pr[i].Co.Lat;
                co.Lon=Traj->Pr[i].Co.Lon;
                co.Elev=0.0;
-               Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
-               Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
+               Proj->Type->Project(Proj,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
+               Proj->Type->Project(Proj,&co,&GDB_VBuf[n*2+1],1);
                n++;
             }
          }
@@ -1009,7 +1009,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                co.Lat=Traj->Pr[i].Co.Lat;
                co.Lon=Traj->Pr[i].Co.Lon;
                co.Elev=0.0;
-               Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n],1);
+               Proj->Type->Project(Proj,&co,&GDB_VBuf[n],1);
                n++;
             }
          }
@@ -1030,8 +1030,8 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                co.Lat=Traj->Pr[i].Co.Lat;
                co.Lon=Traj->Pr[i].Co.Lon;
                co.Elev=0.0;
-               Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
-               Proj->Type->Project(Proj->Params,&co,&GDB_VBuf[n*2+1],1);
+               Proj->Type->Project(Proj,&Traj->Pr[i].Co,&GDB_VBuf[n*2],1);
+               Proj->Type->Project(Proj,&co,&GDB_VBuf[n*2+1],1);
                n++;
             }
          }
@@ -1042,7 +1042,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
          /*Single Trajectory*/
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               Proj->Type->Project(Proj->Params,&Traj->Pr[i].Co,&GDB_VBuf[n],1);
+               Proj->Type->Project(Proj,&Traj->Pr[i].Co,&GDB_VBuf[n],1);
                n++;
             }
          }

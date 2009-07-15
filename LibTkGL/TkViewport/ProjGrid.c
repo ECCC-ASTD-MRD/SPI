@@ -49,8 +49,8 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
 
 /*Fonctions de transformations*/
 
-unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
-int           Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
+unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
+int           Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 int           Grid_ProjectPath(Tcl_Interp *Interp,Projection *Proj,Coord Pt1,Coord Pt2,double Dist);
 int           Grid_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pix00,Vect3d Pix01,Vect3d Pix10,Vect3d Pix11);
 Tcl_Obj*      Grid_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
@@ -95,11 +95,11 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glDisable(GL_STENCIL_TEST);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_POLYGON);
-         glVertex3d(-Proj->Params->LI,-Proj->Params->LJ,1.0);
-         glVertex3d(-Proj->Params->LI,Proj->Params->LJ,1.0);
-         glVertex3d(Proj->Params->LI,Proj->Params->LJ,1.0);
-         glVertex3d(Proj->Params->LI,-Proj->Params->LJ,1.0);
-         glVertex3d(-Proj->Params->LI,-Proj->Params->LJ,1.0);
+         glVertex3d(-Proj->LI,-Proj->LJ,1.0);
+         glVertex3d(-Proj->LI,Proj->LJ,1.0);
+         glVertex3d(Proj->LI,Proj->LJ,1.0);
+         glVertex3d(Proj->LI,-Proj->LJ,1.0);
+         glVertex3d(-Proj->LI,-Proj->LJ,1.0);
       glEnd();
       glEnable(GL_STENCIL_TEST);
 
@@ -110,11 +110,11 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
    glLineWidth(ABS(Proj->Geo->Params.Coast));
    glBegin(GL_LINE_STRIP);
-      glVertex3d(-Proj->Params->LI,-Proj->Params->LJ,1.0);
-      glVertex3d(-Proj->Params->LI,Proj->Params->LJ,1.0);
-      glVertex3d(Proj->Params->LI,Proj->Params->LJ,1.0);
-      glVertex3d(Proj->Params->LI,-Proj->Params->LJ,1.0);
-      glVertex3d(-Proj->Params->LI,-Proj->Params->LJ,1.0);
+      glVertex3d(-Proj->LI,-Proj->LJ,1.0);
+      glVertex3d(-Proj->LI,Proj->LJ,1.0);
+      glVertex3d(Proj->LI,Proj->LJ,1.0);
+      glVertex3d(Proj->LI,-Proj->LJ,1.0);
+      glVertex3d(-Proj->LI,-Proj->LJ,1.0);
    glEnd();
 
    if (Interp)
@@ -151,8 +151,8 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       for(loc.Lat=(-90+Proj->Geo->Params.CoordDef);loc.Lat<=(90-Proj->Geo->Params.CoordDef);loc.Lat+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(loc.Lon=-180;loc.Lon<=180;loc.Lon+=1.0){
-            if (Grid_Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
-               Grid_Vertex(pix,prev,Proj->Params->LI,GL_LINE_STRIP);
+            if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
+               Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
             } else {
                glEnd();
                glBegin(GL_LINE_STRIP);
@@ -166,8 +166,8 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       for(loc.Lon=-180;loc.Lon<=(180-Proj->Geo->Params.CoordDef);loc.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(loc.Lat=-90;loc.Lat<=90;loc.Lat+=1.0){
-            if (Grid_Project(Proj->Params,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
-               Grid_Vertex(pix,prev,Proj->Params->LI,GL_LINE_STRIP);
+            if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
+               Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
             } else {
                glEnd();
                glBegin(GL_LINE_STRIP);
@@ -190,7 +190,7 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  ax[2];
 
    /*Draw 3DAxis*/
-   if (Proj->Params->TAxis && Proj->Params->ZAxis.Elev!=0.0) {
+   if (Proj->TAxis && Proj->ZAxis.Elev!=0.0) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       glEnable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
@@ -201,47 +201,47 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glLineWidth(1.0);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-      incr=pow(10,ORDER(Proj->Params->ZAxis.Elev)-1);
-      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2.5:incr;
-      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
-      incr=(Proj->Params->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=pow(10,ORDER(Proj->ZAxis.Elev)-1);
+      incr=(Proj->ZAxis.Elev/incr)>10?incr*2.5:incr;
+      incr=(Proj->ZAxis.Elev/incr)>10?incr*2:incr;
+      incr=(Proj->ZAxis.Elev/incr)>10?incr*2:incr;
 
-      co.Lat=Proj->Params->ZAxis.Lat;
-      co.Lon=Proj->Params->ZAxis.Lon;
-      co.Elev=Proj->Params->ZAxis.Elev;
-      Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
+      co.Lat=Proj->ZAxis.Lat;
+      co.Lon=Proj->ZAxis.Lon;
+      co.Elev=Proj->ZAxis.Elev;
+      Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
 
-      switch(Proj->Params->TAxis) {
+      switch(Proj->TAxis) {
          case 1: ax[0]=vr[0]; ax[1]=vr[1]; break;
-         case 2: ax[0]=-Proj->Params->LI; ax[1]=Proj->Params->LJ; break;
+         case 2: ax[0]=-Proj->LI; ax[1]=Proj->LJ; break;
       }
 
       /*Draw Z axis planes*/
       glEnable(GL_POLYGON_OFFSET_FILL);
       glBegin(GL_QUADS);
          glColor3us(0xAAAA,0xAAAA,0xAAAA);
-         glVertex3d(vr[0],-Proj->Params->LJ,1.0);
-         glVertex3d(vr[0],-Proj->Params->LJ,vr[2]);
+         glVertex3d(vr[0],-Proj->LJ,1.0);
+         glVertex3d(vr[0],-Proj->LJ,vr[2]);
          glVertex3d(vr[0],ax[1],vr[2]);
          glVertex3d(vr[0],ax[1],1.0);
 
          glColor3us(0xDDDD,0xDDDD,0xDDDD);
          glVertex3d(ax[0],vr[1],1.0);
          glVertex3d(ax[0],vr[1],vr[2]);
-         glVertex3d(Proj->Params->LI,vr[1],vr[2]);
-         glVertex3d(Proj->Params->LI,vr[1],1.0);
+         glVertex3d(Proj->LI,vr[1],vr[2]);
+         glVertex3d(Proj->LI,vr[1],1.0);
       glEnd();
       glDisable(GL_POLYGON_OFFSET_FILL);
 
       /*Draw Z axis increments*/
       glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      for(co.Elev=0;co.Elev<=Proj->Params->ZAxis.Elev;co.Elev+=incr) {
+      for(co.Elev=0;co.Elev<=Proj->ZAxis.Elev;co.Elev+=incr) {
          glBegin(GL_LINES);
-            Proj->Type->Project(Proj->Params,(GeoVect*)&co,(GeoVect*)&vr,1);
-            glVertex3d(vr[0],-Proj->Params->LJ,vr[2]);
+            Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
+            glVertex3d(vr[0],-Proj->LJ,vr[2]);
             glVertex3d(vr[0],ax[1],vr[2]);
             glVertex3d(ax[0],vr[1],vr[2]);
-            glVertex3d(Proj->Params->LI,vr[1],vr[2]);
+            glVertex3d(Proj->LI,vr[1],vr[2]);
          glEnd();
 
          glPushMatrix();
@@ -318,7 +318,7 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
    loc.C.Lon=Lon;
    loc.C.Elev=0.0;
 
-   if (Grid_Project(Proj->Params,&loc,NULL,1)) {
+   if (Grid_Project(Proj,&loc,NULL,1)) {
       if (Undo) {
          glTranslated(loc.V[0],loc.V[1],0.0);
       } else {
@@ -411,7 +411,7 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
          glBegin(Mode);
             for(i=0;i<Nb;i+=stride) {
                if (Tex) glTexCoord1f(Tex[i]);
-               Grid_Vertex(Data[i],prev,Proj->Params->LI,Mode);
+               Grid_Vertex(Data[i],prev,Proj->LI,Mode);
             }
          glEnd();
       } else {
@@ -569,7 +569,7 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
 
    objo=Tcl_NewListObj(0,NULL);
 
-   if (!Proj->Params->Ref)
+   if (!Proj->Ref)
       return(objo);
 
    Tcl_ListObjLength(Interp,List,&nobj);
@@ -596,8 +596,8 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
       Tcl_ListObjIndex(Interp,List,i++,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lon);
 
-      Proj->Params->Ref->UnProject(Proj->Params->Ref,&p0[0],&p0[1],loc0.Lat,loc0.Lon,1,1);
-      Proj->Params->Ref->UnProject(Proj->Params->Ref,&p1[0],&p1[1],loc1.Lat,loc1.Lon,1,1);
+      Proj->Ref->UnProject(Proj->Ref,&p0[0],&p0[1],loc0.Lat,loc0.Lon,1,1);
+      Proj->Ref->UnProject(Proj->Ref,&p1[0],&p1[1],loc1.Lat,loc1.Lon,1,1);
 
       ed=id=1.0/(hypot(p1[1]-p0[1],p1[0]-p0[0])/Dist);
 
@@ -605,7 +605,7 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
       while(ed<1.0) {
          p[0]=ILIN(p0[0],p1[0],ed);
          p[1]=ILIN(p0[1],p1[1],ed);
-         Proj->Params->Ref->Project(Proj->Params->Ref,p[0],p[1],&loc0.Lat,&loc0.Lon,0,1);
+         Proj->Ref->Project(Proj->Ref,p[0],p[1],&loc0.Lat,&loc0.Lon,0,1);
          Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lat));
          Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lon));
          ed+=id;
@@ -648,7 +648,7 @@ Tcl_Obj* Grid_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
    Vect3d   pix,pos;
    int      in;
 
-   in=Proj->Type->Project(Proj->Params,(GeoVect*)&Pt1,(GeoVect*)&pos,1);
+   in=Proj->Type->Project(Proj,(GeoVect*)&Pt1,(GeoVect*)&pos,1);
    obj=Tcl_NewListObj(0,NULL);
 
    /*Si en dehors du domain*/
@@ -656,9 +656,9 @@ Tcl_Obj* Grid_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
       gluProject(pos[0],pos[1],pos[2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
 
       /*Repositionner dans le referentiel de Tcl*/
-      pix[1]=Proj->Params->VP->Height-pix[1];
+      pix[1]=Proj->VP->Height-pix[1];
 
-      if (Any || INSIDE(pix,0,0,Proj->Params->VP->Width,Proj->Params->VP->Height)) {
+      if (Any || INSIDE(pix,0,0,Proj->VP->Width,Proj->VP->Height)) {
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(pix[0]+VP->x));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(pix[1]+VP->y));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(pix[2]));
@@ -706,12 +706,12 @@ int Grid_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pi
    CLAMPLAT(co[1].Lat);
 
    /*Localisation des extremites de la ligne*/
-   Proj->Type->Project(Proj->Params,(GeoVect*)co,(GeoVect*)in,2);
+   Proj->Type->Project(Proj,(GeoVect*)co,(GeoVect*)in,2);
 
    gluProject(in[0][0],in[0][1],in[0][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix00[0],&Pix00[1],&Pix00[2]);
-   Pix00[1]=Proj->Params->VP->Height-Pix00[1];
+   Pix00[1]=Proj->VP->Height-Pix00[1];
    gluProject(in[1][0],in[1][1],in[1][2],VP->GLModR,VP->GLProj,VP->GLView,&Pix01[0],&Pix01[1],&Pix01[2]);
-   Pix01[1]=Proj->Params->VP->Height-Pix01[1];
+   Pix01[1]=Proj->VP->Height-Pix01[1];
 
    return 0;
 }
@@ -737,30 +737,30 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
    TGeoRef *ref;
    double   ni,nj;
 
-   if (!(ref=Proj->Params->Ref))
+   if (!(ref=Proj->Ref))
       return;
 
-   if (Proj->Params->Geographic) {
-      ref->UnProject(ref,&ni,&nj,Proj->Params->Lat,Proj->Params->Lon,0,1);
-      Proj->Params->I=ni;
-      Proj->Params->J=nj;
+   if (Proj->Geographic) {
+      ref->UnProject(ref,&ni,&nj,Proj->Lat,Proj->Lon,0,1);
+      Proj->I=ni;
+      Proj->J=nj;
    }
 
    /* Recuperer les parametres de deformations */
    if (ref->Grid[0]=='Z') {
       GeoRef_Expand(ref);
-      Proj->Params->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
-      Proj->Params->LJ=ref->AY[ref->Y1]-ref->AY[ref->Y0];
+      Proj->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
+      Proj->LJ=ref->AY[ref->Y1]-ref->AY[ref->Y0];
    } else {
-      Proj->Params->LI=ref->X1-ref->X0;
-      Proj->Params->LJ=ref->Y1-ref->Y0;
+      Proj->LI=ref->X1-ref->X0;
+      Proj->LJ=ref->Y1-ref->Y0;
    }
 
-   Proj->Params->L=Proj->Params->LI>Proj->Params->LJ?Proj->Params->LI:Proj->Params->LJ;
-   Proj->Params->LI/=Proj->Params->L;
-   Proj->Params->LJ/=Proj->Params->L;
+   Proj->L=Proj->LI>Proj->LJ?Proj->LI:Proj->LJ;
+   Proj->LI/=Proj->L;
+   Proj->LJ/=Proj->L;
 
-   ViewportClean(Proj->Params->VP,1,1);
+   ViewportClean(Proj->VP,1,1);
    Projection_Clean(Interp,Proj,GDB_FORCE);
 }
 
@@ -771,7 +771,7 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
  * But      : Transforme les coordonnes lat-lon en projection usager.
  *
  * Parametres :
- *  <Params>  : Parametres de la projection
+ *  <Proj>    : Parametres de la projection
  *  <Loc>     : Coordonnees lat lon du point
  *  <Pix>     : Coordonnees cartesienne du point
  *  <Nb>      : Nombre de coordonnees a transformer
@@ -782,7 +782,7 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
  *
  *----------------------------------------------------------------------------
 */
-unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb) {
+unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb) {
 
    TGeoRef *ref;
    GeoVect *out;
@@ -792,9 +792,9 @@ unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,
    long     n,e=0;
 
    out=(Pix?Pix:Loc);
-   r=Params->Scale*Params->ZFactor;
+   r=Proj->Scale*Proj->ZFactor;
 
-   if (!(ref=Params->Ref))
+   if (!(ref=Proj->Ref))
       return(0);
 
    for(n=0;n<ABS(Nb);n++) {
@@ -803,7 +803,7 @@ unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,
       loc.Lon=Loc[n].C.Lon;
       loc.Elev=Loc[n].C.Elev;
 
-      if (Params->Geographic) {
+      if (Proj->Geographic) {
          if (loc.Lat==-999.0 || loc.Lon==-999.0) {
             out[e].V[2]=-999.0;
             continue;
@@ -834,17 +834,17 @@ unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,
             out[e].V[1]=ILIN(ref->AY[s],ref->AY[s+1],out[e].V[1]-s)-ref->AY[ref->Y0];
          }
 
-         d=Params->L*0.5;
+         d=Proj->L*0.5;
       } else {
-         d=(Params->L-1)*0.5;
+         d=(Proj->L-1)*0.5;
       }
 
-      out[e].V[0]=(out[e].V[0]-ref->X0)/d-Params->LI;
-      out[e].V[1]=(out[e].V[1]-ref->Y0)/d-Params->LJ;
+      out[e].V[0]=(out[e].V[0]-ref->X0)/d-Proj->LI;
+      out[e].V[1]=(out[e].V[1]-ref->Y0)/d-Proj->LJ;
       out[e].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
 
       /*Si en dehors du domain*/
-      if (Nb>0 && (out[e].V[0]<-Params->LI || out[e].V[0]>Params->LI || out[e].V[1]<-Params->LJ || out[e].V[1]>Params->LJ)) {
+      if (Nb>0 && (out[e].V[0]<-Proj->LI || out[e].V[0]>Proj->LI || out[e].V[1]<-Proj->LJ || out[e].V[1]>Proj->LJ)) {
 //         out[e].V[2]=-999.0;
       } else {
          e++;
@@ -861,7 +861,7 @@ unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,
  *
  * Parametres :
  *  <VP>      : Parametres du viewport
- *  <Params>  : Parametres de la projection
+ *  <Proj>    : Parametres de la projection
  *  <Loc>     : Coordonne lat lon du point
  *  <Pix>     : Coordonee cartesienne du point
  *
@@ -872,7 +872,7 @@ unsigned long Grid_Project(const ProjParams* restrict const Params,GeoVect *Loc,
  *
  *----------------------------------------------------------------------------
 */
-int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
+int Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    TGeoRef *ref;
    Vect3d   obj;
@@ -882,7 +882,7 @@ int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
    Loc->Lat=-999.0;
    Loc->Lon=-999.0;
 
-   if (!(ref=Params->Ref))
+   if (!(ref=Proj->Ref))
       return(0);
 
    gluUnProject(Pix[0],VP->Height-Pix[1],depth,VP->GLModR,VP->GLProj,VP->GLView,&obj[0],&obj[1],&obj[2]);
@@ -890,13 +890,13 @@ int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
 
       if (ref->AX) {
-         d=Params->L*0.5;
+         d=Proj->L*0.5;
       } else {
-         d=(Params->L-1)*0.5;
+         d=(Proj->L-1)*0.5;
       }
 
-      x=(obj[0]+Params->LI)*d+ref->X0;
-      y=(obj[1]+Params->LJ)*d+ref->Y0;
+      x=(obj[0]+Proj->LI)*d+ref->X0;
+      y=(obj[1]+Proj->LJ)*d+ref->Y0;
 
       if (ref->AX) {
          s=0;
@@ -920,7 +920,7 @@ int Grid_UnProject(ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix) {
          y-=1.0;
       }
 
-      if (Params->Geographic) {
+      if (Proj->Geographic) {
          return(ref->Project(ref,x,y,&Loc->Lat,&Loc->Lon,0,1));
       } else {
          Loc->Lat=y;

@@ -45,29 +45,14 @@
 
 #define MAXGEOSEG   2000                              /*Nombre maximal de segment par boite*/
 
-#define ZM(P,H)     (1.0+H*P->Params->Scale*P->Params->ZFactor) /*Projection de l'elevation*/
+#define ZM(P,H)     (1.0+H*P->Scale*P->ZFactor) /*Projection de l'elevation*/
 
 #define CYLCHECK(D,V)             (V=(D>2.0f)?V-4.0f:(D<-2.0f)?V+4.0f:V)
-#define PROJCHECK(P,V)            if (P->Type->Def==PROJCYLIN) { CYLCHECK((V-P->Params->L),V); }
+#define PROJCHECK(P,V)            if (P->Type->Def==PROJCYLIN) { CYLCHECK((V-P->L),V); }
 #define CYLFLIP(D,V)              ((V-D)<-2.0f?4:((V-D)>2.0f?-4:0))
-
-typedef struct ProjParams {
-   float         L,LI,LJ;         /*Longueur des axes*/
-   double        Scale;           /*Facteur d'ajustement de l'elevation*/
-   int           TAxis;           /*Axis Type*/
-   Coord         ZAxis;           /*Activation de l'echelle 3D*/
-   double        ZFactor;         /*Facteur d'application de l'elevation*/
-   Vect3d        ZPos;            /*Position centrale*/
-   double        Lat,Lon,I,J;     /*Coordonnees de positionement*/
-   double        SLat,CLat;       /*Sin et Cos des coordonnees en radians*/
-   ViewportItem *VP;              /*Definitions des parametres d'affichages du Viewport*/
-   TGeoRef      *Ref;             /*GeoReference des donnees projection grille*/
-   int           Geographic;      /*Indicateur de projection geographique*/
-} ProjParams;
 
 typedef struct Projection {
    struct ProjectionType *Type;    /*Type de projection*/
-   ProjParams            *Params;  /*Donnees de la projection*/
    GDB_Data              *Geo;     /*Donnees geographiques*/
    Tcl_Obj               *Data;    /*Liste des donnees associees*/
    int                   NbData;   /*Nombre d'image*/
@@ -78,13 +63,25 @@ typedef struct Projection {
    Vect3d                Nr;       /*Normale*/
    int                   Sun;      /*Activation du soleil*/
    int                   Loading;  /*Indicateur de lecture en arriere plan*/
+   int                   MinSize;  /*Dimension minimale des features a afficher*/
+   float                 L,LI,LJ;         /*Longueur des axes*/
+   double                Scale;           /*Facteur d'ajustement de l'elevation*/
+   int                   TAxis;           /*Axis Type*/
+   Coord                 ZAxis;           /*Activation de l'echelle 3D*/
+   double                ZFactor;         /*Facteur d'application de l'elevation*/
+   Vect3d                ZPos;            /*Position centrale*/
+   double                Lat,Lon,I,J;     /*Coordonnees de positionement*/
+   double                SLat,CLat;       /*Sin et Cos des coordonnees en radians*/
+   ViewportItem         *VP;              /*Definitions des parametres d'affichages du Viewport*/
+   TGeoRef              *Ref;             /*GeoReference des donnees projection grille*/
+   int                   Geographic;      /*Indicateur de projection geographique*/
 } Projection;
 
 typedef int           (Projection_CallLocate)       (Projection *Proj,double Lat,double Lon,int Undo);
 typedef void          (Projection_CallRender)       (Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
 typedef void          (Projection_CallDraw)         (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
-typedef int           (Projection_CallUnProject)    (ViewportItem *VP,ProjParams *Params,Coord *Loc,Vect3d Pix);
-typedef unsigned long (Projection_CallProject)      (const ProjParams* restrict const Params,GeoVect *Loc,GeoVect *Pix,long Nb);
+typedef int           (Projection_CallUnProject)    (ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
+typedef unsigned long (Projection_CallProject)      (const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
 
 typedef Tcl_Obj* (Projection_CallProjectPoint) (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
 typedef Tcl_Obj* (Projection_CallProjectLine)  (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord *Co,int NbCo);
