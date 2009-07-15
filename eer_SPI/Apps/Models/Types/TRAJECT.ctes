@@ -19,11 +19,6 @@ namespace eval TRAJECT {
    variable Sim
 
    #----- Definition des constantes generale aux simulations
-
-   set Sim(Model)           TRAJECT
-   set Sim(State)           1
-   set Sim(NoPrev)          -1
-   set Sim(NoSim)           -1
    set Sim(Delta)           3               ;#Delta des fichiers meteo
    set Sim(BatchStart)      0               ;#Delta de demarrage en mode batch
    set Sim(Duration)        72              ;#Duree de simulation
@@ -40,5 +35,5 @@ namespace eval TRAJECT {
       set Sim(Hosts) [linsert $Sim(Hosts) 0 $GDefs(Host)]
    }
 
-   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit BatchStart }
+   set Sim(Info) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit BatchStart }
 }

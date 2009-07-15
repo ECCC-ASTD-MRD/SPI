@@ -1014,6 +1014,10 @@ proc MLDP::ValidateDurationValue { Duration Parent { Idx -1 } } {
       return False
    }
 
+   #----- Compute output and model time step [s].
+   set MLDP::Sim(OutputTimeStepSec) [expr $MLDP::Sim(OutputTimeStepMin)*60]
+   set MLDP::Sim(ModelTimeStepSec) [expr $MLDP::Sim(ModelTimeStepMin)*60]
+
    #----- If the duration has a value.
    if { $Duration != "" } {
 
@@ -1292,7 +1296,7 @@ proc MLDP::ValidateDurationsVsModelTimeStep { } {
       set duration [lindex $interval 0]
 
       #----- Validate emission duration value.
-      if { ![MLDP::ValidateDurationValue $duration .mldpnew] } {
+      if { ![MLDP::ValidateDurationValue $duration .modelnew] } {
          return 0
       }
    }
@@ -1475,18 +1479,18 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Verify if output time step is positive.
    set number [string is integer -strict -failindex idx $Sim(Duration)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(SimDurationOutRange) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(SimDurationOutRange) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)" $GDefs(Lang) 600
       focus $Sim(SimDurationEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(Duration) < 1) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(SimDuration) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(SimDuration) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)" $GDefs(Lang) 600
       focus $Sim(SimDurationEnt)
       return 0
    }
 
    #----- Verify if simulation duration is greater than (or equal to) time interval between met data files.
    if { $Sim(Duration) < $Sim(Delta) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(SimDurationDelta) $GDefs(Lang)][lindex $Error(SimDurationDelta2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationDelta3) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(SimDurationDelta) $GDefs(Lang)][lindex $Error(SimDurationDelta2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationDelta3) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" $GDefs(Lang) 600
       focus $Sim(SimDurationEnt)
       return 0
    }
@@ -1494,7 +1498,7 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Verify if simulation duration is greater than output time step.
    set ots [expr double($Sim(OutputTimeStepMin))/double(60.0)] ; #----- Output time step [hr].
    if { $Sim(Duration) < $ots } {
-      Dialog::CreateError .mldpnew "[lindex $Error(SimDurationOutputTimeStep) $GDefs(Lang)][lindex $Error(SimDurationOutputTimeStep2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationOutputTimeStep3) $GDefs(Lang)] $ots $Error(UnitHours)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(SimDurationOutputTimeStep) $GDefs(Lang)][lindex $Error(SimDurationOutputTimeStep2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationOutputTimeStep3) $GDefs(Lang)] $ots $Error(UnitHours)" $GDefs(Lang) 600
       focus $Sim(SimDurationEnt)
       return 0
    }
@@ -1502,7 +1506,7 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Display warning if simulation duration > 72 hrs and output time step <= 60 min.
    if { !$Sim(IsResFileSizeChecked) } {
       if { $Sim(Duration) > 72 && $Sim(OutputTimeStepMin) <= 60 } {
-         set yes [Dialog::CreateDefault .mldpnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration4) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration5) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration6) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+         set yes [Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration4) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration5) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration6) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
          if { $yes } {
             focus $Sim(OutputTimeStepEnt)
             return 0
@@ -1515,7 +1519,7 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Display warning if simulation duration > 72 hrs and time interval between met data files < 3.
    if { !$Sim(IsMetFileSizeChecked) } {
       if { $Sim(Duration) > 72 && $Sim(Delta) < 3 } {
-         set yes [Dialog::CreateDefault .mldpnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration7) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration8) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration9) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+         set yes [Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration7) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration8) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration9) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
          if { $yes } {
             focus $Sim(SimDurationEnt)
             return 0
@@ -1550,11 +1554,11 @@ proc MLDP::ValidateTimeSteps { } {
    #----- Verify if output time step is positive.
    set number [string is integer -strict -failindex idx $MLDP::Sim(OutputTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(OutputTimeStepMinOutRange) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStepMinOutRange) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(OutputTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $MLDP::Sim(OutputTimeStepMin) <= 0) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(OutputTimeStepMin) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStepMin) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(OutputTimeStepEnt)
       return 0
    }
@@ -1562,11 +1566,11 @@ proc MLDP::ValidateTimeSteps { } {
    #----- Verify if model time step is positive.
    set number [string is integer -strict -failindex idx $MLDP::Sim(ModelTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ModelTimeStepMinOutRange) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStepMinOutRange) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(ModelTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $MLDP::Sim(ModelTimeStepMin) <= 0) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ModelTimeStepMin) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStepMin) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
@@ -1577,28 +1581,28 @@ proc MLDP::ValidateTimeSteps { } {
 
    #----- Verify if model time step is lower or equal to an hour (60 minutes).
    if { $MLDP::Sim(ModelTimeStepMin) > 60 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ModelTimeStep1hour) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep1hour) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if model time step is an integer divisor of an hour (60 minutes).
    if { [expr fmod( 60, $MLDP::Sim(ModelTimeStepMin) )] > $MLDP::Sim(EmEpsilon) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ModelTimeStep1hourDiv) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep1hourDiv) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if model time step is lower or equal to the output time step.
    if { $MLDP::Sim(ModelTimeStepMin) > $MLDP::Sim(OutputTimeStepMin) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ModelTimeStepOutputTimeStep) $GDefs(Lang)][lindex $Error(ModelTimeStepOutputTimeStep2) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStepOutputTimeStep3) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStepOutputTimeStep) $GDefs(Lang)][lindex $Error(ModelTimeStepOutputTimeStep2) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStepOutputTimeStep3) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if output time step is an integer multiple of the model time step.
    if { [expr fmod( $MLDP::Sim(OutputTimeStepMin), $MLDP::Sim(ModelTimeStepMin) )] > $MLDP::Sim(EmEpsilon) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(OutputTimeStepModelTimeStep) $GDefs(Lang)][lindex $Error(OutputTimeStepModelTimeStep2) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(OutputTimeStepModelTimeStep3) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStepModelTimeStep) $GDefs(Lang)][lindex $Error(OutputTimeStepModelTimeStep2) $GDefs(Lang)] $MLDP::Sim(OutputTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(OutputTimeStepModelTimeStep3) $GDefs(Lang)] $MLDP::Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
       focus $Sim(OutputTimeStepEnt)
       return 0
    }

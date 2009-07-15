@@ -1,4 +1,3 @@
-#!/bin/ksh
 #===============================================================================
 # Environnement Canada - Service meteorologique du Canada
 # Centre meteorologique canadien
@@ -14,6 +13,14 @@
 #                - {Model}_Pre     : Do the pre-processing stuff
 #                - {Model}_Run     : Run the model
 #                - {Model}_Post    : Do the post-processing stuff
+# Variables:
+#    MLDP_METEO              Meteo type or path to meteo files if already interpolated
+#    MLDP_GRIDDEF            Grid dimension
+#    MLDP_INPUT              Model input file
+#    MLDP_LOGLEVEL           Model log level
+#    MLDP_SEED               Random number seed mode
+#    MLDP_SOURCE             Soure type
+#    MLDP_OUTMODE            Output mode
 #
 # Remarques  :
 #   Aucune.
@@ -27,7 +34,9 @@ function MLDP_Pre {
    if [[ ${#MLDP_METEO} -gt 10 ]] ; then
       Log_Print INFO "Metfields are pre-calculated."
       if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
-         scp -p ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo/*  ${MODEL_RUNDIR}/meteo
+         scp -p ${MODEL_USER}@${MODEL_LOCALHOST}:${MLDP_METEO}/*  ${MODEL_RUNDIR}/meteo
+         taskstatus=$?
+         MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
          if [[ ! ${taskstatus} -eq 0 ]] ; then
             Log_Print ERROR "Could not copy pre-calculated metfields."
          fi
@@ -39,10 +48,10 @@ function MLDP_Pre {
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
 
       if [[ ${taskstatus} -eq 0 ]] ; then
-         Log_Mail "Meteorological preprocessing (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out
+         Log_Mail "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out
       else
          Log_Print ERROR "Problems in metfield calculations."
-         Log_Mail "Meteorological preprocessing (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
+         Log_Mail "Meteorological preprocessing done (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
       fi
    fi
 
@@ -92,10 +101,10 @@ function MLDP_Run {
 
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
-      Log_Mail "Atmospheric dispersion model (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_email.out
+      Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_email.out
    else
       Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
-      Log_Mail "Atmospheric dispersion model (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}

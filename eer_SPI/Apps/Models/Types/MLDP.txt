@@ -33,6 +33,8 @@ namespace eval MLDP {
 
    set Lbl(Product)             { "Produits"  "Products" }
    set Lbl(Result)              { "Résultats" "Results" }
+   set Lbl(Continue)            { "Continuer ..." "Continue ..." }
+   set Lbl(Relaunch)            { "Relancer ..." "Relaunch ..." }
    set Lbl(Suppress)            { "Supprimer" "Delete" }
 
    set Lbl(Model)               { "Modèle" "Model" }
@@ -154,7 +156,6 @@ namespace eval MLDP {
    set Msg(MetGet)       { "Vérification de la disponibilitée des données météo en cours..." "Checking for meteorological data availability..." }
    set Msg(MetProcess)   { "Interpolation des données météo en cours ..." "Processing meteorological data ..." }
    set Msg(Meteo)        { "Création des données météo en cours ..." "Creating meteorological data ..." }
-   set Msg(Exist)        { "Veuillez compléter le lancement de MLDP en cours avant de procéder à un autre." "Please complete the current MLDP launch before proceeding with another one." }
    set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
    set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" "Do you really wish to delete this simulation?" }
    set Msg(Suppressing)  { "Suppression des données" "Suppressing data" }

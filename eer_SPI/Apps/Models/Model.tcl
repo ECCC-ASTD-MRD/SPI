@@ -32,6 +32,7 @@ namespace eval Model {
    variable Warning
    variable Bubble
    variable Title
+   variable Msg
    variable Data
    variable Param
    variable Resources
@@ -66,6 +67,12 @@ namespace eval Model {
    set Param(OMPthreadFact)     1                     ;#Integer multiplicative factor to apply to number of OpenMP threads [1|2].
    set Param(ListOMPthreadFact) { 1 }
 
+   set Data(Job)    ""                    ;#Texte de processus
+   set Data(Active) 0                     ;#Flag d'activation de l'outils
+   set Data(Canvas) ""                    ;#Canvas Actif
+   set Data(Frame)  ""                    ;#Frame actif
+   set Data(VP)     ""                    ;#Viewport actif
+
    #----- Labels
    set Title           { "Modélisation" "Modeling" }
 
@@ -80,6 +87,7 @@ namespace eval Model {
    set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
    set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
    set Lbl(EmailAddress)        { "   Adresse     " "   Address     " }
+   set Lbl(Close)               { "Fermer" "Close" }
 
    set Lbl(Name)       { "Nom" "Name" }
    set Lbl(Diag)       { "Diagnostiques" "Diagnostics" }
@@ -135,15 +143,14 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
-   set Error(EmailAddress)                      { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
-
-   set Error(MetFiles)                          { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
-                                                  "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
-   set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
-   set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
-   set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
-   set Error(DateTimeMetFiles)                  { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
-                                                  "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
+   set Error(EmailAddress)        { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+   set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
+                                    "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
+   set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
+   set Error(FirstMetDateTime)    { "\tPremier temps disponible :" "\tFirst available date-time :" }
+   set Error(LastMetDateTime)     { "\tDernier temps disponible :" "\tLast available date-time  :" }
+   set Error(DateTimeMetFiles)    { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
+                                    "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
 
    set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
@@ -157,6 +164,8 @@ namespace eval Model {
    set Warning(EmailAddress2)     { "\tNouveau courriel    :" "\tNew email     :" }
    set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
 
+   set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
+
    image create photo ICO_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_VOLCANO.gif
    image create photo ICO_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_NUCLEAR.gif
    image create photo ICO_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_CTBT.gif
@@ -164,6 +173,14 @@ namespace eval Model {
    image create photo ICO_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_OTHER.gif
    image create photo ICO_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_BIO.gif
    image create photo ICO_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_SPILL.gif
+
+   image create photo BAD_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_VOLCANO.gif
+   image create photo BAD_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_NUCLEAR.gif
+   image create photo BAD_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_CTBT.gif
+   image create photo BAD_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_FIRE.gif
+   image create photo BAD_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_OTHER.gif
+   image create photo BAD_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_BIO.gif
+   image create photo BAD_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_SPILL.gif
 
    image create photo ACT_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_VOLCANO.gif
    image create photo ACT_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_NUCLEAR.gif
@@ -175,6 +192,7 @@ namespace eval Model {
 
    set Resources(Icos)  "ICO_VOLC ICO_NUCL ICO_CTBT ICO_FIRE ICO_BIO ICO_SPILL ICO_OTHE"
    set Resources(Acts)  "ACT_VOLC ACT_NUCL ACT_CTBT ACT_FIRE ACT_BIO ACT_SPILL ACT_OTHE"
+   set Resources(Bads)  "BAD_VOLC BAD_NUCL BAD_CTBT BAD_FIRE BAD_BIO BAD_SPILL BAD_OTHE"
 
    set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
    set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
@@ -191,6 +209,174 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+
+#----------------------------------------------------------------------------
+# Nom      : <Model::ParamsMetPath>
+# Creation : Juin 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Permet de selectionner les path des fichiers de donnees meteo
+#            d'analyse et de prognostique.
+#
+# Parametres :
+#
+# Retour     :
+#   <Valid>  : True ou False.
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsMetPath { } {
+   global GDefs
+   variable Param
+   variable Lbl
+
+   set Data(ShowPath) 0
+
+   toplevel     .metpath
+
+   wm title     .metpath [lindex $Lbl(MetPath) $GDefs(Lang)]
+   wm resizable .metpath 0 0
+   wm transient .metpath .modelnew
+   wm geom      .metpath +[expr [winfo rootx .modelnew]+50]+[expr [winfo rooty .modelnew]+50]
+
+   frame .metpath.diag -relief raised -bd 1
+     button .metpath.diag.select -text [lindex $Lbl(Diag) $GDefs(Lang)] -relief groove -bd 2 \
+        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set Model::Param(DBaseDiag) $path } }
+     entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseDiag) -relief sunken -bd 1 -width 40
+     pack .metpath.diag.select .metpath.diag.path -side left -fill y
+
+   frame .metpath.prog -relief raised -bd 1
+     button .metpath.prog.select -text [lindex $Lbl(Prog) $GDefs(Lang)] -relief groove -bd 2 \
+        -command { set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]; if { $path != "" } { set Model::Param(DBaseProg) $path } }
+     entry .metpath.prog.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseProg) -relief sunken -bd 1 -width 40
+     pack .metpath.prog.select .metpath.prog.path -side left -fill y
+
+   frame .metpath.command
+     button .metpath.command.ok -text "Ok" -relief raised -bd 1 -command "set Model::Data(ShowPath) 1"
+     pack .metpath.command.ok -side top -fill both
+
+   pack .metpath.diag .metpath.prog .metpath.command -side top -fill x
+
+   #----- Attendre la selection
+   grab .metpath
+   tkwait variable Model::Data(ShowPath)
+   destroy .metpath
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsGridDefine>
+# Creation   : Mai 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Creer une grille pour l'execution du modele
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsGridDefine { Model { Mode NEW } } {
+   variable Data
+
+   if { $Model=="TRAJECT" || $Model=="MLCD" } {
+      return
+   }
+
+   upvar ${Model}::Sim sim
+
+   set Data(Frame) $Page::Data(Frame)
+   set Data(VP)    $Viewport::Data(VP)
+
+   if { $Mode!="NEW" } {
+      set sim(NI)     [lindex $sim(Grid) 1]
+      set sim(NJ)     [lindex $sim(Grid) 2]
+
+      fstdfield free MODELGRID
+      fstdfield create MODELGRID $sim(NI) $sim(NJ) 1
+      fstdfield define MODELGRID -GRTYP [lindex $sim(Grid) 0] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] [lindex $sim(Grid) 5] [lindex $sim(Grid) 6]
+
+      set grid [fstdfield stats MODELGRID -gridpoint [expr $sim(NI)/2+1] [expr $sim(NJ)/2+1]]
+      set sim(GridLat) [lindex $grid 0]
+      set sim(GridLon) [lindex $grid 1]
+   } else {
+
+      if { [llength $sim(Scale)] > 1 } {
+         set string $sim(Scale)
+         set sim(GridRes)  [string trimleft  [lindex $sim(Scale) 1] "("] ; #----- Grid scale resolution [km].
+         set sim(GridSize) [string trimright [lindex $sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
+         set sim(Scale)    [lindex $sim(Scale) 0]                        ; #----- Grid scale name.
+      } else {
+         set idx [lsearch -regexp $sim(ListScale) "$sim(Scale)*"]
+         if { $idx != -1 } {
+            set string [lindex $sim(ListScale) $idx]
+            set sim(GridRes)  [string trimleft  [lindex $string 1] "("] ; #----- Grid scale resolution [km].
+            set sim(GridSize) [string trimright [lindex $string 3] ")"] ; #----- Grid size NIxNJ.
+         }
+      }
+
+      set idx [string first "x" $sim(GridSize)]
+      if { $idx != -1 } {
+         set sim(NI) [string range $sim(GridSize) 0 [expr $idx - 1]]
+         set sim(NJ) [string range $sim(GridSize) [expr $idx + 1] end]
+      }
+
+      set sim(GridRes) [expr $sim(GridRes)*1000]; #----- Convert grid resolution from [km] to [m].
+      set sim(Grid) [MetData::GridDefinePS [list $sim(Scale) $sim(GridRes)] $sim(NI) $sim(NJ) $sim(GridLat) $sim(GridLon) MODELGRID]
+   }
+   set sim(NK) 25 ;#----- Number of vertical levels in the model (MLDP).
+
+   fstdfield define MODELGRID -NOMVAR GRID
+   fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
+
+   Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
+   Viewport::UpdateData $Data(Frame)
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsCopy>
+# Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Creer l'arborescence d'execution et les fichiers de parametres
+#              de la simulation sur l'hote d'executiojn
+#
+# Parametres :
+#  <Model>   : Model
+#
+# Retour     :
+#  <Bool>    : True ou False.
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsCopy { Model  } {
+   global GDefs
+   variable Param
+
+   upvar ${Model}::Sim sim
+
+   #----- Run will be remote, setup what's needed on remote host.
+   if { $Param(Remote) } {
+
+      #----- Create simulation directories .
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp } Message]
+      if { $ErrorCode != 0 } {
+         Debug::TraceProc "(ERROR) Unable to create simulation directories on $Param(Host).\n\n$Message"
+         return False
+      }
+
+      #----- Copy needed files.
+      set ErrorCode [catch { eval exec scp -p $sim(Path)/tmp/sim.pool [glob $sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Param(Host):$sim(PathRun)/tmp } Message]
+      if { $ErrorCode != 0 } {
+         Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$Message"
+         return False
+      }
+      Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Param(Host)) successfully."
+   }
+}
 
 #----------------------------------------------------------------------------
 # Nom        : <Model::ParamsCheck>
@@ -238,7 +424,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    Model::ParamsCPUModel
    Model::ParamsMetDataDir $Model
 
-   if { $Get } {
+   if { $Get && [info proc ::${Model}::GetMetData]!="" } {
       if { ![${Model}::GetMetData] } {
          return False
       }
@@ -276,7 +462,6 @@ proc Model::ParamsMetData { Model } {
       Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]" $GDefs(Lang)
       return False
    }
-   set accdate $sim(AccYear)$sim(AccMonth)$sim(AccDay)$sim(AccHour)$sim(AccMin)
 
    #----- Set starting simulation date-time using first meteorological file available in the database.
    set firststamp [lindex [lindex $sim(Data) 0] 0]
@@ -286,18 +471,20 @@ proc Model::ParamsMetData { Model } {
    set laststamp [lindex [lindex $sim(Data) end] 0]
    set lastdate  [fstdstamp toseconds $laststamp]
 
+   set rundate   [fstdstamp toseconds $sim(RunStamp)]
+
    #----- Compute simulation duration [hr].
    set simdur [expr int([fstdstamp diff $laststamp $firststamp] + 0.5)]
 
    if { $simdur<=0 } {
       Debug::TraceProc "(ERROR) Not enough available meteorological data files in database according to emission date-time to run the model."
-      Debug::TraceProc "             - Emission date-time (stamp)       : $accdate ($sim(AccStamp))"
+      Debug::TraceProc "             - Initial simulation (stamp)       : $rundate ($sim(RunStamp))"
       Debug::TraceProc "             - First available date-time (stamp): $firstdate ($firststamp)"
       Debug::TraceProc "             - Last available date-time (stamp) : $lastdate ($laststamp)"
 
       set first [clock format $firstdate -format "%Y-%m-%d %T UTC" -gmt True]
       set last  [clock format $lastdate -format "%Y-%m-%d %T UTC" -gmt True]
-      Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]\n\n[lindex $Error(DateTimeEmission) $GDefs(Lang)] $accdate.\n[lindex $Error(FirstMetDateTime) $GDefs(Lang)] $first.\n[lindex $Error(LastMetDateTime) $GDefs(Lang)] $last." $GDefs(Lang) 600
+      Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]\n\n[lindex $Error(DateTimeEmission) $GDefs(Lang)] $rundate.\n[lindex $Error(FirstMetDateTime) $GDefs(Lang)] $first.\n[lindex $Error(LastMetDateTime) $GDefs(Lang)] $last." $GDefs(Lang) 600
       return False
    }
 
@@ -373,9 +560,9 @@ proc Model::ParamsMetData { Model } {
    set first [lindex [lindex $sim(Data) 0] 0]
    set last  [lindex [lindex $sim(Data) end] 0]
 
-   if { $sim(AccStamp) < $first || $sim(AccStamp) > $last } {
+   if { $sim(RunStamp) < $first || $sim(RunStamp) > $last } {
       Debug::TraceProc "(ERROR) Emission date-time is not consistent according to available meteorological data files."
-      Debug::TraceProc "             - Emission date-time (stamp) : $accdate ($sim(AccStamp))"
+      Debug::TraceProc "             - Initial simulation (stamp) : $rundate ($sim(RunStamp))"
       Debug::TraceProc "             - Available meteo files      : $sim(MeteoDataFiles)"
       Dialog::CreateError . "[lindex $Error(DateTimeMetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
       return False
@@ -451,7 +638,7 @@ proc Model::ParamsMetDataDir { Model } {
          }
       }
    }
-   set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $Param(DBaseDiag) }]
+   set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls [lindex [split $Param(DBaseDiag) :] end] }]
 }
 
 #----------------------------------------------------------------------------
@@ -604,7 +791,99 @@ proc Model::ParamsQueues { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <Model::ParamsFrame>
+# Nom        : <Model::ParamsClose>
+# Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Finaliser la fermeture de la fenetre des parametres des modeles.
+#
+# Parametres :
+#  <Model>   : Model
+#  <Frame>   : Fenetre parent
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsClose { Model } {
+   variable Data
+
+   if { $Page::Data(ToolMode) == "$Model" } {
+      SPI::ToolMode SPI Zoom
+   }
+   Viewport::UnAssign $Data(Frame) $Data(VP) MODELGRID
+
+   destroy .modelnew
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::InitNew>
+# Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Initialiser les variables communes des modeles.
+#
+# Parametres :
+#   <Model>  : Model
+#   <No>     : Numero de simulation
+#   <Name>   : Nom de l'experience
+#   <Pos>    : Liste des localisations
+#
+# Retour     :
+#   <Base>   : Namespace de base du model
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::InitNew { Model No Name Pos } {
+   variable Data
+
+   set modelbase [string trimright [string trimright $Model 0] 1]
+   upvar ${modelbase}::Sim sim
+
+   #----- Initialize release date-time.
+   set sim(AccSeconds) [clock scan [clock format [clock seconds] -format "%Y%m%d %H:%M" -gmt True]]
+   set sim(AccDate)    [clock scan [clock format $sim(AccSeconds) -format "%Y%m%d" -gmt True]]
+   set sim(AccYear)    [set sim(SimYear)  [clock format $sim(AccSeconds) -format "%Y" -gmt True]]
+   set sim(AccMonth)   [set sim(SimMonth) [clock format $sim(AccSeconds) -format "%m" -gmt True]]
+   set sim(AccDay)     [set sim(SimDay)   [clock format $sim(AccSeconds) -format "%d" -gmt True]]
+   set sim(AccHour)    [set sim(SimHour)  [clock format $sim(AccSeconds) -format "%H" -gmt True]]
+   set sim(AccMin)     [set sim(SimMin)   [clock format $sim(AccSeconds) -format "%M" -gmt True]]
+
+   set sim(Model)   $Model
+   set sim(State)   1
+   set sim(NoPrev) -1
+   set sim(NoSim)  -1
+   set sim(NoExp)   $No
+   set sim(Pos)     $Pos
+   set sim(NameExp) $Name
+   set sim(Retro)   False
+
+   set sim(ReNewMeteo) ""
+
+   set sim(Name)   {}
+   set sim(Lat)    {}
+   set sim(Lon)    {}
+   foreach src $sim(Pos) {
+      lappend sim(Name) [lindex $src 0]                 ;#----- List of source names.
+      lappend sim(Lat)  [format "%.6f" [lindex $src 1]] ;#----- Latitude.
+      lappend sim(Lon)  [format "%.6f" [lindex $src 2]] ;#----- Longitude.
+   }
+   set sim(GridSrc)      [lindex $sim(Pos) 0]
+   set sim(GridLat)      [lindex $sim(GridSrc) 1]
+   set sim(GridLon)      [lindex $sim(GridSrc) 2]
+
+   #----- Initialize grid related stuff
+   fstdfield free MODELGRID
+   set Data(Frame) $Page::Data(Frame)
+   set Data(VP)    $Viewport::Data(VP)
+
+   return ${modelbase}
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsWindow>
 # Creation   : 2 October 2007 - A. Malo - CMC/CMOE
 #
 # But        : Interface de lancement des modeles.
@@ -619,7 +898,63 @@ proc Model::ParamsQueues { } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::ParamsFrame { Model Frame } {
+proc Model::ParamsWindow { Model { Mode NEW } } {
+   global GDefs
+   variable Lbl
+   variable Msg
+   variable Param
+
+   if { [winfo exists .modelnew] } {
+      Dialog::CreateInfo .modelnew "[lindex $Msg(Exist) $GDefs(Lang)]"
+      return
+   }
+   set modelbase [Model::InitNew $Model $Exp::Data(No) $Exp::Data(Name) $Exp::Data(Pos)]
+
+   #----- Create model param window
+   toplevel     .modelnew
+   wm title     .modelnew "Model $Model: $Exp::Data(Name)"
+   wm transient .modelnew .
+   wm resizable .modelnew 0 0
+   wm geom      .modelnew =300x350+[winfo rootx .]+[expr [winfo rooty .]+30]
+   wm protocol  .modelnew WM_DELETE_WINDOW "Model::ParamsClose $modelbase"
+
+   TabFrame::Create .modelnew.params 1 ${modelbase}::ParamsCheck
+   pack .modelnew.params -side top -fill both -expand true -padx 5 -pady 5
+
+   #----- Model specific parameters
+   switch $Mode {
+      "NEW" {
+         ${modelbase}::InitNew $Exp::Data(Type)
+         ${modelbase}::ParamsNew .modelnew.params
+         if { [info proc ::${modelbase}::ParamsEmission]!="" } {
+            ${modelbase}::ParamsEmission .modelnew.params
+         }
+      }
+      "CONT" {
+         #----- For this, we have to get the parametres from the previous simulation
+         eval Info::Decode ::${modelbase}::Sim \${${Model}::Sim(Info)} \$Exp::Data(SelectSim)
+         ${modelbase}::InitCont $Exp::Data(Type)
+         ${modelbase}::ParamsCont .modelnew.params
+      }
+      "RENEW" {
+         #----- For this, we have to point the meteo the renewed simulation's meteo
+         eval Info::Decode ::${modelbase}::Sim \${${Model}::Sim(Info)} \$Exp::Data(SelectSim)
+         eval set ::${modelbase}::Sim(ReNewMeteo) [Exp::Path]/\[Info::Path \${${Model}::Sim(Info)} \$Exp::Data(SelectSim)\]/meteo
+         ${modelbase}::ParamsEmission .modelnew.params
+      }
+   }
+   Model::ParamsGridDefine ${modelbase} $Mode
+
+   #----- Launching Tab.
+   Model::ParamsLaunch $modelbase .modelnew.params
+
+   button .modelnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "Model::ParamsClose $modelbase"
+   pack .modelnew.close -side bottom -anchor e -padx 5 -pady 5
+
+   TabFrame::Select .modelnew.params 0
+}
+
+proc Model::ParamsLaunch { Model Frame } {
    global GDefs
    variable Lbl
    variable Bubble
@@ -736,15 +1071,15 @@ proc Model::Launch { Model } {
 
    . config -cursor watch
    update idletasks
+   set sim(State) 2
 
    #----- Try to lauch the model
    if { [${Model}::Launch] } {
       destroy [winfo toplevel $Param(Frame)]
-      set sim(State) 2
       Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ::${Model}::Sim $sim(Info) :]
       Model::Check 0
 
-      catch { ${Model}::ModeLeave }
+      Model::ParamsClose ${Model}
    }
 
    . config -cursor left_ptr
@@ -814,10 +1149,13 @@ proc Model::ParamsPath { Model } {
    upvar ${Model}::Sim sim
 
    #----- Define simulation path.
-   set sim(NoSim)     [Info::Request $GDefs(DirData)/$sim(NoExp)_$sim(Name)/$sim(Model).pool]
-   set ExpName        "$sim(NoExp)_$sim(Name)"
-   set SimName        "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
-   set sim(Path)      "$GDefs(DirData)/$ExpName/$SimName"
+   set sim(NoSim) [Info::Request $GDefs(DirData)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
+   set expp       "$sim(NoExp)_$sim(NameExp)"
+   set simp       "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
+   set prevp      "$sim(Model).$sim(NoPrev).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
+
+   set sim(Path)     "$GDefs(DirData)/${expp}/${simp}"
+   set sim(PathPrev) "$GDefs(DirData)/${expp}/${prevp}"
 
    file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
 
@@ -825,9 +1163,11 @@ proc Model::ParamsPath { Model } {
    set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
    if { $Param(Remote) } {
       if { $Param(Arch) == "AIX" } {
-         set sim(PathRun) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${ExpName}_${SimName}"
+         set sim(PathRun)  "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${simp}"
+         set sim(PathPrev) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${prevp}"
       } else {
-         set sim(PathRun) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${ExpName}_${SimName}"
+         set sim(PathRun)  "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${simp}"
+         set sim(PathPrev) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${prevp}"
       }
    } else {
       set sim(PathRun) $sim(Path)
@@ -861,9 +1201,15 @@ proc Model::ParamsMeteoInput { Model } {
 
    upvar ${Model}::Sim sim
 
-   set file [open $sim(Path)/tmp/data_std_eta.in w 0644]
-   puts $file $sim(MeteoDataFiles)
-   close $file
+   if { $sim(ReNewMeteo)!="" } {
+      file copy -force $sim(ReNewMeteo)/../tmp/data_std_eta.in $sim(Path)/tmp/data_std_eta.in
+      set sim(MeteoDataFiles) [exec cat $sim(Path)/tmp/data_std_eta.in]
+      set Param(DBaseProg) [set Param(DBaseDiag) [file dirname [lindex $sim(MeteoDataFiles) 0]]]
+   } else {
+      set file [open $sim(Path)/tmp/data_std_eta.in w 0644]
+      puts $file $sim(MeteoDataFiles)
+      close $file
+   }
 
    #----- Create ASCII file containing list of meteorological files for RSMC response.
    if { [regexp "/gridpt/" $Param(DBaseProg)] && [regexp "/gridpt/" $Param(DBaseDiag)] } {
@@ -1186,61 +1532,6 @@ proc Model::Destroy { } {
    #----- Supprimer l'affichage des icones
    SPI::IcoDel WATCH
    SPI::IcoDel EXPERIMENT
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Model::GetMetPath>
-# Creation : Juin 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Permet de selectionner les path des fichiers de donnees meteo
-#            d'analyse et de prognostique.
-#
-# Parametres :
-#   <Parent> : Identificateur de la fenetre parent
-#
-# Retour     :
-#   <Valid>  : True ou False.
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Model::GetMetPath { Parent } {
-   global GDefs
-   variable Param
-   variable Lbl
-
-   set Data(ShowPath) 0
-
-   toplevel     .metpath
-
-   wm title     .metpath [lindex $Lbl(MetPath) $GDefs(Lang)]
-   wm resizable .metpath 0 0
-   wm transient .metpath $Parent
-   wm geom      .metpath +[expr [winfo rootx $Parent]+50]+[expr [winfo rooty $Parent]+50]
-
-   frame .metpath.diag -relief raised -bd 1
-     button .metpath.diag.select -text [lindex $Lbl(Diag) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set Model::Param(DBaseDiag) $path } }
-     entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseDiag) -relief sunken -bd 1 -width 40
-     pack .metpath.diag.select .metpath.diag.path -side left -fill y
-
-   frame .metpath.prog -relief raised -bd 1
-     button .metpath.prog.select -text [lindex $Lbl(Prog) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]; if { $path != "" } { set Model::Param(DBaseProg) $path } }
-     entry .metpath.prog.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseProg) -relief sunken -bd 1 -width 40
-     pack .metpath.prog.select .metpath.prog.path -side left -fill y
-
-   frame .metpath.command
-     button .metpath.command.ok -text "Ok" -relief raised -bd 1 -command "set Model::Data(ShowPath) 1"
-     pack .metpath.command.ok -side top -fill both
-
-   pack .metpath.diag .metpath.prog .metpath.command -side top -fill x
-
-   #----- Attendre la selection
-   grab .metpath
-   tkwait variable Model::Data(ShowPath)
-   destroy .metpath
 }
 
 #-------------------------------------------------------------------------------

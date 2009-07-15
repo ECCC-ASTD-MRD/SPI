@@ -15,6 +15,262 @@
 #
 #============================================================================
 
+#-------------------------------------------------------------------------------
+# Nom      : <CANERM::Params>
+# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Creation d'une nouvelle simulation CANERM.
+#
+# Parametres :
+#   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc CANERM::ParamsNew { Tab } {
+   global   GDefs
+   variable Sim
+   variable Msg
+   variable Lbl
+   variable Bubble
+
+   wm geom [winfo toplevel $Tab] =320x310
+
+   set t [TabFrame::Add $Tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
+
+   #----- Simulation Starting Time.
+   labelframe $t.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
+
+      #----- Simulation Date Hour and minutes.
+      Calendar::Create $t.d.date "" CANERM::Sim(AccSeconds) -1
+      Clock::Create $t.d.time [lindex $Lbl(At) $GDefs(Lang)] CANERM::Sim(AccHour)
+      pack $t.d.date -side left -padx 2 -fill x -expand true
+      pack $t.d.time -side left -padx 2
+   pack $t.d -side top -side top -padx 5 -pady 5 -ipady 2 -fill x
+
+   Bubble::Create $t.d.date [lindex $Bubble(Date) $GDefs(Lang)]
+   Bubble::Create $t.d.time [lindex $Bubble(Time) $GDefs(Lang)]
+
+   #----- Model Integration (data output time step and model time step).
+   labelframe $t.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
+      Option::Create $t.integ.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] CANERM::Sim(Duration) 1 -1 $CANERM::Sim(ListSimDuration) ""
+      Option::Create $t.integ.ots [lindex $Lbl(OutputTimeStepHour) $GDefs(Lang)] CANERM::Sim(ISauve) 0 -1 $CANERM::Sim(ListISauve) ""
+      pack $t.integ.dur $t.integ.ots -side top -fill x -padx 2
+   pack $t.integ -side top -padx 5 -ipady 2 -fill x
+
+   Bubble::Create $t.integ.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
+   Bubble::Create $t.integ.ots "[lindex $Bubble(OutputTimeStepHour) $GDefs(Lang)]"
+   Bubble::Create $t.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+
+   #----- Selection des parametres
+   labelframe $t.fr -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
+      Option::Create $t.fr.event [lindex $Lbl(Event) $GDefs(Lang)] CANERM::Sim(Event) 1 -1 \
+          $CANERM::Sim(ListEvent) ""
+
+      #----- Grid Resolution.
+      frame $t.fr.grid
+         Option::Create $t.fr.grid.res [lindex $Lbl(Grid) $GDefs(Lang)] CANERM::Sim(Scale) 0 7 $CANERM::Sim(ListScale) "Model::ParamsGridDefine CANERM"
+         Option::Create $t.fr.grid.src "" CANERM::Sim(GridSrc) 0 14 $Sim(Pos) \
+            "set CANERM::Sim(GridLat) \[lindex \$CANERM::Sim(GridSrc) 1\];
+             set CANERM::Sim(GridLon) \[lindex \$CANERM::Sim(GridSrc) 2\];
+             Model::ParamsGridDefine CANERM"
+         checkbutton $t.fr.grid.sel -variable Page::Data(ToolMode) -onvalue CANERM -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         pack $t.fr.grid.res -side left -ipady 1
+         pack $t.fr.grid.src -side left -ipady 1
+         pack $t.fr.grid.sel -side left
+
+      #----- Meteorological Model.
+      frame $t.fr.model
+         Option::Create $t.fr.model.met [lindex $Lbl(Meteo) $GDefs(Lang)] CANERM::Sim(Meteo) 0 7 $CANERM::Sim(ListMeteo) "Model::ParamsMetDataDir CANERM"
+         Option::Create $t.fr.model.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] CANERM::Sim(Delta) 0 6 [list 1 3 6] ""
+         button $t.fr.model.path -image OPEN -relief flat -bd 0 -overrelief raised -command "Model::ParamsMetPath"
+         pack $t.fr.model.met -side left -ipady 1
+         pack $t.fr.model.delta -side left -ipady 1
+         pack $t.fr.model.path -side left
+      pack $t.fr.event $t.fr.grid $t.fr.model -side top -padx 2 -fill x
+   pack $t.fr -side top -padx 5 -pady 5 -ipady 2 -fill x
+
+   Bubble::Create $t.fr.event        [lindex $Bubble(Event) $GDefs(Lang)]
+   Bubble::Create $t.fr.model.met    [lindex $Bubble(Meteo) $GDefs(Lang)]
+   Bubble::Create $t.fr.model.delta  [lindex $Bubble(Meteo) $GDefs(Lang)]
+   Bubble::Create $t.fr.model.path   [lindex $Bubble(Path) $GDefs(Lang)]
+   Bubble::Create $t.fr.grid         [lindex $Bubble(Scale) $GDefs(Lang)]
+}
+
+proc CANERM::ParamsEmission { Tab } {
+   global   GDefs
+   variable Sim
+   variable Msg
+   variable Lbl
+   variable Bubble
+
+   wm geom [winfo toplevel $Tab] =320x310
+
+   set Sim(Iso)          [lindex $Sim(IsoName) 0]
+   set Sim(Intensity)    [lindex $Sim(IsoRelease) 0]
+   set Sim(IsoNb)        [llength $Sim(IsoName)]
+   set Sim(EmHeightUnit) METRES
+
+   if { $Sim(FnVert)<0 } {
+      set Sim(FnVertDesc) "GAUSS"
+   } elseif { $Sim(FnVert)>0 } {
+      set Sim(FnVertDesc) "EMPIRICAL"
+   } else {
+      set Sim(FnVertDesc) "CONSTANT"
+   }
+
+   set t [TabFrame::Add $Tab 1 [lindex $Lbl(Emission) $GDefs(Lang)] False]
+
+   #----- Selection des polluants
+   labelframe $t.iso -text [lindex $Lbl(Pollutant) $GDefs(Lang)]
+
+      frame $t.iso.type -bd 1 -relief sunken
+         frame $t.iso.type.lbl
+            label $t.iso.type.lbl.nb -text "Nb" -relief raised -bd 1 -width 3
+            button $t.iso.type.lbl.add -text [lindex $Lbl(Add) $GDefs(Lang)] \
+               -relief raised -bd 1 -width 10 -command "IsoBox::Create $t.iso \"CANERM::SpeciesFormat $t.iso\""
+            button $t.iso.type.lbl.del -text [lindex $Lbl(Suppress) $GDefs(Lang)] \
+               -relief raised -bd 1 -width 11 -command "CANERM::SpeciesDelete $t.iso"
+            label $t.iso.type.lbl.intensity -text [lindex $Lbl(Intensity) $GDefs(Lang)] \
+               -relief raised -bd 1 -width 10
+            pack $t.iso.type.lbl.nb $t.iso.type.lbl.add $t.iso.type.lbl.del -side left -fill both -expand true
+            pack $t.iso.type.lbl.intensity -side left -fill both
+         pack $t.iso.type.lbl -side top -fill x
+
+         frame $t.iso.type.entry
+            label $t.iso.type.entry.nb -textvariable CANERM::Sim(IsoNb) \
+               -relief sunken -bd 1 -width 3 -bg $GDefs(ColorLight)
+            ComboBox::Create $t.iso.type.entry.polluant CANERM::Sim(Iso) noedit unsorted \
+               nodouble $CANERM::Sim(MaxIso) $CANERM::Sim(IsoName) 25 5 \
+               "set CANERM::Sim(Intensity) \[lindex \$CANERM::Sim(IsoRelease) \[lsearch -exact \$CANERM::Sim(IsoName) \$CANERM::Sim(Iso)\]\]
+                $t.iso.type.entry.intensity config -state normal"
+            entry $t.iso.type.entry.intensity -textvariable CANERM::Sim(Intensity) \
+               -relief sunken -bd 1 -width 10 -bg $GDefs(ColorLight)
+             pack $t.iso.type.entry.nb $t.iso.type.entry.polluant $t.iso.type.entry.intensity -side left -fill y
+
+         pack $t.iso.type.entry -side top -fill y
+      pack  $t.iso.type -side left -padx 2 -fill x
+   pack $t.iso -side top -padx 5 -pady 5 -ipady 2 -fill x
+
+   $t.iso.type.entry.polluant.select config -state disabled
+   bind $t.iso.type.entry.intensity <Leave> "focus ."
+   bind $t.iso.type.entry.intensity <FocusOut> "CANERM::CheckIntensity $t.iso.type.entry.polluant"
+
+   Bubble::Create $t.iso.type.lbl.nb         [lindex $Bubble(Nb) $GDefs(Lang)]
+   Bubble::Create $t.iso.type.lbl.add        [lindex $Bubble(Add) $GDefs(Lang)]
+   Bubble::Create $t.iso.type.lbl.del        [lindex $Bubble(Del) $GDefs(Lang)]
+   Bubble::Create $t.iso.type.lbl.intensity  [lindex $Bubble(Intensity) $GDefs(Lang)]
+   Bubble::Create $t.iso.type.entry.polluant [lindex $Bubble(Pol) $GDefs(Lang)]
+
+   #----- Selection de la fonction
+   labelframe $t.func -text [lindex $Lbl(Function) $GDefs(Lang)]
+
+      frame $t.func.type -bd 1 -relief sunken
+         EntryMenu::Create $t.func.type.elev edit [lindex $Lbl(Elevation) $GDefs(Lang)] \
+            top 2 $GDefs(ColorLight) SteelBlue CANERM::Sim(EmHeight) "0.0 10000.0" "; "
+         frame $t.func.type.vert
+            button $t.func.type.vert.select -text [lindex $Lbl(Vertical) $GDefs(Lang)] -relief raised -bd 1 -command "CANERM::GraphVertInit $t.func.type.vert.select"
+            entry $t.func.type.vert.entry -textvariable CANERM::Sim(FnVertDesc) -relief sunken -bd 1 -width 9 -background $GDefs(ColorLight) \
+               -disabledbackground $GDefs(ColorLight) -disabledforeground black -state disabled
+            pack $t.func.type.vert.select -side top -fill both -expand true
+            pack $t.func.type.vert.entry -side top -fill both -expand true
+
+         frame $t.func.type.time
+            button $t.func.type.time.select -text [lindex $Lbl(Time) $GDefs(Lang)] -relief raised -bd 1 -command "CANERM::GraphTimeInit $t.func.type.time.select"
+            entry $t.func.type.time.entry -textvariable CANERM::Sim(FnTime) -relief sunken -bd 1 -width 9 -background $GDefs(ColorLight) \
+               -disabledbackground $GDefs(ColorLight) -disabledforeground black -state disabled
+            pack $t.func.type.time.select -side top -fill both -expand true
+            pack $t.func.type.time.entry -side top -fill both -expand true
+
+         #----- On ajoute une partie au widget EntryMenu
+         entry $t.func.type.time.hour -width 3 -bg $GDefs(ColorLight) -relief sunken -bd 1 \
+            -textvariable CANERM::Sim(EmDuration) -state disabled  -disabledbackground $GDefs(ColorLight) -disabledforeground black
+         pack  $t.func.type.time.hour -after $t.func.type.time.select -side right
+         pack $t.func.type.elev $t.func.type.vert $t.func.type.time -side left -fill both -expand true
+
+      pack  $t.func.type -side left -padx 2 -fill x -expand true
+   pack $t.func -side top -padx 5 -ipady 2 -fill x
+
+   Bubble::Create $t.func.type.elev      [lindex $Bubble(Height) $GDefs(Lang)]
+   Bubble::Create $t.func.type.vert      [lindex $Bubble(Vertical) $GDefs(Lang)]
+   Bubble::Create $t.func.type.time      [lindex $Bubble(Temporal) $GDefs(Lang)]
+   Bubble::Create $t.func.type.time.hour [lindex $Bubble(Delai) $GDefs(Lang)]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CANERM::SimCont>
+# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Continuation d'une simulation.
+#
+# Parametres :
+#   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc CANERM::ParamsCont { Tab } {
+   global GDefs
+   variable Sim
+   variable Lbl
+   variable Msg
+   variable Bubble
+
+   wm geom [winfo toplevel $Tab] =320x220
+
+   #---- Grid Def has an imprecision when converting back and forth so set to previous grid
+   set Sim(Grid) $Sim(PGrid)
+
+   set t [TabFrame::Add $Tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
+
+   #----- Model Integration (data output time step and model time step).
+   labelframe $t.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
+      Option::Create $t.integ.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] CANERM::Sim(Duration) 1 -1 $CANERM::Sim(ListSimDuration) ""
+      Option::Create $t.integ.ots [lindex $Lbl(OutputTimeStepHour) $GDefs(Lang)] CANERM::Sim(ISauve) 0 -1 $CANERM::Sim(ListISauve) ""
+      pack $t.integ.dur $t.integ.ots -side top -fill x -padx 2
+   pack $t.integ -side top -padx 5 -ipady 2 -fill x
+
+   Bubble::Create $t.integ.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
+   Bubble::Create $t.integ.ots "[lindex $Bubble(OutputTimeStepHour) $GDefs(Lang)]"
+   Bubble::Create $t.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+
+   #----- Selection des parametres
+   labelframe $t.fr -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
+      Option::Create $t.fr.event [lindex $Lbl(Event) $GDefs(Lang)] CANERM::Sim(Event) 1 -1 \
+          $CANERM::Sim(ListEvent) ""
+      Option::Create $t.fr.grid [lindex $Lbl(Grid) $GDefs(Lang)] CANERM::Sim(Scale) 0 -1 \
+          $CANERM::Sim(ListScale) "Model::ParamsGridDefine CANERM"
+       checkbutton $t.fr.grid.sel -variable Page::Data(ToolMode) -onvalue CANERM -offvalue SPI \
+         -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+         -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+
+      #----- Meteorological Model.
+      frame $t.fr.model
+         Option::Create $t.fr.model.met [lindex $Lbl(Meteo) $GDefs(Lang)] CANERM::Sim(Meteo) 0 7 $CANERM::Sim(ListMeteo) "Model::ParamsMetDataDir CANERM"
+         Option::Create $t.fr.model.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] CANERM::Sim(Delta) 0 6 [list 1 3 6] ""
+         button $t.fr.model.path -image OPEN -relief flat -bd 0 -overrelief raised -command "Model::ParamsMetPath"
+         pack $t.fr.model.met -side left -ipady 1
+         pack $t.fr.model.delta -side left -ipady 1
+         pack $t.fr.model.path  -side left
+      pack $t.fr.event $t.fr.grid $t.fr.model -padx 2 -side top -fill x
+      pack $t.fr.grid.sel -side left -ipadx 1
+   pack $t.fr -side top -padx 5 -pady 5 -ipady 2 -fill x
+
+   Bubble::Create $t.fr.event        [lindex $Bubble(Event) $GDefs(Lang)]
+   Bubble::Create $t.fr.model.met    [lindex $Bubble(Meteo) $GDefs(Lang)]
+   Bubble::Create $t.fr.model.delta  [lindex $Bubble(Meteo) $GDefs(Lang)]
+   Bubble::Create $t.fr.model.path   [lindex $Bubble(Path) $GDefs(Lang)]
+   Bubble::Create $t.fr.grid         [lindex $Bubble(Scale) $GDefs(Lang)]
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <GraphVertInit>
 # Creation : Decembre 1999 - J.P. Gauthier - CMC/CMOE
@@ -105,11 +361,9 @@ proc CANERM::GraphVertRefresh { Canvas args } {
 
    switch $Sim(FnVertDesc) {
       "EMPIRICAL" {
-
          $Canvas coord ASRC 25 30
 
          #----- Fonction de poids
-
          for { set i 0.0 } { $i <= 1.0 } { set i [expr $i+0.01] } {
 
             set zh [expr 1-$i]
@@ -122,11 +376,9 @@ proc CANERM::GraphVertRefresh { Canvas args } {
       }
 
       "GAUSS" {
-
          $Canvas coord ASRC 25 125
 
          #----- Fonction Gaussienne
-
          set sg [expr 10000*pow(abs($Sim(FnVert)/100.0),2)]
 
          for { set i 0.0 } { $i <= 1.0 } { set i [expr $i+0.01] } {
@@ -139,7 +391,6 @@ proc CANERM::GraphVertRefresh { Canvas args } {
       }
 
       "CONSTANT" {
-
          $Canvas coord ASRC 25 30
 
          set line "75 225 75 25"
@@ -147,7 +398,6 @@ proc CANERM::GraphVertRefresh { Canvas args } {
    }
 
    #----- Creer la fonction
-
    eval $Canvas create line $line -tags ALINE -fill red
 }
 
@@ -235,14 +485,12 @@ proc CANERM::GraphTimeRefresh { Canvas args } {
 
    $Canvas delete ALINE
 
-   set line ""
-
+   set line   ""
    set deltat [expr ($Sim(EmDuration)+72.0)/216.0]
 
    switch $Sim(FnTime) {
 
       "EXPONENTIAL" {
-
          for { set i 0.0 } { $i <= 1.0 } { set i [expr $i+0.01] } {
 
             set y [expr 225-200*exp(-$i*5)]
@@ -252,7 +500,6 @@ proc CANERM::GraphTimeRefresh { Canvas args } {
          }
       }
       "GAUSS" {
-
          set delai [expr $Sim(Delai)/50.0]
          for { set i 0.0 } { $i <= [expr 1.0+$delai] } { set i [expr $i+0.01] } {
 
@@ -263,11 +510,9 @@ proc CANERM::GraphTimeRefresh { Canvas args } {
          }
       }
       "CONSTANT" {
-
          set x [expr 25+200*$deltat]
 
          set line "25 125 $x 125"
-
       }
    }
 
@@ -336,10 +581,10 @@ proc CANERM::PopUp { X Y } {
          .canermpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .canermpopup.product
          .canermpopup add cascade -label [lindex $Lbl(Result) $GDefs(Lang)] -menu .canermpopup.res
          .canermpopup add separator
-         .canermpopup add command -label [lindex $Lbl(ContinueSim) $GDefs(Lang)] \
-            -command "CANERM::SimCont ." -state disabled
-         .canermpopup add command -label [lindex $Lbl(Launch) $GDefs(Lang)] \
-            -command "CANERM::SimRelaunch"
+         .canermpopup add command -label [lindex $Lbl(Continue) $GDefs(Lang)] \
+            -command "Model::ParamsWindow CANERM CONT" -state disabled
+         .canermpopup add command -label [lindex $Lbl(Relaunch) $GDefs(Lang)] \
+            -command "Model::ParamsWindow CANERM RENEW" -state disabled
          .canermpopup add separator
          .canermpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command "CANERM::SimSuppress True \$Exp::Data(SelectSim)"
@@ -371,352 +616,30 @@ proc CANERM::PopUp { X Y } {
          .canermpopup entryconfigure 1 -state disabled   ;#Product
          .canermpopup entryconfigure 2 -state disabled   ;#Data
          .canermpopup entryconfigure 4 -state disabled   ;#Continue
-         .canermpopup entryconfigure 5 -state normal     ;#Launch
+         .canermpopup entryconfigure 5 -state disabled   ;#Relaunch
          .canermpopup entryconfigure 7 -state normal     ;#Suppress
       }
       0 {                                             #----- Continuable
          .canermpopup entryconfigure 1 -state normal     ;#Product
          .canermpopup entryconfigure 2 -state normal     ;#Data
          .canermpopup entryconfigure 4 -state normal     ;#Continue
-         .canermpopup entryconfigure 5 -state disabled   ;#Launch
+         .canermpopup entryconfigure 5 -state disabled   ;#Relaunch
          .canermpopup entryconfigure 7 -state normal     ;#Suppress
       }
       1 {                                             #----- Etat Termine
          .canermpopup entryconfigure 1 -state normal     ;#Product
          .canermpopup entryconfigure 2 -state normal     ;#Data
-         .canermpopup entryconfigure 4 -state disabled   ;#Continue
-         .canermpopup entryconfigure 5 -state disabled   ;#Launch
+         .canermpopup entryconfigure 4 -state normal     ;#Continue
+         .canermpopup entryconfigure 5 -state normal     ;#Relaunch
          .canermpopup entryconfigure 7 -state normal     ;#Suppress
       }
       2 {                                              #----- Etat d'execution
          .canermpopup entryconfigure 1 -state disabled   ;#Product
          .canermpopup entryconfigure 2 -state disabled   ;#Data
          .canermpopup entryconfigure 4 -state disabled   ;#Continue
-         .canermpopup entryconfigure 5 -state disabled   ;#Launch
+         .canermpopup entryconfigure 5 -state disabled    ;#Relaunch
          .canermpopup entryconfigure 7 -state normal     ;#Suppress
       }
    }
-
    tk_popup .canermpopup $X $Y 0
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <CANERM::SimSusp>
-# Creation : Septembre 2000 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Lancement d'un script precalcule
-#
-# Parametres :
-#   <Parent> : Identificateur de la fenetre parent.
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc CANERM::SimSusp { Parent } {
-   global GDefs correct
-   variable Sim
-   variable Lbl
-
-   toplevel     .canermsusp
-   wm title     .canermsusp "CANERM: $Exp::Data(Name)"
-   wm transient .canermsusp $Parent
-   wm resizable .canermsusp 0 0
-   wm protocol  .canermsusp WM_DELETE_WINDOW { }
-
-   frame .canermsusp.s -relief raised -bd 1
-      Option::Create .canermsusp.s.host  [lindex $Lbl(Host) $GDefs(Lang)] Model::Param(Host) 0 11 \
-         $CANERM::Sim(Hosts) "Model::Queues CANERM .canermsusp.s.queue"
-      Option::Create .canermsusp.s.queue [lindex $Lbl(Queue) $GDefs(Lang)] Model::Param(Queue) 0 11 \
-         $GDefs(Queues) ""
-      pack .canermsusp.s.host .canermsusp.s.queue -side top -fill x
-
-   frame .canermsusp.com
-      button .canermsusp.com.launch -text [lindex $Lbl(Launch) $GDefs(Lang)] -bd 1 -command "set correct 1"
-      button .canermsusp.com.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1 -command "set correct 0"
-      pack .canermsusp.com.launch .canermsusp.com.cancel -side left
-   pack .canermsusp.s .canermsusp.com -side top -fill x
-
-   grab .canermsusp
-   tkwait variable correct
-   destroy .canermsusp
-   return $correct
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <CANERM::SimCont>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Continuation d'une simulation.
-#
-# Parametres :
-#   <Parent> : Identificateur de la fenetre parent.
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc CANERM::SimCont { Parent } {
-   global GDefs
-   variable Sim
-   variable Lbl
-   variable Msg
-   variable Bubble
-
-#   if { [winfo exists .canermnew] || [winfo exists .canermcont]} {
-#      Dialog::CreateError . "[lindex $Msg(Exist) $GDefs(Lang)]" $GDefs(Lang)
-#      return
-#   }
-
-   toplevel     .canermcont
-   wm title     .canermcont "CANERM: $Exp::Data(Name)"
-   wm transient .canermcont $Parent
-   wm resizable .canermcont 0 0
-   wm geom      .canermcont =320x220+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+30]
-   wm protocol  .canermcont WM_DELETE_WINDOW { }
-
-   CANERM::SimInitCont
-   CANERM::GridDef
-
-   #---- Grid Def has an imprecision when converting back and forth so set to previous grid
-   set Sim(Grid) $Sim(PGrid)
-
-   TabFrame::Create .canermcont.opt 1 "CANERM::LaunchParams 0"
-   pack .canermcont.opt -side top -fill both -expand true -padx 5 -pady 5
-
-   set t [TabFrame::Add .canermcont.opt 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
-
-   #----- Selection des parametres
-   labelframe $t.fr -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
-      Option::Create $t.fr.event [lindex $Lbl(Event) $GDefs(Lang)] CANERM::Sim(Event) 1 -1 \
-          $CANERM::Sim(ListEvent) ""
-      Option::Create $t.fr.grid [lindex $Lbl(Grid) $GDefs(Lang)] CANERM::Sim(Scale) 0 -1 \
-          $CANERM::Sim(ListScale) "set CANERM::Sim(Scale) \[lindex \$CANERM::Sim(Scale) 0\] ; CANERM::GridDef"
-       checkbutton $t.fr.grid.sel -variable Page::Data(ToolMode) -onvalue CANERM -offvalue SPI \
-         -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-         -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-
-      #----- Meteorological Model.
-      frame $t.fr.model
-         Option::Create $t.fr.model.met [lindex $Lbl(Meteo) $GDefs(Lang)] CANERM::Sim(Meteo) 0 7 $CANERM::Sim(ListMeteo) "Model::ParamsMetDataDir CANERM"
-         Option::Create $t.fr.model.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] CANERM::Sim(Delta) 0 6 [list 1 3 6] ""
-         button $t.fr.model.path -image OPEN -relief flat -bd 0 -overrelief raised \
-                  -command "Model::GetMetPath .canermnew"
-         pack $t.fr.model.met -side left -ipady 1
-         pack $t.fr.model.delta -side left -ipady 1
-         pack $t.fr.model.path  -side left
-      pack $t.fr.event $t.fr.grid $t.fr.model -padx 2 -side top -fill x
-      pack $t.fr.grid.sel -side left -ipadx 1
-   pack $t.fr -side top -padx 5 -pady 5 -ipady 2 -fill x
-
-   Bubble::Create $t.fr.event        [lindex $Bubble(Event) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.met    [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.delta  [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.path   [lindex $Bubble(Path) $GDefs(Lang)]
-   Bubble::Create $t.fr.grid         [lindex $Bubble(Scale) $GDefs(Lang)]
-
-   #----- Launching Tab.
-   Model::ParamsCheck CANERM False
-   Model::ParamsFrame CANERM .canermcont.opt
-
-   button .canermcont.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 \
-      -command { destroy .canermcont ; CANERM::ModeLeave }
-   pack .canermcont.close -side right -padx 5 -pady 5
-
-   TabFrame::Select .canermcont.opt 0
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <CANERM::New>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Creation d'une nouvelle simulation CANERM.
-#
-# Parametres :
-#   <Parent> : Identificateur de la fenetre parent.
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc CANERM::New { Parent } {
-   global   GDefs
-   variable Sim
-   variable Msg
-   variable Lbl
-   variable Bubble
-
-   if { [winfo exists .canermnew] || [winfo exists .canermcont]} {
-      Dialog::CreateInfo . "[lindex $Msg(Exist) $GDefs(Lang)]"
-      return
-   }
-
-   toplevel     .canermnew
-   wm title     .canermnew "CANERM: $Exp::Data(Name)"
-   wm transient .canermnew $Parent
-   wm resizable .canermnew 0 0
-   wm geom      .canermnew =320x310+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+30]
-   wm protocol  .canermnew WM_DELETE_WINDOW { }
-
-   CANERM::SimInitNew
-   CANERM::GridDef
-
-   TabFrame::Create .canermnew.opt 1 "CANERM::LaunchParams 1"
-   pack .canermnew.opt -side top -fill both -expand true -padx 5 -pady 5
-
-   set t [TabFrame::Add .canermnew.opt 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
-
-   #----- Simulation Starting Time.
-   labelframe $t.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
-
-      #----- Simulation Date Hour and minutes.
-      Calendar::Create $t.d.date "" CANERM::Sim(AccSeconds) -1
-      Clock::Create $t.d.time [lindex $Lbl(At) $GDefs(Lang)] CANERM::Sim(AccHour)
-      pack $t.d.date -side left -padx 2 -fill x -expand true
-      pack $t.d.time -side left -padx 2
-   pack $t.d -side top -side top -padx 5 -pady 5 -ipady 2 -fill x
-
-   Bubble::Create $t.d.date [lindex $Bubble(Date) $GDefs(Lang)]
-   Bubble::Create $t.d.time [lindex $Bubble(Time) $GDefs(Lang)]
-
-   #----- Model Integration (data output time step and model time step).
-   labelframe $t.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
-      Option::Create $t.integ.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] CANERM::Sim(Duration) 1 -1 $CANERM::Sim(ListSimDuration) ""
-      Option::Create $t.integ.ots [lindex $Lbl(OutputTimeStepHour) $GDefs(Lang)] CANERM::Sim(ISauve) 0 -1 $CANERM::Sim(ListISauve) ""
-      pack $t.integ.dur $t.integ.ots -side top -fill x -padx 2
-   pack $t.integ -side top -padx 5 -ipady 2 -fill x
-
-   Bubble::Create $t.integ.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
-   Bubble::Create $t.integ.ots "[lindex $Bubble(OutputTimeStepHour) $GDefs(Lang)]"
-   Bubble::Create $t.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
-
-   #----- Selection des parametres
-   labelframe $t.fr -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
-      Option::Create $t.fr.event [lindex $Lbl(Event) $GDefs(Lang)] CANERM::Sim(Event) 1 -1 \
-          $CANERM::Sim(ListEvent) ""
-
-      #----- Grid Resolution.
-      frame $t.fr.grid
-         Option::Create $t.fr.grid.res [lindex $Lbl(Grid) $GDefs(Lang)] CANERM::Sim(Scale) 0 7 $CANERM::Sim(ListScale) "set CANERM::Sim(Scale) \[lindex \$CANERM::Sim(Scale) 0\] ; CANERM::GridDef"
-         Option::Create $t.fr.grid.src "" CANERM::Sim(Src) 0 14 $Sim(Pos) \
-            "set CANERM::Sim(GridLat) \[set CANERM::Sim(Lat) \[lindex \$CANERM::Sim(Src) 1\]\];
-             set CANERM::Sim(GridLon) \[set CANERM::Sim(Lon) \[lindex \$CANERM::Sim(Src) 2\]\];
-             CANERM::GridDef"
-         checkbutton $t.fr.grid.sel -variable Page::Data(ToolMode) -onvalue CANERM -offvalue SPI \
-            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         pack $t.fr.grid.res -side left -ipady 1
-         pack $t.fr.grid.src -side left -ipady 1
-         pack $t.fr.grid.sel -side left
-
-      #----- Meteorological Model.
-      frame $t.fr.model
-         Option::Create $t.fr.model.met [lindex $Lbl(Meteo) $GDefs(Lang)] CANERM::Sim(Meteo) 0 7 $CANERM::Sim(ListMeteo) "Model::ParamsMetDataDir CANERM"
-         Option::Create $t.fr.model.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] CANERM::Sim(Delta) 0 6 [list 1 3 6] ""
-         button $t.fr.model.path -image OPEN -relief flat -bd 0 -overrelief raised \
-                  -command "Model::GetMetPath .canermnew"
-         pack $t.fr.model.met -side left -ipady 1
-         pack $t.fr.model.delta -side left -ipady 1
-         pack $t.fr.model.path -side left
-      pack $t.fr.event $t.fr.grid $t.fr.model -side top -padx 2 -fill x
-   pack $t.fr -side top -padx 5 -pady 5 -ipady 2 -fill x
-
-   Bubble::Create $t.fr.event        [lindex $Bubble(Event) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.met    [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.delta  [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.path   [lindex $Bubble(Path) $GDefs(Lang)]
-   Bubble::Create $t.fr.grid         [lindex $Bubble(Scale) $GDefs(Lang)]
-
-   set t [TabFrame::Add .canermnew.opt 1 [lindex $Lbl(Emission) $GDefs(Lang)] False]
-
-   #----- Selection des polluants
-   labelframe $t.iso -text [lindex $Lbl(Pollutant) $GDefs(Lang)]
-
-      frame $t.iso.type -bd 1 -relief sunken
-         frame $t.iso.type.lbl
-            label $t.iso.type.lbl.nb -text "Nb" -relief raised -bd 1 -width 3
-            button $t.iso.type.lbl.add -text [lindex $Lbl(Add) $GDefs(Lang)] \
-               -relief raised -bd 1 -width 10 -command "IsoBox::Create $t.iso \"CANERM::SpeciesFormat $t.iso\""
-            button $t.iso.type.lbl.del -text [lindex $Lbl(Suppress) $GDefs(Lang)] \
-               -relief raised -bd 1 -width 11 -command "CANERM::SpeciesDelete $t.iso"
-            label $t.iso.type.lbl.intensity -text [lindex $Lbl(Intensity) $GDefs(Lang)] \
-               -relief raised -bd 1 -width 10
-            pack $t.iso.type.lbl.nb $t.iso.type.lbl.add $t.iso.type.lbl.del -side left -fill both -expand true
-            pack $t.iso.type.lbl.intensity -side left -fill both
-         pack $t.iso.type.lbl -side top -fill x
-
-         frame $t.iso.type.entry
-            label $t.iso.type.entry.nb -textvariable CANERM::Sim(IsoNb) \
-               -relief sunken -bd 1 -width 3 -bg $GDefs(ColorLight)
-            ComboBox::Create $t.iso.type.entry.polluant CANERM::Sim(Iso) noedit unsorted \
-               nodouble $CANERM::Sim(MaxIso) $CANERM::Sim(IsoName) 25 5 \
-               "set CANERM::Sim(Intensity) \[lindex \$CANERM::Sim(IsoRelease) \[lsearch -exact \$CANERM::Sim(IsoName) \$CANERM::Sim(Iso)\]\]
-                $t.iso.type.entry.intensity config -state normal"
-            entry $t.iso.type.entry.intensity -textvariable CANERM::Sim(Intensity) \
-               -relief sunken -bd 1 -width 10 -bg $GDefs(ColorLight)
-             pack $t.iso.type.entry.nb $t.iso.type.entry.polluant $t.iso.type.entry.intensity -side left -fill y
-
-         pack $t.iso.type.entry -side top -fill y
-      pack  $t.iso.type -side left -padx 2 -fill x
-   pack $t.iso -side top -padx 5 -pady 5 -ipady 2 -fill x
-
-   $t.iso.type.entry.polluant.select config -state disabled
-   bind $t.iso.type.entry.intensity <Leave> "focus ."
-   bind $t.iso.type.entry.intensity <FocusOut> "CANERM::CheckIntensity $t.iso.type.entry.polluant"
-
-   Bubble::Create $t.iso.type.lbl.nb         [lindex $Bubble(Nb) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.lbl.add        [lindex $Bubble(Add) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.lbl.del        [lindex $Bubble(Del) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.lbl.intensity  [lindex $Bubble(Intensity) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.entry.polluant [lindex $Bubble(Pol) $GDefs(Lang)]
-
-   #----- Selection de la fonction
-   labelframe $t.func -text [lindex $Lbl(Function) $GDefs(Lang)]
-
-      frame $t.func.type -bd 1 -relief sunken
-         EntryMenu::Create $t.func.type.elev edit [lindex $Lbl(Elevation) $GDefs(Lang)] \
-            top 2 $GDefs(ColorLight) SteelBlue CANERM::Sim(EmHeight) "0.0 10000.0" "; "
-         frame $t.func.type.vert
-            button $t.func.type.vert.select -text [lindex $Lbl(Vertical) $GDefs(Lang)] -relief raised -bd 1 -command "CANERM::GraphVertInit $t.func.type.vert.select"
-            entry $t.func.type.vert.entry -textvariable CANERM::Sim(FnVertDesc) -relief sunken -bd 1 -width 9 -background $GDefs(ColorLight) \
-               -disabledbackground $GDefs(ColorLight) -disabledforeground black -state disabled
-            pack $t.func.type.vert.select -side top -fill both -expand true
-            pack $t.func.type.vert.entry -side top -fill both -expand true
-
-         frame $t.func.type.time
-            button $t.func.type.time.select -text [lindex $Lbl(Time) $GDefs(Lang)] -relief raised -bd 1 -command "CANERM::GraphTimeInit $t.func.type.time.select"
-            entry $t.func.type.time.entry -textvariable CANERM::Sim(FnTime) -relief sunken -bd 1 -width 9 -background $GDefs(ColorLight) \
-               -disabledbackground $GDefs(ColorLight) -disabledforeground black -state disabled
-            pack $t.func.type.time.select -side top -fill both -expand true
-            pack $t.func.type.time.entry -side top -fill both -expand true
-
-         #----- On ajoute une partie au widget EntryMenu
-         entry $t.func.type.time.hour -width 3 -bg $GDefs(ColorLight) -relief sunken -bd 1 \
-            -textvariable CANERM::Sim(EmDuration) -state disabled  -disabledbackground $GDefs(ColorLight) -disabledforeground black
-         pack  $t.func.type.time.hour -after $t.func.type.time.select -side right
-         pack $t.func.type.elev $t.func.type.vert $t.func.type.time -side left -fill both -expand true
-
-      pack  $t.func.type -side left -padx 2 -fill x -expand true
-   pack $t.func -side top -padx 5 -ipady 2 -fill x
-
-   Bubble::Create $t.func.type.elev      [lindex $Bubble(Height) $GDefs(Lang)]
-   Bubble::Create $t.func.type.vert      [lindex $Bubble(Vertical) $GDefs(Lang)]
-   Bubble::Create $t.func.type.time      [lindex $Bubble(Temporal) $GDefs(Lang)]
-   Bubble::Create $t.func.type.time.hour [lindex $Bubble(Delai) $GDefs(Lang)]
-
-   #----- Launching Tab.
-   Model::ParamsCheck CANERM False
-   Model::ParamsFrame CANERM .canermnew.opt
-
-   button .canermnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 \
-      -command { destroy .canermnew ; CANERM::ModeLeave }
-   pack .canermnew.close -side right -padx 5 -pady 5
-
-   TabFrame::Select .canermnew.opt 0
 }

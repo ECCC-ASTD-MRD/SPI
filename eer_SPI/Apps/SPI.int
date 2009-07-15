@@ -696,7 +696,7 @@ proc SPI::ToolBar { Frame } {
          }
          pack $Frame.tool.graph -side left -padx 2
          if { $GDefs(Model) } {
-            checkbutton $Frame.tool.model -image MODEL -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Model::Data(Show) \
+            checkbutton $Frame.tool.model -image MODEL -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Model::Param(Show) \
                -onvalue True -offvalue False -command "Model::Window"  -selectcolor $GDefs(ColorLight)
             pack $Frame.tool.model -before $Frame.tool.graph -side left -padx 2
          }

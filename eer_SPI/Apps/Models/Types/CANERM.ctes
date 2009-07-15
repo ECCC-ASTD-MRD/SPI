@@ -17,37 +17,28 @@
 namespace eval CANERM {
    global GDefs
    variable Sim
-   variable Grid
-   variable Data
-   variable Lbl
-
-   set Data(Frame)     ""
-   set Data(VP)        ""
 
    #----- Definition des constantes generale aux simulations
-
-   set Sim(Model)         CANERM                      ;#Identificateur du modele
-   set Sim(Delta)         3                           ;#Delta des fichiers meteo
-   set Sim(Descript)      ""                          ;#Descriptif des donnees affichees
-   set Sim(FreqIn)        12                          ;#Frequence des fichiers d'entree au modele
-   set Sim(FreqOut)       12                          ;#Frequence des fichiers de sortie au modele
-   set Sim(Duration)      72                          ;#Duree de la simulation
-   set Sim(MaxIso)        5                           ;#Nombre maximum de polluants
-   set Sim(Iso)           ""                          ;#Nom du polluant selectionne
-   set Sim(Intensity)     ""                          ;#Intensite du polluant selectionne
-   set Sim(Scale)         "FINE (25 km)"              ;#Echelle de la grille
-   set Sim(Path)          ""                          ;#Repertoire de la simulation
-   set Sim(NTST)          ""                          ;#
-   set Sim(Restart)       "_"                         ;#Nom du fichier "restart" a creer
-   set Sim(PrevRestart)   "_"                         ;#Nom du fichier "restart" a utiliser pour continuer
-   set Sim(ListScale)     { "HEMI (150 km)" "MESO (50 km)"  "FINE (25 km)"  "VFINE (10 km)" "EFINE (5 km)" }
-   set Sim(ListEvent)     { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" }
-   set Sim(ListFnTime)    { LINEAR GAUSSIAN EXPONENTIAL }
-   set Sim(ListISauve)    { 1 3 6 }
-   set Sim(ListMode)      { prog diag }
-   set Sim(ListMeteo)     { glb reg glb100 reg24 }
-   set Sim(ListSimDuration)     { 6 12 18 24 48 72 96 120 144 168 }          ; #----- List of simulation durations [hr].
-   set Sim(Retro)         False
+   set Sim(Delta)           3                           ;#Delta des fichiers meteo
+   set Sim(Descript)        ""                          ;#Descriptif des donnees affichees
+   set Sim(FreqIn)          12                          ;#Frequence des fichiers d'entree au modele
+   set Sim(FreqOut)         12                          ;#Frequence des fichiers de sortie au modele
+   set Sim(Duration)        72                          ;#Duree de la simulation
+   set Sim(MaxIso)          5                           ;#Nombre maximum de polluants
+   set Sim(Iso)             ""                          ;#Nom du polluant selectionne
+   set Sim(Intensity)       ""                          ;#Intensite du polluant selectionne
+   set Sim(Scale)           "FINE (25 km, 229x229)"     ;#Echelle de la grille
+   set Sim(Path)            ""                          ;#Repertoire de la simulation
+   set Sim(NTST)            ""                          ;#
+   set Sim(Restart)         "_"                         ;#Nom du fichier "restart" a creer
+   set Sim(PrevRestart)     "_"                         ;#Nom du fichier "restart" a utiliser pour continuer
+   set Sim(ListScale)       { "HEMI (150 km, 229x229)" "MESO (50 km, 229x229)"  "FINE (25 km, 229x229)"  "VFINE (10 km, 229x229)" "EFINE (5 km, 229x229)" }
+   set Sim(ListEvent)       { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" }
+   set Sim(ListFnTime)      { LINEAR GAUSSIAN EXPONENTIAL }
+   set Sim(ListISauve)      { 1 3 6 }
+   set Sim(ListMode)        { prog diag }
+   set Sim(ListMeteo)       { glb reg glb100 reg24 }
+   set Sim(ListSimDuration) { 6 12 18 24 48 72 96 120 144 168 }          ; #----- List of simulation durations [hr].
 
    #----- Add front-end machine to list of available hosts.
    set Sim(Hosts) $GDefs(FrontEnds)
@@ -60,7 +51,7 @@ namespace eval CANERM {
 
    set Model::Param(Host) [lindex $Sim(Hosts) 0]
 
-   set Sim(Info)  { Model State NoExp NoSim NoPrev Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
+   set Sim(Info)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                     SimYear SimMonth SimDay SimHour Mode Meteo Scale Grid \
                     FreqOut EmHeight Event NbPer Dt ISauve DTIN DTIS FnVert FnTime EmDuration Delai \
                     IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }

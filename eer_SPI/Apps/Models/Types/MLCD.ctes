@@ -111,9 +111,11 @@ namespace eval MLCD {
    set Sim(ObsNbLevels)         3  ; #----- Number of vertical levels in wind profile.
    set Sim(ObsMaxNb)            13 ; #----- Maximum number of observations.
    set Sim(ObsMaxNbLevels)      10 ; #----- Maximum number of vertical levels in wind profile.
-   set Sim(ObsListMetModel)     { glb reg lameast lamwest lammari } ; #----- List of meteorological models.
    set Sim(ObsNo)               1  ; #----- Current observation number.
    set Sim(ObsIdx)              0  ; #----- Current observation index.
+
+   set Sim(ListMeteo)         { glb reg lameast lamwest lammari } ; #----- List of meteorological models.
+
 
    set Sim(ListOptOnOff)       { { "Option désactivée" "Option activée" } \
                                  { "Option disabled" "Option enabled" } } ; #----- List of flags relative to option enabled/disabled.
@@ -126,17 +128,14 @@ namespace eval MLCD {
 
    set Sim(Epsilon) 1.0e-05 ; #----- Epsilon value.
 
-   set Sim(Model)   MLCD
-   set Sim(State)   1
-   set Sim(NoPrev) -1
-   set Sim(NoSim)  -1
-   set Sim(Retro)   False
+   #----- Add Local machine to list of available hosts.
+   set Sim(Hosts) $GDefs(Host)
 
    #----- Set variables for pool info.
-   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon DurMin \
+   set Sim(Info) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin \
                    AccYear AccMonth AccDay AccHour AccMin \
                    OutputTimeStepMin ModelTimeStepMin \
-                   IsConcS GridTypeS GridAlgoS GridDomain VerticalLevels IsSigmaS \
+                   IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
                    EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav \
                    EmDurationMin EmBottom EmTop EmRadius }
 

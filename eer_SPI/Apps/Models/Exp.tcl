@@ -88,8 +88,6 @@ namespace eval Exp {
                             "Suppressing done !" }
    set Msg(SuppressError) { "Impossible de supprimer les repertoires de l'experience suivante:" \
                             "Unable to suppress the following experiment directory" }
-   set Msg(Bad)           { "Un probleme est survenue lors de l'execution suivante"
-                            "An error occurred while running this job" }
    set Msg(Correct0)      { "Voulez-vous lancer le modèle" "Do you wish to launch" }
    set Msg(Correct1)      { "à partir de ces paramètres d'entrée ci-haut?" "model with the above input parameters?" }
    set Msg(Kill)          { "Arrêt de la simulation" "Terminating simulation" }
@@ -309,32 +307,28 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
    set branch [expr $Deep+10]
 
    #----- Construire les branches
-
    foreach sim $List {
       Exp::PoolFormat ${Model} $sim
 
       if { $Data(NoPrev)==$Prev } {
 
          #----- Creer le nom du widget (unique)
-
          set id [Exp::Id $sim]
 
          #----- Code de couleur
-
          switch -- $Data(State) {
-            -1 { set fg lightgray }                   ;# Problems
-            0  { set fg black }                       ;# New
-            1  { set fg black }                       ;# Done
-            2  { set fg red; set Data(StateExp) 2 }   ;# Running
-            3  { set fg darkgray }                    ;# Suspended
-            4  { set fg blue  }                       ;# Continuation
+            -1 { set fg #B6B6B6 ; set Data(StateExp) [expr $Data(StateExp)==2?$Data(StateExp):-1]} ;# Problems
+            0  { set fg black }                          ;# New
+            1  { set fg black }                          ;# Done
+            2  { set fg red; set Data(StateExp) 2 }      ;# Running
+            3  { set fg darkgray }                       ;# Suspended
+            4  { set fg blue  }                          ;# Continuation
          }
 
          if { $Open } {
             incr Deep 20
 
             #----- Creer l'identificateur de l'experience
-
             $Canvas create text [expr $x+5] $Deep -text "$Data(Desc)" -anchor w -tags "SIM SIM$id" -fill $fg -font $GDefs(Font)
             $Canvas create line [expr $x-10] $Deep $x $Deep -width 1 -fill black -tags TREE
 
@@ -348,7 +342,6 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
          }
 
          #----- La branche est elle en execution
-
          if { [info exists Data(Job$id)] } {
             set Data(StateExp) 2
 
@@ -358,7 +351,6 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
          }
 
          #----- Appel recursif des sous branches
-
          set Deep [Exp::CreateBranch $Canvas $Model $Data(NoSim) $No $Name $Deep [expr $Branch+1] $List $Open]
       }
    }
@@ -393,7 +385,6 @@ proc Exp::CreateTree { } {
    set y 15
 
    #----- Cleanup du canvas
-
    $canvas delete TREE SIGN EXP SIM SIMSELECT EXEC
    $canvas create rectangle -10 -10 -10 -10 -outline black -fill $GDefs(ColorHighLight) -tags "SIMSELECT"
 
@@ -425,7 +416,6 @@ proc Exp::CreateTree { } {
       if { [lsearch -exact $Exp::Data(Branch) $no] != -1 } {
 
          #----- On creer les branches des modeles si necesaire
-
          $canvas itemconfigure PEXP$no -bitmap $Model::Resources(Minus)
 
          foreach model $Data(Models) {
@@ -455,7 +445,6 @@ proc Exp::CreateTree { } {
          $canvas create line 10 $y0 10 $y1 -tags TREE
       } else {
          #----- Mais on parse quand meme pour verifier si il y a une execution en cours
-
          foreach model $Data(Models) {
             if { $model=="SATDATA" && [file exists $Param(Path)/${no}_${name}/SatData] } {
                set simlist SATDATA
@@ -468,7 +457,9 @@ proc Exp::CreateTree { } {
       incr y 21
 
       #----- Change icon on experiment state
-
+      if { $Data(StateExp)==-1 } {
+         set ico [lindex $Model::Resources(Bads) $type]
+      }
       if { $Data(StateExp)==2 } {
          set ico [lindex $Model::Resources(Acts) $type]
       }
@@ -531,214 +522,6 @@ proc Exp::PoolFormat { Model Info } {
       set model "[Info::Strip $Info Meteo][Info::Strip $Info Mode]"
 
       set Data(Desc)   "$dur $unit $date $model ($Exp::Data(NoSim))"
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Exp::Launch>
-# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lancer un modele et instaurer un evenement pour surveiller
-#            l'evolution du process.
-#
-# Parametres :
-#   <Job>    : Travail a lancer (script,bin,...)
-#   <Info>   : Information du pool
-#   <Length> : Longueur du travail (Nombre de ligne de sortie)
-#   <args>   : Fichier de sortie de la trace
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Exp::Launch { Job Info Length args } {
-   variable Data
-
-   #----- Recuperer les coordonnees du tag
-
-   set tag [Exp::Id $Info]
-
-   #----- Ouvrir le fichier d'output de la job
-
-   if { $args!="" } {
-      set Data(File$tag) [open $args w]
-   } else {
-      set Data(File$tag) ""
-   }
-
-   #----- Initialisation du pipeline de commande
-
-   set Data(Length$tag)  $Length
-   set Data(Job$tag)     [open |$Job r]
-   set Data(Pid$tag)     [pid $Data(Job$tag)]
-   set Data(Total$tag)   0
-   set Data(Percent$tag) -1
-   set Data(Pixel$tag)   0
-   set Data(Coord$$tag)  {}
-
-   fconfigure $Data(Job$tag) -blocking false -buffering line
-   fileevent $Data(Job$tag) readable "Exp::LaunchUpdate $tag 1"
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Exp::Kill>
-# Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Tuer une execution immediatement.
-#
-# Parametres :
-#   <Info>     : Information du pool
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Exp::Kill { Info } {
-   variable Data
-
-   #----- Recuperer les coordonnees du tag
-
-   set id [Exp::Id $Info]
-
-   if { [info exists Data(Job$id)] } {
-
-      #----- Fermer les pipelines de commande
-
-      close $Data(Job$id)
-      exec kill $Data(Pid$id)
-
-      #----- Fermer le fichier de trace
-
-      if { $Data(File$id)!="" } {
-         close $Data(File$id)
-      }
-
-      #----- Eliminer les variables relies
-
-      catch {
-         unset Data(Job$id)
-         unset Data(Length$id)
-         unset Data(Total$id)
-         unset Data(Percent$id)
-         unset Data(Pixel$id)
-         unset Data(Coord$id)
-         unset Data(Pid$id)
-         unset Data(File$id)
-      }
-
-      #----- Suppression de la barre d'execution
-
-      $Data(Frame).info.exp.canvas delete EXEC$id
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Exp::LaunchUpdate>
-# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : surveiller l'evolution du process en augmentant la barre
-#            d'evolution.
-#
-# Parametres :
-#   <Id>     : Information du pool
-#   <Length> : Longeur du travail (Nombre de ligne de sortie)
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Exp::LaunchUpdate { Id Read } {
-   global   GDefs
-   variable Data
-   variable Msg
-
-   #----- Verifier que le pipe n'est pas brise
-
-   set done    0
-   set broken  0
-   set broken  [catch { set done [eof $Data(Job$Id)] }]
-
-   if { $broken || $done } {
-
-      #----- La commande a echoue
-
-      if { $broken } {
-         Dialog::CreateError . "[lindex $Msg(Bad) $GDefs(Lang)]\n\n\t$Id" $GDefs(Lang)
-      }
-
-      #----- Fermer les pipelines de commande
-
-      if { [winfo exists $Data(Frame).info.exp.canvas] } {
-         $Data(Frame).info.exp.canvas delete EXEC$Id
-         Exp::CreateTree
-      }
-
-      catch { close $Data(Job$Id) }
-      catch { close $Data(File$Id) }
-
-      catch {
-         unset Data(Job$Id)
-         unset Data(Length$Id)
-         unset Data(Total$Id)
-         unset Data(Percent$Id)
-         unset Data(Pixel$Id)
-         unset Data(Coord$Id)
-         unset Data(Pid$Id)
-         unset Data(File$Id)
-      }
-   } else {
-
-      #----- Recuperer la sortie
-
-      if { $Read } {
-         gets $Data(Job$Id) line
-
-         #----- Verification de la sortie
-
-         if { [lindex $line 0]=="ERROR" } {
-            Dialog::CreateError . "$line" $GDefs(Lang)
-         }
-
-         if { [lindex $line 0]==">>" && [lindex $line 8]=="%" } {
-            set Data(Percent$Id) [expr double([lindex $line 7]/100.0)]
-         }
-
-         #----- Inscrire la ligne dans le fichier d'execution
-
-         if { $Data(File$Id)!="" } {
-            puts $Data(File$Id) $line
-         }
-      }
-
-      if { [winfo exists $Data(Frame).info.exp.canvas] } {
-
-         #----- Ajuster le pourcentage
-
-         $Data(Frame).info.exp.canvas delete EXEC$Id
-         set Data(Coord$Id) [$Data(Frame).info.exp.canvas bbox SIM$Id]
-
-         if { [llength $Data(Coord$Id)]>0 } {
-            eval $Data(Frame).info.exp.canvas create rectangle $Data(Coord$Id) -outline #FF9E9E -fill white -tags \"EXEC EXEC$Id\"
-
-            if { $Data(Percent$Id)>=0 } {
-               set Data(Pixel$Id) [expr double([lindex $Data(Coord$Id) 2] - [lindex $Data(Coord$Id) 0])*$Data(Percent$Id)]
-               set Data(Total$Id) $Data(Pixel$Id)
-            } else {
-               set Data(Pixel$Id) [expr double([lindex $Data(Coord$Id) 2] - [lindex $Data(Coord$Id) 0])/$Data(Length$Id)]
-               set Data(Total$Id) [expr $Data(Total$Id)+$Data(Pixel$Id)]
-            }
-            set Data(Coord$Id)   [lreplace $Data(Coord$Id) 2 2 [expr [lindex $Data(Coord$Id) 0]+$Data(Total$Id)]]
-
-            eval $Data(Frame).info.exp.canvas create rectangle $Data(Coord$Id) -outline #FF9E9E -fill #FF9E9E -tags \"EXEC EXEC$Id\"
-            $Data(Frame).info.exp.canvas raise EXEC$Id SIMSELECT
-         }
-      }
    }
 }
 
@@ -860,15 +643,13 @@ proc Exp::New { } {
    variable Msg
 
    #----- Verifier la validitee des parametres
-
    if { $Model::Data(Name)=="" } {
        Dialog::CreateError .expnew [lindex $Msg(Name) $GDefs(Lang)] $GDefs(Lang)
        return 0
    }
 
    #----- Forcer le format degree centiemme
-
-   if { "$Model::Data(Unit)" == "DDD MM" } {
+   if { "$Model::Param(Unit)" == "DDD MM" } {
       Model::SwitchCoord
    }
 
@@ -907,18 +688,15 @@ proc Exp::New { } {
    }
 
    #----- Relire les experiences
-
    Model::Check 0
 
    #----- Extraire les numero d'experience
-
    set listeno ""
    foreach exp $Data(List) {
       lappend listeno [lindex $exp 0]
    }
 
    #----- Rechercher un numero libre
-
    set ok 0
    set no 0
 
@@ -933,7 +711,6 @@ proc Exp::New { } {
    }
 
    #----- Creer l'enregistrement de l'experience
-
    set line "$noexp $Data(Name) $Data(Type) { $info }"
    Debug::TraceProc "Creating new Experiment : $line"
    exec echo "$line" >> $Param(Path)/eer_ExpList
@@ -942,7 +719,6 @@ proc Exp::New { } {
    file mkdir $Param(Path)/${noexp}_$Data(Name)/Output
 
    #----- dans le cas RSMC, initialiser les images
-
    if { $Data(Type)==1 } {
 
       Debug::TraceProc "Copying RSMC joint data to directory $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin"
@@ -1021,7 +797,6 @@ proc Exp::Params { Parent Model Info } {
    wm protocol  .simparams WM_DELETE_WINDOW { }
 
    #----- Afficher la liste des parametres de l'experience.
-
    set correct False
 
    frame .simparams.desc
@@ -1033,7 +808,6 @@ proc Exp::Params { Parent Model Info } {
    pack  .simparams.desc -side top -fill both -expand True
 
    #----- Demander de confirmer la selection faite par l'usager.
-
    label .simparams.que -relief raised -bd 1 -text "[lindex $Msg(Correct0) $GDefs(Lang)] $Model [lindex $Msg(Correct1) $GDefs(Lang)]"
    pack .simparams.que -anchor w -ipadx 5  -ipady 5 -fill x
 
@@ -1108,10 +882,9 @@ proc Exp::PopUp { X Y } {
          .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command "Exp::Store" -state disabled
 
       #----- Menu des modeles
-
       menu  .exppop.new -tearoff 0 -bd 1 -type normal -activeborderwidth 1
       foreach model $Data(Models) {
-         .exppop.new add command -label $model -command "${model}::New ."
+         .exppop.new add command -label $model -command "Model::ParamsWindow $model NEW"
       }
 
       menu  .exppop.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
@@ -1121,7 +894,6 @@ proc Exp::PopUp { X Y } {
    }
 
    #----- Dans le cas RSMC, activer la transmision de produits
-
    if { $Data(Type) == 1 } {
       .exppop entryconfigure 3 -state normal
    } else {
@@ -1212,12 +984,10 @@ proc Exp::ProductRSMCJointData { } {
       warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
    #----- setup le repertoire et le fichier concernant la run du modele meteo utilise.
-
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
    set run [exec cat $path/RUN.txt]
 
    #----- on recupere l'index de la region afin de determiner la region RSMC correspondante.
-
    set region [expr [ogrlayer pick RSMC "$Exp::Data(Lat) $Exp::Data(Lon) "] + 1]
 
    if { $region == "3" || $region == "4" } {
@@ -1231,7 +1001,6 @@ proc Exp::ProductRSMCJointData { } {
    }
 
    #----- cree le fichier pour la date.
-
    if { $run == "Unavailable" } {
       exec echo "Unavailable" > $path/CA_DATE.TXT
    } else {
@@ -1281,7 +1050,6 @@ proc Exp::ProductRSMCJointStatement { File } {
    update idletasks
 
    #----- setup le repertoire et le fichier concernant le joint statement.
-
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin/joint_statement_b.html"
    file copy -force $File $path
 
@@ -1473,7 +1241,6 @@ proc Exp::SelectSim { Info } {
    if { $Info!="" } {
 
       #----- Selectionner la nouvelle simulation
-
       set id [Exp::Id $Info]
       eval $Data(Frame).info.exp.canvas coords SIMSELECT [$Data(Frame).info.exp.canvas bbox SIM$id]
 
@@ -1521,7 +1288,6 @@ proc Exp::Suppress { } {
    variable Msg
 
    #----- Verifier la validitee des parametres
-
    set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressExp) $GDefs(Lang)]\n\n\t($Data(No)) $Data(Name)" \
      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
@@ -1534,15 +1300,14 @@ proc Exp::Suppress { } {
    Debug::TraceProc "Suppressing experiment : $Data(No) $Data(Name)"
 
    #----- Supprimer le repertoire de l'experience
-
    file delete -force $Param(Path)/$Data(No)_$Data(Name)
 
    if { [file exists $Param(Path)/$Data(No)_$Data(Name)] } {
       Dialog::CreateError .  "[lindex $Msg(SuppressError) $GDefs(Lang)]\n\n\t$Param(Path)/$Data(No)_$Data(Name)" $GDefs(Lang)
       Debug::TraceProc "Unable to suppress experiment : $Data(No) $Data(Name)"
    } else {
-      #----- Supprimer l'information de cette experience dans le pool
 
+      #----- Supprimer l'information de cette experience dans le pool
       Debug::TraceProc "Suppressing experiment : $Data(No) $Data(Name)"
       file copy -force $Param(Path)/eer_ExpList $Param(Path)/eer_ExpList.old
 

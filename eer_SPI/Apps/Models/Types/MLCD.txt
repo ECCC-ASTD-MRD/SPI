@@ -24,18 +24,7 @@ namespace eval MLCD {
 
    #----- Labels definitions
 
-   set Lbl(IDate)      { "Date      : " "Date     : " }
-   set Lbl(IDur)       { "Durée     : " "Duration : " }
-   set Lbl(IOut)       { "Sortie    : " "Output   : " }
-   set Lbl(IETime)     { "Émission  : " "Emission : " }
-   set Lbl(IENb)       { "Nombre    : " "Number   : " }
-   set Lbl(IEMass)     { "Masse     : " "Mass     : " }
-   set Lbl(IEVel)      { "Vitesse   : " "Velocity : " }
-   set Lbl(IESpc)      { "Espèce    : " "Specie   : " }
-   set Lbl(IECyl)      { "Cylindre  : " "Cylinder : " }
-   set Lbl(ICst)       { "Constantes: " "Constants: " }
-
-   set Lbl(Sim)            { "MLCD" "MLCD" }
+   set Lbl(Params)         { "Parametres" "Parameters" }
    set Lbl(Em)             { "Émission" "Emission" }
    set Lbl(Src)            { "Source" "Source" }
    set Lbl(Sit)            { "Météo" "Meteo" }
@@ -105,8 +94,7 @@ namespace eval MLCD {
 
    set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" \
                            "Do you really want to delete this simulation?" }
-   set Msg(Exist)        { "Veuillez compléter le lancement du modèle MLCD en cours avant de procéder à une autre."
-                           "Please complete the current MLCD launch before proceeding with another one." }
+   set Msg(MetGet)       { "Récupération des données météo en cours..." "Extracting met data ..." }
 
    #----- Error definitions
 
@@ -301,8 +289,4 @@ namespace eval MLCD {
    set Bubble(ObsHeight)      { "Hauteur observée des vents (m)." "Observed wind height (m)." }
    set Bubble(ObsVelocity)    { "Vitesse observée des vents (m/s)." "Observed wind speed (m/s)." }
    set Bubble(ObsDirection)   { "Direction observée des vents (degrés\np.r. au Nord dans le sens horaire)." "Observed wind direction (degrees with reference\nto North in clockwise direction)." }
-
-   set Bubble(Launch) { "Lancer le modèle." "Launch the model." }
-   set Bubble(Cancel) { "Annuler le modèle." "Cancel the model." }
-
 }

@@ -18,11 +18,7 @@
 namespace eval MLDP {
    global GDefs
    variable Sim
-   variable Data
    variable Tmp
-
-   set Data(Frame)     ""
-   set Data(VP)        ""
 
    #----- Definition des constantes generale aux simulations
 
@@ -61,7 +57,6 @@ namespace eval MLDP {
    #----- List of reflection levels [hyb|eta|sig].
    set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
 
-   set Sim(Model)                "MLDP0"                       ; #----- Model name.
    set Sim(DtOverTl)             1.0                           ; #----- Ratio of diffusion time step over Lagrangian time scale [dimensionless].
    set Sim(DtMin)                1.0                           ; #----- Diffusion time step minimum value [s].
    set Sim(IsIncludeHorizDiff)   ".TRUE."                      ; #----- Flag indicating if including horizontal diffusion in free atmosphere.
@@ -81,7 +76,6 @@ namespace eval MLDP {
    set Sim(EmMaxInterval)        10                            ; #----- Maximum number of emission intervals.
    set Sim(EmDir)                "$GDefs(DirEER)/eer_Scenario" ; #----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-05                       ; #----- Small value.
-   set Sim(Retro)                False
 
    #----- Add front-end machine to list of available hosts.
    set Sim(Hosts) $GDefs(FrontEnds)
@@ -94,9 +88,9 @@ namespace eval MLDP {
    set Model::Param(Host) [lindex $Sim(Hosts) 0]
 
    #----- Set variables for pool info.
-   set Sim(Info) { Model State NoExp NoSim NoPrev Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
+   set Sim(Info) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
                    AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour \
-                   Mode Meteo Delta Scale GridSize Grid \
+                   Mode Meteo Delta Scale Grid \
                    Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel \
                    EmNumberParticles EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                    EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }

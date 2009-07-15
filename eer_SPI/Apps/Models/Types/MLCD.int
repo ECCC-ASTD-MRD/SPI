@@ -16,13 +16,13 @@
 #===============================================================================
 
 #-------------------------------------------------------------------------------
-# Nom      : <MLCD::New>
+# Nom      : <MLCD::ParamsNew>
 # Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Creation d'une nouvelle simulation MLCD.
 #
 # Parametres :
-#   <Parent> : Fenetre parent
+#   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
 #
 # Retour :
 #
@@ -30,7 +30,7 @@
 #
 #-------------------------------------------------------------------------------
 
-proc MLCD::New { Parent } {
+proc MLCD::ParamsNew { Tab } {
    global GDefs
    variable Data
    variable Lbl
@@ -38,42 +38,22 @@ proc MLCD::New { Parent } {
    variable Sim
    variable Bubble
 
-   if { [winfo exists .mlcdnew] } {
-      Dialog::CreateInfo .mlcdnew "[lindex $Msg(Exist) $GDefs(Lang)]"
-      return
-   }
-
-   MLCD::InitNew
-
-   toplevel     .mlcdnew
-   wm title     .mlcdnew "[lindex $Lbl(Sim) $GDefs(Lang)]: $Exp::Data(Name)"
-   wm transient .mlcdnew $Parent
-   wm resizable .mlcdnew 0 0
-   wm geom      .mlcdnew =330x430+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+30]
-   wm protocol  .mlcdnew WM_DELETE_WINDOW { }
-
-   TabFrame::Create .mlcdnew.params 1 "MLCD::ValidateInterface"
-
-   pack .mlcdnew.params -side top -fill both -expand true -padx 5 -pady 5
-
-   set frame [TabFrame::Add .mlcdnew.params 1 [lindex $Lbl(Model) $GDefs(Lang)] False]
+   wm geom [winfo toplevel $Tab] =330x430
+   set frame [TabFrame::Add $Tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
 
    #----- Selection of source.
-
    labelframe $frame.src -text "Source"
-      ComboBox::Create $frame.src.cb MLCD::Sim(Src) noedit sorted nodouble -1 $MLCD::Sim(Names) 20 3 MLCD::SetSrc
+      ComboBox::Create $frame.src.cb MLCD::Sim(GridSrc) noedit sorted nodouble -1 $Sim(Pos) 20 3 MLCD::SetSrc
       pack $frame.src.cb -side left -fill x -expand true -padx 2 -pady 2
    pack $frame.src -side top -padx 5 -pady 5 -fill x
    Bubble::Create $frame.src.cb "[lindex $Bubble(SelectSource) $GDefs(Lang)]"
    Bubble::Create $frame.src "[lindex $Bubble(Source) $GDefs(Lang)]"
 
    #----- Starting time of simulation.
-
    labelframe $frame.t -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
       #---- Simulation Date and Time (hour and minutes) [UTC].
-
-      Calendar::Create $frame.t.date [lindex $Lbl(Date) $GDefs(Lang)] MLCD::Sim(Second) 25
+      Calendar::Create $frame.t.date [lindex $Lbl(Date) $GDefs(Lang)] MLCD::Sim(AccDate) 25
       Clock::Create $frame.t.hour "" MLCD::Sim(AccHour) MLCD::Sim(AccMin)
       pack $frame.t.date -side left -anchor w -padx 2 -fill x
       pack $frame.t.hour -side left -padx 2
@@ -85,7 +65,6 @@ proc MLCD::New { Parent } {
    Bubble::Create $frame.t "[lindex $Bubble(StartTime) $GDefs(Lang)]"
 
    #----- Model integration.
-
    labelframe $frame.integ -text "[lindex $Lbl(Exec) $GDefs(Lang)]"
       frame $frame.integ.opt
 
@@ -112,7 +91,6 @@ proc MLCD::New { Parent } {
    Bubble::Create $frame.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
 
    #----- Concentration calculations.
-
    labelframe $frame.conc -text "[lindex $Lbl(Conc) $GDefs(Lang)]"
 
       #----- Enabling/Disabling for the concentration calculations option.
@@ -154,9 +132,7 @@ proc MLCD::New { Parent } {
    pack $frame.conc -side top -padx 5 -fill x
    Bubble::Create $frame.conc "[lindex $Bubble(Conc) $GDefs(Lang)]"
 
-
    #----- Other options.
-
    labelframe $frame.divers -text "[lindex $Lbl(Other) $GDefs(Lang)]"
       frame $frame.divers.opt
          checkbutton $frame.divers.opt.c1 -anchor w -text "[lindex $Lbl(IsSigma) $GDefs(Lang)]" -offvalue 0 -onvalue 1 -variable MLCD::Sim(IsSigma) -indicatoron true -command ""
@@ -166,14 +142,20 @@ proc MLCD::New { Parent } {
 
    Bubble::Create $frame.divers "[lindex $Bubble(Option) $GDefs(Lang)]"
    Bubble::Create $frame.divers.opt "[lindex $Bubble(Sigma) $GDefs(Lang)]"
+}
 
+proc MLCD::ParamsEmission { Tab } {
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Msg
+   variable Sim
+   variable Bubble
 
-   #----- Emission parameters.
-
-   set frame [TabFrame::Add .mlcdnew.params 1 [lindex $Lbl(Em) $GDefs(Lang)] False]
+   wm geom [winfo toplevel $Tab] =330x430
+   set frame [TabFrame::Add $Tab 1 [lindex $Lbl(Em) $GDefs(Lang)] False]
 
    #----- Options associated to the particles.
-
    labelframe $frame.part -text "[lindex $Lbl(EmPart) $GDefs(Lang)]"
 
    #----- Number of particles.
@@ -231,7 +213,6 @@ proc MLCD::New { Parent } {
    set Data(EmWetScavEnt) $frame.part.wetscav.ent
 
    #----- Options associated to the emission column modeling.
-
    labelframe $frame.col -text "[lindex $Lbl(EmCol) $GDefs(Lang)]"
 
    #----- Emission duration [min].
@@ -273,20 +254,16 @@ proc MLCD::New { Parent } {
    Bubble::Create $frame.part "[lindex $Bubble(EmParticles) $GDefs(Lang)]"
    Bubble::Create $frame.col "[lindex $Bubble(EmColumn) $GDefs(Lang)]"
 
-
    #----- Observation parameters.
-
-   set frame [TabFrame::Add .mlcdnew.params 1 [lindex $Lbl(Sit) $GDefs(Lang)] False]
+   set frame [TabFrame::Add $Tab 1 [lindex $Lbl(Sit) $GDefs(Lang)] False]
 
    #----- Automation frame.
-
    labelframe $frame.auto -text "[lindex $Lbl(ObsAuto) $GDefs(Lang)]"
    Bubble::Create $frame.auto "[lindex $Bubble(ObsAuto) $GDefs(Lang)]"
 
    frame $frame.auto.data
 
    #----- Number of vertical levels in wind profile.
-
    frame $frame.auto.data.nblevels
       label $frame.auto.data.nblevels.lbl -text "[lindex $Lbl(ObsNbLevels) $GDefs(Lang)]"
       spinbox $frame.auto.data.nblevels.spb -textvariable MLCD::Sim(ObsNbLevels) -width 2 -from 1 -to $MLCD::Sim(ObsMaxNbLevels) -bd 1 -state readonly -readonlybackground $GDefs(ColorLight)
@@ -295,10 +272,9 @@ proc MLCD::New { Parent } {
    Bubble::Create $frame.auto.data.nblevels "[lindex $Bubble(ObsNbLevels) $GDefs(Lang)]"
 
    #----- Meteorological model.
-
    frame $frame.auto.data.met
-   Option::Create $frame.auto.data.met.model [lindex $Lbl(ObsMetModel) $GDefs(Lang)] { MLCD::Sim(ObsMetModel) } 0 7 $MLCD::Sim(ObsListMetModel) "MLCD::SetMetDataDir \$MLCD::Sim(ObsMetModel)"
-   button $frame.auto.data.met.path -image OPEN -relief flat -bd 0 -overrelief raised -command "Model::GetMetPath .mlcdnew MLCD::Sim(DBaseDiag) MLCD::Sim(DBaseProg)"
+   Option::Create $frame.auto.data.met.model [lindex $Lbl(ObsMetModel) $GDefs(Lang)] { MLCD::Sim(Meteo) } 0 7 $MLCD::Sim(ListMeteo) "MLCD::SetMetDataDir \$MLCD::Sim(Meteo)"
+   button $frame.auto.data.met.path -image OPEN -relief flat -bd 0 -overrelief raised -command "Model::ParamsMetPath"
    pack $frame.auto.data.met.model -side left -padx 2 -fill x -expand true
    pack $frame.auto.data.met.path -side left
    pack $frame.auto.data.met -side top
@@ -308,22 +284,17 @@ proc MLCD::New { Parent } {
    pack $frame.auto.data -side left
 
    #----- Retrieve meteorological data.
-
-   button $frame.auto.get -text "[lindex $Lbl(ObsRetrieve) $GDefs(Lang)]" -bd 1 -command "MLCD::SetMetData \$MLCD::Sim(ObsMetModel)"
+   button $frame.auto.get -text "[lindex $Lbl(ObsRetrieve) $GDefs(Lang)]" -bd 1 -command "MLCD::SetMetData \$MLCD::Sim(Meteo)"
       pack $frame.auto.get -side left -expand true -anchor center -padx 2 -pady 2
       #pack $frame.auto.get -side left -expand true -anchor se -padx 2 -pady 2
    Bubble::Create $frame.auto.get "[lindex $Bubble(ObsRetrieve) $GDefs(Lang)]"
-
    pack $frame.auto -side top -padx 5 -pady 5 -fill x
 
-
    #----- Editing frame.
-
    labelframe $frame.edit -text "[lindex $Lbl(ObsEdit) $GDefs(Lang)]"
    Bubble::Create $frame.edit "[lindex $Bubble(ObsEdit) $GDefs(Lang)]"
 
    #----- Observation Time.
-
    frame $frame.edit.obstime -relief sunken -bd 1
 
       frame $frame.edit.obstime.title
@@ -350,7 +321,7 @@ proc MLCD::New { Parent } {
          set Data(ObsNoSpinBox) $frame.edit.obstime.data.no
 
          #----- Observation Date [UTC].
-         Calendar::Create $frame.edit.obstime.data.date "" MLCD::Sim(ObsTimeDateSec) 22 "MLCD::SetObsDate \$MLCD::Sim(ObsTimeDateSec)"
+         Calendar::Create $frame.edit.obstime.data.date "" MLCD::Sim(ObsDateSec) 22 "MLCD::SetObsDate"
          Bubble::Create $frame.edit.obstime.data.date "[lindex $Bubble(ObsDate) $GDefs(Lang)]"
 
          #----- Observation Time [UTC].
@@ -364,7 +335,6 @@ proc MLCD::New { Parent } {
    pack $frame.edit.obstime -side top -fill y -fill x -anchor w -padx 2 -pady 5
 
    #----- Local Parameters.
-
    frame $frame.edit.params -relief sunken -bd 1
 
       #----- Title.
@@ -432,7 +402,6 @@ proc MLCD::New { Parent } {
    }
 
    #----- Wind Profile.
-
    frame $frame.edit.prof -relief sunken -bd 1
 
       #----- Title.
@@ -480,22 +449,7 @@ proc MLCD::New { Parent } {
       }
 
    pack $frame.edit.prof -side top -fill y -fill x -anchor w -padx 2 -pady 5
-
    pack $frame.edit -side top -padx 5 -fill x
-
-   TabFrame::Select .mlcdnew.params 0
-
-   #----- 'Launch' and 'Cancel' buttons.
-   frame .mlcdnew.com
-      button .mlcdnew.com.launch -text "[lindex $Lbl(Launch) $GDefs(Lang)]" -bd 1 -command MLCD::SimLaunchNew
-      button .mlcdnew.com.cancel -text "[lindex $Lbl(Close) $GDefs(Lang)]" -bd 1 -command "destroy .mlcdnew"
-      pack .mlcdnew.com.launch .mlcdnew.com.cancel -side left -fill x
-   pack .mlcdnew.com -side top -pady 5 -padx 5 -anchor e
-
-   Bubble::Create .mlcdnew.com.launch "[lindex $Bubble(Launch) $GDefs(Lang)]"
-   Bubble::Create .mlcdnew.com.cancel "[lindex $Bubble(Cancel) $GDefs(Lang)]"
-
-   TabFrame::Select .mlcdnew.opt 0
 }
 
 #----------------------------------------------------------------------------

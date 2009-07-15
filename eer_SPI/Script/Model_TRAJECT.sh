@@ -1,4 +1,3 @@
-#!/bin/ksh
 #===============================================================================
 # Environnement Canada - Service meteorologique du Canada
 # Centre meteorologique canadien
@@ -10,10 +9,16 @@
 # Nom        : <Model_TRAJECT.sh>
 # Creation   : Juin 2009 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Support file for MLDP0 and MLDP1 models, it defines the following functions:
+# Description: Support file for TRAJECT models, it defines the following functions:
 #                - {Model}_Pre     : Do the pre-processing stuff
 #                - {Model}_Run     : Run the model
 #                - {Model}_Post    : Do the post-processing stuff
+# Variable:
+#    TRAJECT_METEO           List of meteo data files
+#    TRAJECT_INC             Increment between simulations
+#    TRAJECT_LEN             Lenght of the simulations
+#    TRAJECT_INPUT           Input file for model
+#    TRAJECT_RESULT          Result file name
 #
 # Remarques  :
 #   Aucune.
@@ -35,7 +40,7 @@ function TRAJECT_Run {
       -tinc ${TRAJECT_INC} \
       -tlen ${TRAJECT_LEN} \
       -o ${TRAJECT_RESULT} \
-      -v ${TRAJECT_LOGLEVEL} \
+      -v ${LOG_LEVEL} \
       >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err
 
    taskstatus=$?
@@ -43,10 +48,10 @@ function TRAJECT_Run {
 
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
-      Log_Mail "Atmospheric dispersion model (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
+      Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
    else
       Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
-      Log_Mail "Atmospheric dispersion model (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}

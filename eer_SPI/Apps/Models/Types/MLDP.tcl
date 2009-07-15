@@ -82,11 +82,9 @@ proc MLDP::Launch { } {
    variable Warning
 
    #----- Create input files for meteorological preprocessing script, model script, launch script.
-   if { ![MLDP::CreateModelInputFile $Sim(Model)] } {
-      return False
-   }
-   MLDP::CreateLaunchInputFile
    Model::ParamsMeteoInput MLDP
+   MLDP::CreateModelInputFile $Sim(Model)
+   MLDP::CreateLaunchInputFile
 
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
@@ -98,11 +96,11 @@ proc MLDP::Launch { } {
 
       #----- Meteo is local, launch it's processing and wait for it.
       if { $Model::Param(DBaseLocal) } {
-         set proceed [Dialog::CreateDefault .mldpnew 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Warning(MetLocal) $GDefs(Lang)] \
+         set proceed [Dialog::CreateDefault .modelnew 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Warning(MetLocal) $GDefs(Lang)] \
             warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
 
          if { !$proceed } {
-            return
+            return False
          }
 
          Dialog::CreateWait . [lindex $Msg(MetProcess) $GDefs(Lang)] 600
@@ -110,23 +108,8 @@ proc MLDP::Launch { } {
          Dialog::DestroyWait
       }
 
-      #----- Run will be remote, setup what's needed on remote host.
-      if { $Model::Param(Remote) } {
-         #----- Create simulation directories.
-         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
-         if { $ErrorCode } {
-            Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
-            return False
-         }
-
-         #----- Copy needed files.
-         set ErrorCode [catch { eval exec scp -p $Sim(Path)/tmp/sim.pool [glob $Sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
-         if { $ErrorCode } {
-            Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
-            return False
-         }
-         Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
-      }
+      #----- Copy needed file to run host:directory.
+      Model::ParamsCopy MLDP
 
       set memory ""
       set mem    ""
@@ -165,7 +148,7 @@ proc MLDP::Launch { } {
       Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
 
    } else {
-      Exp::Launch "$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in" "[Info::Code ::MLDP::Sim $Sim(Info) :]" 10000 $Sim(Path)/tmp/Model_MLDP.out
+      exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
       Debug::TraceProc "(INFO) Job launched on $Model::Param(Host)."
    }
    return True
@@ -211,7 +194,7 @@ proc MLDP::CreateLaunchInputFile { } {
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_CLEAN=1"
-   puts $file "MODEL_TRACE=\"\""
+   puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
    puts $file ""
    puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
    puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
@@ -219,8 +202,10 @@ proc MLDP::CreateLaunchInputFile { } {
    puts $file ""
    puts $file "#----- Model specific parameters"
 
-   if { $Model::Param(DBaseLocal) } {
-      puts $file "MLDP_METEO=$Sim(Path)/meteo"
+   if { $Sim(ReNewMeteo)!="" } {
+      puts $file "MLDP_METEO=$Sim(ReNewMeteo)"
+   } elseif { $Model::Param(DBaseLocal) } {
+      puts $file "MLDP_METEO=$Sim(Path)"
    } else {
       puts $file "MLDP_METEO=$Sim(Meteo)"
    }
@@ -245,7 +230,7 @@ proc MLDP::CreateLaunchInputFile { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::LaunchParams>
+# Nom        : <MLDP::ParamsCheck>
 # Creation   : Juin 2001 - J.P.Gauthier - CMC/CMOE
 #
 # But        : Effectuer toutes les verifications de parametres et recuperer
@@ -261,54 +246,46 @@ proc MLDP::CreateLaunchInputFile { } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDP::LaunchParams { Tab No } {
+proc MLDP::ParamsCheck { Tab No } {
    global   GDefs
    variable Sim
 
-   .mldpnew config -cursor watch
+   #----- Check for last tab
+   set nb [expr [TabFrame::NbFrame $Tab]-1]
+   if { $No!=$nb } {
+      return True
+   }
 
-   if { $No != 0 && $Sim(TabPrevNo) == 0 } {
-      #----- Validate output and model time steps.
+   #----- Validate output and model time steps but not if we are relaunching.
+   if { $Sim(ReNewMeteo)=="" } {
       if { ![MLDP::ValidateNbSrc] || ![MLDP::ValidateTimeSteps] || ![MLDP::ValidateSimulationDuration] || ![MLDP::ValidateOtherParams] } {
          TabFrame::Select $Tab 0
-         return 0
+         return False
       }
    }
 
-   if { $No != 1 && $Sim(TabPrevNo) == 1 } {
-      #----- Validate emission column parameters.
-      if { ![MLDP::ValidateEmissionColumn] } {
-         TabFrame::Select $Tab 1
-         return 0
+   #----- Validate emission column parameters.
+   if { ![MLDP::ValidateEmissionColumn] } {
+      TabFrame::Select $Tab [expr $nb==2?1:0]
+      return False
+   }
+
+   #----- Validate emission scenario if not validated yet.
+   if { !$Sim(IsScenarioValid) } {
+      if { ![MLDP::ValidateDurationsVsModelTimeStep] } {
+         TabFrame::Select $Tab [expr $nb==2?1:0]
+         return False
       }
    }
 
-   if { $No == 2 && $Sim(TabPrevNo) != 2 } {
+   #----- Set isotopes information for pool of simulation.
+   MLDP::SetIsotopesInfo
 
-      .mldpnew config -cursor watch
-
-      #----- Validate emission scenario if not validated yet.
-      if { !$Sim(IsScenarioValid) } {
-         if { ![MLDP::ValidateDurationsVsModelTimeStep] } {
-            TabFrame::Select $Tab 1
-            return 0
-         }
-      }
-
-      #----- Set isotopes information for pool of simulation.
-      MLDP::SetIsotopesInfo
-
-      #----- Get meteorological data according to met database, time interval between files, release accident date-time.
-      if { ![MLDP::GetMetData] } {
-         .mldpnew config -cursor left_ptr
-         return 0
-      }
+   #----- Get meteorological data according to met database, time interval between files, release accident date-time.
+   if { ![MLDP::GetMetData] } {
+      return False
    }
-
-   .mldpnew config -cursor left_ptr
-
-   #----- Set previous tab no.
-   set Sim(TabPrevNo) $No
+   return True
 }
 
 #----------------------------------------------------------------------------
@@ -326,6 +303,7 @@ proc MLDP::LaunchParams { Tab No } {
 #----------------------------------------------------------------------------
 
 proc MLDP::CreateModelInputFile { Model } {
+   global   GDefs
    variable Sim
    variable Tmp
 
@@ -343,8 +321,8 @@ proc MLDP::CreateModelInputFile { Model } {
    #----- Input files.
    set len [expr [string length $Sim(PathRun)/meteo] + [string length [file tail [lindex $Sim(MeteoDataFiles) 0]]] + 10]
    puts $file "\nInput files:"
-   puts $file "[format "%-${len}s" [llength $Sim(Data)]]]     nb_metfiles       Number of meteorological input standard files."
-   for { set i 0 } { $i < [llength $Sim(Data)] } { incr i } {
+   puts $file "[format "%-${len}s" [llength $Sim(MeteoDataFiles)]]]     nb_metfiles       Number of meteorological input standard files."
+   for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
       set filename [lindex $Sim(MeteoDataFiles) $i]
       set metfile  "$Sim(PathRun)/meteo/[file tail $filename].std"
       if { $i > 0 } {
@@ -380,14 +358,16 @@ proc MLDP::CreateModelInputFile { Model } {
    puts $file "[format "%-20s" $Model::Param(OMPthreadFact)] [format "%-20s" ompthreads_fact] Integer multiplicative factor to apply to number of OpenMP threads \[1|2\]."
 
    #----- Source parameters.
+   set nbsrc [expr [llength $Sim(Name)]>$Sim(MaxNbSrc)?$Sim(MaxNbSrc):[llength $Sim(Name)]]
+
    puts $file "\nSource parameters:"
-   puts $file "[format "%-25s" '[string range $Sim(Name) 0 11]'] [format "%-25s" src_name] Source name (12 characters)."
+   puts $file "[format "%-25s" '[string range $Sim(NameExp) 0 11]'] [format "%-25s" src_name] Source name (12 characters)."
    puts $file "[format "%-25s" "$Sim(AccYear), $Sim(AccMonth), $Sim(AccDay), $Sim(AccHour), $Sim(AccMin)"] [format "%-25s" etime(i)] Emission date-time \[UTC\]: Year, Month, Day, Hour, Minutes."
-   puts $file "[format "%-25s" $Sim(NbSrc)] [format "%-25s" nbsrc] Number of sources."
+   puts $file "[format "%-25s" $nbsrc] [format "%-25s" nbsrc] Number of sources."
    puts $file "[format "%-25s" $Sim(EmHeight)] [format "%-25s" z_src] Maximum plume height \[m\]."
    puts $file "[format "%-25s" $Sim(EmRadius)] [format "%-25s" rad_src] Horizontal dispersion source radius \[m\]."
-   for { set i 0 } { $i < $Sim(NbSrc) } { incr i } {
-      set coord [lindex $Sim(CoordSrc) $i]
+   for { set i 0 } { $i < $nbsrc } { incr i } {
+      set coord "[lindex $Sim(Lat) $i] [lindex $Sim(Lon) $i]"
       if { $i == 0 } {
          puts $file "[format "%-25s" $coord] [format "%-25s" "lat_src(i), lon_src(i)"] Latitude and longitude coordinate of i-th source \[degrees\]."
       } else {
@@ -397,7 +377,9 @@ proc MLDP::CreateModelInputFile { Model } {
 
    puts $file "[format "%-25s" 11] [format "%-25s" nblevcol] Number of levels in the cumulative distribution of particles within vertical emission plume column."
    set strg   "[format "%-25s" fnp_column(i)] Cumulative fraction \[0,1\] of number of particles within vertical emission plume column."
-   switch $Sim(EmVerticalDistValue) {
+
+   set vert [lsearch -exact [lindex $MLDP::Sim(ListEmVerticalDist) $GDefs(Lang)] $Sim(EmVerticalDist)]
+   switch $vert {
       0 { set distr [list "[format "%-25s" 0.000] $strg" 0.100 0.200 0.300 0.400 0.500 0.600 0.700 0.800 0.900 1.000] }
       1 { set distr [list "[format "%-25s" 0.000] $strg" 0.010 0.030 0.060 0.100 0.150 0.260 0.410 0.700 0.900 1.000] }
       2 { set distr [list "[format "%-25s" 0.000] $strg" 0.010 0.020 0.040 0.070 0.120 0.190 0.290 0.430 0.650 1.000] }
@@ -407,9 +389,10 @@ proc MLDP::CreateModelInputFile { Model } {
    puts $file [join $distr "\n"]
 
    #----- Particle size distribution (settling velocities).
+   set size [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)] $Sim(EmSizeDist)]
    puts $file "\nParticle size distribution (settling velocities):"
    set IsComputeSV ".FALSE."
-   if { $Sim(SrcType) == "volcano" && $Sim(EmSizeDistValue)!= 3 } {
+   if { $Sim(SrcType) == "volcano" && $size!= 3 } {
       set IsComputeSV ".TRUE."
    }
    set Density $Sim(EmDensity)
@@ -421,7 +404,7 @@ proc MLDP::CreateModelInputFile { Model } {
    if { $Sim(SrcType) == "volcano" } {
 
       #----- Number of particle diameter intervals.
-      if { $Sim(EmSizeDistValue) == 0 } {
+      if { $size == 0 } {
 
          #----- Spurr 1992 empirical size distribution (Default distribution).
          puts $file "[format "%-25s" 5] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
@@ -434,7 +417,7 @@ proc MLDP::CreateModelInputFile { Model } {
          puts $file "62.5      0.200"
          puts $file "125.0     0.100"
 
-      } elseif { $Sim(EmSizeDistValue) == 1 || $Sim(EmSizeDistValue) == 3 } {
+      } elseif { $size == 1 || $size == 3 } {
 
          #----- Redoubt 1989-1990 empirical size distribution.
          puts $file "[format "%-25s" 10] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
@@ -452,7 +435,7 @@ proc MLDP::CreateModelInputFile { Model } {
          puts $file "500.0     0.153"
          puts $file "1000.0    0.066"
 
-      } elseif { $Sim(EmSizeDistValue) == 2 } {
+      } elseif { $size == 2 } {
 
          #----- Fine size distribution.
          puts $file "[format "%-25s" 4] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
@@ -540,8 +523,6 @@ proc MLDP::CreateModelInputFile { Model } {
       puts $file $string
    }
    close $file;
-
-   return True
 }
 
 #----------------------------------------------------------------------------
@@ -564,6 +545,11 @@ proc MLDP::GetMetData { } {
    variable Msg
    variable Sim
 
+   #----- Skip if this is a relaunch since we use the same meteo
+   if { $Sim(ReNewMeteo)!="" } {
+      return True
+   }
+
    Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
 
    #----- Define mixed mode.
@@ -574,8 +560,8 @@ proc MLDP::GetMetData { } {
    }
 
    #----- Get available meteorological files.
-   set Sim(AccStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
-   set Sim(Data)     [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
+   set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
+   set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
    set Sim(Mode)     [MetData::GetMode $Sim(Data)]
 
    Dialog::DestroyWait
@@ -605,6 +591,11 @@ proc MLDP::EmissionRead { } {
    variable Sim
    variable Error
 
+   set Sim(IsScenarioValid)  0 ; #----- Flag indicating if emission scenario has been validated successfully (1) or not (0).
+   set Sim(EmMassMode) 0 ;#----- Total released mass mode
+                          #----- 0: Empirical Formula of Sparks et al. (1997). For this mode, mass cannot be modified manually.
+                          #---- 1: Edition. For this mode, mass can be modified manually for specific purposes.
+
    #----- Initialize list of emission scenario.
    set Sim(EmList) {}
 
@@ -616,7 +607,7 @@ proc MLDP::EmissionRead { } {
    }
 
    if { ![file isdirectory $Sim(EmDirScenario)] } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ScenarioDirectory) $GDefs(Lang)]" $GDefs(Lang)
+      Dialog::CreateError .modelnew "[lindex $Error(ScenarioDirectory) $GDefs(Lang)]" $GDefs(Lang)
       return 0
    }
 
@@ -693,12 +684,12 @@ proc MLDP::EmissionDelete { } {
 
    #----- Do not erase default emission scenario.
    if { $Sim(EmScenario) == "default" } {
-      Dialog::CreateDefault .mldpnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DeleteDefault) $GDefs(Lang)]" warning 0 "OK"
+      Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DeleteDefault) $GDefs(Lang)]" warning 0 "OK"
       return
    }
 
    #----- Ask user if deleting emission scenario.
-   set erase [Dialog::CreateDefault .mldpnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DeleteScenario) $GDefs(Lang)] $Sim(EmScenario)." warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+   set erase [Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DeleteScenario) $GDefs(Lang)] $Sim(EmScenario)." warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
 
    if { !$erase } {
       return
@@ -950,29 +941,6 @@ proc MLDP::File { Info Path Type Back } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::ModeLeave>
-# Creation   : Mai 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Terminer le mode MLDP.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::ModeLeave { } {
-   variable Data
-
-   if { $Page::Data(ToolMode)=="MLDP" } {
-      SPI::ToolMode SPI Zoom
-   }
-   Viewport::UnAssign $Data(Frame) $Data(VP) GRID
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <MLDP::Move>
 # Creation   : Octobre 2000 - J.P. Gauthier - CMC/CMOE
 #
@@ -996,7 +964,7 @@ proc MLDP::Move { Frame VP } {
    set Sim(GridLat) $Viewport::Map(LatCursor)
    set Sim(GridLon) $Viewport::Map(LonCursor)
 
-   MLDP::GridDef
+   Model::ParamsGridDefine MLDP
 }
 
 proc MLDP::MoveDone { Canvas VP } { }
@@ -1051,49 +1019,6 @@ proc MLDP::SetAccidentDate { } {
    set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt true] ; #----- Year of accident date.
    set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt true] ; #----- Month of accident date.
    set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true] ; #----- Day of accident date.
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::SetGridScaleRes>
-# Creation   : 22 August 2007 - A. Malo - CMC/CMOE
-#
-# But        : Set grid scale name and grid scale resolution.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::SetGridScaleRes { } {
-   variable Sim
-
-   if { [llength $Sim(Scale)] > 1 } {
-
-      set string $Sim(Scale)
-      set Sim(GridRes)  [string trimleft  [lindex $Sim(Scale) 1] "("] ; #----- Grid scale resolution [km].
-      set Sim(GridSize) [string trimright [lindex $Sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
-      set Sim(Scale)    [lindex $Sim(Scale) 0]                        ; #----- Grid scale name.
-
-   } else {
-
-      set idx [lsearch -regexp $Sim(ListScale) "$Sim(Scale)*"]
-      if { $idx != -1 } {
-         set string [lindex $Sim(ListScale) $idx]
-         set Sim(GridRes)  [string trimleft  [lindex $string 1] "("] ; #----- Grid scale resolution [km].
-         set Sim(GridSize) [string trimright [lindex $string 3] ")"] ; #----- Grid size NIxNJ.
-      }
-   }
-
-   set idx [string first "x" $Sim(GridSize)]
-   if { $idx != -1 } {
-      set Sim(NI) [string range $Sim(GridSize) 0 [expr $idx - 1]]
-      set Sim(NJ) [string range $Sim(GridSize) [expr $idx + 1] end]
-   }
-
-   set Sim(GridRes) [expr $Sim(GridRes) * 1000] ; #----- Convert grid resolution from [km] to [m].
 }
 
 #----------------------------------------------------------------------------
@@ -1159,39 +1084,14 @@ proc MLDP::SetIsotopesInfo { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::SetSrc>
-# Creation   : Fevrier 2003 - A. Malo - CMC/CMOE
-#
-# But        : Initialiser les coordonnees de la source.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::SetSrc { } {
-   variable Sim
-
-   #----- Initialize coordinates of center of grid according to selected source.
-   set idx [lsearch -exact $MLDP::Sim(Names) $MLDP::Sim(Src)]
-   set Sim(GridLat) [format "%.6f" [lindex [lindex $MLDP::Sim(Pos) $idx] 1]]
-   set Sim(GridLon) [format "%.6f" [lindex [lindex $MLDP::Sim(Pos) $idx] 2]]
-
-   #----- Define polar stereographic grid.
-   MLDP::GridDef
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::SimInitNew>
+# Nom        : <MLDP::InitNew>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Initialise un tableau de defintions de simulation pour une
 #              nouvelle simulation.
 #
 # Parametres :
+#   <Type>   : Type de source
 #
 # Retour     :
 #
@@ -1199,54 +1099,26 @@ proc MLDP::SetSrc { } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDP::SimInitNew { } {
+proc MLDP::InitNew { Type } {
    global   GDefs
    variable Sim
    variable Tmp
 
-   set Sim(Pos)      $Exp::Data(Pos)          ; #----- List of sources containing name and geographical coordinates (lat, lon).
-   set Sim(NoExp)    $Exp::Data(No)           ; #----- Experiment number.
-   set Sim(Name)     $Exp::Data(Name)         ; #----- Name of experiment.
-   set Sim(NbSrc)    [llength $Sim(Pos)]      ; #----- Number of sources.
+   set Sim(GridSrc) [lindex $Sim(Name) 0]     ;#----- Name of first source.
 
-   set Sim(Names)    {}
-   set Sim(CoordSrc) {}
-   foreach src $Sim(Pos) {
-      lappend Sim(Names) [lindex $src 0]      ; #----- List of source names.
-      set lat [format "%.6f" [lindex $src 1]] ; #----- Latitude.
-      set lon [format "%.6f" [lindex $src 2]] ; #----- Longitude.
-      lappend Sim(CoordSrc) "$lat $lon"       ; #----- List of geographical coordinates (lat, lon).
-   }
-   set Sim(Src) [lindex [lindex $Sim(Pos) 0] 0]                 ; #----- Name of first source.
-   set Sim(Lat) [format "%.6f" [lindex [lindex $Sim(Pos) 0] 1]] ; #----- Latitude of first source.
-   set Sim(Lon) [format "%.6f" [lindex [lindex $Sim(Pos) 0] 2]] ; #----- Longitude of first source.
-
-   set Sim(State)     1    ; #----- State of simulation.
-   set Sim(NoSim)    -1    ; #----- Simulation number.
-   set Sim(NoPrev)   -1    ; #----- Previous simulation number.
    set Sim(Mode)      prog ; #----- Type of meteorological data.
 
-   set Sim(TabPrevNo)       -1 ; #----- Previous tab no.
-   set Sim(IsScenarioValid)  0 ; #----- Flag indicating if emission scenario has been validated successfully (1) or not (0).
-
    #----- Set source type according to experiment data type.
-   if { $Exp::Data(Type) == 0 || $Exp::Data(Type) == 3 } {
+   if { $Type==0 || $Type==3 } {
       #----- Volcano (0) or fire (3) source.
       set Sim(SrcType) "volcano"
-   } elseif { $Exp::Data(Type) == 4 } {
+   } elseif { $Type== 4 } {
       #----- Virus (4) source.
       set Sim(SrcType) "virus"
    } else {
       #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
       set Sim(SrcType) "accident"
    }
-
-   set Sim(AccSeconds)   [clock seconds]                                        ; #----- Actual time.
-   set Sim(AccYear)      [clock format $Sim(AccSeconds) -format "%Y" -gmt true] ; #----- Year of accident date.
-   set Sim(AccMonth)     [clock format $Sim(AccSeconds) -format "%m" -gmt true] ; #----- Month of accident date.
-   set Sim(AccDay)       [clock format $Sim(AccSeconds) -format "%d" -gmt true] ; #----- Day of accident date.
-   set Sim(AccHour)      [clock format $Sim(AccSeconds) -format "%H" -gmt true] ; #----- Hour of accident date.
-   set Sim(AccMin)       [clock format $Sim(AccSeconds) -format "%M" -gmt true] ; #----- Minutes of accident date.
 
    if { $Sim(Model)=="MLDP0" } {
       set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
@@ -1311,14 +1183,12 @@ proc MLDP::SimInitNew { } {
    set Sim(IsResFileSizeChecked) 0                                   ; #----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ; #----- Flag indicating if met data file size has been checked (1) or not (0).
    set Sim(Event)                [lindex $Sim(ListEvent) 0]          ; #----- Type of event.
-   set Sim(NK)                   25                                  ; #----- Number of vertical levels in the model.
    set Sim(VerticalLevels)       [lindex $Sim(ListVerticalLevels) 0] ; #----- Vertical levels [m].
    set Sim(VarMesoscale)         1.00                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    set Sim(EmScenario)           "default"                           ; #----- Scenario name.
    set Sim(EmMass)               0.0                                 ; #----- Total mass released.
-   set Sim(EmMassMode)           0                                   ; #----- Total mass released mode.
    set Sim(EmList)               {}                                  ; #----- List of emission scenarios.
    set Sim(EmNbIntervals)        0                                   ; #----- Number of emission intervals.
    set Sim(EmEffectiveDuration)  0.0                                 ; #----- Effective emission duration, only release periods [s].
@@ -1361,36 +1231,16 @@ proc MLDP::SimInitNew { } {
    if { $Sim(SrcType) == "volcano" } {
       set Sim(EmDensity)       2.500e+12 ; #----- Particle density [microgram/m3].
       set Sim(EmSizeDist)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3] ; #----- Particle size distribution.
-      set Sim(EmSizeDistValue) 3         ; #----- Particle size distribution flag.
-      set Sim(EmMassMode)      0         ; #----- Total released mass mode
-                                           #----- 0: Empirical Formula of Sparks et al. (1997). For this mode, mass cannot
-                                           #-----    be modified manually. ;
-                                           #----- 1: Edition. For this mode, mass can be modified manually for specific purposes.
-      set Sim(EmMassModeOld)   $Sim(EmMassMode)
       set Sim(EmIsoQuantity)   $NA
    }
 
-   set Sim(EmVerticalDist)      [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0] ; #----- Plume vertical distribution.
-   set Sim(EmVerticalDistValue) 0                                                         ; #----- Plume vertical distribution flag.
+   set Sim(EmVerticalDist) [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0] ; #----- Plume vertical distribution.
 
    set Tmp(Duration)          $Sim(Duration)          ; #----- Temporary variable for simulation duration.
    set Tmp(OutputTimeStepMin) $Sim(OutputTimeStepMin) ; #----- Temporary variable for output time step.
    set Tmp(Delta)             $Sim(Delta)             ; #----- Temporary variable for time interval between met data files.
 
-   set Sim(OutputTimeStepSec) [expr $Sim(OutputTimeStepMin)*60] ; #----- Output time step [s].
-   set Sim(ModelTimeStepSec)  [expr $Sim(ModelTimeStepMin)*60]  ; #----- Internal model time step [s].
-
-   MLDP::SetGridScaleRes
    MLDP::UpdateEmissionStartingTime
-
-   #----- Read available scenario files.
-   if { [MLDP::EmissionRead] } {
-      MLDP::EmissionSelect
-   }
-
-   #----- Initialize coordinates of center of grid according to selected source and
-   #----- define polar stereographic grid.
-   MLDP::SetSrc
 }
 
 #----------------------------------------------------------------------------
@@ -1473,7 +1323,6 @@ proc MLDP::SimSuppressResults { Path Info } {
    Debug::TraceProc "MLDP: Suppressing simulation $path"
    SPI::Progress 50 "[lindex $Msg(Suppressing) $GDefs(Lang)] (Server)" Model::Param(Job)
 
-   Exp::Kill    $Info
    Info::Delete $Path/$Sim(Model).pool $Info
    SPI::Progress 100 [lindex $Msg(SuppressDone) $GDefs(Lang)] Model::Param(Job)
    file delete -force $path
@@ -1578,7 +1427,7 @@ proc MLDP::SpeciesFormat { Line } {
             MLDP::UpdateEmissionDurationsTotalQuantityAccident
          } else {
             #----- Display warning message if radioactive half-life is less than 15 minutes.
-            Dialog::CreateDefault .mldpnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $symbol." warning 0 "OK"
+            Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $symbol." warning 0 "OK"
          }
       }
    }
@@ -1655,10 +1504,10 @@ proc MLDP::ValidateDensity { } {
    set number [string is double -strict -failindex idx $Sim(EmDensity)]
 
    if { $number==0 && $idx==-1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(EmDensityOutRange) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(EmDensityOutRange) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]." $GDefs(Lang) 600
       return 0
    } elseif { $number== 0 || $Sim(EmDensity)<=0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(EmDensity) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(EmDensity) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]" $GDefs(Lang) 600
       return 0
    }
 
@@ -1756,10 +1605,10 @@ proc MLDP::ValidateMass { } {
    set number [string is double -strict -failindex idx $Sim(EmMass)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(MassRange) $GDefs(Lang)] $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(MassRange) $GDefs(Lang)] $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(EmMass) <= 0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(Mass) $GDefs(Lang)] $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(Mass) $GDefs(Lang)] $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
       return 0
    }
 
@@ -1836,11 +1685,9 @@ proc MLDP::ValidateNbSrc { } {
    variable Sim
 
    #----- Verify if number of sources is less than (or equal to) maximum number of sources.
-   if { $Sim(NbSrc) > $Sim(MaxNbSrc) } {
-      Dialog::CreateDefault .mldpnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(NbSrc1) $GDefs(Lang)] $Sim(NbSrc).\n[lindex $Warning(NbSrc2) $GDefs(Lang)] $Sim(MaxNbSrc).\n[lindex $Warning(NbSrc3) $GDefs(Lang)] $Sim(MaxNbSrc) [lindex $Warning(NbSrc4) $GDefs(Lang)]" warning 0 "OK"
-      set Sim(NbSrc) $Sim(MaxNbSrc) ; #----- Reset number of sources.
+   if { [llength $Sim(Name)] > $Sim(MaxNbSrc) } {
+      Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(NbSrc1) $GDefs(Lang)] [llength $Sim(Name)].\n[lindex $Warning(NbSrc2) $GDefs(Lang)] $Sim(MaxNbSrc).\n[lindex $Warning(NbSrc3) $GDefs(Lang)] $Sim(MaxNbSrc) [lindex $Warning(NbSrc4) $GDefs(Lang)]" warning 0 "OK"
    }
-
    return 1
 }
 
@@ -1868,22 +1715,22 @@ proc MLDP::ValidateNumberParticles { } {
    set number [string is integer -strict -failindex idx $Sim(EmNumberParticles)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(EmNumberParticlesOutRange) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticlesOutRange) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(EmNumberParticles) < 1000 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(EmNumberParticles) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticles) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
       return 0
    }
 
    #----- Verify if number of particles is an integer multiple number of 1000.
    if { [expr fmod($Sim(EmNumberParticles),1000)] > $Sim(EmEpsilon) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(EmNumberParticles2) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticles2) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
       return 0
    }
 
    #----- Verify if number of particles is less than (or equal to) maximum number of particles.
    if { $Sim(EmNumberParticles) > $Sim(EmMaxNumberParticles) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(EmNumberParticles3) $GDefs(Lang)] $Sim(EmNumberParticles).\n[lindex $Error(EmNumberParticles4) $GDefs(Lang)] $Sim(EmMaxNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticles3) $GDefs(Lang)] $Sim(EmNumberParticles).\n[lindex $Error(EmNumberParticles4) $GDefs(Lang)] $Sim(EmMaxNumberParticles)." $GDefs(Lang) 600
       return 0
    }
 
@@ -1968,16 +1815,16 @@ proc MLDP::ValidatePlumeHeight { } {
    set number [string is double -strict -failindex idx $Sim(EmHeight)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(HeightRange) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(HeightRange) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(EmHeight) <= 0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(Height) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(Height) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
       return 0
    }
 
    #----- Verify if maximum plume height is lower or equal to 30000 meters.
    if { $Sim(EmHeight) > 30000.0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(Height2) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(Height2) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
       return 0
    }
 
@@ -2008,10 +1855,10 @@ proc MLDP::ValidateRadius { } {
    set number [string is double -strict -failindex idx $Sim(EmRadius)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(RadiusRange) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(RadiusRange) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(EmRadius) < 0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(Radius) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(Radius) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
       return 0
    }
 
@@ -2043,16 +1890,16 @@ proc MLDP::ValidateReflectionLevel { } {
    set number [string is double -strict -failindex idx $Sim(ReflectionLevel)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ReflectionLevelRange) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ReflectionLevelRange) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(ReflectionLevel) <= 0.0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ReflectionLevel) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ReflectionLevel) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
       return 0
    }
 
    #----- Verify if reflection level falls within the range [0.9900, 1.0000].
    if { $Sim(ReflectionLevel) > 1.0 || $Sim(ReflectionLevel) < 0.9900 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(ReflectionLevel2) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(ReflectionLevel2) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
       return 0
    }
 
@@ -2084,16 +1931,16 @@ proc MLDP::ValidateTimescale { } {
    set number [string is double -strict -failindex idx $Sim(Timescale)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(TimescaleRange) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(TimescaleRange) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(Timescale) <= 0.0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(Timescale) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(Timescale) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
       return 0
    }
 
    #----- Verify if timescale is lower or equal to 21600 s.
    if { $Sim(Timescale) > 21600.0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(Timescale2) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(Timescale2) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
       return 0
    }
 
@@ -2125,16 +1972,16 @@ proc MLDP::ValidateVarianceMesoscale { } {
    set number [string is double -strict -failindex idx $Sim(VarMesoscale)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(VarMesoscaleRange) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(VarMesoscaleRange) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
       return 0
    } elseif { $number == 0 || $Sim(VarMesoscale) < 0.0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(VarMesoscale) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(VarMesoscale) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
       return 0
    }
 
    #----- Verify if variance is lower or equal to 10.0 m2/s2.
    if { $Sim(VarMesoscale) > 10.0 } {
-      Dialog::CreateError .mldpnew "[lindex $Error(VarMesoscale2) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew "[lindex $Error(VarMesoscale2) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
       return 0
    }
 
@@ -2169,7 +2016,7 @@ proc MLDP::ValidateVerticalLevels { } {
    #----- Verify if number of concentration vertical levels is greater than 1 and
    #----- less than (or equal to) maximum number of vertical levels.
    if { $nb<2 || $nb>$Sim(MaxNbVerticalLevels) } {
-      Dialog::CreateError .mldpnew "[lindex $Error(VerticalLevels1) $GDefs(Lang)][lindex $Error(VerticalLevels2) $GDefs(Lang)] $nb.\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(MaxNbVerticalLevels).\n[lindex $Error(VerticalLevels4) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" $GDefs(Lang) 700
+      Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels1) $GDefs(Lang)][lindex $Error(VerticalLevels2) $GDefs(Lang)] $nb.\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(MaxNbVerticalLevels).\n[lindex $Error(VerticalLevels4) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" $GDefs(Lang) 700
       return 0
    }
 
@@ -2180,17 +2027,17 @@ proc MLDP::ValidateVerticalLevels { } {
       set idx ""
       set number [string is double -strict -failindex idx $level]
       if { $number == 0 && $idx == -1 } {
-         Dialog::CreateError .mldpnew "[lindex $Error(VerticalLevelsRange) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew "[lindex $Error(VerticalLevelsRange) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
          return 0
       } elseif { $number == 0 || ($number == 1 && $level < 0) } {
-         Dialog::CreateError .mldpnew "[lindex $Error(VerticalLevels5) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels5) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
          return 0
       }
 
       if { $i > 0 } {
          set prevlevel [lindex $Sim(VerticalLevels) [expr $i - 1]]
          if { $level <= $prevlevel } {
-            Dialog::CreateError .mldpnew "[lindex $Error(VerticalLevels6) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" $GDefs(Lang) 600
+            Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels6) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" $GDefs(Lang) 600
             return 0
          }
       } else {
@@ -2253,35 +2100,4 @@ proc MLDP::ComputeMass { } {
       set Sim(EmMass) [format "%.6e" [expr 0.1 * $Sim(EmDensity) * $Sim(EmEffectiveDuration) * pow(double($Sim(EmHeight)/1.670e3),double(1.0/0.259))]]
       set Sim(EmMassOld) $Sim(EmMass)
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::GridDef>
-# Creation   : Mai 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Debuter le mode MLDP.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::GridDef { } {
-   variable Sim
-   variable Data
-
-   set Data(Frame) $Page::Data(Frame)
-   set Data(VP)    $Viewport::Data(VP)
-
-   fstdfield free GRID
-
-   set Sim(Grid) [MetData::GridDefinePS [list $Sim(Scale) $Sim(GridRes)] $Sim(NI) $Sim(NJ) $Sim(GridLat) $Sim(GridLon) GRID]
-
-   fstdfield configure GRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
-
-   Viewport::Assign $Data(Frame) $Data(VP) GRID
-   Viewport::UpdateData $Data(Frame)
 }

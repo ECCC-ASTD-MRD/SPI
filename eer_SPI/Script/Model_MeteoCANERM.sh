@@ -68,6 +68,8 @@ cd ${DirTmp}
 #----- Lecture des parametres pour la directive GRILLE
 read < griddef.in grid
 
+rm -f ../meteo/*
+
 # ----- Mise-a-jour des directives de PGSM_CLIMATO (climatologie).
 #       les champs sont :
 #                 MN (montagne (NCAR)                 - valeur: metre),

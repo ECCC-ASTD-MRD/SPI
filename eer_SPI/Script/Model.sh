@@ -181,8 +181,7 @@ function Model_Init {
    #----- Model parameters.
    if [[ ${MODEL_RUN} -eq 1 ]] ; then
       Log_Print INFO "Model parameters"
-      Log_Print INFO "   Model name                                           : ${MODEL_NAME}"
-      Log_Print INFO "   Model directives input file                          : ${MODEL_TMPDIR}/${MODEL_NAME}.in"
+      Log_Print INFO "   Model name                                           : ${MODEL_NAME}${MODEL_TYPE}"
    else
       Log_Print INFO "Model run not requested"
    fi
@@ -190,11 +189,12 @@ function Model_Init {
 
 function Model_CopyTrace {
 
-   if [[ ${MODEL_TRACE} -eq "" ]]; then
+   if [[ ${MODEL_TRACE} = "" ]]; then
       return
    fi
 
-   trace="${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_`echo ${MODEL_RUNDIR} | tr "/" "\n" | tail -2 | tr "\n" "."`"
+   path=`echo ${MODEL_RUNDIR} | tr "/" "\n" | tail -2 | tr "\n" "."`
+   trace="${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_${path}"
 
    echo "\n##### Fichier meteo (data_std_eta.in)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/data_std_eta.in >> ${trace}
@@ -218,7 +218,7 @@ function Model_CopyTrace {
    cat  ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
 
    #----- Exit function if running locally or not doing meteo.
-   if [[ ${MODEL_NEEDCOPY} -eq 0 ]] ; then
+   if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
       ssh ${MODEL_USER}@${MODEL_LOCALHOST} "mkdir -p ${MODEL_TRACE}"
       scp -p ${trace} ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_TRACE}
    else
@@ -279,7 +279,7 @@ function Model_CopyResult {
 
    if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
 
-      Log_Print INFO "Copying model output files to local host (${MODEL_LOCALHOST}):"
+      Log_Print INFO "Copying following model output files to local host (${MODEL_LOCALHOST}): \n`ls -l ${MODEL_RUNDIR}/results/*`"
 
       sec=${SECONDS}
 
@@ -383,7 +383,7 @@ Model_CopyResult
 Model_CopyMeteo
 Model_PoolSet DONE ${MODEL_EXITSTATUS}
 Model_CopyLog
-Model_CopyTrace
-Model_CleanUp
+#Model_CopyTrace
 
 Log_End ${MODEL_EXITSTATUS}
+Model_CleanUp

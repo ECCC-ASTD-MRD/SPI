@@ -19,33 +19,13 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.txt
 source $GDefs(Dir)/Apps/Models/Types/TRAJECT.int
 
 #-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::Close>
-# Creation : Avril 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fermer l'interface et nettoyer les repertoires.
-#
-# Parametres :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc TRAJECT::Close { } {
-   global GDefs
-   variable Sim
-
-   destroy .trajectnew
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <TRAJECT::InitNew>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Initialisation des parametres de la trajectoire.
 #
 # Parametres :
+#   <Type>   : Type de source
 #
 # Retour :
 #
@@ -53,32 +33,19 @@ proc TRAJECT::Close { } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::InitNew { } {
+proc TRAJECT::InitNew { Type } {
    variable Sim
 
    TabFrame::Select .trajectnew.opt 0
 
-   set Sim(NoExp)  $Exp::Data(No)
-   set Sim(Name)   $Exp::Data(Name)
-   set Sim(Lat)    $Exp::Data(Lat)
-   set Sim(Lon)    $Exp::Data(Lon)
-   set Sim(Pos)    $Exp::Data(Pos)
-   set Sim(No)     -1
-   set Sim(Last)   -1
-
-   set Sim(Second)  [clock seconds]
-   set Sim(Date)    [clock format $Sim(Second) -format "%a %b %d %Y" -gmt true]
-   set Sim(AccHour) [clock format $Sim(Second) -format "%H" -gmt true]
    set Sim(AccMin)  00
-
    set Sim(Method)   "Trajectoire"
    set Sim(TimeStep) "3600.0"
-   set Sim(DateEnd)  ""
 
    set Sim(BatchStart) 0
    set Sim(Duration)   72
 
-   if { $Exp::Data(Type) == 0 } {
+   if { $Type==0 } {
 
       #----- Ajuster les fonctions de niveau selon le type volcan.
       set Sim(LevelUnit)   "MILLIBARS"
@@ -145,12 +112,12 @@ proc TRAJECT::GetMetData { } {
 
    Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
 
-   set Sim(AccStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
+   set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
 
    if { $Sim(Method) == "Trajectoire" } {
-      set Sim(Data) [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
+      set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
    } else {
-      set Sim(Data) [MetData::File $Sim(AccStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
+      set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
    }
    set Sim(Mode) [MetData::GetMode $Sim(Data) False]
    Dialog::DestroyWait
@@ -170,14 +137,14 @@ proc TRAJECT::GetMetData { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::LaunchParams>
+# Nom      : <TRAJECT::ParamsCheck>
 # Creation : Avril 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Initialiser le lancement en recuperant les dates limites et en verifiant
 #            les selections de l'usager.
 #
 # Parametres :
-#   <Path>   : Identificateur de la fenetre d'onglet
+#   <Tab>    : Frame parent de l'onglet
 #   <No>     : Numero de l'onglet selectionne
 #
 # Retour :
@@ -186,20 +153,22 @@ proc TRAJECT::GetMetData { } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::LaunchParams { Path No } {
+proc TRAJECT::ParamsCheck { Tab No } {
    global   GDefs
    variable Lbl
    variable Msg
    variable Sim
 
-   if { $No==0 } {
+   #----- Check for last tab
+   set nb [expr [TabFrame::NbFrame $Tab]-1]
+   if { $No!=$nb } {
       return True
    }
 
-   set Sim(AccYear)  [clock format $Sim(Second) -format "%Y" -gmt true]
-   set Sim(AccMonth) [clock format $Sim(Second) -format "%m" -gmt true]
-   set Sim(AccDay)   [clock format $Sim(Second) -format "%d" -gmt true]
-   set Sim(Second)   [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt True]
+   set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt true]
+   set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt true]
+   set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true]
+   set Sim(AccSeconds)   [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt True]
 
    if { $Sim(Method) == "Trajectoire" } {
       set Sim(Retro) False
@@ -260,7 +229,7 @@ proc TRAJECT::Launch { } {
 
    #----- Creation du fichier de directives
    set f [open $Sim(Path)/tmp/TRAJECT.in w 0644]
-      puts $f "'[string toupper $Sim(Name)] '"
+      puts $f "'[string toupper $Sim(NameExp)] '"
 
       if { $Sim(Retro) } {
          puts $f ".TRUE.   Mode retro-trajectoire ?"
@@ -287,31 +256,12 @@ proc TRAJECT::Launch { } {
 
    if { $Model::Param(IsUsingSoumet) } {
 
-      #----- Run will be remote, setup what's needed on remote host.
-      if { $Model::Param(Remote) } {
-
-         #----- Create simulation directories .
-         set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) mkdir -p $Sim(PathRun) $Sim(PathRun)/meteo $Sim(PathRun)/results $Sim(PathRun)/tmp } Message]
-         if { $ErrorCode != 0 } {
-            Debug::TraceProc "(ERROR) Unable to create simulation directories on $Model::Param(Host).\n\n$Message"
-            return False
-         }
-
-         #----- Copy needed files.
-         set ErrorCode [catch { eval exec scp -p $Sim(Path)/tmp/sim.pool [glob $Sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Model::Param(Host):$Sim(PathRun)/tmp } Message]
-         if { $ErrorCode != 0 } {
-            Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Model::Param(Host)) has failed.\n\n$Message"
-            return False
-         }
-         Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Model::Param(Host)) successfully."
-      }
-
       set file [open $Sim(Path)/tmp/Model_TRAJECT.in w 0644]
 
       puts $file "#----- Logger specific parameters"
       puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
       puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
-      puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJ.out"
+      puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
       puts $file "LOG_LEVEL=INFO"
       puts $file ""
       puts $file "#----- Job general parameters"
@@ -335,26 +285,35 @@ proc TRAJECT::Launch { } {
       puts $file "TRAJECT_LEN=$Sim(Duration)"
       puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
       puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
-      puts $file "TRAJECT_LOGLEVEL=INFO"
 
       close $file
+
+      #----- Copy needed file to run host:directory.
+      Model::ParamsCopy TRAJECT
 
       exec echo "soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
          -t 3600 -cm !G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
       set ErrorCode [catch { exec soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
          -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
-   } else {
+
+      if { $ErrorCode } {
+         Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+#         return False
+      }
+      Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
+  } else {
+      set info [Info::Code ::TRAJECT::Sim $Sim(Info) :]
       set id [Exp::Id $info]
       simulation create $id -type trajectory
-      simulation param $id -title $Sim(Name) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
-         -mode $mode -unit $unit -date $Sim(Second) -particles $parts -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
+      simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
+         -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $parts -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration)
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
 
       #----- Launch simulation within a new thread
       eval set tid1 \[thread::create \{ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim\; simulation run $id\}\]
 
-      Exp::ThreadUpdate $id $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/TRAJECT.pool [simulation param $id -result]
+      Exp::ThreadUpdate $id $GDefs(DirData)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]
    }
    return True
 }
@@ -389,8 +348,7 @@ proc TRAJECT::SimSuppress { Confirm Info } {
    if { $Confirm } {
 
       #----- Verifier la validitee des parametres
-
-      set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressSim) $GDefs(Lang)]\n\n$path" \
+      set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(Delete) $GDefs(Lang)]\n\n$path" \
          warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
       if { $answer == 1 } {
@@ -399,7 +357,6 @@ proc TRAJECT::SimSuppress { Confirm Info } {
    }
 
    #----- Supprimer la simulation et ses descendants
-
    Debug::TraceProc "TRAJECT: Suppressing trajectory: $path"
 
    Exp::ThreadKill [Exp::Id $Info]
@@ -407,7 +364,6 @@ proc TRAJECT::SimSuppress { Confirm Info } {
    file delete -force $path
 
    #----- Relire les experiences
-
    . config -cursor left_ptr
    Model::Check 0
 }
@@ -434,7 +390,7 @@ proc TRAJECT::SwitchElev { } {
       set Sim(LevelUnit) "METRES"
 
       for { set i 1 } { $i <= 25 } { incr i } {
-    if { $Sim(Level$i)!="" } {
+         if { $Sim(Level$i)!="" } {
             set Sim(Level$i) [format "%0.1f" [Convert::Millibar2Meter $Sim(Level$i)]]
          }
       }
@@ -443,7 +399,7 @@ proc TRAJECT::SwitchElev { } {
       set Sim(LevelUnit) "MILLIBARS"
 
       for { set i 1 } { $i <= 25 } { incr i } {
-    if { $Sim(Level$i)!="" } {
+         if { $Sim(Level$i)!="" } {
             set Sim(Level$i) [format "%0.1f" [Convert::Meter2Millibar $Sim(Level$i)]]
          }
       }
