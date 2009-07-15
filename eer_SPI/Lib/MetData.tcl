@@ -48,8 +48,6 @@ namespace eval MetData { } {
    }
 
    set Data(ProgMax)  240   ;#Max prog usable
-   set Data(IdAnal)   ""    ;#Analysis file name
-   set Data(IdProg)   ""    ;#Prognosis file name
 }
 
 #----------------------------------------------------------------------------
@@ -282,6 +280,15 @@ proc MetData::StampModulo { Stamp Sec } {
 #
 #----------------------------------------------------------------------------
 
+proc MetData::File2Sec { File } {
+
+   set dh [split [file tail $File] _]
+   set r  [lindex $dh 0]
+   set ex [lindex $dh 1]
+
+   return [clock scan "[string range $r 0 7] [string range $r 8 9] +[string range [lindex $dh 1] 0 2] hours" -gmt True]
+}
+
 proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    global GDefs
    variable Data
@@ -315,12 +322,16 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    }
 
    if { [llength $afile]==0 && [llength $pfile]==0 } {
-      Debug::TraceProc "No data found"
+      Debug::TraceProc "No data found (Analysis=$APath, Prognostics=$PPath)"
       return ""
    }
 
-   #----- Get the last run
+   #----- Get time range available
+   set data [concat $afile $pfile]
+   set Data(T0) [MetData::File2Sec [lindex $data 0]]
+   set Data(T1) [MetData::File2Sec [lindex $data end]]
 
+   #----- Get the last run
    set prun [lindex [split [file tail [lindex $pfile end]] _] 0]
    set srun [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
 
@@ -331,7 +342,6 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    if { $Mixed || $Date>=$srun } {
 
       #----- Process Prognostics
-
       foreach f $pfile {
          set dh [split [file tail $f] _]
          set r  [lindex $dh 0]
@@ -360,7 +370,6 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    if { $Mixed || $Date<$srun } {
 
       #----- Process Analysis
-
       foreach f $afile {
          set dh [split [file tail $f] _]
          set r  [lindex $dh 0]
@@ -379,14 +388,12 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       }
 
       #----- Dans le cas ou il manque un trial pour aller jusqu'au prog
-
       if { !$Mixed && $st<$srun } {
          set met($srun) $PPath/${prun}_000
       }
    }
 
    #------ Sort following mode specification
-
    set data ""
    set pidx ""
 
@@ -395,7 +402,6 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    if { $Mode=="F" } {
 
       #------ Forward mode
-
       foreach idx $order {
          if { $Date < $idx } {
             if { $pidx=="" } {
@@ -411,7 +417,6 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    } else {
 
       #------ Backward mode
-
       foreach idx $order {
          lappend data [list $idx [join [fstdstamp todate $idx] ""] $met($idx)]
          if { $Date <= $idx } {
@@ -676,7 +681,6 @@ proc MetData::GridDefinePS { Scale NI NJ Lat Lon { Field "" } } {
    }
 
    #----- choix de l'hemisphere SUD on NORD
-
    if { $Lat<=0 } {
       set grtyp SUD
       set nhem  2
@@ -708,7 +712,6 @@ proc MetData::GridDefinePS { Scale NI NJ Lat Lon { Field "" } } {
    set xg2 [expr ((($NJ-1.0)/2.0) * $xg3 - [lindex $xy 1]) / $xg3 + 1.0]
 
    #----- Si on a un champs
-
    if { $Field!="" } {
       if { ![fstdfield is $Field] } {
          fstdfield create $Field $NI $NJ 1
@@ -784,53 +787,53 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
    upvar #0 $DiagVar diag
    upvar #0 $ProgVar prog
 
-   set Data(IdAnal) trial
-   set Data(IdProg) prog
-
-   if { $Level == "eta" } {
-      switch $Model {
-         "glb" {
-            set diag "$GDefs(DBMet)/trial/glbeta2"
-            set prog "$GDefs(DBMet)/prog/glbeta"
-         }
-         "reg" {
-            set diag "$GDefs(DBMet)/trial/regeta2"
-            set prog "$GDefs(DBMet)/prog/regeta"
-         }
-         "lameast" {
-            set diag ""
-            set prog "$GDefs(DBMet)/prog/lam/east.eta"
-         }
-         "lamwest" {
-            set diag ""
-            set prog "$GDefs(DBMet)/prog/lam/west.eta"
-         }
-         "lamarct" {
-            set diag ""
-            set prog "$GDefs(DBMet)/prog/lam/arctic.eta"
-         }
-         "lammari" {
-            set diag ""
-            set prog "$GDefs(DBMet)/prog/lam/maritimes.eta"
-         }
-         default {
-            set diag ""
-            set prog ""
+   switch $Level {
+      "eta" {
+         switch $Model {
+            "glb" {
+               set diag "$GDefs(DBMet)/trial/glbeta2"
+               set prog "$GDefs(DBMet)/prog/glbeta"
+            }
+            "reg" {
+               set diag "$GDefs(DBMet)/trial/regeta2"
+               set prog "$GDefs(DBMet)/prog/regeta"
+            }
+            "lameast" {
+               set diag ""
+               set prog "$GDefs(DBMet)/prog/lam/east.eta"
+            }
+            "lamwest" {
+               set diag ""
+               set prog "$GDefs(DBMet)/prog/lam/west.eta"
+            }
+            "lamarct" {
+               set diag ""
+               set prog "$GDefs(DBMet)/prog/lam/arctic.eta"
+            }
+            "lammari" {
+               set diag ""
+               set prog "$GDefs(DBMet)/prog/lam/maritimes.eta"
+            }
+            default {
+               set diag ""
+               set prog ""
+            }
          }
       }
-   } else {
-      switch $Model {
-         "glb" {
-            set diag "$GDefs(DBMet)/trial/glbpres2"
-            set prog "$GDefs(DBMet)/prog/glbpres"
-         }
-         "reg" {
-            set diag "$GDefs(DBMet)/trial/regpres2"
-            set prog "$GDefs(DBMet)/prog/regpres"
-         }
-         default {
-            set diag ""
-            set prog ""
+      "pres" {
+         switch $Model {
+            "glb" {
+               set diag "$GDefs(DBMet)/trial/glbpres2"
+               set prog "$GDefs(DBMet)/prog/glbpres"
+            }
+            "reg" {
+               set diag "$GDefs(DBMet)/trial/regpres2"
+               set prog "$GDefs(DBMet)/prog/regpres"
+            }
+            default {
+               set diag ""
+               set prog ""
+            }
          }
       }
    }
@@ -849,6 +852,8 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
 #  <File>    : Fichier meteorologique
 #  <Lat>     : Coordonnne en latitude
 #  <Lon>     : Coordonnne en longitude
+#  <From>    : Index du niveau de depart
+#  <To>      : Index du niveau de fin
 #
 # Retour     :
 #  <Profile> : Liste de valeur au format { { elev value } { ... } ... }
@@ -857,7 +862,7 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
 #
 #----------------------------------------------------------------------------
 
-proc MetData::Profile { Stamp Var File Lat Lon } {
+proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
 
    #----- Recuperer le GZ au niveau 0
 
@@ -877,16 +882,14 @@ proc MetData::Profile { Stamp Var File Lat Lon } {
    }
 
    #----- Recuperer tout les niveaux disponibles pour GZ
-
-   set idxs [fstdfield find $File $Stamp "" -1 -1 -1 "" GZ]
-
-   Debug::TraceProc "Found [llength $idxs] levels for datestamp $Stamp"
+   set ip1s  [lsort -decreasing -integer [fstdfile info $File IP1 GZ]]
+   set ip1ss [lrange $ip1s $From $To]
+   Debug::TraceProc "Using [llength $ip1ss] of the [llength $ip1s] levels for datestamp $Stamp"
 
    #----- Parcourir tout les niveaux et recupere le profil de vent
-
-   foreach idx $idxs {
-      fstdfield read GZ $File $idx
-      fstdfield read VAR $File $Stamp "" [fstdfield define GZ -IP1] -1 -1 "" $Var
+   foreach ip1 $ip1ss {
+      fstdfield read GZ $File $Stamp "" $ip1 -1 -1 "" GZ
+      fstdfield read VAR $File $Stamp "" $ip1 -1 -1 "" $Var
 
       set ele [expr ([fstdfield stats GZ -coordvalue $Lat $Lon]-$gz)*10.0]
       set val [fstdfield stats VAR -coordvalue $Lat $Lon]
@@ -900,8 +903,6 @@ proc MetData::Profile { Stamp Var File Lat Lon } {
          lappend prof [list $ele $val]
       }
    }
-   set prof [lsort -increasing -real -index 0 $prof]
-
    fstdfield free GZ
    fstdfield free VAR
 
