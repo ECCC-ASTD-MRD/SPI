@@ -13,13 +13,13 @@
 #
 # Fonctions:
 #
-#   Info::Code    { Var Items { Token "" } }
-#   Info::Decode  { Var Items Info }
+#   Info::Code    { Var Set { Token "" } }
+#   Info::Decode  { Var Set Info }
 #   Info::Delete  { Path Info }
-#   Info::Find    { Path Items args }
+#   Info::Find    { Path Set args }
 #   Info::Format  { Info }
 #   Info::List    { Path }
-#   Info::Path    { Items Info }
+#   Info::Path    { Set Info }
 #   Info::Read    { Id }
 #   Info::Request { Path }
 #   Info::Set     { Path Info { State "" }}
@@ -36,6 +36,24 @@ catch { SPI::Splash "Loading Widget Package Info 1.0" }
 namespace eval Info {
    variable Lbl
    variable Msg
+   variable Token
+
+   set Token(CANERM)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
+                        SimYear SimMonth SimDay SimHour Mode Meteo Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
+                        DTIN DTIS FnVert FnTime EmDuration Delai IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
+
+   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
+                        OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
+                        EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
+
+   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
+                        Mode Meteo Method Level LevelUnit BatchStart }
+
+   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
+                        AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid \
+                        Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
+                        EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
+                        EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
@@ -169,7 +187,7 @@ namespace eval Info {
 #
 # Parametres :
 #    <Var>   : Variable array a assigner
-#    <Items> : Liste des items de la ligne info
+#    <Set>   : Set de token a utiliser
 #    <Token> : Token de separation
 #
 # Retour:
@@ -179,14 +197,15 @@ namespace eval Info {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Code { Var Items { Token "" } } {
+proc Info::Code { Var Set { Token "" } } {
    global   GDefs
    variable Lbl
+   variable Token
 
    upvar $Var var
 
    set info {}
-   foreach item $Items {
+   foreach item $Token($Set) {
       lappend info "[lindex $Lbl($item) $GDefs(Lang)]=$var($item)"
    }
 
@@ -205,7 +224,7 @@ proc Info::Code { Var Items { Token "" } } {
 #
 # Parametres :
 #    <Var>   : Variable array a assigner
-#    <Items> : Liste des items de la ligne info
+#    <Set>   : Set de token a utiliser
 #    <Info>  : Ligne info dont il faut extraire quelque chose
 #
 # Retour:
@@ -215,9 +234,11 @@ proc Info::Code { Var Items { Token "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Decode { Var Items Info } {
+proc Info::Decode { Var Set Info } {
    global   GDefs
    variable Lbl
+   variable Token
+
    upvar $Var var
 
    set infos [split $Info :]
@@ -228,8 +249,7 @@ proc Info::Decode { Var Items Info } {
       set value [lindex $list 1]
       set found 0
 
-      foreach item $Items {
-
+      foreach item $Token($Set) {
          foreach description $Lbl($item) {
 
             if { "$token"=="$description" } {
@@ -280,7 +300,7 @@ proc Info::Delete { Path Info } {
 #
 # Parametres :
 #    <Path>  : Path complet du fichier info
-#    <Items> : Liste des items
+#    <Set>   : Set de token a utiliser
 #    <args>  : Liste des parametres de recherches
 #
 # Retour:
@@ -291,22 +311,19 @@ proc Info::Delete { Path Info } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Find { Path Items args } {
-   variable Ind
-   variable List
+proc Info::Find { Path Set args } {
+   variable Token
 
    #----- Initialiser le tableau d'arguments de recherche
-
    set line { }
 
-   foreach item $Items {
+   foreach item $Token($Set) {
       lappend line ".*"
    }
 
    #----- Initialiser les arguments de recherche specifies
-
    foreach { item value } $args {
-      set idx [lsearch -exact $Items $item]
+      set idx [lsearch -exact $Token($Set) $item]
 
       if { $idx!=-1 } {
          set line [lreplace $line $idx $idx ".*=$value"]
@@ -314,7 +331,6 @@ proc Info::Find { Path Items args } {
    }
 
    #----- Effectuer la recherche correspondant aux specifications
-
    if { ![catch { set list [exec egrep "^[join $line :]" $Path] }] } {
       return [split $list \n]
    } else {
@@ -400,7 +416,7 @@ proc Info::List { Path } {
 # But      : Decoder le path d'une simulation a partir d'une ligne info.
 #
 # Parametres :
-#    <Items> : Liste des items de la ligne info
+#    <Set>   : Set de token a utiliser
 #    <Info>  : Ligne info dont il faut extraire quelque chose
 #
 # Retour:
@@ -411,10 +427,10 @@ proc Info::List { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Path { Items Info } {
+proc Info::Path { Set Info } {
    variable Tmp
 
-   Info::Decode ::Info::Tmp $Items $Info
+   Info::Decode ::Info::Tmp $Set $Info
    return "$Tmp(Model).$Tmp(NoSim).$Tmp(AccYear)$Tmp(AccMonth)$Tmp(AccDay).$Tmp(AccHour)$Tmp(AccMin)"
 }
 
@@ -544,7 +560,7 @@ proc Info::Set { Path Info { State "" } } {
 # Nom      : <Info::Strip>
 # Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Extrait un parametre d'une ligne pool.
+# But      : Extrait un parametre d'une ligne pool par le libelle.
 #
 # Parametres :
 #    <Info>  : Ligne info dont il faut extraire quelque chose
