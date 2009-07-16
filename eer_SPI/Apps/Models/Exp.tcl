@@ -335,8 +335,8 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
             $Canvas create line [expr $x-10] $Deep $x $Deep -width 1 -fill black -tags TREE
             $Canvas create line [expr $x-10] $branch [expr $x -10] $Deep -width 1 -fill black -tags TREE
 
-            $Canvas bind SIM$id <ButtonPress-3> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; Exp::SelectSim \"$sim\" ; ${Model}::PopUp %X %Y"
-            $Canvas bind SIM$id <ButtonPress-1> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; Exp::SelectSim \"$sim\""
+            $Canvas bind SIM$id <ButtonPress-3> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; set Exp::Data(Pos) {}; Exp::SelectSim \"$sim\" ; ${Model}::PopUp %X %Y"
+            $Canvas bind SIM$id <ButtonPress-1> "set Exp::Data(No) $No; set Exp::Data(Name) $Name; set Exp::Data(Pos) {}; Exp::SelectSim \"$sim\""
 
             CanvasBubble::Create $Canvas SIM$id "[Info::Format $sim]"
          }
