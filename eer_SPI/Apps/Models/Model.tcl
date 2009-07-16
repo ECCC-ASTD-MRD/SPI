@@ -169,6 +169,7 @@ namespace eval Model {
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
 
+   catch {
    image create photo ICO_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_VOLCANO.gif
    image create photo ICO_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_NUCLEAR.gif
    image create photo ICO_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_CTBT.gif
@@ -199,6 +200,7 @@ namespace eval Model {
 
    set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
    set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
+   }
 }
 
 #----- Inclure les type d'experiences
@@ -1124,7 +1126,7 @@ proc Model::Launch { Model } {
    }
 
    #----- Check user params
-   if { ![Exp::Params . ${Model} $sim(Info)] } {
+   if { ![Exp::Params . ${Model}] } {
       return False
    }
 
@@ -1142,7 +1144,7 @@ proc Model::Launch { Model } {
    #----- Try to lauch the model
    if { [${Model}::Launch] } {
       destroy [winfo toplevel $Param(Frame)]
-      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model} $sim(Info) :]
+      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model}::Sim ${Model} :]
       Model::Check 0
 
       Model::ParamsClose ${Model}
@@ -1240,7 +1242,7 @@ proc Model::ParamsPath { Model } {
    }
 
    #----- Save simulation pool information.
-   exec echo "[Info::Code ${Model} $sim(Info) :]" > $sim(Path)/tmp/sim.pool
+   exec echo "[Info::Code ${Model}::Sim ${Model} :]" > $sim(Path)/tmp/sim.pool
 }
 
 #----------------------------------------------------------------------------
@@ -1921,9 +1923,13 @@ proc Model::TypeSelect { Frame No { Icon "" } } {
          Exp::CreateTree
         }
       2 {
-         foreach watch $Watch::Data(List) {
-            if { $Icon=="" || [lindex $watch 0]==$Icon} {
-               lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 [lindex $Resources(Icos) [lindex $watch 3]]"
+         foreach proj $Watch::Data(Projects) {
+            if { [info exists Watch::LData(proj-$proj)] } {
+               foreach watch $Watch::LData(proj-$proj) {
+                  if { $Icon=="" || [lindex $watch 0]==$Icon} {
+                     lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 [lindex $Resources(Icos) [lindex $watch 3]]"
+                  }
+               }
             }
          }
          SPI::IcoDel EXPERIMENT
