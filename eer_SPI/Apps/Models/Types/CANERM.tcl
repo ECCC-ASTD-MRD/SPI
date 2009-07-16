@@ -159,13 +159,13 @@ proc CANERM::Draw     { Frame VP } { }
 proc CANERM::DrawInit { Frame VP } { }
 
 #-------------------------------------------------------------------------------
-# Nom        : <CANERM::SimCreateErsinp>
+# Nom        : <CANERM::CreateModelInput>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Creer le fichier "ersinp" contenant les parametres pour CANERM.
 #
 # Parametres :
-#    <Path>  : Path du repertoire "tmp" de la simulation ou creer le "ersinp".
+#    <Path>  : Path du repertoire de la simulation.
 #
 # Retour     :
 #
@@ -173,7 +173,7 @@ proc CANERM::DrawInit { Frame VP } { }
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::SimCreateErsinp { Path } {
+proc CANERM::CreateModelInput { Path } {
    variable Sim
    variable Tmp
 
@@ -234,7 +234,7 @@ proc CANERM::SimCreateErsinp { Path } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom        : <CANERM::CreateLaunchInputFile>
+# Nom        : <CANERM::CreateScriptInput>
 # Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Creer le fichier "Model_CANERM.in" contenant les parametres necessaires
@@ -248,7 +248,7 @@ proc CANERM::SimCreateErsinp { Path } {
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::CreateLaunchInputFile { } {
+proc CANERM::CreateScriptInput { } {
    variable Sim
    global GDefs
 
@@ -469,7 +469,7 @@ proc CANERM::Launch { } {
    set Sim(GridChanged) 0
    set Sim(State)       0
 
-   CANERM::SimCreateErsinp $Sim(Path)
+   CANERM::CreateModelInput $Sim(Path)
 
    #----- Continuation
    if { $Sim(NoPrev)!=-1 } {
@@ -482,7 +482,7 @@ proc CANERM::Launch { } {
    }
 
    #----- On cree le fichier necessaire au modele (Model_CANERM.in)
-   CANERM::CreateLaunchInputFile
+   CANERM::CreateScriptInput
 
    if { $Model::Param(IsUsingSoumet) } {
 

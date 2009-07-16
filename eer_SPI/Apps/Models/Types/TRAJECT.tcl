@@ -184,6 +184,113 @@ proc TRAJECT::ParamsCheck { Tab No } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom        : <TRAJECT::CreateModelInput>
+# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Creer le fichier "ersinp" contenant les parametres pour CANERM.
+#
+# Parametres :
+#    <Path>  : Path du repertoire de la simulation.
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
+
+proc TRAJECT::CreateModelInput { Path } {
+   variable Sim
+   variable Tmp
+
+   #----- Get the particles list
+   set Sim(Particles) {}
+   foreach pos $Sim(Pos) {
+      foreach level $Sim(Level) {
+         lappend Sim(Particles) [list [lindex $pos 2] [lindex $pos 1] $level [lindex $pos 0]]
+      }
+   }
+
+   #----- Creation du fichier de directives
+   set f [open $Path/tmp/TRAJECT.in w 0644]
+      puts $f "'[string toupper $Sim(NameExp)] '"
+
+      if { $Sim(Retro) } {
+         puts $f ".TRUE.   Mode retro-trajectoire ?"
+      } else {
+         puts $f ".FALSE.  Mode retro-trajectoire ?"
+      }
+
+      if { $Sim(LevelUnit) == "METRES" } {
+         puts $f "'H'      Niveaux en metres"
+      } else {
+         puts $f "'P'      Niveaux en millibars"
+      }
+
+      puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
+      puts $f "[expr [llength $Sim(Level)]*[llength $Sim(Pos)]]        Nombre de position de parcelles"
+      foreach part $Sim(Particles) {
+         puts $f "$part"
+      }
+      puts $f "$Sim(AccYear)     Annee de l'accident"
+      puts $f "$Sim(AccMonth)       Mois de l'accident"
+      puts $f "$Sim(AccDay)       Jour de l'accident"
+      puts $f "$Sim(AccHour)       Heure de l'accident"
+   close $f
+
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <TRAJECT::CreateScriptInput>
+# Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Create input file for launching script.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc TRAJECT::CreateScriptInput { Path } {
+   variable Sim
+   global   GDefs
+
+   set file [open $Path/tmp/Model_TRAJECT.in w 0644]
+
+   puts $file "#----- Logger specific parameters"
+   puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
+   puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
+   puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
+   puts $file "LOG_LEVEL=INFO"
+   puts $file ""
+   puts $file "#----- Job general parameters"
+   puts $file "MODEL_SOFTWARE=SPI"
+   puts $file "MODEL_NAME=$Sim(Model)"
+   puts $file "MODEL_TYPE=\"\""
+   puts $file "MODEL_USER=$GDefs(FrontEndUser)"
+   puts $file ""
+   puts $file "MODEL_LOCALHOST=$GDefs(Host)"
+   puts $file "MODEL_LOCALDIR=$Sim(Path)"
+   puts $file "MODEL_RUNDIR=$Sim(PathRun)"
+   puts $file "MODEL_PRE=0"
+   puts $file "MODEL_RUN=1"
+   puts $file "MODEL_POST=0"
+   puts $file "MODEL_CLEAN=1"
+   puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+   puts $file ""
+   puts $file "#----- Model specific parameters"
+   puts $file "TRAJECT_METEO=\"$Sim(MeteoDataFiles)\""
+   puts $file "TRAJECT_INC=$Sim(BatchStart)"
+   puts $file "TRAJECT_LEN=$Sim(Duration)"
+   puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
+   puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
+
+   close $file
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <TRAJECT::Launch>
 # Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
@@ -202,23 +309,15 @@ proc TRAJECT::Launch { } {
    global   env
    variable Sim
 
-   if { $Sim(Retro) } {
-      set mode BACKWARD
-   } else {
-      set mode FORWARD
-   }
-
    #----- Creer le fichier de donnees meteo
    set f [open $Sim(Path)/tmp/data_std_eta.in w 0644]
    puts $f $Sim(MeteoDataFiles)
    close $f
 
-   #----- Get the particles list
-   set parts {}
-   foreach pos $Sim(Pos) {
-      foreach level $Sim(Level) {
-         lappend parts [list [lindex $pos 2] [lindex $pos 1] $level [lindex $pos 0]]
-      }
+   if { $Sim(Retro) } {
+      set mode BACKWARD
+   } else {
+      set mode FORWARD
    }
 
    if { $Sim(LevelUnit)=="METRES" } {
@@ -227,66 +326,10 @@ proc TRAJECT::Launch { } {
       set unit PRESSURE
    }
 
-   #----- Creation du fichier de directives
-   set f [open $Sim(Path)/tmp/TRAJECT.in w 0644]
-      puts $f "'[string toupper $Sim(NameExp)] '"
-
-      if { $Sim(Retro) } {
-         puts $f ".TRUE.   Mode retro-trajectoire ?"
-      } else {
-         puts $f ".FALSE.  Mode retro-trajectoire ?"
-      }
-
-      if { $Sim(LevelUnit) == "METRES" } {
-         puts $f "'H'      Niveaux en metres"
-      } else {
-         puts $f "'P'      Niveaux en millibars"
-      }
-
-      puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-      puts $f "[expr [llength $Sim(Level)]*[llength $Sim(Pos)]]        Nombre de position de parcelles"
-      foreach part $parts {
-         puts $f "$part"
-      }
-      puts $f "$Sim(AccYear)     Annee de l'accident"
-      puts $f "$Sim(AccMonth)       Mois de l'accident"
-      puts $f "$Sim(AccDay)       Jour de l'accident"
-      puts $f "$Sim(AccHour)       Heure de l'accident"
-   close $f
+   TRAJECT::CreateModelInput $Sim(Path)
+   TRAJECT::CreateScriptInput $Sim(Path)
 
    if { $Model::Param(IsUsingSoumet) } {
-
-      set file [open $Sim(Path)/tmp/Model_TRAJECT.in w 0644]
-
-      puts $file "#----- Logger specific parameters"
-      puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
-      puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
-      puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
-      puts $file "LOG_LEVEL=INFO"
-      puts $file ""
-      puts $file "#----- Job general parameters"
-      puts $file "MODEL_SOFTWARE=SPI"
-      puts $file "MODEL_NAME=$Sim(Model)"
-      puts $file "MODEL_TYPE=\"\""
-      puts $file "MODEL_USER=$GDefs(FrontEndUser)"
-      puts $file ""
-      puts $file "MODEL_LOCALHOST=$GDefs(Host)"
-      puts $file "MODEL_LOCALDIR=$Sim(Path)"
-      puts $file "MODEL_RUNDIR=$Sim(PathRun)"
-      puts $file "MODEL_PRE=0"
-      puts $file "MODEL_RUN=1"
-      puts $file "MODEL_POST=0"
-      puts $file "MODEL_CLEAN=1"
-      puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
-      puts $file ""
-      puts $file "#----- Model specific parameters"
-      puts $file "TRAJECT_METEO=\"$Sim(MeteoDataFiles)\""
-      puts $file "TRAJECT_INC=$Sim(BatchStart)"
-      puts $file "TRAJECT_LEN=$Sim(Duration)"
-      puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
-      puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
-
-      close $file
 
       #----- Copy needed file to run host:directory.
       Model::ParamsCopy TRAJECT
@@ -306,7 +349,7 @@ proc TRAJECT::Launch { } {
       set id [Exp::Id $info]
       simulation create $id -type trajectory
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
-         -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $parts -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
+         -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration)
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
 

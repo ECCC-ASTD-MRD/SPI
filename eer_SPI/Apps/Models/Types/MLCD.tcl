@@ -1204,7 +1204,7 @@ proc MLCD::SetSrc { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <MLCD::CreateModelInputFile>
+# Nom      : <MLCD::CreateModelInput>
 # Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
 #
 # But       : Create MLCD model input file.
@@ -1217,14 +1217,14 @@ proc MLCD::SetSrc { } {
 #
 #-------------------------------------------------------------------------------
 
-proc MLCD::CreateModelInputFile { } {
+proc MLCD::CreateModelInput { Path } {
    global GDefs
    variable Sim
    variable Data
    variable Error
 
    #----- Create emission input file.
-   set file [open $Sim(Path)/tmp/input.dat w 0644]
+   set file [open $Path/tmp/input.dat w 0644]
 
    #----- Convert half-life period from [s] to [days].
    set halflifedays [format "%13.7e" [expr double($Sim(EmHalfLife))/86400.0]]
@@ -1243,7 +1243,7 @@ proc MLCD::CreateModelInputFile { } {
    close $file
 
    #---- Create met windfield input file.
-   set file [open $Sim(Path)/tmp/winddata.dat w 0644]
+   set file [open $Path/tmp/winddata.dat w 0644]
 
    puts $file "$Sim(Name)"
    puts $file "[llength $Sim(ObsValidIdx)]"
@@ -1305,28 +1305,25 @@ proc MLCD::CreateModelInputFile { } {
    set Sim(WindProfile)     $NewWindProfile
 }
 
-#-------------------------------------------------------------------------------
-# Nom      : <MLCD::Launch>
-# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
+#----------------------------------------------------------------------------
+# Nom        : <MLCD::CreateScriptInput>
+# Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Executer les scripts permettant de lancer le modele.
+# But        : Create input file for launching script.
 #
 # Parametres :
 #
-# Retour :
+# Retour     :
 #
-# Remarques :
+# Remarques  :
 #
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 
-proc MLCD::Launch { } {
-   global GDefs
-   global env
+proc MLCD::CreateScriptInput { Path } {
    variable Sim
+   global   GDefs
 
-   MLCD::CreateModelInputFile
-
-   set file [open $Sim(Path)/tmp/Model_MLCD.in w 0644]
+   set file [open $Path/tmp/Model_MLCD.in w 0644]
       puts $file "#----- Logger specific parameters"
       puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
       puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
@@ -1363,6 +1360,29 @@ proc MLCD::Launch { } {
       puts $file "MLCD_MODELTS=$Sim(ModelTimeStepMin)"
       puts $file "MLCD_SEED=$Sim(IsRanVar)"
    close $file
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <MLCD::Launch>
+# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Executer les scripts permettant de lancer le modele.
+#
+# Parametres :
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc MLCD::Launch { } {
+   global GDefs
+   global env
+   variable Sim
+
+   MLCD::CreateModelInput $Sim(Path)
+   MLCD::CreateScriptInput $Sim(Path)
 
    if { $Model::Param(IsUsingSoumet) } {
 

@@ -83,8 +83,8 @@ proc MLDP::Launch { } {
 
    #----- Create input files for meteorological preprocessing script, model script, launch script.
    Model::ParamsMeteoInput MLDP
-   MLDP::CreateModelInputFile $Sim(Model)
-   MLDP::CreateLaunchInputFile
+   MLDP::CreateModelInput $Sim(Path)
+   MLDP::CreateScriptInput
 
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
@@ -155,8 +155,8 @@ proc MLDP::Launch { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::CreateLaunchInputFile>
-# Creation   : 1 November 2007 - A. Malo - CMC/CMOE
+# Nom        : <MLDP::CreateScriptInput>
+# Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Create input file for launching script.
 #
@@ -168,7 +168,7 @@ proc MLDP::Launch { } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDP::CreateLaunchInputFile { } {
+proc MLDP::CreateScriptInput { } {
    variable Sim
    global   GDefs
 
@@ -289,12 +289,13 @@ proc MLDP::ParamsCheck { Tab No } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDP::CreateModelInputFile>
+# Nom        : <MLDP::CreateModelInput>
 # Creation   : 22 March 2004 - A. Malo - CMC/CMOE
 #
 # But        : Create MLDP model input file.
 #
 # Parametres :
+#    <Path>  : Path du repertoire de la simulation.
 #
 # Retour     :
 #
@@ -302,14 +303,14 @@ proc MLDP::ParamsCheck { Tab No } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDP::CreateModelInputFile { Model } {
+proc MLDP::CreateModelInput { Path } {
    global   GDefs
    variable Sim
    variable Tmp
 
    Debug::TraceProc "MLDP: Creating MLDP model input file."
 
-   set file [open $Sim(Path)/tmp/$Sim(Model).in w]
+   set file [open $Path/tmp/$Sim(Model).in w]
 
    #----- Output files.
    set len [expr [string length "$Sim(PathRun)/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.pos"] + 10]
@@ -334,7 +335,7 @@ proc MLDP::CreateModelInputFile { Model } {
    }
 
    #----- Grid parameters.
-   if { $Model=="MLDP0" } {
+   if { $Sim(Model)=="MLDP0" } {
       puts $file "\nGrid parameters:"
       puts $file "[format "%-20s" $Sim(NI)] [format "%-20s" GNI] Number of X-grid points in meteorological input standard files."
       puts $file "[format "%-20s" $Sim(NJ)] [format "%-20s" GNJ] Number of Y-grid points in meteorological input standard files."
@@ -351,7 +352,7 @@ proc MLDP::CreateModelInputFile { Model } {
    puts $file "[format "%-20s" [format "%.4f" $Sim(ReflectionLevel)]] [format "%-20s" hybb] Bottom reflection level of particles in the atmosphere \[hybrid|eta|sigma\]."
    puts $file "[format "%-20s" [format "%.2f" $Sim(VarMesoscale)]] [format "%-20s" sig2_v] Horizontal wind velocity variance for mesoscale fluctuations \[m2/s2\]."
    puts $file "[format "%-20s" [format "%.1f" $Sim(Timescale)]] [format "%-20s" tl_v] Lagrangian time scale \[s\]."
-   if { $Model=="MLDP0" } {
+   if { $Sim(Model)=="MLDP0" } {
       puts $file "[format "%-20s" $Sim(IsIncludeHorizDiff)] [format "%-20s" isIncludeHorizDiff] Flag indicating if including horizontal diffusion in free atmosphere."
    }
    puts $file "[format "%-20s" $Sim(IsIncludeSUV)] [format "%-20s" isIncludeSUV] Flag indicating if including horizontal wind speed variances in diffusion calculations."
