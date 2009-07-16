@@ -34,6 +34,4 @@ namespace eval TRAJECT {
    if { [lsearch -exact $Sim(Hosts) $GDefs(Host)]==-1 } {
       set Sim(Hosts) [linsert $Sim(Hosts) 0 $GDefs(Host)]
    }
-
-   set Sim(Info) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin Mode Meteo Method Level LevelUnit BatchStart }
 }

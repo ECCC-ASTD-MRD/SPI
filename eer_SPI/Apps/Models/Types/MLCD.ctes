@@ -130,13 +130,4 @@ namespace eval MLCD {
 
    #----- Add Local machine to list of available hosts.
    set Sim(Hosts) $GDefs(Host)
-
-   #----- Set variables for pool info.
-   set Sim(Info) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin \
-                   AccYear AccMonth AccDay AccHour AccMin \
-                   OutputTimeStepMin ModelTimeStepMin \
-                   IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
-                   EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav \
-                   EmDurationMin EmBottom EmTop EmRadius }
-
 }

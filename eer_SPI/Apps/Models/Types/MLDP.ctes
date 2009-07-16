@@ -15,6 +15,8 @@
 #
 #============================================================================
 
+namespace eval MLDP0 { }
+namespace eval MLDP1 { }
 namespace eval MLDP {
    global GDefs
    variable Sim
@@ -86,24 +88,4 @@ namespace eval MLDP {
    #----- Add back-end machines to list of hosts.
    set Sim(Hosts) [concat $GDefs(BackEnds) $Sim(Hosts)]
    set Model::Param(Host) [lindex $Sim(Hosts) 0]
-
-   #----- Set variables for pool info.
-   set Sim(Info) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
-                   AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour \
-                   Mode Meteo Delta Scale Grid \
-                   Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel \
-                   EmNumberParticles EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
-                   EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
-}
-
-namespace eval MLDP0 {
-  variable Sim
-
-  set Sim(Info) $MLDP::Sim(Info)
-}
-
-namespace eval MLDP1 {
-  variable Sim
-
-  set Sim(Info) $MLDP::Sim(Info)
 }

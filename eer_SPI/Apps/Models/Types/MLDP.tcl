@@ -919,9 +919,9 @@ proc MLDP::File { Info Path Type Back } {
    variable Sim
    variable Tmp
 
-   Info::Decode ::MLDP::Tmp $Sim(Info) $Info
+   Info::Decode ::MLDP::Tmp MLDP $Info
 
-   set simpath $Path/[Info::Path $Sim(Info) $Info]
+   set simpath $Path/[Info::Path MLDP $Info]
    set file "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_000"
    set std  ""
 
@@ -995,7 +995,7 @@ proc MLDP::Result { Type } {
    #----- Recuperer les noms de fichiers resultats avec retour sur les precedentes
    set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]
 
-   Info::Decode ::MLDP::Tmp $Sim(Info) $Exp::Data(SelectSim)
+   Info::Decode ::MLDP::Tmp MLDP $Exp::Data(SelectSim)
    SPI::FileOpen NEW FieldBox "(MLDP) $Tmp(NoExp) $Tmp(Name) ($Type)" "" $files
 }
 
@@ -1241,97 +1241,6 @@ proc MLDP::InitNew { Type } {
    set Tmp(Delta)             $Sim(Delta)             ; #----- Temporary variable for time interval between met data files.
 
    MLDP::UpdateEmissionStartingTime
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::SimSuppress>
-# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Supprimer une simulation ainsi que toutes ses continuations.
-#
-# Parametres :
-#   <Confirm> : Confirmation de la suppression
-#   <Info>    : Identificateur de la simulation
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::SimSuppress { Confirm Info } {
-   global GDefs
-   variable Msg
-   variable Lbl
-   variable Sim
-
-   . config -cursor watch
-   update idletasks
-
-   set path "[Exp::Path]/[Info::Path $Sim(Info) $Info]"
-
-   if { $Confirm } {
-
-      #----- Verifier la validite des parametres.
-      set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressSim) $GDefs(Lang)]\n\n$path" \
-        warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $answer == 1 } {
-         return
-      }
-   }
-
-   #----- Supprimer la simulation et ses descendants
-   MLDP::SimSuppressResults [Exp::Path] $Info
-
-   #----- Relire les experiences
-   Model::Check 0
-   . config -cursor left_ptr
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::SimSuppressResults>
-# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Supprime les resultats d'une simulation.
-#
-# Parametres :
-#   <Path>   : Path du MLDP.pool
-#   <Info>   : Descriptif de la simultation a supprimer
-#
-# Retour     :
-#   <NoSim>  : Numero de l'experience percedente
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::SimSuppressResults { Path Info } {
-   global   GDefs
-   variable Sim
-   variable Msg
-
-   SPI::Progress 0
-
-   #----- Extraire les informations sur l'experience.
-   Info::Decode ::MLDP::Sim $Sim(Info) $Info
-
-   #----- Determiner la localisation du fichier
-   set path "$Path/[Info::Path $Sim(Info) $Info]"
-
-   #----- Supprimer les donnees sur le serveur.
-   Debug::TraceProc "MLDP: Suppressing simulation $path"
-   SPI::Progress 50 "[lindex $Msg(Suppressing) $GDefs(Lang)] (Server)" Model::Param(Job)
-
-   Info::Delete $Path/$Sim(Model).pool $Info
-   SPI::Progress 100 [lindex $Msg(SuppressDone) $GDefs(Lang)] Model::Param(Job)
-   file delete -force $path
-
-   Debug::TraceProc "MLDP: Suppressed data on Server."
-
-   #----- Retour du numero de simulation que l'on vient de supprimer
-   SPI::Progress 0 "" Model::Param(Job)
-   return $Sim(NoSim)
 }
 
 #----------------------------------------------------------------------------

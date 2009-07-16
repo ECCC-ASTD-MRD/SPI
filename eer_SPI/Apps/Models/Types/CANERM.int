@@ -582,12 +582,12 @@ proc CANERM::PopUp { X Y } {
          .canermpopup add cascade -label [lindex $Lbl(Result) $GDefs(Lang)] -menu .canermpopup.res
          .canermpopup add separator
          .canermpopup add command -label [lindex $Lbl(Continue) $GDefs(Lang)] \
-            -command "Model::ParamsWindow CANERM CONT" -state disabled
+            -command { Model::ParamsWindow CANERM CONT } -state disabled
          .canermpopup add command -label [lindex $Lbl(Relaunch) $GDefs(Lang)] \
-            -command "Model::ParamsWindow CANERM RENEW" -state disabled
+            -command { Model::ParamsWindow CANERM RENEW } -state disabled
          .canermpopup add separator
          .canermpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
-             -command "CANERM::SimSuppress True \$Exp::Data(SelectSim)"
+             -command { Model::Delete $Exp::Data(SelectSim) }
 
       menu .canermpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
           .canermpopup.product add command -label "VAAC" -command { CANERM::CallProduct $Page::Data(Frame) result VAAC }
@@ -607,10 +607,8 @@ proc CANERM::PopUp { X Y } {
          .canermpopup.res add command -label "Meteo" -command "CANERM::Result meteo"
    }
 
-   Info::Decode ::CANERM::Tmp $Sim(Info) $Exp::Data(SelectSim)
-
    #----- Verifier l'etat de la simulation et configurer le menu en consequence
-   switch -- $Tmp(State) {
+   switch --  [Info::Strip $Exp::Data(SelectSim) State] {
 
       -1 {                                            #----- Error
          .canermpopup entryconfigure 1 -state disabled   ;#Product

@@ -477,11 +477,10 @@ proc MLCD::PopUp { X Y } {
       menu .mlcdpopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mlcdpopup add command -label "MLCD"  -command "" -background $GDefs(ColorHighLight) \
             -activebackground $GDefs(ColorHighLight)
-         .mlcdpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command "MLCD::Result"
+         .mlcdpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { MLCD::Result }
          .mlcdpopup add separator
          .mlcdpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
-             -command "MLCD::SimSuppress True \$Exp::Data(SelectSim)"
+             -command { Model::Delete $Exp::Data(SelectSim) }
    }
-
    tk_popup .mlcdpopup $X $Y 0
 }

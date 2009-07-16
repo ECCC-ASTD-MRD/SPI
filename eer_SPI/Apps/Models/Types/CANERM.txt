@@ -147,13 +147,6 @@ namespace eval CANERM {
    set Msg(JobSusp)      { "Le script de lancement a ete cree. Voulez-vous generer les donnees meteos sur le serveur ?" \
                            "The launch script has been created. Do you want to generate the meteo data on the server ?" }
    set Msg(LaunchDone)   { "Lancement effectue " "Launch done" }
-   set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation et tout ses descendants ?" \
-                           "Do you really want to delete this simulation and all of its child ?" }
-   set Msg(Suppressing)  { "Suppression des donnees" \
-                           "Suppressing data" }
-   set Msg(SuppressDone) { "Suppression terminee !" \
-                           "Suppressing Done !" }
-
    set Msg(JobInfo)      { "Recuperation du script" "Getting job script" }
    set Msg(JobCancel)    { "Lancement annule" "Launch canceled" }
    set Msg(Launch)       { "Lancement de " "Launching " }

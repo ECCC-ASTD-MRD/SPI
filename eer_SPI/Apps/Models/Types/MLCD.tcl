@@ -846,7 +846,7 @@ proc MLCD::ObukhovFunc { Sc Z0 } {
 proc MLCD::Result { } {
    variable Sim
 
-   set path [Exp::Path]/[Info::Path $Sim(Info) $Exp::Data(SelectSim)]
+   set path [Exp::Path]/[Info::Path MLCD $Exp::Data(SelectSim)]
    SPI::FileOpen NEW FieldBox "(MLCD) $Exp::Data(No) $Exp::Data(Name)" "" "$path/results/pos $path/results/conc"
 }
 
@@ -1384,55 +1384,6 @@ proc MLCD::Launch { } {
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLCD.in &
   }
    return True
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <MLCD::SimSuppress>
-# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer une simulation.
-#
-# Parametres  :
-#   <Confirm> : Confirmation de la suppression
-#   <Pool>    : Identificateur de la simulation
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc MLCD::SimSuppress { Confirm Pool } {
-   global GDefs
-   variable Msg
-   variable Lbl
-   variable Sim
-
-   . config -cursor watch
-   update idletasks
-
-   set path "[Exp::Path]/[Info::Path $Sim(Info) $Pool]"
-
-   if { $Confirm } {
-
-      #----- Verifier la validite des parametres.
-      set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressSim) $GDefs(Lang)]\n\n$path" \
-         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $answer == 1 } {
-         return
-      }
-   }
-
-   #----- Supprimer la simulation et ses descendants
-   Debug::TraceProc "MLCD: Suppressing: $path"
-
-   Info::Delete [Exp::Path]/MLCD.pool $Pool
-   file delete -force $path
-
-   #----- Relire les experiences
-   . config -cursor left_ptr
-   Model::Check 0
 }
 
 #-------------------------------------------------------------------------------

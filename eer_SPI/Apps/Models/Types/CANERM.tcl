@@ -78,14 +78,14 @@ proc CANERM::File { Info Path Type Back } {
 
    while { $carryon } {
 
-      Info::Decode ::CANERM::Tmp $Sim(Info) $Info
+      Info::Decode ::CANERM::Tmp CANERM $Info
 
       set nbper [string trimleft $Tmp(NbPer) 0]
       if { $nbper=="" } {
          set nbper 0
       }
 
-      set simpath $Path/[Info::Path $Sim(Info) $Info]
+      set simpath $Path/[Info::Path CANERM $Info]
       set simprec "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)"
       set simlist ""
 
@@ -113,7 +113,7 @@ proc CANERM::File { Info Path Type Back } {
       set expstd "$simlist $expstd"
 
       if { $Back && $Tmp(NoPrev)!=-1 } {
-         set Info [lindex [Info::Find $simpath/../CANERM.pool $Sim(Info) NoSim $Tmp(NoPrev)] 0]
+         set Info [lindex [Info::Find $simpath/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
       } else {
          set carryon  False
       }
@@ -188,7 +188,7 @@ proc CANERM::SimCreateErsinp { Path } {
    set Sim(Time0) $Sim(SimHour)
 
    while { $Tmp(NoPrev)!=-1 } {
-      Info::Decode ::CANERM::Tmp $Sim(Info) [lindex [Info::Find ${Path}/../CANERM.pool $Sim(Info) NoSim $Tmp(NoPrev)] 0]
+      Info::Decode ::CANERM::Tmp CANERM [lindex [Info::Find ${Path}/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
       set Sim(Date0) $Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)
       set Sim(Time0) $Tmp(SimHour)
    }
@@ -630,8 +630,8 @@ proc CANERM::SimPrevious { Path } {
    set resultlist ""
    set result ""
 
-   set info [lindex [Info::Find $Path/../CANERM.pool $Sim(Info) NoSim $Sim(NoPrev) NameExp $Sim(NameExp)] 0]
-   set res  [glob $Path/../[Info::Path $Sim(Info) $info]]
+   set info [lindex [Info::Find $Path/../CANERM.pool CANERM NoSim $Sim(NoPrev) NameExp $Sim(NameExp)] 0]
+   set res  [glob $Path/../[Info::Path CANERM $info]]
 
    set Sim(PrevRestart) "$res/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000r"
 
@@ -640,8 +640,8 @@ proc CANERM::SimPrevious { Path } {
 
    while { $info!="" && $Tmp(NoPrev)!=-1 } {
 
-      Info::Decode ::CANERM::Tmp $Sim(Info) $info
-      set path [Info::Path $Sim(Info) $info]
+      Info::Decode ::CANERM::Tmp CANERM $info
+      set path [Info::Path CANERM $info]
 
       catch { set result [glob $Path/../$path/results/$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_*c] }
 
@@ -649,7 +649,7 @@ proc CANERM::SimPrevious { Path } {
          Dialog::CreateDefault . 700 "Message" "$path\n\n[lindex $Error(Previous) $GDefs(Lang)]" warning 0 Ok
       }
       set resultlist "[lsort $result] $resultlist "
-      set info [lindex [Info::Find $Path/../CANERM.pool $Sim(Info) NoSim $Tmp(NoPrev)] 0]
+      set info [lindex [Info::Find $Path/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
    }
 
    #----- Inscrire la liste des resultats precedent dans le repertoire temporaire.
@@ -679,103 +679,8 @@ proc CANERM::Result { Type } {
    #----- Recuperer les noms de fichiers resultats avec retour sur les precedentes
    set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]
 
-   Info::Decode ::CANERM::Tmp $Sim(Info) $Exp::Data(SelectSim)
+   Info::Decode ::CANERM::Tmp CANERM $Exp::Data(SelectSim)
    SPI::FileOpen NEW FieldBox "(CANERM) $Tmp(NoExp) $Tmp(Name) ($Type)" "" $files
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <CANERM::SimSuppress>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer une simulation ainsi que toutes ses continuations.
-#
-# Parametres  :
-#   <Confirm> : Confirmation de la suppression
-#   <Info>    : Identificateur de la simulation
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc CANERM::SimSuppress { Confirm Info } {
-   global GDefs
-   variable Msg
-   variable Lbl
-   variable Sim
-
-   . config -cursor watch
-   update idletasks
-
-   if { $Confirm } {
-
-      #----- Verifier la validitee des parametres
-      set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressSim) $GDefs(Lang)]\n\n" \
-        warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $answer == 1 } {
-         return
-      }
-   }
-
-   #----- Supprimer la simulation et ses descendants
-   set path [Exp::Path]
-
-   while { $Info!="" } {
-
-      set nosim [CANERM::SimSuppressResults $path $Info]
-      set Info  [lindex [Info::Find $path/CANERM.pool $Sim(Info) NoPrev $nosim] 0]
-   }
-
-   #----- Relire les experiences
-   Model::Check 0
-   . config -cursor left_ptr
-}
-
-#---------------------------------------------------------------------------
-# Nom      : <CANERM::SimSuppressResults>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprime les resultats d'une simulation.
-#
-# Parametres :
-#   <Path>   : Path du CANERM.pool
-#   <Info>   : Descriptif de la simultation a supprimer
-#
-# Retour:
-#   <NoSim>  : Numero de l'experience percedente
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc CANERM::SimSuppressResults { Path Info } {
-   global   GDefs
-   variable Msg
-   variable Sim
-
-   SPI::Progress 0
-
-   #----- Extraire les informations sur l'experience.
-   Info::Decode ::CANERM::Sim $Sim(Info) $Info
-
-   #----- Determiner la localisation du fichier
-   set path [Info::Path $Sim(Info) $Info]
-
-   #----- Supprimer les donnees sur le serveur.
-   Debug::TraceProc "CANERM: Suppressing simulation $path"
-   SPI::Progress 50 "[lindex $Msg(Suppressing) $GDefs(Lang)] (FrontEnd)" Model::Param(Job)
-
-   SPI::Progress 100 [lindex $Msg(SuppressDone) $GDefs(Lang)] Model::Param(Job)
-   file delete -force $Path/$path
-   Debug::TraceProc "CANERM: Suppressed data on Server."
-
-   Info::Delete $Path/CANERM.pool $Info
-
-   #----- Retour du numero de simulation que l'on vient de supprimer
-   SPI::Progress 0 "" Model::Param(Job)
-   return $Sim(NoSim)
 }
 
 #-------------------------------------------------------------------------------

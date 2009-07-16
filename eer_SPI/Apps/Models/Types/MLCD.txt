@@ -92,8 +92,6 @@ namespace eval MLCD {
 
    #-----Messages definitions
 
-   set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" \
-                           "Do you really want to delete this simulation?" }
    set Msg(MetGet)       { "Récupération des données météo en cours..." "Extracting met data ..." }
 
    #----- Error definitions

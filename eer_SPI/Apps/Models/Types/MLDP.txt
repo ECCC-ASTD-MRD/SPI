@@ -157,9 +157,6 @@ namespace eval MLDP {
    set Msg(MetProcess)   { "Interpolation des données météo en cours ..." "Processing meteorological data ..." }
    set Msg(Meteo)        { "Création des données météo en cours ..." "Creating meteorological data ..." }
    set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
-   set Msg(SuppressSim)  { "Voulez-vous vraiment supprimer cette simulation?" "Do you really wish to delete this simulation?" }
-   set Msg(Suppressing)  { "Suppression des données" "Suppressing data" }
-   set Msg(SuppressDone) { "Suppression terminée !" "Suppressing done !" }
 
    #----- Definitions des erreurs
 

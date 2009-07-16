@@ -88,6 +88,8 @@ namespace eval Model {
    set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
    set Lbl(EmailAddress)        { "   Adresse     " "   Address     " }
    set Lbl(Close)               { "Fermer" "Close" }
+   set Lbl(Yes)                 { "Oui" "Yes" }
+   set Lbl(No)                  { "Non" "No " }
 
    set Lbl(Name)       { "Nom" "Name" }
    set Lbl(Diag)       { "Diagnostiques" "Diagnostics" }
@@ -165,6 +167,7 @@ namespace eval Model {
    set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
 
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
+   set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
 
    image create photo ICO_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_VOLCANO.gif
    image create photo ICO_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_NUCLEAR.gif
@@ -209,6 +212,69 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+
+#-------------------------------------------------------------------------------
+# Nom      : <Model::Delete>
+# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer une simulation.
+#
+# Parametres  :
+#   <Model>   : Model
+#   <Info>    : Identificateur de la simulation
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Model::Delete { Info } {
+   global GDefs
+   variable Msg
+   variable Lbl
+   variable Sim
+
+   . config -cursor watch
+   update idletasks
+
+   #----- Verifier la validitee des parametres
+   set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(Delete) $GDefs(Lang)]" \
+      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+
+   if { $answer == 1 } {
+      return
+   }
+
+   #----- Arreter l'execution en cours  si ily a lieu
+   Exp::ThreadKill [Exp::Id $Info]
+
+   set path      [Exp::Path]
+   set model     [Info::Strip $Info Model]
+   set modelbase [string trimright [string trimright $model 0] 1]
+
+   #----- Delete simulation (continued included)
+   while { $Info!="" } {
+
+      #----- Extraire les informations sur l'experience.
+      Info::Decode ::Model::Sim $modelbase $Info
+
+      #----- Determiner la localisation du fichier
+      set simpath [Info::Path $modelbase $Info]
+
+      #----- Supprimer les donnees sur le serveur.
+      file delete -force $path/$simpath
+
+      Info::Delete $path/$model.pool $Info
+
+      #----- Recherche de simulation precedente
+      set Info [lindex [Info::Find $path/$model.pool $modelbase NoPrev $Sim(NoSim)] 0]
+   }
+
+   #----- Relire les experiences
+   . config -cursor left_ptr
+   Model::Check 0
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <Model::ParamsMetPath>
@@ -932,14 +998,14 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
       }
       "CONT" {
          #----- For this, we have to get the parametres from the previous simulation
-         eval Info::Decode ::${modelbase}::Sim \${${Model}::Sim(Info)} \$Exp::Data(SelectSim)
+         Info::Decode ::${modelbase}::Sim ${modelbase} $Exp::Data(SelectSim)
          ${modelbase}::InitCont $Exp::Data(Type)
          ${modelbase}::ParamsCont .modelnew.params
       }
       "RENEW" {
          #----- For this, we have to point the meteo the renewed simulation's meteo
-         eval Info::Decode ::${modelbase}::Sim \${${Model}::Sim(Info)} \$Exp::Data(SelectSim)
-         eval set ::${modelbase}::Sim(ReNewMeteo) [Exp::Path]/\[Info::Path \${${Model}::Sim(Info)} \$Exp::Data(SelectSim)\]/meteo
+         Info::Decode ::${modelbase}::Sim ${modelbase} $Exp::Data(SelectSim)
+         set ::${modelbase}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path ${modelbase} $Exp::Data(SelectSim)]/meteo
          ${modelbase}::ParamsEmission .modelnew.params
       }
    }
@@ -1076,7 +1142,7 @@ proc Model::Launch { Model } {
    #----- Try to lauch the model
    if { [${Model}::Launch] } {
       destroy [winfo toplevel $Param(Frame)]
-      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ::${Model}::Sim $sim(Info) :]
+      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model} $sim(Info) :]
       Model::Check 0
 
       Model::ParamsClose ${Model}
@@ -1159,7 +1225,7 @@ proc Model::ParamsPath { Model } {
 
    file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
 
-   #----- Check for remote path
+   #----- Check for remote path::${Model}::Sim
    set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
    if { $Param(Remote) } {
       if { $Param(Arch) == "AIX" } {
@@ -1174,7 +1240,7 @@ proc Model::ParamsPath { Model } {
    }
 
    #----- Save simulation pool information.
-   exec echo "[Info::Code ::${Model}::Sim $sim(Info) :]" > $sim(Path)/tmp/sim.pool
+   exec echo "[Info::Code ${Model} $sim(Info) :]" > $sim(Path)/tmp/sim.pool
 }
 
 #----------------------------------------------------------------------------

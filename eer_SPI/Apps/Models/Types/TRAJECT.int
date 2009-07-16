@@ -210,10 +210,10 @@ proc TRAJECT::PopUp { X Y } {
          .trajectpopup add command -label "TRAJECT"  -command "" -background $GDefs(ColorHighLight) \
             -activebackground $GDefs(ColorHighLight)
          .trajectpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .trajectpopup.product
-         .trajectpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command "TRAJECT::Result"
+         .trajectpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { TRAJECT::Result }
          .trajectpopup add separator
          .trajectpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
-             -command "TRAJECT::SimSuppress True \$Exp::Data(SelectSim)"
+             -command { Model::Delete $Exp::Data(SelectSim) }
 
       menu .trajectpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
           .trajectpopup.product add command -label "TRAJ" -command {  TRAJECT::CallProduct $Page::Data(Frame) All TRAJ }

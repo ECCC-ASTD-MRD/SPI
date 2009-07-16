@@ -32,11 +32,9 @@ namespace eval TRAJECT {
    set Lbl(Batch)           { "Batch" "Batch" }
    set Lbl(Date)            { { "Depart " "Start  " } { "Arrivee" "Arrival" } }
    set Lbl(Level)           { "Niveau" "Level" }
-   set Lbl(No)              { "Non" "No " }
    set Lbl(Params)          { "Parametres" "Parameters" }
    set Lbl(Suppress)        { "Supprimer" "Delete" }
    set Lbl(Result)          { "Resultats" "Results" }
-   set Lbl(Yes)             { "Oui" "Yes" }
    set Lbl(Method)          { "Methode  " "Method  " }
    set Lbl(Mode)            { "Mode     " "Mode    " }
    set Lbl(Meteo)           { "Meteo" "Meteo" }
@@ -45,8 +43,6 @@ namespace eval TRAJECT {
 
    #----- Definitions des messages
 
-   set Msg(Delete)            { "Voulez-vous vraiment supprimer cette simulation ?" \
-                                "Do you really want to delete this simulation ?" }
    set Msg(Exist)             { "Veuillez completer le lancement de la trajectoire en cours avant de proceder a une autre"
                                 "Please complete the current trajectory launch before proceeding with another one" }
    set Msg(MetGet)            { "Vérification de la disponibilitée des données météo en cours..." "Checking for meteorological data availability..." }

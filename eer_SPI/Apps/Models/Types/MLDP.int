@@ -445,7 +445,7 @@ proc MLDP::PopUp { X Y } {
             -command { Model::ParamsWindow $MLDP::Sim(Model) RENEW } -state disabled
          .mldppopup add separator
          .mldppopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
-             -command "MLDP::SimSuppress True \$Exp::Data(SelectSim)"
+             -command { Model::Delete $Exp::Data(SelectSim) }
 
       menu .mldppopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
           .mldppopup.product add command -label "VAAC" -command { MLDP::CallProduct $Page::Data(Frame) result VAAC }
@@ -464,10 +464,8 @@ proc MLDP::PopUp { X Y } {
          .mldppopup.res add command -label "Meteo" -command "MLDP::Result meteo"
    }
 
-   Info::Decode ::MLDP::Tmp $Sim(Info) $Exp::Data(SelectSim)
-
    #----- Verifier l'etat de la simulation et configurer le menu en consequence
-   switch -- $Tmp(State) {
+   switch --  [Info::Strip $Exp::Data(SelectSim) State] {
 
       -1 {                                            #----- Error
          .mldppopup entryconfigure 1 -state disabled   ;#Product

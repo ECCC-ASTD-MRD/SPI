@@ -86,7 +86,7 @@ proc TRAJECT::Result { } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.
-   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path $Sim(Info) $Exp::Data(SelectSim)]/results/traject.points
+   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path TRAJECT $Exp::Data(SelectSim)]/results/traject.points
 }
 
 #-------------------------------------------------------------------------------
@@ -302,7 +302,7 @@ proc TRAJECT::Launch { } {
       }
       Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
   } else {
-      set info [Info::Code ::TRAJECT::Sim $Sim(Info) :]
+      set info [Info::Code ::TRAJECT::Sim TRAJECT :]
       set id [Exp::Id $info]
       simulation create $id -type trajectory
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
@@ -316,56 +316,6 @@ proc TRAJECT::Launch { } {
       Exp::ThreadUpdate $id $GDefs(DirData)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]
    }
    return True
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <TRAJECT::SimSuppress>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer une simulation.
-#
-# Parametres  :
-#   <Confirm> : Confirmation de la suppression
-#   <Info>    : Identificateur de la simulation
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc TRAJECT::SimSuppress { Confirm Info } {
-   global GDefs
-   variable Msg
-   variable Lbl
-   variable Sim
-
-   . config -cursor watch
-   update idletasks
-
-   set path "[Exp::Path]/[Info::Path $Sim(Info)  $Info]"
-
-   if { $Confirm } {
-
-      #----- Verifier la validitee des parametres
-      set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(Delete) $GDefs(Lang)]\n\n$path" \
-         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $answer == 1 } {
-         return
-      }
-   }
-
-   #----- Supprimer la simulation et ses descendants
-   Debug::TraceProc "TRAJECT: Suppressing trajectory: $path"
-
-   Exp::ThreadKill [Exp::Id $Info]
-   Info::Delete [Exp::Path]/TRAJECT.pool $Info
-   file delete -force $path
-
-   #----- Relire les experiences
-   . config -cursor left_ptr
-   Model::Check 0
 }
 
 #-------------------------------------------------------------------------------
