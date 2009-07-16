@@ -13,7 +13,7 @@
 #
 # Fonctions:
 #
-#   Info::Code    { Var Set { Token "" } }
+#   Info::Code    { Var Set { Separator "" } }
 #   Info::Decode  { Var Set Info }
 #   Info::Delete  { Path Info }
 #   Info::Find    { Path Set args }
@@ -186,9 +186,9 @@ namespace eval Info {
 # But      : Coder une ligne info.
 #
 # Parametres :
-#    <Var>   : Variable array a assigner
-#    <Set>   : Set de token a utiliser
-#    <Token> : Token de separation
+#    <Var>       : Variable array a assigner
+#    <Set>       : Set de token a utiliser
+#    <Separator> : Token de separation
 #
 # Retour:
 #
@@ -197,7 +197,7 @@ namespace eval Info {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Code { Var Set { Token "" } } {
+proc Info::Code { Var Set { Separator "" } } {
    global   GDefs
    variable Lbl
    variable Token
@@ -209,8 +209,8 @@ proc Info::Code { Var Set { Token "" } } {
       lappend info "[lindex $Lbl($item) $GDefs(Lang)]=$var($item)"
    }
 
-   if { $Token!="" } {
-      return [join $info $Token]
+   if { $Separator!="" } {
+      return [join $info $Separator]
    } else {
       return $info
    }
