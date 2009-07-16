@@ -782,7 +782,7 @@ proc Exp::New { } {
 #
 #----------------------------------------------------------------------------
 
-proc Exp::Params { Parent Model Info } {
+proc Exp::Params { Parent Model } {
    global   GDefs correct
    variable Lbl
    variable Msg
@@ -817,7 +817,7 @@ proc Exp::Params { Parent Model Info } {
       pack .simparams.confirm.yes .simparams.confirm.no -side left -fill x -expand true
    pack .simparams.confirm -side top  -fill x
 
-   eval .simparams.desc.list insert end [split [Info::Format [Info::Code ::${Model}::Sim $Info :]] \n]
+   eval .simparams.desc.list insert end [split [Info::Format [Info::Code ::${Model}::Sim ${Model} :]] \n]
 
    grab .simparams
    tkwait variable correct
