@@ -47,7 +47,7 @@ namespace eval Info {
                         EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
-                        Mode Meteo Method Level LevelUnit BatchStart }
+                        Mode Meteo Method Level LevelUnit TimeStep BatchStart }
 
    set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
                         AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid \
@@ -69,6 +69,7 @@ namespace eval Info {
    set Lbl(BatchStart)           { "Délai de démarrage (h)" "Batch start delay (h)" }
    set Lbl(Duration)             { "Durée de simulation (h)" "Simulation duration (h)" }
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
+   set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
    set Lbl(EmTotMass)            { "Masse totale relâchée (unité)" "Total released mass (unit)" }
