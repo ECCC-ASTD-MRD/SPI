@@ -138,6 +138,11 @@ proc  Dialog::CreateDefault { Master Width Title Text Bitmap Default args } {
 
 proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
 
+   if { ![info exists tk_version] } {
+      puts stderr "(ERROR) $Text"
+      return
+   }
+
    set previous [grab current]
 
    if { [winfo exists .error] == 1} {
@@ -194,6 +199,11 @@ proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
 
 proc Dialog::CreateErrorListing { Master Text List Lang } {
    global GDefs
+
+   if { ![info exists tk_version] } {
+      puts stderr "(ERROR) $Text"
+      return
+   }
 
    set previous [grab current]
 
@@ -258,6 +268,11 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 
 proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 
+   if { ![info exists tk_version] } {
+      puts stderr "(INFO) $Text"
+      return
+   }
+
    if { [winfo exists .dlginfo] == 1} {
 
       set oldtext [lindex [.dlginfo.haut.txt configure -text] 4]
@@ -310,6 +325,11 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 
 proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 
+   if { ![info exists tk_version] } {
+      puts stderr "(DOING) $Text"
+      return
+   }
+
    if { [winfo exists .dlgwait]==1 } {
 
       set oldtext [lindex [.dlgwait.txt configure -text] 4]
@@ -348,6 +368,10 @@ proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 
 proc Dialog::DestroyWait { } {
 
+   if { ![info exists tk_version] } {
+      return
+   }
+
    destroy .dlgwait
    update idletasks
 }
@@ -369,6 +393,11 @@ proc Dialog::DestroyWait { } {
 #----------------------------------------------------------------------------
 
 proc Dialog::CreateMessage { Master Text { Aspect 1000 } } {
+
+   if { ![info exists tk_version] } {
+      puts stderr "(INFO) $Text"
+      return
+   }
 
    if { [winfo exists .msgbox] } {
 

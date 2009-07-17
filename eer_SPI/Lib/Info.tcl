@@ -516,8 +516,6 @@ proc Info::Request { Path } {
    while { [lsearch -exact $nos $no]!=-1 } {
       incr no
    }
-
-   Debug::TraceProc "Simulation request number : $no"
    return $no
 }
 

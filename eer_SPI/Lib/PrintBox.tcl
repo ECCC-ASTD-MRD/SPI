@@ -667,7 +667,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
             set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f $Print(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/${prefix}_[file tail $Print(FullName)].$Print(Device)" } MsgCatch]
 
 			if { $ErrCatch != 0 } {
-               Debug::TraceProc "Error : Unable to transfert the $Print(FullName).$Print(Device) on weatheroffice.\n\n$MsgCatch"
+               puts stderr "(ERROR) Unable to transfert the $Print(FullName).$Print(Device) on weatheroffice.\n\n$MsgCatch"
             }
 
          } else {
