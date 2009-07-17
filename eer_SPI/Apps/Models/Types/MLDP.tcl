@@ -83,12 +83,12 @@ proc MLDP::Launch { } {
 
    #----- Create input files for meteorological preprocessing script, model script, launch script.
    Model::ParamsMeteoInput MLDP
-   MLDP::CreateModelInput $Sim(Path)
+   MLDP::CreateModelInput
    MLDP::CreateScriptInput
 
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
-      Debug::TraceProc "(INFO) Launching RSMC meteorological fields script on local host ($GDefs(Host))."
+      puts "(INFO) Launching RSMC meteorological fields script on local host ($GDefs(Host))."
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
@@ -142,14 +142,14 @@ proc MLDP::Launch { } {
       }
 
       if { $ErrorCode } {
-         Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         puts "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
 #         return False
       }
-      Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
+      puts "(INFO) Job has been submitted successfully on $Model::Param(Host)."
 
    } else {
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
-      Debug::TraceProc "(INFO) Job launched on $Model::Param(Host)."
+      puts "(INFO) Job launched on $Model::Param(Host)."
    }
    return True
 }
@@ -176,7 +176,7 @@ proc MLDP::CreateScriptInput { } {
    set file [open $Sim(Path)/tmp/Model_MLDP.in w 0644]
 
    puts $file "#----- Logger specific parameters"
-   puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
+   puts $file "LOG_MAIL=$Model::Param(EMail)"
    puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLDP.out"
    puts $file "LOG_LEVEL=INFO"
@@ -295,7 +295,6 @@ proc MLDP::ParamsCheck { Tab No } {
 # But        : Create MLDP model input file.
 #
 # Parametres :
-#    <Path>  : Path du repertoire de la simulation.
 #
 # Retour     :
 #
@@ -303,14 +302,16 @@ proc MLDP::ParamsCheck { Tab No } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDP::CreateModelInput { Path } {
+proc MLDP::CreateModelInput { } {
    global   GDefs
    variable Sim
    variable Tmp
 
-   Debug::TraceProc "MLDP: Creating MLDP model input file."
+   set Sim(NI) [lindex $Sim(Grid) 1]
+   set Sim(NJ) [lindex $Sim(Grid) 2]
+   set Sim(NK) 25
 
-   set file [open $Path/tmp/$Sim(Model).in w]
+   set file [open $Sim(Path)/tmp/$Sim(Model).in w]
 
    #----- Output files.
    set len [expr [string length "$Sim(PathRun)/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.pos"] + 10]
@@ -344,8 +345,8 @@ proc MLDP::CreateModelInput { Path } {
 
    #----- Model parameters.
    puts $file "\nModel parameters:"
-   puts $file "[format "%-20s" $Sim(ModelTimeStepSec).0] [format "%-20s" dt_int] Internal model time step \[s\]."
-   puts $file "[format "%-20s" $Sim(OutputTimeStepSec).0] [format "%-20s" dt_out] Output time step \[s\]."
+   puts $file "[format "%-20s" [expr $MLDP::Sim(ModelTimeStepMin)*60].0] [format "%-20s" dt_int] Internal model time step \[s\]."
+   puts $file "[format "%-20s" [expr $MLDP::Sim(OutputTimeStepMin)*60].0] [format "%-20s" dt_out] Output time step \[s\]."
    puts $file "[format "%-20s" $Sim(EmNumberParticles)] [format "%-20s" NP] Number of particles."
    puts $file "[format "%-20s" $Sim(DtOverTl)] [format "%-20s" dt_sur_tl] Ratio of diffusion time step over Lagrangian time scale \[dimensionless\]."
    puts $file "[format "%-20s" $Sim(DtMin)] [format "%-20s" dt_bas] Diffusion time step minimum value \[s\]."

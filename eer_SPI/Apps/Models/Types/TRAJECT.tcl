@@ -122,16 +122,6 @@ proc TRAJECT::GetMetData { } {
    set Sim(Mode) [MetData::GetMode $Sim(Data) False]
    Dialog::DestroyWait
 
-   #----- Get the levels
-   set Sim(Level) ""
-   for { set i 1 } { $i<=25 } { incr i } {
-      if { $Sim(Level$i)!="" } {
-         lappend Sim(Level) "$Sim(Level$i)"
-      } else {
-         break
-      }
-   }
-
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    return [Model::ParamsMetData TRAJECT]
 }
@@ -176,6 +166,16 @@ proc TRAJECT::ParamsCheck { Tab No } {
       set Sim(Retro) True
    }
 
+   #----- Get the levels
+   set Sim(Level) ""
+   for { set i 1 } { $i<=25 } { incr i } {
+      if { $Sim(Level$i)!="" } {
+         lappend Sim(Level) "$Sim(Level$i)"
+      } else {
+         break
+      }
+   }
+
    #----- Get meteorological data according to met database, time interval between files, release accident date-time.
    if { ![GetMetData] } {
       return False
@@ -190,7 +190,6 @@ proc TRAJECT::ParamsCheck { Tab No } {
 # But        : Creer le fichier "ersinp" contenant les parametres pour CANERM.
 #
 # Parametres :
-#    <Path>  : Path du repertoire de la simulation.
 #
 # Retour     :
 #
@@ -198,7 +197,7 @@ proc TRAJECT::ParamsCheck { Tab No } {
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::CreateModelInput { Path } {
+proc TRAJECT::CreateModelInput { } {
    variable Sim
    variable Tmp
 
@@ -211,7 +210,7 @@ proc TRAJECT::CreateModelInput { Path } {
    }
 
    #----- Creation du fichier de directives
-   set f [open $Path/tmp/TRAJECT.in w 0644]
+   set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
       puts $f "'[string toupper $Sim(NameExp)] '"
 
       if { $Sim(Retro) } {
@@ -253,14 +252,14 @@ proc TRAJECT::CreateModelInput { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc TRAJECT::CreateScriptInput { Path } {
+proc TRAJECT::CreateScriptInput { } {
    variable Sim
    global   GDefs
 
-   set file [open $Path/tmp/Model_TRAJECT.in w 0644]
+   set file [open $Sim(Path)/tmp/Model_TRAJECT.in w 0644]
 
    puts $file "#----- Logger specific parameters"
-   puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
+   puts $file "LOG_MAIL=$Model::Param(EMail)"
    puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
    puts $file "LOG_LEVEL=INFO"
@@ -309,10 +308,7 @@ proc TRAJECT::Launch { } {
    global   env
    variable Sim
 
-   #----- Creer le fichier de donnees meteo
-   set f [open $Sim(Path)/tmp/data_std_eta.in w 0644]
-   puts $f $Sim(MeteoDataFiles)
-   close $f
+   Model::ParamsMeteoInput TRAJECT
 
    if { $Sim(Retro) } {
       set mode BACKWARD
@@ -326,8 +322,8 @@ proc TRAJECT::Launch { } {
       set unit PRESSURE
    }
 
-   TRAJECT::CreateModelInput $Sim(Path)
-   TRAJECT::CreateScriptInput $Sim(Path)
+   TRAJECT::CreateModelInput
+   TRAJECT::CreateScriptInput
 
    if { $Model::Param(IsUsingSoumet) } {
 

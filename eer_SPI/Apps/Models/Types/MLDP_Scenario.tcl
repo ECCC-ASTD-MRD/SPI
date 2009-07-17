@@ -1014,40 +1014,39 @@ proc MLDP::ValidateDurationValue { Duration Parent { Idx -1 } } {
       return False
    }
 
-   #----- Compute output and model time step [s].
-   set MLDP::Sim(OutputTimeStepSec) [expr $MLDP::Sim(OutputTimeStepMin)*60]
-   set MLDP::Sim(ModelTimeStepSec) [expr $MLDP::Sim(ModelTimeStepMin)*60]
+   #----- Compute  model time step [s].
+   set timestepsec [expr $MLDP::Sim(ModelTimeStepMin)*60]
 
    #----- If the duration has a value.
    if { $Duration != "" } {
 
       #----- Verify if duration is greater or equal to the model time step.
-      if { $Duration < $Sim(ModelTimeStepSec) } {
-         Dialog::CreateError $Parent "[lindex $Error(Duration2) $GDefs(Lang)][lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $Sim(ModelTimeStepSec) $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))" $GDefs(Lang) 600
+      if { $Duration < $timestepsec } {
+         Dialog::CreateError $Parent "[lindex $Error(Duration2) $GDefs(Lang)][lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestepsec $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))" $GDefs(Lang) 600
 
          if { $Idx > -1 } {
 
             #----- Modify the emission duration to the nearest multiple of internal model time step.
-            set Tmp(Duration$Idx) [expr int(double($Duration)/double($Sim(ModelTimeStepSec))+0.5) * $Sim(ModelTimeStepSec)]
+            set Tmp(Duration$Idx) [expr int(double($Duration)/double($timestepsec)+0.5) * $timestepsec]
 
-            if { $Tmp(Duration$Idx) < $Sim(ModelTimeStepSec) } {
-               set Tmp(Duration$Idx) $Sim(ModelTimeStepSec)
+            if { $Tmp(Duration$Idx) < $timestepsec } {
+               set Tmp(Duration$Idx) $timestepsec
             }
          }
          return False
       }
 
       #----- Verify if duration is an integer multiple of the model time step.
-      if { [expr fmod($Duration, $Sim(ModelTimeStepSec))] > $Sim(EmEpsilon) } {
-         Dialog::CreateError $Parent "[lindex $Error(Duration3) $GDefs(Lang)][lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $Sim(ModelTimeStepSec) $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))" $GDefs(Lang) 600
+      if { [expr fmod($Duration, $timestepsec)] > $Sim(EmEpsilon) } {
+         Dialog::CreateError $Parent "[lindex $Error(Duration3) $GDefs(Lang)][lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestepsec $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))" $GDefs(Lang) 600
 
          if { $Idx > -1 } {
 
             #----- Modify the emission duration to the nearest multiple of internal model time step.
-            set Tmp(Duration$Idx) [expr int(double($Duration)/double($Sim(ModelTimeStepSec))+0.5) * $Sim(ModelTimeStepSec)]
+            set Tmp(Duration$Idx) [expr int(double($Duration)/double($timestepsec)+0.5) * $timestepsec]
 
-            if { $Tmp(Duration$Idx) < $Sim(ModelTimeStepSec) } {
-               set Tmp(Duration$Idx) $Sim(ModelTimeStepSec)
+            if { $Tmp(Duration$Idx) < $timestepsec } {
+               set Tmp(Duration$Idx) $timestepsec
             }
          }
          return False
@@ -1574,10 +1573,6 @@ proc MLDP::ValidateTimeSteps { } {
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
-
-   #----- Compute output and model time step [s].
-   set MLDP::Sim(OutputTimeStepSec) [expr $MLDP::Sim(OutputTimeStepMin)*60]
-   set MLDP::Sim(ModelTimeStepSec) [expr $MLDP::Sim(ModelTimeStepMin)*60]
 
    #----- Verify if model time step is lower or equal to an hour (60 minutes).
    if { $MLDP::Sim(ModelTimeStepMin) > 60 } {

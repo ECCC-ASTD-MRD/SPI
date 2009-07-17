@@ -47,13 +47,16 @@ namespace eval Model {
    set Param(Show)    False
    set Param(Job)     ""                               ;#Current processing
 
+   set Param(App)  SPI                                 ;#Calling application
+   set Param(Path) $GDefs(DirData)                     ;#Data path
+   set Param(Log)  INFO                                ;#Log level
    set Param(Arch) ""                                  ;#Host architecture
    set Param(Host) ""                                  ;#Host
-   set Para(Queue) ""                                  ;#Queue
-   set Param(EmailAddress)     ""                      ;#Username email address.
-   set Param(EmailAddressSet)  "$env(USER)@ec.gc.ca"   ;#Username email address.
-   set Param(ListEmailAddress) $Param(EmailAddressSet) ;#List of email addresses.
-   set Param(IsEmailAddress)   0                       ;#Flag indicating if sending email to user for monitoring entire job (1) or not (0).
+   set Param(Queue) ""                                 ;#Queue
+   set Param(EMail)     ""                             ;#Username email address.
+   set Param(EMailSet)  "$env(USER)@ec.gc.ca"          ;#Username email address.
+   set Param(ListEMail) $Param(EMailSet)               ;#List of email addresses.
+   set Param(IsEMail)   0                              ;#Flag indicating if sending email to user for monitoring entire job (1) or not (0).
    set Param(DBaseType) "eta"                          ;#Type od metdata
    set Param(DBaseLocal) False                         ;#Is the metdata local
    set Param(DBaseDiag) ""                             ;#Path for diag metdata
@@ -85,8 +88,8 @@ namespace eval Model {
    set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
    set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
    set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
-   set Lbl(IsEmailAddress)      { "Surveillance par courriel" "E-mail monitoring" }
-   set Lbl(EmailAddress)        { "   Adresse     " "   Address     " }
+   set Lbl(IsEMail)      { "Surveillance par courriel" "E-mail monitoring" }
+   set Lbl(EMail)        { "   Adresse     " "   Address     " }
    set Lbl(Close)               { "Fermer" "Close" }
    set Lbl(Yes)                 { "Oui" "Yes" }
    set Lbl(No)                  { "Non" "No " }
@@ -118,8 +121,8 @@ namespace eval Model {
    set Bubble(NbOMPthreads)           { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
                                         "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
    set Bubble(OMPthreadFact)          { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
-   set Bubble(IsEmailAddress)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
-   set Bubble(EmailAddress)           { "Adresse de courrier électronique." "E-mail address." }
+   set Bubble(IsEMail)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
+   set Bubble(EMail)           { "Adresse de courrier électronique." "E-mail address." }
    set Bubble(LaunchModel)            { "Lancer le modèle" "Launch model" }
 
    set Bubble(PathSel) { "Liste des dépots d'experiences disponibles" "List of experiments available" }
@@ -145,7 +148,7 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
-   set Error(EmailAddress)        { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+   set Error(EMail)        { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
    set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
                                     "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
    set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
@@ -161,10 +164,10 @@ namespace eval Model {
 
    set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
                                     "Warning! You are about to launch model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
-   set Warning(EmailAddress)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
+   set Warning(EMail)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
                                     "Warning! The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
-   set Warning(EmailAddress2)     { "\tNouveau courriel    :" "\tNew email     :" }
-   set Warning(EmailAddress3)     { "\tCourriel par défaut :" "\tDefault email :" }
+   set Warning(EMail2)     { "\tNouveau courriel    :" "\tNew email     :" }
+   set Warning(EMail3)     { "\tCourriel par défaut :" "\tDefault email :" }
 
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
@@ -432,17 +435,17 @@ proc Model::ParamsCopy { Model  } {
       #----- Create simulation directories .
       set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp } Message]
       if { $ErrorCode != 0 } {
-         Debug::TraceProc "(ERROR) Unable to create simulation directories on $Param(Host).\n\n$Message"
+         puts stderr "(ERROR) Unable to create simulation directories on $Param(Host).\n\n$Message"
          return False
       }
 
       #----- Copy needed files.
       set ErrorCode [catch { eval exec scp -p $sim(Path)/tmp/sim.pool [glob $sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Param(Host):$sim(PathRun)/tmp } Message]
       if { $ErrorCode != 0 } {
-         Debug::TraceProc "(ERROR) Copying meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$Message"
+         puts stderr "(ERROR) Copying meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$Message"
          return False
       }
-      Debug::TraceProc "(INFO) Meteorological preprocessing input files and script have been copied on ($Param(Host)) successfully."
+      puts "(INFO) Meteorological preprocessing input files and script have been copied on ($Param(Host)) successfully."
    }
 }
 
@@ -545,11 +548,6 @@ proc Model::ParamsMetData { Model } {
    set simdur [expr int([fstdstamp diff $laststamp $firststamp] + 0.5)]
 
    if { $simdur<=0 } {
-      Debug::TraceProc "(ERROR) Not enough available meteorological data files in database according to emission date-time to run the model."
-      Debug::TraceProc "             - Initial simulation (stamp)       : $rundate ($sim(RunStamp))"
-      Debug::TraceProc "             - First available date-time (stamp): $firstdate ($firststamp)"
-      Debug::TraceProc "             - Last available date-time (stamp) : $lastdate ($laststamp)"
-
       set first [clock format $firstdate -format "%Y-%m-%d %T UTC" -gmt True]
       set last  [clock format $lastdate -format "%Y-%m-%d %T UTC" -gmt True]
       Dialog::CreateError . "[lindex $Error(MetFiles) $GDefs(Lang)]\n\n[lindex $Error(DateTimeEmission) $GDefs(Lang)] $rundate.\n[lindex $Error(FirstMetDateTime) $GDefs(Lang)] $first.\n[lindex $Error(LastMetDateTime) $GDefs(Lang)] $last." $GDefs(Lang) 600
@@ -569,9 +567,6 @@ proc Model::ParamsMetData { Model } {
          #----- computed according to available met files. Thus, simulation duration will be re-initialized.
          set oldsimdur     $sim(Duration)
          set sim(Duration) $simdur
-         Debug::TraceProc "(WARNING) Re-initializing simulation duration according to available met files in database."
-         Debug::TraceProc "               - Old simulation duration : $oldsimdur hr."
-         Debug::TraceProc "               - New simulation duration : $sim(Duration) hr."
          Dialog::CreateDefault . 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration1) $GDefs(Lang)]\n\n[lindex $Warning(SimDuration2) $GDefs(Lang)] $oldsimdur h.\n[lindex $Warning(SimDuration3) $GDefs(Lang)] $sim(Duration) h." warning 0 "OK"
 
       } else {
@@ -629,15 +624,9 @@ proc Model::ParamsMetData { Model } {
    set last  [lindex [lindex $sim(Data) end] 0]
 
    if { $sim(RunStamp) < $first || $sim(RunStamp) > $last } {
-      Debug::TraceProc "(ERROR) Emission date-time is not consistent according to available meteorological data files."
-      Debug::TraceProc "             - Initial simulation (stamp) : $rundate ($sim(RunStamp))"
-      Debug::TraceProc "             - Available meteo files      : $sim(MeteoDataFiles)"
       Dialog::CreateError . "[lindex $Error(DateTimeMetFiles) $GDefs(Lang)]" $GDefs(Lang) 600
       return False
    }
-
-   Debug::TraceProc "(INFO) Selected meteorological data files:\n\t[join $sim(MeteoDataFiles) \n\t]"
-
    return True
 }
 
@@ -904,7 +893,7 @@ proc Model::ParamsClose { Model } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::InitNew { Model No Name Pos } {
+proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    variable Data
 
    set modelbase [string trimright [string trimright $Model 0] 1]
@@ -929,6 +918,7 @@ proc Model::InitNew { Model No Name Pos } {
    set sim(Retro)   False
 
    set sim(ReNewMeteo) ""
+   set sim(GridChanged) 0
 
    set sim(Name)   {}
    set sim(Lat)    {}
@@ -943,10 +933,11 @@ proc Model::InitNew { Model No Name Pos } {
    set sim(GridLon)      [lindex $sim(GridSrc) 2]
 
    #----- Initialize grid related stuff
-   fstdfield free MODELGRID
-   set Data(Frame) $Page::Data(Frame)
-   set Data(VP)    $Viewport::Data(VP)
-
+   catch {
+      fstdfield free MODELGRID
+      set Data(Frame) $Page::Data(Frame)
+      set Data(VP)    $Viewport::Data(VP)
+   }
    return ${modelbase}
 }
 
@@ -1073,22 +1064,22 @@ proc Model::ParamsLaunch { Model Frame } {
    }
 
    #----- Enabling/Disabling email monitoring option.
-   checkbutton $tabframe.params.emonitor -anchor w -text "[lindex $Lbl(IsEmailAddress) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
-       -variable Model::Param(IsEmailAddress) -indicatoron true \
-      -command "if { \$Model::Param(IsEmailAddress) } {
+   checkbutton $tabframe.params.emonitor -anchor w -text "[lindex $Lbl(IsEMail) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
+       -variable Model::Param(IsEMail) -indicatoron true \
+      -command "if { \$Model::Param(IsEMail) } {
                    pack $tabframe.params.email -after $tabframe.params.emonitor -side top -anchor w -padx 2 -fill x
                 } else {
                    pack forget $tabframe.params.email
                 }"
    pack $tabframe.params.emonitor -side top -anchor w
-   Bubble::Create $tabframe.params.emonitor "[lindex $Bubble(IsEmailAddress) $GDefs(Lang)]"
+   Bubble::Create $tabframe.params.emonitor "[lindex $Bubble(IsEMail) $GDefs(Lang)]"
 
    #----- Email address.
-   Option::Create $tabframe.params.email [lindex $Lbl(EmailAddress) $GDefs(Lang)] Model::Param(EmailAddressSet) 1 -1 $Model::Param(ListEmailAddress) ""
-   if { $Model::Param(IsEmailAddress) } {
+   Option::Create $tabframe.params.email [lindex $Lbl(EMail) $GDefs(Lang)] Model::Param(EMailSet) 1 -1 $Model::Param(ListEMail) ""
+   if { $Model::Param(IsEMail) } {
       pack $tabframe.params.email -side top -anchor w -padx 2 -fill x
    }
-   Bubble::Create $tabframe.params.email "[lindex $Bubble(EmailAddress) $GDefs(Lang)]"
+   Bubble::Create $tabframe.params.email "[lindex $Bubble(EMail) $GDefs(Lang)]"
 
    #----- Button.
    button $tabframe.params.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::Launch ${Model}"
@@ -1217,13 +1208,13 @@ proc Model::ParamsPath { Model } {
    upvar ${Model}::Sim sim
 
    #----- Define simulation path.
-   set sim(NoSim) [Info::Request $GDefs(DirData)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
+   set sim(NoSim) [Info::Request $Param(Path)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
    set expp       "$sim(NoExp)_$sim(NameExp)"
    set simp       "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
    set prevp      "$sim(Model).$sim(NoPrev).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
 
-   set sim(Path)     "$GDefs(DirData)/${expp}/${simp}"
-   set sim(PathPrev) "$GDefs(DirData)/${expp}/${prevp}"
+   set sim(Path)     "$Param(Path)/${expp}/${simp}"
+   set sim(PathPrev) "$Param(Path)/${expp}/${prevp}"
 
    file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
 
@@ -1243,6 +1234,7 @@ proc Model::ParamsPath { Model } {
 
    #----- Save simulation pool information.
    exec echo "[Info::Code ${Model}::Sim ${Model} :]" > $sim(Path)/tmp/sim.pool
+   return $sim(Path)
 }
 
 #----------------------------------------------------------------------------
@@ -1306,9 +1298,11 @@ proc Model::ParamsMeteoInput { Model } {
    }
 
    #----- Create ASCII file containing grid parameters.
-   exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
-     [lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
-     [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]] > $sim(Path)/tmp/griddef.in
+   if { [info exists sim(Grid)] } {
+      exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
+         [lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
+         [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]] > $sim(Path)/tmp/griddef.in
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -1334,17 +1328,17 @@ proc Model::ParamValidateEmail { } {
    variable Lbl
    variable Warning
 
-   if { $Param(IsEmailAddress) } {
+   if { $Param(IsEMail) } {
 
       set err 0
-      if { $Param(EmailAddressSet)=="" } {
+      if { $Param(EMailSet)=="" } {
          set err 1
       }
 
-      if { [set idx [string last "@" $Param(EmailAddressSet)]]==-1 } {
+      if { [set idx [string last "@" $Param(EMailSet)]]==-1 } {
          set err 1
       } else {
-         set name [string range $Param(EmailAddressSet) 0 [expr $idx-1]]
+         set name [string range $Param(EMailSet) 0 [expr $idx-1]]
          foreach char { \  , ; : ~ ` ! @ \# $ % ^ & * ? \( \) + / = < > \" \\ [ ] \{ \} | é è ê ë à â ä ì î ï ç É È Ê Ë À Â Ä Ì Î Ï Ç } {
             if { [string last "${char}" $name]!=-1 } {
                set err 1
@@ -1357,14 +1351,14 @@ proc Model::ParamValidateEmail { } {
       }
 
       if { $err } {
-         Dialog::CreateError $Param(Frame) "[lindex $Error(EmailAddress) $GDefs(Lang)] $Param(EmailAddressSet)" $GDefs(Lang) 600
+         Dialog::CreateError $Param(Frame) "[lindex $Error(EMail) $GDefs(Lang)] $Param(EMailSet)" $GDefs(Lang) 600
          focus $Param(Frame).params.email.e
          return 0
       }
 
       #----- Display warning if email is different than default one.
-      if { $Param(EmailAddressSet) != "$env(USER)@ec.gc.ca" } {
-         set answer [Dialog::CreateDefault $Param(Frame) 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(EmailAddress) $GDefs(Lang)]\n\n[lindex $Warning(EmailAddress2) $GDefs(Lang)] $Param(EmailAddress)\n[lindex $Warning(EmailAddress3) $GDefs(Lang)] $env(USER)@ec.gc.ca" \
+      if { $Param(EMailSet) != "$env(USER)@ec.gc.ca" } {
+         set answer [Dialog::CreateDefault $Param(Frame) 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(EMail) $GDefs(Lang)]\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMail)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" \
                      warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
 
          if { $answer } {
@@ -1372,9 +1366,9 @@ proc Model::ParamValidateEmail { } {
             return 0
          }
       }
-      set Param(EmailAddress) $Param(EmailAddressSet)
+      set Param(EMail) $Param(EMailSet)
    } else {
-      set Param(EmailAddress) ""
+      set Param(EMail) ""
    }
    return 1
 }

@@ -165,7 +165,6 @@ proc CANERM::DrawInit { Frame VP } { }
 # But        : Creer le fichier "ersinp" contenant les parametres pour CANERM.
 #
 # Parametres :
-#    <Path>  : Path du repertoire de la simulation.
 #
 # Retour     :
 #
@@ -173,7 +172,7 @@ proc CANERM::DrawInit { Frame VP } { }
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::CreateModelInput { Path } {
+proc CANERM::CreateModelInput { } {
    variable Sim
    variable Tmp
 
@@ -196,8 +195,7 @@ proc CANERM::CreateModelInput { Path } {
    # ----- creer le fichier <ersinp> en s'assurant qu'il n'y ait pas
    #       de blanc apres le signe "=".
 
-   Debug::TraceProc "CANERM: Creating ersinp file: (DT:$Sim(Dt) NbPer:$Sim(NbPer))"
-   set f [open $Path/tmp/ersinp.in w]
+   set f [open  $Sim(Path)/tmp/ersinp.in w]
 
    puts $f "ITYPE1 =$Sim(IType1)"
    puts $f "ITYPE2 =$Sim(IType2)"
@@ -216,7 +214,7 @@ proc CANERM::CreateModelInput { Path } {
    puts $f "NTST   =$Sim(NbPer)"
    puts $f "DT     =$Sim(Dt).0"
    puts $f "ZBVAL  =[expr double($Sim(EmHeight))]"
-   puts $f "ZBTYP  =$Sim(EmHeightUnit)"
+   puts $f "ZBTYP  =METRES"
    puts $f "AVAL   =$Sim(FnVert)"
    puts $f "FNTYP  =$Sim(FnTime)"
    puts $f "DELAI  =[expr $Sim(Delai) * 3600].0"
@@ -256,13 +254,13 @@ proc CANERM::CreateScriptInput { } {
    set file [open $Sim(Path)/tmp/Model_CANERM.in w 0644]
 
       puts $file "#----- Logger specific parameters"
-      puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
-      puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
+      puts $file "LOG_MAIL=\"$Model::Param(EMail)\""
+      puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_CANERM.out"
-      puts $file "LOG_LEVEL=INFO"
+      puts $file "LOG_LEVEL=$Model::Param(Log)"
       puts $file ""
       puts $file "#----- Job general parameters"
-      puts $file "MODEL_SOFTWARE=SPI"
+      puts $file "MODEL_SOFTWARE=$Model::Param(App)"
       puts $file "MODEL_NAME=CANERM"
       puts $file "MODEL_TYPE=\"\""
       puts $file "MODEL_USER=$GDefs(FrontEndUser)"
@@ -375,9 +373,15 @@ proc CANERM::InitCont { Type } {
 
    set Sim(PGrid)  $Sim(Grid)
    set Sim(NoPrev) $Sim(NoSim)
-   set Sim(State)  4
 
-   set Sim(EmHeightUnit) METRES
+   #----- On Determine la date de simulation propice
+   set nbhour [expr [string trimleft $Sim(NbPer) 0]*$Sim(Dt)]
+   set sec    [clock scan "$nbhour hours" -base [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour):00" -gmt True] -gmt True]
+
+   set Sim(SimYear)  [clock format $sec -format "%Y" -gmt True]
+   set Sim(SimMonth) [clock format $sec -format "%m" -gmt True]
+   set Sim(SimDay)   [clock format $sec -format "%d" -gmt True]
+   set Sim(SimHour)  [clock format $sec -format "%H" -gmt True]
 }
 
 #----------------------------------------------------------------------------
@@ -431,7 +435,6 @@ proc CANERM::InitNew { Type } {
       set Sim(EmDuration) 6
    }
 
-   set Sim(EmHeightUnit) METRES
    set Sim(FnTime)       "CONSTANT"
    set Sim(Delai)        "0"
    set Sim(IType1)       "STATIC"
@@ -465,11 +468,7 @@ proc CANERM::Launch { } {
    variable Sim
 
    Model::ParamsMeteoInput CANERM
-
-   set Sim(GridChanged) 0
-   set Sim(State)       0
-
-   CANERM::CreateModelInput $Sim(Path)
+   CANERM::CreateModelInput
 
    #----- Continuation
    if { $Sim(NoPrev)!=-1 } {
@@ -524,7 +523,6 @@ proc CANERM::Launch { } {
    } else {
       exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in &
    }
-   set Sim(State) 2
 
    return True
 }
@@ -588,13 +586,6 @@ proc CANERM::ParamsCheck { Tab No } {
       set Sim(Lon)          [lindex $Sim(GridSrc) 2]
    } else {
       #----- On Determine la date de simulation propice
-      set nbhour [expr [string trimleft $Sim(NbPer) 0] * $Sim(Dt)]
-      set sec    [clock scan "$nbhour hours" -base [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour):00" -gmt True] -gmt True]
-
-      set Sim(SimYear)  [clock format $sec -format "%Y" -gmt True]
-      set Sim(SimMonth) [clock format $sec -format "%m" -gmt True]
-      set Sim(SimDay)   [clock format $sec -format "%d" -gmt True]
-      set Sim(SimHour)  [clock format $sec -format "%H" -gmt True]
       set Sim(RunStamp) [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
    }
 

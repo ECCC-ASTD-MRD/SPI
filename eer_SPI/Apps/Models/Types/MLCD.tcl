@@ -1217,14 +1217,14 @@ proc MLCD::SetSrc { } {
 #
 #-------------------------------------------------------------------------------
 
-proc MLCD::CreateModelInput { Path } {
+proc MLCD::CreateModelInput { } {
    global GDefs
    variable Sim
    variable Data
    variable Error
 
    #----- Create emission input file.
-   set file [open $Path/tmp/input.dat w 0644]
+   set file [open $Sim(Path)/tmp/input.dat w 0644]
 
    #----- Convert half-life period from [s] to [days].
    set halflifedays [format "%13.7e" [expr double($Sim(EmHalfLife))/86400.0]]
@@ -1319,13 +1319,13 @@ proc MLCD::CreateModelInput { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc MLCD::CreateScriptInput { Path } {
+proc MLCD::CreateScriptInput { } {
    variable Sim
    global   GDefs
 
-   set file [open $Path/tmp/Model_MLCD.in w 0644]
+   set file [open $Sim(Path)/tmp/Model_MLCD.in w 0644]
       puts $file "#----- Logger specific parameters"
-      puts $file "LOG_MAIL=$Model::Param(EmailAddress)"
+      puts $file "LOG_MAIL=$Model::Param(EMail)"
       puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLCD.out"
       puts $file "LOG_LEVEL=INFO"
@@ -1381,8 +1381,8 @@ proc MLCD::Launch { } {
    global env
    variable Sim
 
-   MLCD::CreateModelInput $Sim(Path)
-   MLCD::CreateScriptInput $Sim(Path)
+   MLCD::CreateModelInput
+   MLCD::CreateScriptInput
 
    if { $Model::Param(IsUsingSoumet) } {
 
