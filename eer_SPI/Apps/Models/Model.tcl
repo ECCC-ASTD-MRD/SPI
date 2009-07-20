@@ -47,11 +47,12 @@ namespace eval Model {
    set Param(Show)    False
    set Param(Job)     ""                               ;#Current processing
 
-   set Param(App)  SPI                                 ;#Calling application
-   set Param(Path) $GDefs(DirData)                     ;#Data path
-   set Param(Log)  INFO                                ;#Log level
-   set Param(Arch) ""                                  ;#Host architecture
-   set Param(Host) ""                                  ;#Host
+   set Param(Auto)  False                              ;#Running mode
+   set Param(App)   SPI                                ;#Calling application
+   set Param(Path)  $GDefs(DirData)                    ;#Data path
+   set Param(Log)   INFO                               ;#Log level
+   set Param(Arch)  ""                                 ;#Host architecture
+   set Param(Host)  ""                                 ;#Host
    set Param(Queue) ""                                 ;#Queue
    set Param(EMail)     ""                             ;#Username email address.
    set Param(EMailSet)  "$env(USER)@ec.gc.ca"          ;#Username email address.
@@ -217,6 +218,21 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+
+proc Model::GetMetData { Model } {
+   Model::ParamsMetDataDir ${Model}
+   ${Model}::GetMetData
+   Model::ParamsMeteoInput ${Model}
+}
+
+proc Model::CreateInput { Model } {
+   catch { ${Model}::EmissionRead }
+   ${Model}::CreateModelInput
+   ${Model}::CreateScriptInput
+
+   #----- Copy files to run host if needed
+   Model::ParamsCopy ${Model}
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Model::Delete>

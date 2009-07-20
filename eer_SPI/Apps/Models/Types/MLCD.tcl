@@ -1329,6 +1329,11 @@ proc MLCD::CreateScriptInput { } {
       puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLCD.out"
       puts $file "LOG_LEVEL=INFO"
+
+      if { $Model::Param(Auto) } {
+         puts $file "LOG_MODE=AUTO"
+      }
+
       puts $file ""
       puts $file "#----- Job general parameters"
       puts $file "MODEL_SOFTWARE=SPI"

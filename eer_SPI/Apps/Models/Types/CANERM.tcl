@@ -258,6 +258,11 @@ proc CANERM::CreateScriptInput { } {
       puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_CANERM.out"
       puts $file "LOG_LEVEL=$Model::Param(Log)"
+
+      if { $Model::Param(Auto) } {
+         puts $file "LOG_MODE=AUTO"
+      }
+
       puts $file ""
       puts $file "#----- Job general parameters"
       puts $file "MODEL_SOFTWARE=$Model::Param(App)"
