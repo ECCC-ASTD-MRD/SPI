@@ -66,27 +66,29 @@ function Model_PoolSet {
       mode=${1}
       status=${2}
 
-      line=`cat ${MODEL_TMPDIR}/sim.pool`
+      if [[ -f ${master} ]]; then
+         line=`cat ${MODEL_TMPDIR}/sim.pool`
 
-      #----- Get pool parts
-      start=`echo ${line} | cut -d: -f1`
-      end=`echo ${line} | cut -d: -f3-`
-      state=`echo ${line} | cut -d: -f2`
+         #----- Get pool parts
+         start=`echo ${line} | cut -d: -f1`
+         end=`echo ${line} | cut -d: -f3-`
+         state=`echo ${line} | cut -d: -f2`
 
-      token=`echo ${state} | cut -d= -f1`
-      if [[ $status -eq 0 ]]; then
-         eval state=\"\$\{token\}=\${POOL_${mode}\}\"
-      else
-         state="${token}=${POOL_ERROR}"
-      fi
+         token=`echo ${state} | cut -d= -f1`
+         if [[ $status -eq 0 ]]; then
+            eval state=\"\$\{token\}=\${POOL_${mode}\}\"
+         else
+            state="${token}=${POOL_ERROR}"
+         fi
 
-      #----- Replace pool info.
-      if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
-         ssh ${MODEL_USER}@${MODEL_LOCALHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
-      else
-         cp ${master} ${master}.exec
-         grep -v "${start}:.*:${end}" ${master}.exec > ${master}
-         echo "${start}:${state}:${end}" >> ${master}
+         #----- Replace pool info.
+         if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
+            ssh ${MODEL_USER}@${MODEL_LOCALHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
+         else
+            cp ${master} ${master}.exec
+            grep -v "${start}:.*:${end}" ${master}.exec > ${master}
+            echo "${start}:${state}:${end}" >> ${master}
+         fi
       fi
    fi
 }

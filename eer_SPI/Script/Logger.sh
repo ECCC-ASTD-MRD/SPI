@@ -34,6 +34,7 @@
 
 #----- Check for environment settings
 LOG_LEVEL=${LOG_LEVEL:=INFO}
+LOG_MODE=${LOG_MODE:=""}
 LOG_MAIL=${LOG_MAIL:=""}
 LOG_MAILTITLE=${LOG_MAILTITLE:="Job Info"}
 LOG_JOBID=${LOG_JOBID:=""}
@@ -77,8 +78,9 @@ function Log_Mail {
 
    subject=${1}
    file=${2}
+   auto=${3}
 
-   if [[ ${LOG_MAIL} = "" ]] ; then
+   if [[ ${LOG_MAIL} = "" || ! ${LOG_MODE} = $auto ]] ; then
       return 0
    fi
 
@@ -164,7 +166,7 @@ function Log_End {
    if [[ ${status} -eq 0 ]] ; then
       Log_Mail "Job finished (NORMAL)" ${LOG_FILE}
    else
-      Log_Mail "Job finished (ERROR)" ${LOG_FILE}
+      Log_Mail "Job finished (ERROR)" ${LOG_FILE} AUTO
    fi
 
    exit $status

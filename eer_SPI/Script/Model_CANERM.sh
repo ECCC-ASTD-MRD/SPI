@@ -103,36 +103,38 @@ function CANERM_Pre {
 function CANERM_Post {
 
    #----- Get the results list from previous runs, needed for dosage calulations
-   for file in `cat previous.in`
-   do
-      name=`echo ${file} | sed 's/^.*\///g' | head -1`
-      path=`echo ${file} | tr "/" "\\012" | tail -6 |  tr "\\012" " " | cut -d" " -f1,4 | tr " " "_"`
+   if [[ -r previous.in ]]; then
+      for file in `cat previous.in`
+      do
+         name=`echo ${file} | sed 's/^.*\///g' | head -1`
+         path=`echo ${file} | tr "/" "\\012" | tail -6 |  tr "\\012" " " | cut -d" " -f1,4 | tr " " "_"`
 
-      if [[ -r ${file} ]]; then
-         ln -s ${file} ${name}
-      elif [[ -r ../../${path}/results/${name} ]]; then
-         ln -s ../../${path}/results/${name} ${name}
-      else
-         Log_Print INFO "Can't find previous run file ${name} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST}). Trying to get it from ${MODEL_LOCALHOST}."
-         scp ${MODEL_LOCALHOST}:${file} ${name}
-         taskstatus=$?
-         MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+${taskstatus}))
-         if [[ taskstatus != 0 ]]; then
-            Log_Print ERROR "Unable to get  previous run file ${name} from ${MODEL_LOCALHOST}., skipping post-processing"
-            return 1
+         if [[ -r ${file} ]]; then
+            ln -s ${file} ${name}
+         elif [[ -r ../../${path}/results/${name} ]]; then
+            ln -s ../../${path}/results/${name} ${name}
+         else
+            Log_Print INFO "Can't find previous run file ${name} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST}). Trying to get it from ${MODEL_LOCALHOST}."
+            scp ${MODEL_LOCALHOST}:${file} ${name}
+            taskstatus=$?
+            MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+${taskstatus}))
+            if [[ taskstatus != 0 ]]; then
+               Log_Print ERROR "Unable to get  previous run file ${name} from ${MODEL_LOCALHOST}., skipping post-processing"
+               return 1
+            fi
          fi
-      fi
-   done
+      done
 
-   #----- List result files from previous simulations
-   no=1
-   files=""
+      #----- List result files from previous simulations
+      no=1
+      files=""
 
-   for file in `ls *_*c` ; do
-      nb=`printf %02i ${no}`
-      files="${files} -file${nb} ${file}"
-      no=$((no+1))
-   done
+      for file in `ls *_*c` ; do
+         nb=`printf %02i ${no}`
+         files="${files} -file${nb} ${file}"
+         no=$((no+1))
+      done
+   fi
 
    #----- List result files from current simulation
    for file in `ls ../results/*_*c` ; do
