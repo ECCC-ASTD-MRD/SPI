@@ -203,9 +203,9 @@ proc TRAJECT::CreateModelInput { } {
 
    #----- Get the particles list
    set Sim(Particles) {}
-   foreach pos $Sim(Pos) {
+   foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
       foreach level $Sim(Level) {
-         lappend Sim(Particles) [list [lindex $pos 2] [lindex $pos 1] $level [lindex $pos 0]]
+         lappend Sim(Particles) [list $lon $lat $level $name]
       }
    }
 
@@ -226,7 +226,7 @@ proc TRAJECT::CreateModelInput { } {
       }
 
       puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-      puts $f "[expr [llength $Sim(Level)]*[llength $Sim(Pos)]]        Nombre de position de parcelles"
+      puts $f "[expr [llength $Sim(Level)]*[llength $Sim(Name)]]        Nombre de position de parcelles"
       foreach part $Sim(Particles) {
          puts $f "$part"
       }
@@ -262,7 +262,8 @@ proc TRAJECT::CreateScriptInput { } {
    puts $file "LOG_MAIL=$Model::Param(EMail)"
    puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
-   puts $file "LOG_LEVEL=INFO"
+   puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
+   puts $file "LOG_TIME=$Model::Param(LogTime)"
 
    if { $Model::Param(Auto) } {
       puts $file "LOG_MODE=AUTO"

@@ -187,7 +187,7 @@ proc CANERM::CreateModelInput { } {
    set Sim(Time0) $Sim(SimHour)
 
    while { $Tmp(NoPrev)!=-1 } {
-      Info::Decode ::CANERM::Tmp CANERM [lindex [Info::Find ${Path}/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
+      Info::Decode ::CANERM::Tmp CANERM [lindex [Info::Find $Sim(Path)/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
       set Sim(Date0) $Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)
       set Sim(Time0) $Tmp(SimHour)
    }
@@ -257,7 +257,8 @@ proc CANERM::CreateScriptInput { } {
       puts $file "LOG_MAIL=\"$Model::Param(EMail)\""
       puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_CANERM.out"
-      puts $file "LOG_LEVEL=$Model::Param(Log)"
+      puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
+      puts $file "LOG_TIME=$Model::Param(LogTime)"
 
       if { $Model::Param(Auto) } {
          puts $file "LOG_MODE=AUTO"
@@ -524,7 +525,7 @@ proc CANERM::Launch { } {
    }
 
    if { $Sim(ReNewMeteo)!="" } {
-      file copy -force $Sim(ReNewMeteo)/../results/*m $Sim(Path)/results
+      eval file copy -force [glob $Sim(ReNewMeteo)/../results/*m] $Sim(Path)/results
    } else {
       exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in &
    }
