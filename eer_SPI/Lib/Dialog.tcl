@@ -138,7 +138,7 @@ proc  Dialog::CreateDefault { Master Width Title Text Bitmap Default args } {
 
 proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
 
-   if { ![info exists tk_version] } {
+   if { ![info exists ::tk_version] } {
       puts stderr "(ERROR) $Text"
       return
    }
@@ -200,7 +200,7 @@ proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
 proc Dialog::CreateErrorListing { Master Text List Lang } {
    global GDefs
 
-   if { ![info exists tk_version] } {
+   if { ![info exists ::tk_version] } {
       puts stderr "(ERROR) $Text"
       return
    }
@@ -268,7 +268,7 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 
 proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 
-   if { ![info exists tk_version] } {
+   if { ![info exists ::tk_version] } {
       puts stderr "(INFO) $Text"
       return
    }
@@ -325,8 +325,8 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 
 proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 
-   if { ![info exists tk_version] } {
-      puts stderr "(DOING) $Text"
+   if { ![info exists ::tk_version] } {
+      puts stderr "(INFO) $Text"
       return
    }
 
@@ -368,7 +368,7 @@ proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 
 proc Dialog::DestroyWait { } {
 
-   if { ![info exists tk_version] } {
+   if { ![info exists ::tk_version] } {
       return
    }
 
@@ -394,7 +394,7 @@ proc Dialog::DestroyWait { } {
 
 proc Dialog::CreateMessage { Master Text { Aspect 1000 } } {
 
-   if { ![info exists tk_version] } {
+   if { ![info exists ::tk_version] } {
       puts stderr "(INFO) $Text"
       return
    }
