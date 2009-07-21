@@ -335,7 +335,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    set prun [lindex [split [file tail [lindex $pfile end]] _] 0]
    set srun [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
 
-   puts "(INFO) Analysis found    :\n[join $afile \t\n]\n       Prognostics found :\n[join $pfile \t\n]\n       Last run found    : $prun ($srun)"
+#   puts "(INFO) Analysis found    :\n\t[join $afile \n\t]\n       Prognostics found :\n\t[join $pfile \n\t]\n       Last run found    : $prun ($srun)"
 
    if { $Mixed || $Date>=$srun } {
 
@@ -424,7 +424,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    }
 
    if { [llength $data] } {
-      puts "(INFO) Available processed and sorted files: \n[join $data \t\n]"
+#      puts "(INFO) Available processed and sorted files: \n\t[join $data \n\t]"
    } else {
       puts "(INFO) No data available for this date"
    }
@@ -711,10 +711,8 @@ proc MetData::GridDefinePS { Scale NI NJ Lat Lon { Field "" } } {
 
    #----- Si on a un champs
    if { $Field!="" } {
-      if { ![fstdfield is $Field] } {
-         fstdfield create $Field $NI $NJ 1
-         fstdfield define $Field -NOMVAR GRID
-      }
+      fstdfield create $Field $NI $NJ 1
+      fstdfield define $Field -NOMVAR GRID
       fstdfield define $Field -GRTYP $grtyp $xg1 $xg2 $xg3 $xg4
    }
 
