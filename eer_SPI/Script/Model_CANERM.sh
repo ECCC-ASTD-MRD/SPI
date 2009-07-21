@@ -71,7 +71,7 @@ function CANERM_Pre {
             Log_Print ERROR "Could not copy pre-calculated metfields."
          fi
       else
-         for file in `ls -1 ${MODEL_LOCALDIR}/meteo/*`
+         for file in `ls -1 ${CANERM_METEO}/*`
          do
             ln -s $file ../meteo/`echo ${file} | sed 's/^.*\///g' | head -1`
          done
