@@ -18,6 +18,7 @@
 #   LOG_JOBID      Job Identificator
 #   LOG_FILE       File to use for log (stdout if undefined)
 #   LOG_TIME       Include dates in log
+#   LOG_MODE       Mode de log (AUTO=automated jobs, send emails on error)
 #
 # Functions:
 #   Log_Start     $Job $Version [$Paramfile]
