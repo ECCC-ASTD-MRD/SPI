@@ -86,6 +86,7 @@ typedef struct GDB_Box {
 typedef struct GDB_Geo {
    Vect3d         *Loc;
    GDB_Box         Box;
+   unsigned int    List;
    struct GDB_Geo *Next;
 } GDB_Geo;
 
@@ -118,8 +119,6 @@ typedef struct GDB_Tile {
    struct GDB_Geo *Rail;
    struct GDB_Txt *TPlace;
    struct GDB_Txt *TCity;
-
-   unsigned int FLand1,FLand2,FWater1,FWater2;
 } GDB_Tile;
 
 typedef struct GDB_Data {

@@ -47,22 +47,22 @@ static GDB_Txt  *TxtPtr;
 Vect3d GDB_VBuf[4096];
 Vect3d GDB_NMap[181][361];
 
-void         GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Data *GDB);
-void         GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon1,float *LatLon);
-void         GDB_GeoProj(GDB_Geo *Geo,Projection *Proj);
-void         GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XColor *Color,int Low);
-unsigned int GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo);
-void         GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,GDB_Geo *Geo,XColor *Color,GLuint MaskIn);
-int          GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1);
-void         GDB_TileClear(Projection *Proj,GDB_Tile *Tile,XColor *Color,GLuint MaskIn);
-int          GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data);
-void         GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *Proj);
-int          GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode);
-int          GDB_TileResolution(GDB_Data *GDB,double Dist);
-void         GDB_TxtGet(int Type,float Lat,float Lon,char *Txt);
-void         GDB_TxtFree(GDB_Txt *Txt);
-void         GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point);
-void         GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
+void  GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Data *GDB);
+void  GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon1,float *LatLon);
+void  GDB_GeoProj(GDB_Geo *Geo,Projection *Proj);
+void  GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XColor *Color,int Low);
+void  GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo);
+void  GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Color,GLuint MaskIn);
+int   GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1);
+void  GDB_TileClear(Projection *Proj,GDB_Tile *Tile,XColor *Color,GLuint MaskIn);
+int   GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data);
+void  GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *Proj);
+int   GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode);
+int   GDB_TileResolution(GDB_Data *GDB,double Dist);
+void  GDB_TxtGet(int Type,float Lat,float Lon,char *Txt);
+void  GDB_TxtFree(GDB_Txt *Txt);
+void  GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point);
+void  GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
 
 GLuint Texture_Read(char *File);
 
@@ -334,11 +334,6 @@ int GDB_Init(GDB_Data *GDB) {
          GDB->Tile[x][y].Rail=NULL;
          GDB->Tile[x][y].Box.Nb=0;
          GDB->Tile[x][y].Res=0;
-
-         GDB->Tile[x][y].FLand1=0;
-         GDB->Tile[x][y].FLand2=0;
-         GDB->Tile[x][y].FWater1=0;
-         GDB->Tile[x][y].FWater2=0;
          GDB->Tile[x][y].Flag=0;
       }
    }
@@ -403,6 +398,7 @@ void GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon
       Nb++;
    }
 
+   geo->List=0;
    geo->Next=GeoPtr;
    GeoPtr=geo;
 }
@@ -429,6 +425,9 @@ void GDB_GeoFree(GDB_Geo *Geo) {
    while(Geo) {
       tmp=Geo;
       Geo=Geo->Next;
+      if (tmp->List) {
+         glDeleteLists(tmp->List,1);
+      }
       free(tmp->Loc);
       free(tmp);
    }
@@ -630,39 +629,29 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
    if (Force!=GDB_RASTER) {
 
       /*Donnees vectorielles*/
-
       if (Tile->Coast) {
          GDB_GeoFree(Tile->Coast);
          Tile->Coast=NULL;
       }
-      if (Tile->FLand1) {
+      if (Tile->FCoast) {
          GDB_GeoFree(Tile->FCoast);
          Tile->FCoast=NULL;
-         glDeleteLists(Tile->FLand1,1);
-         Tile->FLand1=0;
       }
-      if (Tile->FLand2) {
+      if (Tile->FCoastIn) {
          GDB_GeoFree(Tile->FCoastIn);
          Tile->FCoastIn=NULL;
-         glDeleteLists(Tile->FLand2,1);
-         Tile->FLand2=0;
       }
-
       if (Tile->Lake) {
          GDB_GeoFree(Tile->Lake);
          Tile->Lake=NULL;
       }
-      if (Tile->FWater1) {
+      if (Tile->FLake) {
          GDB_GeoFree(Tile->FLake);
          Tile->FLake=NULL;
-         glDeleteLists(Tile->FWater1,1);
-         Tile->FWater1=0;
       }
-      if (Tile->FWater2) {
+      if (Tile->FLakeIn) {
          GDB_GeoFree(Tile->FLakeIn);
          Tile->FLakeIn=NULL;
-         glDeleteLists(Tile->FWater2,1);
-         Tile->FWater2=0;
       }
 
       if (Tile->River) {
@@ -735,14 +724,10 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
             case GDB_TYPE_COAST: if (tile->Coast)    { GDB_GeoFree(tile->Coast); tile->Coast=NULL; }
                                  if (tile->FCoast)   { GDB_GeoFree(tile->FCoast); tile->FCoast=NULL; }
                                  if (tile->FCoastIn) { GDB_GeoFree(tile->FCoastIn); tile->FCoastIn=NULL; }
-                                 if (tile->FLand1)   { glDeleteLists(tile->FLand1,1); tile->FLand1=0; }
-                                 if (tile->FLand2)   { glDeleteLists(tile->FLand2,1); tile->FLand2=0; }
                                  break;
             case GDB_TYPE_LAKE : if (tile->Lake)    { GDB_GeoFree(tile->Lake); tile->Lake=NULL; }
                                  if (tile->FLake)   { GDB_GeoFree(tile->FLake); tile->FLake=NULL; }
                                  if (tile->FLakeIn) { GDB_GeoFree(tile->FLakeIn); tile->FLakeIn=NULL; }
-                                 if (tile->FWater1) { glDeleteLists(tile->FWater1,1); tile->FWater1=0; }
-                                 if (tile->FWater2) { glDeleteLists(tile->FWater2,1); tile->FWater2=0; }
                                  break;
             case GDB_TYPE_RIVER: if (tile->River) { GDB_GeoFree(tile->River); tile->River=NULL; }
                                  break;
@@ -773,57 +758,47 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
  * Parametres:
  *  <Tcl_Interp> : Interpreteur Tcl
  *  <Geo>        : Tuile de donnees
- *  <Data>       : Type de donnees
  *
  * Retour:
- *   <id>        : Id Opengl de la liste de tessalation
  *
  * Remarques :
  *
  *----------------------------------------------------------------------------
 */
-unsigned int GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
+void GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
 
-   unsigned int n,lst=0;
+   unsigned int n;
 
    if (GLRender->GLTess) {
 
-      if (!Interp) {
-         lst=glGenLists(1);
-         glNewList(lst,GL_COMPILE);
-      }
+      if (Geo->Box.Nb>2) {
 
-      while(Geo) {
-
-         if (Geo->Box.Nb>0) {
-
-            if (Interp)
-               glFeedbackInit(Geo->Box.Nb*20,GL_2D);
-
-            gluTessBeginPolygon(GLRender->GLTess,NULL);
-            gluTessBeginContour(GLRender->GLTess);
-
-            for(n=0;n<Geo->Box.Nb;n++){
-               gluTessVertex(GLRender->GLTess,Geo->Loc[n],Geo->Loc[n]);
-            }
-
-            gluTessEndContour(GLRender->GLTess);
-            gluTessEndPolygon(GLRender->GLTess);
-
-            if (Interp)
-               glFeedbackProcess(Interp,GL_2D);
+         if (Interp) {
+            glFeedbackInit(Geo->Box.Nb*20,GL_2D);
+         } else {
+            Geo->List=glGenLists(1);
+            glNewList(Geo->List,GL_COMPILE);
          }
-         Geo=Geo->Next;
-      }
 
-      if (!Interp) {
-         glEndList();
+         gluTessBeginPolygon(GLRender->GLTess,NULL);
+         gluTessBeginContour(GLRender->GLTess);
+
+         for(n=0;n<Geo->Box.Nb;n++){
+            gluTessVertex(GLRender->GLTess,Geo->Loc[n],Geo->Loc[n]);
+         }
+
+         gluTessEndContour(GLRender->GLTess);
+         gluTessEndPolygon(GLRender->GLTess);
+
+         if (Interp) {
+            glFeedbackProcess(Interp,GL_2D);
+         } else {
+            glEndList();
+         }
       }
    } else {
       fprintf(stderr,"(WARNING) GDB_GeoTess: Unable to obtain valid tesselator\n");
    }
-
-   return(lst);
 }
 
 /*----------------------------------------------------------------------------
@@ -1215,11 +1190,7 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
             glFeedbackInit(Geo->Box.Nb*8,GL_2D);
 
          state=GDB_Loc(Geo->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height);
-         if (state==GDB_LOW) {
-            if (!Low) {
-               Proj->Type->Render(Proj,0,Geo->Loc,NULL,NULL,NULL,GL_LINE_STRIP,Geo->Box.Nb,Geo->Box.Vr[0],Geo->Box.Vr[2]);
-            }
-         } else if (state==GDB_VIS || Proj->Type->Def==PROJCYLIN) {
+         if ((state==GDB_LOW && !Low) || state==GDB_VIS || Proj->Type->Def==PROJCYLIN) {
             Proj->Type->Render(Proj,0,Geo->Loc,NULL,NULL,NULL,GL_LINE_STRIP,Geo->Box.Nb,Geo->Box.Vr[0],Geo->Box.Vr[2]);
          }
 
@@ -1240,8 +1211,6 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
  * Parametres :
  *   <Interp> : Interpreteur TCL
  *   <Proj>   : Parametres de projection
- *   <List>   : Liste d'affichage
-     <Box>    : Boite de delimitation
  *   <Geo>    : Liste des boites de donnees geographiques
  *   <Color>  : Couleur des segments
  *   <MaskIn> : Masque du Stencil (Inside)
@@ -1255,9 +1224,9 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
  *----------------------------------------------------------------------------
 */
 
-void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,GDB_Geo *Geo,XColor *Color,GLuint MaskIn) {
+void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Color,GLuint MaskIn) {
 
-   int state;
+   int     state,n;
 
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_CULL_FACE);
@@ -1289,10 +1258,35 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GLuint List,GDB_Box Box,
          Tk_CanvasPsColor(Interp,Proj->VP->canvas,Color);
       }
       Tcl_AppendResult(Interp,"0.5 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
-      GDB_GeoTess(Interp,Geo);
+      while (Geo) {
+         if (Geo->Box.Nb>2) {
+            state=GDB_Loc(Geo->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height);
+            if (state==GDB_VIS || Proj->Type->Def==PROJCYLIN) {
+               GDB_GeoTess(Interp,Geo);
+            }
+         }
+         Geo=Geo->Next;
+      }
    } else {
-      if (List) {
-         Proj->Type->Render(Proj,List,NULL,NULL,NULL,NULL,0,0,Box.Vr[0],Box.Vr[2]);
+      n=0;
+      while (Geo) {
+         if (Geo->Box.Nb>2) {
+            state=GDB_Loc(Geo->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height);
+            if (state==GDB_VIS || Proj->Type->Def==PROJCYLIN) {
+               if (!Geo->List) {
+                  GDB_GeoTess(Interp,Geo);
+                  n++;
+               }
+               Proj->Type->Render(Proj,Geo->List,NULL,NULL,NULL,NULL,0,0,Geo->Box.Vr[0],Geo->Box.Vr[2]);
+            }
+         }
+         Geo=Geo->Next;
+
+         /*After some tessalation, give back control to application*/
+         if (n>10) {
+            ViewportRefresh_Canvas(Proj->VP->canvas);
+            break;
+         }
       }
    }
 
@@ -1704,36 +1698,30 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
             if (Mode & GDB_MASK) {
                if (GDB->Params.Mask && tile->FCoast && tile->FLake) {
-                  if (!tile->FLand1) tile->FLand1=GDB_GeoTess(NULL,tile->FCoast);
-                  if (!tile->FWater1) tile->FWater1=GDB_GeoTess(NULL,tile->FLake);
                   if (GDB->Params.Mask==GDB_LAND) {
 //                     GDB_TileClear(Proj,tile,NULL,0x2);
-                     GDB_FillRender(NULL,Proj,tile->FLand1,tile->Box,tile->FCoast,NULL,0x0);
-                     GDB_FillRender(NULL,Proj,tile->FWater1,tile->Box,tile->FLake,NULL,0x2);
+                     GDB_FillRender(NULL,Proj,tile->FCoast,NULL,0x0);
+                     GDB_FillRender(NULL,Proj,tile->FLake,NULL,0x2);
                   }
                   if (GDB->Params.Mask==GDB_SEA){
-                     GDB_FillRender(NULL,Proj,tile->FLand1,tile->Box,tile->FCoast,NULL,0x2);
-                     GDB_FillRender(NULL,Proj,tile->FWater1,tile->Box,tile->FLake,NULL,0x0);
+                     GDB_FillRender(NULL,Proj,tile->FCoast,NULL,0x2);
+                     GDB_FillRender(NULL,Proj,tile->FLake,NULL,0x0);
                   }
                }
             }
 
             if (Mode & GDB_FILL) {
                if (Proj->VP->ColorFCoast && tile->FCoast) {
-                  if (!tile->FLand1) tile->FLand1=GDB_GeoTess(NULL,tile->FCoast);
-                  GDB_FillRender(Interp,Proj,tile->FLand1,tile->Box,tile->FCoast,Proj->VP->ColorFCoast,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FCoast,Proj->VP->ColorFCoast,0xff);
                }
                if (Proj->VP->ColorFLake && tile->FLake) {
-                 if (!tile->FWater1) tile->FWater1=GDB_GeoTess(NULL,tile->FLake);
-                  GDB_FillRender(Interp,Proj,tile->FWater1,tile->Box,tile->FLake,Proj->VP->ColorFLake,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FLake,Proj->VP->ColorFLake,0xff);
                }
                if (Proj->VP->ColorFCoast && tile->FCoastIn) {
-                  if (!tile->FLand2) tile->FLand2=GDB_GeoTess(NULL,tile->FCoastIn);
-                  GDB_FillRender(Interp,Proj,tile->FLand2,tile->Box,tile->FCoastIn,Proj->VP->ColorFCoast,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FCoastIn,Proj->VP->ColorFCoast,0xff);
                }
                if (Proj->VP->ColorFLake && tile->FLakeIn) {
-                 if (!tile->FWater2) tile->FWater2=GDB_GeoTess(NULL,tile->FLakeIn);
-                  GDB_FillRender(Interp,Proj,tile->FWater2,tile->Box,tile->FLakeIn,Proj->VP->ColorFLake,0xff);
+                  GDB_FillRender(Interp,Proj,tile->FLakeIn,Proj->VP->ColorFLake,0xff);
                }
             }
 
