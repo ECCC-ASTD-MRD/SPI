@@ -185,7 +185,7 @@ namespace eval Viewport {
    set Lbl(Sea)            { "Mer" "Sea" }
    set Lbl(Show)           { "Afficher" "Show" }
    set Lbl(Text)           { "Texture" "Texture" }
-   set Lbl(MinSize)        { "Minimum"   "Minimum" }
+   set Lbl(MinSize)        { "Détails" "Details" }
 
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Close)          { "Fermer" "Close" }
@@ -1866,9 +1866,10 @@ proc Viewport::ParamFrame { Frame Apply } {
       frame $Data(Frame).layer.min
          scale $Data(Frame).layer.min.sc -orient horizontal -from 0 -to 100 \
             -showvalue false -variable Viewport::Map(MinSize) -relief flat \
-            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -sliderlength 8  -bd 1 -resolution 1
-         label $Data(Frame).layer.min.lbl -text [format "%-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
-#         pack $Data(Frame).layer.min.sc $Data(Frame).layer.min.lbl -side left
+            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 71 -sliderlength 8  -bd 1 -resolution 1
+         label $Data(Frame).layer.min.lbl -text [format " %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
+         pack $Data(Frame).layer.min.sc $Data(Frame).layer.min.lbl -side left
+
       pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
          $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.place $Data(Frame).layer.road $Data(Frame).layer.rail \
          $Data(Frame).layer.ll $Data(Frame).layer.min -side top -anchor sw -padx 2 -fill x
