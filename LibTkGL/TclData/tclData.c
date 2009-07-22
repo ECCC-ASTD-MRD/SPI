@@ -1620,6 +1620,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj *obj,*sub;
    TData   *fld;
+   TList   *list;
+   TArray  *array;
    int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex;
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
@@ -1631,9 +1633,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-within","-level","-levels","-leveltype","-pressurelevels","-limits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-level","-levels","-leveltype","-pressurelevels","-limits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,WITHIN,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2064,6 +2066,52 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            }
+            break;
+
+         case GRIDCONTOUR:
+            if (Field->Spec->InterNb) {
+               Data_Clean(Field,0,0,1);
+               Data_GetContour(REF_GRID,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+
+               list=Field->Segments;
+
+               obj=Tcl_NewListObj(0,NULL);
+               while(list) {
+                  array=(TArray*)list->Data;
+                  array->Value;
+                  sub=Tcl_NewListObj(0,NULL);
+                  for (n=0;n<array->Size;n++) {
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                  }
+                  Tcl_ListObjAppendElement(Interp,obj,sub);
+                  list=list->Next;
+               }
+               Tcl_SetObjResult(Interp,obj);
+            }
+            break;
+
+         case COORDCONTOUR:
+            if (Field->Spec->InterNb) {
+               Data_Clean(Field,0,0,1);
+               Data_GetContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+
+               list=Field->Segments;
+
+               obj=Tcl_NewListObj(0,NULL);
+               while(list) {
+                  array=(TArray*)list->Data;
+                  array->Value;
+                  sub=Tcl_NewListObj(0,NULL);
+                  for (n=0;n<array->Size;n++) {
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                  }
+                  Tcl_ListObjAppendElement(Interp,obj,sub);
+                  list=list->Next;
                }
                Tcl_SetObjResult(Interp,obj);
             }
