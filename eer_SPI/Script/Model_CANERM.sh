@@ -118,7 +118,7 @@ function CANERM_Post {
             scp ${MODEL_LOCALHOST}:${file} ${name}
             taskstatus=$?
             MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+${taskstatus}))
-            if [[ taskstatus != 0 ]]; then
+            if [[ ${taskstatus} != 0 ]]; then
                Log_Print ERROR "Unable to get  previous run file ${name} from ${MODEL_LOCALHOST}., skipping post-processing"
                return 1
             fi
