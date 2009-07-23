@@ -86,7 +86,7 @@ proc TRAJECT::Result { } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.
-   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path TRAJECT $Exp::Data(SelectSim)]/results/*.points
+   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [glob [Exp::Path]/[Info::Path TRAJECT $Exp::Data(SelectSim)]/results/*.points]
 }
 
 #-------------------------------------------------------------------------------
@@ -353,7 +353,7 @@ proc TRAJECT::Launch { } {
       simulation create $id -type trajectory
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
          -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
-         -tinc $Sim(BatchStart) -tlen $Sim(Duration)
+         -tinc $Sim(BatchStart) -tlen $Sim(Duration) -split 1
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
 
       #----- Launch simulation within a new thread
