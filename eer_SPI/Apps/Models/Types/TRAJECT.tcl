@@ -86,7 +86,7 @@ proc TRAJECT::Result { } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.
-   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path TRAJECT $Exp::Data(SelectSim)]/results/traject.points
+   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [Exp::Path]/[Info::Path TRAJECT $Exp::Data(SelectSim)]/results/*.points
 }
 
 #-------------------------------------------------------------------------------
@@ -290,6 +290,7 @@ proc TRAJECT::CreateScriptInput { } {
    puts $file "TRAJECT_INC=$Sim(BatchStart)"
    puts $file "TRAJECT_LEN=$Sim(Duration)"
    puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
+   puts $file "TRAJECT_SPLIT=1"
    puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
 
    close $file

@@ -18,6 +18,7 @@
 #    TRAJECT_INC             Increment between simulations
 #    TRAJECT_LEN             Lenght of the simulations
 #    TRAJECT_INPUT           Input file for model
+#    TRAJECT_SPLIT           Split result file by source location
 #    TRAJECT_RESULT          Result file name
 #
 # Remarques  :
@@ -39,6 +40,7 @@ function TRAJECT_Run {
       -fich10 ${TRAJECT_METEO} \
       -tinc ${TRAJECT_INC} \
       -tlen ${TRAJECT_LEN} \
+      -split ${TRAJECT_SPLIT} \
       -o ${TRAJECT_RESULT} \
       -v ${LOG_LEVEL} \
       >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err

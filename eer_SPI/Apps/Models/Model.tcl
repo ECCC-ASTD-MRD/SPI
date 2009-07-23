@@ -47,13 +47,14 @@ namespace eval Model {
    set Param(Show)    False
    set Param(Job)     ""                               ;#Current processing
 
-   set Param(Auto)  False                              ;#Running mode
-   set Param(App)   SPI                                ;#Calling application
-   set Param(Path)  $GDefs(DirData)                    ;#Data path
-   set Param(Log)   INFO                               ;#Log level
-   set Param(Arch)  ""                                 ;#Host architecture
-   set Param(Host)  ""                                 ;#Host
-   set Param(Queue) ""                                 ;#Queue
+   set Param(Auto)      False                          ;#Running mode
+   set Param(App)       SPI                            ;#Calling application
+   set Param(Path)      $GDefs(DirData)                ;#Data path
+   set Param(LogLevel)  INFO                           ;#Log level
+   set Param(LogTime)   0                              ;#Log Timing
+   set Param(Arch)      ""                             ;#Host architecture
+   set Param(Host)      ""                             ;#Host
+   set Param(Queue)     ""                             ;#Queue
    set Param(EMail)     ""                             ;#Username email address.
    set Param(EMailSet)  "$env(USER)@ec.gc.ca"          ;#Username email address.
    set Param(ListEMail) $Param(EMailSet)               ;#List of email addresses.
@@ -391,7 +392,6 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    } else {
 
       if { [llength $sim(Scale)] > 1 } {
-         set string $sim(Scale)
          set sim(GridRes)  [string trimleft  [lindex $sim(Scale) 1] "("] ; #----- Grid scale resolution [km].
          set sim(GridSize) [string trimright [lindex $sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
          set sim(Scale)    [lindex $sim(Scale) 0]                        ; #----- Grid scale name.
