@@ -13,13 +13,13 @@
 #
 # Fonctions:
 #
-#   Info::Code    { Var Set { Separator "" } }
-#   Info::Decode  { Var Set Info }
+#   Info::Code    { Var { Separator : } }
+#   Info::Decode  { Var Info }
 #   Info::Delete  { Path Info }
 #   Info::Find    { Path Set args }
 #   Info::Format  { Info }
 #   Info::List    { Path }
-#   Info::Path    { Set Info }
+#   Info::Path    { Info }
 #   Info::Read    { Id }
 #   Info::Request { Path }
 #   Info::Set     { Path Info { State "" }}
@@ -188,7 +188,6 @@ namespace eval Info {
 #
 # Parametres :
 #    <Var>       : Variable array a assigner
-#    <Set>       : Set de token a utiliser
 #    <Separator> : Token de separation
 #
 # Retour:
@@ -198,7 +197,7 @@ namespace eval Info {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Code { Var Set { Separator "" } } {
+proc Info::Code { Var { Separator : } } {
    global   GDefs
    variable Lbl
    variable Token
@@ -206,7 +205,9 @@ proc Info::Code { Var Set { Separator "" } } {
    upvar $Var var
 
    set info {}
-   foreach item $Token($Set) {
+   set model [string trimright $var(Model) 01]
+
+   foreach item $Token($model) {
       lappend info "[lindex $Lbl($item) $GDefs(Lang)]=$var($item)"
    }
 
@@ -225,7 +226,6 @@ proc Info::Code { Var Set { Separator "" } } {
 #
 # Parametres :
 #    <Var>   : Variable array a assigner
-#    <Set>   : Set de token a utiliser
 #    <Info>  : Ligne info dont il faut extraire quelque chose
 #
 # Retour:
@@ -235,7 +235,7 @@ proc Info::Code { Var Set { Separator "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Decode { Var Set Info } {
+proc Info::Decode { Var Info } {
    global   GDefs
    variable Lbl
    variable Token
@@ -243,6 +243,7 @@ proc Info::Decode { Var Set Info } {
    upvar $Var var
 
    set infos [split $Info :]
+   set model [string trimright [lindex [split [lindex $infos 0] =] 1] 01]
 
    foreach info $infos {
       set list  [split $info =]
@@ -250,7 +251,7 @@ proc Info::Decode { Var Set Info } {
       set value [lindex $list 1]
       set found 0
 
-      foreach item $Token($Set) {
+      foreach item $Token($model) {
          foreach description $Lbl($item) {
 
             if { "$token"=="$description" } {
@@ -417,7 +418,6 @@ proc Info::List { Path } {
 # But      : Decoder le path d'une simulation a partir d'une ligne info.
 #
 # Parametres :
-#    <Set>   : Set de token a utiliser
 #    <Info>  : Ligne info dont il faut extraire quelque chose
 #
 # Retour:
@@ -428,10 +428,10 @@ proc Info::List { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Path { Set Info } {
+proc Info::Path { Info } {
    variable Tmp
 
-   Info::Decode ::Info::Tmp $Set $Info
+   Info::Decode ::Info::Tmp $Info
    return "$Tmp(Model).$Tmp(NoSim).$Tmp(AccYear)$Tmp(AccMonth)$Tmp(AccDay).$Tmp(AccHour)$Tmp(AccMin)"
 }
 

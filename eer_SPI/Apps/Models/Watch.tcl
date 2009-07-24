@@ -31,7 +31,7 @@ namespace eval Watch {
 
    set Data(Models)        "CANERM TRAJECT SATDATA MLDP0 MLDP1 MLCD"       ;#Liste des modeles disponibles
    set Data(Frame)         ""
-   set Data(ProjectsPath)  "/data/cmoex6/afsrelo/experiment/temp_Watch"    
+   set Data(ProjectsPath)  "/data/cmoex6/afsrelo/experiment/temp_Watch"
    set Data(Select)        ""                                              ;#Experience selectionnee
    set Data(Types)         "VAAC RSMC CTBT FIRE BIO SPILL SPCL"            ;#Liste des types
 
@@ -67,6 +67,7 @@ namespace eval Watch {
    set Lbl(Edit)        { "Modifier" "Edit" }
    set Lbl(EditWatch)   { "Modifier veille" "Edit watch" }
    set Lbl(OpenBranch)  { "Ouvrir branches" "Open branches" }
+   set Lbl(CloseBranch) { "Fermer branches" "Close branches" }
 
    #--- Definitions des messages
 
@@ -151,8 +152,8 @@ proc Watch::AllOpen { } {
                foreach model $LData($name) {
                   lappend Data(BranchModel) $name$model
 
-                  foreach item $LData($name$model) {
-                     set no [lindex $item 0]
+                  foreach sim $LData($name$model) {
+                     set no [lindex $sim 0]
                      lappend Data(BranchSim) $name$model$no
                   }
                }
@@ -165,57 +166,161 @@ proc Watch::AllOpen { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Watch::AllOpen>
+# Nom      : <Watch::AllOpenItem>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Ouvrir toutes les branchesi d'un projet en particulier.
+# But      : Ouvrir toutes les branches d'un item (projet, watch, model, sim).
 #
 # Parametres :
-#     <Project>   : Le nom du projet dont il faut ouvrir les branches.
+#     <Tag>    : Le tag permettant d'avoir les informations sur la branche a ouvrir.
+#     <Level>  : Le niveau de la branche a ouvrir.
 #
 # Retour :
 #
 # Remarques :
 #
+#     Tag :
+#        Projet --> nom du projet
+#        Watch  --> nom de la Watch
+#        Modele --> nom de la watch et nom du modele ($name$model)
+#        Sim    --> nom de la watch et du model ainsi que numero de la sim
+#                   ($name$model$no)
+#
+#     Level :
+#        0 --> Ouvre un projet et tous ses enfants
+#        1 --> Ouvre une watch et tous ses enfants
+#        2 --> Ouvre un model et tous ses enfants
+#        3 --> Ouvre une simulation et tous ses enfants
+#
 #-------------------------------------------------------------------------------
 
-proc Watch::AllOpenProject { Project } {
+proc Watch::AllOpenItem { Tag Level } {
    variable LData
    variable Data
 
-   if { [lsearch $Data(BranchProject) $Project] == -1 } {
-      lappend Data(BranchProject) $Project
-   }
+   set tags ""
 
-   if { [info exists LData(proj-$Project)] } {
+   switch $Level {
+      0 {
+         set Data(BranchProject) [concat $Data(BranchProject) $Tag]
 
-      foreach watch $LData(proj-$Project) {
-         set name [lindex $watch 0]
-
-         if { [lsearch $Data(BranchWatch) $name] == -1 } {
-            lappend Data(BranchWatch) $name
+         if { [info exists LData(proj-$Tag)] } {
+            foreach watch $LData(proj-$Tag) {
+               lappend tags [lindex $watch 0]
+            }
          }
+      }
+      1 {
+         set Data(BranchWatch) [concat $Data(BranchWatch) $Tag]
 
-         if { [info exists LData($name)] } {
-
-            foreach model $LData($name) {
-               if { [lsearch $Data(BranchModel) $name$model] == -1 } {
-                  lappend Data(BranchModel) $name$model
-
-                  foreach item $LData($name$model) {
-                     set no [lindex $item 0]
-                     if { [lsearch $Data(BranchSim) $name$model$no] } {
-                        lappend Data(BranchSim) $name$model$no
-                     }
-                  }
+         foreach tag $Tag {
+            if { [info exists LData($tag)] } {
+               foreach model $LData($tag) {
+                  lappend tags $tag$model
                }
             }
          }
       }
+      2 {
+         set Data(BranchModel) [concat $Data(BranchModel) $Tag]
+
+         foreach tag $Tag {
+            if { [info exists LData($tag)] } {
+               foreach sim $LData($tag) {
+                  lappend tags $tag[lindex $sim 0]
+               }
+            }
+         }
+      }
+      3 {
+         set Data(BranchSim) [concat $Data(BranchSim) $Tag]
+      }
+      default {
+         return
+      }
    }
 
-   Watch::CreateTree
+   if { $Level >= 3 } {
+      Watch::CreateTree
+   } else {
+      Watch::AllOpenItem "$tags" [incr Level]
+   }
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Watch::AllCloseItem>
+# Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Fermer toutes les branches d'un item (projet, watch, model, sim).
+#
+# Parametres :
+#     <Tag>    : Le tag permettant d'avoir les informations sur la branche a fermer.
+#     <Level>  : Le niveau de la branche a fermer.
+#
+# Retour :
+#
+# Remarques :
+#
+#     Tag :
+#        Projet --> nom du projet
+#        Watch  --> nom de la Watch
+#        Modele --> nom de la watch et nom du modele ($name$model)
+#        Sim    --> nom de la watch et du model ainsi que numero de la sim
+#                   ($name$model$no)
+#
+#     Level :
+#        0 --> Ferme un projet et tous ses enfants
+#        1 --> Ferme une watch et tous ses enfants
+#        2 --> Ferme un model et tous ses enfants
+#        3 --> Ferme une simulation et tous ses enfants
+#
+#-------------------------------------------------------------------------------
+
+proc Watch::AllCloseItem { Tag Level } {
+   variable LData
+   variable Data
+
+   set branch ""
+
+   #----- Choisi la bonne branche
+
+   switch $Level {
+         0     { set branch "BranchProject" }
+         1     { set branch "BranchWatch" }
+         2     { set branch "BranchModel" }
+         3     { set branch "BranchSim" }
+      default  { return }
+   }
+
+   #----- Enleve toutes les occurence du tag dans cette branche
+
+   set idx [lsearch -all $Data($branch) $Tag]
+   foreach id [lsort -integer -decreasing $idx] {
+      set Data($branch) [lreplace $Data($branch) $id $id]
+   }
+
+   #----- Il n'y a pas de pattern recurrant a partir des projets
+   #      On doit donc rappeller la fonction sur chacune des watch
+
+   if { $Level == 0 } {
+      if { [info exists LData(proj-$Tag)] } {
+         foreach watch $LData(proj-$Tag) {
+            Watch::AllCloseItem [lindex $watch 0] 1
+         }
+      }
+      set Level 4
+   }
+
+   #----- Si on a atteint le dernier niveau, on rafraichit l'arbre
+   #      Sinon, on rappelle la fonction avec un globbing pattern
+
+   if { $Level >= 3 } {
+      Watch::CreateTree
+   } else {
+      Watch::AllCloseItem $Tag* [incr Level]
+   }
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <Watch::Create>
@@ -242,7 +347,7 @@ proc Watch::Create { Frame } {
 
    frame $Frame.info
       canvas $Frame.info.canvas -bg white -relief sunken -bd 1 -yscrollcommand "$Frame.info.scroll set" \
-         -scrollregion "1 1 280 7000" -width 200 -height 1
+         -scrollregion "1 1 280 5000" -width 200 -height 1
       scrollbar $Frame.info.scroll -orient vertical -bd 1 -width 10 \
          -command "$Frame.info.canvas yview"
       pack $Frame.info.canvas -side left -fill both -expand true
@@ -294,35 +399,31 @@ proc Watch::CreateTree { } {
 
    #----- Cleanup du canvas
 
-   $canvas delete TREE SIGN WATCH SIM SIMSELECT PROJECT MODEL RESULT
-   $canvas create rectangle -10 -10 -10 -10 -outline black -fill $GDefs(ColorHighLight) -tags "SIMSELECT"
+   $canvas delete TREE SIGN WATCH SIM RESULTSELECT PROJECT MODEL RESULT
+   $canvas create rectangle -10 -10 -10 -10 -outline black -fill $GDefs(ColorHighLight) -tags "RESULTSELECT"
 
    #----- Creation des branches des differents projets
 
-   foreach proj $Data(Projects) { 
+   foreach proj [lsort $Data(Projects)] {
       set y [Watch::CreateBranchProject $canvas $proj $x $y]
       incr y 21
    }
 
-   $canvas itemconfigure -scrollregion "1 1 280 $y"
-   puts "ERIC : le y est de >$y<"
+   $canvas configure -scrollregion "1 1 280 $y"
 
    $canvas bind SIGN <Enter> "$canvas config -cursor hand1"
    $canvas bind SIGN <Leave> "$canvas config -cursor left_ptr"
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Watch::CreateBranchSim>
+# Nom      : <Watch::CreateBranchProject>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Creer l'arborescence des watchs.
+# But      : Creer l'arborescence d'un projet.
 #
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
-#     <Watch>     : Une liste contenant les informations de la watch
-#     <Name>      : Le nom de la watch
-#     <Model>     : Le nom du model
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
 #
@@ -361,30 +462,28 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
             set y1 [incr Y 21]
             set Y [Watch::CreateBranchWatch $Canvas $Project "$watch" [expr $X+20] $Y]
          }
-         
+
          #----- Creation de la ligne verticale de l'arbre
 
          $Canvas create line $X $y0 $X $y1 -tags TREE
       }
    }
-   
+
    return $Y
 }
 
 
 
 #-------------------------------------------------------------------------------
-# Nom      : <Watch::CreateBranchModel>
+# Nom      : <Watch::CreateBranchWatch>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Creer l'arborescence des watchs.
+# But      : Creer l'arborescence d'une watch.
 #
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
 #     <Watch>     : Une liste contenant les informations de la watch
-#     <Name>      : Le nom de la watch
-#     <Model>     : Le nom du model
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
 #
@@ -433,7 +532,7 @@ proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
 
       $Canvas create line $X $y0 $X $y1 -tags TREE
    }
-   
+
    return $Y
 }
 
@@ -441,13 +540,12 @@ proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
 # Nom      : <Watch::CreateBranchModel>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Creer l'arborescence des watchs.
+# But      : Creer l'arborescence d'un model.
 #
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
 #     <Watch>     : Une liste contenant les informations de la watch
-#     <Name>      : Le nom de la watch
 #     <Model>     : Le nom du model
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
@@ -458,7 +556,7 @@ proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchModel { Canvas Project Watch Model X Y} {
+proc Watch::CreateBranchModel { Canvas Project Watch Model X Y } {
    variable Data
    variable LData
    global GDefs
@@ -479,9 +577,9 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y} {
    if { [lsearch -exact $Watch::Data(BranchModel) $name$Model] != -1 } {
       $Canvas itemconfigure PMODEL$name$Model -bitmap $Model::Resources(Minus)
 
-      foreach item [lsort -index 0 $LData($name$Model)] {
+      foreach sim [lsort -index 0 $LData($name$Model)] {
          set y1 [incr Y 21]
-         set Y [Watch::CreateBranchSim $Canvas $Project "$Watch" $Model "$item" [expr $X+20] $Y]
+         set Y [Watch::CreateBranchSim $Canvas $Project "$Watch" $Model "$sim" [expr $X+20] $Y]
       }
 
       #----- Ligne verticale de la sous-branche
@@ -496,14 +594,14 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y} {
 # Nom      : <Watch::CreateBranchSim>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Creer l'arborescence des watchs.
+# But      : Creer l'arborescence d'une simulation.
 #
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
 #     <Watch>     : Une liste contenant les informations de la watch
-#     <Name>      : Le nom de la watch
 #     <Model>     : Le nom du model
+#     <Sim>       : La liste d'une simulation
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
 #
@@ -513,16 +611,16 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y} {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchSim { Canvas Project Watch Model Item X Y } {
+proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
    variable Data
    variable LData
    global GDefs
 
    set name [lindex $Watch 0]
-   set info    [lindex $Item 1]
+   set info    [lindex $Sim 1]
    set mode    [Info::Strip $info Mode]
    set meteo   [Info::Strip $info Meteo]
-   set no      [lindex $Item 0]
+   set no      [lindex $Sim 0]
 
    set txt "$meteo$mode ($no)"
    set tag "$name$Model$no"
@@ -535,8 +633,8 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Item X Y } {
    $Canvas create line [expr $X-20] $Y [expr $X-10] $Y -tags TREE
    $Canvas create bitmap $X $Y -bitmap $Model::Resources(Plus) -tags "SIGN PSIM$tag"
 
-   $Canvas bind SIM$tag <ButtonPress-3> "Watch::SelectSim SIM$tag $Model \"$info\" \"$Watch\" $Project ; Watch::PopUpSim %X %Y"
-   $Canvas bind SIM$tag <ButtonPress-1> "Watch::SelectSim SIM$tag $Model \"$info\" \"$Watch\" $Project"
+   $Canvas bind SIM$tag <ButtonPress-3> "Watch::SelectSim $Model \"$info\" \"$Watch\" $Project ; Watch::PopUpSim %X %Y"
+   #$Canvas bind SIM$tag <ButtonPress-1> "Watch::SelectSim $Model \"$info\" \"$Watch\" $Project"
    $Canvas bind PSIM$tag <ButtonPress-1> "Watch::SelectBranch $tag BranchSim"
 
    CanvasBubble::Create $Canvas SIM$tag "[Info::Format \"$info\"]"
@@ -547,11 +645,11 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Item X Y } {
       $Canvas itemconfigure PSIM$tag -bitmap $Model::Resources(Minus)
 
       #----- On regarde s'il y a quelque chsoe a afficher
-      
+
       if { [info exists LData(result-$tag)] && [llength $LData(result-$tag)] > 0} {
          foreach result [lsort $LData(result-$tag)] {
             set y1 [incr Y 21]
-            set Y [Watch::CreateBranchResult $Canvas $Project "$Watch" $Model "$Item" $result $X $Y]
+            set Y [Watch::CreateBranchResult $Canvas $Project "$Watch" $Model "$Sim" $result $X $Y]
          }
       }
 
@@ -567,14 +665,15 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Item X Y } {
 # Nom      : <Watch::CreateBranchResult>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Creer l'arborescence des watchs.
+# But      : Creer l'arborescence d'un resultat.
 #
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
 #     <Watch>     : Une liste contenant les informations de la watch
-#     <Name>      : Le nom de la watch
 #     <Model>     : Le nom du model
+#     <Sim>       : La liste d'une simulation
+#     <Result>    : Nom complet du fichier resultat (path complet)
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
 #
@@ -584,15 +683,17 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Item X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchResult { Canvas Project Watch Model Item Result X Y } {
+proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
    variable Data
    variable LData
    global GDefs
 
    set name [lindex $Watch 0]
-   set info    [lindex $Item 1]
-   set no      [lindex $Item 0]
+   set info    [lindex $Sim 1]
+   set no      [lindex $Sim 0]
    set result [split [file tail $Result] .]
+
+   #----- Creation du texte de lA'ffichage sous la forme YYYY-MM-DD hh:mm
 
    set date [lindex $result 2]
    set time [lindex $result 3]
@@ -601,6 +702,9 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Item Result X Y } {
 
    $Canvas create text [expr $X+13] $Y -text "$txt" -anchor w -tags "RESULT RESULT$tag" -font $GDefs(Font)
    $Canvas create line $X $Y [expr $X+10] $Y -tags TREE
+
+   $Canvas bind RESULT$tag <ButtonPress-3> "Watch::SelectResult RESULT$tag $Model \"$info\" \"$Watch\" $Project $Result ; Watch::PopUpResult \"$Result\" \"$txt\" %X %Y"
+   $Canvas bind RESULT$tag <ButtonPress-1> "Watch::SelectResult RESULT$tag $Model \"$info\" \"$Watch\" $Project $Result"
 
    return $Y
 }
@@ -762,14 +866,14 @@ proc Watch::PopUpProject { X Y } {
       menu .watchpopproj -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .watchpopproj add command -label ""  -command "" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
+         .watchpopproj add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Project) 0"
+         .watchpopproj add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project) 0"
          .watchpopproj add separator
-         .watchpopproj add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenProject $Data(Project)"
          .watchpopproj add command -label [lindex $Lbl(New) $GDefs(Lang)] -command "Model::New \$Data(Frame) Watch::New \"[lindex $Lbl(New) $GDefs(Lang)]\" 0"
    }
 
    .watchpopproj entryconfigure 0 -label "$Data(Project)"
-
-   .watchpopproj entryconfigure 3 -state disable
+   .watchpopproj entryconfigure 4 -state disable
 
    tk_popup .watchpopproj $X $Y 0
 }
@@ -800,6 +904,9 @@ proc Watch::PopUpWatch { X Y } {
       menu .watchpopwatch -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .watchpopwatch add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Name); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
+         .watchpopwatch add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Name) 1"
+         .watchpopwatch add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Name) 1"
+         .watchpopwatch add separator
          .watchpopwatch add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu .watchpopwatch.new
          .watchpopwatch add separator
          .watchpopwatch add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Watch::Suppress"
@@ -840,11 +947,16 @@ proc Watch::PopUpModel { X Y Model } {
       menu .watchpopmodel -tearoff 0 -bd 1 -type normal -activeborderwidth 1
             .watchpopmodel add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Name); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
                 -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
+            .watchpopmodel add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command ""
+            .watchpopmodel add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command ""
+            .watchpopmodel add separator
             .watchpopmodel add command -label [lindex $Lbl(New) $GDefs(Lang)] -command ""
    }
 
    .watchpopmodel entryconfigure 0 -label $Model
-   .watchpopmodel entryconfigure 1 -command "Watch::ParamsWindow $Model"
+   .watchpopmodel entryconfigure 1 -command "Watch::AllOpenItem $Data(Name)$Model 2"
+   .watchpopmodel entryconfigure 2 -command "Watch::AllCloseItem $Data(Name)$Model 2"
+   .watchpopmodel entryconfigure 4 -command "Watch::ParamsWindow $Model"
    tk_popup .watchpopmodel $X $Y 0
 }
 
@@ -876,29 +988,65 @@ proc Watch::PopUpSim { X Y } {
             -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
          .watchpopsim add command -label [lindex $Lbl(Edit) $GDefs(Lang)] -command "Watch::ParamsWindow \$Watch::Data(Model) False"
          .watchpopsim add separator
-         .watchpopsim add command -label [lindex $Lbl(Result) $GDefs(Lang)] -command ""
-         .watchpopsim add separator
-         .watchpopsim add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Watch::SimSuppress"
+         .watchpopsim add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Watch::SimSuppress" -state disable
    }
 
    .watchpopsim entryconfigure 0 -label $Data(Name)
+   tk_popup .watchpopsim $X $Y 0
+}
 
-   #----- Initialiser le menu
-   set pattern "$Data(ProjectsPath)/$Data(Project)/data/*_$Data(Name)/[Info::Path $Data(Modelbase) $Data(Info)]/results/*"
-   puts "ERIC : le super pattern est >>>>$pattern<<<<"
-   if { ![catch { set files [glob $pattern] }] && $files != "" } {
-      puts "ERIC : les files globbe sont : >>>>$files<<<<"
-      .watchpopsim entryconfigure 3 -state normal
-      if { "$Data(Model)"=="TRAJECT" } {
-         .watchpopsim entryconfigure 3 -command "SPI::FileOpen NEW TrajBox \"\" [list $FileBox::Type(TRAJ)] $files"
-      } else {
-         .watchpopsim entryconfigure 3 -command "SPI::FileOpen NEW FieldBox \"\" [list $FileBox::Type(FSTD)] $files"
-      }
-   } else {
-         .watchpopsim entryconfigure 3 -state disabled
+#----------------------------------------------------------------------------
+# Nom      : <Watch::PopUpResult>
+# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher le popup contextuel des resultats d'une simulation.
+#
+# Parametres    :
+#     <Result> : Path complet du dossier de la simulation
+#     <Title>    : Titre du popup
+#     <X>      : ...
+#     <Y>      : ...
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Watch::PopUpResult { Result Title X Y } {
+   global   GDefs
+   variable Data
+   variable Lbl
+
+   if { ![winfo exists .watchpopresult] } {
+
+      menu .watchpopresult -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+         .watchpopresult add command -label "" -command "SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
+            -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
+         .watchpopresult add command -label [lindex $Lbl(Result) $GDefs(Lang)] -command ""
+         .watchpopresult add separator
+         .watchpopresult add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Watch::SimSuppress" -state disable
    }
 
-   tk_popup .watchpopsim $X $Y 0
+   set files [glob -nocomplain $Result/results/*]
+
+   if { "$files" != "" } {
+      .watchpopresult entryconfigure 1 -state normal
+      if { "$Data(Model)"=="TRAJECT" } {
+         .watchpopresult entryconfigure 1 \
+            -command "SPI::FileOpen NEW TrajBox \"\" [list $FileBox::Type(TRAJ)] \"$files\" ;\
+            SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)"
+      } else {
+         .watchpopresult entryconfigure 1 \
+            -command "SPI::FileOpen NEW FieldBox \"\" [list $FileBox::Type(FSTD)] \"$files\" ;\
+            SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)"
+      }
+   } else {
+         .watchpopresult entryconfigure 1 -state disabled
+   }
+
+   .watchpopresult entryconfigure 0 -label "$Title"
+   tk_popup .watchpopresult $X $Y 0
 }
 
 #-------------------------------------------------------------------------------
@@ -931,6 +1079,10 @@ proc Watch::SelectBranch { Tag Tree } {
       lappend Data($Tree) $Tag
    } else {
       set Data($Tree) [lreplace $Data($Tree) $idx $idx]
+
+      while { [set idx [lsearch -exact $Data($Tree) $Tag]] != -1 } {
+         set Data($Tree) [lreplace $Data($Tree) $idx $idx]
+      }
    }
    Watch::CreateTree
 }
@@ -955,17 +1107,47 @@ proc Watch::SelectBranch { Tag Tree } {
 #
 #----------------------------------------------------------------------------
 
-proc Watch::SelectSim { Tag Model Info Watch Project} {
+proc Watch::SelectSim { Model Info Watch Project } {
    variable Data
 
-   if { $Tag != "" } {
-      eval $Data(Frame).info.canvas coords SIMSELECT [$Data(Frame).info.canvas bbox $Tag]
-   }
+   #if { $Tag != "" } {
+      #eval $Data(Frame).info.canvas coords SIMSELECT [$Data(Frame).info.canvas bbox $Tag]
+   #}
 
    Watch::Select "$Watch" $Project
    set Data(Model) $Model
    set Data(Modelbase) [string trimright $Model "01"]
    set Data(Info) "$Info"
+}
+
+#---------------------------------------------------------------------------
+# Nom      : <Watch::SelectResult>
+# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
+# Modif    : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Selection d'une simulation.
+#
+# Parametres :
+#     <Tag>       : Tag associe
+#     <Model>     : Nom du model de la simulation
+#     <Info>      : Ligne descriptive de la simulation (pool)
+#     <Watch>     : Ligne descriptive de la source (watch)
+#     <Project>   : Nom du projet
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Watch::SelectResult { Tag Model Info Watch Project Result } {
+   variable Data
+
+   if { $Tag != ""} {
+      eval $Data(Frame).info.canvas coords RESULTSELECT [$Data(Frame).info.canvas bbox $Tag]
+   }
+
+   Watch::SelectSim $Model "$Info" "$Watch" $Project
 }
 
 #-------------------------------------------------------------------------------
@@ -1132,7 +1314,8 @@ proc Watch::Read { } {
 
    #----- Trouve la liste des noms de tous les projets (un projet = un dossier (directory))
 
-   set Data(Projects) [exec ls -p $Data(ProjectsPath) | grep "/" | sed s:/::]
+   #set Data(Projects) [exec ls -p $Data(ProjectsPath) | grep "/" | sed s:/::]
+   set Data(Projects) [glob -nocomplain -types d -directory $Data(ProjectsPath) -tails *]
 
    #----- Traverse l'arborescence des projets pour trouver les pool voulus
 
@@ -1140,7 +1323,7 @@ proc Watch::Read { } {
       foreach proj $Data(Projects) {
 
          #----- Verifie que les fichiers necessaires sont presents
-         
+
          set path $Data(ProjectsPath)/$proj
          if { ![file exists $path/sim.pool] || ![file exists $path/sources.src] } {
             continue
@@ -1175,7 +1358,7 @@ proc Watch::Read { } {
                lappend LData($name) $model
                set LData($name$model) ""
             }
-            lappend LData($name$model) "$nosim \"$info\"" 
+            lappend LData($name$model) "$nosim \"$info\""
 
             #----- Trouve tous les dossiers des resultats des simulations
 
@@ -1240,11 +1423,11 @@ proc Watch::Write { Modelbase } {
    upvar ${Modelbase}::Sim sim
 
    #----- Verification des valeurs
-   
 
-   #----- Creation de la ligne de pool 
 
-   set pool [Info::Code ${Modelbase}::Sim $Modelbase :]
+   #----- Creation de la ligne de pool
+
+   set pool [Info::Code ${Modelbase}::Sim]
 
    #----- Regarder s'il existe deja une ligne de pool concernant cette watch
 
@@ -1258,7 +1441,7 @@ proc Watch::Write { Modelbase } {
    exec echo $pool >> $path
    exec chmod 664           $path
    exec chgrp $GDefs(Group) $path
-   
+
    #----- Relire les experiences
 
    Model::Check 0
@@ -1293,12 +1476,12 @@ proc Watch::InitNew { Model } {
 
    if { [info exists LData($Data(Name))] && [info exists LData($namemodel)] } {
       set nos ""
-      foreach item $LData($namemodel) {
-         lappend nos [lindex $item 0]
+      foreach sim $LData($namemodel) {
+         lappend nos [lindex $sim 0]
       }
       set i 0
       while { [lsearch $nos $i] != -1 } {
-      incr i
+         incr i
       }
       set Data(No) $i
    } else {
@@ -1308,7 +1491,7 @@ proc Watch::InitNew { Model } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <Watch::ParamsWindow>
-# Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE        
+# Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
 # But      : Affiche l'interface de creation/edition d'une simulation.
 #
@@ -1415,7 +1598,7 @@ proc Watch::ParamsAutoWatch { Modelbase Frame New } {
 
    set proj [lindex $Data(Types) $Data(Type)]
    set Data(Product) [lindex $Data(Project$proj) 0]
-   Option::Create $tabframe.params.projet [lindex $Lbl(Prod) $GDefs(Lang)] Watch::Data(Project) 0 -1 $Data(Project$proj) "" 
+   Option::Create $tabframe.params.projet [lindex $Lbl(Prod) $GDefs(Lang)] Watch::Data(Project) 0 -1 $Data(Project$proj) ""
    pack $tabframe.params.projet -side top -anchor w -padx 2 -fill x
    #Bubble::Create $tabframe.params.prod "[lindex $Bubble(Prod) $GDefs(Lang)]"
    button $tabframe.params.add -text "[lindex $Lbl(AddWatch) $GDefs(Lang)]" -bd 1 -command "Watch::Write $Modelbase ; Model::ParamsClose $Modelbase"

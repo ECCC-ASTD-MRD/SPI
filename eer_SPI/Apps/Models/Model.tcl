@@ -279,10 +279,10 @@ proc Model::Delete { Info } {
    while { $Info!="" } {
 
       #----- Extraire les informations sur l'experience.
-      Info::Decode ::Model::Sim $modelbase $Info
+      Info::Decode ::Model::Sim $Info
 
       #----- Determiner la localisation du fichier
-      set simpath [Info::Path $modelbase $Info]
+      set simpath [Info::Path $Info]
 
       #----- Supprimer les donnees sur le serveur.
       file delete -force $path/$simpath
@@ -1007,14 +1007,14 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
       }
       "CONT" {
          #----- For this, we have to get the parametres from the previous simulation
-         Info::Decode ::${modelbase}::Sim ${modelbase} $Exp::Data(SelectSim)
+         Info::Decode ::${modelbase}::Sim $Exp::Data(SelectSim)
          ${modelbase}::InitCont $Exp::Data(Type)
          ${modelbase}::ParamsCont .modelnew.params
       }
       "RENEW" {
          #----- For this, we have to point the meteo the renewed simulation's meteo
-         Info::Decode ::${modelbase}::Sim ${modelbase} $Exp::Data(SelectSim)
-         set ::${modelbase}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path ${modelbase} $Exp::Data(SelectSim)]/meteo
+         Info::Decode ::${modelbase}::Sim $Exp::Data(SelectSim)
+         set ::${modelbase}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/meteo
          ${modelbase}::ParamsEmission .modelnew.params
       }
    }
@@ -1151,7 +1151,7 @@ proc Model::Launch { Model } {
    #----- Try to lauch the model
    if { [${Model}::Launch] } {
       destroy [winfo toplevel $Param(Frame)]
-      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model}::Sim ${Model} :]
+      Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model}::Sim]
       Model::Check 0
 
       Model::ParamsClose ${Model}
@@ -1249,7 +1249,7 @@ proc Model::ParamsPath { Model } {
    }
 
    #----- Save simulation pool information.
-   exec echo "[Info::Code ${Model}::Sim ${Model} :]" > $sim(Path)/tmp/sim.pool
+   exec echo "[Info::Code ${Model}::Sim]" > $sim(Path)/tmp/sim.pool
    return $sim(Path)
 }
 

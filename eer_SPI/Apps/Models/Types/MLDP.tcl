@@ -927,9 +927,9 @@ proc MLDP::File { Info Path Type Back } {
    variable Sim
    variable Tmp
 
-   Info::Decode ::MLDP::Tmp MLDP $Info
+   Info::Decode ::MLDP::Tmp $Info
 
-   set simpath $Path/[Info::Path MLDP $Info]
+   set simpath $Path/[Info::Path $Info]
    set file "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_000"
    set std  ""
 
@@ -1003,7 +1003,7 @@ proc MLDP::Result { Type } {
    #----- Recuperer les noms de fichiers resultats avec retour sur les precedentes
    set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]
 
-   Info::Decode ::MLDP::Tmp MLDP $Exp::Data(SelectSim)
+   Info::Decode ::MLDP::Tmp $Exp::Data(SelectSim)
    SPI::FileOpen NEW FieldBox "(MLDP) $Tmp(NoExp) $Tmp(Name) ($Type)" "" $files
 }
 

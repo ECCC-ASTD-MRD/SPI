@@ -817,7 +817,7 @@ proc Exp::Params { Parent Model } {
       pack .simparams.confirm.yes .simparams.confirm.no -side left -fill x -expand true
    pack .simparams.confirm -side top  -fill x
 
-   eval .simparams.desc.list insert end [split [Info::Format [Info::Code ::${Model}::Sim ${Model} :]] \n]
+   eval .simparams.desc.list insert end [split [Info::Format [Info::Code ::${Model}::Sim]] \n]
 
    grab .simparams
    tkwait variable correct

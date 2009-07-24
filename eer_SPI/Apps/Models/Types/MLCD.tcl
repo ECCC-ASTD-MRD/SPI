@@ -846,7 +846,7 @@ proc MLCD::ObukhovFunc { Sc Z0 } {
 proc MLCD::Result { } {
    variable Sim
 
-   set path [Exp::Path]/[Info::Path MLCD $Exp::Data(SelectSim)]
+   set path [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]
    SPI::FileOpen NEW FieldBox "(MLCD) $Exp::Data(No) $Exp::Data(Name)" "" "$path/results/pos $path/results/conc"
 }
 

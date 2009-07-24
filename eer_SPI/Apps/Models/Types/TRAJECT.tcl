@@ -86,7 +86,7 @@ proc TRAJECT::Result { } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.
-   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [glob [Exp::Path]/[Info::Path TRAJECT $Exp::Data(SelectSim)]/results/*.points]
+   SPI::FileOpen NEW TrajBox "$Exp::Data(No) $Exp::Data(Name)" "" [glob [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/results/*.points]
 }
 
 #-------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ proc TRAJECT::Launch { } {
       }
       Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
   } else {
-      set info [Info::Code ::TRAJECT::Sim TRAJECT :]
+      set info [Info::Code ::TRAJECT::Sim]
       set id [Exp::Id $info]
       simulation create $id -type trajectory
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \

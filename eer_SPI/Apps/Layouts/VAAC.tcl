@@ -287,7 +287,7 @@ proc VAAC::DataInit { Frame } {
    if { [set info [Info::Read [lindex [lindex $Data(Index) 0] 0]]]=="" } {
       return
    }
-   eval Info::Decode ::VAAC::Sim \$[Info::Strip $info Model]::Sim(Info) \$info
+   eval Info::Decode ::VAAC::Sim \$info
 
    set Sim(model) [string tolower $Sim(Model)] ; #----- Dispersion model name in lower case.
 

@@ -191,7 +191,7 @@ proc METF::DataInit { Frame } {
    if { [set info [Info::Read [lindex [lindex $info 0] 0]]]=="" } {
       return
    }
-   eval Info::Decode ::METF::Sim \$[Info::Strip $info Model]::Sim(Info) \$info
+   eval Info::Decode ::METF::Sim \$info
 
    #----- Updater les informations sur la source
 

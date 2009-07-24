@@ -372,9 +372,8 @@ proc RSMC::LayoutUpdate { Frame } {
       return
    }
 
-   eval set Sim(Info) \$[Info::Strip $info Model]::Sim(Info)
-   Info::Decode ::RSMC::Sim $Sim(Info) $info
-   set Sim(Path) [Info::Path $Sim(Info) $info]
+   Info::Decode ::RSMC::Sim $info
+   set Sim(Path) [Info::Path $info]
 
    set DispModel $Sim(Model)
    switch $Sim(Model) {

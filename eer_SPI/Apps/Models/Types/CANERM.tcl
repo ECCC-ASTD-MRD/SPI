@@ -78,14 +78,14 @@ proc CANERM::File { Info Path Type Back } {
 
    while { $carryon } {
 
-      Info::Decode ::CANERM::Tmp CANERM $Info
+      Info::Decode ::CANERM::Tmp $Info
 
       set nbper [string trimleft $Tmp(NbPer) 0]
       if { $nbper=="" } {
          set nbper 0
       }
 
-      set simpath $Path/[Info::Path CANERM $Info]
+      set simpath $Path/[Info::Path $Info]
       set simprec "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)"
       set simlist ""
 
@@ -187,7 +187,7 @@ proc CANERM::CreateModelInput { } {
    set Sim(Time0) $Sim(SimHour)
 
    while { $Tmp(NoPrev)!=-1 } {
-      Info::Decode ::CANERM::Tmp CANERM [lindex [Info::Find $Sim(Path)/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
+      Info::Decode ::CANERM::Tmp [lindex [Info::Find $Sim(Path)/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]
       set Sim(Date0) $Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)
       set Sim(Time0) $Tmp(SimHour)
    }
@@ -628,7 +628,7 @@ proc CANERM::SimPrevious { Path } {
    set result ""
 
    set info [lindex [Info::Find $Path/../CANERM.pool CANERM NoSim $Sim(NoPrev) NameExp $Sim(NameExp)] 0]
-   set res  [glob $Path/../[Info::Path CANERM $info]]
+   set res  [glob $Path/../[Info::Path $info]]
 
    set Sim(PrevRestart) "$res/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000r"
 
@@ -637,8 +637,8 @@ proc CANERM::SimPrevious { Path } {
 
    while { $info!="" && $Tmp(NoPrev)!=-1 } {
 
-      Info::Decode ::CANERM::Tmp CANERM $info
-      set path [Info::Path CANERM $info]
+      Info::Decode ::CANERM::Tmp $info
+      set path [Info::Path $info]
 
       catch { set result [glob $Path/../$path/results/$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_*c] }
 
@@ -676,7 +676,7 @@ proc CANERM::Result { Type } {
    #----- Recuperer les noms de fichiers resultats avec retour sur les precedentes
    set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]
 
-   Info::Decode ::CANERM::Tmp CANERM $Exp::Data(SelectSim)
+   Info::Decode ::CANERM::Tmp $Exp::Data(SelectSim)
    SPI::FileOpen NEW FieldBox "(CANERM) $Tmp(NoExp) $Tmp(Name) ($Type)" "" $files
 }
 

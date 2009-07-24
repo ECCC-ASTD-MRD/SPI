@@ -322,9 +322,8 @@ puts stderr $field
       return
    }
 
-   eval set Sim(Info) \$[Info::Strip $info Model]::Sim(Info)
-   Info::Decode ::TOA::Sim $Sim(Info) $info
-   set Sim(Path)    [Info::Path $Sim(Info) $info]
+   Info::Decode ::TOA::Sim $info
+   set Sim(Path) [Info::Path $info]
 
    #----- Position de recentrage
 
