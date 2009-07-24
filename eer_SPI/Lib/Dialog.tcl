@@ -269,7 +269,7 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(INFO) $Text"
+      puts "(INFO) $Text"
       return
    }
 
@@ -326,7 +326,7 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(INFO) $Text"
+      puts "(INFO) $Text"
       return
    }
 
@@ -395,7 +395,7 @@ proc Dialog::DestroyWait { } {
 proc Dialog::CreateMessage { Master Text { Aspect 1000 } } {
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(INFO) $Text"
+      puts "(INFO) $Text"
       return
    }
 
