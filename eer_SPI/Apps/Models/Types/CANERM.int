@@ -23,6 +23,7 @@
 #
 # Parametres :
 #   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
+#   <Time>   : Selection du temps de depart
 #
 # Retour :
 #
@@ -30,7 +31,7 @@
 #
 #-------------------------------------------------------------------------------
 
-proc CANERM::ParamsNew { Tab } {
+proc CANERM::ParamsNew { Tab { Time True } } {
    global   GDefs
    variable Sim
    variable Msg
@@ -42,17 +43,19 @@ proc CANERM::ParamsNew { Tab } {
    set t [TabFrame::Add $Tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
 
    #----- Simulation Starting Time.
-   labelframe $t.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
+   if { $Time } {
+      labelframe $t.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
-      #----- Simulation Date Hour and minutes.
-      Calendar::Create $t.d.date "" CANERM::Sim(AccSeconds) -1
-      Clock::Create $t.d.time [lindex $Lbl(At) $GDefs(Lang)] CANERM::Sim(AccHour)
-      pack $t.d.date -side left -padx 2 -fill x -expand true
-      pack $t.d.time -side left -padx 2
-   pack $t.d -side top -side top -padx 5 -pady 5 -ipady 2 -fill x
+         #----- Simulation Date Hour and minutes.
+         Calendar::Create $t.d.date "" CANERM::Sim(AccSeconds) -1
+         Clock::Create $t.d.time [lindex $Lbl(At) $GDefs(Lang)] CANERM::Sim(AccHour)
+         pack $t.d.date -side left -padx 2 -fill x -expand true
+         pack $t.d.time -side left -padx 2
+      pack $t.d -side top -side top -padx 5 -pady 5 -ipady 2 -fill x
 
-   Bubble::Create $t.d.date [lindex $Bubble(Date) $GDefs(Lang)]
-   Bubble::Create $t.d.time [lindex $Bubble(Time) $GDefs(Lang)]
+      Bubble::Create $t.d.date [lindex $Bubble(Date) $GDefs(Lang)]
+      Bubble::Create $t.d.time [lindex $Bubble(Time) $GDefs(Lang)]
+   }
 
    #----- Model Integration (data output time step and model time step).
    labelframe $t.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"

@@ -237,7 +237,6 @@ proc TRAJECT::CreateModelInput { } {
       puts $f "$Sim(AccDay)       Jour de l'accident"
       puts $f "$Sim(AccHour)       Heure de l'accident"
    close $f
-
 }
 
 #----------------------------------------------------------------------------

@@ -23,7 +23,7 @@
 #
 # Parametres :
 #   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
-#   <New>    : Nouvelle simulation ?
+#   <Time>   : Selection du temps de depart
 #
 # Retour :
 #
@@ -31,7 +31,7 @@
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::ParamsNew { Tab } {
+proc TRAJECT::ParamsNew { Tab { Time True } } {
    global GDefs
    variable Lbl
    variable Msg
@@ -42,18 +42,20 @@ proc TRAJECT::ParamsNew { Tab } {
    set frame [TabFrame::Add $Tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
 
    #----- Simulation Starting Time.
-   labelframe $frame.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
+   if { $Time } {
+      labelframe $frame.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
-      #----- Simulation Date Hour and minutes.
-      set TRAJECT::Sim(Second) [clock seconds]
-      Calendar::Create $frame.d.date "" TRAJECT::Sim(Second) -1
-      Clock::Create $frame.d.time [lindex $Lbl(At) $GDefs(Lang)] TRAJECT::Sim(AccHour)
-      pack $frame.d.date -side left -fill x -expand true -padx 2
-      pack $frame.d.time -side left -padx 2
-   pack $frame.d -side top -padx 5 -pady 5 -ipady 2 -fill x
+         #----- Simulation Date Hour and minutes.
+         set TRAJECT::Sim(Second) [clock seconds]
+         Calendar::Create $frame.d.date "" TRAJECT::Sim(Second) -1
+         Clock::Create $frame.d.time [lindex $Lbl(At) $GDefs(Lang)] TRAJECT::Sim(AccHour)
+         pack $frame.d.date -side left -fill x -expand true -padx 2
+         pack $frame.d.time -side left -padx 2
+      pack $frame.d -side top -padx 5 -pady 5 -ipady 2 -fill x
 
-   Bubble::Create $frame.d.date [lindex $Bubble(Date) $GDefs(Lang)]
-   Bubble::Create $frame.d.time [lindex $Bubble(Time) $GDefs(Lang)]
+      Bubble::Create $frame.d.date [lindex $Bubble(Date) $GDefs(Lang)]
+      Bubble::Create $frame.d.time [lindex $Bubble(Time) $GDefs(Lang)]
+   }
 
    #----- Model Integration (data output time step and model time step).
    labelframe $frame.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"

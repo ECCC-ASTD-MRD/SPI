@@ -23,6 +23,7 @@
 #
 # Parametres :
 #   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
+#   <Time>   : Selection du temps de depart
 #
 # Retour :
 #
@@ -30,7 +31,7 @@
 #
 #-------------------------------------------------------------------------------
 
-proc MLCD::ParamsNew { Tab } {
+proc MLCD::ParamsNew { Tab { Time True } } {
    global GDefs
    variable Data
    variable Lbl
@@ -49,20 +50,22 @@ proc MLCD::ParamsNew { Tab } {
    Bubble::Create $frame.src.cb "[lindex $Bubble(SelectSource) $GDefs(Lang)]"
    Bubble::Create $frame.src "[lindex $Bubble(Source) $GDefs(Lang)]"
 
-   #----- Starting time of simulation.
-   labelframe $frame.t -text "[lindex $Lbl(Start) $GDefs(Lang)]"
+   #----- Simulation Starting Time.
+   if { $Time } {
+      labelframe $frame.t -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
-      #---- Simulation Date and Time (hour and minutes) [UTC].
-      Calendar::Create $frame.t.date [lindex $Lbl(Date) $GDefs(Lang)] MLCD::Sim(AccDate) 25
-      Clock::Create $frame.t.hour "" MLCD::Sim(AccHour) MLCD::Sim(AccMin)
-      pack $frame.t.date -side left -anchor w -padx 2 -fill x
-      pack $frame.t.hour -side left -padx 2
+         #---- Simulation Date and Time (hour and minutes) [UTC].
+         Calendar::Create $frame.t.date [lindex $Lbl(Date) $GDefs(Lang)] MLCD::Sim(AccDate) 25
+         Clock::Create $frame.t.hour "" MLCD::Sim(AccHour) MLCD::Sim(AccMin)
+         pack $frame.t.date -side left -anchor w -padx 2 -fill x
+         pack $frame.t.hour -side left -padx 2
 
-      Bubble::Create $frame.t.date "[lindex $Bubble(StartDate) $GDefs(Lang)]"
-      Bubble::Create $frame.t.hour "[lindex $Bubble(StartHour) $GDefs(Lang)]"
+         Bubble::Create $frame.t.date "[lindex $Bubble(StartDate) $GDefs(Lang)]"
+         Bubble::Create $frame.t.hour "[lindex $Bubble(StartHour) $GDefs(Lang)]"
 
-   pack $frame.t -side top -padx 5 -fill x
-   Bubble::Create $frame.t "[lindex $Bubble(StartTime) $GDefs(Lang)]"
+      pack $frame.t -side top -padx 5 -fill x
+      Bubble::Create $frame.t "[lindex $Bubble(StartTime) $GDefs(Lang)]"
+   }
 
    #----- Model integration.
    labelframe $frame.integ -text "[lindex $Lbl(Exec) $GDefs(Lang)]"
