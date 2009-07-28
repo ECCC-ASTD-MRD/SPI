@@ -169,8 +169,6 @@ function Log_End {
    else
       Log_Mail "Job finished (ERROR)" ${LOG_FILE} AUTO
    fi
-
-   exit $status
 }
 
 function Log_Print {

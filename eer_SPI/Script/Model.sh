@@ -387,3 +387,5 @@ Model_CopyLog
 
 Log_End ${MODEL_EXITSTATUS}
 Model_CleanUp
+
+exit ${MODEL_EXITSTATUS}
