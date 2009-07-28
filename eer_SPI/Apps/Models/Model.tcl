@@ -1210,6 +1210,7 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
 #
 # Parametres :
 #  <Model>   : Model
+#  <ReqNo>   : Request simulation number
 #
 # Retour     :
 #
@@ -1217,14 +1218,16 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::ParamsPath { Model } {
+proc Model::ParamsPath { Model { ReqNo True } } {
    global GDefs
    variable Param
 
    upvar ${Model}::Sim sim
 
    #----- Define simulation path.
-   set sim(NoSim) [Info::Request $Param(Path)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
+   if { $ReqNo } {
+      set sim(NoSim) [Info::Request $Param(Path)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
+   }
    set expp       "$sim(NoExp)_$sim(NameExp)"
    set simp       "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
    set prevp      "$sim(Model).$sim(NoPrev).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
@@ -1232,6 +1235,9 @@ proc Model::ParamsPath { Model } {
    set sim(Path)     "$Param(Path)/${expp}/${simp}"
    set sim(PathPrev) "$Param(Path)/${expp}/${prevp}"
 
+   if { [file exists $sim(Path)] } {
+      file delete -force $sim(Path)
+   }
    file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
 
    #----- Check for remote path::${Model}::Sim
