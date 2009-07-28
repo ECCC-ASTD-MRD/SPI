@@ -177,8 +177,10 @@ proc TRAJECT::ParamsCheck { Tab No } {
    }
 
    #----- Get meteorological data according to met database, time interval between files, release accident date-time.
-   if { ![GetMetData] } {
-      return False
+   if { $Sim(ReNewMeteo)=="" } {
+      if { ![GetMetData] } {
+         return False
+      }
    }
    return True
 }
