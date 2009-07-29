@@ -39,7 +39,7 @@ namespace eval Info {
    variable Token
 
    set Token(CANERM)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
-                        SimYear SimMonth SimDay SimHour Mode Meteo Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
+                        SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
                         DTIN DTIS FnVert FnTime EmDuration Delai IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
@@ -47,7 +47,7 @@ namespace eval Info {
                         EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
-                        Mode Meteo Method Level LevelUnit TimeStep BatchStart }
+                        Mode Meteo Delta Method Level LevelUnit TimeStep BatchStart }
 
    set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
                         AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid \
@@ -402,7 +402,8 @@ proc Info::List { Path } {
 
       while { ![eof $file] } {
          gets $file line
-         if { [string length $line] > 0 } {
+         set line  [string trim $line]
+         if { [string length $line] && [string index $line 0]!="#" } {
             lappend list $line
          }
       }
