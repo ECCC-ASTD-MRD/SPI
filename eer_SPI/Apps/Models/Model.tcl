@@ -1238,7 +1238,7 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    if { [file exists $sim(Path)] } {
       file delete -force $sim(Path)
    }
-   file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp
+   file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp $sim(Path)/products
 
    #----- Check for remote path::${Model}::Sim
    set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
