@@ -59,6 +59,11 @@ namespace eval Dialog { }
 proc  Dialog::CreateDefault { Master Width Title Text Bitmap Default args } {
    global button
 
+   if { ![info exists ::tk_version] } {
+      puts "(INFO) $Text"
+      return
+   }
+
    toplevel .dg -class Dialog
    wm title .dg $Title
    wm resizable .dg 0 0
