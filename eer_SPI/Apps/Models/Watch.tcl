@@ -1304,6 +1304,7 @@ proc Watch::Read { } {
             }
             gets $f line
          }
+         close $f
 
          #----- Trouve les lignes de pool de ces sources
          set infos [Info::List $path/sim.pool]
