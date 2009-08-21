@@ -1243,7 +1243,7 @@ proc MLCD::CreateModelInput { } {
    close $file
 
    #---- Create met windfield input file.
-   set file [open $Path/tmp/winddata.dat w 0644]
+   set file [open $Sim(Path)/tmp/winddata.dat w 0644]
 
    puts $file "$Sim(Name)"
    puts $file "[llength $Sim(ObsValidIdx)]"
