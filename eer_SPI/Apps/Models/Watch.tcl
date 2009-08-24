@@ -324,7 +324,8 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
    $Canvas create image [expr $X+20] $Y -image [lindex $Model::Resources(Icos) [Watch::GetType $Project]] -tags "PROJECT"
    $Canvas create text [expr $X+33] $Y -text "$Project" -anchor w -tags "PROJECT PROJECT$Project" -font $GDefs(Font) -fill black
 
-   $Canvas bind PPROJECT$Project <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::SelectBranch $Project BranchProject True"
+   $Canvas bind PPROJECT$Project <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
+   $Canvas bind PROJECT$Project  <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
    $Canvas bind PROJECT$Project  <ButtonPress-3> "set Watch::Data(Project) $Project; Watch::PopUpProject %X %Y"
 
    #----- On cree les branches des watchs seulement s'il faut les afficher
@@ -585,7 +586,7 @@ proc Watch::GetType { Project } {
       "FIRE"  { set type 3 }
       "BIO"   { set type 4 }
       "SPILL" { set type 5 }
-      "SPCL"  { set type 6 }
+      "SPEC"  { set type 6 }
       default { set type 6 }
    }
    return $type

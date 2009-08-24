@@ -1907,7 +1907,8 @@ proc Model::SwitchCoord { } {
 # Parametres :
 #   <Frame>  : Frame de l'onglet
 #   <No>     : Numero de l'onglet
-#   <Icon>   : Index d'une icone specifique
+#   <Loc>    : Localisation specifique
+#   <Group>  : Groupe cpecifique
 #
 # Retour:
 #
@@ -1915,41 +1916,40 @@ proc Model::SwitchCoord { } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::TypeSelect { Frame No { Icon "" } } {
+proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
    variable Resources
 
    set icos ""
 
+   SPI::IcoDel WATCH
+   SPI::IcoDel EXPERIMENT
+
    switch $No {
-      0 {
-         SPI::IcoDel WATCH
-         SPI::IcoDel EXPERIMENT
-      }
       1 {
          foreach exp $Exp::Data(List) {
-            if { $Icon=="" || [lindex $exp 1]==$Icon } {
+            if { $Loc=="" || [lindex $exp 1]==$Loc } {
                foreach loc [lindex $exp 3] {
                   lappend icos "\"[lindex $loc 0] [lindex $exp 0]:[lindex $exp 1]\"\
                      [lindex $loc 1] [lindex $loc 2] 0 [lindex $Resources(Icos) [lindex $exp 2]]"
                }
             }
          }
-         SPI::IcoDel WATCH
          SPI::IcoAdd $Page::Data(Frame) EXPERIMENT "" $icos
          Exp::CreateTree
-        }
+      }
       2 {
          foreach proj $Watch::Data(Projects) {
-            set ico [lindex $Resources(Icos) [Watch::GetType $proj]]
-            foreach watch $Watch::Data(Sources$proj) {
-               if { $Icon=="" || [lindex $watch 0]==$Icon } {
-                  lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"
+            if { $Group=="" || $proj==$Group } {
+               set ico [lindex $Resources(Icos) [Watch::GetType $proj]]
+               foreach watch $Watch::Data(Sources$proj) {
+                  if { $Loc=="" || [lindex $watch 0]==$Loc } {
+                     lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"
+                  }
                }
             }
          }
-         SPI::IcoDel EXPERIMENT
          SPI::IcoAdd $Page::Data(Frame) WATCH "" $icos
-        }
+      }
    }
 }
 
