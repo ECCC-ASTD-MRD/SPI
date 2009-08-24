@@ -1055,6 +1055,15 @@ proc Watch::SimSuppress { } {
    set path $Data(Path)/$Data(Project)/sim.pool
    Info::Delete $path "$Data(Info)"
 
+   set model [Info::Strip $Data(Info) Model]
+   set name  [Info::Strip $Data(Info) NameExp]
+   set no    [Info::Strip $Data(Info) NoSim]
+
+   #----- Supprimer tous les resultats pour la source
+   if { [llength [set files [glob -nocomplain $Data(Path)/$Data(Project)/data/*_${name}/${model}.${no}*]]] } {
+      eval file delete -force $files
+   }
+
    #----- Mise a jour de la liste des experiences
    Model::Check 0
    Model::TypeSelect none 2
