@@ -2130,7 +2130,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
 
-               if (nobj>6) {
+               if (nobj!=6) {
                   Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates must be { i0 i1 j0 j1 k0 k1 }",(char*)NULL);
                   return(TCL_ERROR);
                }
