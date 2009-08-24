@@ -1927,7 +1927,7 @@ proc Model::TypeSelect { Frame No { Icon "" } } {
       }
       1 {
          foreach exp $Exp::Data(List) {
-            if { $Icon=="" || [lindex $exp 1]==$Icon} {
+            if { $Icon=="" || [lindex $exp 1]==$Icon } {
                foreach loc [lindex $exp 3] {
                   lappend icos "\"[lindex $loc 0] [lindex $exp 0]:[lindex $exp 1]\"\
                      [lindex $loc 1] [lindex $loc 2] 0 [lindex $Resources(Icos) [lindex $exp 2]]"
@@ -1940,11 +1940,10 @@ proc Model::TypeSelect { Frame No { Icon "" } } {
         }
       2 {
          foreach proj $Watch::Data(Projects) {
-            if { [info exists Watch::LData(proj-$proj)] } {
-               foreach watch $Watch::LData(proj-$proj) {
-                  if { $Icon=="" || [lindex $watch 0]==$Icon} {
-                     lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 [lindex $Resources(Icos) [lindex $watch 3]]"
-                  }
+            set ico [lindex $Resources(Icos) [Watch::GetType $proj]]
+            foreach watch $Watch::Data(Sources$proj) {
+               if { $Icon=="" || [lindex $watch 0]==$Icon } {
+                  lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"
                }
             }
          }

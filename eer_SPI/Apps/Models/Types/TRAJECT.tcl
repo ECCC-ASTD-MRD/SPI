@@ -38,23 +38,23 @@ proc TRAJECT::InitNew { Type } {
 
    TabFrame::Select .trajectnew.opt 0
 
-   set Sim(AccMin)  00
-   set Sim(Method)   "Trajectoire"
-   set Sim(TimeStep) "3600.0"
-
+   set Sim(Method)     "Trajectoire"
+   set Sim(Mode)       "prog"
+   set Sim(TimeStep)   "3600.0"
+   set Sim(AccMin)     00
    set Sim(BatchStart) 0
    set Sim(Duration)   72
 
    if { $Type==0 } {
 
-      #----- Ajuster les fonctions de niveau selon le type volcan.
+      #----- Ajuster les fonctions de niveau selon le type volcan (Pression).
       set Sim(LevelUnit)   "MILLIBARS"
       set Sim(Level1)        700.0
       set Sim(Level2)        500.0
       set Sim(Level3)        250.0
    } else {
 
-      #----- Ajuster les fonctions de niveau selon tout autre type.
+      #----- Ajuster les fonctions de niveau selon tout autre type (Metres).
       set Sim(LevelUnit)   "METRES"
       set Sim(Level1)       500.0
       set Sim(Level2)       1500.0
