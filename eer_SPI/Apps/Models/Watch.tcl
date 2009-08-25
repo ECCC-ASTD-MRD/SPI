@@ -542,9 +542,9 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
    global GDefs
    variable Data
 
-   set name [lindex $Watch 0]
-   set info    [lindex $Sim 1]
-   set no      [lindex $Sim 0]
+   set name   [lindex $Watch 0]
+   set info   [lindex $Sim 1]
+   set no     [lindex $Sim 0]
    set result [split [file tail $Result] .]
 
    #----- Creation du texte de lA'ffichage sous la forme YYYY-MM-DD hh:mm
@@ -586,7 +586,6 @@ proc Watch::GetType { Project } {
       "FIRE"  { set type 3 }
       "BIO"   { set type 4 }
       "SPILL" { set type 5 }
-      "SPEC"  { set type 6 }
       default { set type 6 }
    }
    return $type
@@ -1166,17 +1165,17 @@ proc Watch::Read { } {
             lappend Data(Sources$proj) [list $src $lat $lon]
          }
 
-         if { ![info exists Data(Models$name)] } {
-            set Data(Models$name) ""
+         if { ![info exists Data(Models$src)] } {
+            set Data(Models$src) ""
          }
-         if { [lsearch $Data(Models$name) $model]==-1 } {
-            lappend Data(Models$name) $model
-            set Data(Sims$name$model) ""
+         if { [lsearch $Data(Models$src) $model]==-1 } {
+            lappend Data(Models$src) $model
+            set Data(Sims$src$model) ""
          }
-         lappend Data(Sims$name$model) "$nosim \"$info\""
+         lappend Data(Sims$src$model) "$nosim \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$name$model$nosim) [glob -nocomplain  $Data(Path)/$proj/data/*_$name/${model}.${nosim}.*]
+         set Data(Results$src$model$nosim) [glob -nocomplain  $Data(Path)/$proj/data/*_$src/${model}.${nosim}.*]
       }
       set Data(Sources$proj) [lsort -unique $Data(Sources$proj)]
    }
