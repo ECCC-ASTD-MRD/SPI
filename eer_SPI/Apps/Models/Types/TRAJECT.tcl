@@ -47,14 +47,14 @@ proc TRAJECT::InitNew { Type } {
 
    if { $Type==0 } {
 
-      #----- Ajuster les fonctions de niveau selon le type volcan (Pression).
+      #----- Ajuster les fonctions de niveau selon le type volcan.
       set Sim(LevelUnit)   "MILLIBARS"
       set Sim(Level1)        700.0
       set Sim(Level2)        500.0
       set Sim(Level3)        250.0
    } else {
 
-      #----- Ajuster les fonctions de niveau selon tout autre type (Metres).
+      #----- Ajuster les fonctions de niveau selon tout autre type.
       set Sim(LevelUnit)   "METRES"
       set Sim(Level1)       500.0
       set Sim(Level2)       1500.0
@@ -205,9 +205,21 @@ proc TRAJECT::CreateModelInput { } {
 
    #----- Get the particles list
    set Sim(Particles) {}
-   foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
-      foreach level $Sim(Level) {
-         lappend Sim(Particles) [list $lon $lat $level $name]
+   set nb 0
+
+   if { [llength [lindex $Sim(Level) 0]]==1 } {
+      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
+         foreach level $Sim(Level) {
+            lappend Sim(Particles) [list $lon $lat $level $name]
+            incr nb
+         }
+      }
+   } else {
+      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) levels $Sim(Level) {
+         foreach level $levels {
+            lappend Sim(Particles) [list $lon $lat $level $name]
+            incr nb
+         }
       }
    }
 
@@ -228,7 +240,7 @@ proc TRAJECT::CreateModelInput { } {
       }
 
       puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-      puts $f "[expr [llength $Sim(Level)]*[llength $Sim(Name)]]        Nombre de position de parcelles"
+      puts $f "$nb        Nombre de position de parcelles"
       foreach part $Sim(Particles) {
          puts $f "$part"
       }
