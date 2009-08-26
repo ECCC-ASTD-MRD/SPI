@@ -150,14 +150,14 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
-   set Error(EMail)        { "Erreur! L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "Error! The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+   set Error(EMail)        { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
    set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
                                     "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
    set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
    set Error(FirstMetDateTime)    { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)     { "\tDernier temps disponible :" "\tLast available date-time  :" }
-   set Error(DateTimeMetFiles)    { "Erreur! La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
-                                    "Error! The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
+   set Error(DateTimeMetFiles)    { "La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
+                                    "The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
 
    set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
@@ -222,8 +222,11 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
 
 proc Model::GetMetData { Model } {
    Model::ParamsMetDataDir ${Model}
-   ${Model}::GetMetData
+   if { ![${Model}::GetMetData] } {
+      return False
+   }
    Model::ParamsMeteoInput ${Model}
+   return True
 }
 
 proc Model::CreateInput { Model } {
