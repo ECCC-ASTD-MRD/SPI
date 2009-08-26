@@ -39,11 +39,13 @@ proc TRAJECT::InitNew { Type } {
    TabFrame::Select .trajectnew.opt 0
 
    set Sim(Method)     "Trajectoire"
+   set Sim(Retro)      False
    set Sim(Mode)       "prog"
    set Sim(TimeStep)   "3600.0"
    set Sim(AccMin)     00
    set Sim(BatchStart) 0
    set Sim(Duration)   72
+   set Sim(MultiLevel) False
 
    if { $Type==0 } {
 
@@ -114,9 +116,11 @@ proc TRAJECT::GetMetData { } {
 
    set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
 
-   if { $Sim(Method) == "Trajectoire" } {
+   if { $Sim(Method)=="Trajectoire" } {
+      set Sim(Retro) False
       set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
    } else {
+      set Sim(Retro) True
       set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
    }
    set Sim(Mode) [MetData::GetMode $Sim(Data) False]
@@ -160,12 +164,6 @@ proc TRAJECT::ParamsCheck { Tab No } {
    set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true]
    set Sim(AccSeconds)   [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt True]
 
-   if { $Sim(Method) == "Trajectoire" } {
-      set Sim(Retro) False
-   } else {
-      set Sim(Retro) True
-   }
-
    #----- Get the levels
    set Sim(Level) ""
    for { set i 1 } { $i<=25 } { incr i } {
@@ -207,16 +205,16 @@ proc TRAJECT::CreateModelInput { } {
    set Sim(Particles) {}
    set nb 0
 
-   if { [llength [lindex $Sim(Level) 0]]==1 } {
-      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
-         foreach level $Sim(Level) {
+   if { $Sim(MultiLevel) } {
+      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) levels $Sim(Level) {
+         foreach level $levels {
             lappend Sim(Particles) [list $lon $lat $level $name]
             incr nb
          }
       }
    } else {
-      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) levels $Sim(Level) {
-         foreach level $levels {
+      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
+         foreach level $Sim(Level) {
             lappend Sim(Particles) [list $lon $lat $level $name]
             incr nb
          }
@@ -227,10 +225,10 @@ proc TRAJECT::CreateModelInput { } {
    set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
       puts $f "'[string toupper $Sim(NameExp)] '"
 
-      if { $Sim(Retro) } {
-         puts $f ".TRUE.   Mode retro-trajectoire ?"
-      } else {
+      if { $Sim(Method)=="Trajectoire" } {
          puts $f ".FALSE.  Mode retro-trajectoire ?"
+      } else {
+         puts $f ".TRUE.   Mode retro-trajectoire ?"
       }
 
       if { $Sim(LevelUnit) == "METRES" } {
@@ -330,10 +328,13 @@ proc TRAJECT::Launch { } {
 
    Model::ParamsMeteoInput TRAJECT
 
-   if { $Sim(Retro) } {
-      set mode BACKWARD
-   } else {
+   TRAJECT::CreateModelInput
+   TRAJECT::CreateScriptInput
+
+   if { $Sim(Method)=="Trajectoire" } {
       set mode FORWARD
+   } else {
+      set mode BACKWARD
    }
 
    if { $Sim(LevelUnit)=="METRES" } {
@@ -342,16 +343,13 @@ proc TRAJECT::Launch { } {
       set unit PRESSURE
    }
 
-   TRAJECT::CreateModelInput
-   TRAJECT::CreateScriptInput
-
    if { $Model::Param(IsUsingSoumet) } {
 
       #----- Copy needed file to run host:directory.
       Model::ParamsCopy TRAJECT
 
       exec echo "soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
-         -t 3600 -cm !G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
+         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
       set ErrorCode [catch { exec soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
          -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
 
