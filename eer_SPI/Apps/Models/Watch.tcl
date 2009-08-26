@@ -391,7 +391,7 @@ proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
    if { [lsearch -exact $Data(BranchWatch) $name] != -1 } {
       $Canvas itemconfigure PWATCH$name -bitmap $Model::Resources(Minus)
 
-      foreach model [lsort $Data(Models$name)] {
+      foreach model [lsort $Data(Models$Project$name)] {
          if { $model!="NONE" } {
             set y1 [incr Y 21]
             set Y [Watch::CreateBranchModel $Canvas $Project "$Watch" $model [expr $X+20] $Y]
@@ -442,7 +442,7 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y } {
    if { [lsearch -exact $Watch::Data(BranchModel) $name$Model] != -1 } {
       $Canvas itemconfigure PMODEL$name$Model -bitmap $Model::Resources(Minus)
 
-      foreach sim [lsort -index 0 $Data(Sims$name$Model)] {
+      foreach sim [lsort -index 0 $Data(Sims$Project$name$Model)] {
          set y1 [incr Y 21]
          set Y [Watch::CreateBranchSim $Canvas $Project "$Watch" $Model "$sim" [expr $X+20] $Y]
       }
@@ -486,7 +486,7 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
    set no      [lindex $Sim 0]
 
    set txt "$meteo$mode ($no)"
-   set tag "$name$Model$no"
+   set tag "$Project$name$Model$no"
 
    set y1 [set y0 [expr $Y+10]]
 
@@ -747,8 +747,8 @@ proc Watch::PopUpWatch { X Y } {
       menu .watchpopwatch -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .watchpopwatch add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Name); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
-         .watchpopwatch add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Name) 1"
-         .watchpopwatch add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Name) 1"
+         .watchpopwatch add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Project)\$Watch::Data(Name) 1"
+         .watchpopwatch add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project)\$Watch::Data(Name) 1"
          .watchpopwatch add separator
          .watchpopwatch add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu .watchpopwatch.new
          .watchpopwatch add separator
@@ -797,8 +797,8 @@ proc Watch::PopUpModel { X Y Model } {
    }
 
    .watchpopmodel entryconfigure 0 -label $Model
-   .watchpopmodel entryconfigure 1 -command "Watch::AllOpenItem $Data(Name)$Model 2"
-   .watchpopmodel entryconfigure 2 -command "Watch::AllCloseItem $Data(Name)$Model 2"
+   .watchpopmodel entryconfigure 1 -command "Watch::AllOpenItem $Data(Project)$Data(Name)$Model 2"
+   .watchpopmodel entryconfigure 2 -command "Watch::AllCloseItem $Data(Project)$Data(Name)$Model 2"
    .watchpopmodel entryconfigure 4 -command "Watch::ParamsWindow $Model"
    tk_popup .watchpopmodel $X $Y 0
 }
@@ -1127,8 +1127,8 @@ proc Watch::Suppress { } {
 #
 # Remarques :
 #    - Chaque projet a sa liste de noms de watch sous Data(Sources$Projet)
-#    - Chaque watch a sa liste de modeles sous Data(Models$Watch)
-#    - Chaque modele de chaque watch a sa liste de simulation sous Data(Sims$Watch$Model)
+#    - Chaque watch a sa liste de modeles sous Data(Models$Project$Watch)
+#    - Chaque modele de chaque watch a sa liste de simulation sous Data(Sims$Project$Watch$Model)
 #
 #      La raison pour laquelle les projets ont 'proj-$proj' comme nom
 #      est que cela permet ainsi de nommer une source du meme nom qu'un
@@ -1165,17 +1165,17 @@ proc Watch::Read { } {
             lappend Data(Sources$proj) [list $src $lat $lon]
          }
 
-         if { ![info exists Data(Models$src)] } {
-            set Data(Models$src) ""
+         if { ![info exists Data(Models$proj$src)] } {
+            set Data(Models$proj$src) ""
          }
-         if { [lsearch $Data(Models$src) $model]==-1 } {
-            lappend Data(Models$src) $model
-            set Data(Sims$src$model) ""
+         if { [lsearch $Data(Models$proj$src) $model]==-1 } {
+            lappend Data(Models$proj$src) $model
+            set Data(Sims$proj$src$model) ""
          }
-         lappend Data(Sims$src$model) "$nosim \"$info\""
+         lappend Data(Sims$proj$src$model) "$nosim \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$src$model$nosim) [glob -nocomplain  $Data(Path)/$proj/data/*_$src/${model}.${nosim}.*]
+         set Data(Results$proj$src$model$nosim) [glob -nocomplain  $Data(Path)/$proj/data/*_$src/${model}.${nosim}.*]
       }
       set Data(Sources$proj) [lsort -unique $Data(Sources$proj)]
    }
@@ -1238,11 +1238,12 @@ proc Watch::GetNo { Model } {
    variable Data
 
    #----- Trouve un numero de simulation unique pour ce model
-   set namemodel $Data(Name)$Model
+   set model $Data(Project)$Data(Name)
+   set sim   $Data(Project)$Data(Name)$Model
 
-   if { [info exists Data(Models$Data(Name))] && [info exists Data(Sims$namemodel)] } {
+   if { [info exists Data(Models$model)] && [info exists Data(Sims$sim) } {
       set nos ""
-      foreach sim $Data(Sims$namemodel) {
+      foreach sim $Data(Sims$sim) {
          lappend nos [lindex $sim 0]
       }
       set i 0
