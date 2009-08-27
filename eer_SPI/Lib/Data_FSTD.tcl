@@ -151,7 +151,7 @@ namespace eval FSTD {
    set Lbl(Grid)          { "Grille" "Grid" }
    set Lbl(Particle)      { "Particule" "Particle" }
    set Lbl(Label)         { "Etiquette" "Labels" }
-   set Lbl(Intervals)     { "Intervals" "Intervals" }
+   set Lbl(Intervals)     { "Intervalles" "Intervals" }
    set Lbl(No)            { "Non" "No" }
    set Lbl(Map)           { "Palette" "Colormap" }
    set Lbl(Topo)          { "Var 3D " "Var 3D " }

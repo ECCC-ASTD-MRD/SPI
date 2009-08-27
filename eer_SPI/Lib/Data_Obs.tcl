@@ -120,7 +120,7 @@ namespace eval Obs {
    set Lbl(Color)          { "Couleur  " "Color" }
    set Lbl(Icon)           { "Icones" "Icons" }
    set Lbl(Contour)        { "Contour" "Outline" }
-   set Lbl(Intervals)      { "Intervals" "Intervals" }
+   set Lbl(Intervals)      { "Intervalles" "Intervals" }
    set Lbl(Conv)           { "Conv " "Conv " }
    set Lbl(Value)          { "Valeur " "Values " }
    set Lbl(Unit)           { "Unites " "Units  " }
