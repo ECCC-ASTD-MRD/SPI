@@ -633,11 +633,12 @@ proc NowCaster::Obs::Delete { Obs } {
 
 proc NowCaster::Obs::PageUpdate { Obs } {
 
-   Viewport::AssignedTo $Obs page vp
-   Viewport::LinkDo $vp
+   if { [Viewport::AssignedTo $Obs page vp] } {
+      Viewport::LinkDo $vp
 
-   Page::Update        $page
-   Page::UpdateCommand $page
+      Page::Update        $page
+      Page::UpdateCommand $page
+   }
 }
 
 #-------------------------------------------------------------------------------
