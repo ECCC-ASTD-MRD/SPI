@@ -270,9 +270,6 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
    bind $id.data.list <ButtonRelease-1>        "set FieldBox::Data(Current) $no"
    bind $id.data.list <ButtonPress-3>          "set FieldBox::Data(Current) $no ; tk_popup .fieldmenu %X %Y"
 
-   bind $id.data.list <ButtonPress-2>          "set FieldBox::Data(Current) $no ; if { \[winfo exist .fieldcalc\] } { FieldBox::PasteClick $no %y }"
-   bind $id.data.list <ButtonRelease-2>        "set FieldBox::Data(Current) $no ; if { \[winfo exist .fieldcalc\] } { FieldBox::PasteDeClick $no %y }"
-
    bind $id <Key-Up>                           "FieldBox::Scroll $no -1"
    bind $id <Key-Down>                         "FieldBox::Scroll $no  1"
 
