@@ -774,11 +774,20 @@ proc CVGeoLegend::Write { Frame File } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
-namespace eval CVScale { } { }
+namespace eval CVScale { } {
+   variable Data
+   variable Lbl
+
+   set Data(BG)    False
+   set Data(Scale) 0
+
+   set Lbl(BG) { "Arrière opaque" "White background" }
+}
 
 proc CVScale::Create { Frame X Y Size } {
    global GDefs
    variable Data
+   variable Lbl
 
    set canvas $Frame.page.canvas
    set Data(Size)   $Size
@@ -788,6 +797,7 @@ proc CVScale::Create { Frame X Y Size } {
    set x1 [expr $X+$Size/2]
    set y1 [expr $Y+10]
 
+   $canvas create rectangle -999 -999 -999 -999 -outline black -fill white -width 1 -tag "CVSBG CVSCALE"
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVSCLOC CVSCALE"
    $canvas create text $x0 $Y -text "" -font XFont12 -anchor sw -tag "CVSCTXT CVSCALE"
    $canvas create text $x1 $Y -text "" -font XFont12 -anchor se -tag "CVSCUNI CVSCALE"
@@ -814,7 +824,10 @@ proc CVScale::Create { Frame X Y Size } {
          $canvas.cvscale.menu add radiobutton -label "1:${size}" -variable CVScale::Data(Scale) -value ${size}.0 \
             -command "CVScale::Set $Page::Data(Frame)" -indicatoron false
       }
-   }
+      $canvas.cvscale.menu add separator
+      $canvas.cvscale.menu add checkbutton -label [lindex $Lbl(BG) $GDefs(Lang)] -variable CVScale::Data(BG) -onvalue True -offvalue False \
+            -command { CVScale::Update $Page::Data(Frame) $Viewport::Data(VP) }
+    }
 
    $canvas create window [expr $x0-3] [expr $y0-1] -window $canvas.cvscale -anchor se -tags "CVSCALE NOPRINT"
 
@@ -917,18 +930,15 @@ proc CVScale::Update { Frame VP } {
    }
 
    #----- On calcule la distance pour 1 pixel
-
    set dxy [$VP -distpix]
    if { $dxy<1e-30 || $dxy>1e30} {
       return
    }
 
    #----- Calcul du plus proche gradient
-
    set o "1e[expr int(log10($dxy))+1]"
 
    #----- Determiner l'amplitude
-
    set xy [expr $o/$dxy]
 
    set m  [expr int(($Data(Size)/5.0)/$xy)]
@@ -960,7 +970,6 @@ proc CVScale::Update { Frame VP } {
    }
 
    #----- Coordonnees courantes
-
    set canvas $Frame.page.canvas
    set co [$canvas coords CVSC00]
    set x0 [lindex $co 0]
@@ -968,7 +977,6 @@ proc CVScale::Update { Frame VP } {
    set y1 [expr $y0+10]
 
    #----- Update des 1/10
-
    foreach i { 0 1 2 3 4 5 6 7 8 9 } {
       set x1 [expr $x0+$xy/10.0]
       $canvas coords CVSC0$i $x0 $y0 $x1 $y1
@@ -976,7 +984,6 @@ proc CVScale::Update { Frame VP } {
    }
 
    #----- Update des 10
-
    foreach i { 0 1 2 3 } {
       set x1 [expr $x0+$xy]
       $canvas coords CVSC1$i $x0 $y0 $x1 $y1
@@ -986,7 +993,6 @@ proc CVScale::Update { Frame VP } {
    }
 
    #----- Update de l'echelle (1:???)
-
    set Data(Scale) [expr wide($dxy/2.8e-4)]
 
    if ($Data(Scale)==0) {
@@ -1001,6 +1007,12 @@ proc CVScale::Update { Frame VP } {
       $canvas itemconfigure CVSCUNI -text "[lindex $Convert::Lbl(DistU) $GDefs(Lang)]"
    } else {
       $canvas itemconfigure CVSCUNI -text "$Convert::Lbl($u)[lindex $Convert::Lbl(DistL) $GDefs(Lang)]"
+   }
+
+   $canvas coords CVSBG $x0 $y0 $x0 $y0
+   if { $Data(BG) } {
+      set bbox [$canvas bbox CVSCALE]
+      $canvas coords CVSBG [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-4] [expr [lindex $bbox 2]+12] [expr [lindex $bbox 3]+2]
    }
    $canvas raise CVSCALE
 }
