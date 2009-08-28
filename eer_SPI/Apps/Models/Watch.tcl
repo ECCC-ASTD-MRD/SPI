@@ -579,16 +579,12 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
 
 proc Watch::GetType { Project } {
 
-   switch $Project {
-      "VAAC"  { set type 0 }
-      "RSMC"  { set type 1 }
-      "CTBT"  { set type 2 }
-      "FIRE"  { set type 3 }
-      "BIO"   { set type 4 }
-      "SPILL" { set type 5 }
-      default { set type 6 }
+   foreach txt { VAAC RSMC CTBT FIRE BIO SPILL } no { 0 1 2 3 4 5 } {
+      if { [string first $txt $Project]!=-1 } {
+         return $no
+      }
    }
-   return $type
+   return 6
 }
 
 #-------------------------------------------------------------------------------
@@ -956,10 +952,6 @@ proc Watch::SelectBranch { Tag Tree { Single False } } {
 
 proc Watch::SelectSim { Model Info Watch Project } {
    variable Data
-
-   #if { $Tag != "" } {
-      #eval $Data(Frame).info.canvas coords SIMSELECT [$Data(Frame).info.canvas bbox $Tag]
-   #}
 
    Watch::Select "$Watch" $Project
    set Data(Model) $Model
