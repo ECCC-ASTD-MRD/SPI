@@ -257,21 +257,18 @@ proc RSMC::LayoutInit { Frame } {
       $Page(Border) $Page(Border) -fill black -tags defs
 
    #----- Afficher l'identification de la source
-
    $canvas create bitmap [expr $Page(Border)+220] [expr $Page(Border)+22] -bitmap $Ico(Nuclear) -foreground black -tags FIX
    $canvas create text [expr $Page(Border)+240] [expr $Page(Border)+10] -font XFont12 -anchor w -text "" -tags RSMCSOURCE
    $canvas create text [expr $Page(Border)+240] [expr $Page(Border)+22] -font XFont12 -anchor w -text "" -tags RSMCLOC
    $canvas create text [expr $Page(Border)+240] [expr $Page(Border)+34] -font XFont12 -anchor w -text "" -tags RSMCRELEASE
 
    #----- Afficher l'identification
-
    $canvas create bitmap [expr $Page(Border)+10] [expr $Viewport::Data(Height$Page(VP))+$Viewport::Data(Y$Page(VP))] \
       -bitmap $Ico(Flag) -foreground red  -anchor sw -tags "FIX RED"
    $canvas create bitmap [expr $Page(Border)+10] [expr $Viewport::Data(Height$Page(VP))+$Viewport::Data(Y$Page(VP))-250] \
       -bitmap $Ico(RSMC) -foreground red  -anchor sw -tags "FIX RED"
 
    #----- Afficher la legende du bas
-
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+670] -font XFont20 -anchor s -text "" -tags HD1
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+690] -font XFont20 -anchor s -text "" -tags HD2
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+720] -font XFont20 -anchor s -text "" -tags HD3
@@ -292,9 +289,9 @@ proc RSMC::LayoutInit { Frame } {
    $canvas create text [expr $Page(Width)/2]    [expr $Page(Height)-1]   -font XFont12 -anchor s  -tags FT14
 
    $canvas create text [expr $Page(Width)-1] [expr $Page(Height)-1] -font XFont10 -anchor se -text "[clock format [clock seconds] -format "%H%M %d/%m/%Y" -gmt true]" -tags FTID
+   $canvas create text [expr $Page(Width)/2] [expr $Page(Height)/2] -font XFont24 -text "" -tags MSG
 
    #----- Afficher l'entete d'echelle
-
    $canvas create bitmap [expr $Page(Width)-$Page(Border)-10] 60 -bitmap $Ico(Contour) -foreground black -tags FIX -anchor ne
 }
 
@@ -329,7 +326,6 @@ proc RSMC::LayoutUpdate { Frame } {
    set canvas $Frame.page.canvas
 
    #----- Recuperer les informations sur le champs selectionne
-
    set Data(FieldList) [FieldBox::GetContent -1]
    set Data(NOMVAR)    [string trim [fstdfield define $field -NOMVAR]]
    set Data(IP2)       [fstdfield define $field -IP2]
@@ -340,7 +336,6 @@ proc RSMC::LayoutUpdate { Frame } {
    set idxdose         [lsearch -exact $Data(DoseFields) $Data(NOMVAR)]
 
    #----- Recuperer la description de l'experience
-
    set Sim(Lat)               0
    set Sim(Lon)               0
    set Sim(Name)              ""
@@ -501,12 +496,10 @@ proc RSMC::LayoutUpdate { Frame } {
    }
 
    #----- Calculer la date d'accident(release)
-
    set seconds     [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true]
    set daterelease [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -gmt true]
 
    #----- Convert source coordinates.
-
    set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
 
    #----- Search index in list of isotopes for selected current isotope.
@@ -568,6 +561,7 @@ proc RSMC::LayoutUpdate { Frame } {
    $canvas itemconf RSMCLOC     -text "Source location : $coord"
    $canvas itemconf RSMCRELEASE -text "Date of release : $daterelease"
 
+   $canvas itemconf MSG  -text ""
    $canvas itemconf FT1  -text ""
    $canvas itemconf FT2  -text ""
    $canvas itemconf FT3  -text ""
@@ -582,6 +576,12 @@ proc RSMC::LayoutUpdate { Frame } {
    $canvas itemconf FT12 -text ""
    $canvas itemconf FT13 -text ""
    $canvas itemconf FT14 -text ""
+
+   if { [lindex $Data(Max) 0]==0.0 } {
+      switch $Data(NOMVAR) {
+         "IT" { $canvas itemconf MSG  -text "NO DEPOSITION" }
+      }
+   }
 
    switch $DispModel {
 
@@ -625,7 +625,6 @@ proc RSMC::LayoutUpdate { Frame } {
    }
 
    #----- Afficher les informations complementaires
-
    RSMC::UpdateItems $Frame
    RSMC::DrawScale   $Frame
 }
