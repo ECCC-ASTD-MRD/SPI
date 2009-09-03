@@ -25,7 +25,7 @@ vec4 texture2DRectBi(sampler2DRect Tex,vec2 ST) {
    vec4 tex22 = texture2DRect(Tex,st.zw);
 
    // bilinear interpolation
-   return(lerp(lerp(tex11,tex21,t.x),lerp(tex12,tex22,t.x),t.y));
+   return(mix(mix(tex11,tex21,t.x),mix(tex12,tex22,t.x),t.y));
 }
 
 void main() {

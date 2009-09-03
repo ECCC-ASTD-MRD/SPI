@@ -25,6 +25,6 @@ void main() {
    LightDir      = normalize(vec3(gl_LightSource[0].position));
    gl_ClipVertex = gl_ModelViewMatrix*CylinCheck(gl_Vertex);
    gl_Position   = gl_ModelViewProjectionMatrix*CylinCheck(gl_Vertex);
-   Normal        = gl_Position;
+   Normal        = gl_Position.xyz;
 //   gl_TexCoord[0]= gl_MultiTexCoord0;
 }

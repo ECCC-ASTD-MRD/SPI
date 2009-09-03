@@ -8,7 +8,7 @@ uniform   sampler1D Colormap;
 //uniform   sampler2D Sprite;
 uniform   sampler2DRect Interval;
 
-attribute float     Vd;
+//attribute float     Vd;
 varying   float     Fd;
 
 void main() {
