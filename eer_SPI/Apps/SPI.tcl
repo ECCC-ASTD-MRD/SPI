@@ -399,9 +399,6 @@ proc Page::UpdateItems { Frame } {
       return
    }
 
-   #----- Data types
-   Trajectory::UpdateItems $Frame
-
    #----- Update des Objects
    SPI::IcoDraw        $Frame
    Graph::UpdateItems  $Frame

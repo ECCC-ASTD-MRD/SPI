@@ -195,10 +195,7 @@ proc OpenGL::Update { } {
    }
 
    #----- si les informations resources sont affichees
-
    set Stat(RenderTime)  "[format "%2.3f" [lindex $stat 0]] sec"
    catch { set Stat(FPS) "[format "%1.3f" [expr 1.0/[lindex $stat 0]]] fps" }
    set Stat(MemUsage)    "[format "%2.3f" [lindex $stat 1]] Mb"
-
 }
-

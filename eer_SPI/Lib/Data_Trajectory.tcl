@@ -24,7 +24,6 @@
 #    Trajectory::Register    { Traj { Update True } }
 #    Trajectory::UnRegister  { Traj { Update True } }
 #    Trajectory::VarMode     { Mode }
-#    Trajectory::UpdateItems { Frame }
 #    Trajectory::Graph       { Frame X0 Y0 X1 Y1 TrajId }
 #    Trajectory::GraphPlot   { Frame TrajId }
 #    Trajectory::GraphScale  { Frame TrajId X Y }
@@ -653,27 +652,6 @@ proc Trajectory::VarMode { Mode } {
    Trajectory::ParamUpdate
 
    catch { $Data(ApplyButton) configure -state normal }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Trajectory::UpdateItems>
-# Creation : Juin 1998 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectue le refresh des trajectroires affichees sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#
-# Retour:
-#
-# Remarques :
-#   Cette procedure est appele par la librairie de projection Page et Viewport
-#
-#----------------------------------------------------------------------------
-
-proc Trajectory::UpdateItems { Frame } {
-   variable Data
-
 }
 
 #----------------------------------------------------------------------------
