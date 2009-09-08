@@ -87,7 +87,6 @@ typedef struct ViewportItem  {
    int Realloc;                   /*Indicateur de reallocation des structures*/
    double Ratio;                  /*Ratio de hauteur/largeur/Cam aspect*/
    int Secondary;                 /*Indicateur d'importance*/
-   int BackBuffer;                /*Indicateur de memorisation du rendue*/
 
    GLubyte *Frames[NBFRAMEMAX];   /*Liste des frames de retention*/
    GLdouble GLModS[16];           /*Matrice du modele statique*/

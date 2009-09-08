@@ -114,8 +114,6 @@ static Tk_ConfigSpec configSpecs[] = {
         "1",Tk_Offset(ViewportItem,Update),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_BOOLEAN,"-secondary",(char *)NULL,(char *)NULL,
         "0",Tk_Offset(ViewportItem,Secondary),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_BOOLEAN,"-backbuffer",(char *)NULL,(char *)NULL,
-        "1",Tk_Offset(ViewportItem,BackBuffer),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_STRING,"-command",(char*)NULL,(char *)NULL,
         (char *)NULL,Tk_Offset(ViewportItem,Command),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM,"-projection",(char *)NULL,(char *)NULL,
@@ -273,7 +271,6 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->NbData      = 0;
    vp->Ratio       = 0;
    vp->Secondary   = 0;
-   vp->BackBuffer  = 1;
 
    vp->Loading     = 0;
    vp->ThreadId    = Tcl_GetCurrentThread();
@@ -750,7 +747,7 @@ static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
       return(TCL_ERROR);
    }
 
-   if (vp->Realloc || !vp->BackBuffer || (vp->Frame==0 && frame!=0)) {
+   if (vp->Realloc || (vp->Frame==0 && frame!=0)) {
       ViewportClean(vp,0,1);
    }
 
@@ -1055,7 +1052,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    ViewportItem *vp=(ViewportItem*)Item;
    Projection   *proj;
-   char          alloc=0;
    int           i,load;
    clock_t       sec;
 
@@ -1069,8 +1065,8 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    extern int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj,GLuint GLMode);
    extern int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode);
 
-   load=vp->Loading;
    /*Take care of automated refresh handler*/
+   load=vp->Loading;
    Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
    if (GLRender->Delay<2000)
       ViewportRefresh(vp,GLRender->Delay);
@@ -1078,7 +1074,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    if (proj=Projection_Get(vp->Projection)) {
       load+=proj->Loading;
 
-      /* Si rendue dans un pixmap, forcer le rendue*/
+      /*Force update if rendering within PBuffer*/
       if (GLRender->TRCon) {
          /*Wait for everything to be loaded*/
          sec=clock();
@@ -1089,66 +1085,67 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          vp->Update=1;
       }
 
-      if (GLRender->XExpose>0) {
+      /*Force update on XExposure event and backbuffer refresh*/
+      if (GLRender->XExpose>0 || !vp->Frames[vp->Frame]) {
          vp->Update=1;
       }
 
-      if (vp->Update || !vp->BackBuffer) {
+      /*If update is needed or the back buffer frame is not rendered yet*/
+      if (vp->Update && (!vp->Frames[vp->Frame] || !vp->Frame)) {
 
          ViewportSet(vp,proj);
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
          Projection_Setup(vp,proj,1);
 
-         if (!GLRender->XBatch || vp->Update || GLRender->TRCon) {
+         if (!GLRender->XBatch) {
             /*Allouer les frames de retentions si ce n'est pas deja fait*/
-            if (!vp->Frames[vp->Frame] && vp->BackBuffer) {
+            if (!vp->Frames[vp->Frame]) {
                vp->Frames[vp->Frame]=(GLubyte*)malloc(vp->Width*vp->Height*4);
-               alloc=1;
             }
 
             /*Effectuer le rendue des champs*/
-            if (vp->Frame==0 || alloc) {
-               Projection_Render(NULL,vp,proj,GL_ALL);
-               ProjCam_Project(vp->Cam,proj);
+            Projection_Render(NULL,vp,proj,GL_ALL);
+            ProjCam_Project(vp->Cam,proj);
 
-               /*Rendue des donnees raster*/
-               for (i=0;i<vp->NbData;i++) {
-                  fld=Data_Get(vp->Data[i]);
-                  if (fld) {
-                     Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
-                  }
-               }
-
-               /*Rendue des donnees vectoriellle*/
-               for (i=0;i<vp->NbData;i++) {
-                  if ((fld=Data_Get(vp->Data[i]))) {
-                     Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
-                  }
-                  if ((obs=Obs_Get(vp->Data[i]))) {
-                     Obs_Render(NULL,obs,vp,proj,GL_RENDER);
-                  }
-                  if ((met=MetObs_Get(vp->Data[i]))) {
-                     MetObs_Render(NULL,met,vp,proj,GL_RENDER);
-                  }
-                  if ((traj=Traj_Get(vp->Data[i]))) {
-                     Traj_Render(NULL,traj,vp,proj,GL_RENDER);
-                  }
-               }
-
-               if (!GLRender->TRCon && GLRender->XExpose<=1 && vp->Frames[vp->Frame]) {
-                  glReadBuffer(GL_BACK);
-                  glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
+            /*Rendue des donnees raster*/
+            for (i=0;i<vp->NbData;i++) {
+               fld=Data_Get(vp->Data[i]);
+               if (fld) {
+                  Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
                }
             }
+
+            /*Rendue des donnees vectoriellle*/
+            for (i=0;i<vp->NbData;i++) {
+               if ((fld=Data_Get(vp->Data[i]))) {
+                  Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+               }
+               if ((obs=Obs_Get(vp->Data[i]))) {
+                  Obs_Render(NULL,obs,vp,proj,GL_RENDER);
+               }
+               if ((met=MetObs_Get(vp->Data[i]))) {
+                  MetObs_Render(NULL,met,vp,proj,GL_RENDER);
+               }
+               if ((traj=Traj_Get(vp->Data[i]))) {
+                  Traj_Render(NULL,traj,vp,proj,GL_RENDER);
+               }
+            }
+
+            if (vp->Frames[vp->Frame] && GLRender->XExpose<=1 && !GLRender->TRCon) {
+               glReadBuffer(GL_BACK);
+               glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
+            }
+            fprintf(stderr,"Rendered(%i). \n",vp->Frame);
          }
          ViewportUnset(vp);
-      }
-
-      /*Recopier le frame seulement si il n'as pas deja ete generer plut tot*/
-      if ((!vp->Update || !alloc) && !GLRender->XBatch && !GLRender->TRCon) {
-         if (vp->Frames[vp->Frame]) {
-            trRasterPos2i(vp->header.x1-((TkCanvas *)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas *)Canvas)->yOrigin));
-            glDrawPixels(vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
+      } else {
+         /*Copy the backbuffer*/
+         if (!GLRender->XBatch) {
+            if (vp->Frames[vp->Frame]) {
+               trRasterPos2i(vp->header.x1-((TkCanvas *)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas *)Canvas)->yOrigin));
+               glDrawPixels(vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
+               fprintf(stderr,"Copied.\n");
+            }
          }
       }
    }
