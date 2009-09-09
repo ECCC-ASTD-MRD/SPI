@@ -1135,16 +1135,14 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
                glReadBuffer(GL_BACK);
                glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
             }
-            fprintf(stderr,"Rendered(%i). \n",vp->Frame);
          }
          ViewportUnset(vp);
       } else {
          /*Copy the backbuffer*/
          if (!GLRender->XBatch) {
             if (vp->Frames[vp->Frame]) {
-               trRasterPos2i(vp->header.x1-((TkCanvas *)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas *)Canvas)->yOrigin));
+               trRasterPos2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas*)Canvas)->yOrigin));
                glDrawPixels(vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
-               fprintf(stderr,"Copied.\n");
             }
          }
       }

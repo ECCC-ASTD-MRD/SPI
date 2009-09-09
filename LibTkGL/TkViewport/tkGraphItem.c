@@ -1804,7 +1804,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
    int    depth=0,base=0;
    Vect3d g0,g1,g2,g3,min,max;
    double v0,v1,v2,v3,vf;
-   double dx,dy;
+   int    dx,dy;
 
    if (!Data || !Data->Spec->Map)
       return;
@@ -1832,33 +1832,23 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
    for(j=0;j<Data->Def->NJ-1;j++) {
 
       glBegin(GL_QUADS);
+      depth=0;
 
-      for(i=0;i<Data->Def->NI-1;i++) {
-         idx0=j*Data->Def->NI+i;
-         idx3=idx0+Data->Def->NI;
+      for(i=0;i<Data->Def->NI;i++) {
 
-         if (i>0) {
+         if (i!=0) {
+            idx1=idx0;
+            idx2=idx3;
+            v1=v0;
+            v2=v3;
             c1=c0;
             c2=c3;
             Vect_Assign(g1,g0);
             Vect_Assign(g2,g3);
-         } else {
-            idx1=idx0+1;
-            idx2=idx3+1;
-            Def_GetMod(Data->Def,idx1,v1);
-            Def_GetMod(Data->Def,idx2,v2);
-            VAL2COL(c1,Data->Spec,v1);
-            VAL2COL(c2,Data->Spec,v2);
-
-            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx1]:Data->Ref->Levels[j]):j;
-            g1[0]=X0+AXISVALUE(AxisX,(i+1));
-            g1[1]=Y0+AXISVALUE(AxisY,vf);
-            g1[2]=0.0;
-            vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx2]:Data->Ref->Levels[j+1]):j+1;
-            g2[0]=X0+AXISVALUE(AxisX,(i+1));
-            g2[1]=Y0+AXISVALUE(AxisY,vf);
-            g2[2]=0.0;
          }
+
+         idx0=j*Data->Def->NI+i;
+         idx3=idx0+Data->Def->NI;
 
          Def_GetMod(Data->Def,idx0,v0);
          Def_GetMod(Data->Def,idx3,v3);
@@ -1875,7 +1865,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
          g3[2]=0.0;
 
          /*Is the quad valid ???*/
-         if (c0>-1 || c1>-1 || c2>-1 || c3>-1) {
+         if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             /* Is the quad visible ???*/
             Vect_Assign(min,g0);
@@ -1894,21 +1884,17 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
             if (depth==0) {
                dx=fabs(g2[0]-g0[0]);
                dy=fabs(g2[1]-g0[1]);
-               dx=MAX(dx,dy);
-               depth=1;
-               while (dx>1) {
+               dx=MIN(dx,dy);
+               while (dx>>=1) depth++;
+               if (Data->Spec->InterNb)
                   depth++;
-                  dx*=0.5;
-               }
-               if (!Data->Spec->InterNb && depth>1) {
-                  depth--;
-               }
             }
+
             if (Data->Spec->InterpDegree[0]=='N') {
                VertexQuad_Nearest(Data,g0,g1,g2,g3,c0,c1,c2,c3,base);
             } else {
                /*Is the quad resolution enough ???*/
-               if (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1) {
+               if (depth>=2 && (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1)) {
                   VertexQuad_Linear(Data,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                } else {
                   glColor4ubv(Data->Spec->Map->Color[c0<0?base:c0]);glVertex3dv(g0);

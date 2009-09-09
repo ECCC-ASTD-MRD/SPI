@@ -1285,12 +1285,12 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int    i,j,col0,col1,col2,col3,idxk,idx0,idx1,idx2,idx3;
-   int    ri,rj,ox=0,oi,base=0;
+   int    i,j,c0,c1,c2,c3,idxk,idx0,idx1,idx2,idx3;
+   int    ox=0,base=0;
    int    depth;
-   double val0,val1,val2,val3;
+   double v0,v1,v2,v3;
    Vect3d g0,g1,g2,g3,dim,*pos;
-   double dx,dy;
+   int    dx,dy;
 
    if (GLRender->Resolution>2) {
       return(0);
@@ -1323,26 +1323,6 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glEnable(GL_BLEND);
    }
 
-   pos=Field->Ref->Pos[Field->Def->Level];
-
-   if (Field->Spec->InterNb || Proj->Type->Def==PROJPLANE || Field->Ref->Grid[0]=='W') {
-      ri=1;
-      rj=1;
-   } else {
-      rj=ceil(2.0/FFCellResolution(VP,Proj,pos[Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2],pos[(Field->Def->NJ/2+1)*Field->Def->NI+Field->Def->NI/2]));
-      rj=rj>7?7:rj;
-   }
-
-   if (Field->Ref->Grid[0]=='V') {
-     ri=1;
-   } else {
-     ri=rj;
-   }
-
-   if (ri==0 || rj==0) {
-      return(0);
-   }
-
    if (Field->Spec->InterNb) {
       VAL2COL(base,Field->Spec,Field->Spec->Inter[0]);
    }
@@ -1351,38 +1331,41 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
    }
-   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
 
    /*Process gridpoints*/
-   for(j=0;j<Field->Def->NJ-rj;j+=rj) {
+   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
+   pos=Field->Ref->Pos[Field->Def->Level];
+   for(j=0;j<Field->Def->NJ-1;j++) {
 
       glBegin(GL_QUADS);
 
-      for(i=0;i<Field->Def->NI-ri+ox;i+=ri) {
+      for(i=0;i<Field->Def->NI+ox;i++) {
 
-         oi=(i+ri)%Field->Def->NI;
-         idx0=j*Field->Def->NI+i;
-         idx3=(j+rj)*Field->Def->NI+i;
-
-         /*Si l'increment fait manquer le dernier point*/
-         if ((i+ri)>=(Field->Def->NI-ri+ox)) {
-            oi=(Field->Def->NI+ox-1)%Field->Def->NI;
+         if (i!=0) {
+            idx1=idx0;
+            idx2=idx3;
+            v1=v0;
+            v2=v3;
+            c1=c0;
+            c2=c3;
          }
-         idx1=j*Field->Def->NI+oi;
-         idx2=(j+rj)*Field->Def->NI+oi;
 
-         Def_GetMod(Field->Def,idxk+idx0,val0);
-         Def_GetMod(Field->Def,idxk+idx1,val1);
-         Def_GetMod(Field->Def,idxk+idx2,val2);
-         Def_GetMod(Field->Def,idxk+idx3,val3);
+         /*If the grid wraps around*/
+         if (ox && i>Field->Def->NI) {
+            idx0=j*Field->Def->NI;
+            idx3=idx0+Field->Def->NI;
+         } else {
+            idx0=j*Field->Def->NI+i;
+            idx3=idx0+Field->Def->NI;
+         }
 
-         VAL2COL(col0,Field->Spec,val0);
-         VAL2COL(col1,Field->Spec,val1);
-         VAL2COL(col2,Field->Spec,val2);
-         VAL2COL(col3,Field->Spec,val3);
+         Def_GetMod(Field->Def,idxk+idx0,v0);
+         Def_GetMod(Field->Def,idxk+idx3,v3);
+         VAL2COL(c0,Field->Spec,v0);
+         VAL2COL(c3,Field->Spec,v3);
 
          /* Is the cell valid ??? */
-         if (col0>-1 || col1>-1 || col2>-1 || col3>-1) {
+         if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             Vect_Assign(g0,pos[idx0]);
             Vect_Assign(g1,pos[idx1]);
@@ -1393,41 +1376,36 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
 
                if (Field->Spec->InterpDegree[0]=='N') {
-                  VertexQuad_Nearest(Field,g0,g1,g2,g3,col0,col1,col2,col3,base);
+                  VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
                } else {
 
                   dx=ABS(dim[0]);
                   dy=ABS(dim[1]);
-                  dx=MAX(dx,dy);
-                  depth=1;
-                  while (dx>2) {
+                  dx=MIN(dx,dy);
+                  depth=0;
+                  while (dx>>=1) depth++;
+                  if (Field->Spec->InterNb)
                      depth++;
-                     dx*=0.5;
-                  }
-                  if (!Field->Spec->InterNb && depth>1) {
-                     depth--;
-                  }
 
                   /* Is the cell resolution enough ??? */
-                  if (depth>=2 && (ABS(col0-col1)>1 || ABS(col1-col2)>1 || ABS(col2-col3)>1 || ABS(col3-col0)>1)) {
-//                     depth>>=1;
-                     VertexQuad_Linear(Field,g0,g1,g2,g3,col0,col1,col2,col3,val0,val1,val2,val3,depth,base);
+                  if (depth>=2 && (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1)) {
+                     VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                   } else {
-                     VR(g0,col0,base);
-                     VR(g1,col1,base);
-                     VR(g2,col2,base);
-                     VR(g3,col3,base);
+                     VR(g0,c0,base);
+                     VR(g1,c1,base);
+                     VR(g2,c2,base);
+                     VR(g3,c3,base);
                   }
                }
             }
          }
-      }
-      glEnd();
+     }
+     glEnd();
    }
-
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
-   return 1;
+
+   return(1);
 }
 
 /*----------------------------------------------------------------------------
