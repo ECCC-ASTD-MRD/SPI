@@ -90,8 +90,8 @@ namespace eval Model {
    set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
    set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
    set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
-   set Lbl(IsEMail)      { "Surveillance par courriel" "E-mail monitoring" }
-   set Lbl(EMail)        { "   Adresse     " "   Address     " }
+   set Lbl(IsEMail)             { "Surveillance par courriel" "E-mail monitoring" }
+   set Lbl(EMail)               { "   Adresse     " "   Address     " }
    set Lbl(Close)               { "Fermer" "Close" }
    set Lbl(Yes)                 { "Oui" "Yes" }
    set Lbl(No)                  { "Non" "No " }

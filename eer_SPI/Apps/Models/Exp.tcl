@@ -22,10 +22,11 @@ namespace eval Exp {
    variable Lbl
    variable Msg
 
-   set Param(Paths)    [list $GDefs(DirData)]              ;#Liste des fichier d'experiences
-   set Param(Path)     [lindex $Param(Paths) 0]            ;#Fichier d'experiences courant
-
-   set Data(Proc)     $GDefs(Dir)/Apps/Models/procedures_0
+   set Param(Paths)     [list $GDefs(DirData)]              ;#Liste des fichier d'experiences
+   set Param(Path)      [lindex $Param(Paths) 0]            ;#Fichier d'experiences courant
+   set Param(StoreHost) goodenough
+   set Param(StorePath) /tmp/ArchiveTest
+   set Param(Proc)      $GDefs(Dir)/Apps/Models/procedures_0
 
    #----- Variables relatives aux experiences
 
@@ -46,6 +47,7 @@ namespace eval Exp {
    set Data(Select)    ""                                 ;#Experience selectionnee
    set Data(SelectSim) ""                                 ;#Simulation selectionnee
    set Data(State)     ""                                 ;#Etat de la simulation
+   set Data(StoreID)   ""                                 ;#Identificateur d'archive
 
    #----- Labels
 
@@ -60,9 +62,16 @@ namespace eval Exp {
    set Lbl(No)                 { "Non" "No" }
    set Lbl(Warning)            { "Attention" "Warning" }
    set Lbl(Params)             { "Parametres" "Parameters" }
+   set Lbl(Name)               { "Nom" "Name" }
 
    #----- Messages
 
+   set Msg(DoingStore)    { "Archivage en cours ..." "Archiving ..." }
+   set Msg(DoingCopy)     { "Copie en cours ..." "Copying ..." }
+   set Msg(Store)         { "Veuillez entrer le nom du rapport d'incident afin d'identifier l'experience en archives."
+                            "Please enter the incident report name to identify the experiment to be archived." }
+   set Msg(StoreExist)    { "Une archive avec ce nom existe déja, Voulez-vous l'écraser ?"
+                            "An archive by this name already exist, do you want to overwrit it ?" }
    set Msg(Path)          { "Répertoire d'expériences invalides.\nImpossible de trouver le fichier eer_ExpList"
                             "Invalid experiment path.\n Unable to find the eer_ExpList file" }
    set Msg(Coord)         { "Les coordonnées de la source sont invalides"
@@ -249,13 +258,13 @@ proc Exp::Create { Frame } {
 }
 
 proc Exp::Procedure { Text  } {
-   variable Data
+   variable Param
 
    #----- Inclure le fichier texte si il existe
 
-   if { [file exists $Data(Proc).txt] } {
+   if { [file exists $Param(Proc).txt] } {
 
-      set f [open $Data(Proc).txt]
+      set f [open $Param(Proc).txt]
       while { [gets $f ligne] >= 0 } {
          $Text insert end "$ligne\n"
       }
@@ -264,9 +273,9 @@ proc Exp::Procedure { Text  } {
 
    #----- Traiter les directives si elles existent
 
-   if { [file exists $Data(Proc).dir] } {
+   if { [file exists $Param(Proc).dir] } {
 
-      set f [open $Data(Proc).dir]
+      set f [open $Param(Proc).dir]
       while { [gets $f ligne] >= 0 } {
          Dialog::SearchText $Text [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
       }
@@ -879,7 +888,7 @@ proc Exp::PopUp { X Y } {
          .exppop add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .exppop.product -state disabled
          .exppop add separator
          .exppop add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Exp::Suppress"
-         .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command "Exp::Store" -state disabled
+         .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command "Exp::Store .model"
 
       #----- Menu des modeles
       menu  .exppop.new -tearoff 0 -bd 1 -type normal -activeborderwidth 1
@@ -1250,9 +1259,9 @@ proc Exp::SelectSim { Info } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <Exp::Store>
-# Creation : Novembre 1999 - J.P. Gauthier - CMC/CMOE
+# Creation : Septembre 2009 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Archiver une experience sur CFS.
+# But      : Interface d'archivage
 #
 # Parametres:
 #
@@ -1262,7 +1271,105 @@ proc Exp::SelectSim { Info } {
 #
 #-------------------------------------------------------------------------------
 
-proc Exp::Store { } {
+proc Exp::Store { Master } {
+   global GDefs
+   variable Lbl
+   variable Msg
+
+   toplevel .dlgstore
+   wm title .dlgstore [lindex $Lbl(Store) $GDefs(Lang)]
+   wm protocol .dlgstore WM_DELETE_WINDOW { }
+   if { [winfo exists $Master] } {
+      wm transient .dlgstore $Master
+      wm geom .dlgstore +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+   }
+
+   #----- Afficher le frame du haut qui va contenir le message
+   frame .dlgstore.msg -relief raised -bd 1
+      label .dlgstore.msg.bitmap -bitmap info
+      message .dlgstore.msg.txt -aspect 1000 -text [lindex $Msg(Store) $GDefs(Lang)]
+      pack .dlgstore.msg.bitmap -side left -padx 20 -pady 20
+      pack .dlgstore.msg.txt -padx 20 -pady 20
+   pack .dlgstore.msg -side top -expand true -fill x
+
+   frame .dlgstore.id -relief raised -bd 1
+      label .dlgstore.id.lbl -text [lindex $Lbl(Name) $GDefs(Lang)] -anchor w -width 5
+      entry .dlgstore.id.def -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Exp::Data(StoreID)
+      pack .dlgstore.id.lbl  -side left
+      pack .dlgstore.id.def -side left -expand true -fill x -ipady 2
+   pack .dlgstore.id -side top -expand true -fill x
+
+   #----- Afficher le frame du bas qui va contenir le bouton retour
+   frame .dlgstore.cmd -relief flat
+      button .dlgstore.cmd.ok -text "Ok" -command { if { [Exp::StoreIt $Exp::Data(StoreID)] } { destroy .dlgstore } } -bd 1
+      button .dlgstore.cmd.cancel -text "Cancel" -command "destroy .dlgstore" -bd 1
+      pack .dlgstore.cmd.ok .dlgstore.cmd.cancel -side left -ipadx 10 -fill x  -expand true
+   pack .dlgstore.cmd -side top -fill x
+
+   update idletasks
+   grab .dlgstore
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Exp::StoreIt>
+# Creation : Septembre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Archiver une experience.
+#
+# Parametres:
+#   <Id>    : Identificateur du rapport d'incident associe
+#
+# Retour:
+#
+# Remarques :
+#-------------------------------------------------------------------------------
+
+proc Exp::StoreIt { Id } {
+   global GDefs
+   variable Param
+   variable Lbl
+   variable Msg
+
+   set code  True
+   set cpath [pwd]
+
+   #----- Check if an archive already exists
+   set ErrorCode [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc } Message]
+   if { !$ErrorCode } {
+      set notoverwrite [Dialog::CreateDefault .dlgstore 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(StoreExist) $GDefs(Lang)] \
+         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+
+      if { $notoverwrite } {
+         return False
+      }
+   }
+
+   Dialog::CreateWait .dlgstore [lindex $Msg(DoingStore) $GDefs(Lang)]
+
+   #----- Build the archive
+   cd  [set path [Exp::Path]]/../
+#   set ErrorCode [catch { exec cmcarc -a $path -f /tmp/$Id.cmc --md5 --dereference } Message]
+   set ErrorCode [catch { exec tar -zcvf /tmp/$Id.tgz $path } Message]
+   if { $ErrorCode } {
+      Dialog::CreateError .dlgstore $Message $GDefs(Lang)
+      set code False
+   } else {
+      #----- Copy it to CFS
+      Dialog::CreateWait .dlgstore  [lindex $Msg(DoingCopy) $GDefs(Lang)]
+      set ErrorCode [catch { exec scp /tmp/$Id.cmc $Param(StoreHost):$Param(StorePath)/$Id.cmc } Message]
+      if { $ErrorCode } {
+         Dialog::CreateError .dlgstore $Message $GDefs(Lang)
+         set code False
+      } else {
+         #----- Remove local copy
+         file delete -force /tmp/$Id.cmc
+      }
+   }
+
+   Dialog::DestroyWait
+   cd $cpath
+
+   return $code
 }
 
 #-------------------------------------------------------------------------------
