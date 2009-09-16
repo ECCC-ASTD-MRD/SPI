@@ -11,6 +11,7 @@ YACC = bison
 ARCH      = IRIX64
 LIB_VER   = 7.3.0
 TCLTK_VER = 8.4.13
+TCLTK_VER = 8.5.7
 
 X_INCLUDE   = -I/usr/contrib/X11R6/include -I/usr/include/X11R6
 PROTO       = -DFUNCPROTO=7 -DNARROWPROTO

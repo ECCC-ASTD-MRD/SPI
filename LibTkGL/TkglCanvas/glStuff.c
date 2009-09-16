@@ -435,8 +435,8 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    handle=Tk_FindPhoto(Interp,Img);
 
    /*Definire les parametres du block de donnees */
-//TK84   Tk_PhotoSetSize(Interp,handle,Width,Height);
-   Tk_PhotoSetSize(handle,Width,Height);
+   Tk_PhotoSetSize(Interp,handle,Width,Height);
+//TK84   Tk_PhotoSetSize(handle,Width,Height);
 
    data.width=TR->TileWidthNB-dx;
    data.height=TR->TileHeightNB-dy;
@@ -456,8 +456,8 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
       }
 
       /* Envoyer le data dans l'image Tk */
-//TK84      Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-      Tk_PhotoPutBlock(handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+      Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+//TK84      Tk_PhotoPutBlock(handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
       free(data.pixelPtr);
    } else {
       return TCL_ERROR;
@@ -504,8 +504,8 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
 
    /*Definire les parametres du bock de donnees*/
 
-//TK84   Tk_PhotoSetSize(Interp,handle,data.width,data.height);
-   Tk_PhotoSetSize(handle,data.width,data.height);
+   Tk_PhotoSetSize(Interp,handle,data.width,data.height);
+//TK84   Tk_PhotoSetSize(handle,data.width,data.height);
 
    data.pitch=data.width*4;
    data.pixelSize=4;
@@ -526,8 +526,8 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
    }
 
    /*Envoyer le data dans l'image Tk*/
-//TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+//TK84   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 
    return(TCL_OK);

@@ -1499,8 +1499,8 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
    }
 
    /*Envoyer le data dans l'image Tk*/
-//TK84   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+//TK84   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
 
    free(data.pixelPtr);
 
@@ -1579,7 +1579,7 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
          }
 
          /* an extrema was found */
-         if (high==High) {
+         if (high==High && DEF2DIN(Field->Def,ip,jp)) {
             sub=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,zm)));
             Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ip));
@@ -1748,18 +1748,17 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               if (Field->Ref->Grid[0]!='V') {
-                  for (i=0;i<Field->Def->NI;i++) {
-                     for (j=0;j<Field->Def->NJ;j++) {
+               for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
+                  for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+                     if (Field->Ref->Grid[0]!='V') {
                         Field->Ref->Project(Field->Ref,i,j,&dlat,&dlon,0,1);
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     } else {
+                        index=FIDX2D(Field->Def,ni,nj);
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
                      }
-                  }
-               } else {
-                  for (index=0;index<Field->Def->NI;index++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
                   }
                }
                Tcl_SetObjResult(Interp,obj);
@@ -1792,16 +1791,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             }
             obj=Tcl_NewListObj(0,NULL);
-            if (Field->Ref->Grid[0]!='V') {
-               for (i=0;i<Field->Def->NI;i++) {
-                  for (j=0;j<Field->Def->NJ;j++) {
-                     Field->Ref->Project(Field->Ref,i,j,&dlat,&dlon,0,1);
+            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
+               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+                  if (Field->Ref->Grid[0]!='V') {
+                     Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                  } else {
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[FIDX2D(Field->Def,ni,nj)]));
                   }
-               }
-            } else {
-               for (index=0;index<Field->Def->NI;index++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
                }
             }
             Tcl_SetObjResult(Interp,obj);
@@ -1813,16 +1810,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             }
             obj=Tcl_NewListObj(0,NULL);
-            if (Field->Ref->Grid[0]!='V') {
-               for (i=0;i<Field->Def->NI;i++) {
-                  for (j=0;j<Field->Def->NJ;j++) {
-                     Field->Ref->Project(Field->Ref,i,j,&dlat,&dlon,0,1);
+            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
+               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+                  if (Field->Ref->Grid[0]!='V') {
+                     Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                  } else {
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[FIDX2D(Field->Def,ni,nj)]));
                   }
-               }
-            } else {
-               for (index=0;index<Field->Def->NI;index++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
                }
             }
             Tcl_SetObjResult(Interp,obj);
@@ -1945,14 +1940,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dx));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dy));
             Tcl_SetObjResult(Interp,obj);
-           break;
+            break;
 
          case GRIDVALUE:
             if (Objc==1) {
-               for (index=0;index<FSIZE2D(Field->Def);index++) {
-                  Def_GetMod(Field->Def,index,dval);
-                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+               obj=Tcl_NewListObj(0,NULL);
+               for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
+                  for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+                     Def_GetMod(Field->Def,FIDX2D(Field->Def,ni,nj),dval);
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                  }
                }
+               Tcl_SetObjResult(Interp,obj);
             } else {
 
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
@@ -2242,8 +2241,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                i++;
                Tcl_UnsetVar2(Interp,Tcl_GetString(Objv[i]),NULL,0x0);
-               for(ni=0;ni<Field->Def->NI;ni++) {
-                  for(nj=0;nj<Field->Def->NJ;nj++) {
+               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+                  for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
                      sprintf(buf,"%i,%i",nj+1,ni+1);
                      Def_Get(Field->Def,0,FIDX2D(Field->Def,ni,nj),val);
                      switch(Field->Def->Type) {

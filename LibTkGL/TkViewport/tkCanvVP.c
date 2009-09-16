@@ -1052,13 +1052,12 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    ViewportItem *vp=(ViewportItem*)Item;
    Projection   *proj;
-   int           i,load;
-   clock_t       sec;
-
    TData        *fld;
    TTraj        *traj;
    TObs         *obs;
    TMetObs      *met;
+   int           i,load;
+   clock_t       sec;
 
    extern int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
    extern int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
@@ -1080,7 +1079,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          sec=clock();
          while (((clock()-sec)<(60*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
          if ((clock()-sec)>=(60*CLOCKS_PER_SEC)) {
-            fprintf(stderr,"(WARNING) ViewportDisplay: Warning, waited too long for data, rendering anyway\n");
+            fprintf(stderr,"(WARNING) ViewportDisplay: Waited too long for data, rendering anyway\n");
          }
          vp->Update=1;
       }

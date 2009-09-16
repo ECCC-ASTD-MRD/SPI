@@ -9,9 +9,10 @@ YACC = bison
 # Target architecture
 
 ARCH      = Linux
-LIB_VER   = 7.3.0
+LIB_VER   = 7.4.0
 TCLTK_VER = 8.4.13
-#TCLTK_VER = 8.5.6
+TCLTK_VER = 8.5.7
+TCLTK_BASE= 8.5
 
 X_INCLUDE   =
 PROTO       =

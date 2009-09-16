@@ -9,8 +9,8 @@ include ../Makefile.$(ARCH)
 INCLUDES  = $(INCLUDE)
 CFLAGS    = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(LIBS) $(PROTO) $(DEFINES)
 LIBGL     = -L$(GL_PATH)/lib -lGL -lGLU
-LIBTK     = -L$(TK_PATH)/lib -ltk8.4
-LIBTCL    = -L$(TCL_PATH)/lib -ltcl8.4
+LIBTK     = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE)
+LIBTCL    = -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
 
 # Start of Makefile
 
