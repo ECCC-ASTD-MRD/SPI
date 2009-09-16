@@ -324,8 +324,8 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
    $Canvas create image [expr $X+20] $Y -image [lindex $Model::Resources(Icos) [Watch::GetType $Project]] -tags "PROJECT"
    $Canvas create text [expr $X+33] $Y -text "$Project" -anchor w -tags "PROJECT PROJECT$Project" -font $GDefs(Font) -fill black
 
-   $Canvas bind PPROJECT$Project <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
-   $Canvas bind PROJECT$Project  <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
+   $Canvas bind PPROJECT$Project <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::ReadProject $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
+   $Canvas bind PROJECT$Project  <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::ReadProject $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
    $Canvas bind PROJECT$Project  <ButtonPress-3> "set Watch::Data(Project) $Project; Watch::PopUpProject %X %Y"
 
    #----- On cree les branches des watchs seulement s'il faut les afficher
@@ -1131,45 +1131,46 @@ proc Watch::Suppress { } {
 proc Watch::Read { } {
    variable Data
 
+   #----- Trouve la liste des noms de tous les projets (un projet = un dossier (directory))
+   foreach proj [set Data(Projects) [glob -nocomplain -types d -directory $Data(Path) -tails *]] {
+      set Data(Sources$proj) {}
+   }
+}
+
+proc Watch::ReadProject { Project } {
+   variable Data
+
    array unset Data Models*
    array unset Data Sims*
 
-   #----- Trouve la liste des noms de tous les projets (un projet = un dossier (directory))
-   set Data(Projects) [glob -nocomplain -types d -directory $Data(Path) -tails *]
+   set Data(Sources$Project) {}
 
-   #----- Traverse l'arborescence des projets pour trouver les pool voulus
-   foreach proj $Data(Projects) {
-
-      set Data(Sources$proj) {}
-
-      #----- Verifie que les fichiers necessaires sont presents
-      if { ![file exists $Data(Path)/$proj/sim.pool] } {
-         continue
-      }
+   #----- Verifie que les fichiers necessaires sont presents
+   if { [file exists $Data(Path)/$Project/sim.pool] } {
 
       #----- Trouve les lignes de pool
-      foreach info [Info::List $Data(Path)/$proj/sim.pool] {
+      foreach info [Info::List $Data(Path)/$Project/sim.pool] {
          set model   [Info::Strip $info Model]
          set name    [Info::Strip $info NameExp]
          set nosim   [Info::Strip $info NoSim]
 
          foreach src [Info::Strip $info Name] lat [Info::Strip $info Lat] lon [Info::Strip $info Lon] {
-            lappend Data(Sources$proj) [list $src $lat $lon]
+            lappend Data(Sources$Project) [list $src $lat $lon]
          }
 
-         if { ![info exists Data(Models$proj$src)] } {
-            set Data(Models$proj$src) ""
+         if { ![info exists Data(Models$Project$src)] } {
+            set Data(Models$Project$src) ""
          }
-         if { [lsearch $Data(Models$proj$src) $model]==-1 } {
-            lappend Data(Models$proj$src) $model
-            set Data(Sims$proj$src$model) ""
+         if { [lsearch $Data(Models$Project$src) $model]==-1 } {
+            lappend Data(Models$Project$src) $model
+            set Data(Sims$Project$src$model) ""
          }
-         lappend Data(Sims$proj$src$model) "$nosim \"$info\""
+         lappend Data(Sims$Project$src$model) "$nosim \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$proj$src$model$nosim) [glob -nocomplain  $Data(Path)/$proj/data/*_$src/${model}.${nosim}.*]
+         set Data(Results$Project$src$model$nosim) [glob -nocomplain  $Data(Path)/$Project/data/*_$src/${model}.${nosim}.*]
       }
-      set Data(Sources$proj) [lsort -unique $Data(Sources$proj)]
+      set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
    }
 }
 
