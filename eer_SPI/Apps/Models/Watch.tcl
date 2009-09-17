@@ -214,7 +214,6 @@ proc Watch::AllCloseItem { Tag Level } {
    }
 }
 
-
 #----------------------------------------------------------------------------
 # Nom      : <Watch::Create>
 # Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
@@ -1111,7 +1110,7 @@ proc Watch::Suppress { } {
 # Nom      : <Watch::Read>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Lire la liste des watchs.
+# But      : Lire la liste des projects.
 #
 # Parametres :
 #
@@ -1121,11 +1120,6 @@ proc Watch::Suppress { } {
 #    - Chaque projet a sa liste de noms de watch sous Data(Sources$Projet)
 #    - Chaque watch a sa liste de modeles sous Data(Models$Project$Watch)
 #    - Chaque modele de chaque watch a sa liste de simulation sous Data(Sims$Project$Watch$Model)
-#
-#      La raison pour laquelle les projets ont 'proj-$proj' comme nom
-#      est que cela permet ainsi de nommer une source du meme nom qu'un
-#      projet sans probleme. Les nom ne pouvant contenir de caracteres
-#      speciaux, sauf '_', le '-' evite tous conflit.
 #----------------------------------------------------------------------------
 
 proc Watch::Read { } {
@@ -1135,7 +1129,25 @@ proc Watch::Read { } {
    foreach proj [set Data(Projects) [glob -nocomplain -types d -directory $Data(Path) -tails *]] {
       set Data(Sources$proj) {}
    }
+
+   if { $Data(BranchProject)!="" } {
+      Watch::ReadProject $Data(BranchProject)
+   }
 }
+
+#---------------------------------------------------------------------------
+# Nom      : <Watch::ReadProject>
+# Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Lire la liste des sources/sims pour un projets.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Watch::ReadProject { Project } {
    variable Data
