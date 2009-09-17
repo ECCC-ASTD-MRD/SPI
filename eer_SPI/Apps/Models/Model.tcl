@@ -107,7 +107,7 @@ namespace eval Model {
    set Lbl(Create)     { "Créer" "Create" }
    set Lbl(Cancel)     { "Annuler" "Cancel" }
    set Lbl(Checked)    { "Rafraichissement effectué à" "Refresh done at" }
-   set Lbl(Checking)   { "Rafraichissement en cours" "Refreshing simulations" }
+   set Lbl(Checking)   { "Rafraichissement en cours..." "Refreshing simulations..." }
    set Lbl(Select)     { "Sélectionner" "Select" }
    set Lbl(Warning)    { "Avertissement" "Warning" }
    set Lbl(Watch)      { "Veilles" "Watch" }
@@ -1945,7 +1945,7 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
       2 {
          foreach proj $Watch::Data(Projects) {
             if { $Group=="" || $proj==$Group } {
-               set ico [lindex $Resources(Icos) [Watch::GetType $proj]]
+               set ico [Watch::GetIcon $proj]
                foreach watch $Watch::Data(Sources$proj) {
                   if { $Loc=="" || [lindex $watch 0]==$Loc } {
                      lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"

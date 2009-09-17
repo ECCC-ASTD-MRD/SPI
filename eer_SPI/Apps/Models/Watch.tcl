@@ -286,7 +286,7 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
 
    #----- Creation de la ligne descriptive du projet
    $Canvas create bitmap $X $Y -bitmap $Model::Resources(Plus) -tags "SIGN PPROJECT$Project"
-   $Canvas create image [expr $X+20] $Y -image [lindex $Model::Resources(Icos) [Watch::GetType $Project]] -tags "PROJECT"
+   $Canvas create image [expr $X+20] $Y -image [Watch::GetIcon $Project] -tags "PROJECT"
    $Canvas create text [expr $X+33] $Y -text "$Project" -anchor w -tags "PROJECT PROJECT$Project" -font $GDefs(Font) -fill black
 
    $Canvas bind PPROJECT$Project <ButtonPress-1> "set Watch::Data(Project) $Project; Watch::ReadProject $Project; Watch::SelectBranch $Project BranchProject True; Model::TypeSelect none 2 \"\" $Project"
@@ -530,7 +530,7 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Watch::GetType>
+# Nom      : <Watch::GetIcon>
 # Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
 #
 # But      : Retourne le numero du type correspondant au projet.
@@ -544,14 +544,14 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::GetType { Project } {
+proc Watch::GetIcon { Project } {
 
    foreach txt { VAAC RSMC CTBT FIRE BIO SPILL } no { 0 1 2 3 4 5 } {
       if { [string first $txt $Project]!=-1 } {
-         return $no
+         return [lindex $Model::Resources(Icos) $no]
       }
    }
-   return 6
+   return [lindex $Model::Resources(Icos) 6]
 }
 
 #-------------------------------------------------------------------------------
@@ -1118,10 +1118,15 @@ proc Watch::Read { } {
 #----------------------------------------------------------------------------
 
 proc Watch::ReadProject { Project } {
+   global GDefs
    variable Data
 
    array unset Data Models*
    array unset Data Sims*
+
+   set Model::Param(Job) "[lindex $Model::Lbl(Checking) $GDefs(Lang)]"
+   .model config -cursor watch
+   update idletask
 
    set Data(Sources$Project) {}
 
@@ -1152,6 +1157,10 @@ proc Watch::ReadProject { Project } {
       }
       set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
    }
+
+   set Model::Param(Job) ""
+   .model config -cursor left_ptr
+   update idletask
 }
 
 #-------------------------------------------------------------------------------
@@ -1345,4 +1354,3 @@ proc Watch::ParamsAutoWatch { Modelbase Frame Mode } {
    }
    pack $tabframe.add -side bottom -anchor e -padx 5 -pady 5
 }
-
