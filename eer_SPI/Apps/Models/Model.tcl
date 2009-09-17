@@ -106,7 +106,8 @@ namespace eval Model {
    set Lbl(Type)       { "Type d'expérience      :" "Experiment type          :" }
    set Lbl(Create)     { "Créer" "Create" }
    set Lbl(Cancel)     { "Annuler" "Cancel" }
-   set Lbl(Checked)    { "Pool vérifié à" "Checked pool at" }
+   set Lbl(Checked)    { "Rafraichissement effectué à" "Refresh done at" }
+   set Lbl(Checking)   { "Rafraichissement en cours" "Refreshing simulations" }
    set Lbl(Select)     { "Sélectionner" "Select" }
    set Lbl(Warning)    { "Avertissement" "Warning" }
    set Lbl(Watch)      { "Veilles" "Watch" }
@@ -1572,6 +1573,7 @@ proc Model::Check { MS } {
 
    if { [winfo exists .model] } {
 
+      set Param(Job) "[lindex $Lbl(Checking) $GDefs(Lang)]"
       .model config -cursor watch
       update idletask
 
