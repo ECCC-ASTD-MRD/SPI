@@ -235,7 +235,6 @@ proc Option::Set { Frame List { ListVal {} } } {
 #-------------------------------------------------------------------------------
 
 proc EntryVar::Create { W Var Type Format Command args } {
-   global $Var
 
    #--- Creation du widget entry
 
