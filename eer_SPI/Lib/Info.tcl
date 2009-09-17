@@ -29,14 +29,16 @@
 #
 #===============================================================================
 
-package provide Info 1.0
+package provide Info 2.0
 
-catch { SPI::Splash "Loading Widget Package Info 1.0" }
+catch { SPI::Splash "Loading Package Info 2.0" }
 
 namespace eval Info {
    variable Lbl
    variable Msg
    variable Token
+
+   set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon }
 
    set Token(CANERM)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                         SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
@@ -49,8 +51,8 @@ namespace eval Info {
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                         Mode Meteo Delta Method Level LevelUnit TimeStep BatchStart }
 
-   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration OutputTimeStepMin ModelTimeStepMin \
-                        AccYear AccMonth AccDay AccHour AccMin SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid \
+   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin
+                        SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
                         Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
@@ -309,7 +311,8 @@ proc Info::Delete { Path Info } {
 #    <list>  : Liste des lignes info correspondantes
 #
 # Remarques :
-#    Aucune.
+#    -Seul les 15 premiers items du pool peuvent servir de token de recherche,
+#     ce sont les seuls communs a tous les modeles
 #
 #----------------------------------------------------------------------------
 
@@ -317,17 +320,13 @@ proc Info::Find { Path Set args } {
    variable Token
 
    #----- Initialiser le tableau d'arguments de recherche
-   set line { }
-
-   foreach item $Token($Set) {
-      lappend line ".*"
-   }
+   set line [list .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*]
 
    #----- Initialiser les arguments de recherche specifies
    foreach { item value } $args {
       set idx [lsearch -exact $Token($Set) $item]
 
-      if { $idx!=-1 } {
+      if { $idx!=-1 && $idx<=15 } {
          set line [lreplace $line $idx $idx ".*=$value"]
       }
    }
