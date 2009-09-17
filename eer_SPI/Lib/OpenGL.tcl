@@ -35,7 +35,6 @@ namespace eval OpenGL {
 
    set Param(Delay)       2000
    set Param(Res)         0
-   set Param(BBuf)        1
    set Param(Debug)       0
    set Param(Alias)       0
    set Param(FSAA)        4
@@ -56,7 +55,6 @@ namespace eval OpenGL {
    set Lbl(Resources)   { "Ressources" "Resources" }
    set Lbl(Params)      { "Parametres" "Parameters" }
    set Lbl(Alias)       { "Anti-aliasing" "Anti-aliasing" }
-   set Lbl(BBuf)        { "Rafraichissement par copie" "Back buffering refresh" }
    set Lbl(ZBuf)        { "Cohérence de profondeur (ZBuffer)" "Depth coherence (ZBuffer)" }
    set Lbl(Low)         { "Interactivité basse résolution" "Low resolution interactivity" }
    set Lbl(Time)        { "Temps du rendue" "Render time" }
@@ -130,8 +128,6 @@ proc OpenGL::ParamFrame { Frame Apply } {
             -indicatoron false -command "glrender -debug \$OpenGL::Param(Debug); $Apply configure -state normal" -onvalue 1 -offvalue 0 -bd 1
          checkbutton $frame.params.def.alias  -text [lindex $Lbl(Alias) $GDefs(Lang)] -variable OpenGL::Param(Alias) \
             -indicatoron false -command "glrender -aliasing \$OpenGL::Param(Alias); $Apply configure -state normal" -onvalue 1 -offvalue 0 -bd 1
-         checkbutton $frame.params.def.bbuf  -text [lindex $Lbl(BBuf) $GDefs(Lang)] -variable OpenGL::Param(BBuf) \
-            -indicatoron false -command "$Apply configure -state normal" -onvalue 1 -offvalue 0 -bd 1
          checkbutton $frame.params.def.zbuf  -text [lindex $Lbl(ZBuf) $GDefs(Lang)] -variable OpenGL::Param(ZBuf) \
             -indicatoron false -command "glrender -zbuffer \$OpenGL::Param(ZBuf); $Apply configure -state normal" -onvalue 1 -offvalue 0 -bd 1
          checkbutton $frame.params.def.res -text [lindex $Lbl(Low) $GDefs(Lang)] -variable OpenGL::Param(Res) \

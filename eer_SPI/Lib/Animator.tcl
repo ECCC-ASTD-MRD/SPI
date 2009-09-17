@@ -179,9 +179,12 @@ proc Animator::Window { { Parent .} } {
    eval wm geom .anim $Param(Geom)
    wm protocol  .anim WM_DELETE_WINDOW Animator::Close
 
+#   bind .anim.tab  <<NotebookTabChanged>> {puts stderr [.anim.tab index current] }
    TabFrame::Create .anim.tab 1 {}
    pack .anim.tab -side top -fill both -expand true -padx 2 -pady 2
 
+#   frame .anim.tab.f1
+#   set Data(Tab1) [.anim.tab add .anim.tab.f1 -text  [lindex $Lbl(Data) $GDefs(Lang)]]
    set Data(Tab1) [TabFrame::Add .anim.tab 1 [lindex $Lbl(Data) $GDefs(Lang)] False ""]
 
       frame $Data(Tab1).lbl
@@ -201,6 +204,8 @@ proc Animator::Window { { Parent .} } {
       pack $Data(Tab1).type.f -side top -fill both -padx 2 -pady 2
       pack $Data(Tab1).type -side top -fill both -padx 5 -pady 2
 
+#   frame .anim.tab.f2
+#   set Data(Tab2) [.anim.tab add .anim.tab.f2 -text [lindex $Lbl(Fly) $GDefs(Lang)]]
    set Data(Tab2) [TabFrame::Add .anim.tab 1 [lindex $Lbl(Fly) $GDefs(Lang)] False ""]
       frame $Data(Tab2).head
          button $Data(Tab2).head.add  -image PLUS -bd 0 -relief flat -overrelief raised -command "Animator::FlyPointAdd $Data(Tab2).way.list.box"
@@ -802,9 +807,9 @@ proc Animator::Play { } {
             set Play(Data)    [FieldCalc::Operand $vp $Play($vp$info)]
 
             if { $Play(Cache) && !$Play(File) } {
-               $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data) -backbuffer True
+               $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data)
             } else {
-               $Play(Canvas) itemconf $vp -frame 0 -data $Play(Data) -backbuffer $OpenGL::Param(BBuf)
+               $Play(Canvas) itemconf $vp -frame 0 -data $Play(Data)
             }
 
             #----- Animer les viewport liees

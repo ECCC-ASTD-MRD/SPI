@@ -359,7 +359,7 @@ proc Dialog::CreateWait { Master Text { Percent 1000 } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateWait>
+# Nom      : <Dialog::DestroyWait>
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Detruit le message d'information sur un processue en cours.

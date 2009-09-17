@@ -640,7 +640,7 @@ proc Viewport::ConfigSet { Frame } {
    set Map(Lon) [lindex $ll 1]
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
+      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -652,7 +652,7 @@ proc Viewport::ConfigSet { Frame } {
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -minsize $Map(MinSize) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
-     $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) -backbuffer $OpenGL::Param(BBuf) \
+     $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -1162,7 +1162,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
-      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -backbuffer $OpenGL::Param(BBuf)
+      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp
 
    if { $Active } {
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
