@@ -544,6 +544,8 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    TRANSFORM(Ref,dx,dy,X1+0.5,Y0-0.5);
    OGR_G_SetPoint(Def->Pick,3,dx,dy,0);
 
+   val=Value;
+
    /* Test for intersection */
    if ((Area>0.0 || Mode!='C' || Mode!='N' || Mode!='A') && GPC_Intersect(Geom,Def->Pick)) {
 
@@ -588,7 +590,7 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
          }
 
          /* Are we within */
-         if (Mode!='W' || (OGR_G_GetDimension(Geom)>=2 && OGR_G_Within(Geom,Def->Poly))) {
+         if (Mode!='W' || GPC_Within(Def->Poly,Geom)) {
             Def_Set(Def,0,idx3,val);
 
             if (Mode=='N' && Def->Buffer) {

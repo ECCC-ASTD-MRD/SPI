@@ -76,7 +76,7 @@ int GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip) {
    if ((nb=OGR_G_GetPointCount(Line))) {
       OGR_G_GetPoint(Line,0,&pt0[0],&pt0[1],&pt0[2]);
       OGR_G_SetPoint_2D(point,0,pt0[0],pt0[1]);
-      in=GPC_PointPolyIntersect(point,ring);
+      in=GPC_PointPolyIntersect(point,ring,0);
       /*Add the current point if inside*/
       if (in) {
          if (!line) line=OGR_G_CreateGeometry(wkbLineString);
@@ -127,7 +127,7 @@ int GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip) {
          /*If still in, add the point*/
          if (in) {
             OGR_G_SetPoint_2D(point,0,pt1[0],pt1[1]);
-            if (GPC_PointPolyIntersect(point,ring)) {
+            if (GPC_PointPolyIntersect(point,ring,0)) {
                OGR_G_AddPoint_2D(line,pt1[0],pt1[1]);
             }
          }
@@ -267,6 +267,66 @@ OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1) {
    return(geom);
 }
 
+int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+
+   int n0,n1,t0,t1,npt=0;
+   Vect3d v0,v1;
+   OGRGeometryH pt;
+
+   /*It can't be within if it's not a within polygon*/
+   if (OGR_G_GetGeometryType(Geom1)!=wkbPolygon && OGR_G_GetGeometryType(Geom1)!=wkbMultiPolygon && OGR_G_GetGeometryType(Geom1)!=wkbLinearRing) {
+      return(0);
+   }
+
+   /*Boucle recursive sur les sous geometrie*/
+   if (OGR_G_GetGeometryType(Geom0)!=wkbPolygon && (n0=OGR_G_GetGeometryCount(Geom0))) {
+      for(n0=0;n0<OGR_G_GetGeometryCount(Geom0);n0++) {
+         if (!GPC_Within(OGR_G_GetGeometryRef(Geom0,n0),Geom1)) {
+            return(0);
+         } else {
+            npt++;
+         }
+      }
+      return(npt==OGR_G_GetGeometryCount(Geom0));
+   }
+
+   if (OGR_G_GetGeometryType(Geom1)!=wkbPolygon && (n1=OGR_G_GetGeometryCount(Geom1))) {
+      for(n1=0;n1<OGR_G_GetGeometryCount(Geom1);n1++) {
+         if (!GPC_Within(Geom0,OGR_G_GetGeometryRef(Geom1,n1))) {
+            return(0);
+         }
+      }
+      return(1);
+   }
+
+   /*Verifier l'inclusion dans les trous pour les polygones*/
+   if (OGR_G_GetGeometryType(Geom1)==wkbPolygon && OGR_G_GetGeometryCount(Geom1)>1) {
+      pt=OGR_G_CreateGeometry(wkbPoint);
+      for(n0=1;n0<OGR_G_GetGeometryCount(Geom1);n0++) {
+         npt=0;
+         for(n1=0;n1<OGR_G_GetPointCount(Geom0);n1++) {
+            OGR_G_SetPoint(pt,0,OGR_G_GetX(Geom0,n1),OGR_G_GetY(Geom0,n1),0);
+            if (GPC_PointPolyIntersect(pt,OGR_G_GetGeometryRef(Geom1,n0),0)) {
+               OGR_G_DestroyGeometry(pt);
+               return(0);
+            }
+         }
+      }
+      OGR_G_DestroyGeometry(pt);
+   }
+
+   /*Pour les polygones tester seulement le contour externe*/
+   if (OGR_G_GetGeometryType(Geom0)==wkbPolygon) {
+      Geom0=OGR_G_GetGeometryRef(Geom0,0);
+   }
+   if (OGR_G_GetGeometryType(Geom1)==wkbPolygon) {
+      Geom1=OGR_G_GetGeometryRef(Geom1,0);
+   }
+
+   /*Demarrer les tests selon les type de geometrie*/
+   return(GPC_PointPolyIntersect(Geom0,Geom1,1));
+}
+
 int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
    int n0,n1,t0,t1,npt;
@@ -297,7 +357,7 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
          npt=0;
          for(n1=0;n1<OGR_G_GetPointCount(Geom1);n1++) {
             OGR_G_SetPoint(pt,0,OGR_G_GetX(Geom1,n1),OGR_G_GetY(Geom1,n1),0);
-            npt+=GPC_PointPolyIntersect(pt,OGR_G_GetGeometryRef(Geom0,n0));
+            npt+=GPC_PointPolyIntersect(pt,OGR_G_GetGeometryRef(Geom0,n0),0);
          }
          if (npt==OGR_G_GetPointCount(Geom1)) {
             return(0);
@@ -333,45 +393,45 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    /*Demarrer les tests selon les type de geometrie*/
    if (t0==0) {
       if (t1==0) {
-         return(GPC_PointPointIntersect(Geom0,Geom1));
+         return(GPC_PointPointIntersect(Geom0,Geom1,0));
       } if (t1==1){
-         return(GPC_PointLineIntersect(Geom0,Geom1));
+         return(GPC_PointLineIntersect(Geom0,Geom1,0));
       } else {
-         return(GPC_PointPolyIntersect(Geom0,Geom1));
+         return(GPC_PointPolyIntersect(Geom0,Geom1,0));
       }
    } else if (t0==1) {
       if (t1==0) {
-         return(GPC_PointLineIntersect(Geom1,Geom0));
+         return(GPC_PointLineIntersect(Geom1,Geom0,0));
       } else if (t1==1) {
-         return(GPC_LinePolyIntersect(Geom0,Geom1));
+         return(GPC_LinePolyIntersect(Geom0,Geom1,0));
       } else {
-         if (GPC_PointPolyIntersect(Geom0,Geom1)) {
+         if (GPC_PointPolyIntersect(Geom0,Geom1,0)) {
             return(1);
          } else {
-            return(GPC_LinePolyIntersect(Geom0,Geom1));
+            return(GPC_LinePolyIntersect(Geom0,Geom1,0));
          }
       }
    } else {
       if (t1==0) {
-         return(GPC_PointPolyIntersect(Geom1,Geom0));
+         return(GPC_PointPolyIntersect(Geom1,Geom0,0));
       } else if (t1==1) {
-         return(GPC_LinePolyIntersect(Geom1,Geom0));
+         return(GPC_LinePolyIntersect(Geom1,Geom0,0));
       } else {
-         if (GPC_PointPolyIntersect(Geom1,Geom0)) {
+         if (GPC_PointPolyIntersect(Geom1,Geom0,0)) {
             return(1);
-         } if (GPC_PointPolyIntersect(Geom0,Geom1)) {
+         } if (GPC_PointPolyIntersect(Geom0,Geom1,0)) {
             return(1);
          } else  {
-            return(GPC_LinePolyIntersect(Geom1,Geom0));
+            return(GPC_LinePolyIntersect(Geom1,Geom0,0));
          }
       }
    }
    return(0);
 }
 
-int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n;
+   register long n0,n1,n,t=0;
    Vect3d        v0,v1;
 
    n=OGR_G_GetPointCount(Geom1);
@@ -383,16 +443,18 @@ int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
          OGR_G_GetPoint(Geom1,0,&v1[0],&v1[1],&v1[2]);
 
          if (v0[0]==v1[0] && v0[1]==v1[1]) {
-            return(1);
+            t++;
+            if (!All)
+               return(1);
          }
       }
    }
-   return(0);
+   return(All?t==OGR_G_GetPointCount(Geom0):t);
 }
 
-int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n;
+   register long n0,n1,n,t=0;
    Vect3d        v0,v1[2];
 
    n=OGR_G_GetPointCount(Geom1);
@@ -405,16 +467,18 @@ int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
          OGR_G_GetPoint(Geom1,n1+1,&v1[1][0],&v1[1][1],&v1[1][2]);
 
          if (GPC_SegmentIntersect(v0,v0,v1[0],v1[1],NULL)==1) {
-            return(1);
+            t++;
+            if (!All)
+               return(1);
          }
       }
    }
-   return(0);
+   return(All?t==OGR_G_GetPointCount(Geom0):t);
 }
 
-int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n,nn;
+   register long n0,n1,n,nn,t=0;
    int           c=0;
    Vect3d        v0,v1[2];
 
@@ -434,14 +498,19 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
                c=!c;
         }
       }
-      if (c) break;
+      if (c) {
+         t++;
+         if (!All) {
+            break;
+         }
+      }
    }
-   return(c);
+   return(All?t==OGR_G_GetPointCount(Geom0):t);
 }
 
-int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n;
+   register long n0,n1,n,t=0;
    int           d;
    Vect3d        v0[2],v1[2];
 
@@ -457,11 +526,13 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
          d=GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL);
          if (d==1) {
-            return(1);
+            t++;
+            if (!All)
+               return(1);
          }
       }
    }
-   return(0);
+   return(All?t==OGR_G_GetPointCount(Geom0):t);
 }
 
 double GPC_Length(OGRGeometryH Geom) {
