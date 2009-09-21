@@ -649,8 +649,10 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          min=1e32;
          for(f=0;f<layer->NFeature;f++) {
-            val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
-            min=min<val?min:val;
+            if (layer->Select[f]) {
+               val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
+               min=min<val?min:val;
+            }
          }
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(min));
          break;
@@ -667,8 +669,10 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          max=-1e32;
          for(f=0;f<layer->NFeature;f++) {
-            val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
-            max=max>val?max:val;
+            if (layer->Select[f]) {
+               val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
+               max=max>val?max:val;
+            }
          }
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(max));
          break;
