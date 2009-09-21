@@ -417,7 +417,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
          /* Fix in 1.3: count a vertex only once */
          for (y=miny;y<=maxy;y++) {
-            dy=y+0.5; /* center height of line*/
+            dy=y; /* center height of line*/
             ints=0 ;
 
             /*Initialize polyInts, otherwise it can sometimes causes a seg fault */
@@ -462,8 +462,8 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                            -Fill them separately-
                            They are not taken into account twice.*/
                      if (dx1>dx2) {
-                        horizontal_x1=(int)floor(dx2+0.5);
-                        horizontal_x2=(int)floor(dx1+0.5);
+                        horizontal_x1=ROUND(dx2);
+                        horizontal_x2=ROUND(dx1);
                         if ((horizontal_x1>maxx) || (horizontal_x2<minx))
                            continue;
 
@@ -480,7 +480,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
                   if ((dy<dy2) && (dy>=dy1)) {
                      intersect=(dy-dy1)*(dx2-dx1)/(dy2-dy1)+dx1;
-                     polyInts[ints++]=(int)floor(intersect+0.5);
+                     polyInts[ints++]=ROUND(intersect);
                   }
                }
             }
