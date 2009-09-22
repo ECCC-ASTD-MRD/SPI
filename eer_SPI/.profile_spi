@@ -1,7 +1,7 @@
 #----- Definitions
 export ARCH=`uname -s`
-export TCL_VERSION=8.4
-export SPI_VERSION=7.3.1
+export TCL_VERSION=8.5
+export SPI_VERSION=7.4.0
 export SPI_SHARED=${SPI_PATH}/Shared/${ARCH}
 
 #----- Library locations
