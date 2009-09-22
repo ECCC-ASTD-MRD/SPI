@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/ksh
 
-export SPI_PATH=${0%SPI}
-#export SPI_PATH=$(cd -P $(dirname ${0%tclsh}) 2>/dev/null && pwd -P)
+#export SPI_PATH=${0%SPI}
+export SPI_PATH=$(cd -P $(dirname ${0%tclsh}) 2>/dev/null && pwd -P)
 . ${SPI_PATH}/.profile_spi
 
 SOFT=0
@@ -100,7 +100,6 @@ then
 fi
 
 #----- Let's start up the software
-
 ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
 code=$?
 
