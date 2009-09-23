@@ -25,7 +25,7 @@ namespace eval TRAJECT {
    set Sim(Meteo)           glb
    set Sim(Path)            ""
    set Sim(ListMeteo)       { "glb" "reg" }
-   set Sim(ListMethod)      { "Trajectoire" "Retro-trajectoire" }
+   set Sim(ListMethod)      { { "Trajectoire" "Retro-trajectoire" } { "Forward" "Backward" } }
    set Sim(ListTimeStep)    { 1200.0 3600.0 }
    set Sim(ListSimDuration) { 6 12 18 24 48 72 96 120 144 168 192 216 240 }  ;#----- List of simulation durations [hr].
 

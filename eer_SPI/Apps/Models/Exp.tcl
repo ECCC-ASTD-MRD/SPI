@@ -317,7 +317,7 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
 
    #----- Construire les branches
    foreach sim $List {
-      Exp::PoolFormat ${Model} $sim
+      set Data(Desc) [Exp::PoolFormat ${Model} $sim]
 
       if { $Data(NoPrev)==$Prev } {
 
@@ -515,11 +515,12 @@ proc Exp::PoolFormat { Model Info } {
       set Data(NoSim)  0
       set Data(NoPrev) -1
       set Data(State)  0
-      set Data(Desc)   SATDATA
+      return SATDATA
    } else {
       set Data(NoSim)  [Info::Strip $Info NoSim]
       set Data(NoPrev) [Info::Strip $Info NoPrev]
       set Data(State)  [Info::Strip $Info State]
+      set Data(Delta)  [Info::Strip $Info Delta]
 
       if { [set dur [Info::Strip $Info Duration]]!="" } {
          set unit Hrs
@@ -528,9 +529,9 @@ proc Exp::PoolFormat { Model Info } {
          set unit Min
       }
       set date  "[Info::Strip $Info AccYear]-[Info::Strip $Info AccMonth]-[Info::Strip $Info AccDay] [Info::Strip $Info AccHour]:[Info::Strip $Info AccMin]"
-      set model "[Info::Strip $Info Meteo][Info::Strip $Info Mode]"
+      set model "[Info::Strip $Info Meteo][Info::Strip $Info Delta][Info::Strip $Info Mode]"
 
-      set Data(Desc)   "$dur $unit $date $model ($Exp::Data(NoSim))"
+      return "$dur $unit $date $model ($Exp::Data(NoSim))"
    }
 }
 

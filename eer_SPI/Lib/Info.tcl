@@ -49,10 +49,10 @@ namespace eval Info {
                         EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
-                        Mode Meteo Delta Method Level LevelUnit TimeStep BatchStart }
+                        Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
    set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin
-                        SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
+                        SimYear SimMonth SimDay SimHour Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
                         Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
@@ -60,14 +60,15 @@ namespace eval Info {
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
 
-   set Lbl(Method)               { "Methode" "Method" }
+   set Lbl(Method)               { "Méthode" "Method" }
+   set Lbl(Backward)             { "Mode arrière" "Backward mode" }
    set Lbl(Mode)                 { "Mode" "Mode" }
    set Lbl(Meteo)                { "Modèle météorologique" "Meteorological model" }
    set Lbl(Delta)                { "Interval de temps des fichiers météo (h)" "Time interval of meteo files (h)" }
-   set Lbl(Start)                { "Depart" "Start" }
-   set Lbl(Arrival)              { "Arrivee" "Arrival" }
+   set Lbl(Start)                { "Départ" "Start" }
+   set Lbl(Arrival)              { "Arrivée" "Arrival" }
    set Lbl(Level)                { "Niveau" "Level" }
-   set Lbl(LevelUnit)            { "Unite" "Unit" }
+   set Lbl(LevelUnit)            { "Unité" "Unit" }
    set Lbl(BatchStart)           { "Délai de démarrage (h)" "Batch start delay (h)" }
    set Lbl(Duration)             { "Durée de simulation (h)" "Simulation duration (h)" }
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }

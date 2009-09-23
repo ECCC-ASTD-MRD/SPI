@@ -28,7 +28,6 @@ namespace eval Watch {
 
    #----- Variables relatives aux Watchs
    set Data(Frame)         ""
-   set Data(Path)          /data/cmoex6/afsrelo/experiment/temp_Watch
    set Data(Path)          $GDefs(DirWatch)
    set Data(Select)        ""                                              ;#Experience selectionnee
 
@@ -100,13 +99,14 @@ namespace eval Watch {
 proc Watch::AllOpenItem { Tag Level } {
    variable Data
 
-   Watch::AllCloseItem $Data(BranchProject) 0
-
    while { $Level<3 } {
       set tags {}
 
       switch $Level {
          0 {
+            #----- Only on project open at a time
+            Watch::AllCloseItem $Data(BranchProject) 0
+
             set Data(BranchProject) [concat $Data(BranchProject) $Tag]
 
             if { [info exists Data(Sources$Tag)] } {
@@ -446,13 +446,25 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
    global GDefs
    variable Data
 
-   set name [lindex $Watch 0]
-   set info    [lindex $Sim 1]
-   set mode    [Info::Strip $info Mode]
-   set meteo   [Info::Strip $info Meteo]
-   set no      [lindex $Sim 0]
+   set name  [lindex $Watch 0]
+   set info  [lindex $Sim 1]
+   set mode  [Info::Strip $info Mode]
+   set meteo [Info::Strip $info Meteo]
+   set delta [Info::Strip $info Delta]
+   set back  [Info::Strip $info Backward]
+   set no    [lindex $Sim 0]
 
-   set txt "$meteo$mode ($no)"
+   if { [set dur [Info::Strip $info Duration]]!="" } {
+      set unit Hrs
+   } else {
+      set dur [Info::Strip $info DurMin]
+      set unit Min
+   }
+   if { $back==1 } {
+      set txt "$dur $unit back $meteo$delta ($no)"
+   } else {
+      set txt "$dur $unit $meteo$delta ($no)"
+   }
    set tag "$Project$name$Model$no"
 
    set y1 [set y0 [expr $Y+10]]
@@ -676,7 +688,7 @@ proc Watch::PopUpProject { X Y } {
          .watchpopproj add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::ReadProject \$Watch::Data(Project); Watch::AllOpenItem \$Watch::Data(Project) 0"
          .watchpopproj add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project) 0"
          .watchpopproj add separator
-         .watchpopproj add command -label [lindex $Lbl(New) $GDefs(Lang)] -command "Model::New \$Watch::Data(Frame) Watch::New \"[lindex $Lbl(New) $GDefs(Lang)]\" 0"
+         .watchpopproj add command -label [lindex $Lbl(New) $GDefs(Lang)] -command "Model::New \$Watch::Data(Frame) Watch::New \"[lindex $Lbl(New) $GDefs(Lang)]\" 1"
    }
 
    .watchpopproj entryconfigure 0 -label "$Data(Project)"
@@ -1223,7 +1235,7 @@ proc Watch::GetNo { Model } {
    set model $Data(Project)$Data(Name)
    set sim   $Data(Project)$Data(Name)$Model
 
-   if { [info exists Data(Models$model)] && [info exists Data(Sims$sim) } {
+   if { [info exists Data(Models$model)] && [info exists Data(Sims$sim)] } {
       set nos ""
       foreach sim $Data(Sims$sim) {
          lappend nos [lindex $sim 0]

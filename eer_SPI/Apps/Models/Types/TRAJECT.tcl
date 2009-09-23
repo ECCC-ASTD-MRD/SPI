@@ -34,12 +34,13 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.int
 #-------------------------------------------------------------------------------
 
 proc TRAJECT::InitNew { Type } {
+   global GDefs
    variable Sim
 
    TabFrame::Select .trajectnew.opt 0
 
-   set Sim(Method)     "Trajectoire"
-   set Sim(Retro)      False
+   set Sim(Method)     [lindex [lindex $Sim(ListMethod) $GDefs(Lang)] 0]
+   set Sim(Backward)   False
    set Sim(Mode)       "prog"
    set Sim(TimeStep)   "3600.0"
    set Sim(AccMin)     00
@@ -115,13 +116,10 @@ proc TRAJECT::GetMetData { } {
    Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
 
    set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
-
-   if { $Sim(Method)=="Trajectoire" } {
-      set Sim(Retro) False
-      set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
+   if { $Sim(Backward) } {
+      set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
    } else {
-      set Sim(Retro) True
-      set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
+      set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
    }
    set Sim(Mode) [MetData::GetMode $Sim(Data) False]
    Dialog::DestroyWait
@@ -225,10 +223,10 @@ proc TRAJECT::CreateModelInput { } {
    set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
       puts $f "'[string toupper $Sim(NameExp)] '"
 
-      if { $Sim(Method)=="Trajectoire" } {
-         puts $f ".FALSE.  Mode retro-trajectoire ?"
-      } else {
+      if { $Sim(Backward) } {
          puts $f ".TRUE.   Mode retro-trajectoire ?"
+      } else {
+         puts $f ".FALSE.  Mode retro-trajectoire ?"
       }
 
       if { $Sim(LevelUnit) == "METRES" } {
@@ -331,10 +329,10 @@ proc TRAJECT::Launch { } {
    TRAJECT::CreateModelInput
    TRAJECT::CreateScriptInput
 
-   if { $Sim(Method)=="Trajectoire" } {
-      set mode FORWARD
-   } else {
+   if { $Sim(Backward) } {
       set mode BACKWARD
+   } else {
+      set mode FORWARD
    }
 
    if { $Sim(LevelUnit)=="METRES" } {

@@ -56,13 +56,6 @@ proc Meteo::Create { Frame } {
 
       bind $Frame.info.canvas <Button-4> "$Frame.info.canvas yview scroll -1 units"
       bind $Frame.info.canvas <Button-5> "$Frame.info.canvas yview scroll 1 units"
-
-   frame $Frame.opt
-      button $Frame.opt.open -image PLUS -relief flat -bd 0 -overrelief raised -command "Meteo::All Open"
-      button $Frame.opt.close -image MINUS -relief flat -bd 0 -overrelief raised -command "Meteo::All Close"
-      pack $Frame.opt.open $Frame.opt.close -side left -padx 2
-
-   pack $Frame.opt -side top -fill x -padx 2
    pack $Frame.info -side top -fill both -expand true  -padx 2 -pady 2
 
    Meteo::Tree
@@ -143,36 +136,6 @@ proc Meteo::Tree { } {
 #            Tree::Add Meteo::Data(Tree) {fd fstdfield /data/sat/parallel1/goesw/fst/imager/fd/ * *_*}   "{goese 0}"
 #            Tree::Add Meteo::Data(Tree) {ncq fstdfield /data/sat/parallel1/goese/fst/imager/ncq/ * *_*} "{goese 0}"
 #            Tree::Add Meteo::Data(Tree) {nwq fstdfield /data/sat/parallel1/goese/fst/imager/nwq/ * *_*} "{goese 0}"
-}
-
-proc Meteo::All { Mode } {
-   variable Data
-
-   if { $Mode=="Open" } {
-      Tree::Parse $Meteo::Data(Tree) Meteo::AllOpen
-   } else {
-      Tree::Parse $Meteo::Data(Tree) Meteo::AllClose
-   }
-
-   $Data(Frame).info.canvas delete METEOTREE
-   Tree::Render $Data(Frame).info.canvas METEOTREE 10 10 $Meteo::Data(Tree) Meteo::BranchRender
-   $Data(Frame).info.canvas configure -scrollregion "0 0 [lrange [$Data(Frame).info.canvas bbox METEOTREE] 2 end]"
-
-   Tree::ParseBranch $Meteo::Data(Tree)
-}
-
-proc Meteo::AllOpen { Branch Path } {
-
-   if { [llength $Branch]==2 } {
-      Tree::Set Meteo::Data(Tree) $Path "[lindex $Branch 0] 1"
-   }
-}
-
-proc Meteo::AllClose { Branch Path } {
-
-   if { [llength $Branch]==2 } {
-      Tree::Set Meteo::Data(Tree) $Path "[lindex $Branch 0] 0"
-   }
 }
 
 proc Meteo::BranchData { Type Path Run Pattern } {

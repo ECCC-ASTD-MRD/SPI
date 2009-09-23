@@ -59,7 +59,7 @@ proc TRAJECT::ParamsNew { Tab { Time True } } {
 
    #----- Model Integration (data output time step and model time step).
    labelframe $frame.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
-      Option::Create $frame.integ.method [lindex $Lbl(Method) $GDefs(Lang)] TRAJECT::Sim(Method) 0 -1 $TRAJECT::Sim(ListMethod) ""
+      Option::Create $frame.integ.method [lindex $Lbl(Method) $GDefs(Lang)] { TRAJECT::Sim(Method) TRAJECT::Sim(Backward) } 0 -1 [lindex $TRAJECT::Sim(ListMethod) $GDefs(Lang)] "" { False True }
       Option::Create $frame.integ.time [lindex $Lbl(TimeStep) $GDefs(Lang)] TRAJECT::Sim(TimeStep) 0 -1 $TRAJECT::Sim(ListTimeStep) ""
       Option::Create $frame.integ.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] TRAJECT::Sim(Duration) 1 -1 $TRAJECT::Sim(ListSimDuration) ""
       Option::Create $frame.integ.res [lindex $Lbl(SimBatchStart) $GDefs(Lang)] TRAJECT::Sim(BatchStart) 1 -1 $TRAJECT::Sim(ListSimDuration) ""
