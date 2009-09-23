@@ -309,7 +309,7 @@ proc SPI::Window { } {
       label .info.altval -textvariable Page::Data(Altitude) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 9 -anchor e
       label .info.fldval -textvariable Page::Data(Value) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 10
 
-      ProgressBar::Create .info.job -color $GDefs(ColorHighLight) -width 50 -relief flat -variable ::SPI::Data(Percent)
+      ttk::progressbar .info.job -variable ::SPI::Data(Percent) -orient horizontal -length 100 -maximum 100
 
       pack .info.opt -side left -fill y
       pack .info.cooval .info.altval -ipadx 2 -side left -fill y

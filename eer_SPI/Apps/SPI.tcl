@@ -211,7 +211,6 @@ package require InfoFrame
 package require FieldCalc
 package require Animator
 package require Info
-package require ProgressBar
 
 #----- Liste des outils
 
