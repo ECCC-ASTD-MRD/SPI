@@ -969,9 +969,6 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
    if (!(spec=Traj->Spec))
       return(TCL_OK);
 
-   if (spec->Width<=0)
-      return(TCL_OK);
-
    sz=VP->Ratio*(spec->Size+spec->Width);
 
    glLineWidth(spec->Width);
@@ -988,7 +985,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
       /*Height markers*/
       glColor3us(0x00,0x00,0x00);
-      if (spec->Style==1 || spec->Style==3) {
+      if (spec->Width>0 && (spec->Style==2 || spec->Style==4)) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
                co.Lat=Traj->Pr[i].Co.Lat;
@@ -1003,7 +1000,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       }
 
       /*Shadow (Ground zero)*/
-      if (spec->Style==2 || spec->Style==3) {
+      if (spec->Width>0 && (spec->Style==3 || spec->Style==4)) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
                co.Lat=Traj->Pr[i].Co.Lat;
@@ -1021,7 +1018,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       }
 
       /*Ribbon*/
-      if (spec->Style==4) {
+      if (spec->Style==5) {
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glDisable(GL_CULL_FACE);
 
@@ -1037,16 +1034,18 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
          }
          Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_QUAD_STRIP,n*2,NULL,NULL);
          glEnable(GL_CULL_FACE);
-      } else {
+      }
 
-         /*Single Trajectory*/
+      if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
+
+      /*Single Trajectory*/
+      if (spec->Width>0 && spec->Style!=0 && spec->Style!=5) {
          for(i=0,n=0;i<Traj->NPr;i++) {
             if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
                Proj->Type->Project(Proj,&Traj->Pr[i].Co,&GDB_VBuf[n],1);
                n++;
             }
          }
-         if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
          Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
       }
 
@@ -1107,8 +1106,6 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       }
       glPopName();
       glEnable(GL_CULL_FACE);
-//      if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
-//      Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
    }
 
    glDisableClientState(GL_VERTEX_ARRAY);

@@ -74,7 +74,7 @@ namespace eval Trajectory {
    set Param(Colors)    { #ff0000 #0000ff #006400 #4C7A5C #FFCC00 #FF00CC #00FFFF #785D0C #ACF003 } ;#Liste des couleurs des niveaux
    set Param(Icon)      TRIANGLE
    set Param(Color)     #ff0000                                                     ;#Couleur courante
-   set Param(Style)     0                                                           ;#Type d'affichage
+   set Param(Style)     1                                                           ;#Type d'affichage
    set Param(Size)      3                                                           ;#Grandeur des icones
    set Param(Width)     1                                                           ;#Grandeur des icones
    set Param(Mark)      24                                                          ;#Remplir les icones
@@ -327,14 +327,14 @@ proc Trajectory::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).left.show.traj
             IcoMenu::Create $Data(Frame).left.show.traj.sel $GDefs(Dir)/Resources/Bitmap \
-               "tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4" \
+               "zeroth.xbm tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4 5" \
                 Trajectory::Param(Style) "Trajectory::ParamSet" $Trajectory::Param(Style) -relief groove -bd 2
             label $Data(Frame).left.show.traj.lbl -text " [lindex $Lbl(Traj) $GDefs(Lang)]" -anchor w
          pack  $Data(Frame).left.show.traj.sel $Data(Frame).left.show.traj.lbl -side left -fill x
 
          frame $Data(Frame).left.show.mark
             IcoMenu::Create $Data(Frame).left.show.mark.sel $GDefs(Dir)/Resources/Bitmap \
-               "nofill.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
+               "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
                 Trajectory::Param(Mark) "Trajectory::ParamSet" $Trajectory::Param(Mark) -relief groove -bd 2
             label $Data(Frame).left.show.mark.lbl -text " [lindex $Lbl(Fill) $GDefs(Lang)]" -anchor w
          pack  $Data(Frame).left.show.mark.sel $Data(Frame).left.show.mark.lbl -side left -fill x
