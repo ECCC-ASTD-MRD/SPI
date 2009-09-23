@@ -186,7 +186,7 @@ proc WidgetPath { Frame } {
 
    frame $Frame.host
       label $Frame.host.lbl -text BackEnd -width 8 -anchor w
-      entry $Frame.host.ent -textvariable GDefs(BackEndmaia) -width 25 -bd 1 -highlightthickness 0 -bg $GDefs(ColorLight)
+      entry $Frame.host.ent -textvariable GDefs(BackEndsaiph) -width 25 -bd 1 -highlightthickness 0 -bg $GDefs(ColorLight)
       pack $Frame.host.lbl $Frame.host.ent -side left
    pack $Frame.host -side top -padx 5 -anchor w
 
@@ -344,6 +344,7 @@ set GDefs(FrontEnds)        { $GDefs(FrontEnds) }
 set GDefs(BackEnds)         { $GDefs(BackEnds) }
 set GDefs(BackEndmaia)      { $GDefs(BackEndmaia) }
 set GDefs(BackEndsaiph)     { $GDefs(BackEndsaiph) }
+set GDefs(BackEndzeta)      { $GDefs(BackEndzeta) }
 
 #----- Constantes diverses relatives a toutes les applications
 
@@ -430,15 +431,16 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
 
 set GDefs(Ver)           [regsub \[:alpha:\]+ [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end] ""]
 set GDefs(DefFile)       .eer_Defs-$GDefs(Ver)
-set GDefs(FrontEnd)      pollux
+set GDefs(FrontEnd)      alef
 set GDefs(FrontEndUser)  $env(USER)
 set GDefs(TransmitUser)  afsiops
 set GDefs(Model)         False
 
-set GDefs(FrontEnds)        { alef dorval-ib pollux castor }
-set GDefs(BackEnds)         { maia saiph }
+set GDefs(FrontEnds)        { alef dorval-ib }
+set GDefs(BackEnds)         { saiph zeta maia }
 set GDefs(BackEndmaia)      { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 set GDefs(BackEndsaiph)     { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+set GDefs(BackEndzeta)      { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 
 set GDefs(DirData)        ""
 set GDefs(DirCFSArch)     ""

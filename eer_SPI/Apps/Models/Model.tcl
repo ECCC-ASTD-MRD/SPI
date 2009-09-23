@@ -115,8 +115,8 @@ namespace eval Model {
 
    #----- Bulles d'aide
 
-   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et le modèle seront exécutés.\n\nmaia   : grappe dorsale opérationnelle du superordinateur IBM (avec préemption)\nsaiph  : grappe dorsale développement du superordinateur IBM (sans préemption)\ncastor : grappe frontale opérationnelle\npollux : grappe frontale développement" \
-                                        "Host where meteorological preprocessing and model will be executed.\n\nmaia   : back-end operational cluster of IBM supercomputer (with preemption)\nsaiph  : back-end development cluster of IBM supercomputer (without preemption)\ncastor : operational front-end cluster\npollux : development front-end cluster" }
+   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et le modèle seront exécutés." \
+                                        "Host where meteorological preprocessing and model will be executed." }
    set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
    set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
    set Bubble(NbMPItasks)             { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
@@ -596,7 +596,7 @@ proc Model::ParamsMetData { Model } {
 
          #----- Compute new ending simulation date-time [s] according to starting simulation date-time and simulation duration.
          #----- Redefine list of available meteorological data files according to simulation duration set as input parameter.
-         if { $sim(Retro) } {
+         if { $sim(Backward) } {
             set stamp [fstdstamp fromseconds [expr $lastdate-$sim(Duration)*3600]]
          } else {
             set stamp [fstdstamp fromseconds [expr $firstdate+$sim(Duration)*3600]]
@@ -609,7 +609,7 @@ proc Model::ParamsMetData { Model } {
             }
             incr idx
          }
-         if { $sim(Retro) } {
+         if { $sim(Backward) } {
             set sim(Data) [lrange $sim(Data) $idx end]
          } else {
             set sim(Data) [lrange $sim(Data) 0 $idx]
@@ -629,7 +629,7 @@ proc Model::ParamsMetData { Model } {
    }
 
    #----- Set simulation date-time.
-   if { $sim(Retro) } {
+   if { $sim(Backward) } {
       set simdate   $lastdate
    } else {
       set simdate   $firstdate
@@ -928,14 +928,14 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(AccHour)    [set sim(SimHour)  [clock format $sim(AccSeconds) -format "%H" -gmt True]]
    set sim(AccMin)     [set sim(SimMin)   [clock format $sim(AccSeconds) -format "%M" -gmt True]]
 
-   set sim(Model)   $Model
-   set sim(State)   1
-   set sim(NoPrev) -1
-   set sim(NoSim)  -1
-   set sim(NoExp)   $No
-   set sim(Pos)     $Pos
-   set sim(NameExp) $Name
-   set sim(Retro)   False
+   set sim(Model)    $Model
+   set sim(State)    1
+   set sim(NoPrev)   -1
+   set sim(NoSim)    -1
+   set sim(NoExp)    $No
+   set sim(Pos)      $Pos
+   set sim(NameExp)  $Name
+   set sim(Backward) False
 
    set sim(ReNewMeteo) ""
    set sim(GridChanged) 0
@@ -1683,11 +1683,13 @@ proc Model::New { Parent Command Label Single } {
    pack .expnew.hd -side top -fill x -expand true
 
    frame .expnew.info -bd 1 -relief raised
-      frame .expnew.info.l
+      button .expnew.info.coord -relief groove -bd 2 -textvariable Model::Param(Unit)\
+         -command "Model::SwitchCoord"
 
+      frame .expnew.info.l
       if { $Single } {
          frame .expnew.info.l.loc1
-            radiobutton .expnew.info.l.loc1.sel -text "01" -indicatoron false -bd 1 \
+            radiobutton .expnew.info.l.loc1.sel -text "  " -indicatoron false -bd 1 \
                -variable Model::Data(Pos) -value 1 -selectcolor $GDefs(ColorHighLight)
             EntryVar::Create .expnew.info.l.loc1.name Model::Data(Name) string 25 "Model::DrawCurrent" \
                -bd 1 -bg $GDefs(ColorLight)
@@ -1698,6 +1700,9 @@ proc Model::New { Parent Command Label Single } {
             pack .expnew.info.l.loc1.sel -ipadx 2  -side left
             pack .expnew.info.l.loc1.name .expnew.info.l.loc1.lat .expnew.info.l.loc1.lon -side left -fill y -expand true
          pack .expnew.info.l.loc1 -side top -fill y -expand true
+
+         pack .expnew.info.l .expnew.info.coord -side left -fill y -expand true
+         pack .expnew.info -side top
       } else {
 
          foreach i "1 2 3" {
@@ -1716,35 +1721,28 @@ proc Model::New { Parent Command Label Single } {
          }
          scale .expnew.info.sc -orient vertical -command "Model::Scroll" -relief flat -sliderlength 10 -width 10 -bd 1\
             -showvalue false -length 50 -from 1 -to 48 -resolution 1
-      }
-      button .expnew.info.coord -relief groove -bd 2 -textvariable Model::Param(Unit)\
-         -command "Model::SwitchCoord"
-
-      if { $Single } {
-         pack .expnew.info.l .expnew.info.coord -side left -fill y -expand true
-         pack .expnew.info -side top
-      } else {
          pack .expnew.info.l .expnew.info.sc .expnew.info.coord -side left -fill y
          pack .expnew.info -side top
+
+
+         frame .expnew.group -bd 1 -relief raised
+            label .expnew.group.lbl -text "Id"
+            entry .expnew.group.ent -textvariable Model::Data(Name) -width 20 -bd 1 -bg $GDefs(ColorLight)
+
+            frame .expnew.group.type -bd 1 -relief sunken
+               foreach type { 0 1 2 3 4 5 6 } ico { VAAC RSMC CTBT FIRE BIO SPILL SPCL } {
+                  radiobutton .expnew.group.type.t$ico -image [lindex $Resources(Icos) $type] -variable Model::Data(Type) \
+                     -value $type -indicatoron False -selectcolor $GDefs(ColorFrame) -command "Model::DrawCurrent" -bd 1
+                  pack .expnew.group.type.t$ico -side left -fill x -expand true
+
+                  Bubble::Create .expnew.group.type.t$ico [lindex $Bubble(Type$type) $GDefs(Lang)]
+               }
+            pack .expnew.group.lbl -side left -anchor w
+            pack .expnew.group.ent -side left -fill y
+            pack .expnew.group.type -side left -fill both -expand true
+
+         pack .expnew.group -side top -fill x
       }
-
-   frame .expnew.group -bd 1 -relief raised
-      label .expnew.group.lbl -text "Id"
-      entry .expnew.group.ent -textvariable Model::Data(Name) -width 20 -bd 1 -bg $GDefs(ColorLight)
-
-      frame .expnew.group.type -bd 1 -relief sunken
-         foreach type { 0 1 2 3 4 5 6 } ico { VAAC RSMC CTBT FIRE BIO SPILL SPCL } {
-            radiobutton .expnew.group.type.t$ico -image [lindex $Resources(Icos) $type] -variable Model::Data(Type) \
-               -value $type -indicatoron False -selectcolor $GDefs(ColorFrame) -command "Model::DrawCurrent" -bd 1
-            pack .expnew.group.type.t$ico -side left -fill x -expand true
-
-            Bubble::Create .expnew.group.type.t$ico [lindex $Bubble(Type$type) $GDefs(Lang)]
-         }
-      pack .expnew.group.lbl -side left -anchor w
-      pack .expnew.group.ent -side left -fill y
-      pack .expnew.group.type -side left -fill both -expand true
-
-   pack .expnew.group -side top -fill x
 
    frame .expnew.commands
       button .expnew.commands.create -text [lindex $Lbl(Create) $GDefs(Lang)] \
