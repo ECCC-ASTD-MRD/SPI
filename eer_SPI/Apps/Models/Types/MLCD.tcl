@@ -42,10 +42,10 @@ proc MLCD::ParamsCheck { Tab No } {
    variable Sim
    variable Data
 
-   set Sim(Duration)      [expr int($Sim(DurMin)*60)]              ; #----- Simulation duration [s].
-   set Sim(EmDurationSec) [expr int($Sim(EmDurationMin)*60)]       ; #----- Emission duration [s].
+   scan $Sim(AccHour) "%02d" hour
+   scan $Sim(AccMin)  "%02d" min
+   set Sim(AccSeconds) [expr $Sim(AccDate)+$hour*3600+$min*60]
 
-   SetReleaseDateTime
    set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt True]
    set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt True]
    set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt True]
@@ -61,6 +61,7 @@ proc MLCD::ParamsCheck { Tab No } {
       TabFrame::Select $Tab 0
       return 0
    }
+
    #----- Check for last tab
    set nb [expr [TabFrame::NbFrame $Tab]-1]
    if { $No!=$nb } {
@@ -72,7 +73,7 @@ proc MLCD::ParamsCheck { Tab No } {
       return 0
    }
 
-   if { ![MLCD::ValidateMeteoTab] } {
+   if { !$Sim(Auto) && ![MLCD::ValidateMeteoTab] } {
       TabFrame::Select $Tab 2
       return 0
    }
@@ -123,7 +124,6 @@ proc MLCD::AskIfInitMeteoData { } {
 
          #----- Keep old simulation duration as current simulation duration.
          set Sim(DurMin)   $Sim(OldDurMin)
-         set Sim(Duration) [expr int($Sim(DurMin)*60)]
 
       } else {
          #---- Answer is "Yes" : Re-initialize release date-time, simulation duration and meteo data
@@ -159,7 +159,6 @@ proc MLCD::AskIfInitMeteoData { } {
             #----- Answer is "No" : Do not re-initialize simulation duration and meteo data
             #----- Keep old simulation duration as current simulation duration
             set Sim(DurMin)   $Sim(OldDurMin)
-            set Sim(Duration) [expr int($Sim(DurMin)*60)]
          } else {
             #---- Answer is "Yes" : Re-initialize simulation duration and meteo data.
             MLCD::InitMeteoData
@@ -269,7 +268,7 @@ proc MLCD::ExtractMetData { } {
       set obukhov [MetData::Obukhov $stamp UNITFILE $Sim(Lat) $Sim(Lon)]
 
       #----- Update Roughness Length.
-      set default [lindex [lindex $Sim(LocalParameters) $i] 0]
+      set roughness [lindex [lindex $Sim(LocalParameters) $i] 0]
 
       set z0 [fstdfield find UNITFILE $stamp "" 1195 -1 -1 "" Z0]
       if { [llength $z0] } {
@@ -277,17 +276,14 @@ proc MLCD::ExtractMetData { } {
 
          set roughness [fstdfield stats TMP -coordvalue $Sim(Lat) $Sim(Lon)]
          if { $roughness == "-" } {
-            #----- Use default value since off grid localisation.
-            set roughness $default
-            Debug::TraceProc "MLCD: Warning, off grid localisation. Using default value for roughness length : $roughness \[m\]."
+            puts "(WARNING) Off grid localisation. Using default value for roughness length : $roughness \[m\]."
          }
       } else {
-         set roughness $default
-         Debug::TraceProc "MLCD: Warning, missing field 'Z0'. Using default value for roughness length : $roughness \[m\]."
+         puts "(WARNING) Missing field 'Z0'. Using default value for roughness length : $roughness \[m\]."
       }
 
       #----- Update Precipitation Rate.
-      set default [lindex [lindex $Sim(LocalParameters) $i] 2]
+      set precip [lindex [lindex $Sim(LocalParameters) $i] 2]
 
       set rt [fstdfield find UNITFILE $stamp "" -1 -1 -1 "" RT]
       if { [llength $rt] } {
@@ -295,16 +291,13 @@ proc MLCD::ExtractMetData { } {
 
          set precip [fstdfield stats TMP -coordvalue $Sim(Lat) $Sim(Lon)]
          if { $precip == "-" } {
-            #----- Use default value since off grid localisation.
-            set precip $default
-            Debug::TraceProc "MLCD: Warning, off grid localisation. Using default value for precipitation rate : $precip \[mm/h\]."
+            puts "(WARNING) Off grid localisation. Using default value for precipitation rate : $precip \[mm/h\]."
          } else {
             #----- Convert precipitation rate from [m/s] to [mm/h].
             set precip [expr $precip*3.6e+06]
          }
       } else {
-         set precip $default
-         Debug::TraceProc "MLCD: Warning, missing field 'RT'. Using default value for precipitation rate : $precip \[mm/h\]."
+         puts "(WARNING) Missing field 'RT'. Using default value for precipitation rate : $precip \[mm/h\]."
       }
 
       #----- Set local parameters list.
@@ -331,23 +324,19 @@ proc MLCD::ExtractMetData { } {
 
       fstdfile close UNITFILE
 
-      #----- Add local parameters and wind profile to lists.
-      set Sim(LocalParameters) [lreplace $Sim(LocalParameters) $i $i $params]
-      set Sim(WindProfile)     [lreplace $Sim(WindProfile) $i $i $prof]
+      #----- Set local parameters and wind profile to lists.
+      lset Sim(LocalParameters) $i $params
+      lset Sim(WindProfile)     $i $prof
    }
 
    #----- Loop over other observations
    for { set i $Sim(ObsNb) } { $i < $Sim(ObsMaxNb) } { incr i } {
 
       #----- Initialize local parameters for all other observations.
-      set Sim(LocalParameters) [lreplace $Sim(LocalParameters) $i $i [list 0.5 [format "%.7f" [MLCD::ObukhovFunc 0 0.5]] 0.0]]
+      lset Sim(LocalParameters) $i [list 0.5 [format "%.7f" [MLCD::ObukhovFunc 0 0.5]] 0.0]
 
       #----- Initialize wind profile for all other observations.
-      set prof {}
-      for { set j 0 } { $j < $Sim(ObsMaxNbLevels) } { incr j } {
-         lappend prof [list "" "" ""]
-      }
-      set Sim(WindProfile) [lreplace $Sim(WindProfile) $i $i $prof]
+      lset Sim(WindProfile) $i [lrepeat Sim(ObsMaxNbLevels) [list "" "" ""]]
    }
 }
 
@@ -385,7 +374,7 @@ proc MLCD::FindMetData { } {
    }
 
    #----- Get list of available meteorological files according to release date-time.
-   set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $Mixed $Sim(ProgMeteoTimeStep)]
+   set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $Mixed]
 
    #----- Verify that number of meteo data files is greater than 1.
    if { [llength $Sim(Data)] <= 1 } {
@@ -412,6 +401,8 @@ proc MLCD::FindMetData { } {
    set SimDurHr  [fstdstamp diff $laststamp $Sim(RunStamp)] ; #----- [hr].
    set SimDurMin [expr round(double($SimDurHr) * 60.0)]     ; #----- [min].
    set SimDurSec [expr int($SimDurMin*60)]                  ; #----- [s].
+
+   set Sim(Duration) [expr int($Sim(DurMin)*60)]
 
    if { $Sim(Duration) >= $SimDurSec } {
 
@@ -448,6 +439,12 @@ proc MLCD::FindMetData { } {
          incr idx
       }
       set Sim(Data) [lrange $Sim(Data) 0 $idx]
+   }
+
+   #----- List of met data files.
+   set Sim(MeteoDataFiles) {}
+   foreach data $Sim(Data) {
+      lappend Sim(MeteoDataFiles) [lindex $data 2]
    }
 
    return 1
@@ -541,15 +538,12 @@ proc MLCD::InitLocalParameters { } {
    set Sim(ObsObukhovCte)   0                                                                      ; #----- Obukhov const.
    set Sim(ObsObukhov)      [format "%.7f" [MLCD::ObukhovFunc $Sim(ObsObukhovCte) $Sim(ObsRough)]] ; #----- Obukhov length [m].
    set Sim(ObsPrecip)       0.0                                                                    ; #----- Precipitation rate [mm/h].
-   set Sim(LocalParameters) {}
 
-   #----- Loop over number of observations
-   for { set i 0 } { $i < $Sim(ObsMaxNb) } { incr i } {
-      lappend Sim(LocalParameters) [list $Sim(ObsRough) $Sim(ObsObukhov) $Sim(ObsPrecip)]
-   }
+   #----- Loop over number of observations and save local parameters for future verification.
+   set Sim(OldLocalParameters) [set Sim(LocalParameters) [lrepeat $Sim(ObsMaxNb) [list $Sim(ObsRough) $Sim(ObsObukhov) $Sim(ObsPrecip)]]]
 
-   #----- Save local parameters for future verification.
-   set Sim(OldLocalParameters) $Sim(LocalParameters)
+   #----- Initialize variables and save wind profile for future verification.
+   set Sim(OldWindProfile) [set Sim(WindProfile) [lrepeat $Sim(ObsMaxNb) [lrepeat $Sim(ObsMaxNbLevels) [list "" "" ""]]]]
 }
 
 #-------------------------------------------------------------------------------
@@ -584,7 +578,6 @@ proc MLCD::InitMeteoData { { Flag 1 } } {
    MLCD::InitAutomationParams ; #----- Initialize automation parameters.
    MLCD::InitObservationTimes ; #----- Initialize observation times.
    MLCD::InitLocalParameters  ; #----- Initialize local parameters.
-   MLCD::InitWindProfile      ; #----- Initialize wind profile.
 
    #----- Update edition observation interface.
    if { $Flag } {
@@ -615,15 +608,11 @@ proc MLCD::InitNew { Type } {
    set Model::Param(Host) [lindex $Sim(Hosts) 0]
 
    set Sim(DurMin)            360                         ; #----- Simulation duration [min].
-   set Sim(Duration)          [expr int($Sim(DurMin)*60)] ; #----- Simulation duration [s].
    set Sim(OutputTimeStepMin) 5                           ; #----- Output time step [min].
    set Sim(ModelTimeStepMin)  5                           ; #----- Model time step [min].
 
    #----- Initialize old release date-time.
    set Sim(OldSeconds)  $Sim(AccSeconds)
-
-   #----- Prognostics meteorological time step [hr].
-   set Sim(ProgMeteoTimeStep) 1
 
    #----- Initialize general and concentrations parameters.
    set Sim(Mode)           0        ; #----- Forward mode: 0; Backward mode: 1.
@@ -675,65 +664,18 @@ proc MLCD::InitObservationTimes { } {
    variable Warning
    variable Error
 
-   #----- Initialize observation time according to nearest lower accident hour.
-   set Sim(ObsTime) [clock scan [clock format $Sim(AccSeconds) -format "%Y%m%d %H:00" -gmt True]]
-
-   #----- Define maximum number of observation according to
-   #----- release date-time and 48-hr simulation duration.
-   set sec0 $Sim(ObsTime)
-   set sec1 [expr $Sim(AccSeconds)+48*3600]
-
-   set min [clock format $sec1 -format "%M" -gmt true]
-   set min [string trimleft $min 0]
-   if { $min == "" } { set min 0 }
-
-   set sec1 [expr $sec1 - $min*60]
-   set sec1 [expr $sec1 + int(ceil(double($min)/60.0)) * 60 * 60]
-   set sec  [expr $sec1 - $sec0]
-
-   set Sim(ObsMaxNb)     [expr int(double($sec)/3600.0) + 1]
-   set Sim(ObsNb)        $Sim(ObsMaxNb)
+   #----- Define maximum number of observation according to release date-time and 48-hr simulation duration.
+   set Sim(ObsNb)   [set Sim(ObsMaxNb) 49]
+   set Sim(ObsTime) {}
 
    #----- Initialize observation times according to 1-hour time interval between following observations.
-   for { set i 1 } { $i < $Sim(ObsMaxNb) } { incr i } {
-      lappend Sim(ObsTime) [expr [lindex $Sim(ObsTime) [expr $i-1]]+3600]
+   set secs [clock scan [clock format $Sim(AccSeconds) -format "%Y%m%d %H:00" -gmt True]]
+   for { set i 0 } { $i < $Sim(ObsMaxNb) } { incr i } {
+      lappend Sim(ObsTime) [expr $secs+$i*3600]
    }
 
    #----- Get current observation time according to (selected) observation index.
    MLCD::GetCurrentObservationTime
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <MLCD::InitWindProfile>
-# Creation : 12 November 2003 - A. Malo - CMC/CMOE
-#
-# But      : Initialize wind profile.
-#
-# Parametres :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc MLCD::InitWindProfile { } {
-   variable Sim
-
-   #----- Initialize variables.
-   set Sim(WindProfile) {}
-
-   for { set i 0 } { $i < $Sim(ObsMaxNb) } { incr i } {
-      set prof {}
-
-      for { set j 0 } { $j < $Sim(ObsMaxNbLevels) } { incr j } {
-         lappend prof [list "" "" ""]
-      }
-      lappend Sim(WindProfile) $prof
-   }
-
-   #----- Save wind profile for future verification.
-   set Sim(OldWindProfile) $Sim(WindProfile)
 }
 
 #-------------------------------------------------------------------------------
@@ -871,12 +813,12 @@ proc MLCD::SelectObs { No } {
 
    #----- Check if observation number is valid.
    if { $No > $Sim(ObsMaxNb) || $No < 1 } {
-      puts stderr "*** Error! Selecting invalid observation \# $No. Observation number must be between 1 and $Sim(ObsMaxNb)."
+      puts stderr "(ERROR) Selecting invalid observation \# $No. Observation number must be between 1 and $Sim(ObsMaxNb)."
       return 0
    }
 
    #----- Validate current observation (local parameters + wind profile).
-   if { ![MLCD::ValidateCurrentObservation] } {
+   if { ![MLCD::ValidateLocalParameters] || ![MLCD::ValidateWindProfile] } {
       #----- Modify selected observation to last one.
       set Sim(ObsNo) [expr $Sim(ObsIdx) + 1]
       return 0
@@ -958,12 +900,8 @@ proc MLCD::SetMetData { Model } {
    #----- Select first observation.
    MLCD::SelectObs 1
 
-   .modelnew config -cursor watch
-   update idletasks
-
    #----- Find available meteorological data files.
    if { ![MLCD::FindMetData] } {
-      .modelnew config -cursor left_ptr
       return 0
    }
 
@@ -971,15 +909,38 @@ proc MLCD::SetMetData { Model } {
 
    MLCD::SetObservationTimes
    MLCD::InitLocalParameters
-   MLCD::InitWindProfile
    MLCD::ExtractMetData
    MLCD::UpdateObsInterface $Sim(ObsIdx)
 
    Dialog::DestroyWait
-
-   .modelnew config -cursor left_ptr
 }
 
+proc MLCD::GetMetData { } {
+   global   GDefs
+   variable Sim
+   variable Data
+   variable Msg
+
+   #----- Select first observation.
+#   MLCD::SelectObs 1
+
+   #----- Find available meteorological data files.
+   if { ![MLCD::FindMetData] } {
+      return 0
+   }
+
+   Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+
+   MLCD::SetObservationTimes
+   MLCD::InitLocalParameters
+   MLCD::ExtractMetData
+#   MLCD::UpdateObsInterface $Sim(ObsIdx)
+   MLCD::ComputeNbValidWindProfiles
+
+   Dialog::DestroyWait
+
+   return 1
+}
 #-------------------------------------------------------------------------------
 # Nom      : <MLCD::SetObsDate>
 # Creation : 6 November 2003 - A. Malo - CMC/CMOE
@@ -1025,9 +986,6 @@ proc MLCD::SetObservationTimes { } {
    #----- Set number of observations and maximum number of observations.
    set Sim(ObsNb)    [llength $Sim(Data)]
    set Sim(ObsMaxNb) $Sim(ObsNb)
-
-   #----- Refresh maximum number of observations within spibox.
-   $Data(ObsNoSpinBox) configure -to $Sim(ObsMaxNb)
 
    #----- Set observation times, stamps, files.
    set Sim(ObsTime)  {}
@@ -1136,28 +1094,6 @@ proc MLCD::SetPreviousObs { Idx } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <MLCD::SetReleaseDateTime>
-# Creation : 3 October 2005 - A. Malo - CMC/CMOE
-#
-# But      : Set release date-time.
-#
-# Parametres :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc MLCD::SetReleaseDateTime { } {
-   variable Sim
-
-   scan $Sim(AccHour) "%02d" hour
-   scan $Sim(AccMin)  "%02d" min
-   set Sim(AccSeconds) [expr $Sim(AccDate)+$hour*3600+$min*60]
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <MLCD::SetRoughnessLength>
 # Creation : 16 April 2004 - A. Malo - CMC/CMOE
 #
@@ -1231,12 +1167,13 @@ proc MLCD::CreateModelInput { } {
 
    puts $file "$Sim(Name)"
    puts $file "H"
-   puts $file "$Sim(EmDurationSec) $Sim(Duration) $Sim(IsSigma)"
+   puts $file "[expr int($Sim(EmDurationMin)*60)] $Sim(Duration) $Sim(IsSigma)"
    puts $file "$Sim(EmNumberParticles) $Sim(EmTotMass) $Sim(EmDepVel) $halflifedays $Sim(EmWetScav)"
    puts $file "$Sim(Lon) $Sim(Lat)"
    puts $file "$Sim(EmBottom) $Sim(EmTop) $Sim(EmRadius)"
    puts $file "$Sim(AccYear) $Sim(AccMonth) $Sim(AccDay) $Sim(AccHour) $Sim(AccMin)"
-   puts $file "$Sim(NbVerticalLevels)"
+
+   puts $file "[llength $Sim(VerticalLevels)]"
    foreach level $Sim(VerticalLevels) {
       puts $file [format "%.2f" $level]
    }
@@ -1508,31 +1445,6 @@ proc MLCD::UpdateObsInterface { Idx } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <MLCD::ValidateCurrentObservation>
-# Creation : 13 November 2003 - A. Malo - CMC/CMOE
-#
-# But      : Validate current observation.
-#            - Local Parameters,
-#            - Wind Profile.
-# Parametres :
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc MLCD::ValidateCurrentObservation { } {
-   variable Sim
-
-   if { ![MLCD::ValidateLocalParameters] || ![MLCD::ValidateWindProfile] } {
-      return 0
-   }
-
-   return 1
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <MLCD::ValidateEmissionTab>
 # Creation : 19 November 2003 - A. Malo - CMC/CMOE
 #
@@ -1774,7 +1686,7 @@ proc MLCD::ValidateMeteoTab { } {
    variable Sim
 
    #----- Validate current observation (local parameters + wind profile).
-   if { ![MLCD::ValidateCurrentObservation] } {
+   if { ![MLCD::ValidateLocalParameters] || ![MLCD::ValidateWindProfile] } {
       return 0
    }
 
@@ -1817,9 +1729,6 @@ proc MLCD::ValidateModelTab { } {
    variable Sim
    variable Data
    variable Error
-
-   #----- Update release date-time.
-   MLCD::SetReleaseDateTime
 
    #----- Verify that simulation duration is an integer positive value.
    set idx ""
@@ -1986,18 +1895,15 @@ proc MLCD::ValidateModelTab { } {
       return 0
    }
 
-   #----- Number of vertical levels for concentration calculations.
-   set Sim(NbVerticalLevels) [llength $Sim(VerticalLevels)]
-
    #----- Verify that number of concentration vertical levels is greater than 1.
-   if { $Sim(NbVerticalLevels) < 2 } {
+   if { [llength $Sim(VerticalLevels)]<2 } {
       Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels1) $GDefs(Lang)][lindex $Error(VerticalLevels2) $GDefs(Lang)] $Sim(NbVerticalLevels).\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels)." $GDefs(Lang) 600
       focus $Data(ConcVerticalLevelsEnt)
       return 0
    }
 
    #----- Verify that all concentration vertical levels are positive and sorted in increasing order.
-   for { set i 0 } { $i < $Sim(NbVerticalLevels) } { incr i } {
+   for { set i 0 } { $i < [llength $Sim(VerticalLevels)] } { incr i } {
       set level [lindex $Sim(VerticalLevels) $i]
 
       set idx ""

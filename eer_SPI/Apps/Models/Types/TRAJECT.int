@@ -23,7 +23,7 @@
 #
 # Parametres :
 #   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
-#   <Time>   : Selection du temps de depart
+#   <Auto>   : Mode Auto
 #
 # Retour :
 #
@@ -31,7 +31,7 @@
 #
 #-------------------------------------------------------------------------------
 
-proc TRAJECT::ParamsNew { Tab { Time True } } {
+proc TRAJECT::ParamsNew { Tab { Auto False } } {
    global GDefs
    variable Lbl
    variable Msg
@@ -42,7 +42,7 @@ proc TRAJECT::ParamsNew { Tab { Time True } } {
    set frame [TabFrame::Add $Tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False]
 
    #----- Simulation Starting Time.
-   if { $Time } {
+   if { !$Auto } {
       labelframe $frame.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #----- Simulation Date Hour and minutes.

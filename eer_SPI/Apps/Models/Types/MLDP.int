@@ -24,7 +24,7 @@
 #
 # Parametres :
 #   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
-#   <Time>   : Selection du temps de depart
+#   <Auto>   : Mode Auto
 #
 # Retour     :
 #
@@ -32,7 +32,7 @@
 #
 #----------------------------------------------------------------------------
 
-proc MLDP::ParamsNew { Tab { Time True } } {
+proc MLDP::ParamsNew { Tab { Auto False } } {
    global GDefs
    variable Sim
    variable Msg
@@ -45,7 +45,7 @@ proc MLDP::ParamsNew { Tab { Time True } } {
    set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
 
    #----- Simulation Starting Time.
-   if { $Time } {
+   if { !$Auto } {
       labelframe $tabframe.time -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #----- Simulation Date Hour and minutes.
@@ -177,7 +177,7 @@ proc MLDP::ParamsNew { Tab { Time True } } {
    Bubble::Create $tabframe.others.opt.reflect        "[lindex $Bubble(ReflectionLevel) $GDefs(Lang)]"
 }
 
-proc MLDP::ParamsEmission { Tab } {
+proc MLDP::ParamsEmission { Tab { Auto False } } {
    global GDefs
    variable Sim
    variable Msg

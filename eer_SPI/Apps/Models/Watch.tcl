@@ -57,8 +57,7 @@ namespace eval Watch {
                          "Do you really want to desactivate this watch ?" }
    set Msg(SimSuppress) { "Voulez-vous vraiment supprimer cette simulation ?"
                          "De you really want to suppress this simulation ?" }
-   set Msg(Exists)      { "Cette fenetre est deja ouverte."
-                         "This window is already openned!" }
+   set Msg(Exist)       { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
 
    #----- Definitions des messages d'erreurs
    set Error(Exist)     { "Une source portant ce nom est deja activee."
@@ -1297,22 +1296,23 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
 
    #----- Run parameters
    set $Data(Modelbase)::Sim(ReNewMeteo) "None"
+   set $Data(Modelbase)::Sim(Auto) True
    $Data(Modelbase)::InitNew $Data(Type)
 
    switch $Mode {
       "NEW" {
-         $Data(Modelbase)::ParamsNew .modelnew.params False
+         $Data(Modelbase)::ParamsNew .modelnew.params True
          if { [info procs ::$Data(Modelbase)::ParamsEmission] != "" } {
-            $Data(Modelbase)::ParamsEmission .modelnew.params
+            $Data(Modelbase)::ParamsEmission .modelnew.params True
          }
          set $Data(Modelbase)::Sim(NoSim) $Data(No)
       }
       default {
          set Data(OldInfo) "$Data(Info)"
          Info::Decode $Data(Modelbase)::Sim "$Data(Info)"
-         $Data(Modelbase)::ParamsNew .modelnew.params False
+         $Data(Modelbase)::ParamsNew .modelnew.params True
          if { [info procs ::$Data(Modelbase)::ParamsEmission] != "" } {
-            $Data(Modelbase)::ParamsEmission .modelnew.params
+            $Data(Modelbase)::ParamsEmission .modelnew.params True
          }
       }
    }

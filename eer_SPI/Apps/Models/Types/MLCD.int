@@ -23,7 +23,7 @@
 #
 # Parametres :
 #   <Tab>    : Boite d'onglet dans laquelle ajoute les onglets
-#   <Time>   : Selection du temps de depart
+#   <Auto>   : Mode Auto
 #
 # Retour :
 #
@@ -31,7 +31,7 @@
 #
 #-------------------------------------------------------------------------------
 
-proc MLCD::ParamsNew { Tab { Time True } } {
+proc MLCD::ParamsNew { Tab { Auto False } } {
    global GDefs
    variable Data
    variable Lbl
@@ -51,7 +51,7 @@ proc MLCD::ParamsNew { Tab { Time True } } {
    Bubble::Create $frame.src "[lindex $Bubble(Source) $GDefs(Lang)]"
 
    #----- Simulation Starting Time.
-   if { $Time } {
+   if { !$Auto } {
       labelframe $frame.t -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #---- Simulation Date and Time (hour and minutes) [UTC].
@@ -147,7 +147,7 @@ proc MLCD::ParamsNew { Tab { Time True } } {
    Bubble::Create $frame.divers.opt "[lindex $Bubble(Sigma) $GDefs(Lang)]"
 }
 
-proc MLCD::ParamsEmission { Tab } {
+proc MLCD::ParamsEmission { Tab { Auto False } } {
    global GDefs
    variable Data
    variable Lbl
@@ -285,13 +285,17 @@ proc MLCD::ParamsEmission { Tab } {
    Bubble::Create $frame.auto.data.met.path  "[lindex $Bubble(ObsMetPath) $GDefs(Lang)]"
 
    pack $frame.auto.data -side left
+   pack $frame.auto -side top -padx 5 -pady 5 -fill x
+
+   if { $Auto } {
+      return
+   }
 
    #----- Retrieve meteorological data.
    button $frame.auto.get -text "[lindex $Lbl(ObsRetrieve) $GDefs(Lang)]" -bd 1 -command "MLCD::SetMetData \$MLCD::Sim(Meteo)"
       pack $frame.auto.get -side left -expand true -anchor center -padx 2 -pady 2
       #pack $frame.auto.get -side left -expand true -anchor se -padx 2 -pady 2
    Bubble::Create $frame.auto.get "[lindex $Bubble(ObsRetrieve) $GDefs(Lang)]"
-   pack $frame.auto -side top -padx 5 -pady 5 -fill x
 
    #----- Editing frame.
    labelframe $frame.edit -text "[lindex $Lbl(ObsEdit) $GDefs(Lang)]"

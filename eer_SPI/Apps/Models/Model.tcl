@@ -987,7 +987,9 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
       Dialog::CreateInfo .modelnew "[lindex $Msg(Exist) $GDefs(Lang)]"
       return
    }
-   set modelbase [Model::InitNew $Model $Exp::Data(No) $Exp::Data(Name) $Exp::Data(Pos)]
+   set Data(Modelbase) [Model::InitNew $Model $Exp::Data(No) $Exp::Data(Name) $Exp::Data(Pos)]
+   set Data(Model)     $Model
+   set ${Data(Modelbase)}::Sim(Auto) False
 
    #----- Create model param window
    toplevel     .modelnew
@@ -995,39 +997,39 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
    wm transient .modelnew .
    wm resizable .modelnew 0 0
    wm geom      .modelnew =300x350+[winfo rootx .]+[expr [winfo rooty .]+30]
-   wm protocol  .modelnew WM_DELETE_WINDOW "Model::ParamsClose $modelbase"
+   wm protocol  .modelnew WM_DELETE_WINDOW "Model::ParamsClose $Data(Modelbase)"
 
-   TabFrame::Create .modelnew.params 1 ${modelbase}::ParamsCheck
+   TabFrame::Create .modelnew.params 1 ${Data(Modelbase)}::ParamsCheck
    pack .modelnew.params -side top -fill both -expand true -padx 5 -pady 5
 
    #----- Model specific parameters
    switch $Mode {
       "NEW" {
-         ${modelbase}::InitNew $Exp::Data(Type)
-         ${modelbase}::ParamsNew .modelnew.params
-         if { [info proc ::${modelbase}::ParamsEmission]!="" } {
-            ${modelbase}::ParamsEmission .modelnew.params
+         ${Data(Modelbase)}::InitNew $Exp::Data(Type)
+         ${Data(Modelbase)}::ParamsNew .modelnew.params
+         if { [info proc ::${Data(Modelbase)}::ParamsEmission]!="" } {
+            ${Data(Modelbase)}::ParamsEmission .modelnew.params
          }
       }
       "CONT" {
          #----- For this, we have to get the parametres from the previous simulation
-         Info::Decode ::${modelbase}::Sim $Exp::Data(SelectSim)
-         ${modelbase}::InitCont $Exp::Data(Type)
-         ${modelbase}::ParamsCont .modelnew.params
+         Info::Decode ::${Data(Modelbase)}::Sim $Exp::Data(SelectSim)
+         ${Data(Modelbase)}::InitCont $Exp::Data(Type)
+         ${Data(Modelbase)}::ParamsCont .modelnew.params
       }
       "RENEW" {
          #----- For this, we have to point the meteo the renewed simulation's meteo
-         Info::Decode ::${modelbase}::Sim $Exp::Data(SelectSim)
-         set ::${modelbase}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/meteo
-         ${modelbase}::ParamsEmission .modelnew.params
+         Info::Decode ::${Data(Modelbase)}::Sim $Exp::Data(SelectSim)
+         set ::${Data(Modelbase)}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/meteo
+         ${Data(Modelbase)}::ParamsEmission .modelnew.params
       }
    }
-   Model::ParamsGridDefine ${modelbase} $Mode
+   Model::ParamsGridDefine $Data(Modelbase) $Mode
 
    #----- Launching Tab.
-   Model::ParamsLaunch $modelbase .modelnew.params
+   Model::ParamsLaunch $Data(Modelbase) .modelnew.params
 
-   button .modelnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "Model::ParamsClose $modelbase"
+   button .modelnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "Model::ParamsClose $Data(Modelbase)"
    pack .modelnew.close -side bottom -anchor e -padx 5 -pady 5
 
    TabFrame::Select .modelnew.params 0
