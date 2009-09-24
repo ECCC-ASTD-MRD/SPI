@@ -292,7 +292,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    }
 
    #----- Retrieve meteorological data.
-   button $frame.auto.get -text "[lindex $Lbl(ObsRetrieve) $GDefs(Lang)]" -bd 1 -command "MLCD::SetMetData \$MLCD::Sim(Meteo)"
+   button $frame.auto.get -text "[lindex $Lbl(ObsRetrieve) $GDefs(Lang)]" -bd 1 -command "MLCD::SelectObs 1; MLCD::GetMetData; MLCD::UpdateObsInterface"
       pack $frame.auto.get -side left -expand true -anchor center -padx 2 -pady 2
       #pack $frame.auto.get -side left -expand true -anchor se -padx 2 -pady 2
    Bubble::Create $frame.auto.get "[lindex $Bubble(ObsRetrieve) $GDefs(Lang)]"
