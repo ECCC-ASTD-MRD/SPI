@@ -186,8 +186,7 @@ for { set i 0 } { $i < $argc } { incr i } {
 catch { package require Thread }
 package require Tktable
 package require http
-package require xml
-package require dom
+package require tdom
 package require struct::tree
 
 package require Icons

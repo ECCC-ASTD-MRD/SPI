@@ -97,26 +97,28 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
          set req [http::geturl "${Path}&SERVICE=WMS&REQUEST=GetCapabilities"]
       }
 
-      if { [catch { set doc [dom::parse [http::data $req]] } ] } {
-         Dialog::CreateErrorListing . [lindex $Msg(Request) $GDefs(Lang)] [http::data $req] $GDefs(Lang)
+      if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
+         Dialog::CreateErrorListing . "[lindex $Msg(Request) $GDefs(Lang)]\n\n$msg" [http::data $req] $GDefs(Lang)
          return
       }
+      set root [$doc documentElement]
 
       set Data(Version) 1.1.1
       set Data(Format) "image/gif"
-      set getmap [lindex [set [dom::document getElementsByTagName $doc GetMap]] 0]
-      foreach node [set [dom::document getElementsByTagName $getmap Format]] {
-         set Data(Format) [dom::node cget  [dom::node children $node] -nodeValue]
+
+      set getmap [lindex [$root getElementsByTagName GetMap] 0]
+      foreach node [$getmap getElementsByTagName Format] {
+         set Data(Format) [[$node firstChild] nodeValue]
          if { $Data(Format)=="image/png" || $Data(Format)=="image/jpeg" } {
             break
          }
       }
 
-      set layer [lindex [set [dom::document getElementsByTagName $doc Layer]] 0]
+      set layer [lindex [$root getElementsByTagName Layer] 0]
       foreach layer [Mapper::DepotWare::WMS::ParseLayer $Path $layer] {
          Mapper::DepotWare::WMS::Add $Tree $Branch $layer
       }
-      dom::destroy $doc
+      $doc delete
    } else {
       set def [Mapper::DepotWare::WMS::BuildXMLDef $Path]
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
@@ -214,16 +216,19 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node { First True } } {
       set Data(Cache)  1
    }
    set Data(Style)  {}
+   set Data(Opaque)  {}
 
-   foreach node [set [dom::node configure $Node -childNodes]] {
-      switch [dom::node configure $node  -nodeName] {
-         Layer                    { set Data(Opaque) [dom::element getAttribute $node opaque]
+   foreach node [$Node childNodes] {
+      switch [$node nodeName] {
+         Layer                    { if { [$Node hasAttribute opaque] } {
+                                       set Data(Opaque) [$node getAttribute opaque]
+                                    }
                                     Mapper::DepotWare::WMS::ParseLayer $URL $node False }
          EX_GeographicBoundingBox { Mapper::DepotWare::WMS::ParseGeographic $node }
          LatLonBoundingBox        { Mapper::DepotWare::WMS::ParseLatLonBoundingBox $node }
          BoundingBox              { Mapper::DepotWare::WMS::ParseBoundingBox $node }
-         Name                     { set Data(Identifier)  [dom::node cget [dom::node children $node] -nodeValue] }
-         Title                    { set Data(Title) [dom::node cget [dom::node children $node] -nodeValue] }
+         Name                     { set Data(Identifier)  [[$node firstChild] nodeValue] }
+         Title                    { set Data(Title) [[$node firstChild] nodeValue] }
          Dimension                { set Data(Cache) 0 }
          DataURL                  { }
          Style                    { Mapper::DepotWare::WMS::ParseStyle $node }
@@ -256,7 +261,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node { First True } } {
 proc Mapper::DepotWare::WMS::ParseStyle { Node } {
    variable Data
 
-   lappend Data(Style) [dom::node cget [lindex [dom::node children $Node] 0] -nodeValue]
+   lappend Data(Style) [[$Node firstChild] nodeValue]
 }
 
 #-------------------------------------------------------------------------------
@@ -298,10 +303,10 @@ proc Mapper::DepotWare::WMS::ParseGeographic { Node } {
    variable Data
 
    set Data(Geographic) [list\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node westBoundLongitude]]] -nodeValue]\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node northBoundLatitude]]] -nodeValue]\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node eastBoundLongitude]]] -nodeValue]\
-      [dom::node cget [dom::node children [set [dom::document getElementsByTagName $Node southBoundLatitude]]] -nodeValue]]
+      [[[$Node getElementsByTagName westBoundLongitude] firstChild] nodeValue]\
+      [[[$Node getElementsByTagName northBoundLatitude] firstChild] nodeValue]\
+      [[[$Node getElementsByTagName eastBoundLongitude] firstChild] nodeValue]\
+      [[[$Node getElementsByTagName southBoundLatitude] firstChild] nodeValue]]
 }
 
 #-------------------------------------------------------------------------------
@@ -323,12 +328,22 @@ proc Mapper::DepotWare::WMS::ParseGeographic { Node } {
 proc Mapper::DepotWare::WMS::ParseBoundingBox { Node } {
    variable Data
 
-   set x0 [dom::element getAttribute $Node minx]
-   set y0 [dom::element getAttribute $Node miny]
-   set x1 [dom::element getAttribute $Node maxx]
-   set y1 [dom::element getAttribute $Node maxy]
-   set epsg [dom::element getAttribute $Node SRS]
-   set crs  [dom::element getAttribute $Node CRS]
+   set x0 [$Node getAttribute minx]
+   set y0 [$Node getAttribute miny]
+   set x1 [$Node getAttribute maxx]
+   set y1 [$Node getAttribute maxy]
+
+   if { [$Node hasAttribute SRS] } {
+      set epsg [$Node getAttribute SRS]
+   } else {
+      set epsg ""
+   }
+
+   if { [$Node hasAttribute CRS] } {
+      set crs  [$Node getAttribute CRS]
+   } else {
+      set crs ""
+   }
 
    set Data(BBox)  [list $x0 $y0 $x1 $y1]
 
@@ -344,8 +359,8 @@ proc Mapper::DepotWare::WMS::ParseBoundingBox { Node } {
 proc Mapper::DepotWare::WMS::ParseLatLonBoundingBox { Node } {
    variable Data
 
-   set Data(Geographic) [list [dom::element getAttribute $Node minx] [dom::element getAttribute $Node maxy] \
-      [dom::element getAttribute $Node maxx] [dom::element getAttribute $Node miny]]
+   set Data(Geographic) [list [$Node getAttribute minx] [$Node getAttribute maxy] \
+      [$Node getAttribute maxx] [$Node getAttribute miny]]
 }
 
 #-------------------------------------------------------------------------------
