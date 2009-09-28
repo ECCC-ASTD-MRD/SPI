@@ -90,13 +90,15 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
    global GDefs
    variable Msg
 
+   set str [http::config -useragent]
+   http::config -useragent "EC/CMC/CMOE SPI $GDefs(Version) (through $str)"
+
    if { $URL=="URL" }  {
       if { [string first "?" ${Path}]==-1 } {
-         set req [http::geturl "${Path}?&SERVICE=WMS&REQUEST=GetCapabilities"]
+         set req [http::geturl "${Path}?&SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
       } else {
-         set req [http::geturl "${Path}&SERVICE=WMS&REQUEST=GetCapabilities"]
+         set req [http::geturl "${Path}&SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580 ]
       }
-
       if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
          Dialog::CreateErrorListing . "[lindex $Msg(Request) $GDefs(Lang)]\n\n$msg" [http::data $req] $GDefs(Lang)
          return
@@ -106,7 +108,13 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
       set Data(Version) 1.1.1
       set Data(Format) "image/gif"
 
-      set getmap [lindex [$root getElementsByTagName GetMap] 0]
+      #----- If there's no map available
+      if { [set getmap [lindex [$root getElementsByTagName GetMap] 0]]=="" } {
+         Dialog::CreateErrorListing . "[lindex $Msg(Request) $GDefs(Lang)]" [http::data $req] $GDefs(Lang)
+         return
+      }
+
+      #----- Parse the available image formats
       foreach node [$getmap getElementsByTagName Format] {
          set Data(Format) [[$node firstChild] nodeValue]
          if { $Data(Format)=="image/png" || $Data(Format)=="image/jpeg" } {
@@ -114,11 +122,13 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
          }
       }
 
+      #----- Parse the availabel layers
       set layer [lindex [$root getElementsByTagName Layer] 0]
       foreach layer [Mapper::DepotWare::WMS::ParseLayer $Path $layer] {
          Mapper::DepotWare::WMS::Add $Tree $Branch $layer
       }
       $doc delete
+      http::cleanup $req
    } else {
       set def [Mapper::DepotWare::WMS::BuildXMLDef $Path]
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
