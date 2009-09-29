@@ -65,8 +65,8 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    Tcl_Obj       *obj;
    TGeoRef       *ref;
 
-   static CONST char *sopt[] = { "-wkt","-gml","-geometry","-addgeometry","-space","-dimension","-type","-nb","-name","-points","-addpoint","-georef",NULL };
-   enum                opt { WKT,GML,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NAME,POINTS,ADDPOINT,GEOREF };
+   static CONST char *sopt[] = { "-wkt","-gml","-kml","-geometry","-addgeometry","-space","-dimension","-type","-nb","-name","-points","-addpoint","-georef",NULL };
+   enum                opt { WKT,GML,KML,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NAME,POINTS,ADDPOINT,GEOREF };
 
    geom=OGR_GeometryGet(Name);
    if (!geom) {
@@ -112,6 +112,17 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Unsupported geometry type\"",(char*)NULL);
                   return(TCL_ERROR);
                }
+            }
+            break;
+
+         case KML:
+            if (Objc==1) {
+               buf=OGR_G_ExportToKML(geom,NULL);
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+               CPLFree(buf);
+            } else {
+               Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Operation not supported\"",(char*)NULL);
+               return(TCL_ERROR);
             }
             break;
 
