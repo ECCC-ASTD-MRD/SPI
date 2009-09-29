@@ -257,7 +257,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             break;
 
          case GEOMETRY:
-            if (Objc!=2 && Objc!=4) {
+            if (Objc<2 || Objc>4) {
                Tcl_WrongNumArgs(Interp,2,Objv,"index ?direct? ?geometry?");
                return TCL_ERROR;
             }
@@ -266,14 +266,22 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
                return TCL_ERROR;
             }
-            if (Objc==2) {
+
+            /* Get the direct pointer flag*/
+            t=0;
+            if (Objc>2) {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&t);
+            }
+
+            if (Objc<4) {
                /* Force assignation of spatial reference since it seems it is no done automatically*/
-               geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f]));
-               OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+               geom=OGR_F_GetGeometryRef(layer->Feature[f]);
+               if (!t) {
+                  geom=OGR_G_Clone(geom);
+                  OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+               }
                Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,geom));
             } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&t);
-
                if (!(geom=OGR_GeometryGet(Tcl_GetString(Objv[++i])))) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid geometry",(char*)NULL);
                   return TCL_ERROR;
