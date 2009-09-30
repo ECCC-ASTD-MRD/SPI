@@ -1,13 +1,74 @@
 #ERPG - Emergency Response Planning Guideline
 #
-#Number of ERPGs: 130
+#Updated 30 sep 2009
 #
+#Number of ERPGs: 140 (as mentioned in original 2009 .pdf document)
 #
-#NOTE: This information is correct as of January 1, 2007. It is possible
+######
+#NOTE: This information is correct as of January 1, 2009. It is possible
 #that an ERPG under review by the Committee will be balloted and
-#approved in 2007, making it eligible for inclusion in the 2008 ERPG
+#approved in 2009, making it eligible for inclusion in the 2009 ERPG
 #Document Set.
 #
+#These chemicals are under consideration or review by the AIHA ERP Committee:
+#Benzene
+#Boron trifluoride
+#1,3-Butadiene
+#n-Butyl acetate
+#Carbon disulfide
+#Carbon monoxide
+#1-Chloro-1,1- (HCFC-142b)
+#Chloroacetophenone
+#Chloroacetic acid
+#Chloroacetyl chloride
+#Chloroform
+#Chloromethyl methyl ether
+#Chloropicrin
+#Chlorosulfonic acid
+#Cyanogen chloride
+#Diborane
+#1,2-Dichloroethane
+#Diesel/Fuel Oil/Kerosene
+#Dimethyl disulfide
+#Dimethyl sulfate
+#Ethyl acrylate
+#Ethanol
+#Fluorine
+#Formaldehyde
+#Formic acid
+#Furfural
+#Gasoline
+#Hydrogen chloride
+#Hydrogen peroxide
+#Hydroquinone
+#Iodine
+#Isocyanuric acid
+#Methyl bromide
+#Methyl mercaptan
+#Methylene diphenyl diisocyanate (MDI)
+#Naphthalene
+#1-Octanol
+#Phosphine
+#Phosphoric acid
+#Polyethylene glycol
+#Polypropylene
+#Propylene glycol momomethylether acetate
+#Propylene oxide
+#Quinoline
+#Sodium chloroacetate
+#Sulfur dioxide
+#Sulfuryl chloride
+#Sulfuryl fluoride
+#Tetrachlorosilane
+#Tetraethoxysilane
+#Tetramethoxysilane
+#Thionyl chloride
+#Toluene
+#Toluene 2,4-(2,6-) Diisocyanate (TDI)
+#1,1,1-Trichloroethane
+#Trichlorosilane
+#Trimethyl Chlorosilane 
+#######
 #
 #Definitions:
 #
@@ -51,6 +112,7 @@
 array set ERPG {
 "Acetaldehyde (75-07-0)" { ppm { { 10 200 1000 } } }
 "Acetic Acid (64-19-7)" { ppm { { 5 35 250 } } }
+"Acetic Anhydride (108-24-7)" { ppm { { 0.5 15 100 } } }
 "Acrolein (107-02-8)" { ppm { { 0.05 0.15 1.5 } } }
 "Acrylic Acid (79-10-7)" { ppm  { { 2 50 750 } } }
 "Acrylonitrile (107-13-1)" { ppm { { 10 35 75 } } }
@@ -75,6 +137,7 @@ array set ERPG {
 "Chlorine Dioxide (10049-04-4)" { ppm { {  0.5 3 } } }
 "Chlorine Trifluoride (7790-91-2)" { ppm { { 0.1 1 10 } } }
 "1-Chloro-1,1-Difluoroethane (HCFC-142b) (75-68-3)" { ppm { { 10000 15000 25000 } } }
+"2-Chloro-1,1,1,2-Tetrafluoroethane (2837-89-0)" { ppm { { 1,000 5,000 10,000 } } }
 "Chloroacetyl Chloride (79-04-9)" { ppm { { 0.05 0.5 10 } } }
 "o-Chlorobenzylidene Malononitrile (2698-41-1)" { mg/m3 { { 0.005 0.1 25 } } }
 "Chloroform (67-66-3)" { ppm { {  50 5000 } } }
@@ -101,10 +164,11 @@ array set ERPG {
 "Epichlorohydrin (106-89-8)" { ppm { { 5 20 100 } } }
 "Ethyl Acrylate (140-88-5)" { ppm { { 0.01 30 300 } } }
 "Ethyl Chloroformate (541-41-3)" { ppm { {  5 10 } } }
-"2-Ethyl hexanol (104-76-7)" { ppm { { 0.1 120 227 } } }
+"2-Ethyl hexanol (104-76-7)" { ppm { { 0.1 100 200 } } }
 "Ethylene Oxide (75-21-8)" { ppm { {  50 500 } } }
 "Ethylidene Norbornene (16219-75-3)" { ppm { { 0.2 100 500 } } }
 "Fluorine (7782-41-4)" { ppm { { 0.5 5 20 } } }
+"Fluorosulfonic acid (7789-21-1)" { mg/m3 { { 2 10 30 } } }
 "Formaldehyde (50-00-0)" { ppm { { 1 10 25 } } }
 "Furfural (98-01-1)" { ppm { { 2 10 100 } } }
 "Gluteraldehyde (111-30-8)" { ppm  { { 0.2 1 5 } } }
@@ -112,6 +176,7 @@ array set ERPG {
 "Hexachlorobutadiene (87-68-3)" { ppm { { 1 3 10 } } }
 "Hexafluoroacetone (684-16-2)" { ppm { {  1 50 } } }
 "Hexafluoropropylene (116-15-4)" { ppm { { 10 50 500 } } }
+"1-Hexene (592-41-6)" { ppm { {  500 5,000 } } }
 "Hydrazine (302-01-2)" { ppm { { 0.5 5 30 } } }
 "Hydrogen Chloride (7647-01-0)" { ppm { { 3 20 150 } } }
 "Hydrogen Cyanide (74-90-8)" { ppm { {  10 25 } } }
@@ -121,8 +186,8 @@ array set ERPG {
 "Hydrogen Sulfide (7783-06-4)" { ppm { { 0.1 30 100 } } }
 "Iodine (7553-56-2)" { ppm { { 0.1 0.5 5 } } }
 "Isobutyronitrile (78-82-0)" { ppm { { 10 50 200 } } }
-"Isoprene (78-79-5)" { ppm { { 5 1000 4000 } } }
 "2-Isocyanatoethyl Methacrylate (30674-80-7)" { ppm { {  0.1 1 } } }
+"Isoprene (78-79-5)" { ppm { { 5 1000 4000 } } }
 "Isopropyl Chloroformate (108-23-6)" { ppm { {  5 20 } } }
 "Lithium Hydride (7580-67-8)" { ug/m3 { { 25 100 500 } } }
 "Maleic Anhydride (108-31-6)" { ppm { { 0.2 2 20 } } }
@@ -134,7 +199,8 @@ array set ERPG {
 "Methyl Iodide (74-88-4)" { ppm { { 25 50 125 } } }
 "Methyl Isocyanate (624-83-9)" { ppm { { 0.025 0.25 1.5 } } }
 "Methyl Mercaptan (74-93-1)" { ppm { { 0.005 25 100 } } }
-"Methylene Chloride (75-09-02)" { ppm { { 200 750 4000 } } }
+"Methyl tert-Butyl Ether (1634-0404)" { ppm { { 5 1000 5000 } } }
+"Methylene Chloride (75-09-02)" { ppm { { 300 750 4000 } } }
 "Methylene Diphenyl Diisocyanate (MDI) (101-68-8)" { mg/m3 { { 0.2 2 25 } } }
 "Methyltrichlorosilane (75-79-6)" { ppm { { 0.5 3 15 } } }
 "Monomethylamine (74-89-5)" { ppm { { 10 100 500 } } }
@@ -145,18 +211,20 @@ array set ERPG {
 "Perchloroethylene (127-18-4)" { ppm { { 100 200 1000 } } }
 "Perfluoroisobutylene (382-21-8)" { ppm { {  0.1 0.3 } } }
 "Phenol (108-95-2)" { ppm { { 10 50 200 } } }
-"Phosgene (75-44-5)" { ppm { {  0.2 1 } } }
+"Phosgene (75-44-5)" { ppm { {  0.5 1.5 } } }
 "Phosphine (7803-51-2)" { ppm { {  0.5 5 } } }
 "Phosphorus Pentoxide (1314-56-3)" { mg/m3 { { 1 10 50 } } }
 "Phosphorus Trichloride (7719-12-2)" { ppm { { 0.5 3 15 } } }
+"Propylene Glycol Methyl Ether Acetate (108-65-6 ?-isomer) (70657-70-4 ?-isomer)" { ppm { { 50 1000 5000 } } }
 "Propylene Oxide (75-56-9)" { ppm { { 50 250 750 } } }
 "Sodium Hydroxide (1310-73-2)" { mg/m3 { { 0.5 5 50 } } }
 "Stibine (7803-52-3)" { ppm { {  0.5 1.5 } } }
 "Styrene (100-42-5)" { ppm { { 50 250 1000 } } }
 "Sulfur Dioxide (7446-09-5)" { ppm { { 0.3 3 15 } } }
-"Sulfuric Acid, Oleum (8014-95-7)" { mg/m3 { { 2 10 30 } } }
-"Sulfuric Acid, Sulfur Trioxide (7446-11-9)" { mg/m3 { { 2 10 30 } } }
+"Sulfur Trioxide (7446-11-9)" { mg/m3 { { 2 10 30 } } }
+"Sulfuric Acid Oleum (8014-95-7)" { mg/m3 { { 2 10 30 } } }
 "Sulfuric Acid (7664-93-9)" { mg/m3 { { 2 10 30 } } }
+"Sulfuryl Chloride (7791-25-5)" { ppm { { 0.3 3 15 } } }
 "Tetrachlorosilane (10026-04-7)" { ppm { { 0.75 5 37 } } }
 "Tetraethoxysilane (78-10-4)" { ppm { { 25 100 300 } } }
 "Tetrafluoroethylene (116-14-3)" { ppm  { { 200 1000 10000 } } }
@@ -169,14 +237,16 @@ array set ERPG {
 "1,1,1-Trichloroethane (71-55-6)" { ppm { { 350 700 3500 } } }
 "Trichloroethylene (79-01-6)" { ppm { { 100 500 5000 } } }
 "Trichlorosilane (10025-78-2)" { ppm { { 1 3 25 } } }
+"Triethoxysilane (998-30-1)" { ppm { { 0.5 4 10 } } }
 "Trimethoxysilane (2487-90-3)" { ppm { { 0.5 2 5 } } }
 "Trimethylamine (75-50-3)" { ppm { { 0.1 100 500 } } }
 "Trimethylchlorosilane (75-77-4)" { ppm { { 3 20 150 } } }
 "Triuranium Octaoxide (1344-59-8)" { mg/m3 { {  10 50 } } }
 "Uranium Dioxide (1344-57-6)" { mg/m3 { {  10 30 } } }
 "Uranium Hexafluoride (7783-81-5)" { mg/m3 { { 5 15 30 } } }
-"Vinylidene Chloride (75-35-4)" { ppm { {  500 1000 } } }
+"Uranium Trioxide (1344-58-7)" { mg/m3 { {  0.5 3 } } }
 "Vinyl Acetate (108-05-4)" { ppm { { 5 75 500 } } }
 "Vinyl Chloride (75-01-4)" { ppm { { 500 5000 20000 } } }
 "Vinyl Trichlorosilane (75-94-5)" { ppm { { 0.5 5 50 } } }
+"Vinylidene Chloride (75-35-4)" { ppm { {  500 1000 } } }
 }
