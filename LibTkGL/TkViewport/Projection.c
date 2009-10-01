@@ -1711,7 +1711,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
  *
  *----------------------------------------------------------------------------
 */
-int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,int X0,int Y0,int X1,int Y1) {
+int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,double X0,double Y0,double X1,double Y1) {
 
    double dx=Pt2[0]-Pt1[0];
    double dy=Pt2[1]-Pt1[1];

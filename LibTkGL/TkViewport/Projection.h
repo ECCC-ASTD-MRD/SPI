@@ -132,7 +132,7 @@ void Projection_CreateType(
 #define DELTA(P0,P1)         ((P1[1]-P0[1])/(P1[0]-P0[0]))
 #define LIANGCOPY(X,Y,PT,NB) PT[NB][0]=X;PT[NB][1]=Y;NB=NB+1;
 
-int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,int X0,int Y0,int X1,int Y1);
+int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,double X0,double Y0,double X1,double Y1);
 int LiangBarsky_LineClipT(double Denom,double Num,double *Te,double *Tl);
 int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double X0,double Y0,double X1,double Y1);
 
