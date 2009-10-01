@@ -1763,7 +1763,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
                      if (Field->Ref->Grid[0]!='V') {
-                        Field->Ref->Project(Field->Ref,i,j,&dlat,&dlon,0,1);
+                        Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                             dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
 
@@ -1811,7 +1811,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
                   if (Field->Ref->Grid[0]!='V') {
                      Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                     if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
+                         dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                     }
                   } else {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[FIDX2D(Field->Def,ni,nj)]));
                   }
@@ -1830,7 +1833,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
                   if (Field->Ref->Grid[0]!='V') {
                      Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
+                         dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     }
                   } else {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[FIDX2D(Field->Def,ni,nj)]));
                   }
@@ -1963,8 +1969,16 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                obj=Tcl_NewListObj(0,NULL);
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
-                     Def_GetMod(Field->Def,FIDX2D(Field->Def,ni,nj),dval);
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                     if (Field->Ref->Grid[0]!='V') {
+                        Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+                        if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
+                           dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
+                           Def_GetMod(Field->Def,FIDX2D(Field->Def,ni,nj),dval);
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                         }
+                     } else {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                     }
                   }
                }
                Tcl_SetObjResult(Interp,obj);
@@ -2211,16 +2225,17 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      return(TCL_ERROR);
                   }
                   Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[0][0]);
-                  if (Field->Def->Limits[0][0]<0) Field->Def->Limits[0][0]=0.0;
                   Tcl_ListObjIndex(Interp,Objv[i],1,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][0]);
-                  if (Field->Def->Limits[1][0]<0) Field->Def->Limits[1][0]=0.0;
                   Tcl_ListObjIndex(Interp,Objv[i],2,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][0]);
-                  if (Field->Def->Limits[2][0]<0) Field->Def->Limits[2][0]=0.0;
                   Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
-                  if (Field->Def->Limits[0][1]>Field->Def->NI-1) Field->Def->Limits[0][1]=Field->Def->NI-1;
                   Tcl_ListObjIndex(Interp,Objv[i],4,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
-                  if (Field->Def->Limits[1][1]>Field->Def->NJ-1) Field->Def->Limits[1][1]=Field->Def->NJ-1;
                   Tcl_ListObjIndex(Interp,Objv[i],5,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][1]);
+
+                  if (Field->Def->Limits[0][0]<0) Field->Def->Limits[0][0]=0.0;
+                  if (Field->Def->Limits[1][0]<0) Field->Def->Limits[1][0]=0.0;
+                  if (Field->Def->Limits[2][0]<0) Field->Def->Limits[2][0]=0.0;
+                  if (Field->Def->Limits[0][1]>Field->Def->NI-1) Field->Def->Limits[0][1]=Field->Def->NI-1;
+                  if (Field->Def->Limits[1][1]>Field->Def->NJ-1) Field->Def->Limits[1][1]=Field->Def->NJ-1;
                   if (Field->Def->Limits[2][1]>Field->Def->NK-1) Field->Def->Limits[2][1]=Field->Def->NK-1;
                }
                Data_Clean(Field,0,0,1);
@@ -2248,14 +2263,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates must be { lat0 lon0 lat1 lon1 }",(char*)NULL);
                      return(TCL_ERROR);
                   }
-                  Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[0][1]);
-                  if (Field->Def->CoordLimits[0][1]<-90.0) Field->Def->CoordLimits[0][1]=-90.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[1][0]);
                   Tcl_ListObjIndex(Interp,Objv[i],1,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[0][0]);
-                  if (Field->Def->CoordLimits[1][0]<-180.0) Field->Def->CoordLimits[1][0]=-180.0;
                   Tcl_ListObjIndex(Interp,Objv[i],2,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[1][1]);
+                  Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[0][1]);
+
+                  if (Field->Def->CoordLimits[1][0]<-90.0) Field->Def->CoordLimits[1][0]=-90.0;
+                  if (Field->Def->CoordLimits[0][0]<-180.0) Field->Def->CoordLimits[0][0]=-180.0;
                   if (Field->Def->CoordLimits[1][1]>90.0) Field->Def->CoordLimits[1][1]=90.0;
-                  Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[1][0]);
-                  if (Field->Def->CoordLimits[1][0]>180.0) Field->Def->CoordLimits[1][0]=180.0;
+                  if (Field->Def->CoordLimits[0][1]>180.0) Field->Def->CoordLimits[0][1]=180.0;
                }
                Data_Clean(Field,0,0,1);
             }
