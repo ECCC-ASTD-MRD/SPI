@@ -242,22 +242,23 @@ typedef struct TDataStat {
 } TDataStat;
 
 typedef struct TDataDef {
-   double  NoData;           /*Valeur de novalue*/
-   double *Buffer;           /*Buffer temporaire*/
-   int    *Accum;            /*Accumulation Buffer temporaire*/
-   char   *Mask;             /*Masque a appliquer au traitement sur le champs*/
-   char   *Data[4];          /*Composantes du champs*/
-   char   *Mode;             /*Module des champs Data is vectoriel*/
-   char   *Pres;             /*Pression au sol*/
-   OGRGeometryH *Pick,*Poly; /*Geometry used in various interpolation method*/
+   double  NoData;            /*Valeur de novalue*/
+   double *Buffer;            /*Buffer temporaire*/
+   int    *Accum;             /*Accumulation Buffer temporaire*/
+   char   *Mask;              /*Masque a appliquer au traitement sur le champs*/
+   char   *Data[4];           /*Composantes du champs*/
+   char   *Mode;              /*Module des champs Data is vectoriel*/
+   char   *Pres;              /*Pression au sol*/
+   OGRGeometryH *Pick,*Poly;  /*Geometry used in various interpolation method*/
 
-   TData_Type Type;          /*Type de donnees du champs*/
-   int NI,NJ,NK,NC;          /*Dimensions du champs*/
+   TData_Type Type;           /*Type de donnees du champs*/
+   int NI,NJ,NK,NC;           /*Dimensions du champs*/
 
-   int     CellDim;          /*Defined grid point coverage, point=1 or area=2*/
-   char    Container;        /*Container pointant sur d'autres donnees*/
-   int     Level;            /*Niveau courant*/
-   int     Limits[3][2];     /*Limites d'interet*/
+   int     CellDim;           /*Defined grid point coverage, point=1 or area=2*/
+   char    Container;         /*Container pointant sur d'autres donnees*/
+   int     Level;             /*Niveau courant*/
+   int     Limits[3][2];      /*Limits of processing in grid points*/
+   double  CoordLimits[2][2]; /*Limits of processing in latlon*/
 } TDataDef;
 
 struct TData;

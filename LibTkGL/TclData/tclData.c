@@ -1074,6 +1074,11 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Limits[2][0]=0;
    def->Limits[2][1]=NK-1;
 
+   def->CoordLimits[0][0]=-180;
+   def->CoordLimits[0][1]=180;
+   def->CoordLimits[1][0]=-90;
+   def->CoordLimits[1][1]=90;
+
    /* Allocate data vector */
    def->Data[0]=NULL;
    def->Data[1]=NULL;
@@ -1218,6 +1223,11 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       Def->Limits[2][0]=0;
       Def->Limits[2][1]=NK-1;
 
+      Def->CoordLimits[0][0]=-180;
+      Def->CoordLimits[0][1]=180;
+      Def->CoordLimits[1][0]=-90;
+      Def->CoordLimits[1][1]=90;
+
       if (Def->Mode && Def->Mode!=Def->Data[0]) {
          free(Def->Mode);
          Def->Mode=NULL;
@@ -1317,6 +1327,7 @@ TDataDef *Data_DefCopy(TDataDef *Def){
       def->Pick=def->Poly=NULL;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
+      memcpy(def->CoordLimits,Def->CoordLimits,4*sizeof(double));
 
       for(i=0;i<4;i++) {
          if (def->Container) {
@@ -1361,6 +1372,7 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
       def->Pick=def->Poly=NULL;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
+      memcpy(def->CoordLimits,Def->Limits,4*sizeof(double));
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
@@ -1633,9 +1645,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-level","-levels","-leveltype","-pressurelevels","-limits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -1752,8 +1764,12 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
                      if (Field->Ref->Grid[0]!='V') {
                         Field->Ref->Project(Field->Ref,i,j,&dlat,&dlon,0,1);
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                        if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
+                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
+
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                        }
                      } else {
                         index=FIDX2D(Field->Def,ni,nj);
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
@@ -2036,7 +2052,21 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                b=FFStreamLine(Field->Ref,Field->Def,NULL,GDB_VBuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_GRID,0);
                f=FFStreamLine(Field->Ref,Field->Def,NULL,&GDB_VBuf[len],NULL,dx,0,dy,len,dval,dv,dl,REF_GRID,0);
                obj=Tcl_NewListObj(0,NULL);
-               for (nb=0;nb<b+f;nb++) {
+               ex=0;
+
+               /*Loop on all streamline points*/
+               for (nb=0;nb<b+f-1;nb++) {
+                  /*Clip to extent limits*/
+                  if (ex=LiangBarsky_LineClip2D(GDB_VBuf[len-b+nb],GDB_VBuf[len-b+nb+1],&c1,&c2,
+                     Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1])) {
+
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+                  }
+               }
+               /*If last segment was visible, add its end point*/
+               if (ex){
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
@@ -2061,7 +2091,21 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                b=FFStreamLine(Field->Ref,Field->Def,NULL,GDB_VBuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_COOR,0);
                f=FFStreamLine(Field->Ref,Field->Def,NULL,&GDB_VBuf[len],NULL,dx,dy,0,len,dval,dv,dl,REF_COOR,0);
                obj=Tcl_NewListObj(0,NULL);
-               for (nb=0;nb<b+f;nb++) {
+               ex=0;
+
+               /*Loop on all streamline points*/
+               for (nb=0;nb<b+f-1;nb++) {
+                  /*Clip to extent limits*/
+                  if (ex=LiangBarsky_LineClip2D(GDB_VBuf[len-b+nb],GDB_VBuf[len-b+nb+1],&c1,&c2,
+                     Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
+
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+                  }
+               }
+               /*If last segment was visible, add its end point*/
+               if (ex) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
@@ -2083,11 +2127,12 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   array=(TArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
+                  ex=0;
 
                   /*Loop on the contour points*/
                   for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
-                     if (b=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
+                     if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
                         Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1])) {
 
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
@@ -2095,7 +2140,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      }
                   }
                   /*If last segment was visible, add its end point*/
-                  if (b){
+                  if (ex){
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
                   }
@@ -2118,7 +2163,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   array=(TArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
+                  ex=0;
+
                   for (n=0;n<array->Size;n++) {
+                     /*Clip to extent limits*/
+                     if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
+                        Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                     }
+                  }
+                  /*If last segment was visible, add its end point*/
+                  if (ex){
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
                   }
@@ -2133,31 +2189,74 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[0][0]));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[0][1]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[1][0]));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[1][1]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[2][0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[0][1]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[1][1]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Def->Limits[2][1]));
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
 
-               if (nobj!=6) {
-                  Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates must be { i0 i1 j0 j1 k0 k1 }",(char*)NULL);
-                  return(TCL_ERROR);
+               if (nobj==0) {
+                  Field->Def->Limits[0][0]=0;
+                  Field->Def->Limits[0][1]=Field->Def->NI-1;
+                  Field->Def->Limits[1][0]=0;
+                  Field->Def->Limits[1][1]=Field->Def->NJ-1;
+                  Field->Def->Limits[2][0]=0;
+                  Field->Def->Limits[2][1]=Field->Def->NK-1;
+               } else {
+                  if (nobj!=6) {
+                     Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates must be { i0 j0 k0 i1 j1 k1 }",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[0][0]);
+                  if (Field->Def->Limits[0][0]<0) Field->Def->Limits[0][0]=0.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],1,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][0]);
+                  if (Field->Def->Limits[1][0]<0) Field->Def->Limits[1][0]=0.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],2,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][0]);
+                  if (Field->Def->Limits[2][0]<0) Field->Def->Limits[2][0]=0.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
+                  if (Field->Def->Limits[0][1]>Field->Def->NI-1) Field->Def->Limits[0][1]=Field->Def->NI-1;
+                  Tcl_ListObjIndex(Interp,Objv[i],4,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
+                  if (Field->Def->Limits[1][1]>Field->Def->NJ-1) Field->Def->Limits[1][1]=Field->Def->NJ-1;
+                  Tcl_ListObjIndex(Interp,Objv[i],5,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][1]);
+                  if (Field->Def->Limits[2][1]>Field->Def->NK-1) Field->Def->Limits[2][1]=Field->Def->NK-1;
                }
-               Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[0][0]);
-               if (Field->Def->Limits[0][0]<0) Field->Def->Limits[0][0]=0.0;
-               Tcl_ListObjIndex(Interp,Objv[i],1,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[0][1]);
-               if (Field->Def->Limits[0][1]>Field->Def->NI-1) Field->Def->Limits[0][1]=Field->Def->NI-1;
-               Tcl_ListObjIndex(Interp,Objv[i],2,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][0]);
-               if (Field->Def->Limits[1][0]<0) Field->Def->Limits[1][0]=0.0;
-               Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
-               if (Field->Def->Limits[1][1]>Field->Def->NJ-1) Field->Def->Limits[1][1]=Field->Def->NJ-1;
-               Tcl_ListObjIndex(Interp,Objv[i],4,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][0]);
-               if (Field->Def->Limits[2][0]<0) Field->Def->Limits[2][0]=0.0;
-               Tcl_ListObjIndex(Interp,Objv[i],5,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][1]);
-               if (Field->Def->Limits[2][1]>Field->Def->NK-1) Field->Def->Limits[2][1]=Field->Def->NK-1;
+               Data_Clean(Field,0,0,1);
+            }
+            break;
+
+         case COORDLIMITS:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Def->CoordLimits[1][0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Def->CoordLimits[0][0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Def->CoordLimits[1][1]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Def->CoordLimits[0][1]));
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               Tcl_ListObjLength(Interp,Objv[++i],&nobj);
+
+               if (nobj==0) {
+                  Field->Def->CoordLimits[0][0]=-180;
+                  Field->Def->CoordLimits[1][0]=-90;
+                  Field->Def->CoordLimits[0][1]=180;
+                  Field->Def->CoordLimits[1][1]=90;
+               } else {
+                  if (nobj!=4) {
+                     Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates must be { lat0 lon0 lat1 lon1 }",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[0][1]);
+                  if (Field->Def->CoordLimits[0][1]<-90.0) Field->Def->CoordLimits[0][1]=-90.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],1,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[0][0]);
+                  if (Field->Def->CoordLimits[1][0]<-180.0) Field->Def->CoordLimits[1][0]=-180.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],2,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[1][1]);
+                  if (Field->Def->CoordLimits[1][1]>90.0) Field->Def->CoordLimits[1][1]=90.0;
+                  Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetDoubleFromObj(Interp,obj,&Field->Def->CoordLimits[1][0]);
+                  if (Field->Def->CoordLimits[1][0]>180.0) Field->Def->CoordLimits[1][0]=180.0;
+               }
                Data_Clean(Field,0,0,1);
             }
             break;
