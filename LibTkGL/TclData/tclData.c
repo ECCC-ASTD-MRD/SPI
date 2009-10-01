@@ -2141,7 +2141,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   array=(TArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
-                  ex=0;
+                  ex=tr=0;
 
                   /*Loop on the contour points*/
                   for (n=0;n<array->Size-1;n++) {
@@ -2151,6 +2151,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                        tr=1;
                      }
                   }
                   /*If last segment was visible, add its end point*/
@@ -2158,7 +2159,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
                   }
-                  Tcl_ListObjAppendElement(Interp,obj,sub);
+                  if (tr) {
+                     Tcl_ListObjAppendElement(Interp,obj,sub);
+                  }
                   list=list->Next;
                }
                Tcl_SetObjResult(Interp,obj);
@@ -2177,14 +2180,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   array=(TArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
-                  ex=0;
+                  ex=tr=0;
 
-                  for (n=0;n<array->Size;n++) {
+                  for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
-                     if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
-                        Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
+                     if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                        tr=1;
                      }
                   }
                   /*If last segment was visible, add its end point*/
@@ -2192,7 +2195,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
                   }
-                  Tcl_ListObjAppendElement(Interp,obj,sub);
+                  if (tr) {
+                     Tcl_ListObjAppendElement(Interp,obj,sub);
+                  }
                   list=list->Next;
                }
                Tcl_SetObjResult(Interp,obj);
