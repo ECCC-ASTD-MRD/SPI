@@ -90,10 +90,11 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
       i=-1;j=0;
       ci=1;cj=0;
 
-      i0=0;
-      j0=1;
-      i1=Field->Def->NI-1;
-      j1=Field->Def->NJ-1;
+      /*Calculate contours within the specified limits*/
+      i0=Field->Def->Limits[0][0];
+      j0=Field->Def->Limits[1][0];
+      i1=Field->Def->Limits[0][1];
+      j1=Field->Def->Limits[1][1];
 
       /*As long as we did not check all gridpoint (Worse case)*/
       while(d++<FSIZE2D(Field->Def)) {

@@ -1622,7 +1622,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    TData   *fld;
    TList   *list;
    TArray  *array;
-   int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex;
+   int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
    float    val,val1,*levels;
@@ -2076,13 +2076,26 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Data_GetContour(REF_GRID,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
 
                list=Field->Segments;
-
                obj=Tcl_NewListObj(0,NULL);
+
+               /*Loop on all contours*/
                while(list) {
                   array=(TArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
-                  for (n=0;n<array->Size;n++) {
+
+                  /*Loop on the contour points*/
+                  for (n=0;n<array->Size-1;n++) {
+                     /*Clip to extent limits*/
+                     if (b=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
+                        Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1])) {
+
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                     }
+                  }
+                  /*If last segment was visible, add its end point*/
+                  if (b){
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
                   }
