@@ -993,17 +993,17 @@ proc Page::ModeData { Frame VP } {
 
    #----- Evenements de selection de region
 
-   $c bind $Data(Tag)$VP <ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP; $c config -cursor sizing"
-   $c bind $Data(Tag)$VP <B1-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Draw $Frame $VP }"
-   $c bind $Data(Tag)$VP <ButtonRelease-1> "\$Page::Data(ToolMode)::DrawDone $Frame $VP; $c config -cursor left_ptr"
+   $c bind $Data(Tag)$VP <ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP"
+   $c bind $Data(Tag)$VP <B1-Motion>       "$c config -cursor sizing; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Draw $Frame $VP }"
+   $c bind $Data(Tag)$VP <ButtonRelease-1> "$c config -cursor hand1; \$Page::Data(ToolMode)::DrawDone $Frame $VP"
 
    #----- Evenement de deplacement de region (A implementer chez le client)
 
    $c bind $Data(Tag)$VP <ButtonPress-2>   "$c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP"
    $c bind $Data(Tag)$VP <B2-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
-   $c bind $Data(Tag)$VP <ButtonRelease-2> "\$Page::Data(ToolMode)::MoveDone $Frame $VP ; $c config -cursor left_ptr"
+   $c bind $Data(Tag)$VP <ButtonRelease-2> "$c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP"
 
-   $c config -cursor left_ptr
+   $c config -cursor hand1
 }
 
 #----------------------------------------------------------------------------
@@ -1033,7 +1033,7 @@ proc Page::ModeDraw { Frame VP } {
 
    $c bind $Data(Tag)$VP <ButtonPress-1>   "$c config -cursor pencil; Viewport::Activate $Frame $VP"
    $c bind $Data(Tag)$VP <B1-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 1 }"
-   $c bind $Data(Tag)$VP <ButtonRelease-1> "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexAdd $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] }; $c config -cursor left_ptr"
+   $c bind $Data(Tag)$VP <ButtonRelease-1> "$c config -cursor left_ptr; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexAdd $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] }"
 
    #----- Evenement de suppression de vertex
 
