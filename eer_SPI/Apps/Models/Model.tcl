@@ -176,36 +176,12 @@ namespace eval Model {
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
 
    catch {
-   image create photo ICO_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_VOLCANO.gif
-   image create photo ICO_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_NUCLEAR.gif
-   image create photo ICO_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_CTBT.gif
-   image create photo ICO_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_FIRE.gif
-   image create photo ICO_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_OTHER.gif
-   image create photo ICO_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_BIO.gif
-   image create photo ICO_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_SPILL.gif
+      set Resources(Icos)  "ICO_VOLC ICO_NUCL ICO_CTBT ICO_FIRE ICO_BIO ICO_SPILL ICO_OTHE"
+      set Resources(Acts)  "ACT_VOLC ACT_NUCL ACT_CTBT ACT_FIRE ACT_BIO ACT_SPILL ACT_OTHE"
+      set Resources(Bads)  "BAD_VOLC BAD_NUCL BAD_CTBT BAD_FIRE BAD_BIO BAD_SPILL BAD_OTHE"
 
-   image create photo BAD_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_VOLCANO.gif
-   image create photo BAD_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_NUCLEAR.gif
-   image create photo BAD_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_CTBT.gif
-   image create photo BAD_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_FIRE.gif
-   image create photo BAD_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_OTHER.gif
-   image create photo BAD_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_BIO.gif
-   image create photo BAD_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_SPILL.gif
-
-   image create photo ACT_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_VOLCANO.gif
-   image create photo ACT_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_NUCLEAR.gif
-   image create photo ACT_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_CTBT.gif
-   image create photo ACT_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_FIRE.gif
-   image create photo ACT_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_OTHER.gif
-   image create photo ACT_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_BIO.gif
-   image create photo ACT_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_SPILL.gif
-
-   set Resources(Icos)  "ICO_VOLC ICO_NUCL ICO_CTBT ICO_FIRE ICO_BIO ICO_SPILL ICO_OTHE"
-   set Resources(Acts)  "ACT_VOLC ACT_NUCL ACT_CTBT ACT_FIRE ACT_BIO ACT_SPILL ACT_OTHE"
-   set Resources(Bads)  "BAD_VOLC BAD_NUCL BAD_CTBT BAD_FIRE BAD_BIO BAD_SPILL BAD_OTHE"
-
-   set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
-   set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
+      set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
+      set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
    }
 }
 

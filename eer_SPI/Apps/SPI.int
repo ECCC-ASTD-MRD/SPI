@@ -770,7 +770,7 @@ proc SPI::ToolBar { Frame } {
          button $Frame.win.del -image FRAMEDEL -relief flat -bd 0 -overrelief raised \
             -command { SPI::PageDel }
          pack $Frame.win.new $Frame.win.add $Frame.win.del -side left -padx 2
-      pack $Frame.win -side left -fill x -expand true
+      pack $Frame.win -side left -fill x
    pack $Frame -side top -fill x
 
    pack [Mapper::Geo::Widget $Frame] -side left -fill x -expand true

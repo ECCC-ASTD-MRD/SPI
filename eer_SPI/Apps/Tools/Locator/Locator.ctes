@@ -59,14 +59,6 @@ namespace eval Locator {
    set Data(Lon0)    ""
    set Data(Lon1)    ""
 
-   image create photo SEL_VOLC -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_VOLCANO.gif
-   image create photo SEL_NUCL -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_NUCLEAR.gif
-   image create photo SEL_CTBT -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CTBT.gif
-   image create photo SEL_FIRE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_FIRE.gif
-   image create photo SEL_OTHE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_OTHER.gif
-   image create photo SEL_STAT -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_STATION.gif
-   image create photo SEL_CITY -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CITY.gif
-
    set Data(Nb)        0
 }
 

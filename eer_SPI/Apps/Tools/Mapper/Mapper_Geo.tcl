@@ -193,6 +193,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    Dialog::DestroyWait
 
    if { $Data(Lat)!=0.0 && $Data(Lon)!=0.0 && $Param(Locate) } {
+      SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
       SPI::Locate $Data(Lat) $Data(Lon) 128
    }
 

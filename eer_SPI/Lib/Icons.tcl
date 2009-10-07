@@ -179,3 +179,39 @@ image create photo VCRCYCLE    -file $GDefs(Dir)/Resources/Image/Icon/VCRCycle.g
 image create photo VCRSAVE     -file $GDefs(Dir)/Resources/Image/Icon/VCRSave.gif
 image create photo VCRLOCK     -file $GDefs(Dir)/Resources/Image/Icon/Lock.gif
 image create photo VCRUNLOCK   -file $GDefs(Dir)/Resources/Image/Icon/UnLock.gif
+
+image create photo ICO_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_VOLCANO.gif
+image create photo ICO_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_NUCLEAR.gif
+image create photo ICO_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_CTBT.gif
+image create photo ICO_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_FIRE.gif
+image create photo ICO_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_OTHER.gif
+image create photo ICO_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_BIO.gif
+image create photo ICO_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_SPILL.gif
+image create photo ICO_THERE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_THERE.gif
+
+image create photo BAD_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_VOLCANO.gif
+image create photo BAD_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_NUCLEAR.gif
+image create photo BAD_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_CTBT.gif
+image create photo BAD_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_FIRE.gif
+image create photo BAD_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_OTHER.gif
+image create photo BAD_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_BIO.gif
+image create photo BAD_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_SPILL.gif
+image create photo BAD_THERE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_THERE.gif
+
+image create photo ACT_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_VOLCANO.gif
+image create photo ACT_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_NUCLEAR.gif
+image create photo ACT_CTBT    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_CTBT.gif
+image create photo ACT_FIRE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_FIRE.gif
+image create photo ACT_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_OTHER.gif
+image create photo ACT_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_BIO.gif
+image create photo ACT_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_SPILL.gif
+image create photo ACT_THERE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_THERE.gif
+
+image create photo SEL_VOLC  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_VOLCANO.gif
+image create photo SEL_NUCL  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_NUCLEAR.gif
+image create photo SEL_CTBT  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CTBT.gif
+image create photo SEL_FIRE  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_FIRE.gif
+image create photo SEL_OTHE  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_OTHER.gif
+image create photo SEL_STAT  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_STATION.gif
+image create photo SEL_CITY  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CITY.gif
+image create photo SEL_THERE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_THERE.gif
