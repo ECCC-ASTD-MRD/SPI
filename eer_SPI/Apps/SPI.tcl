@@ -142,7 +142,7 @@ proc CommandLine { { Args {} }} {
       \[-traj ... ...\]                 : Open the specified trajectory files
       \[-obs ...\]                      : Open the specified observation files
       \[-icon ... ...\]                 : Open the specified icon files
-      \[-script ... ...\]               : Run the specified script
+      \[-macro ... ...\]                : Run the specified macro script
       \[-args ... ...\]                 : Arguments to be used by the previously specified script
       \[-layout ...\]                   : Use the specified layout
       \[-project ...\]                  : Use the specified spi project file
@@ -172,6 +172,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "icon"     { set i [ArgsParse $argv $argc $i 1 0 ""] }
       "args"     { set i [ArgsParse $argv $argc $i 1 0 ""] }
       "script"   { set i [ArgsParse $argv $argc $i 1 1 ""] }
+      "macro"    { set i [ArgsParse $argv $argc $i 1 1 ""] }
       "pane"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
       "side"     { set i [ArgsParse $argv $argc $i 0 1 ""] }
       "layout"   { set i [ArgsParse $argv $argc $i 0 1 ""] }
@@ -903,7 +904,7 @@ proc SPI::LayoutUpdate { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc SPI::Locate { Lat Lon } {
+proc SPI::Locate { Lat Lon { Zoom 0 } } {
    variable Data
 
    if { $Viewport::Map(Type)=="grid" } {
@@ -912,7 +913,8 @@ proc SPI::Locate { Lat Lon } {
       set Viewport::Map(GridI) [lindex $ij 0]
       set Viewport::Map(GridJ) [lindex $ij 1]
    }
-   Viewport::GoTo $Page::Data(Frame) $Lat $Lon
+
+   Viewport::GoTo $Page::Data(Frame) $Lat $Lon $Zoom
 }
 
 #-------------------------------------------------------------------------------
@@ -2430,6 +2432,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "icon"     { set i [ArgsParse $argv $argc $i 1 0 "SPI::IcoOpen"] }
       "args"     { set i [ArgsParse $argv $argc $i 1 0 "set SPI::Param(Args)"] }
       "script"   { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
+      "macro"    { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
       "pane"     { set i [ArgsParse $argv $argc $i 1 1 "set SPI::Param(Panes)"] }
       "side"     { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(PaneSide)"] }
       "layout"   { set i [ArgsParse $argv $argc $i 0 1 "set SPI::Param(Layout)"] }
