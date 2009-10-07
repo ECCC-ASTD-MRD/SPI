@@ -9,7 +9,7 @@
 # Creation : Fevrier 2007 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
-#    Fcontions de geolocalisation par point de controle.
+#    Fontions de geolocalisation par point de controle.
 #
 # Remarques :
 #

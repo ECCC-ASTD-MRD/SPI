@@ -773,6 +773,8 @@ proc SPI::ToolBar { Frame } {
       pack $Frame.win -side left -fill x -expand true
    pack $Frame -side top -fill x
 
+   pack [Mapper::Geo::Widget $Frame] -side left -fill x -expand true
+
    Bubble::Create $Frame.win.new     [lindex $Bubble(WinNew) $GDefs(Lang)]
    Bubble::Create $Frame.win.add     [lindex $Bubble(WinAdd) $GDefs(Lang)]
    Bubble::Create $Frame.win.del     [lindex $Bubble(WinDel) $GDefs(Lang)]

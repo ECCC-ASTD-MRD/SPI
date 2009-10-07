@@ -20,6 +20,7 @@
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper.ctes
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper.txt
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper.int
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_Geo.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_GeoLocator.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_Cutter.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_WKT.tcl
