@@ -44,10 +44,6 @@ namespace eval Info {
                         SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
                         DTIN DTIS FnVert FnTime EmDuration Delai IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
 
-   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
-                        OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
-                        EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
-
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                         Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
@@ -56,6 +52,10 @@ namespace eval Info {
                         Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
+
+   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
+                        Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
+                        EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
@@ -89,6 +89,7 @@ namespace eval Info {
    set Lbl(ObsObukhov)           { "Obukhov (m)" "Obukhov (m)" }
    set Lbl(ObsPrecip)            { "Précipitation (mm/h)" "Precipitation (mm/h)" }
    set Lbl(Obs)                  { "Profil des vents" "Wind Profile" }
+   set Lbl(ObsNbLevels)          { "Nb niveaux" "Nb of levels" }
 
    set Lbl(Model)                { "Modèle" "Model" }
    set Lbl(State)                { "État de la simulation" "Simulation state" }
@@ -172,15 +173,6 @@ namespace eval Info {
 
    set Lbl(EmLabel)              { "Type de période" "Type of period" }
    set Lbl(EmReleaseRates)       { "Taux de relâchement (unité/h)" "Release rate (unit/h)" }
-
-   set Lbl(Host)                 { "Nom de l'hôte" "Host name" }
-   set Lbl(Queue)                { "Type de queue" "Queue type" }
-   set Lbl(NbCPUsMeteo)          { "Nombre de processus pour le prétraitement météorologique" "Number of processes for meteorological preprocessing" }
-   set Lbl(NbMPItasks)           { "Nombre de tâches MPI pour le modèle" "Number of MPI tasks for the model" }
-   set Lbl(NbOMPthreads)         { "Nombre de threads OMP par tâche MPI pour le modèle" "Number of OMP threads per MPI task for model" }
-   set Lbl(OMPthreadFact)        { "Facteur multiplicatif entier OMP" "OMP integer multiplicative factor" }
-   set Lbl(FlagEmailAddress)     { "Surveillance par courriel" "E-mail monitoring" }
-   set Lbl(EmailAddress)         { "Adresse de courrier électronique" "E-mail address" }
 }
 
 #----------------------------------------------------------------------------
