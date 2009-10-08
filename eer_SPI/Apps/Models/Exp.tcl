@@ -276,7 +276,7 @@ proc Exp::Procedure { Text  } {
 
       set f [open $Param(Proc).dir]
       while { [gets $f ligne] >= 0 } {
-         Dialog::SearchText $Text [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
+         Dialog::TextSearch $Text [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
       }
       close $f
    }
