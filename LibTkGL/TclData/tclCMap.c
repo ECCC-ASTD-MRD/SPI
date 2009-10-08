@@ -119,7 +119,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
 
    if (cmap) {
       /*Definir le maximum de couleur disponibles*/
-      cmap->NbPixels=(Nb<=0?CR_MAX:Nb);
+      cmap->NbPixels=(Nb<=0?CR_MAX:(Nb>CR_MAX?CR_MAX:Nb));
 
       if (!Name) {
          sprintf(buf,"COLORMAP_____%li",CMapNo++);

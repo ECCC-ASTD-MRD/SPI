@@ -148,7 +148,6 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Invalid dimensions",(char*)NULL);
                return(TCL_ERROR);
             }
-
             type=GDALGetDataTypeByName(Tcl_GetString(Objv[6]));
             if (!(band->Def=Data_DefNew(width,height,1,space,GDAL_Type[type]))) {
                Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Unable to allocate band",(char*)NULL);
@@ -710,7 +709,8 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
 
    GDAL_Band* band;
 
-   if (!(band=(GDAL_Band*)TclY_HashPut(Interp,&GDAL_BandTable,Name,sizeof(GDAL_Band)))) {
+
+  if (!(band=(GDAL_Band*)TclY_HashPut(Interp,&GDAL_BandTable,Name,sizeof(GDAL_Band)))) {
       return(NULL);
    }
 
