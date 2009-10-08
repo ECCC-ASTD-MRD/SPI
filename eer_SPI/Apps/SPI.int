@@ -88,7 +88,6 @@ proc SPI::About { } {
 
    toplevel     .about
    wm title     .about [lindex $Lbl(About) $GDefs(Lang)]
-   wm resizable .about 0 0
    wm geometry  .about +[winfo rootx .]+[winfo rooty .]
 
    frame .about.info -relief raised -bd 1
@@ -97,7 +96,8 @@ proc SPI::About { } {
          text .about.info.list.l -relief sunken -bd 1 -bg $GDefs(ColorLight) -height 10 -width 50 \
             -yscrollcommand [list .about.info.list.s set]
          scrollbar .about.info.list.s -command ".about.info.list.l yview" -width 10 -bd 1
-         pack .about.info.list.l .about.info.list.s -side left -fill y
+         pack .about.info.list.l -side left -fill both -expand true
+         pack .about.info.list.s -side left -fill y
       pack .about.info.flag -side top -anchor nw -padx 5 -pady 5
       pack .about.info.list -side top -fill both -padx 5 -pady 5 -fill both -expand true
 
@@ -105,11 +105,12 @@ proc SPI::About { } {
    pack .about.info -fill both -side top -expand true
    pack .about.close -fill x -side top
 
-   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2007/05/02)\n\n"
+   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2009/11/02)\n\n"
    .about.info.list.l insert end "[lindex $Msg(Id) $GDefs(Lang)]\n"
-   .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n\n"
-   .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n\n"
-   .about.info.list.l insert end "[lindex $Msg(Authors) 0]"
+   .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n"
+   .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n"
+   .about.info.list.l insert end "[lindex $Msg(Authors) 0]\n\n"
+   .about.info.list.l insert end "[exec cat $GDefs(Dir)/Apps/License.txt]"
 }
 
 #----------------------------------------------------------------------------
