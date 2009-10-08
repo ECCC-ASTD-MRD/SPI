@@ -54,11 +54,13 @@ namespace eval Dialog { } {
    set Bubble(Print) { "Impressiondu contenue" "Print window content" }
    set Bubble(Save)  { "Sauvegarde du contenu" "Save window content" }
 
-   image create photo DIALOG_ERROR    -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Error.gif
-   image create photo DIALOG_WAIT     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Timer.gif
-   image create photo DIALOG_WARNING  -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Alert.gif
-   image create photo DIALOG_QUESTION -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Tick.gif
-   image create photo DIALOG_INFO     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Info.gif
+   if { [info exists ::tk_version] } {
+      image create photo DIALOG_ERROR    -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Error.gif
+      image create photo DIALOG_WAIT     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Timer.gif
+      image create photo DIALOG_WARNING  -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Alert.gif
+      image create photo DIALOG_QUESTION -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Tick.gif
+      image create photo DIALOG_INFO     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Info.gif
+   }
 }
 
 #-------------------------------------------------------------------------------
