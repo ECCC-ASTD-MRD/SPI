@@ -162,12 +162,10 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
          #----- Extract info from XML
          if { [set root [$doc documentElement]]!="" } {
             set node [lindex  [$root getElementsByTagName Placemark] 0]
-            set Data(Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
+            set Data[http::data $req](Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
             set coords        [split [[[$node getElementsByTagName coordinates] firstChild] nodeValue] ,]
             set Data(Lat)     [lindex $coords 1]
             set Data(Lon)     [lindex $coords 0]
-         } else {
-            Dialog::Error. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -179,22 +177,23 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
             Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
-
          #----- Extract info from XML
          if { [set root [$doc documentElement]]!="" } {
-            catch { set Data(Lat)     [[[$root getElementsByTagName latt] firstChild] nodeValue] }
-            catch { set Data(Lon)     [[[$root getElementsByTagName longt] firstChild] nodeValue] }
+            catch {
+                set Data(Lat)     [[[$root getElementsByTagName latt] firstChild] nodeValue]
+                set Data(Lon)     [[[$root getElementsByTagName longt] firstChild] nodeValue]
+            }
             set Data(Address) ${Request}
-         } else {
-            Dialog::Error. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
       }
    }
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
 
-   if { $Data(Lat)!=0.0 && $Data(Lon)!=0.0 && $Param(Locate) } {
+   if { $Data(Lat)==0.0 && $Data(Lon)==0.0 } {
+      Dialog::Error . $Error(NoneFound)
+   } elseif { $Param(Locate) } {
       SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
       SPI::Locate $Data(Lat) $Data(Lon) $Param(Zoom)
    }
@@ -225,6 +224,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
    variable Msg
    variable Error
    variable Data
+   variable Param
 
    #----- Cleanup location info
    set Data(Address)  ""
@@ -255,8 +255,6 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
             catch { set Data(Postal)   [[[$root getElementsByTagName PostalCodeNumber] firstChild] nodeValue] }
 
             set Data(Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
-         } else {
-            Dialog::Error. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -277,17 +275,23 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
             catch { set Data(Country)  [[[$root getElementsByTagName AdministrativeAreaName] firstChild] nodeValue] }
             catch { set Data(Postal)   [[[$root getElementsByTagName postal] firstChild] nodeValue] }
 
-            set Data(Address) "$Data(Street) $Data(City) $Data(Province) $Data(Postal)"
-         } else {
-            Dialog::Error. $Error(NoneFound)
+            set Data(Address) [string trim "$Data(Street) $Data(City) $Data(Province) $Data(Postal)"]
          }
 
          $doc delete
          http::cleanup $req
       }
    }
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
 
+   if { $Data(Address)=="" } {
+      Dialog::Error . $Error(NoneFound)
+   } elseif { $Param(Locate) } {
+      set Data(Lat) $Lat
+      set Data(Lon) $Lon
+      SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
+      SPI::Locate $Data(Lat) $Data(Lon) $Param(Zoom)
+   }
    return $Data(Address)
 }
 
