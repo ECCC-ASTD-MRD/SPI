@@ -124,7 +124,7 @@ proc SATDATA::Suppress { } {
    variable Lbl
    variable Msg
 
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(Suppress) "\n\n$Exp::Data(No) $Exp::Data(Name)" 0 $Lbl(No) $Lbl(Yes)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(Suppress) "\n\n$Exp::Data(No) $Exp::Data(Name)" 0 $Lbl(No) $Lbl(Yes)] } {
       file delete -force $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData
       Model::Check 0
    }

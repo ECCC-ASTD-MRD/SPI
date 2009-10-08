@@ -1333,7 +1333,7 @@ proc Drawing::FileLoad { Frame File } {
    gets $file version
 
    if { $version!="Drawing 3.01" && $version!="Drawing 3.1"} {
-      Dialog::CreateError .drawing $Error(File)
+      Dialog::Error .drawing $Error(File)
       return
    }
 

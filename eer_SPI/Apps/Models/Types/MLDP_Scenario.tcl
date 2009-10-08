@@ -130,7 +130,7 @@ proc MLDP::ScenarioValidateName { } {
    variable Error
 
    if { $Tmp(Scenario)=="" } {
-      Dialog::CreateError .newscenario $Error(ScenarioName)
+      Dialog::Error .newscenario $Error(ScenarioName)
       focus .newscenario.emint.fr.box1.data.name.ent
       return False
    }
@@ -934,7 +934,7 @@ proc MLDP::ScenarioAccidentValidateTotalReleasedQuantity { } {
          #----- Total released quantity is null for this isotope.
          for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
             if { $Tmp(ReleaseRate$i.$j) == 0 } {
-               Dialog::CreateError .newscenario $Error(TotalQuantityAccident) "[lindex $Error(TotalQuantity2) $GDefs(Lang)] $Tmp(Iso$j).\n[lindex $Error(TotalQuantity3) $GDefs(Lang)] $Tmp(Duration$i) $Error(UnitSeconds)"
+               Dialog::Error .newscenario $Error(TotalQuantityAccident) "[lindex $Error(TotalQuantity2) $GDefs(Lang)] $Tmp(Iso$j).\n[lindex $Error(TotalQuantity3) $GDefs(Lang)] $Tmp(Duration$i) $Error(UnitSeconds)"
                focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates.iso$j
                return False
             }
@@ -970,7 +970,7 @@ proc MLDP::ScenarioVirusValidateTotalReleasedQuantity { } {
       #----- Total released quantity is null.
       for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
          if { $Tmp(ReleaseRate$i) == 0 } {
-            Dialog::CreateError .newscenario $Error(TotalQuantityVirus) "[lindex $Error(TotalQuantity3) $GDefs(Lang)] $Tmp(Duration$i) $Error(UnitSeconds)"
+            Dialog::Error .newscenario $Error(TotalQuantityVirus) "[lindex $Error(TotalQuantity3) $GDefs(Lang)] $Tmp(Duration$i) $Error(UnitSeconds)"
             focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates
             return False
          }
@@ -1007,10 +1007,10 @@ proc MLDP::ValidateDurationValue { Duration Parent { Idx -1 } } {
    set number [string is integer -failindex idx $Duration]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError $Parent $Error(DurationOutRange) " $Duration [lindex $Error(UnitSeconds) $GDefs(Lang)]"
+      Dialog::Error $Parent $Error(DurationOutRange) " $Duration [lindex $Error(UnitSeconds) $GDefs(Lang)]"
       return False
    } elseif { $number == 0 || ($number == 1 && $Duration <= 0 && $Duration != "") } {
-      Dialog::CreateError $Parent $Error(Duration) " $Duration $Error(UnitSeconds)"
+      Dialog::Error $Parent $Error(Duration) " $Duration $Error(UnitSeconds)"
       return False
    }
 
@@ -1022,7 +1022,7 @@ proc MLDP::ValidateDurationValue { Duration Parent { Idx -1 } } {
 
       #----- Verify if duration is greater or equal to the model time step.
       if { $Duration < $timestepsec } {
-         Dialog::CreateError $Parent $Error(Duration2) "[lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestepsec $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
+         Dialog::Error $Parent $Error(Duration2) "[lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestepsec $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
 
          if { $Idx > -1 } {
 
@@ -1038,7 +1038,7 @@ proc MLDP::ValidateDurationValue { Duration Parent { Idx -1 } } {
 
       #----- Verify if duration is an integer multiple of the model time step.
       if { [expr fmod($Duration, $timestepsec)] > $Sim(EmEpsilon) } {
-         Dialog::CreateError $Parent $Error(Duration3) "[lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestepsec $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
+         Dialog::Error $Parent $Error(Duration3) "[lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitSeconds)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestepsec $Error(UnitSeconds) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
 
          if { $Idx > -1 } {
 
@@ -1086,12 +1086,12 @@ proc MLDP::ValidateDurationsRatesAccident { } {
 
          if { $Tmp(Duration$i) != "" && $Tmp(ReleaseRate$i.$j) == "" } {
             #----- Release rate field for this isotope is empty while emission duration field is filled.
-            Dialog::CreateError .newscenario $Error(Scenario)
+            Dialog::Error .newscenario $Error(Scenario)
             focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates.iso$j
             return 0
          } elseif { $Tmp(Duration$i) == "" && $Tmp(ReleaseRate$i.$j) != "" } {
             #----- Emission duration field is empty while release rate field for this isotope is filled.
-            Dialog::CreateError .newscenario $Error(Scenario)
+            Dialog::Error .newscenario $Error(Scenario)
             focus $MLDP::Sim(ReleaseRatesFrame).entry$i.dur
             return 0
          }
@@ -1124,7 +1124,7 @@ proc MLDP::ValidateDurationsRatesAccident { } {
       if { !$hasFoundDuration && !$hasFoundRate($j) } {
 
          #----- Emission duration and release rate for this isotope fields are both empty.
-         Dialog::CreateError .newscenario $Error(Scenario)
+         Dialog::Error .newscenario $Error(Scenario)
          focus $MLDP::Sim(ReleaseRatesFrame).entry0.dur
          return 0
       }
@@ -1161,12 +1161,12 @@ proc MLDP::ValidateDurationsRatesVirus { } {
 
       if { $Tmp(Duration$i) != "" && $Tmp(ReleaseRate$i) == "" } {
          #----- Release rate field is empty while emission duration field is filled.
-         Dialog::CreateError .newscenario $Error(Scenario)
+         Dialog::Error .newscenario $Error(Scenario)
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates
          return 0
       } elseif { $Tmp(Duration$i) == "" && $Tmp(ReleaseRate$i) != "" } {
          #----- Emission duration field is empty while release rate field is filled.
-         Dialog::CreateError .newscenario $Error(Scenario)
+         Dialog::Error .newscenario $Error(Scenario)
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.dur
          return 0
       }
@@ -1191,7 +1191,7 @@ proc MLDP::ValidateDurationsRatesVirus { } {
 
    if { !$hasFoundDuration && !$hasFoundRate } {
       #----- Emission duration and release rate fields are both empty.
-      Dialog::CreateError .newscenario $Error(Scenario)
+      Dialog::Error .newscenario $Error(Scenario)
       focus $MLDP::Sim(ReleaseRatesFrame).entry0.dur
       return 0
    }
@@ -1230,7 +1230,7 @@ proc MLDP::ValidateDurationsReleasesVolcano { } {
 
          if { $Tmp(Value$i) == 1 || $Tmp(Value$i) == 0 } {
             #----- Emission duration field is empty while emission period type field is filled.
-            Dialog::CreateError .newscenario $Error(Scenario)
+            Dialog::Error .newscenario $Error(Scenario)
             focus $MLDP::Sim(ReleaseRatesFrame).entry$i.dur
             return 0
          }
@@ -1239,7 +1239,7 @@ proc MLDP::ValidateDurationsReleasesVolcano { } {
 
          if { $Tmp(Value$i) == "" || $Tmp(Value$i) == -1 } {
             #----- Emission duration field is filled while emission period type field is empty.
-            Dialog::CreateError .newscenario $Error(Scenario)
+            Dialog::Error .newscenario $Error(Scenario)
             focus $MLDP::Sim(ReleaseRatesFrame).entry$i.dur
             return 0
          }
@@ -1265,7 +1265,7 @@ proc MLDP::ValidateDurationsReleasesVolcano { } {
 
    if { !$hasFoundDuration && !$hasFoundReleasePeriodType } {
       #----- Emission duration and release period type fields are both empty.
-      Dialog::CreateError .newscenario $Error(Scenario)
+      Dialog::Error .newscenario $Error(Scenario)
       focus $MLDP::Sim(ReleaseRatesFrame).entry0.dur
       return 0
    }
@@ -1326,7 +1326,7 @@ proc MLDP::ValidateNbIsotopes { } {
    #----- Verify if number of isotopes is greater than 0.
    if { [llength $Tmp(Iso)] < 1 } {
 
-      Dialog::CreateError .newscenario $Error(NbIsotopes)
+      Dialog::Error .newscenario $Error(NbIsotopes)
 
       for { set i 0 } { $i < $Sim(EmMaxInterval) } { incr i } {
          if { $Tmp(Duration$i) != "" } {
@@ -1443,10 +1443,10 @@ proc MLDP::ValidateReleaseRateValue { Interval { Isotope -1 } } {
    #----- Verify if release rate is positive.
    set number [string is double -failindex idx $rate]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .newscenario $Error(ReleaseRateRange) " $rate [lindex $Error(UnitRate) $GDefs(Lang)]"
+      Dialog::Error .newscenario $Error(ReleaseRateRange) " $rate [lindex $Error(UnitRate) $GDefs(Lang)]"
       return 0
    } elseif { $number == 0 || ($rate < 0 && $rate != "") } {
-      Dialog::CreateError .newscenario $Error(ReleaseRate) " $rate [lindex $Error(UnitRate) $GDefs(Lang)]"
+      Dialog::Error .newscenario $Error(ReleaseRate) " $rate [lindex $Error(UnitRate) $GDefs(Lang)]"
       return 0
    }
    return 1
@@ -1478,18 +1478,18 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Verify if output time step is positive.
    set number [string is integer -strict -failindex idx $Sim(Duration)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew $Error(SimDurationOutRange) " $Sim(Duration) $Error(UnitHours)"
+      Dialog::Error .modelnew $Error(SimDurationOutRange) " $Sim(Duration) $Error(UnitHours)"
       focus $Sim(SimDurationEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(Duration) < 1) } {
-      Dialog::CreateError .modelnew $Error(SimDuration) " $Sim(Duration) $Error(UnitHours)"
+      Dialog::Error .modelnew $Error(SimDuration) " $Sim(Duration) $Error(UnitHours)"
       focus $Sim(SimDurationEnt)
       return 0
    }
 
    #----- Verify if simulation duration is greater than (or equal to) time interval between met data files.
    if { $Sim(Duration) < $Sim(Delta) } {
-      Dialog::CreateError .modelnew $Error(SimDurationDelta) "[lindex $Error(SimDurationDelta2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationDelta3) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)"
+      Dialog::Error .modelnew $Error(SimDurationDelta) "[lindex $Error(SimDurationDelta2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationDelta3) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)"
       focus $Sim(SimDurationEnt)
       return 0
    }
@@ -1497,7 +1497,7 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Verify if simulation duration is greater than output time step.
    set ots [expr double($Sim(OutputTimeStepMin))/double(60.0)] ; #----- Output time step [hr].
    if { $Sim(Duration) < $ots } {
-      Dialog::CreateError .modelnew $Error(SimDurationOutputTimeStep) "[lindex $Error(SimDurationOutputTimeStep2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationOutputTimeStep3) $GDefs(Lang)] $ots $Error(UnitHours)"
+      Dialog::Error .modelnew $Error(SimDurationOutputTimeStep) "[lindex $Error(SimDurationOutputTimeStep2) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Error(SimDurationOutputTimeStep3) $GDefs(Lang)] $ots $Error(UnitHours)"
       focus $Sim(SimDurationEnt)
       return 0
    }
@@ -1505,7 +1505,7 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Display warning if simulation duration > 72 hrs and output time step <= 60 min.
    if { !$Sim(IsResFileSizeChecked) } {
       if { $Sim(Duration) > 72 && $Sim(OutputTimeStepMin) <= 60 } {
-         set yes [Dialog::CreateDefault .modelnew 400 WARNING $Warning(SimDuration4) "\n\n[lindex $Warning(SimDuration5) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration6) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" 0 $Lbl(No) $Lbl(Yes)]
+         set yes [Dialog::Default .modelnew 400 WARNING $Warning(SimDuration4) "\n\n[lindex $Warning(SimDuration5) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration6) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" 0 $Lbl(No) $Lbl(Yes)]
          if { $yes } {
             focus $Sim(OutputTimeStepEnt)
             return 0
@@ -1518,7 +1518,7 @@ proc MLDP::ValidateSimulationDuration { } {
    #----- Display warning if simulation duration > 72 hrs and time interval between met data files < 3.
    if { !$Sim(IsMetFileSizeChecked) } {
       if { $Sim(Duration) > 72 && $Sim(Delta) < 3 } {
-         set yes [Dialog::CreateDefault .modelnew 400 WARNING $Warning(SimDuration7) "\n\n[lindex $Warning(SimDuration8) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration9) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" 0 $Lbl(No) $Lbl(Yes)]
+         set yes [Dialog::Default .modelnew 400 WARNING $Warning(SimDuration7) "\n\n[lindex $Warning(SimDuration8) $GDefs(Lang)] $Sim(Duration) $Error(UnitHours)\n[lindex $Warning(SimDuration9) $GDefs(Lang)] $Sim(Delta) $Error(UnitHours)" 0 $Lbl(No) $Lbl(Yes)]
          if { $yes } {
             focus $Sim(SimDurationEnt)
             return 0
@@ -1553,11 +1553,11 @@ proc MLDP::ValidateTimeSteps { } {
    #----- Verify if output time step is positive.
    set number [string is integer -strict -failindex idx $MLDP::Sim(OutputTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew $Error(OutputTimeStepMinOutRange)] " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(OutputTimeStepMinOutRange)] " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(OutputTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $MLDP::Sim(OutputTimeStepMin) <= 0) } {
-      Dialog::CreateError .modelnew $Error(OutputTimeStepMin) " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(OutputTimeStepMin) " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(OutputTimeStepEnt)
       return 0
    }
@@ -1565,39 +1565,39 @@ proc MLDP::ValidateTimeSteps { } {
    #----- Verify if model time step is positive.
    set number [string is integer -strict -failindex idx $MLDP::Sim(ModelTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew $Error(ModelTimeStepMinOutRange) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(ModelTimeStepMinOutRange) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(ModelTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $MLDP::Sim(ModelTimeStepMin) <= 0) } {
-      Dialog::CreateError .modelnew $Error(ModelTimeStepMin) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(ModelTimeStepMin) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if model time step is lower or equal to an hour (60 minutes).
    if { $MLDP::Sim(ModelTimeStepMin) > 60 } {
-      Dialog::CreateError .modelnew $Error(ModelTimeStep1hour) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(ModelTimeStep1hour) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if model time step is an integer divisor of an hour (60 minutes).
    if { [expr fmod( 60, $MLDP::Sim(ModelTimeStepMin) )] > $MLDP::Sim(EmEpsilon) } {
-      Dialog::CreateError .modelnew $Error(ModelTimeStep1hourDiv) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(ModelTimeStep1hourDiv) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if model time step is lower or equal to the output time step.
    if { $MLDP::Sim(ModelTimeStepMin) > $MLDP::Sim(OutputTimeStepMin) } {
-      Dialog::CreateError .modelnew $Error(ModelTimeStepOutputTimeStep) "[lindex $Error(ModelTimeStepOutputTimeStep2) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStepOutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(ModelTimeStepOutputTimeStep) "[lindex $Error(ModelTimeStepOutputTimeStep2) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStepOutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify if output time step is an integer multiple of the model time step.
    if { [expr fmod( $MLDP::Sim(OutputTimeStepMin), $MLDP::Sim(ModelTimeStepMin) )] > $MLDP::Sim(EmEpsilon) } {
-      Dialog::CreateError .modelnew $Error(OutputTimeStepModelTimeStep) "[lindex $Error(OutputTimeStepModelTimeStep2) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(OutputTimeStepModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(OutputTimeStepModelTimeStep) "[lindex $Error(OutputTimeStepModelTimeStep2) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(OutputTimeStepModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(OutputTimeStepEnt)
       return 0
    }
@@ -1640,7 +1640,7 @@ proc MLDP::ValidateLullPeriodsEndAccident { } {
             }
          }
 
-         Dialog::CreateError .newscenario $Error(LullPeriodEndAccident) " $Tmp(Duration$i) $Error(UnitSeconds)"
+         Dialog::Error .newscenario $Error(LullPeriodEndAccident) " $Tmp(Duration$i) $Error(UnitSeconds)"
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates.iso0
          return 0
       }
@@ -1678,7 +1678,7 @@ proc MLDP::ValidateLullPeriodsEndVirus { } {
             return 1 ; #----- No lull periods.
          }
 
-         Dialog::CreateError .newscenario $Error(LullPeriodEndVirus) " $Tmp(Duration$i) $Error(UnitSeconds)"
+         Dialog::Error .newscenario $Error(LullPeriodEndVirus) " $Tmp(Duration$i) $Error(UnitSeconds)"
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates
          return 0
       }
@@ -1716,7 +1716,7 @@ proc MLDP::ValidateLullPeriodsEndVolcan { } {
             return 1 ; #----- No lull periods.
          }
 
-         Dialog::CreateError .newscenario  $Error(LullPeriodEndVolcan) " $Tmp(Duration$i) $Error(UnitSeconds)"
+         Dialog::Error .newscenario  $Error(LullPeriodEndVolcan) " $Tmp(Duration$i) $Error(UnitSeconds)"
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.dur
          return 0
       }
@@ -1756,7 +1756,7 @@ proc MLDP::ValidateLullPeriodsStartAccident { } {
             }
          }
 
-         Dialog::CreateError .newscenario $Error(LullPeriodStartAccident) " $Tmp(Duration$i) $Error(UnitSeconds)"
+         Dialog::Error .newscenario $Error(LullPeriodStartAccident) " $Tmp(Duration$i) $Error(UnitSeconds)"
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates.iso0
          return 0
       }
@@ -1795,7 +1795,7 @@ proc MLDP::ValidateLullPeriodsStartVirus { } {
             return 1 ; #----- No lull periods.
          }
 
-         Dialog::CreateError .newscenario $Error(LullPeriodStartVirus) " $Tmp(Duration$i) $Error(UnitSeconds)"
+         Dialog::Error .newscenario $Error(LullPeriodStartVirus) " $Tmp(Duration$i) $Error(UnitSeconds)"
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.rates
          return 0
       }
@@ -1834,7 +1834,7 @@ proc MLDP::ValidateLullPeriodsStartVolcan { } {
             return 1 ; #----- No lull periods.
          }
 
-         Dialog::CreateError .newscenario $Error(LullPeriodStartVolcan) " $Tmp(Duration$i) $Error(UnitSeconds)"
+         Dialog::Error .newscenario $Error(LullPeriodStartVolcan) " $Tmp(Duration$i) $Error(UnitSeconds)"
          focus $MLDP::Sim(ReleaseRatesFrame).entry$i.dur
          return 0
       }

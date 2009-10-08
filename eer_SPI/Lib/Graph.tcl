@@ -738,7 +738,7 @@ proc Graph::DataSheet { Type GR } {
    upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
 
    eval set title \[lindex \$Graph::${Type}::Lbl(Title) $GDefs(Lang)\]
-   set text [Text::Create .graphdata "[lindex $Lbl(Data) $GDefs(Lang)]: $title" "" 60 20]
+   set text [Dialog::Text .graphdata "[lindex $Lbl(Data) $GDefs(Lang)]: $title" "" 60 20]
 
    $text insert end "Title : $title\n"
 

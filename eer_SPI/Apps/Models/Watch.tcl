@@ -615,7 +615,7 @@ proc Watch::New { } {
 
    #----- Verifier la validitee des parametres
    if { $Model::Data(Name)=="" || $Model::Data(Lat1)=="" || $Model::Data(Lon1)=="" } {
-       Dialog::CreateError .expnew $Error(Info)
+       Dialog::Error .expnew $Error(Info)
        return 0
    }
 
@@ -636,7 +636,7 @@ proc Watch::New { } {
    #----- On verifie que le nom n'existe pas deja
    foreach src $Data(Sources$Data(Project)) {
       if { "[lindex $src 0]"=="$Data(Name)" } {
-         Dialog::CreateError . $Error(Exist)
+         Dialog::Error . $Error(Exist)
          return 0
       }
    }
@@ -1013,7 +1013,7 @@ proc Watch::SimSuppress { } {
    variable Msg
 
    #----- Demande de confirmation
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(SimSuppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(SimSuppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1056,7 +1056,7 @@ proc Watch::Suppress { } {
    variable Msg
    variable Lbl
 
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(Suppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(Suppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1267,7 +1267,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    variable Data
 
    if { [winfo exists .modelnew] } {
-      Dialog::CreateInfo .modelnew $Msg(Exist)
+      Dialog::Info .modelnew $Msg(Exist)
       return
    }
 

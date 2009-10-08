@@ -529,7 +529,7 @@ proc Writer::FVCN::Correct { Pad } {
    #----- On ne permet pas la correction d'un nouveau message
 
    if { $Data(File$Pad)=="FVCN" } {
-      Dialog::CreateError . $Writer::Msg(NEW)
+      Dialog::Error . $Writer::Msg(NEW)
       return
    }
 
@@ -576,14 +576,14 @@ proc Writer::FVCN::Update { Pad } {
    #----- On ne permet pas la mise-a-jour d'un nouveau message
 
    if { $Data(File$Pad)=="FVCN" } {
-      Dialog::CreateError . $Writer::Msg(NEW)
+      Dialog::Error . $Writer::Msg(NEW)
       return
    }
 
    #----- On ne permet pas la mise-a-jour d'une retransmission 'RET'
 
    if { $Data(Mode$Pad)=="RET" } {
-      Dialog::CreateError . $Writer::Msg(RET)
+      Dialog::Error . $Writer::Msg(RET)
       return
    }
 
@@ -883,7 +883,7 @@ proc Writer::FVCN::GetNo { Name } {
             }
 
             Debug::TraceProc "FVCN::GetNo: No header available !!!"
-            Dialog::CreateError . $Msg(NoHeader)
+            Dialog::Error . $Msg(NoHeader)
             return ""
          }
       }
@@ -899,7 +899,7 @@ proc Writer::FVCN::GetNo { Name } {
    }
 
    Debug::TraceProc "FVCN::GetNo: No header available !!!"
-   Dialog::CreateError . $Msg(NoHeader)
+   Dialog::Error . $Msg(NoHeader)
    return ""
 }
 
@@ -2183,7 +2183,7 @@ proc Writer::FVCN::Write { Pad Sent } {
       }
 
       if { [file exists $GDefs(DirMsg)/FVCN/$file] } {
-         if { ![Dialog::CreateDefault .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
+         if { ![Dialog::Default .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
             return ""
          }
       }

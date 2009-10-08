@@ -113,7 +113,7 @@ proc TRAJECT::GetMetData { } {
    variable Sim
    variable Msg
 
-   Dialog::CreateWait . $Msg(MetGet)
+   Dialog::Wait . $Msg(MetGet)
 
    set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
    if { $Sim(Backward) } {

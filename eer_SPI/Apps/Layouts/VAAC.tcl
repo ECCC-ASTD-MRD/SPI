@@ -768,7 +768,7 @@ proc VAAC::Transmit { Frame } {
       }
    }
    if { !$maxhour } {
-      Dialog::CreateError .  $Error(Hours)
+      Dialog::Error . $Error(Hours)
       return
    }
 

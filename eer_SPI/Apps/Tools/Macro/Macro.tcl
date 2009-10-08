@@ -73,7 +73,7 @@ proc Macro::Close { } {
    #----- Save the modified macros ?
    foreach macro $Data(List) {
       if { $Data(Save$macro) } {
-         if { ![Dialog::CreateDefault . 300 WARNING $Msg(Save) "\n\n\tMacro::$macro" 0 $Lbl(Yes) $Lbl(No)] } {
+         if { ![Dialog::Default . 300 WARNING $Msg(Save) "\n\n\tMacro::$macro" 0 $Lbl(Yes) $Lbl(No)] } {
             Macro::Save $macro
          }
       }
@@ -109,7 +109,7 @@ proc Macro::Error { Error } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   Dialog::CreateError .macro $Error " (${stackproc})"
+   Dialog::Error .macro $Error " (${stackproc})"
 }
 
 #-------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ proc Macro::Info { Info } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   Dialog::CreateInfo .macro [list $Info $Info] " (${stackproc})"
+   Dialog::Info .macro [list $Info $Info] " (${stackproc})"
 }
 
 #-------------------------------------------------------------------------------
@@ -266,12 +266,12 @@ proc Macro::Check { Macro } {
 
    eval set proc \[info procs ::Macro::${Macro}::Execute\]
    if { $proc=="" } {
-      Dialog::CreateError . 400 [lindex $Error(Execute) $GDefs(Lang)] " (Macro::$Macro)"
+      Dialog::Error . 400 [lindex $Error(Execute) $GDefs(Lang)] " (Macro::$Macro)"
       return False
    }
 
    if { ![info exists ::Macro::${Macro}::Param(Info)] } {
-      Dialog::CreateError . 400 [lindex $Error(Info) $GDefs(Lang)] " (Macro::$Macro)"
+      Dialog::Error . 400 [lindex $Error(Info) $GDefs(Lang)] " (Macro::$Macro)"
       return False
    }
    return True
@@ -372,7 +372,7 @@ proc Macro::Execute { Macro } {
    #----- Check that it is still valid
 
    if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
-      if { ![Dialog::CreateDefault . 300 WARNING $Msg(Modified) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
+      if { ![Dialog::Default . 300 WARNING $Msg(Modified) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
          Macro::Load $Data(Path$Macro)
       } else {
          set Data(Time$Macro) [file mtime $Data(Path$Macro)]
@@ -464,7 +464,7 @@ proc Macro::Save { Macro } {
       #----- Check that it is still valid
 
       if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
-         if { [Dialog::CreateDefault . 300 WARNING $Msg(Overwrite) "\n\n\tMacro::$Macro" 1 $Lbl(Yes) $Lbl(No)] } {
+         if { [Dialog::Default . 300 WARNING $Msg(Overwrite) "\n\n\tMacro::$Macro" 1 $Lbl(Yes) $Lbl(No)] } {
             return
          }
       }
@@ -534,7 +534,7 @@ proc Macro::Delete { Macro } {
    variable Msg
    variable Lbl
 
-   if { ![Dialog::CreateDefault . 300 WARNING $Msg(Delete) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { ![Dialog::Default . 300 WARNING $Msg(Delete) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
       file delete -force $Data(Path$Macro)
 
       Macro::UnDefine $Macro

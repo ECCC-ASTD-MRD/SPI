@@ -307,7 +307,7 @@ proc ProjCam::Delete { Combo } {
 
    if { [ComboBox::Index $Combo exact $Data(Name)]!=-1 && $Data(Name)!="" } {
 
-      if { [Dialog::CreateDefault . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)] } {
+      if { [Dialog::Default . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)] } {
 
          file copy -force $Data(File) $Data(File).old
          exec grep -v "$Data(Name).*" $Data(File).old > $Data(File)
@@ -573,7 +573,7 @@ proc ProjCam::Save { Combo Name } {
 
    set nok 0
    if { [ComboBox::Index $Combo exact $Name]!=-1 } {
-      set nok [Dialog::CreateDefault . 200 WARNING $Msg(Exist) "" 1 $Lbl(Yes) $Lbl(No)]
+      set nok [Dialog::Default . 200 WARNING $Msg(Exist) "" 1 $Lbl(Yes) $Lbl(No)]
    }
 
    if { !$nok } {
@@ -592,9 +592,9 @@ proc ProjCam::Save { Combo Name } {
       ComboBox::Add $Combo $Data(Name)
       ProjCam::Read
 
-      Dialog::CreateInfo . $Msg(Saved)
+      Dialog::Info . $Msg(Saved)
    } else {
-      Dialog::CreateError . $Msg(Name)
+      Dialog::Error . $Msg(Name)
    }
    ComboBox::Close $Combo
 }

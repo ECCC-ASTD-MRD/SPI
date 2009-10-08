@@ -127,7 +127,7 @@ proc Writer::PadClose { Save } {
 
       #----- Sauvegarde
       if { $upd!="" && $Save } {
-         if { [Dialog::CreateDefault .writer 300 WARNING $Msg(Save) "" 0 $Lbl(No) $Lbl(Yes)] } {
+         if { [Dialog::Default .writer 300 WARNING $Msg(Save) "" 0 $Lbl(No) $Lbl(Yes)] } {
             Writer::${Data(Type)}::Write $Data(Pad) 0
          }
       }
@@ -288,14 +288,14 @@ proc Writer::Send { { Backup 0 } } {
 
    #----- Confirmer la transmission
 
-   if { [Dialog::CreateDefault .writer 300 WARNING $Msg(Send) "" 0 $Lbl(Send) $Lbl(Cancel)] } {
+   if { [Dialog::Default .writer 300 WARNING $Msg(Send) "" 0 $Lbl(Send) $Lbl(Cancel)] } {
       return
    }
 
    Writer::$Data(Type)::Send $Data(Pad) $Backup
    Writer::PadClose 0
 
-   Dialog::CreateInfo .writer $Writer::Msg(Sent)
+   Dialog::Info .writer $Writer::Msg(Sent)
 }
 
 #----------------------------------------------------------------------------

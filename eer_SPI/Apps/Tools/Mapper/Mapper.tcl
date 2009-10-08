@@ -261,7 +261,7 @@ proc Mapper::SetGeoRef { } {
          Viewport::ConfigGet $Page::Data(Frame) $Viewport::Data(VP)
          Viewport::Reset $Page::Data(Frame)
       } else {
-         Dialog::CreateError . $Msg(GeoRef)
+         Dialog::Error . $Msg(GeoRef)
       }
    }
 }
@@ -424,7 +424,7 @@ proc Mapper::Read { Files } {
 
    foreach file $Files {
       if { ![Mapper::ReadBand $file] && ![Mapper::ReadLayer $file] } {
-         Dialog::CreateError . $Msg(BadFile)
+         Dialog::Error . $Msg(BadFile)
       }
       Mapper::UpdateData $Page::Data(Frame)
    }
@@ -561,7 +561,7 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
          }
 
          if { [ogrlayer define $layer -nb]==0 } {
-            Dialog::CreateError . $Msg(NoFeature) $layer
+            Dialog::Error . $Msg(NoFeature) $layer
             ogrlayer free $layer
             ogrfile close $File
             continue
@@ -1021,7 +1021,7 @@ proc Mapper::PickOGR { VP X Y } {
 
                if { $files!="" } {
 
-               if { ![Dialog::CreateDefault . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
+               if { ![Dialog::Default . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
                   foreach file $files {
                      set path [file dirname $Data(Id$object)]
                      set file $path/../$file

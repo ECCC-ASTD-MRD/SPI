@@ -230,7 +230,7 @@ proc MetInfo::SaveAs { } {
    if { ("[.export.mid.typefrm.type curselection]" == "" ) || \
         ("[.export.mid.stationfrm.station curselection]" == "") || \
         ("[.export.mid.filesfrm.files  curselection]" == "") } {
-      Dialog::CreateInfo .export $Msg(SelectVide)
+      Dialog::Info .export $Msg(SelectVide)
       return;
    }
 

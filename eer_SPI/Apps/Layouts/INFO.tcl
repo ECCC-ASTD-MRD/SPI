@@ -613,7 +613,7 @@ proc INFO::RSMCJoin { Frame } {
       return
    }
 
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(Join) "" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(Join) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 

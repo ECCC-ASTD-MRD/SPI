@@ -143,7 +143,7 @@ proc Writer::AACN::Correct { Pad } {
    #----- On ne permet pas la correction d'un nouveau message
 
    if { $Data(File$Pad)=="AACN" } {
-      Dialog::CreateError . $Writer::Msg(NEW)
+      Dialog::Error . $Writer::Msg(NEW)
       return
    }
 
@@ -648,7 +648,7 @@ proc Writer::AACN::Write { Pad Sent } {
       }
 
       if { [file exists $GDefs(DirMsg)/AACN/$file] } {
-         if { ![Dialog::CreateDefault .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
+         if { ![Dialog::Default .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
             return
          }
       }

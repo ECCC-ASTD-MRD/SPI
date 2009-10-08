@@ -240,7 +240,7 @@ proc Model::Delete { Info } {
    update idletasks
 
    #----- Verifier la validitee des parametres
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -522,7 +522,7 @@ proc Model::ParamsMetData { Model } {
    upvar ${Model}::Sim sim
 
    if { ![llength $sim(Data)] } {
-      Dialog::CreateError . $Error(MetFiles)
+      Dialog::Error . $Error(MetFiles)
       return False
    }
 
@@ -542,7 +542,7 @@ proc Model::ParamsMetData { Model } {
    if { $simdur<=0 } {
       set first [clock format $firstdate -format "%Y-%m-%d %T UTC" -gmt True]
       set last  [clock format $lastdate -format "%Y-%m-%d %T UTC" -gmt True]
-      Dialog::CreateError . $Error(MetFiles) "\n\n[lindex $Error(DateTimeEmission) $GDefs(Lang)] $rundate.\n[lindex $Error(FirstMetDateTime) $GDefs(Lang)] $first.\n[lindex $Error(LastMetDateTime) $GDefs(Lang)] $last."
+      Dialog::Error . $Error(MetFiles) "\n\n[lindex $Error(DateTimeEmission) $GDefs(Lang)] $rundate.\n[lindex $Error(FirstMetDateTime) $GDefs(Lang)] $first.\n[lindex $Error(LastMetDateTime) $GDefs(Lang)] $last."
       return False
    }
 
@@ -559,7 +559,7 @@ proc Model::ParamsMetData { Model } {
          #----- computed according to available met files. Thus, simulation duration will be re-initialized.
          set oldsimdur     $sim(Duration)
          set sim(Duration) $simdur
-         Dialog::CreateInfo . 400 $Warning(SimDuration1) "\n\n[lindex $Warning(SimDuration2) $GDefs(Lang)] $oldsimdur h.\n[lindex $Warning(SimDuration3) $GDefs(Lang)] $sim(Duration) h."
+         Dialog::Info . 400 $Warning(SimDuration1) "\n\n[lindex $Warning(SimDuration2) $GDefs(Lang)] $oldsimdur h.\n[lindex $Warning(SimDuration3) $GDefs(Lang)] $sim(Duration) h."
 
       } else {
 
@@ -596,7 +596,7 @@ proc Model::ParamsMetData { Model } {
    }
 
    if { [llength $sim(Data)]<2 } {
-      Dialog::CreateError . $Error(MetFiles)
+      Dialog::Error . $Error(MetFiles)
       return False
    }
 
@@ -616,7 +616,7 @@ proc Model::ParamsMetData { Model } {
    set last  [lindex [lindex $sim(Data) end] 0]
 
    if { $sim(RunStamp) < $first || $sim(RunStamp) > $last } {
-      Dialog::CreateError . $Error(DateTimeMetFiles)
+      Dialog::Error . $Error(DateTimeMetFiles)
       return False
    }
    return True
@@ -956,7 +956,7 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
    variable Param
 
    if { [winfo exists .modelnew] } {
-      Dialog::CreateInfo .modelnew $Msg(Exist)
+      Dialog::Info .modelnew $Msg(Exist)
       return
    }
    set Data(Modelbase) [Model::InitNew $Model $Exp::Data(No) $Exp::Data(Name) $Exp::Data(Pos)]
@@ -1171,7 +1171,7 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
    if { [expr $free/(1024.0*1024.0)]<$Max } {
 
       set info "\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskNeed) $GDefs(Lang)] : [Convert::KBytes2Human $Max]\n[lindex $Warning(DiskAvail) $GDefs(Lang)] :[Convert::KBytes2Human $free]"
-      if { [Dialog::CreateDefault .modelnew 700 WARNING $Warning(DiskSpace) "\n$Info" 1 $Lbl(Yes) $Lbl(No)] } {
+      if { [Dialog::Default .modelnew 700 WARNING $Warning(DiskSpace) "\n$Info" 1 $Lbl(Yes) $Lbl(No)] } {
          return False
       }
    }
@@ -1349,14 +1349,14 @@ proc Model::ParamValidateEmail { } {
       }
 
       if { $err } {
-         Dialog::CreateError $Param(Frame) $Error(EMail) $Param(EMailSet)
+         Dialog::Error $Param(Frame) $Error(EMail) $Param(EMailSet)
          focus $Param(Frame).params.email.e
          return 0
       }
 
       #----- Display warning if email is different than default one.
       if { $Param(EMailSet) != "$env(USER)@ec.gc.ca" } {
-         set answer [Dialog::CreateDefault $Param(Frame) 400 WARNING $Warning(EMail) "\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMail)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" 1 $Lbl(Yes) $Lbl(No)]
+         set answer [Dialog::Default $Param(Frame) 400 WARNING $Warning(EMail) "\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMail)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" 1 $Lbl(Yes) $Lbl(No)]
          if { $answer } {
             focus $Param(Frame).params.email.e
             return 0
@@ -1391,7 +1391,7 @@ proc Model::ParamValidateQueue { } {
    variable Warning
 
    if { $Param(Queue) == "production" } {
-      if { [Dialog::CreateDefault $Param(Frame) 400 WARNING $Warning(Queue) "" 1 $Lbl(Yes) $Lbl(No)] } {
+      if { [Dialog::Default $Param(Frame) 400 WARNING $Warning(Queue) "" 1 $Lbl(Yes) $Lbl(No)] } {
          set Param(Queue) "development"
          return 0
       }

@@ -371,7 +371,7 @@ proc Export::Window { } {
    variable Data
 
    if { ![llength $FSTD::Data(List)] } {
-      Dialog::CreateError . $Error(Data)
+      Dialog::Error . $Error(Data)
       return
    }
 
@@ -587,7 +587,7 @@ proc Export::Do { } {
 
    } else {
       if { $Data(Path)=="" } {
-         Dialog::CreateError .export $Error(Path)
+         Dialog::Error .export $Error(Path)
          return
       }
    }

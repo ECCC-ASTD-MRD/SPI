@@ -579,7 +579,7 @@ proc FieldCalc::Window { { Parent .} } {
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is CALC$Viewport::Data(VP)] } { FieldParams::Window CALC$Viewport::Data(VP) } }
       ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
-      button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command { FieldCalc::FormulaSave [Dialog::CreateGetter . $FieldCalc::Bubble(Save) $FieldCalc::Msg(Name)]}
+      button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command { FieldCalc::FormulaSave [Dialog::Get . $FieldCalc::Bubble(Save) $FieldCalc::Msg(Name)]}
       button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
       pack .fieldcalc.expr.op -side left -fill both -expand true
       pack .fieldcalc.expr.param .fieldcalc.expr.save -side left
@@ -643,7 +643,7 @@ proc FieldCalc::FormulaDel { } {
 
    if { $Data(Formula)!="" && $Data(Formula)!=[lindex $Lbl(None) $GDefs(Lang)] && [set idx [lsearch -exact $Data(Formulas) $Data(Formula)]]!=-1  } {
 
-      set del [Dialog::CreateDefault . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)]
+      set del [Dialog::Default . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)]
 
       if { $del } {
 
@@ -733,7 +733,7 @@ proc FieldCalc::FormulaSave { Name } {
    set ok  1
    set add 1
    if { [lsearch -exact $Data(Formulas) $Name]!=-1 } {
-      set ok [Dialog::CreateDefault .fieldcalc 200 WARNING $Msg(Exist) "" 0 $Lbl(No) $Lbl(Yes)]
+      set ok [Dialog::Default .fieldcalc 200 WARNING $Msg(Exist) "" 0 $Lbl(No) $Lbl(Yes)]
       if { $ok } {
          set add 0
       }
@@ -763,7 +763,7 @@ proc FieldCalc::FormulaSave { Name } {
    }
 
    close $f
-   Dialog::CreateInfo . $Msg(Saved)
+   Dialog::Info . $Msg(Saved)
 }
 
 #----------------------------------------------------------------------------
@@ -998,7 +998,7 @@ proc FieldCalc::Operand { VP Fields } {
    if { !$nout && $expr!="" } {
       set res [vexpr CALC$VP $expr]
       if { ![fstdfield is $res] } {
-         Dialog::CreateError . $Error(Operand) "\n\n$res" $GDefs(Lang)
+         Dialog::Error . $Error(Operand) "\n\n$res" $GDefs(Lang)
          set data $Fields
       } else {
          FSTD::Register $res

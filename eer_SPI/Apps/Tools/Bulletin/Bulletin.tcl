@@ -180,7 +180,7 @@ proc Bulletin::Draw { Draw Zoom } {
    } error]
 
    if { $ok } {
-      Dialog::CreateErrorListing .bulletin $Msg(Coords) [.bulletin.mid.t get sel.first sel.last]
+      Dialog::ErrorListing .bulletin $Msg(Coords) [.bulletin.mid.t get sel.first sel.last]
    } else {
       Drawing::Window
       set Drawing::Data(GeoRef) 1
@@ -308,7 +308,7 @@ proc Bulletin::PrintCommand { Widget } {
    #----- Si il y a selection, verifier ce qu'il faut imprimer
 
    if { $selected != "" } {
-      set what [Dialog::CreateDefault .bulletin 300 INFO $Msg(Selection) "" 0 $Lbl(Selection) $Lbl(Tout)]
+      set what [Dialog::Default .bulletin 300 INFO $Msg(Selection) "" 0 $Lbl(Selection) $Lbl(Tout)]
    }
 
    set f [open /tmp/Bulletin[pid].txt w]
@@ -522,7 +522,7 @@ proc Bulletin::SearchNext { TextWidget Direct } {
             .bulletin.mid.frm.scrllist see $Bul(Choix)
             Bulletin::SearchNext $TextWidget $Direct
          } else {
-            Dialog::CreateInfo .bulletin $Msg(Fin)
+            Dialog::Info .bulletin $Msg(Fin)
             set Search(LocB) [expr $Search(LocE)-1.0]
          }
       }
@@ -549,7 +549,7 @@ proc Bulletin::SearchNext { TextWidget Direct } {
             set Search(LocB) [$TextWidget index end]
             Bulletin::SearchNext $TextWidget $Direct
          } else {
-            Dialog::CreateInfo .bulletin $Msg(Fin)
+            Dialog::Info .bulletin $Msg(Fin)
             set Search(LocB) $Search(LocE)
          }
       }

@@ -372,7 +372,7 @@ proc NowCaster::Radar::Now { Sec { Check False } } {
 
          if { [file exist $file] } {
             if { [catch { set Data(Scans$site) [radarfile open RADAR${site}$Data(Sec) read $file]} ] } {
-               Dialog::CreateError .nowcaster $Msg(FileBad) "\n\n$file"
+               Dialog::Error .nowcaster $Msg(FileBad) "\n\n$file"
                return
             }
             NowCaster::Radar::Read $site $Data(Sec)
@@ -475,7 +475,7 @@ proc NowCaster::Radar::Add { Path } {
          set site [file tail $file]
          if { [lsearch -exact $Data(Sites) $site]==-1 } {
             if { [catch { set Data(Scans$site) [radarfile open RADAR${site}0 read $file] }] } {
-              Dialog::CreateError .nowcaster $Msg(FileBad) "\n\n$file"
+              Dialog::Error .nowcaster $Msg(FileBad) "\n\n$file"
 #               radarfile close RADAR${site}0
             } else {
                set Data(Path$site) $file
@@ -571,7 +571,7 @@ proc NowCaster::Radar::Read { Site Sec { Scan 0 } } {
 
    #--- Find location
    if { [set id [ogrlayer define RADAR -featureselect [list [list ID == $Site]]]]=="" } {
-      Dialog::CreateError .nowcaster $Msg(Loc)
+      Dialog::Error .nowcaster $Msg(Loc)
    } else {
       radarscan define SCAN$Site$Sec -LOCATION [ogrlayer define RADAR -feature $id LAT] [ogrlayer define RADAR -feature $id LON] [ogrlayer define RADAR -feature $id ELEV]
       ogrlayer define RADAR -featureselect { }

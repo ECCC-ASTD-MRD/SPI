@@ -670,7 +670,7 @@ proc MapBox::Delete { Widget } {
    set idx [lsearch -exact $Data(List) $Data(Name)]
 
    if { $idx!=-1 } {
-      if { [Dialog::CreateDefault .mapbox 200 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
+      if { [Dialog::Default .mapbox 200 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return
       }
 
@@ -733,14 +733,14 @@ proc MapBox::Save { Widget } {
    set idx [lsearch -exact $Data(List) $Data(Name)]
 
    if { $idx!=-1 } {
-      if { [Dialog::CreateDefault .mapbox 200 WARNING $Msg(Exist) "" 0 $Lbl(Yes) $Lbl(No)] } {
+      if { [Dialog::Default .mapbox 200 WARNING $Msg(Exist) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }
    colormap write $Data(Map) $Data(Dir)/$Data(Name).rgba
    MapBox::List $Widget
 
-   Dialog::CreateInfo .mapbox $Msg(Saved) "\n\n\t $Data(Name)"
+   Dialog::Info .mapbox $Msg(Saved) "\n\n\t $Data(Name)"
 }
 
 #-------------------------------------------------------------------------------

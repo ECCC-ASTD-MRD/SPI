@@ -485,7 +485,7 @@ proc FieldBox::FileOpen { No File } {
 
       #----- Le fichier existe il ???
       if { ![file exists $file] && [string first : $file]==-1 } {
-         Dialog::CreateError .fieldbox$No $Error(Exist) "\n\n$file"
+         Dialog::Error .fieldbox$No $Error(Exist) "\n\n$file"
          continue
       }
 
@@ -520,7 +520,7 @@ proc FieldBox::FileOpen { No File } {
       }
 
       if { $index=="" } {
-         Dialog::CreateError .fieldbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
+         Dialog::Error .fieldbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
       } else {
          lappend data(FileList)  $file
          lappend data(FIDList)   $fid
@@ -591,7 +591,7 @@ proc FieldBox::FileReOpen { No } {
       #----- Le fichier existe il ???
 
       if { ![file exists $file] } {
-         Dialog::CreateError .fieldbox$No "[lindex $Error(Exist) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
+         Dialog::Error .fieldbox$No "[lindex $Error(Exist) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
          lset data(FieldList) $idx ""
       } else {
          if { $type=="fstdfield" } {
@@ -609,7 +609,7 @@ proc FieldBox::FileReOpen { No } {
          }
 
          if { $index == "" } {
-            Dialog::CreateError .fieldbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
+            Dialog::Error .fieldbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
             lset data(FieldList) $idx ""
             lreplace data(FileList) $idx $idx
          } else {
@@ -1537,9 +1537,9 @@ proc FieldBox::Show { Field } {
    set title "$var [fstdfield define $Field -TYPVAR] [fstdfield define $Field -ETIKET]"
 
    if { $var=="TEXT" || $var=="META" || $var=="PROJ" } {
-      Text::Create .infocode $title [MetData::TextDecode $Field] 100 50
+      Dialog::Text .infocode $title [MetData::TextDecode $Field] 100 50
    } else {
-      Text::Create .infocode $title [Info::Format [FSTD::Data $Field]] 100 50
+      Dialog::Text .infocode $title [Info::Format [FSTD::Data $Field]] 100 50
    }
 }
 

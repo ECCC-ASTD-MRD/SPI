@@ -100,7 +100,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
          set req [http::geturl "${Path}&SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580 ]
       }
       if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-         Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
+         Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
          return
       }
       set root [$doc documentElement]
@@ -110,7 +110,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
 
       #----- If there's no map available
       if { [set getmap [lindex [$root getElementsByTagName GetMap] 0]]=="" } {
-         Dialog::CreateErrorListing . $Msg(Request) [http::data $req] $GDefs(Lang)
+         Dialog::ErrorListing . $Msg(Request) [http::data $req] $GDefs(Lang)
          return
       }
 

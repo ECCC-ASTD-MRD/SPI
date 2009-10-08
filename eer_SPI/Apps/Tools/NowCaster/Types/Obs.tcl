@@ -388,7 +388,7 @@ proc NowCaster::Obs::ReadProcess { Obs } {
 
    #----- Define default model
    if { ![llength [set Data(Elems$Obs) [metobs define $Obs -ELEMENT]]] } {
-      Dialog::CreateError .nowcaster $Error(Elems)
+      Dialog::Error .nowcaster $Error(Elems)
    } else {
       if { ![llength $Data(Model$Obs)] } {
          set Data(Model$Obs) [list [list 0 0 [lindex $Data(Elems$Obs) 0]]]
@@ -430,7 +430,7 @@ proc NowCaster::Obs::Read { Obs Files } {
          foreach file $Files {
             thread::send -async $Thread "set NowCaster::Data(Job) \"\[lindex \$NowCaster::Obs::Msg(Read) \$GDefs(Lang)\] $file\""
             if { [catch { metobs read $Obs $file }] } {
-               thread::send -async $Thread "Dialog::CreateErrorListing .nowcaster \$NowCaster::Obs::Error(File) \"$file\n\""
+               thread::send -async $Thread "Dialog::ErrorListing .nowcaster \$NowCaster::Obs::Error(File) \"$file\n\""
             } else {
                file stat $file valid
                if { $Thread!="0" } {
@@ -864,7 +864,7 @@ proc NowCaster::Obs::ModelDel { Model } {
    variable Msg
 
    if { [set idx [lsearch -exact $Data(Models) $Model]]!=-1 } {
-      if { ![Dialog::CreateDefault $Data(Frame) 200 WARNING $Msg(Del) "\n\n\t$Model" 1 $Lbl(Yes) $Lbl(No)] } {
+      if { ![Dialog::Default $Data(Frame) 200 WARNING $Msg(Del) "\n\n\t$Model" 1 $Lbl(Yes) $Lbl(No)] } {
          set Data(Models) [lreplace $Data(Models) $idx $idx]
       }
       NowCaster::Obs::ModelSave
@@ -895,7 +895,7 @@ proc NowCaster::Obs::ModelAdd { Model Params } {
 
    if { $Model!= "" } {
       if { [set idx [lsearch -exact $Data(Models) $Model]]!=-1 } {
-         if { ![Dialog::CreateDefault $Data(Frame) 200 INFO $Msg(Exist) "" 1 $Lbl(Yes) $Lbl(No)] } {
+         if { ![Dialog::Default $Data(Frame) 200 INFO $Msg(Exist) "" 1 $Lbl(Yes) $Lbl(No)] } {
             set Data(Models$Model) $Params
          }
       } else {

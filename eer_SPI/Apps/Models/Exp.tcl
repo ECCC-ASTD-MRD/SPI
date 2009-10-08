@@ -615,7 +615,7 @@ proc Exp::ThreadKill { Id } {
    if { [simulation is $Id] } {
 
       set ::Model::Param(Job) "[lindex $Msg(Kill) $GDefs(Lang)]"
-      Dialog::CreateWait $Data(Frame) $Msg(Kill)
+      Dialog::Wait $Data(Frame) $Msg(Kill)
       update idletasks
 
       #----- Signal simulation to finish and wait for it to do so
@@ -653,7 +653,7 @@ proc Exp::New { } {
 
    #----- Verifier la validitee des parametres
    if { $Model::Data(Name)=="" } {
-       Dialog::CreateError .expnew $Msg(Name)
+       Dialog::Error .expnew $Msg(Name)
        return 0
    }
 
@@ -675,11 +675,11 @@ proc Exp::New { } {
       }
 
       if { $Model::Data(Lat$i)<-90.0 || $Model::Data(Lat$i)>90.0 || $Model::Data(Lon$i)<-180 || $Model::Data(Lon$i)>360 } {
-          Dialog::CreateError .expnew $Msg(Coord) "\n\n\t$Model::Data(Name$i) $Model::Data(Lat$i) $Model::Data(Lon$i)\n"
+          Dialog::Error .expnew $Msg(Coord) "\n\n\t$Model::Data(Name$i) $Model::Data(Lat$i) $Model::Data(Lon$i)\n"
           return 0
       }
       if { $Model::Data(Name$i)=="" } {
-          Dialog::CreateError .expnew $Msg(Name)
+          Dialog::Error .expnew $Msg(Name)
           return 0
       }
 
@@ -692,7 +692,7 @@ proc Exp::New { } {
    }
 
    if { [llength $info]==0 } {
-       Dialog::CreateError .expnew $Msg(Pos)
+       Dialog::Error .expnew $Msg(Pos)
        return 0
    }
 
@@ -938,7 +938,7 @@ proc Exp::ProductRSMCFax { } {
 
    set path $Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin
 
-   Dialog::CreateMessage . $Msg(Fax) "\n\n\t$path/rsmc_fax.ps"
+   Dialog::Message . $Msg(Fax) "\n\n\t$path/rsmc_fax.ps"
 
    set nbre [lindex [exec wc -w $path/IP2List.txt] 0]
 
@@ -982,11 +982,11 @@ proc Exp::ProductRSMCJointData { } {
    . config -cursor watch
    update idletasks
 
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(JointData) "" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(JointData) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
-   set join [Dialog::CreateDefault . 400 WARNING $Msg(JointClear) "" 0 $Lbl(Yes) $Lbl(No)]
+   set join [Dialog::Default . 400 WARNING $Msg(JointClear) "" 0 $Lbl(Yes) $Lbl(No)]
 
    #----- setup le repertoire et le fichier concernant la run du modele meteo utilise.
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
@@ -1012,7 +1012,7 @@ proc Exp::ProductRSMCJointData { } {
       exec echo [clock format [clock seconds] -format "%Y%m%d${run}_%H%M" -gmt true] > $path/CA_DATE.TXT
    }
 
-   Dialog::CreateMessage . $Msg(SendJoint)
+   Dialog::Message . $Msg(SendJoint)
 
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
@@ -1058,7 +1058,7 @@ proc Exp::ProductRSMCJointStatement { File } {
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin/joint_statement_b.html"
    file copy -force $File $path
 
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(JointStatement) "" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(JointStatement) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1131,7 +1131,7 @@ proc Exp::ReadPath { Path } {
          Exp::Read
          Exp::CreateTree
       } else {
-         Dialog::CreateError . $Msg(Path)
+         Dialog::Error . $Msg(Path)
       }
    }
 }
@@ -1329,26 +1329,26 @@ proc Exp::StoreIt { Id } {
    #----- Check if an archive already exists
    set ErrorCode [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc } Message]
    if { !$ErrorCode } {
-      if { [Dialog::CreateDefault .dlgstore 400 WARNING $Msg(StoreExist) "" 0 $Lbl(Yes) $Lbl(No)] } {
+      if { [Dialog::Default .dlgstore 400 WARNING $Msg(StoreExist) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return False
       }
    }
 
-   Dialog::CreateWait .dlgstore $Msg(DoingStore)
+   Dialog::Wait .dlgstore $Msg(DoingStore)
 
    #----- Build the archive
    cd  [set path [Exp::Path]]/../
 #   set ErrorCode [catch { exec cmcarc -a $path -f /tmp/$Id.cmc --md5 --dereference } Message]
    set ErrorCode [catch { exec tar -zcvf /tmp/$Id.tgz $path } Message]
    if { $ErrorCode } {
-      Dialog::CreateError .dlgstore [list $Message $Message]
+      Dialog::Error .dlgstore [list $Message $Message]
       set code False
    } else {
       #----- Copy it to CFS
-      Dialog::CreateWait .dlgstore  $Msg(DoingCopy)
+      Dialog::Wait .dlgstore  $Msg(DoingCopy)
       set ErrorCode [catch { exec scp /tmp/$Id.cmc $Param(StoreHost):$Param(StorePath)/$Id.cmc } Message]
       if { $ErrorCode } {
-         Dialog::CreateError .dlgstore [list $Message $Message]
+         Dialog::Error .dlgstore [list $Message $Message]
          set code False
       } else {
          #----- Remove local copy
@@ -1385,7 +1385,7 @@ proc Exp::Suppress { } {
    variable Msg
 
    #----- Verifier la validitee des parametres
-   if { [Dialog::CreateDefault . 400 WARNING $Msg(SuppressExp) "\n\n\t($Data(No)) $Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(SuppressExp) "\n\n\t($Data(No)) $Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1397,7 +1397,7 @@ proc Exp::Suppress { } {
    file delete -force $Param(Path)/$Data(No)_$Data(Name)
 
    if { [file exists $Param(Path)/$Data(No)_$Data(Name)] } {
-      Dialog::CreateError .  $Msg(SuppressError) "\n\n\t$Param(Path)/$Data(No)_$Data(Name)"
+      Dialog::Error .  $Msg(SuppressError) "\n\n\t$Param(Path)/$Data(No)_$Data(Name)"
       Debug::TraceProc "Unable to suppress experiment : $Data(No) $Data(Name)"
    } else {
 

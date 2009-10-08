@@ -12,17 +12,17 @@
 #    Permet d'afficher diverses boite de dialogue standard.
 #
 # Fonctions:
-#    Dialog::CreateDefault      { Master Width Type Text Extra Default args }
-#    Dialog::CreateInfo         { Master Text { Extra "" } }
-#    Dialog::CreateWait         { Master Text { Extra "" } }
-#    Dialog::DestroyWait        { }
-#    Dialog::CreateError        { Master Text { Extra "" } }
-#    Dialog::CreateErrorListing { Master Text List }
-#    Dialog::CreateMessage      { Master Text { Extra "" } }
-#    Dialog::CreateGetter       { Master Title Text { Var "" } }
-#    Dialog::CreateText         { Id Title File Width Height }
-#    Text::Create               { Id Title File Width Height }
-#    Text::Save                 { Text File }
+#    Dialog::Default      { Master Width Type Text Extra Default args }
+#    Dialog::Info         { Master Text { Extra "" } }
+#    Dialog::Wait         { Master Text { Extra "" } }
+#    Dialog::WaitDestroy  { }
+#    Dialog::Error        { Master Text { Extra "" } }
+#    Dialog::ErrorListing { Master Text List }
+#    Dialog::Message      { Master Text { Extra "" } }
+#    Dialog::Getter       { Master Title Text { Var "" } }
+#    Dialog::Text         { Id Title File Width Height }
+#    Dialog::TextSave     { Text File }
+#    Dialog::TextSearch   { Widget String Tag args }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
@@ -38,7 +38,9 @@ package provide Dialog 3.0
 catch { SPI::Splash "Loading Widget Package Dialog 3.0" }
 
 namespace eval Dialog { } {
+   variable Data
    variable Lbl
+   variable Bubble
 
    set Lbl(Ok)      { "Ok" "Ok" }
    set Lbl(Cancel)  { "Annuler" "Cancel" }
@@ -49,6 +51,9 @@ namespace eval Dialog { } {
    set Lbl(ERROR)    { "Erreur" "Error" }
    set Lbl(QUESTION) { "Question ?" "Question ?" }
 
+   set Bubble(Print) { "Impressiondu contenue" "Print window content" }
+   set Bubble(Save)  { "Sauvegarde du contenu" "Save window content" }
+
    image create photo DIALOG_ERROR    -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Error.gif
    image create photo DIALOG_WAIT     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Timer.gif
    image create photo DIALOG_WARNING  -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Alert.gif
@@ -57,7 +62,7 @@ namespace eval Dialog { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Dialog::CreateDefault>
+# Nom      : <Dialog::Default>
 # Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Permet de creer des boites de dialog de maniere standard.
@@ -79,7 +84,7 @@ namespace eval Dialog { } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Dialog::CreateDefault { Master Width Type Text Extra Default args } {
+proc  Dialog::Default { Master Width Type Text Extra Default args } {
    global GDefs
    global button
    variable Lbl
@@ -143,7 +148,7 @@ proc  Dialog::CreateDefault { Master Width Type Text Extra Default args } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateError>
+# Nom      : <Dialog::Error>
 # Creation : Juillet 97 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Afficher un message d'erreur.
@@ -158,7 +163,7 @@ proc  Dialog::CreateDefault { Master Width Type Text Extra Default args } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateError { Master Text { Extra "" } } {
+proc Dialog::Error { Master Text { Extra "" } } {
    global GDefs
    variable Lbl
 
@@ -203,7 +208,7 @@ proc Dialog::CreateError { Master Text { Extra "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateErrorListing>
+# Nom      : <Dialog::ErrorListing>
 # Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Afficher un message d'erreur avec un liste deroulante pour l'info.
@@ -218,7 +223,7 @@ proc Dialog::CreateError { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateErrorListing { Master Text List } {
+proc Dialog::ErrorListing { Master Text List } {
    global GDefs
    variable Lbl
 
@@ -272,7 +277,7 @@ proc Dialog::CreateErrorListing { Master Text List } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateInfo>
+# Nom      : <Dialog::Info>
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Afficher un message d'information.
@@ -287,7 +292,7 @@ proc Dialog::CreateErrorListing { Master Text List } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateInfo { Master Text { Extra "" } } {
+proc Dialog::Info { Master Text { Extra "" } } {
    global GDefs
    variable Lbl
 
@@ -330,7 +335,7 @@ proc Dialog::CreateInfo { Master Text { Extra "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateWait>
+# Nom      : <Dialog::Wait>
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Afficher un message d'information sur un processue en cours.
@@ -345,7 +350,7 @@ proc Dialog::CreateInfo { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateWait { Master Text { Extra "" } } {
+proc Dialog::Wait { Master Text { Extra "" } } {
    global GDefs
 
    if { ![info exists ::tk_version] } {
@@ -381,7 +386,7 @@ proc Dialog::CreateWait { Master Text { Extra "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::DestroyWait>
+# Nom      : <Dialog::WaitDestroy>
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Detruit le message d'information sur un processue en cours.
@@ -393,7 +398,7 @@ proc Dialog::CreateWait { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::DestroyWait { } {
+proc Dialog::WaitDestroy { } {
 
    if { ![info exists ::tk_version] } {
       return
@@ -404,7 +409,7 @@ proc Dialog::DestroyWait { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateMessage>
+# Nom      : <Dialog::Message>
 # Creation : Juillet 98 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Afficher un message dynamique standard.
@@ -419,7 +424,7 @@ proc Dialog::DestroyWait { } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateMessage { Master Text { Extra "" } } {
+proc Dialog::Message { Master Text { Extra "" } } {
    global GDefs
 
    if { ![info exists ::tk_version] } {
@@ -455,7 +460,7 @@ proc Dialog::CreateMessage { Master Text { Extra "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Dialog::CreateGetter>
+# Nom      : <Dialog::Get>
 # Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Recuperer une valeur unique.
@@ -474,7 +479,7 @@ proc Dialog::CreateMessage { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateGetter { Master Title Text { Var "" } } {
+proc Dialog::Get { Master Title Text { Var "" } } {
    global GDefs
    global gettervalue
    variable Lbl
@@ -515,7 +520,7 @@ proc Dialog::CreateGetter { Master Title Text { Var "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Text::Create>
+# Nom      : <Dialog::Text>
 # Creation : Novembre 98 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Ouvrir une fenetre contenant un fichier texte.
@@ -532,15 +537,7 @@ proc Dialog::CreateGetter { Master Title Text { Var "" } } {
 #
 #----------------------------------------------------------------------------
 
-namespace eval Text { } {
-   variable Bubble
-   variable Data
-
-   set Bubble(Print)      { "Impressiondu contenue" "Print window content" }
-   set Bubble(Save)       { "Sauvegarde du contenu" "Save window content" }
-}
-
-proc Text::Create { Id Title File Width Height } {
+proc Dialog::Text { Id Title File Width Height } {
    global GDefs
    variable Bubble
    variable Data
@@ -564,9 +561,9 @@ proc Text::Create { Id Title File Width Height } {
       frame $Id.command
          button $Id.command.ok -text [lindex { Fermer Close } $GDefs(Lang)] -relief raised -bd 1 \
             -command "destroy $Id"
-         button $Id.command.print -image PRINT -relief raised -bd 1 -command "PrintBox::Create $Id.file.text PRINT Text"
-         button $Id.command.save -image OPENDOC -relief raised -bd 1 -command "Text::Save $Id.file.text \[FileBox::Create $Id \"\" Save \[list \$FileBox::Type(TXT)\]\]"
-         label $Id.command.line -relief raised -bd 1 -width 10 -textvariable Text::Data(Cursor$Id) -bg $GDefs(ColorLight)
+         button $Id.command.print -image PRINT -relief raised -bd 1 -command "PrintBox::Create $Id.file.text PRINT Dialog"
+         button $Id.command.save -image OPENDOC -relief raised -bd 1 -command "Dialog::TextSave $Id.file.text \[FileBox::Create $Id \"\" Save \[list \$FileBox::Type(TXT)\]\]"
+         label $Id.command.line -relief raised -bd 1 -width 10 -textvariable Dialog::Data(Cursor$Id) -bg $GDefs(ColorLight)
          pack $Id.command.print $Id.command.save -side left
          pack $Id.command.ok -side left -fill both -expand true
          pack $Id.command.line -side left -fill y
@@ -587,8 +584,8 @@ proc Text::Create { Id Title File Width Height } {
       Bubble::Create $Id.command.print [lindex $Bubble(Print) $GDefs(Lang)]
       Bubble::Create $Id.command.save  [lindex $Bubble(Save) $GDefs(Lang)]
 
-      bind $Id.file.text <Any-KeyRelease> "set Text::Data(Cursor$Id) \[$Id.file.text index insert\]"
-      bind $Id.file.text <Any-Button> "set Text::Data(Cursor$Id) \[$Id.file.text index insert\]"
+      bind $Id.file.text <Any-KeyRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
+      bind $Id.file.text <Any-Button> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
    }
 
    #----- Inclure le fichier texte si il existe
@@ -602,7 +599,7 @@ proc Text::Create { Id Title File Width Height } {
       close $f
    } else {
       $Id.file.text insert end $File
-      set Text::Data(Nb$Id) [$Id.file.text index end]
+      set Dialog::Data(Nb$Id) [$Id.file.text index end]
    }
 
    #----- Traiter les directives si elles existent
@@ -611,7 +608,7 @@ proc Text::Create { Id Title File Width Height } {
 
       set f [open $File.dir]
       while { [gets $f ligne] >= 0 } {
-         Text::Search $Id.file.text [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
+         Dialog::TextSearch $Id.file.text [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
       }
       close $f
    }
@@ -619,7 +616,7 @@ proc Text::Create { Id Title File Width Height } {
    return $Id.file.text
 }
 
-proc Text::Save { Text File } {
+proc Dialog::TextSave { Text File } {
 
    if { $File=="" } {
       return
@@ -630,7 +627,7 @@ proc Text::Save { Text File } {
    close $f
 }
 
-proc Text::PrintCommand { Widget } {
+proc Dialog::PrintCommand { Widget } {
    variable Data
 
    exec echo [$Widget get 0.0 end] > /tmp/[pid].txt
@@ -640,7 +637,7 @@ proc Text::PrintCommand { Widget } {
    PrintBox::Destroy
 }
 
-proc Text::Search { Widget String Tag args } {
+proc Dialog::TextSearch { Widget String Tag args } {
 
    if {$String == ""} {
       return
@@ -655,26 +652,4 @@ proc Text::Search { Widget String Tag args } {
    set cur [$Widget index "$cur + $length char"]
    }
    eval $Widget tag configure $Tag [join $args " "]
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Dialog::SearchText>
-# Creation : Novembre 98 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Effectue une recherche sur une fenetre texte et y highlight les
-#            occurences comme specifie.
-#
-# Parametres  :
-#    <Path>   : Identification de la fenetre
-#    <String> : Chaine a rechercher
-#    <Tag>    : Tag a donner aux occurences
-#    <args>   : Parametres a associee au tag
-#
-# Remarques :
-#    Aucune.
-#
-#----------------------------------------------------------------------------
-
-proc Dialog::SearchText { Path String Tag args } {
-   eval Text::Search \$Path \$String \$Tag $args
 }

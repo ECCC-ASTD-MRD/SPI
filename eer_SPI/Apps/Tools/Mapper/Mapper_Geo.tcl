@@ -148,14 +148,14 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    set Data(Lat) 0.0
    set Data(Lon) 0.0
 
-   Dialog::CreateWait . $Msg(Request)
+   Dialog::Wait . $Msg(Request)
 
    switch $API {
       "Google" {
          #----- Send request through Google
          set req [http::geturl "http://maps.google.com/maps/geo?q=[join ${Request} +]&output=xml&oe=utf8&sensor=false"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . $Error(Request) "$msg\n[http::data $req]"
+            Dialog::ErrorListing . $Error(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -167,7 +167,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
             set Data(Lat)     [lindex $coords 1]
             set Data(Lon)     [lindex $coords 0]
          } else {
-            Dialog::CreateError. $Error(NoneFound)
+            Dialog::Error. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -176,7 +176,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
          #----- Send request through Geocoder.ca
          set req [http::geturl "http://geocoder.ca/?locate=[join ${Request} %20]&geoit=XML"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
+            Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -186,7 +186,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
             catch { set Data(Lon)     [[[$root getElementsByTagName longt] firstChild] nodeValue] }
             set Data(Address) ${Request}
          } else {
-            Dialog::CreateError. $Error(NoneFound)
+            Dialog::Error. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -234,14 +234,14 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
    set Data(Country)  ""
    set Data(Postal)   ""
 
-   Dialog::CreateWait . $Msg(Request)
+   Dialog::Wait . $Msg(Request)
 
    switch $API {
       "Google" {
          #----- Send request through Google
          set req [http::geturl "http://maps.google.com/maps/geo?q=$Lat,$Lon&output=xml&oe=utf8&sensor=false"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
+            Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -256,7 +256,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
 
             set Data(Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
          } else {
-            Dialog::CreateError. $Error(NoneFound)
+            Dialog::Error. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -265,7 +265,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
          #----- Send request through Geocoder.ca
          set req [http::geturl "http://geocoder.ca/?latt=$Lat&longt=$Lon&geoit=XML&reverse=1"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
+            Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -279,7 +279,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
 
             set Data(Address) "$Data(Street) $Data(City) $Data(Province) $Data(Postal)"
          } else {
-            Dialog::CreateError. $Error(NoneFound)
+            Dialog::Error. $Error(NoneFound)
          }
 
          $doc delete

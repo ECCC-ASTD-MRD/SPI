@@ -273,11 +273,11 @@ proc MetInfo::ExportFile { outFile } {
    }
 
    if { [llength $errFiles] != 0 } {
-      Dialog::CreateError .export $Msg(Empty) "\n\n$errFiles"
+      Dialog::Error .export $Msg(Empty) "\n\n$errFiles"
    }
 
    if { [llength $generatedFiles] != 0 } {
-      Dialog::CreateInfo .export $Msg(Complete) "\n\n$generatedFiles"
+      Dialog::Info .export $Msg(Complete) "\n\n$generatedFiles"
    }
 
    puts "*** Extraction of observations completed ***"

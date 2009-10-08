@@ -184,7 +184,7 @@ proc HFManager::FileCommand { Id Command } {
             }
         }
         "RM" {
-            if { [Dialog::CreateDefault .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
+            if { [Dialog::Default .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
                if { [lindex $params 1]=="wget" } {
                   #----- send a file to pds
                   exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser)
@@ -198,7 +198,7 @@ proc HFManager::FileCommand { Id Command } {
             }
          }
          "RMDIR" {
-            if { [Dialog::CreateDefault .hfman 350 WARNING $Txt(DeleteD) "" 0 $Lbl(No) $Lbl(Yes)] } {
+            if { [Dialog::Default .hfman 350 WARNING $Txt(DeleteD) "" 0 $Lbl(No) $Lbl(Yes)] } {
                 HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "rm -f -r" $file
             } else {
                .hfman config -cursor left_ptr
@@ -218,7 +218,7 @@ proc HFManager::FileCommand { Id Command } {
             }
          }
          "STAT" {
-            eval Text::Create .stat Stat \[exec $prefix [lindex $params 1] -n $HFManager::Host(Name$Id) \"stat $file\"\] 75 10
+            eval Dialog::Text .stat Stat \[exec $prefix [lindex $params 1] -n $HFManager::Host(Name$Id) \"stat $file\"\] 75 10
             return
          }
          "COPY" {
@@ -695,7 +695,7 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
          ComboBox::AddList .hfman.host.$Id.host.sel $Host(Name$Id)
          HFManager::HostWrite $Id
       } else {
-         Dialog::CreateError .hfman $Error(Host)
+         Dialog::Error .hfman $Error(Host)
          set $Host(Name$Id) ""
          return
       }
