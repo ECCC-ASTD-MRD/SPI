@@ -126,28 +126,21 @@ proc Writer::PadClose { Save } {
       eval set upd \$Writer::$Data(Type)::Data(Handle$Data(Pad))
 
       #----- Sauvegarde
-
       if { $upd!="" && $Save } {
-         set Save [Dialog::CreateDefault .writer 300 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Save) $GDefs(Lang)] \
-            info 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-         if { $Save } {
+         if { [Dialog::CreateDefault .writer 300 WARNING $Msg(Save) "" 0 $Lbl(No) $Lbl(Yes)] } {
             Writer::${Data(Type)}::Write $Data(Pad) 0
          }
       }
 
       #----- Sortir du mode dessin
-
       if { [lindex [split $Page::Data(ToolMode) ":"] 0]=="Writer" } {
          SPI::ToolMode SPI Zoom
       }
 
       #----- Nettoyage du message
-
       Writer::$Data(Type)::Clear $Data(Pad)
 
       #----- Suppression de l'onget
-
       TabFrame::Delete .writer.pad 1 [string index $Data(Pad) end]
       set Data(Pad) ""
       TabFrame::Select .writer.pad [TabFrame::Current .writer.pad]
@@ -295,17 +288,14 @@ proc Writer::Send { { Backup 0 } } {
 
    #----- Confirmer la transmission
 
-   set nosend [Dialog::CreateDefault .writer 300 [lindex $Lbl(Warning) $GDefs(Lang)] \
-                 [lindex $Msg(Send) $GDefs(Lang)] warning 0 [lindex $Lbl(Send) $GDefs(Lang)] \
-                 [lindex $Lbl(Cancel) $GDefs(Lang)]]
-   if { $nosend } {
+   if { [Dialog::CreateDefault .writer 300 WARNING $Msg(Send) "" 0 $Lbl(Send) $Lbl(Cancel)] } {
       return
    }
 
    Writer::$Data(Type)::Send $Data(Pad) $Backup
    Writer::PadClose 0
 
-   Dialog::CreateDefault .writer 300 Info [lindex $Writer::Msg(Sent) $GDefs(Lang)] info 0 Ok
+   Dialog::CreateInfo .writer $Writer::Msg(Sent)
 }
 
 #----------------------------------------------------------------------------

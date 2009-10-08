@@ -121,7 +121,7 @@ proc SatData::DataExtract { InFile } {
    } else {
       puts stderr "Option 2... not available right now, sorry ! ( $GDefs(FrontEnd) $GDefs(Host) )"
       if { $trace } {
-         Dialog::CreateError .satdata $message $GDefs(Lang)
+         Dialog::CreateError .satdata $message
       }
    }
 }
@@ -145,7 +145,7 @@ proc SatData::DataGet { }  {
    variable Msg
 
    if  { !$Data(Select) } {
-       Dialog::CreateError .satdata [lindex $Msg(Range) $GDefs(Lang)] $GDefs(Lang)
+       Dialog::CreateError .satdata $Msg(Range)
        return
    }
 
@@ -162,7 +162,7 @@ proc SatData::DataGet { }  {
 
    #----- Y a t il un traitement a effectuer
    if { !$todo } {
-       Dialog::CreateError .satdata [lindex $Msg(Data) $GDefs(Lang)] $GDefs(Lang)
+       Dialog::CreateError .satdata $Msg(Data)
        return
    }
 
@@ -315,10 +315,7 @@ proc SatData::DomainDelete { Combo } {
 
    if { ([ComboBox::Index $Combo exact $Data(Name)] != -1) && ($Data(Name) != "") } {
 
-      set suppress [Dialog::CreateDefault . 300 "Message" "[lindex $Msg(Del) $GDefs(Lang)] $Data(Name)" \
-         info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $suppress == 0 } {
+      if { ![Dialog::CreateDefault . 300 WARNING $Msg(Del)] "\n\n$Data(Name)" 1 $Lbl(Yes) $Lbl(No)] } {
 
          file copy -force $Data(File) $Data(File).old
 
@@ -409,7 +406,7 @@ proc SatData::DomainSave { Combo } {
 
       ComboBox::Add $Combo $Data(Name)
    } else {
-      Dialog::CreateError .satdata [lindex $Msg(Domain) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError .satdata $Msg(Domain)
    }
 }
 

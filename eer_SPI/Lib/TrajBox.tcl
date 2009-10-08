@@ -408,7 +408,7 @@ proc TrajBox::FileOpen { No File } {
       set ltraj [trajectory load $file]
 
       if { ![llength $ltraj] } {
-         Dialog::CreateError .trajbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
+         Dialog::CreateError .trajbox$No $Error(Empty) "\n\n$file"
       } else {
 
          lappend data(FileList) $file

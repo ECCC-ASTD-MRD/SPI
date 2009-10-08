@@ -34,7 +34,6 @@ namespace eval RSMC {
    set Lbl(PrintPlugIn) { "Selection carte (RSMC)" "Map Selection (RSMC)" }
    set Lbl(Products)    { "Produits" "Products" }
    set Lbl(Yes)         { "Oui" "Yes" }
-   set Lbl(Warning)     { "Attention" "Warning" }
 
    #----- Definitions des messages
 
@@ -889,10 +888,7 @@ proc RSMC::JoinTransfert { Frame } {
       return
    }
 
-   set create [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Join) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $create } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(Join) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 

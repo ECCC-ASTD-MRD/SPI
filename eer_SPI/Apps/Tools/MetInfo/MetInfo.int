@@ -225,14 +225,12 @@ proc MetInfo::SaveAs { } {
    global env
    global GDefs
    global Rapport
-   variable Dia
    variable Msg
 
    if { ("[.export.mid.typefrm.type curselection]" == "" ) || \
         ("[.export.mid.stationfrm.station curselection]" == "") || \
         ("[.export.mid.filesfrm.files  curselection]" == "") } {
-      Dialog::CreateDefault .export 300 [lindex $Dia $GDefs(Lang)] \
-         "[lindex $Msg(SelectVide)  $GDefs(Lang)]" warning 0 Ok
+      Dialog::CreateInfo .export $Msg(SelectVide)
       return;
    }
 

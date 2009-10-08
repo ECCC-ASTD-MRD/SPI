@@ -529,7 +529,7 @@ proc Writer::FVCN::Correct { Pad } {
    #----- On ne permet pas la correction d'un nouveau message
 
    if { $Data(File$Pad)=="FVCN" } {
-      Dialog::CreateError . [lindex $Writer::Msg(NEW) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Writer::Msg(NEW)
       return
    }
 
@@ -576,14 +576,14 @@ proc Writer::FVCN::Update { Pad } {
    #----- On ne permet pas la mise-a-jour d'un nouveau message
 
    if { $Data(File$Pad)=="FVCN" } {
-      Dialog::CreateError . [lindex $Writer::Msg(NEW) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Writer::Msg(NEW)
       return
    }
 
    #----- On ne permet pas la mise-a-jour d'une retransmission 'RET'
 
    if { $Data(Mode$Pad)=="RET" } {
-      Dialog::CreateError . [lindex $Writer::Msg(RET) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Writer::Msg(RET)
       return
    }
 
@@ -883,7 +883,7 @@ proc Writer::FVCN::GetNo { Name } {
             }
 
             Debug::TraceProc "FVCN::GetNo: No header available !!!"
-            Dialog::CreateError . [lindex $Msg(NoHeader) $GDefs(Lang)] $GDefs(Lang)
+            Dialog::CreateError . $Msg(NoHeader)
             return ""
          }
       }
@@ -899,7 +899,7 @@ proc Writer::FVCN::GetNo { Name } {
    }
 
    Debug::TraceProc "FVCN::GetNo: No header available !!!"
-   Dialog::CreateError . [lindex $Msg(NoHeader) $GDefs(Lang)] $GDefs(Lang)
+   Dialog::CreateError . $Msg(NoHeader)
    return ""
 }
 
@@ -2183,11 +2183,7 @@ proc Writer::FVCN::Write { Pad Sent } {
       }
 
       if { [file exists $GDefs(DirMsg)/FVCN/$file] } {
-         set ok [Dialog::CreateDefault .writer 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
-            "[lindex $Writer::Msg(Exist) $GDefs(Lang)]\n\t$file\n" \
-            info 0 [lindex $Writer::Lbl(No) $GDefs(Lang)] [lindex $Writer::Lbl(Yes) $GDefs(Lang)]]
-
-         if { !$ok } {
+         if { ![Dialog::CreateDefault .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
             return ""
          }
       }

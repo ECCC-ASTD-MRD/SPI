@@ -371,7 +371,7 @@ proc Export::Window { } {
    variable Data
 
    if { ![llength $FSTD::Data(List)] } {
-      Dialog::CreateError . [lindex $Error(Data) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Error(Data)
       return
    }
 
@@ -587,7 +587,7 @@ proc Export::Do { } {
 
    } else {
       if { $Data(Path)=="" } {
-         Dialog::CreateError .export [lindex $Error(Path) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError .export $Error(Path)
          return
       }
    }

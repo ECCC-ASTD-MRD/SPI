@@ -83,7 +83,6 @@ namespace eval ProjCam {
 
    #----- Definitions des labels
 
-   set Lbl(Warning)   { "Attention" "Warning" }
    set Lbl(Yes)       { "Oui" "Yes" }
    set Lbl(No)        { "Non" "No" }
 
@@ -94,9 +93,6 @@ namespace eval ProjCam {
 
    set Msg(Saved) { "Definition de camera sauvegardee."
                     "Camera definition saved." }
-
-   set Msg(Name)  { "Vous n'avez pas donner de nom"
-                    "You did not give it any name." }
 
    set Msg(Exist) { "Ce nom de camera existe deja, voulez-vous l'ecraser ?"
                     "This camera name exists do you wish to overwrite it ?" }
@@ -311,10 +307,7 @@ proc ProjCam::Delete { Combo } {
 
    if { [ComboBox::Index $Combo exact $Data(Name)]!=-1 && $Data(Name)!="" } {
 
-      set del [Dialog::CreateDefault . 200 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Del) $GDefs(Lang)] \
-         warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-      if { $del } {
+      if { [Dialog::CreateDefault . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)] } {
 
          file copy -force $Data(File) $Data(File).old
          exec grep -v "$Data(Name).*" $Data(File).old > $Data(File)
@@ -558,6 +551,7 @@ proc ProjCam::Reset { Cam { All True } } {
 #
 # Parametres :
 #   <Combo>  : Identificateur du combobox
+#   <Name>   : Camera name
 #
 # Retour:
 #
@@ -565,31 +559,27 @@ proc ProjCam::Reset { Cam { All True } } {
 #
 #----------------------------------------------------------------------------
 
-proc ProjCam::Save { Combo } {
+proc ProjCam::Save { Combo Name } {
    global   GDefs
    variable Data
    variable Msg
    variable Lbl
 
-   regsub -all " " $Data(Name) "_" Data(Name)
-
-   #----- Si le nom est correct
-
-   if { $Data(Name)=="" } {
-      Dialog::CreateError . [lindex $Msg(Name) $GDefs(Lang)] $GDefs(Lang)
+   #----- If this is a valid name
+   if { $Name=="" } {
       return
    }
+   regsub -all " " $Name "_" Name
 
    set nok 0
-
-   if { [ComboBox::Index $Combo exact $Data(Name)]!=-1 } {
-      set nok [Dialog::CreateDefault . 200 "Info" [lindex $Msg(Exist) $GDefs(Lang)] info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+   if { [ComboBox::Index $Combo exact $Name]!=-1 } {
+      set nok [Dialog::CreateDefault . 200 WARNING $Msg(Exist) "" 1 $Lbl(Yes) $Lbl(No)]
    }
 
    if { !$nok } {
 
-      #----- Enregistrer la vue
-
+      #----- Save the camera parameters
+      set Data(Name) $Name
       set line "$Data(Name) [ProjCam::Mem $Page::Data(Frame) $Data(Name)]"
 
       if { [file exists $Data(File)] } {
@@ -598,17 +588,14 @@ proc ProjCam::Save { Combo } {
       catch { exec grep -v "^$Data(Name) " $Data(File).old > $Data(File) }
       exec echo $line >> $Data(File)
 
-      #----- Ajouter la vue a la liste des vues
-
+      #----- Add to list of camera
       ComboBox::Add $Combo $Data(Name)
       ProjCam::Read
 
-      Dialog::CreateDefault . 200 "Info" [lindex $Msg(Saved) $GDefs(Lang)] info 0 Ok
-
+      Dialog::CreateInfo . $Msg(Saved)
    } else {
-      Dialog::CreateError . [lindex $Msg(Name) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Msg(Name)
    }
-
    ComboBox::Close $Combo
 }
 

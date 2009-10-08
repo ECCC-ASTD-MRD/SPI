@@ -21,7 +21,6 @@ namespace eval MetInfo {
    #----- Titre de l'outils
 
    set Export        { "MET Information - Export" "Exporter MET Information" }
-   set Dia           { "Completé" "Complete" }
 
    #----- Definitions des labels
 

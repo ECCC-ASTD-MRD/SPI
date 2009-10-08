@@ -18,7 +18,7 @@
 #   FieldCalc::ConvertList    { Frame }
 #   FieldCalc::Window         { Parent }
 #   FieldCalc::FormulaLoad    { }
-#   FieldCalc::FormulaSave    { }
+#   FieldCalc::FormulaSave    { Name }
 #   FieldCalc::FormulaSet     { { Formula False } }
 #   FieldCalc::InsertDigit    { Digit }
 #   FieldCalc::InsertFunc     { Func Argc Trigo }
@@ -47,7 +47,7 @@ namespace eval FieldCalc {
    variable Lbl
    variable Bubble
    variable Error
-   variable Mesg
+   variable Msg
    variable Data
    variable Const
    variable Conv
@@ -69,7 +69,6 @@ namespace eval FieldCalc {
    set Lbl(Yes)      { "Oui" "Yes" }
    set Lbl(No)       { "Non" "No" }
    set Lbl(None)     { "Aucune" "None" }
-   set Lbl(Warning)  { "Attention" "Warning" }
    set Lbl(Mem)      { "Memoire" "Memory" }
    set Lbl(Conv)     { "Conversion" "Conversion" }
    set Lbl(Const)    { "Constantes" "Constant" }
@@ -86,7 +85,8 @@ namespace eval FieldCalc {
 
    set Msg(Del)     { "Voulez-vous vraiment supprimer cette fonction ?" "Do you really want to suppress this function ?" }
    set Msg(Exist)   { "Cette fonction existe deja, voulez-vous la remplacer ?" "This function is already defined, do you want to replace it ?" }
-   set Msg(Invalid) { "Le nom de la fonction est invalide" "The function name is invalid" }
+   set Msg(Name)    { "Veuillez spéfifier le nom de la formule." "Please enter the formula name." }
+   set Msg(Saved)   { "Formule sauvegardee." "Formula saved." }
 
    #----- Bulles d'aides
 
@@ -579,7 +579,7 @@ proc FieldCalc::Window { { Parent .} } {
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is CALC$Viewport::Data(VP)] } { FieldParams::Window CALC$Viewport::Data(VP) } }
       ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
-      button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaSave
+      button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command { FieldCalc::FormulaSave [Dialog::CreateGetter . $FieldCalc::Bubble(Save) $FieldCalc::Msg(Name)]}
       button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
       pack .fieldcalc.expr.op -side left -fill both -expand true
       pack .fieldcalc.expr.param .fieldcalc.expr.save -side left
@@ -643,8 +643,7 @@ proc FieldCalc::FormulaDel { } {
 
    if { $Data(Formula)!="" && $Data(Formula)!=[lindex $Lbl(None) $GDefs(Lang)] && [set idx [lsearch -exact $Data(Formulas) $Data(Formula)]]!=-1  } {
 
-      set del [Dialog::CreateDefault . 200 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Del) $GDefs(Lang)] \
-         warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+      set del [Dialog::CreateDefault . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)]
 
       if { $del } {
 
@@ -712,6 +711,7 @@ proc FieldCalc::FormulaLoad { } {
 # But      : Sauvegarder la liste des formules.
 #
 # Parametres :
+#   <Name>   : Layout name
 #
 # Retour:
 #
@@ -719,24 +719,21 @@ proc FieldCalc::FormulaLoad { } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::FormulaSave { } {
+proc FieldCalc::FormulaSave { Name } {
    global GDefs
    variable Lbl
    variable Msg
    variable Data
 
-   set ok  1
-   set add 1
-
-   set Data(Formula) [string trim $Data(Formula)]
-
-   if { $Data(Formula)=="" } {
-     Dialog::CreateError .fieldcalc [lindex $Msg(Invalid) $GDefs(Lang)] $GDefs(Lang)
+   #----- If this is a valid name
+   if { [set Name [string trim $Name]]=="" } {
      return
    }
 
-   if { [lsearch -exact $Data(Formulas) $Data(Formula)]!=-1 } {
-      set ok [Dialog::CreateDefault .fieldcalc 200 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Exist) $GDefs(Lang)] info 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+   set ok  1
+   set add 1
+   if { [lsearch -exact $Data(Formulas) $Name]!=-1 } {
+      set ok [Dialog::CreateDefault .fieldcalc 200 WARNING $Msg(Exist) "" 0 $Lbl(No) $Lbl(Yes)]
       if { $ok } {
          set add 0
       }
@@ -747,6 +744,7 @@ proc FieldCalc::FormulaSave { } {
    }
 
    if { $add } {
+      set Data(Formula) $Name
       lappend Data(Formulas) $Data(Formula)
       ComboBox::Add .fieldcalc.expr.sel $Data(Formula)
    }
@@ -765,6 +763,7 @@ proc FieldCalc::FormulaSave { } {
    }
 
    close $f
+   Dialog::CreateInfo . $Msg(Saved)
 }
 
 #----------------------------------------------------------------------------
@@ -999,7 +998,7 @@ proc FieldCalc::Operand { VP Fields } {
    if { !$nout && $expr!="" } {
       set res [vexpr CALC$VP $expr]
       if { ![fstdfield is $res] } {
-         Dialog::CreateError . "[lindex $Error(Operand) $GDefs(Lang)]\n\n$res" $GDefs(Lang)
+         Dialog::CreateError . $Error(Operand) "\n\n$res" $GDefs(Lang)
          set data $Fields
       } else {
          FSTD::Register $res

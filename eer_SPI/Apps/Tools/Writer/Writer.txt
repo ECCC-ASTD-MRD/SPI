@@ -39,7 +39,6 @@ namespace eval Writer {
    set Lbl(Send)       { "Transmettre" "Transmit" }
    set Lbl(SendBackup) { "Transmettre (METMANAGER)" "Transmit (METMANAGER)" }
    set Lbl(Update)     { "Mettre a jour" "Update" }
-   set Lbl(Warning)    { "Attention" "Warning" }
    set Lbl(Yes)        { "Oui" "Yes" }
    set Lbl(No)         { "Non" "No" }
    set Lbl(Edit)       { "Edition" "Edit" }

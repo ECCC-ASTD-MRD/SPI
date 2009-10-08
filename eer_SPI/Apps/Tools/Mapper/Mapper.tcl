@@ -261,7 +261,7 @@ proc Mapper::SetGeoRef { } {
          Viewport::ConfigGet $Page::Data(Frame) $Viewport::Data(VP)
          Viewport::Reset $Page::Data(Frame)
       } else {
-         Dialog::CreateError . [lindex $Msg(GeoRef) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError . $Msg(GeoRef)
       }
    }
 }
@@ -424,7 +424,7 @@ proc Mapper::Read { Files } {
 
    foreach file $Files {
       if { ![Mapper::ReadBand $file] && ![Mapper::ReadLayer $file] } {
-         Dialog::CreateError . [lindex $Msg(BadFile) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError . $Msg(BadFile)
       }
       Mapper::UpdateData $Page::Data(Frame)
    }
@@ -561,7 +561,7 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
          }
 
          if { [ogrlayer define $layer -nb]==0 } {
-            Dialog::CreateError . "[lindex $Msg(NoFeature) $GDefs(Lang)] : $layer" $GDefs(Lang)
+            Dialog::CreateError . $Msg(NoFeature) $layer
             ogrlayer free $layer
             ogrfile close $File
             continue
@@ -1021,11 +1021,7 @@ proc Mapper::PickOGR { VP X Y } {
 
                if { $files!="" } {
 
-               set load [Dialog::CreateDefault . 400 [lindex $Lbl(Info) $GDefs(Lang)] \
-                  "[lindex $Msg(Index) $GDefs(Lang)]\n\n$files\n" \
-                  warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-               if { !$load } {
+               if { ![Dialog::CreateDefault . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
                   foreach file $files {
                      set path [file dirname $Data(Id$object)]
                      set file $path/../$file

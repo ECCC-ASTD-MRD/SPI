@@ -880,7 +880,7 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
    #----- Recuperer tout les niveaux disponibles pour GZ
    set ip1s  [lsort -decreasing -integer [fstdfile info $File IP1 GZ]]
    set ip1ss [lrange $ip1s $From $To]
-   puts "(INFO) Using [llength $ip1ss] of the [llength $ip1s] levels for datestamp $Stamp"
+#   puts "(INFO) Using [llength $ip1ss] of the [llength $ip1s] levels for datestamp $Stamp"
 
    #----- Parcourir tout les niveaux et recupere le profil de vent
    foreach ip1 $ip1ss {
@@ -902,7 +902,7 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
    fstdfield free GZ
    fstdfield free VAR
 
-   puts "(INFO) Description of the profile: $prof"
+#   puts "(INFO) Description of the profile: $prof"
    return $prof
 }
 

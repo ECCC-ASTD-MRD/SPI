@@ -24,7 +24,6 @@ namespace eval Kriger {
    set Lbl(Grid)    { "Grille" "Grid" }
    set Lbl(Krig)    { "Krigage" "Kriging" }
    set Lbl(Result)  { "Resultats" "Results" }
-   set Lbl(Warning) { "Attention" "Warning" }
    set Lbl(Yes)     { "Oui" "Yes" }
    set Lbl(No)      { "Non" "No" }
    set Lbl(Out)     { "Hors grille" "Out of grid" }

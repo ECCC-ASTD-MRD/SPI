@@ -31,7 +31,6 @@ namespace eval INFO {
    set Lbl(Products)     { "Produits" "Products" }
    set Lbl(Quit)         { "Quitter" "Quit" }
    set Lbl(Title)        { "Resume d'experience" "Experiment abstract" }
-   set Lbl(Warning)      { "Attention" "Warning" }
    set Lbl(Yes)          { "Oui" "Yes" }
 
    #----- Definitions des messages
@@ -614,10 +613,7 @@ proc INFO::RSMCJoin { Frame } {
       return
    }
 
-   set create [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Join) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $create } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(Join) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 

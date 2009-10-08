@@ -96,14 +96,11 @@ proc MLDP::Launch { } {
 
       #----- Meteo is local, launch it's processing and wait for it.
       if { $Model::Param(DBaseLocal) } {
-         set proceed [Dialog::CreateDefault .modelnew 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Warning(MetLocal) $GDefs(Lang)] \
-            warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-         if { !$proceed } {
+         if { ![Dialog::CreateDefault .modelnew 400 WARNING $Warning(MetLocal) "" 0 $Lbl(No) $Lbl(Yes)] } {
             return False
          }
 
-         Dialog::CreateWait . [lindex $Msg(MetProcess) $GDefs(Lang)] 600
+         Dialog::CreateWait . $Msg(MetProcess)
          exec $env(EER_DIRSCRIPT)/Model_Meteo$Sim(Model).sh $Sim(Path)/tmp $Sim(Meteo) 1 $Sim(NI)x$Sim(NJ)x$Sim(NK) low
          Dialog::DestroyWait
       }
@@ -560,7 +557,7 @@ proc MLDP::GetMetData { } {
       return True
    }
 
-   Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+   Dialog::CreateWait . $Msg(MetGet)
 
    #----- Define mixed mode.
    if { $Model::Param(DBaseDiag) == $Model::Param(DBaseProg) } {
@@ -617,7 +614,7 @@ proc MLDP::EmissionRead { } {
    }
 
    if { ![file isdirectory $Sim(EmDirScenario)] } {
-      Dialog::CreateError .modelnew "[lindex $Error(ScenarioDirectory) $GDefs(Lang)]" $GDefs(Lang)
+      Dialog::CreateError .modelnew $Error(ScenarioDirectory)
       return 0
    }
 
@@ -694,14 +691,12 @@ proc MLDP::EmissionDelete { } {
 
    #----- Do not erase default emission scenario.
    if { $Sim(EmScenario) == "default" } {
-      Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DeleteDefault) $GDefs(Lang)]" warning 0 "OK"
+      Dialog::CreateError .modelnew $Warning(DeleteDefault)
       return
    }
 
    #----- Ask user if deleting emission scenario.
-   set erase [Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(DeleteScenario) $GDefs(Lang)] $Sim(EmScenario)." warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-   if { !$erase } {
+   if { ![Dialog::CreateDefault .modelnew 400 WARNING $Warning(DeleteScenario) "$Sim(EmScenario)." 0 $Lbl(No) $Lbl(Yes)] } {
       return
    }
 
@@ -787,22 +782,18 @@ proc MLDP::EmissionUpdate { } {
    regsub -all "\[^a-zA-Z0-9-\]" $Tmp(Scenario) "_" Tmp(Scenario)
 
    if { $Tmp(Scenario) == "default" } {
-      Dialog::CreateDefault .newscenario 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(OverwriteDefault) $GDefs(Lang)]" warning 0 "OK"
+      Dialog::CreateError .newscenario $Warning(OverwriteDefault)
       focus $Sim(ScenarioNameEntry)
       grab .newscenario
       return 0
    }
 
    set idx [lsearch -exact $Sim(EmList) $Tmp(Scenario)]
-   set save [Dialog::CreateDefault .newscenario 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(Save) $GDefs(Lang)] $Tmp(Scenario)." \
-                 warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
+   set save [Dialog::CreateDefault .newscenario 400 WARNING $Warning(Save) " $Tmp(Scenario)." 0 $Lbl(No) $Lbl(Yes)]
 
    #----- Verify if release scenario name does not already exists.
    if { $save && $idx != -1 } {
-      set ok [Dialog::CreateDefault .newscenario 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(Overwrite) $GDefs(Lang)] $Tmp(Scenario)." \
-                  warning 0 [lindex $Lbl(Cancel) $GDefs(Lang)] [lindex $Lbl(Overwrite) $GDefs(Lang)]]
-
-      if { !$ok } {
+      if { ![Dialog::CreateDefault .newscenario 400 WARNING $Warning(Overwrite) " $Tmp(Scenario)." 0 $Lbl(Cancel) $Lbl(Overwrite)] } {
          focus $Sim(ScenarioNameEntry)
          grab .newscenario
          return 0
@@ -1345,7 +1336,7 @@ proc MLDP::SpeciesFormat { Line } {
             MLDP::UpdateEmissionDurationsTotalQuantityAccident
          } else {
             #----- Display warning message if radioactive half-life is less than 15 minutes.
-            Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $symbol." warning 0 "OK"
+            Dialog::CreatError .modelnew $Warning(HalfLife) " $symbol."
          }
       }
    }
@@ -1422,10 +1413,10 @@ proc MLDP::ValidateDensity { } {
    set number [string is double -strict -failindex idx $Sim(EmDensity)]
 
    if { $number==0 && $idx==-1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDensityOutRange) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDensityOutRange) " $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]."
       return 0
    } elseif { $number== 0 || $Sim(EmDensity)<=0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDensity) $GDefs(Lang)] $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDensity) " $Sim(EmDensity) [lindex $Error(UnitDensity) $GDefs(Lang)]"
       return 0
    }
 
@@ -1523,10 +1514,10 @@ proc MLDP::ValidateMass { } {
    set number [string is double -strict -failindex idx $Sim(EmMass)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(MassRange) $GDefs(Lang)] $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(MassRange) " $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
       return 0
    } elseif { $number == 0 || $Sim(EmMass) <= 0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(Mass) $GDefs(Lang)] $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(Mass) " $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
       return 0
    }
 
@@ -1604,7 +1595,7 @@ proc MLDP::ValidateNbSrc { } {
 
    #----- Verify if number of sources is less than (or equal to) maximum number of sources.
    if { [llength $Sim(Name)] > $Sim(MaxNbSrc) } {
-      Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(NbSrc1) $GDefs(Lang)] [llength $Sim(Name)].\n[lindex $Warning(NbSrc2) $GDefs(Lang)] $Sim(MaxNbSrc).\n[lindex $Warning(NbSrc3) $GDefs(Lang)] $Sim(MaxNbSrc) [lindex $Warning(NbSrc4) $GDefs(Lang)]" warning 0 "OK"
+      Dialog::CreateError .modelnew $Warning(NbSrc1) " [llength $Sim(Name)].\n[lindex $Warning(NbSrc2) $GDefs(Lang)] $Sim(MaxNbSrc).\n[lindex $Warning(NbSrc3) $GDefs(Lang)] $Sim(MaxNbSrc) [lindex $Warning(NbSrc4) $GDefs(Lang)]"
    }
    return 1
 }
@@ -1633,22 +1624,22 @@ proc MLDP::ValidateNumberParticles { } {
    set number [string is integer -strict -failindex idx $Sim(EmNumberParticles)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticlesOutRange) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmNumberParticlesOutRange) " $Sim(EmNumberParticles)."
       return 0
    } elseif { $number == 0 || $Sim(EmNumberParticles) < 1000 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticles) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmNumberParticles) " $Sim(EmNumberParticles)."
       return 0
    }
 
    #----- Verify if number of particles is an integer multiple number of 1000.
    if { [expr fmod($Sim(EmNumberParticles),1000)] > $Sim(EmEpsilon) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticles2) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmNumberParticles2) " $Sim(EmNumberParticles)."
       return 0
    }
 
    #----- Verify if number of particles is less than (or equal to) maximum number of particles.
    if { $Sim(EmNumberParticles) > $Sim(EmMaxNumberParticles) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmNumberParticles3) $GDefs(Lang)] $Sim(EmNumberParticles).\n[lindex $Error(EmNumberParticles4) $GDefs(Lang)] $Sim(EmMaxNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmNumberParticles3) " $Sim(EmNumberParticles).\n[lindex $Error(EmNumberParticles4) $GDefs(Lang)] $Sim(EmMaxNumberParticles)."
       return 0
    }
 
@@ -1733,16 +1724,16 @@ proc MLDP::ValidatePlumeHeight { } {
    set number [string is double -strict -failindex idx $Sim(EmHeight)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(HeightRange) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(HeightRange) " $Sim(EmHeight) $Error(UnitMeters)"
       return 0
    } elseif { $number == 0 || $Sim(EmHeight) <= 0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(Height) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(Height) " $Sim(EmHeight) $Error(UnitMeters)"
       return 0
    }
 
    #----- Verify if maximum plume height is lower or equal to 30000 meters.
    if { $Sim(EmHeight) > 30000.0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(Height2) $GDefs(Lang)] $Sim(EmHeight) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(Height2) " $Sim(EmHeight) $Error(UnitMeters)"
       return 0
    }
 
@@ -1773,10 +1764,10 @@ proc MLDP::ValidateRadius { } {
    set number [string is double -strict -failindex idx $Sim(EmRadius)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(RadiusRange) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(RadiusRange) " $Sim(EmRadius) $Error(UnitMeters)"
       return 0
    } elseif { $number == 0 || $Sim(EmRadius) < 0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(Radius) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(Radius) " $Sim(EmRadius) $Error(UnitMeters)"
       return 0
    }
 
@@ -1808,16 +1799,16 @@ proc MLDP::ValidateReflectionLevel { } {
    set number [string is double -strict -failindex idx $Sim(ReflectionLevel)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ReflectionLevelRange) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ReflectionLevelRange) " $Sim(ReflectionLevel) $Error(UnitHybEtaSig)"
       return 0
    } elseif { $number == 0 || $Sim(ReflectionLevel) <= 0.0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ReflectionLevel) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ReflectionLevel) " $Sim(ReflectionLevel) $Error(UnitHybEtaSig)"
       return 0
    }
 
    #----- Verify if reflection level falls within the range [0.9900, 1.0000].
    if { $Sim(ReflectionLevel) > 1.0 || $Sim(ReflectionLevel) < 0.9900 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ReflectionLevel2) $GDefs(Lang)] $Sim(ReflectionLevel) $Error(UnitHybEtaSig)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ReflectionLevel2) " $Sim(ReflectionLevel) $Error(UnitHybEtaSig)"
       return 0
    }
 
@@ -1849,16 +1840,16 @@ proc MLDP::ValidateTimescale { } {
    set number [string is double -strict -failindex idx $Sim(Timescale)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(TimescaleRange) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(TimescaleRange) " $Sim(Timescale) $Error(UnitSeconds)"
       return 0
    } elseif { $number == 0 || $Sim(Timescale) <= 0.0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(Timescale) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(Timescale) " $Sim(Timescale) $Error(UnitSeconds)"
       return 0
    }
 
    #----- Verify if timescale is lower or equal to 21600 s.
    if { $Sim(Timescale) > 21600.0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(Timescale2) $GDefs(Lang)] $Sim(Timescale) $Error(UnitSeconds)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(Timescale2) " $Sim(Timescale) $Error(UnitSeconds)"
       return 0
    }
 
@@ -1890,16 +1881,16 @@ proc MLDP::ValidateVarianceMesoscale { } {
    set number [string is double -strict -failindex idx $Sim(VarMesoscale)]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(VarMesoscaleRange) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(VarMesoscaleRange) " $Sim(VarMesoscale) $Error(UnitM2PS2)"
       return 0
    } elseif { $number == 0 || $Sim(VarMesoscale) < 0.0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(VarMesoscale) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(VarMesoscale) " $Sim(VarMesoscale) $Error(UnitM2PS2)"
       return 0
    }
 
    #----- Verify if variance is lower or equal to 10.0 m2/s2.
    if { $Sim(VarMesoscale) > 10.0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(VarMesoscale2) $GDefs(Lang)] $Sim(VarMesoscale) $Error(UnitM2PS2)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(VarMesoscale2) " $Sim(VarMesoscale) $Error(UnitM2PS2)"
       return 0
    }
 
@@ -1934,7 +1925,7 @@ proc MLDP::ValidateVerticalLevels { } {
    #----- Verify if number of concentration vertical levels is greater than 1 and
    #----- less than (or equal to) maximum number of vertical levels.
    if { $nb<2 || $nb>$Sim(MaxNbVerticalLevels) } {
-      Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels1) $GDefs(Lang)][lindex $Error(VerticalLevels2) $GDefs(Lang)] $nb.\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(MaxNbVerticalLevels).\n[lindex $Error(VerticalLevels4) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" $GDefs(Lang) 700
+      Dialog::CreateError .modelnew $Error(VerticalLevels1) "[lindex $Error(VerticalLevels2) $GDefs(Lang)] $nb.\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(MaxNbVerticalLevels).\n[lindex $Error(VerticalLevels4) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)"
       return 0
    }
 
@@ -1945,17 +1936,17 @@ proc MLDP::ValidateVerticalLevels { } {
       set idx ""
       set number [string is double -strict -failindex idx $level]
       if { $number == 0 && $idx == -1 } {
-         Dialog::CreateError .modelnew "[lindex $Error(VerticalLevelsRange) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(VerticalLevelsRange) " $level $Error(UnitMeters)"
          return 0
       } elseif { $number == 0 || ($number == 1 && $level < 0) } {
-         Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels5) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(VerticalLevels5) " $level $Error(UnitMeters)"
          return 0
       }
 
       if { $i > 0 } {
          set prevlevel [lindex $Sim(VerticalLevels) [expr $i - 1]]
          if { $level <= $prevlevel } {
-            Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels6) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" $GDefs(Lang) 600
+            Dialog::CreateError .modelnew $Error(VerticalLevels6) " $Sim(VerticalLevels) $Error(UnitMeters)"
             return 0
          }
       } else {
@@ -1966,14 +1957,14 @@ proc MLDP::ValidateVerticalLevels { } {
             set oldlist $Sim(VerticalLevels)
             set firstlevel 0
             set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::CreateDefault .mldp1new 800 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(VerticalLevels1) $GDefs(Lang)]\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" warning 0 "OK"
+            Dialog::CreateDefault .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
          }
          if { $Sim(Model)=="MLDP0" && $firstlevel!=1.0 } {
             #----- Replace first level.
             set oldlist $Sim(VerticalLevels)
             set firstlevel 1
             set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::CreateDefault .mldp1new 800 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(VerticalLevels1) $GDefs(Lang)]\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" warning 0 "OK"
+            Dialog::CreateDefault .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
          }
       }
    }

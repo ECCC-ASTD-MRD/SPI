@@ -768,7 +768,7 @@ proc VAAC::Transmit { Frame } {
       }
    }
    if { !$maxhour } {
-      Dialog::CreateError . "[lindex $Error(Hours) $GDefs(Lang)]" $GDefs(Lang)
+      Dialog::CreateError .  $Error(Hours)
       return
    }
 

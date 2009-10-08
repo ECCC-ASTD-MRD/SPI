@@ -414,7 +414,7 @@ proc ObsBox::FileOpen { No File } {
       set lobs [observation load $file]
 
       if { ![llength $lobs] } {
-         Dialog::CreateError .obsbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
+         Dialog::CreateError .obsbox$No $Error(Empty) "\n\n$file"
       } else {
 
          lappend data(FileList) $file

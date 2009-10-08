@@ -504,16 +504,11 @@ proc SPI::LayoutDelete { } {
 
    if { $SPI::Param(Layout)!="SPI" } {
       if { [file exists $GDefs(Dir)/Apps/Layouts/${SPI::Param(Layout)}.tcl] } {
-         Dialog::CreateError . "[lindex $Error(LayoutDel) $GDefs(Lang)]\n\n\t$SPI::Param(Layout)" $GDefs(Lang)
+         Dialog::CreateError . $Error(LayoutDel) "\n\n\t$SPI::Param(Layout)"
          return
       }
 
-      set oops [Dialog::CreateDefault . 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
-         "[lindex $Msg(LayoutErase) $GDefs(Lang)]\n\n\t$SPI::Param(Layout)\n" \
-         info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-
-      if { ! $oops } {
+      if { ![Dialog::CreateDefault . 300 WARNING $Msg(LayoutErase) "\n\n\t$SPI::Param(Layout)\n" 1 $Lbl(Yes) $Lbl(No)] } {
          set idx [lsearch -exact $SPI::Param(Layouts) $SPI::Param(Layout)]
          set SPI::Param(Layouts) [lreplace $SPI::Param(Layouts) $idx $idx]
          file delete $GDefs(DirEER)/eer_Layout/${SPI::Param(Layout)}.tcl
@@ -565,9 +560,7 @@ proc SPI::LayoutLoad { Frame Layout } {
 
    #----- Current page layout is locked
    if { $Page::Data(Lock$Frame) } {
-      set so [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] \
-          "[lindex $Msg(Locked) $GDefs(Lang)]" \
-          info 0 [lindex $Lbl(PageOther) $GDefs(Lang)] [lindex $Lbl(PageNew) $GDefs(Lang)] [lindex $Lbl(Cancel) $GDefs(Lang)]]
+      set so [Dialog::CreateDefault . 300 INFO $Msg(Locked) "" 0 $Lbl(PageOther) $Lbl(PageNew) $Lbl(Cancel)]
 
       switch $so {
          0 { ;#Find first layout not locked
@@ -665,6 +658,7 @@ proc SPI::LayoutLoad { Frame Layout } {
 #
 # Parametres :
 #   <Frame>  : Identificateur de Page
+#   <Name>   : Layout name
 #
 # Retour:
 #
@@ -672,7 +666,7 @@ proc SPI::LayoutLoad { Frame Layout } {
 #
 #-------------------------------------------------------------------------------
 
-proc SPI::LayoutSave { Frame } {
+proc SPI::LayoutSave { Frame Name } {
    global   GDefs
    variable Msg
    variable Lbl
@@ -682,23 +676,20 @@ proc SPI::LayoutSave { Frame } {
 
    set oops 0
 
-   if { $Param(Layout)=="" } {
+   #----- If this is a valid name
+   if { $Name=="" } {
       return
    }
+   regsub -all " " $Name "_" Name
 
-   regsub -all " "  $Param(Layout) _ Param(Layout)
+   if { [file exists $GDefs(DirEER)/eer_Layout/$Name.tcl] } {
 
-   if { [file exists $GDefs(DirEER)/eer_Layout/$Param(Layout).tcl] } {
-
-      set oops [Dialog::CreateDefault . 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] \
-         "[lindex $Msg(LayoutOver) $GDefs(Lang)]\n\n\t$Param(Layout)\n" \
-         info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $oops } {
+      if { [Dialog::CreateDefault . 300 WARNING $Msg(LayoutOver) "\n\n\t$Name\n" 1 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }
 
+   set Param(Layout) $Name
    set file [open $GDefs(DirEER)/eer_Layout/$Param(Layout).tcl w]
 
    #----- Creer la commande d'execution du layout
@@ -717,11 +708,7 @@ proc SPI::LayoutSave { Frame } {
    #----- Parametres de la camera
 
    if { [llength [Page::Registered $Frame Viewport]] } {
-
-      set oops [Dialog::CreateDefault . 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] "[lindex $Msg(CamSave) $GDefs(Lang)]" \
-         info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { !$oops } {
+      if { ![Dialog::CreateDefault . 300 INFO $Msg(CamSave) 1 $Lbl(Yes) $Lbl(No)] } {
          ProjCam::Write $Frame $file
       }
    }
@@ -743,6 +730,8 @@ proc SPI::LayoutSave { Frame } {
 
    lappend Param(Layouts) $Param(Layout)
    ComboBox::Add .bar.layout.sel $Param(Layout)
+
+   Dialog::CreateInfo . $Msg(LayoutSaved)
 }
 
 #-------------------------------------------------------------------------------
@@ -1478,7 +1467,7 @@ proc SPI::IcoOpen { Files } {
       gets $f id
 
       if { [lindex $id 0] != "IconList" } {
-         Dialog::CreateError . "[lindex $Error(Icon) $GDefs(Lang)]:\n\n\t$file" $GDefs(Lang)
+         Dialog::CreateError . $Error(Icon) ":\n\n\t$file"
          close $f
          return
       }
@@ -1972,11 +1961,10 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
    variable Msg
    variable Error
 
-   set new [Dialog::CreateDefault . 300 [lindex $Lbl(Question) $GDefs(Lang)] [lindex $Msg(Page) $GDefs(Lang)] \
-         info 2 [lindex $Lbl(Current) $GDefs(Lang)] [lindex $Lbl(Page) $GDefs(Lang)] [lindex $Lbl(Window) $GDefs(Lang)]]
+   set new [Dialog::CreateDefault . 300 QUESTION $Msg(Page) 2 $Lbl(Current) $Lbl(Page) $Lbl(Window)]
 
    switch $new {
-      0 { if { ![winfo exists $Page::Data(Canvas)] } { Dialog::CreateError . [lindex $Error(Page) $GDefs(Lang)] $GDefs(Lang); return } }
+      0 { if { ![winfo exists $Page::Data(Canvas)] } { Dialog::CreateError . $Error(Page); return } }
       1 { SPI::PageNew False $Type${Sub} }
       2 { SPI::PageNew True $Type${Sub} }
    }
@@ -2082,15 +2070,12 @@ proc SPI::ProjectRead { File { Force False } } {
    close $f
 
    if { ![string equal "set SPI::Param(Project)" [string range $head 0 22]] } {
-      Dialog::CreateError . "[lindex $Error(Project) $GDefs(Lang)]:\n\n\t$File" $GDefs(Lang)
+      Dialog::CreateError . $Error(Project) ":\n\n\t$File"
       return
    }
 
    if { !$Force } {
-      set oops [Dialog::CreateDefault . 300 [lindex $Writer::Lbl(Warning) $GDefs(Lang)] [lindex $Msg(ProjectRead) $GDefs(Lang)] \
-         info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $oops } {
+      if { [Dialog::CreateDefault . 300 WARNING "" 1 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }

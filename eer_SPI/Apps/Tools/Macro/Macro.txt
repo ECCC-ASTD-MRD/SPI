@@ -22,11 +22,8 @@ namespace eval Macro { } {
    variable Data
    variable Error
 
-   set Lbl(Error)        { "Erreur" "Error" }
-   set Lbl(Ok)           { "Ok" "Ok" }
    set Lbl(Yes)          { "Oui" "Yes" }
    set Lbl(No)           { "Non" "No" }
-   set Lbl(Warning)      { "Attention" "Warning" }
 
    set Error(Execute)    { "La fonction \"Execute\" n'est pas definie" "The \"Execute\" function is not defined" }
    set Error(Info)       { "La description (Info) de la macro n'est pas definie" "The macro description (Info) is no defined" }

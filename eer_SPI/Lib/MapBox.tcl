@@ -86,7 +86,6 @@ namespace eval MapBox {
    set Lbl(Apply)   { "Appliquer" "Apply" }
    set Lbl(Yes)     { "Oui" "Yes" }
    set Lbl(No)      { "Non" "No" }
-   set Lbl(Warning) { "Attention" "Warning" }
    set Lbl(Color)   { "Couleur" "Color" }
    set Lbl(Smooth)  { "Lisse" "Smooth" }
    set Lbl(Fix)     { "Fixe" "Fixed" }
@@ -671,10 +670,7 @@ proc MapBox::Delete { Widget } {
    set idx [lsearch -exact $Data(List) $Data(Name)]
 
    if { $idx!=-1 } {
-      set er [Dialog::CreateDefault .mapbox 200 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Delete) $GDefs(Lang)] \
-         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $er } {
+      if { [Dialog::CreateDefault .mapbox 200 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return
       }
 
@@ -737,17 +733,14 @@ proc MapBox::Save { Widget } {
    set idx [lsearch -exact $Data(List) $Data(Name)]
 
    if { $idx!=-1 } {
-      set er [Dialog::CreateDefault .mapbox 200 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Exist) $GDefs(Lang)] \
-         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $er } {
+      if { [Dialog::CreateDefault .mapbox 200 WARNING $Msg(Exist) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }
    colormap write $Data(Map) $Data(Dir)/$Data(Name).rgba
    MapBox::List $Widget
 
-   Dialog::CreateInfo .mapbox "[lindex $Msg(Saved) $GDefs(Lang)]\n\n\t $Data(Name)"
+   Dialog::CreateInfo .mapbox $Msg(Saved) "\n\n\t $Data(Name)"
 }
 
 #-------------------------------------------------------------------------------

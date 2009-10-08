@@ -50,6 +50,7 @@ Model="${2}"
 NbProc="${3}"
 GridSize="${4}"
 Debug="${5}"
+Debug="high"
 
 Log_Print INFO "Temporary directory  : ${DirTmp}"
 Log_Print INFO "Meteorological model : ${Model}"

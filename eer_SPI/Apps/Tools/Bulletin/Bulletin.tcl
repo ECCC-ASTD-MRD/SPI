@@ -180,7 +180,7 @@ proc Bulletin::Draw { Draw Zoom } {
    } error]
 
    if { $ok } {
-      Dialog::CreateErrorListing .bulletin [lindex $Msg(Coords) $GDefs(Lang)] [.bulletin.mid.t get sel.first sel.last] $GDefs(Lang)
+      Dialog::CreateErrorListing .bulletin $Msg(Coords) [.bulletin.mid.t get sel.first sel.last]
    } else {
       Drawing::Window
       set Drawing::Data(GeoRef) 1
@@ -308,9 +308,7 @@ proc Bulletin::PrintCommand { Widget } {
    #----- Si il y a selection, verifier ce qu'il faut imprimer
 
    if { $selected != "" } {
-      set what [Dialog::CreateDefault .bulletin 300 [lindex $Lbl(Print) $GDefs(Lang)] \
-               [lindex $Msg(Selection) $GDefs(Lang)] warning 0 \
-               [lindex $Lbl(Selection) $GDefs(Lang)] [lindex $Lbl(Tout) $GDefs(Lang)]]
+      set what [Dialog::CreateDefault .bulletin 300 INFO $Msg(Selection) "" 0 $Lbl(Selection) $Lbl(Tout)]
    }
 
    set f [open /tmp/Bulletin[pid].txt w]
@@ -524,8 +522,7 @@ proc Bulletin::SearchNext { TextWidget Direct } {
             .bulletin.mid.frm.scrllist see $Bul(Choix)
             Bulletin::SearchNext $TextWidget $Direct
          } else {
-            Dialog::CreateDefault .bulletin 300 [lindex $Lbl(SearchEnd) $GDefs(Lang)] \
-            [lindex $Msg(Fin) $GDefs(Lang)] warning 0 Ok
+            Dialog::CreateInfo .bulletin $Msg(Fin)
             set Search(LocB) [expr $Search(LocE)-1.0]
          }
       }
@@ -552,8 +549,7 @@ proc Bulletin::SearchNext { TextWidget Direct } {
             set Search(LocB) [$TextWidget index end]
             Bulletin::SearchNext $TextWidget $Direct
          } else {
-            Dialog::CreateDefault .bulletin 300 [lindex $Lbl(SearchEnd) $GDefs(Lang)] \
-            [lindex $Msg(Fin) $GDefs(Lang)] warning 0 Ok
+            Dialog::CreateInfo .bulletin $Msg(Fin)
             set Search(LocB) $Search(LocE)
          }
       }

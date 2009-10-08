@@ -115,7 +115,7 @@ proc MLCD::AskIfInitMeteoData { } {
       set olddate [clock format $Sim(OldSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
       set newdur "$Sim(DurMin) $Error(UnitMinutes)"
       set olddur "$Sim(OldDurMin) $Error(UnitMinutes)"
-      set answer [Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(ChangeReleaseDateTimeSimDur) $GDefs(Lang)]\n\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur2) $GDefs(Lang)] $newdate\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur3) $GDefs(Lang)] $olddate\n\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur4) $GDefs(Lang)] $newdur\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur5) $GDefs(Lang)] $olddur[lindex $Warning(ChangeReleaseDateTimeSimDur6) $GDefs(Lang)]" warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+      set answer [Dialog::CreateDefault .modelnew 500 WARNING $Warning(ChangeReleaseDateTimeSimDur) "\n\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur2) $GDefs(Lang)] $newdate\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur3) $GDefs(Lang)] $olddate\n\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur4) $GDefs(Lang)] $newdur\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur5) $GDefs(Lang)] $olddur[lindex $Warning(ChangeReleaseDateTimeSimDur6) $GDefs(Lang)]" 0 $Lbl(Yes) $Lbl(No)]
 
       if { $answer == 1 } {
          #---- Answer is "No" : Do not re-initialize release date-time, simulation duration and meteo data.
@@ -136,7 +136,7 @@ proc MLCD::AskIfInitMeteoData { } {
 
          set newdate [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
          set olddate [clock format $Sim(OldSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
-         set answer [Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(ChangeReleaseDateTime) $GDefs(Lang)]\n\n\t[lindex $Warning(ChangeReleaseDateTime2) $GDefs(Lang)] $newdate\n\t[lindex $Warning(ChangeReleaseDateTime3) $GDefs(Lang)] $olddate[lindex $Warning(ChangeReleaseDateTime4) $GDefs(Lang)]" warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+         set answer [Dialog::CreateDefault .modelnew 500 WARNING $Warning(ChangeReleaseDateTime) "\n\n\t[lindex $Warning(ChangeReleaseDateTime2) $GDefs(Lang)] $newdate\n\t[lindex $Warning(ChangeReleaseDateTime3) $GDefs(Lang)] $olddate[lindex $Warning(ChangeReleaseDateTime4) $GDefs(Lang)]" 0 $Lbl(Yes) $Lbl(No)]
 
          if { $answer == 1 } {
             #----- Answer is "No" : Do not re-initialize release date-time and meteo data.
@@ -153,7 +153,7 @@ proc MLCD::AskIfInitMeteoData { } {
 
          set newdur "$Sim(DurMin) $Error(UnitMinutes)"
          set olddur "$Sim(OldDurMin) $Error(UnitMinutes)"
-         set answer [Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(ChangeSimDuration) $GDefs(Lang)]\n\n\t[lindex $Warning(ChangeSimDuration2) $GDefs(Lang)] $newdur\n\t[lindex $Warning(ChangeSimDuration3) $GDefs(Lang)] $olddur[lindex $Warning(ChangeSimDuration4) $GDefs(Lang)]" warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+         set answer [Dialog::CreateDefault .modelnew 500 WARNING $Warning(ChangeSimDuration) "\n\n\t[lindex $Warning(ChangeSimDuration2) $GDefs(Lang)] $newdur\n\t[lindex $Warning(ChangeSimDuration3) $GDefs(Lang)] $olddur[lindex $Warning(ChangeSimDuration4) $GDefs(Lang)]" 0 $Lbl(Yes)$Lbl(No)]
 
          if { $answer == 1 } {
             #----- Answer is "No" : Do not re-initialize simulation duration and meteo data
@@ -209,7 +209,7 @@ proc MLCD::ComputeNbValidWindProfiles { } {
 
    #----- Verify that number of wind profile is not zero.
    if { ![llength $Sim(ObsValidIdx)] } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsNbValidWindProfiles) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsNbValidWindProfiles)
       focus $Data(FrameWindProfile).l0.z
       return 0
    }
@@ -255,8 +255,8 @@ proc MLCD::ExtractMetData { } {
 
       #----- Verify if wind profile data has been found.
       if { $windprof == "" } {
-         set msg "Observation \#[expr $i + 1] : [clock format $secs -format "%Y-%m-%d %H;%M UTC" -gmt True]"
-         set answer [Dialog::CreateDefault .modelnew 400 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(WindProfData) $GDefs(Lang)]$msg[lindex $Warning(WindProfData2) $GDefs(Lang)]" warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+         set msg " Observation \#[expr $i + 1] : [clock format $secs -format "%Y-%m-%d %H;%M UTC" -gmt True]"
+         set answer [Dialog::CreateDefault .modelnew 400 WARNING $Warning(WindProfData) "$msg[lindex $Warning(WindProfData2) $GDefs(Lang)]" 0 $Lbl(Yes) $Lbl(No)]
 
          if { $answer == 1 } {
             fstdfile close UNITFILE
@@ -375,9 +375,8 @@ proc MLCD::FindMetData { } {
    #----- Verify that number of meteo data files is greater than 1.
    if { [llength $Sim(Data)] <= 1 } {
       set start [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
-      set text "[lindex $Error(MetData) $GDefs(Lang)]\n\n\t[lindex $Error(MetData2) $GDefs(Lang)] $start"
-      append text "\n\t[lindex $Error(MetData3) $GDefs(Lang)] [clock format $MetData::Data(T0) -gmt True] - [clock format $MetData::Data(T1) -gmt True]"
-      Dialog::CreateError .modelnew $text $GDefs(Lang) 900
+      set text "\n\n\t[lindex $Error(MetData2) $GDefs(Lang)] $start\n\t[lindex $Error(MetData3) $GDefs(Lang)] [clock format $MetData::Data(T0) -gmt True] - [clock format $MetData::Data(T1) -gmt True]"
+      Dialog::CreateError .modelnew $Error(MetData) $text
 
       #----- Select first observation.
       MLCD::SelectObs 1
@@ -411,7 +410,7 @@ proc MLCD::FindMetData { } {
       #----- Initialize old simulation duration.
       set Sim(OldDurMin) $Sim(DurMin)
 
-      Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(SimDuration) $GDefs(Lang)]\n\n\t[lindex $Warning(SimDuration2) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)\n\t[lindex $Warning(SimDuration3) $GDefs(Lang)] $OldSimDurMin $Error(UnitMinutes)" warning 0 "OK"
+      Dialog::CreateDefault .modelnew 500 WARNING $Warning(SimDuration) "\n\n\t[lindex $Warning(SimDuration2) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)\n\t[lindex $Warning(SimDuration3) $GDefs(Lang)] $OldSimDurMin $Error(UnitMinutes)" 0 "OK"
 
       #----- Redefine emission duration since simulation duration has changed.
       MLCD::SetEmissionDuration
@@ -832,7 +831,7 @@ proc MLCD::SetEmissionDuration { { Flag 1 } } {
       set Sim(EmDurationMin) $Sim(DurMin)
 
       if { $Flag } {
-         Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(EmDuration) $GDefs(Lang)]\n\n\t[lindex $Warning(EmDuration2) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)\n\t[lindex $Warning(EmDuration3) $GDefs(Lang)] $OldEmDurMin $Error(UnitMinutes)" warning 0 "OK"
+         Dialog::CreateDefault .modelnew 500 WARNING $Warning(EmDuration) "\n\n\t[lindex $Warning(EmDuration2) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)\n\t[lindex $Warning(EmDuration3) $GDefs(Lang)] $OldEmDurMin $Error(UnitMinutes)" 0 "OK"
       }
    }
 }
@@ -866,7 +865,7 @@ proc MLCD::GetMetData { } {
       return 0
    }
 
-   Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+   Dialog::CreateWait . $Msg(MetGet)
 
    MLCD::SetObservationTimes
    MLCD::InitLocalParameters
@@ -1321,7 +1320,7 @@ proc MLCD::SpeciesFormat { Line } {
          set Sim(EmHalfLife) $halflife
          set Sim(EmDepVel)   $drydepvel
       } else {
-         Dialog::CreateDefault .modelnew 500 "[lindex $Lbl(Warning) $GDefs(Lang)]" "[lindex $Warning(HalfLife) $GDefs(Lang)] $symbol." warning 0 "OK"
+         Dialog::CreateDefault .modelnew 500 WARNING $Warning(HalfLife) " $symbol." 0 "OK"
       }
    }
 }
@@ -1410,11 +1409,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is integer -strict -failindex idx $Sim(EmNumberParticles)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmNbPartRange) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmNbPartRange) " $Sim(EmNumberParticles)."
       focus $Data(EmNbPartEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmNumberParticles) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmNbPart) $GDefs(Lang)] $Sim(EmNumberParticles)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmNbPart) $GDefs(Lang) " $Sim(EmNumberParticles)."
       focus $Data(EmNbPartEnt)
       return 0
    }
@@ -1423,11 +1422,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmTotMass)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmTotMassRange) $GDefs(Lang)] $Sim(EmTotMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmTotMassRange) " $Sim(EmTotMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
       focus $Data(EmTotMassEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmTotMass) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmTotMass) $GDefs(Lang)] $Sim(EmTotMass) [lindex $Error(UnitMass) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmTotMass) " $Sim(EmTotMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
       focus $Data(EmTotMassEnt)
       return 0
    }
@@ -1436,11 +1435,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmDepVel)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDepVelRange) $GDefs(Lang)] $Sim(EmDepVel) $Error(UnitVelocity)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDepVelRange) " $Sim(EmDepVel) $Error(UnitVelocity)"
       focus $Data(EmDepVelEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmDepVel) < 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDepVel) $GDefs(Lang)] $Sim(EmDepVel) $Error(UnitVelocity)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDepVel) " $Sim(EmDepVel) $Error(UnitVelocity)"
       focus $Data(EmDepVelEnt)
       return 0
    }
@@ -1449,11 +1448,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmHalfLife)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmHalfLifeRange) $GDefs(Lang)] $Sim(EmHalfLife) [lindex $Error(UnitDay) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmHalfLifeRange) " $Sim(EmHalfLife) [lindex $Error(UnitDay) $GDefs(Lang)]"
       focus $Data(EmHalfLifeEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmHalfLife) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmHalfLife) $GDefs(Lang)] $Sim(EmHalfLife) [lindex $Error(UnitDay) $GDefs(Lang)]" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmHalfLife) " $Sim(EmHalfLife) [lindex $Error(UnitDay) $GDefs(Lang)]"
       focus $Data(EmHalfLifeEnt)
       return 0
    }
@@ -1462,11 +1461,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmWetScav)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmWetScavRange) $GDefs(Lang)] $Sim(EmWetScav)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmWetScavRange) " $Sim(EmWetScav)."
       focus $Data(EmWetScavEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmWetScav) < 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmWetScav) $GDefs(Lang)] $Sim(EmWetScav)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmWetScav) " $Sim(EmWetScav)."
       focus $Data(EmWetScavEnt)
       return 0
    }
@@ -1475,18 +1474,18 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is integer -strict -failindex idx $Sim(EmDurationMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDurationRange) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDurationRange) " $Sim(EmDurationMin) $Error(UnitMinutes)"
       focus $Data(EmDurationEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmDurationMin) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDuration) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDuration) " $Sim(EmDurationMin) $Error(UnitMinutes)"
       focus $Data(EmDurationEnt)
       return 0
    }
 
    #----- Verify that the release duration is greater or equal to model time step.
    if { $Sim(EmDurationMin) < $Sim(ModelTimeStepMin) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmDuration2) $GDefs(Lang)][lindex $Error(EmDuration3) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)\n[lindex $Error(EmDuration4) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmDuration2) " [lindex $Error(EmDuration3) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)\n[lindex $Error(EmDuration4) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Data(EmDurationEnt)
       return 0
    }
@@ -1498,11 +1497,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmBottom)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmBottomRange) $GDefs(Lang)] $Sim(EmBottom) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmBottomRange) " $Sim(EmBottom) $Error(UnitMeters)"
       focus $Data(EmBottomEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmBottom) < 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmBottom) $GDefs(Lang)] $Sim(EmBottom) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmBottom) " $Sim(EmBottom) $Error(UnitMeters)"
       focus $Data(EmBottomEnt)
       return 0
    }
@@ -1511,11 +1510,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmTop)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmTopRange) $GDefs(Lang)] $Sim(EmTop) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmTopRange) " $Sim(EmTop) $Error(UnitMeters)"
       focus $Data(EmTopEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmTop) <= $Sim(EmBottom)) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmTop) $GDefs(Lang)] $Sim(EmTop) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmTop) " $Sim(EmTop) $Error(UnitMeters)"
       focus $Data(EmTopEnt)
       return 0
    }
@@ -1524,11 +1523,11 @@ proc MLCD::ValidateEmissionTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmRadius)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmRadiusRange) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmRadiusRange) " $Sim(EmRadius) $Error(UnitMeters)"
       focus $Data(EmRadiusEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(EmRadius) < 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(EmRadius) $GDefs(Lang)] $Sim(EmRadius) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(EmRadius) " $Sim(EmRadius) $Error(UnitMeters)"
       focus $Data(EmRadiusEnt)
       return 0
    }
@@ -1563,11 +1562,11 @@ proc MLCD::ValidateLocalParameters { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(ObsRough)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsRoughnessLengthRange) $GDefs(Lang)] $Sim(ObsRough) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsRoughnessLengthRange) " $Sim(ObsRough) $Error(UnitMeters)"
       focus $Data(ObsRoughnessLengthEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(ObsRough) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsRoughnessLength) $GDefs(Lang)] $Sim(ObsRough) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsRoughnessLength) " $Sim(ObsRough) $Error(UnitMeters)"
       focus $Data(ObsRoughnessLengthEnt)
       return 0
    }
@@ -1576,11 +1575,11 @@ proc MLCD::ValidateLocalParameters { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(ObsObukhov)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsObukhovLengthRange) $GDefs(Lang)] $Sim(ObsObukhov) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsObukhovLengthRange) " $Sim(ObsObukhov) $Error(UnitMeters)"
       focus $Data(ObsObukhovLengthEnt)
       return 0
    } elseif { $number == 0 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsObukhovLength) $GDefs(Lang)] $Sim(ObsObukhov) $Error(UnitMeters)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsObukhovLength) " $Sim(ObsObukhov) $Error(UnitMeters)"
       focus $Data(ObsObukhovLengthEnt)
       return 0
    }
@@ -1589,11 +1588,11 @@ proc MLCD::ValidateLocalParameters { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(ObsPrecip)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsPrecipRateRange) $GDefs(Lang)] $Sim(ObsPrecip) $Error(UnitPrecip)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsPrecipRateRange) " $Sim(ObsPrecip) $Error(UnitPrecip)"
       focus $Data(ObsPrecipRateEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(ObsPrecip) < 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ObsPrecipRate) $GDefs(Lang)] $Sim(ObsPrecip) $Error(UnitPrecip)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ObsPrecipRate) " $Sim(ObsPrecip) $Error(UnitPrecip)"
       focus $Data(ObsPrecipRateEnt)
       return 0
    }
@@ -1667,11 +1666,11 @@ proc MLCD::ValidateModelTab { } {
    set idx ""
    set number [string is integer -strict -failindex idx $Sim(DurMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(SimDurationRange) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(SimDurationRange) " $Sim(DurMin) $Error(UnitMinutes)"
       focus $Data(SimDurationEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(DurMin) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(SimDuration) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(SimDuration) " $Sim(DurMin) $Error(UnitMinutes)"
       focus $Data(SimDurationEnt)
       return 0
    }
@@ -1696,11 +1695,11 @@ proc MLCD::ValidateModelTab { } {
    set idx ""
    set number [string is integer -strict -failindex idx $Sim(OutputTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStepRange) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(OutputTimeStepRange) " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Data(OutputTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(OutputTimeStepMin) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep1) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(OutputTimeStep1) " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Data(OutputTimeStepEnt)
       return 0
    }
@@ -1709,60 +1708,60 @@ proc MLCD::ValidateModelTab { } {
    set idx ""
    set number [string is integer -strict -failindex idx $Sim(ModelTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStepRange) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStepRange) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(ModelTimeStepMin) <= 0) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep1) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep1) " $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that output time step is lower (or equal to) simulation duration.
    if { $Sim(OutputTimeStepMin) > $Sim(DurMin) } {
-      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep2) $GDefs(Lang)][lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(OutputTimeStep4) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(OutputTimeStep2) " [lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(OutputTimeStep4) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)"
       focus $Data(OutputTimeStepEnt)
       return 0
    }
 
    #----- Verify that model time step is lower (or equal to) release duration.
    if { $Sim(ModelTimeStepMin) > $Sim(EmDurationMin) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep2) $GDefs(Lang)][lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep4) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep2) " [lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep4) $GDefs(Lang)] $Sim(EmDurationMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that model time step is lower (or equal) to simulation duration.
    if { $Sim(ModelTimeStepMin) > $Sim(DurMin) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep5) $GDefs(Lang)][lindex $Error(ModelTimeStep6) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep7) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep5) " [lindex $Error(ModelTimeStep6) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep7) $GDefs(Lang)] $Sim(DurMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that model time step is greater than (or equal to) 1 minute and lower than (or equal to) 60 min.
    if { $Sim(ModelTimeStepMin) < 1 || $Sim(ModelTimeStepMin) > 60 } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep11) $GDefs(Lang)][lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep11) " [lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that model time step is an integer divisor of 60 minutes.
    if { [expr fmod(60, $Sim(ModelTimeStepMin))] > $Sim(Epsilon) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep12) $GDefs(Lang)][lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep12) " [lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that model time step is a integer multiple of 1 minute.
    if { [expr fmod($Sim(ModelTimeStepMin), 1)] > $Sim(Epsilon) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep13) $GDefs(Lang)][lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep13) " [lindex $Error(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that output time step is greater than (or equal to) 1 minute and lower than (or equal to) 1440 minutes (24 hrs).
    if { $Sim(OutputTimeStepMin) < 1 || $Sim(OutputTimeStepMin) > 1440 } {
-      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep6) $GDefs(Lang)][lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(OutputTimeStep6) " [lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Data(OutputTimeStepEnt)
       return 0
    }
@@ -1771,14 +1770,14 @@ proc MLCD::ValidateModelTab { } {
 
       #----- Verify that output time step is an integer divisor of 60 minutes.
       if { [expr fmod(60, $Sim(OutputTimeStepMin))] > $Sim(Epsilon) } {
-         Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep7) $GDefs(Lang)][lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(OutputTimeStep7) " [lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
          focus $Data(OutputTimeStepEnt)
          return 0
       }
 
       #----- Verify that output time step is an integer multiple of 1 minute.
       if { [expr fmod($Sim(OutputTimeStepMin), 1)] > $Sim(Epsilon) } {
-         Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep8) $GDefs(Lang)][lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(OutputTimeStep8) " [lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
          focus $Data(OutputTimeStepEnt)
          return 0
       }
@@ -1787,14 +1786,14 @@ proc MLCD::ValidateModelTab { } {
 
       #----- Verify that output time step is an integer divisor of 1440 minutes.
       if { [expr fmod(1440, $Sim(OutputTimeStepMin))] > $Sim(Epsilon) } {
-         Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep9) $GDefs(Lang)][lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(OutputTimeStep9) " [lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
          focus $Data(OutputTimeStepEnt)
          return 0
       }
 
       #----- Verify that output time step is an integer multiple of 60 minutes.
       if { [expr fmod($Sim(OutputTimeStepMin), 60)] > $Sim(Epsilon) } {
-         Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep10) $GDefs(Lang)][lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(OutputTimeStep10) " [lindex $Error(OutputTimeStep3) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
          focus $Data(OutputTimeStepEnt)
          return 0
       }
@@ -1803,14 +1802,14 @@ proc MLCD::ValidateModelTab { } {
 
    #----- Verify that model time step is lower (or equal to) output time step.
    if { $Sim(ModelTimeStepMin) > $Sim(OutputTimeStepMin) } {
-      Dialog::CreateError .modelnew "[lindex $Error(ModelTimeStep8) $GDefs(Lang)][lindex $Error(ModelTimeStep9) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep10) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(ModelTimeStep8) " [lindex $Error(ModelTimeStep9) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep10) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
 
    #----- Verify that output time step is an integer multiple of model time step.
    if { [expr fmod($Sim(OutputTimeStepMin), $Sim(ModelTimeStepMin))] > $Sim(Epsilon) } {
-      Dialog::CreateError .modelnew "[lindex $Error(OutputTimeStep5) $GDefs(Lang)][lindex $Error(ModelTimeStep9) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep10) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(OutputTimeStep5) " [lindex $Error(ModelTimeStep9) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)\n[lindex $Error(ModelTimeStep10) $GDefs(Lang)] $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Data(ModelTimeStepEnt)
       return 0
    }
@@ -1819,18 +1818,18 @@ proc MLCD::ValidateModelTab { } {
    set idx ""
    set number [string is double -strict -failindex idx $Sim(GridDomain)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::CreateError .modelnew "[lindex $Error(GridDomainRange) $GDefs(Lang)] $Sim(GridDomain) $Error(UnitKilometers)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(GridDomainRange) " $Sim(GridDomain) $Error(UnitKilometers)"
       focus $Data(ConcDomainEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $Sim(GridDomain) <= 0.1) || ($number == 1 && $Sim(GridDomain) > 200) } {
-      Dialog::CreateError .modelnew "[lindex $Error(GridDomain) $GDefs(Lang)] $Sim(GridDomain) $Error(UnitKilometers)" $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(GridDomain) " $Sim(GridDomain) $Error(UnitKilometers)"
       focus $Data(ConcDomainEnt)
       return 0
    }
 
    #----- Verify that number of concentration vertical levels is greater than 1.
    if { [llength $Sim(VerticalLevels)]<2 } {
-      Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels1) $GDefs(Lang)][lindex $Error(VerticalLevels2) $GDefs(Lang)] $Sim(NbVerticalLevels).\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels)." $GDefs(Lang) 600
+      Dialog::CreateError .modelnew $Error(VerticalLevels1) " [lindex $Error(VerticalLevels2) $GDefs(Lang)] $Sim(NbVerticalLevels).\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels)."
       focus $Data(ConcVerticalLevelsEnt)
       return 0
    }
@@ -1842,11 +1841,11 @@ proc MLCD::ValidateModelTab { } {
       set idx ""
       set number [string is double -strict -failindex idx $level]
       if { $number == 0 && $idx == -1 } {
-         Dialog::CreateError .modelnew "[lindex $Error(VerticalLevelsRange) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(VerticalLevelsRange) " $level $Error(UnitMeters)"
          focus $Data(ConcVerticalLevelsEnt)
          return 0
       } elseif { $number == 0 || ($number == 1 && $level < 0) } {
-         Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels4) $GDefs(Lang)] $level $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(VerticalLevels4) " $level $Error(UnitMeters)"
          focus $Data(ConcVerticalLevelsEnt)
          return 0
       }
@@ -1854,7 +1853,7 @@ proc MLCD::ValidateModelTab { } {
       if { $i > 0 } {
          set prevlevel [lindex $Sim(VerticalLevels) [expr $i - 1]]
          if { $level <= $prevlevel } {
-            Dialog::CreateError .modelnew "[lindex $Error(VerticalLevels5) $GDefs(Lang)] $Sim(VerticalLevels)." $GDefs(Lang) 600
+            Dialog::CreateError .modelnew $Error(VerticalLevels5) " $Sim(VerticalLevels)."
             focus $Data(ConcVerticalLevelsEnt)
             return 0
          }
@@ -1897,7 +1896,7 @@ proc MLCD::ValidateObsDateTime { } {
          set time0 "Observation \# [expr $idx + 1] : [clock format $time -format "%Y-%m-%d %H:%M UTC" -gmt True]"
          set time1 "Observation \# [expr $nextidx + 1] : [clock format $nexttime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
 
-         Dialog::CreateError .modelnew "[lindex $Error(ObsTimes) $GDefs(Lang)]\t$time0\n\t$time1" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsTimes) "\t$time0\n\t$time1"
 
          #----- Select next observation according to date-time stamps comparison.
          MLCD::SelectObs [expr $nextidx + 1]
@@ -1918,7 +1917,7 @@ proc MLCD::ValidateObsDateTime { } {
          set obs0  "Observation \# [expr $FirstIdx + 1] : [clock format $FirstObsTime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
          set obs1  "Observation \# [expr $LastIdx + 1] : [clock format $LastObsTime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
 
-         Dialog::CreateError .modelnew "[lindex $Error(ObsTimes2) $GDefs(Lang)]\t$acc\n\t$obs0\n\t$obs1" $GDefs(Lang) 500
+         Dialog::CreateError .modelnew $Error(ObsTimes2) "\t$acc\n\t$obs0\n\t$obs1"
 
          #----- Select first observation.
          MLCD::SelectObs 1
@@ -1930,7 +1929,7 @@ proc MLCD::ValidateObsDateTime { } {
          set acc   "Accident        : [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]"
          set obs0  "Observation \# [expr $FirstIdx + 1] : [clock format $FirstObsTime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
 
-         Dialog::CreateError .modelnew "[lindex $Error(ObsTimes2) $GDefs(Lang)]\t$acc\n\t$obs0" $GDefs(Lang) 500
+         Dialog::CreateError .modelnew $Error(ObsTimes2) "\t$acc\n\t$obs0"
 
          #----- Select first observation.
          MLCD::SelectObs 1
@@ -1976,11 +1975,11 @@ proc MLCD::ValidateWindProfile { } {
       set idx ""
       set number [string is double -failindex idx $height]
       if { $number == 0 && $idx == -1 } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsHeightRange) $GDefs(Lang)] $height $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsHeightRange) " $height $Error(UnitMeters)"
          focus $HeightEnt
          return 0
       } elseif { $number == 0 || ($number == 1 && $height <= 0 && $height != "") } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsHeight) $GDefs(Lang)] $height $Error(UnitMeters)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsHeight) " $height $Error(UnitMeters)"
          focus $HeightEnt
          return 0
       }
@@ -1989,11 +1988,11 @@ proc MLCD::ValidateWindProfile { } {
       set idx ""
       set number [string is double -failindex idx $velocity]
       if { $number == 0 && $idx == -1 } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsVelocityRange) $GDefs(Lang)] $velocity $Error(UnitVelocity)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsVelocityRange) $GDefs(Lang)] " $velocity $Error(UnitVelocity)"
          focus $VelocityEnt
          return 0
       } elseif { $number == 0 || ($number == 1 && $velocity < 0 && $velocity != "") } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsVelocity) $GDefs(Lang)] $velocity $Error(UnitVelocity)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsVelocity) " $velocity $Error(UnitVelocity)"
          focus $VelocityEnt
          return 0
       }
@@ -2002,32 +2001,32 @@ proc MLCD::ValidateWindProfile { } {
       set idx ""
       set number [string is double -failindex idx $direction]
       if { $number == 0 && $idx == -1 } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsDirectionRange) $GDefs(Lang)] $direction $Error(UnitDirection)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsDirectionRange) " $direction $Error(UnitDirection)"
          focus $DirectionEnt
          return 0
       } elseif { $number == 0 || ($number == 1 && $direction != "" && ($direction < 0.0 || $direction >= 360.0)) } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsDirection) $GDefs(Lang)] $direction $Error(UnitDirection)" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsDirection) " $direction $Error(UnitDirection)"
          focus $DirectionEnt
          return 0
       }
 
       #----- Verify that height field is not empty for a specified velocity or direction.
       if { ($height == "" && ($velocity != "" || $direction != "")) } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsEmptyField) $GDefs(Lang)]" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsEmptyField)
          focus $HeightEnt
          return 0
       }
 
       #----- Verify that velocity field is not empty for a specified height or direction.
       if { ($velocity == "" && ($height != "" || $direction != "")) } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsEmptyField) $GDefs(Lang)]" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsEmptyField)
          focus $VelocityEnt
          return 0
       }
 
       #----- Verify that direction field is not empty for a specified height or velocity.
       if { ($direction == "" && ($height != "" || $velocity != "")) } {
-         Dialog::CreateError .modelnew "[lindex $Error(ObsEmptyField) $GDefs(Lang)]" $GDefs(Lang) 600
+         Dialog::CreateError .modelnew $Error(ObsEmptyField)
          focus $DirectionEnt
          return 0
       }

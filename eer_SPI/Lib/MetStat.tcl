@@ -478,7 +478,7 @@ proc MetStat::RECRCLoad { File } {
          #----- Verifier la structure de la commande
 
          if { [catch {MetStat::RECRCEval $cmd}] } {
-            Dialog::CreateError . "[lindex $Msg(RECRC) $GDefs(Lang)]\n\n$cmd" $GDefs(Lang)
+            Dialog::CreateError . $Msg(RECRC) "\n\n$cmd"
          }
       } else {
          gets $file line

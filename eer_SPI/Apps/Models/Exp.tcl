@@ -60,7 +60,6 @@ namespace eval Exp {
    set Lbl(Suppress)           { "Supprimer" "Delete" }
    set Lbl(Yes)                { "Oui" "Yes" }
    set Lbl(No)                 { "Non" "No" }
-   set Lbl(Warning)            { "Attention" "Warning" }
    set Lbl(Params)             { "Parametres" "Parameters" }
    set Lbl(Name)               { "Nom" "Name" }
 
@@ -616,7 +615,7 @@ proc Exp::ThreadKill { Id } {
    if { [simulation is $Id] } {
 
       set ::Model::Param(Job) "[lindex $Msg(Kill) $GDefs(Lang)]"
-      Dialog::CreateWait $Data(Frame) [lindex $Msg(Kill) $GDefs(Lang)]
+      Dialog::CreateWait $Data(Frame) $Msg(Kill)
       update idletasks
 
       #----- Signal simulation to finish and wait for it to do so
@@ -654,7 +653,7 @@ proc Exp::New { } {
 
    #----- Verifier la validitee des parametres
    if { $Model::Data(Name)=="" } {
-       Dialog::CreateError .expnew [lindex $Msg(Name) $GDefs(Lang)] $GDefs(Lang)
+       Dialog::CreateError .expnew $Msg(Name)
        return 0
    }
 
@@ -676,11 +675,11 @@ proc Exp::New { } {
       }
 
       if { $Model::Data(Lat$i)<-90.0 || $Model::Data(Lat$i)>90.0 || $Model::Data(Lon$i)<-180 || $Model::Data(Lon$i)>360 } {
-          Dialog::CreateError .expnew "[lindex $Msg(Coord) $GDefs(Lang)]\n\n\t$Model::Data(Name$i) $Model::Data(Lat$i) $Model::Data(Lon$i)\n" $GDefs(Lang)
+          Dialog::CreateError .expnew $Msg(Coord) "\n\n\t$Model::Data(Name$i) $Model::Data(Lat$i) $Model::Data(Lon$i)\n"
           return 0
       }
       if { $Model::Data(Name$i)=="" } {
-          Dialog::CreateError .expnew [lindex $Msg(Name) $GDefs(Lang)] $GDefs(Lang)
+          Dialog::CreateError .expnew $Msg(Name)
           return 0
       }
 
@@ -693,7 +692,7 @@ proc Exp::New { } {
    }
 
    if { [llength $info]==0 } {
-       Dialog::CreateError .expnew [lindex $Msg(Pos) $GDefs(Lang)] $GDefs(Lang)
+       Dialog::CreateError .expnew $Msg(Pos)
        return 0
    }
 
@@ -939,7 +938,7 @@ proc Exp::ProductRSMCFax { } {
 
    set path $Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin
 
-   Dialog::CreateMessage . "[lindex $Msg(Fax) $GDefs(Lang)]\n\n\t$path/rsmc_fax.ps"
+   Dialog::CreateMessage . $Msg(Fax) "\n\n\t$path/rsmc_fax.ps"
 
    set nbre [lindex [exec wc -w $path/IP2List.txt] 0]
 
@@ -983,15 +982,11 @@ proc Exp::ProductRSMCJointData { } {
    . config -cursor watch
    update idletasks
 
-   set send [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(JointData) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $send } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(JointData) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
-   set join [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(JointClear) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
+   set join [Dialog::CreateDefault . 400 WARNING $Msg(JointClear) "" 0 $Lbl(Yes) $Lbl(No)]
 
    #----- setup le repertoire et le fichier concernant la run du modele meteo utilise.
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
@@ -1017,7 +1012,7 @@ proc Exp::ProductRSMCJointData { } {
       exec echo [clock format [clock seconds] -format "%Y%m%d${run}_%H%M" -gmt true] > $path/CA_DATE.TXT
    }
 
-   Dialog::CreateMessage . [lindex $Msg(SendJoint) $GDefs(Lang)]
+   Dialog::CreateMessage . $Msg(SendJoint)
 
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
@@ -1063,10 +1058,7 @@ proc Exp::ProductRSMCJointStatement { File } {
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin/joint_statement_b.html"
    file copy -force $File $path
 
-   set send [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(JointStatement) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $send } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(JointStatement) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1139,7 +1131,7 @@ proc Exp::ReadPath { Path } {
          Exp::Read
          Exp::CreateTree
       } else {
-         Dialog::CreateError . [lindex $Msg(Path) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError . $Msg(Path)
       }
    }
 }
@@ -1337,29 +1329,26 @@ proc Exp::StoreIt { Id } {
    #----- Check if an archive already exists
    set ErrorCode [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc } Message]
    if { !$ErrorCode } {
-      set notoverwrite [Dialog::CreateDefault .dlgstore 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(StoreExist) $GDefs(Lang)] \
-         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { $notoverwrite } {
+      if { [Dialog::CreateDefault .dlgstore 400 WARNING $Msg(StoreExist) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return False
       }
    }
 
-   Dialog::CreateWait .dlgstore [lindex $Msg(DoingStore) $GDefs(Lang)]
+   Dialog::CreateWait .dlgstore $Msg(DoingStore)
 
    #----- Build the archive
    cd  [set path [Exp::Path]]/../
 #   set ErrorCode [catch { exec cmcarc -a $path -f /tmp/$Id.cmc --md5 --dereference } Message]
    set ErrorCode [catch { exec tar -zcvf /tmp/$Id.tgz $path } Message]
    if { $ErrorCode } {
-      Dialog::CreateError .dlgstore $Message $GDefs(Lang)
+      Dialog::CreateError .dlgstore [list $Message $Message]
       set code False
    } else {
       #----- Copy it to CFS
-      Dialog::CreateWait .dlgstore  [lindex $Msg(DoingCopy) $GDefs(Lang)]
+      Dialog::CreateWait .dlgstore  $Msg(DoingCopy)
       set ErrorCode [catch { exec scp /tmp/$Id.cmc $Param(StoreHost):$Param(StorePath)/$Id.cmc } Message]
       if { $ErrorCode } {
-         Dialog::CreateError .dlgstore $Message $GDefs(Lang)
+         Dialog::CreateError .dlgstore [list $Message $Message]
          set code False
       } else {
          #----- Remove local copy
@@ -1396,10 +1385,7 @@ proc Exp::Suppress { } {
    variable Msg
 
    #----- Verifier la validitee des parametres
-   set answer [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SuppressExp) $GDefs(Lang)]\n\n\t($Data(No)) $Data(Name)" \
-     warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $answer == 1 } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(SuppressExp) "\n\n\t($Data(No)) $Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1411,7 +1397,7 @@ proc Exp::Suppress { } {
    file delete -force $Param(Path)/$Data(No)_$Data(Name)
 
    if { [file exists $Param(Path)/$Data(No)_$Data(Name)] } {
-      Dialog::CreateError .  "[lindex $Msg(SuppressError) $GDefs(Lang)]\n\n\t$Param(Path)/$Data(No)_$Data(Name)" $GDefs(Lang)
+      Dialog::CreateError .  $Msg(SuppressError) "\n\n\t$Param(Path)/$Data(No)_$Data(Name)"
       Debug::TraceProc "Unable to suppress experiment : $Data(No) $Data(Name)"
    } else {
 

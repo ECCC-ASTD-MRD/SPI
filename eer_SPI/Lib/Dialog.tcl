@@ -12,27 +12,49 @@
 #    Permet d'afficher diverses boite de dialogue standard.
 #
 # Fonctions:
-#    Dialog::CreateDefault      { Master Loc Width Title Text Bitmap Default args }
-#    Dialog::CreateInfo         { Master Text }
-#    Dialog::CreateWait         { Master Text { Percent 0 } }
+#    Dialog::CreateDefault      { Master Width Type Text Extra Default args }
+#    Dialog::CreateInfo         { Master Text { Extra "" } }
+#    Dialog::CreateWait         { Master Text { Extra "" } }
 #    Dialog::DestroyWait        { }
-#    Dialog::CreateError        { Master Text Lang }
-#    Dialog::CreateErrorListing { Master Text List Lang }
-#    Dialog::CreateMessage      { Master Text }
+#    Dialog::CreateError        { Master Text { Extra "" } }
+#    Dialog::CreateErrorListing { Master Text List }
+#    Dialog::CreateMessage      { Master Text { Extra "" } }
+#    Dialog::CreateGetter       { Master Title Text { Var "" } }
 #    Dialog::CreateText         { Id Title File Width Height }
 #    Text::Create               { Id Title File Width Height }
 #    Text::Save                 { Text File }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
-#
+#    - Icon license
+#         author : Aleksandra Wolska
+#         e-mail : wolskaola@gmail.com
+#         www    : olawolska.com, graffika.org
+#         license: Attribution-Share Alike 3.0 Unported (http://creativecommons.org/licenses/by-sa/3.0/)
 #===============================================================================
 
-package provide Dialog 2.1
+package provide Dialog 3.0
 
-catch { SPI::Splash "Loading Widget Package Dialog 2.1" }
+catch { SPI::Splash "Loading Widget Package Dialog 3.0" }
 
-namespace eval Dialog { }
+namespace eval Dialog { } {
+   variable Lbl
+
+   set Lbl(Ok)      { "Ok" "Ok" }
+   set Lbl(Cancel)  { "Annuler" "Cancel" }
+
+   set Lbl(WARNING)  { "Avertissement" "Warning" }
+   set Lbl(INFO)     { "Information" "Information" }
+   set Lbl(MESSAGE)  { "Message" "Message" }
+   set Lbl(ERROR)    { "Erreur" "Error" }
+   set Lbl(QUESTION) { "Question ?" "Question ?" }
+
+   image create photo DIALOG_ERROR    -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Error.gif
+   image create photo DIALOG_WAIT     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Timer.gif
+   image create photo DIALOG_WARNING  -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Alert.gif
+   image create photo DIALOG_QUESTION -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Tick.gif
+   image create photo DIALOG_INFO     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Info.gif
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Dialog::CreateDefault>
@@ -43,8 +65,9 @@ namespace eval Dialog { }
 # Parametres :
 #   <Master> : Frame a qui la boite appartient.
 #   <Width>  : Largeur de la boite
-#   <Title>  : Titre de la boite.
-#   <Text>   : Texte a afficher dans la boite.
+#   <Title>  : Titre bilingue de la boite.
+#   <Text>   : Texte bilingue a afficher dans la boite.
+#   <Extra>  : Texte suplementaire
 #   <Bitmap> : Bitmap de la boite.
 #   <Default>: Index du bouton par default (-1 si aucun).
 #   <args>   : Liste des boutons a inserer dans la boite (Oui , Ok , ... ).
@@ -56,71 +79,66 @@ namespace eval Dialog { }
 #
 #-------------------------------------------------------------------------------
 
-proc  Dialog::CreateDefault { Master Width Title Text Bitmap Default args } {
+proc  Dialog::CreateDefault { Master Width Type Text Extra Default args } {
+   global GDefs
    global button
+   variable Lbl
 
-   if { ![info exists ::tk_version] } {
-      puts "(INFO) $Text"
-      return
+   switch $Type {
+      "WARNING"  { set title [lindex $Lbl(WARNING)  $GDefs(Lang)]; set icon DIALOG_WARNING }
+      "INFO"     { set title [lindex $Lbl(INFO)     $GDefs(Lang)]; set icon DIALOG_INFO }
+      "ERROR"    { set title [lindex $Lbl(ERROR)    $GDefs(Lang)]; set icon DIALOG_ERROR }
+      "MESSAGE"  { set title [lindex $Lbl(MESSAGE)  $GDefs(Lang)]; set icon DIALOG_QUESTION }
+      "QUESTION" { set title [lindex $Lbl(QUESTION) $GDefs(Lang)]; set icon DIALOG_QUESTION }
+      default    { set title [lindex $Type $GDefs(Lang)];          set icon DIALOG_QUESTION }
    }
 
-   toplevel .dg -class Dialog
-   wm title .dg $Title
-   wm resizable .dg 0 0
-   wm protocol .dg WM_DELETE_WINDOW { }
+   toplevel     .dlgdef -class Dialog
+   wm title     .dlgdef $title
+   wm resizable .dlgdef 0 0
+   wm protocol  .dlgdef WM_DELETE_WINDOW { }
 
    #----- Positionnement de la boite
-
    if { [winfo exists $Master] } {
-      wm transient .dg $Master
-      wm geom .dg +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+      wm transient .dlgdef $Master
+      wm geom .dlgdef +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
    }
 
-   frame .dg.top -relief raised -bd 1
-   pack .dg.top -side top -fill both -expand true
-   frame .dg.bot
-   pack .dg.bot -side bottom -fill x -expand true
+   frame .dlgdef.top -relief raised -bd 1
+      label .dlgdef.top.bitmap -image $icon
+      message .dlgdef.top.msg -width $Width -text [lindex $Text $GDefs(Lang)]
+      pack .dlgdef.top.bitmap .dlgdef.top.msg -side left -expand 1 -fill both -padx 3m -pady 3m
+    pack .dlgdef.top -side top -fill both -expand true
 
-   #----- Insertion du bitmap et du message
-
-   message .dg.top.msg -width $Width -text $Text
-   pack .dg.top.msg -side right -expand 1 -fill both -padx 3m -pady 3m
-
-   if { $Bitmap != ""} {
-      label .dg.top.bitmap -bitmap $Bitmap
-      pack .dg.top.bitmap -side left -padx 3m -pady 3m
-   }
-
-   #----- Creation de la rangee de bouttons
+   frame .dlgdef.bot
+   pack .dlgdef.bot -side bottom -fill x -expand true
 
    set i 0
+   puts stderr .$args.
    foreach but $args {
-      button .dg.bot.button$i -text $but -command "set button $i"  -relief raised -bd 1
+      button .dlgdef.bot.button$i -text [lindex $but $GDefs(Lang)] -command "set button $i"  -relief raised -bd 1
       if {$i == $Default} {
-         .dg.bot.button$i configure -foreground green
+         .dlgdef.bot.button$i configure -foreground green
       }
-      pack .dg.bot.button$i -side left -expand 1 -fill x
+      pack .dlgdef.bot.button$i -side left -expand 1 -fill x
       incr i
    }
 
    set oldFocus [focus]
 
    #----- Mise en place de la surveillance des bouttons
-
-   if { $Default >= 0 } {
-      bind .dg <Return> ".dg.bot.button$Default flash; \
-         set button $Default"
-      focus  .dg.bot.button$Default
+   if { $Default>=0 } {
+      bind .dlgdef <Return> ".dlgdef.bot.button$Default flash; set button $Default"
+      focus .dlgdef.bot.button$Default
    }
 
    update idletasks
-   grab .dg
+   grab .dlgdef
 
    #----- Attente de la selection du boutton
-
    tkwait variable button
    focus $oldFocus
-   destroy .dg
+   destroy .dlgdef
    return $button
 }
 
@@ -132,55 +150,55 @@ proc  Dialog::CreateDefault { Master Width Title Text Bitmap Default args } {
 #
 # Parametres :
 #    <Master> : Fenetre toplevel auquel l'aide est reliee.
-#    <Text>   : Texte a afficher.
-#    <Lang>   : Langue ( 0 Francais 1 Anglais ) .
-#    <Aspect> : Aspect de la boite (default=1000).
+#    <Text>   : Texte bilingue a afficher.
+#    <Extra>  : Texte supplementaire.
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
+proc Dialog::CreateError { Master Text { Extra "" } } {
+   global GDefs
+   variable Lbl
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(ERROR) $Text"
+      puts stderr "(ERROR) [lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
    set previous [grab current]
 
-   if { [winfo exists .error] == 1} {
+   if { [winfo exists .dlgerr] == 1} {
 
-      set oldtext [lindex [.error.haut.txt configure -text] 4]
-      .error.haut.txt configure -text "$oldtext\n\n$Text"
+      set oldtext [lindex [.dlgerr.haut.txt configure -text] 4]
+      .dlgerr.haut.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
 
    } else {
 
-      toplevel .error
-      wm title .error [lindex { "Erreur" "Error" } $Lang]
-      wm protocol .error WM_DELETE_WINDOW { }
+      toplevel .dlgerr -class Dialog
+      wm title .dlgerr [lindex $Lbl(ERROR) $GDefs(Lang)]
+      wm protocol .dlgerr WM_DELETE_WINDOW { }
       if { [winfo exists $Master] } {
-#         wm transient .error $Master
-         wm geom .error +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+         wm geom .dlgerr +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
       }
 
       # ----- Afficher le frame du haut qui va contenir le message
 
-      frame .error.haut -relief raised -bd 1
-      pack .error.haut -side top -expand true -fill x
+      frame .dlgerr.haut -relief raised -bd 1
+      pack .dlgerr.haut -side top -expand true -fill x
 
-      label .error.haut.bitmap -bitmap error
-      message .error.haut.txt -aspect $Aspect -text $Text
-      pack .error.haut.bitmap -side left -padx 20 -pady 20
-      pack .error.haut.txt -padx 20 -pady 20
+      label .dlgerr.haut.bitmap -image DIALOG_ERROR
+      message .dlgerr.haut.txt -aspect 1000 -text "[lindex $Text $GDefs(Lang)]$Extra"
+      pack .dlgerr.haut.bitmap -side left -padx 10 -pady 10
+      pack .dlgerr.haut.txt -padx 10 -pady 10
 
       # ----- Afficher le frame du bas qui va contenir le bouton retour
 
-      button .error.ok -text "OK" -command "catch { grab [lindex $previous 0] } ; destroy .error" -bd 1
-      pack .error.ok -side bottom -ipadx 10 -fill x
+      button .dlgerr.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command "catch { grab [lindex $previous 0] } ; destroy .dlgerr" -bd 1
+      pack .dlgerr.ok -side bottom -ipadx 10 -fill x
       update idletasks
-      grab .error
+      grab .dlgerr
    }
 }
 
@@ -194,63 +212,62 @@ proc Dialog::CreateError { Master Text Lang { Aspect 1000 } } {
 #    <Master> : Fenetre toplevel auquel l'aide est reliee.
 #    <Text>   : Texte a afficher.
 #    <List>   : Text a ajouter a la liste deroulante
-#    <Lang>   : Langue ( 0 Francais 1 Anglais ) .
-#    <Aspect> : Aspect de la boite (default=1000).
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateErrorListing { Master Text List Lang } {
+proc Dialog::CreateErrorListing { Master Text List } {
    global GDefs
+   variable Lbl
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(ERROR) $Text"
+      puts stderr "(ERROR) [lindex $Text $GDefs(Lang)]"
       return
    }
 
    set previous [grab current]
 
-   if { [winfo exists .errorlist] == 1} {
+   if { [winfo exists .dlgerrlist] == 1} {
 
-      .errorlist.haut.txt configure -text "$Text"
-      .errorlist.bas.list insert end $List
+      .dlgerrlist.haut.txt configure -text [lindex $Text $GDefs(Lang)]
+      .dlgerrlist.bas.list insert end $List
 
    } else {
 
-      toplevel .errorlist
-      wm title .errorlist [lindex { "Erreur" "Error" } $Lang]
-      wm protocol .errorlist WM_DELETE_WINDOW { }
+      toplevel .dlgerrlist -class Dialog
+      wm title .dlgerrlist [lindex $Lbl(ERROR) $GDefs(Lang)]
+      wm protocol .dlgerrlist WM_DELETE_WINDOW { }
       if { [winfo exists $Master] } {
-         wm geom .errorlist +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+         wm geom .dlgerrlist +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
       }
 
       #----- Afficher le frame du haut qui va contenir le message
 
-      frame .errorlist.haut -relief raised -bd 1
-         label .errorlist.haut.bitmap -bitmap error
-         message .errorlist.haut.txt -aspect 1000 -text $Text
-         pack .errorlist.haut.bitmap -side left -padx 20 -pady 20
-         pack .errorlist.haut.txt -padx 20 -pady 20
-      pack .errorlist.haut -side top -fill x
+      frame .dlgerrlist.haut -relief raised -bd 1
+         label .dlgerrlist.haut.bitmap -image DIALOG_ERROR
+         message .dlgerrlist.haut.txt -aspect 1000 -text [lindex $Text $GDefs(Lang)]
+         pack .dlgerrlist.haut.bitmap -side left -padx 10 -pady 10
+         pack .dlgerrlist.haut.txt -padx 10 -pady 1+0
+      pack .dlgerrlist.haut -side top -fill x
 
-      frame .errorlist.bas
-         scrollbar .errorlist.bas.scroll -command ".errorlist.bas.list yview" -bd 1 -width 10
-         text .errorlist.bas.list -relief sunken -yscrollcommand ".errorlist.bas.scroll set" \
+      frame .dlgerrlist.bas
+         scrollbar .dlgerrlist.bas.scroll -command ".dlgerrlist.bas.list yview" -bd 1 -width 10
+         text .dlgerrlist.bas.list -relief sunken -yscrollcommand ".dlgerrlist.bas.scroll set" \
             -exportselection 0 -background $GDefs(ColorLight) -bd 1
-         pack .errorlist.bas.list -side left -fill both -expand True
-         pack .errorlist.bas.scroll -side left -fill y
-      pack  .errorlist.bas -side top -fill both -expand True
+         pack .dlgerrlist.bas.list -side left -fill both -expand True
+         pack .dlgerrlist.bas.scroll -side left -fill y
+      pack  .dlgerrlist.bas -side top -fill both -expand True
 
-      .errorlist.bas.list insert 0.0 $List
+      .dlgerrlist.bas.list insert 0.0 $List
 
       #----- Afficher le frame du bas qui va contenir le bouton retour
 
-      button .errorlist.ok -text "OK" -command "catch { grab [lindex $previous 0] } ; destroy .errorlist" -bd 1
-      pack .errorlist.ok -side bottom -ipadx 10 -fill x
+      button .dlgerrlist.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command "catch { grab [lindex $previous 0] } ; destroy .dlgerrlist" -bd 1
+      pack .dlgerrlist.ok -side bottom -ipadx 10 -fill x
       update idletasks
-      grab .errorlist
+      grab .dlgerrlist
    }
 }
 
@@ -262,30 +279,31 @@ proc Dialog::CreateErrorListing { Master Text List Lang } {
 #
 # Parametres :
 #    <Master> : Fenetre toplevel auquel l'aide est reliee.
-#    <Text>   : Texte a afficher.
-#    <Lang>   : Langue ( 0 Francais 1 Anglais ) .
-#    <Aspect> : Aspect de la boite (default=1000).
+#    <Text>   : Texte bilingue a afficher.
+#    <Extra>  : Texte supplementaire.
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
+proc Dialog::CreateInfo { Master Text { Extra "" } } {
+   global GDefs
+   variable Lbl
 
    if { ![info exists ::tk_version] } {
-      puts "(INFO) $Text"
+      puts "(INFO) [lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
    if { [winfo exists .dlginfo] == 1} {
 
       set oldtext [lindex [.dlginfo.haut.txt configure -text] 4]
-      .dlginfo.haut.txt configure -text "$oldtext\n\n$Text"
+      .dlginfo.haut.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
 
    } else {
 
-      toplevel .dlginfo
+      toplevel .dlginfo -class Dialog
       wm title .dlginfo Info
       wm protocol .dlginfo WM_DELETE_WINDOW { }
       if { [winfo exists $Master] } {
@@ -298,14 +316,13 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
       frame .dlginfo.haut -relief raised -bd 1
       pack .dlginfo.haut -side top -expand true -fill x
 
-      label .dlginfo.haut.bitmap -bitmap info
-      message .dlginfo.haut.txt -aspect $Aspect -text $Text
-      pack .dlginfo.haut.bitmap -side left -padx 20 -pady 20
-      pack .dlginfo.haut.txt -padx 20 -pady 20
+      label .dlginfo.haut.bitmap -image DIALOG_INFO
+      message .dlginfo.haut.txt -aspect 1000 -text "[lindex $Text $GDefs(Lang)]$Extra"
+      pack .dlginfo.haut.bitmap .dlginfo.haut.txt -side left -padx 20 -pady 20
 
       # ----- Afficher le frame du bas qui va contenir le bouton retour
 
-      button .dlginfo.ok -text "OK" -command "destroy .dlginfo" -bd 1
+      button .dlginfo.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command "destroy .dlginfo" -bd 1
       pack .dlginfo.ok -side bottom -ipadx 10 -fill x
       update idletasks
       grab .dlginfo
@@ -320,37 +337,42 @@ proc Dialog::CreateInfo { Master Text { Aspect 1000 } } {
 #
 # Parametres :
 #    <Master>  : Fenetre toplevel auquel l'aide est reliee.
-#    <Text>    : Texte a afficher.
-#    <Percent> : Pourcentage d'execution.
+#    <Text>    : Texte bilingue a afficher.
+#    <Extra>   : Texte supplementaire.
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateWait { Master Text { Percent 1000 } } {
+proc Dialog::CreateWait { Master Text { Extra "" } } {
+   global GDefs
 
    if { ![info exists ::tk_version] } {
-      puts "(INFO) $Text"
+      puts "(INFO) [lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
    if { [winfo exists .dlgwait]==1 } {
 
       set oldtext [lindex [.dlgwait.txt configure -text] 4]
-      .dlgwait.txt configure -text "$oldtext\n\n$Text"
+      .dlgwait.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
 
    } else {
 
-      toplevel .dlgwait
+      toplevel .dlgwait -class Dialog
       wm overrideredirect .dlgwait true
       if { [winfo exists $Master] } {
          wm transient .dlgwait $Master
          wm geom .dlgwait +[expr [winfo rootx $Master]+[winfo width $Master]/2-300]+[expr [winfo rooty $Master]+[winfo height $Master]/2-50]
       }
 
-      message .dlgwait.txt -aspect 1000 -text $Text -relief raised -bd 1
-      pack .dlgwait.txt -ipadx 20 -ipady 20
+      frame .dlgwait.fr -relief raised -bd 1
+         label .dlgwait.fr.bitmap -image DIALOG_WAIT
+         message .dlgwait.fr.txt -aspect 1000 -text "[lindex $Text $GDefs(Lang)]$Extra"
+         pack .dlgwait.fr.bitmap .dlgwait.fr.txt -side left -ipadx 10 -ipady 10
+      pack .dlgwait.fr
+
       update idletasks
 
       grab .dlgwait
@@ -390,42 +412,106 @@ proc Dialog::DestroyWait { } {
 # Parametres  :
 #    <Master> : Fenetre toplevel auquel l'aide est reliee.
 #    <Text>   : Texte a afficher.
-#    <Aspect> : Aspect de la boite (default=1000).
+#    <Extra>   : Texte supplementaire.
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::CreateMessage { Master Text { Aspect 1000 } } {
+proc Dialog::CreateMessage { Master Text { Extra "" } } {
+   global GDefs
 
    if { ![info exists ::tk_version] } {
-      puts "(INFO) $Text"
+      puts "(INFO) [lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
-   if { [winfo exists .msgbox] } {
+   if { [winfo exists .dlgmsg] } {
 
-      .msgbox.txt config -text $Text
+      .dlgmsg.txt config -text $Text
       update idletasks
    } else {
 
-      toplevel .msgbox
-      wm title .msgbox "Message ([wm title $Master])"
+      toplevel .dlgmsg -class Dialog
+      wm title .dlgmsg "Message ([wm title $Master])"
       if { [winfo exists $Master] } {
-         wm transient .msgbox $Master
-         wm geom .msgbox +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+         wm transient .dlgmsg $Master
+         wm geom .dlgmsg +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
       }
 
       # ----- Creer et affiche le message.
 
-      message .msgbox.txt -aspect $Aspect -relief raised -bd 1 -text $Text
-      pack .msgbox.txt -ipadx 20 -ipady 20
+      frame .dlgmsg.msg  -relief raised -bd 1
+         label .dlgmsg.msg.bitmap -image DIALOG_QUESTION
+         message .dlgmsg.msg.txt -aspect 1000 -text "[lindex $Text $GDefs(Lang)]$Extra"
+         pack .dlgmsg.msg.bitmap .dlgmsg.msg.txt -side left -ipadx 10 -ipady 10
+      pack .dlgmsg.msg
 
-      .msgbox config -cursor watch
+      .dlgmsg config -cursor watch
       update idletasks
    }
-   grab .msgbox
+   grab .dlgmsg
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::CreateGetter>
+# Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Recuperer une valeur unique.
+#
+# Parametres  :
+#    <Master> : Fenetre toplevel auquel l'aide est reliee.
+#    <Title>  : Titre de la fenetre
+#    <Text>   : Texte a afficher.
+#    <Var>    : Variable
+#
+# Retour      :
+#    <Val>    : Valeur saisie
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Dialog::CreateGetter { Master Title Text { Var "" } } {
+   global GDefs
+   global gettervalue
+   variable Lbl
+
+   toplevel .dlgget -class Dialog
+   wm title .dlgget [lindex $Title $GDefs(Lang)]
+   wm transient .dlgget $Master
+   wm geom .dlgget +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+
+   frame .dlgget.msg -relief raised -bd 1
+      label .dlgget.msg.bitmap -image DIALOG_QUESTION
+      message .dlgget.msg.txt -aspect 1000 -text [lindex $Text $GDefs(Lang)]
+      pack .dlgget.msg.bitmap -side left -ipadx 10 -ipady 10
+      pack .dlgget.msg.txt -side left -fill x -expand True -ipadx 10 -ipady 10
+   pack .dlgget.msg -side top  -fill x -expand True
+
+   if { $Var!="" } {
+      entry .dlgget.in -textvariable $Var  -relief flat -bd 1 -bg $GDefs(ColorLight)
+   } else {
+      entry .dlgget.in -relief flat -bd 1 -bg $GDefs(ColorLight)
+   }
+   pack .dlgget.in -side top -fill x -ipady 2
+
+   set gettervalue ""
+   frame .dlgget.cmd
+      button .dlgget.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command { set gettervalue [.dlgget.in get] } -bd 1
+      button .dlgget.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { set gettervalue "" } -bd 1
+      pack .dlgget.ok .dlgget.cancel -side left -fill x  -expand True
+   pack .dlgget.cmd -side top -fill x
+
+   focus .dlgget.in
+   update idletasks
+   grab .dlgget
+
+   tkwait variable gettervalue
+   destroy .dlgget
+   return $gettervalue
 }
 
 #----------------------------------------------------------------------------

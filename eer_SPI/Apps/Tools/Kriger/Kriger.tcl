@@ -88,9 +88,7 @@ proc Kriger::Process { } {
 
    if { [fstdfield is KRIGGRID] } {
       if { [fstdfield define KRIGGRID -NI]>500 || [fstdfield define KRIGGRID -NJ]>500 } {
-         set notok [Dialog::CreateDefault .kriger 200 [lindex $Lbl(Warning) $GDefs(Lang)] \
-            "[lindex $Msg(KrigSize) $GDefs(Lang)]" warning 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-         if { $notok } {
+         if { [Dialog::CreateDefault .kriger 200 WARNING $Msg(KrigSize) "" 1 $Lbl(Yes) $Lbl(No)] } {
             return
          }
       }
@@ -98,7 +96,7 @@ proc Kriger::Process { } {
       update idletasks;
 
       if { ![observation is $Data(Obs)] } {
-         Dialog::CreateError .kriger [lindex $Msg(ObsExist) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError .kriger $Msg(ObsExist)
       } else {
 
          fstdfield gridinterp KRIGGRID $Data(Obs) $Data(Mode) $Data(Nugget) $Data(Sill) $Data(Range) $Data(Out)
@@ -123,7 +121,7 @@ proc Kriger::Process { } {
          Viewport::UpdateData $Page::Data(Frame)
       }
    } else {
-      Dialog::CreateError .kriger [lindex $Msg(GridExist) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError .kriger $Msg(GridExist)
    }
    set Data(Job) ""
 }
@@ -206,7 +204,7 @@ proc Kriger::Grid { Coords } {
             }
 
             if { $ni>2000 || $nj>2000 } {
-               Dialog::CreateError .kriger "[lindex $Msg(GridSize) $GDefs(Lang)]\n\n\t$ni x $nj" $GDefs(Lang)
+               Dialog::CreateError .kriger $Msg(GridSize) "\n\n\t$ni x $nj"
                set Data(Job) ""
                return
             }
@@ -256,7 +254,7 @@ proc Kriger::Grid { Coords } {
             }
 
             if { $ni>2000 || $nj>2000 } {
-               Dialog::CreateError .kriger "[lindex $Msg(GridSize) $GDefs(Lang)]\n\n\t$ni x $nj" $GDefs(Lang)
+               Dialog::CreateError .kriger $Msg(GridSize) "\n\n\t$ni x $nj"
               set Data(Job) ""
               return
             }

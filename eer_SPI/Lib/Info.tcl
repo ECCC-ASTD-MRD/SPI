@@ -457,7 +457,7 @@ proc Info::Read { Id } {
 
    if { [catch { fstdfield read INFO $Id -1 "" -1 -1 -1 "" "OL" }] } {
       if { [catch { fstdfield read INFO $Id -1 "" -1 -1 -1 "" "INFO" }] } {
-         Dialog::CreateError . [lindex $Msg(Info) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError . $Msg(Info)
          return ""
       }
    }

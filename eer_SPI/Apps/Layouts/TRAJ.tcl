@@ -31,7 +31,6 @@ namespace eval TRAJ {
    set Lbl(SATNET_Spec)  { "Transmission SATNET (Carte Speciale)" "Transmit over SATNET (Special Map)" }
    set Lbl(SATNET_Test)  { "Transmission SATNET (Carte Test)"     "Transmit over SATNET (Test Map)" }
    set Lbl(Yes)          { "Oui" "Yes" }
-   set Lbl(Warning)      { "Attention" "Warning" }
 
    #----- Definitions des messages
 
@@ -307,10 +306,7 @@ proc TRAJ::RSMCJoin { Frame } {
       return
    }
 
-   set create [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Join) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $create } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(Join) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -356,10 +352,7 @@ proc TRAJ::SATNET { Frame Mode } {
    variable OCXNO
    variable Page
 
-   set transmit [Dialog::CreateDefault . 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Msg(Transmit) $GDefs(Lang)] \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $transmit } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(Transmit) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 

@@ -46,7 +46,7 @@ proc Mapper::GeoLocator::Activate { Object } {
       Viewport::ConfigGet $Mapper::Data(Frame4).georef.hfrm.map $Mapper::Data(RefVP)
       Viewport::Reset $Mapper::Data(Frame4).georef.hfrm.map
    } else {
-      Dialog::CreateError . [lindex $Mapper::Msg(GeoRef) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Mapper::Msg(GeoRef)
    }
 
    set Data(GCPS) {}

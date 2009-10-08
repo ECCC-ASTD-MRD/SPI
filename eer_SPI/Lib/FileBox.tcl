@@ -101,7 +101,6 @@ namespace eval FileBox {
    set Lbl(Owner)        { "Propr" "Owner" }
    set Lbl(Size)         { "Espace" "Size" }
    set Lbl(Tout)         { "Fichiers caches" "Hidden files" }
-   set Lbl(Warning)      { "Attention" "Warning" }
    set Lbl(Yes)          { "Oui" "Yes" }
 
    #----- Definitions des Bulles
@@ -174,7 +173,7 @@ proc FileBox::GetContent { { Path "" } } {
       return
    } else {
       if { ![file readable $Data(Path)] } {
-         Dialog::CreateInfo .filebox "[lindex $Msg(Right) $GDefs(Lang)]\n\n\t$Data(Path)"
+         Dialog::CreateInfo .filebox $Msg(Right) "\n\n\t$Data(Path)"
       }
    }
 
@@ -573,11 +572,7 @@ proc FileBox::Delete { } {
       lappend files [string trim [string range [.filebox.files.list get $idx] 0 $Data(Width)]]
    }
 
-   set ok [Dialog::CreateDefault .filebox 200 [lindex $Lbl(Warning) $GDefs(Lang)] \
-         "[lindex $Msg(Del) $GDefs(Lang)]\n\n$files" \
-         warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-   if { $ok } {
+   if { [Dialog::CreateDefault .filebox 200 WARNING $Msg(Del) "\n\n$files" 0 $Lbl(No) $Lbl(Yes)] } {
       foreach file $files {
          file delete -force $Data(Path)/$file
       }
@@ -649,7 +644,7 @@ proc FileBox::MemAdd { } {
 
    if { [ComboBox::Add .filebox.path.name $name] != -1 } {
       FileBox::MemSave
-      Dialog::CreateInfo .filebox "[lindex $Msg(MemAdd) $GDefs(Lang)]\n\n\t$name"
+      Dialog::CreateInfo .filebox $Msg(MemAdd) "\n\n\t$name"
    }
 }
 
@@ -673,7 +668,7 @@ proc FileBox::MemDel { } {
 
    if { [ComboBox::Del .filebox.path.name $Data(Path)] != -1 } {
       FileBox::MemSave
-      Dialog::CreateInfo .filebox "[lindex $Msg(MemDel) $GDefs(Lang)]\n\n\t$Data(Path)"
+      Dialog::CreateInfo .filebox $Msg(MemDel) "\n\n\t$Data(Path)"
    }
 }
 
@@ -849,7 +844,7 @@ proc FileBox::Select { Mode Ok } {
              foreach file $Data(Filename) {
                 set file "$Data(Path)/$file"
                 if { ![file isfile $file] } {
-                   Dialog::CreateError .filebox "[lindex $Error(File) $GDefs(Lang)]\n\n\t$file" $GDefs(Lang)
+                   Dialog::CreateError .filebox $Error(File) "\n\n\t$file"
                    return
                 } else {
                    lappend result $file
@@ -866,7 +861,7 @@ proc FileBox::Select { Mode Ok } {
           foreach file $Data(Filename) {
              set file "$Data(Path)/$file"
              if { ![file isfile $file] } {
-                Dialog::CreateError .filebox "[lindex $Error(File) $GDefs(Lang)]\n\n\t$file" $GDefs(Lang)
+                Dialog::CreateError .filebox $Error(File) "\n\n\t$file"
                 return
              } else {
                 lappend result $file
@@ -877,10 +872,7 @@ proc FileBox::Select { Mode Ok } {
       "Save" {
          if { [string trim $Data(Filename)]!="" } {
             if { [file isfile $Data(Path)/$Data(Filename)] } {
-               set ok [Dialog::CreateDefault .filebox 200 [lindex $Lbl(Warning) $GDefs(Lang)] \
-                     "[lindex $Msg(Overwrite) $GDefs(Lang)]\n\n$Data(Path)/$Data(Filename)" \
-                     warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-               if { $ok  } {
+              if { [Dialog::CreateDefault .filebox 200 WARNING $Msg(Overwrite) "\n\n$Data(Path)/$Data(Filename)" 0 $Lbl(No) $Lbl(Yes)] } {
                   set Data(Result) [FileBox::Filename $Data(Path)/$Data(Filename)]
                }
 
@@ -890,7 +882,7 @@ proc FileBox::Select { Mode Ok } {
                 if { [file writable [file dirname $Data(Path)/$Data(Filename)]] } {
                    set Data(Result) [FileBox::Filename $Data(Path)/$Data(Filename)]
                 } else {
-                   Dialog::CreateError .filebox [lindex $Error(Right) $GDefs(Lang)] $GDefs(Lang)
+                   Dialog::CreateError .filebox $Error(Right)
                 }
              }
           }

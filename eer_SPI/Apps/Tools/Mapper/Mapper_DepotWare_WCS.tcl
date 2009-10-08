@@ -85,7 +85,7 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
          set req [http::geturl "${Path}&SERVICE=WCS&REQUEST=GetCapabilities"]
       }
       if { [catch { set doc [dom::parse [http::data $req]] } ] } {
-         Dialog::CreateErrorListing . [lindex $Msg(Request) $GDefs(Lang)] [http::data $req] $GDefs(Lang)
+         Dialog::CreateErrorListing . $Msg(Request) [http::data $req]
          return
       }
 

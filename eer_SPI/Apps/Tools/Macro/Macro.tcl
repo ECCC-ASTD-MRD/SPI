@@ -71,12 +71,9 @@ proc Macro::Close { } {
    }
 
    #----- Save the modified macros ?
-
    foreach macro $Data(List) {
       if { $Data(Save$macro) } {
-         set nok [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] "[lindex $Msg(Save) $GDefs(Lang)]\n\n\tMacro::$macro" info 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-         if { !$nok } {
+         if { ![Dialog::CreateDefault . 300 WARNING $Msg(Save) "\n\n\tMacro::$macro" 0 $Lbl(Yes) $Lbl(No)] } {
             Macro::Save $macro
          }
       }
@@ -112,11 +109,7 @@ proc Macro::Error { Error } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   if { $SPI::Param(Batch) } {
-      puts stderr "(ERROR) ${stackproc}: [lindex $Error $GDefs(Lang)]"
-   } else {
-      Dialog::CreateError .macro "${stackproc}\n\n[lindex $Error $GDefs(Lang)]" $GDefs(Lang)
-   }
+   Dialog::CreateError .macro $Error " (${stackproc})"
 }
 
 #-------------------------------------------------------------------------------
@@ -172,11 +165,7 @@ proc Macro::Info { Info } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   if { $SPI::Param(Batch) } {
-      puts stdout "(INFO) ${stackproc}: $Info"
-   } else {
-      Dialog::CreateInfo .macro "${stackproc}\n\n$Info"
-   }
+   Dialog::CreateInfo .macro [list $Info $Info] " (${stackproc})"
 }
 
 #-------------------------------------------------------------------------------
@@ -277,20 +266,12 @@ proc Macro::Check { Macro } {
 
    eval set proc \[info procs ::Macro::${Macro}::Execute\]
    if { $proc=="" } {
-      if { [winfo exists .macro] } {
-         Dialog::CreateDefault .macro 400 "Macro::[lindex $Lbl(Error) $GDefs(Lang)]  (Macro::$Macro)" [lindex $Error(Execute) $GDefs(Lang)] error 0 [lindex $Lbl(Ok) $GDefs(Lang)]
-      } else {
-         puts stderr "(ERROR) Macro::$Macro : [lindex $Error(Execute) $GDefs(Lang)]"
-      }
+      Dialog::CreateError . 400 [lindex $Error(Execute) $GDefs(Lang)] " (Macro::$Macro)"
       return False
    }
 
    if { ![info exists ::Macro::${Macro}::Param(Info)] } {
-      if { [winfo exists .macro] } {
-         Dialog::CreateDefault .macro 400 "Macro::[lindex $Lbl(Error) $GDefs(Lang)]  (Macro::$Macro)" [lindex $Error(Info) $GDefs(Lang)] error 0 [lindex $Lbl(Ok) $GDefs(Lang)]
-      } else {
-         puts stderr "(ERROR) Macro::$Macro : [lindex $Error(Info) $GDefs(Lang)]"
-      }
+      Dialog::CreateError . 400 [lindex $Error(Info) $GDefs(Lang)] " (Macro::$Macro)"
       return False
    }
    return True
@@ -391,9 +372,7 @@ proc Macro::Execute { Macro } {
    #----- Check that it is still valid
 
    if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
-      set cont [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] "[lindex $Msg(Modified) $GDefs(Lang)]\n\n\tMacro::$Macro" info 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { !$cont } {
+      if { ![Dialog::CreateDefault . 300 WARNING $Msg(Modified) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
          Macro::Load $Data(Path$Macro)
       } else {
          set Data(Time$Macro) [file mtime $Data(Path$Macro)]
@@ -485,9 +464,7 @@ proc Macro::Save { Macro } {
       #----- Check that it is still valid
 
       if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
-         set cont [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] "[lindex $Msg(Overwrite) $GDefs(Lang)]\n\n\tMacro::$Macro" info 1 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-         if { $cont } {
+         if { [Dialog::CreateDefault . 300 WARNING $Msg(Overwrite) "\n\n\tMacro::$Macro" 1 $Lbl(Yes) $Lbl(No)] } {
             return
          }
       }
@@ -557,8 +534,7 @@ proc Macro::Delete { Macro } {
    variable Msg
    variable Lbl
 
-   set nok [Dialog::CreateDefault . 300 [lindex $Lbl(Warning) $GDefs(Lang)] "[lindex $Msg(Delete) $GDefs(Lang)]\n\n\tMacro::$Macro" info 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-   if { !$nok } {
+   if { ![Dialog::CreateDefault . 300 WARNING $Msg(Delete) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
       file delete -force $Data(Path$Macro)
 
       Macro::UnDefine $Macro

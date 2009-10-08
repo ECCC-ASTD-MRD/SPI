@@ -671,6 +671,7 @@ proc SPI::WindowMenu { } {
 proc SPI::ToolBar { Frame } {
    global GDefs
    variable Lbl
+   variable Msg
    variable Bubble
 
    frame $Frame
@@ -720,7 +721,7 @@ proc SPI::ToolBar { Frame } {
          button $Frame.cam.zback -image ZOOMBACK -relief flat -bd 0 -overrelief raised \
             -command { ProjCam::ZoomOut $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) False True }
          button $Frame.cam.out   -image CAMSAVE  -relief flat -bd 0 -overrelief raised \
-            -command "ProjCam::Save $Frame.cam.sel"
+            -command "ProjCam::Save $Frame.cam.sel \[Dialog::CreateGetter . \$SPI::Bubble(CamSave) \$SPI::Msg(CamName)\]"
          button $Frame.cam.in    -image CAMDEL   -relief flat -bd 0 -overrelief raised \
             -command "ProjCam::Delete $Frame.cam.sel"
          pack $Frame.cam.clr $Frame.cam.down $Frame.cam.zclr $Frame.cam.zback $Frame.cam.zoom $Frame.cam.cam $Frame.cam.sel $Frame.cam.out $Frame.cam.in -side left -padx 2
@@ -740,7 +741,7 @@ proc SPI::ToolBar { Frame } {
          ComboBox::Create $Frame.layout.sel SPI::Param(Layout) edit sorted nodouble -1 $SPI::Param(Layouts) 15 5 \
             { SPI::LayoutLoad $Page::Data(Frame) $SPI::Param(Layout) }
          button $Frame.layout.save -image PAGESAVE -relief flat -bd 0 -overrelief raised \
-            -command { SPI::LayoutSave $Page::Data(Frame) }
+            -command { SPI::LayoutSave $Page::Data(Frame) [Dialog::CreateGetter . $SPI::Bubble(LayoutSave) $SPI::Msg(LayoutName)] }
          button $Frame.layout.del -image PAGEDEL -relief flat -bd 0 -overrelief raised \
             -command { SPI::LayoutDelete }
          button $Frame.layout.run -image DOCRUN -relief flat -bd 0 -overrelief raised \

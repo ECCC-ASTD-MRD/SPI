@@ -184,11 +184,7 @@ proc HFManager::FileCommand { Id Command } {
             }
         }
         "RM" {
-            set del [Dialog::CreateDefault .hfman 350 [lindex $Lbl(Warning) $GDefs(Lang)] \
-                [lindex $Txt(Delete) $GDefs(Lang)] warning 0 [lindex $Lbl(No) $GDefs(Lang)] \
-                [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-            if { $del } {
+            if { [Dialog::CreateDefault .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
                if { [lindex $params 1]=="wget" } {
                   #----- send a file to pds
                   exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser)
@@ -202,11 +198,7 @@ proc HFManager::FileCommand { Id Command } {
             }
          }
          "RMDIR" {
-            set del [Dialog::CreateDefault .hfman 350 [lindex $Lbl(Warning) $GDefs(Lang)] \
-                [lindex $Txt(DeleteD) $GDefs(Lang)] warning 0 [lindex $Lbl(No) $GDefs(Lang)] \
-                [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-            if { $del } {
+            if { [Dialog::CreateDefault .hfman 350 WARNING $Txt(DeleteD) "" 0 $Lbl(No) $Lbl(Yes)] } {
                 HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "rm -f -r" $file
             } else {
                .hfman config -cursor left_ptr
@@ -703,7 +695,7 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
          ComboBox::AddList .hfman.host.$Id.host.sel $Host(Name$Id)
          HFManager::HostWrite $Id
       } else {
-         Dialog::CreateError .hfman [lindex $Error(Host) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError .hfman $Error(Host)
          set $Host(Name$Id) ""
          return
       }

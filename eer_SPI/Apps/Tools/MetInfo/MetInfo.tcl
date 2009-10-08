@@ -144,7 +144,6 @@ proc MetInfo::ExportFileGet { } {
 
 proc MetInfo::ExportFile { outFile } {
    variable Data
-   variable Dia
    variable Msg
    global GDefs
 
@@ -274,19 +273,12 @@ proc MetInfo::ExportFile { outFile } {
    }
 
    if { [llength $errFiles] != 0 } {
-      set errmess "[lindex $Msg(Empty)  $GDefs(Lang)] $errFiles"
-   } else {
-      set errmess ""
+      Dialog::CreateError .export $Msg(Empty) "\n\n$errFiles"
    }
 
    if { [llength $generatedFiles] != 0 } {
-      set mess "[lindex $Msg(Complete)  $GDefs(Lang)] $generatedFiles"
-   } else {
-      set mess ""
+      Dialog::CreateInfo .export $Msg(Complete) "\n\n$generatedFiles"
    }
-
-   Dialog::CreateDefault .export 300 [lindex $Dia $GDefs(Lang)] \
-      "$errmess\n\n$mess" warning 0 Ok
 
    puts "*** Extraction of observations completed ***"
 }

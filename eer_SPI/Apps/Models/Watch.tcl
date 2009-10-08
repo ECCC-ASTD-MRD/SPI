@@ -615,7 +615,7 @@ proc Watch::New { } {
 
    #----- Verifier la validitee des parametres
    if { $Model::Data(Name)=="" || $Model::Data(Lat1)=="" || $Model::Data(Lon1)=="" } {
-       Dialog::CreateError .expnew [lindex $Error(Info) $GDefs(Lang)] $GDefs(Lang)
+       Dialog::CreateError .expnew $Error(Info)
        return 0
    }
 
@@ -636,7 +636,7 @@ proc Watch::New { } {
    #----- On verifie que le nom n'existe pas deja
    foreach src $Data(Sources$Data(Project)) {
       if { "[lindex $src 0]"=="$Data(Name)" } {
-         Dialog::CreateError . [lindex $Error(Exist) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError . $Error(Exist)
          return 0
       }
    }
@@ -1013,10 +1013,7 @@ proc Watch::SimSuppress { } {
    variable Msg
 
    #----- Demande de confirmation
-   set nodel [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(SimSuppress) $GDefs(Lang)]\n\n$Data(Name)" \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $nodel } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(SimSuppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1059,10 +1056,7 @@ proc Watch::Suppress { } {
    variable Msg
    variable Lbl
 
-   set nodel [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(Suppress) $GDefs(Lang)]\n\n$Data(Name)" \
-      warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-   if { $nodel } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(Suppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1273,7 +1267,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    variable Data
 
    if { [winfo exists .modelnew] } {
-      Dialog::CreateInfo .modelnew "[lindex $Msg(Exist) $GDefs(Lang)]"
+      Dialog::CreateInfo .modelnew $Msg(Exist)
       return
    }
 

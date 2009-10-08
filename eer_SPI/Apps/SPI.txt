@@ -54,7 +54,6 @@ namespace eval SPI {
    set Lbl(Icons)          { "Icônes" "Icons" }
    set Lbl(Id)             { "Identifications" "Identifications" }
    set Lbl(Layout)         { "Page" "Layout" }
-   set Lbl(LayoutCam)      { "Sauvegarder la camera" "Save the camera" }
    set Lbl(GeoLegend)      { "Légende geographique" "Geographical legend" }
    set Lbl(DataBar)        { "Légende des donnees" "Data legend" }
    set Lbl(Logo)           { "Logo" "Logo" }
@@ -85,7 +84,6 @@ namespace eval SPI {
    set Lbl(FileGRIB)       { "GRIB (Edition 1-2)" "GRIB (Edition 1-2)" }
    set Lbl(Test)           { "Chaine \"Test\"" "String \"Test\"" }
    set Lbl(Tools)          { "Outils" "Tools" }
-   set Lbl(Question)       { "Question ?" "Question ?" }
    set Lbl(Traj)           { "Trajectoire" "Trajectory" }
    set Lbl(Trajectory)     { "Trajectoire" "Trajectory" }
    set Lbl(TrajGraph)      { "Graphique d'élévation" "Elevations graph" }
@@ -173,9 +171,12 @@ namespace eval SPI {
 
    #----- Definition des messages
 
+   set Msg(LayoutName)     { "Veuillez spéfifier le nom de la mise-en-page." "Please enter the page layout name." }
+   set Msg(CamName)        { "Veuillez spéfifier le nom de la camera." "Please enter the camera name." }
    set Msg(CamSave)        { "Voulez-vous inclure les paramètres de camera dans de modèle de page ?" "Do you want to include the camera parameters in this page layout ?" }
    set Msg(LayoutErase)    { "Etes-vous certain de vouloir supprimer ce modèle de page ?" "Do you really want to delete this page layout ?" }
    set Msg(LayoutOver)     { "Ce modèle de page existe deja. Voulez-vous le remplacer ?" "This page layout exists. Do you want to overwrite it ?" }
+   set Msg(LayoutSaved)    { "Definition de mise-en-page sauvegardee." "Page layout saved." }
    set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModelisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnees Geographiques   : Michel Grenier\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          Réal D'Amours" }
    set Msg(Id)             { "Développé au Centre Meteorologique Canadien\npar le groupe des urgences (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n"
                              "Developped at the Canadian Meteorological Center\nby the emergency division (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n" }

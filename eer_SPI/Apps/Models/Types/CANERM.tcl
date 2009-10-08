@@ -40,7 +40,7 @@ proc CANERM::CheckIntensity { Combo } {
    variable Sim
 
    if { [catch { set h [expr $Sim(Intensity) + 0.1] }] || $Sim(Intensity) == "" } {
-      Dialog::CreateError . [lindex $Error(Intensity) $GDefs(Lang)] $GDefs(Lang)
+      Dialog::CreateError . $Error(Intensity)
    } else {
       set index [ComboBox::Index $Combo exact $Sim(Iso)]
       set Sim(IsoRelease) [lreplace $Sim(IsoRelease) $index $index $Sim(Intensity)]
@@ -329,7 +329,7 @@ proc CANERM::GetMetData { } {
       return True
    }
 
-   Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+   Dialog::CreateWait . $Msg(MetGet)
 
    #----- Get available meteorological files.
    set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 0 $Sim(Delta)]
@@ -493,14 +493,11 @@ proc CANERM::Launch { } {
 
       #----- Meteo is local, launch it's processing and wait for it.
       if { $Model::Param(DBaseLocal) } {
-         set proceed [Dialog::CreateDefault .mldpnew 400 [lindex $Lbl(Warning) $GDefs(Lang)] [lindex $Warning(MetLocal) $GDefs(Lang)] \
-            warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)]]
-
-         if { !$proceed } {
+         if { ![Dialog::CreateDefault .modelnew 400 WARNING $Warning(MetLocal) "" 0 $Lbl(No) $Lbl(Yes)] } {
             return
          }
 
-         Dialog::CreateWait . [lindex $Msg(MetGet) $GDefs(Lang)] 600
+         Dialog::CreateWait . $Msg(MetGet)
          exec $env(EER_DIRSCRIPT)/Model_MeteoCANERM.sh $Sim(Path)/tmp $Sim(Meteo) $Sim(ISauve) 1
          Dialog::DestroyWait
       }
@@ -569,14 +566,14 @@ proc CANERM::ParamsCheck { Tab No } {
    if { $Sim(NoPrev)==-1 } {
       if { $Sim(IsoNb)==0 } {
          Debug::TraceProc "CANERM: Not enough pollutants"
-         Dialog::CreateError .canermnew [lindex $Error(NbIso) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError .modelnew $Error(NbIso)
          TabFrame::Select $Tab 0
          return False
       }
 
       if { $Sim(EmHeight)>30000 } {
          Debug::TraceProc "CANERM: Height over 30000 meters"
-         Dialog::CreateError .canermnew [lindex $Error(Height) $GDefs(Lang)] $GDefs(Lang)
+         Dialog::CreateError .modelnew $Error(Height)
          TabFrame::Select $Tab 0
          return False
       }
@@ -643,7 +640,7 @@ proc CANERM::SimPrevious { Path } {
       catch { set result [glob $Path/../$path/results/$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_*c] }
 
       if { [llength $result] == 0 } {
-         Dialog::CreateDefault . 700 "Message" "$path\n\n[lindex $Error(Previous) $GDefs(Lang)]" warning 0 Ok
+         Dialog::CreateError . $Error(Previous) "$path\n\n"
       }
       set resultlist "[lsort $result] $resultlist "
       set info [lindex [Info::Find $Path/../CANERM.pool CANERM NoSim $Tmp(NoPrev)] 0]

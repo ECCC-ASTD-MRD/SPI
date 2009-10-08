@@ -373,11 +373,7 @@ proc Mapper::DepotWare::Del { Branch } {
       set name [TREE get $Branch name]
       set type [TREE get $Branch type]
       set path [TREE get $Branch path]
-      set nodel [Dialog::CreateDefault . 400 [lindex $Lbl(Del) $GDefs(Lang)] \
-         "[lindex $Msg(Del) $GDefs(Lang)]\n\n$name\n" \
-         warning 0 [lindex $Lbl(Yes) $GDefs(Lang)] [lindex $Lbl(No) $GDefs(Lang)]]
-
-      if { !$nodel } {
+      if { ![Dialog::CreateDefault . 400 WARNING $Msg(Del) "\n\n$name\n" 0 $Lbl(Yes) $Lbl(No)] } {
          set idx 0
          foreach depot $Data(Depots) {
             if { [lindex $depot 0]==$name && [lindex $depot 1]==$type && [lindex $depot 2]==$path } {

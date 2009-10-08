@@ -27,6 +27,7 @@ namespace eval Mapper::Geo { } {
 
    set Param(API)      Geocoder
    set Param(Locate)   True
+   set Param(Zoom)     128
 
    set Data(Address)  ""
    set Data(Street)   ""
@@ -95,12 +96,12 @@ proc Mapper::Geo::Widget { Frame } {
       menubutton $Frame.geo.icode.api -image OPTIONS -relief flat -bd 0 -menu $Frame.geo.icode.api.menu
       place $Frame.geo.icode.api -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
       menu $Frame.geo.icode.api.menu
-      $Frame.geo.icode.api.menu add radiobutton -indicatoron False -variable Mapper::Geo::Param(API) -image GEOCODER -label Geocoder -compound left \
+      $Frame.geo.icode.api.menu add radiobutton -variable Mapper::Geo::Param(API) -image GEOCODER -label Geocoder -compound left \
          -value Geocoder -command "$Frame.geo.icode configure -image GEOCODER"
-      $Frame.geo.icode.api.menu add radiobutton -indicatoron False -variable Mapper::Geo::Param(API) -image GEOGOOGLE -label Google -compound left\
+      $Frame.geo.icode.api.menu add radiobutton -variable Mapper::Geo::Param(API) -image GEOGOOGLE -label Google -compound left\
          -value Google -command "$Frame.geo.icode configure -image GEOGOOGLE"
       $Frame.geo.icode.api.menu add separator
-      $Frame.geo.icode.api.menu add checkbutton -indicatoron True -variable Mapper::Geo::Param(Locate) -label [lindex $Lbl(Locate) $GDefs(Lang)] \
+      $Frame.geo.icode.api.menu add checkbutton -variable Mapper::Geo::Param(Locate) -label [lindex $Lbl(Locate) $GDefs(Lang)] \
          -onvalue True -offvalue False
 
       entry $Frame.geo.address -textvariable Mapper::Geo::Data(Address) -relief sunken -bd 1 -bg $GDefs(ColorLight)
@@ -109,6 +110,7 @@ proc Mapper::Geo::Widget { Frame } {
    pack $Frame.geo -side left -fill x -expand true
 
    bind $Frame.geo.address <Return> { Mapper::Geo::Code $Mapper::Geo::Data(Address) $Mapper::Geo::Param(API) }
+   bind $Frame.geo.address <Any-KeyRelease> { if { $Mapper::Geo::Data(Address)=="" } { SPI::IcoDel GEOCODE } }
 
    Bubble::Create $Frame.geo.icode     [lindex $Bubble(ICode) $GDefs(Lang)]
    Bubble::Create $Frame.geo.icode.api [lindex $Bubble(API) $GDefs(Lang)]
@@ -146,14 +148,14 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    set Data(Lat) 0.0
    set Data(Lon) 0.0
 
-   Dialog::CreateWait . [lindex $Msg(Request) $GDefs(Lang)] 600
+   Dialog::CreateWait . $Msg(Request)
 
    switch $API {
       "Google" {
          #----- Send request through Google
          set req [http::geturl "http://maps.google.com/maps/geo?q=[join ${Request} +]&output=xml&oe=utf8&sensor=false"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . "[lindex $Error(Request) $GDefs(Lang)]\n\n$msg" [http::data $req] $GDefs(Lang)
+            Dialog::CreateErrorListing . $Error(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -165,7 +167,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
             set Data(Lat)     [lindex $coords 1]
             set Data(Lon)     [lindex $coords 0]
          } else {
-            Dialog::CreateError. [lindex $Error(NoneFound) $GDefs(Lang)]  $GDefs(Lang)
+            Dialog::CreateError. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -174,7 +176,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
          #----- Send request through Geocoder.ca
          set req [http::geturl "http://geocoder.ca/?locate=[join ${Request} %20]&geoit=XML"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . "[lindex $Msg(Request) $GDefs(Lang)]\n\n$msg" [http::data $req] $GDefs(Lang)
+            Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -184,7 +186,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
             catch { set Data(Lon)     [[[$root getElementsByTagName longt] firstChild] nodeValue] }
             set Data(Address) ${Request}
          } else {
-            Dialog::CreateError. [lindex $Error(NoneFound) $GDefs(Lang)]  $GDefs(Lang)
+            Dialog::CreateError. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -194,9 +196,8 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
 
    if { $Data(Lat)!=0.0 && $Data(Lon)!=0.0 && $Param(Locate) } {
       SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
-      SPI::Locate $Data(Lat) $Data(Lon) 128
+      SPI::Locate $Data(Lat) $Data(Lon) $Param(Zoom)
    }
-
    return [list $Data(Lat) $Data(Lon)]
 }
 
@@ -233,14 +234,14 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
    set Data(Country)  ""
    set Data(Postal)   ""
 
-   Dialog::CreateWait . [lindex $Msg(Request) $GDefs(Lang)] 600
+   Dialog::CreateWait . $Msg(Request)
 
    switch $API {
       "Google" {
          #----- Send request through Google
          set req [http::geturl "http://maps.google.com/maps/geo?q=$Lat,$Lon&output=xml&oe=utf8&sensor=false"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . "[lindex $Msg(Request) $GDefs(Lang)]\n\n$msg" [http::data $req] $GDefs(Lang)
+            Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -255,7 +256,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
 
             set Data(Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
          } else {
-            Dialog::CreateError. [lindex $Error(NoneFound) $GDefs(Lang)]  $GDefs(Lang)
+            Dialog::CreateError. $Error(NoneFound)
          }
          $doc delete
          http::cleanup $req
@@ -264,7 +265,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
          #----- Send request through Geocoder.ca
          set req [http::geturl "http://geocoder.ca/?latt=$Lat&longt=$Lon&geoit=XML&reverse=1"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-            Dialog::CreateErrorListing . "[lindex $Msg(Request) $GDefs(Lang)]\n\n$msg" [http::data $req] $GDefs(Lang)
+            Dialog::CreateErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
          }
 
@@ -278,7 +279,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
 
             set Data(Address) "$Data(Street) $Data(City) $Data(Province) $Data(Postal)"
          } else {
-            Dialog::CreateError. [lindex $Error(NoneFound) $GDefs(Lang)]  $GDefs(Lang)
+            Dialog::CreateError. $Error(NoneFound)
          }
 
          $doc delete

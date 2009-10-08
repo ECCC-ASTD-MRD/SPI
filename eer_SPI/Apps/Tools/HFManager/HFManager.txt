@@ -36,7 +36,6 @@ namespace eval HFManager { } {
    set Lbl(GroupT)  { "Changement de groupe" "Change group" }
    set Lbl(MkDir)   { "Nom" "Name" }
    set Lbl(MkDirT)  { "Creer un repertoire" "Create directory" }
-   set Lbl(Warning) { "Attention" "Warning" }
    set Lbl(Yes)     { "Oui" "Yes" }
    set Lbl(No)      { "Non" "No" }
    set Lbl(Open)    { "Nouvel hote" "New host" }

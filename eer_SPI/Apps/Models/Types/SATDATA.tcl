@@ -124,10 +124,7 @@ proc SATDATA::Suppress { } {
    variable Lbl
    variable Msg
 
-   set del [Dialog::CreateDefault . 400 "Message" "[lindex $Msg(Suppress) $GDefs(Lang)]\n\n$Exp::Data(No) $Exp::Data(Name)" \
-     warning 0 [lindex $Lbl(No) $GDefs(Lang)] [lindex $Lbl(Yes) $GDefs(Lang)] ]
-
-   if { $del } {
+   if { [Dialog::CreateDefault . 400 WARNING $Msg(Suppress) "\n\n$Exp::Data(No) $Exp::Data(Name)" 0 $Lbl(No) $Lbl(Yes)] } {
       file delete -force $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData
       Model::Check 0
    }

@@ -22,6 +22,8 @@ exec $SPI_PATH/wish "$0" "$@"
 
 package require TkglCanvas
 package require TkViewport
+package require Img
+#package require tkpng
 
 #----- Creation des fonctions de manipulation des objets du canvas
 
@@ -124,5 +126,12 @@ update idletasks
 
 .glcanvas postscript -file DataOut/TK_glCanvas_gl.ps
 .canvas postscript -file DataOut/TK_glCanvas_tk.ps
+
+image create photo TMPIMG
+.glcanvas buffer TMPIMG 1 1 300 300
+
+#image create photo TMPIMG -width 300 -height 300 -format window -data .canvas
+#TMPIMG write "DataOut/TK_glCanvas.png" -format png
+TMPIMG write "DataOut/TK_glCanvas.ppm" -format ppm
 
 
