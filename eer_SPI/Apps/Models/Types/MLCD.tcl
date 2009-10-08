@@ -872,7 +872,7 @@ proc MLCD::GetMetData { } {
    MLCD::ExtractMetData
    MLCD::ComputeNbValidWindProfiles
 
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
 
    return 1
 }

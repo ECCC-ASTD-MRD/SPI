@@ -683,7 +683,6 @@ proc SPI::LayoutSave { Frame Name } {
    regsub -all " " $Name "_" Name
 
    if { [file exists $GDefs(DirEER)/eer_Layout/$Name.tcl] } {
-
       if { [Dialog::Default . 300 WARNING $Msg(LayoutOver) "\n\n\t$Name\n" 1 $Lbl(Yes) $Lbl(No)] } {
          return
       }

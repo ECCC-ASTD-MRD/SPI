@@ -102,7 +102,7 @@ proc MLDP::Launch { } {
 
          Dialog::Wait . $Msg(MetProcess)
          exec $env(EER_DIRSCRIPT)/Model_Meteo$Sim(Model).sh $Sim(Path)/tmp $Sim(Meteo) 1 $Sim(NI)x$Sim(NJ)x$Sim(NK) low
-         Dialog::DestroyWait
+         Dialog::WaitDestroy
       }
 
       #----- Copy needed file to run host:directory.
@@ -571,7 +571,7 @@ proc MLDP::GetMetData { } {
    set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
    set Sim(Mode)     [MetData::GetMode $Sim(Data)]
 
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    return [Model::ParamsMetData MLDP]

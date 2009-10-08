@@ -624,7 +624,7 @@ proc Exp::ThreadKill { Id } {
       simulation destroy $Id
 
       set ::Model::Param(Job) ""
-      Dialog::DestroyWait
+      Dialog::WaitDestroy
 
       #----- Suppression de la barre d'execution
       $Data(Frame).info.exp.canvas delete EXEC$Id
@@ -1356,7 +1356,7 @@ proc Exp::StoreIt { Id } {
       }
    }
 
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
    cd $cpath
 
    return $code

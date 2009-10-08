@@ -339,7 +339,7 @@ proc CANERM::GetMetData { } {
       set Sim(Delta) 6
       set Sim(Data) [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 0 $Sim(Delta)]
    }
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    if { ![Model::ParamsMetData CANERM] } {
@@ -499,7 +499,7 @@ proc CANERM::Launch { } {
 
          Dialog::Wait . $Msg(MetGet)
          exec $env(EER_DIRSCRIPT)/Model_MeteoCANERM.sh $Sim(Path)/tmp $Sim(Meteo) $Sim(ISauve) 1
-         Dialog::DestroyWait
+         Dialog::WaitDestroy
       }
 
       #----- Copy needed file to run host:directory.

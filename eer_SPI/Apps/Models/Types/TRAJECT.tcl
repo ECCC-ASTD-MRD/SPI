@@ -122,7 +122,7 @@ proc TRAJECT::GetMetData { } {
       set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F 1 $Sim(Delta)]
    }
    set Sim(Mode) [MetData::GetMode $Sim(Data) False]
-   Dialog::DestroyWait
+   Dialog::WaitDestroy
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    return [Model::ParamsMetData TRAJECT]

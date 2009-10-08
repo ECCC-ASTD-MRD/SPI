@@ -162,7 +162,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
          #----- Extract info from XML
          if { [set root [$doc documentElement]]!="" } {
             set node [lindex  [$root getElementsByTagName Placemark] 0]
-            set Data[http::data $req](Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
+            set Data(Address) [[[$node getElementsByTagName address] firstChild] nodeValue]
             set coords        [split [[[$node getElementsByTagName coordinates] firstChild] nodeValue] ,]
             set Data(Lat)     [lindex $coords 1]
             set Data(Lon)     [lindex $coords 0]
@@ -290,7 +290,6 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
       set Data(Lat) $Lat
       set Data(Lon) $Lon
       SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
-      SPI::Locate $Data(Lat) $Data(Lon) $Param(Zoom)
    }
    return $Data(Address)
 }
