@@ -1939,8 +1939,8 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       /*Insert station in list if not already done*/
       if (!loc) {
          loc=TMetLoc_New(Obs,stnid,NULL,(blat-9000.0)/100.0,blon/100.0,hgt-400);
-         loc->Grid[0]=dx;
-         loc->Grid[1]=dy;
+         loc->Grid[0]=dx/10.0;
+         loc->Grid[1]=dy/10.0;
       }
       if ((time=System_DateTime2Seconds(yymmdd,hhmm*100,1))<0)
          continue;
@@ -1967,10 +1967,10 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          bktyp=(btyp>>4)%128;
          bkstp=(btyp)%16;
 
-         /*Skip if this is a bloc marker*/
+         /*Skip if this is a bloc marker
          if ((bknat%4)!=0)
             continue;
-
+*/
          /*Skip if empty*/
          if ((nelem*nval*nt)==0)
             continue;
@@ -1999,7 +1999,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             } else {
 
             }
-            fprintf(stderr,"DEBUG) ---- dx=%f dy=%f, %i %i %i\n",dx*10.0,dy*10.0,nelem,nval,nt);
          }
 
          /*Get the elements code list and cache it within obs object*/
@@ -2358,14 +2357,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
    TMetLoc      *loc;
    TMetElem     *elem;
-   TMetElemData *data;
+   TMetElemData *data,*cdata;
    TDataSpec    *spec;
    EntryTableB  *eb;
    Vect3d        pix;
    char          buf[128];
    double        z,val,dir,dx,dy,k;
-   int           d,e,i,n,v,iy,idx,line,id,ne;
+   int           d,e,i,n,v,t,iy,idx,line,id,ne;
    double        alpha=1.0;
+   int           clat,clon;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2450,6 +2450,23 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                if (GLMode==GL_SELECT)
                   glPushName(i);
 
+               /*check for grouped data*/
+               clat=clon=-1;
+               if (loc->Grid[0]!=0.0 && loc->Grid[1]!=0.0) {
+                  for(d=0;d<elem->NData;d++) {
+                     cdata=elem->EData[d];
+                     for(e=0;e<cdata->Ne;e++) {
+                        if (cdata->Code[e]->descriptor==5002)
+                           clat=e;
+                        else if (cdata->Code[e]->descriptor==6002)
+                           clon=e;
+                     }
+                     if (clat!=-1 || clon!=-1) {
+                        break;
+                     }
+                  }
+               }
+
                /*Loop on the data*/
                for(d=0;d<elem->NData;d++) {
                   data=elem->EData[d];
@@ -2465,113 +2482,139 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                         ne++;
                         id=0;
                         for(v=0;v<data->Nv;v++) {
+                           for(t=0;t<data->Nt;t++) {
 
-                           /*Check for validity*/
-                           val=MetObs_GetData(data,e,v,0);
-                           if (MET_VALID(val,Obs->NoData)) {
-                              if (val<spec->Min || val>spec->Max)
-                                 continue;
-                              if (spec->InterNb && val<spec->Inter[0])
-                                 continue;
-                           }
-
-                           if (Interp) {
-                              Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
-                              Tcl_AppendResult(Interp,"1.0 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
-                           } else {
-                              if (spec->Outline) {
-                                 glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*65535);
-                              } else {
-                                 glColor4us(0,0,0,alpha*65535);
+                              /*Check for validity*/
+                              val=MetObs_GetData(data,e,v,t);
+                              if (MET_VALID(val,Obs->NoData)) {
+                                 if (val<spec->Min || val>spec->Max)
+                                    continue;
+                                 if (spec->InterNb && val<spec->Inter[0])
+                                    continue;
                               }
-                           }
 
-                           /*Get height*/
-                           if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
-                              z=k;
-                           } else {
-                              z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
-                           }
-
-                          /*Set position within projection*/
-                           glPushMatrix();
-
-                           if (Obs->Model->Flat) {
-                              if (loc->Pix[0]!=0.0 && loc->Pix[1]!=0.0) {
-                                 glTranslated(loc->Pix[0],VPY(VP,loc->Pix[1]),0.0);
-                              } else {
-                                 glTranslated(pix[0],pix[1],0.0);
-                              }
-                           } else {
-                              Proj->Type->Locate(Proj,loc->Coord.Lat,loc->Coord.Lon,1);
-                              glTranslated(0.0,0.0,ZM(Proj,z));
-                              glScalef(VP->Ratio,VP->Ratio,1.0);
-                           }
-
-                           dx=Obs->Model->Items[i].X*Obs->Model->Space+(Obs->Model->Flat?0:loc->Pix[0]);
-                           dy=-Obs->Model->Items[i].Y*Obs->Model->Space+(Obs->Model->Flat?0:-loc->Pix[1]);
-
-                           /*Draw the position line if needed*/
-                           if ((loc->Pix[0]!=0.0 || loc->Pix[1]!=0.0) && !line) {
-                              if (Interp)
-                                 glFeedbackInit(20,GL_2D);
-                              glLineWidth(spec->Width);
-                              glBegin(GL_LINES);
-                                 glVertex3d(0,0,0);
-                                 if (Obs->Model->Flat) {
-                                    glVertex3d(pix[0]-loc->Pix[0],pix[1]-VPY(VP,loc->Pix[1]),0.0);
-                                 } else {
-                                    glVertex3d(dx,dy,0.0);
-                                 }
-                              glEnd();
                               if (Interp) {
-                                 glFeedbackProcess(Interp,GL_2D);
-                                 Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
-                                 glFeedbackInit(4000,GL_2D);
+                                 Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
+                                 Tcl_AppendResult(Interp,"1.0 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
+                              } else {
+                                 if (spec->Outline) {
+                                    glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*65535);
+                                 } else {
+                                    glColor4us(0,0,0,alpha*65535);
+                                 }
                               }
 
-                              v=spec->Width<<1;
-                              glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+                              /*Get height*/
+                              if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
+                                 z=k;
+                              } else {
+                                 z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
+                              }
+
+                           /*Set position within projection*/
                               glPushMatrix();
-                              if (Obs->Model->Flat)
-                                 glTranslated(pix[0]-loc->Pix[0],pix[1]-VPY(VP,loc->Pix[1]),0.0);
-                              glScalef(v,v,1.0);
-                              glDrawCircle(64,GL_POLYGON);
-                              line=1;
-                              glPopMatrix();
-                              if (Interp) {
-                                 glFeedbackProcess(Interp,GL_2D);
-                              }
-                           }
 
-                           /*Positionner dans le modele*/
-                           glTranslated(dx,dy,0.0);
-
-                           iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue-2;
-
-                           if (id && spec->RenderLabel) iy--;
-                           if (id && spec->RenderCoord) iy--;
-
-                           if (!id) {
-                              if (spec->RenderLabel && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                 if (loc->No) {
-                                    snprintf(buf,128,"%s (%s)",loc->Id,loc->No);
+                              if (Obs->Model->Flat) {
+                                 if (loc->Pix[0]!=0.0 && loc->Pix[1]!=0.0) {
+                                    glTranslated(loc->Pix[0],VPY(VP,loc->Pix[1]),0.0);
                                  } else {
-                                    snprintf(buf,128,"%s",loc->Id);
+                                    glTranslated(pix[0],pix[1],0.0);
                                  }
-                                 MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
+                              } else {
+                                 if (clat!=-1 && clon!=-1) {
+                                    Proj->Type->Locate(Proj,MetObs_GetData(cdata,clat,0,t),MetObs_GetData(cdata,clon,0,t),1);
+                                 } else {
+                                    Proj->Type->Locate(Proj,loc->Coord.Lat,loc->Coord.Lon,1);
+                                 }
+                                 glTranslated(0.0,0.0,ZM(Proj,z));
+                                 glScalef(VP->Ratio,VP->Ratio,1.0);
                               }
 
-                              if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                 snprintf(buf,128,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
-                                 MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
-                              }
-                              id=1;
-                           }
+                              dx=Obs->Model->Items[i].X*Obs->Model->Space+(Obs->Model->Flat?0:loc->Pix[0]);
+                              dy=-Obs->Model->Items[i].Y*Obs->Model->Space+(Obs->Model->Flat?0:-loc->Pix[1]);
 
-                           if (spec->RenderVector && MET_VALID(val,Obs->NoData)) {
-                              dir=TMetElem_Value(data,Obs->Model->Items[i].Code[1],ne,v,0);
-                              if (MET_VALID(dir,Obs->NoData)) {
+                              /*Draw the position line if needed*/
+                              if ((loc->Pix[0]!=0.0 || loc->Pix[1]!=0.0) && !line) {
+                                 if (Interp)
+                                    glFeedbackInit(20,GL_2D);
+                                 glLineWidth(spec->Width);
+                                 glBegin(GL_LINES);
+                                    glVertex3d(0,0,0);
+                                    if (Obs->Model->Flat) {
+                                       glVertex3d(pix[0]-loc->Pix[0],pix[1]-VPY(VP,loc->Pix[1]),0.0);
+                                    } else {
+                                       glVertex3d(dx,dy,0.0);
+                                    }
+                                 glEnd();
+                                 if (Interp) {
+                                    glFeedbackProcess(Interp,GL_2D);
+                                    Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
+                                    glFeedbackInit(4000,GL_2D);
+                                 }
+
+                                 v=spec->Width<<1;
+                                 glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+                                 glPushMatrix();
+                                 if (Obs->Model->Flat)
+                                    glTranslated(pix[0]-loc->Pix[0],pix[1]-VPY(VP,loc->Pix[1]),0.0);
+                                 glScalef(v,v,1.0);
+                                 glDrawCircle(64,GL_POLYGON);
+                                 line=1;
+                                 glPopMatrix();
+                                 if (Interp) {
+                                    glFeedbackProcess(Interp,GL_2D);
+                                 }
+                              }
+
+                              /*Positionner dans le modele*/
+                              glTranslated(dx,dy,0.0);
+
+                              iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue-2;
+
+                              if (id && spec->RenderLabel) iy--;
+                              if (id && spec->RenderCoord) iy--;
+
+                              if (!id) {
+                                 if (spec->RenderLabel && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
+                                    if (loc->No) {
+                                       snprintf(buf,128,"%s (%s)",loc->Id,loc->No);
+                                    } else {
+                                       snprintf(buf,128,"%s",loc->Id);
+                                    }
+                                    MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
+                                 }
+
+                                 if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
+                                    snprintf(buf,128,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
+                                    MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
+                                 }
+                                 id=1;
+                              }
+
+                              if (spec->RenderVector && MET_VALID(val,Obs->NoData)) {
+                                 dir=TMetElem_Value(data,Obs->Model->Items[i].Code[1],ne,v,0);
+                                 if (MET_VALID(dir,Obs->NoData)) {
+                                    if (spec->Map && spec->MapAll) {
+                                       VAL2COL(idx,spec,val);
+
+                                       if (Interp) {
+                                          CMap_PostscriptColor(Interp,spec->Map,idx);
+                                       } else {
+                                          glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha);
+                                       }
+                                    }
+
+                                    if (Interp)
+                                       glFeedbackInit(40,GL_2D);
+                                    Data_RenderBarbule(spec->RenderVector,1,0.0,0.0,0.0,0.0,VAL2SPEC(spec,val),dir,VECTORSIZE(spec,val),NULL);
+                                    if (Interp) {
+                                       glFeedbackProcess(Interp,GL_2D);
+                                       Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
+                                    }
+                                 }
+                              }
+
+                              if (spec->RenderValue && MET_VALID(val,Obs->NoData) && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                                  if (spec->Map && spec->MapAll) {
                                     VAL2COL(idx,spec,val);
 
@@ -2581,45 +2624,28 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                        glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha);
                                     }
                                  }
-
-                                 if (Interp)
-                                    glFeedbackInit(40,GL_2D);
-                                 Data_RenderBarbule(spec->RenderVector,1,0.0,0.0,0.0,0.0,VAL2SPEC(spec,val),dir,VECTORSIZE(spec,val),NULL);
-                                 if (Interp) {
-                                    glFeedbackProcess(Interp,GL_2D);
-                                    Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
-                                 }
+                                 DataSpec_Format(spec,VAL2SPEC(spec,val),buf);
+                                 MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                               }
-                           }
 
-                           if (spec->RenderValue && MET_VALID(val,Obs->NoData) && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                              if (spec->Map && spec->MapAll) {
-                                 VAL2COL(idx,spec,val);
-
-                                 if (Interp) {
-                                    CMap_PostscriptColor(Interp,spec->Map,idx);
-                                 } else {
-                                    glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha);
-                                 }
+                              if (spec->Icon) {
+                                 MetObs_RenderIcon(Interp,spec,alpha,val,VP,Proj);
                               }
-                              DataSpec_Format(spec,VAL2SPEC(spec,val),buf);
-                              MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
-                           }
 
-                           if (spec->Icon) {
-                              MetObs_RenderIcon(Interp,spec,alpha,val,VP,Proj);
-                           }
+                              glPopMatrix();
+                              /*Skip the rest if in select mode and a valid one has been drawn*/
+                              if (GLMode==GL_SELECT && MET_VALID(val,Obs->NoData))
+                                 break;
 
-                           glPopMatrix();
-                           /*Skip the rest if in select mode and a valid one has been drawn*/
-                           if (GLMode==GL_SELECT && MET_VALID(val,Obs->NoData))
-                              break;
-
-                           /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
-                           if (!eb || Proj->Scale==1.0) {
-                              break;
+                              /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
+                              if (clat==-1 && (!eb || Proj->Scale==1.0)) {
+                                 break;
+                              }
                            }
                         }
+                        /*TODO break if grouped data, until we can select the variables (ex:Per channel)*/
+                        if (data->Nt>1)
+                           break;
                      }
                      /*Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway*/
                      if (ne>=0 && (!eb || Proj->Scale==1.0)) {
