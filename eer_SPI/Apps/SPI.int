@@ -42,8 +42,8 @@ proc SPI::Splash { { Msg "" } } {
          wm overrideredirect .splash true
 
          image create photo SPLASH -file $GDefs(Dir)/Apps/SPI.gif
-         label .splash.img -image SPLASH -relief sunken -bd 1 -bg #FFFFFF
-         label .splash.info -relief sunken -bd 1 -bg #FFFFFF -textvariable SPI::Param(Loading) -anchor w
+         label .splash.img -image SPLASH -relief raised -bd 2 -bg #FFFFFF
+         label .splash.info -relief flat -bd 0 -font -*-arial-bold-*-*-*-18-*-*-*-*-* -bg #FFFFFF -fg #666666 -textvariable SPI::Param(Loading) -anchor w
 
          set h [winfo screenheight .]
          set w [winfo screenwidth  .]
@@ -57,7 +57,7 @@ proc SPI::Splash { { Msg "" } } {
 
          wm geometry .splash +$x+$y
          pack .splash.img -side top -fill x
-         pack .splash.info -side top -fill x -padx 2
+         place .splash.info -in .splash.img -x 0 -y 35
 
          wm withdraw .
       }
@@ -88,7 +88,7 @@ proc SPI::About { } {
 
    toplevel     .about
    wm title     .about [lindex $Lbl(About) $GDefs(Lang)]
-   wm geometry  .about +[winfo rootx .]+[winfo rooty .]
+   wm geometry  .about 650x450+[winfo rootx .]+[winfo rooty .]
 
    frame .about.info -relief raised -bd 1
       label .about.info.flag -bitmap @$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm -fg red

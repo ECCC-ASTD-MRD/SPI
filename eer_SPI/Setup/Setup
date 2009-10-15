@@ -268,20 +268,17 @@ proc InstallOutput { } {
    global GDefs
 
    #----- Determiner la langue
-
    switch $GDefs(Langue) {
       Francais { set GDefs(Lang) 0 }
       English  { set GDefs(Lang) 1 }
    }
 
    #----- Mettre en place le printer default
-
    set idx [lsearch -exact $GDefs(Printers) $GDefs(Printer)]
    set GDefs(Printers) [lreplace $GDefs(Printers) $idx $idx]
    set GDefs(Printers) [linsert $GDefs(Printers) 0 $GDefs(Printer)]
 
    #----- Creer le fichier d'initialisations
-
    set f [open $env(HOME)/.eer_ToolDefs/$GDefs(DefFile) w+]
 
    puts $f "
@@ -318,8 +315,10 @@ set GDefs(Arch)           \$tcl_platform(os)
 set GDefs(Host)           \[lindex \[split \[info hostname\] .\] 0\]
 set GDefs(Ext)            \[info sharedlibextension\]
 
+set GDefs(Lang)           $GDefs(Lang)
 set GDefs(Group)          $GDefs(Group)
 set GDefs(Model)          $GDefs(Model)
+set GDefs(Printers)       \"$GDefs(Printers)\"
 
 #----- Repertoires des experiences
 
@@ -345,16 +344,6 @@ set GDefs(BackEnds)         { $GDefs(BackEnds) }
 set GDefs(BackEndmaia)      { $GDefs(BackEndmaia) }
 set GDefs(BackEndsaiph)     { $GDefs(BackEndsaiph) }
 set GDefs(BackEndzeta)      { $GDefs(BackEndzeta) }
-
-#----- Constantes diverses relatives a toutes les applications
-
-set GDefs(Printers)       \"$GDefs(Printers)\"
-
-#----- Constantes relatives aux traces
-
-set GDefs(DebugOutput) $GDefs(DebugOutput)
-set GDefs(DebugLevel)  $GDefs(DebugLevel)
-set GDefs(Lang)        $GDefs(Lang)
 
 #----- Definitions generale de Tk
 
@@ -406,7 +395,6 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
    file mkdir $env(HOME)/.eer_ToolDefs/Macro
 
    #----- Installer les fichiers de definitions
-
    foreach file { eer_GRIBDict eer_AutoList eer_FileBoxPath eer_Host eer_SatDomain eer_WEBPath eer_ProjCam  } {
       if { ![file exists $env(HOME)/.eer_ToolDefs/$file] } {
          puts "Copying setup file : $file"
@@ -428,7 +416,6 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
 }
 
 #----- Initialize environnement
-
 set GDefs(Ver)           [regsub \[:alpha:\]+ [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end] ""]
 set GDefs(DefFile)       .eer_Defs-$GDefs(Ver)
 set GDefs(FrontEnd)      alef
@@ -450,21 +437,14 @@ set GDefs(Printers)       ""
 set GDefs(Lang)           0
 
 #----- Setup parameters
-
 GetPrinters
 GetPrevious
 
-#----- Set packages version
-
-set GDefs(Arch)      [exec uname -s]
-set GDefs(Dir)       [file dirname [info script]]/..
-
 #----- Set default values
-
-set GDefs(Group)          [lindex [exec groups] 0]
-set GDefs(DebugOutput)    stdout
-set GDefs(DebugLevel)     0
-set GDefs(DBMet)          /data/gridpt/dbase
+set GDefs(Arch)  [exec uname -s]
+set GDefs(Dir)   [file dirname [info script]]/..
+set GDefs(Group) [lindex [exec groups] 0]
+set GDefs(DBMet) /data/gridpt/dbase
 
 set GDefs(Colors)         { #ffffff #000000 #bfbfbf #7f7f7f #ff0000 #006464 #00ffff #0000ff  #ffff00 #ffa500 #ff1493 #da70d6 }
 set GDefs(ColorEmerg)     red
@@ -477,10 +457,8 @@ set GDefs(Font)           -*-courier-*-r-*-*-12-*-*-*-*-*-*-*
 option add *background $GDefs(ColorFrame)
 option add *foreground black
 option add *font       $GDefs(Font)
-#catch { lappend auto_path $/Lib }
 
 #----- Include needed packages
-
 package require Icons
 package require FrameDefs
 package require ComboBox
@@ -488,5 +466,4 @@ package require Dialog
 package require FileBox
 
 #----- Crank it up
-
 InstallWindow

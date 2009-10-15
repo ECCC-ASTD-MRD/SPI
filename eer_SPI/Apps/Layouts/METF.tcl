@@ -130,8 +130,6 @@ proc METF::LoadFields { Frame } {
       }
    }
 
-   Debug::TraceProc "Reading field -1 ________ _ $ip2 -1 _ (GZ,UU,ES,HR)"
-
    fstdfield read GZ850  $file -1 "" 850  $ip2 -1 "" GZ
    fstdfield read WD850  $file -1 "" 850  $ip2 -1 "" UU
    fstdfield read GZ1000 $file -1 "" 1000 $ip2 -1 "" GZ

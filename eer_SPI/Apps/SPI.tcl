@@ -205,8 +205,7 @@ package require Dialog
 package require FileBox
 package require CanvasShape
 package require Areas
-package require FrameDefs
-package require Debug
+package require TabFrame
 package require InfoFrame
 package require FieldCalc
 package require Animator
@@ -1226,7 +1225,7 @@ proc SPI::Execute { Script } {
       if { ![file exists $Script] } {
          if { ![file exists $GDefs(DirEER)/Macro/$Script] } {
             if { ![file exists $GDefs(DirEER)/Macro/$Script.tcl] } {
-               puts stderr "(ERROR) SPI: Could not find script $Script"
+               puts stderr "(ERROR) SPI::Execute: Could not find script $Script"
                SPI::Quit 1
             } else {
                set Script $GDefs(DirEER)/Macro/$Script.tcl
@@ -2360,30 +2359,24 @@ proc SPI::WithDraw { } {
    wm withdraw .
 
    #----- Fermer tout les outils
-
    foreach tool $Param(Tools) {
       ${tool}::Close
    }
 }
 
 #----- Demmarage de l'application
-
 SPI::Splash "Initializing interface"
-Debug::Init 0 -1 "SPI"
 
 #----- Initialisations de certaines fonctions et package
-
 Areas::Init
 ProjCam::Read
 
 #----- Inclure les parametres usagers
-
 if { [file exists  $env(HOME)/.eer_ToolDefs/eer_Default] } {
    source $SPI::Param(Default)
 }
 
 #----- Mise en place de l'interface
-
 tk scaling 1.0
 
 if { $SPI::Param(Window) } {
@@ -2398,7 +2391,6 @@ SPI::Params
 SPI::ContextMenuProj
 
 #----- Parcourir la liste des parametres post-launch
-
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "setup"    { }
@@ -2428,7 +2420,6 @@ for { set i 0 } { $i < $argc } { incr i } {
 glrender -xbatch $SPI::Param(Batch)
 
 #----- Creation des pages
-
 set layout $SPI::Param(Layout)
 SPI::WindowLayout $SPI::Param(PaneSide) $SPI::Param(Panes)
 
@@ -2440,25 +2431,21 @@ TabFrame::Select .mdi 0
 SPI::Splash "Setting up tools"
 
 #----- Boite d'experience
-
 if { $SPI::Param(Exp) } {
    Model::Window True
 }
 
 #----- Selection d'un outils
-
 foreach tool $SPI::Param(Tool) {
    eval ${tool}::Window
 }
 
 #----- Inclusion du projet
-
 if { $SPI::Param(Project)!="" } {
    SPI::ProjectRead $SPI::Param(Project) True
 } else {
 
    #----- Selection du Layout pour la premiere page
-
    SPI::Splash "Setting up initial layout"
    if { ![SPI::LayoutLoad [lindex $Page::Data(Frames) 0] $layout] } {
       puts stderr "(ERROR) SPI: Invalid Layout"
@@ -2467,24 +2454,20 @@ if { $SPI::Param(Project)!="" } {
 }
 
 #----- Refresh final
-
 SPI::Splash $SPI::Param(Script)
 update idletasks
 Page::Update
 
 #----- On bypass les arguments regulier de SPI pour ceux du script a etre execute
-
 set argv $SPI::Param(Args)
 set argc [llength $SPI::Param(Args)]
 
 #----- Patch pour les $#@%@! de system RedHat en #$%$#^@$ de 64 bit
 #      Y faut faire un LD_PRELOAD de la lib GL avant de lancer le tout parce que le LD_LIBRARY_PATH
 #      marche pas pis y faut le deloader parce que le 64 bit kapote quand on fait un exec
-
 set env(LD_PRELOAD) ""
 
 #----- Execution du script si necessaire
-
 foreach script $SPI::Param(Script) {
    puts "(INFO) SPI: Starting execution of script $script"
    SPI::Splash "Executing $script"

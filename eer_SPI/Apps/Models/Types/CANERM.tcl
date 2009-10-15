@@ -512,12 +512,12 @@ proc CANERM::Launch { } {
          -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
 
       if { $ErrorCode } {
-         Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         puts stderr "(ERROR) CANERM::Launch: Submitting the job on $Model::Param(Host) failed.\n\n$Message"
 #         return False
       }
-      Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
+      puts stderr "(INFO) CANERM::Launch: Job has been submitted successfully on $Model::Param(Host)."
    } else {
-      Debug::TraceProc "(INFO) Launching model on : $Model::Param(Host)"
+      puts stderr "(INFO) CANERM::Launch: Launching model on $Model::Param(Host)"
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_CANERM.in &
    }
 
@@ -565,14 +565,12 @@ proc CANERM::ParamsCheck { Tab No } {
 
    if { $Sim(NoPrev)==-1 } {
       if { $Sim(IsoNb)==0 } {
-         Debug::TraceProc "CANERM: Not enough pollutants"
          Dialog::Error .modelnew $Error(NbIso)
          TabFrame::Select $Tab 0
          return False
       }
 
       if { $Sim(EmHeight)>30000 } {
-         Debug::TraceProc "CANERM: Height over 30000 meters"
          Dialog::Error .modelnew $Error(Height)
          TabFrame::Select $Tab 0
          return False
@@ -648,7 +646,6 @@ proc CANERM::SimPrevious { Path } {
 
    #----- Inscrire la liste des resultats precedent dans le repertoire temporaire.
    exec echo "$resultlist" > $Path/tmp/previous.in
-   Debug::TraceProc "CANERM: Previous files: $resultlist"
 }
 
 #---------------------------------------------------------------------------

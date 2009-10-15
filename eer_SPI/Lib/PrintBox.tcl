@@ -35,7 +35,7 @@ catch { SPI::Splash "Loading Widget Package PrintBox 3.2" }
 
 package require FileBox
 package require ComboBox
-package require FrameDefs
+package require TabFrame
 package require InfoFrame
 
 namespace eval PrintBox {

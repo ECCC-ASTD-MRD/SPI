@@ -228,7 +228,7 @@ proc Bulletin::InsertArchives { Nom } {
 
    #----- Decompresse les archives selectionnees
 
-   Debug::TraceProc "Getting archives $Bul(Path)/$Nom"
+   puts "(INFO) Bulletin::InsertArchive: Getting archives $Bul(Path)/$Nom"
    catch { exec tar xf $Bul(Path)/$Nom }
 
    #----- Insere les archives dans la liste de bulletins

@@ -587,8 +587,6 @@ proc Writer::FVCN::Update { Pad } {
       return
    }
 
-   Debug::TraceProc "Writer::FVCN::Update : Checking for Site $Data(Site$Pad)"
-
    #----- Ajustement du numero du bulletin
    #         - incremente si il y a eu transmission.
    #         - non incremente si il y a eu sauvegarde.
@@ -831,7 +829,7 @@ proc Writer::FVCN::GetNo { Name } {
 
    set filelist [glob -nocomplain $GDefs(DirMsg)/FVCN/*.sent]
 
-   Debug::TraceProc "FVCN::GetNo: Msg list: $filelist"
+   puts "(INFO) FVCN::GetNo: Msg list: $filelist"
 
    set entetes_exclues {}
 
@@ -839,7 +837,7 @@ proc Writer::FVCN::GetNo { Name } {
 
       set file [file tail $file]
 
-      Debug::TraceProc "FVCN::GetNo: Processing... $file"
+      puts "(INFO) FVCN::GetNo: Processing... $file"
 
       #----- on determine le nombre d'heures qui s'est ecoule
       #      depuis la transmission.
@@ -853,12 +851,12 @@ proc Writer::FVCN::GetNo { Name } {
 
       if { $delta<48.0 && [string first $name $file]!=-1 } {
 
-         Debug::TraceProc "FVCN::GetNo: There is already a message emitted within 48 hours ($name)"
+         puts "(INFO) FVCN::GetNo: There is already a message emitted within 48 hours ($name)"
 
          #----- on conserve la meme entete FVCNxx.
 
          set no [string range $file 14 19]
-         Debug::TraceProc "FVCN::GetNo: Selected $no"
+         puts "(INFO) FVCN::GetNo: Selected $no"
          return $no
 
       } else {
@@ -868,7 +866,7 @@ proc Writer::FVCN::GetNo { Name } {
             #----- on doit exclure cette entete FVCNxx.
 
             lappend entetes_exclues [string range ${file} 14 19]
-            Debug::TraceProc "FVCN::GetNo: There is another message emitted within 48 hours ([string range ${file} 13 18])"
+            puts "(INFO) FVCN::GetNo: There is another message emitted within 48 hours ([string range ${file} 13 18])"
 
          } else {
 
@@ -877,12 +875,12 @@ proc Writer::FVCN::GetNo { Name } {
             foreach entete { FVCN01 FVCN02 FVCN03 FVCN04 } {
                if { [lsearch -exact ${entetes_exclues} ${entete}]==-1 } {
                   set no [string trim ${entete}]
-                  Debug::TraceProc "FVCN::GetNo: Found header $no"
+                  puts "(INFO) FVCN::GetNo: Found header $no"
                   return $no
                }
             }
 
-            Debug::TraceProc "FVCN::GetNo: No header available !!!"
+            puts "(INFO) FVCN::GetNo: No header available !!!"
             Dialog::Error . $Msg(NoHeader)
             return ""
          }
@@ -898,7 +896,7 @@ proc Writer::FVCN::GetNo { Name } {
       }
    }
 
-   Debug::TraceProc "FVCN::GetNo: No header available !!!"
+   puts "(INFO) FVCN::GetNo: No header available !!!"
    Dialog::Error . $Msg(NoHeader)
    return ""
 }
@@ -1593,27 +1591,22 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    exec chmod 644 $file
 
    if { $Backup } {
-      Debug::TraceProc "Writer::FVCN::Send: Sending via metmanager $name"
       set ErrCatch [catch  { exec ssh metmgr1 -l $GDefs(TransmitUser) -n -x ". ~/.profile; export DISPLAY=$env(DISPLAY); export TERM=$env(TERM); /opt/mm/bin/amxmit -s ncp1lx $file " } MsgCatch]
-
       if { $ErrCatch != 0 } {
-         Debug::TraceProc "Error : Unable to sent the $file via metmanager.\n\n$MsgCatch"
+         puts stderr "(ERROR) Writer::FVCN::Send: Unable to sent the $file via metmanager.\n\n$MsgCatch"
       }
 
    } else {
-      Debug::TraceProc "Writer::FVCN::Send: Sending via nanproc $name"
       if { $GDefs(FrontEnd)!=$GDefs(Host) } {
          set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; nanproc -bs -p b -f $file " } MsgCatch]
-
          if { $ErrCatch != 0 } {
-            Debug::TraceProc "Error : Unable to sent the $file via nanproc.\n\n$MsgCatch"
+            puts stderr "(ERROR) Writer::FVCN::Send: Unable to sent the $file via nanproc.\n\n$MsgCatch"
          }
 
       } else {
          set ErrCatch [catch { exec nanproc -bs -p b -f $file } MsgCatch]
-
          if { $ErrCatch != 0 } {
-            Debug::TraceProc "Error : Unable to sent the $file via nanproc.\n\n$MsgCatch"
+            puts stderr "(ERROR) Writer::FVCN::Send: Unable to sent the $file via nanproc.\n\n$MsgCatch"
          }
       }
    }
@@ -1976,7 +1969,7 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
    set Data(No$Writer::Data(Pad)) [GetNo $Name]
    if { $Data(No$Writer::Data(Pad))!="" } {
 
-      Debug::TraceProc "Writer::FVCN::Site: Valid source selected ($Name)"
+      puts "(INFO) Writer::FVCN::Site: Valid source selected ($Name)"
 
       set Data(Advisory$Writer::Data(Pad)) [GetAdvisory $Writer::Data(Pad) $Name]
 
@@ -2000,7 +1993,7 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
 
       Writer::FVCN::GraphUpdate $Writer::Data(Pad) True
    } else {
-      Debug::TraceProc "Writer::FVCN::Site: Invalid source ($Name)"
+      puts "(INFO) Writer::FVCN::Site: Invalid source ($Name)"
    }
 }
 

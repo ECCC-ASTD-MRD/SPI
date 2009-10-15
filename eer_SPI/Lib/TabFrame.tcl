@@ -39,9 +39,9 @@
 #
 #===============================================================================
 
-package provide FrameDefs 1.6
+package provide TabFrame 2.0
 
-catch { SPI::Splash "Loading Widget Package FrameDefs 1.6" }
+catch { SPI::Splash "Loading Widget Package TabFrame 2.0" }
 
 namespace eval TabFrame {
    global   GDefs

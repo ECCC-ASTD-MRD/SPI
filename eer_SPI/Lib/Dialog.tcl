@@ -256,7 +256,7 @@ proc Dialog::ErrorListing { Master Text List } {
          label .dlgerrlist.haut.bitmap -image DIALOG_ERROR
          message .dlgerrlist.haut.txt -aspect 1000 -text [lindex $Text $GDefs(Lang)]
          pack .dlgerrlist.haut.bitmap -side left -padx 10 -pady 10
-         pack .dlgerrlist.haut.txt -padx 10 -pady 1+0
+         pack .dlgerrlist.haut.txt -padx 10 -pady 10
       pack .dlgerrlist.haut -side top -fill x
 
       frame .dlgerrlist.bas

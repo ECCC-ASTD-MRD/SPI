@@ -1061,8 +1061,6 @@ proc Watch::Suppress { } {
    }
 
    #----- Enlever la watch du pool
-   Debug::TraceProc "Suppressing watch: $Data(Name)"
-
    set path $Data(Path)/$Data(Project)/sim.pool
    if { [file exists $path] } {
       file rename -force $path "$path.old"

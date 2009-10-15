@@ -352,10 +352,10 @@ proc TRAJECT::Launch { } {
          -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
 
       if { $ErrorCode } {
-         Debug::TraceProc "(ERROR) Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         puts stderr "(ERROR) TRAJECT::Launch: Submitting the job on $Model::Param(Host) failed.\n\n$Message"
 #         return False
       }
-      Debug::TraceProc "(INFO) Job has been submitted successfully on $Model::Param(Host)."
+      puts "(INFO) TRAJECT::Launch: Job has been submitted successfully on $Model::Param(Host)."
   } else {
       set info [Info::Code ::TRAJECT::Sim]
       set id [Exp::Id $info]

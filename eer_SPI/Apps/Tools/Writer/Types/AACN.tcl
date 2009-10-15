@@ -454,27 +454,22 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
    exec chmod 644 $file
 
    if { $Backup } {
-      Debug::TraceProc "Writer::AACN::Send: Sending via metmanager $name"
       set ErrCatch [catch  { exec ssh metmgr1 -l $GDefs(TransmitUser) -n -x ". ~/.profile; export DISPLAY=$env(DISPLAY); export TERM=$env(TERM); /opt/mm/bin/amxmit -s $file " } MsgCatch]
-
       if { $ErrCatch != 0 } {
-         Debug::TraceProc "Error : Unable to sent the $file via metmanager.\n\n$MsgCatch"
+         puts stderr "(ERROR) Writer::AACN::Send: Unable to sent the $file via metmanager.\n\n$MsgCatch"
       }
 
    } else {
-      Debug::TraceProc "Writer::AACN::Send: Sending via nanproc $name"
       if { $GDefs(FrontEnd)!=$GDefs(Host) } {
          set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; nanproc -bs -p b -f $file " } MsgCatch]
-
          if { $ErrCatch != 0 } {
-            Debug::TraceProc "Error : Unable to sent the $file via nanproc.\n\n$MsgCatch"
+            puts stderr "(ERROR) Writer::AACN::Send: Unable to sent the $file via nanproc.\n\n$MsgCatch"
          }
 
       } else {
          set ErrCatch [catch  { exec nanproc -bs -p b -f $file } MsgCatch]
-
          if { $ErrCatch != 0 } {
-            Debug::TraceProc "Error : Unable to sent the $file via nanproc.\n\n$MsgCatch"
+            puts stderr "(ERROR) Writer::AACN::Send: Unable to sent the $file via nanproc.\n\n$MsgCatch"
          }
 
       }

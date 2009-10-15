@@ -29,9 +29,7 @@ namespace eval NowCaster::Obs { } {
 
    set Param(Title)      { "Observation" "Observation" }
 
-   set Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa
-                           /data/ade/dbase/surface/ozone /data/ade/dbase/surface/pm25 /data/ade/dbase/surface/synop
-                           /data/ade/dbase/surface/shef }
+   set Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
    set Param(PathsUpper) { /data/ade/dbase/uprair/profiler /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/pirep /data/ade/dbase/uprair/airep }
 
    set Data(Frame)       ""
@@ -402,6 +400,12 @@ proc NowCaster::Obs::Read { Obs Files } {
    global GDefs
    variable Msg
    variable Data
+   variable Error
+
+   if { ![llength $Files] } {
+      Dialog::Error .nowcaster $Error(File)
+      return
+   }
 
    set NowCaster::Data(Job) [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;

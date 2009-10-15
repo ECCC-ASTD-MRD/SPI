@@ -119,7 +119,7 @@ proc SatData::DataExtract { InFile } {
    if { $GDefs(FrontEnd)!=$GDefs(Host) } {
       catch { exec ssh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $GDefs(DirEER)/eer_Tmp/SAT_hdf2fstd.out" }
    } else {
-      puts stderr "Option 2... not available right now, sorry ! ( $GDefs(FrontEnd) $GDefs(Host) )"
+      puts stderr "(ERROR) SatData::DataExtract: Option 2 not available right now, sorry! ( $GDefs(FrontEnd) $GDefs(Host) )"
       if { $trace } {
          Dialog::Error .satdata $message
       }
@@ -263,13 +263,10 @@ proc SatData::Directive { }  {
    global GDefs
    variable Data
 
-   # ----- effectue la translation.
-   #       ( origine du referentiel du globe est au centre a droite )
+   #----- Effectue la translation (origine du referentiel du globe est au centre a droite )
+   puts "(INFO) SatData::Directive: (lat, lon) inf left = ($Data(Lat0), $Data(Lon0))"
 
-   Debug::TraceProc "Grille directives : (lat, lon) inf left = ($Data(Lat0), $Data(Lon0))"
-
-   # ----- determine le nombre de points de grille en i et j.
-
+   #----- Determine le nombre de points de grille en i et j.
    set latdiff [expr abs($Data(Lat1) - $Data(Lat0))]
    set londiff [expr abs($Data(Lon1) - $Data(Lon0))]
 
@@ -280,16 +277,12 @@ proc SatData::Directive { }  {
    set ni [expr round([expr ($londiff / $Data(Res))])]
    set nj [expr round([expr ($latdiff / $Data(Res))])]
 
-   Debug::TraceProc "Grille directives : diff lat=$latdiff lon=$londiff"
+   puts "(INFO) SatData::Directive: diff lat=$latdiff lon=$londiff"
 
-   # ----- Ecrire le fichier de directives.
-
-#ST   set fileId [open $GDefs(DirEER)/eer_Tmp/SAThdf2fstd.grille w]
-#ST   puts $fileId "GRILLE(LATLON,${ni},${nj},$Data(Lat0),$Data(Lon0),$Data(Res),$Data(Res))"
-#ST   close $fileId
+   #----- Ecrire le fichier de directives.
    set Data(Grille) "GRILLE(LATLON,${ni},${nj},$Data(Lat0),$Data(Lon0),$Data(Res),$Data(Res))"
 
-   Debug::TraceProc "Grille directives : $Data(Grille)"
+   puts "(INFO) SatData::Directive: $Data(Grille)"
 }
 
 #----------------------------------------------------------------------------
@@ -503,7 +496,7 @@ proc SatData::GetFiles { } {
    foreach sat { GOES11 GOES12 } {
       foreach c { nV } {
 
- puts stderr "Trace : GetFiles... $Data(CPath$sat) , $Data(C$c)"
+        puts stderr "(INFO) SatData::GetFiles:  $Data(CPath$sat) , $Data(C$c)"
 
          foreach file [exec ls -1r $Data(CPath$sat)/$Data(C$c)/ ] {
             if { [string match ??????????_??g?? $file] } {

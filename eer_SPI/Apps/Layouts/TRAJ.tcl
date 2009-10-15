@@ -387,13 +387,12 @@ proc TRAJ::SATNET { Frame Mode } {
       "regs" { set no $OCXNO(Regs) }
    }
 
-   Debug::TraceProc "Sending $file.gif over SATNET"
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
    set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
 
    if { $ErrCatch != 0 } {
-      Debug::TraceProc "Error : Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"
+      puts stderr "(ERROR) TRAJ::SATNET: Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"
    }
 
    #----- envoyer sur les sites web.
@@ -406,7 +405,7 @@ proc TRAJ::SATNET { Frame Mode } {
    set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png" } MsgCatch ]
 
    if { $ErrCatch != 0 } {
-      Debug::TraceProc "Error : Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+      puts stderr "(ERROR) TRAJ::SATNET: Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
    }
 
    #----- supprimer les residus

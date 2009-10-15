@@ -128,7 +128,7 @@ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim
 package require PrintBox
 package require ProjCam
 package require Convert
-package require FrameDefs
+package require TabFrame
 package require ColorBox
 package require ColorBar
 package require DataBar

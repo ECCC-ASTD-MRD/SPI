@@ -142,7 +142,7 @@ namespace eval FSTD {
    set Lbl(Texture)       { "Texture" "Texture" }
    set Lbl(Volume)        { "Volume" "Volume" }
    set Lbl(Display)       { "Affichage" "Display" }
-   set Lbl(Conv)          { "Conv " "Conv " }
+   set Lbl(Conv)          { "Conv  " "Conv  " }
    set Lbl(Interp)        { "Interp " "Interp " }
    set Lbl(Value)         { "Valeur " "Values " }
    set Lbl(Unit)          { "Unites " "Units  " }

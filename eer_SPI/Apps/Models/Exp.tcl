@@ -721,7 +721,7 @@ proc Exp::New { } {
 
    #----- Creer l'enregistrement de l'experience
    set line "$noexp $Data(Name) $Data(Type) { $info }"
-   Debug::TraceProc "Creating new Experiment : $line"
+   puts "(INFO) Exp::New: Creating new Experiment ($line)"
    exec echo "$line" >> $Param(Path)/eer_ExpList
 
    file mkdir $Param(Path)/${noexp}_$Data(Name)
@@ -730,7 +730,7 @@ proc Exp::New { } {
    #----- dans le cas RSMC, initialiser les images
    if { $Data(Type)==1 } {
 
-      Debug::TraceProc "Copying RSMC joint data to directory $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin"
+      puts "(INFO) Exp::New: Copying RSMC joint data to directory $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin"
       file mkdir $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin
       file copy $GDefs(Dir)/Resources/Image/System/CVNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.gif
       file copy $GDefs(Dir)/Resources/Image/System/CVNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.ps
@@ -1391,18 +1391,16 @@ proc Exp::Suppress { } {
 
    . config -cursor watch
 
-   Debug::TraceProc "Suppressing experiment : $Data(No) $Data(Name)"
-
    #----- Supprimer le repertoire de l'experience
    file delete -force $Param(Path)/$Data(No)_$Data(Name)
 
    if { [file exists $Param(Path)/$Data(No)_$Data(Name)] } {
       Dialog::Error .  $Msg(SuppressError) "\n\n\t$Param(Path)/$Data(No)_$Data(Name)"
-      Debug::TraceProc "Unable to suppress experiment : $Data(No) $Data(Name)"
+      puts stderr "(ERROR) Exp::Suppress: Unable to suppress experiment : $Data(No) $Data(Name)"
    } else {
 
+      puts "(INFO) Exp::Suppress: Suppressing experiment $Data(No) $Data(Name)"
       #----- Supprimer l'information de cette experience dans le pool
-      Debug::TraceProc "Suppressing experiment : $Data(No) $Data(Name)"
       file copy -force $Param(Path)/eer_ExpList $Param(Path)/eer_ExpList.old
 
       set fi [open $Param(Path)/eer_ExpList.old r]
