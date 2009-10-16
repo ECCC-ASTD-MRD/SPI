@@ -218,7 +218,6 @@ foreach tool [lsort [glob $GDefs(Dir)/Apps/Tools/*]] {
    uplevel #0 source $tool/$name.tcl
    lappend SPI::Param(Tools) $name
 }
-
 Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 
 #----- Liste des layouts

@@ -126,11 +126,11 @@ proc Log::Start { Job Version { Input "" } } {
 #----------------------------------------------------------------------------
 
 proc Log::End { { Status 0 } } {
-   variabl Param
+   variable Param
 
    set Param(SecEnd) [clock seconds]
 
-   Log::Print MUST "\n -------------------------------------------------------------------------------"
+   Log::Print MUST "\n-------------------------------------------------------------------------------"
    if { ${Status}==0 } {
       Log::Print MUST "Status              : Job has terminated successfully."
    } else {

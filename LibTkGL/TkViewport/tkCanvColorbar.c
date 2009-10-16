@@ -87,6 +87,8 @@ static Tk_ConfigSpec ColorbarSpecs[] = {
         "0", Tk_Offset(ColorbarItem,BarBorder), TK_CONFIG_DONT_SET_DEFAULT},
    { TK_CONFIG_JUSTIFY, "-barside",(char*)NULL,(char*) NULL,
         "right", Tk_Offset(ColorbarItem,BarSide),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_BOOLEAN, "-showfactor",(char*)NULL,(char*) NULL,
+        "1", Tk_Offset(ColorbarItem,ShowFactor),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_STRING,"-orient",(char*)NULL,(char *)NULL,
         (char *)NULL,Tk_Offset(ColorbarItem,Orient),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_END,(char *)NULL,(char *)NULL,(char *)NULL,(char *)NULL,0,0 }
@@ -141,7 +143,7 @@ int Tkcolorbar_Init(Tcl_Interp *Interp) {
 
    Tk_glCreateItemType(&tkColorbarType);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -189,14 +191,15 @@ int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
    cb->BarWidth   = 15;
    cb->BarBorder  = 0;
    cb->BarSide    = TK_JUSTIFY_RIGHT;
+   cb->ShowFactor = 1;
 
    /*Process the arguments to fill in the item record*/
 
    if (ColorbarConfigure(Interp,Canvas,Item,Argc,Argv,0) != TCL_OK){
       ColorbarDelete(Canvas,Item,Tk_Display(Tk_CanvasTkwin(Canvas)));
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -238,9 +241,9 @@ int ColorbarCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
       ColorbarBBox(Canvas,cb);
    } else {
       sprintf(Interp->result,"ColorbarCoords: wrong # coordinates,  expected 0 or 2, got %d",Argc);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -270,13 +273,13 @@ int ColorbarConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc
    ColorbarItem *cb=(ColorbarItem*)Item;
 
    if (Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canvas),ColorbarSpecs,Argc,(CONST84 char**)Argv,(char*)cb,Flags) != TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    cb->Alpha=cb->Alpha<0?0:cb->Alpha>100?100:cb->Alpha;
 
    ColorbarBBox(Canvas,cb);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -631,25 +634,27 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
          Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,Spec->Desc,Spec);
       }
 
-      if (Spec->ValDelta!=0.0) {
-         sprintf(buf,"+ %1.2e",Spec->ValDelta);
+      if (CB->ShowFactor) {
+         if (Spec->ValDelta!=0.0) {
+            sprintf(buf,"+ %1.2e",Spec->ValDelta);
 
-         y+=CB->tkm.linespace+2;
-         if (Interp) {
-            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
-         } else {
-            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
+            y+=CB->tkm.linespace+2;
+            if (Interp) {
+               glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+            } else {
+               Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
+            }
          }
-      }
 
-      if (Spec->ValFactor!=1.0) {
-         sprintf(buf,"x %1.2e",Spec->ValFactor);
+         if (Spec->ValFactor!=1.0) {
+            sprintf(buf,"x %1.2e",Spec->ValFactor);
 
-         y+=CB->tkm.linespace+2;
-         if (Interp) {
-            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
-         } else {
-            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
+            y+=CB->tkm.linespace+2;
+            if (Interp) {
+               glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+            } else {
+               Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
+            }
          }
       }
 
@@ -1109,9 +1114,9 @@ double ColorbarToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr){
    }
 
    if (xDiff==0.0 && yDiff==0.0) {
-      return 0.0;
+      return(0.0);
    } else {
-      return hypot(xDiff,yDiff);
+      return(hypot(xDiff,yDiff));
    }
 }
 
@@ -1143,15 +1148,15 @@ int ColorbarToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr){
        (RectPtr[0] >= cb->header.x2) ||
        (RectPtr[3] <= cb->header.y1) ||
        (RectPtr[1] >= cb->header.y2)) {
-      return -1;
+      return(-1);
    }
    if ((RectPtr[0] <= cb->header.x1) &&
        (RectPtr[1] <= cb->header.y1) &&
        (RectPtr[2] >= cb->header.x2) &&
        (RectPtr[3] >= cb->header.y2)) {
-      return 1;
+      return(1);
    }
-   return 0;
+   return(0);
 }
 
 /*----------------------------------------------------------------------------
@@ -1361,7 +1366,7 @@ static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window T
    cb->DataStr=strdup(Value);
    Tcl_SplitList(Interp,Value,&cb->NbData,&cb->Data);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1388,5 +1393,5 @@ static char *Colorbar_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRe
 
    ColorbarItem *cb=(ColorbarItem*)WidgRec;
 
-   return cb->DataStr;
+   return(cb->DataStr);
 }

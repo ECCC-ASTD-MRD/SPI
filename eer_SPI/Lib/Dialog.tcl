@@ -34,6 +34,7 @@
 #===============================================================================
 
 package provide Dialog 3.0
+package require Logger
 
 catch { SPI::Splash "Loading Widget Package Dialog 3.0" }
 

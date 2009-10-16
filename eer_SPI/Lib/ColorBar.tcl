@@ -38,6 +38,7 @@ namespace eval ColorBar {
    set Lbl(BarFrame)  { "Cadre" "Frame" }
    set Lbl(BarAlpha)  { "Transparence" "Transparency" }
    set Lbl(BarSplit)  { "Séparation des intervalles" "Split intervals" }
+   set Lbl(BarFactor) { "Afficher les facteurs" "Show factors" }
    set Lbl(BarBorder) { "Bordure des intervalles" "Border intervals" }
    set Lbl(BarThin)   { "Barre mince" "Thin bar" }
    set Lbl(BarMedium) { "Barre moyenne" "Medium bar" }
@@ -49,6 +50,7 @@ namespace eval ColorBar {
    set Param(BG)     white
    set Param(Alpha)  100
    set Param(Split)  0
+   set Param(Factor) True
    set Param(Border) 0
    set Param(Width)  15
    set Param(Side)   right
@@ -114,6 +116,7 @@ proc ColorBar::Create { Frame VP X0 Y0 Width Height } {
    set Data(BG$tag)       $Param(BG)
    set Data(Alpha$tag)    $Param(Alpha)
    set Data(Split$tag)    $Param(Split)
+   set Data(Factor$tag)   $Param(Factor)
    set Data(Border$tag)   $Param(Border)
    set Data(Width$tag)    $Param(Width)
    set Data(Side$tag)     $Param(Side)
@@ -189,6 +192,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
          set Data(BG$tag)     $Param(BG)
          set Data(Alpha$tag)  $Param(Alpha)
          set Data(Split$tag)  $Param(Split)
+         set Data(Factor$tag) $Param(Factor)
          set Data(Border$tag) $Param(Border)
          set Data(Width$tag)  $Param(Width)
          set Data(Side$tag)   $Param(Side)
@@ -196,7 +200,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
          -data $Field -tags "$Page::Data(Tag) CB$VP $tag" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
-         -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag)
+         -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag) -showfactor $Data(Factor$tag)
 
       menubutton $Frame.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
          -menu $Frame.bo$tag.menu
@@ -222,6 +226,9 @@ proc ColorBar::Set { Frame VP No Id Field } {
             -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
          $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarRight) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value right \
             -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
+         $Frame.bo$tag.menu add separator
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFactor) $GDefs(Lang)] -variable ColorBar::Data(Factor$tag) -onvalue True -offvalue False \
+            -command "$Frame.page.canvas itemconfigure $tag -showfactor \$ColorBar::Data(Factor$tag); Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h-1] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
       Shape::BindMove  $Frame.page.canvas $tag ColorBar::Move $Frame.page.canvas $tag
