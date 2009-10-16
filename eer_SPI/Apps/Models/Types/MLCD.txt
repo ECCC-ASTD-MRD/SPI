@@ -43,8 +43,8 @@ namespace eval MLCD {
    set Lbl(ModelTimeStep)  { "Pas de temps du modèle (min)" "Model Time Step     (min)" }
    set Lbl(Other)          { "Autre option" "Other option" }
 
-   set Lbl(IsSigma)        { "Fluctuations des vitesses  \nà méso-échelle             " "Mesoscale velocity fluctuations" }
-   set Lbl(IsRanVar)       { "Générateur variable de nom-\nbres gaussiens aléatoires  " "Variable generator of      \nrandom gaussians numbers   " }
+   set Lbl(IsSigma)        { "Fluctuations des vitesses à méso-échelle" "Mesoscale velocity fluctuations" }
+   set Lbl(IsRanVar)       { "Générateur variable de nombres gaussiens\naléatoires" "Variable generator of random gaussians\nnumbers" }
    set Lbl(IsDiag)         { "Fichier sortie diagnostique" "Diagnostics output file" }
    set Lbl(Conc)           { "Concentrations" "Concentrations" }
    set Lbl(IsConc)         { "Calcul des concentrations" "Compute concentrations" }

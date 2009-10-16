@@ -137,10 +137,9 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
 
    #----- Other options.
    labelframe $frame.divers -text "[lindex $Lbl(Other) $GDefs(Lang)]"
-      frame $frame.divers.opt
-         checkbutton $frame.divers.opt.c1 -anchor w -text "[lindex $Lbl(IsSigma) $GDefs(Lang)]" -offvalue 0 -onvalue 1 -variable MLCD::Sim(IsSigma) -indicatoron true -command ""
-         pack $frame.divers.opt.c1 -side top -anchor w
-      pack $frame.divers.opt -side top -anchor w
+      checkbutton $frame.divers.c1 -anchor w -text "[lindex $Lbl(IsSigma) $GDefs(Lang)]" -offvalue 0 -onvalue 1 -variable MLCD::Sim(IsSigma) -indicatoron true -command ""
+      checkbutton $frame.divers.c2 -anchor w -text "[lindex $Lbl(IsRanVar) $GDefs(Lang)]" -justify left -offvalue 0 -onvalue 1 -variable MLCD::Sim(IsRanVar) -indicatoron true -command ""
+      pack $frame.divers.c1 $frame.divers.c2 -side top -anchor w
    pack $frame.divers -side top -padx 5 -pady 5 -fill x
 
    Bubble::Create $frame.divers "[lindex $Bubble(Option) $GDefs(Lang)]"
