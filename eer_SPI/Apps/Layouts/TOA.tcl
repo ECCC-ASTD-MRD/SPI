@@ -62,7 +62,7 @@ proc TOA::DrawScale { Frame } {
 
       set x $x0
       set dx [expr ($x1-$x0-5*($n-1))/$n]
-      puts stderr $dx
+      Log::Print DEBUG $dx
       foreach inter $inters {
 
          $Frame.page.canvas create rectangle $x $y0 [incr x $dx] $y1 \
@@ -281,7 +281,7 @@ proc TOA::LayoutUpdate { Frame } {
    Viewport::UnAssign $Frame $Data(VP) TOAFIELD
    set field [lindex [Viewport::Assigned $Frame $Data(VP) fstdfield] 0]
 
-puts stderr $field
+   Log::Print DEBUG $field
    if { $field=="" } {
       return
    }

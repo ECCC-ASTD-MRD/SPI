@@ -427,17 +427,17 @@ proc Model::ParamsCopy { Model  } {
       #----- Create simulation directories .
       set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp } Message]
       if { $ErrorCode != 0 } {
-         puts stderr "(ERROR) Model::ParamsCopy: Unable to create simulation directories on $Param(Host).\n\n$Message"
+         Log::Print ERROR "Unable to create simulation directories on $Param(Host).\n\n$Message"
          return False
       }
 
       #----- Copy needed files.
       set ErrorCode [catch { eval exec scp -p $sim(Path)/tmp/sim.pool [glob $sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Param(Host):$sim(PathRun)/tmp } Message]
       if { $ErrorCode != 0 } {
-         puts stderr "(ERROR) Model::ParamsCopy: Copying meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$Message"
+         Log::Print ERROR "Copying meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$Message"
          return False
       }
-      puts "(INFO) Model::ParamsCopy: Meteorological preprocessing input files and script have been copied on ($Param(Host)) successfully."
+      Log::Print INFO "Meteorological preprocessing input files and script have been copied on ($Param(Host)) successfully."
    }
 }
 
@@ -713,7 +713,7 @@ proc Model::ParamsCPUMeteo { } {
       "Linux"  {
          set ErrorCode [catch { set Param(NbCPUsMeteo) [lindex [exec grep "processor" /proc/cpuinfo | wc -l] 0] } Message]
          if { $ErrorCode != 0 } {
-            puts "(WARNING) Model::ParamsCPUMeteo: Unable to find number of avaible CPUs on $Param(Host).\n\n$Message"
+            Log::Print WARNING "Unable to find number of avaible CPUs on $Param(Host).\n\n$Message"
             set Param(NbCPUsMeteo) 1
          }
          set Param(ListNbCPUsMeteo) 1

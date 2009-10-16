@@ -276,10 +276,10 @@ proc MLCD::ExtractMetData { } {
 
          set roughness [fstdfield stats TMP -coordvalue $Sim(Lat) $Sim(Lon)]
          if { $roughness == "-" } {
-            puts "(WARNING) MLCD::ExtractMetData: Off grid localisation. Using default value for roughness length ($roughness \[m\])."
+            Log::Print WARNING "Off grid localisation. Using default value for roughness length ($roughness \[m\])."
          }
       } else {
-         puts "(WARNING) MLCD::ExtractMetData: Missing field 'Z0'. Using default value for roughness length ($roughness \[m\])."
+         Log::Print WARNING "Missing field 'Z0'. Using default value for roughness length ($roughness \[m\])."
       }
 
       #----- Update Precipitation Rate.
@@ -291,13 +291,13 @@ proc MLCD::ExtractMetData { } {
 
          set precip [fstdfield stats TMP -coordvalue $Sim(Lat) $Sim(Lon)]
          if { $precip == "-" } {
-            puts "(WARNING) MLCD::ExtractMetData: Off grid localisation. Using default value for precipitation rate ($precip \[mm/h\])."
+            Log::Print WARNING "Off grid localisation. Using default value for precipitation rate ($precip \[mm/h\])."
          } else {
             #----- Convert precipitation rate from [m/s] to [mm/h].
             set precip [expr $precip*3.6e+06]
          }
       } else {
-         puts "(WARNING) MLCD::ExtractMetData: Missing field 'RT'. Using default value for precipitation rate ($precip \[mm/h\])."
+         Log::Print WARNING "Missing field 'RT'. Using default value for precipitation rate ($precip \[mm/h\])."
       }
 
       #----- Set local parameters list.
@@ -776,7 +776,7 @@ proc MLCD::SelectObs { No } {
 
    #----- Check if observation number is valid.
    if { $No > $Sim(ObsMaxNb) || $No < 1 } {
-      puts stderr "(ERROR) MLCD::SelectObs: Selecting invalid observation \# $No. Observation number must be between 1 and $Sim(ObsMaxNb)."
+      Log::Print ERROR "Selecting invalid observation \# $No. Observation number must be between 1 and $Sim(ObsMaxNb)."
       return 0
    }
 
@@ -1275,12 +1275,12 @@ proc MLCD::Launch { } {
          -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
 
       if { $ErrorCode } {
-         puts stderr "(ERROR) MLCD::Launch: Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"
 #         return False
       }
-      puts "(INFO) MLCD::Launch: Job has been submitted successfully on $Model::Param(Host)."
+      Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
    } else {
-      puts "(INFO) MLCD::Launch:Launching model on $Model::Param(Host)"
+      Log::Print INFO "Launching model on $Model::Param(Host)"
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLCD.in &
    }
    return True

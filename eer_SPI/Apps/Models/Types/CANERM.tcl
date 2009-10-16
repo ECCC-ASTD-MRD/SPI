@@ -512,12 +512,12 @@ proc CANERM::Launch { } {
          -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
 
       if { $ErrorCode } {
-         puts stderr "(ERROR) CANERM::Launch: Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"
 #         return False
       }
-      puts stderr "(INFO) CANERM::Launch: Job has been submitted successfully on $Model::Param(Host)."
+      Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
    } else {
-      puts stderr "(INFO) CANERM::Launch: Launching model on $Model::Param(Host)"
+      Log::Print INFO "Launching model on $Model::Param(Host)"
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_CANERM.in &
    }
 

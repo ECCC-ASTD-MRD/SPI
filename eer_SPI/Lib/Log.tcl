@@ -1,81 +1,48 @@
 #===============================================================================
-# Environnement Canada - Service meteorologique du Canada
-# Centre meteorologique canadien
-# 2121 Route Trans-canadienne
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
 # Dorval, Quebec
-# H9P 1J3
 #
-# Projet     : Logger to generalize the logging mechanism among the jobs.
-# Nom        : <Logger.sh>
-# Creation   : Juin 2009 - J.P. Gauhier - CMC/CMOE
+# Projet    : Librairie de gestion des logs
+# Fichier   : Log.tcl
+# Creation  : Octobre 2009 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Functions to generalize the loggin mechanism amongs various jobs:
+# Description: Definitions de diverses fonctions pour la gestion standardisee des logs.
 #
-# Global Settings
-#   LOG_LEVEL      Logging level (MUST,ERROR,WARNING,INFO,DEBUG)
-#   LOG_MAIL       EMail address for mail reports
-#   LOG_MAILTITLE Title to include in mail reports
-#   LOG_JOBID      Job Identificator
-#   LOG_FILE       File to use for log (stdout if undefined)
-#   LOG_TIME       Include dates in log
-#   LOG_MODE       Mode de log (AUTO=automated jobs, send emails on error)
+# Fonctions:
 #
-# Functions:
-#   Log_Start     $Job $Version [$Paramfile]
-#   Log_Mail      $Subject $File
-#   Log_End       $ExitStatus
-#   Log_Print     $Level $Message $Seconds
-#   Log_Time      $Seconds
+#   Log::Print { Type Message { Proc True } }
+
+# Remarques :
+#   Aucune
 #
-# Retour     :
-#
-# Remarques  :
-#   Aucune.
 #===============================================================================
 
-namespace eval Log {
+package provide Log 1.0
+
+catch { SPI::Splash "Loading Package Log 1.0" }
+
+namespace eval Log { } {
    global env
+   variable Param
 
-   #----- Check for environment settings
-   set Param(Level)     =${LOG_LEVEL:=INFO}
-   set Param(Mode)      =${LOG_MODE:=""}
-   set Param(Mail)      =${LOG_MAIL:=""}
-   set Param(MailTitle) =${LOG_MAILTITLE:="Job Info"}
-   set Param(Id)        =${LOG_JOBID:=""}
-   set Param(File)      =${LOG_FILE:=""}
-   set Param(Time)      =${LOG_TIME:=0}
-   set Param(OC)        =""
-
-   #----- Logger internal variables
+   set Param(Out)       stdout                ;#Output file/channel
+   set Param(Level)     DEBUG                 ;#Log level
+   set Param(Time)      False                 ;#Print the time
+   set Param(Proc)      True                  ;#Print the calling proc
+   set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to stro the log files
+   set Param(Mail)      False
+   set Param(MailTitle) "Job Info"
+   set Param(Id)        ""
+   set Param(OCLog)     ""
    set Param(SecTime)  [clock seconds]
    set Param(SecStart) $Param(SecTime)
    set Param(SecEnd)   $Param(SecTime)
    set Param(Job)      "Unknown"
    set Param(Version)  "Unknown"
 
-   set Level(MUST)   -1
-   set Level(ERROR)   0
-   set Level(WARNING) 1
-   set Level(INFO)    2
-   set Level(DEBUG)   3
-   set Level(No)      $Level(INFO)
-
-proc Log::Mail { Subject File Auto } {
-   variable Param
-
-   if { $Param(Mail}="" || $Param(Mode)!="$Auto" } {
-      return
-   }
-
-   if { ![file readable ${file}] } {
-      set file /dev/null
-   }
-
-   if { $env(EER_ARCH)=="IRIX64" } {
-      eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobID)\" $Param(Mail) < ${file}
-   } else {
-      eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobID)\" $Param(Mail) < ${file}
-   }
+   array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 };
 }
 
 proc Log::Start { Job Version { Input "" } } {
@@ -119,7 +86,7 @@ proc Log::Start { Job Version { Input "" } } {
       Log::Print MUST "   Queue               : $env(QUEUE)"
       Log::Print MUST "   Job ID              : $env(JOB_ID)"
       if { [file exists $Input] } {
-        eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print \$mtime\'\`
+         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print \$mtime\'\`
          Log_Print MUST "   Waiting time     : $(Log_Time `expr ${LogSecTime}-${secs}`)"
       fi
    fi
@@ -148,55 +115,84 @@ proc Log::End { { Status 0 } } {
    if { $Status==0 } {
       Log::Mail "Job finished (NORMAL)" $Param(File)
    } else {
-      Log::Mail "Job finished (ERROR)" $Param(File) AUTO
+      Log::Mail "Job finished (ERROR)" $Param(File)
    }
 
    exit $Status
 }
 
-proc Log::Print { Level Msg { Time 0 } } {
+proc Log::Print { Type Message { Pre "" } } {
    variable Param
-   variable Level
 
-   level=${1}
-   msg=${2}
-   time=${3}
+   #----- Check for log file
+   if { $Param(Out)=="" || [string first "/" $Param(Out)]!=-1 } {
 
-   #----- Levels are MUST,ERROR,WARNING,INFO,DEBUG
-   set lvl=$Level($Level)
+      #----- Use temp path of specified path
+      if { $Param(Out)=="" } {
 
-   #----- Format the time if it is specified
-   if { $Time } {
-      set Time [Log_Time $Time]
+         #----- Keep only last 3
+         if { [llength [set logs [lrange [lsort -decreasing [glob -nocomplain $Param(Path)/*.log]] 3 end]]] } {
+            eval file delete $logs
+         }
+         set Param(Out) [open $Data(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log w]
+      } else {
+         if { [file exists $Param(Out)] } {
+            file rename $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]
+         }
+         set Param(Out) [open $Param(Out) w]
+      }
    }
 
-   #----- Check for event time
-   set datetime=" "
-   if { $Param(Time) } {
-      set datetime=" ($(date)) "
-   fi
+   #----- If the message is within the specified log level
+   if { $Param($Type)<=$Param($Param(Level)) } {
 
-   if { ${lvl}<=$Param($Param(Level)) } {
-      if { ${Level}=="MUST"  } {
-         levels=""
+      #----- Do we print the time
+      if { $Param(Time) } {
+         set time "([Log::Time [clock seconds]]) "
       } else {
-         levels="(${Level})"
+         set time ""
       }
 
-      if { $Param(File)=="" } {
-         exec echo "${levels}${datetime}${msg} ${time}"
+      #----- Do we print the calling proc
+      if { $Param(Proc) && [set lvl [expr [info level]-1]]>0 } {
+         set proc "[lindex [info level $lvl] 0]: "
       } else {
-         exec echo "${levels}${datetime}${msg} ${time}" >> $Param(File)
+         set proc ""
       }
-      if { $Level=="ERROR" } {
-         echo "${levels}${datetime}${msg} ${time}" 1>&2
-         if { $Param(OC) } {
-            exec oclog x "$Param(OC)\n\n${levels}${datetime}${msg} ${time}"
+
+      #----- If it is an error, print it on stderr
+      if { $Type=="ERROR" && $Param(Out)!="stdout" } {
+         puts stderr "${time}(${Type}) ${proc}${Message}"
+         if { $Param(OCLog)!=""  } {
+            exec oclog x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}"
          }
       }
+
+      puts $Param(Out) "${time}(${Type}) ${proc}${Message}"
+      flush $Param(Out)
+   }
+}
+
+proc Log::Mail { Subject File } {
+   global env
+   variable Param
+
+   if { $Param(Mail}="" } {
+      return
+   }
+
+   if { ![file readable ${file}] } {
+      set file /dev/null
+   }
+
+   if { $env(EER_ARCH)=="IRIX64" } {
+      eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobID)\" $Param(Mail) < ${file}
+   } else {
+      eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobID)\" $Param(Mail) < ${file}
    }
 }
 
 proc Log::Time { Secs } {
    return [clock format $Secs -format "%H:%M:%S" -gmt True]
 }
+

@@ -307,7 +307,7 @@ proc VAAC::DataInit { Frame } {
    set Sim(StampS) [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
    set Data(HourD) [fstdstamp diff $Sim(Stamp0) $Sim(StampS)]
 
-   puts "(INFO) VAAC::DataInit: Difference between Simulation and accident hour: $Data(HourD)"
+   Log::Print INFO "Difference between Simulation and accident hour: $Data(HourD)"
 
    set hours [MetData::ListIP2 $Data(Index) AV $Sim(StampS)]
 
@@ -829,7 +829,7 @@ proc VAAC::Transmit { Frame } {
                set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" } MsgCatch]
 
                if { $ErrCatch != 0 } {
-                  puts stderr "(ERROR) VAAC::Transmit: Unable to send the $file.pbm over WAFS.\n\n$MsgCatch"
+                  Log::Print ERROR "Unable to send the $file.pbm over WAFS.\n\n$MsgCatch"
                }
 
                #----- envoyer sur les sites web.
@@ -839,7 +839,7 @@ proc VAAC::Transmit { Frame } {
                set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png" } MsgCatch]
 
                if { $ErrCatch != 0 } {
-                  puts stderr "(ERROR) VAAC::Transmit: Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+                  Log::Print ERROR "Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
                }
 
             }
@@ -849,7 +849,7 @@ proc VAAC::Transmit { Frame } {
             set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " } MsgCatch]
 
             if { $ErrCatch != 0 } {
-               puts stderr "(ERROR) VAAC::Transmit: Unable to send the $file.pbm over SATNET.\n\n$MsgCatch"
+               Log::Print ERROR "Unable to send the $file.pbm over SATNET.\n\n$MsgCatch"
             }
 
             #----- envoyer sur les sites web.
@@ -859,9 +859,8 @@ proc VAAC::Transmit { Frame } {
             set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png" } MsgCatch]
 
             if { $ErrCatch != 0 } {
-               puts stderr "(ERROR) VAAC::Transmit: Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+               Log::Print ERROR "Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
             }
-
          }
       }
    }

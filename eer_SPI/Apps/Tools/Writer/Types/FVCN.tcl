@@ -829,7 +829,7 @@ proc Writer::FVCN::GetNo { Name } {
 
    set filelist [glob -nocomplain $GDefs(DirMsg)/FVCN/*.sent]
 
-   puts "(INFO) FVCN::GetNo: Msg list: $filelist"
+   Log::Print INFO "Msg list: $filelist"
 
    set entetes_exclues {}
 
@@ -837,7 +837,7 @@ proc Writer::FVCN::GetNo { Name } {
 
       set file [file tail $file]
 
-      puts "(INFO) FVCN::GetNo: Processing... $file"
+      Log::Print INFO "Processing... $file"
 
       #----- on determine le nombre d'heures qui s'est ecoule
       #      depuis la transmission.
@@ -851,12 +851,12 @@ proc Writer::FVCN::GetNo { Name } {
 
       if { $delta<48.0 && [string first $name $file]!=-1 } {
 
-         puts "(INFO) FVCN::GetNo: There is already a message emitted within 48 hours ($name)"
+         Log::Print INFO "There is already a message emitted within 48 hours ($name)"
 
          #----- on conserve la meme entete FVCNxx.
 
          set no [string range $file 14 19]
-         puts "(INFO) FVCN::GetNo: Selected $no"
+         Log::Print INFO "Selected $no"
          return $no
 
       } else {
@@ -866,7 +866,7 @@ proc Writer::FVCN::GetNo { Name } {
             #----- on doit exclure cette entete FVCNxx.
 
             lappend entetes_exclues [string range ${file} 14 19]
-            puts "(INFO) FVCN::GetNo: There is another message emitted within 48 hours ([string range ${file} 13 18])"
+            Log::Print INFO "There is another message emitted within 48 hours ([string range ${file} 13 18])"
 
          } else {
 
@@ -875,12 +875,12 @@ proc Writer::FVCN::GetNo { Name } {
             foreach entete { FVCN01 FVCN02 FVCN03 FVCN04 } {
                if { [lsearch -exact ${entetes_exclues} ${entete}]==-1 } {
                   set no [string trim ${entete}]
-                  puts "(INFO) FVCN::GetNo: Found header $no"
+                  Log::Print INFO "Found header $no"
                   return $no
                }
             }
 
-            puts "(INFO) FVCN::GetNo: No header available !!!"
+            Log::Print ERROR "No header available !!!"
             Dialog::Error . $Msg(NoHeader)
             return ""
          }
@@ -896,7 +896,7 @@ proc Writer::FVCN::GetNo { Name } {
       }
    }
 
-   puts "(INFO) FVCN::GetNo: No header available !!!"
+   Log::Print ERROR "No header available !!!"
    Dialog::Error . $Msg(NoHeader)
    return ""
 }
@@ -1593,20 +1593,20 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    if { $Backup } {
       set ErrCatch [catch  { exec ssh metmgr1 -l $GDefs(TransmitUser) -n -x ". ~/.profile; export DISPLAY=$env(DISPLAY); export TERM=$env(TERM); /opt/mm/bin/amxmit -s ncp1lx $file " } MsgCatch]
       if { $ErrCatch != 0 } {
-         puts stderr "(ERROR) Writer::FVCN::Send: Unable to sent the $file via metmanager.\n\n$MsgCatch"
+         Log::Print ERROR "Unable to sent the $file via metmanager.\n\n$MsgCatch"
       }
 
    } else {
       if { $GDefs(FrontEnd)!=$GDefs(Host) } {
          set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; nanproc -bs -p b -f $file " } MsgCatch]
          if { $ErrCatch != 0 } {
-            puts stderr "(ERROR) Writer::FVCN::Send: Unable to sent the $file via nanproc.\n\n$MsgCatch"
+            Log::Print ERROR "Unable to sent the $file via nanproc.\n\n$MsgCatch"
          }
 
       } else {
          set ErrCatch [catch { exec nanproc -bs -p b -f $file } MsgCatch]
          if { $ErrCatch != 0 } {
-            puts stderr "(ERROR) Writer::FVCN::Send: Unable to sent the $file via nanproc.\n\n$MsgCatch"
+            Log::Print ERROR "Unable to sent the $file via nanproc.\n\n$MsgCatch"
          }
       }
    }
@@ -1969,7 +1969,7 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
    set Data(No$Writer::Data(Pad)) [GetNo $Name]
    if { $Data(No$Writer::Data(Pad))!="" } {
 
-      puts "(INFO) Writer::FVCN::Site: Valid source selected ($Name)"
+      Log::Print INFO "Valid source selected ($Name)"
 
       set Data(Advisory$Writer::Data(Pad)) [GetAdvisory $Writer::Data(Pad) $Name]
 
@@ -1993,7 +1993,7 @@ proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
 
       Writer::FVCN::GraphUpdate $Writer::Data(Pad) True
    } else {
-      puts "(INFO) Writer::FVCN::Site: Invalid source ($Name)"
+      Log::Print INFO "Invalid source ($Name)"
    }
 }
 

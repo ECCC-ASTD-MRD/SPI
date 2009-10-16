@@ -88,7 +88,7 @@ proc MLDP::Launch { } {
 
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
-      puts "(INFO) MLDP::Launch: Launching RSMC meteorological fields script on local host ($GDefs(Host))."
+      Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
@@ -139,14 +139,14 @@ proc MLDP::Launch { } {
       }
 
       if { $ErrorCode } {
-         puts stderr "(ERROR) MLDP::Launch: Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"
 #         return False
       }
-      puts "(INFO) MLDP::Launch: Job has been submitted successfully on $Model::Param(Host)."
+      Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
 
    } else {
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
-      puts "(INFO) MLDP::Launch: Job launched on $Model::Param(Host)."
+      Log::Print INFO "Job launched on $Model::Param(Host)."
    }
    return True
 }

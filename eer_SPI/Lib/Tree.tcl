@@ -55,7 +55,7 @@ proc Tree::Add { Tree Node { Parent "" } } {
       set path [Tree::Find $tree $Parent]
 
       if { ![llength $path] } {
-         puts stderr "Tree::Add Could not find parent node: $Parent"
+         Log::Print ERROR "Could not find parent node: $Parent"
          return 0
       }
    }
@@ -69,7 +69,7 @@ proc Tree::Del { Tree Node } {
    set path [Tree::Find $tree $Node]
 
    if { ![llength $path] } {
-      puts stderr "Tree::Del Could not find node: $Node"
+      Log::Print ERROR "Could not find node: $Node"
       return 0
    }
 
@@ -91,7 +91,7 @@ proc Tree::Merge { Tree Branch { Parent "" } } {
       set path [Tree::Find $tree $Parent]
 
       if { ![llength $path] } {
-         puts stderr "Tree::Add Could not find parent node: $Parent"
+         Log::Print ERROR "Could not find parent node: $Parent"
          return 0
       }
    }
@@ -218,7 +218,7 @@ proc Tree::Path { Tree Node { Separator " " } } {
    set path [Tree::Find $tree $Node]
    set str  ""
 
-   puts stderr $path
+   Log::Print DEBUG $path
 
    for { set i 0 } { $i<[llength $path] } { incr i 2 } {
       eval set str \$Separator\[lindex \$tree [lrange $path 0 end-$i] 1\]\$str

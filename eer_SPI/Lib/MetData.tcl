@@ -322,7 +322,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    }
 
    if { [llength $afile]==0 && [llength $pfile]==0 } {
-      puts "(WARNING) No data found (Analysis=$APath, Prognostics=$PPath)"
+      Log::Print WARNING "No data found (Analysis=$APath, Prognostics=$PPath)"
       return ""
    }
 
@@ -335,7 +335,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    set prun [lindex [split [file tail [lindex $pfile end]] _] 0]
    set srun [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
 
-#   puts "(INFO) Analysis found    :\n\t[join $afile \n\t]\n       Prognostics found :\n\t[join $pfile \n\t]\n       Last run found    : $prun ($srun)"
+   Log::Print DEBUG "Found data:\n\tAnalysis    :\n\t[join $afile \n\t]\n       Prognostics :\n\t[join $pfile \n\t]\n       Last run    : $prun ($srun)"
 
    if { $Mixed || $Date>=$srun } {
 
@@ -403,7 +403,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       foreach idx $order {
          if { $Date < $idx } {
             if { $pidx=="" } {
-               puts "(INFO) Data starting later than $Date"
+               Log::Print INFO "Data starting later than $Date"
                return
             } else {
                lappend data [list $pidx [join [fstdstamp todate $pidx] ""] $met($pidx)]
@@ -424,9 +424,9 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    }
 
    if { [llength $data] } {
-#      puts "(INFO) Available processed and sorted files: \n\t[join $data \n\t]"
+      Log::Print DEBUG "Available processed and sorted files: \n\t[join $data \n\t]"
    } else {
-      puts "(INFO) No data available for this date"
+      Log::Print INFO "No data available for this date"
    }
 
    return $data
@@ -865,14 +865,14 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
    set nofield [catch { fstdfield read GZ $File $Stamp "" 12000 -1 -1 "" GZ }]
 
    if { $nofield } {
-      puts stderr "(ERROR) No field found"
+      Log::Print ERROR "No field found"
       return ""
    }
 
    set gz [fstdfield stats GZ -coordvalue $Lat $Lon]
 
    if { $gz=="-" } {
-       puts stderr "(ERROR) off grid localisation"
+       Log::Print ERROR "Off grid localisation"
        fstdfield free GZ
        return ""
    }
@@ -880,7 +880,7 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
    #----- Recuperer tout les niveaux disponibles pour GZ
    set ip1s  [lsort -decreasing -integer [fstdfile info $File IP1 GZ]]
    set ip1ss [lrange $ip1s $From $To]
-#   puts "(INFO) Using [llength $ip1ss] of the [llength $ip1s] levels for datestamp $Stamp"
+   Log::Print DEBUG "Using [llength $ip1ss] of the [llength $ip1s] levels for datestamp $Stamp"
 
    #----- Parcourir tout les niveaux et recupere le profil de vent
    foreach ip1 $ip1ss {
@@ -902,7 +902,7 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
    fstdfield free GZ
    fstdfield free VAR
 
-#   puts "(INFO) Description of the profile: $prof"
+   Log::Print DEBUG "Description of the profile: $prof"
    return $prof
 }
 
@@ -967,14 +967,14 @@ proc MetData::Obukhov { Stamp File Lat Lon } {
             set L [expr 1.0/$unsL]
          }
       } else {
-         puts stderr "(ERROR) Off grid localisation"
+         Log::Print ERROR "Off grid localisation"
          set L 22856.0320937
       }
 
       fstdfield free OBVAR
    } else {
 
-      puts stderr "(ERROR) Missing fields"
+      Log::Print ERROR "Missing fields"
 
       #----- Si on ne peut calculer, mettre un atmosphere neurtre
       set L 22856.0320937

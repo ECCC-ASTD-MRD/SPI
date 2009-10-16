@@ -377,7 +377,7 @@ proc ProjCam::Fly { Cam Frame } {
    while (1) {
 
       set cam(CFZ) [expr $cam(CFZ)-$Param(Speed)]
-puts stderr "$Param(Speed) $cam(CTX) $cam(CTY) $cam(CFZ)"
+      Log::Print DEBUG "$Param(Speed) $cam(CTX) $cam(CTY) $cam(CFZ)"
       set cam(To) [projcam define $Cam -circleto $cam(CTX) $cam(CTY) $cam(CFZ)]
 
       Page::Update $Frame

@@ -473,7 +473,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
          wm title .filebox [lindex $Title(Path) $GDefs(Lang)]
       }
       default {
-         puts stderr "FileBox::Create error: Mode has to be \"Load\" , \"Save\" or \"Path\""
+         Log::Print ERROR "Mode has to be \"Load\" , \"Save\" or \"Path\""
          exit 0
       }
    }

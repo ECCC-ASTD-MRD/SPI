@@ -85,7 +85,6 @@ proc Grab::Put { Widget Type X Y } {
    variable Data
 
    set Data(Active) False
-   puts stderr "$Data(Dest) $X $Y"
    wm state .grab withdrawn
    event delete <<UnGrab>>
 }

@@ -97,7 +97,7 @@ proc Mapper::Cutter::VertexDelete { Frame VP } {
    set Mapper::Data(Mask$Mapper::Data(Object)) [lreplace $Mapper::Data(Mask$Mapper::Data(Object)) end-2 end]
    set Mapper::Data(Cut$Mapper::Data(Object)) [lreplace $Mapper::Data(Cut$Mapper::Data(Object)) end-1 end]
 
-   puts stderr $Mapper::Data(Cut$Mapper::Data(Object))
+   Log::Print DEBUG "$Mapper::Data(Cut$Mapper::Data(Object))"
    ogrgeometry define MASKRING$Mapper::Data(Object) -points $Mapper::Data(Cut$Mapper::Data(Object))
 
    if { $Mapper::Data(Cut) && $Mapper::Data(RealTime) } {

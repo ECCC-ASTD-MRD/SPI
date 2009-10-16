@@ -169,7 +169,7 @@ proc MetInfo::ExportFile { outFile } {
 
    foreach type $typeList {
 
-      puts "*** Extraction of $type observations ***"
+      Log::Print INFO "Extraction of $type observations"
 
       foreach station $stationList {
          foreach file $fileList {
@@ -180,7 +180,7 @@ proc MetInfo::ExportFile { outFile } {
 
             switch $type {
                radiosonde  {
-                  puts "Extract radiosonde info from $path/$file"
+                  Log::Print INFO "Extract radiosonde info from $path/$file"
                   set output [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -prf $path/$file] "\n"]
 
                   if { [llength $output] == 6 } {
@@ -189,7 +189,7 @@ proc MetInfo::ExportFile { outFile } {
                }
                metar {
                   set stid [lindex $station 0]
-                  puts "Extract metar info from $path/$file"
+                  Log::Print INFO "Extract metar info from $path/$file"
                   set output [split [exec $GDefs(DirBin)/scipuff -stn $stidLet -sfc $path/$file] "\n"]
 
                   if { [llength $output] == 6 } {
@@ -197,7 +197,7 @@ proc MetInfo::ExportFile { outFile } {
                   }
                }
                synop {
-                  puts "Extract synop info from $path/$file"
+                  Log::Print INFO "Extract synop info from $path/$file"
                   set output [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -sfc $path/$file] "\n"]
 
                   if { [llength $output] == 6 } {
@@ -224,7 +224,7 @@ proc MetInfo::ExportFile { outFile } {
          lappend errFiles $type
       }
 
-      puts "Sorting data ..."
+      Log::Print INFO "Sorting data ..."
       set tmpFile /tmp/$type[pid]
       set sortedTmpFile /tmp/sorted$type[pid]
 
@@ -252,7 +252,7 @@ proc MetInfo::ExportFile { outFile } {
             exec echo "-99.00" >> $sortedTmpFile
          }
 
-         puts "generate file(s) ..."
+         Log::Print INFO "generate file(s) ..."
 
          if { $type == "radiosonde" } {
             exec sort $tmpFile | uniq | sort -k8,8 -g -s | sort -k1,1 -s -g | sort -k7,7 -s -g | sort -k6,6 -s -g | sort -k5,5 -s -g | sort -k4,4 -s -g >> $sortedTmpFile
@@ -267,7 +267,7 @@ proc MetInfo::ExportFile { outFile } {
          file delete $sortedTmpFile ;#ne devrait plus exister, mais mieux vaut ne pas prendre de chance ...
 
          lappend generatedFiles $outFile-$type.$extension
-         puts "done."
+         Log::Print INFO "done."
       }
       set result ""
    }
@@ -280,7 +280,7 @@ proc MetInfo::ExportFile { outFile } {
       Dialog::Info .export $Msg(Complete) "\n\n$generatedFiles"
    }
 
-   puts "*** Extraction of observations completed ***"
+   Log::Print INFO "Extraction of observations completed"
 }
 
 #-------------------------------------------------------------------------------

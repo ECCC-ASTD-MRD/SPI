@@ -65,8 +65,7 @@ namespace eval Obs {
    } error ]
 
    if { $code } {
-      puts stderr "(ERROR) problems while loading BUFR tables"
-      puts stderr $error
+      Log::Print ERROR "Problems while loading BUFR tables\n\n$error"
    }
 
    #----- Variables des structures de donnees

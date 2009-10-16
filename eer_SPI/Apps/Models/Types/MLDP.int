@@ -72,13 +72,13 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
       set MLDP::Sim(SimDurationEnt) $tabframe.integ.opt.dur.e
 
       #----- Data output time step [min].
-      Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDP::Sim(OutputTimeStepMin) 1 -1 $MLDP::Sim(ListOutputTimeStep) "MLDP::CheckFileSize ; MLDP::UpdateListVerticalLevels" ; # "puts stderr \$MLDP::Sim(OutputTimeStepMin)"
+      Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDP::Sim(OutputTimeStepMin) 1 -1 $MLDP::Sim(ListOutputTimeStep) "MLDP::CheckFileSize ; MLDP::UpdateListVerticalLevels"
       pack $tabframe.integ.opt.ots -side top -fill x
       Bubble::Create $tabframe.integ.opt.ots "[lindex $Bubble(OutputTimeStepMin) $GDefs(Lang)]"
       set MLDP::Sim(OutputTimeStepEnt) $tabframe.integ.opt.ots.e
 
       #----- Model time step [min].
-      Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDP::Sim(ModelTimeStepMin) 1 -1 $MLDP::Sim(ListModelTimeStep) "set Sim(IsScenarioValid) 0 ; MLDP::UpdateListVerticalLevels" ; # "puts stderr \$MLDP::Sim(ModelTimeStepMin)"
+      Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDP::Sim(ModelTimeStepMin) 1 -1 $MLDP::Sim(ListModelTimeStep) "set Sim(IsScenarioValid) 0 ; MLDP::UpdateListVerticalLevels"
       pack $tabframe.integ.opt.mts -side top -fill x
       Bubble::Create $tabframe.integ.opt.mts "[lindex $Bubble(ModelTimeStepMin) $GDefs(Lang)]"
       set MLDP::Sim(ModelTimeStepEnt) $tabframe.integ.opt.mts.e
@@ -265,7 +265,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
 
    #----- Plume vertical distribution.
    Option::Create  $tabframe.column.vertical [lindex $Lbl(EmVerticalDist) $GDefs(Lang)] MLDP::Sim(EmVerticalDist) \
-      0 -1 [lindex $MLDP::Sim(ListEmVerticalDist) $GDefs(Lang)] "puts stderr \$MLDP::Sim(EmVerticalDist)"
+      0 -1 [lindex $MLDP::Sim(ListEmVerticalDist) $GDefs(Lang)] ""
    bind $tabframe.column.vertical.e <Button-1> "MLDP::ComputeMass"
    bind $tabframe.column.vertical.b <Button-1> "MLDP::ComputeMass"
    pack $tabframe.column.vertical -side top -anchor w -padx 2 -fill x

@@ -121,7 +121,6 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
    pack .dlgdef.bot -side bottom -fill x -expand true
 
    set i 0
-   puts stderr .$args.
    foreach but $args {
       button .dlgdef.bot.button$i -text [lindex $but $GDefs(Lang)] -command "set button $i"  -relief raised -bd 1
       if {$i == $Default} {
@@ -170,7 +169,7 @@ proc Dialog::Error { Master Text { Extra "" } } {
    variable Lbl
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(ERROR) [lindex $Text $GDefs(Lang)]$Extra"
+      Log::Print ERROR "[lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
@@ -230,7 +229,7 @@ proc Dialog::ErrorListing { Master Text List } {
    variable Lbl
 
    if { ![info exists ::tk_version] } {
-      puts stderr "(ERROR) [lindex $Text $GDefs(Lang)]"
+      Log::Print ERROR "[lindex $Text $GDefs(Lang)]"
       return
    }
 
@@ -299,7 +298,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
    variable Lbl
 
    if { ![info exists ::tk_version] } {
-      puts "(INFO) [lindex $Text $GDefs(Lang)]$Extra"
+      Log::Print INFO "[lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
@@ -356,7 +355,7 @@ proc Dialog::Wait { Master Text { Extra "" } } {
    global GDefs
 
    if { ![info exists ::tk_version] } {
-      puts "(INFO) [lindex $Text $GDefs(Lang)]$Extra"
+      Log::Print INFO "[lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 
@@ -430,7 +429,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
    global GDefs
 
    if { ![info exists ::tk_version] } {
-      puts "(INFO) [lindex $Text $GDefs(Lang)]$Extra"
+      Log::Print INFO "[lindex $Text $GDefs(Lang)]$Extra"
       return
    }
 

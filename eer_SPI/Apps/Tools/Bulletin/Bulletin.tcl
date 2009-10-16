@@ -228,7 +228,7 @@ proc Bulletin::InsertArchives { Nom } {
 
    #----- Decompresse les archives selectionnees
 
-   puts "(INFO) Bulletin::InsertArchive: Getting archives $Bul(Path)/$Nom"
+   Log::Print INFO "Getting archives $Bul(Path)/$Nom"
    catch { exec tar xf $Bul(Path)/$Nom }
 
    #----- Insere les archives dans la liste de bulletins

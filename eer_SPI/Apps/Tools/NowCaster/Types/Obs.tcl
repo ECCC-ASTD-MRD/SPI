@@ -349,7 +349,7 @@ proc NowCaster::Obs::Now { Sec { Check False } } {
          file stat $file valid
 
          if { $valid(mtime)>$Data(Valid$obs) } {
-            puts "NowCaster::Obs::Now: Change in $obs $file"
+            Log::Print INFO "Change in $obs $file"
             NowCaster::Obs::Read $obs $file
          }
          metobs define $obs -VALID $Sec False

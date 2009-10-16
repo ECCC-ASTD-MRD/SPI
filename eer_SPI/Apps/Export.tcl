@@ -216,7 +216,7 @@ proc Export::Vector::Export { Path Format } {
             if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
             if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
             if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
-            puts stderr "ogrfile open FILE write $req $Format"
+
             ogrfile open FILE write $req $Format
          } else {
             set file [file rootname $Path]

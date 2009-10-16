@@ -203,7 +203,7 @@ proc Mapper::DepotWare::WCS::ParseLayer { URL Node { First True } } {
          ows:Title                { set Data(Title) [dom::node cget [dom::node children $node] -nodeValue] }
       }
    }
-puts stderr -----$Data(Title)---
+
    if { $Data(Identifier)!="" } {
       set Data($Data(Title)) [list $URL $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format)]
       lappend Data(Layers) $Data(Title)

@@ -410,7 +410,7 @@ proc HFManager::HostFiles { Id } {
          } elseif { [lindex $params 1]!="wget" } {
             eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n $Host(Name$Id) pwd\]
          } else {
-            puts stderr "on regarde sur weatheroffice... "
+            Log::Print DEBUG "on regarde sur weatheroffice... "
             set Host(Path$Id) [lindex [lindex $params 3] 0]
          }
       }
@@ -419,7 +419,7 @@ proc HFManager::HostFiles { Id } {
          exec $GDefs(Dir)/Script/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res
 
          if { $Host(Wild$Id) != "" } {
-            puts stderr "egrep $Host(Wild$Id) /tmp/index[pid].res"
+            Log::Print DEBUG "egrep $Host(Wild$Id) /tmp/index[pid].res"
             catch { eval set Host(File$Id) \[split \[exec egrep $Host(Wild$Id) /tmp/index[pid].res ] \\n\] }
          } else {
             catch { eval set Host(File$Id) \[split \[exec cat /tmp/index[pid].res ] \\n\] }

@@ -486,7 +486,7 @@ proc Mapper::WKT::BuildList { WKTList {Index 0}} {
          }
 
          default {
-            puts stderr "Mapper::WKT::BuildList: Liste invalide. La liste doit faire partie du standard WKT."
+            Log::Print ERROR "Liste invalide. La liste doit faire partie du standard WKT."
             return ""
          }
    }
@@ -886,7 +886,7 @@ proc Mapper::WKT::UpdateWidget { Section { EPSG 0 } } {
       }
 
       default {
-         puts stderr "Mapper::WKT::UpdateWidget: Paramètre de section invalide."
+         Log::Print ERROR "Paramètre de section invalide."
       }
    }
 }

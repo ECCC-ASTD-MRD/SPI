@@ -397,22 +397,22 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
    #----- Installer les fichiers de definitions
    foreach file { eer_GRIBDict eer_AutoList eer_FileBoxPath eer_Host eer_SatDomain eer_WEBPath eer_ProjCam  } {
       if { ![file exists $env(HOME)/.eer_ToolDefs/$file] } {
-         puts "Copying setup file : $file"
+         Log::Print INFO "Copying setup file : $file"
          file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.eer_ToolDefs/$file
       }
    }
 
    foreach file { eer_Default  } {
-      puts "Copying setup file : $file"
+      Log::Print INFO "Copying setup file : $file"
       file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.eer_ToolDefs/$file
    }
 
    foreach file { eer_Map eer_Scenario } {
-      puts  "Copying setup file : $file"
+      Log::Print INFO "Copying setup file : $file"
       exec cp -r $GDefs(Dir)/Setup/Data/$file $env(HOME)/.eer_ToolDefs
    }
 
-   puts  "Installation done"
+   Log::Print INFO "Installation done"
 }
 
 #----- Initialize environnement
@@ -464,6 +464,7 @@ package require FrameDefs
 package require ComboBox
 package require Dialog
 package require FileBox
+package require Log
 
 #----- Crank it up
 InstallWindow

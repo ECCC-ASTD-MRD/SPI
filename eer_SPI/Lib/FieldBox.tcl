@@ -1192,7 +1192,6 @@ proc FieldBox::Restrict { No args } {
       set svar ".+"
    } else {
       set svar ([join [string map { + \\\\+ } $data(Var)] |])
-      puts $svar
    }
    if { $data(Type)=="" } {
       set styp ".+"

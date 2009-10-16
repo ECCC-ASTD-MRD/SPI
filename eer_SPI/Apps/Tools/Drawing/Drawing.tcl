@@ -2689,7 +2689,7 @@ proc Drawing::Parse { } {
         eval eval lset Drawing::Data(Params) $i 2 \$$vp
       }
    }
-   puts stderr $Drawing::Data(Params)
+   Log::Print DEBUG "$Drawing::Data(Params)"
 }
 
 #------------------------------------------------------------------------------
