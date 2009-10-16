@@ -177,8 +177,8 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
    wm title     $id "[lindex $Param(Title) $GDefs(Lang)] ($Title)"
    wm transient $id .
    wm resizable $id False True
-   wm maxsize   $id 415 10000
-   wm minsize   $id 415 300
+   wm maxsize   $id 425 10000
+   wm minsize   $id 425 300
    wm protocol  $id WM_DELETE_WINDOW "FieldBox::Close $no"
 
    #----- Afficher la fenetre par dessus la derniere
@@ -202,7 +202,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
       SelectBox::Create $id.header.type "TYPE"  \
          FieldBox::${spc}::Data(Type) "" 4 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.level [lindex $Lbl(Level) $GDefs(Lang)]  \
-         FieldBox::${spc}::Data(Level) "" 7 10 FieldBox::Restrict $no
+         FieldBox::${spc}::Data(Level) "" 9 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.ip2 "IP2"  \
          FieldBox::${spc}::Data(IP2) "" 5 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.ip3 "IP3"  \
@@ -210,7 +210,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
       SelectBox::Create $id.header.eticket "ETICKET"  \
          FieldBox::${spc}::Data(Eticket) "" 12 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.date "DATEV"  \
-         FieldBox::${spc}::Data(Date) "" 11 10 FieldBox::Restrict $no
+         FieldBox::${spc}::Data(Date) "" 12 10 FieldBox::Restrict $no
       button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "FieldBox::RestrictClear $no"
       pack $id.header.var $id.header.type $id.header.level $id.header.ip2 \
@@ -1033,7 +1033,7 @@ proc FieldBox::Insert { No } {
 
          #----- Inserer les donnees dans la liste
 
-         $id.data.list insert end [format "%-4s %-2s   %9s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
+         $id.data.list insert end [format "%-4s %-2s   %11s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
       }
       incr data(NbRead) [llength $fields]
    }
@@ -1252,7 +1252,7 @@ proc FieldBox::Restrict { No args } {
          } else {
             set date    [clock format [lindex $field 9] -format "%Y%m%d%H%M" -gmt True]
          }
-         set line [format "%-4s %-2s   %9s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
+         set line [format "%-4s %-2s   %11s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
 
          if { [regexp $str $line] } {
             .fieldbox$No.data.list insert end $line
