@@ -1032,41 +1032,48 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 
 void GeoRef_Qualify(TGeoRef *Ref) {
 
-  Coord co[2];
-  double d[2];
+   Coord co[2];
+   double d[2];
 
-  if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[1]=='Y' || Ref->Grid[1]=='Z' || Ref->Grid[0]=='X') {
-      Ref->Type|=GRID_SPARSE;
-   } else {
-      Ref->Type|=GRID_REGULAR;
-   }
-
-   if (Ref->Grid[0]=='#') {
-      Ref->Type|=GRID_TILE;
-   }
-
-   if (Ref->Grid[0]=='A' || Ref->Grid[0]=='G') {
-      Ref->Type|=GRID_WRAP;
-   } else {
-      Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
-      Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0+1.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
-      d[0]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
-
-      Ref->Project(Ref,Ref->X0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
-      Ref->Project(Ref,Ref->X1,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
-      d[1]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
-
-      if (d[1]<=(d[0]*1.5)) {
-         Ref->Type|=GRID_WRAP;
+   if (Ref) {
+      if (Ref->Grid[0]=='X') {
+         Ref->Type==GRID_NONE;
+         return;
       }
-   }
 
-   if (Ref->Grid[0]=='V') {
-      Ref->Type|=GRID_VERTICAL;
-   }
+      if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[0]=='P' || Ref->Grid[1]=='Y' || Ref->Grid[1]=='Z') {
+         Ref->Type|=GRID_SPARSE;
+      } else {
+         Ref->Type|=GRID_REGULAR;
+      }
 
-   if (Ref->Grid[0]=='R') {
-      Ref->Type|=GRID_RADIAL;
+      if (Ref->Grid[0]=='#') {
+         Ref->Type|=GRID_TILE;
+      }
+
+      if (Ref->Grid[0]=='A' || Ref->Grid[0]=='G') {
+         Ref->Type|=GRID_WRAP;
+      } else {
+         Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
+         Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0+1.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
+         d[0]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
+
+         Ref->Project(Ref,Ref->X0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
+         Ref->Project(Ref,Ref->X1,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
+         d[1]=DIST(0.0,DEG2RAD(co[0].Lat),DEG2RAD(co[0].Lon),DEG2RAD(co[1].Lat),DEG2RAD(co[1].Lon));
+
+         if (d[1]<=(d[0]*1.5)) {
+            Ref->Type|=GRID_WRAP;
+         }
+      }
+
+      if (Ref->Grid[0]=='V') {
+         Ref->Type|=GRID_VERTICAL;
+      }
+
+      if (Ref->Grid[0]=='R') {
+         Ref->Type|=GRID_RADIAL;
+      }
    }
 }
 
@@ -1077,10 +1084,10 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
    }
 
    /*Pacth temporaire du au lagrangien qui doivent avoir des GeoRef differents*/
-   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#' || Ref0->Grid[0]=='X')
+   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#' || Ref0->Grid[0]=='P')
       return(0);
 
-   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#' || Ref1->Grid[0]=='X')
+   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#' || Ref1->Grid[0]=='P')
       return(0);
 
    if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)

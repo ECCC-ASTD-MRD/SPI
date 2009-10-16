@@ -158,7 +158,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          return(valid);
       }
 
-      if (Ref->Grid[0]!='Y' && Ref->Grid[0]!='X' && Def->Data[1] && !C) {
+      if (Ref->Grid[0]!='Y' && Ref->Grid[0]!='P' && Def->Data[1] && !C) {
          if (Ref && Ref->Id>-1) {
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
@@ -170,7 +170,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          ix=ROUND(X);
          iy=ROUND(Y);
 
-         if (Ref->Grid[0]=='Y' || Ref->Grid[0]=='X') {
+         if (Ref->Grid[0]=='Y' || Ref->Grid[0]=='P') {
             X=ix;
             Y=iy;
          }
@@ -222,7 +222,7 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    int   idx;
 
 /*
-      if (Ref->Grid[0]=='X' || Ref->Grid[0]=='Y' || Ref->Grid[0]=='M') {
+      if (Ref->Grid[0]=='P' || Ref->Grid[0]=='Y' || Ref->Grid[0]=='M') {
       *Lon=X;
       *Lat=Y;
       return(1);
@@ -399,7 +399,7 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref=GeoRef_New();
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
 
-   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
+   if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
       EZLock_RPNInt();
       ref->Id=c_ezqkdef(NI,NJ,GRTYP,IG1,IG2,IG3,IG4,FID);
       EZUnLock_RPNInt();

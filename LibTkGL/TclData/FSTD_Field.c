@@ -254,7 +254,7 @@ int FSTD_FieldReadMesh(TData *Field) {
             if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
             break;
 
-         case 'X':
+         case 'P':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0);
             if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0);
             if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
@@ -2173,8 +2173,11 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    type=type==LVL_SIGMA?LVL_ETA:type;
 
    /*Override le type de niveaux pour ZH is ip1=0*/
-   if (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H' && h.IP1==0){
-      type=LVL_MASL;
+   if (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H') {
+      grtyp[0]='P';
+      if (h.IP1==0){
+         type=LVL_MASL;
+      }
    }
 
    /*Creer une grille comme definie dans l'enregistrement*/
@@ -2240,10 +2243,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    EZUnLock_RPNField();
 
    FSTD_FieldSet(field);
-
-//   if (grtyp[0]!='X' || (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H')){
-      GeoRef_Qualify(field->Ref);
-//   }
+   GeoRef_Qualify(field->Ref);
 
    if (field->Spec->Desc)
       free(field->Spec->Desc);
