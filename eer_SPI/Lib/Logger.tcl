@@ -11,17 +11,19 @@
 # Description: Definitions de diverses fonctions pour la gestion standardisee des logs.
 #
 # Fonctions:
+#   Log::Start { Job Version { Input "" } }
+#   Log::End   { { Status 0 } }
+#   Log::Print { Type Message }
+#   Log::Mail  { Subject File }
 #
-#   Log::Print { Type Message { Proc True } }
-
 # Remarques :
 #   Aucune
 #
 #===============================================================================
 
-package provide Log 1.0
+package provide Logger 1.0
 
-catch { SPI::Splash "Loading Package Log 1.0" }
+catch { SPI::Splash "Loading Package Logger 1.0" }
 
 namespace eval Log { } {
    global env
@@ -32,9 +34,9 @@ namespace eval Log { } {
    set Param(Time)      False                 ;#Print the time
    set Param(Proc)      True                  ;#Print the calling proc
    set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to stro the log files
-   set Param(Mail)      False
+   set Param(Mail)      ""
    set Param(MailTitle) "Job Info"
-   set Param(Id)        ""
+   set Param(JobId)     ""
    set Param(OCLog)     ""
    set Param(SecTime)  [clock seconds]
    set Param(SecStart) $Param(SecTime)
@@ -45,6 +47,22 @@ namespace eval Log { } {
    array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 };
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Log::Start>
+# Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher une message de demarrage standard.
+#
+# Parametres  :
+#    <Job>    : Nom de la job
+#    <Version>: Version de la job
+#    <Input>  : fichier d'entre (afin de recupere le temps d'attente en queue)
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
 proc Log::Start { Job Version { Input "" } } {
    global env
    variable Param
@@ -52,13 +70,9 @@ proc Log::Start { Job Version { Input "" } } {
    set Param(SecStart) [clock seconds]
 
   #----- Simulation run time ID.
-   if { $Param(JobID)=="" } {
+   if { $Param(JobId)=="" } {
       #----- Define run time ID if not defined.
-      set Param(JobID) exec date +%Y%m%d%H%M%S
-   fi
-
-   if { [file exists $Param(File)] } {
-      file delete -force $Param(File)
+      set Param(JobId) [clock format [clock seconds] -format "%Y%m%d%H%M%S" -gmt True]
    }
 
    Log::Print MUST "-------------------------------------------------------------------------------"
@@ -66,11 +80,11 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "Version             : $Version"
    Log::Print MUST "Hostname            : [exec hostname]"
    Log::Print MUST "Architecture        : [exec uname -s]"
-   Log::Print MUST "Run ID              : $Param(JobID)"
+   Log::Print MUST "Run ID              : $Param(JobId)"
 
    if { $Param(Mail)!="" } {
       Log::Print MUST "E-mail Address      : $Param(Mail)"
-   fi
+   }
 
    #----- Queue stuff
    if { [info exists env(LOADL_STEP_ID)] } {
@@ -78,24 +92,38 @@ proc Log::Start { Job Version { Input "" } } {
       Log::Print MUST "   Queue            : $env(LOADL_STEP_CLASS)"
       Log::Print MUST "   Job ID           : $env(LOADL_STEP_ID)"
       if { [file exists $Input] } {
-         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print \$mtime\'\`
-         Log::Print MUST "   Waiting time     : $(Log_Time `expr ${LogSecTime}-${secs}`)"
-      fi
+         set secs [file mtime $Input]
+         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
+      }
     } elseif { [info exists env(SGE_CELL)] } {
       Log::Print MUST "Queue Method        : sge"
       Log::Print MUST "   Queue               : $env(QUEUE)"
       Log::Print MUST "   Job ID              : $env(JOB_ID)"
       if { [file exists $Input] } {
-         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print \$mtime\'\`
-         Log_Print MUST "   Waiting time     : $(Log_Time `expr ${LogSecTime}-${secs}`)"
-      fi
-   fi
+         set secs [file mtime $Input]
+         Log_Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
+      }
+   }
 
-   Log::Print MUST "Start time          : [exec date +\"%c %Z\"]"
+   Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
-   Log::Mail "Job started" $Param(File)
+   Log::Mail "Job started" $Param(Out)
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::End>
+# Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher une message de fin standard.
+#
+# Parametres  :
+#    <status> : Code de retour de la job (0=ok, sinon erreur)
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
 
 proc Log::End { { Status 0 } } {
    variabl Param
@@ -108,20 +136,35 @@ proc Log::End { { Status 0 } } {
    } else {
       Log::Print MUST "Status              : Job has encountered some errors."
    }
-   Log::Print MUST "End time            : [exec date +\"%c %Z\"]"
-   Log::Print MUST "Total running time  : [Log::Time [expr $Param(SecEnd)-$Param(SecStart)]]"
+   Log::Print MUST "End time            : [clock format $Param(SecEnd)]"
+   Log::Print MUST "Total running time  : [clock format [expr $Param(SecEnd)-$Param(SecStart)] -format "%H:%M:%S" -gmt True]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
    if { $Status==0 } {
-      Log::Mail "Job finished (NORMAL)" $Param(File)
+      Log::Mail "Job finished (NORMAL)" $Param(Out)
    } else {
-      Log::Mail "Job finished (ERROR)" $Param(File)
+      Log::Mail "Job finished (ERROR)" $Param(Out)
    }
 
    exit $Status
 }
 
-proc Log::Print { Type Message { Pre "" } } {
+#----------------------------------------------------------------------------
+# Nom      : <Log::Print>
+# Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher une message standard.
+#
+# Parametres  :
+#    <Type>   : Type de mesage (MUST,ERROR,WARNING,INFO,DEBUG)
+#    <Message>: Message a afficher
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::Print { Type Message } {
    variable Param
 
    #----- Check for log file
@@ -148,7 +191,7 @@ proc Log::Print { Type Message { Pre "" } } {
 
       #----- Do we print the time
       if { $Param(Time) } {
-         set time "([Log::Time [clock seconds]]) "
+         set time "([clock format [clock seconds]]) "
       } else {
          set time ""
       }
@@ -168,31 +211,45 @@ proc Log::Print { Type Message { Pre "" } } {
          }
       }
 
-      puts $Param(Out) "${time}(${Type}) ${proc}${Message}"
+      if { $Type=="MUST" } {
+         puts $Param(Out) "${Message}"
+      } else {
+         puts $Param(Out) "${time}(${Type}) ${proc}${Message}"
+      }
       flush $Param(Out)
    }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::Mail>
+# Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Envoyer un message par courriel.
+#
+# Parametres  :
+#    <Subject>: Sujet du message
+#    <File>   : Fichier a envoyer
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
 
 proc Log::Mail { Subject File } {
    global env
    variable Param
 
-   if { $Param(Mail}="" } {
+   if { $Param(Mail)=="" } {
       return
    }
 
-   if { ![file readable ${file}] } {
+   if { ![file exists $File] || ![file readable $File] } {
       set file /dev/null
    }
 
    if { $env(EER_ARCH)=="IRIX64" } {
-      eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobID)\" $Param(Mail) < ${file}
+      eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
    } else {
-      eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobID)\" $Param(Mail) < ${file}
+      eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
    }
 }
-
-proc Log::Time { Secs } {
-   return [clock format $Secs -format "%H:%M:%S" -gmt True]
-}
-
