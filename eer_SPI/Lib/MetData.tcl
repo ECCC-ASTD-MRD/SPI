@@ -335,7 +335,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    set prun [lindex [split [file tail [lindex $pfile end]] _] 0]
    set srun [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
 
-   Log::Print DEBUG "Found data:\n\tAnalysis    :\n\t[join $afile \n\t]\n       Prognostics :\n\t[join $pfile \n\t]\n       Last run    : $prun ($srun)"
+   Log::Print DEBUG "Found data:\n   Last run: $prun ($srun)\n   Analysis:\n      [join $afile "\n      "]\n   Prognostics:\n      [join $pfile "\n      "]"
 
    if { $Mixed || $Date>=$srun } {
 
@@ -424,7 +424,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    }
 
    if { [llength $data] } {
-      Log::Print DEBUG "Available processed and sorted files: \n\t[join $data \n\t]"
+      Log::Print DEBUG "Available processed and sorted files:\n[join $data "\n   "]"
    } else {
       Log::Print INFO "No data available for this date"
    }

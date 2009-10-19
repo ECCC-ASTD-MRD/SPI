@@ -19,7 +19,7 @@
 #    Dialog::Error        { Master Text { Extra "" } }
 #    Dialog::ErrorListing { Master Text List }
 #    Dialog::Message      { Master Text { Extra "" } }
-#    Dialog::Getter       { Master Title Text { Var "" } }
+#    Dialog::Get          { Master Title Text { Var "" } }
 #    Dialog::Text         { Id Title File Width Height }
 #    Dialog::TextSave     { Text File }
 #    Dialog::TextSearch   { Widget String Tag args }
@@ -504,10 +504,11 @@ proc Dialog::Get { Master Title Text { Var "" } } {
       entry .dlgget.in -relief flat -bd 1 -bg $GDefs(ColorLight)
    }
    pack .dlgget.in -side top -fill x -ipady 2
+   bind .dlgget.in <Return>  { .dlgget.ok invoke }
 
    set gettervalue ""
    frame .dlgget.cmd
-      button .dlgget.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command { set gettervalue [.dlgget.in get] } -bd 1
+      button .dlgget.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command { set gettervalue [.dlgget.in get] } -bd 1 -foreground green
       button .dlgget.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { set gettervalue "" } -bd 1
       pack .dlgget.ok .dlgget.cancel -side left -fill x  -expand True
    pack .dlgget.cmd -side top -fill x
