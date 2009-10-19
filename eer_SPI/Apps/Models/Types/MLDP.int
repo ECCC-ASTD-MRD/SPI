@@ -220,14 +220,11 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
    }
 
    #----- Maximum plume height [m].
-   frame $tabframe.column.height
-      label $tabframe.column.height.lbl -relief flat -anchor w -text "[lindex $Lbl(EmHeight) $GDefs(Lang)]"
-      entry $tabframe.column.height.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Sim(EmHeight) -width 60
-      if { $MLDP::Sim(SrcType) == "volcano" } {
-         bind $tabframe.column.height.ent <Key-Tab> "MLDP::ComputeMass"
-         bind $tabframe.column.height.ent <Button-1> "MLDP::ComputeMass"
-      }
-      pack $tabframe.column.height.lbl $tabframe.column.height.ent -side left
+   Option::Create  $tabframe.column.height [lindex $Lbl(EmHeight) $GDefs(Lang)] { MLDP::Sim(EmHeight) MLDP::Sim(EmHeightMode) } \
+       1 -1 [lindex $MLDP::Sim(ListEmHeightMode) $GDefs(Lang)] "set  MLDP::Sim(EmHeight) \[Model::ComputeKaboomHeight\]; MLDP::ComputeMass"
+   bind $tabframe.column.height.e <Key-Tab> "MLDP::ComputeMass"
+   bind $tabframe.column.height.e <Button-1> "MLDP::ComputeMass"
+
    pack $tabframe.column.height -side top -anchor w -padx 2 -fill x
    Bubble::Create $tabframe.column.height "[lindex $Bubble(EmHeight) $GDefs(Lang)]"
 

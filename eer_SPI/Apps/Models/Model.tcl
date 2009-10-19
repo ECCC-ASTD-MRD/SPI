@@ -111,6 +111,7 @@ namespace eval Model {
    set Lbl(Select)     { "Sélectionner" "Select" }
    set Lbl(Watch)      { "Veilles" "Watch" }
    set Lbl(MetPath)    { "Répertoire des données météorologiques" "Meteorological data path" }
+   set Lbl(EmHeight)   { "Hauteur explosive maximale" "Maximum explosive height" }
 
    #----- Bulles d'aide
 
@@ -171,6 +172,7 @@ namespace eval Model {
    set Warning(EMail2)     { "\tNouveau courriel    :" "\tNew email     :" }
    set Warning(EMail3)     { "\tCourriel par défaut :" "\tDefault email :" }
 
+   set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogramme." "Please enter explosive mass in kilograms." }
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
 
@@ -195,6 +197,32 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+
+#----------------------------------------------------------------------------
+# Nom        : <Model::ComputeKaboomHeight>
+# Creation   : Octobre 2009 - J.P. gauthier - CMC/CMOE
+#
+# But        : Calculate explosive source term height from
+#              Real's formula.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ComputeKaboomHeight { } {
+   variable Lbl
+   variable Msg
+
+   if { [set boom [Dialog::Get . $Lbl(EmHeight) $Msg(EmHeight)\]]]!="" } {
+      return [expr int(3160.0*(pow($boom/1000000.0,0.268)))]
+   } else {
+      return 0
+   }
+}
 
 proc Model::GetMetData { Model } {
    Model::ParamsMetDataDir ${Model}

@@ -1472,7 +1472,7 @@ proc MLDP::ValidateEmissionColumn { } {
 
    #----- Validate maximum plume height.
    if { ![MLDP::ValidatePlumeHeight] } {
-      focus $Sim(EmissionColumnFrame).height.ent
+      focus $Sim(EmissionColumnFrame).height.e
       return 0
    }
 
@@ -1557,7 +1557,7 @@ proc MLDP::ValidateMassInputParams { } {
 
    #----- Validate maximum plume height.
    if { ![MLDP::ValidatePlumeHeight] } {
-      focus $Sim(EmissionColumnFrame).height.ent
+      focus $Sim(EmissionColumnFrame).height.e
       return 0
    }
 

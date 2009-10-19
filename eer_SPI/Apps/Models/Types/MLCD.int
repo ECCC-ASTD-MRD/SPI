@@ -233,13 +233,11 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    set Data(EmBottomEnt) $frame.col.bottom.ent
 
    #----- Top of column [m].
-   frame $frame.col.top
-      label $frame.col.top.lbl -relief flat -anchor w -text "[lindex $Lbl(EmTop) $GDefs(Lang)]"
-      entry $frame.col.top.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmTop) -width 18
-      pack $frame.col.top.lbl $frame.col.top.ent -side left
+   Option::Create $frame.col.top [lindex $Lbl(EmTop) $GDefs(Lang)] { MLCD::Sim(EmTop) MLDP::Sim(EmHeightMode) } \
+       1 -1 [lindex $MLDP::Sim(ListEmHeightMode) $GDefs(Lang)] "set MLCD::Sim(EmTop) \[Model::ComputeKaboomHeight\]"
    pack $frame.col.top -side top -anchor w -padx 2 -fill x
    Bubble::Create $frame.col.top "[lindex $Bubble(EmColTop) $GDefs(Lang)]"
-   set Data(EmTopEnt) $frame.col.top.ent
+   set Data(EmTopEnt) $frame.col.top.e
 
    #----- Radius of column [m].
    frame $frame.col.radius
