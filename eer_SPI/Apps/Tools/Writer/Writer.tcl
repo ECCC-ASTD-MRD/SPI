@@ -440,7 +440,7 @@ proc Writer::TextExpand { Text Len { Max 0 } } {
       set he [expr $he+double(($len-1)/$Len)]
    }
 
-   $Text configure -height [set he [expr int($he)]]
+   $Text configure -height [set he [expr int($he<1?1:$he)]]
    return $he
 }
 
