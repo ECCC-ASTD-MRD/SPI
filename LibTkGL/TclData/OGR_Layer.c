@@ -987,7 +987,7 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
       Tcl_ListObjLength(Interp,Value,&n);
       for(i=0;i<n;i++) {
          Tcl_ListObjIndex(Interp,Value,i,&obj);
-         if (strcmp(Tcl_GetString(obj),fls)==0) {
+         if (strcasecmp(Tcl_GetString(obj),fls)==0) {
             return(1);
          }
       }
