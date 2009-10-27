@@ -246,7 +246,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_WrongNumArgs(Interp,2,Objv,"field settings");
             return(TCL_ERROR);
          }
-         return (FSTD_ZFilterTopo(Interp,Data_Get(Tcl_GetString(Objv[2])),Objv[3]));
+         return(FSTD_ZFilterTopo(Interp,Data_Get(Tcl_GetString(Objv[2])),Objv[3]));
          break;
    }
    return(TCL_OK);
