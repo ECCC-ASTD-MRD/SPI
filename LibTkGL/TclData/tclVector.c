@@ -325,7 +325,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             return(TCL_ERROR);
          }
          for(n=2;n<Objc;n++) {
-            Vector_Destroy(Interp,Tcl_GetString(Objv[2]));
+            Vector_Destroy(Interp,Tcl_GetString(Objv[n]));
          }
          return(TCL_OK);
          break;
