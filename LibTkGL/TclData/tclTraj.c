@@ -353,7 +353,7 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(traj->Pr[j].Date));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.Lat));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.Lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZSig));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZModel));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZPres));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].Co.Elev));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[j].ZMSL));
@@ -389,7 +389,7 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(traj->Pr[t].Date));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.Lat));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.Lon));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZSig));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZModel));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZPres));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].Co.Elev));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(traj->Pr[t].ZMSL));
@@ -787,7 +787,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          for(j=0;j<traj->NPr;j++) {
             fgets(buf,512,Stream);
             sscanf(buf,"%i %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
-               &traj->Pr[j].Co.Lat,&traj->Pr[j].Co.Lon,&traj->Pr[j].ZSig,&traj->Pr[j].ZPres,
+               &traj->Pr[j].Co.Lat,&traj->Pr[j].Co.Lon,&traj->Pr[j].ZModel,&traj->Pr[j].ZPres,
                &traj->Pr[j].Co.Elev,&traj->Pr[j].ZMSL,&traj->Pr[j].Dist,&traj->Pr[j].Speed);
 
             traj->Min=traj->Pr[j].Co.Elev<traj->Min?traj->Pr[j].Co.Elev:traj->Min;
@@ -923,7 +923,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       traj[nb]->Pr[j[nb]].Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000,1);
       traj[nb]->Pr[j[nb]].Co.Lat=lat;
       traj[nb]->Pr[j[nb]].Co.Lon=lon;
-      traj[nb]->Pr[j[nb]].ZSig=0.0;
+      traj[nb]->Pr[j[nb]].ZModel=0.0;
       traj[nb]->Pr[j[nb]].ZPres=s;
       traj[nb]->Pr[j[nb]].Co.Elev=h;
       traj[nb]->Pr[j[nb]].ZMSL=0.0;

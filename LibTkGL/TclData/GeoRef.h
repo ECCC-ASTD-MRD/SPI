@@ -107,17 +107,6 @@ typedef int    (TGeoRef_Value)     (struct TGeoRef *Ref,void *Def,char Mode,int 
 typedef double (TGeoRef_Distance)  (struct TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
 typedef int    (TGeoRef_Check)     (struct TGeoRef *Ref);
 
-typedef struct THeightRef {
-   float *Levels;       /*Levels list*/
-   int    LevelType;    /*Type of levels*/
-   int    LevelNb;      /*Number of Levels*/
-   float  PTop;         /*Pressure at top of atmosphere*/
-   float  PRef;         /*Refference pressure*/
-   float  RCoef[2];     /*Hybrid level coefficient*/
-   float  ETop;         /*Eta coordinate a top*/
-   float  *A,*B;        /*Pressure calculation factors*/
-} TZRef;
-
 typedef struct TGeoRef {
    char*   Name;
    int     Id;                                            /*Id de la georeference (>=0 = ezscint)*/

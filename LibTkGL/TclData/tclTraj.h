@@ -39,7 +39,7 @@
 typedef struct TParticle {
    long   Date;
    Coord  Co;
-   float  ZPres,ZSig,ZMSL,Dist,Speed;
+   float  ZPres,ZModel,ZMSL,Dist,Speed;
 } TParticle;
 
 typedef struct TTraj {
