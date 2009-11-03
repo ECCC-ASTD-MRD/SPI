@@ -2641,7 +2641,7 @@ int FSTD_ZFilterTopo(Tcl_Interp *Interp,TData *Field,Tcl_Obj *Set) {
    if (!lagrd) {
       for(j=0;j<Field->Def->NJ;j++) {
          idx=j*nio;
-         Def_Set(Field->Def,0,FIDX2D(Field->Def,Field->Def->NI,j),fld[idx]);
+         Def_Set(Field->Def,0,FIDX2D(Field->Def,Field->Def->NI-1,j),fld[idx]);
       }
    }
 
