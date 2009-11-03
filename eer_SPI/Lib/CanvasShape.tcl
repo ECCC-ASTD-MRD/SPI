@@ -253,7 +253,7 @@ proc CVCompass::RotateDo { Frame X Y Theta } {
 
 proc CVCompass::Destroy { Frame } {
 
-   $Frame.page.canvas delete CVCOMP CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET
+   $Frame.page.canvas delete CVCOMP CVCOMPHT CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET
 }
 
 #----------------------------------------------------------------------------
