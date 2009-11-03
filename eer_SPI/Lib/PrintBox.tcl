@@ -542,7 +542,7 @@ proc PrintBox::Postscript { Frame File X Y Width Height { Angle portrait } { For
       set ratio  [expr $width/$height]
 
       if { $Angle=="portrait" } {
-         if { [expr double($Width)/double($Height)]>=$ratio } {
+        if { [expr double($Width)/double($Height)]>=$ratio } {
             $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex 0 -pagey 0 -pageanchor sw \
                -colormode color -pagewidth ${width}i -file $File.ps -fontmap PrintBox::Map
          } else {

@@ -24,7 +24,7 @@
 #   FileBox::MemSave       { }
 #   FileBox::New           { }
 #   FileBox::Popup         { X Y YL }
-#   FileBox::Select        { Mode Ok }
+#   FileBox::Select        { Ok }
 #   FileBox::SelectList    { { Exec True } }
 #
 # Remarques :
@@ -56,6 +56,7 @@ namespace eval FileBox {
    set Data(Result)       ""
    set Data(Filename)     ""
    set Data(Type)         ""
+   set Data(Mode)         ""
    set Data(DirList)      "$env(HOME)/.eer_ToolDefs/eer_FileBoxPath"
    set Data(All)          0
    set Data(Sort)         File
@@ -163,7 +164,10 @@ proc FileBox::GetContent { { Path "" } } {
    }
    set Data(Path)      [file normalize $Data(Path)]
    set Data(Width)     [expr [winfo width .filebox.header.file]/[font measure [lindex [.filebox.header.file configure -font] 4] "m"]-2]
-   set Data(Filename)  ""
+
+   if { $Data(Mode)!="Save" } {
+      set Data(Filename) ""
+   }
 
    .filebox.files.list configure -bg $GDefs(ColorLight)
 
@@ -348,6 +352,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    }
 
    set Data(Types)    $Types
+   set Data(Mode)     $Mode
    set Data(Type)     [lindex $Types 0]
    set Data(Filename) $File
 
@@ -426,7 +431,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    pack .filebox.bar -side top -fill x
 
    frame .filebox.frame1
-      button .filebox.frame1.ok -text "Ok" -command "FileBox::Select $Mode 1" -bd 1
+      button .filebox.frame1.ok -text "Ok" -command "FileBox::Select 1" -bd 1
       button .filebox.frame1.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1 -command "set FileBox::Data(Result) \"\""
       pack .filebox.frame1.ok .filebox.frame1.cancel -expand true -side left -fill both
    pack .filebox.frame1 -side top -fill x
@@ -436,14 +441,14 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    #----- Creation des evenements
 
 #   bind .filebox.path.name.select <Return>           { + FileBox::GetContent }
-   bind .filebox.file.name        <Return>           " FileBox::Select $Mode 1 "
+   bind .filebox.file.name        <Return>           " FileBox::Select 1 "
    bind .filebox.files.list       <ButtonRelease-1>  { FileBox::SelectList }
    bind .filebox.files.list       <Button-3>         { FileBox::Popup %X %Y %y}
    bind .filebox.type.pattern     <Return>           { FileBox::GetContent }
    bind .filebox.file.pattern     <Return>           { FileBox::GetContent }
    bind .filebox.files.list       <Configure>        { FileBox::GetContent }
 
-   bind .filebox                  <Return>           " FileBox::SelectList; if { \$FileBox::Data(Filename)!=\"\" } { FileBox::Select $Mode 1 } "
+   bind .filebox                  <Return>           " FileBox::SelectList; if { \$FileBox::Data(Filename)!=\"\" } { FileBox::Select 1 } "
    bind .filebox                  <Key-Up>           { FileBox::Scroll -1 }
    bind .filebox                  <Key-Down>         { FileBox::Scroll   1 }
    bind .filebox                  <Key-Escape>       { set FileBox::Data(Result) "" }
@@ -456,7 +461,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    Bubble::Create .filebox.path.name.box [lindex $Bubble(Mem)  $GDefs(Lang)]
    Bubble::Create .filebox.file.pattern  [lindex $Bubble(Pattern) $GDefs(Lang)]
 
-   switch $Mode {
+   switch $Data(Mode) {
 
       "Load" {
          wm title .filebox [lindex $Title(Load) $GDefs(Lang)]
@@ -811,7 +816,6 @@ proc FileBox::Popup { X Y YL } {
 # But      : Retour apres la selection effectuee.
 #
 # Parametres   :
-#   <Mode>     : Mode (Load ou Save)
 #   <Ok>       : L'appel provient du bouton "Ok" ou de la cle "Enter"
 #
 # Remarques :
@@ -829,14 +833,14 @@ proc FileBox::Filename { File } {
    }
 }
 
-proc FileBox::Select { Mode Ok } {
+proc FileBox::Select { Ok } {
    global   GDefs
    variable Error
    variable Data
    variable Lbl
    variable Msg
 
-   switch $Mode {
+   switch $Data(Mode) {
       "LoadPath" {
           set result ""
 
