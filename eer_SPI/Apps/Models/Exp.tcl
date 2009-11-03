@@ -61,7 +61,6 @@ namespace eval Exp {
    set Lbl(Yes)                { "Oui" "Yes" }
    set Lbl(No)                 { "Non" "No" }
    set Lbl(Params)             { "Parametres" "Parameters" }
-   set Lbl(Name)               { "Nom" "Name" }
 
    #----- Messages
 
@@ -888,7 +887,7 @@ proc Exp::PopUp { X Y } {
          .exppop add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .exppop.product -state disabled
          .exppop add separator
          .exppop add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Exp::Suppress"
-         .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command "Exp::Store .model"
+         .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command { Exp::Store [Dialog::Get .model $Exp::Lbl(Store) $Exp::Msg(Store)] }
 
       #----- Menu des modeles
       menu  .exppop.new -tearoff 0 -bd 1 -type normal -activeborderwidth 1
@@ -1254,59 +1253,6 @@ proc Exp::SelectSim { Info } {
 # Nom      : <Exp::Store>
 # Creation : Septembre 2009 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Interface d'archivage
-#
-# Parametres:
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Exp::Store { Master } {
-   global GDefs
-   variable Lbl
-   variable Msg
-
-   toplevel .dlgstore
-   wm title .dlgstore [lindex $Lbl(Store) $GDefs(Lang)]
-   wm protocol .dlgstore WM_DELETE_WINDOW { }
-   if { [winfo exists $Master] } {
-      wm transient .dlgstore $Master
-      wm geom .dlgstore +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
-   }
-
-   #----- Afficher le frame du haut qui va contenir le message
-   frame .dlgstore.msg -relief raised -bd 1
-      label .dlgstore.msg.bitmap -bitmap info
-      message .dlgstore.msg.txt -aspect 1000 -text [lindex $Msg(Store) $GDefs(Lang)]
-      pack .dlgstore.msg.bitmap -side left -padx 20 -pady 20
-      pack .dlgstore.msg.txt -padx 20 -pady 20
-   pack .dlgstore.msg -side top -expand true -fill x
-
-   frame .dlgstore.id -relief raised -bd 1
-      label .dlgstore.id.lbl -text [lindex $Lbl(Name) $GDefs(Lang)] -anchor w -width 5
-      entry .dlgstore.id.def -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Exp::Data(StoreID)
-      pack .dlgstore.id.lbl  -side left
-      pack .dlgstore.id.def -side left -expand true -fill x -ipady 2
-   pack .dlgstore.id -side top -expand true -fill x
-
-   #----- Afficher le frame du bas qui va contenir le bouton retour
-   frame .dlgstore.cmd -relief flat
-      button .dlgstore.cmd.ok -text "Ok" -command { if { [Exp::StoreIt $Exp::Data(StoreID)] } { destroy .dlgstore } } -bd 1
-      button .dlgstore.cmd.cancel -text "Cancel" -command "destroy .dlgstore" -bd 1
-      pack .dlgstore.cmd.ok .dlgstore.cmd.cancel -side left -ipadx 10 -fill x  -expand true
-   pack .dlgstore.cmd -side top -fill x
-
-   update idletasks
-   grab .dlgstore
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Exp::StoreIt>
-# Creation : Septembre 2009 - J.P. Gauthier - CMC/CMOE
-#
 # But      : Archiver une experience.
 #
 # Parametres:
@@ -1317,7 +1263,7 @@ proc Exp::Store { Master } {
 # Remarques :
 #-------------------------------------------------------------------------------
 
-proc Exp::StoreIt { Id } {
+proc Exp::Store { Id } {
    global GDefs
    variable Param
    variable Lbl
@@ -1326,39 +1272,41 @@ proc Exp::StoreIt { Id } {
    set code  True
    set cpath [pwd]
 
-   #----- Check if an archive already exists
-   set ErrorCode [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc } Message]
-   if { !$ErrorCode } {
-      if { [Dialog::Default .dlgstore 400 WARNING $Msg(StoreExist) "" 0 $Lbl(Yes) $Lbl(No)] } {
-         return False
+   if { $Id!="" } {
+
+      #----- Check if an archive already exists
+      set ErrorCode [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc } Message]
+      if { !$ErrorCode } {
+         if { [Dialog::Default .model 400 WARNING $Msg(StoreExist) "" 0 $Lbl(Yes) $Lbl(No)] } {
+            return False
+         }
       }
-   }
 
-   Dialog::Wait .dlgstore $Msg(DoingStore)
+      Dialog::Wait .model $Msg(DoingStore)
 
-   #----- Build the archive
-   cd  [set path [Exp::Path]]/../
-#   set ErrorCode [catch { exec cmcarc -a $path -f /tmp/$Id.cmc --md5 --dereference } Message]
-   set ErrorCode [catch { exec tar -zcvf /tmp/$Id.tgz $path } Message]
-   if { $ErrorCode } {
-      Dialog::Error .dlgstore [list $Message $Message]
-      set code False
-   } else {
-      #----- Copy it to CFS
-      Dialog::Wait .dlgstore  $Msg(DoingCopy)
-      set ErrorCode [catch { exec scp /tmp/$Id.cmc $Param(StoreHost):$Param(StorePath)/$Id.cmc } Message]
+      #----- Build the archive
+      cd  [set path [Exp::Path]]/../
+   #   set ErrorCode [catch { exec cmcarc -a [file tail $path] -f /tmp/$Id.cmc --md5 --dereference } Message]
+      set ErrorCode [catch { exec tar -zcvf /tmp/$Id.tgz [file tail $path] } Message]
       if { $ErrorCode } {
-         Dialog::Error .dlgstore [list $Message $Message]
+         Dialog::Error .model [list $Message $Message]
          set code False
       } else {
-         #----- Remove local copy
-         file delete -force /tmp/$Id.cmc
+         #----- Copy it to CFS
+         Dialog::Wait .model  $Msg(DoingCopy)
+         set ErrorCode [catch { exec scp /tmp/$Id.tgz $Param(StoreHost):$Param(StorePath)/$Id.tgz } Message]
+         if { $ErrorCode } {
+            Dialog::Error .model [list $Message $Message]
+            set code False
+         } else {
+            #----- Remove local copy
+            file delete -force /tmp/$Id.tgz
+         }
       }
+
+      Dialog::WaitDestroy
+      cd $cpath
    }
-
-   Dialog::WaitDestroy
-   cd $cpath
-
    return $code
 }
 
