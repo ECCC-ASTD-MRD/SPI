@@ -362,8 +362,8 @@ proc Dialog::Wait { Master Text { Extra "" } } {
 
    if { [winfo exists .dlgwait]==1 } {
 
-      set oldtext [lindex [.dlgwait.txt configure -text] 4]
-      .dlgwait.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
+       set oldtext [lindex [.dlgwait.fr.txt configure -text] 4]
+      .dlgwait.fr.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
 
    } else {
 
