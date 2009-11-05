@@ -296,26 +296,40 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       /* In case of non-uniform grid, figure out where in the position vector we are */
       if (Ref->Grid[1]=='Z') {
          s=Ref->X0;
-         while(s<=Ref->X1 && *X>Ref->Lon[s]) s++;
+         /*Check if vector is increasing*/
+         if (Ref->Lon[s]<Ref->Lon[s+1]) {
+            while(s<=Ref->X1 && *X>Ref->Lon[s]) s++;
+         } else {
+            while(s<=Ref->X1 && *X<Ref->Lon[s]) s++;
+         }
          if (s>Ref->X0) {
+             /*We're in so interpolate postion*/
              if (s<=Ref->X1) {
                 *X=(*X-Ref->Lon[s-1])/(Ref->Lon[s]-Ref->Lon[s-1])+s-1;
              } else {
                 *X=(*X-Ref->Lon[Ref->X1])/(Ref->Lon[Ref->X1]-Ref->Lon[Ref->X1-1])+s-1;
              }
          } else {
+            /*We're ou of the vectoe so extrapolate position*/
             *X=(*X-Ref->Lon[0])/(Ref->Lon[1]-Ref->Lon[0])+s;
          }
 
          s=Ref->Y0;dx=Ref->X1-Ref->X0+1;
-         while(s<=Ref->Y1 && *Y>Ref->Lat[s*dx]) s++;
+         /*Check if vector is increasing*/
+         if (Ref->Lat[s*dx]<Ref->Lat[(s+1)*dx]) {
+            while(s<=Ref->Y1 && *Y>Ref->Lat[s*dx]) s++;
+         } else {
+            while(s<=Ref->Y1 && *Y<Ref->Lat[s*dx]) s++;
+         }
          if (s>Ref->Y0) {
+             /*We're in so interpolate postion*/
             if (s<=Ref->Y1) {
                 *Y=(*Y-Ref->Lat[(s-1)*dx])/(Ref->Lat[s*dx]-Ref->Lat[(s-1)*dx])+s-1;
              } else {
                 *Y=(*Y-Ref->Lat[Ref->Y1*dx])/(Ref->Lat[Ref->Y1*dx]-Ref->Lat[(Ref->Y1-1)*dx])+s-1;
              }
          } else {
+            /*We're ou of the vectoe so extrapolate position*/
             *Y=(*Y-Ref->Lat[0])/(Ref->Lat[dx]-Ref->Lat[0])+s;
          }
       }
