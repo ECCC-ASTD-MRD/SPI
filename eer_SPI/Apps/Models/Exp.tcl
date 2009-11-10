@@ -892,7 +892,11 @@ proc Exp::PopUp { X Y } {
       #----- Menu des modeles
       menu  .exppop.new -tearoff 0 -bd 1 -type normal -activeborderwidth 1
       foreach model $Data(Models) {
-         .exppop.new add command -label $model -command "Model::ParamsWindow $model NEW"
+         if { $model=="SATDATA" } {
+            .exppop.new add command -label $model -command "SATDATA::New .exp"
+         } else {
+            .exppop.new add command -label $model -command "Model::ParamsWindow $model NEW"
+         }
       }
 
       menu  .exppop.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
@@ -1365,7 +1369,6 @@ proc Exp::Suppress { } {
    }
 
    #----- Relire les experiences
-
    Model::Check 0
    Model::TypeSelect none 1
   . config -cursor left_ptr
