@@ -460,7 +460,7 @@ option add *font       $GDefs(Font)
 
 #----- Include needed packages
 package require Icons
-package require FrameDefs
+package require TabFrame
 package require ComboBox
 package require Dialog
 package require FileBox
