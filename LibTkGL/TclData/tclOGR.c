@@ -503,7 +503,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return TCL_ERROR;
          } else {
             lst=Tcl_NewListObj(0,NULL);
-            layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,0,1);
+            layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
             Tcl_SetObjResult(Interp,lst);

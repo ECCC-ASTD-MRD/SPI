@@ -310,7 +310,7 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                 *X=(*X-Ref->Lon[Ref->X1])/(Ref->Lon[Ref->X1]-Ref->Lon[Ref->X1-1])+s-1;
              }
          } else {
-            /*We're ou of the vectoe so extrapolate position*/
+            /*We're out so extrapolate position*/
             *X=(*X-Ref->Lon[0])/(Ref->Lon[1]-Ref->Lon[0])+s;
          }
 
@@ -329,7 +329,7 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                 *Y=(*Y-Ref->Lat[Ref->Y1*dx])/(Ref->Lat[Ref->Y1*dx]-Ref->Lat[(Ref->Y1-1)*dx])+s-1;
              }
          } else {
-            /*We're ou of the vectoe so extrapolate position*/
+            /*We're out so extrapolate position*/
             *Y=(*Y-Ref->Lat[0])/(Ref->Lat[dx]-Ref->Lat[0])+s;
          }
       }
