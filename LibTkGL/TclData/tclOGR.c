@@ -316,6 +316,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TDataSpec    *spec=NULL;
    Tcl_Obj      *lst,*obj;
 
+   static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE",NULL };
    static CONST char *sopt[] = { "create","free","clean","clear","read","write","import","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
    enum                opt { CREATE,FREE,CLEAN,CLEAR,READ,WRITE,IMPORT,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
 
@@ -564,19 +565,24 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case PICK:
-         if (Objc!=4 && Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"layer coords [all]");
+         if (Objc!=4 && Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer coords [all] [INTERSECT|INSIDE|OUTSIDE]");
             return TCL_ERROR;
          }
 
-         if (Objc==5) {
+         all=0;f=0;
+         if (Objc>4) {
             Tcl_GetBooleanFromObj(Interp,Objv[4],&all);
-         } else {
-            all=0;
+            if (Objc>5) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[5],modepick,"mode",0,&f)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
+            }
          }
+
          /*Recuperation de la geometrie*/
          geom=OGR_GeometryGet(Tcl_GetString(Objv[3]));
-         return(OGR_Pick(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),geom,Objv[3],all));
+         return(OGR_Pick(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),geom,Objv[3],all,f));
          break;
 
       case SQLSELECT:

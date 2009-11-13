@@ -125,7 +125,7 @@ void               OGR_GeometryRender(Projection *Proj,ViewportItem *VP,TGeoRef 
 Tcl_Obj*           OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom);
 Tcl_Obj*           OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geom);
 
-int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All);
+int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode);
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 

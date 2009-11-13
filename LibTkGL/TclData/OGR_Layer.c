@@ -2513,12 +2513,12 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    return(1);
 }
-int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All) {
+int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode) {
 
    Tcl_Obj     *obj;
    OGRGeometryH geom,pick;
    double       x,y,lat,lon;
-   int          nobj;
+   int          nobj,n;
    long         f;
    char         buf[32];
 
@@ -2561,7 +2561,14 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
-            if (GPC_Intersect(geom,pick)) {
+            /*Test delon le mode*/
+            switch(Mode) {
+               case 0: n=GPC_Intersect(geom,pick); break;
+               case 1: n=GPC_Within(geom,pick); break;
+               case 2: n=!GPC_Intersect(geom,pick); break;
+            }
+            /*Si on a trouve, ajouter a la liste de retour*/
+            if (n) {
                sprintf(buf,"%li",f);
                Tcl_AppendElement(Interp,buf);
                if (!All)
