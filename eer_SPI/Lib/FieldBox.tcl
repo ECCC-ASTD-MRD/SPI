@@ -210,7 +210,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
       SelectBox::Create $id.header.eticket "ETICKET"  \
          FieldBox::${spc}::Data(Eticket) "" 12 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.date "DATEV"  \
-         FieldBox::${spc}::Data(Date) "" 12 10 FieldBox::Restrict $no
+         FieldBox::${spc}::Data(Date) "" 10 10 FieldBox::Restrict $no
       button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "FieldBox::RestrictClear $no"
       pack $id.header.var $id.header.type $id.header.level $id.header.ip2 \
@@ -1455,6 +1455,10 @@ proc FieldBox::Select { } {
 
             set nv [fstdfield define $fld -NOMVAR]
             if { $nv=="INFO" || $nv=="META" || $nv=="TEXT" || $nv=="PROJ" || ($nv=="OL" && [fstdfield define $fld -TYPVAR]=="X") } {
+               if { [winfo exists .fieldboxparams] } {
+                  FieldParams::GetInfo   $fld
+                  FieldParams::GetMatrix $fld
+               }
                FieldBox::Show $fld
                continue
             }

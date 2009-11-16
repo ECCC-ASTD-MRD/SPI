@@ -148,8 +148,8 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
    wm title     $id "[lindex $Param(Title) $GDefs(Lang)] ($Title)"
    wm transient $id .
    wm resizable $id False True
-   wm maxsize   $id 415 10000
-   wm minsize   $id 415 300
+   wm maxsize   $id 425 10000
+   wm minsize   $id 425 300
    wm protocol  $id WM_DELETE_WINDOW "TrajBox::Close $no"
 
    #----- Afficher la fenetre par dessus la derniere
@@ -175,7 +175,7 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
       SelectBox::Create $id.header.mode "MODE" \
          TrajBox::${spc}::Data(Mode) "" 5 10 TrajBox::Restrict $no
       SelectBox::Create $id.header.date "DATE" \
-         TrajBox::${spc}::Data(Date) "" 11 10 TrajBox::Restrict $no
+         TrajBox::${spc}::Data(Date) "" 10 10 TrajBox::Restrict $no
       button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "TrajBox::RestrictClear $no"
       pack $id.header.id $id.header.level $id.header.mode $id.header.date -side left -ipadx 3 -fill y
@@ -725,8 +725,8 @@ proc TrajBox::Insert { No } {
          #----- Extraire les informations
 
          set id [trajectory define $traj -ID]
-         if { [string length $id] > 30 } {
-            set id "[string range $id 0 27]..."
+         if { [string length $id] > 29 } {
+            set id "[string range $id 0 26]..."
          }
 
          if { [trajectory define $traj -BACKWARD] } {
@@ -754,7 +754,7 @@ proc TrajBox::Insert { No } {
          }
          #----- Inserer les donnees dans la liste
 
-         set line [format "%-30s %9.2f %-5s %12s %s" $id $level $mode $date $traj]
+         set line [format "%-29s %9.2f %-5s %12s %s" $id $level $mode $date $traj]
          .trajbox$No.data.list insert end $line
          incr data(Read)
       }
