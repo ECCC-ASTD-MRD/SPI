@@ -587,7 +587,7 @@ proc Model::ParamsMetData { Model } {
          #----- computed according to available met files. Thus, simulation duration will be re-initialized.
          set oldsimdur     $sim(Duration)
          set sim(Duration) $simdur
-         Dialog::Info . 400 $Warning(SimDuration1) "\n\n[lindex $Warning(SimDuration2) $GDefs(Lang)] $oldsimdur h.\n[lindex $Warning(SimDuration3) $GDefs(Lang)] $sim(Duration) h."
+         Dialog::Info . $Warning(SimDuration1) "\n\n[lindex $Warning(SimDuration2) $GDefs(Lang)] $oldsimdur h.\n[lindex $Warning(SimDuration3) $GDefs(Lang)] $sim(Duration) h."
 
       } else {
 
