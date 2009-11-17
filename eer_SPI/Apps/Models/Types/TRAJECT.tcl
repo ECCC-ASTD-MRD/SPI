@@ -360,7 +360,7 @@ proc TRAJECT::Launch { } {
       set info [Info::Code ::TRAJECT::Sim]
       set id [Exp::Id $info]
       simulation create $id -type trajectory
-      simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) -sigt 0.15 -sigb 0.997 -ptop 10.0  \
+      simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) \
          -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration) -split 1
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
