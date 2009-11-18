@@ -81,7 +81,6 @@ namespace eval FSTD {
    set Data(ListTool)      {}          ;#Liste des champs ouvert par d'autres outils
 
    set Param(Spec)          ""                                     ;#Variable a parametrer
-   set Param(Specs)         {}                                     ;#Variables a parametrer
 
    #----- Parametres du champs
 
@@ -879,13 +878,9 @@ proc FSTD::ParamInit { Field { Spec "" } } {
       set set [dataspec configure $Spec -set]
       set var [dataspec configure $Spec -desc]
 
-      if { [lsearch -exact $Param(Specs) $Spec]==-1 } {
-         lappend Param(Specs) $Spec
-
-         if { !$set } {
-            dataspec copy $Spec FLDDEFAULT
-            dataspec configure $Spec -desc $var
-         }
+      if { !$set } {
+         dataspec copy $Spec FLDDEFAULT
+         dataspec configure $Spec -desc $var
       }
 
       #----- Set a colormap if not done
@@ -986,14 +981,10 @@ proc FSTD::Params { Id Map args } {
 
    if { ![colormap is FLDMAP$Id] } {
       colormap create FLDMAP$Id
-      colormap read FLDMAP$Id $GDefs(DirEER)/eer_Map/$Map.rgba
    }
+   colormap read FLDMAP$Id $GDefs(DirEER)/eer_Map/$Map.rgba
 
    eval dataspec configure $Id $args -font FLDFONTDEFAULT -colormap FLDMAP$Id
-
-   if { [lsearch -exact $Param(Specs) $Id]==-1 } {
-      lappend Param(Specs) $Id
-   }
 }
 
 #----------------------------------------------------------------------------

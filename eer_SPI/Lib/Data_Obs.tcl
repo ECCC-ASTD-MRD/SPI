@@ -83,7 +83,6 @@ namespace eval Obs {
    set Param(Icons)         { NONE TRIANGLE SQUARE VBAR HBAR CIRCLE LOZENGE PENTAGON HEXAGON LIGHTNING X + }
 
    set Param(Spec)          ""                                     ;#Variable a parametrer
-   set Param(Specs)         {}                                     ;#Variables a parametrer
    set Param(Font)          OBSFONTDEFAULT                         ;#Police
    set Param(Map)           OBSDMAPEFAULT                          ;#Palette de couleur
    set Param(MapAll)        0                                      ;#Palette de couleur applique au vecteurs
@@ -691,12 +690,9 @@ proc Obs::ParamInit { Obs { Spec "" } } {
       set var  [dataspec configure $Spec -desc]
       set unit [dataspec configure $Spec -unit]
 
-      if { [lsearch -exact $Param(Specs) $Spec]==-1 } {
-         lappend Param(Specs) $Spec
-         if { !$set } {
-            dataspec copy $Spec OBSDEFAULT
-            dataspec configure $Spec -desc $var -unit $unit
-         }
+      if { !$set } {
+         dataspec copy $Spec OBSDEFAULT
+         dataspec configure $Spec -desc $var -unit $unit
       }
 
       #----- Set a colormap if not done

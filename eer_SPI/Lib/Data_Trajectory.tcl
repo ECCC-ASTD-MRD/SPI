@@ -84,7 +84,6 @@ namespace eval Trajectory {
    set Param(Modes)     { LEVEL PARCEL ALL }                                        ;#Mode de selection des parametres
    set Param(Mode)      LEVEL                                                       ;#Mode de selection des parametres
    set Param(Spec)      ""                                                          ;#Variable a parametrer
-   set Param(Specs)     {}                                                          ;#Variables a parametrer
 
    catch {
       set Resources(LogoCMC)   @$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm
@@ -505,18 +504,12 @@ proc Trajectory::ParamInit { Traj { Spec "" } } {
    if { [dataspec is $Spec] } {
       set set [dataspec configure $Spec -set]
 
-      if { [lsearch -exact $Param(Specs) $Spec]==-1 } {
-         lappend Param(Specs) $Spec
-
-         if { !$set } {
-            dataspec create $Spec
-
-            incr Param(Idx)
-            dataspec configure $Spec -color [lindex $Param(Colors) [expr $Param(Idx)%[llength $Param(Colors)]]] \
-               -icon [lindex $Param(Icons) [expr $Param(Idx)%[llength $Param(Icons)]]] -width $Param(Width) \
-               -fill white -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] \
-               -mark [expr $Param(Mark)*3600]
-         }
+      if { !$set } {
+         incr Param(Idx)
+         dataspec configure $Spec -color [lindex $Param(Colors) [expr $Param(Idx)%[llength $Param(Colors)]]] \
+            -icon [lindex $Param(Icons) [expr $Param(Idx)%[llength $Param(Icons)]]] -width $Param(Width) \
+            -fill white -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] \
+            -mark [expr $Param(Mark)*3600]
       }
    }
 }
