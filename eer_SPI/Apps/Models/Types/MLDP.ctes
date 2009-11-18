@@ -78,7 +78,7 @@ namespace eval MLDP {
    set Sim(EmMaxNumberParticles) 500000                        ; #----- Maximum number of particles.
    set Sim(EmMaxIso)             5                             ; #----- Maximum number of isotopes.
    set Sim(EmMaxInterval)        10                            ; #----- Maximum number of emission intervals.
-   set Sim(EmDir)                "$GDefs(DirEER)/eer_Scenario" ; #----- Directory containing emission scenario files.
+   set Sim(EmDir)                "$GDefs(DirEER)/Scenario"     ; #----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-05                       ; #----- Small value.
 
    #----- Add front-end machine to list of available hosts.

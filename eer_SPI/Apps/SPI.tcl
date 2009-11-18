@@ -20,7 +20,7 @@ set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [
 set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
 
 #----- Lire la liste des definitions communes
-if { ![file exists [set defs $env(HOME)/.eer_ToolDefs/.eer_Defs-[regsub \[:alpha:\]+ $GDefs(Version) ""]]] } {
+if { ![file exists [set defs $env(HOME)/.spi/.spi-[regsub \[:alpha:\]+ $GDefs(Version) ""]]] } {
    exec $GDefs(Dir)/Setup/Setup
 }
 source $defs
@@ -225,7 +225,7 @@ Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 foreach layout [glob -nocomplain $GDefs(Dir)/Apps/Layouts/*.tcl] {
     lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
 }
-foreach layout [glob -nocomplain $GDefs(DirEER)/eer_Layout/*.tcl] {
+foreach layout [glob -nocomplain $GDefs(DirEER)/Layout/*.tcl] {
     lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
 }
 Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
@@ -509,7 +509,7 @@ proc SPI::LayoutDelete { } {
       if { ![Dialog::Default . 300 WARNING $Msg(LayoutErase) "\n\n\t$SPI::Param(Layout)\n" 1 $Lbl(Yes) $Lbl(No)] } {
          set idx [lsearch -exact $SPI::Param(Layouts) $SPI::Param(Layout)]
          set SPI::Param(Layouts) [lreplace $SPI::Param(Layouts) $idx $idx]
-         file delete $GDefs(DirEER)/eer_Layout/${SPI::Param(Layout)}.tcl
+         file delete $GDefs(DirEER)/Layout/${SPI::Param(Layout)}.tcl
       } else {
          return
       }
@@ -593,8 +593,8 @@ proc SPI::LayoutLoad { Frame Layout } {
       set Layout [file rootname [file tail $Layout]]
    } elseif { [file exists $GDefs(Dir)/Apps/Layouts/$Layout.tcl] } {
       uplevel #0 source \$GDefs(Dir)/Apps/Layouts/$Layout.tcl
-   } elseif { [file exists $GDefs(DirEER)/eer_Layout/$Layout.tcl] } {
-      uplevel #0 source \$GDefs(DirEER)/eer_Layout/$Layout.tcl
+   } elseif { [file exists $GDefs(DirEER)/Layout/$Layout.tcl] } {
+      uplevel #0 source \$GDefs(DirEER)/Layout/$Layout.tcl
    } elseif { [namespace exists ::$Layout] && [llength [info procs ::${Layout}::Layout]] } {
    } else {
       Log::Print ERROR "Invalid Layout"
@@ -681,14 +681,14 @@ proc SPI::LayoutSave { Frame Name } {
    }
    regsub -all " " $Name "_" Name
 
-   if { [file exists $GDefs(DirEER)/eer_Layout/$Name.tcl] } {
+   if { [file exists $GDefs(DirEER)/Layout/$Name.tcl] } {
       if { [Dialog::Default . 300 WARNING $Msg(LayoutOver) "\n\n\t$Name\n" 1 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }
 
    set Param(Layout) $Name
-   set file [open $GDefs(DirEER)/eer_Layout/$Param(Layout).tcl w]
+   set file [open $GDefs(DirEER)/Layout/$Param(Layout).tcl w]
 
    #----- Creer la commande d'execution du layout
 
@@ -2372,7 +2372,7 @@ Areas::Init
 ProjCam::Read
 
 #----- Inclure les parametres usagers
-if { [file exists  $env(HOME)/.eer_ToolDefs/eer_Default] } {
+if { [file exists $SPI::Param(Default)] } {
    source $SPI::Param(Default)
 }
 

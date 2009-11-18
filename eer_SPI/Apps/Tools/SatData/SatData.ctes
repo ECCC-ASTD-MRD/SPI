@@ -37,7 +37,7 @@ namespace eval SatData {
 
    set Data(NIMax)    8000.0   ;#Nombre de points de grille maximum en i
    set Data(NJMax)    8000.0   ;#Nombre de points de grille maximum en j
-   set Data(File)     "$env(HOME)/.eer_ToolDefs/eer_SatDomain"
+   set Data(File)     "$env(HOME)/.spi/SatData"
    set Data(Select)   0        ;#Si un range est presentement selectionnee
    set Data(Box)      ""
    set Data(Msg)      ""       ;#Messages d'execution

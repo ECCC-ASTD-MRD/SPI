@@ -21,7 +21,7 @@
 #    PrintBox::Print            { Frame X Y Width Height }
 #    PrintBox::PrintCommand     { Frame }
 #    PrintBox::PrintTXT         { File }
-#    PrintBox::ReadWEBPath      { }
+#    PrintBox::ReadParams       { }
 #    PrintBox::Save             { Frame X Y Width Height File }
 #    PrintBox::SelectOutputType { Type }
 #
@@ -40,6 +40,7 @@ package require InfoFrame
 
 namespace eval PrintBox {
    global  env GDefs
+   variable Param
    variable Print
    variable Lbl
    variable Titre
@@ -110,8 +111,8 @@ namespace eval PrintBox {
    #----- Definitions des parametres de transmission sur site WEB
 
    set Print(WEBSite)        ""                                             ;#Site WEB du transfert
-   set Print(WEBNameList)    ""                                             ;#Liste des noms de sites
-   set Print(WEBPathList)    ""                                             ;#Liste des path de sites
+   set Param(WEBNameList)    ""                                             ;#Liste des noms de sites
+   set Param(WEBPathList)    ""                                             ;#Liste des path de sites
 
    #----- Definitions des labels
 
@@ -201,6 +202,7 @@ proc PrintBox::FontMap { } {
 proc PrintBox::PrintTXT { File } {
    global   GDefs
    variable Print
+   variable Param
 
    if { $PrintBox::Print(Type)=="printer" } {
       if { $Print(Angle) == "portrait" } {
@@ -216,7 +218,7 @@ proc PrintBox::PrintTXT { File } {
       }
 
       if { $Print(WEBSite)!="" } {
-         set site [lindex $Print(WEBPathList) [lsearch -exact $Print(WEBNameList) $Print(WEBSite)]]
+         set site [lindex $Param(WEBPathList) [lsearch -exact $Param(WEBNameList) $Print(WEBSite)]]
          InfoFrame::Msg .printbox.job "Transfering to WEB $site"
          exec chmod 644 $Print(FullName).$Print(Device)
          eval exec scp $Print(FullName).$Print(Device) ${site}/[file tail $Print(FullName)].$Print(Device) > /dev/null
@@ -279,6 +281,7 @@ proc PrintBox::PrintCommand { Frame } {
 proc PrintBox::Create { Frame Mode args } {
    global GDefs
    variable Print
+   variable Param
    variable Type
    variable Titre
    variable Lbl
@@ -289,7 +292,7 @@ proc PrintBox::Create { Frame Mode args } {
 
    #----- Initialisations des donnees
 
-   ReadWEBPath
+   ReadParams
 
    toplevel     .printbox
    wm transient .printbox $Frame
@@ -353,7 +356,7 @@ proc PrintBox::Create { Frame Mode args } {
          frame $frame.web
             label $frame.web.lbl -text [lindex $Lbl(WEBSite) $GDefs(Lang)] -width 8 -anchor w
             ComboBox::Create $frame.web.sel PrintBox::Print(WEBSite) \
-               noedit sorted nodouble -1 $Print(WEBNameList) 33 5
+               noedit sorted nodouble -1 $Param(WEBNameList) 33 5
             ComboBox::Add $frame.web.sel ""
             pack $frame.web.lbl $frame.web.sel -side left
          pack $frame.web -side top -pady 5
@@ -590,6 +593,7 @@ proc PrintBox::Postscript { Frame File X Y Width Height { Angle portrait } { For
 
 proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    variable Print
+   variable Param
    variable Error
    variable Txt
    global GDefs
@@ -656,7 +660,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
       #----- Si un transfert WEB est requis
 
       if { $Print(WEBSite)!="" } {
-         set site [lindex $Print(WEBPathList) [lsearch -exact $Print(WEBNameList) $Print(WEBSite)]]
+         set site [lindex $Param(WEBPathList) [lsearch -exact $Param(WEBNameList) $Print(WEBSite)]]
          InfoFrame::Incr .printbox.job 1 "Transfering to WEB $site"
          exec chmod 644 $Print(FullName).$Print(Device)
 
@@ -687,7 +691,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <PrintBox::ReadWEBPath>
+# Nom      : <PrintBox::ReadParams>
 # Creation : Mai 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Lire la liste des site web utilises.
@@ -700,26 +704,16 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc PrintBox::ReadWEBPath { } {
+proc PrintBox::ReadParams { } {
    global env
-   variable Print
+   variable Param
 
-   set Print(WEBNameList)    ""
-   set Print(WEBPathList)    ""
+   set Param(WEBNameList)    ""
+   set Param(WEBPathList)    ""
 
-   if { ![catch { set file [open $env(HOME)/.eer_ToolDefs/eer_WEBPath r] }]  } {
-
-      while { ![eof $file] } {
-
-         gets $file line
-         if { [string index $line 0] != "#" && [string length $line] > 0 } {
-            set line [split $line ","]
-            lappend Print(WEBNameList) [lindex $line 0]
-            lappend Print(WEBPathList) [lindex $line 1]
-         }
-      }
-      close $file
-  }
+   if { [file exists $env(HOME)/.spi/PrintBox] } {
+      uplevel #0 source $env(HOME)/.spi/PrintBox
+   }
 }
 
 #----------------------------------------------------------------------------

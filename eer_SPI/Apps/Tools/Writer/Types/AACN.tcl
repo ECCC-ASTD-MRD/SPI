@@ -196,7 +196,7 @@ proc Writer::AACN::Format { Pad } {
    global   GDefs
    variable Data
 
-   set file $GDefs(DirEER)/eer_Tmp/AACN[pid]_[clock seconds].txt
+   set file $GDefs(DirEER)/Tmp/AACN[pid]_[clock seconds].txt
 
    set f [open $file w]
 

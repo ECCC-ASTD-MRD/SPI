@@ -160,13 +160,9 @@ proc Mapper::DepotWare::ParamsSave { } {
    global GDefs
    variable Data
 
-   if { ![file exists $GDefs(DirEER)/Mapper] || ![file isdirectory $GDefs(DirEER)/Mapper] } {
-      file mkdir $GDefs(DirEER)/Mapper
-   }
-
-   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)"  > $GDefs(DirEER)/Mapper/Params
-   exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" >> $GDefs(DirEER)/Mapper/Params
-   exec chmod 600 $GDefs(DirEER)/Mapper/Params
+   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)"  > $GDefs(DirEER)/Mapper
+   exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" >> $GDefs(DirEER)/Mapper
+   exec chmod 600 $GDefs(DirEER)/Mapper
 }
 
 #-------------------------------------------------------------------------------
@@ -366,10 +362,6 @@ proc Mapper::DepotWare::Del { Branch } {
    variable Data
 
    if { $Branch!="" && [TREE depth $Branch]==1 } {
-      if { ![file exists $GDefs(DirEER)/Mapper] || ![file isdirectory $GDefs(DirEER)/Mapper] } {
-         file mkdir $GDefs(DirEER)/Mapper
-      }
-
       set name [TREE get $Branch name]
       set type [TREE get $Branch type]
       set path [TREE get $Branch path]
@@ -582,8 +574,8 @@ proc Mapper::DepotWare::Create { } {
       return
    }
 
-   if { [file exists $GDefs(DirEER)/Mapper/Params] } {
-      source $GDefs(DirEER)/Mapper/Params
+   if { [file exists $GDefs(DirEER)/Mapper] } {
+      source $GDefs(DirEER)/Mapper
    }
 
 

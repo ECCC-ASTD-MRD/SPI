@@ -38,7 +38,7 @@ namespace eval SPI {
    set Param(Exp)            False        ;#Affichage des experiences
    set Param(Window)         True         ;#Affichage de la fenetre principale
    set Param(Args)           ""           ;#Parametres pour le script en cours d'execution
-   set Param(Default)        $env(HOME)/.eer_ToolDefs/eer_Default
+   set Param(Default)        $env(HOME)/.spi/SPI
    set Param(Script)         ""           ;#Script en cours d'execution
    set Param(Layout)         SPI          ;#Layout courant
    set Param(Tool)           ""           ;#Outils courant

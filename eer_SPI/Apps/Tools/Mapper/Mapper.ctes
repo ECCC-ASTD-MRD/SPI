@@ -27,7 +27,7 @@ namespace eval Mapper { } {
       font create OGRFONT -family courier -size -10 -weight bold
 
       colormap create OGRMAPDEFAULT
-      colormap read OGRMAPDEFAULT $GDefs(DirEER)/eer_Map/REC_Col.std1.rgba
+      colormap read OGRMAPDEFAULT $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
    }
 
    set Param(Title)     { "Données Geographiques" "Geographical data" }

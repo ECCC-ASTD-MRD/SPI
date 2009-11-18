@@ -51,7 +51,7 @@ proc Macro::SimpleDiff::Execute { } {
 
    if { ![colormap is DIFF_MAP] } {
       colormap create DIFF_MAP
-      colormap read DIFF_MAP $GDefs(DirEER)/eer_Map/OTH_Bias.rgba
+      colormap read DIFF_MAP $GDefs(DirEER)/Colormap/OTH_Bias.rgba
    }
    font create DIFF_FONT -family courier -size -12 -weight bold
 

@@ -651,9 +651,9 @@ proc FieldCalc::FormulaDel { } {
          set Data(Formulas) [lreplace $Data(Formulas) $idx $idx]
          set Data(Formula) ""
 
-         file rename -force $GDefs(DirEER)/eer_FieldCalc $GDefs(DirEER)/eer_FieldCalc.old
+         file rename -force $GDefs(DirEER)/FieldCalc $GDefs(DirEER)/FieldCalc.old
 
-         set f [open $GDefs(DirEER)/eer_FieldCalc w]
+         set f [open $GDefs(DirEER)/FieldCalc w]
 
          foreach name $Data(Formulas) {
             puts $f "\{$name\} \{$Data(Formula$name)\}"
@@ -686,11 +686,11 @@ proc FieldCalc::FormulaLoad { } {
    set Data(Formulas) [lindex $Lbl(None) $GDefs(Lang)]
    set Data(Formula[lindex $Lbl(None) $GDefs(Lang)]) ""
 
-   if { ![file exist $GDefs(DirEER)/eer_FieldCalc] } {
+   if { ![file exist $GDefs(DirEER)/FieldCalc] } {
       return
    }
 
-   set f [open $GDefs(DirEER)/eer_FieldCalc r]
+   set f [open $GDefs(DirEER)/FieldCalc r]
 
    while { ![eof $f] } {
       gets $f line
@@ -750,11 +750,11 @@ proc FieldCalc::FormulaSave { Name } {
    }
    set Data(Formula$Data(Formula)) $Data(Operand)
 
-   if { [file exist $GDefs(DirEER)/eer_FieldCalc] } {
-      file rename -force $GDefs(DirEER)/eer_FieldCalc $GDefs(DirEER)/eer_FieldCalc.old
+   if { [file exist $GDefs(DirEER)/FieldCalc] } {
+      file rename -force $GDefs(DirEER)/FieldCalc $GDefs(DirEER)/FieldCalc.old
    }
 
-   set f [open $GDefs(DirEER)/eer_FieldCalc w]
+   set f [open $GDefs(DirEER)/FieldCalc w]
 
    foreach name $Data(Formulas) {
       if { $Data(Formula$name)!= "" } {

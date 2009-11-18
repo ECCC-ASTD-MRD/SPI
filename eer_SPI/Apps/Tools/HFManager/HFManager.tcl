@@ -625,9 +625,9 @@ proc HFManager::HostRead { } {
 
    set Host(List) {}
 
-   if { [file exists $env(HOME)/.eer_ToolDefs/eer_Host] } {
+   if { [file exists $env(HOME)/.spi/HFManager] } {
 
-      set f [open $env(HOME)/.eer_ToolDefs/eer_Host r]
+      set f [open $env(HOME)/.spi/HFManager r]
 
       while { ![eof $f] } {
 
@@ -773,15 +773,15 @@ proc HFManager::HostWrite { Id } {
    global env
    variable Host
 
-   if { ![file exists $env(HOME)/.eer_ToolDefs] } {
-      file mkdir $env(HOME)/.eer_ToolDefs
+   if { ![file exists $env(HOME)/.spi] } {
+      file mkdir $env(HOME)/.spi
    }
 
-   if { [file exists $env(HOME)/.eer_ToolDefs/eer_Host] } {
-      file rename -force $env(HOME)/.eer_ToolDefs/eer_Host $env(HOME)/.eer_ToolDefs/eer_Host.old
+   if { [file exists $env(HOME)/.spi/HFManager] } {
+      file rename -force $env(HOME)/.spi/HFManager $env(HOME)/.spi/HFManager.old
    }
 
-   set f [open $env(HOME)/.eer_ToolDefs/eer_Host w]
+   set f [open $env(HOME)/.spi/HFManager w]
 
    puts $f "# Liste des hotes pour HFManager"
    puts $f "#"

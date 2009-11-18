@@ -45,7 +45,7 @@ namespace eval Obs {
 
    image create photo OBSMAPImg -width 170 -height 15
    colormap create OBSMAPDEFAULT
-   colormap read OBSMAPDEFAULT $GDefs(DirEER)/eer_Map/REC_Col.std1.rgba
+   colormap read OBSMAPDEFAULT $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
    dataspec create OBSDEFAULT

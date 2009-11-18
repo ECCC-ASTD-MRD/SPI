@@ -930,8 +930,8 @@ proc NowCaster::Obs::ModelLoad { } {
 
    set Data(Models) {}
 
-   if {[file exists $GDefs(DirEER)/eer_ObsModel] } {
-      set f [open $GDefs(DirEER)/eer_ObsModel r]
+   if {[file exists $GDefs(DirEER)/ObsModel] } {
+      set f [open $GDefs(DirEER)/ObsModel r]
       while { ![eof $f] } {
          gets $f line
          if { [string index $line 0] != "#" && [string length $line] > 0 } {
@@ -966,11 +966,11 @@ proc NowCaster::Obs::ModelSave { } {
    global GDefs
    variable Data
 
-   if {[file exists $GDefs(DirEER)/eer_ObsModel] } {
-      file rename -force $GDefs(DirEER)/eer_ObsModel $GDefs(DirEER)/eer_ObsModel.old
+   if {[file exists $GDefs(DirEER)/ObsModel] } {
+      file rename -force $GDefs(DirEER)/ObsModel $GDefs(DirEER)/ObsModel.old
    }
 
-   set f [open $GDefs(DirEER)/eer_ObsModel w]
+   set f [open $GDefs(DirEER)/ObsModel w]
    foreach model $Data(Models) {
       set mparam {}
       set msave $Data(Models$model)

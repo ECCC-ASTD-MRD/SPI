@@ -1,4 +1,4 @@
-#!/bin/ksh 
+#!/bin/ksh
 #===========================================================================
 # Environnement Canada
 # Centre Meteorologique Canadien
@@ -50,17 +50,17 @@ TransmitUser=${4}
 
 datef=`date -u '+%Y%m%d-%H%MZ'`
 
-ssh ${FrontEnd} -l ${TransmitUser} -x "echo ${0} : ${datef} > /users/dor/afse/eer/.eer_ToolDefs/eer_Trace/HFdel.out 2>&1 "
+ssh ${FrontEnd} -l ${TransmitUser} -x "echo ${0} : ${datef} > /users/dor/afse/eer/.spi/Trace/HFdel.out 2>&1 "
 
-mkdir -p ${HOME}/.eer_ToolDefs/eer_Trace/HFdel
-cd ${HOME}/.eer_ToolDefs/eer_Trace/HFdel
+mkdir -p ${HOME}/.spi/Trace/HFdel
+cd ${HOME}/.spi/Trace/HFdel
 
 echo $Files | tr ' ' '\012' | sed 's/data\/eer\/vaac\///g' | sed 's/^\/*//g' > realtime_eer_cleanup_${datef}.txt
 chmod 644 realtime_eer_cleanup_${datef}.txt
 rm -f realtime_eer_cleanup.txt
 ln -s realtime_eer_cleanup_${datef}.txt realtime_eer_cleanup.txt
 
-ssh ${FrontEnd} -l ${TransmitUser} -x ". ~/.profile > /dev/null 2>&1 ; webprods -f /users/dor/afse/eer/.eer_ToolDefs/eer_Trace/HFdel/realtime_eer_cleanup.txt -s weather -D 0 -p eer/data/vaac/realtime_eer_cleanup.txt >> /users/dor/afse/eer/.eer_ToolDefs/eer_Trace/HFdel.out 2>&1 "
+ssh ${FrontEnd} -l ${TransmitUser} -x ". ~/.profile > /dev/null 2>&1 ; webprods -f /users/dor/afse/eer/.spi/Trace/HFdel/realtime_eer_cleanup.txt -s weather -D 0 -p eer/data/vaac/realtime_eer_cleanup.txt >> /users/dor/afse/eer/.spi/Trace/HFdel.out 2>&1 "
 
 if [ $? -eq 0 ]
 then

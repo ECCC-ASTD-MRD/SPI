@@ -43,7 +43,7 @@
 #                       ce fichier, soit 644.
 #===============================================================================
 
-. $HOME/.eer_ToolDefs/.password
+. $HOME/.spi/.password
 
 #----- recupere les parametres.
 

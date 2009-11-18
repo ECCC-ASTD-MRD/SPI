@@ -56,7 +56,7 @@ proc Macro::XSection::Execute { } {
    Macro::Doing "Initializing config"
    if { ![colormap is XSECTION_MAP] } {
       colormap create XSECTION_MAP
-      colormap read XSECTION_MAP $GDefs(DirEER)/eer_Map/REC_Col.std1.rgba
+      colormap read XSECTION_MAP $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
    }
 
    Macro::XSection::Clean

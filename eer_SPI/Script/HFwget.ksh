@@ -1,4 +1,4 @@
-#!/bin/ksh 
+#!/bin/ksh
 #===========================================================================
 # Environnement Canada
 # Centre Meteorologique Canadien
@@ -45,14 +45,14 @@ FileIndexRes=${3}
 #      ainsi que de la presence du fichier qui
 #      contient la liste des fichiers a afficher.
 
-echo ${0} : `date -u '+%Y%m%d - %H%M Z'` > ${HOME}/.eer_ToolDefs/eer_Trace/HFwget.out 2>&1
+echo ${0} : `date -u '+%Y%m%d - %H%M Z'` > ${HOME}/.spi/Trace/HFwget.out 2>&1
 
-mkdir ${HOME}/.eer_ToolDefs/eer_Trace/HFwget_$$
-cd ${HOME}/.eer_ToolDefs/eer_Trace/HFwget_$$
+mkdir ${HOME}/.spi/Trace/HFwget_$$
+cd ${HOME}/.spi/Trace/HFwget_$$
 
 \rm -f index.*
 
-wget http://${Host}/${Dir}/ >> ${HOME}/.eer_ToolDefs/eer_Trace/HFwget.out 2>&1
+wget http://${Host}/${Dir}/ >> ${HOME}/.spi/Trace/HFwget.out 2>&1
 
 if [ $? -eq 0 ]
 then
@@ -61,7 +61,7 @@ then
    # 19k 01-Mar-2006 00:46 veniaminof_watch_23.png
    egrep -i "^<IMG SRC" file.html | egrep -v Parent | sed 's/[ ][ ]*/ /g' | sed 's/^.*<a href="\(.*\)".*<\/a> \(.*-.*-.*\) \(.*:.*\) \(.*\) .*/ \4 \2 \3 \1/g' > file.res
 
-   #cat file.res 
+   #cat file.res
    cp file.res ${FileIndexRes}
 else
    echo "   Repertoire ${PathWeatherOfficeEER} inexistant ou weatheroffice sur le dos !!!"

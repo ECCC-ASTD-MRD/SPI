@@ -57,7 +57,7 @@ namespace eval FileBox {
    set Data(Filename)     ""
    set Data(Type)         ""
    set Data(Mode)         ""
-   set Data(DirList)      "$env(HOME)/.eer_ToolDefs/eer_FileBoxPath"
+   set Data(DirList)      "$env(HOME)/.spi/FileBox"
    set Data(All)          0
    set Data(Sort)         File
    set Data(Size)         0

@@ -361,7 +361,7 @@ proc TRAJ::SATNET { Frame Mode } {
 
    SPI::Progress 0
 
-   set file "$GDefs(DirEER)/eer_Tmp/TRAJ_[pid]_[clock seconds]"
+   set file "$GDefs(DirEER)/Tmp/TRAJ_[pid]_[clock seconds]"
 
    #----- Generer le fichier image
 
@@ -389,7 +389,7 @@ proc TRAJ::SATNET { Frame Mode } {
 
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/eer_Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
+   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
 
    if { $ErrCatch != 0 } {
       Log::Print ERROR "Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"

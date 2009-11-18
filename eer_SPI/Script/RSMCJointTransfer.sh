@@ -48,7 +48,7 @@
 #===============================================================================
 
 . /usr/local/env/profile_ksh_usr
-. $HOME/.eer_ToolDefs/.password
+. $HOME/.spi/.password
 
 #----- recupere les parametres.
 

@@ -625,7 +625,7 @@ proc Writer::FVCN::Format { Pad Mode } {
    global   GDefs
    variable Data
 
-   set file $GDefs(DirEER)/eer_Tmp/FVCN[pid]_[clock seconds].txt
+   set file $GDefs(DirEER)/Tmp/FVCN[pid]_[clock seconds].txt
 
    set f [open $file w]
 

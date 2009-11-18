@@ -79,7 +79,7 @@ namespace eval ProjCam {
    set Data(Name)   ""                            ;#Nome de la camera courante
    set Data(Names)  {}                            ;#Liste des noms de vues
    set Data(Combo)  ""
-   set Data(File)   $env(HOME)/.eer_ToolDefs/eer_ProjCam
+   set Data(File)   $env(HOME)/.spi/ProjCam
 
    #----- Definitions des labels
 

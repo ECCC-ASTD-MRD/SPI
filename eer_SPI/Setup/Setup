@@ -42,15 +42,15 @@ proc GetPrevious { } {
          set GDefs(Copy) True
       }
       file mkdir $env(HOME)/.spi
-   } else {
-      if { [file exists $env(HOME)/.eer_ToolDefs] } {
-         if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.eer_ToolDefs/.eer_Defs-*]] end]]!="" } {
-            source $file
-         }
-      }
-      if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.spi/.spi-*]] end]]!="" } {
+   }
+
+   if { [file exists $env(HOME)/.eer_ToolDefs] } {
+      if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.eer_ToolDefs/.eer_Defs-*]] end]]!="" } {
          source $file
       }
+   }
+   if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.spi/.spi-*]] end]]!="" } {
+      source $file
    }
 
    set GDefs(Printer) [lindex $GDefs(Printers) 0]
@@ -403,14 +403,7 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
    file mkdir $env(HOME)/.spi/Macro
 
    #----- Installer les fichiers de definitions
-   foreach file { GRIBDict AutoList FileBoxPath Host SatDomain WEBPath ProjCam  } {
-      if { ![file exists $env(HOME)/.spi/$file] } {
-         Log::Print INFO "Copying setup file : $file"
-         file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi/$file
-      }
-   }
-
-   foreach file { Default  } {
+   foreach file { SPI } {
       Log::Print INFO "Copying setup file : $file"
       file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi/$file
    }
@@ -422,12 +415,14 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
 
    #----- Copy old users definitions
    if { $GDefs(Copy) } {
-      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel } filenew { FieldCalc FileBox HFManager ObsModel } {
+      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain eer_Default } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData SPI } {
          catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
       }
-      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel } filenew { FieldCalc FileBox HFManager ObsModel } {
-         catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+      foreach fileold { eer_Layout eer_Scenario } filenew { Layout Scenario } {
+         eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew}
       }
+
+      catch { file copy $env(HOME)/.eer_ToolDefs/Mapper/Params $env(HOME)/.spi/Mapper }
    }
    Log::Print INFO "Installation done"
 }
@@ -435,7 +430,7 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
 #----- Initialize environnement
 set GDefs(Ver)           [regsub \[:alpha:\]+ [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end] ""]
 set GDefs(DefFile)       .spi-$GDefs(Ver)
- et GDefs(Copy)          False
+set GDefs(Copy)          False
 set GDefs(FrontEnd)      alef
 set GDefs(FrontEndUser)  $env(USER)
 set GDefs(TransmitUser)  afsiops

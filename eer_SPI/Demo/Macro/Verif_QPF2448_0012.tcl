@@ -55,7 +55,7 @@ proc Macro::Verif_QPF2448_0012::Execute { } {
    Macro::Doing "Initializing config"
    if { ![colormap is VERIF_MAP] } {
       colormap create VERIF_MAP
-      colormap read VERIF_MAP $GDefs(DirEER)/eer_Map/REC_Col.std1.rgba
+      colormap read VERIF_MAP $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
    }
 
    font create VERIF_FONT -family courier -size -12 -weight bold
