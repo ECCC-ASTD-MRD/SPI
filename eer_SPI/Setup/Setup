@@ -37,10 +37,18 @@ proc GetPrevious { } {
    global env
    global tcl_platform
 
-   if { ![file exists $env(HOME)/.eer_ToolDefs] } {
-      file mkdir $env(HOME)/.eer_ToolDefs
+   if { ![file exists $env(HOME)/.spi] } {
+      if { [file exists $env(HOME)/.eer_ToolDefs] } {
+         set GDefs(Copy) True
+      }
+      file mkdir $env(HOME)/.spi
    } else {
-      if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.eer_ToolDefs/.eer_Defs-*]] end]]!="" } {
+      if { [file exists $env(HOME)/.eer_ToolDefs] } {
+         if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.eer_ToolDefs/.eer_Defs-*]] end]]!="" } {
+            source $file
+         }
+      }
+      if { [set file [lindex [lsort -dictionary -increasing [glob -nocomplain $env(HOME)/.spi/.spi-*]] end]]!="" } {
          source $file
       }
    }
@@ -279,7 +287,7 @@ proc InstallOutput { } {
    set GDefs(Printers) [linsert $GDefs(Printers) 0 $GDefs(Printer)]
 
    #----- Creer le fichier d'initialisations
-   set f [open $env(HOME)/.eer_ToolDefs/$GDefs(DefFile) w+]
+   set f [open $env(HOME)/.spi/$GDefs(DefFile) w+]
 
    puts $f "
 #==============================================================================
@@ -322,7 +330,7 @@ set GDefs(Printers)       \"$GDefs(Printers)\"
 
 #----- Repertoires des experiences
 
-set GDefs(DirEER)         \$env(HOME)/.eer_ToolDefs
+set GDefs(DirEER)         \$env(HOME)/.spi
 set GDefs(DirWatch)       \"$GDefs(DirWatch)\"
 set GDefs(DirData)        \"$GDefs(DirData)\"
 set GDefs(DirObs)         \"/data/ade\"
@@ -387,37 +395,47 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
 "
    close $f
 
-   file mkdir $env(HOME)/.eer_ToolDefs/eer_Trace
-   file mkdir $env(HOME)/.eer_ToolDefs/eer_Tmp
-   file mkdir $env(HOME)/.eer_ToolDefs/eer_Layout
-   file mkdir $env(HOME)/.eer_ToolDefs/eer_Map
-   file mkdir $env(HOME)/.eer_ToolDefs/eer_Scenario
-   file mkdir $env(HOME)/.eer_ToolDefs/Macro
+   file mkdir $env(HOME)/.spi/Trace
+   file mkdir $env(HOME)/.spi/Tmp
+   file mkdir $env(HOME)/.spi/Layout
+   file mkdir $env(HOME)/.spi/Colormap
+   file mkdir $env(HOME)/.spi/Scenario
+   file mkdir $env(HOME)/.spi/Macro
 
    #----- Installer les fichiers de definitions
-   foreach file { eer_GRIBDict eer_AutoList eer_FileBoxPath eer_Host eer_SatDomain eer_WEBPath eer_ProjCam  } {
-      if { ![file exists $env(HOME)/.eer_ToolDefs/$file] } {
+   foreach file { GRIBDict AutoList FileBoxPath Host SatDomain WEBPath ProjCam  } {
+      if { ![file exists $env(HOME)/.spi/$file] } {
          Log::Print INFO "Copying setup file : $file"
-         file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.eer_ToolDefs/$file
+         file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi/$file
       }
    }
 
-   foreach file { eer_Default  } {
+   foreach file { Default  } {
       Log::Print INFO "Copying setup file : $file"
-      file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.eer_ToolDefs/$file
+      file copy -force $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi/$file
    }
 
-   foreach file { eer_Map eer_Scenario } {
+   foreach file { Colormap Scenario } {
       Log::Print INFO "Copying setup file : $file"
-      exec cp -r $GDefs(Dir)/Setup/Data/$file $env(HOME)/.eer_ToolDefs
+      exec cp -r $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi
    }
 
+   #----- Copy old users definitions
+   if { $GDefs(Copy) } {
+      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel } filenew { FieldCalc FileBox HFManager ObsModel } {
+         catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+      }
+      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel } filenew { FieldCalc FileBox HFManager ObsModel } {
+         catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+      }
+   }
    Log::Print INFO "Installation done"
 }
 
 #----- Initialize environnement
 set GDefs(Ver)           [regsub \[:alpha:\]+ [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end] ""]
-set GDefs(DefFile)       .eer_Defs-$GDefs(Ver)
+set GDefs(DefFile)       .spi-$GDefs(Ver)
+ et GDefs(Copy)          False
 set GDefs(FrontEnd)      alef
 set GDefs(FrontEndUser)  $env(USER)
 set GDefs(TransmitUser)  afsiops
