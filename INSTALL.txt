@@ -51,7 +51,7 @@ access this manual, simply type:
             northamericaDBGeo.tgz
 
       - The SPI application (Application CD)
-         SPI-7.2.4a.tgz
+         SPI-7.4.0.tgz
 
    B) Decompressing the packages
 
@@ -71,7 +71,7 @@ access this manual, simply type:
       - Then you may go on with the SPI package by untarring it to a temporary
         directory since it will install itself somewhere else later.
 
-         tar -zxvf SPI-7.2.3.tgz -C [your temp_path]
+         tar -zxvf SPI-7.4.0.tgz -C [your temp_path]
 
    C) Package installation
 

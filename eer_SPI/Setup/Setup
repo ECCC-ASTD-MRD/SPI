@@ -464,7 +464,7 @@ package require TabFrame
 package require ComboBox
 package require Dialog
 package require FileBox
-package require Log
+package require Logger
 
 #----- Crank it up
 InstallWindow

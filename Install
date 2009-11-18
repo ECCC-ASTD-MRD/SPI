@@ -16,7 +16,7 @@ then
    exit 0
 fi
 
-ver=7.3.1
+ver=7.4.0
 mach=`uname -n`
 arch=`uname`
 user=`whoami`
