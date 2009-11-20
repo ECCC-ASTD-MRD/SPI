@@ -44,19 +44,6 @@ package provide TabFrame 2.0
 catch { SPI::Splash "Loading Widget Package TabFrame 2.0" }
 
 namespace eval TabFrame {
-   global   GDefs
-   variable Data
-   variable Resources
-
-   #----- Definitions des differentes resources du widget
-
-   catch {
-      set Resources(BorderWidth) 1                      ;#
-      set Resources(Select)      $GDefs(ColorHighLight) ;#
-      set Resources(Background)  $GDefs(ColorFrame)     ;#
-      set Resources(Disabled)    $GDefs(ColorOff)       ;#
-      set Resources(Foreground)  black                  ;#
-   }
 }
 
 #-------------------------------------------------------------------------------
@@ -81,8 +68,8 @@ namespace eval TabFrame {
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Add { Tab Level Title Edit { ColorFrame "" } { ColorTab "" } } {
+   global GDefs
    variable Data
-   variable Resources
 
    #----- Verifier si une couleur a ete specifie
 
@@ -90,12 +77,12 @@ proc TabFrame::Add { Tab Level Title Edit { ColorFrame "" } { ColorTab "" } } {
 
    #----- Creer les diverses parties du widget
 
-   entry $Tab.tab$no  -width [expr [string length $Title]+2] -relief raised -bd $Resources(BorderWidth) -fg $Resources(Foreground) \
-      -disabledforeground $Resources(Foreground) -disabledbackground $Resources(Background) -cursor left_ptr -justify center
+   entry $Tab.tab$no  -width [expr [string length $Title]+2] -relief raised -bd 1 -fg black \
+      -disabledforeground black -disabledbackground $GDefs(ColorFrame)  -cursor left_ptr -justify center
    $Tab.tab$no insert end "$Title"
    $Tab.tab$no configure -state disabled
 
-   frame $Tab.frame$no -relief raised -bd $Resources(BorderWidth)
+   frame $Tab.frame$no -relief raised -bd 1
 
    if { $ColorFrame!="" } {
       $Tab.tab$no configure    -bg $ColorFrame -disabledbackground $ColorFrame
@@ -114,8 +101,8 @@ proc TabFrame::Add { Tab Level Title Edit { ColorFrame "" } { ColorTab "" } } {
    TabFrame::Place $Tab $Level $no $Data(Level$Tab) $xloc $Data(Top$Tab)
 
    bind $Tab.tab$no <ButtonPress-1>        "TabFrame::Select $Tab $no"
-   bind $Tab.tab$no <Enter>                "$Tab.tab$no configure -fg $Resources(Select)"
-   bind $Tab.tab$no <Leave>                "$Tab.tab$no configure -fg $Resources(Foreground)"
+   bind $Tab.tab$no <Enter>                "$Tab.tab$no configure -fg $GDefs(ColorHighLight) "
+   bind $Tab.tab$no <Leave>                "$Tab.tab$no configure -fg black"
 
    if { $Edit } {
       bind $Tab.tab$no <Double-ButtonPress-1> "$Tab.tab$no configure -state normal -relief sunken"
@@ -382,13 +369,13 @@ proc TabFrame::Destroy { Tab } {
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Disable { Tab No } {
-   variable Resources
+   global GDefs
 
    bind $Tab.tab$No <ButtonPress-1> ""
    bind $Tab.tab$No <Enter>         ""
    bind $Tab.tab$No <Leave>         ""
 
-   $Tab.tab$No configure -fg $Resources(Disabled) -disabledforeground $Resources(Disabled)
+   $Tab.tab$No configure -fg $GDefs(ColorOff)  -disabledforeground $GDefs(ColorOff)
 }
 
 #-------------------------------------------------------------------------------
@@ -408,13 +395,13 @@ proc TabFrame::Disable { Tab No } {
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Enable { Tab No } {
-   variable Resources
+   global GDefs
 
    bind $Tab.tab$No <ButtonPress-1> "TabFrame::Select $Tab $No"
-   bind $Tab.tab$No <Enter>         "$Tab.tab$No configure -fg $Resources(Select)"
-   bind $Tab.tab$No <Leave>         "$Tab.tab$No configure -fg $Resources(Foreground)"
+   bind $Tab.tab$No <Enter>         "$Tab.tab$No configure -fg $GDefs(ColorHighLight) "
+   bind $Tab.tab$No <Leave>         "$Tab.tab$No configure -fg black"
 
-   $Tab.tab$No configure -fg $Resources(Foreground) -disabledforeground $Resources(Foreground)
+   $Tab.tab$No configure -fg black -disabledforeground black
 }
 
 #-------------------------------------------------------------------------------
@@ -551,7 +538,6 @@ proc TabFrame::Label { Tab Level No Label } {
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Place { Tab Level No Nb X Top { Hid False } } {
-   variable Resources
 
    set y [expr [winfo reqheight $Tab.tab$No] -1]
 
@@ -595,7 +581,6 @@ proc TabFrame::Place { Tab Level No Nb X Top { Hid False } } {
 #-------------------------------------------------------------------------------
 
 proc TabFrame::PlaceHidder { Tab No Top } {
-   variable Resources
 
    if { $No==-1 } {
       return
@@ -603,16 +588,16 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 
    if { $Top } {
       place $Tab.hidder \
-         -x [expr [winfo x $Tab.tab$No] + $Resources(BorderWidth)] \
-         -y [expr [winfo y $Tab.frame$No] -$Resources(BorderWidth)] \
+         -x [expr [winfo x $Tab.tab$No] + 1] \
+         -y [expr [winfo y $Tab.frame$No] -1] \
          -width [expr [winfo reqwidth $Tab.tab$No] -2] \
-         -height [expr $Resources(BorderWidth)+1]
+         -height [expr 1+1]
    } else {
      place $Tab.hidder \
-         -x [expr [winfo x $Tab.tab$No] + $Resources(BorderWidth)] \
-         -y [expr [winfo height $Tab.frame$No] - $Resources(BorderWidth)] \
+         -x [expr [winfo x $Tab.tab$No] + 1] \
+         -y [expr [winfo height $Tab.frame$No] - 1] \
          -width [expr [winfo reqwidth $Tab.tab$No] -2] \
-         -height [expr 2*$Resources(BorderWidth)-1]
+         -height [expr 2*1-1]
    }
 
    $Tab.hidder configure -bg [lindex [$Tab.frame$No configure -bg] 4]
@@ -636,7 +621,6 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 #-------------------------------------------------------------------------------
 
 proc TabFrame::Select { Tab No } {
-   variable Resources
    variable Data
 
    if { ![winfo exists $Tab.frame$No] } {

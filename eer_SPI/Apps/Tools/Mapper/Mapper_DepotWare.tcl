@@ -255,8 +255,8 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
       pack .mapperdepotparams.cmd.ok .mapperdepotparams.cmd.cancel -side left  -fill x -expand True
    pack .mapperdepotparams.cmd -side top -fill x -padx 5 -pady 5
 
-   Bubble::Create .mapperdepotparams.cache.sz.cur  [lindex $Bubble(Size) $GDefs(Lang)]
-   Bubble::Create .mapperdepotparams.cache.sz.clear  [lindex $Bubble(Clear) $GDefs(Lang)]
+   Bubble::Create .mapperdepotparams.cache.sz.cur $Bubble(Size)
+   Bubble::Create .mapperdepotparams.cache.sz.clear $Bubble(Clear)
 }
 
 proc Mapper::DepotWare::Window { } {

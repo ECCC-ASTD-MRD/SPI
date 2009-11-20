@@ -471,9 +471,9 @@ proc Graph::Section::Params { Parent GR } {
       pack $Parent.scale.type -side top -padx 2 -fill x
    pack $Parent.scale -side top -fill x -padx 5 -pady 5
 
-   Bubble::Create $Parent.disp.mode       [lindex $Graph::Bubble(Viewport) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
-   Bubble::Create $Parent.res.list        [lindex $Graph::Bubble(Sample) $GDefs(Lang)]
+   Bubble::Create $Parent.disp.mode  $Graph::Bubble(Viewport)
+   Bubble::Create $Parent.scale.valy $Graph::Bubble(ScaleY)
+   Bubble::Create $Parent.res.list   $Graph::Bubble(Sample)
 
    bind $Parent.res.cur         <Return>          "Graph::Section::Graph $GR True"
    bind $Parent.res.sc          <ButtonRelease-1> "Graph::Section::Graph $GR True"

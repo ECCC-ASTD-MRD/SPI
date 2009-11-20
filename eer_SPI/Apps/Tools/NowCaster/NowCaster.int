@@ -144,12 +144,12 @@ proc NowCaster::Window { { Type "" } } {
       TabFrame::Select .nowcaster.tab 0
    }
 
-   Bubble::Create .nowcaster.time.clock      [lindex $Bubble(Now) $GDefs(Lang)]
-   Bubble::Create .nowcaster.time.clock.down [lindex $Bubble(Opt) $GDefs(Lang)]
-   Bubble::Create .nowcaster.time.set        [lindex $Bubble(Scale) $GDefs(Lang)]
-   Bubble::Create .nowcaster.time.now        [lindex $Bubble(Scale) $GDefs(Lang)]
-   Bubble::Create .nowcaster.time.play       [lindex $Bubble(Play) $GDefs(Lang)]
+   Bubble::Create .nowcaster.time.clock      $Bubble(Now)
+   Bubble::Create .nowcaster.time.clock.down $Bubble(Opt)
+   Bubble::Create .nowcaster.time.set        $Bubble(Scale)
+   Bubble::Create .nowcaster.time.now        $Bubble(Scale)
+   Bubble::Create .nowcaster.time.play       $Bubble(Play)
 
-   Bubble::Create .nowcaster.dock.sel    [lindex $Bubble(Dock) $GDefs(Lang)]
-   Bubble::Create .nowcaster.dock.del    [lindex $Bubble(Close) $GDefs(Lang)]
+   Bubble::Create .nowcaster.dock.sel $Bubble(Dock)
+   Bubble::Create .nowcaster.dock.del $Bubble(Close)
 }

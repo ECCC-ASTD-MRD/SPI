@@ -96,9 +96,9 @@ proc InfoFrame::Create { Frame Msg Size args } {
    set Data(Size$Frame) $Size
    set Data(Var$Frame)  $Msg
 
-   Bubble::Create $Frame.lbl  [lindex $Bubble(Msg)  $GDefs(Lang)]
-   Bubble::Create $Frame.gage [lindex $Bubble(Gage) $GDefs(Lang)]
-   Bubble::Create $Frame.lst  [lindex $Bubble(List) $GDefs(Lang)]
+   Bubble::Create $Frame.lbl  $Bubble(Msg)
+   Bubble::Create $Frame.gage $Bubble(Gage)
+   Bubble::Create $Frame.lst  $Bubble(List)
 }
 
 #----------------------------------------------------------------------------

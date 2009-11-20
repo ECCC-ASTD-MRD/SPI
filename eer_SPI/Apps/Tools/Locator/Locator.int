@@ -171,23 +171,22 @@ proc Locator::WinDef { } {
       pack .locator.cmd.close -side top -fill x
    pack .locator.cmd -side top -fill x
 
-   Bubble::Create .locator.sel.no   [lindex $Bubble(SearchNum)  $GDefs(Lang)]
-   Bubble::Create .locator.sel.name [lindex $Bubble(SearchName) $GDefs(Lang)]
-   Bubble::Create .locator.sel.area [lindex $Bubble(SearchArea) $GDefs(Lang)]
+   Bubble::Create .locator.sel.no   $Bubble(SearchNum)
+   Bubble::Create .locator.sel.name $Bubble(SearchName)
+   Bubble::Create .locator.sel.area $Bubble(SearchArea)
 
-   Bubble::Create .locator.menu.sel.type0  [lindex $Bubble(Volcanic)   $GDefs(Lang)]
-   Bubble::Create .locator.menu.sel.type1  [lindex $Bubble(Nuclear)    $GDefs(Lang)]
-   Bubble::Create .locator.menu.sel.type2  [lindex $Bubble(CTBT)       $GDefs(Lang)]
-   Bubble::Create .locator.menu.sel.type3  [lindex $Bubble(Meteo)      $GDefs(Lang)]
-   Bubble::Create .locator.menu.sel.type4  [lindex $Bubble(City)       $GDefs(Lang)]
+   Bubble::Create .locator.menu.sel.type0 $Bubble(Volcanic)   Bubble::Create .locator.menu.sel.type1 $Bubble(Nuclear)
+   Bubble::Create .locator.menu.sel.type2 $Bubble(CTBT)
+   Bubble::Create .locator.menu.sel.type3 $Bubble(Meteo)
+   Bubble::Create .locator.menu.sel.type4 $Bubble(City)
 
-   Bubble::Create .locator.head.no   [lindex $Bubble(Sort) $GDefs(Lang)]
-   Bubble::Create .locator.head.name [lindex $Bubble(Sort) $GDefs(Lang)]
-   Bubble::Create .locator.head.area [lindex $Bubble(Sort) $GDefs(Lang)]
-   Bubble::Create .locator.head.lat  [lindex $Bubble(Sort) $GDefs(Lang)]
-   Bubble::Create .locator.head.lon  [lindex $Bubble(Sort) $GDefs(Lang)]
-   Bubble::Create .locator.head.elev [lindex $Bubble(Sort) $GDefs(Lang)]
-   Bubble::Create .locator.list.box  [lindex $Bubble(List) $GDefs(Lang)]
-   Bubble::Create .locator.sel.nb    [lindex $Bubble(Nb) $GDefs(Lang)]
-   Bubble::Create .locator.close     [lindex $Bubble(Close) $GDefs(Lang)]
+   Bubble::Create .locator.head.no   $Bubble(Sort)
+   Bubble::Create .locator.head.name $Bubble(Sort)
+   Bubble::Create .locator.head.area $Bubble(Sort)
+   Bubble::Create .locator.head.lat  $Bubble(Sort)
+   Bubble::Create .locator.head.lon  $Bubble(Sort)
+   Bubble::Create .locator.head.elev $Bubble(Sort)
+   Bubble::Create .locator.list.box  $Bubble(List)
+   Bubble::Create .locator.sel.nb    $Bubble(Nb)
+   Bubble::Create .locator.close     $Bubble(Close)
 }

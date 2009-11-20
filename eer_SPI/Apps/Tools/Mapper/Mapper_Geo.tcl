@@ -112,9 +112,9 @@ proc Mapper::Geo::Widget { Frame } {
    bind $Frame.geo.address <Return> { Mapper::Geo::Code $Mapper::Geo::Data(Address) $Mapper::Geo::Param(API) }
    bind $Frame.geo.address <Any-KeyRelease> { if { $Mapper::Geo::Data(Address)=="" } { SPI::IcoDel GEOCODE } }
 
-   Bubble::Create $Frame.geo.icode     [lindex $Bubble(ICode) $GDefs(Lang)]
-   Bubble::Create $Frame.geo.icode.api [lindex $Bubble(API) $GDefs(Lang)]
-   Bubble::Create $Frame.geo.address   [lindex $Bubble(Code) $GDefs(Lang)]
+   Bubble::Create $Frame.geo.icode     $Bubble(ICode)
+   Bubble::Create $Frame.geo.icode.api $Bubble(API)
+   Bubble::Create $Frame.geo.address   $Bubble(Code)
 
    return $Frame.geo
 }

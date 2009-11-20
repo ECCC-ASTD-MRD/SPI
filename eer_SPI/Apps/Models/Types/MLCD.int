@@ -47,8 +47,8 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
       ComboBox::Create $frame.src.cb MLCD::Sim(GridSrc) noedit sorted nodouble -1 $Sim(Pos) 20 3 MLCD::SetSrc
       pack $frame.src.cb -side left -fill x -expand true -padx 2 -pady 2
    pack $frame.src -side top -padx 5 -pady 5 -fill x
-   Bubble::Create $frame.src.cb "[lindex $Bubble(SelectSource) $GDefs(Lang)]"
-   Bubble::Create $frame.src "[lindex $Bubble(Source) $GDefs(Lang)]"
+   Bubble::Create $frame.src.cb $Bubble(SelectSource)
+   Bubble::Create $frame.src    $Bubble(Source)
 
    #----- Simulation Starting Time.
    if { !$Auto } {
@@ -60,11 +60,11 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
          pack $frame.t.date -side left -anchor w -padx 2 -fill x
          pack $frame.t.hour -side left -padx 2
 
-         Bubble::Create $frame.t.date "[lindex $Bubble(StartDate) $GDefs(Lang)]"
-         Bubble::Create $frame.t.hour "[lindex $Bubble(StartHour) $GDefs(Lang)]"
+         Bubble::Create $frame.t.date $Bubble(StartDate)
+         Bubble::Create $frame.t.hour $Bubble(StartHour)
 
       pack $frame.t -side top -padx 5 -fill x
-      Bubble::Create $frame.t "[lindex $Bubble(StartTime) $GDefs(Lang)]"
+      Bubble::Create $frame.t $Bubble(StartTime)
    }
 
    #----- Model integration.
@@ -74,24 +74,24 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
       #----- Simulation duration [min].
       Option::Create $frame.integ.opt.dur [lindex $Lbl(Dur) $GDefs(Lang)] MLCD::Sim(DurMin) 1 -1 $MLCD::Sim(ListSimulationDuration) "MLCD::SetEmissionDuration 0"
       pack $frame.integ.opt.dur -side top -fill x
-      Bubble::Create $frame.integ.opt.dur "[lindex $Bubble(SimIntegTime) $GDefs(Lang)]"
+      Bubble::Create $frame.integ.opt.dur $Bubble(SimIntegTime)
       set Data(SimDurationEnt) $frame.integ.opt.dur.e
 
       #----- Data output time step [min].
       Option::Create $frame.integ.opt.ots [lindex $Lbl(OutputTimeStep) $GDefs(Lang)] MLCD::Sim(OutputTimeStepMin) 1 -1 $MLCD::Sim(ListOutputTimeStep) ""
       pack $frame.integ.opt.ots -side top -fill x
-      Bubble::Create $frame.integ.opt.ots "[lindex $Bubble(SimOutputTimeStep) $GDefs(Lang)]"
+      Bubble::Create $frame.integ.opt.ots $Bubble(SimOutputTimeStep)
       set Data(OutputTimeStepEnt) $frame.integ.opt.ots.e
 
       #----- Model time step [min].
       Option::Create $frame.integ.opt.mts [lindex $Lbl(ModelTimeStep) $GDefs(Lang)] MLCD::Sim(ModelTimeStepMin) 1 -1 $MLCD::Sim(ListModelTimeStep) ""
       pack $frame.integ.opt.mts -side top -fill x
-      Bubble::Create $frame.integ.opt.mts "[lindex $Bubble(SimModelTimeStep) $GDefs(Lang)]"
+      Bubble::Create $frame.integ.opt.mts $Bubble(SimModelTimeStep)
       set Data(ModelTimeStepEnt) $frame.integ.opt.mts.e
 
       pack $frame.integ.opt -side top -fill x -padx 2
    pack $frame.integ -side top -padx 5 -pady 5 -fill x
-   Bubble::Create $frame.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+   Bubble::Create $frame.integ $Bubble(SimIntegration)
 
    #----- Concentration calculations.
    labelframe $frame.conc -text "[lindex $Lbl(Conc) $GDefs(Lang)]"
@@ -100,40 +100,40 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
       checkbutton $frame.conc.sel -anchor w -text "[lindex $Lbl(IsConc) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
          -variable MLCD::Sim(IsConc) -indicatoron true -command "if {\$MLCD::Sim(IsConc)} {pack $frame.conc.opt -side top -anchor w} else {pack forget $frame.conc.opt}"
       pack $frame.conc.sel -side top -anchor w
-      Bubble::Create $frame.conc.sel "[lindex $Bubble(ConcOpt) $GDefs(Lang)]"
+      Bubble::Create $frame.conc.sel $Bubble(ConcOpt)
 
       #----- Options associated to the concentration calculations.
       frame $frame.conc.opt
 
       #----- Grid type.
       Option::Create $frame.conc.opt.grid [lindex $Lbl(GridType) $GDefs(Lang)] { MLCD::Sim(GridTypeS) MLCD::Sim(GridType) } 0 -1 \
-         [lindex $Sim(ConcGrid) $GDefs(Lang)] "Bubble::Create $frame.conc.opt.grid \[lindex \[lindex \$MLCD::Bubble(GridType2) $GDefs(Lang)\] \$MLCD::Sim(GridType)\] ; if {\$MLCD::Sim(GridType) == 1} {pack forget $frame.conc.opt.domain} else {pack forget $frame.conc.opt.domain $frame.conc.opt.levels ; pack $frame.conc.opt.grid $frame.conc.opt.algo $frame.conc.opt.domain $frame.conc.opt.levels -side top -anchor w -fill x -expand true}"
-      Bubble::Create $frame.conc.opt.grid.l [lindex $Bubble(GridType1) $GDefs(Lang)]
-      Bubble::Create $frame.conc.opt.grid   [lindex [lindex $Bubble(GridType2) $GDefs(Lang)] $MLCD::Sim(GridType)]
+         [lindex $Sim(ConcGrid) $GDefs(Lang)] "Bubble::Create $frame.conc.opt.grid \[lindex \$MLCD::Bubble(GridType2) \$MLCD::Sim(GridType)\] ; if {\$MLCD::Sim(GridType) == 1} {pack forget $frame.conc.opt.domain} else {pack forget $frame.conc.opt.domain $frame.conc.opt.levels ; pack $frame.conc.opt.grid $frame.conc.opt.algo $frame.conc.opt.domain $frame.conc.opt.levels -side top -anchor w -fill x -expand true}"
+      Bubble::Create $frame.conc.opt.grid.l $Bubble(GridType1)
+      Bubble::Create $frame.conc.opt.grid   [lindex $Bubble(GridType2) $MLCD::Sim(GridType)]
 
       #----- Algorithm type.
       Option::Create $frame.conc.opt.algo [lindex $Lbl(GridAlgo) $GDefs(Lang)] { MLCD::Sim(GridAlgoS) MLCD::Sim(GridAlgo) } 0 -1 \
-         [lindex $Sim(ConcAlgo) $GDefs(Lang)] "Bubble::Create $frame.conc.opt.algo \[lindex \[lindex \$MLCD::Bubble(GridAlgo2) $GDefs(Lang)\] \$MLCD::Sim(GridAlgo)\] "
-      Bubble::Create $frame.conc.opt.algo.l [lindex $Bubble(GridAlgo1) $GDefs(Lang)]
-      Bubble::Create $frame.conc.opt.algo   [lindex [lindex $Bubble(GridAlgo2) $GDefs(Lang)] $MLCD::Sim(GridAlgo)]
+         [lindex $Sim(ConcAlgo) $GDefs(Lang)] "Bubble::Create $frame.conc.opt.algo \[lindex \$MLCD::Bubble(GridAlgo2) \$MLCD::Sim(GridAlgo)\] "
+      Bubble::Create $frame.conc.opt.algo.l $Bubble(GridAlgo1)
+      Bubble::Create $frame.conc.opt.algo   [lindex $Bubble(GridAlgo2) $MLCD::Sim(GridAlgo)]
 
       #----- Grid domain [km].
       Option::Create $frame.conc.opt.domain [lindex $Lbl(GridDomain) $GDefs(Lang)] { MLCD::Sim(GridDomain) } 1 -1 \
          $Sim(ConcDomainVal) ""
       set Data(ConcDomainEnt) $frame.conc.opt.domain.e
-      Bubble::Create $frame.conc.opt.domain "[lindex $Bubble(GridDomain) $GDefs(Lang)]"
+      Bubble::Create $frame.conc.opt.domain $Bubble(GridDomain)
 
       #----- Vertical levels [m].
       Option::Create $frame.conc.opt.levels [lindex $Lbl(VerticalLevels) $GDefs(Lang)] { MLCD::Sim(VerticalLevels) } 1 -1 \
          $Sim(ConcVerticalLevelsVal) ""
       set Data(ConcVerticalLevelsEnt) $frame.conc.opt.levels.e
-      Bubble::Create $frame.conc.opt.levels "[lindex $Bubble(VerticalLevels) $GDefs(Lang)]"
+      Bubble::Create $frame.conc.opt.levels $Bubble(VerticalLevels)
 
       pack $frame.conc.opt.grid $frame.conc.opt.algo $frame.conc.opt.domain $frame.conc.opt.levels -side top -anchor w -fill x -expand true
       pack $frame.conc.opt -side top -anchor w -padx 2
 
    pack $frame.conc -side top -padx 5 -fill x
-   Bubble::Create $frame.conc "[lindex $Bubble(Conc) $GDefs(Lang)]"
+   Bubble::Create $frame.conc $Bubble(Conc)
 
    #----- Other options.
    labelframe $frame.divers -text "[lindex $Lbl(Other) $GDefs(Lang)]"
@@ -142,8 +142,8 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
       pack $frame.divers.c1 $frame.divers.c2 -side top -anchor w
    pack $frame.divers -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create $frame.divers "[lindex $Bubble(Option) $GDefs(Lang)]"
-   Bubble::Create $frame.divers.opt "[lindex $Bubble(Sigma) $GDefs(Lang)]"
+   Bubble::Create $frame.divers $Bubble(Option)
+   Bubble::Create $frame.divers.opt $Bubble(Sigma)
 }
 
 proc MLCD::ParamsEmission { Tab { Auto False } } {
@@ -166,7 +166,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.part.nb.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmNumberParticles)
       pack $frame.part.nb.lbl $frame.part.nb.ent -side left
    pack $frame.part.nb -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.nb "[lindex $Bubble(EmNumberParticles) $GDefs(Lang)]"
+   Bubble::Create $frame.part.nb $Bubble(EmNumberParticles)
    set Data(EmNbPartEnt) $frame.part.nb.ent
 
    #----- Total released mass.
@@ -175,7 +175,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.part.mass.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmTotMass)
       pack $frame.part.mass.lbl $frame.part.mass.ent -side left
    pack $frame.part.mass -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.mass "[lindex $Bubble(EmTotMass) $GDefs(Lang)]"
+   Bubble::Create $frame.part.mass $Bubble(EmTotMass)
    set Data(EmTotMassEnt) $frame.part.mass.ent
 
    #----- Radioactive Isotope Name.
@@ -185,7 +185,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
          -command "IsoBox::Create $frame.part.iso MLCD::SpeciesFormat"
       pack $frame.part.iso.lbl $frame.part.iso.but -side left -expand true
    pack $frame.part.iso -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.iso "[lindex $Bubble(EmIsoName) $GDefs(Lang)]"
+   Bubble::Create $frame.part.iso $Bubble(EmIsoName)
 
    #----- Deposition velocity [m/s].
    frame $frame.part.vel
@@ -193,7 +193,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.part.vel.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmDepVel)
       pack $frame.part.vel.lbl $frame.part.vel.ent -side left
    pack $frame.part.vel -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.vel "[lindex $Bubble(EmDepVel) $GDefs(Lang)]"
+   Bubble::Create $frame.part.vel $Bubble(EmDepVel)
    set Data(EmDepVelEnt) $frame.part.vel.ent
 
    #----- Radioactive half-life [s].
@@ -202,7 +202,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.part.half.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmHalfLife)
       pack $frame.part.half.lbl $frame.part.half.ent -side left
    pack $frame.part.half -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.half "[lindex $Bubble(EmHalfLife) $GDefs(Lang)]"
+   Bubble::Create $frame.part.half $Bubble(EmHalfLife)
    set Data(EmHalfLifeEnt) $frame.part.half.ent
 
    #----- Wet scavenging coefficient.
@@ -211,7 +211,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.part.wetscav.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmWetScav)
       pack $frame.part.wetscav.lbl $frame.part.wetscav.ent -side left
    pack $frame.part.wetscav -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.wetscav "[lindex $Bubble(EmWetScav) $GDefs(Lang)]"
+   Bubble::Create $frame.part.wetscav $Bubble(EmWetScav)
    set Data(EmWetScavEnt) $frame.part.wetscav.ent
 
    #----- Options associated to the emission column modeling.
@@ -220,7 +220,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    #----- Emission duration [min].
    Option::Create $frame.col.dur [lindex $Lbl(EmDuration) $GDefs(Lang)] MLCD::Sim(EmDurationMin) 1 16 $MLCD::Sim(ListEmDuration) ""
    pack $frame.col.dur -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.col.dur "[lindex $Bubble(EmDuration) $GDefs(Lang)]"
+   Bubble::Create $frame.col.dur $Bubble(EmDuration)
    set Data(EmDurationEnt) $frame.col.dur.e
 
    #----- Bottom of column [m].
@@ -229,14 +229,14 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.col.bottom.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmBottom) -width 18
       pack $frame.col.bottom.lbl $frame.col.bottom.ent -side left
    pack $frame.col.bottom -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.col.bottom "[lindex $Bubble(EmColBottom) $GDefs(Lang)]"
+   Bubble::Create $frame.col.bottom $Bubble(EmColBottom)
    set Data(EmBottomEnt) $frame.col.bottom.ent
 
    #----- Top of column [m].
    Option::Create $frame.col.top [lindex $Lbl(EmTop) $GDefs(Lang)] { MLCD::Sim(EmTop) MLDP::Sim(EmHeightMode) } \
        1 -1 [lindex $MLDP::Sim(ListEmHeightMode) $GDefs(Lang)] "set MLCD::Sim(EmTop) \[Model::ComputeKaboomHeight\]"
    pack $frame.col.top -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.col.top "[lindex $Bubble(EmColTop) $GDefs(Lang)]"
+   Bubble::Create $frame.col.top $Bubble(EmColTop)
    set Data(EmTopEnt) $frame.col.top.e
 
    #----- Radius of column [m].
@@ -245,21 +245,21 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       entry $frame.col.radius.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmRadius) -width 18
       pack $frame.col.radius.lbl $frame.col.radius.ent -side left
    pack $frame.col.radius -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.col.radius "[lindex $Bubble(EmColRadius) $GDefs(Lang)]"
+   Bubble::Create $frame.col.radius $Bubble(EmColRadius)
    set Data(EmRadiusEnt) $frame.col.radius.ent
 
    pack $frame.part -side top -padx 5 -pady 5 -fill x
    pack $frame.col -side top -padx 5 -fill x
 
-   Bubble::Create $frame.part "[lindex $Bubble(EmParticles) $GDefs(Lang)]"
-   Bubble::Create $frame.col "[lindex $Bubble(EmColumn) $GDefs(Lang)]"
+   Bubble::Create $frame.part $Bubble(EmParticles)
+   Bubble::Create $frame.col $Bubble(EmColumn)
 
    #----- Observation parameters.
    set frame [TabFrame::Add $Tab 1 [lindex $Lbl(Sit) $GDefs(Lang)] False]
 
    #----- Automation frame.
    labelframe $frame.auto -text "[lindex $Lbl(ObsAuto) $GDefs(Lang)]"
-   Bubble::Create $frame.auto "[lindex $Bubble(ObsAuto) $GDefs(Lang)]"
+   Bubble::Create $frame.auto $Bubble(ObsAuto)
 
    frame $frame.auto.data
 
@@ -269,7 +269,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       spinbox $frame.auto.data.nblevels.spb -textvariable MLCD::Sim(ObsNbLevels) -width 2 -from 1 -to $MLCD::Sim(ObsMaxNbLevels) -bd 1 -state readonly -readonlybackground $GDefs(ColorLight)
       pack $frame.auto.data.nblevels.lbl $frame.auto.data.nblevels.spb -side left -fill y
    pack $frame.auto.data.nblevels -side top -fill y -anchor w -padx 2
-   Bubble::Create $frame.auto.data.nblevels "[lindex $Bubble(ObsNbLevels) $GDefs(Lang)]"
+   Bubble::Create $frame.auto.data.nblevels $Bubble(ObsNbLevels)
 
    #----- Meteorological model.
    frame $frame.auto.data.met
@@ -278,8 +278,8 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    pack $frame.auto.data.met.model -side left -padx 2 -fill x -expand true
    pack $frame.auto.data.met.path -side left
    pack $frame.auto.data.met -side top
-   Bubble::Create $frame.auto.data.met.model "[lindex $Bubble(ObsMetModel) $GDefs(Lang)]"
-   Bubble::Create $frame.auto.data.met.path  "[lindex $Bubble(ObsMetPath) $GDefs(Lang)]"
+   Bubble::Create $frame.auto.data.met.model $Bubble(ObsMetModel)
+   Bubble::Create $frame.auto.data.met.path  $Bubble(ObsMetPath)
 
    pack $frame.auto.data -side left
    pack $frame.auto -side top -padx 5 -pady 5 -fill x
@@ -292,11 +292,11 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    button $frame.auto.get -text "[lindex $Lbl(ObsRetrieve) $GDefs(Lang)]" -bd 1 -command "MLCD::SelectObs 1; MLCD::GetMetData; MLCD::UpdateObsInterface"
       pack $frame.auto.get -side left -expand true -anchor center -padx 2 -pady 2
       #pack $frame.auto.get -side left -expand true -anchor se -padx 2 -pady 2
-   Bubble::Create $frame.auto.get "[lindex $Bubble(ObsRetrieve) $GDefs(Lang)]"
+   Bubble::Create $frame.auto.get $Bubble(ObsRetrieve)
 
    #----- Editing frame.
    labelframe $frame.edit -text "[lindex $Lbl(ObsEdit) $GDefs(Lang)]"
-   Bubble::Create $frame.edit "[lindex $Bubble(ObsEdit) $GDefs(Lang)]"
+   Bubble::Create $frame.edit $Bubble(ObsEdit)
 
    #----- Observation Time.
    frame $frame.edit.obstime -relief sunken -bd 1
@@ -306,12 +306,12 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
          #----- Title Observation.
          label $frame.edit.obstime.title.obs -relief raised -width 8 -bd 1 -text "[lindex $Lbl(Obs) $GDefs(Lang)]"
          pack $frame.edit.obstime.title.obs -side left
-         Bubble::Create $frame.edit.obstime.title.obs "[lindex $Bubble(ObsNo) $GDefs(Lang)]"
+         Bubble::Create $frame.edit.obstime.title.obs $Bubble(ObsNo)
 
          #----- Title of Date and Time.
          label $frame.edit.obstime.title.time -relief raised -width 20 -bd 1 -text "[lindex $Lbl(ObsTime) $GDefs(Lang)]"
          pack $frame.edit.obstime.title.time -side left -fill x -expand true
-         Bubble::Create $frame.edit.obstime.title.time "[lindex $Bubble(ObsDateTime) $GDefs(Lang)]"
+         Bubble::Create $frame.edit.obstime.title.time $Bubble(ObsDateTime)
 
       pack $frame.edit.obstime.title -side top -fill x -expand true
 
@@ -320,17 +320,17 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
          #----- Observation No.
          label $frame.edit.obstime.data.lb1 -relief sunken -width 2 -bd 1 -text "[lindex $Lbl(ObsNo) $GDefs(Lang)]"
          spinbox $frame.edit.obstime.data.no -textvariable MLCD::Sim(ObsNo) -width 4 -from 1 -to $MLCD::Sim(ObsMaxNb) -bd 1 -state readonly -readonlybackground $GDefs(ColorLight) -command "MLCD::SelectObs \$MLCD::Sim(ObsNo)"
-         Bubble::Create $frame.edit.obstime.data.lb1 "[lindex $Bubble(ObsNo) $GDefs(Lang)]"
-         Bubble::Create $frame.edit.obstime.data.no "[lindex $Bubble(ObsNo) $GDefs(Lang)]"
+         Bubble::Create $frame.edit.obstime.data.lb1 $Bubble(ObsNo)
+         Bubble::Create $frame.edit.obstime.data.no $Bubble(ObsNo)
          set Data(ObsNoSpinBox) $frame.edit.obstime.data.no
 
          #----- Observation Date [UTC].
          Calendar::Create $frame.edit.obstime.data.date "" MLCD::Sim(ObsDateSec) 22 "MLCD::SetObsDate"
-         Bubble::Create $frame.edit.obstime.data.date "[lindex $Bubble(ObsDate) $GDefs(Lang)]"
+         Bubble::Create $frame.edit.obstime.data.date $Bubble(ObsDate)
 
          #----- Observation Time [UTC].
          Clock::Create $frame.edit.obstime.data.time "" MLCD::Sim(ObsTimeHour) MLCD::Sim(ObsTimeMin)
-         Bubble::Create $frame.edit.obstime.data.time "[lindex $Bubble(ObsTime) $GDefs(Lang)]"
+         Bubble::Create $frame.edit.obstime.data.time $Bubble(ObsTime)
 
          pack $frame.edit.obstime.data.lb1 $frame.edit.obstime.data.no $frame.edit.obstime.data.date $frame.edit.obstime.data.time -side left -fill x -fill y -expand true
 
@@ -344,7 +344,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       #----- Title.
       label $frame.edit.params.title -relief raised -width 20 -bd 1 -text "[lindex $Lbl(ObsParams) $GDefs(Lang)]"
       pack $frame.edit.params.title -side top -fill x -expand true
-      Bubble::Create $frame.edit.params.title "[lindex $Bubble(ObsLocalParams) $GDefs(Lang)]"
+      Bubble::Create $frame.edit.params.title $Bubble(ObsLocalParams)
 
       #----- Roughness Length [m].
       frame $frame.edit.params.rough
@@ -356,7 +356,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
                     -menu $frame.edit.params.rough.mnb.menu -highlightthickness 1
          pack $frame.edit.params.rough.mnb $frame.edit.params.rough.ent -side left -fill y
       pack $frame.edit.params.rough -side left
-      Bubble::Create $frame.edit.params.rough "[lindex $Bubble(ObsRoughness) $GDefs(Lang)]"
+      Bubble::Create $frame.edit.params.rough $Bubble(ObsRoughness)
       set Data(ObsRoughnessLengthEnt) $frame.edit.params.rough.ent
 
       #----- Obukhov Length [m].
@@ -369,7 +369,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
                     -menu $frame.edit.params.obukhov.mnb.menu -highlightthickness 1
          pack $frame.edit.params.obukhov.mnb $frame.edit.params.obukhov.ent -side left -fill y
       pack $frame.edit.params.obukhov -side left
-      Bubble::Create $frame.edit.params.obukhov "[lindex $Bubble(ObsObukhov) $GDefs(Lang)]"
+      Bubble::Create $frame.edit.params.obukhov $Bubble(ObsObukhov)
       set Data(ObsObukhovLengthEnt) $frame.edit.params.obukhov.ent
 
       #----- Precipitation Rate [mm/h].
@@ -382,7 +382,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
                     -menu $frame.edit.params.precip.mnb.menu -highlightthickness 1
          pack $frame.edit.params.precip.mnb $frame.edit.params.precip.ent -side left -fill y
       pack $frame.edit.params.precip -side left
-      Bubble::Create $frame.edit.params.precip "[lindex $Bubble(ObsPrecip) $GDefs(Lang)]"
+      Bubble::Create $frame.edit.params.precip $Bubble(ObsPrecip)
       set Data(ObsPrecipRateEnt) $frame.edit.params.precip.ent
 
    pack $frame.edit.params -side top -fill y -fill x -anchor w -padx 2 -pady 5
@@ -411,7 +411,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
       #----- Title.
       label $frame.edit.prof.title -relief raised -width 20 -bd 1 -text "[lindex $Lbl(ObsWindProf) $GDefs(Lang)]"
       pack $frame.edit.prof.title -side top -fill x -expand true
-      Bubble::Create $frame.edit.prof.title "[lindex $Bubble(ObsWindProfile) $GDefs(Lang)]"
+      Bubble::Create $frame.edit.prof.title $Bubble(ObsWindProfile)
 
       #----- Headers: Height [m], Velocity [m/s] and Direction [deg].
       frame $frame.edit.prof.header
@@ -420,9 +420,9 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
          label $frame.edit.prof.header.dir -relief raised -width 14 -bd 1 -text "[lindex $Lbl(ObsDirection) $GDefs(Lang)]"
          pack $frame.edit.prof.header.height $frame.edit.prof.header.vel $frame.edit.prof.header.dir -side left
          pack $frame.edit.prof.header.dir -side left -fill x -expand true
-         Bubble::Create $frame.edit.prof.header.height "[lindex $Bubble(ObsHeight) $GDefs(Lang)]"
-         Bubble::Create $frame.edit.prof.header.vel "[lindex $Bubble(ObsVelocity) $GDefs(Lang)]"
-         Bubble::Create $frame.edit.prof.header.dir "[lindex $Bubble(ObsDirection) $GDefs(Lang)]"
+         Bubble::Create $frame.edit.prof.header.height $Bubble(ObsHeight)
+         Bubble::Create $frame.edit.prof.header.vel $Bubble(ObsVelocity)
+         Bubble::Create $frame.edit.prof.header.dir $Bubble(ObsDirection)
 
       #----- List.
       frame $frame.edit.prof.list
@@ -445,9 +445,9 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
             entry $frame.edit.prof.list.c.cv.l$i.v -width 14 -bd 1 -bg $GDefs(ColorLight)
             entry $frame.edit.prof.list.c.cv.l$i.d -width 11 -bd 1 -bg $GDefs(ColorLight)
             pack $frame.edit.prof.list.c.cv.l$i.z $frame.edit.prof.list.c.cv.l$i.v $frame.edit.prof.list.c.cv.l$i.d -side left
-            Bubble::Create $frame.edit.prof.list.c.cv.l$i.z "[lindex $Bubble(ObsHeight) $GDefs(Lang)]"
-            Bubble::Create $frame.edit.prof.list.c.cv.l$i.v "[lindex $Bubble(ObsVelocity) $GDefs(Lang)]"
-            Bubble::Create $frame.edit.prof.list.c.cv.l$i.d "[lindex $Bubble(ObsDirection) $GDefs(Lang)]"
+            Bubble::Create $frame.edit.prof.list.c.cv.l$i.z $Bubble(ObsHeight)
+            Bubble::Create $frame.edit.prof.list.c.cv.l$i.v $Bubble(ObsVelocity)
+            Bubble::Create $frame.edit.prof.list.c.cv.l$i.d $Bubble(ObsDirection)
 
          pack $frame.edit.prof.list.c.cv.l$i -side top
       }

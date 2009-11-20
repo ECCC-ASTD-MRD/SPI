@@ -1223,7 +1223,7 @@ proc MLCD::CreateScriptInput { } {
       puts $file "MODEL_RUN=1"
       puts $file "MODEL_POST=0"
       puts $file "MODEL_CLEAN=1"
-      puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+      puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
       puts $file ""
       puts $file "#----- Model specific parameters"
       puts $file "MLCD_MODE=$Sim(Mode)"

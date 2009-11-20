@@ -115,13 +115,13 @@ proc MetInfo::WinDef { } {
       pack .metinfo.status.info -side left -fill both -expand true
    pack .metinfo.status -side top -fill x
 
-   Bubble::Create .metinfo.sel.stat.select [lindex $Bubble(Station) $GDefs(Lang)]
-   Bubble::Create .metinfo.sel.type.select [lindex $Bubble(Type)    $GDefs(Lang)]
-   Bubble::Create .metinfo.sel.file.select [lindex $Bubble(File)    $GDefs(Lang)]
-   Bubble::Create .metinfo.info.list       [lindex $Bubble(List)    $GDefs(Lang)]
-   Bubble::Create .metinfo.status.msg      [lindex $Bubble(Msg)     $GDefs(Lang)]
-   Bubble::Create .metinfo.status.stat     [lindex $Bubble(Stat)    $GDefs(Lang)]
-   Bubble::Create .metinfo.status.mode     [lindex $Bubble(Mode)    $GDefs(Lang)]
+   Bubble::Create .metinfo.sel.stat.select $Bubble(Station)
+   Bubble::Create .metinfo.sel.type.select $Bubble(Type)
+   Bubble::Create .metinfo.sel.file.select $Bubble(File)
+   Bubble::Create .metinfo.info.list       $Bubble(List)
+   Bubble::Create .metinfo.status.msg      $Bubble(Msg)
+   Bubble::Create .metinfo.status.stat     $Bubble(Stat)
+   Bubble::Create .metinfo.status.mode     $Bubble(Mode)
 }
 
 #----------------------------------------------------------------------------

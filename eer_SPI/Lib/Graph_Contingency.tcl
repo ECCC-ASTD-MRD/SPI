@@ -538,9 +538,9 @@ proc Graph::Contingency::Params { Parent GR } {
 
    Graph::ParamsScaleUniform Contingency $GR
 
-   Bubble::Create $Parent.scale.equiv     [lindex $Graph::Bubble(Uniform) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valx      [lindex $Graph::Bubble(ScaleX) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.equiv $Graph::Bubble(Uniform)
+   Bubble::Create $Parent.scale.valx  $Graph::Bubble(ScaleX)
+   Bubble::Create $Parent.scale.valy  $Graph::Bubble(ScaleY)
 
    bind $Parent.scale.valx.list <Return> "Graph::Contingency::Update \$Graph::Contingency::Contingency${GR}::Data(FrameData)  $GR"
    bind $Parent.scale.valy.list <Return> "Graph::Contingency::Update \$Graph::Contingency::Contingency${GR}::Data(FrameData)  $GR"

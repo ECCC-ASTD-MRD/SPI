@@ -53,15 +53,9 @@ namespace eval ComboBox {
    set Param(Height) 0
 
    #----- Definitions des parametres du ComboBox
-
-   catch {
-
-      set Resources(Up)            "@$GDefs(Dir)/Resources/Bitmap/combobox_up.ico"
-      set Resources(Down)          "@$GDefs(Dir)/Resources/Bitmap/combobox_down.ico"
-      set Resources(Scale)         "@$GDefs(Dir)/Resources/Bitmap/combobox_scale.ico"
-      set Resources(Border)        1
-      set Resources(Background)    $GDefs(ColorLight)
-   }
+   set Resources(Up)            "@$GDefs(Dir)/Resources/Bitmap/combobox_up.ico"
+   set Resources(Down)          "@$GDefs(Dir)/Resources/Bitmap/combobox_down.ico"
+   set Resources(Scale)         "@$GDefs(Dir)/Resources/Bitmap/combobox_scale.ico"
 }
 
 #-------------------------------------------------------------------------------
@@ -278,6 +272,7 @@ proc ComboBox::Enable { W } {
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
+   global GDefs
    variable ${W}var
    variable ${W}edit
    variable ${W}cmd
@@ -304,9 +299,9 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
    #----- Creation du ComboBox
 
    frame $W -relief sunken -bd 1
-      entry $W.select -textvariable $IVar -relief flat -bd $Resources(Border) -width $Width \
-         -bg $Resources(Background) -disabledbackground $Resources(Background) -disabledforeground black
-      checkbutton $W.box -bitmap $Resources(Down) -relief raised -indicatoron false -bd $Resources(Border) \
+      entry $W.select -textvariable $IVar -relief flat -bd 1 -width $Width \
+         -bg $GDefs(ColorLight) -disabledbackground $GDefs(ColorLight) -disabledforeground black
+      checkbutton $W.box -bitmap $Resources(Down) -relief raised -indicatoron false -bd 1 \
          -selectcolor "" -variable ${W}on -command "ComboBox::Invoke $W"
       pack $W.select -side left -fill both -expand true
       pack $W.box -side left -fill y
@@ -323,16 +318,15 @@ proc ComboBox::Create { W IVar Edit Type Mode Max List Width Height args } {
 
       set Height [expr $Param(Height)>0?$Param(Height):$Height]
 
-      listbox .$top.content -height $Height -width 0 -bg $Resources(Background) -selectmode single \
-         -bd $Resources(Border) -relief sunken -yscrollcommand ".$top.scroll.bar set" \
+      listbox .$top.content -height $Height -width 0 -bg $GDefs(ColorLight) -selectmode single \
+         -bd 1 -relief sunken -yscrollcommand ".$top.scroll.bar set" \
          -exportselection false -cursor hand1
       pack .$top.content -side left -fill both -expand true
 
       frame .$top.scroll
-         scrollbar .$top.scroll.bar -command ".$top.content yview" -cursor left_ptr -width 12 \
-            -bd $Resources(Border)
+         scrollbar .$top.scroll.bar -command ".$top.content yview" -cursor left_ptr -width 12 -bd 1
          label .$top.scroll.box -bitmap $Resources(Scale) -highlightthickness 1 \
-            -cursor double_arrow -bd $Resources(Border) -relief raised -bd 1
+            -cursor double_arrow -bd 1 -relief raised -bd 1
          pack .$top.scroll.bar -side top -fill y -expand true
          pack .$top.scroll.box -side top -fill x
 
@@ -597,7 +591,6 @@ proc ComboBox::List { W } {
 #-------------------------------------------------------------------------------
 
 proc ComboBox::Open { W } {
-   variable Resources
 
    upvar #0 ComboBox::${W}top Top
 

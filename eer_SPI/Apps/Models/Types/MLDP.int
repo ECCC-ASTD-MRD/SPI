@@ -54,11 +54,11 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
          pack $tabframe.time.date -side left -anchor w -padx 2 -fill x
          pack $tabframe.time.hour -side left -padx 2
 
-         Bubble::Create $tabframe.time.date "[lindex $Bubble(StartDate) $GDefs(Lang)]"
-         Bubble::Create $tabframe.time.hour "[lindex $Bubble(StartHour) $GDefs(Lang)]"
+         Bubble::Create $tabframe.time.date $Bubble(StartDate)
+         Bubble::Create $tabframe.time.hour $Bubble(StartHour)
 
       pack $tabframe.time -side top -padx 5 -pady 5 -fill x
-      Bubble::Create $tabframe.time "[lindex $Bubble(StartTime) $GDefs(Lang)]"
+      Bubble::Create $tabframe.time $Bubble(StartTime)
    }
 
    #----- Model Integration (data output time step and model time step).
@@ -68,24 +68,24 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
       #----- Simulation duration [hr].
       Option::Create $tabframe.integ.opt.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] MLDP::Sim(Duration) 1 -1 $MLDP::Sim(ListSimDuration) "MLDP::CheckFileSize; MLDP::UpdateListVerticalLevels"
       pack $tabframe.integ.opt.dur -side top -fill x
-      Bubble::Create $tabframe.integ.opt.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
+      Bubble::Create $tabframe.integ.opt.dur $Bubble(SimDuration)
       set MLDP::Sim(SimDurationEnt) $tabframe.integ.opt.dur.e
 
       #----- Data output time step [min].
       Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDP::Sim(OutputTimeStepMin) 1 -1 $MLDP::Sim(ListOutputTimeStep) "MLDP::CheckFileSize ; MLDP::UpdateListVerticalLevels"
       pack $tabframe.integ.opt.ots -side top -fill x
-      Bubble::Create $tabframe.integ.opt.ots "[lindex $Bubble(OutputTimeStepMin) $GDefs(Lang)]"
+      Bubble::Create $tabframe.integ.opt.ots $Bubble(OutputTimeStepMin)
       set MLDP::Sim(OutputTimeStepEnt) $tabframe.integ.opt.ots.e
 
       #----- Model time step [min].
       Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDP::Sim(ModelTimeStepMin) 1 -1 $MLDP::Sim(ListModelTimeStep) "set Sim(IsScenarioValid) 0 ; MLDP::UpdateListVerticalLevels"
       pack $tabframe.integ.opt.mts -side top -fill x
-      Bubble::Create $tabframe.integ.opt.mts "[lindex $Bubble(ModelTimeStepMin) $GDefs(Lang)]"
+      Bubble::Create $tabframe.integ.opt.mts $Bubble(ModelTimeStepMin)
       set MLDP::Sim(ModelTimeStepEnt) $tabframe.integ.opt.mts.e
 
       pack $tabframe.integ.opt -side top -fill x -padx 2
    pack $tabframe.integ -side top -padx 5 -fill x
-   Bubble::Create $tabframe.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+   Bubble::Create $tabframe.integ $Bubble(SimIntegration)
 
    #----- Other parameters.
    labelframe $tabframe.others -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
@@ -101,7 +101,7 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
          if { $Sim(SrcType) == "virus" } {
             Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDP::Sim(EmIsoSymbol) MLDP::Sim(VirusID) } 0 -1 [lindex $MLDP::Sim(ListVirusName) $GDefs(Lang)] "set MLDP::Sim(VirusType) \[lindex \$MLDP::Sim(ListVirusType) \$MLDP::Sim(VirusID)\] ; MLDP::UpdateListVerticalLevels"
             pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
-            Bubble::Create $tabframe.others.opt.virus "[lindex $Bubble(Virus) $GDefs(Lang)]"
+            Bubble::Create $tabframe.others.opt.virus $Bubble(Virus)
          }
 
          #----- Grid Resolution.
@@ -163,18 +163,18 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
       pack $tabframe.others.opt -side top -fill x -padx 2
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create $tabframe.others                    "[lindex $Bubble(OtherParameters) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.event          "[lindex $Bubble(Event) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.grid.res       "[lindex $Bubble(Scale) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.grid.src       "[lindex $Bubble(MoveGrid1) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.grid.sel       "[lindex $Bubble(MoveGrid2) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.met.model      "[lindex $Bubble(Meteo) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.met.delta      "[lindex $Bubble(MeteoDelta) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.met.path       "[lindex $Bubble(ModifyPath) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.levels         "[lindex $Bubble(VerticalLevels) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.varmesoscale   "[lindex $Bubble(VarMesoscale) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.timescale      "[lindex $Bubble(Timescale) $GDefs(Lang)]"
-   Bubble::Create $tabframe.others.opt.reflect        "[lindex $Bubble(ReflectionLevel) $GDefs(Lang)]"
+   Bubble::Create $tabframe.others                   $Bubble(OtherParameters)
+   Bubble::Create $tabframe.others.opt.event         $Bubble(Event)
+   Bubble::Create $tabframe.others.opt.grid.res      $Bubble(Scale)
+   Bubble::Create $tabframe.others.opt.grid.src      $Bubble(MoveGrid1)
+   Bubble::Create $tabframe.others.opt.grid.sel      $Bubble(MoveGrid2)
+   Bubble::Create $tabframe.others.opt.met.model     $Bubble(Meteo)
+   Bubble::Create $tabframe.others.opt.met.delta     $Bubble(MeteoDelta)
+   Bubble::Create $tabframe.others.opt.met.path      $Bubble(ModifyPath)
+   Bubble::Create $tabframe.others.opt.levels        $Bubble(VerticalLevels)
+   Bubble::Create $tabframe.others.opt.varmesoscale  $Bubble(VarMesoscale)
+   Bubble::Create $tabframe.others.opt.timescale     $Bubble(Timescale)
+   Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
 }
 
 proc MLDP::ParamsEmission { Tab { Auto False } } {
@@ -205,7 +205,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       bind $tabframe.column.nbpart.ent <Button-1> "MLDP::ComputeMass"
       pack $tabframe.column.nbpart.lbl $tabframe.column.nbpart.ent -side left
    pack $tabframe.column.nbpart -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.column.nbpart "[lindex $Bubble(EmNumberParticles) $GDefs(Lang)]"
+   Bubble::Create $tabframe.column.nbpart $Bubble(EmNumberParticles)
 
    #----- Density [microgram/m3].
    if { $MLDP::Sim(SrcType) == "volcano" } {
@@ -216,7 +216,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
          bind $tabframe.column.density.ent <Button-1> "MLDP::ComputeMass"
          pack $tabframe.column.density.lbl $tabframe.column.density.ent -side left
       pack $tabframe.column.density -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.column.density "[lindex $Bubble(EmDensity) $GDefs(Lang)]"
+      Bubble::Create $tabframe.column.density $Bubble(EmDensity)
    }
 
    #----- Maximum plume height [m].
@@ -226,7 +226,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
    bind $tabframe.column.height.e <Button-1> "MLDP::ComputeMass"
 
    pack $tabframe.column.height -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.column.height "[lindex $Bubble(EmHeight) $GDefs(Lang)]"
+   Bubble::Create $tabframe.column.height $Bubble(EmHeight)
 
    #----- Total released mass [microgram].
    if { $MLDP::Sim(SrcType) == "volcano" } {
@@ -238,7 +238,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       bind $tabframe.column.mass.e <Button-1> "MLDP::ComputeMass"
       bind $tabframe.column.mass.b <Button-1> "MLDP::ComputeMass"
       pack $tabframe.column.mass -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.column.mass  "[lindex $Bubble(MassMode) $GDefs(Lang)]"
+      Bubble::Create $tabframe.column.mass $Bubble(MassMode)
    }
 
    #----- Column radius [m].
@@ -248,7 +248,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       bind $tabframe.column.radius.ent <Button-1> "MLDP::ComputeMass"
       pack $tabframe.column.radius.lbl $tabframe.column.radius.ent -side left
    pack $tabframe.column.radius -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.column.radius "[lindex $Bubble(Radius) $GDefs(Lang)]"
+   Bubble::Create $tabframe.column.radius $Bubble(Radius)
 
    #----- Particles size distribution.
    if { $MLDP::Sim(SrcType) == "volcano" } {
@@ -257,7 +257,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       bind $tabframe.column.size.e <Button-1> "MLDP::ComputeMass"
       bind $tabframe.column.size.b <Button-1> "MLDP::ComputeMass"
       pack $tabframe.column.size -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.column.size  "[lindex $Bubble(EmSizeDist) $GDefs(Lang)]"
+      Bubble::Create $tabframe.column.size $Bubble(EmSizeDist)
    }
 
    #----- Plume vertical distribution.
@@ -266,10 +266,10 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
    bind $tabframe.column.vertical.e <Button-1> "MLDP::ComputeMass"
    bind $tabframe.column.vertical.b <Button-1> "MLDP::ComputeMass"
    pack $tabframe.column.vertical -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.column.vertical  "[lindex $Bubble(EmVerticalDist) $GDefs(Lang)]"
+   Bubble::Create $tabframe.column.vertical $Bubble(EmVerticalDist)
 
    pack $tabframe.column -side top -padx 5 -pady 5 -fill x
-   Bubble::Create $tabframe.column "[lindex $Bubble(Column) $GDefs(Lang)]"
+   Bubble::Create $tabframe.column $Bubble(Column)
 
    #----- Emission scenario.
    labelframe $tabframe.scenario -text "[lindex $Lbl(Scenario) $GDefs(Lang)]"
@@ -284,8 +284,8 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
    pack $tabframe.scenario.name.lbl -side left -padx 2
    pack $tabframe.scenario.name.ent -side left -padx 2 -fill x -expand true
    pack $tabframe.scenario.name -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.scenario.name.lbl "[lindex $Bubble(ScenarioName) $GDefs(Lang)]"
-   Bubble::Create $tabframe.scenario.name.ent "[lindex $Bubble(ScenarioSelect) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.name.lbl $Bubble(ScenarioName)
+   Bubble::Create $tabframe.scenario.name.ent $Bubble(ScenarioSelect)
 
    #----- Number of intervals.
    frame $tabframe.scenario.nbint
@@ -293,7 +293,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       entry $tabframe.scenario.nbint.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmNbIntervals) -width 60 -state disabled
       pack $tabframe.scenario.nbint.lbl $tabframe.scenario.nbint.ent -side left -padx 2
    pack $tabframe.scenario.nbint -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.scenario.nbint "[lindex $Bubble(NbIntervals) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.nbint $Bubble(NbIntervals)
 
    #----- Number of isotopes.
    if { $MLDP::Sim(SrcType) == "accident" } {
@@ -302,7 +302,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
          entry $tabframe.scenario.nbiso.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmNbIso) -width 60 -state disabled
          pack $tabframe.scenario.nbiso.lbl $tabframe.scenario.nbiso.ent -side left -padx 2
       pack $tabframe.scenario.nbiso -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.scenario.nbiso "[lindex $Bubble(NbIsotopes) $GDefs(Lang)]"
+      Bubble::Create $tabframe.scenario.nbiso $Bubble(NbIsotopes)
    }
 
    #----- Total emission duration [s].
@@ -311,7 +311,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       entry $tabframe.scenario.totdur.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmTotalDuration) -width 60 -state disabled
       pack $tabframe.scenario.totdur.lbl $tabframe.scenario.totdur.ent -side left -padx 2
    pack $tabframe.scenario.totdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.scenario.totdur "[lindex $Bubble(TotalDuration) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.totdur $Bubble(TotalDuration)
 
    #----- Effective emission duration [s].
    frame $tabframe.scenario.effdur
@@ -319,7 +319,7 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       entry $tabframe.scenario.effdur.ent -relief sunken -bd 1 -textvariable MLDP::Sim(EmEffectiveDuration) -width 60 -state disabled
       pack $tabframe.scenario.effdur.lbl $tabframe.scenario.effdur.ent -side left -padx 2
    pack $tabframe.scenario.effdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.scenario.effdur "[lindex $Bubble(EffectiveDuration) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.effdur $Bubble(EffectiveDuration)
 
    #----- Buttons.
    frame $tabframe.scenario.button
@@ -327,11 +327,11 @@ proc MLDP::ParamsEmission { Tab { Auto False } } {
       button $tabframe.scenario.button.delete -text "[lindex $Lbl(Suppress) $GDefs(Lang)]" -bd 1 -command "MLDP::EmissionDelete"
       pack $tabframe.scenario.button.edit $tabframe.scenario.button.delete -side right
    pack $tabframe.scenario.button -side top -anchor w -padx 5 -pady 10 -fill x -expand true
-   Bubble::Create $tabframe.scenario.button.edit "[lindex $Bubble(EditScenario) $GDefs(Lang)]"
-   Bubble::Create $tabframe.scenario.button.delete "[lindex $Bubble(DeleteScenario) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario.button.edit $Bubble(EditScenario)
+   Bubble::Create $tabframe.scenario.button.delete $Bubble(DeleteScenario)
 
    pack $tabframe.scenario -side top -padx 5 -fill x
-   Bubble::Create $tabframe.scenario "[lindex $Bubble(Scenario) $GDefs(Lang)]"
+   Bubble::Create $tabframe.scenario $Bubble(Scenario)
 }
 
 #----------------------------------------------------------------------------

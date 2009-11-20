@@ -314,12 +314,12 @@ proc Export::Raster::Option { Frame } {
       pack  $Frame.type.data $Frame.type.rgb $Frame.type.idx -side left -fill x -expand true
    pack $Frame.area $Frame.res $Frame.type -side top -fill both -expand true
 
-   Bubble::Create $Frame.area.lat0 [lindex $Bubble(Lat0) $GDefs(Lang)]
-   Bubble::Create $Frame.area.lon0 [lindex $Bubble(Lon0) $GDefs(Lang)]
-   Bubble::Create $Frame.area.lat1 [lindex $Bubble(Lat1) $GDefs(Lang)]
-   Bubble::Create $Frame.area.lon1 [lindex $Bubble(Lon1) $GDefs(Lang)]
-   Bubble::Create $Frame.res       [lindex $Bubble(Res) $GDefs(Lang)]
-   Bubble::Create $Frame.type      [lindex $Bubble(Values) $GDefs(Lang)]
+   Bubble::Create $Frame.area.lat0 $Bubble(Lat0)
+   Bubble::Create $Frame.area.lon0 $Bubble(Lon0)
+   Bubble::Create $Frame.area.lat1 $Bubble(Lat1)
+   Bubble::Create $Frame.area.lon1 $Bubble(Lon1)
+   Bubble::Create $Frame.res       $Bubble(Res)
+   Bubble::Create $Frame.type      $Bubble(Values)
 }
 
 

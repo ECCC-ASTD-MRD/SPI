@@ -237,18 +237,18 @@ namespace eval MLCD {
    set Bubble(ConcOpt)           { "Permettre d'activer ou de désactiver\nle calcul des concentrations." "Allow the activation or desactivation\nof concentrations calculations." }
    set Bubble(GridType1)         { "Type de grille utilisée pour calculer les concentrations.\n\nNote: La grille est centrée sur la source pour les types\nde grille fixe temporellement." "Type of grid used for the concentration calculations.\n\nNote: The grid is centered on the source for time-fixed grid types." }
    set Bubble(GridType2)       { { "Grille polaire stéréographique fixe temporellement\nà resolution spatiale constante."
-                                   "Grille cylindrique équidistante (Lat-Lon) variable temporellement\nà résolution spatiale constante."
-                                   "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale constante."
-                                   "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale constante avec un coeur à résolution fine constante."
-                                   "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale variable." }
-                                 { "Polar Stereographic time-fixed grid\nat constant spatial resolution."
-                                   "Cylindrical Equidistant (Lat-Lon) time-variable grid\nat constant spatial resolution."
-                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat constant spatial resolution."
-                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat constant spatial resolution with a\nfine constant resolution core."
+                                   "Polar Stereographic time-fixed grid\nat constant spatial resolution." }
+                                 { "Grille cylindrique équidistante (Lat-Lon) variable temporellement\nà résolution spatiale constante."
+                                  "Cylindrical Equidistant (Lat-Lon) time-variable grid\nat constant spatial resolution." }
+                                 { "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale constante."
+                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat constant spatial resolution." }
+                                 { "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale constante avec un coeur à résolution fine constante."
+                                   "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat constant spatial resolution with a\nfine constant resolution core." }
+                                 { "Grille cylindrique équidistante (Lat-Lon) fixe temporellement\nà résolution spatiale variable."
                                    "Cylindrical Equidistant (Lat-Lon) time-fixed grid\nat variable spatial resolution." } }
    set Bubble(GridAlgo1)         { "Type d'algorithme utilisé pour calculer la contribution de la masse\nd'une particule à la concentration de chaque point de grille.\n\nNote: L'algorithme '4 points de grille' lisse davantage les\nconcentrations à chaque point de grille." "Type of algorithm used to compute the contribution\nof the mass of a particle to the concentration\nat each grid point.\n\nNote: The algorithm '4 grid points' generates smoother\nconcentrations than '1 grid point' algorithm." }
-   set Bubble(GridAlgo2)       { { "Le point de grille le plus près." "Les 4 points de grille les plus près." }
-                                 { "The nearest grid point." "The 4 nearest grid points." } }
+   set Bubble(GridAlgo2)       { { "Le point de grille le plus près." "The nearest grid point."  }
+                                 { "Les 4 points de grille les plus près." "The 4 nearest grid points." } }
    set Bubble(GridDomain)        { "Domaine (km) de la grille fixe temporellement." "Domain (km) for the time-fixed grid."}
    set Bubble(VerticalLevels)    { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
    set Bubble(Option)            { "Autre option." "Other option." }

@@ -461,17 +461,17 @@ proc FSTD::ParamFrame { Frame Apply } {
 
    #------ Creation des bulles d'aide
 
-   Bubble::Create $Data(Frame).def.l.val.order.font [lindex $Bubble(Font) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.order      [lindex $Bubble(Format) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.unit       [lindex $Bubble(Unit) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.desc       [lindex $Bubble(Desc) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.pal.cmap       [lindex $Bubble(Map) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.fac        [lindex $Bubble(Conv) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp           [lindex $Bubble(Format) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).var.sel              [lindex $Bubble(NomVar) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).lev.select.mode      [lindex $Bubble(Mode) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).lev.select.number    [lindex $Bubble(Nb) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).lev.edit             [lindex $Bubble(Intervals) $GDefs(Lang)]
+   Bubble::Create $Data(Frame).def.l.val.order.font $Bubble(Font)
+   Bubble::Create $Data(Frame).def.l.val.order      $Bubble(Format)
+   Bubble::Create $Data(Frame).def.l.val.unit       $Bubble(Unit)
+   Bubble::Create $Data(Frame).def.l.val.desc       $Bubble(Desc)
+   Bubble::Create $Data(Frame).def.l.pal.cmap       $Bubble(Map)
+   Bubble::Create $Data(Frame).def.l.val.fac        $Bubble(Conv)
+   Bubble::Create $Data(Frame).def.r.disp           $Bubble(Format)
+   Bubble::Create $Data(Frame).var.sel              $Bubble(NomVar)
+   Bubble::Create $Data(Frame).lev.select.mode      $Bubble(Mode)
+   Bubble::Create $Data(Frame).lev.select.number    $Bubble(Nb)
+   Bubble::Create $Data(Frame).lev.edit             $Bubble(Intervals)
 }
 
 #----------------------------------------------------------------------------

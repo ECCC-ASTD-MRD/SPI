@@ -235,12 +235,12 @@ proc NowCaster::Radar::Window { Frame } {
    bind $Frame.param.loc.ele <Return> { NowCaster::Radar::Locate $NowCaster::Radar::Data(Site) $NowCaster::Radar::Data(Lat) $NowCaster::Radar::Data(Lon) $NowCaster::Radar::Data(Ele) }
    bind $Frame.select.list <ButtonRelease-1>  { NowCaster::Radar::ButtonSelect $NowCaster::Radar::Data(Frame).select.list }
 
-  Bubble::Create $Frame.head.params [lindex $Bubble(Params) $GDefs(Lang)]
-  Bubble::Create $Frame.head.ranges [lindex $Bubble(Ranges) $GDefs(Lang)]
-  Bubble::Create $Frame.head.areas  [lindex $Bubble(Areas) $GDefs(Lang)]
-  Bubble::Create $Frame.head.mode   [lindex $Bubble(Mode) $GDefs(Lang)]
-  Bubble::Create $Frame.head.add    [lindex $Bubble(Add) $GDefs(Lang)]
-  Bubble::Create $Frame.head.del    [lindex $Bubble(Del) $GDefs(Lang)]
+  Bubble::Create $Frame.head.params $Bubble(Params)
+  Bubble::Create $Frame.head.ranges $Bubble(Ranges)
+  Bubble::Create $Frame.head.areas  $Bubble(Areas)
+  Bubble::Create $Frame.head.mode   $Bubble(Mode)
+  Bubble::Create $Frame.head.add    $Bubble(Add)
+  Bubble::Create $Frame.head.del    $Bubble(Del)
 }
 
 #-------------------------------------------------------------------------------

@@ -54,8 +54,8 @@ proc Meteo::Create { Frame } {
    Meteo::Tree
    Tree::Render $Frame.info.canvas METEOTREE 10 10 $Meteo::Data(Tree) Meteo::BranchRender
 
-   Bubble::Create $Frame.opt.open  [lindex $Model::Bubble(Plus) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.close [lindex $Model::Bubble(Minus) $GDefs(Lang)]
+   Bubble::Create $Frame.opt.open  $Model::Bubble(Plus)
+   Bubble::Create $Frame.opt.close $Model::Bubble(Minus)
 }
 
 proc Meteo::Tree { } {

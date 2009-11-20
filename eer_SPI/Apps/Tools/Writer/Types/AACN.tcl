@@ -582,11 +582,11 @@ proc Writer::AACN::ToolBar { Pad } {
    pack $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 -side left -padx 2
    pack $Pad.head.close -side right -padx 2
 
-   Bubble::Create $Pad.head.save  [lindex $Writer::Bubble(Save) $GDefs(Lang)]
-   Bubble::Create $Pad.head.print [lindex $Writer::Bubble(Print) $GDefs(Lang)]
-   Bubble::Create $Pad.head.send  [lindex $Writer::Bubble(Send) $GDefs(Lang)]
-   Bubble::Create $Pad.head.send2  [lindex $Writer::Bubble(SendBackup) $GDefs(Lang)]
-   Bubble::Create $Pad.head.close [lindex $Writer::Bubble(Close) $GDefs(Lang)]
+   Bubble::Create $Pad.head.save  $Writer::Bubble(Save)
+   Bubble::Create $Pad.head.print $Writer::Bubble(Print)
+   Bubble::Create $Pad.head.send  $Writer::Bubble(Send)
+   Bubble::Create $Pad.head.send2 $Writer::Bubble(SendBackup)
+   Bubble::Create $Pad.head.close $Writer::Bubble(Close)
 }
 #----------------------------------------------------------------------------
 # Nom      : <Writer::AACN::Write>
@@ -642,14 +642,14 @@ proc Writer::AACN::Write { Pad Sent } {
          set file $file.sent
       }
 
-      if { [file exists $GDefs(DirMsg)/AACN/$file] } {
+      if { [file exists $Writer::Param(Path)/AACN/$file] } {
          if { ![Dialog::Default .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
             return
          }
       }
    }
 
-   set f [open $GDefs(DirMsg)/AACN/$file w]
+   set f [open $Writer::Param(Path)/AACN/$file w 0660]
 
    puts $f "$Data(No$Pad)"
    puts $f "$Data(Id$Pad)"
@@ -661,9 +661,6 @@ proc Writer::AACN::Write { Pad Sent } {
    puts $f "[Writer::TextExtract none 47 "" $Pad.body]"
 
    close $f
-
-   exec chgrp cmcfe $GDefs(DirMsg)/AACN/$file
-   exec chmod 660 $GDefs(DirMsg)/AACN/$file
 
    return $file
 }

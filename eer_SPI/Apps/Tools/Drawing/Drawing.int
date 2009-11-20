@@ -112,7 +112,7 @@ proc Drawing::Window { } {
          frame $Data(Tab).items.def -relief sunken -bd 1
             foreach type $Data(Type) img $Data(Image) {
                button $Data(Tab).items.def.$type -image $img -relief flat -bd 0 -overrelief raised  -command "Drawing::ItemAdd \$Page::Data(Frame) $type"
-               Bubble::Create $Data(Tab).items.def.$type [lindex $Bubble($type) $GDefs(Lang)]
+               Bubble::Create $Data(Tab).items.def.$type $Bubble($type)
                pack $Data(Tab).items.def.$type -side top
             }
          pack $Data(Tab).items.def -side left -fill y -ipadx 2 -ipady 2
@@ -258,24 +258,24 @@ proc Drawing::Window { } {
 
       #----- Creation des bulles d'aides
 
-      Bubble::Create .drawing.dock.sel       [lindex $Bubble(Dock) $GDefs(Lang)]
-      Bubble::Create .drawing.dock.del       [lindex $Bubble(Close) $GDefs(Lang)]
-      Bubble::Create .drawing.dock.lat       [lindex $Bubble(Lat) $GDefs(Lang)]
-      Bubble::Create .drawing.dock.lon       [lindex $Bubble(Lon) $GDefs(Lang)]
-      Bubble::Create .drawing.dock.ele       [lindex $Bubble(Ele) $GDefs(Lang)]
-      Bubble::Create .drawing.dock.add       [lindex $Bubble(Add) $GDefs(Lang)]
+      Bubble::Create .drawing.dock.sel       $Bubble(Dock)
+      Bubble::Create .drawing.dock.del       $Bubble(Close)
+      Bubble::Create .drawing.dock.lat       $Bubble(Lat)
+      Bubble::Create .drawing.dock.lon       $Bubble(Lon)
+      Bubble::Create .drawing.dock.ele       $Bubble(Ele)
+      Bubble::Create .drawing.dock.add       $Bubble(Add)
 
-      Bubble::Create $Data(Tab).head.file      [lindex $Bubble(File) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.mark      [lindex $Bubble(Mark) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.georef    [lindex $Bubble(GeoRef) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.mode      [lindex $Bubble(Mode) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.grid      [lindex $Bubble(Grid) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.del       [lindex $Bubble(Del) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.front     [lindex $Bubble(Front) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.back      [lindex $Bubble(Back) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.idx.up    [lindex $Bubble(Down) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.idx.down  [lindex $Bubble(Up) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).items.list.box [lindex $Bubble(List) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.file      $Bubble(File)
+      Bubble::Create $Data(Tab).head.mark      $Bubble(Mark)
+      Bubble::Create $Data(Tab).head.georef    $Bubble(GeoRef)
+      Bubble::Create $Data(Tab).head.mode      $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.grid      $Bubble(Grid)
+      Bubble::Create $Data(Tab).head.del       $Bubble(Del)
+      Bubble::Create $Data(Tab).head.front     $Bubble(Front)
+      Bubble::Create $Data(Tab).head.back      $Bubble(Back)
+      Bubble::Create $Data(Tab).head.idx.up    $Bubble(Down)
+      Bubble::Create $Data(Tab).head.idx.down  $Bubble(Up)
+      Bubble::Create $Data(Tab).items.list.box $Bubble(List)
 
       Drawing::ImageSetup
    }

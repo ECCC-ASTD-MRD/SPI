@@ -138,8 +138,8 @@ proc VectorBox::Create { Parent Apply } {
          pack  $fr.plane.z -side top -fill x -expand True
       pack $fr.plane -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create $fr.plane         [lindex $Bubble(Cube) $GDefs(Lang)]
-   Bubble::Create $fr.plane.mode    [lindex $Bubble(Select) $GDefs(Lang)]
+   Bubble::Create $fr.plane      $Bubble(Cube)
+   Bubble::Create $fr.plane.mode $Bubble(Select)
 
    set fr [TabFrame::Add .vecbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
 
@@ -154,9 +154,9 @@ proc VectorBox::Create { Parent Apply } {
          checkbutton $fr.geo -text [lindex $Lbl(Geo) $GDefs(Lang)] -variable FSTD::Param(Geo) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
       pack $fr.size $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create $fr.size.sc       [lindex $Bubble(Size) $GDefs(Lang)]
-   Bubble::Create $fr.sample.sc     [lindex $Bubble(Sample) $GDefs(Lang)]
-   Bubble::Create $fr.geo           [lindex $Bubble(Geo) $GDefs(Lang)]
+   Bubble::Create $fr.size.sc   $Bubble(Size)
+   Bubble::Create $fr.sample.sc $Bubble(Sample)
+   Bubble::Create $fr.geo       $Bubble(Geo)
 
    #----- Commandes
 
@@ -169,9 +169,9 @@ proc VectorBox::Create { Parent Apply } {
       pack .vecbox.cmd.apply .vecbox.cmd.close -side left -fill x -expand true
    pack .vecbox.cmd -side bottom -fill x -padx 5 -pady 5
 
-   Bubble::Create .vecbox.cmd.real  [lindex $Bubble(Real) $GDefs(Lang)]
-   Bubble::Create .vecbox.cmd.apply [lindex $Bubble(Apply) $GDefs(Lang)]
-   Bubble::Create .vecbox.cmd.close [lindex $Bubble(Close) $GDefs(Lang)]
+   Bubble::Create .vecbox.cmd.real  $Bubble(Real)
+   Bubble::Create .vecbox.cmd.apply $Bubble(Apply)
+   Bubble::Create .vecbox.cmd.close $Bubble(Close)
 }
 
 #----------------------------------------------------------------------------

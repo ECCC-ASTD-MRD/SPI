@@ -267,10 +267,64 @@ proc SPI::ParamsApply { } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <SPI::Init>
+# Creation : Novembre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialise les parametres d'interfaces.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc SPI::Init { } {
+   global GDefs
+
+   font create XFont6  -family Courier -weight bold -size -6
+   font create XFont8  -family Courier -weight bold -size -8
+   font create XFont9  -family Courier -weight bold -size -9
+   font create XFont10 -family Courier -weight bold -size -10
+   font create XFont12 -family Courier -weight bold -size -12
+   font create XFont14 -family Courier -weight bold -size -14
+   font create XFont16 -family Courier -weight bold -size -16
+   font create XFont17 -family Courier -weight bold -size -17
+   font create XFont18 -family Courier -weight bold -size -18
+   font create XFont20 -family Courier -weight bold -size -20
+   font create XFont24 -family Courier -weight bold -size -24
+
+   option add *selectColor            $GDefs(ColorHighLight)
+   option add *background             $GDefs(ColorFrame)
+   option add *foreground             black
+   option add *highlightThickness     0
+   option add *font                   $GDefs(Font)
+   option add *Menu*activeBorderWidth 0
+   option add *Menu*tearOff           0
+   option add *Menu*borderWidth       1
+
+   #----- Mise en place de l'interface
+   tk scaling 1.0
+
+   if { $SPI::Param(Window) } {
+      wm geometry . $SPI::Param(Geom)
+   } else {
+      wm withdraw .
+   }
+
+   #----- NVidia Antialiasing
+   set env(__GL_FSAA_MODE) 1 ;#2x Bilenear Multisampling
+   set env(__GL_FSAA_MODE) 2 ;#2x Quincunx Multisampling
+   set env(__GL_FSAA_MODE) 4 ;#2x2 SuperSampling (Best for Quadro2 Pro)
+   set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <SPI::Window>
 # Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Initialise le frame de la projection.
+# But      : Initialise la fenetre principale.
 #
 # Parametres :
 #
@@ -334,10 +388,10 @@ proc SPI::Window { } {
    .pan add .mdi
    raise .mdi
 
-   Bubble::Create .info.opt       [lindex $Bubble(CoordsOpt) $GDefs(Lang)]
-   Bubble::Create .info.cooval    [lindex $Bubble(Coords) $GDefs(Lang)]
-   Bubble::Create .info.altval    [lindex $Bubble(Alt) $GDefs(Lang)]
-   Bubble::Create .info.fldval    [lindex $Bubble(Val) $GDefs(Lang)]
+   Bubble::Create .info.opt    $Bubble(CoordsOpt)
+   Bubble::Create .info.cooval $Bubble(Coords)
+   Bubble::Create .info.altval $Bubble(Alt)
+   Bubble::Create .info.fldval $Bubble(Val)
 }
 
 #-------------------------------------------------------------------------------
@@ -594,7 +648,7 @@ proc SPI::WindowMenu { } {
          -command { Animator::Window }
       .menu.tools.menu add command -label [lindex $Lbl(Calculator) $GDefs(Lang)] -accelerator "Alt-C" -image CALC -compound left \
          -command { FieldCalc::Window }
-      if { $GDefs(Model) } {
+      if { [string first "ec.gc.ca" [info hostname]] } {
          .menu.tools.menu add command -label [lindex $Lbl(Model) $GDefs(Lang)] -accelerator "Alt-M" -image MODEL  -compound left \
             -command { set Model::Data(Show) True; Model::Window }
       }
@@ -649,10 +703,12 @@ proc SPI::WindowMenu { } {
           -command { SPI::WindowLayout $SPI::Param(PaneSide) -1 }
 
    menu .menu.help.menu
-       .menu.help.menu add checkbutton -image BUBBLE -label [lindex $Lbl(Bubble) $GDefs(Lang)] -variable Bubble::Defs(State) -compound left \
+       .menu.help.menu add checkbutton -image BUBBLE -label [lindex $Lbl(Bubble) $GDefs(Lang)] -variable SPI::Param(Bubble) -compound left \
          -onvalue True -offvalue False -command "Bubble::Activate"
        .menu.help.menu add separator
        .menu.help.menu add command -label [lindex $Lbl(About) $GDefs(Lang)] -command "SPI::About"
+
+   Bubble::Activate $Param(Bubble)
 }
 
 #-------------------------------------------------------------------------------
@@ -697,7 +753,7 @@ proc SPI::ToolBar { Frame } {
             $Frame.tool.graph.down.menu add command -label $lbl -command "set Graph::Data(Show) True; SPI::ObjectAdd Graph ::$graph; Graph::Params"
          }
          pack $Frame.tool.graph -side left -padx 2
-         if { $GDefs(Model) } {
+         if { [string first "ec.gc.ca" [info hostname]] } {
             checkbutton $Frame.tool.model -image MODEL -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Model::Param(Show) \
                -onvalue True -offvalue False -command "Model::Window"  -selectcolor $GDefs(ColorLight)
             pack $Frame.tool.model -before $Frame.tool.graph -side left -padx 2
@@ -777,34 +833,34 @@ proc SPI::ToolBar { Frame } {
 
    pack [Mapper::Geo::Widget $Frame] -side left -fill x -expand true
 
-   Bubble::Create $Frame.win.new     [lindex $Bubble(WinNew) $GDefs(Lang)]
-   Bubble::Create $Frame.win.add     [lindex $Bubble(WinAdd) $GDefs(Lang)]
-   Bubble::Create $Frame.win.del     [lindex $Bubble(WinDel) $GDefs(Lang)]
+   Bubble::Create $Frame.win.new     $Bubble(WinNew)
+   Bubble::Create $Frame.win.add     $Bubble(WinAdd)
+   Bubble::Create $Frame.win.del     $Bubble(WinDel)
 
-   Bubble::Create $Frame.tool.graph  [lindex $Bubble(Graph) $GDefs(Lang)]
-   Bubble::Create $Frame.tool.model  [lindex $Bubble(Model) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.params  [lindex $Bubble(Params) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.print   [lindex $Bubble(Print) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.save    [lindex $Bubble(Image) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.zoom    [lindex $Bubble(Zoom) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.cam     [lindex $Bubble(Cam) $GDefs(Lang)]
-   Bubble::Create $Frame.page.scale  [lindex $Bubble(PageScale) $GDefs(Lang)]
-   Bubble::Create $Frame.page.in     [lindex $Bubble(PageIn) $GDefs(Lang)]
-   Bubble::Create $Frame.page.out    [lindex $Bubble(PageOut) $GDefs(Lang)]
-   Bubble::Create $Frame.page.full   [lindex $Bubble(PageFull) $GDefs(Lang)]
-   Bubble::Create $Frame.layout.sel  [lindex $Bubble(LayoutName) $GDefs(Lang)]
-   Bubble::Create $Frame.layout.save [lindex $Bubble(LayoutSave) $GDefs(Lang)]
-   Bubble::Create $Frame.layout.del  [lindex $Bubble(LayoutDel) $GDefs(Lang)]
-   Bubble::Create $Frame.layout.run  [lindex $Bubble(LayoutRun) $GDefs(Lang)]
-   Bubble::Create $Frame.layout.mag  [lindex $Bubble(LayoutMag) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.zback   [lindex $Bubble(ZoomBack) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.zclr    [lindex $Bubble(ZoomClear) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.clr     [lindex $Bubble(CamClear) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.sel     [lindex $Bubble(CamName) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.out     [lindex $Bubble(CamSave) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.in      [lindex $Bubble(CamDel) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.fly     [lindex $Bubble(CamFly) $GDefs(Lang)]
-   Bubble::Create $Frame.cam.down    [lindex $Bubble(CamDown) $GDefs(Lang)]
+   Bubble::Create $Frame.tool.graph  $Bubble(Graph)
+   Bubble::Create $Frame.tool.model  $Bubble(Model)
+   Bubble::Create $Frame.opt.params  $Bubble(Params)
+   Bubble::Create $Frame.opt.print   $Bubble(Print)
+   Bubble::Create $Frame.opt.save    $Bubble(Image)
+   Bubble::Create $Frame.cam.zoom    $Bubble(Zoom)
+   Bubble::Create $Frame.cam.cam     $Bubble(Cam)
+   Bubble::Create $Frame.page.scale  $Bubble(PageScale)
+   Bubble::Create $Frame.page.in     $Bubble(PageIn)
+   Bubble::Create $Frame.page.out    $Bubble(PageOut)
+   Bubble::Create $Frame.page.full   $Bubble(PageFull)
+   Bubble::Create $Frame.layout.sel  $Bubble(LayoutName)
+   Bubble::Create $Frame.layout.save $Bubble(LayoutSave)
+   Bubble::Create $Frame.layout.del  $Bubble(LayoutDel)
+   Bubble::Create $Frame.layout.run  $Bubble(LayoutRun)
+   Bubble::Create $Frame.layout.mag  $Bubble(LayoutMag)
+   Bubble::Create $Frame.cam.zback   $Bubble(ZoomBack)
+   Bubble::Create $Frame.cam.zclr    $Bubble(ZoomClear)
+   Bubble::Create $Frame.cam.clr     $Bubble(CamClear)
+   Bubble::Create $Frame.cam.sel     $Bubble(CamName)
+   Bubble::Create $Frame.cam.out     $Bubble(CamSave)
+   Bubble::Create $Frame.cam.in      $Bubble(CamDel)
+   Bubble::Create $Frame.cam.fly     $Bubble(CamFly)
+   Bubble::Create $Frame.cam.down    $Bubble(CamDown)
 }
 
 #-------------------------------------------------------------------------------

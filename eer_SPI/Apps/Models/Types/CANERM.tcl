@@ -278,7 +278,7 @@ proc CANERM::CreateScriptInput { } {
       puts $file "MODEL_RUN=1"
       puts $file "MODEL_POST=1"
       puts $file "MODEL_CLEAN=1"
-      puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+      puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
       puts $file ""
       puts $file "#----- Model specific parameters"
       puts $file "CANERM_FREQIN=$Sim(FreqIn)"

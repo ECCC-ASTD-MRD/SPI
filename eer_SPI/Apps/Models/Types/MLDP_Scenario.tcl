@@ -203,7 +203,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
    frame .newscenario.emint
 
    labelframe .newscenario.emint.fr -text "[lindex $Lbl(Scenario) $GDefs(Lang)]"
-   Bubble::Create .newscenario.emint.fr     "[lindex $Bubble(Scenario) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr $Bubble(Scenario)
 
    frame .newscenario.emint.fr.box1
    frame .newscenario.emint.fr.box1.data
@@ -214,7 +214,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
       entry .newscenario.emint.fr.box1.data.name.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Scenario) -width 20
       pack .newscenario.emint.fr.box1.data.name.lbl .newscenario.emint.fr.box1.data.name.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.name -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.name "[lindex $Bubble(ScenarioName) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.name $Bubble(ScenarioName)
    set MLDP::Sim(ScenarioNameEntry) .newscenario.emint.fr.box1.data.name.ent
 
    #----- Total emission duration [s].
@@ -223,7 +223,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
       entry .newscenario.emint.fr.box1.data.totdur.ent -relief sunken -bd 1 -textvariable MLDP::Tmp(TotalDuration) -width 20 -state disabled
       pack .newscenario.emint.fr.box1.data.totdur.lbl .newscenario.emint.fr.box1.data.totdur.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.totdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.totdur "[lindex $Bubble(TotalDuration2) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.totdur $Bubble(TotalDuration2)
 
    #----- Effective emission duration [s].
    frame .newscenario.emint.fr.box1.data.effdur
@@ -231,7 +231,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
       entry .newscenario.emint.fr.box1.data.effdur.ent -relief sunken -bd 1 -textvariable MLDP::Tmp(EffectiveDuration) -width 20 -state disabled
       pack .newscenario.emint.fr.box1.data.effdur.lbl .newscenario.emint.fr.box1.data.effdur.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.effdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.effdur "[lindex $Bubble(EffectiveDuration2) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.effdur $Bubble(EffectiveDuration2)
 
    pack .newscenario.emint.fr.box1.data -side left
    pack .newscenario.emint.fr.box1 -side top
@@ -245,15 +245,15 @@ proc MLDP::ScenarioAccidentNew { Parent } {
    frame .newscenario.emint.fr.box2.header
       label .newscenario.emint.fr.box2.header.dur -relief raised -width 20 -bd 1 -text "[lindex $Lbl(Duration) $GDefs(Lang)]"
       pack .newscenario.emint.fr.box2.header.dur -side left -fill x -fill y
-      Bubble::Create .newscenario.emint.fr.box2.header.dur "[lindex $Bubble(DurationInter) $GDefs(Lang)]"
+      Bubble::Create .newscenario.emint.fr.box2.header.dur $Bubble(DurationInter)
 
       frame .newscenario.emint.fr.box2.header.rates
          label .newscenario.emint.fr.box2.header.rates.lbl -relief raised -height 3 -width 40 -bd 1 -text "[lindex $Lbl(ReleaseRateAccident) $GDefs(Lang)]"
          button .newscenario.emint.fr.box2.header.rates.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -relief raised -bd 1 -width 10 -state active \
             -command "IsoBox::Create .newscenario MLDP::SpeciesFormat"
          pack .newscenario.emint.fr.box2.header.rates.lbl .newscenario.emint.fr.box2.header.rates.add -side top -fill x -expand true
-         Bubble::Create .newscenario.emint.fr.box2.header.rates.add "[lindex $Bubble(AddIso) $GDefs(Lang)]"
-         Bubble::Create .newscenario.emint.fr.box2.header.rates.lbl "[lindex $Bubble(ReleaseRate) $GDefs(Lang)]"
+         Bubble::Create .newscenario.emint.fr.box2.header.rates.add $Bubble(AddIso)
+         Bubble::Create .newscenario.emint.fr.box2.header.rates.lbl $Bubble(ReleaseRate)
 
          frame .newscenario.emint.fr.box2.header.rates.iso
          set MLDP::Sim(IsotopeLabels) .newscenario.emint.fr.box2.header.rates.iso
@@ -264,7 +264,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
             pack .newscenario.emint.fr.box2.header.rates.iso.name$j -side left -ipadx 2 -fill x -expand true
             place .newscenario.emint.fr.box2.header.rates.iso.kill$j -in .newscenario.emint.fr.box2.header.rates.iso.name$j \
                -relx 1 -rely 0 -anchor ne -width 15 -height 15
-            Bubble::Create .newscenario.emint.fr.box2.header.rates.iso.name$j "[lindex $Bubble(DeleteIso) $GDefs(Lang)]"
+            Bubble::Create .newscenario.emint.fr.box2.header.rates.iso.name$j $Bubble(DeleteIso)
          }
          pack .newscenario.emint.fr.box2.header.rates.iso -side top -fill x -expand true
       pack .newscenario.emint.fr.box2.header.rates -side left -fill x -expand true
@@ -277,7 +277,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
       frame .newscenario.emint.fr.box2.entry$i
          entry .newscenario.emint.fr.box2.entry$i.dur -relief sunken -width 20 -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Duration$i)
          pack .newscenario.emint.fr.box2.entry$i.dur -side left
-         Bubble::Create .newscenario.emint.fr.box2.entry$i.dur "[lindex $Bubble(DurationInter) $GDefs(Lang)]"
+         Bubble::Create .newscenario.emint.fr.box2.entry$i.dur $Bubble(DurationInter)
 
       frame .newscenario.emint.fr.box2.entry$i.rates
          for { set j 0 } { $j < $Sim(EmMaxIso) } { incr j } {
@@ -287,7 +287,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
 
       pack .newscenario.emint.fr.box2.entry$i.rates -side left -fill y
       pack .newscenario.emint.fr.box2.entry$i -side top -anchor w -fill x -expand true
-      Bubble::Create .newscenario.emint.fr.box2.entry$i.rates "[lindex $Bubble(ReleaseRate2) $GDefs(Lang)]"
+      Bubble::Create .newscenario.emint.fr.box2.entry$i.rates $Bubble(ReleaseRate2)
    }
 
    #----- Total released quantity.
@@ -302,7 +302,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
       }
       pack .newscenario.emint.fr.box2.quant.tot -side left -fill y
    pack .newscenario.emint.fr.box2.quant -side top -anchor w -fill x -fill y -expand true
-   Bubble::Create .newscenario.emint.fr.box2.quant "[lindex $Bubble(TotalQuantityAccident) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box2.quant $Bubble(TotalQuantityAccident)
 
    pack .newscenario.emint.fr.box2 -side top -anchor w -padx 5 -pady 10
    pack .newscenario.emint.fr -side top -anchor w -fill x
@@ -313,8 +313,8 @@ proc MLDP::ScenarioAccidentNew { Parent } {
       button .newscenario.button.apply -text "[lindex $Lbl(Apply) $GDefs(Lang)]" -bd 1 -command "MLDP::EmissionUpdate"
       pack .newscenario.button.apply .newscenario.button.cancel -side right
    pack .newscenario.button -side top -anchor w -padx 7 -fill x
-   Bubble::Create .newscenario.button.cancel "[lindex $Bubble(Cancel) $GDefs(Lang)]"
-   Bubble::Create .newscenario.button.apply "[lindex $Bubble(Apply) $GDefs(Lang)]"
+   Bubble::Create .newscenario.button.cancel $Bubble(Cancel)
+   Bubble::Create .newscenario.button.apply $Bubble(Apply)
 
    grab .newscenario
 }
@@ -504,7 +504,7 @@ proc MLDP::ScenarioVirusNew { Parent } {
    frame .newscenario.emint
 
    labelframe .newscenario.emint.fr -text "[lindex $Lbl(Scenario) $GDefs(Lang)]"
-   Bubble::Create .newscenario.emint.fr     "[lindex $Bubble(Scenario) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr $Bubble(Scenario)
 
    frame .newscenario.emint.fr.box1
    frame .newscenario.emint.fr.box1.data
@@ -515,7 +515,7 @@ proc MLDP::ScenarioVirusNew { Parent } {
       entry .newscenario.emint.fr.box1.data.name.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Scenario) -width 20
       pack .newscenario.emint.fr.box1.data.name.lbl .newscenario.emint.fr.box1.data.name.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.name -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.name "[lindex $Bubble(ScenarioName) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.name $Bubble(ScenarioName)
    set MLDP::Sim(ScenarioNameEntry) .newscenario.emint.fr.box1.data.name.ent
 
    #----- Total emission duration [s].
@@ -524,7 +524,7 @@ proc MLDP::ScenarioVirusNew { Parent } {
       entry .newscenario.emint.fr.box1.data.totdur.ent -relief sunken -bd 1 -textvariable MLDP::Tmp(TotalDuration) -width 20 -state disabled
       pack .newscenario.emint.fr.box1.data.totdur.lbl .newscenario.emint.fr.box1.data.totdur.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.totdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.totdur "[lindex $Bubble(TotalDuration2) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.totdur $Bubble(TotalDuration2)
 
    #----- Effective emission duration [s].
    frame .newscenario.emint.fr.box1.data.effdur
@@ -532,7 +532,7 @@ proc MLDP::ScenarioVirusNew { Parent } {
       entry .newscenario.emint.fr.box1.data.effdur.ent -relief sunken -bd 1 -textvariable MLDP::Tmp(EffectiveDuration) -width 20 -state disabled
       pack .newscenario.emint.fr.box1.data.effdur.lbl .newscenario.emint.fr.box1.data.effdur.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.effdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.effdur "[lindex $Bubble(EffectiveDuration2) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.effdur $Bubble(EffectiveDuration2)
 
    pack .newscenario.emint.fr.box1.data -side left
    pack .newscenario.emint.fr.box1 -side top
@@ -544,11 +544,11 @@ proc MLDP::ScenarioVirusNew { Parent } {
    frame .newscenario.emint.fr.box2.header
       label .newscenario.emint.fr.box2.header.dur -relief raised -width 20 -bd 1 -text "[lindex $Lbl(Duration) $GDefs(Lang)]"
       pack .newscenario.emint.fr.box2.header.dur -side left -fill x -fill y
-      Bubble::Create .newscenario.emint.fr.box2.header.dur "[lindex $Bubble(DurationInter) $GDefs(Lang)]"
+      Bubble::Create .newscenario.emint.fr.box2.header.dur $Bubble(DurationInter)
 
       label .newscenario.emint.fr.box2.header.rates -relief raised -height 3 -width 30 -bd 1 -text "[lindex $Lbl(ReleaseRateVirus) $GDefs(Lang)]"
       pack .newscenario.emint.fr.box2.header.rates -side left -fill x -expand true
-      Bubble::Create .newscenario.emint.fr.box2.header.rates "[lindex $Bubble(ReleaseRateVirus) $GDefs(Lang)]"
+      Bubble::Create .newscenario.emint.fr.box2.header.rates $Bubble(ReleaseRateVirus)
    pack .newscenario.emint.fr.box2.header -side top -anchor w -fill x -expand true
 
    #----- Entries.
@@ -557,11 +557,11 @@ proc MLDP::ScenarioVirusNew { Parent } {
        frame .newscenario.emint.fr.box2.entry$i
           entry .newscenario.emint.fr.box2.entry$i.dur -relief sunken -width 20 -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Duration$i)
           pack .newscenario.emint.fr.box2.entry$i.dur -side left
-          Bubble::Create .newscenario.emint.fr.box2.entry$i.dur "[lindex $Bubble(DurationInter) $GDefs(Lang)]"
+          Bubble::Create .newscenario.emint.fr.box2.entry$i.dur $Bubble(DurationInter)
 
           entry .newscenario.emint.fr.box2.entry$i.rates -relief sunken -width 20 -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(ReleaseRate$i)
           pack .newscenario.emint.fr.box2.entry$i.rates -side left -fill x -expand true
-          Bubble::Create .newscenario.emint.fr.box2.entry$i.rates "[lindex $Bubble(ReleaseRateVirus) $GDefs(Lang)]"
+          Bubble::Create .newscenario.emint.fr.box2.entry$i.rates $Bubble(ReleaseRateVirus)
        pack .newscenario.emint.fr.box2.entry$i -side top -anchor w -fill x -expand true
 
     }
@@ -575,7 +575,7 @@ proc MLDP::ScenarioVirusNew { Parent } {
       pack .newscenario.emint.fr.box2.quant.tot -side left -fill y
 
     pack .newscenario.emint.fr.box2.quant -side top -anchor w -fill x -fill y -expand true
-    Bubble::Create .newscenario.emint.fr.box2.quant "[lindex $Bubble(TotalQuantityVirus) $GDefs(Lang)]"
+    Bubble::Create .newscenario.emint.fr.box2.quant $Bubble(TotalQuantityVirus)
 
     pack .newscenario.emint.fr.box2 -side top -anchor w -padx 5 -pady 10
     pack .newscenario.emint.fr -side top -anchor w -fill x
@@ -586,8 +586,8 @@ proc MLDP::ScenarioVirusNew { Parent } {
        button .newscenario.button.apply -text "[lindex $Lbl(Apply) $GDefs(Lang)]" -bd 1 -command "MLDP::EmissionUpdate"
        pack .newscenario.button.apply .newscenario.button.cancel -side right
     pack .newscenario.button -side top -anchor w -padx 7 -fill x
-    Bubble::Create .newscenario.button.cancel "[lindex $Bubble(Cancel) $GDefs(Lang)]"
-    Bubble::Create .newscenario.button.apply "[lindex $Bubble(Apply) $GDefs(Lang)]"
+    Bubble::Create .newscenario.button.cancel $Bubble(Cancel)
+    Bubble::Create .newscenario.button.apply $Bubble(Apply)
 
    grab .newscenario
 }
@@ -737,7 +737,7 @@ proc MLDP::ScenarioVolcanNew { Parent } {
       entry .newscenario.emint.fr.box1.data.name.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Scenario) -width 60
       pack .newscenario.emint.fr.box1.data.name.lbl .newscenario.emint.fr.box1.data.name.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.name -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.name "[lindex $Bubble(ScenarioName) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.name $Bubble(ScenarioName)
    set MLDP::Sim(ScenarioNameEntry) .newscenario.emint.fr.box1.data.name.ent
 
    #----- Total emission duration [s].
@@ -746,7 +746,7 @@ proc MLDP::ScenarioVolcanNew { Parent } {
       entry .newscenario.emint.fr.box1.data.totdur.ent -relief sunken -bd 1 -textvariable MLDP::Tmp(TotalDuration) -width 60 -state disabled
       pack .newscenario.emint.fr.box1.data.totdur.lbl .newscenario.emint.fr.box1.data.totdur.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.totdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.totdur "[lindex $Bubble(TotalDuration) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.totdur $Bubble(TotalDuration)
 
    #----- Effective emission duration [s].
    frame .newscenario.emint.fr.box1.data.effdur
@@ -754,7 +754,7 @@ proc MLDP::ScenarioVolcanNew { Parent } {
       entry .newscenario.emint.fr.box1.data.effdur.ent -relief sunken -bd 1 -textvariable MLDP::Tmp(EffectiveDuration) -width 60 -state disabled
       pack .newscenario.emint.fr.box1.data.effdur.lbl .newscenario.emint.fr.box1.data.effdur.ent -side left -padx 2
    pack .newscenario.emint.fr.box1.data.effdur -side top -anchor w -padx 2 -fill x
-   Bubble::Create .newscenario.emint.fr.box1.data.effdur "[lindex $Bubble(EffectiveDuration) $GDefs(Lang)]"
+   Bubble::Create .newscenario.emint.fr.box1.data.effdur $Bubble(EffectiveDuration)
 
    pack .newscenario.emint.fr.box1.data -side left
    pack .newscenario.emint.fr.box1 -side top
@@ -766,11 +766,11 @@ proc MLDP::ScenarioVolcanNew { Parent } {
    frame .newscenario.emint.fr.box2.header
       label .newscenario.emint.fr.box2.header.dur -relief raised -width 20 -bd 1 -text "[lindex $Lbl(Duration) $GDefs(Lang)]"
       pack .newscenario.emint.fr.box2.header.dur -side left -fill x -fill y
-      Bubble::Create .newscenario.emint.fr.box2.header.dur "[lindex $Bubble(DurationInter) $GDefs(Lang)]"
+      Bubble::Create .newscenario.emint.fr.box2.header.dur $Bubble(DurationInter)
 
       label .newscenario.emint.fr.box2.header.em  -relief raised -height 3 -width 30 -bd 1 -text "[lindex $Lbl(Period) $GDefs(Lang)]"
       pack .newscenario.emint.fr.box2.header.em -side left -fill x -expand true
-      Bubble::Create .newscenario.emint.fr.box2.header.em  "[lindex $Bubble(Period) $GDefs(Lang)]"
+      Bubble::Create .newscenario.emint.fr.box2.header.em $Bubble(Period)
    pack .newscenario.emint.fr.box2.header -side top -anchor w -fill x -expand true
 
    #----- Entries.
@@ -779,12 +779,12 @@ proc MLDP::ScenarioVolcanNew { Parent } {
       frame .newscenario.emint.fr.box2.entry$i
          entry .newscenario.emint.fr.box2.entry$i.dur -relief sunken -width 20 -bd 1 -bg $GDefs(ColorLight) -textvariable MLDP::Tmp(Duration$i)
          pack .newscenario.emint.fr.box2.entry$i.dur -side left
-         Bubble::Create .newscenario.emint.fr.box2.entry$i.dur "[lindex $Bubble(DurationInter) $GDefs(Lang)]"
+         Bubble::Create .newscenario.emint.fr.box2.entry$i.dur $Bubble(DurationInter)
 
          Option::Create .newscenario.emint.fr.box2.entry$i.em "" [list MLDP::Tmp(Label$i) MLDP::Tmp(Value$i)] \
             0 -1 [lindex $Sim(ListEmissionLabel) $GDefs(Lang)] "" $Sim(ListEmissionValue)
       pack .newscenario.emint.fr.box2.entry$i.em -side left -fill x -expand true
-         Bubble::Create .newscenario.emint.fr.box2.entry$i.em "[lindex $Bubble(Period) $GDefs(Lang)]"
+         Bubble::Create .newscenario.emint.fr.box2.entry$i.em $Bubble(Period)
       pack .newscenario.emint.fr.box2.entry$i -side top -anchor w -fill x -expand true
    }
 
@@ -797,8 +797,8 @@ proc MLDP::ScenarioVolcanNew { Parent } {
       button .newscenario.button.apply -text "[lindex $Lbl(Apply) $GDefs(Lang)]" -bd 1 -command "MLDP::EmissionUpdate"
       pack .newscenario.button.apply .newscenario.button.cancel -side right
    pack .newscenario.button -side top -anchor w -padx 7 -fill x
-   Bubble::Create .newscenario.button.cancel "[lindex $Bubble(Cancel) $GDefs(Lang)]"
-   Bubble::Create .newscenario.button.apply "[lindex $Bubble(Apply) $GDefs(Lang)]"
+   Bubble::Create .newscenario.button.cancel $Bubble(Cancel)
+   Bubble::Create .newscenario.button.apply $Bubble(Apply)
 
    grab .newscenario
 }

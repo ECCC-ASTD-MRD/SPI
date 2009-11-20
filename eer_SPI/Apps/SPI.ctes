@@ -48,6 +48,7 @@ namespace eval SPI {
    set Param(Project)        ""           ;#Projet courant
    set Param(Loading)        "Loading"    ;#Load en cours
    set Param(Batch)          False        ;#Mode batch
+   set Param(Bubble)         True         ;#Mode batch
 
    #----- Definitions des variables internes
 

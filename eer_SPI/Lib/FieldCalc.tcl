@@ -587,11 +587,11 @@ proc FieldCalc::Window { { Parent .} } {
       pack .fieldcalc.expr.fsave .fieldcalc.expr.fdel -side left -fill both
    pack .fieldcalc.expr -side top -anchor e -padx 2 -pady 2 -fill x
 
-   Bubble::Create .fieldcalc.expr.sel       [lindex $Bubble(Formula) $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.save      [lindex $Bubble(Field)   $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.param     [lindex $Bubble(Param)   $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.fsave     [lindex $Bubble(Save)    $GDefs(Lang)]
-   Bubble::Create .fieldcalc.expr.fdel      [lindex $Bubble(Del)     $GDefs(Lang)]
+   Bubble::Create .fieldcalc.expr.sel   $Bubble(Formula)
+   Bubble::Create .fieldcalc.expr.save  $Bubble(Field)
+   Bubble::Create .fieldcalc.expr.param $Bubble(Param)
+   Bubble::Create .fieldcalc.expr.fsave $Bubble(Save)
+   Bubble::Create .fieldcalc.expr.fdel  $Bubble(Del)
 
    #----- Creation des fonctions
 
@@ -1091,7 +1091,6 @@ proc FieldCalc::Save { File } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetCond { Frame } {
-   global GDefs
    variable Bubble
 
    frame $Frame.sunk -relief sunken -bd 1
@@ -1115,14 +1114,13 @@ proc FieldCalc::WidgetCond { Frame } {
 
    pack $Frame.ops $Frame.sunk -side left -pady 10 -padx 5 -anchor nw
 
-   Bubble::Create $Frame.sunk.l1.min   [lindex $Bubble(CondMIN) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l1.max   [lindex $Bubble(CondMAX) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l1.clamp [lindex $Bubble(CondCLAMP) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.if    [lindex $Bubble(CondIFELSE) $GDefs(Lang)]
-
-   Bubble::Create $Frame.ops.if.not    [lindex $Bubble(CondNOT) $GDefs(Lang)]
-   Bubble::Create $Frame.ops.if.and    [lindex $Bubble(CondAND) $GDefs(Lang)]
-   Bubble::Create $Frame.ops.if.or     [lindex $Bubble(CondOR) $GDefs(Lang)]
+   Bubble::Create $Frame.sunk.l1.min   $Bubble(CondMIN)
+   Bubble::Create $Frame.sunk.l1.max   $Bubble(CondMAX)
+   Bubble::Create $Frame.sunk.l1.clamp $Bubble(CondCLAMP)
+   Bubble::Create $Frame.sunk.l2.if    $Bubble(CondIFELSE)
+   Bubble::Create $Frame.ops.if.not    $Bubble(CondNOT)
+   Bubble::Create $Frame.ops.if.and    $Bubble(CondAND)
+   Bubble::Create $Frame.ops.if.or     $Bubble(CondOR)
 }
 
 #----------------------------------------------------------------------------
@@ -1141,7 +1139,6 @@ proc FieldCalc::WidgetCond { Frame } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetConst { Frame } {
-   global GDefs
    variable Const
    variable Desc
 
@@ -1153,12 +1150,12 @@ proc FieldCalc::WidgetConst { Frame } {
          button $Frame.sunk.l1.w   -text "W " -bd 1 -command "FieldCalc::InsertDigit $Const(W)"
          button $Frame.sunk.l1.c   -text "c " -bd 1 -command "FieldCalc::InsertDigit $Const(c)"
          button $Frame.sunk.l1.md   -text "Md " -bd 1 -command "FieldCalc::InsertDigit $Const(Md)"
-         Bubble::Create $Frame.sunk.l1.pi [lindex $Desc(Pi) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l1.re [lindex $Desc(Re) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l1.g  [lindex $Desc(g) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l1.w  [lindex $Desc(W) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l1.c  [lindex $Desc(c) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l1.md [lindex $Desc(Md) $GDefs(Lang)]
+         Bubble::Create $Frame.sunk.l1.pi $Desc(Pi)
+         Bubble::Create $Frame.sunk.l1.re $Desc(Re)
+         Bubble::Create $Frame.sunk.l1.g  $Desc(g)
+         Bubble::Create $Frame.sunk.l1.w  $Desc(W)
+         Bubble::Create $Frame.sunk.l1.c  $Desc(c)
+         Bubble::Create $Frame.sunk.l1.md $Desc(Md)
       pack $Frame.sunk.l1.pi $Frame.sunk.l1.re $Frame.sunk.l1.g $Frame.sunk.l1.w $Frame.sunk.l1.c $Frame.sunk.l1.md -side left -anchor n
       frame $Frame.sunk.l2
          button $Frame.sunk.l2.rx  -text "Rx" -bd 1 -command "FieldCalc::InsertDigit $Const(Rx)"
@@ -1167,12 +1164,12 @@ proc FieldCalc::WidgetConst { Frame } {
          button $Frame.sunk.l2.s   -text "S " -bd 1 -command "FieldCalc::InsertDigit $Const(S)"
          button $Frame.sunk.l2.h   -text "h " -bd 1 -command "FieldCalc::InsertDigit $Const(h)"
          button $Frame.sunk.l2.cpd -text "cpd" -bd 1 -command "FieldCalc::InsertDigit $Const(cpd)"
-         Bubble::Create $Frame.sunk.l2.rx [lindex $Desc(Rx) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l2.na [lindex $Desc(Na) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l2.k [lindex $Desc(k) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l2.s [lindex $Desc(S) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l2.h [lindex $Desc(h) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l2.cpd [lindex $Desc(cpd) $GDefs(Lang)]
+         Bubble::Create $Frame.sunk.l2.rx  $Desc(Rx)
+         Bubble::Create $Frame.sunk.l2.na  $Desc(Na)
+         Bubble::Create $Frame.sunk.l2.k   $Desc(k)
+         Bubble::Create $Frame.sunk.l2.s   $Desc(S)
+         Bubble::Create $Frame.sunk.l2.h   $Desc(h)
+         Bubble::Create $Frame.sunk.l2.cpd $Desc(cpd)
          pack $Frame.sunk.l2.rx $Frame.sunk.l2.na $Frame.sunk.l2.k $Frame.sunk.l2.s $Frame.sunk.l2.h $Frame.sunk.l2.cpd -side left -anchor n
       frame $Frame.sunk.l3
          button $Frame.sunk.l3.rd  -text "Rd" -bd 1 -command "FieldCalc::InsertDigit $Const(Rd)"
@@ -1181,12 +1178,12 @@ proc FieldCalc::WidgetConst { Frame } {
          button $Frame.sunk.l3.ri  -text "ri" -bd 1 -command "FieldCalc::InsertDigit $Const(ri)"
          button $Frame.sunk.l3.rrd -text "rd" -bd 1 -command "FieldCalc::InsertDigit $Const(rd)"
          button $Frame.sunk.l3.cvd -text "cvd" -bd 1 -command "FieldCalc::InsertDigit $Const(cvd)"
-         Bubble::Create $Frame.sunk.l3.rd [lindex $Desc(Rd) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l3.rv [lindex $Desc(Rv) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l3.rw [lindex $Desc(rw) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l3.ri [lindex $Desc(ri) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l3.rrd [lindex $Desc(rd) $GDefs(Lang)]
-         Bubble::Create $Frame.sunk.l3.cvd [lindex $Desc(cvd) $GDefs(Lang)]
+         Bubble::Create $Frame.sunk.l3.rd  $Desc(Rd)
+         Bubble::Create $Frame.sunk.l3.rv  $Desc(Rv)
+         Bubble::Create $Frame.sunk.l3.rw  $Desc(rw)
+         Bubble::Create $Frame.sunk.l3.ri  $Desc(ri)
+         Bubble::Create $Frame.sunk.l3.rrd $Desc(rd)
+         Bubble::Create $Frame.sunk.l3.cvd $Desc(cvd)
          pack $Frame.sunk.l3.rd $Frame.sunk.l3.rv $Frame.sunk.l3.rw $Frame.sunk.l3.ri $Frame.sunk.l3.rrd $Frame.sunk.l3.cvd -side left -anchor n
       pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 -side top -fill y
    pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
@@ -1229,10 +1226,10 @@ proc FieldCalc::WidgetConv { Frame } {
    pack $Frame.conv -side top -padx 5 -anchor w
    pack $Frame.factor -side top -padx 5 -fill x -expand true
 
-   Bubble::Create $Frame.type      [lindex $Bubble(ConvType) $GDefs(Lang)]
-   Bubble::Create $Frame.conv.from [lindex $Bubble(ConvFrom) $GDefs(Lang)]
-   Bubble::Create $Frame.conv.to   [lindex $Bubble(ConvTo)   $GDefs(Lang)]
-   Bubble::Create $Frame.factor    [lindex $Bubble(ConvFact) $GDefs(Lang)]
+   Bubble::Create $Frame.type      $Bubble(ConvType)
+   Bubble::Create $Frame.conv.from $Bubble(ConvFrom)
+   Bubble::Create $Frame.conv.to   $Bubble(ConvTo)
+   Bubble::Create $Frame.factor    $Bubble(ConvFact)
 }
 
 #----------------------------------------------------------------------------
@@ -1251,7 +1248,6 @@ proc FieldCalc::WidgetConv { Frame } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetMath { Frame } {
-   global GDefs
    variable Bubble
 
    frame $Frame.sunk -relief sunken -bd 1
@@ -1279,17 +1275,17 @@ proc FieldCalc::WidgetMath { Frame } {
       pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 $Frame.sunk.l4 -side left  -fill y
    pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
 
-   Bubble::Create $Frame.sunk.l1.ln    [lindex $Bubble(MathLN)    $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l1.exp   [lindex $Bubble(MathEXP)   $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l1.log   [lindex $Bubble(MathLOG)   $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.sqrt  [lindex $Bubble(MathSQRT)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.cbrt  [lindex $Bubble(MathCBRT)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.mod   [lindex $Bubble(MathFMOD)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l3.ceil  [lindex $Bubble(MathCEIL)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l3.floor [lindex $Bubble(MathFLOOR) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l3.round [lindex $Bubble(MathROUND) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l4.abs   [lindex $Bubble(MathABS)   $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l4.dif   [lindex $Bubble(MathDIF)   $GDefs(Lang)]
+   Bubble::Create $Frame.sunk.l1.ln    $Bubble(MathLN)
+   Bubble::Create $Frame.sunk.l1.exp   $Bubble(MathEXP)
+   Bubble::Create $Frame.sunk.l1.log   $Bubble(MathLOG)
+   Bubble::Create $Frame.sunk.l2.sqrt  $Bubble(MathSQRT)
+   Bubble::Create $Frame.sunk.l2.cbrt  $Bubble(MathCBRT)
+   Bubble::Create $Frame.sunk.l2.mod   $Bubble(MathFMOD)
+   Bubble::Create $Frame.sunk.l3.ceil  $Bubble(MathCEIL)
+   Bubble::Create $Frame.sunk.l3.floor $Bubble(MathFLOOR)
+   Bubble::Create $Frame.sunk.l3.round $Bubble(MathROUND)
+   Bubble::Create $Frame.sunk.l4.abs   $Bubble(MathABS)
+   Bubble::Create $Frame.sunk.l4.dif   $Bubble(MathDIF)
 }
 
 #----------------------------------------------------------------------------
@@ -1328,10 +1324,10 @@ proc FieldCalc::WidgetMem { Frame } {
       pack $Frame.mem.scroll -side left -fill y
    pack $Frame.mem -side left -fill both -pady 10 -padx 5 -expand true
 
-   Bubble::Create $Frame.fun.sto  [lindex $Bubble(STO) $GDefs(Lang)]
-   Bubble::Create $Frame.fun.rcl  [lindex $Bubble(RCL) $GDefs(Lang)]
-   Bubble::Create $Frame.fun.del  [lindex $Bubble(DEL) $GDefs(Lang)]
-   Bubble::Create $Frame.mem.list [lindex $Bubble(LST) $GDefs(Lang)]
+   Bubble::Create $Frame.fun.sto  $Bubble(STO)
+   Bubble::Create $Frame.fun.rcl  $Bubble(RCL)
+   Bubble::Create $Frame.fun.del  $Bubble(DEL)
+   Bubble::Create $Frame.mem.list $Bubble(LST)
 }
 
 #----------------------------------------------------------------------------
@@ -1350,7 +1346,6 @@ proc FieldCalc::WidgetMem { Frame } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetOps { Frame } {
-   global GDefs
    variable Bubble
 
    frame $Frame.ops
@@ -1422,9 +1417,9 @@ proc FieldCalc::WidgetOps { Frame } {
       pack $Frame.cmd.idx $Frame.cmd.int3 $Frame.cmd.int2 -side right
    pack $Frame.cmd -side bottom -fill both  -padx 2 -pady 2
 
-   Bubble::Create $Frame.cmd.int2 [lindex $Bubble(Int2) $GDefs(Lang)]
-   Bubble::Create $Frame.cmd.int3 [lindex $Bubble(Int3) $GDefs(Lang)]
-   Bubble::Create $Frame.cmd.idx  [lindex $Bubble(Idx)  $GDefs(Lang)]
+   Bubble::Create $Frame.cmd.int2 $Bubble(Int2)
+   Bubble::Create $Frame.cmd.int3 $Bubble(Int3)
+   Bubble::Create $Frame.cmd.idx  $Bubble(Idx)
 }
 
 #----------------------------------------------------------------------------
@@ -1443,7 +1438,6 @@ proc FieldCalc::WidgetOps { Frame } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetStat { Frame } {
-   global GDefs
    variable Bubble
 
    frame $Frame.sunk -relief sunken -bd 1
@@ -1479,23 +1473,23 @@ proc FieldCalc::WidgetStat { Frame } {
       pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 $Frame.sunk.l4 $Frame.sunk.l5 $Frame.sunk.l6 -side left  -fill y
    pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
 
-   Bubble::Create $Frame.sunk.l1.smin  [lindex $Bubble(StatSMIN)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l1.smax  [lindex $Bubble(StatSMAX)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l1.savg  [lindex $Bubble(StatSAVG)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.ssum  [lindex $Bubble(StatSSUM)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.snb   [lindex $Bubble(StatSNB)   $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l2.svar  [lindex $Bubble(StatSVAR)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l3.scor  [lindex $Bubble(StatSCOR)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l3.scov  [lindex $Bubble(StatSCOV)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l3.srms  [lindex $Bubble(StatSRMSE) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l4.smb   [lindex $Bubble(StatSMB)   $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l4.snmb  [lindex $Bubble(StatSNMB)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l4.smnb  [lindex $Bubble(StatSMNB)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l5.sme   [lindex $Bubble(StatSME)   $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l5.snme  [lindex $Bubble(StatSNME)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l5.smne  [lindex $Bubble(StatSMNE)  $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l6.srega [lindex $Bubble(StatSREGA) $GDefs(Lang)]
-   Bubble::Create $Frame.sunk.l6.sregb [lindex $Bubble(StatSREGB) $GDefs(Lang)]
+   Bubble::Create $Frame.sunk.l1.smin  $Bubble(StatSMIN)
+   Bubble::Create $Frame.sunk.l1.smax  $Bubble(StatSMAX)
+   Bubble::Create $Frame.sunk.l1.savg  $Bubble(StatSAVG)
+   Bubble::Create $Frame.sunk.l2.ssum  $Bubble(StatSSUM)
+   Bubble::Create $Frame.sunk.l2.snb   $Bubble(StatSNB)
+   Bubble::Create $Frame.sunk.l2.svar  $Bubble(StatSVAR)
+   Bubble::Create $Frame.sunk.l3.scor  $Bubble(StatSCOR)
+   Bubble::Create $Frame.sunk.l3.scov  $Bubble(StatSCOV)
+   Bubble::Create $Frame.sunk.l3.srms  $Bubble(StatSRMSE)
+   Bubble::Create $Frame.sunk.l4.smb   $Bubble(StatSMB)
+   Bubble::Create $Frame.sunk.l4.snmb  $Bubble(StatSNMB)
+   Bubble::Create $Frame.sunk.l4.smnb  $Bubble(StatSMNB)
+   Bubble::Create $Frame.sunk.l5.sme   $Bubble(StatSME)
+   Bubble::Create $Frame.sunk.l5.snme  $Bubble(StatSNME)
+   Bubble::Create $Frame.sunk.l5.smne  $Bubble(StatSMNE)
+   Bubble::Create $Frame.sunk.l6.srega $Bubble(StatSREGA)
+   Bubble::Create $Frame.sunk.l6.sregb $Bubble(StatSREGB)
 }
 
 #----------------------------------------------------------------------------
@@ -1514,7 +1508,6 @@ proc FieldCalc::WidgetStat { Frame } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetTrigo { Frame } {
-   global GDefs
    variable Bubble
 
    frame $Frame.typ -relief sunken -bd 1
@@ -1530,9 +1523,9 @@ proc FieldCalc::WidgetTrigo { Frame } {
        pack $Frame.fun.sin $Frame.fun.cos $Frame.fun.tan -side left -fill x -expand true
    pack $Frame.fun -side left -pady 10 -padx 5 -anchor nw
 
-   Bubble::Create $Frame.typ.arc [lindex $Bubble(TrigoARC) $GDefs(Lang)]
-   Bubble::Create $Frame.typ.hyp [lindex $Bubble(TrigoHYP) $GDefs(Lang)]
-   Bubble::Create $Frame.fun.sin [lindex $Bubble(TrigoSIN) $GDefs(Lang)]
-   Bubble::Create $Frame.fun.cos [lindex $Bubble(TrigoCOS) $GDefs(Lang)]
-   Bubble::Create $Frame.fun.tan [lindex $Bubble(TrigoTAN) $GDefs(Lang)]
+   Bubble::Create $Frame.typ.arc $Bubble(TrigoARC)
+   Bubble::Create $Frame.typ.hyp $Bubble(TrigoHYP)
+   Bubble::Create $Frame.fun.sin $Bubble(TrigoSIN)
+   Bubble::Create $Frame.fun.cos $Bubble(TrigoCOS)
+   Bubble::Create $Frame.fun.tan $Bubble(TrigoTAN)
 }

@@ -124,7 +124,7 @@ proc SatData::WinDef { } {
             -variable SatData::Data(View$sat) -command "SatData::UpdateItems \$SatData::Data(Frame)"
          pack .satdata.sel.s$sat.lbl -fill x
 
-         Bubble::Create .satdata.sel.s$sat.lbl [lindex $Bubble(Sat) $GDefs(Lang)]
+         Bubble::Create .satdata.sel.s$sat.lbl $Bubble(Sat)
 
          frame .satdata.sel.s$sat.ch
          foreach c { nV } {
@@ -154,7 +154,7 @@ proc SatData::WinDef { } {
              }"
       pack .satdata.seluser.lbl -side top -fill x -expand true
 
-      Bubble::Create .satdata.seluser.lbl [lindex $Bubble(User) $GDefs(Lang)]
+      Bubble::Create .satdata.seluser.lbl $Bubble(User)
 
       frame .satdata.seluser.ch
          frame .satdata.seluser.ch.path
@@ -204,12 +204,12 @@ proc SatData::WinDef { } {
 
    SatData::GetFiles
 
-   Bubble::Create .satdata.dom.name.select [lindex $Bubble(Domain)  $GDefs(Lang)]
-   Bubble::Create .satdata.dom.res.select  [lindex $Bubble(Resol)   $GDefs(Lang)]
-   Bubble::Create .satdata.dom.save        [lindex $Bubble(Save)    $GDefs(Lang)]
-   Bubble::Create .satdata.dom.del         [lindex $Bubble(Del)     $GDefs(Lang)]
-   Bubble::Create .satdata.info.mode       [lindex $Bubble(Mode)    $GDefs(Lang)]
-   Bubble::Create .satdata.cmd.extract     [lindex $Bubble(Extract) $GDefs(Lang)]
-   Bubble::Create .satdata.out.path        [lindex $Bubble(File)    $GDefs(Lang)]
-   Bubble::Create .satdata.out.in          [lindex $Bubble(SelFile) $GDefs(Lang)]
+   Bubble::Create .satdata.dom.name.select $Bubble(Domain)
+   Bubble::Create .satdata.dom.res.select  $Bubble(Resol)
+   Bubble::Create .satdata.dom.save        $Bubble(Save)
+   Bubble::Create .satdata.dom.del         $Bubble(Del)
+   Bubble::Create .satdata.info.mode       $Bubble(Mode)
+   Bubble::Create .satdata.cmd.extract     $Bubble(Extract)
+   Bubble::Create .satdata.out.path        $Bubble(File)
+   Bubble::Create .satdata.out.in          $Bubble(SelFile)
 }

@@ -53,51 +53,10 @@ proc GetPrevious { } {
       source $file
    }
 
-   set GDefs(Printer) [lindex $GDefs(Printers) 0]
-
    if { $GDefs(Lang) } {
       set GDefs(Langue) English
    } else {
       set GDefs(Langue) Francais
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <GetPrinters>
-# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Recuperer la liste des imprimantes disponibles.
-#
-# Parametres :
-#
-# Remarques :
-#   -On utilise le fichier /etc/printcap
-#
-# Modifications :
-#
-#    Nom         : -
-#    Date        : -
-#    Description : -
-#
-#-------------------------------------------------------------------------------
-
-proc GetPrinters { } {
-   global GDefs
-
-   set GDefs(Printers) ""
-
-   if { [file exists /etc/printcap] && [file readable /etc/printcap] } {
-
-      set f [open /etc/printcap r]
-
-      while { ![eof $f] } {
-         gets $f printer
-
-         if { [string index $printer 0]!="#" && $printer!="" } {
-            lappend GDefs(Printers) [lindex [split [lindex [split $printer :] 0] |] 0]
-         }
-      }
-      close $f
    }
 }
 
@@ -161,28 +120,9 @@ proc InstallWindow { } {
 #
 #-------------------------------------------------------------------------------
 
-proc WidgetEnable { Frame } {
-   global GDefs
-
-   if { $GDefs(Model) } {
-      $Frame.loc.ent configure -state normal -fg black
-      $Frame.loc.but configure -state normal
-
-      $Frame.host.ent configure -state normal -fg black
-   } else {
-      $Frame.loc.ent configure -state disabled -fg $GDefs(ColorOff)
-      $Frame.loc.but configure -state disabled
-
-      $Frame.host.ent configure -state disabled -fg $GDefs(ColorOff)
-   }
-}
-
 proc WidgetPath { Frame } {
    global GDefs
    global Lbl
-
-   checkbutton $Frame.model -variable GDefs(Model) -onvalue True -offvalue False -text "Modelisation" -command "WidgetEnable $Frame"
-   pack $Frame.model -side top -pady 10 -padx 5 -anchor w
 
    frame $Frame.loc
       label $Frame.loc.lbl -text Experiments -width 8 -anchor w
@@ -231,26 +171,12 @@ proc WidgetOther { Frame } {
       pack $Frame.deb.lbl $Frame.deb.out $Frame.deb.lvl -side left
    pack $Frame.deb -pady 10 -side top
 
-   frame $Frame.print
-      label $Frame.print.lbl -text "Imprimante par defaut" -width 22 -anchor w
-      ComboBox::Create $Frame.print.ent GDefs(Printer) noedit sorted nodouble -1 \
-          $GDefs(Printers) 10 5 ""
-      pack $Frame.print.lbl $Frame.print.ent -side left
-   pack $Frame.print -side top
-
    frame $Frame.lan
       label $Frame.lan.lbl -text "Language" -width 22 -anchor w
       ComboBox::Create $Frame.lan.ent GDefs(Langue) noedit sorted nodouble -1 \
           "Francais English" 10 5 ""
       pack $Frame.lan.lbl $Frame.lan.ent -side left
    pack $Frame.lan -side top
-
-   frame $Frame.grp
-      label $Frame.grp.lbl -text "Groupe" -width 22 -anchor w
-      ComboBox::Create $Frame.grp.ent GDefs(Group) noedit sorted nodouble -1 \
-          "[exec groups]" 10 5 ""
-      pack $Frame.grp.lbl $Frame.grp.ent -side left
-   pack $Frame.grp -side top
 }
 
 #-------------------------------------------------------------------------------
@@ -280,11 +206,6 @@ proc InstallOutput { } {
       Francais { set GDefs(Lang) 0 }
       English  { set GDefs(Lang) 1 }
    }
-
-   #----- Mettre en place le printer default
-   set idx [lsearch -exact $GDefs(Printers) $GDefs(Printer)]
-   set GDefs(Printers) [lreplace $GDefs(Printers) $idx $idx]
-   set GDefs(Printers) [linsert $GDefs(Printers) 0 $GDefs(Printer)]
 
    #----- Creer le fichier d'initialisations
    set f [open $env(HOME)/.spi/$GDefs(DefFile) w+]
@@ -324,9 +245,6 @@ set GDefs(Host)           \[lindex \[split \[info hostname\] .\] 0\]
 set GDefs(Ext)            \[info sharedlibextension\]
 
 set GDefs(Lang)           $GDefs(Lang)
-set GDefs(Group)          $GDefs(Group)
-set GDefs(Model)          $GDefs(Model)
-set GDefs(Printers)       \"$GDefs(Printers)\"
 
 #----- Repertoires des experiences
 
@@ -352,39 +270,6 @@ set GDefs(BackEnds)         { $GDefs(BackEnds) }
 set GDefs(BackEndmaia)      { $GDefs(BackEndmaia) }
 set GDefs(BackEndsaiph)     { $GDefs(BackEndsaiph) }
 set GDefs(BackEndzeta)      { $GDefs(BackEndzeta) }
-
-#----- Definitions generale de Tk
-
-catch {
-   font create XFont6  -family Courier -weight bold -size -6
-   font create XFont8  -family Courier -weight bold -size -8
-   font create XFont9  -family Courier -weight bold -size -9
-   font create XFont10 -family Courier -weight bold -size -10
-   font create XFont12 -family Courier -weight bold -size -12
-   font create XFont14 -family Courier -weight bold -size -14
-   font create XFont16 -family Courier -weight bold -size -16
-   font create XFont17 -family Courier -weight bold -size -17
-   font create XFont18 -family Courier -weight bold -size -18
-   font create XFont20 -family Courier -weight bold -size -20
-   font create XFont24 -family Courier -weight bold -size -24
-
-   set GDefs(Font)           XFont12
-   set GDefs(Colors)         { #ffffff #000000 #bfbfbf #7f7f7f #404040 #ff0000 #ffc0c0 #006464 #00ffff #0000ff #b0d8d8  #ffff00 #ffa500 #ffd700 #ffa54f #ff1493 #da70d6 #ffbbff }
-   set GDefs(ColorEmerg)     red
-   set GDefs(ColorFrame)     gray80
-   set GDefs(ColorLight)     gray70
-   set GDefs(ColorOff)       gray60
-   set GDefs(ColorHighLight) yellow
-
-   option add *selectColor            \$GDefs(ColorHighLight)
-   option add *background             \$GDefs(ColorFrame)
-   option add *foreground             black
-   option add *highlightThickness     0
-   option add *font                   \$GDefs(Font)
-   option add *Menu*activeBorderWidth 0
-   option add *Menu*tearOff           0
-   option add *Menu*borderWidth       1
-}
 
 #----- NVidia Antialiasing
 
@@ -418,7 +303,7 @@ set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
       foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain eer_Default } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData SPI } {
          catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
       }
-      foreach fileold { eer_Layout eer_Scenario } filenew { Layout Scenario } {
+      foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
          eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew}
       }
 
@@ -434,7 +319,6 @@ set GDefs(Copy)          False
 set GDefs(FrontEnd)      alef
 set GDefs(FrontEndUser)  $env(USER)
 set GDefs(TransmitUser)  afsiops
-set GDefs(Model)         False
 
 set GDefs(FrontEnds)        { alef dorval-ib }
 set GDefs(BackEnds)         { saiph zeta maia }
@@ -446,30 +330,15 @@ set GDefs(DirData)        ""
 set GDefs(DirCFSArch)     ""
 set GDefs(DirMsg)         ""
 set GDefs(DirWatch)       ""
-set GDefs(Printers)       ""
 set GDefs(Lang)           0
 
 #----- Setup parameters
-GetPrinters
 GetPrevious
 
 #----- Set default values
 set GDefs(Arch)  [exec uname -s]
 set GDefs(Dir)   [file dirname [info script]]/..
-set GDefs(Group) [lindex [exec groups] 0]
 set GDefs(DBMet) /data/gridpt/dbase
-
-set GDefs(Colors)         { #ffffff #000000 #bfbfbf #7f7f7f #ff0000 #006464 #00ffff #0000ff  #ffff00 #ffa500 #ff1493 #da70d6 }
-set GDefs(ColorEmerg)     red
-set GDefs(ColorFrame)     gray80
-set GDefs(ColorLight)     gray70
-set GDefs(ColorOff)       gray60
-set GDefs(ColorHighLight) yellow
-set GDefs(Font)           -*-courier-*-r-*-*-12-*-*-*-*-*-*-*
-
-option add *background $GDefs(ColorFrame)
-option add *foreground black
-option add *font       $GDefs(Font)
 
 #----- Include needed packages
 package require Icons

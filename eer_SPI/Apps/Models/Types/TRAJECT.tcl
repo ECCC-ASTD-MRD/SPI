@@ -292,7 +292,7 @@ proc TRAJECT::CreateScriptInput { } {
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=0"
    puts $file "MODEL_CLEAN=1"
-   puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+   puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
    puts $file ""
    puts $file "#----- Model specific parameters"
    puts $file "TRAJECT_METEO=\"$Sim(MeteoDataFiles)\""
@@ -366,9 +366,9 @@ proc TRAJECT::Launch { } {
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
 
       #----- Launch simulation within a new thread
-      eval set tid1 \[thread::create \{ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim$GDefs(Ext) TclSim\; simulation run $id\}\]
+      eval set tid1 \[thread::create \{ load $GDefs(Dir)/Shared/$GDefs(Arch)/libTclSim[info sharedlibextension] TclSim\; simulation run $id\}\]
 
-      Exp::ThreadUpdate $id $GDefs(DirData)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]
+      Exp::ThreadUpdate $id $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]
    }
    return True
 }

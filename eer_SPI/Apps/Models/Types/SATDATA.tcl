@@ -38,10 +38,9 @@ namespace eval SATDATA {
 #-------------------------------------------------------------------------------
 
 proc SATDATA::New { Parent } {
-   global GDefs
 
    SatData::Window
-   set ::SatData::Data(ResultFile) $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData
+   set ::SatData::Data(ResultFile) $Exp::Param(Path)/$Exp::Data(No)_$Exp::Data(Name)/SatData
    set ::SPI::Src(Type) $Exp::Data(Type)
    set ::SPI::Src(No)   ""
    set ::SPI::Src(Name) $Exp::Data(Name)
@@ -120,12 +119,11 @@ proc SATDATA::PopUp { X Y } {
 #-------------------------------------------------------------------------------
 
 proc SATDATA::Suppress { } {
-   global GDefs
    variable Lbl
    variable Msg
 
    if { [Dialog::Default . 400 WARNING $Msg(Suppress) "\n\n$Exp::Data(No) $Exp::Data(Name)" 0 $Lbl(No) $Lbl(Yes)] } {
-      file delete -force $GDefs(DirData)/$Exp::Data(No)_$Exp::Data(Name)/SatData
+      file delete -force $Exp::Param(Path)/$Exp::Data(No)_$Exp::Data(Name)/SatData
       Model::Check 0
    }
 }

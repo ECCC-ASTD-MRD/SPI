@@ -1,3 +1,4 @@
+
 #===============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
@@ -29,8 +30,8 @@ namespace eval NowCaster::Obs { } {
 
    set Param(Title)      { "Observation" "Observation" }
 
-   set Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
-   set Param(PathsUpper) { /data/ade/dbase/uprair/profiler /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/pirep /data/ade/dbase/uprair/airep }
+   set Param(PathsSurf)  { }
+   set Param(PathsUpper) { }
 
    set Data(Frame)       ""
 
@@ -269,25 +270,24 @@ proc NowCaster::Obs::Window { Frame } {
 
    bind $Frame.select.list <ButtonRelease-1>  "catch { NowCaster::Obs::ObsSelect \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
 
-   Bubble::Create $Frame.head.mode   [lindex $Bubble(Mode) $GDefs(Lang)]
-   Bubble::Create $Frame.head.graph  [lindex $Bubble(Graph) $GDefs(Lang)]
-   Bubble::Create $Frame.head.params [lindex $Bubble(Params) $GDefs(Lang)]
-   Bubble::Create $Frame.head.add    [lindex $Bubble(Add) $GDefs(Lang)]
-   Bubble::Create $Frame.head.del    [lindex $Bubble(Del) $GDefs(Lang)]
+   Bubble::Create $Frame.head.mode   $Bubble(Mode)
+   Bubble::Create $Frame.head.graph  $Bubble(Graph)
+   Bubble::Create $Frame.head.params $Bubble(Params)
+   Bubble::Create $Frame.head.add    $Bubble(Add)
+   Bubble::Create $Frame.head.del    $Bubble(Del)
+   Bubble::Create $Frame.find        $Bubble(Find)
 
-   Bubble::Create $Frame.find        [lindex $Bubble(Find) $GDefs(Lang)]
+   Bubble::Create $Frame.model.name.model $Bubble(Model)
+   Bubble::Create $Frame.model.name.save  $Bubble(ModelSave)
+   Bubble::Create $Frame.model.name.del   $Bubble(ModelDel)
+   Bubble::Create $Frame.model.name.new   $Bubble(ModelClear)
 
-   Bubble::Create $Frame.model.name.model [lindex $Bubble(Model) $GDefs(Lang)]
-   Bubble::Create $Frame.model.name.save  [lindex $Bubble(ModelSave) $GDefs(Lang)]
-   Bubble::Create $Frame.model.name.del   [lindex $Bubble(ModelDel) $GDefs(Lang)]
-   Bubble::Create $Frame.model.name.new   [lindex $Bubble(ModelClear) $GDefs(Lang)]
-
-   Bubble::Create $Frame.model.elem.var0.sel   [lindex $Bubble(Variable0) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.var1.sel   [lindex $Bubble(Variable1) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.topo.sel   [lindex $Bubble(Topo) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.spc.val    [lindex $Bubble(Spacing) $GDefs(Lang)]
-   Bubble::Create $Frame.model.elem.status.sel [lindex $Bubble(Status) $GDefs(Lang)]
-   Bubble::Create $Frame.model.items           [lindex $Bubble(Grid) $GDefs(Lang)]
+   Bubble::Create $Frame.model.elem.var0.sel   $Bubble(Variable0)
+   Bubble::Create $Frame.model.elem.var1.sel   $Bubble(Variable1)
+   Bubble::Create $Frame.model.elem.topo.sel   $Bubble(Topo)
+   Bubble::Create $Frame.model.elem.spc.val    $Bubble(Spacing)
+   Bubble::Create $Frame.model.elem.status.sel $Bubble(Status)
+   Bubble::Create $Frame.model.items           $Bubble(Grid)
 
    NowCaster::Obs::ModelLoad
 }

@@ -481,8 +481,8 @@ proc Graph::Profile::Params { Parent GR } {
 
    Graph::ParamsObs $Parent Profile $GR
 
-   Bubble::Create $Parent.scale.valx      [lindex $Graph::Bubble(ScaleX) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.valx $Graph::Bubble(ScaleX)
+   Bubble::Create $Parent.scale.valy $Graph::Bubble(ScaleY)
 
    bind $Parent.scale.valx.list <Return> "Graph::Profile::Graph $GR"
    bind $Parent.scale.valy.list <Return> "Graph::Profile::Graph $GR"

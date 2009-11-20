@@ -45,7 +45,7 @@ foreach format [glob $GDefs(Dir)/Apps/Tools/Writer/Types/*.tcl] {
 #----------------------------------------------------------------------------
 
 proc Writer::AutoSave { Type Pad { Delay 0 } } {
-   global   GDefs
+   variable Param
    variable Data
 
    if { $Type!="" } {
@@ -56,7 +56,7 @@ proc Writer::AutoSave { Type Pad { Delay 0 } } {
             after $Delay [list Writer::AutoSave $Type $Pad $Delay]
          }
       } else {
-         catch { file delete $GDefs(DirMsg)/$Type/$Data(AutoSaveFile) }
+         catch { file delete $Param(Path)/$Type/$Data(AutoSaveFile) }
       }
    }
 }
@@ -76,6 +76,7 @@ proc Writer::AutoSave { Type Pad { Delay 0 } } {
 
 proc Writer::Close { } {
    global   GDefs
+   variable Param
    variable Data
 
    #----- Liberer l'allocation des champs
@@ -90,8 +91,8 @@ proc Writer::Close { } {
    set Data(Active) 0
 
    #----- Supprimer les autosave
-   foreach type $Writer::Data(Types) {
-      catch { file delete $GDefs(DirMsg)/$type/$Data(AutoSaveFile) }
+   foreach type $Data(Types) {
+      catch { file delete $Param(Path)/$type/$Data(AutoSaveFile) }
    }
    destroy .writer
 

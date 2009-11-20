@@ -49,7 +49,6 @@ namespace eval Model {
 
    set Param(Auto)      False                          ;#Running mode
    set Param(App)       SPI                            ;#Calling application
-   set Param(Path)      $GDefs(DirData)                ;#Data path
    set Param(LogLevel)  INFO                           ;#Log level
    set Param(LogTime)   0                              ;#Log Timing
    set Param(Arch)      ""                             ;#Host architecture
@@ -115,18 +114,18 @@ namespace eval Model {
 
    #----- Bulles d'aide
 
-   set Bubble(Host)                   { "Hôte où le prétraitement météorologique et le modèle seront exécutés." \
-                                        "Host where meteorological preprocessing and model will be executed." }
-   set Bubble(Queue)                  { "Type de queue de lancement." "Type of launching queue." }
-   set Bubble(MetCPU)                 { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
-   set Bubble(NbMPItasks)             { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
-                                        "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
-   set Bubble(NbOMPthreads)           { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
-                                        "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
-   set Bubble(OMPthreadFact)          { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
-   set Bubble(IsEMail)         { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
-   set Bubble(EMail)           { "Adresse de courrier électronique." "E-mail address." }
-   set Bubble(LaunchModel)            { "Lancer le modèle" "Launch model" }
+   set Bubble(Host)          { "Hôte où le prétraitement météorologique et le modèle seront exécutés." \
+                               "Host where meteorological preprocessing and model will be executed." }
+   set Bubble(Queue)         { "Type de queue de lancement." "Type of launching queue." }
+   set Bubble(MetCPU)        { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
+   set Bubble(NbMPItasks)    { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                              "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(NbOMPthreads)  { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
+                               "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(OMPthreadFact) { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
+   set Bubble(IsEMail)       { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
+   set Bubble(EMail)         { "Adresse de courrier électronique." "E-mail address." }
+   set Bubble(LaunchModel)   { "Lancer le modèle." "Launch model." }
 
    set Bubble(PathSel) { "Liste des dépots d'experiences disponibles" "List of experiments available" }
    set Bubble(PathAdd) { "Ajouter un repertoire a la liste\ndes dépots d'experiences disponibles" "Add a path to the list of experiments available" }
@@ -151,7 +150,7 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
-   set Error(EMail)        { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+   set Error(EMail)               { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
    set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
                                     "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
    set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
@@ -1053,18 +1052,18 @@ proc Model::ParamsLaunch { Model Frame } {
    #----- Host.
    Option::Create $tabframe.params.host [lindex $Lbl(Host) $GDefs(Lang)] Model::Param(Host) 0 -1 $sim(Hosts) "Model::ParamsCheck $Model"
    pack $tabframe.params.host -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.params.host "[lindex $Bubble(Host) $GDefs(Lang)]"
+   Bubble::Create $tabframe.params.host $Bubble(Host)
 
    #----- Queue.
    Option::Create $tabframe.params.queue [lindex $Lbl(Queue) $GDefs(Lang)] Model::Param(Queue) 0 -1 $Model::Param(Queues) ""
    pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
-   Bubble::Create $tabframe.params.queue "[lindex $Bubble(Queue) $GDefs(Lang)]"
+   Bubble::Create $tabframe.params.queue $Bubble(Queue)
 
    if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" || $sim(Model)=="CANERM" } {
       #----- Nb CPUs for meteorological preprocessing.
       Option::Create $tabframe.params.metcpu [lindex $Lbl(MetCPU) $GDefs(Lang)] Model::Param(NbCPUsMeteo) 0 -1 $Model::Param(ListNbCPUsMeteo) ""
       pack $tabframe.params.metcpu -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.params.metcpu "[lindex $Bubble(MetCPU) $GDefs(Lang)]"
+      Bubble::Create $tabframe.params.metcpu $Bubble(MetCPU)
    }
 
    if { $sim(Model)=="MLDP1" } {
@@ -1072,17 +1071,17 @@ proc Model::ParamsLaunch { Model Frame } {
       #----- Nb MPI tasks for model.
       Option::Create $tabframe.params.mpi [lindex $Lbl(NbMPItasks) $GDefs(Lang)] Model::Param(NbMPItasks) 0 -1 $Model::Param(ListNbMPItasks) ""
       pack $tabframe.params.mpi -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.params.mpi "[lindex $Bubble(NbMPItasks) $GDefs(Lang)]"
+      Bubble::Create $tabframe.params.mpi $Bubble(NbMPItasks)
 
       #----- Nb OMP threads for model.
       Option::Create $tabframe.params.omp [lindex $Lbl(NbOMPthreads) $GDefs(Lang)] Model::Param(NbOMPthreads) 0 -1 $Model::Param(ListNbOMPthreads) ""
       pack $tabframe.params.omp -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.params.omp "[lindex $Bubble(NbOMPthreads) $GDefs(Lang)]"
+      Bubble::Create $tabframe.params.omp $Bubble(NbOMPthreads)
 
       #----- OMP thread factor.
       Option::Create $tabframe.params.smt [lindex $Lbl(OMPthreadFact) $GDefs(Lang)] Model::Param(OMPthreadFact) 0 -1 $Model::Param(ListOMPthreadFact) ""
       pack $tabframe.params.smt -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.params.smt "[lindex $Bubble(OMPthreadFact) $GDefs(Lang)]"
+      Bubble::Create $tabframe.params.smt $Bubble(OMPthreadFact)
    }
 
    #----- Enabling/Disabling email monitoring option.
@@ -1094,19 +1093,19 @@ proc Model::ParamsLaunch { Model Frame } {
                    pack forget $tabframe.params.email
                 }"
    pack $tabframe.params.emonitor -side top -anchor w
-   Bubble::Create $tabframe.params.emonitor "[lindex $Bubble(IsEMail) $GDefs(Lang)]"
+   Bubble::Create $tabframe.params.emonitor $Bubble(IsEMail)
 
    #----- Email address.
    Option::Create $tabframe.params.email [lindex $Lbl(EMail) $GDefs(Lang)] Model::Param(EMailSet) 1 -1 $Model::Param(ListEMail) ""
    if { $Model::Param(IsEMail) } {
       pack $tabframe.params.email -side top -anchor w -padx 2 -fill x
    }
-   Bubble::Create $tabframe.params.email "[lindex $Bubble(EMail) $GDefs(Lang)]"
+   Bubble::Create $tabframe.params.email $Bubble(EMail)
 
    #----- Button.
    button $tabframe.params.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::Launch ${Model}"
    pack $tabframe.params.launch -side top -anchor w -padx 2 -pady 2 -anchor e
-   Bubble::Create $tabframe.params.launch "[lindex $Bubble(LaunchModel) $GDefs(Lang)] ${Model}."
+   Bubble::Create $tabframe.params.launch $Bubble(LaunchModel)
 
    pack $tabframe.params -side top -padx 5 -pady 5 -fill x
 }
@@ -1230,14 +1229,14 @@ proc Model::ParamsPath { Model { ReqNo True } } {
 
    #----- Define simulation path.
    if { $ReqNo } {
-      set sim(NoSim) [Info::Request $Param(Path)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
+      set sim(NoSim) [Info::Request $Exp::Param(Path)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
    }
    set expp       "$sim(NoExp)_$sim(NameExp)"
    set simp       "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
    set prevp      "$sim(Model).$sim(NoPrev).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
 
-   set sim(Path)     "$Param(Path)/${expp}/${simp}"
-   set sim(PathPrev) "$Param(Path)/${expp}/${prevp}"
+   set sim(Path)     "$Exp::Param(Path)/${expp}/${simp}"
+   set sim(PathPrev) "$Exp::Param(Path)/${expp}/${prevp}"
 
    if { [file exists $sim(Path)] } {
       file delete -force $sim(Path)
@@ -1498,8 +1497,8 @@ proc Model::Window { { Show "" } } {
          pack .model.dock.info -side left -fill x -expand true
       pack .model.dock -side bottom -fill x
 
-      Bubble::Create .model.dock.sel [lindex $Bubble(Dock) $GDefs(Lang)]
-      Bubble::Create .model.dock.del [lindex $Bubble(Close) $GDefs(Lang)]
+      Bubble::Create .model.dock.sel $Bubble(Dock)
+      Bubble::Create .model.dock.del $Bubble(Close)
 
       TabFrame::Create .model.tab 1 Model::TypeSelect 1 350
       pack .model.tab -side top -fill both -expand true
@@ -1730,7 +1729,7 @@ proc Model::New { Parent Command Label Single } {
                      -value $type -indicatoron False -selectcolor $GDefs(ColorFrame) -command "Model::DrawCurrent" -bd 1
                   pack .expnew.group.type.t$ico -side left -fill x -expand true
 
-                  Bubble::Create .expnew.group.type.t$ico [lindex $Bubble(Type$type) $GDefs(Lang)]
+                  Bubble::Create .expnew.group.type.t$ico $Bubble(Type$type)
                }
             pack .expnew.group.lbl -side left -anchor w
             pack .expnew.group.ent -side left -fill y
@@ -1748,11 +1747,11 @@ proc Model::New { Parent Command Label Single } {
       pack .expnew.commands.create .expnew.commands.cancel -side left -fill x -expand true
    pack .expnew.commands -side top -fill x
 
-   Bubble::Create .expnew.group.ent       [lindex $Bubble(Name) $GDefs(Lang)]
-   Bubble::Create .expnew.info.coord      [lindex $Bubble(Coord) $GDefs(Lang)]
-   Bubble::Create .expnew.info            [lindex $Bubble(Info) $GDefs(Lang)]
-   Bubble::Create .expnew.commands.create [lindex $Bubble(Create) $GDefs(Lang)]
-   Bubble::Create .expnew.commands.cancel [lindex $Bubble(Cancel) $GDefs(Lang)]
+   Bubble::Create .expnew.group.ent       $Bubble(Name)
+   Bubble::Create .expnew.info.coord      $Bubble(Coord)
+   Bubble::Create .expnew.info            $Bubble(Info)
+   Bubble::Create .expnew.commands.create $Bubble(Create)
+   Bubble::Create .expnew.commands.cancel $Bubble(Cancel)
 
    trace variable SPI::Src(Info) w "Model::Source"
 }

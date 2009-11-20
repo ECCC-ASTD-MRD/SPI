@@ -33,7 +33,7 @@ namespace eval MetInfo {
 
    set Data(Path)     ""            ;#Path courant
 
-   set Data(BurpPath) "$GDefs(DirObs)/dbase/uprair/radiosonde  $GDefs(DirObs)/dbase/surface/synop $GDefs(DirObs)/dbase/surface/metar"
-   set Data(RawPath)  "$GDefs(DirObs)/rawdata/uprair/radiosonde $GDefs(DirObs)/rawdata/surface/synop $GDefs(DirObs)/rawdata/surface/metar $GDefs(DirObs)/rawdata/surface/sa/"
+   set Data(BurpPath) "/data/ade/dbase/uprair/radiosonde  /data/ade/dbase/surface/synop /data/ade/dbase/surface/metar"
+   set Data(RawPath)  "/data/ade/rawdata/uprair/radiosonde /data/ade/rawdata/surface/synop /data/ade/rawdata/surface/metar /data/ade/rawdata/surface/sa/"
    set Data(Extension) "prf sfc sfc"
 }

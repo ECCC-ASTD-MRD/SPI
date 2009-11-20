@@ -460,7 +460,6 @@ proc Writer::FVCN::GraphAreaColor { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Open { Pad File } {
-   global   GDefs
    variable Data
 
    if { [string length $File] == 0 } {
@@ -517,7 +516,6 @@ proc Writer::FVCN::Open { Pad File } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Correct { Pad } {
-   global   GDefs
    variable Data
    variable Msg
    variable Lbl
@@ -565,7 +563,6 @@ proc Writer::FVCN::Correct { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Update { Pad } {
-   global   GDefs
    variable Data
    variable Msg
 
@@ -765,14 +762,13 @@ proc Writer::FVCN::UnFormatCoord { Coord } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::GetAdvisory { Pad Name } {
-   global   GDefs
    variable Data
 
    regsub -all "\[^a-zA-Z0-9-\]" $Name - name
 
    #----- Recupere tout les fichiers transmis.
 
-   set filelist [glob -nocomplain $GDefs(DirMsg)/FVCN/*.sent*]
+   set filelist [glob -nocomplain $Writer::Param(Path)/FVCN/*.sent*]
    set no 1
 
    #----- On increment si toute les conditions suivantes sont respectees :
@@ -819,7 +815,6 @@ proc Writer::FVCN::GetAdvisory { Pad Name } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::GetNo { Name } {
-   global   GDefs
    variable Data
    variable Msg
 
@@ -827,7 +822,7 @@ proc Writer::FVCN::GetNo { Name } {
 
    #----- Recupere tout les fichiers transmis.
 
-   set filelist [glob -nocomplain $GDefs(DirMsg)/FVCN/*.sent]
+   set filelist [glob -nocomplain $Writer::Param(Path)/FVCN/*.sent]
 
    Log::Print INFO "Msg list: $filelist"
 
@@ -985,7 +980,6 @@ proc Writer::FVCN::Clear { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::LayoutInit { Pad } {
-   global   GDefs
    variable Data
    variable Bubble
 
@@ -1350,7 +1344,6 @@ proc Writer::FVCN::SetRem { Pad Text No FV } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::PageInit { Pad } {
-   global   GDefs
    variable Data
 
    $Pad.canvas delete HEADER DESC INFO ASH NEXT FOOTER WIN
@@ -1497,7 +1490,6 @@ proc Writer::FVCN::PageInit { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Read { Pad File Mode } {
-   global GDefs
    variable Data
 
    set f [open $File r]
@@ -1688,12 +1680,12 @@ proc Writer::FVCN::ToolBar { Pad } {
    pack $Pad.head.test -side left -ipadx 2 -padx 2 -fill y
    pack $Pad.head.close -side right -padx 2
 
-   Bubble::Create $Pad.head.mode  [lindex $Writer::Bubble(Select) $GDefs(Lang)]
-   Bubble::Create $Pad.head.save  [lindex $Writer::Bubble(Save) $GDefs(Lang)]
-   Bubble::Create $Pad.head.print [lindex $Writer::Bubble(Print) $GDefs(Lang)]
-   Bubble::Create $Pad.head.send  [lindex $Writer::Bubble(Send) $GDefs(Lang)]
-   Bubble::Create $Pad.head.send2 [lindex $Writer::Bubble(SendBackup) $GDefs(Lang)]
-   Bubble::Create $Pad.head.close [lindex $Writer::Bubble(Close) $GDefs(Lang)]
+   Bubble::Create $Pad.head.mode  $Writer::Bubble(Select)
+   Bubble::Create $Pad.head.save  $Writer::Bubble(Save)
+   Bubble::Create $Pad.head.print $Writer::Bubble(Print)
+   Bubble::Create $Pad.head.send  $Writer::Bubble(Send)
+   Bubble::Create $Pad.head.send2 $Writer::Bubble(SendBackup)
+   Bubble::Create $Pad.head.close $Writer::Bubble(Close)
 }
 
 #----------------------------------------------------------------------------
@@ -2060,7 +2052,6 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::UpdateGraphItems { Pad } {
-   global GDefs
    variable Data
 
    if { [info exists Data(Page$Pad)] &&  [winfo exists $Data(Page$Pad)] } {
@@ -2141,7 +2132,6 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Write { Pad Sent } {
-   global GDefs
    variable Data
 
    if { $Sent==-1 } {
@@ -2175,14 +2165,14 @@ proc Writer::FVCN::Write { Pad Sent } {
          set Data(Sent$Pad) 1
       }
 
-      if { [file exists $GDefs(DirMsg)/FVCN/$file] } {
+      if { [file exists $Writer::Param(Path)/FVCN/$file] } {
          if { ![Dialog::Default .writer 300 WARNING $Writer::Msg(Exist) "\n\t$file\n" 0 $Writer::Lbl(No) $Writer::Lbl(Yes)] } {
             return ""
          }
       }
    }
 
-   set f [open $GDefs(DirMsg)/FVCN/$file w]
+   set f [open $Writer::Param(Path)/FVCN/$file w 0660]
 
    puts $f "$Data(No$Pad)"
    puts $f "$Data(Id$Pad)"
@@ -2217,9 +2207,6 @@ proc Writer::FVCN::Write { Pad Sent } {
    }
 
    close $f
-
-   exec chgrp cmcfe $GDefs(DirMsg)/FVCN/$file
-   exec chmod 660 $GDefs(DirMsg)/FVCN/$file
 
    return $file
 }

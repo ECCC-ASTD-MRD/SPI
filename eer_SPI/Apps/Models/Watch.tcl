@@ -25,10 +25,12 @@ namespace eval Watch {
    variable Msg
    variable Error
    variable Bubble
+   variable Param
+
+   set Param(Path)        ""
 
    #----- Variables relatives aux Watchs
    set Data(Frame)         ""
-   set Data(Path)          $GDefs(DirWatch)
    set Data(Select)        ""                                              ;#Experience selectionnee
 
    #----- Liste des branches ouvertes pour chacun des niveaux
@@ -215,9 +217,9 @@ proc Watch::Create { Frame } {
 
    pack $Frame.info -side top -fill both -expand true  -padx 2 -pady 2
 
-   Bubble::Create $Frame.opt.open   [lindex $Model::Bubble(Plus) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.close  [lindex $Model::Bubble(Minus) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.bubble [lindex $Model::Bubble(Bubble) $GDefs(Lang)]
+   Bubble::Create $Frame.opt.open   $Model::Bubble(Plus)
+   Bubble::Create $Frame.opt.close  $Model::Bubble(Minus)
+   Bubble::Create $Frame.opt.bubble $Model::Bubble(Bubble)
 }
 
 #-------------------------------------------------------------------------------
@@ -610,6 +612,7 @@ proc Watch::Select { Source Project } {
 proc Watch::New { } {
    global GDefs
    variable Data
+   variable Param
    variable Error
    variable Sim
 
@@ -652,7 +655,7 @@ proc Watch::New { } {
    set Sim(Lat)     $Data(Lat)
    set Sim(Lon)     $Data(Lon)
 
-   exec echo "[Info::Code Watch::Sim]" >> $Data(Path)/$Data(Project)/sim.pool
+   exec echo "[Info::Code Watch::Sim]" >> $Param(Path)/$Data(Project)/sim.pool
 
    Model::Check 0
    Model::TypeSelect none 2
@@ -983,9 +986,10 @@ proc Watch::SelectResult { Tag Model Info Watch Project Result } {
 
 proc Watch::SimEdit { } {
    variable Data
+   variable Param
 
    #----- Suppression de l'ancienne ligne de pool
-   set path $Data(Path)/$Data(Project)/sim.pool
+   set path $Param(Path)/$Data(Project)/sim.pool
    Info::Delete $path "$Data(OldInfo)"
 
    #----- Ajout de la nouvelle ligne de pool
@@ -1008,6 +1012,7 @@ proc Watch::SimEdit { } {
 
 proc Watch::SimSuppress { } {
    global GDefs
+   variable Param
    variable Data
    variable Lbl
    variable Msg
@@ -1018,7 +1023,7 @@ proc Watch::SimSuppress { } {
    }
 
    #----- Suppression de la simulation dans le pool
-   set path $Data(Path)/$Data(Project)/sim.pool
+   set path $Param(Path)/$Data(Project)/sim.pool
    Info::Delete $path "$Data(Info)"
 
    set model [Info::Strip $Data(Info) Model]
@@ -1026,7 +1031,7 @@ proc Watch::SimSuppress { } {
    set no    [Info::Strip $Data(Info) NoSim]
 
    #----- Supprimer tous les resultats pour la source
-   if { [llength [set files [glob -nocomplain $Data(Path)/$Data(Project)/data/*_${name}/${model}.${no}*]]] } {
+   if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_${name}/${model}.${no}*]]] } {
       eval file delete -force $files
    }
 
@@ -1053,6 +1058,7 @@ proc Watch::SimSuppress { } {
 proc Watch::Suppress { } {
    global   GDefs
    variable Data
+   variable Param
    variable Msg
    variable Lbl
 
@@ -1061,14 +1067,14 @@ proc Watch::Suppress { } {
    }
 
    #----- Enlever la watch du pool
-   set path $Data(Path)/$Data(Project)/sim.pool
+   set path $Param(Path)/$Data(Project)/sim.pool
    if { [file exists $path] } {
       file rename -force $path "$path.old"
       catch { exec egrep -i -v ".*$Data(Name).*" "$path.old" > $path }
    }
 
    #----- Supprimer tous les resultats pour la source
-   if { [llength [set files [glob -nocomplain $Data(Path)/$Data(Project)/data/*_$Data(Name)]]] } {
+   if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_$Data(Name)]]] } {
       eval file delete -force $files
    }
 
@@ -1095,9 +1101,10 @@ proc Watch::Suppress { } {
 
 proc Watch::Read { } {
    variable Data
+   variable Param
 
    #----- Trouve la liste des noms de tous les projets (un projet = un dossier (directory))
-   foreach proj [set Data(Projects) [glob -nocomplain -types d -directory $Data(Path) -tails *]] {
+   foreach proj [set Data(Projects) [glob -nocomplain -types d -directory $Param(Path) -tails *]] {
       set Data(Sources$proj) {}
    }
 
@@ -1123,6 +1130,7 @@ proc Watch::Read { } {
 proc Watch::ReadProject { Project } {
    global GDefs
    variable Data
+   variable Param
 
    array unset Data Models*
    array unset Data Sims*
@@ -1134,10 +1142,10 @@ proc Watch::ReadProject { Project } {
    set Data(Sources$Project) {}
 
    #----- Verifie que les fichiers necessaires sont presents
-   if { [file exists $Data(Path)/$Project/sim.pool] } {
+   if { [file exists $Param(Path)/$Project/sim.pool] } {
 
       #----- Trouve les lignes de pool
-      foreach info [Info::List $Data(Path)/$Project/sim.pool] {
+      foreach info [Info::List $Param(Path)/$Project/sim.pool] {
          set model   [Info::Strip $info Model]
          set name    [Info::Strip $info NameExp]
          set nosim   [Info::Strip $info NoSim]
@@ -1156,7 +1164,7 @@ proc Watch::ReadProject { Project } {
          lappend Data(Sims$Project$src$model) "$nosim \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$Project$src$model$nosim) [glob -nocomplain  $Data(Path)/$Project/data/*_$src/${model}.${nosim}.*]
+         set Data(Results$Project$src$model$nosim) [glob -nocomplain  $Param(Path)/$Project/data/*_$src/${model}.${nosim}.*]
       }
       set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
    }
@@ -1182,6 +1190,7 @@ proc Watch::ReadProject { Project } {
 
 proc Watch::Write { Modelbase } {
    global GDefs
+   variable Param
    variable Data
    variable Error
 
@@ -1191,7 +1200,7 @@ proc Watch::Write { Modelbase } {
    set pool [Info::Code ${Modelbase}::Sim]
 
    #----- Regarder s'il existe deja une ligne de pool concernant cette watch
-   set path $Data(Path)/$Data(Project)/sim.pool
+   set path $Param(Path)/$Data(Project)/sim.pool
    set oldpool [Info::Find $path $Modelbase Model $sim(Model) NoSim $sim(NoSim) NameExp $sim(NameExp)]
 
    if { $oldpool!="" } {

@@ -22,10 +22,10 @@ namespace eval Exp {
    variable Lbl
    variable Msg
 
-   set Param(Paths)     [list $GDefs(DirData)]              ;#Liste des fichier d'experiences
-   set Param(Path)      [lindex $Param(Paths) 0]            ;#Fichier d'experiences courant
-   set Param(StoreHost) goodenough
-   set Param(StorePath) /tmp/ArchiveTest
+   set Param(Paths)     {}                                  ;#Liste des fichier d'experiences
+   set Param(Path)      ""                                  ;#Fichier d'experiences courant
+   set Param(StoreHost) ""
+   set Param(StorePath) /tmp
    set Param(Proc)      $GDefs(Dir)/Apps/Models/procedures_0
 
    #----- Variables relatives aux experiences
@@ -245,14 +245,14 @@ proc Exp::Create { Frame } {
 
    Exp::Procedure $Frame.info.proc.text
 
-   Bubble::Create $Frame.path.sel     [lindex $Model::Bubble(PathAdd) $GDefs(Lang)]
-   Bubble::Create $Frame.path.list    [lindex $Model::Bubble(PathSel) $GDefs(Lang)]
+   Bubble::Create $Frame.path.sel     $Model::Bubble(PathAdd)
+   Bubble::Create $Frame.path.list    $Model::Bubble(PathSel)
 
-   Bubble::Create $Frame.opt.open     [lindex $Model::Bubble(Plus) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.close    [lindex $Model::Bubble(Minus) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.writer   [lindex $Writer::Param(Title) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.bulletin [lindex $Bulletin::Param(Title) $GDefs(Lang)]
-   Bubble::Create $Frame.opt.bubble   [lindex $Model::Bubble(Bubble) $GDefs(Lang)]
+   Bubble::Create $Frame.opt.open     $Model::Bubble(Plus)
+   Bubble::Create $Frame.opt.close    $Model::Bubble(Minus)
+   Bubble::Create $Frame.opt.writer   $Writer::Param(Title)
+   Bubble::Create $Frame.opt.bulletin $Bulletin::Param(Title)
+   Bubble::Create $Frame.opt.bubble   $Model::Bubble(Bubble)
 }
 
 proc Exp::Procedure { Text  } {
@@ -766,7 +766,6 @@ proc Exp::New { } {
       exec echo "01 02 03 04" > $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/IP2List.txt
   }
 
-   exec chgrp -R $GDefs(Group) $Param(Path)/${noexp}_$Data(Name)
    exec chmod -R 755 $Param(Path)/${noexp}_$Data(Name)
 
    Model::Check 0

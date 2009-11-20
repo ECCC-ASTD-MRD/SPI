@@ -455,11 +455,11 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
   #----- Creation des bulles
 
-   Bubble::Create .filebox.path.home     [lindex $Bubble(Back) $GDefs(Lang)]
-   Bubble::Create .filebox.path.save     [lindex $Bubble(Add)  $GDefs(Lang)]
-   Bubble::Create .filebox.path.del      [lindex $Bubble(Del)  $GDefs(Lang)]
-   Bubble::Create .filebox.path.name.box [lindex $Bubble(Mem)  $GDefs(Lang)]
-   Bubble::Create .filebox.file.pattern  [lindex $Bubble(Pattern) $GDefs(Lang)]
+   Bubble::Create .filebox.path.home     $Bubble(Back)
+   Bubble::Create .filebox.path.save     $Bubble(Add)
+   Bubble::Create .filebox.path.del      $Bubble(Del)
+   Bubble::Create .filebox.path.name.box $Bubble(Mem)
+   Bubble::Create .filebox.file.pattern  $Bubble(Pattern)
 
    switch $Data(Mode) {
 

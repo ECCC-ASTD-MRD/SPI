@@ -155,24 +155,24 @@ proc Mapper::Window { } {
    bind $Mapper::Data(Tab1).select.list <ButtonRelease-1>  { Mapper::Params }
    bind $Mapper::Data(Tab1).select.list <Double-ButtonRelease-1>  { Mapper::Params True }
 
-   Bubble::Create .mapper.dock.sel          [lindex $Bubble(Dock) $GDefs(Lang)]
-   Bubble::Create .mapper.dock.del          [lindex $Bubble(Close) $GDefs(Lang)]
-   Bubble::Create $Data(Tab2).head.mode     [lindex $Bubble(DepotSelect) $GDefs(Lang)]
-   Bubble::Create $Data(Tab2).head.reset    [lindex $Bubble(DepotReset) $GDefs(Lang)]
-   Bubble::Create $Data(Tab2).head.add      [lindex $Bubble(DepotAdd) $GDefs(Lang)]
-   Bubble::Create $Data(Tab2).head.del      [lindex $Bubble(DepotDel) $GDefs(Lang)]
-   Bubble::Create $Data(Tab2).head.params   [lindex $Bubble(DepotParams) $GDefs(Lang)]
+   Bubble::Create .mapper.dock.sel          $Bubble(Dock)
+   Bubble::Create .mapper.dock.del          $Bubble(Close)
+   Bubble::Create $Data(Tab2).head.mode     $Bubble(DepotSelect)
+   Bubble::Create $Data(Tab2).head.reset    $Bubble(DepotReset)
+   Bubble::Create $Data(Tab2).head.add      $Bubble(DepotAdd)
+   Bubble::Create $Data(Tab2).head.del      $Bubble(DepotDel)
+   Bubble::Create $Data(Tab2).head.params   $Bubble(DepotParams)
 
-   Bubble::Create $Data(Tab1).head.idx.up   [lindex $Bubble(Down) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.idx.down [lindex $Bubble(Up) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.del      [lindex $Bubble(Del) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.front    [lindex $Bubble(Front) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.back     [lindex $Bubble(Back) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.params   [lindex $Bubble(Params) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.loc      [lindex $Bubble(Locate) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.zoom     [lindex $Bubble(Zoom) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.mode     [lindex $Bubble(Mode) $GDefs(Lang)]
-   Bubble::Create $Data(Tab1).head.open     [lindex $Bubble(File) $GDefs(Lang)]
+   Bubble::Create $Data(Tab1).head.idx.up   $Bubble(Down)
+   Bubble::Create $Data(Tab1).head.idx.down $Bubble(Up)
+   Bubble::Create $Data(Tab1).head.del      $Bubble(Del)
+   Bubble::Create $Data(Tab1).head.front    $Bubble(Front)
+   Bubble::Create $Data(Tab1).head.back     $Bubble(Back)
+   Bubble::Create $Data(Tab1).head.params   $Bubble(Params)
+   Bubble::Create $Data(Tab1).head.loc      $Bubble(Locate)
+   Bubble::Create $Data(Tab1).head.zoom     $Bubble(Zoom)
+   Bubble::Create $Data(Tab1).head.mode     $Bubble(Mode)
+   Bubble::Create $Data(Tab1).head.open     $Bubble(File)
 
    trace add variable Viewport::Data(Data) write Mapper::Toggler
    Viewport::FollowerAdd Mapper
@@ -502,27 +502,27 @@ proc Mapper::ParamsGDAL { Object Tab } {
             pack $Data(Frame2).pos.crop -side top -fill x -padx 5
          pack $Data(Frame2).pos -side top -fill x -padx 5 -pady 5 -ipady 2
 
-         Bubble::Create $Data(Frame2).col.curve.map [lindex $Bubble(ColorMap) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.sel [lindex $Bubble(CurveBand) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.def.curve [lindex $Bubble(Curve) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.def.tran [lindex $Bubble(Transparency) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.def.res [lindex $Bubble(Resolution) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.def.interp [lindex $Bubble(Interp) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.def.nodata [lindex $Bubble(NoData) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.info.min [lindex $Bubble(CurveMin) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.limit.histo  [lindex $Bubble(Histo) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.info.now [lindex $Bubble(CurveNow) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.info.nb [lindex $Bubble(CurveNb) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.info.max [lindex $Bubble(CurveMax) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.limit.min [lindex $Bubble(CurveLimitMin) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).col.curve.limit.max [lindex $Bubble(CurveLimitMax) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).band [lindex $Bubble(Band) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).pos.topo.fac [lindex $Bubble(TopoFactor) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).pos.topo.sel [lindex $Bubble(Topo) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).pos.sample.val [lindex $Bubble(Sample) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).pos.crop.active [lindex $Bubble(CropTool) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).pos.crop.show [lindex $Bubble(CropShow) $GDefs(Lang)]
-         Bubble::Create $Data(Frame2).pos.crop.mode [lindex $Bubble(CropDo) $GDefs(Lang)]
+         Bubble::Create $Data(Frame2).col.curve.map $Bubble(ColorMap)
+         Bubble::Create $Data(Frame2).col.sel $Bubble(CurveBand)
+         Bubble::Create $Data(Frame2).col.def.curve $Bubble(Curve)
+         Bubble::Create $Data(Frame2).col.def.tran $Bubble(Transparency)
+         Bubble::Create $Data(Frame2).col.def.res $Bubble(Resolution)
+         Bubble::Create $Data(Frame2).col.def.interp $Bubble(Interp)
+         Bubble::Create $Data(Frame2).col.def.nodata $Bubble(NoData)
+         Bubble::Create $Data(Frame2).col.curve.info.min $Bubble(CurveMin)
+         Bubble::Create $Data(Frame2).col.curve.limit.histo  $Bubble(Histo)
+         Bubble::Create $Data(Frame2).col.curve.info.now $Bubble(CurveNow)
+         Bubble::Create $Data(Frame2).col.curve.info.nb $Bubble(CurveNb)
+         Bubble::Create $Data(Frame2).col.curve.info.max $Bubble(CurveMax)
+         Bubble::Create $Data(Frame2).col.curve.limit.min $Bubble(CurveLimitMin)
+         Bubble::Create $Data(Frame2).col.curve.limit.max $Bubble(CurveLimitMax)
+         Bubble::Create $Data(Frame2).band $Bubble(Band)
+         Bubble::Create $Data(Frame2).pos.topo.fac $Bubble(TopoFactor)
+         Bubble::Create $Data(Frame2).pos.topo.sel $Bubble(Topo)
+         Bubble::Create $Data(Frame2).pos.sample.val $Bubble(Sample)
+         Bubble::Create $Data(Frame2).pos.crop.active $Bubble(CropTool)
+         Bubble::Create $Data(Frame2).pos.crop.show $Bubble(CropShow)
+         Bubble::Create $Data(Frame2).pos.crop.mode $Bubble(CropDo)
 
       set Data(Frame1) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Ref) $GDefs(Lang)] False ""]
 
@@ -553,10 +553,10 @@ proc Mapper::ParamsGDAL { Object Tab } {
             pack $Data(Frame1).trans.fwd $Data(Frame1).trans.bck -fill x -side top -padx 5
          pack $Data(Frame1).trans -side top -fill x -padx 5 -pady 5 -ipady 2
 
-         Bubble::Create $Data(Frame1).projhead.file [lindex $Bubble(ProjLoad) $GDefs(Lang)]
-         Bubble::Create $Data(Frame1).projhead.tab  [lindex $Bubble(ProjRef) $GDefs(Lang)]
-         Bubble::Create $Data(Frame1).proj [lindex $Bubble(Projection) $GDefs(Lang)]
-         Bubble::Create $Data(Frame1).trans [lindex $Bubble(Transform) $GDefs(Lang)]
+         Bubble::Create $Data(Frame1).projhead.file $Bubble(ProjLoad)
+         Bubble::Create $Data(Frame1).projhead.tab  $Bubble(ProjRef)
+         Bubble::Create $Data(Frame1).proj $Bubble(Projection)
+         Bubble::Create $Data(Frame1).trans $Bubble(Transform)
 
       set Data(Frame3) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Meta) $GDefs(Lang)] False ""]
          frame $Data(Frame3).meta
@@ -626,11 +626,11 @@ proc Mapper::ParamsGDAL { Object Tab } {
             pack $Data(Frame4).georef.hfrm -side left -fill both -expand True -padx 2 -pady 5
          pack $Data(Frame4).georef -side top -expand true -fill both -padx 5 -pady 5
 
-         Bubble::Create $Data(Frame4).georef.tool.add    [lindex $Bubble(RefAdd) $GDefs(Lang)]
-         Bubble::Create $Data(Frame4).georef.tool.del    [lindex $Bubble(RefDel) $GDefs(Lang)]
-         Bubble::Create $Data(Frame4).georef.tool.mode   [lindex $Bubble(RefMode) $GDefs(Lang)]
-         Bubble::Create $Data(Frame4).georef.tool.calcul [lindex $Bubble(RefCalcul) $GDefs(Lang)]
-         Bubble::Create $Data(Frame4).georef.tool.fit    [lindex $Bubble(RefFit) $GDefs(Lang)]
+         Bubble::Create $Data(Frame4).georef.tool.add    $Bubble(RefAdd)
+         Bubble::Create $Data(Frame4).georef.tool.del    $Bubble(RefDel)
+         Bubble::Create $Data(Frame4).georef.tool.mode   $Bubble(RefMode)
+         Bubble::Create $Data(Frame4).georef.tool.calcul $Bubble(RefCalcul)
+         Bubble::Create $Data(Frame4).georef.tool.fit    $Bubble(RefFit)
 
       frame .mapperparams.com
          checkbutton .mapperparams.com.real -image DOCSEL -bd 1 -relief raised \
@@ -1190,8 +1190,8 @@ proc Mapper::ParamsOGR { Object Tab } {
             pack $Data(Frame1).proj.val -side right -fill both -expand true -padx 5 -pady 5
          pack  $Data(Frame1).proj -side top -fill both -expand true -padx 5 -pady 5
 
-         Bubble::Create $Data(Frame1).projhead.file [lindex $Mapper::Bubble(ProjLoad) $GDefs(Lang)]
-         Bubble::Create $Data(Frame1).projhead.tab  [lindex $Mapper::Bubble(ProjRef) $GDefs(Lang)]
+         Bubble::Create $Data(Frame1).projhead.file $Mapper::Bubble(ProjLoad)
+         Bubble::Create $Data(Frame1).projhead.tab  $Mapper::Bubble(ProjRef)
 
       set Data(Frame3) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Feature) $GDefs(Lang)] False ""]
 
@@ -1300,7 +1300,7 @@ proc Mapper::SelectOGR { Object } {
             -relief raised -width 2 -bd 1
          pack $Data(Frame4).fr$n.lbl $Data(Frame4).fr$n.op $Data(Frame4).fr$n.sel -side left -fill y
 
-         Bubble::Create $Data(Frame4).fr$n.op [lindex $Bubble(Op) $GDefs(Lang)]
+         Bubble::Create $Data(Frame4).fr$n.op $Bubble(Op)
 
       menu $Data(Frame4).fr$n.op.menu
          $Data(Frame4).fr$n.op.menu add command -label ""   -command "set Mapper::Select(Op$Object$field) \"\""
@@ -1592,8 +1592,8 @@ proc Mapper::ParamsModel { Object Tab } {
             pack $Data(Frame1).proj.val -side right -fill both -expand true -padx 5 -pady 5
          pack  $Data(Frame1).proj -side top -fill both -expand true -padx 5 -pady 5
 
-         Bubble::Create $Data(Frame1).projhead.file [lindex $Mapper::Bubble(ProjLoad) $GDefs(Lang)]
-         Bubble::Create $Data(Frame1).projhead.tab  [lindex $Mapper::Bubble(ProjRef) $GDefs(Lang)]
+         Bubble::Create $Data(Frame1).projhead.file $Mapper::Bubble(ProjLoad)
+         Bubble::Create $Data(Frame1).projhead.tab  $Mapper::Bubble(ProjRef)
 
          labelframe $Data(Frame1).matrix -text [lindex $Lbl(Matrix) $GDefs(Lang)]
             frame $Data(Frame1).matrix.loc

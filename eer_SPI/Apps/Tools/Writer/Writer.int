@@ -90,7 +90,7 @@ proc Writer::Menu { } {
    menu .writer.menu.win.menu
       .writer.menu.win.menu add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu .writer.menu.win.menu.new
       .writer.menu.win.menu add command -label [lindex $Lbl(Open) $GDefs(Lang)] \
-         -command { Writer::PadNew "" Open NEW [FileBox::Create .writer $GDefs(DirMsg) Load [list {EER Messages {*.msg*}}] ] }
+         -command { Writer::PadNew "" Open NEW [FileBox::Create .writer $Writer::Param(Path) Load [list {EER Messages {*.msg*}}] ] }
       .writer.menu.win.menu add command -label [lindex $Lbl(Close) $GDefs(Lang)] \
          -command { Writer::PadClose 1 }
       .writer.menu.win.menu add command -label [lindex $Lbl(Save) $GDefs(Lang)] \

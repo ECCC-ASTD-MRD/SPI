@@ -428,7 +428,7 @@ proc Graph::Compare::Params { Parent GR } {
 
    Graph::ParamsObs $Parent Compare $GR
 
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.valy $Graph::Bubble(ScaleY)
 
    bind $Parent.scale.valy.list <Return>  "Graph::Compare::Graph $GR"
 }

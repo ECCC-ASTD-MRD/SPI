@@ -1897,14 +1897,14 @@ proc Viewport::ParamFrame { Frame Apply } {
 
       pack $Data(Frame).left $Data(Frame).layer -side left -fill both -expand true -padx 5 -pady 5
 
-   Bubble::Create $Data(Frame).proj.type.list.select [lindex $Bubble(Proj)    $GDefs(Lang)]
-   Bubble::Create $Data(Frame).left.ras.topo         [lindex $Bubble(Topo)    $GDefs(Lang)]
-   Bubble::Create $Data(Frame).left.ras.sun          [lindex $Bubble(Sun)     $GDefs(Lang)]
-   Bubble::Create $Data(Frame).left.ras.bath         [lindex $Bubble(Bath)    $GDefs(Lang)]
-   Bubble::Create $Data(Frame).left.ras.text         [lindex $Bubble(Texture) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).left.scale            [lindex $Bubble(Elev)    $GDefs(Lang)]
-   Bubble::Create $Data(Frame).layer                 [lindex $Bubble(Vector)  $GDefs(Lang)]
-   Bubble::Create $Data(Frame).left.sun              [lindex $Bubble(Sun)     $GDefs(Lang)]
+   Bubble::Create $Data(Frame).proj.type.list.select $Bubble(Proj)
+   Bubble::Create $Data(Frame).left.ras.topo         $Bubble(Topo)
+   Bubble::Create $Data(Frame).left.ras.sun          $Bubble(Sun)
+   Bubble::Create $Data(Frame).left.ras.bath         $Bubble(Bath)
+   Bubble::Create $Data(Frame).left.ras.text         $Bubble(Texture)
+   Bubble::Create $Data(Frame).left.scale            $Bubble(Elev)
+   Bubble::Create $Data(Frame).layer                 $Bubble(Vector)
+   Bubble::Create $Data(Frame).left.sun              $Bubble(Sun)
 }
 
 #-------------------------------------------------------------------------------

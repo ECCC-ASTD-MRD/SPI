@@ -877,7 +877,6 @@ proc RSMC::PrintWidget { Frame } {
 #----------------------------------------------------------------------------
 
 proc RSMC::JoinTransfert { Frame } {
-   global GDefs
    variable Sim
    variable Data
    variable Page
@@ -893,7 +892,7 @@ proc RSMC::JoinTransfert { Frame } {
    }
 
    set data [Viewport::Assigned $Frame $Page(VP) { fstdfield trajectory observation }]
-   set path "$GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/Output/RSMCJoin"
+   set path "$Exp::Param(Path)/$Sim(NoExp)_$Sim(Name)/Output/RSMCJoin"
 
    if { ![file exists $path] } {
       file mkdir $path
@@ -901,7 +900,7 @@ proc RSMC::JoinTransfert { Frame } {
 
    #----- Recuperer la RUN
 
-   set file [exec cat $GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/$Sim(Path)/tmp/data_std_sim.eta]
+   set file [exec cat $Exp::Param(Path)/$Sim(NoExp)_$Sim(Name)/$Sim(Path)/tmp/data_std_sim.eta]
    set run  [string range [lindex [split [lindex $file end] "/"] end] 8 9]
    exec echo $run > $path/RUN.txt
 

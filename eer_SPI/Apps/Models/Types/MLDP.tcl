@@ -197,7 +197,7 @@ proc MLDP::CreateScriptInput { } {
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_CLEAN=1"
-   puts $file "MODEL_TRACE=$GDefs(DirData)/trace"
+   puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
    puts $file ""
    puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
    puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"

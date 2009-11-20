@@ -203,7 +203,7 @@ proc INFO::LayoutInit { Frame } {
 
    menubutton $Frame.name -textvariable INFO::Data(Name) -relief flat -bd 1 -bg $GDefs(ColorHighLight)\
        -font XFont20 -menu $Frame.name.list
-   Bubble::Create $Frame.name  [lindex $Bubble(Name) $GDefs(Lang)]
+   Bubble::Create $Frame.name $Bubble(Name)
 
    menu $Frame.name.list -tearoff 0 -bd 1 -bg $GDefs(ColorHighLight) -activeborderwidth 1
    foreach name $Data(Names) {
@@ -214,7 +214,7 @@ proc INFO::LayoutInit { Frame } {
 
    menubutton $Frame.products -text "Products :" -relief flat -bd 1 -bg $GDefs(ColorHighLight) \
       -font XFont10 -menu $Frame.products.list
-   Bubble::Create $Frame.products  [lindex $Bubble(Products) $GDefs(Lang)]
+   Bubble::Create $Frame.products $Bubble(Products)
 
    set no 0
    menu $Frame.products.list -tearoff 0 -bd 1 -activeborderwidth 1 -bg $GDefs(ColorHighLight)
@@ -228,7 +228,7 @@ proc INFO::LayoutInit { Frame } {
 
    menubutton $Frame.situ -textvariable INFO::Data(Situation) -relief flat -bd 1 -bg $GDefs(ColorHighLight)\
        -font XFont24 -menu $Frame.situ.list
-   Bubble::Create $Frame.situ  [lindex $Bubble(Situation) $GDefs(Lang)]
+   Bubble::Create $Frame.situ $Bubble(Situation)
 
    menu $Frame.situ.list -tearoff 0 -bd 1 -activeborderwidth 1 -bg $GDefs(ColorHighLight)
    foreach situation $Data(Situations) {
@@ -617,7 +617,7 @@ proc INFO::RSMCJoin { Frame } {
       return
    }
 
-   set path "$GDefs(DirData)/$Sim(NoExp)_$Sim(Name)/Output/RSMCJoin"
+   set path "$Exp::Param(Path)/$Sim(NoExp)_$Sim(Name)/Output/RSMCJoin"
 
    if { ![file exists $path] } {
       file mkdir $path

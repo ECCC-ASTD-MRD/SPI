@@ -41,10 +41,6 @@ namespace eval TRAJ {
    set Msg(SATNET)       { "Transfert sur SATNET en cours ..." "Transferring on SATNET" }
    set Msg(FTP)          { "Transfert sur site FTP en cours ..." "Transferring on FTP site" }
 
-   #----- Constantes
-
-   set Data(Path)       $GDefs(DirData)  ;#Repertoire des trajectoires
-
    #----- Definitions des numeros de cartes
 
    set OCXNO(Test) ca0493c    ;#No d'envoi pour test

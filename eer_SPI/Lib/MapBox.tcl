@@ -526,10 +526,10 @@ proc MapBox::Create { Parent Apply Map args } {
       pack $fr.name -side left -fill x -expand true -padx 2
       pack $fr.save $fr.del -side left -padx 2
 
-      Bubble::Create $$fr.name      [lindex $Bubble(List) $GDefs(Lang)]
-      Bubble::Create $fr.sel.save   [lindex $Bubble(Save) $GDefs(Lang)]
-      Bubble::Create $fr.sel.del    [lindex $Bubble(Del)  $GDefs(Lang)]
-      Bubble::Create $fr.sel.name   [lindex $Bubble(Name) $GDefs(Lang)]
+      Bubble::Create $$fr.name     $Bubble(List)
+      Bubble::Create $fr.sel.save  $Bubble(Save)
+      Bubble::Create $fr.sel.del   $Bubble(Del)
+      Bubble::Create $fr.sel.name  $Bubble(Name)
 
       MapBox::List $fr.name
    pack .mapbox.fr.list -side top -fill both -padx 5 -pady 5
@@ -597,13 +597,13 @@ proc MapBox::Create { Parent Apply Map args } {
       pack $fr.interp $fr.curve $fr.min $fr.max $fr.red $fr.green $fr.blue $fr.alpha -fill x -padx 2
    pack .mapbox.fr.params -side top -fill both -padx 5 -pady 5 -ipady 2
 
-      Bubble::Create $fr.min   [lindex $Bubble(Min)   $GDefs(Lang)]
-      Bubble::Create $fr.max   [lindex $Bubble(Max)   $GDefs(Lang)]
-      Bubble::Create $fr.red   [lindex $Bubble(Red)   $GDefs(Lang)]
-      Bubble::Create $fr.green [lindex $Bubble(Green) $GDefs(Lang)]
-      Bubble::Create $fr.blue  [lindex $Bubble(Blue)  $GDefs(Lang)]
-      Bubble::Create $fr.alpha [lindex $Bubble(Alpha) $GDefs(Lang)]
-      Bubble::Create $fr.curve [lindex $Bubble(Curve) $GDefs(Lang)]
+      Bubble::Create $fr.min   $Bubble(Min)
+      Bubble::Create $fr.max   $Bubble(Max)
+      Bubble::Create $fr.red   $Bubble(Red)
+      Bubble::Create $fr.green $Bubble(Green)
+      Bubble::Create $fr.blue  $Bubble(Blue)
+      Bubble::Create $fr.alpha $Bubble(Alpha)
+      Bubble::Create $fr.curve $Bubble(Curve)
 
    #----- Edition de palette
 
@@ -620,7 +620,7 @@ proc MapBox::Create { Parent Apply Map args } {
 
    MapBox::ControlInit .mapbox.fr.edit.map
    .mapbox.fr.edit.map bind MAPBOXIMG <ButtonPress-3> { MapBox::ControlPopup .mapbox.fr.edit.map %X %Y %x -1 }
-   Bubble::Create .mapbox.fr.edit.map  [lindex $Bubble(Map) $GDefs(Lang)]
+   Bubble::Create .mapbox.fr.edit.map $Bubble(Map)
 
    #----- Commandes
 
@@ -633,9 +633,9 @@ proc MapBox::Create { Parent Apply Map args } {
       pack .mapbox.cmd.apply .mapbox.cmd.close -side left -fill x -expand true
    pack .mapbox.cmd -side bottom -fill x -padx 5 -pady 5
 
-   Bubble::Create .mapbox.cmd.real  [lindex $Bubble(Real) $GDefs(Lang)]
-   Bubble::Create .mapbox.cmd.apply [lindex $Bubble(Apply) $GDefs(Lang)]
-   Bubble::Create .mapbox.cmd.close [lindex $Bubble(Close) $GDefs(Lang)]
+   Bubble::Create .mapbox.cmd.real  $Bubble(Real)
+   Bubble::Create .mapbox.cmd.apply $Bubble(Apply)
+   Bubble::Create .mapbox.cmd.close $Bubble(Close)
 
    #----- Afficher les valeurs si presentes
 

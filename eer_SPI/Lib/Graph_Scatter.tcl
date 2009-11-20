@@ -598,12 +598,12 @@ proc Graph::Scatter::Params { Parent GR } {
 
    Graph::ParamsScaleUniform Scatter $GR
 
-   Bubble::Create $Parent.scale.sel.stat  [lindex $Graph::Bubble(Stat) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.sel.sel   [lindex $Graph::Bubble(Select) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.equiv     [lindex $Graph::Bubble(Uniform) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valx      [lindex $Graph::Bubble(ScaleX) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
-   Bubble::Create $Parent.fit.sel         [lindex $Graph::Bubble(Fit) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.sel.stat $Graph::Bubble(Stat)
+   Bubble::Create $Parent.scale.sel.sel  $Graph::Bubble(Select)
+   Bubble::Create $Parent.scale.equiv    $Graph::Bubble(Uniform)
+   Bubble::Create $Parent.scale.valx     $Graph::Bubble(ScaleX)
+   Bubble::Create $Parent.scale.valy     $Graph::Bubble(ScaleY)
+   Bubble::Create $Parent.fit.sel        $Graph::Bubble(Fit)
 
    bind $Parent.scale.valx.list <Return>     "Graph::Scatter::Graph $GR"
    bind $Parent.scale.valy.list <Return>     "Graph::Scatter::Graph $GR"

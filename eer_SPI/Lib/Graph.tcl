@@ -677,9 +677,9 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
       frame $Data(Tab).font
       pack $Data(Tab).font -side bottom -fill x -anchor s
 
-      Bubble::Create $Data(Tab).head.sel   [lindex $Bubble(Mode) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.reset [lindex $Bubble(Reset) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.data  [lindex $Bubble(Sheet) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.sel   $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.reset $Bubble(Reset)
+      Bubble::Create $Data(Tab).head.data  $Bubble(Sheet)
 
       Graph::ParamsGraph $Data(Tab).font
    }
@@ -1065,11 +1065,11 @@ proc Graph::ParamsItem { Parent } {
       pack $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value -side top -fill x -padx 2
    pack $Parent.item -side top -fill both -padx 5 -pady 5
 
-   Bubble::Create $Parent.item.sel.list [lindex $Bubble(ItemList) $GDefs(Lang)]
-   Bubble::Create $Parent.item.line     [lindex $Bubble(ItemLine) $GDefs(Lang)]
-   Bubble::Create $Parent.item.fill     [lindex $Bubble(ItemFill) $GDefs(Lang)]
-   Bubble::Create $Parent.item.icon     [lindex $Bubble(ItemIcon) $GDefs(Lang)]
-   Bubble::Create $Parent.item.type     [lindex $Bubble(ItemType) $GDefs(Lang)]
+   Bubble::Create $Parent.item.sel.list $Bubble(ItemList)
+   Bubble::Create $Parent.item.line     $Bubble(ItemLine)
+   Bubble::Create $Parent.item.fill     $Bubble(ItemFill)
+   Bubble::Create $Parent.item.icon     $Bubble(ItemIcon)
+   Bubble::Create $Parent.item.type     $Bubble(ItemType)
 
    bind $Parent.item.sel.list <ButtonRelease-1>  { set Graph::Data(Item) [%W get [%W nearest %y]] ; Graph::ItemSelect $Graph::Data(Item) }
 }
@@ -1091,9 +1091,9 @@ proc Graph::ParamsPos { Parent } {
       pack $Parent.pos.add $Parent.pos.del -side left
    pack $Parent.pos -side top -fill x -padx 5 -pady 5
 
-   Bubble::Create $Parent.pos.sel [lindex $Bubble(PosList) $GDefs(Lang)]
-   Bubble::Create $Parent.pos.add [lindex $Bubble(PosAdd) $GDefs(Lang)]
-   Bubble::Create $Parent.pos.del [lindex $Bubble(PosDel) $GDefs(Lang)]
+   Bubble::Create $Parent.pos.sel $Bubble(PosList)
+   Bubble::Create $Parent.pos.add $Bubble(PosAdd)
+   Bubble::Create $Parent.pos.del $Bubble(PosDel)
 }
 
 proc Graph::PosAdd { GR Type } {
@@ -1249,13 +1249,13 @@ proc Graph::ParamsGraph { Parent } {
       pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.grid $Parent.graph.color $Parent.graph.frame $Parent.graph.update -side top  -fill x
    pack $Parent.graph -side top -fill both -padx 5 -pady 5
 
-   Bubble::Create $Parent.graph.info   [lindex $Bubble(Info) $GDefs(Lang)]
-   Bubble::Create $Parent.graph.axis   [lindex $Bubble(Axis) $GDefs(Lang)]
-   Bubble::Create $Parent.graph.select [lindex $Bubble(Pick) $GDefs(Lang)]
-   Bubble::Create $Parent.graph.grid   [lindex $Bubble(Grid) $GDefs(Lang)]
-   Bubble::Create $Parent.graph.color  [lindex $Bubble(Back) $GDefs(Lang)]
-   Bubble::Create $Parent.graph.frame  [lindex $Bubble(Frame) $GDefs(Lang)]
-   Bubble::Create $Parent.graph.update [lindex $Bubble(Update) $GDefs(Lang)]
+   Bubble::Create $Parent.graph.info   $Bubble(Info)
+   Bubble::Create $Parent.graph.axis   $Bubble(Axis)
+   Bubble::Create $Parent.graph.select $Bubble(Pick)
+   Bubble::Create $Parent.graph.grid   $Bubble(Grid)
+   Bubble::Create $Parent.graph.color  $Bubble(Back)
+   Bubble::Create $Parent.graph.frame  $Bubble(Frame)
+   Bubble::Create $Parent.graph.update $Bubble(Update)
 }
 
 #----------------------------------------------------------------------------
@@ -1292,8 +1292,8 @@ proc Graph::ParamsObs { Parent Type GR } {
       pack $Parent.obs.list -side top  -fill both -expand true -padx 2
    pack $Parent.obs -side top -fill both -expand true -pady 5 -padx 5
 
-   Bubble::Create $Parent.obs.sel  [lindex $Bubble(ObsSearch) $GDefs(Lang)]
-   Bubble::Create $Parent.obs.list [lindex $Bubble(ObsList) $GDefs(Lang)]
+   Bubble::Create $Parent.obs.sel  $Bubble(ObsSearch)
+   Bubble::Create $Parent.obs.list $Bubble(ObsList)
 
    Graph::ParamsObsSearch $Type $GR
 

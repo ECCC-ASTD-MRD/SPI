@@ -587,11 +587,11 @@ proc Graph::Time::Params { Parent GR } {
 
    Graph::ParamsObs $Parent Time $GR
 
-   Bubble::Create $Parent.scale.type.date [lindex $Graph::Bubble(Date) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.type.ip3  [lindex $Graph::Bubble(IP3) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.date0     [lindex $Graph::Bubble(Date0) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.date1     [lindex $Graph::Bubble(Date1) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
+   Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
+   Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
+   Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
+   Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
 
    bind $Parent.scale.valy.list <Return>    "Graph::Time::Graph $GR"
    bind $Parent.scale.date0.ent <Return>    "Graph::Time::Graph $GR"

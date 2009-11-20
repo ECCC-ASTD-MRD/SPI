@@ -229,7 +229,6 @@ proc Bubble::Create { Widget Hlp } {
    }
 
    #----- Activer les evenements d'appel de la bulle
-
    Bubble::Activate
 }
 
@@ -334,12 +333,13 @@ proc Bubble::Follow { Widget X Y } {
 #-------------------------------------------------------------------------------
 
 proc Bubble::Show { Widget X Y } {
+   global GDefs
    variable Defs
    variable Data
    variable Resources
 
    set idx   [lsearch -exact $Defs(WidgetList) $Widget]
-   set hlp   [lindex $Data(HlpList) $idx]
+   set hlp   [lindex [lindex $Data(HlpList) $idx] $GDefs(Lang)]
    set state [lindex $Defs(StateList) $idx]
 
    #----- Si le curseur est toujours sur le widget concerne, afficher

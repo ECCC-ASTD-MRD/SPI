@@ -506,7 +506,7 @@ proc Graph::Frequence::Params { Parent GR } {
          pack $Parent.scale.val.list -side left -fill x -expand true
       pack $Parent.scale.val -side top -padx 2 -pady 2 -fill x
 
-   Bubble::Create $Parent.scale.val      [lindex $Graph::Bubble(ScaleX) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.val $Graph::Bubble(ScaleX)
 
    bind $Parent.scale.val.list <Return>  "Graph::Frequence::Update  \$Graph::Frequence::Frequence${GR}::Data(FrameData) $GR"
    pack $Parent.scale -side top -fill x  -pady 5

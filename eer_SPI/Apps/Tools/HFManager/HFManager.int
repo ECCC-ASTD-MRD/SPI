@@ -173,12 +173,12 @@ proc HFManager::CreateHost { Id } {
 
    HFManager::CreatePopup $Id
 
-   Bubble::Create .hfman.host.$Id.path.wild     [lindex $Bubble(Wild) $GDefs(Lang)]
-   Bubble::Create .hfman.host.$Id.host.sel      [lindex $Bubble(Host) $GDefs(Lang)]
-   Bubble::Create .hfman.host.$Id.path.sel      [lindex $Bubble(Path) $GDefs(Lang)]
-   Bubble::Create .hfman.host.$Id.path.save     [lindex $Bubble(Save) $GDefs(Lang)]
-   Bubble::Create .hfman.host.$Id.path.del      [lindex $Bubble(Del) $GDefs(Lang)]
-   Bubble::Create .hfman.host.$Id.file.sel.list [lindex $Bubble(File) $GDefs(Lang)]
+   Bubble::Create .hfman.host.$Id.path.wild     $Bubble(Wild)
+   Bubble::Create .hfman.host.$Id.host.sel      $Bubble(Host)
+   Bubble::Create .hfman.host.$Id.path.sel      $Bubble(Path)
+   Bubble::Create .hfman.host.$Id.path.save     $Bubble(Save)
+   Bubble::Create .hfman.host.$Id.path.del      $Bubble(Del)
+   Bubble::Create .hfman.host.$Id.file.sel.list $Bubble(File)
 
    bind .hfman.host.$Id.file.sel.list <ButtonPress-3>        "HFManager::FilePopup $Id %X %Y"
    bind .hfman.host.$Id.file.sel.list <Double-ButtonPress-1> "HFManager::HostPath $Id %y"

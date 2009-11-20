@@ -93,8 +93,8 @@ proc Console::Window { } {
 
       frame .console.cmd
 
-      Bubble::Create .console.dock.sel [lindex $Bubble(Dock) $GDefs(Lang)]
-      Bubble::Create .console.dock.del [lindex $Bubble(Close) $GDefs(Lang)]
+      Bubble::Create .console.dock.sel $Bubble(Dock)
+      Bubble::Create .console.dock.del $Bubble(Close)
 
       bind $Data(Tab).text.text.text <Return>   "Console::Eval $Data(Tab).text.text.text True"
       bind $Data(Tab).text.text.text <Key-Up>   "Console::History $Data(Tab).text.text.text \[incr Console::Data(HistoryIndex) -1\]"

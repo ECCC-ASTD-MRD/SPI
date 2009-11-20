@@ -77,7 +77,7 @@ proc YourToolHere::Window { } {
          pack .yourtoolhere.dock.coo -side left -fill both -expand true
       pack .yourtoolhere.dock -side bottom -fill x
 
-      Bubble::Create $Data(Tab).head.mode   [lindex $Bubble(Mode)    $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
    }
    raise  .yourtoolhere
 }

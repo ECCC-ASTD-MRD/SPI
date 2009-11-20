@@ -474,22 +474,22 @@ proc Obs::ParamFrame { Frame Apply } {
             -command "set Obs::Param(Intervals) \"\"; set Obs::Param(IntervalMode) [lindex $Param(IntervalModes) 2]; set Obs::Param(IntervalParam) $i; Obs::ParamSet"
       }
 
-   Bubble::Create $Data(Frame).def.l.val.order.font [lindex $Bubble(Font) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.order      [lindex $Bubble(Format) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.unit       [lindex $Bubble(Unit) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.desc       [lindex $Bubble(Desc) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.val.fac        [lindex $Bubble(Conv) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.l.pal.cmap       [lindex $Bubble(Map) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.p.ico     [lindex $Bubble(Icon) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.p.col     [lindex $Bubble(Color) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.tex.sel   [lindex $Bubble(Texture) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.vol.sel   [lindex $Bubble(Volume) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.info.sel  [lindex $Bubble(Info) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.coord.sel [lindex $Bubble(Coord) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.width.sel [lindex $Bubble(Contour) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.disp.traj.sel  [lindex $Bubble(Traj) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).def.r.size.si        [lindex $Bubble(Size) $GDefs(Lang)]
-   Bubble::Create $Data(Frame).lev.desc.edit        [lindex $Bubble(Intervals) $GDefs(Lang)]
+   Bubble::Create $Data(Frame).def.l.val.order.font $Bubble(Font)
+   Bubble::Create $Data(Frame).def.l.val.order      $Bubble(Format)
+   Bubble::Create $Data(Frame).def.l.val.unit       $Bubble(Unit)
+   Bubble::Create $Data(Frame).def.l.val.desc       $Bubble(Desc)
+   Bubble::Create $Data(Frame).def.l.val.fac        $Bubble(Conv)
+   Bubble::Create $Data(Frame).def.l.pal.cmap       $Bubble(Map)
+   Bubble::Create $Data(Frame).def.r.disp.p.ico     $Bubble(Icon)
+   Bubble::Create $Data(Frame).def.r.disp.p.col     $Bubble(Color)
+   Bubble::Create $Data(Frame).def.r.disp.tex.sel   $Bubble(Texture)
+   Bubble::Create $Data(Frame).def.r.disp.vol.sel   $Bubble(Volume)
+   Bubble::Create $Data(Frame).def.r.disp.info.sel  $Bubble(Info)
+   Bubble::Create $Data(Frame).def.r.disp.coord.sel $Bubble(Coord)
+   Bubble::Create $Data(Frame).def.r.disp.width.sel $Bubble(Contour)
+   Bubble::Create $Data(Frame).def.r.disp.traj.sel  $Bubble(Traj)
+   Bubble::Create $Data(Frame).def.r.size.si        $Bubble(Size)
+   Bubble::Create $Data(Frame).lev.desc.edit        $Bubble(Intervals)
 }
 
 #-------------------------------------------------------------------------------

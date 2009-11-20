@@ -53,8 +53,8 @@ proc CANERM::ParamsNew { Tab { Auto False } } {
          pack $t.d.time -side left -padx 2
       pack $t.d -side top -side top -padx 5 -pady 5 -ipady 2 -fill x
 
-      Bubble::Create $t.d.date [lindex $Bubble(Date) $GDefs(Lang)]
-      Bubble::Create $t.d.time [lindex $Bubble(Time) $GDefs(Lang)]
+      Bubble::Create $t.d.date $Bubble(Date)
+      Bubble::Create $t.d.time $Bubble(Time)
    }
 
    #----- Model Integration (data output time step and model time step).
@@ -64,9 +64,9 @@ proc CANERM::ParamsNew { Tab { Auto False } } {
       pack $t.integ.dur $t.integ.ots -side top -fill x -padx 2
    pack $t.integ -side top -padx 5 -ipady 2 -fill x
 
-   Bubble::Create $t.integ.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
-   Bubble::Create $t.integ.ots "[lindex $Bubble(OutputTimeStepHour) $GDefs(Lang)]"
-   Bubble::Create $t.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+   Bubble::Create $t.integ.dur $Bubble(SimDuration)
+   Bubble::Create $t.integ.ots $Bubble(OutputTimeStepHour)
+   Bubble::Create $t.integ     $Bubble(SimIntegration)
 
    #----- Selection des parametres
    labelframe $t.fr -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
@@ -98,11 +98,11 @@ proc CANERM::ParamsNew { Tab { Auto False } } {
       pack $t.fr.event $t.fr.grid $t.fr.model -side top -padx 2 -fill x
    pack $t.fr -side top -padx 5 -pady 5 -ipady 2 -fill x
 
-   Bubble::Create $t.fr.event        [lindex $Bubble(Event) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.met    [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.delta  [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.path   [lindex $Bubble(Path) $GDefs(Lang)]
-   Bubble::Create $t.fr.grid         [lindex $Bubble(Scale) $GDefs(Lang)]
+   Bubble::Create $t.fr.event       $Bubble(Event)
+   Bubble::Create $t.fr.model.met   $Bubble(Meteo)
+   Bubble::Create $t.fr.model.delta $Bubble(Meteo)
+   Bubble::Create $t.fr.model.path  $Bubble(Path)
+   Bubble::Create $t.fr.grid        $Bubble(Scale)
 }
 
 proc CANERM::ParamsEmission { Tab { Auto False } } {
@@ -164,11 +164,11 @@ proc CANERM::ParamsEmission { Tab { Auto False } } {
    bind $t.iso.type.entry.intensity <Leave> "focus ."
    bind $t.iso.type.entry.intensity <FocusOut> "CANERM::CheckIntensity $t.iso.type.entry.polluant"
 
-   Bubble::Create $t.iso.type.lbl.nb         [lindex $Bubble(Nb) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.lbl.add        [lindex $Bubble(Add) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.lbl.del        [lindex $Bubble(Del) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.lbl.intensity  [lindex $Bubble(Intensity) $GDefs(Lang)]
-   Bubble::Create $t.iso.type.entry.polluant [lindex $Bubble(Pol) $GDefs(Lang)]
+   Bubble::Create $t.iso.type.lbl.nb         $Bubble(Nb)
+   Bubble::Create $t.iso.type.lbl.add        $Bubble(Add)
+   Bubble::Create $t.iso.type.lbl.del        $Bubble(Del0
+   Bubble::Create $t.iso.type.lbl.intensity  $Bubble(Intensity)
+   Bubble::Create $t.iso.type.entry.polluant $Bubble(Pol)
 
    #----- Selection de la fonction
    labelframe $t.func -text [lindex $Lbl(Function) $GDefs(Lang)]
@@ -199,10 +199,10 @@ proc CANERM::ParamsEmission { Tab { Auto False } } {
       pack  $t.func.type -side left -padx 2 -fill x -expand true
    pack $t.func -side top -padx 5 -ipady 2 -fill x
 
-   Bubble::Create $t.func.type.elev      [lindex $Bubble(Height) $GDefs(Lang)]
-   Bubble::Create $t.func.type.vert      [lindex $Bubble(Vertical) $GDefs(Lang)]
-   Bubble::Create $t.func.type.time      [lindex $Bubble(Temporal) $GDefs(Lang)]
-   Bubble::Create $t.func.type.time.hour [lindex $Bubble(Delai) $GDefs(Lang)]
+   Bubble::Create $t.func.type.elev      $Bubble(Height)
+   Bubble::Create $t.func.type.vert      $Bubble(Vertical)
+   Bubble::Create $t.func.type.time      $Bubble(Temporal)
+   Bubble::Create $t.func.type.time.hour $Bubble(Delai)
 }
 
 #-------------------------------------------------------------------------------
@@ -241,9 +241,9 @@ proc CANERM::ParamsCont { Tab } {
       pack $t.integ.dur $t.integ.ots -side top -fill x -padx 2
    pack $t.integ -side top -padx 5 -ipady 2 -fill x
 
-   Bubble::Create $t.integ.dur "[lindex $Bubble(SimDuration) $GDefs(Lang)]"
-   Bubble::Create $t.integ.ots "[lindex $Bubble(OutputTimeStepHour) $GDefs(Lang)]"
-   Bubble::Create $t.integ "[lindex $Bubble(SimIntegration) $GDefs(Lang)]"
+   Bubble::Create $t.integ.dur $Bubble(SimDuration)
+   Bubble::Create $t.integ.ots $Bubble(OutputTimeStepHour)
+   Bubble::Create $t.integ     $Bubble(SimIntegration)
 
    #----- Selection des parametres
    labelframe $t.fr -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
@@ -267,11 +267,11 @@ proc CANERM::ParamsCont { Tab } {
       pack $t.fr.grid.sel -side left -ipadx 1
    pack $t.fr -side top -padx 5 -pady 5 -ipady 2 -fill x
 
-   Bubble::Create $t.fr.event        [lindex $Bubble(Event) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.met    [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.delta  [lindex $Bubble(Meteo) $GDefs(Lang)]
-   Bubble::Create $t.fr.model.path   [lindex $Bubble(Path) $GDefs(Lang)]
-   Bubble::Create $t.fr.grid         [lindex $Bubble(Scale) $GDefs(Lang)]
+   Bubble::Create $t.fr.event       $Bubble(Event)
+   Bubble::Create $t.fr.model.met   $Bubble(Meteo)
+   Bubble::Create $t.fr.model.delta $Bubble(Meteo)
+   Bubble::Create $t.fr.model.path  $Bubble(Path)
+   Bubble::Create $t.fr.grid        $Bubble(Scale)
 }
 
 #----------------------------------------------------------------------------

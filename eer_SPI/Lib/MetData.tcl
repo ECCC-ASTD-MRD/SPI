@@ -39,6 +39,9 @@ catch { SPI::Splash "Loading Widget Package MetData 1.0" }
 
 namespace eval MetData { } {
    variable Data
+   variable Param
+
+   set Param(Path) /data/gridpt/dbase
 
    #----- Lire les diverses definitions
 
@@ -778,7 +781,7 @@ proc MetData::ListIP2 { Index Var { Stamp 0 } } {
 #----------------------------------------------------------------------------
 
 proc MetData::Path { Level Model DiagVar ProgVar } {
-   global GDefs
+   global Param
 
    upvar #0 $DiagVar diag
    upvar #0 $ProgVar prog
@@ -787,28 +790,28 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
       "eta" {
          switch $Model {
             "glb" {
-               set diag "$GDefs(DBMet)/trial/glbeta2"
-               set prog "$GDefs(DBMet)/prog/glbeta"
+               set diag "$Param(Path)/trial/glbeta2"
+               set prog "$Param(Path)/prog/glbeta"
             }
             "reg" {
-               set diag "$GDefs(DBMet)/trial/regeta2"
-               set prog "$GDefs(DBMet)/prog/regeta"
+               set diag "$Param(Path)/trial/regeta2"
+               set prog "$Param(Path)/prog/regeta"
             }
             "lameast" {
                set diag ""
-               set prog "$GDefs(DBMet)/prog/lam/east.eta"
+               set prog "$Param(Path)/prog/lam/east.eta"
             }
             "lamwest" {
                set diag ""
-               set prog "$GDefs(DBMet)/prog/lam/west.eta"
+               set prog "$Param(Path)/prog/lam/west.eta"
             }
             "lamarct" {
                set diag ""
-               set prog "$GDefs(DBMet)/prog/lam/arctic.eta"
+               set prog "$Param(Path)/prog/lam/arctic.eta"
             }
             "lammari" {
                set diag ""
-               set prog "$GDefs(DBMet)/prog/lam/maritimes.eta"
+               set prog "$Param(Path)/prog/lam/maritimes.eta"
             }
             default {
                set diag ""
@@ -819,12 +822,12 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
       "pres" {
          switch $Model {
             "glb" {
-               set diag "$GDefs(DBMet)/trial/glbpres2"
-               set prog "$GDefs(DBMet)/prog/glbpres"
+               set diag "$Param(Path)/trial/glbpres2"
+               set prog "$Param(Path)/prog/glbpres"
             }
             "reg" {
-               set diag "$GDefs(DBMet)/trial/regpres2"
-               set prog "$GDefs(DBMet)/prog/regpres"
+               set diag "$Param(Path)/trial/regpres2"
+               set prog "$Param(Path)/prog/regpres"
             }
             default {
                set diag ""

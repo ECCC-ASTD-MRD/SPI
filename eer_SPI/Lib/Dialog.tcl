@@ -584,8 +584,8 @@ proc Dialog::Text { Id Title File Width Height } {
       pack $Id.file -side bottom -fill both -expand true
 
 
-      Bubble::Create $Id.command.print [lindex $Bubble(Print) $GDefs(Lang)]
-      Bubble::Create $Id.command.save  [lindex $Bubble(Save) $GDefs(Lang)]
+      Bubble::Create $Id.command.print $Bubble(Print)
+      Bubble::Create $Id.command.save  $Bubble(Save)
 
       bind $Id.file.text <Any-KeyRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
       bind $Id.file.text <Any-Button> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"

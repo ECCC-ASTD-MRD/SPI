@@ -290,17 +290,17 @@ proc ColorBox::Create { Parent args } {
          pack .colbox.cmd.no .colbox.cmd.clr .colbox.cmd.ok -side left -fill x -expand true
       pack .colbox.cmd -side top -fill x
 
-      Bubble::Create .colbox.opt.opt.h.lbl  [lindex $Bubble(H) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.opt.s.lbl  [lindex $Bubble(S) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.opt.v.lbl  [lindex $Bubble(V) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.opt.r.lbl  [lindex $Bubble(R) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.opt.g.lbl  [lindex $Bubble(G) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.opt.b.lbl  [lindex $Bubble(B) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.opt.a.lbl  [lindex $Bubble(A) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.sel.cv.a   [lindex $Bubble(ImgA) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.sel.cv.h   [lindex $Bubble(ImgH) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.sel.cv.hsv [lindex $Bubble(ImgSV) $GDefs(Lang)]
-      Bubble::Create .colbox.opt.sel.hex    [lindex $Bubble(Hex) $GDefs(Lang)]
+      Bubble::Create .colbox.opt.opt.h.lbl  $Bubble(H)
+      Bubble::Create .colbox.opt.opt.s.lbl  $Bubble(S)
+      Bubble::Create .colbox.opt.opt.v.lbl  $Bubble(V)
+      Bubble::Create .colbox.opt.opt.r.lbl  $Bubble(R)
+      Bubble::Create .colbox.opt.opt.g.lbl  $Bubble(G)
+      Bubble::Create .colbox.opt.opt.b.lbl  $Bubble(B)
+      Bubble::Create .colbox.opt.opt.a.lbl  $Bubble(A)
+      Bubble::Create .colbox.opt.sel.cv.a   $Bubble(ImgA)
+      Bubble::Create .colbox.opt.sel.cv.h   $Bubble(ImgH)
+      Bubble::Create .colbox.opt.sel.cv.hsv $Bubble(ImgSV)
+      Bubble::Create .colbox.opt.sel.hex    $Bubble(Hex)
 
       #----- Initialiser la couleur courante
       #----- l'update sert a forcer les bindings de scale a s'executer imediatement

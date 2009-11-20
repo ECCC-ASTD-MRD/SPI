@@ -138,21 +138,21 @@ proc Bulletin::Window { } {
          pack .bulletin.bas.doing -side left -fill both -expand true
       pack .bulletin.bas -side top -fill x -anchor s
 
-      Bubble::Create .bulletin.mid.frm.scrllist    [lindex $Bubble(List) $GDefs(Lang)]
-      Bubble::Create .bulletin.mid.t               [lindex $Bubble(Msg) $GDefs(Lang)]
-      Bubble::Create .bulletin.bas.current         [lindex $Bubble(Current) $GDefs(Lang)]
-      Bubble::Create .bulletin.bas.for             [lindex $Bubble(Date) $GDefs(Lang)]
-      Bubble::Create .bulletin.bas.doing           [lindex $Bubble(Bar) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.search.next     [lindex $Bubble(Forward) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.search.previous [lindex $Bubble(Backward) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.search.stop     [lindex $Bubble(Stop) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.searche.local   [lindex $Bubble(Local) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.search.global   [lindex $Bubble(Global) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.search.entry    [lindex $Bubble(Predicat) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.draw.line       [lindex $Bubble(Line) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.draw.poly       [lindex $Bubble(Poly) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.draw.loc        [lindex $Bubble(Locate) $GDefs(Lang)]
-      Bubble::Create .bulletin.bar.draw.zoom       [lindex $Bubble(Zoom) $GDefs(Lang)]
+      Bubble::Create .bulletin.mid.frm.scrllist    $Bubble(List)
+      Bubble::Create .bulletin.mid.t               $Bubble(Msg)
+      Bubble::Create .bulletin.bas.current         $Bubble(Current)
+      Bubble::Create .bulletin.bas.for             $Bubble(Date)
+      Bubble::Create .bulletin.bas.doing           $Bubble(Bar)
+      Bubble::Create .bulletin.bar.search.next     $Bubble(Forward)
+      Bubble::Create .bulletin.bar.search.previous $Bubble(Backward)
+      Bubble::Create .bulletin.bar.search.stop     $Bubble(Stop)
+      Bubble::Create .bulletin.bar.searche.local   $Bubble(Local)
+      Bubble::Create .bulletin.bar.search.global   $Bubble(Global)
+      Bubble::Create .bulletin.bar.search.entry    $Bubble(Predicat)
+      Bubble::Create .bulletin.bar.draw.line       $Bubble(Line)
+      Bubble::Create .bulletin.bar.draw.poly       $Bubble(Poly)
+      Bubble::Create .bulletin.bar.draw.loc        $Bubble(Locate)
+      Bubble::Create .bulletin.bar.draw.zoom       $Bubble(Zoom)
   }
 
    #----- Initialiser l'evenement de blinking

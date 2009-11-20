@@ -234,12 +234,12 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
    bind $id <Key-Up>                           "TrajBox::Scroll $no -1"
    bind $id <Key-Down>                         "TrajBox::Scroll $no  1"
 
-   Bubble::Create $id.info         [lindex $Bubble(Files)    $GDefs(Lang)]
-   Bubble::Create $id.info.name    [lindex $Bubble(File)     $GDefs(Lang)]
-   Bubble::Create $id.info.lbl     [lindex $Bubble(Nb)       $GDefs(Lang)]
-   Bubble::Create $id.header       [lindex $Bubble(Select)   $GDefs(Lang)]
-   Bubble::Create $id.header.info  [lindex $Bubble(Restrict) $GDefs(Lang)]
-   Bubble::Create $id.info.refresh [lindex $Bubble(Refresh)  $GDefs(Lang)]
+   Bubble::Create $id.info         $Bubble(Files)
+   Bubble::Create $id.info.name    $Bubble(File)
+   Bubble::Create $id.info.lbl     $Bubble(Nb)
+   Bubble::Create $id.header       $Bubble(Select)
+   Bubble::Create $id.header.info  $Bubble(Restrict)
+   Bubble::Create $id.info.refresh $Bubble(Refresh)
 
    #----- Creer le menu contextuel
 

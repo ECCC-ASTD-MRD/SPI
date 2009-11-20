@@ -243,13 +243,13 @@ proc Animator::Window { { Parent .} } {
 
       bind $Data(Tab2).way.list.box <Double-ButtonRelease-1> "Animator::FlyPointSelect $Data(Tab2).way.list.box"
 
-      Bubble::Create $Data(Tab2).way.preset     [lindex $Bubble(FlyPreset) $GDefs(Lang)]
-      Bubble::Create $Data(Tab2).head.del       [lindex $Bubble(FlyDel) $GDefs(Lang)]
-      Bubble::Create $Data(Tab2).head.add       [lindex $Bubble(FlyIns) $GDefs(Lang)]
-      Bubble::Create $Data(Tab2).head.rep       [lindex $Bubble(FlyRep) $GDefs(Lang)]
-      Bubble::Create $Data(Tab2).head.show      [lindex $Bubble(FlyShow) $GDefs(Lang)]
-      Bubble::Create $Data(Tab2).head.fly       [lindex $Bubble(FlyFly) $GDefs(Lang)]
-      Bubble::Create $Data(Tab2).way.list.speed [lindex $Bubble(FlySpeed) $GDefs(Lang)]
+      Bubble::Create $Data(Tab2).way.preset     $Bubble(FlyPreset)
+      Bubble::Create $Data(Tab2).head.del       $Bubble(FlyDel)
+      Bubble::Create $Data(Tab2).head.add       $Bubble(FlyIns)
+      Bubble::Create $Data(Tab2).head.rep       $Bubble(FlyRep)
+      Bubble::Create $Data(Tab2).head.show      $Bubble(FlyShow)
+      Bubble::Create $Data(Tab2).head.fly       $Bubble(FlyFly)
+      Bubble::Create $Data(Tab2).way.list.speed $Bubble(FlySpeed)
 
    frame .anim.params -relief raised -bd 1
       scale .anim.params.frame -from 0 -to 0 -resolution 1 -variable Animator::Play(Idx) -relief raised -bd 1 \
@@ -296,23 +296,23 @@ proc Animator::Window { { Parent .} } {
 
    #----- Creation des bulles d'aides
 
-   Bubble::Create .anim.comm.cache       [lindex $Bubble(Cache) $GDefs(Lang)]
-   Bubble::Create .anim.comm.cycle       [lindex $Bubble(Cycle) $GDefs(Lang)]
-   Bubble::Create .anim.comm.rewind      [lindex $Bubble(Rewind) $GDefs(Lang)]
-   Bubble::Create .anim.comm.forwind     [lindex $Bubble(Forwind) $GDefs(Lang)]
-   Bubble::Create .anim.comm.playback    [lindex $Bubble(PlayBack) $GDefs(Lang)]
-   Bubble::Create .anim.comm.stepback    [lindex $Bubble(StepBack) $GDefs(Lang)]
-   Bubble::Create .anim.comm.stop        [lindex $Bubble(Stop) $GDefs(Lang)]
-   Bubble::Create .anim.comm.stepforward [lindex $Bubble(StepForward) $GDefs(Lang)]
-   Bubble::Create .anim.comm.playforward [lindex $Bubble(PlayForward) $GDefs(Lang)]
-   Bubble::Create .anim.comm.playfile    [lindex $Bubble(PlayFile) $GDefs(Lang)]
-   Bubble::Create .anim.comm.off         [lindex $Bubble(Off) $GDefs(Lang)]
-   Bubble::Create .anim.params.lapse     [lindex $Bubble(Delai) $GDefs(Lang)]
-   Bubble::Create .anim.params.frame     [lindex $Bubble(Scroll) $GDefs(Lang)]
-   Bubble::Create .anim.params.idx0      [lindex $Bubble(Idx0) $GDefs(Lang)]
-   Bubble::Create .anim.params.idx1      [lindex $Bubble(Idx1) $GDefs(Lang)]
-   Bubble::Create .anim.info.lbl         [lindex $Bubble(State) $GDefs(Lang)]
-   Bubble::Create .$Data(Tab1).type      [lindex $Bubble(Type) $GDefs(Lang)]
+   Bubble::Create .anim.comm.cache       $Bubble(Cache)
+   Bubble::Create .anim.comm.cycle       $Bubble(Cycle)
+   Bubble::Create .anim.comm.rewind      $Bubble(Rewind)
+   Bubble::Create .anim.comm.forwind     $Bubble(Forwind)
+   Bubble::Create .anim.comm.playback    $Bubble(PlayBack)
+   Bubble::Create .anim.comm.stepback    $Bubble(StepBack)
+   Bubble::Create .anim.comm.stop        $Bubble(Stop)
+   Bubble::Create .anim.comm.stepforward $Bubble(StepForward)
+   Bubble::Create .anim.comm.playforward $Bubble(PlayForward)
+   Bubble::Create .anim.comm.playfile    $Bubble(PlayFile)
+   Bubble::Create .anim.comm.off         $Bubble(Off)
+   Bubble::Create .anim.params.lapse     $Bubble(Delai)
+   Bubble::Create .anim.params.frame     $Bubble(Scroll)
+   Bubble::Create .anim.params.idx0      $Bubble(Idx0)
+   Bubble::Create .anim.params.idx1      $Bubble(Idx1)
+   Bubble::Create .anim.info.lbl         $Bubble(State)
+   Bubble::Create .$Data(Tab1).type      $Bubble(Type)
 
    TabFrame::Select .anim.tab 0
 }

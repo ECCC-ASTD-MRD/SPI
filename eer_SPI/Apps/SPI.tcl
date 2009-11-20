@@ -15,18 +15,41 @@
 #
 #============================================================================
 
-
 set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end]
 set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
 
-#----- Lire la liste des definitions communes
-if { ![file exists [set defs $env(HOME)/.spi/.spi-[regsub \[:alpha:\]+ $GDefs(Version) ""]]] } {
-   exec $GDefs(Dir)/Setup/Setup
-}
-source $defs
+#----- Do setup if not done
+set defs $env(HOME)/.spi/.spi-[regsub \[:alpha:\]+ $GDefs(Version) ""]
+if { ![file exists $env(HOME)/.spi] } {
 
-set GDefs(Dir)    [file dirname [info script]]/..
-set GDefs(DirBin) $GDefs(Dir)/Bin/$GDefs(Arch)
+   SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
+   file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro
+
+   #----- Installer les fichiers de definitions
+   if { ![file exists $env(HOME)/.spi/SPI] } {
+      file copy -force $GDefs(Dir)/Setup/Data/SPI $env(HOME)/.spi/SPI
+   }
+
+   #----- Copy standard stuff
+   foreach file { Colormap Scenario } {
+      exec cp -r $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi
+   }
+
+   #----- Copy old users definitions
+   if { [file exists $env(HOME)/.eer_ToolDefs] } {
+      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain eer_Default } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData SPI } {
+         catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+      }
+      foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
+         eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew}
+      }
+
+      catch { file copy $env(HOME)/.eer_ToolDefs/Mapper/Params $env(HOME)/.spi/Mapper }
+   }
+}
+
+#----- Lire la liste des definitions communes
+source $env(HOME)/.spi/SPI
 
 #----- Verifier pour script init seulement
 
@@ -2376,15 +2399,7 @@ if { [file exists $SPI::Param(Default)] } {
    source $SPI::Param(Default)
 }
 
-#----- Mise en place de l'interface
-tk scaling 1.0
-
-if { $SPI::Param(Window) } {
-   wm geometry . $SPI::Param(Geom)
-} else {
-   wm withdraw .
-}
-
+SPI::Init
 SPI::Window
 SPI::WindowMenu
 SPI::Params

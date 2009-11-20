@@ -592,11 +592,11 @@ proc Graph::TimeSection::Params { Parent GR } {
       pack $Parent.scale.time $Parent.scale.date0 $Parent.scale.date1 $Parent.scale.valy $Parent.scale.type -side top -padx 2 -pady 2 -fill x
    pack $Parent.scale -side top -fill x -padx 5
 
-   Bubble::Create $Parent.scale.type.date [lindex $Graph::Bubble(Date) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.type.ip3  [lindex $Graph::Bubble(IP3) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.valy      [lindex $Graph::Bubble(ScaleY) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.date0     [lindex $Graph::Bubble(Date0) $GDefs(Lang)]
-   Bubble::Create $Parent.scale.date1     [lindex $Graph::Bubble(Date1) $GDefs(Lang)]
+   Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
+   Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
+   Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
+   Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
+   Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
 
    bind $Parent.scale.valy.list <Return>    "Graph::TimeSection::Graph $GR"
 }

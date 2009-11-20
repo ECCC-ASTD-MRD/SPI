@@ -157,10 +157,10 @@ proc Kriger::Window { } {
          pack .kriger.dock.coo -side left -fill both -expand true
       pack .kriger.dock -side bottom -fill x
 
-      Bubble::Create $Data(Tab).head.mode   [lindex $Bubble(Mode)    $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.krig   [lindex $Bubble(Krig)    $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.save   [lindex $Bubble(Save)    $GDefs(Lang)]
-      Bubble::Create $Data(Tab).headdel     [lindex $Bubble(Del)    $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.krig $Bubble(Krig)
+      Bubble::Create $Data(Tab).head.save $Bubble(Save)
+      Bubble::Create $Data(Tab).headdel   $Bubble(Del)
    }
 
    Kriger::GridType

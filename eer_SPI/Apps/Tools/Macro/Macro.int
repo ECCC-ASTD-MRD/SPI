@@ -102,14 +102,14 @@ proc Macro::Window { } {
       bind $Data(Tab).desc.data.list <Double-ButtonPress-1> { Macro::Execute [$Macro::Data(Tab).desc.data.list get [$Macro::Data(Tab).desc.data.list nearest %y]] }
       bind $Data(Tab).desc.data.list <ButtonPress-1>        { Macro::Select [$Macro::Data(Tab).desc.data.list get [$Macro::Data(Tab).desc.data.list nearest %y]] }
 
-      Bubble::Create $Data(Tab).head.start [lindex $Bubble(Start) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.new   [lindex $Bubble(New) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.load  [lindex $Bubble(Load) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.save  [lindex $Bubble(Save) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.del   [lindex $Bubble(Del) $GDefs(Lang)]
-      Bubble::Create $Data(Tab).head.reset [lindex $Bubble(Clean) $GDefs(Lang)]
-      Bubble::Create .macro.dock.sel [lindex $Bubble(Dock) $GDefs(Lang)]
-      Bubble::Create .macro.dock.del [lindex $Bubble(Close) $GDefs(Lang)]
+      Bubble::Create $Data(Tab).head.start $Bubble(Start)]
+      Bubble::Create $Data(Tab).head.new   $Bubble(New)
+      Bubble::Create $Data(Tab).head.load  $Bubble(Load)
+      Bubble::Create $Data(Tab).head.save  $Bubble(Save)
+      Bubble::Create $Data(Tab).head.del   $Bubble(Del)
+      Bubble::Create $Data(Tab).head.reset $Bubble(Clean)
+      Bubble::Create .macro.dock.sel       $Bubble(Dock)
+      Bubble::Create .macro.dock.del       $Bubble(Close)
 
       ListboxBubble::Create $Data(Tab).desc.data.list 0 Macro::Bubble
    }

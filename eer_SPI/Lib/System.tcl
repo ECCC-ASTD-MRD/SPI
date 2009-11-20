@@ -15,9 +15,8 @@ if { [file exists /dev/nvidiactl] && ![file readable /dev/nvidiactl] } {
 
 set GDefs(Dir)  [file dirname [info script]]/..
 set GDefs(Arch) $tcl_platform(os)
-set GDefs(Ext)  [info sharedlibextension]
 
-load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkglCanvas$GDefs(Ext) glCanvas
+load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkglCanvas[info sharedlibextension] glCanvas
 
 namespace eval System {}
 

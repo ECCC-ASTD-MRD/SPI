@@ -21,7 +21,6 @@
 #    PrintBox::Print            { Frame X Y Width Height }
 #    PrintBox::PrintCommand     { Frame }
 #    PrintBox::PrintTXT         { File }
-#    PrintBox::ReadParams       { }
 #    PrintBox::Save             { Frame X Y Width Height File }
 #    PrintBox::SelectOutputType { Type }
 #
@@ -47,22 +46,40 @@ namespace eval PrintBox {
    variable Txt
    variable Error
 
-   #----- Definitions des parametres d'impression
+   #----- Definitions des parametres de transmission sur site WEB
+   set Param(Path)           $env(HOME)                                       ;#Path du fichier de sortie
+   set Param(Filename)       "output"                                         ;#Nom du fichier de sortie
+   set Param(Size)           "8.5_x_11"                                       ;#Format par defaut
+   set Param(Sizes)          { 4_x_4 6_x_6 7_x_7 8.5_x_11 8.5_x_14 17_x_22 }  ;#Liste des formats
+   set Param(Angle)          portrait                                         ;#Orientation
+   set Param(WEBNameList)    ""                                               ;#Liste des noms de sites
+   set Param(WEBPathList)    ""                                               ;#Liste des path de sites
 
+   #----- Recuperer les imprimantes
    catch {
-      set Print(Printer_List)   $GDefs(Printers)                                 ;#Liste des imprimantes
-      set Print(Printer)        [lindex $Print(Printer_List) 0]                  ;#Imprimante par defaut
+      set Param(Printers)    {}
+
+      if { [file readable /etc/printcap] } {
+
+         set f [open /etc/printcap r]
+
+         while { ![eof $f] } {
+            gets $f printer
+
+            if { [string index $printer 0]!="#" && $printer!="" } {
+               lappend Param(Printers) [lindex [split [lindex [split $printer :] 0] |] 0]
+            }
+         }
+         close $f
+      }
+      set Param(Printer) [lindex $Param(Printers) 0]                  ;#Imprimante par defaut
    }
 
+   set Print(WEBSite)        ""                                             ;#Site WEB du transfert
    set Print(Job)            ""                                               ;#Traivail en cours
    set Print(DPI)            [expr [winfo screenwidth .]/([winfo screenmmwidth .]*0.03937008231878280600)] ;#DPI de l'ecran
-   set Print(Format)         "8.5_x_11"                                       ;#Format par defaut
-   set Print(Format_List)    { 4_x_4 6_x_6 7_x_7 8.5_x_11 8.5_x_14 17_x_22 }  ;#Liste des formats
    set Print(Type)           printer                                        ;#Type de sortie
-   set Print(Angle)          portrait                                       ;#Orientation
-   set Print(Path)           $env(HOME)                                     ;#Path du fichier de sortie
-   set Print(Filename)       "output"                                       ;#Nom du fichier de sortie
-   set Print(FullName)       "$Print(Path)/$Print(Filename)"                ;#Nom complet
+   set Print(FullName)       "$Param(Path)/$Param(Filename)"                ;#Nom complet
    set Print(InternalFile)   ""                                             ;#Fichier interne utilise pour generer le ps
 
    set Type(RASTER)  { {Adobe PostScript {*.ps}}
@@ -104,15 +121,8 @@ namespace eval PrintBox {
                        {Raw gray {*.gray}}
                        {CCIR 601 4:1:1 {*.yuv}} }
 
-   set Print(DeviceDef) [lindex $Type(RASTER) 1]
-   set Print(FileType)  $Print(DeviceDef)
+   set Param(Format)    [lindex $Type(RASTER) 1]
    set Print(Device)    png                                            ;#Type de fichier
-
-   #----- Definitions des parametres de transmission sur site WEB
-
-   set Print(WEBSite)        ""                                             ;#Site WEB du transfert
-   set Param(WEBNameList)    ""                                             ;#Liste des noms de sites
-   set Param(WEBPathList)    ""                                             ;#Liste des path de sites
 
    #----- Definitions des labels
 
@@ -205,13 +215,13 @@ proc PrintBox::PrintTXT { File } {
    variable Param
 
    if { $PrintBox::Print(Type)=="printer" } {
-      if { $Print(Angle) == "portrait" } {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -P $Print(Printer) }
+      if { $Param(Angle) == "portrait" } {
+         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -P $Param(Printer) }
       } else {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3  $File -P $Print(Printer) }
+         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3  $File -P $Param(Printer) }
       }
    } else {
-      if { $Print(Angle) == "portrait" } {
+      if { $Param(Angle) == "portrait" } {
          catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -o - | convert -density $Print(DPI) - $Print(FullName).$Print(Device) }
       } else {
          catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3 $File -o - | convert -density $Print(DPI) - $Print(FullName).$Print(Device) }
@@ -290,10 +300,6 @@ proc PrintBox::Create { Frame Mode args } {
       destroy .printbox
    }
 
-   #----- Initialisations des donnees
-
-   ReadParams
-
    toplevel     .printbox
    wm transient .printbox $Frame
    wm geom      .printbox 335x195+[winfo rootx $Frame]+[winfo rooty $Frame]
@@ -301,7 +307,7 @@ proc PrintBox::Create { Frame Mode args } {
 
    .printbox configure -cursor left_ptr
 
-   set Print(FullName) "$Print(Path)/$Print(Filename)"
+   set Print(FullName) "$Param(Path)/$Param(Filename)"
    set Print(Job)      ""
 
    TabFrame::Create .printbox.tab 1 ""
@@ -313,21 +319,21 @@ proc PrintBox::Create { Frame Mode args } {
 
       frame $frame.sel
          label $frame.sel.lbl -text [lindex $Lbl(Printer) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $frame.sel.sel PrintBox::Print(Printer) \
-            noedit unsorted nodouble -1 $Print(Printer_List) 28 5
+         ComboBox::Create $frame.sel.sel PrintBox::Param(Printer) \
+            noedit unsorted nodouble -1 $Param(Printers) 28 5
          pack $frame.sel.lbl $frame.sel.sel -side left -padx 2
       pack $frame.sel -side top -pady 5
 
       frame $frame.page
          label $frame.page.lbl -text [lindex $Lbl(Dim) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $frame.page.sel PrintBox::Print(Format) \
-            noedit unsorted nodouble -1 $Print(Format_List) 28 5
+         ComboBox::Create $frame.page.sel PrintBox::Param(Size) \
+            noedit unsorted nodouble -1 $Param(Sizes) 28 5
          pack  $frame.page.lbl $frame.page.sel -side left -padx 2
       pack $frame.page -side top
 
       frame $frame.ori
          label $frame.ori.lbl -text [lindex $Lbl(Orient) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $frame.ori.sel PrintBox::Print(Angle) \
+         ComboBox::Create $frame.ori.sel PrintBox::Param(Angle) \
             noedit unsorted nodouble -1 "portrait landscape" 28 2
          pack  $frame.ori.lbl $frame.ori.sel -side left -padx 2
       pack $frame.ori -side top -pady 5
@@ -340,7 +346,7 @@ proc PrintBox::Create { Frame Mode args } {
          frame $frame.file
             label $frame.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 8 -anchor w
             button $frame.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
-               -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Print(Path) Save [linsert $PrintBox::Type(RASTER) 0 $PrintBox::Print(FileType)] $PrintBox::Print(Filename)] [FileBox::GetType] }
+               -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Param(Path) Save [linsert $PrintBox::Type(RASTER) 0 $PrintBox::Param(Format)] $PrintBox::Param(Filename)] [FileBox::GetType] }
             entry $frame.file.name -width 32 -bg $GDefs(ColorLight) -textvariable PrintBox::Print(FullName) \
                -bd 1 -justify left
             $frame.file.name xview moveto 1
@@ -349,7 +355,7 @@ proc PrintBox::Create { Frame Mode args } {
 
          frame $frame.format
             label $frame.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 8 -anchor w
-            ComboBox::Create $frame.format.sel PrintBox::Print(FileType) noedit unsorted nodouble -1 $Type(RASTER) 33 5 PrintBox::SetDevice
+            ComboBox::Create $frame.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Type(RASTER) 33 5 PrintBox::SetDevice
             pack $frame.format.lbl $frame.format.sel -side left
          pack $frame.format -side top
 
@@ -401,8 +407,9 @@ proc PrintBox::Create { Frame Mode args } {
 
 proc PrintBox::SetDevice { } {
    variable Print
+   variable Param
 
-   set Print(Device) [lindex [split [lindex $Print(FileType) end] .] end]
+   set Print(Device) [lindex [split [lindex $Param(Format) end] .] end]
 }
 
 #----------------------------------------------------------------------------
@@ -473,18 +480,19 @@ proc PrintBox::Do { Frame } {
 
 proc PrintBox::FilePathDefine { Path { Type "" } } {
    variable Print
+   variable Param
 
    if { $Path == "" } {
       return
    }
 
    if { $Type!="" } {
-      set Print(FileType) $Type
+      set Param(Format) $Type
       PrintBox::SetDevice
    }
 
-   set Print(Path)     [file dirname $Path]
-   set Print(Filename) [file tail $Path]
+   set Param(Path)     [file dirname $Path]
+   set Param(Filename) [file tail $Path]
    set Print(FullName) $Path
 }
 
@@ -511,7 +519,7 @@ proc PrintBox::Image { Frame Format File { Angle portrait } } {
    set PrintBox::Print(Type)     file
    set PrintBox::Print(Device)   $Format
    set PrintBox::Print(FullName) $File
-   set PrintBox::Print(Angle)    $Angle
+   set PrintBox::Param(Angle)    $Angle
 
    PrintBox::Do $Frame
 }
@@ -619,16 +627,16 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
 
-      PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height $Print(Angle) $Print(Format)
+      PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height $Param(Angle) $Param(Size)
 
-      InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Print) $GDefs(Lang)] $Print(Printer)"
+      InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Print) $GDefs(Lang)] $Param(Printer)"
 
-      if { $Print(Printer) == "wideprnt1" || $Print(Printer) == "wideprnt2" } {
+      if { $Param(Printer) == "wideprnt1" || $Param(Printer) == "wideprnt2" } {
          catch { exec convert -density 200 -colors 2 -dither -monochrome $Print(InternalFile).ps $Print(InternalFile).tiff }
-         exec lpr -s -r -P$Print(Printer) $Print(InternalFile).tiff
+         exec lpr -s -r -P$Param(Printer) $Print(InternalFile).tiff
          file delete $Print(InternalFile).ps
       } else {
-         exec lpr -s -r -P$Print(Printer) $Print(InternalFile).ps
+         exec lpr -s -r -P$Param(Printer) $Print(InternalFile).ps
       }
    } else {
       if { $Print(Device)!="ps" } {
@@ -691,32 +699,6 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <PrintBox::ReadParams>
-# Creation : Mai 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lire la liste des site web utilises.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc PrintBox::ReadParams { } {
-   global env
-   variable Param
-
-   set Param(WEBNameList)    ""
-   set Param(WEBPathList)    ""
-
-   if { [file exists $env(HOME)/.spi/PrintBox] } {
-      uplevel #0 source $env(HOME)/.spi/PrintBox
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <PrintBox::Save>
 # Creation : Decembre 2002 - J.P. Gauthier - CMC/CMOE
 #
@@ -761,16 +743,15 @@ proc PrintBox::Save { Frame X Y Width Height File } {
 
 proc PrintBox::SelectOutputType { Type } {
    variable Print
+   variable Param
 
    if { $Type == "PRINT" } {
       set Print(Type)      printer
-      set Print(DeviceDef) $Print(FileType)
       set Print(Device)    ps
-      set Print(Format)    8.5_x_11
+      set Param(Size)    8.5_x_11
       set Print(WEBSite)   ""
    } else {
       set Print(Type)   file
-      set Print(FileType) $Print(DeviceDef)
       PrintBox::SetDevice
    }
 }
