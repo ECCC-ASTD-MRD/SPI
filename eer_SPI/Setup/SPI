@@ -92,7 +92,6 @@ namespace eval Viewport {
 }
 
 #----- Parametres des Legende
-
 namespace eval DataBar  {
 
    set Param(Title) "Title"           ;#Titre par defaut
@@ -109,6 +108,7 @@ namespace eval ColorBar {
    set Param(Border) 0                ;#Epaisseur de la bordure des intervalles
    set Param(Width)  15               ;#Largeur de la barre de couleur
    set Param(Side)   right            ;#Position des chiffres
+   set Param(Factor) True             ;#Show conversion factor
 }
 
 #----- Parametres de la loupe
