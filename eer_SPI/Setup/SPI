@@ -1,0 +1,242 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Description:
+#
+#    Fichier de configuration pour SPI
+#
+#===============================================================================
+
+set GDefs(Lang)   0
+set GDefs(Arch)   $tcl_platform(os)
+set GDefs(Host)   [lindex [split [info hostname] .] 0]
+set GDefs(DirBin) $GDefs(Dir)/Bin/$GDefs(Arch)
+set GDefs(DirEER) $env(HOME)/.spi
+set GDefs(Done)   True
+
+#----- Definitions des ressources
+set GDefs(Font)           XFont12
+set GDefs(ColorFrame)     gray80
+set GDefs(ColorLight)     gray70
+set GDefs(ColorOff)       gray60
+set GDefs(ColorHighLight) yellow
+
+#----- Definitions pour les Frontends/Backends
+set GDefs(FrontEnd)       pollux
+set GDefs(FrontEndUser)   afsr005
+set GDefs(TransmitUser)   afsiops
+
+set GDefs(FrontEnds)        { alef dorval-ib pollux castor goodenough spurr zenon thorim hodir }
+set GDefs(BackEnds)         { maia saiph }
+set GDefs(BackEndmaia)      { /home/binops/afse/eer }
+set GDefs(BackEndsaiph)     { /home/binops/afse/eer }
+set GDefs(BackEndzeta)      { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+
+#----- Parametres de SPI
+namespace eval SPI {
+   set Param(Geom)           1024x768     ;#Geometrie de ;'interface
+   set Param(Pages)          { "Page 1" } ;#Liste des pages
+   set Param(Panes)          {}           ;#Liste des dimensions de sidepane (ex:200x200)
+   set Param(PaneSide)       right        ;#Position des sidepane
+   set Param(Exp)            False        ;#Affichage des experiences
+   set Param(Layout)         SPI          ;#Layout courant
+   set Param(Bubble)         True         ;#Bulles d'aides
+}
+
+#----- Parametres de la projection
+namespace eval Viewport {
+
+   set Map(Lat)         41.0          ;#Latitude centrale de l'affichage
+   set Map(Lon)         -103.0        ;#Longitude centrale de l'affichage
+   set Map(Type)        orthographic  ;#Type de projection geographique (orthographic cylindric mercator grid)
+   set Map(Delay)       1000.0        ;#Temps de deplacement en millisecondes
+   set Map(Damping)     1.07          ;#Facteur de l'effet de ralentissement
+   set Map(Mask)        NONE          ;#Masque (NONE,SEA,LAND,DATA)
+   set Map(Coast)       1             ;#Cotes
+   set Map(Lake)        1             ;#Lacs
+   set Map(River)       0             ;#Rivieres
+   set Map(Polit)       1             ;#Bordures politiques
+   set Map(Admin)       0             ;#Bordures politiques internes
+   set Map(City)        0             ;#Villes
+   set Map(Road)        0             ;#Routes
+   set Map(Rail)        0             ;#Chemin de fer
+   set Map(Util)        0             ;#Utilitaires
+   set Map(Canal)       0             ;#Canal/Aqueduc
+   set Map(Topo)        0             ;#Topographie
+   set Map(Bath)        0             ;#Bathymetrie
+   set Map(Text)        0             ;#Texture
+   set Map(Coord)       1             ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Map(CoordDef)    10            ;#Intervale entre les latlon en degres
+   set Map(CoordNum)    2             ;#Numerotation des latlon
+   set Map(Elev)        1.0           ;#Facteur d'expansion des elevations
+   set Map(TPolit)      1             ;#Identifications provinces
+
+   set Resources(Font)      [font create -family Helvetica -weight bold -size -10]   ;#Police de caractere de la vue
+   set Resources(Bkg)       white     ;#Couleur du font (background)
+   set Resources(Coast)     #000000   ;#Cotes
+   set Resources(Lake)      #0000ff   ;#Lacs
+   set Resources(River)     #0000ff   ;#Rivieres
+   set Resources(Polit)     #ff0000   ;#Bordures politiques
+   set Resources(Admin)     #ff0000   ;#Bordures politiques internes
+   set Resources(City)      #000000   ;#Villes
+   set Resources(Road)      #404040   ;#Routes
+   set Resources(Rail)      #ff1493   ;#Chemin de fer
+   set Resources(Util)      #ffff00   ;#Utilitaires
+   set Resources(Canal)     #00ffff   ;#Canal/Aqueduc
+   set Resources(Coord)     #000000   ;#Latlon
+   set Resources(FillCoast) #C2D74B   ;#Cotes (Polygones)
+   set Resources(FillLake)  #33C2FF   ;#Lacs (Polygones)
+}
+
+#----- Parametres des Legende
+
+namespace eval DataBar  {
+
+   set Param(Title) "Title"           ;#Titre par defaut
+   set Param(Full)  1                 ;#Pleine largeur
+}
+
+#----- Parametres des Colorbar
+namespace eval ColorBar {
+
+   set Param(Full)   0                ;#Pleine hauteur
+   set Param(BG)     white            ;#Couleur du fond
+   set Param(Alpha)  100              ;#Transparence
+   set Param(Split)  0                ;#Separation des intervals
+   set Param(Border) 0                ;#Epaisseur de la bordure des intervalles
+   set Param(Width)  15               ;#Largeur de la barre de couleur
+   set Param(Side)   right            ;#Position des chiffres
+}
+
+#----- Parametres de la loupe
+namespace eval CVMagnifier {
+
+   set Param(Zoom)   2                ;#Facteur de Zoom initial de la loupe
+   set Param(Size)   256              ;#Dimension de la loupe en pixels
+}
+
+#----- Parametres des champs
+namespace eval FSTD {
+   set Param(Interp)   LINEAR         ;#Type d'interpolation
+}
+
+#----- Parametres des Observations
+namespace eval Obs {
+}
+
+#----- Parametres des trajectoires
+namespace eval Trajectory {
+
+   set Param(Size)     3              ;#Grandeur des icones
+   set Param(Width)    1              ;#Grandeur des icones
+   set Param(Fill)     2              ;#Remplir les icones
+   set Param(Interval) 3              ;#Intervale de selection des donnees
+   set Param(Speed)    0              ;#Afficher les vitesse lorsque disponible
+   set Param(Style)    1              ;#Type d'affichage
+}
+
+#----- Parametres des graphs
+namespace eval Graph {
+
+   set Color(Select) #FF0000
+   set Color(Axis)   #000000
+   set Color(Fill)   #FFFFFF
+   set Color(BG)     #FFFFFF
+   set Color(FG)     #000000
+
+   set Grid(Color)   #000000
+   set Grid(Width)   0
+   set Grid(Dash)    ""
+
+   set Font(Select)    [font create -family courier -size -8  -weight bold]
+   set Font(Axis)      [font create -family courier -size -10 -weight bold]
+   set Font(Graph)     [font create -family courier -size -14 -weight bold]
+   set Font(Angle)     0
+}
+
+#----- Parametres des outils
+namespace eval Console {
+   set Param(Geom)   { 200x400+[winfo rootx .]+[winfo rooty .] }
+   set Param(Dock)   True
+}
+
+namespace eval Mapper {
+   set Param(Geom)    { 300x600+[winfo rootx .]+[winfo rooty .] }
+   set Param(Dock)    True
+   set Param(Paths)   { }
+}
+
+namespace eval Macro {
+   set Param(Geom)     { 200x400+[winfo rootx .]+[winfo rooty .] }
+   set Param(Dock)     True
+   set Param(Paths)    { }
+}
+
+namespace eval Drawing {
+   set Param(Geom)   { 200x600+[winfo rootx .]+[winfo rooty .] }
+   set Param(Dock)   True
+}
+
+namespace eval Locator {
+   set Param(Geom)   { +[winfo rootx .]+[winfo rooty .] }
+}
+
+namespace eval HFManager {
+   set Param(Geom) { 700x200+[winfo rootx .]+[winfo rooty .] }
+}
+
+namespace eval FieldCalc {
+   set Param(Geom) { 550x190+[winfo rootx .]+[winfo rooty .] }
+}
+
+namespace eval Animator {
+   set Param(Geom)  { 275x275+[winfo rootx .]+[winfo rooty .] }
+}
+
+namespace eval Exp {
+   set Param(Paths)     { }
+   set Param(Path)      /data/cmoe/afsr005/eer_Experiment
+   set Param(StoreHost) goodenough
+   set Param(StorePath) /tmp/ArchiveTest
+}
+
+namespace eval MetData {
+   set Param(Path)      /data/gridpt/dbase
+}
+
+namespace eval Watch {
+   set Param(Path)      /home/afsr/005/Projects/AutoSim/Projects
+}
+
+namespace eval Writer {
+   set Param(Path)      /data/cmoe/afsr005/eer_Msg
+}
+
+namespace eval NowCaster {
+   set Param(Geom) { 200x400+[winfo rootx .]+[winfo rooty .] }
+   set Param(Dock) True
+
+   namespace eval Radar {
+      set Param(Paths)    { }
+   }
+
+   namespace eval Obs {
+      set Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/ozone /data/ade/dbase/surface/pm25 /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
+      set Param(PathsUpper) { /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/airep }
+   }
+}
+
+#----- Printing parameters
+namespace eval PrintBox {
+   set Param(Path)        $env(HOME)                            ;#Path par defaut du fichier d'impression
+   set Param(Filename)    output                                ;#Nom par defaut du fichier d'impression
+   set Param(Size)        8.5_x_11                              ;#Dimension de la page
+   set Param(Angle)       portrait                              ;#Orientation
+   set Param(Format)      {Portable Network Graphics {*.png}}   ;#Format par defaut du fichier d'impression
+   set Param(Printer)     ""
+   set Param(WEBNameList) { }
+   set Param(WEBPathList) { }
+}
