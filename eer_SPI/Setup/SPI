@@ -168,6 +168,10 @@ namespace eval Mapper {
    set Param(Geom)    { 300x600+[winfo rootx .]+[winfo rooty .] }
    set Param(Dock)    True
    set Param(Paths)   { }
+
+   namespace eval Mapper::Geo {
+      set Param(Key) ""
+   }
 }
 
 namespace eval Macro {

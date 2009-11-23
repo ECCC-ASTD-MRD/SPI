@@ -25,9 +25,10 @@ namespace eval Mapper::Geo { } {
    variable Msg
    variable Bubble
 
-   set Param(API)      Geocoder
-   set Param(Locate)   True
-   set Param(Zoom)     128
+   set Param(API)       Geocoder
+   set Param(Locate)    True
+   set Param(Zoom)      128
+   set Param(Key)       ""
 
    set Data(Address)  ""
    set Data(Street)   ""
@@ -65,8 +66,8 @@ namespace eval Mapper::Geo { } {
    image create photo GEOGOOGLE -file $GDefs(Dir)/Resources/Image/Icon/Google.gif
    image create photo GEOCODER  -file $GDefs(Dir)/Resources/Image/Icon/Geocoder.gif
 
-   set str [http::config -useragent]
-   http::config -useragent "EC/CMC/CMOE SPI $GDefs(Version) (through $str)"
+#   set str [http::config -useragent]
+#   http::config -useragent "EC/CMC/CMOE SPI $GDefs(Version) (through $str)"
 }
 
 #----------------------------------------------------------------------------
@@ -153,7 +154,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    switch $API {
       "Google" {
          #----- Send request through Google
-         set req [http::geturl "http://maps.google.com/maps/geo?q=[join ${Request} +]&output=xml&oe=utf8&sensor=false"]
+         set req [http::geturl "http://maps.google.com/maps/geo?q=[join ${Request} +]&output=xml&oe=utf8&sensor=false&key=$Param(Key)"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
             Dialog::ErrorListing . $Error(Request) "$msg\n[http::data $req]"
             return
@@ -239,7 +240,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
    switch $API {
       "Google" {
          #----- Send request through Google
-         set req [http::geturl "http://maps.google.com/maps/geo?q=$Lat,$Lon&output=xml&oe=utf8&sensor=false"]
+         set req [http::geturl "http://maps.google.com/maps/geo?q=$Lat,$Lon&output=xml&oe=utf8&sensor=false&key=$Param(Key)"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
             Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
