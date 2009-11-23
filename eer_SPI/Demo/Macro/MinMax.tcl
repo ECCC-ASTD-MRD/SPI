@@ -72,12 +72,3 @@ proc Macro::MinMax::Execute { } {
 proc Macro::MinMax::Clean { } {
    fstdfield free Macro::MINMAX
 }
-
-
-
-
-
-
-
-
-

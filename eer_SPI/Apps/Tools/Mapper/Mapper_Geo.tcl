@@ -97,7 +97,7 @@ proc Mapper::Geo::Widget { Frame } {
       menubutton $Frame.geo.icode.api -image OPTIONS -relief flat -bd 0 -menu $Frame.geo.icode.api.menu
       place $Frame.geo.icode.api -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
       menu $Frame.geo.icode.api.menu
-      $Frame.geo.icode.api.menu add radiobutton -variable Mapper::Geo::Param(API) -image GEOCODER -label Geocoder -compound left \
+      $Frame.geo.icode.api.menu add radiobutton -variable Mapper::Geo::Param(API) -image GEOCODER -label Geocoder.ca -compound left \
          -value Geocoder -command "$Frame.geo.icode configure -image GEOCODER"
       $Frame.geo.icode.api.menu add radiobutton -variable Mapper::Geo::Param(API) -image GEOGOOGLE -label Google -compound left\
          -value Google -command "$Frame.geo.icode configure -image GEOGOOGLE"
