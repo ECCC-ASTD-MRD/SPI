@@ -36,7 +36,7 @@ namespace eval Macro::XSection {} {
 }
 
 proc Macro::XSection::Execute { } {
-   global GDefs
+   global env
    variable Lbl
    variable Error
    variable Data
@@ -56,7 +56,7 @@ proc Macro::XSection::Execute { } {
    Macro::Doing "Initializing config"
    if { ![colormap is XSECTION_MAP] } {
       colormap create XSECTION_MAP
-      colormap read XSECTION_MAP $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
+      colormap read XSECTION_MAP $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    }
 
    Macro::XSection::Clean

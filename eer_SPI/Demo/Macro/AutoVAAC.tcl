@@ -32,7 +32,7 @@ namespace eval Macro::AutoVAAC {} {
 }
 
 proc Macro::AutoVAAC::Execute { } {
-   global GDefs
+   global env
    variable Data
    variable Error
    variable Param
@@ -54,7 +54,7 @@ proc Macro::AutoVAAC::Execute { } {
 
    #----- Creer la palette de couleur
    colormap create VAACMAP
-   colormap read   VAACMAP $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
+   colormap read   VAACMAP $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
 
    #----- Creer l'icone
    set pixel [$VAAC_Watch::Data(VP1) -project $Info(Lat) $Info(Lon) 0]

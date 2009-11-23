@@ -35,7 +35,7 @@ namespace eval Macro::URPMap {} {
 }
 
 proc Macro::URPMap::Execute { } {
-   global GDefs
+   global env
    variable Data
    variable Error
    variable Param
@@ -88,7 +88,7 @@ proc Macro::URPMap::Execute { } {
    #----- Create the colormap
    if { ![colormap is RADAR_MAP] } {
       colormap create RADAR_MAP
-      colormap read RADAR_MAP $GDefs(DirEER)/Colormap/URP.rgba
+      colormap read RADAR_MAP $env(HOME)/.spi/Colormap/URP.rgba
       colormap configure RADAR_MAP -interp False
    }
 
