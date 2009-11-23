@@ -43,7 +43,7 @@ package require VectorBox
 package require MetStat
 
 namespace eval FSTD {
-   global   GDefs
+   global   env
    variable Data
    variable Param
    variable Params
@@ -56,7 +56,7 @@ namespace eval FSTD {
 
    image create photo FLDMAPImg -width 185 -height 15
    colormap create FLDMAPDEFAULT
-   colormap read FLDMAPDEFAULT $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
+   colormap read FLDMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
    dataspec create FLDDEFAULT
@@ -972,7 +972,7 @@ proc FSTD::UnRegister { FieldId { Update True } } {
 #-------------------------------------------------------------------------------
 
 proc FSTD::Params { Id Map args } {
-   global   GDefs
+   global   env
    variable Param
 
    if { ![dataspec is $Id] } {
@@ -982,7 +982,7 @@ proc FSTD::Params { Id Map args } {
    if { ![colormap is FLDMAP$Id] } {
       colormap create FLDMAP$Id
    }
-   colormap read FLDMAP$Id $GDefs(DirEER)/Colormap/$Map.rgba
+   colormap read FLDMAP$Id $env(HOME)/.spi/Colormap/$Map.rgba
 
    eval dataspec configure $Id $args -font FLDFONTDEFAULT -colormap FLDMAP$Id
 }

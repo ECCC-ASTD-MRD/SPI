@@ -10,12 +10,24 @@
 #
 #===============================================================================
 
+#----- General definitions
 set GDefs(Lang)   0
 set GDefs(Arch)   $tcl_platform(os)
 set GDefs(Host)   [lindex [split [info hostname] .] 0]
-set GDefs(DirBin) $GDefs(Dir)/Bin/$GDefs(Arch)
-set GDefs(DirEER) $env(HOME)/.spi
-set GDefs(Done)   True
+
+#----- Definitions pour les Frontends/Backends
+set GDefs(FrontEnd)     $GDefs(Host)
+set GDefs(FrontEndUser) afsr005
+set GDefs(TransmitUser) afsiops
+
+set GDefs(FrontEnds)    { alef dorval-ib }
+set GDefs(BackEnds)     { maia saiph }
+set GDefs(BackEndmaia)  { /home/binops/afse/eer }
+set GDefs(BackEndsaiph) { /home/binops/afse/eer }
+set GDefs(BackEndzeta)  { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+
+#----- If we're running Tk
+if { [info exists ::tk_version] } {
 
 #----- Definitions des ressources
 set GDefs(Font)           XFont12
@@ -23,17 +35,6 @@ set GDefs(ColorFrame)     gray80
 set GDefs(ColorLight)     gray70
 set GDefs(ColorOff)       gray60
 set GDefs(ColorHighLight) yellow
-
-#----- Definitions pour les Frontends/Backends
-set GDefs(FrontEnd)       pollux
-set GDefs(FrontEndUser)   afsr005
-set GDefs(TransmitUser)   afsiops
-
-set GDefs(FrontEnds)        { alef dorval-ib pollux castor goodenough spurr zenon thorim hodir }
-set GDefs(BackEnds)         { maia saiph }
-set GDefs(BackEndmaia)      { /home/binops/afse/eer }
-set GDefs(BackEndsaiph)     { /home/binops/afse/eer }
-set GDefs(BackEndzeta)      { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 
 #----- Parametres de SPI
 namespace eval SPI {
@@ -239,4 +240,5 @@ namespace eval PrintBox {
    set Param(Printer)     ""
    set Param(WEBNameList) { }
    set Param(WEBPathList) { }
+}
 }

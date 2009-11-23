@@ -925,13 +925,13 @@ proc NowCaster::Obs::ModelAdd { Model Params } {
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelLoad { } {
-   global GDefs
+   global env
    variable Data
 
    set Data(Models) {}
 
-   if {[file exists $GDefs(DirEER)/ObsModel] } {
-      set f [open $GDefs(DirEER)/ObsModel r]
+   if {[file exists $env(HOME)/.spi/ObsModel] } {
+      set f [open $env(HOME)/.spi/ObsModel r]
       while { ![eof $f] } {
          gets $f line
          if { [string index $line 0] != "#" && [string length $line] > 0 } {
@@ -963,14 +963,14 @@ proc NowCaster::Obs::ModelLoad { } {
 #-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::ModelSave { } {
-   global GDefs
+   global env
    variable Data
 
-   if {[file exists $GDefs(DirEER)/ObsModel] } {
-      file rename -force $GDefs(DirEER)/ObsModel $GDefs(DirEER)/ObsModel.old
+   if {[file exists $env(HOME)/.spi/ObsModel] } {
+      file rename -force $env(HOME)/.spi/ObsModel $env(HOME)/.spi/ObsModel.old
    }
 
-   set f [open $GDefs(DirEER)/ObsModel w]
+   set f [open $env(HOME)/.spi/ObsModel w]
    foreach model $Data(Models) {
       set mparam {}
       set msave $Data(Models$model)

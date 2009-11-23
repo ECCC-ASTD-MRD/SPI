@@ -193,10 +193,10 @@ proc Writer::AACN::Update { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::AACN::Format { Pad } {
-   global   GDefs
+   global   env
    variable Data
 
-   set file $GDefs(DirEER)/Tmp/AACN[pid]_[clock seconds].txt
+   set file $env(HOME)/.spi/Tmp/AACN[pid]_[clock seconds].txt
 
    set f [open $file w]
 

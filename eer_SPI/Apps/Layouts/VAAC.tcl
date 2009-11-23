@@ -750,14 +750,14 @@ proc VAAC::LayoutUpdate { Frame } {
 #----------------------------------------------------------------------------
 
 proc VAAC::Transmit { Frame } {
-   global GDefs
+   global GDefs env
    variable Print
    variable Sim
    variable Lbl
    variable Error
    variable Data
 
-   set file "$GDefs(DirEER)/Tmp/VAAC_[pid]_[clock seconds]"
+   set file "$env(HOME)/.spi/Tmp/VAAC_[pid]_[clock seconds]"
 
    #----- Calculer le pourcentage maximum
 
@@ -826,7 +826,7 @@ proc VAAC::Transmit { Frame } {
             if { $no!="ca0281c" && $no!="ca0282c" && $no!="ca0287c" && $no!="ca0288c" } {
                SPI::Progress +0 "Sending over WAFS"
 
-               set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" } MsgCatch]
+               set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $env(HOME)/.spi/Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" } MsgCatch]
 
                if { $ErrCatch != 0 } {
                   Log::Print ERROR "Unable to send the $file.pbm over WAFS.\n\n$MsgCatch"
@@ -846,7 +846,7 @@ proc VAAC::Transmit { Frame } {
          }
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
-            set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " } MsgCatch]
+            set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $env(HOME)/.spi/Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " } MsgCatch]
 
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to send the $file.pbm over SATNET.\n\n$MsgCatch"
@@ -1107,7 +1107,6 @@ proc VAAC::PrintWidget { Frame } {
 #----------------------------------------------------------------------------
 
 proc VAAC::PrintCommand { Frame } {
-   global GDefs
    variable Lbl
    variable Print
    variable Data

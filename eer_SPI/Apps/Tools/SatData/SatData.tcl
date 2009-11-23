@@ -43,7 +43,7 @@ source $GDefs(Dir)/Apps/Tools/SatData/SatData.int
 #-------------------------------------------------------------------------------
 
 proc SatData::Close { } {
-   global GDefs
+   global env
    variable Data
 
    if { $Page::Data(ToolMode) == "SatData" } {
@@ -73,7 +73,7 @@ proc SatData::Close { } {
    }
 
    trace vdelete SPI::Src(Info) w { SatData::Source }
-   foreach file [glob -nocomplain $GDefs(DirEER)/Tmp/SAT*] {
+   foreach file [glob -nocomplain $env(HOME)/.spi/Tmp/SAT*] {
       file delete $file
    }
    destroy .satdata
@@ -109,7 +109,7 @@ proc SatData::DataExtract { InFile } {
 
    #----- setup output file.
 
-   set outfile "$GDefs(DirEER)/Tmp/SAT_${InFileDate}${IdSat}"
+   set outfile "$env(HOME)/.spi/Tmp/SAT_${InFileDate}${IdSat}"
 
    InfoFrame::Msg .satdata.info.msg "[lindex $Msg(Extract) $GDefs(Lang)] ($InFile)"
    update idletasks
@@ -117,7 +117,7 @@ proc SatData::DataExtract { InFile } {
    #----- execute the converter program.
 
    if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-      catch { exec ssh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $GDefs(DirEER)/Tmp/SAT_hdf2fstd.out" }
+      catch { exec ssh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out" }
    } else {
       Log::Print ERROR "Option 2 not available right now, sorry! ( $GDefs(FrontEnd) $GDefs(Host) )"
       if { $trace } {
@@ -139,7 +139,7 @@ proc SatData::DataExtract { InFile } {
 #-------------------------------------------------------------------------------
 
 proc SatData::DataGet { }  {
-   global GDefs
+   global GDefs env
    variable Data
    variable Lbl
    variable Msg
@@ -185,8 +185,8 @@ proc SatData::DataGet { }  {
    foreach item [.satdata.seluser.ch.list curselection] {
       #ST SatData::DataExtract [.satdata.seluser.ch.list get $item] $Data(ResultFile) $Data(UserPath) U
       SatData::DataExtract $SatData::Data(UserPath)/[.satdata.seluser.ch.list get $item]
-      catch { exec editfst2000 -s $GDefs(DirEER)/Tmp/SAT_$file -d $Data(ResultFile) -i 0 }
-      catch { exec pgsm2000 -iment $GDefs(DirEER)/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
+      catch { exec editfst2000 -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 }
+      catch { exec pgsm2000 -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
  SORTIE(STD,1000,A)
  LIREE('Z9','O',-1,0,0,4,'        ')
 C ---- canal 5 pour les cas d'archives.
@@ -210,8 +210,8 @@ ENDPGSM" }
             #----- Calcul du 4-5.
 
             InfoFrame::Msg .satdata.info.msg "[lindex $Msg(45) $GDefs(Lang)] $item."
-            catch { exec editfst2000 -s $GDefs(DirEER)/Tmp/SAT_$file -d $Data(ResultFile) -i 0 }
-            catch { exec pgsm2000 -iment $GDefs(DirEER)/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
+            catch { exec editfst2000 -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 }
+            catch { exec pgsm2000 -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
  SORTIE(STD,1000,A)
  LIREE('Z9','O',-1,0,0,4,'        ')
 C ---- canal 5 pour GOES 11 ou canal 6 pour GOES 12.
@@ -228,7 +228,7 @@ ENDPGSM" }
 
    #----- Suppression des fichiers temporaires
 
-   foreach file [glob -nocomplain $GDefs(DirEER)/Tmp/SAT*] {
+   foreach file [glob -nocomplain $env(HOME)/.spi/Tmp/SAT*] {
        file delete $file
    }
 

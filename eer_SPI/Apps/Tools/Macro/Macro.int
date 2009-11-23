@@ -30,7 +30,7 @@
 #----------------------------------------------------------------------------
 
 proc Macro::Window { } {
-   global GDefs
+   global GDefs env
    variable Lbl
    variable Bubble
    variable Data
@@ -71,7 +71,7 @@ proc Macro::Window { } {
 
       frame $Data(Tab).head
          button $Data(Tab).head.start -image DOCRUN -bd 0 -relief flat -overrelief raised -command { if { [llength [$Macro::Data(Tab).desc.data.list curselection]] } { Macro::Execute [Macro::Current] } }
-         button $Data(Tab).head.new -image DOCNEW -bd 0 -relief flat -overrelief raised -command { Macro::New [FileBox::Create .macro $GDefs(DirEER)/Macro Save [list $FileBox::Type(TCL)]]}
+         button $Data(Tab).head.new -image DOCNEW -bd 0 -relief flat -overrelief raised -command { Macro::New [FileBox::Create .macro $env(HOME)/.spi/Macro Save [list $FileBox::Type(TCL)]]}
          button $Data(Tab).head.load -image DOCLOAD -bd 0 -relief flat -overrelief raised -command { Macro::Load [FileBox::Create .macro "" Load [list $FileBox::Type(TCL)]]}
          button $Data(Tab).head.save -image DOCSAVE -bd 0 -relief flat -overrelief raised -command { Macro::Save [Macro::Current] } -state disabled
          button $Data(Tab).head.del -image DOCDEL -bd 0 -relief flat -overrelief raised -command { Macro::Delete [Macro::Current] ; update idletasks; Macro::Select [Macro::Current]}
@@ -122,10 +122,10 @@ proc Macro::Window { } {
       }
    }
 
-   if { ![file exists $GDefs(DirEER)/Macro] } {
-      file mkdir $GDefs(DirEER)/Macro
+   if { ![file exists $env(HOME)/.spi/Macro] } {
+      file mkdir $env(HOME)/.spi/Macro
    }
-   foreach macro [glob -nocomplain $GDefs(DirEER)/Macro/*.tcl] {
+   foreach macro [glob -nocomplain $env(HOME)/.spi/Macro/*.tcl] {
       Macro::Load $macro
    }
    raise .macro

@@ -144,8 +144,8 @@ proc MetInfo::ExportFileGet { } {
 
 proc MetInfo::ExportFile { outFile } {
    variable Data
+   variable Param
    variable Msg
-   global GDefs
 
    set typeList    ""
    set stationList ""
@@ -181,27 +181,27 @@ proc MetInfo::ExportFile { outFile } {
             switch $type {
                radiosonde  {
                   Log::Print INFO "Extract radiosonde info from $path/$file"
-                  set output [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -prf $path/$file] "\n"]
+                  set output [split [exec $Param(Bin)/scipuff -stn $stidNum -prf $path/$file] "\n"]
 
                   if { [llength $output] == 6 } {
-                     set output [split [exec $GDefs(DirBin)/scipuff -stn $stidLet -prf $path/$file] "\n"]
+                     set output [split [exec $Param(Bin)/scipuff -stn $stidLet -prf $path/$file] "\n"]
                   }
                }
                metar {
                   set stid [lindex $station 0]
                   Log::Print INFO "Extract metar info from $path/$file"
-                  set output [split [exec $GDefs(DirBin)/scipuff -stn $stidLet -sfc $path/$file] "\n"]
+                  set output [split [exec $Param(Bin)/scipuff -stn $stidLet -sfc $path/$file] "\n"]
 
                   if { [llength $output] == 6 } {
-                     set output [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -sfc $path/$file] "\n"]
+                     set output [split [exec $Param(Bin)/scipuff -stn $stidNum -sfc $path/$file] "\n"]
                   }
                }
                synop {
                   Log::Print INFO "Extract synop info from $path/$file"
-                  set output [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -sfc $path/$file] "\n"]
+                  set output [split [exec $Param(Bin)/scipuff -stn $stidNum -sfc $path/$file] "\n"]
 
                   if { [llength $output] == 6 } {
-                     set output [split [exec $GDefs(DirBin)/scipuff -stn $stidLet -sfc $path/$file] "\n"]
+                     set output [split [exec $Param(Bin)/scipuff -stn $stidLet -sfc $path/$file] "\n"]
                   }
                }
             }
@@ -300,6 +300,7 @@ proc MetInfo::ExportFile { outFile } {
 proc MetInfo::MsgGet { } {
    global GDefs
    variable Data
+   variable Param
    variable Msg
 
    .metinfo.info.list delete 0 end
@@ -317,14 +318,14 @@ proc MetInfo::MsgGet { } {
 
       switch $Data(Type) {
          radiosonde  {
-            set lines [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -prf $Data(Path)/$Data(File) ] "\n"]
+            set lines [split [exec $Param(Bin)/scipuff -stn $stidNum -prf $Data(Path)/$Data(File) ] "\n"]
             if { [llength $lines] == 6 } {
-               set lines [split [exec $GDefs(DirBin)/scipuff -stn $stidLet -prf $Data(Path)/$Data(File) ] "\n"]
+               set lines [split [exec $Param(Bin)/scipuff -stn $stidLet -prf $Data(Path)/$Data(File) ] "\n"]
             }
          }
 
         metar {
-            set lines [split [exec $GDefs(DirBin)/search -me $Data(Path)/$Data(File) $stidLet] "\n"]
+            set lines [split [exec $Param(Bin)/search -me $Data(Path)/$Data(File) $stidLet] "\n"]
 
             foreach line $lines {
                .metinfo.info.list insert end "$line"
@@ -340,7 +341,7 @@ proc MetInfo::MsgGet { } {
             if { [string length $stidLet] > 3 } {
                set stidLet [string range $stidLet 1 4]
             }
-            set lines [split [exec $GDefs(DirBin)/search -sa $Data(Path)/$Data(File) $stidLet] "\n"]
+            set lines [split [exec $Param(Bin)/search -sa $Data(Path)/$Data(File) $stidLet] "\n"]
 
             foreach line $lines {
                .metinfo.info.list insert end "$line"
@@ -354,9 +355,9 @@ proc MetInfo::MsgGet { } {
          }
 
          synop {
-            set lines [split [exec $GDefs(DirBin)/scipuff -stn $stidNum -sfc $Data(Path)/$Data(File) ] "\n"]
+            set lines [split [exec $Param(Bin)/scipuff -stn $stidNum -sfc $Data(Path)/$Data(File) ] "\n"]
             if { [llength $lines] == 6 } {
-               set lines [split [exec $GDefs(DirBin)/scipuff -stn $stidLet -sfc $Data(Path)/$Data(File) ] "\n"]
+               set lines [split [exec $Param(Bin)/scipuff -stn $stidLet -sfc $Data(Path)/$Data(File) ] "\n"]
             }
          }
       }

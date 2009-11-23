@@ -211,7 +211,6 @@ proc TRAJ::LayoutClear { Frame } {
 #----------------------------------------------------------------------------
 
 proc TRAJ::PrintWidget { Frame } {
-   global GDefs
 
    #----- Constantes pour l'impression par PrintBox
 
@@ -291,7 +290,6 @@ proc TRAJ::LayoutToolBar { Frame } {
 #----------------------------------------------------------------------------
 
 proc TRAJ::RSMCJoin { Frame } {
-   global GDefs
    variable Lbl
    variable Msg
    variable Data
@@ -342,7 +340,7 @@ proc TRAJ::RSMCJoin { Frame } {
 #----------------------------------------------------------------------------
 
 proc TRAJ::SATNET { Frame Mode } {
-   global GDefs
+   global GDefs env
    variable Lbl
    variable Msg
    variable OCXNO
@@ -357,7 +355,7 @@ proc TRAJ::SATNET { Frame Mode } {
 
    SPI::Progress 0
 
-   set file "$GDefs(DirEER)/Tmp/TRAJ_[pid]_[clock seconds]"
+   set file "$env(HOME)/.spi/Tmp/TRAJ_[pid]_[clock seconds]"
 
    #----- Generer le fichier image
 
@@ -385,7 +383,7 @@ proc TRAJ::SATNET { Frame Mode } {
 
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $GDefs(DirEER)/Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
+   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $env(HOME)/.spi/Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
 
    if { $ErrCatch != 0 } {
       Log::Print ERROR "Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"

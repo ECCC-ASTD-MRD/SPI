@@ -78,10 +78,6 @@ do
       exit $code
    fi
 
-   if [[ $flag = "-setup" ]]
-   then
-      ${SPI_PATH}/Setup/Setup
-   fi
 done
 
 #----- Testing hardware capabilities

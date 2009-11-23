@@ -636,7 +636,7 @@ proc FieldCalc::Window { { Parent .} } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaDel { } {
-   global GDefs
+   global GDefs env
    variable Data
    variable Lbl
    variable Msg
@@ -651,9 +651,9 @@ proc FieldCalc::FormulaDel { } {
          set Data(Formulas) [lreplace $Data(Formulas) $idx $idx]
          set Data(Formula) ""
 
-         file rename -force $GDefs(DirEER)/FieldCalc $GDefs(DirEER)/FieldCalc.old
+         file rename -force $env(HOME)/.spi/FieldCalc $env(HOME)/.spi/FieldCalc.old
 
-         set f [open $GDefs(DirEER)/FieldCalc w]
+         set f [open $env(HOME)/.spi/FieldCalc w]
 
          foreach name $Data(Formulas) {
             puts $f "\{$name\} \{$Data(Formula$name)\}"
@@ -679,18 +679,18 @@ proc FieldCalc::FormulaDel { } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaLoad { } {
-   global GDefs
+   global GDefs env
    variable Data
    variable Lbl
 
    set Data(Formulas) [lindex $Lbl(None) $GDefs(Lang)]
    set Data(Formula[lindex $Lbl(None) $GDefs(Lang)]) ""
 
-   if { ![file exist $GDefs(DirEER)/FieldCalc] } {
+   if { ![file exist $env(HOME)/.spi/FieldCalc] } {
       return
    }
 
-   set f [open $GDefs(DirEER)/FieldCalc r]
+   set f [open $env(HOME)/.spi/FieldCalc r]
 
    while { ![eof $f] } {
       gets $f line
@@ -720,7 +720,7 @@ proc FieldCalc::FormulaLoad { } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::FormulaSave { Name } {
-   global GDefs
+   global env
    variable Lbl
    variable Msg
    variable Data
@@ -750,11 +750,11 @@ proc FieldCalc::FormulaSave { Name } {
    }
    set Data(Formula$Data(Formula)) $Data(Operand)
 
-   if { [file exist $GDefs(DirEER)/FieldCalc] } {
-      file rename -force $GDefs(DirEER)/FieldCalc $GDefs(DirEER)/FieldCalc.old
+   if { [file exist $env(HOME)/.spi/FieldCalc] } {
+      file rename -force $env(HOME)/.spi/FieldCalc $env(HOME)/.spi/FieldCalc.old
    }
 
-   set f [open $GDefs(DirEER)/FieldCalc w]
+   set f [open $env(HOME)/.spi/FieldCalc w]
 
    foreach name $Data(Formulas) {
       if { $Data(Formula$name)!= "" } {

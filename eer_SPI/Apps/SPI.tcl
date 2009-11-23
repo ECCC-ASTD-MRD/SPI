@@ -37,7 +37,7 @@ if { ![file exists $env(HOME)/.spi] } {
 
    #----- Copy old users definitions
    if { [file exists $env(HOME)/.eer_ToolDefs] } {
-      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain eer_Default } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData SPI } {
+      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData } {
          catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
       }
       foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
@@ -248,7 +248,7 @@ Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 foreach layout [glob -nocomplain $GDefs(Dir)/Apps/Layouts/*.tcl] {
     lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
 }
-foreach layout [glob -nocomplain $GDefs(DirEER)/Layout/*.tcl] {
+foreach layout [glob -nocomplain $env(HOME)/.spi/Layout/*.tcl] {
     lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
 }
 Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
@@ -518,7 +518,7 @@ proc SPI::Layout { Frame } {
 #-------------------------------------------------------------------------------
 
 proc SPI::LayoutDelete { } {
-   global   GDefs
+   global   GDefs env
    variable Error
    variable Msg
    variable Lbl
@@ -532,7 +532,7 @@ proc SPI::LayoutDelete { } {
       if { ![Dialog::Default . 300 WARNING $Msg(LayoutErase) "\n\n\t$SPI::Param(Layout)\n" 1 $Lbl(Yes) $Lbl(No)] } {
          set idx [lsearch -exact $SPI::Param(Layouts) $SPI::Param(Layout)]
          set SPI::Param(Layouts) [lreplace $SPI::Param(Layouts) $idx $idx]
-         file delete $GDefs(DirEER)/Layout/${SPI::Param(Layout)}.tcl
+         file delete $env(HOME)/.spi/Layout/${SPI::Param(Layout)}.tcl
       } else {
          return
       }
@@ -567,7 +567,7 @@ proc SPI::LayoutUnLock { Frame } {
 }
 
 proc SPI::LayoutLoad { Frame Layout } {
-   global   GDefs
+   global   GDefs env
    global   env
    variable Title
    variable Lbl
@@ -616,8 +616,8 @@ proc SPI::LayoutLoad { Frame Layout } {
       set Layout [file rootname [file tail $Layout]]
    } elseif { [file exists $GDefs(Dir)/Apps/Layouts/$Layout.tcl] } {
       uplevel #0 source \$GDefs(Dir)/Apps/Layouts/$Layout.tcl
-   } elseif { [file exists $GDefs(DirEER)/Layout/$Layout.tcl] } {
-      uplevel #0 source \$GDefs(DirEER)/Layout/$Layout.tcl
+   } elseif { [file exists $env(HOME)/.spi/Layout/$Layout.tcl] } {
+      uplevel #0 source \$env(HOME)/.spi/Layout/$Layout.tcl
    } elseif { [namespace exists ::$Layout] && [llength [info procs ::${Layout}::Layout]] } {
    } else {
       Log::Print ERROR "Invalid Layout"
@@ -689,7 +689,7 @@ proc SPI::LayoutLoad { Frame Layout } {
 #-------------------------------------------------------------------------------
 
 proc SPI::LayoutSave { Frame Name } {
-   global   GDefs
+   global   GDefs env
    variable Msg
    variable Lbl
    variable Data
@@ -704,14 +704,14 @@ proc SPI::LayoutSave { Frame Name } {
    }
    regsub -all " " $Name "_" Name
 
-   if { [file exists $GDefs(DirEER)/Layout/$Name.tcl] } {
+   if { [file exists $env(HOME)/.spi/Layout/$Name.tcl] } {
       if { [Dialog::Default . 300 WARNING $Msg(LayoutOver) "\n\n\t$Name\n" 1 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }
 
    set Param(Layout) $Name
-   set file [open $GDefs(DirEER)/Layout/$Param(Layout).tcl w]
+   set file [open $env(HOME)/.spi/Layout/$Param(Layout).tcl w]
 
    #----- Creer la commande d'execution du layout
 
@@ -1239,22 +1239,22 @@ proc SPI::DrawTrajLegend { Frame } {
 #-------------------------------------------------------------------------------
 
 proc SPI::Execute { Script } {
-   global GDefs
+   global env
    global argv
 
    if { $Script!="" } {
 
       #----- Check for regular script
       if { ![file exists $Script] } {
-         if { ![file exists $GDefs(DirEER)/Macro/$Script] } {
-            if { ![file exists $GDefs(DirEER)/Macro/$Script.tcl] } {
+         if { ![file exists $env(HOME)/.spi/Macro/$Script] } {
+            if { ![file exists $env(HOME)/.spi/Macro/$Script.tcl] } {
                Log::Print ERROR "Could not find script $Script"
                SPI::Quit 1
             } else {
-               set Script $GDefs(DirEER)/Macro/$Script.tcl
+               set Script $env(HOME)/.spi/Macro/$Script.tcl
             }
          } else {
-            set Script $GDefs(DirEER)/Macro/$Script
+            set Script $env(HOME)/.spi/Macro/$Script
          }
       }
 

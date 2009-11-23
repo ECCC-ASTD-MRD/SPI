@@ -16,7 +16,7 @@
 #===============================================================================
 
 namespace eval Mapper { } {
-   global   GDefs
+   global   env
    variable Bubble
    variable Data
    variable Param
@@ -27,7 +27,7 @@ namespace eval Mapper { } {
       font create OGRFONT -family courier -size -10 -weight bold
 
       colormap create OGRMAPDEFAULT
-      colormap read OGRMAPDEFAULT $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
+      colormap read OGRMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    }
 
    set Param(Title)     { "Données Geographiques" "Geographical data" }

@@ -34,7 +34,7 @@ package provide Obs 3.4
 catch { SPI::Splash "Loading Data Package Obs 3.4" }
 
 namespace eval Obs {
-   global GDefs
+   global GDefs env
    variable Data
    variable Param
    variable Params
@@ -45,7 +45,7 @@ namespace eval Obs {
 
    image create photo OBSMAPImg -width 170 -height 15
    colormap create OBSMAPDEFAULT
-   colormap read OBSMAPDEFAULT $GDefs(DirEER)/Colormap/REC_Col.std1.rgba
+   colormap read OBSMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
    dataspec create OBSDEFAULT

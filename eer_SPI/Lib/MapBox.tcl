@@ -64,7 +64,7 @@ namespace eval MapBox {
    set Control(X0) 5
    set Control(Y0) 30
 
-   catch { set Data(Dir)      $GDefs(DirEER)/Colormap }
+   catch { set Data(Dir) $env(HOME)/.spi/Colormap }
 
    #----- Definitions des labels
 

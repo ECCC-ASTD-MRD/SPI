@@ -619,10 +619,10 @@ proc Writer::FVCN::Update { Pad } {
 #----------------------------------------------------------------------------
 
 proc Writer::FVCN::Format { Pad Mode } {
-   global   GDefs
+   global   env
    variable Data
 
-   set file $GDefs(DirEER)/Tmp/FVCN[pid]_[clock seconds].txt
+   set file $env(HOME)/.spi/Tmp/FVCN[pid]_[clock seconds].txt
 
    set f [open $file w]
 

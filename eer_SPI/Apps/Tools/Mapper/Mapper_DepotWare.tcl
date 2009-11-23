@@ -157,12 +157,12 @@ proc Mapper::DepotWare::CacheClean { } {
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::ParamsSave { } {
-   global GDefs
+   global env
    variable Data
 
-   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)"  > $GDefs(DirEER)/Mapper
-   exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" >> $GDefs(DirEER)/Mapper
-   exec chmod 600 $GDefs(DirEER)/Mapper
+   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)"  > $env(HOME)/.spi/Mapper
+   exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" >> $env(HOME)/.spi/Mapper
+   exec chmod 600 $env(HOME)/.spi/Mapper
 }
 
 #-------------------------------------------------------------------------------
@@ -567,15 +567,15 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
 #-------------------------------------------------------------------------------
 
 proc Mapper::DepotWare::Create { } {
-   global GDefs
+   global env
    variable Data
 
    if { [llength [TREE children root]] } {
       return
    }
 
-   if { [file exists $GDefs(DirEER)/Mapper] } {
-      source $GDefs(DirEER)/Mapper
+   if { [file exists $env(HOME)/.spi/Mapper] } {
+      source $env(HOME)/.spi/Mapper
    }
 
 
