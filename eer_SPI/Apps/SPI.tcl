@@ -18,8 +18,14 @@
 set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end]
 set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
 
+package require TclSystem
+package require Logger
+
+source $GDefs(Dir)/Apps/SPI.txt
+source $GDefs(Dir)/Apps/SPI.ctes
+source $GDefs(Dir)/Apps/SPI.int
+
 #----- Do setup if not done
-set defs $env(HOME)/.spi/.spi-[regsub \[:alpha:\]+ $GDefs(Version) ""]
 if { ![file exists $env(HOME)/.spi] } {
 
    SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
@@ -27,18 +33,18 @@ if { ![file exists $env(HOME)/.spi] } {
 
    #----- Installer les fichiers de definitions
    if { ![file exists $env(HOME)/.spi/SPI] } {
-      file copy -force $GDefs(Dir)/Setup/Data/SPI $env(HOME)/.spi/SPI
+      file copy -force $GDefs(Dir)/Setup/SPI $env(HOME)/.spi/SPI
    }
 
    #----- Copy standard stuff
    foreach file { Colormap Scenario } {
-      exec cp -r $GDefs(Dir)/Setup/Data/$file $env(HOME)/.spi
+      exec cp -r $GDefs(Dir)/Setup/$file $env(HOME)/.spi
    }
 
    #----- Copy old users definitions
    if { [file exists $env(HOME)/.eer_ToolDefs] } {
       foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData } {
-         catch { file copy $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+         catch { file copy -force $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
       }
       foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
          eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew}
@@ -50,32 +56,6 @@ if { ![file exists $env(HOME)/.spi] } {
 
 #----- Lire la liste des definitions communes
 source $env(HOME)/.spi/SPI
-
-#----- Verifier pour script init seulement
-
-if { [lindex $argv 0]=="-tclsh" } {
-   set scr  [lindex $argv 1]
-   set argv [lrange $argv 2 end]
-   set argc [llength $argv]
-
-   load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkViewport.so TclData
-
-   source $scr
-   exit 0
-}
-
-package require TclSystem
-package require Logger
-
-#----- Fichiers complementaires
-
-source $GDefs(Dir)/Apps/SPI.txt
-source $GDefs(Dir)/Apps/SPI.ctes
-source $GDefs(Dir)/Apps/SPI.int
-source $GDefs(Dir)/Apps/Export.tcl
-source $GDefs(Dir)/Apps/Models/Model.tcl
-
-SPI::Splash "Sourcing packages"
 
 #---------------------------------------------------------------------------
 # Nom      : <SPI::ArgsParse>
@@ -205,8 +185,9 @@ for { set i 0 } { $i < $argc } { incr i } {
    }
 }
 
-#----- Fonctions en librairie.
+SPI::Splash "Sourcing packages"
 
+#----- Fonctions en librairie.
 catch { package require Thread }
 package require Tktable
 package require http
@@ -234,8 +215,11 @@ package require FieldCalc
 package require Animator
 package require Info
 
-#----- Liste des outils
+#----- Fichiers complementaires
+source $GDefs(Dir)/Apps/Export.tcl
+source $GDefs(Dir)/Apps/Models/Model.tcl
 
+#----- Liste des outils
 foreach tool [lsort [glob $GDefs(Dir)/Apps/Tools/*]] {
    set name [file tail [file rootname $tool]]
    uplevel #0 source $tool/$name.tcl
@@ -244,7 +228,6 @@ foreach tool [lsort [glob $GDefs(Dir)/Apps/Tools/*]] {
 Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 
 #----- Liste des layouts
-
 foreach layout [glob -nocomplain $GDefs(Dir)/Apps/Layouts/*.tcl] {
     lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
 }
@@ -2282,7 +2265,7 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
 
          set cmap [dataspec configure $spec -colormap]
          if { [colormap is $cmap] && [lsearch -exact $cmaps $cmap]==-1 } {
-            lappend cmpas $cmap
+            lappend cmaps $cmap
             puts $f "\nif { !\[colormap is $cmap\] } { colormap create $cmap }"
             puts $f "colormap control $cmap -del"
             puts $f "colormap control $cmap -list { [colormap control $cmap -list] }"
