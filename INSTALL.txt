@@ -38,7 +38,7 @@ access this manual, simply type:
 
    A) Packages description
 
-      - Geographical database
+      - Geographical database (GDB)
          (on 2 CDs)
             DBGEO_R.zip (Raster data)
             DBGeo_T.zip (Texture data)
@@ -56,7 +56,7 @@ access this manual, simply type:
    B) Decompressing the packages
 
       - You will need to install the geographical database (DBGEO_?.zip) first by decompressing it
-        into it's final installation directory.
+        into it's final installation directory if it has'nt been installed before.
 
         This will take up to 2.3 Gig for the global coverage
 
@@ -82,9 +82,21 @@ access this manual, simply type:
 
          ./Install [your spi_path]
 
-            Enter the geographical database (GDB) path: [your geo_path]
-
    D) Profile setup.
+
+      - You will have to define the GDB_PATH variable to the location of the geographical database for SPI to use it:
+        Depending on the shell you are using, this might mean:
+
+        sh/ksh/bash
+           add this line to the .profile or .profile_usr
+
+           export GDB_PATH=[your geo_path]/data
+
+        csh
+
+           add this line to the .cshrc
+
+           setenv GDB_PATH [your geo_path]/data
 
       - If you want to run scripts, you will have to define an environment variable pointing to the path
         where you installed SPI. Depending on the shell you are using, this might mean:
@@ -111,12 +123,9 @@ access this manual, simply type:
 
         $SPI_PATH/SPI
 
-        The first time you run it a setup window will popup for you to
-        set default parameters.
-
-        In the "Options" tab you may wish to setup a default printer and language.
-
-        The other items should be fine as is. Just click Install and that's it
+        The first time you run it SPI will create a setup directory called .spi in
+        your home directory where the parameters are saved. You can edit theses files, primarily
+        the one called ~/.spi/SPI, carefully to configure SPI to your likings.
 
 **** In case of problem with the OpenGL librairies, you can try to do the installation
      with the forcing parameter which will cause the librairies to be relinked and force
