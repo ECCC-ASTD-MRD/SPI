@@ -47,7 +47,7 @@ if { ![file exists $env(HOME)/.spi] } {
          catch { file copy -force $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
       }
       foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
-         eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew}
+         catch { eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew} }
       }
 
       catch { file copy $env(HOME)/.eer_ToolDefs/Mapper/Params $env(HOME)/.spi/Mapper }

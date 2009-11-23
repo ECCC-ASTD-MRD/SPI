@@ -22,8 +22,8 @@ set GDefs(TransmitUser) afsiops
 
 set GDefs(FrontEnds)    { alef dorval-ib }
 set GDefs(BackEnds)     { maia saiph }
-set GDefs(BackEndmaia)  { /home/binops/afse/eer }
-set GDefs(BackEndsaiph) { /home/binops/afse/eer }
+set GDefs(BackEndmaia)  { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+set GDefs(BackEndsaiph) { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 set GDefs(BackEndzeta)  { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 
 #----- If we're running Tk
@@ -203,9 +203,9 @@ namespace eval Animator {
 
 namespace eval Exp {
    set Param(Paths)     { }
-   set Param(Path)      /data/cmoe/afsr005/eer_Experiment
-   set Param(StoreHost) goodenough
-   set Param(StorePath) /tmp/ArchiveTest
+   set Param(Path)      { }
+   set Param(StoreHost) { }
+   set Param(StorePath) { }
 }
 
 namespace eval MetData {
@@ -213,11 +213,11 @@ namespace eval MetData {
 }
 
 namespace eval Watch {
-   set Param(Path)      /home/afsr/005/Projects/AutoSim/Projects
+   set Param(Path)      { }
 }
 
 namespace eval Writer {
-   set Param(Path)      /data/cmoe/afsr005/eer_Msg
+   set Param(Path)      { }
 }
 
 namespace eval NowCaster {
