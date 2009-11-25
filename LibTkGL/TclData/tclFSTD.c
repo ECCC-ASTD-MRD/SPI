@@ -786,7 +786,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[5],&c0);
-            Tcl_GetDoubleFromObj(Interp,Objv[6],&c1);
+            Tcl_GetDoubleFromObj(Interp,Objv[6],&c1);c1-=c0;
             Tcl_GetDoubleFromObj(Interp,Objv[7],&a);
 
             n=1;
