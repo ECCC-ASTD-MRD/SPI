@@ -489,7 +489,7 @@ TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,in
 TDataDef* Calc_Length(TDataDef* A) {
 
    unsigned long i;
-   double        v;
+   double        v[3];
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) Calc_Length(A:%p,Func:%p)\n",(void*)A);
 #endif
@@ -502,8 +502,14 @@ TDataDef* Calc_Length(TDataDef* A) {
       GData[GDataN]=Data_DefNew(A->NI,A->NJ,A->NK,1,A->Type);
 
       for(i=0;i<FSIZE3D(A);i++) {
-         Def_GetMod(A,i,v);
-         Def_Set(GData[GDataN],0,i,v);
+         Def_Get(A,0,i,v[0]);
+         Def_Get(A,1,i,v[1]);
+         if (A->Data[2]) {
+            Def_Get(A,2,i,v[2]);
+            Def_Set(GData[GDataN],0,i,sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]));
+         } else {
+            Def_Set(GData[GDataN],0,i,sqrt(v[0]*v[0]+v[1]*v[1]));
+         }
       }
    }
    return(GData[GDataN]);
