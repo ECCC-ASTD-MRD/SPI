@@ -781,7 +781,7 @@ proc MetData::ListIP2 { Index Var { Stamp 0 } } {
 #----------------------------------------------------------------------------
 
 proc MetData::Path { Level Model DiagVar ProgVar } {
-   global Param
+   variable Param
 
    upvar #0 $DiagVar diag
    upvar #0 $ProgVar prog
