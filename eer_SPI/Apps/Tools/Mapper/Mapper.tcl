@@ -557,7 +557,7 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
          if { $SQL!="" } {
             ogrlayer sqlselect $layer $File $SQL
          } else {
-            eval ogrlayer read $layer $idx
+            eval ogrlayer read \$layer $idx
          }
 
          if { [ogrlayer define $layer -nb]==0 } {

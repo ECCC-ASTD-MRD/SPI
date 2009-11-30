@@ -1432,7 +1432,7 @@ proc Mapper::TableOGR { Object { Force False } } {
    update idletasks
 
    set Data(TableObject) $Object
-   eval ogrlayer stats $Object -table Mapper::Table $Data(TableSort) 0 $Data(TableMax)
+   eval ogrlayer stats \$Object -table Mapper::Table $Data(TableSort) 0 $Data(TableMax)
 #   eval ogrlayer stats $Object -table Mapper::Table $Data(TableSort)
 
    if { ![winfo exists $Data(Frame5).meta.table] } {
@@ -1462,7 +1462,7 @@ proc Mapper::TableOGR { Object { Force False } } {
       }
       catch {  $Data(Frame5).meta.table.r$r configure -text $Mapper::Table($r,0) -value $Mapper::Table($r,0) \
          -command "$Data(Frame5).meta.table selection clear all; $Data(Frame5).meta.table selection set $r,1 $r,$col;
-            Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Table($r,0) True" }
+            Mapper::FeatureOGR \$Mapper::Data(Object) $Mapper::Table($r,0) True" }
       $Data(Frame5).meta.table window configure $r,0 -window $Data(Frame5).meta.table.r$r -sticky nsew
    }
    for { set r $r } { $r<$rs } { incr r } {
