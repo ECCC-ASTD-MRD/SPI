@@ -166,7 +166,7 @@ proc CANERM::ParamsEmission { Tab { Auto False } } {
 
    Bubble::Create $t.iso.type.lbl.nb         $Bubble(Nb)
    Bubble::Create $t.iso.type.lbl.add        $Bubble(Add)
-   Bubble::Create $t.iso.type.lbl.del        $Bubble(Del0
+   Bubble::Create $t.iso.type.lbl.del        $Bubble(Del)
    Bubble::Create $t.iso.type.lbl.intensity  $Bubble(Intensity)
    Bubble::Create $t.iso.type.entry.polluant $Bubble(Pol)
 

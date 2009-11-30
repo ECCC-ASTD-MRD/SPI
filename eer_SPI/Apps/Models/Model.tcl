@@ -512,7 +512,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    Model::ParamsQueues
    Model::ParamsCPUMeteo
    Model::ParamsCPUModel
-   Model::ParamsMetDataDir $Model
+   Model::ParamsMetDataDir $Model $Get
 
    if { $Get && [info proc ::${Model}::GetMetData]!="" } {
       if { ![${Model}::GetMetData] } {
@@ -665,7 +665,7 @@ proc Model::ParamsMetData { Model } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::ParamsMetDataDir { Model } {
+proc Model::ParamsMetDataDir { Model { Get True } } {
    global GDefs
    variable Param
 
@@ -714,7 +714,9 @@ proc Model::ParamsMetDataDir { Model } {
          }
       }
    }
-   set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls [lindex [split $Param(DBaseDiag) :] end] }]
+   if { $Get } {
+      set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls [lindex [split $Param(DBaseDiag) :] end] }]
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -1042,7 +1044,6 @@ proc Model::ParamsLaunch { Model Frame } {
    upvar ${Model}::Sim sim
 
    Model::ParamsCheck $Model False
-   Model::ParamsMetDataDir $Model
 
    #----- Launching Tab.
    set Model::Param(Frame) [set tabframe [TabFrame::Add $Frame 1 "[lindex $Lbl(Launch) $GDefs(Lang)]" False]]
