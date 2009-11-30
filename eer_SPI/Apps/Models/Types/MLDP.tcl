@@ -1108,19 +1108,19 @@ proc MLDP::InitNew { Type } {
    set Sim(GridSrc) [lindex $Sim(Name) 0] ;#----- Name of first source.
    set Sim(Mode)    prog                  ;#----- Type of meteorological data.
 
-   #----- Set source type according to experiment data type.
-   if { $Type==0 || $Type==3 } {
-      #----- Volcano (0) or fire (3) source.
-      set Sim(SrcType) "volcano"
-   } elseif { $Type== 4 } {
-      #----- Virus (4) source.
-      set Sim(SrcType) "virus"
-   } else {
-      #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
-      set Sim(SrcType) "accident"
-   }
-
    if { $Sim(Model)=="MLDP0" } {
+      #----- Set source type according to experiment data type.
+      if { $Type==0 || $Type==3 } {
+         #----- Volcano (0) or fire (3) source.
+         set Sim(SrcType) "volcano"
+      } elseif { $Type== 4 } {
+         #----- Virus (4) source.
+         set Sim(SrcType) "virus"
+      } else {
+         #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
+         set Sim(SrcType) "accident"
+      }
+
       set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
       set Sim(OutputTimeStepMin)    60                                  ; #----- Output time step [min].
       set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
@@ -1150,6 +1150,14 @@ proc MLDP::InitNew { Type } {
                                      "1 50 100 500 1000" \
                                      "1 50 100 1000" }
    } else {
+      if { $Type== 4 } {
+         #----- Virus (4) source.
+         set Sim(SrcType) "virus"
+      } else {
+         #----- Voilcano (0), Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
+         set Sim(SrcType) "accident"
+      }
+
       set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
       set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
       set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
