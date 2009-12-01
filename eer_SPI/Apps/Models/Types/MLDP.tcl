@@ -1109,18 +1109,6 @@ proc MLDP::InitNew { Type } {
    set Sim(Mode)    prog                  ;#----- Type of meteorological data.
 
    if { $Sim(Model)=="MLDP0" } {
-      #----- Set source type according to experiment data type.
-      if { $Type==0 || $Type==3 } {
-         #----- Volcano (0) or fire (3) source.
-         set Sim(SrcType) "volcano"
-      } elseif { $Type== 4 } {
-         #----- Virus (4) source.
-         set Sim(SrcType) "virus"
-      } else {
-         #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
-         set Sim(SrcType) "accident"
-      }
-
       set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
       set Sim(OutputTimeStepMin)    60                                  ; #----- Output time step [min].
       set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
@@ -1149,15 +1137,22 @@ proc MLDP::InitNew { Type } {
                                      "1 50 100" \
                                      "1 50 100 500 1000" \
                                      "1 50 100 1000" }
-   } else {
-      if { $Type== 4 } {
-         #----- Virus (4) source.
-         set Sim(SrcType) "virus"
-      } else {
-         #----- Voilcano (0), Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
-         set Sim(SrcType) "accident"
-      }
 
+      #----- Set source type according to experiment data type.
+      if { $Type==0 || $Type==3 } {
+         #----- Volcano (0) or fire (3) source.
+         set Sim(SrcType) "volcano"
+      } elseif { $Type== 4 } {
+         #----- Virus (4) source.
+         set Sim(SrcType)  "virus"
+         set Sim(Duration) 48
+         set Sim(Meteo)    reg
+      } else {
+         #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
+         set Sim(SrcType) "accident"
+         set Sim(OutputTimeStepMin) 180
+      }
+   } else {
       set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
       set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
       set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
@@ -1186,6 +1181,15 @@ proc MLDP::InitNew { Type } {
                                     "0 50 100" \
                                     "0 50 100 500 1000" \
                                     "0 50 100 1000" }
+
+      #----- Set source type according to experiment data type.
+      if { $Type== 4 } {
+         #----- Virus (4) source.
+         set Sim(SrcType) "virus"
+      } else {
+         #----- Voilcano (0), Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
+         set Sim(SrcType) "accident"
+      }
    }
 
    set Sim(IsResFileSizeChecked) 0                                   ; #----- Flag indicating if results file size has been checked (1) or not (0).
@@ -1212,9 +1216,8 @@ proc MLDP::InitNew { Type } {
       set Sim(EmIsoSymbol) TRACER
       set Sim(EmNbIso)     1
    } elseif { $Sim(SrcType) == "accident" } { #----- Accident source type.
-      set Sim(EmHeight)          500.0
-      set Sim(EmRadius)          100.0
-      set Sim(OutputTimeStepMin) 180   ; #----- Output time step [min].
+      set Sim(EmHeight)    500.0
+      set Sim(EmRadius)    100.0
    } elseif { $Sim(SrcType) == "virus" } {    #----- Virus source type.
       set Sim(EmHeight)    100.0
       set Sim(EmRadius)    100.0
@@ -1223,8 +1226,6 @@ proc MLDP::InitNew { Type } {
       set Sim(VirusType)   [lindex $Sim(ListVirusType) 0]
       set Sim(VirusSymbol) [lindex $Sim(ListVirusSymbol) 0]
       set Sim(Scale)       "EFINE"
-      set Sim(Duration)    48   ; #----- Simulation duration [hr].
-      set Sim(Meteo)       reg  ; #----- Meteorological model.
    }
 
    set NA [lindex $Sim(NotAvailable) $GDefs(Lang)]
