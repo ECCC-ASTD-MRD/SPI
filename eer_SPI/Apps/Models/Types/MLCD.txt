@@ -57,7 +57,7 @@ namespace eval MLCD {
    set Lbl(EmCol)      { "Colonne d'émission" "Emission column" }
 
    set Lbl(EmNumberParticles) { "Nombre de particules      " "Number of particles       " }
-   set Lbl(EmTotMass)         { "Masse totale relâchée     " "Total Released Mass       " }
+   set Lbl(EmMass)            { "Masse totale relâchée     " "Total Released Mass       " }
    set Lbl(EmIsoName)         { "Isotope radioactif        " "Radioactive Isotope       " }
    set Lbl(EmDepVel)          { "Vitesse de dépôt     (m/s)" "Deposition Velocity  (m/s)" }
    set Lbl(EmHalfLife)        { "Période de demi-vie    (s)" "Half-Life Period       (s)" }
@@ -144,8 +144,8 @@ namespace eval MLCD {
 
    set Error(EmNbPart)                 { "Le nombre de particules doit être un entier positif.\n\n\tNombre de particules :" "The number of particles must be a positive integer.\n\n\tNumber of particles :" }
    set Error(EmNbPartRange)            { "La valeur du nombre de particules déborde la capacité mémoire d'un nombre entier.\n\n\tNombre de particules :" "The value of the number of particles under/overflows the memory capacity of an integer number.\n\n\tNumber of particles :" }
-   set Error(EmTotMass)                { "La masse totale relâchée (spécifiée en unité arbitraire) doit être un nombre positif.\n\n\tMasse totale relâchée :" "The total mass released (specified in arbitrary unit) must be a positive number.\n\n\tTotal mass released :" }
-   set Error(EmTotMassRange)           { "La valeur de la masse totale relâchée (spécifiée en unité arbitraire) déborde la capacité mémoire d'un nombre réel.\n\n\tMasse totale relâchée :" "The value of total mass released (specified in arbitrary unit) under/overflows the memory capacity of a float number.\n\n\tTotal mass released :" }
+   set Error(EmMass)                   { "La masse totale relâchée (spécifiée en unité arbitraire) doit être un nombre positif.\n\n\tMasse totale relâchée :" "The total mass released (specified in arbitrary unit) must be a positive number.\n\n\tTotal mass released :" }
+   set Error(EmMassRange)              { "La valeur de la masse totale relâchée (spécifiée en unité arbitraire) déborde la capacité mémoire d'un nombre réel.\n\n\tMasse totale relâchée :" "The value of total mass released (specified in arbitrary unit) under/overflows the memory capacity of a float number.\n\n\tTotal mass released :" }
    set Error(EmDepVel)                 { "La vitesse de dépôt (spécifiée en m/s) doit être un nombre supérieur ou égal à 0.\n\n\tVitesse de dépôt :" "The deposition velocity (specified in m/s) must be greater or equal to 0.\n\n\tDeposition velocity :" }
    set Error(EmDepVelRange)            { "La valeur de la vitesse de dépôt (spécifiée en m/s) déborde la capacité mémoire d'un nombre réel.\n\n\tVitesse de dépôt :" "The value of deposition velocity (specified in m/s) under/overflows the memory capacity of a float number.\n\n\tDeposition velocity :" }
    set Error(EmHalfLife)               { "La demie-vie radioactive (spécifiée en s) doit être un nombre positif.\n\n\tDemie-vie :" "The radioactive half-life (specified in s) must be a positive number.\n\n\tRadioactive half-Life :" }
@@ -257,7 +257,7 @@ namespace eval MLCD {
    set Bubble(EmParticles)       { "Propriétés des particules." "Particles' properties." }
    set Bubble(EmColumn)          { "Propriétés de la colonne d'émission." "Emission column's properties." }
    set Bubble(EmNumberParticles) { "Nombre de particules." "Number of particles." }
-   set Bubble(EmTotMass)         { "Masse totale relâchée (unité arbitraire, e.g.: Bq, kg, g, ...)." "Total mass released (arbitrary unit, e.g.: Bq, kg, g, ...)." }
+   set Bubble(EmMass)            { "Masse totale relâchée (unité arbitraire, e.g.: Bq, kg, g, ...)." "Total mass released (arbitrary unit, e.g.: Bq, kg, g, ...)." }
    set Bubble(EmIsoName)         { "Sélectionner un nouvel isotope radioactif." "Select a new radionuclide." }
    set Bubble(EmDepVel)          { "Vitesse de dépôt (m/s)." "Deposition velocity (m/s)." }
    set Bubble(EmHalfLife)        { "Période de demi-vie radioactive (s)." "Radioactive half-life period (s)." }

@@ -617,7 +617,7 @@ proc MLCD::InitNew { Type } {
    #----- Initialize emission parameters.
    set Sim(EmDurationMin)     360             ; #----- Emission duration [min].
    set Sim(EmNumberParticles) 50000           ; #----- Number of particles.
-   set Sim(EmTotMass)         1.0             ; #----- Total mass released [arbitrary mass unit].
+   set Sim(EmMass)            1.0             ; #----- Total mass released [arbitrary mass unit].
    set Sim(EmIsoName)         "Cs-137"        ; #----- Isotope name.
    set Sim(EmDepVel)          1.00e-03        ; #----- Deposition velocity [m/s].
    set Sim(EmHalfLife)        9.47e+08        ; #----- Radioactive half-life [s].
@@ -1104,7 +1104,7 @@ proc MLCD::CreateModelInput { } {
    puts $file "$Sim(Name)"
    puts $file "H"
    puts $file "[expr int($Sim(EmDurationMin)*60)] $Sim(Duration) $Sim(IsSigma)"
-   puts $file "$Sim(EmNumberParticles) $Sim(EmTotMass) $Sim(EmDepVel) $halflifedays $Sim(EmWetScav)"
+   puts $file "$Sim(EmNumberParticles) $Sim(EmMass) $Sim(EmDepVel) $halflifedays $Sim(EmWetScav)"
    puts $file "$Sim(Lon) $Sim(Lat)"
    puts $file "$Sim(EmBottom) $Sim(EmTop) $Sim(EmRadius)"
    puts $file "$Sim(AccYear) $Sim(AccMonth) $Sim(AccDay) $Sim(AccHour) $Sim(AccMin)"
@@ -1420,14 +1420,14 @@ proc MLCD::ValidateEmissionTab { } {
 
    #----- Verify that the total release mass is a positive number.
    set idx ""
-   set number [string is double -strict -failindex idx $Sim(EmTotMass)]
+   set number [string is double -strict -failindex idx $Sim(EmMass)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::Error .modelnew $Error(EmTotMassRange) " $Sim(EmTotMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
-      focus $Data(EmTotMassEnt)
+      Dialog::Error .modelnew $Error(EmMassRange) " $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
+      focus $Data(EmMassEnt)
       return 0
-   } elseif { $number == 0 || ($number == 1 && $Sim(EmTotMass) <= 0) } {
-      Dialog::Error .modelnew $Error(EmTotMass) " $Sim(EmTotMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
-      focus $Data(EmTotMassEnt)
+   } elseif { $number == 0 || ($number == 1 && $Sim(EmMass) <= 0) } {
+      Dialog::Error .modelnew $Error(EmMass) " $Sim(EmMass) [lindex $Error(UnitMass) $GDefs(Lang)]"
+      focus $Data(EmMassEnt)
       return 0
    }
 

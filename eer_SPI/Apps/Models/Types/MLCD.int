@@ -171,12 +171,12 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
 
    #----- Total released mass.
    frame $frame.part.mass
-      label $frame.part.mass.lbl -relief flat -anchor w -text "[lindex $Lbl(EmTotMass) $GDefs(Lang)]"
-      entry $frame.part.mass.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmTotMass)
+      label $frame.part.mass.lbl -relief flat -anchor w -text "[lindex $Lbl(EmMass) $GDefs(Lang)]"
+      entry $frame.part.mass.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLCD::Sim(EmMass)
       pack $frame.part.mass.lbl $frame.part.mass.ent -side left
    pack $frame.part.mass -side top -anchor w -padx 2 -fill x
-   Bubble::Create $frame.part.mass $Bubble(EmTotMass)
-   set Data(EmTotMassEnt) $frame.part.mass.ent
+   Bubble::Create $frame.part.mass $Bubble(EmMass)
+   set Data(EmMassEnt) $frame.part.mass.ent
 
    #----- Radioactive Isotope Name.
    frame $frame.part.iso
