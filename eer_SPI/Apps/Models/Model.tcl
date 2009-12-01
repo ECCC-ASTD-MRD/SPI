@@ -24,6 +24,11 @@ package require MetData
 package require Tree
 package require IsoBox
 
+#----- If the Global path does not exits, set it to env
+if { ![info exists GDefs(Dir)] } {
+   set GDefs(Dir) $env(SPI_PATH)
+}
+
 namespace eval Model {
    global GDefs
    global env
