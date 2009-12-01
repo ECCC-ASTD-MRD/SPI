@@ -93,6 +93,7 @@ proc Drawing::PageActivate { Frame } {
    set Current(Mode) ""
 
    Drawing::Insert
+   Drawing::UpdateItems $Frame
 }
 
 #----------------------------------------------------------------------------
@@ -2632,38 +2633,41 @@ proc Drawing::VertexSet { Frame Tag No } {
    variable Data
    variable Current
 
-   #----- Recuperer tout les items correspondants
+   if { [llength $Data(Params)] } {
 
-   set items [$Frame.page.canvas find withtag $Tag]
+      #----- Recuperer tout les items correspondants
 
-   #----- Recuperer les coordonnees
+      set items [$Frame.page.canvas find withtag $Tag]
 
-   set vertex ""
-   foreach item $items {
-      append vertex " [$Frame.page.canvas coords $item]"
-   }
+      #----- Recuperer les coordonnees
 
-   #----- Recuperer la liste de ses parametres
-
-   set no 0
-   foreach params $Data(Params) {
-      if { [lindex $params 1]==$No } {
-         break
+      set vertex ""
+      foreach item $items {
+         append vertex " [$Frame.page.canvas coords $item]"
       }
-      incr no
-   }
 
-   #----- Modifier la liste des parametres
+      #----- Recuperer la liste de ses parametres
 
-   lset params 3 $vertex
-   lset Data(Params) $no $params
-   set Data(Params$Frame) $Data(Params)
+      set no 0
+      foreach params $Data(Params) {
+         if { [lindex $params 1]==$No } {
+            break
+         }
+         incr no
+      }
 
-   #----- Modiffier l'item courant si necessaire
+      #----- Modifier la liste des parametres
 
-   if { $Current(NoItem)==$No } {
-      set Current(Vertex) $vertex
-      set Current(Params) $params
+      lset params 3 $vertex
+      lset Data(Params) $no $params
+      set Data(Params$Frame) $Data(Params)
+
+      #----- Modiffier l'item courant si necessaire
+
+      if { $Current(NoItem)==$No } {
+         set Current(Vertex) $vertex
+         set Current(Params) $params
+      }
    }
 }
 
@@ -2747,8 +2751,7 @@ proc Drawing::Write { Frame File } {
          }
       }
       puts $File ""
-      puts $File "   Drawing::Insert"
-      puts $File "   Drawing::UpdateItems \$Frame"
+      puts $File "   Drawing::PageActivate \$Frame"
       puts $File ""
    }
 }
