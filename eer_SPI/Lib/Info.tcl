@@ -55,7 +55,7 @@ namespace eval Info {
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
-                        EmNumberParticles EmTotMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
+                        EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
@@ -75,7 +75,7 @@ namespace eval Info {
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
-   set Lbl(EmTotMass)            { "Masse totale relâchée (unité)" "Total released mass (unit)" }
+   set Lbl(EmMass)               { "Masse totale relâchée (unité)" "Total released mass (unit)" }
    set Lbl(EmIsoName)            { "Nom de l'isotope radioactif" "Name of the radionuclide" }
    set Lbl(EmDepVel)             { "Vitesse de dépôt (m/s)" "Deposition velocity (m/s)" }
    set Lbl(EmHalfLife)           { "Période de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
