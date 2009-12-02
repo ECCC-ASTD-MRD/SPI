@@ -24,19 +24,21 @@ package require TclData
 
 puts \n[file tail [info script]]
 
-puts "Testing stamp functions:"
-puts "   seconds: [set secs [clock scan "20090916 00:00" -gmt True]]"
+set secs [clock seconds]
+puts "Testing stamp functions for [clock format $secs]"
+puts "   seconds: $secs"
 puts "   stamp  : [set stamp [fstdstamp fromseconds $secs]]"
-puts "   incr   : [set stamp [fstdstamp incr $stamp 024]]"
-puts "   date   : [exec r.date $stamp]"
+puts "   incr 24: [set stamp [fstdstamp incr $stamp 024]]"
+puts "   r.date : [exec r.date $stamp]"
+puts "   date   : [clock format [fstdstamp toseconds $stamp]]"
 
-#----- Ouvrir les fichiers d'entree (1) sortie (2)
-puts "Testing file IO functions:"
+set inter { -20 0 20 }
+puts "\nTesting contour extraction ($inter):"
 fstdfile open 1 read DataIn/2005102612_012
 fstdfield read TT 1 -1 "" 12000 -1 -1 "" "TT"
-fstdfield configure TT -intervals { -20 0 20 }
+fstdfield configure TT -intervals $inter
 
-fstdfield stats TT -limits { 10 100 10 100 0 0 }
+fstdfield stats TT -limits { 10 10 0 100 100 0 }
 
 set n 0
 foreach contour [fstdfield stats TT -coordcontour] {
@@ -64,8 +66,8 @@ fstdfile close 2
 fstdfile close 3
 
 #----- Test l'ouverture de plus de 1000 fichiers
-puts "Testing multiple file open:"
-for { set i 0 } { $i<1000 } { incr i } {
+puts "\nTesting multiple file open:"
+for { set i 0 } { $i<=1001 } { incr i } {
    puts "Opening file $i"
    fstdfile open FILE$i read DataIn/2005102612_012
    fstdfile close FILE$i
