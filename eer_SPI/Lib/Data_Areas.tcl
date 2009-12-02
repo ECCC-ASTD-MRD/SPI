@@ -73,7 +73,7 @@ proc Areas::CreateWidget { Parent } {
 
       set Data(Id$l) False
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display $layer"
-      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId $layer"
+      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId \"$layer\""
       foreach l $layer {
          $Parent.areas.t$no add separator
 
@@ -168,7 +168,7 @@ proc Areas::Read { File Fill Line { Field "" } } {
 # But      : Affiche ou supprime toutes les regions de la projection.
 #
 # Parametres :
-#  <Type>    : Identificateur de la liste de regions
+#  <args>    : Liste des identificateurs de la liste de regions.
 #
 # Retour:
 #
@@ -176,28 +176,30 @@ proc Areas::Read { File Fill Line { Field "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Areas::Display { Type } {
+proc Areas::Display { args } {
    global GDefs
    variable Data
 
-   set f {}
+   foreach type $args {
+      set f {}
 
-   for { set n 0 } { $n<[ogrlayer define $Type -nb] } { incr n } {
+      for { set n 0 } { $n<[ogrlayer define $type -nb] } { incr n } {
 
-      if { $Data(All$Type) } {
-         set Data(Toggle$Type$n) 1
-         lappend f $n
-      } else {
-         set Data(Toggle$Type$n) 0
+         if { $Data(All$args) } {
+            set Data(Toggle$type$n) 1
+            lappend f $n
+         } else {
+            set Data(Toggle$type$n) 0
+         }
       }
-   }
-   ogrlayer define $Type -featurehighlight $f
+      ogrlayer define $type -featurehighlight $f
 
-   set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $Type]
-   if { ![llength $f] } {
-      set Viewport::Data(Data$Page::Data(Frame)) [lreplace $Viewport::Data(Data$Page::Data(Frame)) $idx $idx]
-   } elseif { $idx==-1 } {
-      lappend Viewport::Data(Data$Page::Data(Frame)) $Type
+      set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $type]
+      if { ![llength $f] } {
+         set Viewport::Data(Data$Page::Data(Frame)) [lreplace $Viewport::Data(Data$Page::Data(Frame)) $idx $idx]
+      } elseif { $idx==-1 } {
+         lappend Viewport::Data(Data$Page::Data(Frame)) $type
+      }
    }
    set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
 
@@ -256,7 +258,7 @@ proc Areas::DisplayToggle { Type No } {
 # But      : Affiche ou supprime l'identificateur de la region.
 #
 # Parametres :
-#  <Type>    : Identificateur de la liste de regions
+#  <args>    : Liste des identificateurs de la liste de regions.
 #  <Display> : Affichage ou non
 #
 # Retour:
@@ -265,18 +267,20 @@ proc Areas::DisplayToggle { Type No } {
 #
 #----------------------------------------------------------------------------
 
-proc Areas::DisplayId { Type { Display "" } } {
+proc Areas::DisplayId { Types { Display "" } } {
    global GDefs
    variable Data
 
-   if { $Display!="" } {
-      set Data(Id$Type) $Display
-   }
+   foreach type $Types {
+      if { $Display!="" } {
+         set Data(Id$Types) $Display
+      }
 
-   if { $Data(Id$Type) } {
-      ogrlayer define $Type -label $Data(Field$Type)
-   } else {
-      ogrlayer define $Type -label {}
+      if { $Data(Id$Types) } {
+         ogrlayer define $type -label $Data(Field$type)
+      } else {
+         ogrlayer define $type -label {}
+      }
    }
    Page::Update $Page::Data(Frame)
 }
