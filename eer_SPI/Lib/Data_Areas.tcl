@@ -67,22 +67,25 @@ proc Areas::CreateWidget { Parent } {
 
    set no 0
    foreach layer $Data(Layers) {
-      $Parent.areas add cascade -label $layer -menu $Parent.areas.t$no
+      set l [lindex $layer 0]
+      $Parent.areas add cascade -label $l -menu $Parent.areas.t$no
       menu $Parent.areas.t$no -tearoff 1
 
-      set Data(Id$layer) False
+      set Data(Id$l) False
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display $layer"
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId $layer"
-      $Parent.areas.t$no add separator
+      foreach l $layer {
+         $Parent.areas.t$no add separator
 
-      for { set i 0 } { $i<[ogrlayer define $layer -nb] } { incr i } {
-        if { $i && ![expr $i%20] } {
-           $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$i) -label [ogrlayer define $layer -feature $i $Data(Field$layer)] \
-              -command "Areas::DisplayToggle $layer $i" -columnbreak 1
-        } else {
-           $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$i) -label [ogrlayer define $layer -feature $i $Data(Field$layer)] \
-              -command "Areas::DisplayToggle $layer $i"
-        }
+         for { set i 0 } { $i<[ogrlayer define $l -nb] } { incr i } {
+           if { $i && ![expr $i%20] } {
+              $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
+                 -command "Areas::DisplayToggle $l $i" -columnbreak 1
+           } else {
+              $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
+                 -command "Areas::DisplayToggle $l $i"
+           }
+         }
       }
 
       incr no
@@ -108,13 +111,13 @@ proc Areas::CreateWidget { Parent } {
 proc Areas::Init { } {
    global GDefs
 
-   Areas::Read $GDefs(Dir)/Data/RSMC.shp     #AAAA00 #FFFF00
-   Areas::Read $GDefs(Dir)/Data/VAAC.shp     #AA0000 #FF0000
-   Areas::Read $GDefs(Dir)/Data/FIR.shp      #00AA00 #00FF00
-   Areas::Read $GDefs(Dir)/Data/MWO.shp      #0000AA #0000FF
-   Areas::Read $GDefs(Dir)/Data/Volcano.shp  #AA0000 #FF0000
-   Areas::Read $GDefs(Dir)/Data/TimeZone.shp #AAAA00 #FFFF00 TZ
-   Areas::Read $GDefs(Dir)/Data/RADAR.shp    #AAAAAA #FFFFFF ID
+   Areas::Read $GDefs(Dir)/Data/RSMC.shp                                         #AAAA00 #FFFF00
+   Areas::Read [list $GDefs(Dir)/Data/VAAC.shp $GDefs(Dir)/Data/VAAC_555km.shp ] #AA0000 #FF0000
+   Areas::Read $GDefs(Dir)/Data/FIR.shp                                          #00AA00 #00FF00
+   Areas::Read $GDefs(Dir)/Data/MWO.shp                                          #0000AA #0000FF
+   Areas::Read $GDefs(Dir)/Data/Volcano.shp                                      #AA0000 #FF0000
+   Areas::Read $GDefs(Dir)/Data/TimeZone.shp                                     #AAAA00 #FFFF00 TZ
+   Areas::Read $GDefs(Dir)/Data/RADAR.shp                                        #AAAAAA #FFFFFF ID
 }
 
 #----------------------------------------------------------------------------
@@ -139,20 +142,23 @@ proc Areas::Read { File Fill Line { Field "" } } {
    global GDefs
    variable Data
 
-   foreach layer [ogrfile open $File read $File] {
-      set l [lindex $layer 2]
-      eval ogrlayer read $l $layer
-      ogrlayer configure $l -width 1 -font XFont14 -activeoutline $Line -activefill $Fill -transparency 50
+   foreach file $File {
+      foreach layer [ogrfile open $file read $file] {
+         set l [lindex $layer 2]
+         eval ogrlayer read $l $layer
+         ogrlayer configure $l -width 2 -font XFont14 -activeoutline $Line -activefill $Fill -transparency 50
 
-      set Data(Type$l) {}
+         set Data(Type$l) {}
 
-      if { $Field!="" } {
-         set Data(Field$l) $Field
-      } else {
-         set Data(Field$l) [lindex $Data(Languages) $GDefs(Lang)]
+         if { $Field!="" } {
+            set Data(Field$l) $Field
+         } else {
+            set Data(Field$l) [lindex $Data(Languages) $GDefs(Lang)]
+         }
       }
-      lappend Data(Layers) $l
+      lappend layerid $l
    }
+   lappend Data(Layers) $layerid
 }
 
 #----------------------------------------------------------------------------
@@ -179,10 +185,10 @@ proc Areas::Display { Type } {
    for { set n 0 } { $n<[ogrlayer define $Type -nb] } { incr n } {
 
       if { $Data(All$Type) } {
-         set Data(Toggle$n) 1
+         set Data(Toggle$Type$n) 1
          lappend f $n
       } else {
-         set Data(Toggle$n) 0
+         set Data(Toggle$Type$n) 0
       }
    }
    ogrlayer define $Type -featurehighlight $f
