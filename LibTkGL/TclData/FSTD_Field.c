@@ -628,47 +628,47 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
  */
 int ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref) {
 
-   int   l,deet,ip1a,ip2a,ip3a,ig1a,ig2a,ig3a,ig4a,bit;
+   int   l,deet,ip1,ip2,ip3,ig1,ig2,ig3,ig4,bit;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
    int   npas,ni,nj,nk,kind,flag=0,mode=-1;
-   char  typ,grda,blk_S;
+   char  typ[3],grd[2],format;
    char  var[5];
-   char  labanl[13];
+   char  lbl[13];
 
-   l = c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","HY   ");
+   l = c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","HY");
    if (l>=0) {
-       l = c_fstprm(l,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
-                    &ig1a,&ig2a,&ig3a,&ig4a,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
-       f77name(convip)(&ip1a,&Ref->Top,&kind,&mode,&blk_S,&flag);
-       Ref->Coef[0]=ig2a/1000.0f;
+       l = c_fstprm(l,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
+                    &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
+       f77name(convip)(&ip1,&Ref->Top,&kind,&mode,&format,&flag);
+       Ref->Coef[0]=ig2/1000.0f;
        Ref->Coef[1]=0.0f;
-       Ref->Ref=ig1a;
+       Ref->Ref=ig1;
    } else {
       fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).\n");
    }
-   return(l);
+   return(l>=0);
 }
 
 int ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref) {
 
-   int   key,l,deet,ip1a,ip2a,ip3a,ig1a,ig2a,ig3a,ig4a,bit;
+   int   key,l,deet,ip1,ip2,ip3,ig1,ig2,ig3,ig4,bit;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
    int   npas,j,ni,nj,nk,k;
-   char  typ,grda;
+   char  typ[3],grd[2];
    char  var[5];
-   char  labanl[13];
+   char  lbl[13];
    double *buf;
 
-   key=l=c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","!!  ");
+   key=l=c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","!!");
    if (l>=0) {
-       l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1a,&ip2a,&ip3a,&typ,var,labanl,&grda,
-                    &ig1a,&ig2a,&ig3a,&ig4a,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
+       l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
+                    &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
        if (l>=0) {
          Ref->Ref=1000.0;
-         Ref->Top=ig2a/100.0;
+         Ref->Top=ig2/100.0;
          Ref->ETop=0.0;
-         Ref->Coef[0]=ig3a/1000.0f;
-         Ref->Coef[1]=ig4a/1000.0f;
+         Ref->Coef[0]=ig3/1000.0f;
+         Ref->Coef[1]=ig4/1000.0f;
 
          buf=(double*)malloc(ni*nj*sizeof(double));
          if (!Ref->A) Ref->A=(float*)malloc(Ref->LevelNb*sizeof(float));
@@ -698,7 +698,7 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int Date
    } else {
       fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).\n");
    }
-   return(l);
+   return(l>=0);
 }
 
 /*----------------------------------------------------------------------------
@@ -728,16 +728,16 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
       if ((fid=((FSTD_Head*)Field->Head)->FID)) {
          i=-1;
          FSTD_FileSet(NULL,fid);
-         if (ZRef_DecodeRPNHybrid(fid->Id,i,i,"             ",i,Field->Ref)>=0) {
+         if (ZRef_DecodeRPNHybrid(fid->Id,i,i,"",i,Field->Ref)) {
             i=1;
-         } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,i,i,"             ",i,Field->Ref)>=0) {
+         } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,i,i,"",i,Field->Ref)) {
             i=1;
          } else {
             i=0;
          }
          FSTD_FileUnset(NULL,fid);
       }
-   } else  if (Field->Ref->LevelType==LVL_ETA && Field->Ref->Top==0.0) {
+   } else if (Field->Ref->LevelType==LVL_ETA && Field->Ref->Top==0.0) {
       if ((fid=((FSTD_Head*)Field->Head)->FID)) {
          FSTD_FileSet(NULL,fid);
          FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&data,"PT",-1);
@@ -851,7 +851,6 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          return TCL_ERROR;
       }
    }
-
    /* Definition des grilles */
    /* Définition des algorithmes d'[inter/extra]polation */
    if (!threadData->viInterp) {
