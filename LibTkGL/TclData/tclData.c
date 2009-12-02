@@ -1068,10 +1068,10 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Level=0;
 
    def->Limits[0][0]=0;
-   def->Limits[0][1]=NI-1;
    def->Limits[1][0]=0;
-   def->Limits[1][1]=NJ-1;
    def->Limits[2][0]=0;
+   def->Limits[0][1]=NI-1;
+   def->Limits[1][1]=NJ-1;
    def->Limits[2][1]=NK-1;
 
    def->CoordLimits[0][0]=-180;
@@ -1217,10 +1217,10 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       Def->NK=NK;
 
       Def->Limits[0][0]=0;
-      Def->Limits[0][1]=NI-1;
       Def->Limits[1][0]=0;
-      Def->Limits[1][1]=NJ-1;
       Def->Limits[2][0]=0;
+      Def->Limits[0][1]=NI-1;
+      Def->Limits[1][1]=NJ-1;
       Def->Limits[2][1]=NK-1;
 
       Def->CoordLimits[0][0]=-180;
