@@ -232,23 +232,25 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                }
                OGR_G_Empty(geom);
 
-               if (n%OGR_G_GetCoordinateDimension(geom)!=0) {
-                  Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-               pt[2]=0.0;
-               for(j=0;j<n;) {
-                 Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                 Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
-                 Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                 Tcl_GetDoubleFromObj(Interp,obj,&pt[1]);
-                 if (OGR_G_GetCoordinateDimension(geom)==3) {
-                    Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                    Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
-                    OGR_G_AddPoint(geom,pt[0],pt[1],pt[2]);
-                 } else {
-                    OGR_G_AddPoint_2D(geom,pt[0],pt[1]);
-                 }
+               if (n) {
+                  if (n%OGR_G_GetCoordinateDimension(geom)!=0) {
+                     Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  pt[2]=0.0;
+                  for(j=0;j<n;) {
+                  Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
+                  Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
+                  Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
+                  Tcl_GetDoubleFromObj(Interp,obj,&pt[1]);
+                  if (OGR_G_GetCoordinateDimension(geom)==3) {
+                     Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
+                     Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
+                     OGR_G_AddPoint(geom,pt[0],pt[1],pt[2]);
+                  } else {
+                     OGR_G_AddPoint_2D(geom,pt[0],pt[1]);
+                  }
+                  }
                }
             }
             break;
@@ -383,7 +385,6 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          OGR_G_TransformTo(g0,ref->Spatial);
          break;
 
-#ifdef GDAL126
       case DISTANCE:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry");
@@ -622,8 +623,6 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
          GPC_Simplify(dist,g0);
          break;
-
-#endif
    }
    return TCL_OK;
 }

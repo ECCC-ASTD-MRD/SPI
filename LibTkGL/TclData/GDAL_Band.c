@@ -532,7 +532,6 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    int           x,y,n=0,idx2,idx3;
    OGRGeometryH  inter=NULL;
 
-#ifdef GDAL126
    /* Setup the intersecting area */
    TRANSFORM(Ref,dx,dy,X0-0.5,Y0-0.5);
    OGR_G_SetPoint(Def->Pick,0,dx,dy,0);
@@ -624,7 +623,6 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
          }
       }
    }
-#endif
    return(n);
 }
 
@@ -660,7 +658,6 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
    OGREnvelope  env;
    Tcl_Obj      *list=NULL,*lst,*item=NULL;
 
-#ifdef GDAL126
    cell=OGR_G_CreateGeometry(wkbPolygon);
    ring=OGR_G_CreateGeometry(wkbLinearRing);
 
@@ -860,7 +857,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
    OGR_G_DestroyGeometry(ring);
    OGR_G_DestroyGeometry(cell);
-#endif
+
    return(TCL_OK);
 }
 
@@ -893,7 +890,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    double   value,area,t,x0,y0,x1,y1;
    int      fld=-1,pr=1;
 
-#ifdef GDAL126
    OGRCoordinateTransformationH tr=NULL;
    OGRGeometryH                 geom;
    OGREnvelope                  env;
@@ -999,7 +995,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 #endif
    if (tr)
       OCTDestroyCoordinateTransformation(tr);
-#endif
+
    return(TCL_OK);
 }
 

@@ -688,35 +688,33 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
       case BUFFER:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"dist nseg");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
 
-#ifdef GDAL126
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  new=OGR_G_Buffer(geom,x,nseg);
-                  OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                  if ((new=OGR_G_Buffer(geom,x,nseg))) {
+                     OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                  }
                }
             }
          }
-#endif
          break;
 
       case DIFFERENCE:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"layer");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          layerop=OGR_LayerGet(Tcl_GetString(Objv[1]));
          if (!layerop) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Layer name unknown: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
-#ifdef GDAL126
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
@@ -737,21 +735,19 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
             }
          }
-#endif
          break;
 
       case INTERSECTION:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"layer");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          layerop=OGR_LayerGet(Tcl_GetString(Objv[1]));
          if (!layerop) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Layer name unknown: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
-#ifdef GDAL126
          prev=new=uni=NULL;
          for(fop=0;fop<layerop->NFeature;fop++) {
             if (layerop->Select[fop]) {
@@ -777,13 +773,12 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
             }
          }
-#endif
          break;
 
       case SIMPLIFY:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&tol);
 
@@ -799,7 +794,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
       case TABLE:
          if (Objc!=2 && Objc!=3 && Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,0,Objv,"var [field] [Y0 Y1]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          y0=0;y1=0xFFFFFFF;
@@ -1190,7 +1185,6 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
          }
          break;
 
-#ifdef GDAL126
       case OFTTime:
          OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
          time=hour*3600+min*60+sec;
@@ -1208,7 +1202,7 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
          time=System_DateTime2Seconds(year*10000+month*100+day,hour*10000+min*100+sec,tz==100?1:0);
          Tcl_SetLongObj(obj,time);
          break;
-#endif
+
       case OFTWideString:
       case OFTWideStringList:
       case OFTBinary:
@@ -1250,7 +1244,6 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatur
       case OFTStringList:
          break;
 
-#ifdef GDAL126
       case OFTTime:
       case OFTDate:
       case OFTDateTime:
@@ -1265,7 +1258,7 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatur
          sec=tm-hour*10000-min*100;
          OGR_F_SetFieldDateTime(Feature,Index,year,month,day,hour,min,sec,tz);
          break;
-#endif
+
       case OFTWideString:
       case OFTWideStringList:
       case OFTBinary:
@@ -1335,7 +1328,6 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
          sprintf(Buf,"%s",OGR_F_GetFieldAsString(Feature,Index));
          break;
 
-#ifdef GDAL126
       case OFTTime:
          OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
          sprintf(Buf,"%02i:%02i:%02i",hour,min,sec);
@@ -1350,7 +1342,6 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
          OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
          sprintf(Buf,"%i-%02i-%02i %02i:%02i:%02i",year,month,day,hour,min,sec);
          break;
-#endif
 
       case OFTIntegerList:
       case OFTRealList:
@@ -1407,14 +1398,12 @@ void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
    } else if (strcmp(Type,"WideStringList")==0) {
       field=OGR_Fld_Create(Field,OFTWideStringList);
       if (Width) OGR_Fld_SetWidth(field,Width);
-#ifdef GDAL126
    } else if (strcmp(Type,"Time")==0) {
       field=OGR_Fld_Create(Field,OFTTime);
    } else if (strcmp(Type,"Date")==0) {
       field=OGR_Fld_Create(Field,OFTDate);
    } else if (strcmp(Type,"DateTime")==0) {
       field=OGR_Fld_Create(Field,OFTDateTime);
-#endif
    } else if (strcmp(Type,"Binary")==0) {
       field=OGR_Fld_Create(Field,OFTBinary);
    }
@@ -1983,7 +1972,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       return(TCL_ERROR);
    }
 
-#ifdef GDAL126
    cell=OGR_G_CreateGeometry(wkbPolygon);
    ring=OGR_G_CreateGeometry(wkbLinearRing);
    OGR_G_AddGeometryDirectly(cell,ring);
@@ -2134,7 +2122,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
    if (accum)
       free(accum);
-#endif
 
    return(TCL_OK);
 }
@@ -2609,11 +2596,9 @@ int QSort_OGR(const void *A,const void *B){
          }
          break;
 
-#ifdef GDAL126
       case OFTTime:
       case OFTDate:
       case OFTDateTime:
-#endif
       case OFTString:
          fas=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)A],QSort_OGRField);
          fbs=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)B],QSort_OGRField);
