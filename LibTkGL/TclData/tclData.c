@@ -2182,7 +2182,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   sub=Tcl_NewListObj(0,NULL);
                   ex=tr=0;
 
-                  for (n=0;n<array->Size-1;n++) {
+                 for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
                      if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
@@ -2190,7 +2190,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         tr=1;
                      }
                   }
-                  /*If last segment was visible, add its end point*/
+                 /*If last segment was visible, add its end point*/
                   if (ex){
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
@@ -2219,10 +2219,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                if (nobj==0) {
                   Field->Def->Limits[0][0]=0;
-                  Field->Def->Limits[0][1]=Field->Def->NI-1;
                   Field->Def->Limits[1][0]=0;
-                  Field->Def->Limits[1][1]=Field->Def->NJ-1;
                   Field->Def->Limits[2][0]=0;
+                  Field->Def->Limits[0][1]=Field->Def->NI-1;
+                  Field->Def->Limits[1][1]=Field->Def->NJ-1;
                   Field->Def->Limits[2][1]=Field->Def->NK-1;
                } else {
                   if (nobj!=6) {
@@ -2232,10 +2232,16 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjIndex(Interp,Objv[i],0,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[0][0]);
                   Tcl_ListObjIndex(Interp,Objv[i],1,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][0]);
                   Tcl_ListObjIndex(Interp,Objv[i],2,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][0]);
-                  Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
+                  Tcl_ListObjIndex(Interp,Objv[i],3,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[0][1]);
                   Tcl_ListObjIndex(Interp,Objv[i],4,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[1][1]);
                   Tcl_ListObjIndex(Interp,Objv[i],5,&obj); Tcl_GetIntFromObj(Interp,obj,&Field->Def->Limits[2][1]);
 
+                  /*Check limits order*/
+                  if (Field->Def->Limits[0][0]>Field->Def->Limits[0][1]) { tmpd=Field->Def->Limits[0][0];Field->Def->Limits[0][0]=Field->Def->Limits[0][1];Field->Def->Limits[0][1]=tmpd; }
+                  if (Field->Def->Limits[1][0]>Field->Def->Limits[1][1]) { tmpd=Field->Def->Limits[1][0];Field->Def->Limits[1][0]=Field->Def->Limits[1][1];Field->Def->Limits[1][1]=tmpd; }
+                  if (Field->Def->Limits[2][0]>Field->Def->Limits[2][1]) { tmpd=Field->Def->Limits[2][0];Field->Def->Limits[2][0]=Field->Def->Limits[2][1];Field->Def->Limits[2][1]=tmpd; }
+
+                  /*Check limit limits*/
                   if (Field->Def->Limits[0][0]<0) Field->Def->Limits[0][0]=0.0;
                   if (Field->Def->Limits[1][0]<0) Field->Def->Limits[1][0]=0.0;
                   if (Field->Def->Limits[2][0]<0) Field->Def->Limits[2][0]=0.0;

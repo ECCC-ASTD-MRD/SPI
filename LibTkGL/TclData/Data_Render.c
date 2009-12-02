@@ -70,7 +70,7 @@ int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
 */
 int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
-   int n,i,j,d,ci,cj,i0,i1,j0,j1,len,t;
+   int n,i,j,d,ci,cj,i0,i1,j0,j1,len,t,sz;
    unsigned char *buf;
    TArray *array;
 
@@ -86,19 +86,21 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
       memset(buf,0x0,FSIZE2D(Field->Def));
 
-      d=0;t=0;
-      i=-1;j=0;
-      ci=1;cj=0;
-
       /*Calculate contours within the specified limits*/
       i0=Field->Def->Limits[0][0];
       j0=Field->Def->Limits[1][0];
       i1=Field->Def->Limits[0][1];
       j1=Field->Def->Limits[1][1];
 
-      /*As long as we did not check all gridpoint (Worse case)*/
-      while(d++<FSIZE2D(Field->Def)) {
+      d=0;t=0;
+      i=i0-1;j=j0;
+      ci=1;cj=0;
+      sz=((i1-i0+1)*(j1-j0+1));
 
+      /*As long as we did not check all gridpoint (Worse case)*/
+      while(d++<sz) {
+
+         /*We loop on the gridpoints by going around the grid limits smaller and smaller square*/
          if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; t=1; } /* Check lower right corner */
          if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; t=2; } /* Check upper right corner */
          if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; t=3; } /* Check upper left corner */
