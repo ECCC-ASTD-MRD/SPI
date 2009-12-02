@@ -70,7 +70,8 @@ int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
 */
 int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
-   int n,i,j,d,ci,cj,i0,i1,j0,j1,len,t,sz;
+   int n,i,j,ci,cj,i0,i1,j0,j1,len,t;
+   unsigned long d,sz;
    unsigned char *buf;
    TArray *array;
 
