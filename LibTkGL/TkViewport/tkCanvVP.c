@@ -1071,7 +1071,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       ViewportRefresh(vp,GLRender->Delay);
 
    if (proj=Projection_Get(vp->Projection)) {
-      load+=proj->Loading;
+      load+=(proj->Loading=proj->Loading<0?0:proj->Loading);
 
       /*Force update if rendering within PBuffer*/
       if (GLRender->TRCon) {

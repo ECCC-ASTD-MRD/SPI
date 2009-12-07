@@ -140,7 +140,6 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
          if (qdata->Proj && qdata->Proj->VP) {
             vp=qdata->Proj->VP;
             proj=qdata->Proj;
-            qdata->Proj->Loading++;
          }
 
          if (qdata->Tile->Flag) {
@@ -164,7 +163,6 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
          Tcl_MutexUnlock(&MUTEX_GDBQUEUE);
       }
 
-      if (proj)  proj->Loading=0;
       if (vp)    GDB_ThreadQueueRefresh(vp);
       Tcl_ConditionFinalize(&tdata->CondWait);
    }
@@ -197,7 +195,8 @@ int GDB_ThreadQueueClear(Tcl_ThreadId Id) {
 
    qdata=GDBTData?GDBTData->QueueStart:NULL;
    while(qdata) {
-      qdata->Tile->Flag=0;
+      if (qdata->Tile) qdata->Tile->Flag=0;
+      if (qdata->Proj) qdata->Proj->Loading=0;
       qdata=qdata->Next;
    }
 
@@ -247,6 +246,7 @@ int GDB_ThreadQueueAdd(Tcl_ThreadId Id,Projection *Proj,GDB_Tile *Tile,GDB_DataG
    qdata->Param1=Param1;
    qdata->Param2=Param2;
    qdata->Next=NULL;
+   qdata->Proj->Loading++;
 
    /*Insert item into queue*/
    Tcl_MutexLock(&MUTEX_GDBQUEUE);
@@ -833,6 +833,7 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
    TxtPtr=NULL;
 
    if (!tile->Res || tile->Box.Nb<1) {
+      Proj->Loading--;
       return(0);
    }
 
@@ -898,8 +899,10 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
          }
                               free(tmp);
          break;
+      }
    }
-}
+   Proj->Loading--;
+
    return(1);
 }
 
