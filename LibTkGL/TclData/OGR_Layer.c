@@ -2504,8 +2504,8 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    Tcl_Obj     *obj;
    OGRGeometryH geom,pick;
-   double       x,y,lat,lon;
-   int          nobj,n;
+   double       x,y,lat,lon,d=-1.0;
+   int          nobj,n=0,nd=0;
    long         f;
    char         buf[32];
 
@@ -2550,9 +2550,15 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
          if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
             /*Test delon le mode*/
             switch(Mode) {
-               case 0: n=GPC_Intersect(geom,pick); break;
-               case 1: n=GPC_Within(geom,pick); break;
-               case 2: n=!GPC_Intersect(geom,pick); break;
+               case 0: n=GPC_Intersect(geom,pick); break;       //INTERSECT
+               case 1: n=GPC_Within(geom,pick); break;          //INSIDE
+               case 2: n=!GPC_Intersect(geom,pick); break;      //OUTSIDE
+               case 3: x=OGR_G_Distance(geom,pick);             //NEAREST
+                       if (x>d) {
+                          d=x;
+                          nd=f;
+                       }
+                       break;
             }
             /*Si on a trouve, ajouter a la liste de retour*/
             if (n) {
@@ -2563,6 +2569,12 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
             }
          }
       }
+   }
+
+   /*Dans le cas NEAREST, retourner le plus proche*/
+   if (Mode==3) {
+      sprintf(buf,"%li",nd);
+      Tcl_AppendElement(Interp,buf);
    }
 
    if (!Geom) {

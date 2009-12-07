@@ -316,7 +316,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TDataSpec    *spec=NULL;
    Tcl_Obj      *lst,*obj;
 
-   static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE",NULL };
+   static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
    static CONST char *sopt[] = { "create","free","clean","clear","read","write","import","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
    enum                opt { CREATE,FREE,CLEAN,CLEAR,READ,WRITE,IMPORT,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
 
@@ -566,7 +566,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
       case PICK:
          if (Objc!=4 && Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"layer coords [all] [INTERSECT|INSIDE|OUTSIDE]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer coords [all] [INTERSECT|INSIDE|OUTSIDE|NEAREST]");
             return TCL_ERROR;
          }
 
