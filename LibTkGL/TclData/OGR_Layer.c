@@ -2504,7 +2504,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    Tcl_Obj     *obj;
    OGRGeometryH geom,pick;
-   double       x,y,lat,lon,d=-1.0;
+   double       x,y,lat,lon,d=1e32;
    int          nobj,n=0,nd=0;
    long         f;
    char         buf[32];
@@ -2554,7 +2554,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
                case 1: n=GPC_Within(geom,pick); break;          //INSIDE
                case 2: n=!GPC_Intersect(geom,pick); break;      //OUTSIDE
                case 3: x=OGR_G_Distance(geom,pick);             //NEAREST
-                       if (x>d) {
+                       if (x<d) {
                           d=x;
                           nd=f;
                        }
