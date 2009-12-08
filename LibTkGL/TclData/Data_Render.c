@@ -1355,7 +1355,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          /*If the grid wraps around*/
-         if (ox && i>Field->Def->NI) {
+         if (i>=Field->Def->NI) {
             idx0=j*Field->Def->NI;
             idx3=idx0+Field->Def->NI;
          } else {
