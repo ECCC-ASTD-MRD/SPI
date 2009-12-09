@@ -29,6 +29,7 @@ set tests {
    FSTD_CalcES2HR.tcl
    FSTD_DrainDensity.tcl
    FSTD_ExtractValue.tcl
+   FSTD_WindDirProfile.tcl
    FSTD_Flux.tcl
    FSTD_ImagePreview.tcl
    FSTD_IncrIP2.tcl
@@ -65,11 +66,13 @@ set tests {
    OGR_Interp.tcl
    {OGR_LatLon.tcl 20.0}
    OGR_OBS2SHP.tcl
+   OGR_FCST2SHP.tcl
    OGR_OGR2FSTD.tcl
    OGR_Rasterize.tcl
    OGR_Simplify.tcl
    OGR_TZCheck.tcl
    RADAR_Functions.tcl
+   RADAR_EchoTop.tcl
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
 }
