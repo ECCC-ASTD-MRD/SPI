@@ -1289,6 +1289,44 @@ void Data_DefFree(TDataDef *Def){
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <Data_DefClear>
+ * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Reinitialiser la structure de definitions des donnees
+ *
+ * Parametres :
+ *  <Def>     : Structure a reinitialiser
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void Data_DefClear(TDataDef *Def){
+
+   int n,i;
+
+   for(n=0;n<DSIZE(Def->Data);n++) {
+      for(i=0;i<FSIZE3D(Def);i++) {
+         Def_Set(Def,n,i,Def->NoData);
+      }
+   }
+   if (Def->Buffer) {
+      free(Def->Buffer);
+      Def->Buffer=NULL;
+   }
+   if (Def->Accum) {
+      free(Def->Accum);
+      Def->Accum=NULL;
+   }
+   if (Def->Mask) {
+      free(Def->Mask);
+      Def->Mask=NULL;
+   }
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Data_DefCopy>
  * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
  *

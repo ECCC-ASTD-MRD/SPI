@@ -319,6 +319,7 @@ int       Data_DefCompat(TDataDef *DefTo,TDataDef *DefFrom);
 TDataDef *Data_DefCopy(TDataDef *Def);
 TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type);
 void      Data_DefFree(TDataDef *Def);
+void      Data_DefClear(TDataDef *Def);
 TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type);
 TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK);
 int       Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);

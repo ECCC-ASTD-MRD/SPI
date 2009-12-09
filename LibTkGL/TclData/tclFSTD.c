@@ -1012,23 +1012,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return TCL_ERROR;
          }
 
-         for(n=0;n<DSIZE(field0->Def->Data);n++) {
-            for(i=0;i<FSIZE3D(field0->Def);i++) {
-               Def_Set(field0->Def,n,i,field0->Def->NoData);
-            }
-         }
-         if (field0->Def->Buffer) {
-            free(field0->Def->Buffer);
-            field0->Def->Buffer=NULL;
-         }
-         if (field0->Def->Accum) {
-            free(field0->Def->Accum);
-            field0->Def->Accum=NULL;
-         }
-         if (field0->Def->Mask) {
-            free(field0->Def->Mask);
-            field0->Def->Mask=NULL;
-         }
+         Data_DefClear(field0->Def);
          break;
 
       case IS:

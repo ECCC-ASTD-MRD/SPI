@@ -1024,32 +1024,33 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       ez=0;
    }
 
-   if (FieldFrom->Ref->Grid[0]=='W' || FieldTo->Ref->Grid[0]=='W') {
+   if (FieldFrom->Ref->Grid[0]=='R' || FieldTo->Ref->Grid[0]=='R' || FieldFrom->Ref->Grid[0]=='W' || FieldTo->Ref->Grid[0]=='W') {
       ez=0;
    }
 
    FSTD_FieldSetTo(FieldTo,FieldFrom);
 
-   EZLock_RPNInt();
-
-   if (Mode==0) {
-      c_ezsetopt("INTERP_DEGREE","NEAREST");
-   } else if (Mode==1) {
-      c_ezsetopt("INTERP_DEGREE","LINEAR");
-   } else if (Mode==2) {
-      c_ezsetopt("INTERP_DEGREE","CUBIC");
-   } else {
-      c_ezsetopt("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
-   }
-
-   if (FieldTo->Spec->ExtrapDegree[0]=='V') {
-      tmpf=FieldTo->Def->NoData;
-      c_ezsetval("EXTRAP_VALUE",&tmpf);
-   }
-   c_ezsetopt("EXTRAP_DEGREE",FieldTo->Spec->ExtrapDegree);
 
    /*Use ezscint*/
    if (ez) {
+      EZLock_RPNInt();
+
+      if (Mode==0) {
+         c_ezsetopt("INTERP_DEGREE","NEAREST");
+      } else if (Mode==1) {
+         c_ezsetopt("INTERP_DEGREE","LINEAR");
+      } else if (Mode==2) {
+         c_ezsetopt("INTERP_DEGREE","CUBIC");
+      } else {
+         c_ezsetopt("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
+      }
+
+      if (FieldTo->Spec->ExtrapDegree[0]=='V') {
+         tmpf=FieldTo->Def->NoData;
+         c_ezsetval("EXTRAP_VALUE",&tmpf);
+      }
+      c_ezsetopt("EXTRAP_DEGREE",FieldTo->Spec->ExtrapDegree);
+
       ok=c_ezdefset(FieldTo->Ref->Id,FieldFrom->Ref->Id);
 
       if (ok<0) {
@@ -1087,6 +1088,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          EZUnLock_RPNInt();
          return(TCL_ERROR);
       }
+      EZUnLock_RPNInt();
   } else {
       for(i=0;i<FieldTo->Def->NI;i++) {
          for(j=0;j<FieldTo->Def->NJ;j++) {
@@ -1109,7 +1111,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          }
       }
    }
-   EZUnLock_RPNInt();
 #endif
 
    /*In case of vectorial field, we have to recalculate the module*/

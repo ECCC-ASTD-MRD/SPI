@@ -536,14 +536,15 @@ TDataDef* Calc_Dir(TDataDef* A) {
       x=fx=(float*)malloc(FSIZE2D(A)*sizeof(float));
       y=fy=(float*)malloc(FSIZE2D(A)*sizeof(float));
 
-      for(k=0;k<A->NK;k++) {
-         for (j=1;j<=A->NJ;j++) {
-            for (i=1;i<=A->NI;i++) {
-              *x=i;
-              *y=j;
-               x++;y++;
-            }
+      for (j=1;j<=A->NJ;j++) {
+         for (i=1;i<=A->NI;i++) {
+           *x=i;
+           *y=j;
+            x++;y++;
          }
+      }
+
+      for(k=0;k<A->NK;k++) {
          Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);

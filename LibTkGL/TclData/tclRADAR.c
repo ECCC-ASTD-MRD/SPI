@@ -181,8 +181,8 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    TDataSpec *spec;
 
    int         idx,v,n;
-   static CONST char *sopt[] = { "read","configure","define","stats","copy","free","clean","wipe","is",NULL };
-   enum                opt { READ,CONFIGURE,DEFINE,STATS,COPY,FREE,CLEAN,WIPE,IS };
+   static CONST char *sopt[] = { "read","configure","define","stats","copy","free","clean","clear","wipe","is",NULL };
+   enum                opt { READ,CONFIGURE,DEFINE,STATS,COPY,FREE,CLEAN,CLEAR,WIPE,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -296,6 +296,19 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return TCL_ERROR;
          }
          Data_Clean(rad,1,1,1);
+         break;
+
+      case CLEAR:
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            return TCL_ERROR;
+         }
+         rad=Data_Get(Tcl_GetString(Objv[2]));
+         if (!rad) {
+            Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
+            return TCL_ERROR;
+         }
+         Data_DefClear(rad->Def);
          break;
 
      case FREE:
