@@ -1041,7 +1041,7 @@ void GeoRef_Qualify(TGeoRef *Ref) {
          return;
       }
 
-      if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[0]=='P' || Ref->Grid[1]=='Y' || Ref->Grid[1]=='Z') {
+      if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[1]=='Y' || Ref->Grid[1]=='Z') {
          Ref->Type|=GRID_SPARSE;
       } else {
          Ref->Type|=GRID_REGULAR;
@@ -1084,10 +1084,10 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
    }
 
    /*Pacth temporaire du au lagrangien qui doivent avoir des GeoRef differents*/
-   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#' || Ref0->Grid[0]=='P')
+   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#')
       return(0);
 
-   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#' || Ref1->Grid[0]=='P')
+   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#')
       return(0);
 
    if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)

@@ -249,14 +249,10 @@ int FSTD_FieldReadMesh(TData *Field) {
             break;
 
          case 'Y':
-            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
-            if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
-            break;
-
-         case 'P':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0);
+            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
             if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0);
+            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
             if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
             break;
 
@@ -2174,7 +2170,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    /*Override le type de niveaux pour ZH is ip1=0*/
    if (h.NOMVAR[0]=='Z' && h.NOMVAR[1]=='H') {
-      grtyp[0]='P';
+      grtyp[0]='Y';
       if (h.IP1==0){
          type=LVL_MASL;
       }
