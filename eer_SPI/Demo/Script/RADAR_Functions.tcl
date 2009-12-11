@@ -59,14 +59,16 @@ puts "\n   Limits (value lat lon angle): min=[radarscan stats SCAN1 -min] max=[r
 
 radarscan stats SCAN1 -level 0
 puts "\n   Radar sweep angle 0"
-puts "   Projected lat lon (sweep and bin): [radarscan stats SCAN1 -coordpoint 45.28 -74.74]"
-puts "   UnProjected sweep and bin (lat lon): [radarscan stats SCAN1 -gridpoint 75.3750167173 107.193774955]"
-puts "   value (lat lon): [radarscan stats SCAN1 -coordvalue 45.28 -74.74]"
-puts "   value (sweep and bin): [radarscan stats SCAN1 -gridvalue 75.3750167173 107.193774955]"
+puts "   Projected lat lon (azimuth and bin)  : [radarscan stats SCAN1 -coordpoint 45.28 -74.74]"
+puts "   UnProjected azimuth and bin (lat lon): [radarscan stats SCAN1 -gridpoint 75.3750167173 107.193774955]"
+puts "   value (lat lon)        : [radarscan stats SCAN1 -coordvalue 45.28 -74.74]"
+puts "   value (azimuth and bin): [radarscan stats SCAN1 -gridvalue 75.3750167173 107.193774955]"
+puts "   height (lat lon)       : [radarscan stats SCAN1 -height 75.3750167173 107.193774955 0]"
 
 radarscan stats SCAN1 -level 12
 puts "   \nRadar sweep angle 12"
-puts "   Projected lat lon (sweep and bin): [radarscan stats SCAN1 -coordpoint 45.28 -74.74]"
-puts "   UnProjected sweep and bin (lat lon): [radarscan stats SCAN1 -gridpoint 75.3750167173 107.538344429]"
-puts "   value (lat lon): [radarscan stats SCAN1 -coordvalue 45.28 -74.74]"
-puts "   value (sweep and bin): [radarscan stats SCAN1 -gridvalue 75.3750167173 107.538344429]"
+puts "   Projected lat lon (azimuth and bin)  : [radarscan stats SCAN1 -coordpoint 45.28 -74.74]"
+puts "   UnProjected azimuth and bin (lat lon): [radarscan stats SCAN1 -gridpoint 75.3750167173 107.538344429]"
+puts "   value (lat lon)        : [radarscan stats SCAN1 -coordvalue 45.28 -74.74]"
+puts "   value (azimuth and bin): [radarscan stats SCAN1 -gridvalue 75.3750167173 107.538344429]"
+puts "   height (lat lon)       : [radarscan stats SCAN1 -height 75.3750167173 107.193774955 12]"

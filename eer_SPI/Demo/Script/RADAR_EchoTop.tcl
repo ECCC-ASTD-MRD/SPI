@@ -67,7 +67,7 @@ set scans [radarfile open RADARSITE read DataIn/200609032150..CONVOL.URP.WUJ.RAD
 set lat  49.0161
 set lon  -122.4877
 set elev 230.0
-set dt   2.0
+set dt   3.0
 
 #----- Read the first scan
 radarscan read SCAN1 RADARSITE 0
@@ -83,29 +83,33 @@ radarscan clear TOP
 #----- Get top
 set k 0
 set min [radarscan define SCAN1 -NOISE]
+set min 7
 foreach sweep [radarscan define SCAN1 -SWEEPANGLE] {
    puts "   Checking sweep level $sweep"
    vexpr TOP ifelse(SCAN1()()($k)>$min,$k,TOP)
    incr k
 }
 
-GridDefineLL [expr $lat-$dt] [expr $lon-$dt] [expr $lat+$dt] [expr $lon+$dt] 0.01 0.01
-radarscan stats TOP -level 1
-
-#fstdfield gridinterp GRIDLLMEM TOP
-for { set i 0 } { $i<[fstdfield define GRIDLLMEM -NI] } { incr i } {
-   for { set j 0 } { $j<[fstdfield define GRIDLLMEM -NJ] } { incr j } {
-      set ll [fstdfield stats GRIDLLMEM -gridpoint $i $j]
-       set val [radarscan stats TOP -coordvalue [lindex $ll 0] [lindex $ll 1]]
-      puts stderr "$val"
-      fstdfield  stats GRIDLLMEM -gridvalue $i $j $val
+puts "   Calculating echo top"
+for { set i 0 } { $i<[radarscan define TOP -NBAZIMUTH] } { incr i } {
+   puts "   Azimuth $i"
+   for { set j 0 } { $j<[radarscan define TOP -NBBIN] } { incr j } {
+      set k [radarscan stats TOP -gridvalue $i $j]
+      set h [radarscan stats SCAN1 -height $i $j $k]
+      if { $k>0 } {
+         radarscan stats TOP -gridvalue $i $j $h
+      }
    }
 }
 
+puts "   Interpolating on RPN field"
+GridDefineLL [expr $lat-$dt] [expr $lon-$dt] [expr $lat+$dt] [expr $lon+$dt] 0.01 0.01
+radarscan stats TOP -level 1
 
+fstdfield gridinterp GRIDLLMEM TOP
 fstdfield define GRIDLLMEM -IP1 12000
 
-fstdfile open FILE write RADAR_EchoTop.fstd
+fstdfile open FILE write DataOut/RADAR_EchoTop.fstd
 fstdfield write GRIDLLTIC FILE -32 True
 fstdfield write GRIDLLTAC FILE -32 True
 fstdfield write GRIDLLMEM FILE -32 True
