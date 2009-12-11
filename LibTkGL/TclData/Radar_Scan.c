@@ -65,6 +65,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
    TGeoRef    *ref;
    int         i,idx,v=-1,date,time;
    char        buf[64];
+   double      th;
    Coord       loc;
 
    static CONST char *sopt[] = { "-TYPE","-SCAN","-AZIMUTHRESOLUTION","-BINRESOLUTION","-SITEID","-SITENAME","-LOCATION",\
@@ -241,6 +242,9 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
                   Rad->Ref=GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->Levels);
                   GeoRef_Destroy(Interp,ref->Name);
                   Data_Clean(Rad,1,1,1);
+                  th=DEG2RAD(head->Data->volScan[head->Scan]->sweep[Rad->Def->Level]->elevationAngle);
+                  Rad->Ref->CTH=cos(th);
+                  Rad->Ref->STH=sin(th);
                }
             }
             break;
@@ -381,7 +385,7 @@ int Radar_Parse(TData *Rad) {
    VOLUME     *vol;
    RAY        *ray;
    int         i,j,k,new,bin;
-   double      val;
+   double      val,th;
 
    vol=head->Data->volScan[head->Scan];
 
@@ -406,6 +410,9 @@ int Radar_Parse(TData *Rad) {
       }
    }
 
+   th=DEG2RAD(vol->sweep[Rad->Def->Level]->elevationAngle);
+   Rad->Ref->CTH=cos(th);
+   Rad->Ref->STH=sin(th);
    return(TCL_OK);
 }
 
@@ -455,13 +462,12 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
       for (j=0;j<Rad->Def->NJ;j++) {
          idxi=j*Rad->Def->NI;
          th=DEG2RAD(Rad->Ref->Levels[j]);
-         Rad->Ref->CTH=cos(th);
-         Rad->Ref->STH=sin(th);
+         sth=sin(th);
          for (i=0;i<Rad->Def->NI;i++) {
             coord.Lat=Rad->Ref->Lat[i];
             coord.Lon=CLAMPLON(Rad->Ref->Lon[i]);
             Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
-            coord.Elev=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
+            coord.Elev=Rad->Ref->Loc.Elev+sth*dt;
             if (Proj) {
                ((Projection*)Proj)->Type->Project(((Projection*)Proj),&coord,&Rad->Ref->Pos[Level][idxi],1);
             } else {
@@ -472,8 +478,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
       }
    } else {
       th=DEG2RAD(vol->sweep[Level]->elevationAngle);
-      Rad->Ref->CTH=cos(th);
-      Rad->Ref->STH=sin(th);
+      sth=sin(th);
       for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
          idxi=j*Rad->Def->NI;
          for (i=0;i<Rad->Def->NI;i++,idxi++) {           /*Loop on the Azimuths*/
@@ -483,17 +488,13 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
                Vect_Assign(Rad->Ref->Pos[Level][idxi],Rad->Ref->Pos[Level][j*Rad->Def->NI]);
             } else {
                dt=j*head->Data->binResolutionKM*1000;
-               Rad->Ref->Pos[Level][idxi][2]=Rad->Ref->Loc.Elev+Rad->Ref->STH*dt;
+               Rad->Ref->Pos[Level][idxi][2]=Rad->Ref->Loc.Elev+sth*dt;
                Rad->Ref->Project(Rad->Ref,i,j,&Rad->Ref->Pos[Level][idxi][1],&Rad->Ref->Pos[Level][idxi][0],0,1);
             }
          }
       }
       ((Projection*)Proj)->Type->Project(((Projection*)Proj),Rad->Ref->Pos[Level],NULL,FSIZE3D(Rad->Def));
    }
-
-   th=DEG2RAD(vol->sweep[Rad->Def->Level]->elevationAngle);
-   Rad->Ref->CTH=cos(th);
-   Rad->Ref->STH=sin(th);
    return(Rad->Ref->Pos);
 }
 
