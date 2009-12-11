@@ -1693,6 +1693,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    ex=Field->Spec->ExtrapDegree[0]!='N'?1:0;
 
+   if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
+      FSTD_FieldReadMesh(Field);
+
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
