@@ -105,6 +105,7 @@ typedef int    (TGeoRef_Project)   (struct TGeoRef *Ref,double X,double Y,double
 typedef int    (TGeoRef_UnProject) (struct TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 typedef int    (TGeoRef_Value)     (struct TGeoRef *Ref,void *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY);
 typedef double (TGeoRef_Distance)  (struct TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
+typedef double (TGeoRef_Height)    (struct TGeoRef *Ref,double X,double Y,double Z);
 typedef int    (TGeoRef_Check)     (struct TGeoRef *Ref);
 
 typedef struct TGeoRef {
@@ -149,6 +150,7 @@ typedef struct TGeoRef {
    TGeoRef_UnProject *UnProject;
    TGeoRef_Value     *Value;
    TGeoRef_Distance  *Distance;
+   TGeoRef_Height    *Height;
 } TGeoRef;
 
 typedef struct TGeoScan {

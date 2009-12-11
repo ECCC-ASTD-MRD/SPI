@@ -497,12 +497,4 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    }
    return(Rad->Ref->Pos);
 }
-
-double Radar_Height(TData *Rad,double I,double J,double K) {
-   Radar_Head *head=(Radar_Head*)Rad->Head;
-   VOLUME     *vol;
-
-   vol=head->Data->volScan[0];
-   return(Rad->Ref->Loc.Elev+sin(DEG2RAD(vol->sweep[(int)K]->elevationAngle))*((int)J*head->Data->binResolutionKM*1000));
-}
 #endif

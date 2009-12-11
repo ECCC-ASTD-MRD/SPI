@@ -421,6 +421,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    Ref->UnProject=GeoRef_WKTUnProject;
    Ref->Value=GeoRef_WKTValue;
    Ref->Distance=GeoRef_WKTDistance;
+   Ref->Height=NULL;
 }
 
 TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {

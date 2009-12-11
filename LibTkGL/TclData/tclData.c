@@ -2340,10 +2340,8 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
 
                val=0.0;
-               if (DEF3DIN(Field->Def,dx,dy,dv)) {
-                   if (Field->Ref->Grid[0]=='R') {
-                      val=Radar_Height(Field,dx,dy,dv);
-                   }
+               if (Field->Ref->Height) {
+                  val=Field->Ref->Height(Field->Ref,dx,dy,dv);
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(val));
             }

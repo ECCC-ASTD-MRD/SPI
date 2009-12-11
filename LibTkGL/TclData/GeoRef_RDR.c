@@ -32,10 +32,38 @@
  */
 #include "tclData.h"
 
+double   GeoRef_RDRHeight(TGeoRef *Ref,double Azimuth,double Bin,double Sweep);
 double   GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
 int      GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,float *Length,float *ThetaXY);
 int      GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_RDRHeight>
+ * Creation     : Decembre 2009 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Calculer la hauteur en MAGL d<une coordonnee RADAR.
+ *
+ * Parametres    :
+ *   <Ref>       : Pointeur sur la reference geographique
+ *   <Azimuth>   : coordonnee en X dans la projection/grille
+ *   <Bin>       : coordonnee en Y dans la projection/grille
+ *   <Sweep>     : coordonnee en Z dans la projection/grille
+ *
+ * Retour       : Hauteur
+ *
+ * Remarques   :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+double GeoRef_RDRHeight(TGeoRef *Ref,double Azimuth,double Bin,double Sweep) {
+
+   if (Bin>=0 && Bin<Ref->R && Sweep>=0 && Sweep<Ref->LevelNb) {
+      return(Ref->Loc.Elev+sin(DEG2RAD(Ref->Levels[(int)Sweep]))*((int)Bin*Ref->ResR));
+   } else {
+      return(0);
+   }
+}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RDRDistance>
@@ -239,6 +267,7 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
    TGeoRef *ref;
 
    ref=GeoRef_New();
+   GeoRef_Size(ref,0,0,0,(360/ResA),R-1,NTheta-1,0);
 
    ref->Grid[0]='R';
    ref->Loc.Lat=Lat;
@@ -260,6 +289,7 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
    ref->UnProject=GeoRef_RDRUnProject;
    ref->Value=GeoRef_RDRValue;
    ref->Distance=GeoRef_RDRDistance;
+   ref->Height=GeoRef_RDRHeight;
 
    return(GeoRef_Find(ref));
 }
