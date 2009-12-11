@@ -75,7 +75,7 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
    set Viewport::Data(XMINI$Frame)        $X0          ;#Offset en x
    set Viewport::Data(YMINI$Frame)        $Y0          ;#Offset en y
    set Viewport::Data(ZMINI$Frame)        $Z           ;#Zoom
-   set Viewport::Data(LMINI$Frame)        1            ;#log2(Zoom)
+   set Viewport::Data(LMINI$Frame)        [expr log10($Z)/log10(2)] ;#log2(Zoom)
    set Viewport::Data(WidthMINI$Frame)    $Width       ;#Largeur de la projection
    set Viewport::Data(HeightMINI$Frame)   $Height      ;#Hauteur de la projection
    set Viewport::Data(ActiveMINI$Frame)   $Active      ;#Mode Active (Manipulation in place)
@@ -114,55 +114,56 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
 
    #----- Creer les fonction du miniport
 
-   scale $Frame.sc$wtag -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
-      -from [expr log10([lindex $Params(Lens) 0])/log10(2)] -to [expr log10([lindex $Params(Lens) end])/log10(2)] \
-      -variable Viewport::Data(LMINI$Frame) -command "set Viewport::Data(ZMINI$Frame) \[expr pow(2,\$Viewport::Data(LMINI$Frame))\];Page::Update $Frame; catch"
-   label $Frame.bs$wtag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
-   label $Frame.bm$wtag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
-   menubutton $Frame.bf$wtag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
-      -menu $Frame.bf$wtag.menu
+   if { $Active } {
+      scale $Frame.sc$wtag -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
+         -from [expr log10([lindex $Params(Lens) 0])/log10(2)] -to [expr log10([lindex $Params(Lens) end])/log10(2)] \
+         -variable Viewport::Data(LMINI$Frame) -command "set Viewport::Data(ZMINI$Frame) \[expr pow(2,\$Viewport::Data(LMINI$Frame))\];Page::Update $Frame; catch"
+      label $Frame.bs$wtag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
+      label $Frame.bm$wtag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
+      menubutton $Frame.bf$wtag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
+         -menu $Frame.bf$wtag.menu
 
-   menu $Frame.bf$wtag.menu -bg $GDefs(ColorFrame)
-   $Frame.bf$wtag.menu add cascade -label [lindex $Lbl(Zoom) $GDefs(Lang)] -menu $Frame.bf$wtag.menu.lens
-   $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Relative) $GDefs(Lang)] -variable Viewport::Data(RelativeMINI$Frame) \
-      -onvalue True -offvalue False -command "Page::Update $Frame"
-   $Frame.bf$wtag.menu add separator
-   $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Ortho) $GDefs(Lang)] -value orthographic -variable  Viewport::Data(TypeMINI$Frame) \
-      -command "projection configure MINI$Frame -type orthographic; $Frame.page.canvas itemconf MINI$Frame -update True"
-   $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Cylin) $GDefs(Lang)] -value cylindric -variable  Viewport::Data(TypeMINI$Frame) \
-      -command "projection configure MINI$Frame -type cylindric; $Frame.page.canvas itemconf MINI$Frame -update True"
-   $Frame.bf$wtag.menu add separator
-   $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Data) $GDefs(Lang)] -variable Viewport::Data(DataMINI$Frame) \
-      -onvalue True -offvalue False -command "Viewport::UpdateData $Frame"
-   $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Location) $GDefs(Lang)] -variable Viewport::Data(LocationMINI$Frame) \
-      -onvalue True -offvalue False -command "Miniport::Coverage $Frame"
-   $Frame.bf$wtag.menu add command -label [lindex $Lbl(Color) $GDefs(Lang)] -command "set Viewport::Data(ColorMINI$Frame) \[ColorBox::Create . \$Viewport::Data(ColorMINI$Frame)\]"
-   $Frame.bf$wtag.menu add separator
-   $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Cursor) $GDefs(Lang)] -variable Viewport::Data(CursorMINI$Frame) \
-      -onvalue True -offvalue False
+      menu $Frame.bf$wtag.menu -bg $GDefs(ColorFrame)
+      $Frame.bf$wtag.menu add cascade -label [lindex $Lbl(Zoom) $GDefs(Lang)] -menu $Frame.bf$wtag.menu.lens
+      $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Relative) $GDefs(Lang)] -variable Viewport::Data(RelativeMINI$Frame) \
+         -onvalue True -offvalue False -command "Page::Update $Frame"
+      $Frame.bf$wtag.menu add separator
+      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Ortho) $GDefs(Lang)] -value orthographic -variable  Viewport::Data(TypeMINI$Frame) \
+         -command "projection configure MINI$Frame -type orthographic; $Frame.page.canvas itemconf MINI$Frame -update True"
+      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Cylin) $GDefs(Lang)] -value cylindric -variable  Viewport::Data(TypeMINI$Frame) \
+         -command "projection configure MINI$Frame -type cylindric; $Frame.page.canvas itemconf MINI$Frame -update True"
+      $Frame.bf$wtag.menu add separator
+      $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Data) $GDefs(Lang)] -variable Viewport::Data(DataMINI$Frame) \
+         -onvalue True -offvalue False -command "Viewport::UpdateData $Frame"
+      $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Location) $GDefs(Lang)] -variable Viewport::Data(LocationMINI$Frame) \
+         -onvalue True -offvalue False -command "Miniport::Coverage $Frame"
+      $Frame.bf$wtag.menu add command -label [lindex $Lbl(Color) $GDefs(Lang)] -command "set Viewport::Data(ColorMINI$Frame) \[ColorBox::Create . \$Viewport::Data(ColorMINI$Frame)\]"
+      $Frame.bf$wtag.menu add separator
+      $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Cursor) $GDefs(Lang)] -variable Viewport::Data(CursorMINI$Frame) \
+         -onvalue True -offvalue False
 
-   menu $Frame.bf$wtag.menu.lens -bg $GDefs(ColorFrame)
-   foreach size $Params(Lens) {
-      $Frame.bf$wtag.menu.lens add radiobutton -label "${size}x" -variable Viewport::Data(ZMINI$Frame) -value [expr double(${size}.0)] \
-         -command "set Viewport::Data(LMINI$Frame) \[expr log10(\$Viewport::Data(ZMINI$Frame))/log10(2)\];Page::Update $Frame"
+      menu $Frame.bf$wtag.menu.lens -bg $GDefs(ColorFrame)
+      foreach size $Params(Lens) {
+         $Frame.bf$wtag.menu.lens add radiobutton -label "${size}x" -variable Viewport::Data(ZMINI$Frame) -value [expr double(${size}.0)] \
+            -command "set Viewport::Data(LMINI$Frame) \[expr log10(\$Viewport::Data(ZMINI$Frame))/log10(2)\];Page::Update $Frame"
+      }
+
+      $Frame.page.canvas create window [expr $x1-150-35] [expr $y1-1] -window $Frame.sc$wtag -anchor sw -tags "SC$ctag NOPRINT" -width 151
+      $Frame.page.canvas create window $x1 [expr $y1-1]               -window $Frame.bs$wtag -anchor se -tags "BS$ctag NOPRINT"
+      $Frame.page.canvas create window [expr $x1-11] [expr $y1-1]     -window $Frame.bm$wtag -anchor se -tags "BM$ctag NOPRINT"
+      $Frame.page.canvas create window [expr $x1-22] [expr $y1-1]     -window $Frame.bf$wtag -anchor se -tags "BF$ctag NOPRINT"
+
+      #----- bindings de deplacement
+
+      bind $Frame.bm$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
+      bind $Frame.bm$wtag <B1-Motion>          "Page::ActiveMove Viewport $Frame MINI$Frame %X %Y"
+
+      #----- bindings de scaling
+
+      bind $Frame.bs$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
+      bind $Frame.bs$wtag <B1-Motion>          "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 1"
+      bind $Frame.bs$wtag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 0"
    }
-
-   $Frame.page.canvas create window [expr $x1-150-35] [expr $y1-1] -window $Frame.sc$wtag -anchor sw -tags "SC$ctag NOPRINT" -width 151
-   $Frame.page.canvas create window $x1 [expr $y1-1]               -window $Frame.bs$wtag -anchor se -tags "BS$ctag NOPRINT"
-   $Frame.page.canvas create window [expr $x1-11] [expr $y1-1]     -window $Frame.bm$wtag -anchor se -tags "BM$ctag NOPRINT"
-   $Frame.page.canvas create window [expr $x1-22] [expr $y1-1]     -window $Frame.bf$wtag -anchor se -tags "BF$ctag NOPRINT"
-
-   #----- bindings de deplacement
-
-   bind $Frame.bm$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
-   bind $Frame.bm$wtag <B1-Motion>          "Page::ActiveMove Viewport $Frame MINI$Frame %X %Y"
-
-   #----- bindings de scaling
-
-   bind $Frame.bs$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
-   bind $Frame.bs$wtag <B1-Motion>          "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 1"
-   bind $Frame.bs$wtag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 0"
-
    $Frame.page.canvas bind MINI$Frame <Button-3> "tk_popup .mapmenu %X %Y 0"
 
    Page::ModeZoom $Frame MINI$Frame
