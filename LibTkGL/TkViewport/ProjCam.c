@@ -43,6 +43,7 @@ static int  ProjCam_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
 static int  ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int  ProjCam_Create(Tcl_Interp *Interp,char *Name);
 static int  ProjCam_Destroy(Tcl_Interp *Interp,char *Name);
+static int  ProjCam_Copy(Tcl_Interp *Interp,ProjCam *Cam,char *Name);
 
 int  ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List);
 void ProjCam_Project(ProjCam *Cam,Projection *Proj);
@@ -89,8 +90,8 @@ ProjCam* ProjCam_Get(char* Name){
 static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int                idx;
-   static CONST char *sopt[] = { "create","configure","define","stats","destroy","is",NULL };
-   enum                opt { CREATE,CONFIGURE,DEFINE,STATS,DESTROY,IS };
+   static CONST char *sopt[] = { "create","configure","define","stats","copy","destroy","is",NULL };
+   enum                opt { CREATE,CONFIGURE,DEFINE,STATS,COPY,DESTROY,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -135,6 +136,18 @@ static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             return(TCL_ERROR);
          }
          return(ProjCam_Stats(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
+         break;
+
+      case COPY:
+         if(Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"camto camfrom");
+            return(TCL_ERROR);
+         }
+         if (!ProjCam_Copy(Interp,ProjCam_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]))) {
+            return(TCL_ERROR);
+         } else {
+            return(TCL_OK);
+         }
          break;
 
       case DESTROY:
@@ -437,7 +450,8 @@ static int ProjCam_Stats(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
  *
  * Parametres    :
  *  <Interp>     : Interpreteur TCL
- *
+  *  <Name>       : Nom de la camera a creer
+*
  * Retour:
  *  <TCL_...>    : Code de retour standard TCL
  *
@@ -469,6 +483,39 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
    ProjCam_ParamsInit(cam);
 
    return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ProjCam_Copy>
+ * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Copier une camera.
+ *
+ * Parametres    :
+ *  <Interp>     : Interpreteur TCL
+ *  <Cam>        : Parametres de la camera
+ *  <Name>       : Nom de la camera a creer
+ *
+ * Retour:
+ *  <TCL_...>    : Code de retour standard TCL
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int ProjCam_Copy(Tcl_Interp *Interp,ProjCam *Cam,char *Name){
+
+   ProjCam *cam;
+
+   if (!(cam=(ProjCam*)TclY_HashPut(Interp,&ProjCamTable,Name,sizeof(ProjCam)))) {
+      return(TCL_ERROR);
+   }
+
+   /*Initialise les parametres de la camera*/
+   memcpy(cam,Cam,sizeof(ProjCam));
+   cam->Controls=NULL;
+
+   return(1);
 }
 
 /*----------------------------------------------------------------------------
