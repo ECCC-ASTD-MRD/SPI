@@ -1024,8 +1024,9 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       ez=0;
    }
 
-   FSTD_FieldSetTo(FieldTo,FieldFrom);
-
+   if (FieldFrom->Ref->Grid[0]!='R' && FieldTo->Ref->Grid[0]!='R') {
+      FSTD_FieldSetTo(FieldTo,FieldFrom);
+   }
 
    /*Use ezscint*/
    if (ez) {

@@ -1046,6 +1046,36 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
    dd=Dim-1;
    Scan->N=0;
 
+   if (Scan->FromRef->Grid[0]=='R') {
+      transform=Scan->FromRef->Transform;
+      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
+         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
+         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
+            if (x<=Scan->X1 && y<=Scan->Y1) {
+               Scan->V[Scan->N++]=idx;
+            }
+
+            if (!Scan->Valid) {
+               x0=dd?x-0.5:x;
+               y0=dd?y-0.5:y;
+               if (transform) {
+                  Scan->X[n]=transform[0]+transform[1]*x0+transform[2]*y0;
+                  Scan->Y[n]=transform[3]+transform[4]*x0+transform[5]*y0;
+               } else {
+                  Scan->X[n]=x0;
+                  Scan->Y[n]=y0;
+               }
+            }
+         }
+      }
+      if (!Scan->Valid && Scan->FromRef->Function) {
+         OCTTransform(Scan->FromRef->Function,n,Scan->X,Scan->Y,NULL);
+      }
+
+      d=dd?2:1;
+      sz=8;
+   /*Y Grid type*/
+
    /*WKT grid type*/
    if (Scan->FromRef->Grid[0]=='W') {
       transform=Scan->FromRef->Transform;
@@ -1075,6 +1105,7 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
 
       d=dd?2:1;
       sz=8;
+   }
    /*Y Grid type*/
    } else if (Scan->FromRef->Grid[0]=='Y') {
       for(n=0;n<FromDef->NI;n++,idx++) {

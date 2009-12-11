@@ -68,8 +68,8 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
    Coord       loc;
 
    static CONST char *sopt[] = { "-TYPE","-SCAN","-AZIMUTHRESOLUTION","-BINRESOLUTION","-SITEID","-SITENAME","-LOCATION",\
-      "-SWEEPANGLE","-DATE","-PRODUCT","-NOISE","-FILTER","-ZCAL","-NYQUIST","-GEOREF",NULL };
-   enum                opt { TYPE,SCAN,AZRES,BNRES,SITEID,SITENAME,LOCATION,SWEEPANGLE,DATE,PRODUCT,NOISE,FILTER,ZCAL,NYQUIST,GEOREF };
+      "-SWEEPANGLE","-DATE","-PRODUCT","-NOISE","-FILTER","-ZCAL","-NYQUIST","-NBSWEEP","-NBAZIMUTH","-NBBIN","-GEOREF",NULL };
+   enum                opt { TYPE,SCAN,AZRES,BNRES,SITEID,SITENAME,LOCATION,SWEEPANGLE,DATE,PRODUCT,NOISE,FILTER,ZCAL,NYQUIST,NBSWEEP,NBAZIMUTH,NBBIN,GEOREF };
 
    for (i=0;i<Objc;i++) {
 
@@ -203,6 +203,23 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
             }
             break;
 
+         case NBSWEEP:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Rad->Def->NK));
+            }
+            break;
+
+         case NBAZIMUTH:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Rad->Def->NI));
+            }
+            break;
+
+         case NBBIN:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Rad->Def->NJ));
+            }
+            break;
          case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -480,4 +497,11 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    return(Rad->Ref->Pos);
 }
 
+double Radar_Height(TData *Rad,double I,double J,double K) {
+   Radar_Head *head=(Radar_Head*)Rad->Head;
+   VOLUME     *vol;
+
+   vol=head->Data->volScan[0];
+   return(Rad->Ref->Loc.Elev+sin(DEG2RAD(vol->sweep[(int)K]->elevationAngle))*((int)J*head->Data->binResolutionKM*1000));
+}
 #endif

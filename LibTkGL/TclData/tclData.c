@@ -1680,12 +1680,13 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    extern Vect3d GDB_VBuf[];
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+extern double Radar_Height(TData *Rad,double I,double J,double K);
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2329,6 +2330,25 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
+         case HEIGHT:
+            if (Objc<4) {
+               Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates must be I J K",(char*)NULL);
+               return(TCL_ERROR);
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
+
+               val=0.0;
+               if (DEF3DIN(Field->Def,dx,dy,dv)) {
+                   if (Field->Ref->Grid[0]=='R') {
+                      val=Radar_Height(Field,dx,dy,dv);
+                   }
+               }
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(val));
+            }
+            break;
+
          case LEVELS:
             if (Objc==1) {
                if (Field->Ref) {
@@ -2369,7 +2389,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->Level));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&n);
-               if (n<0 || n>Field->Ref->LevelNb) {
+               if (n<0 || n>=Field->Ref->LevelNb) {
                   Tcl_AppendResult(Interp,"Data_Stat: Invalid level index",(char*)NULL);
                   return(TCL_ERROR);
                }

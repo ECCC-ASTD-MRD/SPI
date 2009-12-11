@@ -93,6 +93,7 @@ void    Radar_Free(TData *Rad);
 Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level);
 void    Radar_HeadCopy(void *To,void *From);
 void    Radar_Set(TData *Data);
+double  Radar_Height(TData *Rad,double I,double J,double K);
 
 CONST char* Radar_GetTypeString(DATA_TYPE Type);
 
