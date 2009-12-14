@@ -578,10 +578,6 @@ proc FSTD::IntervalSet { { Select 0 } } {
 proc FSTD::FieldFormat { Field Val } {
    variable Param
 
-   if { $Val=="-" || $Val=="" } {
-      return "-"
-   }
-
    set val      [fstdfield configure $Field -value]
    set order    [lindex $val 0]
    set mantisse [lindex $val 1]
@@ -592,14 +588,17 @@ proc FSTD::FieldFormat { Field Val } {
       set dec $mantisse
    }
 
-   if { $order=="AUTO" || $order=="EXPONENTIAL" } {
-       eval set val \[format \"%1.${dec}e\" $Val\]
-   } elseif { $order == "INTEGER" } {
-       catch { eval set val \[format \"%i\" [expr int($Val)]\] }
-   } elseif { $order == "FLOAT" } {
-       eval set val \[format \"%1.${dec}f\" $Val\]
-   }
-   return $val
+   set bad [catch {
+      if { $order=="AUTO" || $order=="EXPONENTIAL" } {
+         eval set Val \[format \"%1.${dec}e\" $Val\]
+      } elseif { $order == "INTEGER" } {
+         catch { eval set Val \[format \"%i\" [expr int($Val)]\] }
+      } elseif { $order == "FLOAT" } {
+         eval set Val \[format \"%1.${dec}f\" $Val\]
+      }
+   }]
+
+   return $Val
 }
 
 #----------------------------------------------------------------------------
