@@ -371,9 +371,6 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    OGRSpatialReferenceH llref=NULL;
    char                *string=NULL;
 
-   if (String)
-      string=strdup(String);
-
    GeoRef_Clear(Ref,0);
    Ref->Grid[0]='W';
    Ref->Grid[1]=Ref->Grid[2]='\0';
@@ -403,7 +400,8 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    if (Spatial) {
       Ref->Spatial=OSRClone(Spatial);
       OSRExportToWkt(Ref->Spatial,&string);
-   } else if (string) {
+   } else if (String) {
+      string=strdup(String);
       if (strlen(string)<20) {
          Ref->Spatial=OSRNewSpatialReference(NULL);
          OSRSetWellKnownGeogCS(Ref->Spatial,string);
