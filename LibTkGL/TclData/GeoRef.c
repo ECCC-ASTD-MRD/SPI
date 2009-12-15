@@ -669,7 +669,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
             } else {
                if (Tcl_ListObjLength(Interp,Objv[++i],&nidx)==TCL_ERROR) {
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (nidx==0) {
@@ -677,7 +677,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                } else {
                   if (nidx!=6) {
                      Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid number of transform element, must be 6 \"",(char*)NULL);
-                     return TCL_ERROR;
+                     return(TCL_ERROR);
                   }
                   for(j=0;j<6;j++) {
                      Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
@@ -706,7 +706,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
             } else {
                if (Tcl_ListObjLength(Interp,Objv[++i],&nidx)==TCL_ERROR) {
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (nidx==0) {
@@ -714,7 +714,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                } else {
                   if (nidx!=6) {
                      Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid number of transform element, must be 6 \"",(char*)NULL);
-                     return TCL_ERROR;
+                     return(TCL_ERROR);
                   }
                   for(j=0;j<6;j++) {
                      Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
