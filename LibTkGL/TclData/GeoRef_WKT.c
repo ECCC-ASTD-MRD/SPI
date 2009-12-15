@@ -371,6 +371,9 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    OGRSpatialReferenceH llref=NULL;
    char                *string=NULL;
 
+   if (String)
+      string=strdup(String);
+
    GeoRef_Clear(Ref,0);
    Ref->Grid[0]='W';
    Ref->Grid[1]=Ref->Grid[2]='\0';
@@ -400,8 +403,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    if (Spatial) {
       Ref->Spatial=OSRClone(Spatial);
       OSRExportToWkt(Ref->Spatial,&string);
-   } else if (String) {
-      string=strdup(String);
+   } else if (string) {
       if (strlen(string)<20) {
          Ref->Spatial=OSRNewSpatialReference(NULL);
          OSRSetWellKnownGeogCS(Ref->Spatial,string);
@@ -413,8 +415,6 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
       Ref->Spatial=OSRNewSpatialReference(string);
       fprintf(stderr,"(WARNING) GeoRef_WKTSet: Unable to find spatial reference, assuming default (latlon)\n");
    }
-   if (Ref->String)
-      free(Ref->String);
    Ref->String=string;
 
    if (Ref->Spatial) {
