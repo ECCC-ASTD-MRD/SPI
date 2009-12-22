@@ -1785,7 +1785,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    int    i,idx;
 
    glEnable(GL_DEPTH_TEST);
-   glLineWidth(Obs->Spec->RenderContour+1);
+   glLineWidth(Obs->Spec->Width+1);
    if (Obs->Spec->Map && Obs->Spec->Map->Alpha) {
       glEnable(GL_BLEND);
    }
@@ -1892,7 +1892,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    }
 
    /*Outline mode*/
-   if (Obs->Spec->RenderContour && Obs->Spec->Icon && Obs->Spec->RenderTexture) {
+   if (Obs->Spec->Width && Obs->Spec->Icon && Obs->Spec->RenderTexture) {
       for (i=0;i<Obs->Loc->Nb;i++) {
          val=((float*)Obs->Def->Data[0])[i];
          VAL2COL(idx,Obs->Spec,val);
@@ -1904,7 +1904,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev));
             glTranslated(0.0,0.0,z);
 
-            sz=VP->Ratio*(Obs->Spec->Size*0.5+Obs->Spec->RenderContour);
+            sz=VP->Ratio*(Obs->Spec->Size*0.5+Obs->Spec->Width);
 
             if (Interp) {
                glFeedbackInit(IconList[Obs->Spec->Icon].Nb*8,GL_2D);
@@ -2090,7 +2090,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          /*If visible, draw text*/
          if (Projection_Pixel(Proj,VP,co,vr)) {
 
-            sz=Obs->Spec->Size*0.5+Obs->Spec->RenderContour*2;
+            sz=Obs->Spec->Size*0.5+Obs->Spec->Width*2;
             y=0;
 
             if (Interp) {

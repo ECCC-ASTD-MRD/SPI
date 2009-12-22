@@ -334,10 +334,27 @@ proc FSTD::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).def.r.disp.cont
             label $Data(Frame).def.r.disp.cont.lbl -text " [lindex $Lbl(Contour) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.cont.sel $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-               FSTD::Param(Contour) "FSTD::ParamSet" 0 -relief groove -bd 2
-            pack $Data(Frame).def.r.disp.cont.sel $Data(Frame).def.r.disp.cont.lbl -side left
+            checkbutton $Data(Frame).def.r.disp.cont.sel -variable FSTD::Param(Contour) -relief raised -bd 1 \
+               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
+            pack $Data(Frame).def.r.disp.cont.sel -side left -ipadx 1
+            pack $Data(Frame).def.r.disp.cont.lbl -side left  -fill y
+
+         frame $Data(Frame).def.r.disp.tex
+            label $Data(Frame).def.r.disp.tex.lbl -text " [lindex $Lbl(Texture) $GDefs(Lang)]"
+            checkbutton $Data(Frame).def.r.disp.tex.sel -variable FSTD::Param(Texture) -relief raised -bd 1 \
+               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
+            pack $Data(Frame).def.r.disp.tex.sel -side left -ipadx 1
+            pack $Data(Frame).def.r.disp.tex.lbl -side left -fill y
+
+         frame $Data(Frame).def.r.disp.vol
+            label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
+            checkbutton $Data(Frame).def.r.disp.vol.sel -variable FSTD::Param(Volume) -relief raised -bd 1 \
+               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
+            pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
+            pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
 
          frame $Data(Frame).def.r.disp.grid
             label $Data(Frame).def.r.disp.grid.lbl -text " [lindex $Lbl(Grid) $GDefs(Lang)]"
@@ -370,32 +387,15 @@ proc FSTD::ParamFrame { Frame Apply } {
                FSTD::Param(Value) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.val.sel $Data(Frame).def.r.disp.val.lbl -side left
 
-         frame $Data(Frame).def.r.disp.tex
-            label $Data(Frame).def.r.disp.tex.lbl -text " [lindex $Lbl(Texture) $GDefs(Lang)]"
-            checkbutton $Data(Frame).def.r.disp.tex.sel -variable FSTD::Param(Texture) -relief raised -bd 1 \
-               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
-               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
-            pack $Data(Frame).def.r.disp.tex.sel -side left -ipadx 1
-            pack $Data(Frame).def.r.disp.tex.lbl -side left -fill y
-
-         frame $Data(Frame).def.r.disp.vol
-            label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
-            checkbutton $Data(Frame).def.r.disp.vol.sel -variable FSTD::Param(Volume) -relief raised -bd 1 \
-               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
-               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
-            pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
-            pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
-
          frame $Data(Frame).def.r.disp.part
             label $Data(Frame).def.r.disp.part.lbl -text " [lindex $Lbl(Particle) $GDefs(Lang)]"
             IcoMenu::Create $Data(Frame).def.r.disp.part.sel $GDefs(Dir)/Resources/Bitmap \
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 1 2 3 4 5" \
                FSTD::Param(Particle) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.part.sel $Data(Frame).def.r.disp.part.lbl -side left
-         pack $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.cont $Data(Frame).def.r.disp.grid \
-            $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.part $Data(Frame).def.r.disp.label \
-            $Data(Frame).def.r.disp.val $Data(Frame).def.r.disp.tex \
-            $Data(Frame).def.r.disp.vol -side top -anchor w -padx 2 -fill x -expand true
+         pack $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.cont $Data(Frame).def.r.disp.tex $Data(Frame).def.r.disp.vol \
+            $Data(Frame).def.r.disp.grid $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.part $Data(Frame).def.r.disp.label \
+            $Data(Frame).def.r.disp.val -side top -anchor w -padx 2 -fill x -expand true
 
           pack $Data(Frame).def.r.disp -side top -fill x
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
@@ -813,7 +813,6 @@ proc FSTD::ParamPut { } {
    variable Data
    variable Param
 
-   IcoMenu::Set $Data(Frame).def.r.disp.cont.sel   $Param(Contour)
    IcoMenu::Set $Data(Frame).def.r.disp.vect.sel   $Param(Vector)
    IcoMenu::Set $Data(Frame).def.r.disp.grid.sel   $Param(Grid)
    IcoMenu::Set $Data(Frame).def.r.disp.vect.sel   $Param(Vector)

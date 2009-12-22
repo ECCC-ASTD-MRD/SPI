@@ -2726,15 +2726,15 @@ int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Val
       if (Interp) glFeedbackProcess(Interp,GL_2D);
    }
 
-   if (Spec->RenderContour && Spec->Outline) {
+   if (Spec->Outline && Spec->Width) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
       if (Interp) {
          Tk_CanvasPsColor(Interp,VP->canvas,Spec->Outline);
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Spec->RenderContour);
+         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Spec->Width);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
       } else {
          glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,Alpha*65535);
-         glLineWidth(Spec->RenderContour);
+         glLineWidth(Spec->Width);
       }
       if (Interp) glFeedbackInit(IconList[Spec->Icon].Nb*40,GL_2D);
       glDrawArrays(IconList[Spec->Icon].Type,0,IconList[Spec->Icon].Nb);
@@ -2779,7 +2779,7 @@ void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportI
    glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Spec->Font);
 
    if (Spec->Icon) {
-      sz=(Spec->Size*0.5+Spec->RenderContour);
+      sz=(Spec->Size*0.5+Spec->Width);
       dx+=sz+2;
    } else {
       dx-=Tk_TextWidth(Spec->Font,String,strlen(String))/2;

@@ -49,8 +49,8 @@ namespace eval Obs {
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
    dataspec create OBSDEFAULT
-   dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
-      -icon CIRCLE -color #000000 -unit "" -rendercontour 0 -rendervector NONE -rendertexture 1 \
+   dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
+      -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
    #----- Lecture des tables BUFR
@@ -92,7 +92,6 @@ namespace eval Obs {
    set Param(IntervalParam) 0                                      ;#Nombre de niveaux
    set Param(Intervals)     ""                                     ;#Liste de niveaux
    set Param(Icon)          NONE                                   ;#Icone
-   set Param(Contour)       0                                      ;#Largeur du contour
    set Param(Vector)        NONE                                   ;#Rendue vectoriel
    set Param(Topo)          ""                                     ;#Var 3D
    set Param(Color)         #000000                                ;#Couleur
@@ -108,6 +107,7 @@ namespace eval Obs {
    set Param(Desc)          ""                                     ;#Description
    set Param(Mantisse)      0                                      ;#Format d'affichage des valeurs
    set Param(Order)         AUTO                                   ;#Format d'affichage des valeurs
+   set Param(Width)         1                                      ;#Largeur des segments
 
    #----- Definitions des labels
 
@@ -117,7 +117,6 @@ namespace eval Obs {
    set Lbl(Obs)            { "Observations" "Observations" }
    set Lbl(Color)          { "Couleur  " "Color" }
    set Lbl(Icon)           { "Icones" "Icons" }
-   set Lbl(Contour)        { "Contour" "Outline" }
    set Lbl(Intervals)      { "Intervalles" "Intervals" }
    set Lbl(Conv)           { "Conv " "Conv " }
    set Lbl(Value)          { "Valeur " "Values " }
@@ -137,8 +136,6 @@ namespace eval Obs {
 
    set Bubble(Icon)     { "Affichage des icones"
                           "Display icons" }
-   set Bubble(Contour)  { "Affichage d'une bordure autour des icones"
-                          "Display icons border" }
    set Bubble(Color)    { "Couleur d'affichage non-texture"
                           "Non textured color" }
    set Bubble(Font)     { "Police de caracteres pour l'information"
@@ -360,17 +357,13 @@ proc Obs::ParamFrame { Frame Apply } {
                  { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } \
                  $Param(Icons) Obs::Param(Icon) Obs::ParamSet 0 -relief groove -bd 2
                ColorBox::CreateSel $Data(Frame).def.r.disp.p.col Obs::Param(Color) Obs::ParamSet
+               IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/Resources/Bitmap \
+                  "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
+                  Obs::Param(Width) "Obs::ParamSet" 0 -relief groove -bd 2
                checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable Obs::Param(MapAll) -onvalue 1 -offvalue 0 \
                   -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Obs::ParamSet } -indicatoron false
-               pack $Data(Frame).def.r.disp.p.col $Data(Frame).def.r.disp.p.map -side left
+               pack $Data(Frame).def.r.disp.p.map $Data(Frame).def.r.disp.p.col $Data(Frame).def.r.disp.p.width -side left
                pack $Data(Frame).def.r.disp.p.ico -side left -fill x -expand true
-
-            frame $Data(Frame).def.r.disp.width
-               label $Data(Frame).def.r.disp.width.lbl -text " [lindex $Lbl(Contour) $GDefs(Lang)]"
-               IcoMenu::Create $Data(Frame).def.r.disp.width.sel $GDefs(Dir)/Resources/Bitmap \
-                  "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-                  Obs::Param(Contour) Obs::ParamSet 0 -relief groove -bd 2
-               pack $Data(Frame).def.r.disp.width.sel $Data(Frame).def.r.disp.width.lbl -side left
 
             frame $Data(Frame).def.r.disp.traj
                IcoMenu::Create $Data(Frame).def.r.disp.traj.sel $GDefs(Dir)/Resources/Bitmap \
@@ -426,9 +419,9 @@ proc Obs::ParamFrame { Frame Apply } {
                pack $Data(Frame).def.r.disp.value.sel -side left
                pack $Data(Frame).def.r.disp.value.lbl -side left
 
-            pack  $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.width $Data(Frame).def.r.disp.traj $Data(Frame).def.r.disp.vect \
-               $Data(Frame).def.r.disp.tex $Data(Frame).def.r.disp.vol $Data(Frame).def.r.disp.value $Data(Frame).def.r.disp.info \
-               $Data(Frame).def.r.disp.coord -side top -padx 5 -anchor w
+            pack  $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.tex $Data(Frame).def.r.disp.vol \
+               $Data(Frame).def.r.disp.value $Data(Frame).def.r.disp.info $Data(Frame).def.r.disp.coord \
+               $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.traj -side top -padx 5 -anchor w
          pack $Data(Frame).def.r.disp -side top -fill x
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
 
@@ -486,7 +479,6 @@ proc Obs::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.r.disp.vol.sel   $Bubble(Volume)
    Bubble::Create $Data(Frame).def.r.disp.info.sel  $Bubble(Info)
    Bubble::Create $Data(Frame).def.r.disp.coord.sel $Bubble(Coord)
-   Bubble::Create $Data(Frame).def.r.disp.width.sel $Bubble(Contour)
    Bubble::Create $Data(Frame).def.r.disp.traj.sel  $Bubble(Traj)
    Bubble::Create $Data(Frame).def.r.size.si        $Bubble(Size)
    Bubble::Create $Data(Frame).lev.desc.edit        $Bubble(Intervals)
@@ -540,7 +532,6 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Icon)      [dataspec configure $Spec -icon]
    set Param(Style)     [dataspec configure $Spec -style]
    set Param(Color)     [dataspec configure $Spec -color]
-   set Param(Contour)   [dataspec configure $Spec -rendercontour]
    set Param(Vector)    [dataspec configure $Spec -rendervector]
    set Param(Topo)      [dataspec configure $Spec -topography]
    set Param(Texture)   [dataspec configure $Spec -rendertexture]
@@ -551,6 +542,7 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Intervals) [dataspec configure $Spec -intervals]
    set Param(Min)       [dataspec configure $Spec -min]
    set Param(Max)       [dataspec configure $Spec -max]
+   set Param(Width)     [dataspec configure $Spec -width]
 
    if { $Param(Min)!=$Param(Max) } {
       set Param(Intervals) ""
@@ -614,8 +606,8 @@ proc Obs::ParamSet { { Spec "" } } {
       dataspec configure $Spec -min $min -max $max -intervals $inter -intervalmode $Param(IntervalMode) $Param(IntervalParam)
    }
 
-   dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -font $Param(Font) -colormap $Param(Map) \
-      -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
+   dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -width $Param(Width) -font $Param(Font) -colormap $Param(Map) \
+      -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
       -rendervolume $Param(Volume) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo)
 
    catch { $Data(ApplyButton) configure -state normal }
@@ -639,9 +631,9 @@ proc Obs::ParamPut { } {
    variable Data
    variable Param
 
-   IcoMenu::Set $Data(Frame).def.r.disp.width.sel $Param(Contour)
    IcoMenu::Set $Data(Frame).def.r.disp.vect.sel  $Param(Vector)
    IcoMenu::Set $Data(Frame).def.r.disp.p.ico     $Param(Icon)
+   IcoMenu::Set $Data(Frame).def.r.disp.p.width   $Param(Width)
 
    ColorBox::ConfigNoColor $Data(Frame).def.r.disp.p.col $Param(Color)
 

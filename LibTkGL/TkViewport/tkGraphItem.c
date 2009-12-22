@@ -2103,16 +2103,16 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
    if (Data->Segments) {
 
       if (Interp) {
-         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Data->Spec->RenderContour-1);
+         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Data->Spec->Width-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          Tk_CanvasPsColor(Interp,Graph->canvas,Data->Spec->Outline);
       } else {
          glColor3us(Data->Spec->Outline->red,Data->Spec->Outline->green,Data->Spec->Outline->blue);
-         glLineWidth(Data->Spec->RenderContour);
+         glLineWidth(Data->Spec->Width);
       }
 
       if (Interp) {
-         glPostscriptDash(Interp,&Data->Spec->Dash,Data->Spec->RenderContour);
+         glPostscriptDash(Interp,&Data->Spec->Dash,Data->Spec->Width);
       } else {
          glDash(&Data->Spec->Dash);
       }
@@ -2154,7 +2154,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
          list=list->Next;
       }
       if (Interp) {
-         glPostscriptDash(Interp,NULL,Data->Spec->RenderContour);
+         glPostscriptDash(Interp,NULL,Data->Spec->Width);
       }
       glDisable(GL_LINE_STIPPLE);
    }

@@ -114,6 +114,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
             break;
          }
 
+         /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
             len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
             if (len>1) {
@@ -441,7 +442,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    }
 
    /* Render the contours */
-   if (Field->Segments) {
+   if (Field->Segments && Field->Spec->Width && Field->Spec->Outline) {
 
       if (Field->Spec->RenderLabel && Interp)
          Tcl_AppendResult(Interp,"gsave\n",(char*)NULL);
@@ -458,21 +459,20 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
       if (Interp) {
-         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->RenderContour-1);
+         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->Width-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          if (Field->Spec->Outline)
             Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
       }
 
       if (Interp) {
-         glPostscriptDash(Interp,&Field->Spec->Dash,Field->Spec->RenderContour);
+         glPostscriptDash(Interp,&Field->Spec->Dash,Field->Spec->Width);
       } else {
          glDash(&Field->Spec->Dash);
       }
 
-      if (Field->Spec->Outline)
-         glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
-      glLineWidth(Field->Spec->RenderContour);
+      glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
+      glLineWidth(Field->Spec->Width);
 
       list=Field->Segments;
 
@@ -514,7 +514,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       }
 
       if (Interp) {
-         glPostscriptDash(Interp,NULL,Field->Spec->RenderContour);
+         glPostscriptDash(Interp,NULL,Field->Spec->Width);
       }
    }
 

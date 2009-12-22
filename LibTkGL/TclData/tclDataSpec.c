@@ -294,6 +294,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderContour));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderContour);
+               Spec->RenderContour=Spec->RenderContour<0?0:Spec->RenderContour>4?4:Spec->RenderContour;
             }
             break;
 
@@ -610,7 +611,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Width));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Width);
-               Spec->RenderContour=Spec->Width;
             }
             break;
 

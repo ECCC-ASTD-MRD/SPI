@@ -549,8 +549,8 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          Tk_CanvasPsColor(Interp,CB->canvas,Spec->Outline);
       } else {
-         if (Spec->RenderContour)
-            glLineWidth(Spec->RenderContour);
+         if (Spec->Width)
+            glLineWidth(Spec->Width);
          glColor3us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue);
       }
    }
@@ -562,7 +562,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
 
       glPushMatrix();
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-      glLineWidth(Spec->RenderContour);
+      glLineWidth(Spec->Width);
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Spec->Icon].Co);
       glTranslated(CB->header.x2-13,Y1+8,0.0);
@@ -571,7 +571,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       glDisableClientState(GL_VERTEX_ARRAY);
       glPopMatrix();
       dx+=20;
-      dy=14+Spec->RenderContour;
+      dy=14+Spec->Width;
 
       if (Interp) {
          glFeedbackProcess(Interp,GL_2D);
@@ -581,7 +581,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    if (Spec->RenderContour) {
 
       if (Interp) {
-         glPostscriptDash(Interp,&Spec->Dash,Spec->RenderContour);
+         glPostscriptDash(Interp,&Spec->Dash,Spec->Width);
       } else {
          glDash(&Spec->Dash);
       }
@@ -589,7 +589,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       if (Interp) {
          sprintf(buf,"%i %i moveto %i %i lineto stroke\n",CB->header.x1+5,(int)Tk_CanvasPsY(CB->canvas,Y1+8),CB->header.x2-5-dx,(int)Tk_CanvasPsY(CB->canvas,Y1+8));
          Tcl_AppendResult(Interp,buf,(char*)NULL);
-         glPostscriptDash(Interp,NULL,Spec->RenderContour);
+         glPostscriptDash(Interp,NULL,Spec->Width);
       } else {
          glBegin(GL_LINES);
             glVertex2i(CB->header.x1+5,Y1+8);
@@ -597,7 +597,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
          glEnd();
          glDisable(GL_LINE_STIPPLE);
       }
-      dy=14+Spec->RenderContour;
+      dy=14+Spec->Width;
    }
 
    return(dy);
