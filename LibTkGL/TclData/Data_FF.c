@@ -350,7 +350,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
 
 /*----------------------------------------------------------------------------
  * Nom      : <FFContour_Quad>
- * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+ * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Produire le ligne de contours
  *
@@ -362,7 +362,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *  <X>       : Position X en point de grille
  *  <Y>       : Position Y en point de grille
  *  <Z>       : Position Z en point de grille
- *  <Level>   : Intervalle du contour
+ *  <Inter>   : Intervalle du contour
  *  <Mode>    : Type de referenciel (REF_COO,REF_GRID,REF_PROJ)
  *  <Depth>   : Profondeur de subdivision
  *
@@ -371,123 +371,26 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *
  * Remarques :
  *
- *   La numerotation interne des vertex et des cotes/triangles d'un voxel est:
+ *   La numerotation interne des vertex et des cotes/divisions d'un voxel est:
  *
- *           2
+ *           4
  *       3 ----- 2
  *       | 8 | 4 |
- *     3 |---+---| 1
+ *     8 |---+---| 2
  *       | 1 | 2 |
  *       0 ----- 1
- *           0
+ *           1
  *
+ *   Le deplacement se fait par un index d'une profondeur maximale de 4 pour que la valeur puisse
+ *   etre represente dans entier (4*4 bit);
  *   PMatrix    Permet de savoir si un voxel a deja ete visite
- *   first      Permet d'eliminer la possibilite du vertex precendent aux depart d'un cellule ou il y aura 2 vertex
- *   side       Determine quel cote ne pas tenir compte dans le prochain voxel
  *
  *   2 PASS algorithm :
  *   1st PASS - Calculating the length of a contour line (if Line NULL)
- *   2nd PASS - Stocking the position of the contour line
+ *   2nd PASS - Keep the position of the contour line in the Line array
  *
  *----------------------------------------------------------------------------
  */
-unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
-
-   unsigned char out=FF_NONE;
-
-   if (!(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
-      *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
-      out=FF_TOP;
-   } else if (!(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
-      *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
-      out=FF_RIGHT;
-   } else if (!(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
-      *X+=Depth;
-      *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
-      out=FF_LEFT;
-   } else if (!(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
-      *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
-      *Y+=Depth;
-      out=FF_BOTTOM;
-   }
-
-   if (Inter==Quad[0] || Inter==Quad[1] || Inter==Quad[2] || Inter==Quad[3]) {
-//      return(FF_EQUAL);
-   }
-   return(out);
-}
-
-unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
-
-   unsigned char m;
-
-   *N=0;
-
-   m=(Index&0xF);
-   Index>>=4;
-   if (m&0x1) {
-      if (Side&FF_BOTTOM) {
-         Index<<=4;Index|=0x8;
-      } else if (Side&FF_LEFT) {
-         Index<<=4;Index|=0x2;
-      } else if (Side&FF_TOP) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x8;
-      } else if (Side&FF_RIGHT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x2;
-      }
-   } else if (m&0x2) {
-      if (Side&FF_BOTTOM) {
-         Index<<=4;Index|=0x4;
-      } else if (Side&FF_LEFT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x1;
-      } else if (Side&FF_TOP) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x4;
-      } else if (Side&FF_RIGHT) {
-         Index<<=4;Index|=0x1;
-      }
-   } else if (m&0x4) {
-      if (Side&FF_BOTTOM) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x2;
-      } else if (Side&FF_LEFT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x8;
-      } else if (Side&FF_TOP) {
-         Index<<=4;Index|=0x2;
-      } else if (Side&FF_RIGHT) {
-         Index<<=4;Index|=0x8;
-      }
-   } else if (m&0x8) {
-      if (Side&FF_BOTTOM) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x1;
-      } else if (Side&FF_LEFT) {
-         Index<<=4;Index|=0x4;
-      } else if (Side&FF_TOP) {
-         Index<<=4;Index|=0x1;
-      } else if (Side&FF_RIGHT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x4;
-      }
-   } else {
-      *N=1;
-      if (Side&FF_BOTTOM) {
-         (*Y)++;
-      } else if (Side&FF_LEFT) {
-         (*X)++;
-      } else if  (Side&FF_TOP) {
-         (*Y)--;
-      } else if (Side&FF_RIGHT) {
-         (*X)--;
-      }
-   }
-
-   return(Index);
-}
 int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Depth) {
 
    double        vox[4],pvox[4],mid,x,y,dx,dy,d;
@@ -593,6 +496,140 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
       }
    }
    return(n);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FFQuad_Cross>
+ * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Determiner le point de croisement d'un voxel
+ *
+ * Parametres :
+ *  <Depth>   : Profondeur dans le quadtree
+ *  <Side>    : Cote d'entree dans le voxel (donc on ne peut sortir par ce cote)
+ *  <Quad>    : Valeurs du voxel
+ *  <Inter>   : Intervalle du contour
+ *  <X>       : Position X en point de grille
+ *  <Y>       : Position Y en point de grille
+ *
+ * Retour:
+ *   <Side>   : Cote d<entree dans le prochain voxel
+ *
+ * Remarques :
+ *----------------------------------------------------------------------------
+ */
+unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
+
+   unsigned char out=FF_NONE;
+
+   if (!(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
+      *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
+      out=FF_TOP;
+   } else if (!(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
+      *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
+      out=FF_RIGHT;
+   } else if (!(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
+      *X+=Depth;
+      *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
+      out=FF_LEFT;
+   } else if (!(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
+      *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
+      *Y+=Depth;
+      out=FF_BOTTOM;
+   }
+
+   return(out);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FF_Contour_QuadIndex>
+ * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Cacluler l'index du voxel voisin selon le cote d'entree
+ *
+ * Parametres :
+ *  <Index>   : Index du voxel courant
+ *  <Side>    : Cote d'entree dans le voxel (donc on ne peut sortir par ce cote)
+ *  <X>       : Position X en point de grille
+ *  <Y>       : Position Y en point de grille
+ *  <N>       : Flag de changement de voxel maitre (point de grille)
+ *
+ * Retour:
+ *  <Index>   : CIndex du nouveua voxel
+ *
+ * Remarques :
+ *----------------------------------------------------------------------------
+ */
+unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
+
+   unsigned char m;
+
+   *N=0;
+
+   m=(Index&0xF);
+   Index>>=4;
+   if (m&0x1) {
+      if (Side&FF_BOTTOM) {
+         Index<<=4;Index|=0x8;
+      } else if (Side&FF_LEFT) {
+         Index<<=4;Index|=0x2;
+      } else if (Side&FF_TOP) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x8;
+      } else if (Side&FF_RIGHT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x2;
+      }
+   } else if (m&0x2) {
+      if (Side&FF_BOTTOM) {
+         Index<<=4;Index|=0x4;
+      } else if (Side&FF_LEFT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x1;
+      } else if (Side&FF_TOP) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x4;
+      } else if (Side&FF_RIGHT) {
+         Index<<=4;Index|=0x1;
+      }
+   } else if (m&0x4) {
+      if (Side&FF_BOTTOM) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x2;
+      } else if (Side&FF_LEFT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x8;
+      } else if (Side&FF_TOP) {
+         Index<<=4;Index|=0x2;
+      } else if (Side&FF_RIGHT) {
+         Index<<=4;Index|=0x8;
+      }
+   } else if (m&0x8) {
+      if (Side&FF_BOTTOM) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x1;
+      } else if (Side&FF_LEFT) {
+         Index<<=4;Index|=0x4;
+      } else if (Side&FF_TOP) {
+         Index<<=4;Index|=0x1;
+      } else if (Side&FF_RIGHT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x4;
+      }
+   } else {
+      *N=1;
+      if (Side&FF_BOTTOM) {
+         (*Y)++;
+      } else if (Side&FF_LEFT) {
+         (*X)++;
+      } else if  (Side&FF_TOP) {
+         (*Y)--;
+      } else if (Side&FF_RIGHT) {
+         (*X)--;
+      }
+   }
+
+   return(Index);
 }
 
 /*----------------------------------------------------------------------------
