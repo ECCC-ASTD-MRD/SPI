@@ -474,10 +474,10 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
       }
 
       /*Offset a bit if we're right on a corner*/
-      if (Inter==vox[0]) vox[0]+=vox[0]*0.001;
-      if (Inter==vox[1]) vox[1]+=vox[1]*0.001;
-      if (Inter==vox[2]) vox[2]+=vox[2]*0.001;
-      if (Inter==vox[3]) vox[3]+=vox[3]*0.001;
+      if (Inter==vox[0]) vox[0]+=mid*0.001;
+      if (Inter==vox[1]) vox[1]+=mid*0.001;
+      if (Inter==vox[2]) vox[2]+=mid*0.001;
+      if (Inter==vox[3]) vox[3]+=mid*0.001;
 
       /*Get the segment intersection coordinate within the voxel*/
       if (side=FFQuad_Cross(d,side,vox,Inter,&x,&y)) {
