@@ -433,8 +433,6 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    TList *list;
    TArray *array;
 
-   XColor ccc;
-
    if (!Field->Ref || !Field->Ref->Pos || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
 
@@ -476,7 +474,6 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       if (Field->Spec->Outline)
          glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
       glLineWidth(Field->Spec->RenderContour);
-memcpy(&ccc,Field->Spec->Outline,sizeof(XColor));
 
       list=Field->Segments;
 
@@ -494,12 +491,6 @@ memcpy(&ccc,Field->Spec->Outline,sizeof(XColor));
                glColor4ubv(Field->Spec->Map->Color[c]);
             }
          }
-
-glColor3us(ccc.red,ccc.green,ccc.blue);
-c=ccc.red;
-ccc.red=ccc.green;
-ccc.green=ccc.blue;
-ccc.blue=c;
 
          Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,GL_LINE_STRIP,array->Size,NULL,NULL);
 
