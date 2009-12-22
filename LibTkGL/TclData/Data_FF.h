@@ -47,6 +47,7 @@
 #define FF_RIGHT  0x02
 #define FF_TOP    0x04
 #define FF_LEFT   0x08
+#define FF_EQUAL  0x0F
 #define STREAMLEN 2048
 
 #define NORMALIZE(U,V) {\
@@ -70,8 +71,7 @@ typedef struct TKrigging {
 
 float  FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1);
 int    FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim);
-int    FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode);
-int    FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode,int Triangle);
+int    FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode,int Depth);
 int    FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect3d *Vr,int Do);
 int    FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 int    FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode);

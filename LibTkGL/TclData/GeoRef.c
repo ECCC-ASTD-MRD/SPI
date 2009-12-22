@@ -973,7 +973,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       if (Ref->Levels)       free(Ref->Levels);       Ref->Levels=NULL;
       if (Ref->A)            free(Ref->A);            Ref->A=NULL;
       if (Ref->B)            free(Ref->B);            Ref->B=NULL;
-  }
+   }
 
    if (Ref->String)       free(Ref->String);       Ref->String=NULL;
    if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;

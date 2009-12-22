@@ -348,106 +348,8 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
    return(1);
 }
 
-unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,int *QX,int *QY,double *X,double *Y) {
-
-   unsigned char next;
-
-   if (!(Side&(next=FF_BOTTOM)) && ILVIN(Inter,Quad[0],Quad[1])) {
-      *X+=Depth*ILFAC(Inter,Quad[0],Quad[1]);
-      if (Side) {
-         *QY-=Depth;
-         next=FF_TOP;
-      }
-   } else if (!(Side&(next=FF_RIGHT)) && ILVIN(Inter,Quad[1],Quad[2])) {
-      *X+=Depth;
-      *Y+=Depth*ILFAC(Inter,Quad[1],Quad[2]);
-      if (Side) {
-         *QX+=Depth;
-         next=FF_LEFT;
-      }
-   } else if (!(Side&(next=FF_TOP)) && ILVIN(Inter,Quad[3],Quad[2])) {
-      *X+=Depth*ILFAC(Inter,Quad[3],Quad[2]);
-      *Y+=Depth;
-      if (Side) {
-         *QY+=Depth;
-         next=FF_BOTTOM;
-      }
-   } else if (!(Side&(next=FF_LEFT)) && ILVIN(Inter,Quad[0],Quad[3])) {
-      *Y+=Depth*ILFAC(Inter,Quad[0],Quad[3]);
-      if (Side) {
-         *QX-=Depth;
-         next=FF_RIGHT;
-      }
-   } else {
-      next=FF_NONE;
-   }
-   return(next);
-}
-
-int FFQuad_Select(double Depth,double *Quad) {
-
-/*
-   double mid[5];
-   double vox[4];
-
-   mid[0]=(vox[0]+vox[1])*0.5;
-   mid[1]=(vox[1]+vox[2])*0.5;
-   mid[2]=(vox[2]+vox[3])*0.5;
-   mid[3]=(vox[3]+vox[0])*0.5;
-   mid[4]=(vox[0]+vox[1]+vox[2]+vox[3])*0.25f;
-
-   vox[0]=Quad[0];vox[1]=mid[0];vox[2]=mid[4];vox[3]=mid[3];
-  while(side=FFQuad_Cross(Depth,side,vox,Inter,&X,&Y,&x,&y)) {
-   }
-*/
-   return(0);
-}
-
-int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode) {
-
-   double        vox[4],x,y;
-   double        lat=0.0,lon=0.0,delta;
-   unsigned char side=FF_NONE,flag;
-   unsigned int  idx,id,n=0;
-
-   Z*=FSIZE2D(Def);
-   delta=1.0;
-
-   while(X>=0 && X<Def->NI-1 && Y>=0 && Y<Def->NJ-1) {
-
-      idx=Def->NI*Y+X;
-      flag=!Line?side:side<<4;
-
-      if (PMatrix[idx]&flag) break;
-      PMatrix[idx]|=flag;
-
-      x=X;
-      y=Y;
-
-      id=idx+Z;           Def_GetMod(Def,id,vox[0]);
-      id=idx+1+Z;         Def_GetMod(Def,id,vox[1]);
-      id=idx+Def->NI+1+Z; Def_GetMod(Def,id,vox[2]);
-      id=idx+Def->NI+Z;   Def_GetMod(Def,id,vox[3]);
-
-      if (side=FFQuad_Cross(delta,side,vox,Inter,&X,&Y,&x,&y)) {
-
-         if (Line) {
-            switch(Mode) {
-               case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(Line[n],lat,lon,0.0);break;
-               case REF_PROJ : VertexLoc(Ref,Def,Line[n],x,y,Z);break;
-               case REF_GRID : Vect_Init(Line[n],x,y,Z);break;
-            }
-         }
-         n++;
-      } else {
-         break;
-      }
-   }
-   return(n);
-}
-
 /*----------------------------------------------------------------------------
- * Nom      : <FFContour>
+ * Nom      : <FFContour_Quad>
  * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Produire le ligne de contours
@@ -462,22 +364,22 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
  *  <Z>       : Position Z en point de grille
  *  <Level>   : Intervalle du contour
  *  <Mode>    : Type de referenciel (REF_COO,REF_GRID,REF_PROJ)
+ *  <Depth>   : Profondeur de subdivision
  *
  * Retour:
+ *   <Nb>     : Nombre de points de segments
  *
  * Remarques :
  *
  *   La numerotation interne des vertex et des cotes/triangles d'un voxel est:
  *
- *          -4
+ *           2
  *       3 ----- 2
- *       | \ 2 / |
- *       |  \ /  |
- *    -3 |3  4  1| -1     4 (Valeur centrale du voxel)
- *       |  / \  |
- *       | / 0 \ |
+ *       | 8 | 4 |
+ *     3 |---+---| 1
+ *       | 1 | 2 |
  *       0 ----- 1
- *          -2
+ *           0
  *
  *   PMatrix    Permet de savoir si un voxel a deja ete visite
  *   first      Permet d'eliminer la possibilite du vertex precendent aux depart d'un cellule ou il y aura 2 vertex
@@ -489,102 +391,205 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
  *
  *----------------------------------------------------------------------------
  */
-int FFContour_Triangle(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode,int Triangle) {
+unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
 
-   int           idx,n=0,t=-4,z;
-   double        vox[5],x,y,fac;
+   unsigned char out=FF_NONE;
+
+   if (!(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
+      *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
+      out=FF_TOP;
+   } else if (!(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
+      *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
+      out=FF_RIGHT;
+   } else if (!(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
+      *X+=Depth;
+      *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
+      out=FF_LEFT;
+   } else if (!(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
+      *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
+      *Y+=Depth;
+      out=FF_BOTTOM;
+   }
+
+   if (Inter==Quad[0] || Inter==Quad[1] || Inter==Quad[2] || Inter==Quad[3]) {
+//      return(FF_EQUAL);
+   }
+   return(out);
+}
+
+unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
+
+   unsigned char m;
+
+   *N=0;
+
+   m=(Index&0xF);
+   Index>>=4;
+   if (m&0x1) {
+      if (Side&FF_BOTTOM) {
+         Index<<=4;Index|=0x8;
+      } else if (Side&FF_LEFT) {
+         Index<<=4;Index|=0x2;
+      } else if (Side&FF_TOP) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x8;
+      } else if (Side&FF_RIGHT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x2;
+      }
+   } else if (m&0x2) {
+      if (Side&FF_BOTTOM) {
+         Index<<=4;Index|=0x4;
+      } else if (Side&FF_LEFT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x1;
+      } else if (Side&FF_TOP) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x4;
+      } else if (Side&FF_RIGHT) {
+         Index<<=4;Index|=0x1;
+      }
+   } else if (m&0x4) {
+      if (Side&FF_BOTTOM) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x2;
+      } else if (Side&FF_LEFT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x8;
+      } else if (Side&FF_TOP) {
+         Index<<=4;Index|=0x2;
+      } else if (Side&FF_RIGHT) {
+         Index<<=4;Index|=0x8;
+      }
+   } else if (m&0x8) {
+      if (Side&FF_BOTTOM) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x1;
+      } else if (Side&FF_LEFT) {
+         Index<<=4;Index|=0x4;
+      } else if (Side&FF_TOP) {
+         Index<<=4;Index|=0x1;
+      } else if (Side&FF_RIGHT) {
+         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index<<=4;Index|=0x4;
+      }
+   } else {
+      *N=1;
+      if (Side&FF_BOTTOM) {
+         (*Y)++;
+      } else if (Side&FF_LEFT) {
+         (*X)++;
+      } else if  (Side&FF_TOP) {
+         (*Y)--;
+      } else if (Side&FF_RIGHT) {
+         (*X)--;
+      }
+   }
+
+   return(Index);
+}
+int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Depth) {
+
+   double        vox[4],pvox[4],mid,x,y,dx,dy,d;
    double        lat=0.0,lon=0.0;
-   char          side=0,first=1,found=0;
-   unsigned char *tid;
-   unsigned char tid1[4]      = { 0x01,0x02,0x04,0x08 };
-   unsigned char tid2[4]      = { 0x10,0x20,0x40,0x80 };
-   char          tri[4][3]    = { {  0,1,4 },{  1,2,4 },{  2,3,4 },{  3,0,4 } };      /*Current triangle vertices*/
-   char          trn[4][3]    = { { -2,1,3 },{ -1,2,0 },{ -4,3,1 },{ -3,0,2 } };      /*Next triangle to process*/
-   char          trd[4][2]    = { { 0,1 }   ,{ -1,0 }  ,{ 0,-1 }  ,{ 1,0 } };         /*Increment in voxel space*/
-   double        trf[4][3][2] = { { { 0.0,0.0 },{ 0.5,0.0 },{ 0.0,0.0 } },            /*distance delta to increment*/
-                                  { { 1.0,0.0 },{ 0.5,0.5 },{ 0.5,0.0 } },
-                                  { { 0.0,1.0 },{ 0.0,0.5 },{ 0.5,0.5 } },
-                                  { { 0.0,0.0 },{ 0.0,0.0 },{ 0.0,0.5 } } };
-   char          trs[4][3][2] = { { { 0,0 }    ,{ 1,0 }    ,{ 1,1 } },                /*Inversion of interpolated length*/
-                                  { { 0,0 }    ,{ 1,1 }    ,{ 0,1 } },
-                                  { { 1,0 }    ,{ 0,1 }    ,{ 0,0 } },
-                                  { { 0,1 }    ,{ 0,0 }    ,{ 1,0 } } };
+   unsigned int  md,flag,depth,index,m,next=1;
+   unsigned char side=0;
+   unsigned long idx,n=0;
 
-   /*Define mask according to pass*/
-   tid=(!Line)?tid1:tid2;
-   z=Z*FSIZE2D(Def);
-   t=Triangle-4;
+   while(X>=Def->Limits[0][0] && X<=Def->Limits[0][1]-1 && Y>=Def->Limits[1][0] && Y<=Def->Limits[1][1]-1) {
 
-   /*Process the voxels*/
-   while(t<4 && X>=0 && X<Def->NI-1 && Y>=0 && Y<Def->NJ-1) {
-      idx=z+Def->NI*(Y+1)+X;
-      Def_GetMod(Def,idx,vox[3])
-      idx++;
-      Def_GetMod(Def,idx,vox[2])
-      idx=z+Def->NI*Y+X;
-      Def_GetMod(Def,idx,vox[0])
-      idx++;
-      Def_GetMod(Def,idx,vox[1])
-      idx=idx-z-1;
+      /*If we changed voxel*/
+      if (next) {
 
-      if (vox[0]==vox[1] && vox[1]==vox[2] && vox[2]==vox[3]) {
-         break;
-      }
+         idx=Def->NI*Y+X;
 
-      vox[4]=(vox[0]+vox[1]+vox[2]+vox[3])*0.25;
+         /*Check if we've already parsed this voxel from this side*/
+         flag=!Line?side:side<<4;
+         if (PMatrix[idx]&flag) break;
+         PMatrix[idx]|=flag;
 
-      t+=4;
+         /*Get the voxel values*/
+         idx+=Z;       Def_GetMod(Def,idx,pvox[0]);
+         idx++;        Def_GetMod(Def,idx,pvox[1]);
+         idx+=Def->NI; Def_GetMod(Def,idx,pvox[2]);
+         idx--;        Def_GetMod(Def,idx,pvox[3]);
 
-      if (PMatrix[idx]&tid[t]) {
-         return(n);
-      }
+         /*If it's the first point, get it's voxel instersection to start with*/
+         if (!side) {
+            x=X;y=Y;
+            if (!(side=FFQuad_Cross(1.0,side,pvox,Inter,&x,&y))) {
+               break;
+            }
 
-      /*Process the inner triangles*/
-      while(t>=0 && t<4) {
-         found=1;
+            depth=Depth;index=0x0;
+            md=1;d=1.0;dx=X;dy=Y;
+            if      (side&FF_TOP)    { side=FF_BOTTOM; while(depth--) { index<<=4; d=1.0/(md<<=1); if (x<(dx+d)) { index|=0x1; } else { index|=0x2;dx+=d; } } }
+            else if (side&FF_BOTTOM) { side=FF_TOP;    while(depth--) { index<<=4; d=1.0/(md<<=1); if (x<(dx+d)) { index|=0x8; } else { index|=0x4;dx+=d; } } }
+            else if (side&FF_RIGHT)  { side=FF_LEFT;   while(depth--) { index<<=4; d=1.0/(md<<=1); if (y<(dy+d)) { index|=0x1; } else { index|=0x8;dy+=d; } } }
+            else if (side&FF_LEFT)   { side=FF_RIGHT;  while(depth--) { index<<=4; d=1.0/(md<<=1); if (y<(dy+d)) { index|=0x2; } else { index|=0x4;dy+=d; } } }
 
-         if (!(side&0x01) && ILVIN(Level,vox[tri[t][0]],vox[tri[t][1]])) {
-            fac=ILFAC(Level,vox[tri[t][0]],vox[tri[t][1]]);
-            x=X+trf[t][0][0]+(trd[t][0]?0:ILADD(trs[t][0][0],fac));
-            y=Y+trf[t][0][1]+(trd[t][0]?ILADD(trs[t][0][1],fac):0.0);
-            side=0x01;
-            PMatrix[idx]|=tid[t];
-            if (!first) { t=trn[t][0]; } else { first=0; }
-         } else if (!(side&0x02) && ILVIN(Level,vox[tri[t][1]],vox[tri[t][2]])) {
-            fac=ILFAC(Level,vox[tri[t][1]],vox[tri[t][2]]);
-            x=X+trf[t][1][0]+ILADD(trs[t][1][0],fac)*0.5;
-            y=Y+trf[t][1][1]+ILADD(trs[t][1][1],fac)*0.5;
-            side=0x04;
-            PMatrix[idx]|=tid[t];
-            t=trn[t][1];
-         } else if (!(side&0x04) && ILVIN(Level,vox[tri[t][2]],vox[tri[t][0]])) {
-            fac=ILFAC(Level,vox[tri[t][2]],vox[tri[t][0]]);
-            x=X+trf[t][2][0]+ILADD(trs[t][2][0],fac)*0.5;
-            y=Y+trf[t][2][1]+ILADD(trs[t][2][1],fac)*0.5;
-            side=0x02;
-            PMatrix[idx]|=tid[t];
-            t=trn[t][2];
-         } else {
-            found=0;
-            t++;
-         }
-
-         if (found) {
             if (Line) {
                switch(Mode) {
                   case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(Line[n],lat,lon,0.0);break;
-                  case REF_PROJ : VertexLoc(Ref,Def,Line[n],x,y,Z); break;
-                  case REF_GRID : Vect_Init(Line[n],x,y,Z); break;
+                  case REF_PROJ : VertexLoc(Ref,Def,Line[n],x,y,Z);break;
+                  case REF_GRID : Vect_Init(Line[n],x,y,Z);break;
                }
             }
             n++;
          }
       }
 
-      /*Increment voxel*/
-      if (t<0) {
-         X+=trd[t+4][0];
-         Y+=trd[t+4][1];
+      /*Find the sub-voxel in a quad tree way to the needed splitting resoution*/
+      depth=Depth;
+      md=1;d=1.0;x=X;y=Y;
+      vox[0]=pvox[0];vox[1]=pvox[1];vox[2]=pvox[2];vox[3]=pvox[3];
+
+      while(m=((index>>(--depth*4))&0xF)) {
+         mid=(vox[0]+vox[1]+vox[2]+vox[3])*0.25;
+         d=1.0/(md<<=1);
+         if (m&0x1) {
+            vox[1]=(vox[0]+vox[1])*0.5;
+            vox[2]=mid;
+            vox[3]=(vox[0]+vox[3])*0.5;
+         } else if (m&0x2) {
+            vox[0]=(vox[0]+vox[1])*0.5;
+            vox[2]=(vox[1]+vox[2])*0.5;
+            vox[3]=mid;
+            x+=d;
+         } else if (m&0x4) {
+            vox[0]=mid;
+            vox[1]=(vox[1]+vox[2])*0.5;
+            vox[3]=(vox[2]+vox[3])*0.5;
+            x+=d;
+            y+=d;
+         } else if (m&0x8){
+            vox[0]=(vox[0]+vox[3])*0.5;
+            vox[1]=mid;
+            vox[2]=(vox[2]+vox[3])*0.5;
+            y+=d;
+         }
+      }
+
+      /*Offset a bit if we're right on a corner*/
+      if (Inter==vox[0]) vox[0]+=vox[0]*0.001;
+      if (Inter==vox[1]) vox[1]+=vox[1]*0.001;
+      if (Inter==vox[2]) vox[2]+=vox[2]*0.001;
+      if (Inter==vox[3]) vox[3]+=vox[3]*0.001;
+
+      /*Get the segment intersection coordinate within the voxel*/
+      if (side=FFQuad_Cross(d,side,vox,Inter,&x,&y)) {
+         if (Line) {
+            switch(Mode) {
+               case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(Line[n],lat,lon,0.0);break;
+               case REF_PROJ : VertexLoc(Ref,Def,Line[n],x,y,Z);break;
+               case REF_GRID : Vect_Init(Line[n],x,y,Z);break;
+            }
+         }
+         n++;
+         /*Move the index to the nearby voxel*/
+         index=FF_Contour_QuadIndex(index,side,&X,&Y,&next);
+      } else {
+         break;
       }
    }
    return(n);

@@ -116,13 +116,11 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
          }
 
          if (!buf[Field->Def->NI*j+i]) {
-            len=FFContour_Triangle(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,t);
-//            len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode);
+            len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
             if (len>1) {
                if ((array=TArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
-                  FFContour_Triangle(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,t);
-//                  FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode);
+                  FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
                } else {
                   fprintf(stderr,"(ERROR) Data_GetContour: Unable to alloc memory for contour %f",Inter[n]);
                }
@@ -435,6 +433,8 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    TList *list;
    TArray *array;
 
+   XColor ccc;
+
    if (!Field->Ref || !Field->Ref->Pos || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
 
@@ -476,6 +476,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       if (Field->Spec->Outline)
          glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
       glLineWidth(Field->Spec->RenderContour);
+memcpy(&ccc,Field->Spec->Outline,sizeof(XColor));
 
       list=Field->Segments;
 
@@ -493,6 +494,12 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
                glColor4ubv(Field->Spec->Map->Color[c]);
             }
          }
+
+glColor3us(ccc.red,ccc.green,ccc.blue);
+c=ccc.red;
+ccc.red=ccc.green;
+ccc.green=ccc.blue;
+ccc.blue=c;
 
          Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,GL_LINE_STRIP,array->Size,NULL,NULL);
 
