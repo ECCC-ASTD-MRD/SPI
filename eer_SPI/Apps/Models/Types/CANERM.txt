@@ -150,7 +150,7 @@ namespace eval CANERM {
    set Msg(JobInfo)      { "Recuperation du script" "Getting job script" }
    set Msg(JobCancel)    { "Lancement annule" "Launch canceled" }
    set Msg(Launch)       { "Lancement de " "Launching " }
-   set Msg(MetGet)       { "Vérification de la disponibilitée des données météo en cours..." "Checking for meteorological data availability..." }
+   set Msg(MetGet)       { "Vérification de la disponibilité des données météo en cours..." "Checking for meteorological data availability..." }
 
    #----- Definitions des erreurs
 

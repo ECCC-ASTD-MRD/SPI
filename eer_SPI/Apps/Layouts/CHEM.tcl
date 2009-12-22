@@ -31,7 +31,7 @@ proc CHEM::Layout { Frame } {
    set Data(VP) [Viewport::Create $Frame 5 5 760 560 1 0]
 
    $Page::Data(Canvas) create rectangle 5 5 475 40 -width 1 -fill white -transparency 75
-   $Page::Data(Canvas) create rectangle 5 520 265 565 -width 1 -fill white -transparency 75
+#   $Page::Data(Canvas) create rectangle 5 520 265 565 -width 1 -fill white -transparency 75
 
    #----- Positionnement des ColorBars
    set ColorBar::Data(Active$Frame) 1

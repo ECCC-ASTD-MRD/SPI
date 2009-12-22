@@ -2452,7 +2452,6 @@ if { $SPI::Param(Project)!="" } {
 
 #----- Refresh final
 SPI::Splash $SPI::Param(Script)
-update idletasks
 Page::Update
 
 #----- On bypass les arguments regulier de SPI pour ceux du script a etre execute
