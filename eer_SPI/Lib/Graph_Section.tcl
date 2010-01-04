@@ -341,7 +341,7 @@ proc Graph::Section::Graph { GR { Pos False } } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $graph(XLabel) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis) -angle $Graph::Font(Angle)
 
    set id [graphaxis configure axisy$GR -unit]
    if { $Graph::Data(Update) } {
@@ -349,7 +349,7 @@ proc Graph::Section::Graph { GR { Pos False } } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [lindex [$data(Canvas) itemconfigure GRAPH$GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)

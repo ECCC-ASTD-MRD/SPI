@@ -105,6 +105,8 @@ namespace eval Graph {
    set Data(Graph)        ""                     ;#Id du graph courant
    set Data(GraphParams)  ""                     ;#Id du graph courant
    set Data(Show)         False
+   set Data(ShowCoord)    False
+   set Data(ShowGrid)     False
    set Data(ToolMode)     Data
    set Data(Update)       True
    set Data(Pos)          ""
@@ -873,6 +875,7 @@ proc Graph::Dock { } {
 
 proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
    variable Graph
+   variable Data
 
    if { ![llength $Coords] || [lindex $Coords 0]==-999 } {
       return
@@ -886,6 +889,11 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
       if { [set xy [$VP -project [lindex $Coords 0] [lindex $Coords 1] 0]]!="" && [lindex $xy 2]>0 } {
          set x [lindex $xy 0]
          set y [lindex $xy 1]
+
+         if { $Data(ShowCoord) } {
+            set Desc "$Desc\n[format "(%.3f,%.3f)" [lindex $Coords 0] [lindex $Coords 1]]"
+         }
+
          $Frame.page.canvas create text [expr $x+6] $y -text $Desc \
             -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor w
          $Frame.page.canvas create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] -fill $Graph::Color(Select) \
@@ -902,6 +910,10 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
          if { [set xy [$VP -project $la0 $lo1 0]]!= "" && [lindex $xy 2]>0 } {
             set x [lindex $xy 0]
             set y [lindex $xy 1]
+
+            if { $Data(ShowCoord) } {
+               set Desc "$Desc\n[format "(%.3f,%.3f - %.3f,%.3f)" $la0 $lo0 $la1 $lo1]"
+            }
             $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
                -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
          }
@@ -914,7 +926,11 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
          if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
             lappend coords [lindex $xy 0] [lindex $xy 1]
             set id [lindex $Graph(Identitys) [incr i]]
-            $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -anchor se -text $id -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+            if { $Data(ShowCoord) } {
+               set id "$id\n[format "(%.3f,%.3f)" $lat $lon]"
+            }
+            $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -anchor se -text $id -font $Graph::Font(Select) \
+               -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
          }
       }
 
@@ -924,7 +940,8 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
             set y [lindex $xy 1]
             #----- Check close to cursor position cause it breaks in follow mode
             if { [expr hypot($x-$Viewport::Map(X),$y-$Viewport::Map(Y))]>2 } {
-               $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+               $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" \
+                  -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
             }
          }
       }
@@ -1199,13 +1216,13 @@ proc Graph::ParamsGraph { Parent } {
 
    labelframe $Parent.graph -text [lindex $Lbl(Graph) $GDefs(Lang)]
       frame $Parent.graph.info
-         label $Parent.graph.info.lbl -text [lindex $Lbl(Info) $GDefs(Lang)] -width 14 -anchor w
+         label $Parent.graph.info.lbl -text [lindex $Lbl(Info) $GDefs(Lang)] -width 12 -anchor w
          button $Parent.graph.info.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.graph.info.sel Graph::Configure $Graph::Font(Graph)"
          ColorBox::CreateSel $Parent.graph.info.col ::Graph::Color(FG) Graph::Configure
          pack $Parent.graph.info.lbl $Parent.graph.info.col $Parent.graph.info.sel -side left
       frame $Parent.graph.axis
-         label $Parent.graph.axis.lbl -text [lindex $Lbl(Axis) $GDefs(Lang)] -width 14 -anchor w
+         label $Parent.graph.axis.lbl -text [lindex $Lbl(Axis) $GDefs(Lang)] -width 12 -anchor w
          button $Parent.graph.axis.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.graph.axis.sel Graph::Configure $Graph::Font(Axis)"
          ColorBox::CreateSel $Parent.graph.axis.col ::Graph::Color(Axis) Graph::Configure
@@ -1214,15 +1231,19 @@ proc Graph::ParamsGraph { Parent } {
          pack $Parent.graph.axis.lbl $Parent.graph.axis.col $Parent.graph.axis.sel -side left
          pack $Parent.graph.axis.angle -side left -fill x
       frame $Parent.graph.select
-         label $Parent.graph.select.lbl -text [lindex $Lbl(Select) $GDefs(Lang)] -width 14 -anchor w
-         button $Parent.graph.select.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
+         label $Parent.graph.select.lbl -text [lindex $Lbl(Select) $GDefs(Lang)] -width 12 -anchor w
+         button $Parent.graph.select.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico -relief groove \
             -command "FontBox::Create $Parent.graph.select.sel Graph::Configure $Graph::Font(Select)"
          ColorBox::CreateSel $Parent.graph.select.col Graph::Color(Select) Graph::Configure
-         pack $Parent.graph.select.lbl $Parent.graph.select.col $Parent.graph.select.sel -side left
+         checkbutton $Parent.graph.select.coord -bitmap @$GDefs(Dir)/Resources/Bitmap/coord.ico -relief groove \
+            -variable Graph::Data(ShowCoord) -indicatoron false -command Graph::Configure
+#         checkbutton $Parent.graph.select.grid -bitmap @$GDefs(Dir)/Resources/Bitmap/grid.ico -relief groove \
+#            -variable Graph::Data(ShowGrid) -indicatoron false -command Graph::Configure
+         pack $Parent.graph.select.lbl $Parent.graph.select.col $Parent.graph.select.sel $Parent.graph.select.coord -side left
       pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select -side top
 
       frame $Parent.graph.grid
-         label $Parent.graph.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -width 14 -anchor w
+         label $Parent.graph.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.graph.grid.col Graph::Grid(Color) Graph::Configure
          IcoMenu::Create $Parent.graph.grid.sz $GDefs(Dir)/Resources/Bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
@@ -1231,12 +1252,13 @@ proc Graph::ParamsGraph { Parent } {
             { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
             Graph::Grid(Dash) { Graph::Configure } $Graph::Grid(Dash) -relief groove -bd 2
          pack $Parent.graph.grid.lbl $Parent.graph.grid.col $Parent.graph.grid.sz $Parent.graph.grid.dash -side left
+         pack $Parent.graph.grid.dash -side left -fill x -expand True
       frame $Parent.graph.color
-         label $Parent.graph.color.lbl -text [lindex $Lbl(Background) $GDefs(Lang)] -width 14 -anchor w
+         label $Parent.graph.color.lbl -text [lindex $Lbl(Background) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.graph.color.col Graph::Color(Fill) Graph::Configure
          pack $Parent.graph.color.lbl $Parent.graph.color.col -side left
       frame $Parent.graph.frame
-         label $Parent.graph.frame.lbl -text [lindex $Lbl(Frame) $GDefs(Lang)] -width 14 -anchor w
+         label $Parent.graph.frame.lbl -text [lindex $Lbl(Frame) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.graph.frame.col Graph::Color(BG) Graph::Configure
          IcoMenu::Create $Parent.graph.frame.sz $GDefs(Dir)/Resources/Bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
