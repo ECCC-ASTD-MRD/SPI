@@ -132,6 +132,7 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
       Tcl_MutexUnlock(&MUTEX_GDB);
 
       /*Process queued items*/
+      proj=vp=NULL;
       while(tdata->QueueStart) {
          if (!(qdata=tdata->QueueStart)) {
             break;
@@ -163,7 +164,9 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
          Tcl_MutexUnlock(&MUTEX_GDBQUEUE);
       }
 
-      if (vp)    GDB_ThreadQueueRefresh(vp);
+      if (proj) proj->Loading=0;
+      if (vp)   GDB_ThreadQueueRefresh(vp);
+
       Tcl_ConditionFinalize(&tdata->CondWait);
    }
    Tcl_ExitThread(0);
