@@ -1499,7 +1499,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    char          buf[50];
    int           stamp,date=0,time,op;
    int           yyyy,mm,dd,hh,nn,ss;
-   double        tmpf;
+   double        tmpd;
    long          sec;
 
    struct timeb  tb;
@@ -1622,11 +1622,12 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
-         if (Tcl_GetDoubleFromObj(Interp,Objv[3],&tmpf)==TCL_ERROR) {
-            TclY_Get0IntFromObj(Interp,Objv[3],&hh);
-            tmpf=hh;
+         if (TclY_Get0IntFromObj(Interp,Objv[3],&hh)==TCL_ERROR) {
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&tmpd);
+         } else {
+            tmpd=hh;
          }
-         f77name(incdatr)(&op,&stamp,&tmpf);
+         f77name(incdatr)(&op,&stamp,&tmpd);
 
          sprintf(buf,"%09i",op);
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
@@ -1641,9 +1642,9 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
          TclY_Get0IntFromObj(Interp,Objv[3],&time);
 
-         f77name(difdatr)(&stamp,&time,&tmpf);
+         f77name(difdatr)(&stamp,&time,&tmpd);
 
-         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(tmpf));
+         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(tmpd));
          return(TCL_OK);
          break;
    }
