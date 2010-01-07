@@ -129,17 +129,20 @@ function Log_Start {
       Log_Print MUST "Queue Method        : llv"
       Log_Print MUST "   Queue            : $LOADL_STEP_CLASS"
       Log_Print MUST "   Job ID           : $LOADL_STEP_ID"
+
       if [[ -r ${in} ]]; then
-         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print \$mtime\'\`
-         Log_Print MUST "   Waiting time     : $(Log_Time `expr ${LogSecTime}-${secs}`)"
+         secs0=`date +%s`
+         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print ${secs0}-\$mtime\'\`
+         Log_Print MUST "   Waiting time     : $(Log_Time ${secs})"
       fi
     elif [[ ! $SGE_CELL = "" ]]; then
       Log_Print MUST "Queue Method        : sge"
       Log_Print MUST "   Queue               : $QUEUE"
       Log_Print MUST "   Job ID              : $JOB_ID"
       if [[ -r ${in} ]]; then
-         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print \$mtime\'\`
-         Log_Print MUST "   Waiting time     : $(Log_Time `expr ${LogSecTime}-${secs}`)"
+         secs0=`date +%s`
+         eval secs=\`perl -e \'\$mtime=\(stat\(\"${in}\"\)\)\[9\]\; print ${secs0}-\$mtime\'\`
+         Log_Print MUST "   Waiting time     : $(Log_Time ${secs})"
       fi
    fi
 
