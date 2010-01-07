@@ -148,10 +148,19 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
       set lens 1.0
    }
 
+   #----- In software mode, stop the geo loading while checking location
+   if { $OpenGL::Param(Res)!=1 } {
+      set res [projection configure $Frame -mapres]
+      projection configure $Frame -mapres -1
+   }
    projcam configure $Cam -lens $lens
    projection configure $Frame -location $lat $lon
    $Frame.page.canvas itemconf $VP -frame 0
    update idletasks
+   if { $OpenGL::Param(Res)!=1 } {
+   puts stderr $res
+      projection configure $Frame -mapres $res
+   }
 
    #----- Initialiser aux limites
 
