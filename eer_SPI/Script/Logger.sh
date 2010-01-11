@@ -197,6 +197,7 @@ function Log_Print {
 
    if [[ ${lvl} -le ${LogLevelNo} ]]; then
       if [[ ${level} = "MUST" ]] ; then
+         datetime=" "
          levels=""
       else
          levels="(${level})"
