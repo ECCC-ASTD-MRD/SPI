@@ -246,7 +246,7 @@ typedef struct TDataDef {
    double *Buffer;            /*Buffer temporaire*/
    int    *Accum;             /*Accumulation Buffer temporaire*/
    char   *Mask;              /*Masque a appliquer au traitement sur le champs*/
-   char   *Data[4];           /*Composantes du champs*/
+   char   *Data[4];           /*Composantes du champs (Pointeurs sur les donnees)*/
    char   *Mode;              /*Module des champs Data is vectoriel*/
    char   *Pres;              /*Pression au sol*/
    OGRGeometryH *Pick,*Poly;  /*Geometry used in various interpolation method*/
@@ -271,18 +271,18 @@ typedef void    (TData_Set)      (struct TData *Field);
 
 typedef struct TData {
    Tcl_Obj      *Tag;
-   void         *Head;      /*Entete de l'enregistrement*/
+   void         *Head;      /*Entete de l'enregistrement (metadata)*/
 
    TGeoRef      *Ref;       /*Reference geographique horizontale*/
    TDataDef     *Def;       /*Definition des donnees*/
-   TDataSpec    *Spec;      /*Specification des donnees*/
+   TDataSpec    *Spec;      /*Specification des donnees (pour l'affichage)*/
    TDataStat    *Stat;      /*Statistiques de l'enregistrement*/
 
-   TData_Set      *Set;
-   TData_Free     *Free;
-   TData_Copy     *Copy;
-   TData_ReadCube *ReadCube;
-   TData_Grid     *Grid;
+   TData_Set      *Set;     /*Fonction d'initialisation*/
+   TData_Free     *Free;    /*Fonction de liberation*/
+   TData_Copy     *Copy;    /*Fonction de copie de champs*/
+   TData_ReadCube *ReadCube;/*Fonction de lecture du cube de donnees (niveaux verticaux)*/
+   TData_Grid     *Grid;    /*Fonction de recuperation de la grille (geo-localisation)*/
 
    TList  *Segments;        /*Liste d'objets de rendue*/
    float  *Map;             /*Texture du champs*/
