@@ -786,7 +786,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          traj->Spec=spec;
          for(j=0;j<traj->NPr;j++) {
             fgets(buf,512,Stream);
-            sscanf(buf,"%i %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
+            sscanf(buf,"%Li %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
                &traj->Pr[j].Co.Lat,&traj->Pr[j].Co.Lon,&traj->Pr[j].ZModel,&traj->Pr[j].ZPres,
                &traj->Pr[j].Co.Elev,&traj->Pr[j].ZMSL,&traj->Pr[j].Dist,&traj->Pr[j].Speed);
 
@@ -798,7 +798,13 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
             if (System_IsStamp(traj->Pr[j].Date)) {
                traj->Pr[j].Date=System_Stamp2Seconds(traj->Pr[j].Date);
             } else {
-               traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/100,fmod(traj->Pr[j].Date,100)*10000,1);
+               if (traj->Pr[j].Date<3000000000L) {
+                  /*Format YYYYMMDDHH*/
+                  traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/100,fmod(traj->Pr[j].Date,100)*10000,1);
+               } else {
+                  /*Format YYYYMMDDHHMM*/
+                  traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/10000,fmod(traj->Pr[j].Date,10000)*100,1);
+               }
             }
          }
          /*Store pointer if asked to*/

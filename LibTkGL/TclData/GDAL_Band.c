@@ -2011,7 +2011,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
       switch ((enum opt)idx) {
 
-        case MASK:
+         case MASK:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
             } else {
