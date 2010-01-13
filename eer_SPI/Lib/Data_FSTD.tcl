@@ -248,7 +248,7 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).var.sel -side left -fill x -expand True -padx 2 -pady 2
 
       menu $Data(Frame).var.lbl.lst
-      foreach mode "FLD VAR TYP IP1 IP2 IP3 ETI DATEO" {
+      foreach mode "FLD VAR TYP IP1 IP2 IP3 ETI DATEO FILE" {
          $Data(Frame).var.lbl.lst add command -label $mode -command "FSTD::VarMode $mode"
       }
 
@@ -1026,6 +1026,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             "IP3"   { set var [fstdfield define $fld -IP3] }
             "ETI"   { set var [fstdfield define $fld -ETIKET] }
             "DATEO" { set var [fstdfield define $fld -DATEO] }
+            "FILE"   { set var [fstdfield define $fld -FID] }
          }
 
          if { [set var [string trim $var]]=="" } {
@@ -1078,6 +1079,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 #         IP3  : Parametres par IP3
 #         ETI  : Parametres par ETIKET
 #         DATEO: Parametres par DATEO
+#         FILE  : Parametres par FILE
 #
 #----------------------------------------------------------------------------
 
