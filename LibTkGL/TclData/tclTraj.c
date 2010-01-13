@@ -1071,7 +1071,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
          if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
             glPushName(i);
 
-            if (i==0 || i==Traj->NPr-1 || (spec->InterNb && fmod(Traj->Pr[i].Date,spec->Inter[0])==0)) {
+            if (i==0 || i==Traj->NPr-1 || (spec->InterNb && (spec->Inter[0]==0 || fmod(Traj->Pr[i].Date,spec->Inter[0])==0))) {
                glPushMatrix();
                Proj->Type->Locate(Proj,Traj->Pr[i].Co.Lat,Traj->Pr[i].Co.Lon,1);
                glTranslated(0.0,0.0,ZM(Proj,Traj->Pr[i].Co.Elev));
