@@ -35,7 +35,7 @@ puts "   found: $bands"
 
 #----- Affichage des mete-donnees
 
-puts "   metadata: [gdalfile metadata GDAL]"
+puts "   Metadata: [gdalfile metadata GDAL]"
 
 #----- Lecture des bandes
 
@@ -46,6 +46,11 @@ gdalband read RASTER $bands
 set ll [gdalband project RASTER 100 100]
 set xy [gdalband unproject RASTER [lindex $ll 0] [lindex $ll 1]]
 
-puts "   pixel 100 100 -> $ll -> $xy"
-
+puts "   Pixel projection 100 100 -> $ll -> $xy"
 gdalfile close GDAL
+
+puts "    Creating a band "
+gdalband create NEWRASTER 9000 9000 1 Byte
+
+puts "    Freeing a band "
+gdalband free NEWRASTER
