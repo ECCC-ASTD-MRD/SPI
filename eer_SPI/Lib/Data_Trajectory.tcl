@@ -347,7 +347,7 @@ proc Trajectory::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).left.show.int
             IcoMenu::Create $Data(Frame).left.show.int.sel $GDefs(Dir)/Resources/Bitmap \
-               "digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "1 3 6 12 24" \
+               "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
                 Trajectory::Param(Interval) "Trajectory::ParamSet" $Trajectory::Param(Interval) -relief groove -bd 2
             label $Data(Frame).left.show.int.lbl -text " [lindex $Lbl(Interval) $GDefs(Lang)]" -anchor w
             pack  $Data(Frame).left.show.int.sel $Data(Frame).left.show.int.lbl -side left -fill x
@@ -806,6 +806,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          set spd   [lindex $parcel 8]
          lappend secs $date
          set hour [clock format $date -format "%H" -gmt true]
+         set min  [clock format $date -format "%M" -gmt true]
          if { $hour=="00" } {
             set hour 0
          } else {
@@ -814,7 +815,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
 
          #----- Pour l'interval choisie, incluant la date de depart et d'arrivee
 
-         if { $date==$date0 || $date==$date1 || [expr $hour%$inter]==0 } {
+         if { $inter==0 || $date==$date0 || $date==$date1 || ($min=="00" && [expr $hour%$inter]==0) } {
             vector append TRAJGRAPH$t.X $date
             vector append TRAJGRAPH$t.Y $elev
          }
@@ -947,6 +948,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
          set date [lindex $parcel 0]
          set elev [format %5.1f [lindex $parcel 5]]
          set hour [clock format $date -format "%H" -gmt true]
+         set min  [clock format $date -format "%M" -gmt true]
          if { $hour=="00" } {
             set hour 0
          } else {
@@ -955,7 +957,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
 
          #----- Pour l'interval choisie , incluant la date de depart et d'arrivee
 
-         if { $date==$date0 || $date==$date1 || [expr $hour%$inter]==0 } {
+         if { $inter==0 || $date==$date0 || $date==$date1 || ($min=="00" && [expr $hour%$inter]==0) } {
 
             if { [incr y 10] < $Y1 } {
                $canvas create text $x $y -text "$elev" -fill black -font XFont10 -anchor e -tags "P.$t.$no P.$t.$no.TEXT TRAJHEIGHT"
