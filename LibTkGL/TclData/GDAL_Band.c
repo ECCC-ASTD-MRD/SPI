@@ -1136,8 +1136,11 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
       } else {
          if (sz==8) {
             for(x=0;x<n;x++) {
-               ((float*)Scan->X)[x]=(float)((double*)Scan->X)[x];
-               ((float*)Scan->Y)[x]=(float)((double*)Scan->Y)[x];
+               /*RPN functions go from 0 to 360 instead of -180 to 180*/
+               x0=Scan->X[x]<0?Scan->X[x]+360:Scan->X[x];
+               y0=Scan->Y[x];
+               ((float*)Scan->X)[x]=x0;
+               ((float*)Scan->Y)[x]=y0;
             }
          }
 
