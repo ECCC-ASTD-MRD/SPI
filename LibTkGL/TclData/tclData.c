@@ -1079,6 +1079,8 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->CoordLimits[1][0]=-90;
    def->CoordLimits[1][1]=90;
 
+   def->Sample=1;
+
    /* Allocate data vector */
    def->Data[0]=NULL;
    def->Data[1]=NULL;
@@ -1228,6 +1230,8 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       Def->CoordLimits[1][0]=-90;
       Def->CoordLimits[1][1]=90;
 
+      Def->Sample=1;
+
       if (Def->Mode && Def->Mode!=Def->Data[0]) {
          free(Def->Mode);
          Def->Mode=NULL;
@@ -1363,6 +1367,7 @@ TDataDef *Data_DefCopy(TDataDef *Def){
       def->Mask=NULL;
       def->Pres=NULL;
       def->Pick=def->Poly=NULL;
+      def->Sample=def->Sample;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
       memcpy(def->CoordLimits,Def->CoordLimits,4*sizeof(double));
@@ -1408,6 +1413,7 @@ TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
       def->Mask=NULL;
       def->Pres=NULL;
       def->Pick=def->Poly=NULL;
+      def->Sample=def->Sample;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
       memcpy(def->CoordLimits,Def->Limits,4*sizeof(double));
@@ -1684,9 +1690,9 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -1802,8 +1808,8 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
             }
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
-                  for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+               for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
+                  for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
                      if (Field->Ref->Grid[0]!='V') {
                         Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
@@ -1849,8 +1855,8 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                return(TCL_ERROR);
             }
             obj=Tcl_NewListObj(0,NULL);
-            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
-               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
+               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
                   if (Field->Ref->Grid[0]!='V') {
                      Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                      if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
@@ -1871,8 +1877,8 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                return(TCL_ERROR);
             }
             obj=Tcl_NewListObj(0,NULL);
-            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
-               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
+               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
                   if (Field->Ref->Grid[0]!='V') {
                      Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                      if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
@@ -2009,8 +2015,8 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
          case GRIDVALUE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj++) {
-                  for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni++) {
+               for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
+                  for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
                      if (Field->Ref->Grid[0]!='V') {
                         Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
@@ -2342,6 +2348,15 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                   if (Field->Def->CoordLimits[0][1]>180.0) Field->Def->CoordLimits[0][1]=180.0;
                }
                Data_Clean(Field,0,0,1);
+            }
+            break;
+
+         case SAMPLE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->Sample));\
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Field->Def->Sample);
+               Field->Def->Sample=Field->Def->Sample<1?1:Field->Def->Sample;
             }
             break;
 

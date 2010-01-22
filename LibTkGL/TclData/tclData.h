@@ -259,6 +259,7 @@ typedef struct TDataDef {
    int     Level;             /*Niveau courant*/
    int     Limits[3][2];      /*Limits of processing in grid points*/
    double  CoordLimits[2][2]; /*Limits of processing in latlon*/
+   int     Sample;            /*Sample interval in grid points*/
 } TDataDef;
 
 struct TData;
