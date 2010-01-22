@@ -2015,8 +2015,23 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                         Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
-                           Def_GetMod(Field->Def,FIDX2D(Field->Def,ni,nj),dval);
-                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                           if (Field->Def->NC==1) {
+                              Def_GetMod(Field->Def,FIDX2D(Field->Def,ni,nj),dval);
+                              Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                           } else if (Field->Def->NC==2) {
+                              sub=Tcl_NewListObj(0,NULL);
+                              Field->Ref->Value(Field->Ref,Field->Def,'N',0,ni,nj,Field->Def->Level,&val,&val1);
+                              Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+                              Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(val1));
+                              Tcl_ListObjAppendElement(Interp,obj,sub);
+                           } else {
+                              sub=Tcl_NewListObj(0,NULL);
+                              for(n=0;n<Field->Def->NC;n++) {
+                                 Field->Ref->Value(Field->Ref,Field->Def,'N',n,ni,nj,Field->Def->Level,&val,&val1);
+                                 Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+                              }
+                              Tcl_ListObjAppendElement(Interp,obj,sub);
+                           }
                          }
                      } else {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
@@ -2037,7 +2052,7 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                   c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 #endif
                   obj=Tcl_NewListObj(0,NULL);
-                  if (Field->Def->NC>=2) {
+                  if (Field->Def->NC==2) {
                      if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,dx,dy,Field->Def->Level,&val,&val1)) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val1));
@@ -2076,7 +2091,7 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 #endif
                obj=Tcl_NewListObj(0,NULL);
-               if (Field->Def->NC>=2) {
+               if (Field->Def->NC==2) {
                  if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,dx,dy,Field->Def->Level,&val,&val1)) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val1));
