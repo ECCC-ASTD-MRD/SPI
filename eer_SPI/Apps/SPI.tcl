@@ -33,12 +33,12 @@ if { ![file exists $env(HOME)/.spi] } {
 
    #----- Installer les fichiers de definitions
    if { ![file exists $env(HOME)/.spi/SPI] } {
-      file copy -force $GDefs(Dir)/Setup/SPI $env(HOME)/.spi/SPI
+      file copy -force $GDefs(Dir)/Apps/Setup/SPI $env(HOME)/.spi/SPI
    }
 
    #----- Copy standard stuff
    foreach file { Colormap Scenario } {
-      exec cp -r $GDefs(Dir)/Setup/$file $env(HOME)/.spi
+      exec cp -r $GDefs(Dir)/Apps/Setup/$file $env(HOME)/.spi
    }
 
    #----- Copy old users definitions
