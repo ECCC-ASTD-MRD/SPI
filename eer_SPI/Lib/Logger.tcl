@@ -89,22 +89,21 @@ proc Log::Start { Job Version { Input "" } } {
    #----- Queue stuff
    if { [info exists env(LOADL_STEP_ID)] } {
       Log::Print MUST "Queue Method        : llv"
-      Log::Print MUST "   Queue            : $env(LOADL_STEP_CLASS)"
-      Log::Print MUST "   Job ID           : $env(LOADL_STEP_ID)"
+      catch { Log::Print MUST "   Queue            : $env(LOADL_STEP_CLASS)" }
+      catch { Log::Print MUST "   Job ID           : $env(LOADL_STEP_ID)" }
       if { [file exists $Input] } {
          set secs [file mtime $Input]
          Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
       }
     } elseif { [info exists env(SGE_CELL)] } {
       Log::Print MUST "Queue Method        : sge"
-      Log::Print MUST "   Queue               : $env(QUEUE)"
-      Log::Print MUST "   Job ID              : $env(JOB_ID)"
+      catch { Log::Print MUST "   Queue               : $env(QUEUE)" }
+      catch { Log::Print MUST "   Job ID              : $env(JOB_ID)" }
       if { [file exists $Input] } {
          set secs [file mtime $Input]
          Log_Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
       }
    }
-
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 

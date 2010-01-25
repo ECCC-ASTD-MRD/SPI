@@ -55,7 +55,7 @@ if { ![file exists $env(HOME)/.spi] } {
 }
 
 #----- Lire la liste des definitions communes
-source $env(HOME)/.spi/SPI
+catch { source $env(HOME)/.spi/SPI }
 
 #---------------------------------------------------------------------------
 # Nom      : <SPI::ArgsParse>

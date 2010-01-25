@@ -1026,7 +1026,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             "IP3"   { set var [fstdfield define $fld -IP3] }
             "ETI"   { set var [fstdfield define $fld -ETIKET] }
             "DATEO" { set var [fstdfield define $fld -DATEO] }
-            "FILE"   { set var [fstdfield define $fld -FID] }
+            "FILE"  { set var [fstdfield define $fld -FID] }
          }
 
          if { [set var [string trim $var]]=="" } {

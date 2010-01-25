@@ -28,11 +28,15 @@ set file [lindex $argv 0]
 
 #----- Ouvrir le fichier standard
 fstdfile open FILEIN read $file
-fstdfield read TT FILEIN -1 "" -1 -1 -1 "" "TT"
+fstdfield read FLD FILEIN -1 "" -1 -1 -1 "" "UV"
+
+colormap create CMAP
+colormap read CMAP DataIn/REC_Col.std1.rgba
+fstdfield configure FLD -colormap CMAP
 
 #----- Recuperer les limites du champs
-set extent [georef limit [fstdfield define TT -georef]]
-set res    0.1
+set extent [georef limit [fstdfield define FLD -georef]]
+set res    0.01
 set dx     [expr [lindex $extent 3]-[lindex $extent 1]]
 set dy     [expr [lindex $extent 2]-[lindex $extent 0]]
 set width  [expr int(ceil($dx/$res))+1]
@@ -44,19 +48,20 @@ if { $dx!=0 && $dy!=0 } {
    puts "   Processing: $file"
    puts "   Extent    : $extent"
    puts "   Resolution: $res degrees"
-   puts "   Dimension : $width x $height"
+   puts "   Dimension : $width x $height ($dx x $dy)"
 
    #----- Creer le fichier de rasterization
-   catch { file delete -force DataOut/[file rootname [file tail $file]].tif }
-   gdalfile open FILEOUT write DataOut/[file rootname [file tail $file]].tif GeoTiff
+   catch { file delete -force DataOut/[file rootname [file tail $file]].map.tif }
+   gdalfile open FILEOUT write DataOut/[file rootname [file tail $file]].map.tif GeoTiff
 
    #----- Creer la bande et la configurer
-   gdalband create RASTER $width $height 1 Float32
+#   gdalband create RASTER $width $height 1 Float32
+   gdalband create RASTER $width $height 1 Byte
    gdalband define RASTER -transform [list [lindex $extent 1] $res 0.000000000000000 [lindex $extent 0] 0.000000000000000 $res]
-   gdalband configure RASTER -desc TT
+   gdalband configure RASTER -desc FLD
 
    #----- Effectuer l'interpolation
-   gdalband gridinterp RASTER TT
+   gdalband gridinterp RASTER FLD
 
    #----- On sauvegarde le tout
    gdalband write RASTER FILEOUT { COMPRESS=NONE PROFILE=GeoTIFF }

@@ -1200,7 +1200,7 @@ proc MLCD::CreateScriptInput { } {
    set file [open $Sim(Path)/tmp/Model_MLCD.in w 0644]
       puts $file "#----- Logger specific parameters"
       puts $file "LOG_MAIL=$Model::Param(EMail)"
-      puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
+      puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLCD.out"
       puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
       puts $file "LOG_TIME=$Model::Param(LogTime)"

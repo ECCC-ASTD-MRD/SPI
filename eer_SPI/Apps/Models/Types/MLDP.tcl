@@ -174,7 +174,7 @@ proc MLDP::CreateScriptInput { } {
 
    puts $file "#----- Logger specific parameters"
    puts $file "LOG_MAIL=$Model::Param(EMail)"
-   puts $file "LOG_MAILTITLE=\"$Sim(Model) (SPI)\""
+   puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLDP.out"
    puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
    puts $file "LOG_TIME=$Model::Param(LogTime)"

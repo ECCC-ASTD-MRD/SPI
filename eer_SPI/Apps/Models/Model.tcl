@@ -1250,12 +1250,14 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    file mkdir $sim(Path) $sim(Path)/results $sim(Path)/meteo $sim(Path)/tmp $sim(Path)/products
 
    #----- Check for remote path::${Model}::Sim
+   puts stderr "CHECK ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path)"
    set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
    if { $Param(Remote) } {
       if { $Param(Arch) == "AIX" } {
          set sim(PathRun)  "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${simp}"
          set sim(PathPrev) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${prevp}"
       } else {
+   puts stderr "CHECK /tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${simp}"
          set sim(PathRun)  "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${simp}"
          set sim(PathPrev) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${prevp}"
       }

@@ -1164,7 +1164,7 @@ proc Watch::ReadProject { Project } {
          lappend Data(Sims$Project$src$model) "$nosim \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$Project$src$model$nosim) [glob -nocomplain  $Param(Path)/$Project/data/*_$src/${model}.${nosim}.*]
+         set Data(Results$Project$src$model$nosim) [glob -nocomplain $Param(Path)/$Project/data/*_$src/${model}.${nosim}.*]
       }
       set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
    }
