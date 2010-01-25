@@ -8,9 +8,9 @@ include ../Makefile.$(ARCH)
 # Makefile Specific definitions
 
 INCLUDES   = $(INCLUDE)
-DEFINES    = -DTCL_THREADS -DVERSION=\"$(VERSION)\"
-CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(LIBS) $(PROTO) $(DEFINES)
-LIBHM      = -lc
+CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
+LDFLAGS    = $(LDDEBUGFLAGS)
+LIBS       = -lc
 OBJS       = tclSystem.o
 
 # Start of Makefile
@@ -18,11 +18,11 @@ OBJS       = tclSystem.o
 all  : $(OBJS)
 
 link: 
-	$(LD) -o libTclSystem-$(VERSION).so $(OBJS) $(LIBHM)
-	cp libTclSystem-$(VERSION).so $(INSTALL_PATH)
-	rm -f libTclSystem.so $(INSTALL_PATH)/libTclSystem.so
+	$(LD) -o libTclSystem-$(VERSION).so $(OBJS) $(LDFLAGS) $(LIBS)
+	cp libTclSystem-$(VERSION).so $(LIB_PATH)
+	rm -f libTclSystem.so $(LIB_PATH)/libTclSystem.so
 	ln -s libTclSystem-$(VERSION).so libTclSystem.so
-	ln -s libTclSystem-$(VERSION).so $(INSTALL_PATH)/libTclSystem.so
+	ln -s libTclSystem-$(VERSION).so $(LIB_PATH)/libTclSystem.so
 
 install: all link
 

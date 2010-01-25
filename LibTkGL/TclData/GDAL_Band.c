@@ -196,7 +196,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,NULL,NULL,NULL);
 
       printf("(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
-      if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1))) {
+      if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
          printf("(WARNING) GDAL_BandRead: Unable to fit RPC\n");
       }
    } else {

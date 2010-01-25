@@ -8,18 +8,13 @@ include ../Makefile.$(ARCH)
 
 GRAMMAR = Data_Calc
 
-INCLUDES  = $(INCLUDE)
-LIBS      = -L$(INSTALL_PATH) -L$(GDAL_PATH)/lib -lgdal -lproj -lrmn -L$(URP_PATH)/lib -lmut -ldrp -lurp -L$(GRIB_PATH)/lib -lgrib_api -L$(BUFR_PATH)/lib -lecbufr -L$(FLT_PATH)/lib -lflt -L$(EER_PATH)/lib/$(ARCH) -leerUtils -lc
-LIBTK     = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE)
-LIBTCL    = -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
-LDFLAGS   = $(LIBS) $(LIBTCL) $(LIBTK) --warn-once --no-undefined 
-LDFLAGS   = $(LIBS) $(LIBTCL) $(LIBTK)
-CFLAGS    = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
-LEXFLAGS  =
-YACCFLAGS =
-
-# Start of Makefile
-
+INCLUDES   = $(INCLUDE)
+CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
+LDFLAGS    = $(LDDEBUGFLAGS)
+LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lmut -ldrp -lurp -lgrib_api -lecbufr -lflt -leerUtils -lc
+LITCLBTK   = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE) -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
+LEXFLAGS   =
+YACCFLAGS  =
 OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
 	Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o Vertex.o \
 	GeoTex.o GeoRef.o GeoRef_RPN.o GeoRef_WKT.o GeoRef_RDR.o \
@@ -33,11 +28,11 @@ OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
 all: $(OBJ)
 
 link:
-	$(LD) -o libTclData-$(LIB_VER).so $(OBJ) $(LDFLAGS)
-	cp libTclData-$(LIB_VER).so $(INSTALL_PATH)
-	rm -f libTclData.so $(INSTALL_PATH)/libTclData.so
+	$(LD) -o libTclData-$(LIB_VER).so $(OBJ) $(LDFLAGS) $(LIBS) $(LIBTCLTK)
+	cp libTclData-$(LIB_VER).so $(LIB_PATH)
+	rm -f libTclData.so $(LIB_PATH)/libTclData.so
 	ln -s libTclData-$(LIB_VER).so libTclData.so
-	ln -s libTclData-$(LIB_VER).so $(INSTALL_PATH)/libTclData.so
+	ln -s libTclData-$(LIB_VER).so $(LIB_PATH)/libTclData.so
 
 install: all link
 

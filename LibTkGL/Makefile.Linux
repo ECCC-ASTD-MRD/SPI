@@ -10,7 +10,6 @@ YACC = bison
 
 ARCH      = Linux
 LIB_VER   = 7.4.0
-TCLTK_VER = 8.4.13
 TCLTK_VER = 8.5.7
 TCLTK_BASE= 8.5
 
@@ -18,57 +17,28 @@ X_INCLUDE   =
 PROTO       =
 DEFINES     = -DLNK_FSTD -DLNK_GDALOGR -DLNK_URP -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
 
-CDEBUGFLAGS =
-CCOPTIONS   = -O2 -funroll-all-loops -finline-functions -fPIC
+CDEBUGFLAGS  =
+LDDEBUGFLAGS = --warn-once --no-undefined 
+LDDEBUGFLAGS =
+CCOPTIONS    = -O2 -funroll-all-loops -finline-functions -fPIC
 
-LIB_PATH = /data/cmoe/afsr005/Lib/$(ARCH)
-ARC_PATH = /data/cmoe/afsr005/Archive
-
-# Installation path of the binaries
-INSTALL_PATH  = /data/cmoex6/afsr005/Shared/$(LIB_VER)/$(ARCH)
-
-# RMN Path
-RMN_PATH = ${ARMNLIB}
-
-# EER Path
-EER_PATH = /home/binops/afse/eer
+LIB_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/$(ARCH)
+INC_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/Include
 
 # Tk Path
-TCL_SRC  = $(ARC_PATH)/tcl$(TCLTK_VER)
-TCL_PATH = $(INSTALL_PATH)/TclTk
-#TCL_PATH = /data/cmoex6/afsr005/eer_SPI-7.3.0/Shared/$(ARCH)/TclTk
+TCL_SRC  = /data/cmoe/afsr005/Archive/tcl$(TCLTK_VER)
+TCL_PATH = $(LIB_PATH)/TclTk
 
-TK_SRC   = $(ARC_PATH)/tk$(TCLTK_VER)
-TK_PATH  = $(INSTALL_PATH)/TclTk
-#TK_PATH  = /data/cmoex6/afsr005/eer_SPI-7.3.0/Shared/$(ARCH)/TclTk
+TK_SRC   = /data/cmoe/afsr005/Archive/tk$(TCLTK_VER)
+TK_PATH  = $(LIB_PATH)/TclTk
 
 # OpenGL librairies
 #GL_PATH   = $(LIB_PATH)/mesa-6.5/
 
-# GDAL librairie
-GDAL_PATH = $(LIB_PATH)/gdal-1.3.2
-
-# libPROJ librairie
-PROJ_PATH = $(LIB_PATH)/proj-4.4.9
-
-# ECMWF GRIB librairie
-GRIB_PATH = $(LIB_PATH)/grib_api-0.9.31
-#GRIB_PATH = $(LIB_PATH)/grib_api-1.6.4
-
-# BUFR libecbufr path
-BUFR_PATH=  $(LIB_PATH)/libecbufr
-
-# Geographical database localisation
-GDB_PATH = /data/cmoe/afsr005/DBGeo/
-
-# URP librairie
-URP_PATH = /home/afsr/005/Projects/Code/URP
-
-# flt librairie
-FLT_PATH = $(LIB_PATH)/fltlib-0.7.0
-
 # global includes
-INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include -I$(EER_PATH)/include \
-        -I$(GDB_PATH)/include -I$(GL_PATH)/include -I$(PROJ_PATH)/include -I$(GDAL_PATH)/include -I$(URP_PATH)/include \
-        -I$(GRIB_PATH)/include -I$(BUFR_PATH)/include -I$(FLT_PATH)/include -I$(RMN_PATH)/include -I$(RMN_PATH)/include/$(ARCH) \
+INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include \
+        -I$(GL_PATH)/include \
+        -I$(INC_PATH)/gdb -I$(INC_PATH)/gdal -I$(INC_PATH)/urp -I$(INC_PATH)/grib_api -I$(INC_PATH)/libecbufr \
+        -I$(INC_PATH)/fltlib -I$(INC_PATH)/rmnlib -I$(INC_PATH)/libeer \
         -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD
+

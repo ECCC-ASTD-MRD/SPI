@@ -58,7 +58,7 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
 
    Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
-   Tcl_PkgProvide(Interp,"TclSystem",VERSION);
+   Tcl_PkgProvide(Interp,"TclSystem",LIB_VER);
    return(TCL_OK);
 }
 

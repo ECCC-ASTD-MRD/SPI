@@ -1902,7 +1902,7 @@ int glDefineParams(){
 
       memset(GLRender->Prog,0x0,SHADER_MAX*sizeof(GLhandleARB));
       if (GLRender->ShaderAvailable) {
-         sprintf(path,"%s/Shared/Shader",getenv("SPI_PATH"));
+         sprintf(path,"%s/Lib/Shader",getenv("SPI_PATH"));
          n=0;
 
          while(ProgString[n]) {
