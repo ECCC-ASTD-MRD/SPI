@@ -7,7 +7,7 @@ export SPI_SHARED=${SPI_PATH}/Shared/${ARCH}
 #----- Library locations
 export SPI_PATH
 export LD_LIBRARY_PATH=${SPI_SHARED}:${SPI_SHARED}/TclTk/lib:$LD_LIBRARY_PATH
-export TCLLIBPATH="${SPI_SHARED} ${SPI_SHARED}/TclTk/lib ${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION} ${SPI_SHARED}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/Lib"
+export TCLLIBPATH="${SPI_SHARED} ${SPI_SHARED}/TclTk/lib ${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION} ${SPI_SHARED}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/Apps/Lib"
 export TCL_LIBRARY="${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION}"
 
 #----- GDAL data
