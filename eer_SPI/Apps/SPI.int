@@ -105,12 +105,12 @@ proc SPI::About { } {
    pack .about.info -fill both -side top -expand true
    pack .about.close -fill x -side top
 
-   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2009/11/02)\n\n"
+   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2010/02/02)\n\n"
    .about.info.list.l insert end "[lindex $Msg(Id) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Authors) 0]\n\n"
-   .about.info.list.l insert end "[exec cat $GDefs(Dir)/Apps/License.txt]"
+   .about.info.list.l insert end "[exec cat $GDefs(Dir)/License.txt]"
 }
 
 #----------------------------------------------------------------------------
@@ -207,7 +207,6 @@ proc SPI::Params { } {
       pack .params.command -side top -fill x -padx 5 -pady 5
 
       #----- Inserer les parametres des divers items
-
       Viewport::ParamFrame   .params.tab .params.command.apply
       FSTD::ParamFrame       .params.tab .params.command.apply
       Obs::ParamFrame        .params.tab .params.command.apply
@@ -256,7 +255,6 @@ proc SPI::ParamsApply { } {
    update idletasks
 
    #----- Update every pages which could need it
-
    Page::Update        $Page::Data(Frame)
    Page::UpdateCommand $Page::Data(Frame)
 
@@ -422,7 +420,6 @@ proc SPI::WindowLayout { Side { Sizes {} } } {
    set Nb [llength $Sizes]
 
    #----- Si on ne change que la position
-
    if { $Sizes==-1 } {
       set Nb [llength [.pan.side panes]]
       set maxw [winfo width  .pan.side]
@@ -430,7 +427,6 @@ proc SPI::WindowLayout { Side { Sizes {} } } {
    } else {
 
       #----- Recuperer les dimensions maximales
-
       set maxw -1
       set maxh -1
       set i 0
@@ -506,7 +502,6 @@ proc SPI::WindowLayout { Side { Sizes {} } } {
    if { $Sizes!=-1 } {
 
       #----- Supprimer les panes de trops
-
       for { set i [expr [llength [.pan.side panes]]-1] } { $i>[expr $Nb-1] } { incr i -1 } {
          if { [winfo exist .pan.side.win$i] } {
             .pan.side forget .pan.side.win$i
@@ -519,7 +514,6 @@ proc SPI::WindowLayout { Side { Sizes {} } } {
       }
 
       #----- Ajouter les panes manquants
-
       for { set i 0 } { $i<$Nb } { incr i } {
 
          set size [split [lindex $Sizes $i] x]
@@ -539,7 +533,6 @@ proc SPI::WindowLayout { Side { Sizes {} } } {
       set Param(Panes) $Sizes
 
       #----- Selectionner un frame actif
-
       if { $Page::Data(Frame)=="" } {
          set $Page::Data(Frame) [lindex $Page::Data(Frames) 0]
          Page::Activate $Page::Data(Frame)
@@ -923,7 +916,6 @@ proc SPI::ContextMenuProj { } {
    ProjCam::Read
 
    #----- Creation des evenements de touches rapide
-
    bind . <Key-Print>       ".mapmenu invoke 10"
    bind . <Key-F9>          ".mapmenu invoke 12"
    bind . <Key-F1>          ".mapmenu invoke 3"

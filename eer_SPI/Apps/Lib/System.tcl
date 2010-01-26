@@ -2,7 +2,7 @@
 # Let's start up with the proper wish\
 DIR=$0
 # Let's start up with the proper wish\
-exec ${DIR%System.tcl}/../wish "$0" "$@"
+exec ${DIR%System.tcl}/../../wish "$0" "$@"
 
 #----- Check for the nvidia file access problem
 
@@ -13,10 +13,10 @@ if { [file exists /dev/nvidiactl] && ![file readable /dev/nvidiactl] } {
 
 #----- Try to load the extension
 
-set GDefs(Dir)  [file dirname [info script]]/..
+set GDefs(Dir)  [file dirname [info script]]/../..
 set GDefs(Arch) $tcl_platform(os)
 
-load $GDefs(Dir)/Shared/$GDefs(Arch)/libTkglCanvas[info sharedlibextension] glCanvas
+load $GDefs(Dir)/Lib/$GDefs(Arch)/libTkglCanvas[info sharedlibextension] glCanvas
 
 namespace eval System {}
 

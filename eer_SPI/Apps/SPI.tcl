@@ -82,7 +82,6 @@ catch { source $env(HOME)/.spi/SPI }
 proc SPI::ArgsParse { Argv Argc No Multi Must Cmd } {
 
    #----- Garder l'index de depart
-
    set idx [incr No]
    set files ""
 
@@ -135,7 +134,6 @@ proc SPI::CommandLine { { Args {} }} {
    Log::Print ERROR "Wrong arguments $Args, must be:\n
       \[-tclsh ...\]                    : Launch a tcl script through SPI's environment (No Tk)
       \[-soft\]                         : Launch in software mode
-      \[-pipe\]                         : Use the standard in pipe function
       \[-batch\]                        : Launch in batch mode (No screen rendering)
       \[-default ... ...\]              : Use the file specified as the default parameter definition
       \[-lang 0|1\]                     : Select language (0 Francais, 1 English)
@@ -163,7 +161,6 @@ for { set i 0 } { $i < $argc } { incr i } {
       "setup"    { }
       "soft"     { }
       "batch"    { }
-      "pipe"     { wm withdraw . ; fconfigure stdin -blocking false ; fileevent stdin readable SPI::PipeGet }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { set SPI::Param(Window) False }
       "geom"     { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
@@ -262,7 +259,6 @@ proc Page::Activate { Frame { Force 0 } } {
    }
 
    #----- Configurer le frame
-
    if { [winfo exists $Page::Data(Frame)] } {
       $Page::Data(Frame) configure -background black
       catch { place forget [winfo toplevel $Page::Data(Frame)].active }
@@ -272,7 +268,6 @@ proc Page::Activate { Frame { Force 0 } } {
    $Frame configure -background $GDefs(ColorHighLight)
 
    #----- Dans le cas de fenetres externes
-
    set top [winfo toplevel $Frame]
    set own True
    if { $top=="." } {
@@ -310,7 +305,6 @@ proc Page::Activate { Frame { Force 0 } } {
       set SPI::Param(Layout)  $SPI::Data(Layout$Frame)
 
       #----- Update des items
-
       foreach item $SPI::Data(Items) {
          set SPI::Data(Show$item)  $SPI::Data(Show$item$Frame)
       }
@@ -320,7 +314,6 @@ proc Page::Activate { Frame { Force 0 } } {
    }
 
    #----- Update des outils
-
    foreach tool $SPI::Param(Tools) {
       upvar #0 ${tool}::Data(Active) active
       if { $active } {
@@ -355,7 +348,6 @@ proc Page::UpdateCommand { Frame } {
    Graph::Update    $Frame
 
    #----- Update des Outils
-
    foreach tool $SPI::Param(Tools) {
       upvar #0 ${tool}::Data(Active) active
       if { $active } {
@@ -367,7 +359,6 @@ proc Page::UpdateCommand { Frame } {
    }
 
    #----- Update des Layouts
-
    if { [info exists SPI::Data(Layout$Frame)] } {
       eval set proc \[info procs ::$SPI::Data(Layout$Frame)::LayoutUpdate\]
       if { $proc!="" &&  $Frame!="" } {
@@ -567,7 +558,7 @@ proc SPI::LayoutLoad { Frame Layout } {
       set so [Dialog::Default . 300 INFO $Msg(Locked) "" 0 $Lbl(PageOther) $Lbl(PageNew) $Lbl(Cancel)]
 
       switch $so {
-         0 { ;#Find first layout not locked
+         0 { ;#----- Find first layout not locked
             foreach frame $Page::Data(Frames) {
                if { !$Page::Data(Lock$frame) } {
                   set Frame $frame
@@ -575,10 +566,10 @@ proc SPI::LayoutLoad { Frame Layout } {
                }
             }
          }
-         1 { ;#Use a new page
+         1 { ;#----- Use a new page
             set Frame [SPI::PageNew False]
          }
-         2 { ;#Cancel the layout
+         2 { ;#----- Cancel the layout
             return 1
          }
       }
@@ -645,7 +636,6 @@ proc SPI::LayoutLoad { Frame Layout } {
    }
 
    #----- Initialiser la mise en page
-
    ${Layout}::Layout $Frame
    Page::Activate $Frame True
    Page::ModeSelect $Page::Data(Mode) $Frame
@@ -697,7 +687,6 @@ proc SPI::LayoutSave { Frame Name } {
    set file [open $env(HOME)/.spi/Layout/$Param(Layout).tcl w]
 
    #----- Creer la commande d'execution du layout
-
    puts $file "namespace eval $Param(Layout) { }"
    puts $file ""
    puts $file "proc $Param(Layout)::Layout { Frame } {"
@@ -705,12 +694,10 @@ proc SPI::LayoutSave { Frame Name } {
    puts $file ""
 
    #----- Dimension du canvas
-
    puts $file "   Page::Size \$Frame $Page::Data(Width$Frame) $Page::Data(Height$Frame)"
    puts $file ""
 
    #----- Parametres de la camera
-
    if { [llength [Page::Registered $Frame Viewport]] } {
       if { ![Dialog::Default . 300 INFO $Msg(CamSave) 1 $Lbl(Yes) $Lbl(No)] } {
          ProjCam::Write $Frame $file
@@ -720,7 +707,6 @@ proc SPI::LayoutSave { Frame Name } {
    SPI::LayoutSaveItems $Frame $file
 
    #----- Activation du layout
-
    puts $file "   Page::UpdateItems \$Frame"
    puts $file "}"
    puts $file ""
@@ -731,7 +717,6 @@ proc SPI::LayoutSave { Frame Name } {
    close $file
 
    #----- Ajouter a la liste des layouts usagers
-
    lappend Param(Layouts) $Param(Layout)
    ComboBox::Add .bar.layout.sel $Param(Layout)
 
@@ -757,7 +742,6 @@ proc SPI::LayoutSave { Frame Name } {
 proc SPI::LayoutSaveItems { Frame File } {
 
    #----- Les viewports
-
    Viewport::Write $Frame $File
 
    set SPI::Data(ShowMini$Frame)  [info exists Miniport::Data(Mini$Frame)]
@@ -766,11 +750,9 @@ proc SPI::LayoutSaveItems { Frame File } {
    }
 
    #----- Graphs
-
    Graph::Write $Frame $File
 
    #----- Colorbar
-
    set SPI::Data(ShowColorBar$Frame)   [ColorBar::Active $Frame]
    if { $SPI::Data(ShowColorBar$Frame) } {
       ColorBar::Write $Frame $File
@@ -778,7 +760,6 @@ proc SPI::LayoutSaveItems { Frame File } {
    }
 
    #----- DataBar
-
    set SPI::Data(ShowDataBar$Frame)   [DataBar::Active $Frame]
    if { $SPI::Data(ShowDataBar$Frame) } {
       DataBar::Write $Frame $File
@@ -786,7 +767,6 @@ proc SPI::LayoutSaveItems { Frame File } {
    }
 
    #----- Les objets statique
-
    if { $SPI::Data(ShowLOGO$Frame) } {
       set c [$Frame.page.canvas coords LOGO]
       puts $File ""
@@ -819,7 +799,6 @@ proc SPI::LayoutSaveItems { Frame File } {
    }
 
    #----- Les objets relies aux trajectoires
-
    if { $SPI::Data(ShowTrajGraph$Frame) } {
       puts $File ""
       puts $File "   set SPI::Data(ShowTrajGraph\$Frame) 1"
@@ -848,7 +827,6 @@ proc SPI::LayoutSaveItems { Frame File } {
    }
 
    #----- Primitives de dessin
-
    Drawing::Write $Frame $File
 }
 
@@ -1245,7 +1223,6 @@ proc SPI::Execute { Script } {
       namespace inscope :: source $Script
 
       #----- If Macro the execute it
-
       set script [file rootname [file tail $Script]]
       if { [namespace exists ::Macro::$script] } {
          eval Macro::${script}::Execute
@@ -1483,7 +1460,6 @@ proc SPI::IcoOpen { Files } {
       regsub -all "\[^a-zA-Z0-9\]"  $group _ group
 
       #----- Si on n'as pas de couleur, on est en presence d'une image plutot que d'un gif
-
       if { $color=="" } {
          if { [lsearch -exact [image names] $group]==-1 } {
             image create photo $group -file $icon
@@ -1494,7 +1470,6 @@ proc SPI::IcoOpen { Files } {
       }
 
       #----- Lire la liste d'icones
-
       set ico ""
 
       while { ![eof $f] } {
@@ -1530,7 +1505,6 @@ proc SPI::PageDel { { Page "" } { All False } } {
    variable Data
 
    #----- Determiner le frame en cause, celui de la page ou le courant
-
    if { $Page!="" } {
       if { [set frame [join [lrange [split $Page .] 0 1] .]]!=".mdi" } {
          set frame $frame.mdi
@@ -1559,14 +1533,12 @@ proc SPI::PageDel { { Page "" } { All False } } {
    } else {
 
       #----- Determiner la page, la page specifie ou la page courante
-
       set no -1
       if { $Page=="" && [set no [TabFrame::Current $frame]]!=-1} {
          set Page $frame.frame$no.frame
       }
 
       #----- Supprimer la page et les variales d'etat
-
       if { $Page!="" } {
          Page::Destroy $Page
 
@@ -1690,80 +1662,7 @@ proc SPI::PageSetup { Frame No } {
   Page::Activate $Frame.frame$No.frame
 
   #----- Forcer le refresh dans les changement d'onglets
-
   event generate $Frame.frame$No.frame.page.canvas <Configure>
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <SPI::PipeGet>
-# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Recupere l'entree de stdin et traite les commandes.
-#
-# Parametres      :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc SPI::PipeGet { } {
-   variable Data
-
-   gets stdin line
-
-   set command [lindex $line 0]
-   set data    [lrange $line 1 end]
-
-   switch "$command" {
-
-      "SPI_I_TCL_DO"              { eval [join $data] }
-      "SPI_I_TCL_FUNC"            { eval $data }
-
-      "SPI_I_APP_DEICONIFY"       { wm deiconify . ; FieldBox::Raise ; TrajBox::Raise }
-      "SPI_I_APP_DISABLEQUIT"     { wm protocol . WM_DELETE_WINDOW { } ; .menu.file.menu entryconfigure end -state disabled }
-      "SPI_I_APP_ENABLEQUIT"      { wm protocol . WM_DELETE_WINDOW { SPI::Quit } ; .menu.file.menu entryconfigure end -state normal }
-      "SPI_I_APP_ENABLEWITHDRAW"  { wm protocol . WM_DELETE_WINDOW { SPI::WithDraw ; puts "SPI_O_APP_WITHDRAW" } }
-      "SPI_I_APP_ICONIFY"         { wm iconify . }
-      "SPI_I_APP_QUIT"            { SPI::Quit }
-      "SPI_I_APP_GEOMETRY"        { eval wm geometry . [join $data] }
-      "SPI_I_APP_WITHDRAW"        { SPI::WithDraw }
-
-      "SPI_I_PROJ_CENTER"         { set Viewport::Map(Lat) [lindex $data 0] ; set Viewport::Map(Lon) [lindex $data 1] ;
-                                    Viewport::Rotate $Page::Data(Frame) }
-      "SPI_I_PROJ_APPLY"          { Viewport::Do $Page::Data(Frame) }
-      "SPI_I_PROJ_PRINT"          { PrintBox::Do $Page::Data(Frame) }
-      "SPI_I_PROJ_SET_LAT"        { set Viewport::Map(Lat)        $data }
-      "SPI_I_PROJ_SET_LON"        { set Viewport::Map(Lon)        $data }
-      "SPI_I_PROJ_SET_BORDER"     { set Viewport::Map(Border)     $data }
-      "SPI_I_PROJ_SET_COAST"      { set Viewport::Map(Coast)      $data }
-      "SPI_I_PROJ_SET_FACTORPLAN" { set Viewport::Map(FactorPlan) $data }
-      "SPI_I_PROJ_SET_FACTORELEV" { set Viewport::Map(FactorElev) $data }
-      "SPI_I_PROJ_SET_RESOLUTION" { set Viewport::Map(Resol)      $data }
-      "SPI_I_PROJ_SET_LATLON"     { set Viewport::Map(LatLon)     $data }
-      "SPI_I_PROJ_SET_LATLONDEF"  { set Viewport::Map(LatLonDef)  $data }
-      "SPI_I_PROJ_SET_LATLONLOC"  { set Viewport::Map(LatLonLoc)  $data }
-      "SPI_I_PROJ_SET_LATLONNUM"  { set Viewport::Map(LatLonNum)  $data }
-      "SPI_I_PROJ_SET_POPULATION" { set Viewport::Map(Population) $data }
-      "SPI_I_PROJ_SET_TOPO"       { set Viewport::Map(Topo)       $data }
-      "SPI_I_PROJ_SET_VIEWX"      { set Viewport::Map(ViewX)      $data }
-      "SPI_I_PROJ_SET_VIEWY"      { set Viewport::Map(ViewY)      $data }
-      "SPI_I_PROJ_SET_VIEWZ"      { set Viewport::Map(ViewZ)      $data }
-      "SPI_I_PROJ_SET_ZOOM"       { set Viewport::Map(Zoom)       $data }
-      "SPI_I_PROJ_SET_PROJ"       { set Viewport::Map(Proj)       $data }
-
-      "SPI_I_PRINT_SET_TYPE"      { set PrintBox::Print(Type)    $data }
-      "SPI_I_PRINT_SET_FORMAT"    { set PrintBox::Print(Format)  $data }
-      "SPI_I_PRINT_SET_DEVICE"    { set PrintBox::Print(Device)  $data }
-      "SPI_I_PRINT_SET_COLOR"     { set PrintBox::Print(Color)   $data }
-      "SPI_I_PRINT_SET_ANGLE"     { set PrintBox::Print(Angle)   $data }
-      "SPI_I_PRINT_SET_WEBSITE"   { set PrintBox::Print(WEBSite) $data }
-      "SPI_I_PRINT_SET_PRINTER"   { set PrintBox::Print(Printer) $data }
-
-      "SPI_I_DRAW_ICO"        { SPI::IcoAdd $Page::Data(Frame) lindex $data 0] [lindex $data 1] [lindex $data 2] }
-      "SPI_I_DEL_ICO"         { SPI::IcoDel $data }
-   }
 }
 
 #---------------------------------------------------------------------------
@@ -1844,14 +1743,12 @@ proc SPI::ToolMode { Tool Mode { Off False } } {
       }
    } else {
       #----- Garder l'information sur le dernier outils utilise
-
       set Param(Tool) $Tool
       set Param(ToolMode) $Mode
 
       Page::ModeSelect $Mode
 
       #----- Une fonction d'affichage existe-t-elle pour cet outils
-
       eval set proc \[info procs ::${Tool}::UpdateItems\]
       if { $proc!="" } {
          eval ${Tool}::UpdateItems $Page::Data(Frame)
@@ -1917,7 +1814,6 @@ proc SPI::Quit { { Code 0 } } {
    variable Data
 
    #----- Cleanup des outils
-
    foreach tool $SPI::Param(Tools) {
       upvar #0 ${tool}::Data(Active) active
       if { $active } {
@@ -2064,7 +1960,6 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    #----- Determiner si le fichier de projet est valide
-
    if { [file exists $File.spi] } {
       set File $File.spi
    }
@@ -2085,7 +1980,6 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    #----- Detruire toute les pages courantes
-
    SPI::PageDel .mdi True
    foreach win [winfo children .] {
       if { [string equal ".page" [string range $win 0 4]] } {
@@ -2094,7 +1988,6 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    #----- Lire le projet
-
    source $File
 }
 
@@ -2170,7 +2063,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
 
    if { $Window } {
       #----- Process SPI
-
       puts $f "\n#----- Window parameters\n"
       puts $f "set SPI::Param(Geom) [wm geom .]"
       puts $f "set SPI::Param(PaneSide) \"$SPI::Param(PaneSide)\""
@@ -2225,7 +2117,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       }
 
       #----- Process Tools
-
       puts $f "\n#----- Invoke tools\n"
       foreach tool $SPI::Param(Tools) {
          eval set active \$${tool}::Data(Active)
@@ -2297,7 +2188,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
    }
 
    #----- Process Data
-
    if { $Data } {
 
       puts $f "\n#----- Cleanup previous data\n"
@@ -2346,30 +2236,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
    close $f
 }
 
-#-------------------------------------------------------------------------------
-# Nom      : <SPI::WithDraw>
-# Creation : Octobre 2000 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Mettre SPI en backgound et fermer tout ses outils et autres boites.
-#
-# Parametres      :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc SPI::WithDraw { } {
-   variable Param
-   wm withdraw .
-
-   #----- Fermer tout les outils
-   foreach tool $Param(Tools) {
-      ${tool}::Close
-   }
-}
-
 #----- Demmarage de l'application
 SPI::Splash "Initializing interface"
 
@@ -2393,7 +2259,6 @@ for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "setup"    { }
       "soft"     { }
-      "pipe"     { }
       "batch"    { set SPI::Param(Batch) True }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { }
