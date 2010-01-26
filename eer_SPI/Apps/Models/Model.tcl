@@ -163,6 +163,7 @@ namespace eval Model {
    set Error(LastMetDateTime)     { "\tDernier temps disponible :" "\tLast available date-time  :" }
    set Error(DateTimeMetFiles)    { "La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
                                     "The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
+   set Error(Path)                { "Le répertoire de simulation n'est pas accessible sur l'hote d'exécution." "Simulation path is not accessible on remote host" }
 
    set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
@@ -1257,9 +1258,10 @@ proc Model::ParamsPath { Model { ReqNo True } } {
          set sim(PathRun)  "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${simp}"
          set sim(PathPrev) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${prevp}"
       } else {
-   puts stderr "CHECK /tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${simp}"
-         set sim(PathRun)  "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${simp}"
-         set sim(PathPrev) "/tmp/$GDefs(FrontEndUser)/eer_Experiment/${expp}_${prevp}"
+         Dialog::Error . $Error(Path) "\n\t($Param(Host):$sim(Path))"
+         set sim(Path)     ""
+         set sim(PathRun)  ""
+         set sim(PathPrev) ""
       }
    } else {
       set sim(PathRun) $sim(Path)
