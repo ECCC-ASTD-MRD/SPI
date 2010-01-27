@@ -1,5 +1,5 @@
 ARCH        = $(shell uname)
-VERSION     = 1.0
+LIB_VER     = 1.0
 
 # Source in configuration
 

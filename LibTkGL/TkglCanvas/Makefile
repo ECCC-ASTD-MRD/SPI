@@ -16,7 +16,7 @@ OBJ        = tkglCanvas.o tkglCanvLine.o tkglCanvBmap.o tkglCanvPoly.o tkglRectO
 all:$(OBJ)
 
 link:
-	$(LD) -o libTkglCanvas-$(TCLTK_VER).so $(OBJ) $(LDFLAGS) $(LIBGL) $(LIBTK)
+	$(LD) -o libTkglCanvas-$(TCLTK_VER).so $(OBJ) $(LDFLAGS) $(LIBS)
 	cp libTkglCanvas-$(TCLTK_VER).so $(LIB_PATH)
 	rm -f libTkglCanvas.so $(LIB_PATH)/libTkglCanvas.so
 	ln -s libTkglCanvas-$(TCLTK_VER).so libTkglCanvas.so
