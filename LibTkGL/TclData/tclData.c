@@ -527,10 +527,12 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                /*In case of hybrid staggered, read !!SF, otherwise, use P0*/
                if (cut->Ref->RefFrom->A) {
                   if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1))) {
+                     Field[f]->Def->Pres=0x1;
                      p=0;
                   }
                } else {
                   if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
+                     Field[f]->Def->Pres=0x1;
                      p=0;
                   }
                }
@@ -556,7 +558,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                idx=k*NbF*NbC+n*NbF+f;
 
                /*Convert level to pressure*/
-               if (Field[f]->Def->Pres && cut->Ref->Hgt) {
+               if (Field[f]->Def->Pres>0x1 && cut->Ref->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
                   cut->Ref->Hgt[idx]=Data_Level2Pressure(Field[f]->Ref,Field[f]->Ref->Levels[k],p0,k);
                }
@@ -1250,7 +1252,7 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       if (Def->Buffer)     free(Def->Buffer); Def->Buffer=NULL;
       if (Def->Accum)      free(Def->Accum);  Def->Accum=NULL;
       if (Def->Mask)       free(Def->Mask);   Def->Mask=NULL;
-      if (Def->Pres)       free(Def->Pres);   Def->Pres=NULL;
+      if (Def->Pres>0x1)   free(Def->Pres);   Def->Pres=NULL;
    }
    return(Def);
 }
@@ -1284,7 +1286,7 @@ void Data_DefFree(TDataDef *Def){
       if (Def->Buffer)     free(Def->Buffer);
       if (Def->Accum)      free(Def->Accum);
       if (Def->Mask)       free(Def->Mask);
-      if (Def->Pres)       free(Def->Pres);
+      if (Def->Pres>0x1)   free(Def->Pres);
       if (Def->Poly)       OGR_G_DestroyGeometry(Def->Poly);
 //      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 

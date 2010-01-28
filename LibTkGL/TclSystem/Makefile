@@ -1,5 +1,5 @@
 ARCH        = $(shell uname)
-LIB_VER     = 1.0
+VERSION     = 1.0
 
 # Source in configuration
 
@@ -8,7 +8,7 @@ include ../Makefile.$(ARCH)
 # Makefile Specific definitions
 
 INCLUDES   = $(INCLUDE)
-CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
+CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES) -DVERSION=\"$(VERSION)\"
 LDFLAGS    = $(LDDEBUGFLAGS)
 LIBS       = -lc
 OBJS       = tclSystem.o

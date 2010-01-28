@@ -720,21 +720,22 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
    float     *data=NULL;
 
    /*Try to read HY for hybrid levels*/
-   if (Field->Ref->LevelType==LVL_HYBRID && Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
-      if ((fid=((FSTD_Head*)Field->Head)->FID)) {
-         i=-1;
+   if (Field->Ref->LevelType==LVL_HYBRID) {
+      if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0 && (fid=((FSTD_Head*)Field->Head)->FID)) {
+         i=0;
+         Field->Ref->Top=1e-32;
          FSTD_FileSet(NULL,fid);
          if (ZRef_DecodeRPNHybrid(fid->Id,i,i,"",i,Field->Ref)) {
             i=1;
          } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,i,i,"",i,Field->Ref)) {
             i=1;
-         } else {
-            i=0;
          }
          FSTD_FileUnset(NULL,fid);
       }
-   } else if (Field->Ref->LevelType==LVL_ETA && Field->Ref->Top==0.0) {
-      if ((fid=((FSTD_Head*)Field->Head)->FID)) {
+   } else if (Field->Ref->LevelType==LVL_ETA) {
+      if (Field->Ref->Top==0.0 && (fid=((FSTD_Head*)Field->Head)->FID)) {
+         i=0;
+         Field->Ref->Top=1e-32;
          FSTD_FileSet(NULL,fid);
          FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&data,"PT",-1);
          FSTD_FileUnset(NULL,fid);
@@ -742,8 +743,6 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
             Field->Ref->Top=data[0];
             free(data);
             i=1;
-         }  else {
-            i=0;
          }
       }
    }
