@@ -1481,7 +1481,7 @@ void DataSpec_IntervalsMod(TDataSpec *Spec,double Min,double Max) {
    if (Spec->InterModeParam>0.0) {
       Min-=fmod(Min,d);
 
-      for(v=Min;v<Max;v+=d) {
+      for(v=Min+(Min<0?0:d);v<Max;v+=d) {
          Spec->Inter[Spec->InterNb++]=v;
          if (Spec->InterNb>=256) {
             break;
