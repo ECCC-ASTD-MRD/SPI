@@ -436,7 +436,7 @@ proc Graph::Time::Graph { GR } {
    set xdates {}
 
    foreach date $dates {
-      lappend xdates [Graph::Time::Format $GR $date]
+      lappend xdates [Graph::TimeFormat $date $data(Time) $data(XMin)]
       lappend xinter $date
    }
 

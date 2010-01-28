@@ -429,13 +429,7 @@ proc Graph::TimeSection::Graph { GR } {
    set i -1
 
    foreach date $data(Dates) {
-      switch $data(Time) {
-         S    { lappend xdates [expr int($date-$data(XMin))] }
-         M    { lappend xdates [expr int($date-$data(XMin))/60] }
-         H    { lappend xdates [expr int($date-$data(XMin))/3600] }
-         D    { lappend xdates [expr int($date-$data(XMin))/86400] }
-         DATE { lappend xdates [clock format [expr int($date)] -format "%d/%m %H:%M" -gmt True] }
-      }
+      lappend xdates [Graph::TimeFormat $date $data(Time) $data(XMin)]
       lappend xinter [incr i]
    }
 

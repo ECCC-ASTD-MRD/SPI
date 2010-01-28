@@ -46,7 +46,7 @@
 #    Graph::TranslateInit      { Frame Type GR X Y }
 #    Graph::Update             { Frame }
 #    Graph::UpdateItems        { Frame }
-#    Graph::TimeScan           { Sec Mode { From 0 } }
+#    Graph::TimeFormat         { Sec Mode { From 0 } }
 #    Graph::ValFormat          { Order Val }
 #    Graph::Write              { Frame File }
 #    Graph::Zoom               { Type GR }
@@ -1662,7 +1662,7 @@ proc Graph::UpdateItems { Frame } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::TimeScan>
+# Nom      : <Graph::TimeFormat>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Format du temps en secondes.
@@ -1679,7 +1679,7 @@ proc Graph::UpdateItems { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::TimeScan { Sec Mode { From 0 } } {
+proc Graph::TimeFormat { Sec Mode { From 0 } } {
    variable Data
 
    switch $Mode {
@@ -1687,6 +1687,7 @@ proc Graph::TimeScan { Sec Mode { From 0 } } {
       "M"     { return [expr int($Sec-$From)/60] }
       "H"     { return [expr int($Sec-$From)/3600] }
       "D"     { return [expr int($Sec-$From)/86400] }
+      "DATE"  { return [clock format [expr int($Sec)] -format "%d/%m %H:%M" -gmt True] }
       default { return [clock format [expr int($Sec)] -format $Mode -gmt true] }
    }
 }
