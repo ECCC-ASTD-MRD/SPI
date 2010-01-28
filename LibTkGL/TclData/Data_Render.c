@@ -82,7 +82,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
    for (n=0;n<NbInter;n++) {
       /*Is the level within the data interval*/
-      if (Inter[n]>=Field->Stat->Max)
+      if (Inter[n]>=Field->Stat->Max || Inter[n]<=Field->Stat->Min)
          continue;
 
       memset(buf,0x0,FSIZE2D(Field->Def));
@@ -106,19 +106,19 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
          if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; } /* Check upper left corner */
          if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; } /* Check lower left corner */
 
-         i+=ci;
-         j+=cj;
-
          /*When we get to the center, we're done*/
-         if (i1<=i0 && j1<=j0) {
+         if (i1<=i0 || j1<=j0) {
             break;
          }
+
+         i+=ci;
+         j+=cj;
 
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
             len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
             if (len>1) {
-               if ((array=TArray_Alloc(Inter[n],len))) {
+              if ((array=TArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
                   FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
                } else {
@@ -129,6 +129,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
       }
    }
    free(buf);
+
    return(1);
 }
 
