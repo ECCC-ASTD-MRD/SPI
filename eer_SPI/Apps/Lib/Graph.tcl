@@ -771,7 +771,7 @@ proc Graph::DataSheet { Type GR } {
                $text insert end [format "%-20s %-20s" X Y]\n
                foreach x [vector get $xitem] y [vector get $yitem] {
                   if { $Type=="Time" } {
-                     set t [Graph::Time::Format $GR $x]
+                     set t [Graph::TimeFormat $x $data(Time) $data(XMin)]
                   }
                   $text insert end [format "%-20.8e %-20.8e $t" $x $y]\n
                }
