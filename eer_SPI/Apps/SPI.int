@@ -647,7 +647,7 @@ proc SPI::WindowMenu { } {
          -command { FieldCalc::Window }
       if { [string first "ec.gc.ca" [info hostname]] } {
          .menu.tools.menu add command -label [lindex $Lbl(Model) $GDefs(Lang)] -accelerator "Alt-M" -image MODEL  -compound left \
-            -command { set Model::Data(Show) True; Model::Window }
+            -command { set Model::Param(Show) True; Model::Window }
       }
       .menu.tools.menu add separator
 
