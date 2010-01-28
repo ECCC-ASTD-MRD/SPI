@@ -122,6 +122,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    } else {
       glPointSize(Field->Spec->RenderParticle+0.1);
    }
+
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
    glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
@@ -131,8 +132,8 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    att0=GLShader_AttribGet(prog,"Vd");
 
    /*Projeter les particules*/
-   glBegin(GL_POINTS);
    glEnable(GL_TEXTURE_2D);
+   glBegin(GL_POINTS);
    for(n=0;n<FSIZE2D(Field->Def);n++) {
       Def_Get(Field->Def,0,n,val);
       glVertexAttrib1fARB(att0,val);
@@ -311,7 +312,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Outline) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
@@ -488,8 +489,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_WRAP_S,GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_WRAP_T,GL_REPEAT);
 
    /*Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix*/
    if (Field->Def->Type!=TD_Float32) {
@@ -550,5 +549,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glActiveTexture(GL_TEXTURE0);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
-   return 1;
+
+   return(1);
 }

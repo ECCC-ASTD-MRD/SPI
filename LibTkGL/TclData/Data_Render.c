@@ -433,7 +433,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    TList *list;
    TArray *array;
 
-   if (!Field->Ref || !Field->Ref->Pos || (!Field->Spec->Outline && !Field->Spec->MapAll))
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
 
    /*Les contours sont-ils definit*/
@@ -872,7 +872,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Outline) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
@@ -973,7 +973,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[2] || !Field->Spec->Outline) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[2] || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
@@ -1570,7 +1570,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    int     n=0,mem,i,j,idx,dz;
    char    buf[32];
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Outline)
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline)
       return;
 
    /*Calculer la dimension generale*/
