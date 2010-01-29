@@ -416,8 +416,8 @@ proc Mapper::Read { Files } {
       return
    }
 
-   $Data(Canvas) configure -cursor watch
    if { [winfo exists .mapper] } {
+      $Data(Canvas) configure -cursor watch
       .mapper configure -cursor watch
    }
    update idletasks;
@@ -429,8 +429,8 @@ proc Mapper::Read { Files } {
       Mapper::UpdateData $Page::Data(Frame)
    }
 
-   $Data(Canvas) configure -cursor left_ptr
    if { [winfo exists .mapper] } {
+      $Data(Canvas) configure -cursor left_ptr
       .mapper configure -cursor left_ptr
    }
 }
