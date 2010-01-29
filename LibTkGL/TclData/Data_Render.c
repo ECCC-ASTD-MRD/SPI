@@ -72,22 +72,26 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
    int n,i,j,ci,cj,i0,i1,j0,j1,len;
    unsigned long d,sz;
-   unsigned char *buf;
+   unsigned char *buf=NULL;
    TArray *array;
 
+   /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
    if (Mode==REF_COOR && !Field->Ref)
       return(0);
 
-   buf=(unsigned char*)malloc(FSIZE2D(Field->Def));
-
    for (n=0;n<NbInter;n++) {
-      /*Is the level within the data interval*/
+      /*If the interval is not within the value limits, skip*/
       if (Inter[n]>=Field->Stat->Max || Inter[n]<=Field->Stat->Min)
          continue;
 
-      memset(buf,0x0,FSIZE2D(Field->Def));
+      /*Create/Reset gridcell parsing flags*/
+      if (!buf) {
+         buf=(unsigned char*)calloc(FSIZE2D(Field->Def),sizeof(char));
+      } else {
+         memset(buf,0x0,FSIZE2D(Field->Def));
+      }
 
-      /*Calculate contours within the specified limits*/
+      /*Calculate contours within the specified coverage limits*/
       i0=Field->Def->Limits[0][0];
       j0=Field->Def->Limits[1][0];
       i1=Field->Def->Limits[0][1];
@@ -117,6 +121,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
             len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
+            /*If we found a least 1 segment, keep it*/
             if (len>1) {
               if ((array=TArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
@@ -128,7 +133,8 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
          }
       }
    }
-   free(buf);
+   if (buf)
+      free(buf);
 
    return(1);
 }

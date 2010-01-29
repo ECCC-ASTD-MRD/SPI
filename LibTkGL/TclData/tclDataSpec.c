@@ -659,7 +659,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_GetIntFromObj(Interp,Objv[++i],&new);
                if (new!=32 && new!=64 && new!=128 && new!=256 && new!=512 && new!=1024 && new!=2048 && new!=4096) {
                   Tcl_AppendResult(Interp,"DataSpec_Config: Invalid texture size must be 32,64,128,256,512,1024,2048 or 4096",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                if (Spec->TexSize!=new) {
                   Spec->TexSize=new;
@@ -752,7 +752,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      Spec->Inter[ii]=tmp;
                   }
                }
-               if (new || nobj!=Spec->InterNb) {
+               if (!Spec->InterMode && (new || nobj!=Spec->InterNb)) {
                   Spec->InterNb=nobj;
                   cmap=cseg=1;
                }
@@ -861,6 +861,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
             }
             break;
+
          case VAL2MAP:
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
             if (Spec->Map) {
@@ -884,8 +885,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Map->Name,-1));
                }
             } else {
-               Spec->Map=CMap_Get(Tcl_GetString(Objv[++i]));
-               cmap=1;
+               new=CMap_Get(Tcl_GetString(Objv[++i]));
+               if (new!=Spec->Map) {
+                  Spec->Map=new;
+                  cmap=1;
+               }
             }
             break;
 
