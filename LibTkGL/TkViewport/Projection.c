@@ -1228,27 +1228,28 @@ int Projection_Init(Tcl_Interp *Interp){
    extern int Azimuth_Init();
 
    if (!ProjectionInit++) {
-
       Tcl_InitHashTable(&ProjectionTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&ProjectionTypes,TCL_STRING_KEYS);
-      Tcl_CreateObjCommand(Interp,"projection",Projection_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
-
-      /*Initialisation du package de projection cylindrique*/
-      if (Azimuth_Init(Interp)==TCL_ERROR)
-         return(TCL_ERROR);
-
-      /*Initialisation du package de projection cylindrique*/
-      if (Cylin_Init(Interp)==TCL_ERROR)
-         return(TCL_ERROR);
-
-      /*Initialisation du package de projection orthographique*/
-      if (Ortho_Init(Interp)==TCL_ERROR)
-         return(TCL_ERROR);
-
-      /*Initialisation du package de projection usager*/
-      if (Grid_Init(Interp)==TCL_ERROR)
-         return(TCL_ERROR);
    }
+
+   Tcl_CreateObjCommand(Interp,"projection",Projection_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
+
+   /*Initialisation du package de projection cylindrique*/
+   if (Azimuth_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
+   /*Initialisation du package de projection cylindrique*/
+   if (Cylin_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
+   /*Initialisation du package de projection orthographique*/
+   if (Ortho_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
+   /*Initialisation du package de projection usager*/
+   if (Grid_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
    return(TCL_OK);
 }
 
