@@ -526,7 +526,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       ox=1;
       dp=dp>10?10:dp;
    }
-      fprintf(stderr,"-dpdpdpdp %i\n",dp);
 
    /*Process gridpoints*/
    for(j=0;j<Field->Def->NJ-dp;j+=dp) {
@@ -570,6 +569,5 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
 
-      fprintf(stderr,"-22222222-----00000000\n");
    return(1);
 }
