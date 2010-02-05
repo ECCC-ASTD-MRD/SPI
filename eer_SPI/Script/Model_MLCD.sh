@@ -35,6 +35,10 @@ function MLCD_Pre {
 }
 
 function MLCD_Post {
+
+   #----- Encode the pool info on all of the result files
+   Model_PoolEncode
+
    return 0
 }
 

@@ -56,8 +56,9 @@ if { $dx!=0 && $dy!=0 } {
 
    #----- Creer la bande et la configurer
 #   gdalband create RASTER $width $height 1 Float32
-   gdalband create RASTER $width $height 1 Byte
-   gdalband define RASTER -transform [list [lindex $extent 1] $res 0.000000000000000 [lindex $extent 0] 0.000000000000000 $res]
+#   gdalband create RASTER $width $height 1 Byte
+   gdalband create RASTER $width $height 3 Byte
+   gdalband define RASTER -transform [list [lindex $extent 1] $res 0.000000000000000 [lindex $extent 2] 0.000000000000000 -$res]
    gdalband configure RASTER -desc FLD
 
    #----- Effectuer l'interpolation
