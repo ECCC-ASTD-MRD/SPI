@@ -75,16 +75,6 @@ namespace eval Info {
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
-   set Lbl(EmMass)               { "Masse totale relâchée (unité)" "Total released mass (unit)" }
-   set Lbl(EmIsoName)            { "Nom de l'isotope radioactif" "Name of the radionuclide" }
-   set Lbl(EmDepVel)             { "Vitesse de dépôt (m/s)" "Deposition velocity (m/s)" }
-   set Lbl(EmHalfLife)           { "Période de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
-   set Lbl(EmWetScav)            { "Facteur de lessivage humide" "Wet scavenging coefficient" }
-   set Lbl(EmDuration)           { "Durée (s)" "Duration (s)" }
-   set Lbl(EmDurationMin)        { "Durée d'émission (min)" "Release duration (min)" }
-   set Lbl(EmBottom)             { "Bas de la colonne (m)" "Column bottom (m)" }
-   set Lbl(EmTop)                { "Haut de la colonne (m)" "Column top (m)" }
-   set Lbl(EmRadius)             { "Rayon de la colonne (m)" "Column radius (m)" }
    set Lbl(ObsRough)             { "Rugosité (m)" "Roughness (m)" }
    set Lbl(ObsObukhov)           { "Obukhov (m)" "Obukhov (m)" }
    set Lbl(ObsPrecip)            { "Précipitation (mm/h)" "Precipitation (mm/h)" }
@@ -155,10 +145,20 @@ namespace eval Info {
    set Lbl(Timescale)            { "Échelle de temps lagrangienne (s)" "Lagrangian time scale (s)" }
    set Lbl(ReflectionLevel)      { "Niveau inférieur de réflexion (hyb|eta|sig)" "Bottom reflection level (hyb|eta|sig)" }
 
+   set Lbl(EmMass)               { "Masse totale relâchée (unité)" "Total released mass (unit)" }
+   set Lbl(EmIsoName)            { "Nom de l'isotope radioactif" "Name of the radionuclide" }
+   set Lbl(EmDepVel)             { "Vitesse de dépôt (m/s)" "Deposition velocity (m/s)" }
+   set Lbl(EmHalfLife)           { "Période de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
+   set Lbl(EmWetScav)            { "Facteur de lessivage humide" "Wet scavenging coefficient" }
+   set Lbl(EmDuration)           { "Durée (s)" "Duration (s)" }
+   set Lbl(EmDurationMin)        { "Durée d'émission (min)" "Release duration (min)" }
+   set Lbl(EmBottom)             { "Bas de la colonne (m)" "Column bottom (m)" }
+   set Lbl(EmTop)                { "Haut de la colonne (m)" "Column top (m)" }
+   set Lbl(EmRadius)             { "Rayon de la colonne (m)" "Column radius (m)" }
+
    set Lbl(EmNumberParticles)    { "Nombre de particules" "Number of particles" }
    set Lbl(EmDensity)            { "Densité d'une particule (µg/m³)" "Density of a particle (µg/m³)" }
    set Lbl(EmHeight)             { "Hauteur maximale du panache (m)" "Maximum plume height (m)" }
-   set Lbl(EmMass)               { "Masse totale relâchée (µg)" "Total released mass (µg)" }
    set Lbl(EmSizeDist)           { "Distribution de la taille des particules" "Size distribution of the particles" }
    set Lbl(EmVerticalDist)       { "Distribution verticale du panache" "Vertical plume distribution" }
 
@@ -169,7 +169,6 @@ namespace eval Info {
    set Lbl(EmIsoQuantity)        { "Quantité totale relâchée" "Total release quantity" }
    set Lbl(EmTotalDuration)      { "Durée totale d'émission (s)" "Total release duration (s)" }
    set Lbl(EmEffectiveDuration)  { "Durée effective d'émission (s)" "Effective release duration (s)" }
-   set Lbl(EmDuration)           { "Durée d'émission" "Emission duration" }
 
    set Lbl(EmLabel)              { "Type de période" "Type of period" }
    set Lbl(EmReleaseRates)       { "Taux de relâchement (unité/h)" "Release rate (unit/h)" }
