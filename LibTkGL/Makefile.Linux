@@ -8,7 +8,9 @@ YACC = bison
 
 # Target architecture
 
-ARCH      = Linux
+OS        = $(shell uname -s)
+PROC      = $(shell uname -m)
+ARCH      = $(OS)_$(PROC)
 LIB_VER   = 7.4.0
 TCLTK_VER = 8.5.7
 TCLTK_BASE= 8.5
