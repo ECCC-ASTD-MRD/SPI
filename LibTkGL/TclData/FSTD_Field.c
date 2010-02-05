@@ -246,6 +246,14 @@ int FSTD_FieldReadMesh(TData *Field) {
                if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
                if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
             }
+
+            if (Field->Ref->Grid[1]=='Y') {
+               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0);
+               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
+               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0);
+               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
+               if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
+            }
             break;
 
          case 'Y':
