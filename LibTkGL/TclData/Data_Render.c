@@ -1294,7 +1294,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int    i,j,c0,c1,c2,c3,idxk,idx0,idx1,idx2,idx3;
-   int    ox=0,base=0;
+   int    ox=0,base=0,dp;
    int    depth;
    double v0,v1,v2,v3;
    Vect3d g0,g1,g2,g3,dim,*pos;
@@ -1335,19 +1335,30 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       VAL2COL(base,Field->Spec,Field->Spec->Inter[0]);
    }
 
-   /*Grille avec loop sur la longitude*/
-   if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
-      ox=1;
-   }
-
    /*Process gridpoints*/
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    pos=Field->Ref->Pos[Field->Def->Level];
-   for(j=0;j<Field->Def->NJ-1;j++) {
+
+   /*Resolution selon la dimension des cellules (mid-grid)*/
+   dp=1;
+   if (Field->Ref->Grid[0]!='V') {
+      idx0=Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2;
+      dp=2.0/FFCellResolution(VP,Proj,pos[idx0],pos[idx0+Field->Def->NI+1]);
+      dp=dp<1?1:dp;
+   }
+
+   /*Grille avec loop sur la longitude*/
+   if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
+      ox=1;
+      dp=dp>10?10:dp;
+   }
+
+   /*Process gridpoints*/
+   for(j=0;j<Field->Def->NJ-dp;j+=dp) {
 
       glBegin(GL_QUADS);
 
-      for(i=0;i<Field->Def->NI+ox;i++) {
+      for(i=0;i<(Field->Def->NI+dp);i+=dp) {
 
          if (i!=0) {
             idx1=idx0;
@@ -1358,14 +1369,19 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             c2=c3;
          }
 
-         /*If the grid wraps around*/
+         /*If the next index is over the size*/
          if (i>=Field->Def->NI) {
-            idx0=j*Field->Def->NI;
-            idx3=idx0+Field->Def->NI;
+            if (ox) {
+               /*If the grid wraps around, use the first point*/
+               idx0=j*Field->Def->NI;
+            } else {
+               /*If not, use the last point*/
+               idx0=(j+1)*Field->Def->NI-1;
+            }
          } else {
             idx0=j*Field->Def->NI+i;
-            idx3=idx0+Field->Def->NI;
          }
+         idx3=idx0+dp*Field->Def->NI;
 
          Def_GetMod(Field->Def,idxk+idx0,v0);
          Def_GetMod(Field->Def,idxk+idx3,v3);
