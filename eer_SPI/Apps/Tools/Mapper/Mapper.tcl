@@ -399,7 +399,8 @@ proc Mapper::GetColor { } {
 # But      : Lecture d'une donnee geographique.
 #
 # Parametres :
-#   <File>  : Fichier a lire
+#   <Files>  : Fichiers a lire
+#   <Full>   : Lectur complete ou partielle
 #
 # Retour    :
 #
@@ -407,7 +408,7 @@ proc Mapper::GetColor { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::Read { Files } {
+proc Mapper::Read { Files { Full False } } {
    global   GDefs
    variable Data
    variable Msg
@@ -423,7 +424,7 @@ proc Mapper::Read { Files } {
    update idletasks;
 
    foreach file $Files {
-      if { ![Mapper::ReadBand $file] && ![Mapper::ReadLayer $file] } {
+      if { ![Mapper::ReadBand $file "" 2 $Full] && ![Mapper::ReadLayer $file] } {
          Dialog::Error . $Msg(BadFile)
       }
       Mapper::UpdateData $Page::Data(Frame)
@@ -435,7 +436,7 @@ proc Mapper::Read { Files } {
    }
 }
 
-proc Mapper::ReadBand { File { Bands "" } { Nb 2 } } {
+proc Mapper::ReadBand { File { Bands "" } { Nb 2 } { Full False } } {
    global GDefs errorInfo
    variable Data
    variable Msg
@@ -502,7 +503,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } } {
       lappend Data(Bands$File) alpha
    }
 
-   set er [catch { gdalband read $File $Bands False } errmsg ]
+   set er [catch { gdalband read $File $Bands $Full } errmsg ]
 
    if { $er } {
       error $errmsg $errorInfo
