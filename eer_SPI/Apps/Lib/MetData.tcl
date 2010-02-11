@@ -12,21 +12,22 @@
 #
 # Fonctions:
 #
-#   MetData::Duration       { List Idx0 Idx1 }
-#   MetData::File           { Date APath PPath Mode Mixed { Host "" } }
-#   MetData::Find           { FLD FID NOMVAR TYPVAR DATEV IP1 IP2 IP3 ETIKET }
-#   MetData::FindAll        { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
-#   MetData::FormatDATEV    { Field { Min False } }
-#   MetData::GetLatestRun   { Path }
-#   MetData::GetLatestStamp { Path }
-#   MetData::GetMode        { Files }
-#   MetData::StampModulo    { Stamp Sec }
-#   MetData::GridDefineLL   { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
-#   MetData::GridDefinePS   { Scale NI NJ Lat Lon { Field "" } }
-#   MetData::ListIP2        { Index Var { Stamp 0 } }
-#   MetData::Path           { Level Model DiagVar ProgVar }
-#   MetData::Profile        { Stamp Var File Lat Lon }
-#   MetData::Obukhov        { Stamp File Lat Lon }
+#   MetData::Duration         { List Idx0 Idx1 }
+#   MetData::File             { Date APath PPath Mode Mixed { Host "" } }
+#   MetData::Find             { FLD FID NOMVAR TYPVAR DATEV IP1 IP2 IP3 ETIKET }
+#   MetData::FindAll          { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
+#   MetData::FormatDATEV      { Field { Min False } }
+#   MetData::GetLatestRun     { Path }
+#   MetData::GetLatestStamp   { Path }
+#   MetData::GetMode          { Files }
+#   MetData::StampModulo      { Stamp Sec }
+#   MetData::GridDefineLL     { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
+#   MetData::GridDefinePS     { Scale NI NJ Lat Lon { Field "" } }
+#   MetData::ListIP2          { Index Var { Stamp 0 } }
+#   MetData::Path             { Level Model DiagVar ProgVar }
+#   MetData::Profile          { Stamp Var File Lat Lon }
+#   MetData::Obukhov          { Stamp File Lat Lon }
+#   MetData::ObukhovCalculate { Stamp File Lat Lon }
 #
 # Remarques :
 #   Aucune
@@ -913,8 +914,8 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
 # Nom      : <MetData::Obukhov>
 # Creation : Novembre 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Calcule la longueur d'Obukhov pour une date et une localisation
-#            specifique avec les champs du fichier specifier.
+# But      : Recuperer la longueur d'Obukhov pour une date et une localisation
+#            specifique.
 #
 # Parametres :
 #  <Stamp>   : Date stamp des donnees
@@ -929,6 +930,49 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
 #----------------------------------------------------------------------------
 
 proc MetData::Obukhov { Stamp File Lat Lon } {
+
+   #----- Find inverse Obukhov length (aggregated value) [m-1] record.
+   set io [fstdfield find $File $Stamp "" 1195 -1 -1 "" IO]
+
+   if { [llength $io] } {
+
+      #----- Read inverse Obukhov length [m-1].
+      fstdfield read FLD $File $io
+
+      #----- Interpolate field at specific geographical coordinates.
+      set io [fstdfield stats FLD -coordvalue $Lat $Lon]
+
+      #----- Compute Obukhov length [m].
+      set ol [expr 1.0/double($io)]
+
+   } else {
+
+      Log::Print WARNING "Missing inverse Obukhov length field 'IO'. Using a neutral atmosphere."
+
+      set ol 22856.0320937
+   }
+   return $ol
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetData::ObukhovCalculate>
+# Creation : Novembre 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calcule la longueur d'Obukhov pour une date et une localisation
+#            specifique avec les champs du fichier specifier.
+#
+# Parametres :
+#  <Stamp>   : Date stamp des donnees
+#  <File>    : Fichier meteorologique
+#  <Lat>     : Coordonnne en latitude
+#  <Lon>     : Coordonnne en longitude
+#
+# Retour     :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
 
    set rgas  287.00
    set grav    9.81
