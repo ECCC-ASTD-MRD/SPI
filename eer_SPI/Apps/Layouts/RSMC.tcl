@@ -711,8 +711,8 @@ proc RSMC::PrintCommand { Frame } {
 
                            #----- Appeler la fonction d'impression du PrintBox
 
-                           set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_${nomvar}_${ip3}_${iso}.${hour}"
-                           InfoFrame::Incr .printbox.job 1 "Generating RSMC Map $PrintBox::Print(FullName)"
+                           set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)_${nomvar}_${ip3}_${iso}.${hour}"
+                           InfoFrame::Incr .printbox.job 1 "Generating RSMC Map $PrintBox::Param(FullName)"
                            PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame]  [Page::CanvasHeight $Frame]
                         }
                      }
@@ -730,8 +730,8 @@ proc RSMC::PrintCommand { Frame } {
 
                      #----- Appeler la fonction d'impression du PrintBox
 
-                     set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_${field}_${iso}.${hour}"
-                     InfoFrame::Incr .printbox.job 1 "Generating RSMC Map $PrintBox::Print(FullName)"
+                     set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)_${field}_${iso}.${hour}"
+                     InfoFrame::Incr .printbox.job 1 "Generating RSMC Map $PrintBox::Param(FullName)"
                      PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame]  [Page::CanvasHeight $Frame]
                   }
                }
@@ -857,8 +857,8 @@ proc RSMC::PrintWidget { Frame } {
 
    #----- Constantes pour l'impression par PrintBox
 
-   set PrintBox::Print(Filename) "$Sim(Name)"
-   set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)"
+   set PrintBox::Param(Filename) "$Sim(Name)"
+   set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)"
 }
 
 #----------------------------------------------------------------------------

@@ -1083,8 +1083,8 @@ proc VAAC::PrintWidget { Frame } {
 
    #----- Constantes pour l'impression par PrintBox
 
-   set PrintBox::Print(Filename) "$Sim(Name)_[string tolower $Sim(Model)]"
-   set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)"
+   set PrintBox::Param(Filename) "$Sim(Name)_[string tolower $Sim(Model)]"
+   set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)"
 }
 
 #----------------------------------------------------------------------------
@@ -1154,12 +1154,12 @@ proc VAAC::PrintCommand { Frame } {
                if { $vp != "All" } {
                   set lbl [lindex [split $hour _] $idx]
                   InfoFrame::Incr .printbox.job 1 "Generating VAAC Map $Lbl(FL1$vp)_$Lbl(FL2$vp) ${lbl}"
-                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_$Lbl(FL1$vp)_$Lbl(FL2$vp)_${lbl}"
+                  set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)_$Lbl(FL1$vp)_$Lbl(FL2$vp)_${lbl}"
                   PrintBox::Print $Frame $Viewport::Data(X$Page($vp)) [expr $Viewport::Data(Y$Page($vp)) - 50]\
                      $Viewport::Data(Width$Page($vp)) [expr $Viewport::Data(Height$Page($vp)) + 50]
                } else {
                   InfoFrame::Incr .printbox.job 1 "Generating VAAC Map ${hour}"
-                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)_${hour}"
+                  set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)_${hour}"
                   PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame]
                }
             }

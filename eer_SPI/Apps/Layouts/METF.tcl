@@ -522,8 +522,8 @@ proc METF::PrintWidget { Frame } {
 
    #----- Constantes pour l'impression par PrintBox
 
-   set PrintBox::Print(Filename) "$Sim(Name)"
-   set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)"
+   set PrintBox::Param(Filename) "$Sim(Name)"
+   set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)"
 }
 
 #----------------------------------------------------------------------------
@@ -596,12 +596,12 @@ proc METF::PrintCommand { Frame } {
             if { $Print($vp) } {
                if { $vp != "All" } {
                   InfoFrame::Incr .printbox.job 1 "Generating METF Map for level ${lbl}"
-                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename).${lbl}.[format "%03i" ${hour}]"
+                  set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename).${lbl}.[format "%03i" ${hour}]"
                   PrintBox::Print $Frame $Viewport::Data(X$Page($vp)) [expr $Viewport::Data(Y$Page($vp))-20] \
                      $Viewport::Data(Width$Page($vp)) [expr $Viewport::Data(Height$Page($vp))+20]
                } else {
-                  set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename).[format "%03i" ${hour}]"
-                  InfoFrame::Incr .printbox.job 1 "Generating METF Map $PrintBox::Print(FullName)"
+                  set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename).[format "%03i" ${hour}]"
+                  InfoFrame::Incr .printbox.job 1 "Generating METF Map $PrintBox::Param(FullName)"
                   PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame]
                }
             }

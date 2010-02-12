@@ -215,11 +215,11 @@ proc TRAJ::PrintWidget { Frame } {
    #----- Constantes pour l'impression par PrintBox
 
    if { [llength $Trajectory::Data(List)] } {
-      set PrintBox::Print(Filename) "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]_traj"
+      set PrintBox::Param(Filename) "[trajectory define [lindex $Trajectory::Data(List) 0] -ID]_traj"
    } else {
-      set PrintBox::Print(Filename) "output"
+      set PrintBox::Param(Filename) "output"
    }
-   set PrintBox::Print(FullName) "$PrintBox::Print(Path)/$PrintBox::Print(Filename)"
+   set PrintBox::Param(FullName) "$PrintBox::Param(Path)/$PrintBox::Param(Filename)"
 }
 
 #----------------------------------------------------------------------------
