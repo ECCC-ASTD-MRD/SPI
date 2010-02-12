@@ -49,6 +49,7 @@ namespace eval PrintBox {
    #----- Definitions des parametres de transmission sur site WEB
    set Param(Path)           $env(HOME)                                       ;#Path du fichier de sortie
    set Param(Filename)       "output"                                         ;#Nom du fichier de sortie
+   set Param(FullName)       "$Param(Path)/$Param(Filename)"                ;#Nom complet
    set Param(Size)           "8.5_x_11"                                       ;#Format par defaut
    set Param(Sizes)          { 4_x_4 6_x_6 7_x_7 8.5_x_11 8.5_x_14 17_x_22 }  ;#Liste des formats
    set Param(Angle)          portrait                                         ;#Orientation
@@ -79,7 +80,6 @@ namespace eval PrintBox {
    set Print(Job)            ""                                               ;#Traivail en cours
    set Print(DPI)            [expr [winfo screenwidth .]/([winfo screenmmwidth .]*0.03937008231878280600)] ;#DPI de l'ecran
    set Print(Type)           printer                                        ;#Type de sortie
-   set Print(FullName)       "$Param(Path)/$Param(Filename)"                ;#Nom complet
    set Print(InternalFile)   ""                                             ;#Fichier interne utilise pour generer le ps
 
    set Type(RASTER)  { {Adobe PostScript {*.ps}}
@@ -222,16 +222,16 @@ proc PrintBox::PrintTXT { File } {
       }
    } else {
       if { $Param(Angle) == "portrait" } {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -o - | convert -density $Print(DPI) - $Print(FullName).$Print(Device) }
+         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -o - | convert -density $Print(DPI) - $Param(FullName).$Print(Device) }
       } else {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3 $File -o - | convert -density $Print(DPI) - $Print(FullName).$Print(Device) }
+         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3 $File -o - | convert -density $Print(DPI) - $Param(FullName).$Print(Device) }
       }
 
       if { $Print(WEBSite)!="" } {
          set site [lindex $Param(WEBPathList) [lsearch -exact $Param(WEBNameList) $Print(WEBSite)]]
          InfoFrame::Msg .printbox.job "Transfering to WEB $site"
-         exec chmod 644 $Print(FullName).$Print(Device)
-         eval exec scp $Print(FullName).$Print(Device) ${site}/[file tail $Print(FullName)].$Print(Device) > /dev/null
+         exec chmod 644 $Param(FullName).$Print(Device)
+         eval exec scp $Param(FullName).$Print(Device) ${site}/[file tail $Param(FullName)].$Print(Device) > /dev/null
       }
    }
 }
@@ -307,7 +307,7 @@ proc PrintBox::Create { Frame Mode args } {
 
    .printbox configure -cursor left_ptr
 
-   set Print(FullName) "$Param(Path)/$Param(Filename)"
+   set Param(FullName) "$Param(Path)/$Param(Filename)"
    set Print(Job)      ""
 
    TabFrame::Create .printbox.tab 1 ""
@@ -347,7 +347,7 @@ proc PrintBox::Create { Frame Mode args } {
             label $frame.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 8 -anchor w
             button $frame.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
                -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Param(Path) Save [linsert $PrintBox::Type(RASTER) 0 $PrintBox::Param(Format)] $PrintBox::Param(Filename)] [FileBox::GetType] }
-            entry $frame.file.name -width 32 -bg $GDefs(ColorLight) -textvariable PrintBox::Print(FullName) \
+            entry $frame.file.name -width 32 -bg $GDefs(ColorLight) -textvariable PrintBox::Param(FullName) \
                -bd 1 -justify left
             $frame.file.name xview moveto 1
             pack $frame.file.lbl $frame.file.name $frame.file.sel -side left
@@ -367,7 +367,7 @@ proc PrintBox::Create { Frame Mode args } {
             pack $frame.web.lbl $frame.web.sel -side left
          pack $frame.web -side top -pady 5
 
-      bind  $frame.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Print(FullName) }
+      bind  $frame.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Param(FullName) }
    }
 
    frame .printbox.par -relief raised -bd 1
@@ -493,7 +493,7 @@ proc PrintBox::FilePathDefine { Path { Type "" } } {
 
    set Param(Path)     [file dirname $Path]
    set Param(Filename) [file tail $Path]
-   set Print(FullName) $Path
+   set Param(FullName) $Path
 }
 
 #----------------------------------------------------------------------------
@@ -518,7 +518,7 @@ proc PrintBox::Image { Frame Format File { Angle portrait } } {
 
    set PrintBox::Print(Type)     file
    set PrintBox::Print(Device)   $Format
-   set PrintBox::Print(FullName) $File
+   set PrintBox::Param(FullName) $File
    set PrintBox::Param(Angle)    $Angle
 
    PrintBox::Do $Frame
@@ -608,8 +608,8 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
    set Print(InternalFile) "/tmp/output_[pid]_[clock seconds]"
 
-   if { [file extension $Print(FullName)]==".$Print(Device)" } {
-      set Print(FullName) [file rootname $Print(FullName)]
+   if { [file extension $Param(FullName)]==".$Print(Device)" } {
+      set Param(FullName) [file rootname $Param(FullName)]
    }
 
    PrintBox::FontMap
@@ -647,9 +647,9 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)]"
 
          if { $Print(Device)=="ppm" } {
-            file rename -force $Print(InternalFile).ppm  $Print(FullName).$Print(Device)
+            file rename -force $Print(InternalFile).ppm  $Param(FullName).$Print(Device)
          } else {
-            exec convert $Print(InternalFile).ppm $Print(FullName).$Print(Device)
+            exec convert $Print(InternalFile).ppm $Param(FullName).$Print(Device)
             file delete -force $Print(InternalFile).ppm
          }
       } else {
@@ -660,7 +660,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)]"
 
-         file rename -force $Print(InternalFile).ps  $Print(FullName).$Print(Device)
+         file rename -force $Print(InternalFile).ps  $Param(FullName).$Print(Device)
       }
 
       InfoFrame::Incr .printbox.job 1
@@ -670,23 +670,23 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
       if { $Print(WEBSite)!="" } {
          set site [lindex $Param(WEBPathList) [lsearch -exact $Param(WEBNameList) $Print(WEBSite)]]
          InfoFrame::Incr .printbox.job 1 "Transfering to WEB $site"
-         exec chmod 644 $Print(FullName).$Print(Device)
+         exec chmod 644 $Param(FullName).$Print(Device)
 
          #----- Hardcode temporaire pour envoyer sur le nouveau site
 
          if { $Print(WEBSite)=="WEATHEROFFICE_VAAC" } {
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt True]
-            set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f $Print(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/${prefix}_[file tail $Print(FullName)].$Print(Device)" } MsgCatch]
+            set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f $Param(FullName).$Print(Device) -s weather -D 0 -p eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device)" } MsgCatch]
 
 			if { $ErrCatch != 0 } {
-               Log::Print ERROR "Unable to transfert the $Print(FullName).$Print(Device) on weatheroffice.\n\n$MsgCatch"
+               Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on weatheroffice.\n\n$MsgCatch"
             }
 
          } else {
-            eval exec scp $Print(FullName).$Print(Device) ${site}/[file tail $Print(FullName)].$Print(Device) > /dev/null
+            eval exec scp $Param(FullName).$Print(Device) ${site}/[file tail $Param(FullName)].$Print(Device) > /dev/null
          }
 
-         file delete -force $Print(FullName).$Print(Device)
+         file delete -force $Param(FullName).$Print(Device)
       }
    }
 
