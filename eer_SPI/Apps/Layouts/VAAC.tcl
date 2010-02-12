@@ -291,19 +291,12 @@ proc VAAC::DataInit { Frame } {
 
    set Sim(model) [string tolower $Sim(Model)] ; #----- Dispersion model name in lower case.
 
-   #----- Definir la date de l'eruption
+   #----- Initialiser la liste des heures disponibles (On arrondit a l'heure la plus proche)
 
-   set secsim [clock scan "$Sim(SimMonth)/$Sim(SimDay)/$Sim(SimYear) $Sim(SimHour)00" -gmt true]
-   set secacc [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true]
-   set Data(Eruption) [clock format $secacc -format "%a %b %d %Y, %H:%M UTC" -gmt true]
-
-#----- Initialiser la liste des heures disponibles (On arrondit a l'heure la plus proche)
-
-#   set Sim(Stamp0) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
    set Sim(Stamp0) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
    if { $Sim(AccMin)>30 } {
       set Sim(Stamp0) [fstdstamp incr $Sim(Stamp0) 1]
-}
+   }
    set Sim(StampS) [fstdstamp fromdate $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay) $Sim(SimHour)000000]
    set Data(HourD) [fstdstamp diff $Sim(Stamp0) $Sim(StampS)]
 
@@ -614,6 +607,10 @@ proc VAAC::LayoutUpdate { Frame } {
    variable Data
    variable Page
 
+   if { ![info exists Sim(Model)] } {
+      return
+   }
+
    set canvas $Frame.page.canvas
 
    set fld0 [lindex [Viewport::Assigned $Frame $Page(VP1) fstdfield] 0]
@@ -676,8 +673,11 @@ proc VAAC::LayoutUpdate { Frame } {
    $canvas itemconf FT4 -text ""
    $canvas itemconf FT5 -text ""
 
+   #----- Definir la date de l'eruption
+   set erupt [clock format [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true] -format "%a %b %d %Y, %H:%M UTC" -gmt true]
+
    $canvas itemconf FT1 -text "$Lbl(FT1) $Sim(Name) $coord"
-   $canvas itemconf FT2 -text "$Lbl(FT2) $Data(Eruption)"
+   $canvas itemconf FT2 -text "$Lbl(FT2) $erupt"
    $canvas itemconf FT4 -text "$Lbl(FT4) FL[expr round($Sim(EmHeight)*0.032808398950131)]"
    $canvas itemconf MDL -text "$Sim(Model)"
 
