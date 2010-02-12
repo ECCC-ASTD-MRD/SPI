@@ -81,9 +81,12 @@ do
 done
 
 #----- Testing hardware capabilities
-if [[ `${SPI_PATH}/Apps/Lib/System.tcl` -eq 0 ]]
+if [[ ($SOFT -eq 0) ]]
 then
-   SOFT=1
+   if [[ `${SPI_PATH}/Apps/Lib/System.tcl` -eq 0 ]]
+   then
+      SOFT=1
+   fi
 fi
 
 #----- check for software mode
