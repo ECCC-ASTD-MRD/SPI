@@ -434,7 +434,7 @@ proc Macro::Reset { } {
       Macro::${Data(Current)}::Clean
    }
 
-   SPI::LayoutLoad $Data(Frame) SPI
+#   SPI::LayoutLoad $Data(Frame) SPI
    Macro::Cursor left_ptr
 }
 
@@ -504,8 +504,9 @@ proc Macro::New { Path } {
 
       set f [open $Path w]
       puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n"
-      puts $f "proc Macro::${macro}::Execute { } {\n   variable Data\n\n}\n"
-      puts $f "proc Macro::${macro}::Clean { } {\n   variable Data\n\n}\n"
+      puts $f "proc Macro::${macro}::Execute { } {\n   variable Data\nvariable Param\n\n}\n"
+      puts $f "proc Macro::${macro}::Clean { } {\n   variable Data\nvariable Param\n\n}\n"
+      puts $f "proc Macro::${macro}::Args { } {\n   global argc argv\n\n}\n"
 
       close $f
 
