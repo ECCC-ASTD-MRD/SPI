@@ -2452,8 +2452,12 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    }
 
    /*Read in data in another thread*/
-   if (!Band->Tex.ThreadId && !VP->Secondary)
-      Tcl_CreateThread(&id,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS);
+   if (GLRender->XBatch) {
+      GeoTex_Parse(Band,&Band->Tex.Tile,Proj,VP,Band->Tex.ResN,0,0,5);
+   } else {
+      if (!Band->Tex.ThreadId && !VP->Secondary)
+         Tcl_CreateThread(&id,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS);
+   }
 
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
