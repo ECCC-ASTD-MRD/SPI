@@ -227,7 +227,8 @@ int Azimuth_Init(Tcl_Interp *Interp){
       AzimuthArea_Project,
       Azimuth_ProjectPoint,
       Azimuth_ProjectLine);
-   return TCL_OK;
+
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

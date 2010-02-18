@@ -285,7 +285,7 @@ int Cylin_Init(Tcl_Interp *Interp){
       Cylin_ProjectPoint,
       Cylin_ProjectLine);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

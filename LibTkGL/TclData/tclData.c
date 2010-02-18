@@ -928,6 +928,10 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
                free(Data->Ref->Pos[n]);
                Data->Ref->Pos[n]=NULL;
             }
+            /*Vertical grids only have 1 Pos array*/
+            if (Data->Ref->Grid[0]=='V') {
+               break;
+            }
          }
          free(Data->Ref->Pos);
          Data->Ref->Pos=NULL;
