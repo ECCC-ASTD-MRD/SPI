@@ -1102,7 +1102,7 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    for(i=0;i<Dim;i++) {
       def->Data[i]=(char*)calloc(NI*NJ*NK,TData_Size[Type]);
       if (!def->Data[i]) {
-         free(def);
+         Data_DefFree(def);
          return(NULL);
       }
    }
@@ -1246,7 +1246,7 @@ TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
             if (!(Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*TData_Size[Def->Type]))) {
-               free(Def);
+               Data_DefFree(Def);
                return(NULL);
             }
          }
