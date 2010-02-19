@@ -18,7 +18,7 @@
 #    PrintBox::FilePathDefine   { Path }
 #    PrintBox::Image            { Frame Format File { Angle portrait } }
 #    PrintBox::Postscript       { Frame Format File { Device ps } }
-#    PrintBox::Print            { Frame X Y Width Height }
+#    PrintBox::Print            { Frame X Y Width Height { Format "" } }
 #    PrintBox::PrintCommand     { Frame }
 #    PrintBox::PrintTXT         { File }
 #    PrintBox::Save             { Frame X Y Width Height File }
@@ -49,10 +49,12 @@ namespace eval PrintBox {
    #----- Definitions des parametres de transmission sur site WEB
    set Param(Path)           $env(HOME)                                       ;#Path du fichier de sortie
    set Param(Filename)       "output"                                         ;#Nom du fichier de sortie
-   set Param(FullName)       "$Param(Path)/$Param(Filename)"                ;#Nom complet
+   set Param(FullName)       "$Param(Path)/$Param(Filename)"                  ;#Nom complet
    set Param(Size)           "8.5_x_11"                                       ;#Format par defaut
    set Param(Sizes)          { 4_x_4 6_x_6 7_x_7 8.5_x_11 8.5_x_14 17_x_22 }  ;#Liste des formats
    set Param(Angle)          portrait                                         ;#Orientation
+   set Param(Color)          color                                            ;#Couleur
+   set Param(Margin)         0.20                                             ;#Marge
    set Param(WEBNameList)    ""                                               ;#Liste des noms de sites
    set Param(WEBPathList)    ""                                               ;#Liste des path de sites
 
@@ -127,6 +129,7 @@ namespace eval PrintBox {
    #----- Definitions des labels
 
    set Lbl(Color)      { "Couleur" "Color" }
+   set Lbl(Margin)     { "Marge" "Margin" }
    set Lbl(Close)      { "Fermer" "Close" }
    set Lbl(File)       { "Fichier" "File" }
    set Lbl(Format)     { "Format" "Format" }
@@ -302,7 +305,7 @@ proc PrintBox::Create { Frame Mode args } {
 
    toplevel     .printbox
    wm transient .printbox $Frame
-   wm geom      .printbox 335x195+[winfo rootx $Frame]+[winfo rooty $Frame]
+   wm geom      .printbox 335x220+[winfo rootx $Frame]+[winfo rooty $Frame]
    wm protocol  .printbox WM_DELETE_WINDOW { PrintBox::Destroy }
 
    .printbox configure -cursor left_ptr
@@ -334,9 +337,23 @@ proc PrintBox::Create { Frame Mode args } {
       frame $frame.ori
          label $frame.ori.lbl -text [lindex $Lbl(Orient) $GDefs(Lang)] -width 11 -anchor w
          ComboBox::Create $frame.ori.sel PrintBox::Param(Angle) \
-            noedit unsorted nodouble -1 "portrait landscape" 28 2
+            noedit unsorted nodouble -1 "portrait landscape" 28 5
          pack  $frame.ori.lbl $frame.ori.sel -side left -padx 2
       pack $frame.ori -side top -pady 5
+
+      frame $frame.color
+         label $frame.color.lbl -text [lindex $Lbl(Color) $GDefs(Lang)] -width 11 -anchor w
+         ComboBox::Create $frame.color.sel PrintBox::Param(Color) \
+            noedit unsorted nodouble -1 "color gray mono" 28 5
+         pack  $frame.color.lbl $frame.color.sel -side left -padx 2
+      pack $frame.color -side top
+
+      frame $frame.margin
+         label $frame.margin.lbl -text [lindex $Lbl(Margin) $GDefs(Lang)] -width 11 -anchor w
+         spinbox $frame.margin.sel -textvariable PrintBox::Param(Margin) -width 10 -from 0.0 -to 5.0 -wrap 0 -bd 1 \
+            -bg $GDefs(ColorLight) -increment 0.05 -width 28
+         pack  $frame.margin.lbl $frame.margin.sel -side left -padx 2
+      pack $frame.margin -side top -pady 5
    }
 
    if { $Mode=="SAVE" } {
@@ -542,40 +559,48 @@ proc PrintBox::Image { Frame Format File { Angle portrait } } {
 #
 #----------------------------------------------------------------------------
 
-proc PrintBox::Postscript { Frame File X Y Width Height { Angle portrait } { Format "" } } {
+proc PrintBox::Postscript { Frame File X Y Width Height { Format "" } } {
+   variable Param
 
    if { $Format!="" } {
 
-      #----- Definir le format par rapport a la page (avec marges de 1 pouces)
+      #----- Make sure we print everything asked by adding a 1 pixel border
+      set X      [expr $X-1]
+      set Y      [expr $Y-1]
+      set Width  [expr $Width+2]
+      set Height [expr $Height+2]
 
-      set width  [expr [lindex [split $Format _] 0]-0.5]
-      set height [expr [lindex [split $Format _] 2]-0.5]
+      #----- Define page output with margins
+      set width  [expr [lindex [split $Format _] 0]-$Param(Margin)*2.0]
+      set height [expr [lindex [split $Format _] 2]-$Param(Margin)*2.0]
+      set w2     [expr ($width/2.0)+$Param(Margin)]
+      set h2     [expr $height/2.0+$Param(Margin)]
       set ratio  [expr $width/$height]
 
       if { $Angle=="portrait" } {
         if { [expr double($Width)/double($Height)]>=$ratio } {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex 0 -pagey 0 -pageanchor sw \
-               -colormode color -pagewidth ${width}i -file $File.ps -fontmap PrintBox::Map
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex ${w2}i -pagey ${h2}i -pageanchor c \
+               -colormode $Param(Color) -pagewidth ${width}i -file $File.ps -fontmap PrintBox::Map
          } else {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex 0 -pagey 0  -pageanchor sw \
-               -colormode color -pageheight ${height}i -file $File.ps -fontmap PrintBox::Map
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false  -pagex ${w2}i -pagey ${h2}i -pageanchor c \
+               -colormode $Param(Color) -pageheight ${height}i -file $File.ps -fontmap PrintBox::Map
          }
       } else {
          if { [expr double($Height)/double($Width)]<=$ratio } {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true -pagex 0 -pagey 0 -pageanchor sw \
-               -colormode color -pagewidth ${height}i -file $File.ps -fontmap PrintBox::Map
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true  -pagex ${w2}i -pagey ${h2}i -pageanchor c \
+               -colormode $Param(Color) -pagewidth ${height}i -file $File.ps -fontmap PrintBox::Map
          } else {
-            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true -pagex 0 -pagey 0 -pageanchor sw \
-               -colormode color -pageheight ${width}i -file $File.ps -fontmap PrintBox::Map
+            $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true -pagex ${w2}i -pagey ${h2}i -pageanchor c \
+               -colormode $Param(Color) -pageheight ${width}i -file $File.ps -fontmap PrintBox::Map
          }
       }
    } else {
       if { $Angle=="portrait" } {
          $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false \
-            -colormode color -file $File.ps -fontmap PrintBox::Map
+            -colormode $Param(Color) -file $File.ps -fontmap PrintBox::Map
       } else {
          $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate true \
-            -colormode color -file $File.ps -fontmap PrintBox::Map
+            -colormode $Param(Color) -file $File.ps -fontmap PrintBox::Map
       }
    }
 }
@@ -626,11 +651,9 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    if { $Print(Type) == "printer" } {
 
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
-
-      PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height $Param(Angle) $Param(Size)
+      PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height $Param(Size)
 
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Print) $GDefs(Lang)] $Param(Printer)"
-
       if { $Param(Printer) == "wideprnt1" || $Param(Printer) == "wideprnt2" } {
          catch { exec convert -density 200 -colors 2 -dither -monochrome $Print(InternalFile).ps $Print(InternalFile).tiff }
          exec lpr -s -r -P$Param(Printer) $Print(InternalFile).tiff
@@ -641,11 +664,9 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    } else {
       if { $Print(Device)!="ps" } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)] $Frame"
-
          PrintBox::Save $Frame $X $Y $Width $Height $Print(InternalFile)
 
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)]"
-
          if { $Print(Device)=="ppm" } {
             file rename -force $Print(InternalFile).ppm  $Param(FullName).$Print(Device)
          } else {
@@ -655,11 +676,9 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
       } else {
 
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
-
          PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height
 
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)]"
-
          file rename -force $Print(InternalFile).ps  $Param(FullName).$Print(Device)
       }
 
