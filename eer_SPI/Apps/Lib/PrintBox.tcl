@@ -577,7 +577,7 @@ proc PrintBox::Postscript { Frame File X Y Width Height { Format "" } } {
       set h2     [expr $height/2.0+$Param(Margin)]
       set ratio  [expr $width/$height]
 
-      if { $Angle=="portrait" } {
+      if { $Param(Angle)=="portrait" } {
         if { [expr double($Width)/double($Height)]>=$ratio } {
             $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false -pagex ${w2}i -pagey ${h2}i -pageanchor c \
                -colormode $Param(Color) -pagewidth ${width}i -file $File.ps -fontmap PrintBox::Map
@@ -595,7 +595,7 @@ proc PrintBox::Postscript { Frame File X Y Width Height { Format "" } } {
          }
       }
    } else {
-      if { $Angle=="portrait" } {
+      if { $Param(Angle)=="portrait" } {
          $Frame.page.canvas postscript -x $X -y $Y -width $Width -height $Height -rotate false \
             -colormode $Param(Color) -file $File.ps -fontmap PrintBox::Map
       } else {
