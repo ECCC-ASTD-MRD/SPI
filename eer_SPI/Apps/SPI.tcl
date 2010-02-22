@@ -1404,24 +1404,18 @@ proc SPI::IcoDraw { Frame args } {
 
                   #----- Affichage de l'icone
                   if { $Ico(Icon) } {
-                     if { $Ico(Col$group)!="" } {
-                        $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $ico -foreground $Ico(Col$group) -tags "$group $tag"
-                     } else {
-                        $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image $ico -tags "$group $tag"
-                     }
+                     $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image $ico -tags "$group $tag"
                   }
 
                   #----- Affchage du texte
-                  if { $id != "" } {
-                     if { $Ico(Id) } {
-                        $Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text "$id" -fill $col \
-                           -tags "$group TEXT$group" -anchor sw -font XFont10
-                        $Frame.page.canvas bind $tag <Enter> ""
-                        $Frame.page.canvas bind $tag <Leave> ""
-                     } else {
-                        $Frame.page.canvas bind $tag <Enter> "Page::CursorInfo $Frame  \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\] \"$id\""
-                        $Frame.page.canvas bind $tag <Leave> "Page::CursorInfo $Frame 0 0 \"\""
-                     }
+                  if { $Ico(Id) && $id!=""  } {
+                     $Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text "$id" -fill $col \
+                        -tags "$group TEXT$group" -anchor sw -font XFont10
+                     $Frame.page.canvas bind $tag <Enter> ""
+                     $Frame.page.canvas bind $tag <Leave> ""
+                  } else {
+                     $Frame.page.canvas bind $tag <Enter> "Page::CursorInfo $Frame  \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\] \"$id\""
+                     $Frame.page.canvas bind $tag <Leave> "Page::CursorInfo $Frame 0 0 \"\""
                   }
                }
             }
@@ -1475,14 +1469,10 @@ proc SPI::IcoOpen { Files } {
       regsub -all "\[^a-zA-Z0-9\]"  $group _ group
 
       #----- Si on n'as pas de couleur, on est en presence d'une image plutot que d'un gif
-      if { $color=="" } {
-         if { [lsearch -exact [image names] $group]==-1 } {
-            eval image create photo $group -file $icon
-         }
-         set icon $group
-      } else {
-         set icon @$icon
+      if { [lsearch -exact [image names] $group]==-1 } {
+         eval image create photo $group -file $icon
       }
+      set icon $group
 
       #----- Lire la liste d'icones
       set ico ""
