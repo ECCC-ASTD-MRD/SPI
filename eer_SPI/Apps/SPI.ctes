@@ -59,7 +59,8 @@ namespace eval SPI {
    set Data(Percent)        0            ;#Pourcentage du travail
 
    set Ico(Groups)          ""            ;#Liste des icones affichees
-   set Ico(Id)              false         ;#Affichage des descriptifs des icones
+   set Ico(Id)              False         ;#Affichage des descriptifs des icones
+   set Ico(Icon)            True          ;#Affichage des icones des icones
 
    set Src(Area)            ""
    set Src(Name)            ""

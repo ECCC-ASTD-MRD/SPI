@@ -265,6 +265,8 @@ namespace eval PrintBox {
    set Param(Filename)    output                                ;#Nom par defaut du fichier d'impression
    set Param(Size)        8.5_x_11                              ;#Dimension de la page
    set Param(Angle)       portrait                              ;#Orientation
+   set Param(Color)       color                                 ;#Couleur
+   set Param(Margin)      0.20                                  ;#Marge
    set Param(Format)      {Portable Network Graphics {*.png}}   ;#Format par defaut du fichier d'impression
    set Param(Printer)     ""
    set Param(WEBNameList) { }

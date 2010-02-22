@@ -1378,6 +1378,12 @@ proc SPI::IcoDraw { Frame args } {
          set Ico(Frame$group) $Frame
       }
 
+      if { $Ico(Col$group)!="" } {
+         set col $Ico(Col$group)
+      } else {
+         set col black
+      }
+
       if { $Ico(Set$group) && $Ico(Frame$group)=="$Frame" } {
 
          set i 0
@@ -1393,24 +1399,26 @@ proc SPI::IcoDraw { Frame args } {
 
             foreach vp [Page::Registered $Frame Viewport] {
 
-               #----- Projection de l'icone
+               #----- Projection des coordonnées
                if { [set xy [$vp -project $lat $lon $elev]]!="" && [lindex $xy 2]>=0 } {
 
-                  if { $Ico(Col$group)!="" } {
-                     $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $ico -foreground $Ico(Col$group) -tags "$group $tag"
-                     set col $Ico(Col$group)
-                  } else {
-                     $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image $ico -tags "$group $tag"
-                     set col black
+                  #----- Affichage de l'icone
+                  if { $Ico(Icon) } {
+                     if { $Ico(Col$group)!="" } {
+                        $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $ico -foreground $Ico(Col$group) -tags "$group $tag"
+                     } else {
+                        $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image $ico -tags "$group $tag"
+                     }
                   }
 
+                  #----- Affchage du texte
                   if { $id != "" } {
                      if { $Ico(Id) } {
                         $Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text "$id" -fill $col \
                            -tags "$group TEXT$group" -anchor sw -font XFont10
                         $Frame.page.canvas bind $tag <Enter> ""
                         $Frame.page.canvas bind $tag <Leave> ""
-                    } else {
+                     } else {
                         $Frame.page.canvas bind $tag <Enter> "Page::CursorInfo $Frame  \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\] \"$id\""
                         $Frame.page.canvas bind $tag <Leave> "Page::CursorInfo $Frame 0 0 \"\""
                      }
@@ -1439,7 +1447,8 @@ proc SPI::IcoDraw { Frame args } {
 #----------------------------------------------------------------------------
 
 proc SPI::IcoOpen { Files } {
-   global   GDefs
+   global GDefs
+   global env
    variable Data
    variable Error
 
@@ -1468,7 +1477,7 @@ proc SPI::IcoOpen { Files } {
       #----- Si on n'as pas de couleur, on est en presence d'une image plutot que d'un gif
       if { $color=="" } {
          if { [lsearch -exact [image names] $group]==-1 } {
-            image create photo $group -file $icon
+            eval image create photo $group -file $icon
          }
          set icon $group
       } else {

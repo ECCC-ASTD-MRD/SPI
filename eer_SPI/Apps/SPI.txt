@@ -51,6 +51,7 @@ namespace eval SPI {
    set Lbl(File)           { "Fichier" "File" }
    set Lbl(Graph)          { "Graphiques" "Graphs" }
    set Lbl(Help)           { "Aide" "Help" }
+   set Lbl(Icon)           { "Icône" "Icon" }
    set Lbl(Icons)          { "Icônes" "Icons" }
    set Lbl(Id)             { "Identifications" "Identifications" }
    set Lbl(Layout)         { "Page" "Layout" }
