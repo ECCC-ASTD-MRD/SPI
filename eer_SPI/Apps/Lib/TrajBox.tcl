@@ -32,7 +32,6 @@
 #   TrajBox::Restrict      { No }
 #   TrajBox::RestrictClear { No }
 #   TrajBox::RestrictSet   { No Var Value }
-#   TrajBox::Scroll        { No Incr }
 #   TrajBox::Select        { }
 #
 # Remarques :
@@ -231,8 +230,8 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
    bind $id.data.list <ButtonRelease-1>        "set TrajBox::Data(Current) $no"
    bind $id.data.list <ButtonPress-3>          "set TrajBox::Data(Current) $no ; tk_popup .trajmenu %X %Y"
 
-   bind $id <Key-Up>                           "TrajBox::Scroll $no -1"
-   bind $id <Key-Down>                         "TrajBox::Scroll $no  1"
+   bind $id <Key-Up>                           "set TrajBox::Data(Current) $no ; TrajBox::Select"
+   bind $id <Key-Down>                         "set TrajBox::Data(Current) $no ; TrajBox::Select"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -981,42 +980,6 @@ proc TrajBox::RestrictSet { No Var Value } {
 
    set data($Var) $Value
    TrajBox::Restrict $No
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <TrajBox::Scroll>
-# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer un scroll dans la liste et reafficher le tout
-#
-# Parametres   :
-#   <No>       : Numero de boite
-#   <Incr>     : Direction du scroll (1 ou -1)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc TrajBox::Scroll { No Incr } {
-
-   set idx [lindex [.trajbox${No}.data.list curselection] 0]
-
-   set TrajBox::Data(Current) $No
-
-   if { $idx!="" } {
-
-      set nidx [expr $idx+$Incr]
-
-      if { $nidx>=0 && $nidx<[.trajbox${No}.data.list index end] } {
-         .trajbox${No}.data.list selection clear $idx
-         .trajbox${No}.data.list selection set $nidx
-         .trajbox${No}.data.list see $nidx
-      }
-   }
-
-   TrajBox::Select
 }
 
 #-------------------------------------------------------------------------------

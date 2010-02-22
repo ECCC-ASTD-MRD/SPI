@@ -36,7 +36,6 @@
 #   FieldBox::Restrict      { No }
 #   FieldBox::RestrictClear { No }
 #   FieldBox::RestrictSet   { No Var Value }
-#   FieldBox::Scroll        { No Incr }
 #   FieldBox::Select        { }
 #   FieldBox::Show          { Field }
 #
@@ -270,8 +269,8 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
    bind $id.data.list <ButtonRelease-1>        "set FieldBox::Data(Current) $no"
    bind $id.data.list <ButtonPress-3>          "set FieldBox::Data(Current) $no ; tk_popup .fieldmenu %X %Y"
 
-   bind $id <Key-Up>                           "FieldBox::Scroll $no -1"
-   bind $id <Key-Down>                         "FieldBox::Scroll $no  1"
+   bind $id <Key-Up>                           "set FieldBox::Data(Current) $no ; FieldBox::Select"
+   bind $id <Key-Down>                         "set FieldBox::Data(Current) $no ; FieldBox::Select"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -1364,42 +1363,6 @@ proc FieldBox::PasteDeClick { No Y } {
       set data [.fieldbox$No.data.list get $Data(Paste)]
       FieldCalc::Paste [lindex $data end-2] [lindex $data end-1]
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldBox::Scroll>
-# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer un scroll dans la liste et reafficher le tout
-#
-# Parametres   :
-#   <No>       : Numero de boite
-#   <Incr>     : Direction du scroll (1 ou -1)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldBox::Scroll { No Incr } {
-
-   set idx [lindex [.fieldbox${No}.data.list curselection] 0]
-
-   set FieldBox::Data(Current) $No
-
-   if { $idx!="" } {
-
-      set nidx [expr $idx+$Incr]
-
-      if { $nidx>=0 && $nidx<[.fieldbox${No}.data.list index end] } {
-         .fieldbox${No}.data.list selection clear $idx
-         .fieldbox${No}.data.list selection set $nidx
-         .fieldbox${No}.data.list see $nidx
-      }
-   }
-
-   FieldBox::Select
 }
 
 #-------------------------------------------------------------------------------

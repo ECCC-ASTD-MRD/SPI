@@ -449,8 +449,8 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    bind .filebox.files.list       <Configure>        { FileBox::GetContent }
 
    bind .filebox                  <Return>           " FileBox::SelectList; if { \$FileBox::Data(Filename)!=\"\" } { FileBox::Select 1 } "
-   bind .filebox                  <Key-Up>           { FileBox::Scroll -1 }
-   bind .filebox                  <Key-Down>         { FileBox::Scroll   1 }
+   bind .filebox                  <Key-Up>           { FileBox::SelectList False }
+   bind .filebox                  <Key-Down>         { FileBox::SelectList False }
    bind .filebox                  <Key-Escape>       { set FileBox::Data(Result) "" }
 
   #----- Creation des bulles
@@ -499,25 +499,6 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
       grab $prevgrab
    }
    return $Data(Result)
-}
-
-proc FileBox::Scroll { Incr } {
-
-   set idx [lindex [.filebox.files.list curselection] 0]
-
-   if { $idx=="" } {
-      set idx  0
-      set nidx 0
-   } else {
-      set nidx [expr $idx+$Incr]
-   }
-   if { $nidx>=0 && $nidx<[.filebox.files.list index end] } {
-      .filebox.files.list selection clear $idx
-      .filebox.files.list selection set $nidx
-      .filebox.files.list see $nidx
-
-      FileBox::SelectList False
-   }
 }
 
 #----------------------------------------------------------------------------

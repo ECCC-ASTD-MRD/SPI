@@ -34,7 +34,6 @@
 #   ObsBox::Restrict      { No }
 #   ObsBox::RestrictClear { No }
 #   ObsBox::RestrictSet   { No Var Value }
-#   ObsBox::Scroll        { No Incr }
 #   ObsBox::Select        { }
 #
 # Remarques :
@@ -236,8 +235,8 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    bind $id.data.list <ButtonPress-2>          "set ObsBox::Data(Current) $no ; if { \[winfo exist .fieldcalc\] } { ObsBox::PasteClick $no %y }"
    bind $id.data.list <ButtonRelease-2>        "set ObsBox::Data(Current) $no ; if { \[winfo exist .fieldcalc\] } { ObsBox::PasteDeClick $no %y }"
 
-   bind $id <Key-Up>                 "ObsBox::Scroll $no -1"
-   bind $id <Key-Down>               "ObsBox::Scroll $no  1"
+   bind $id <Key-Up>                           "set ObsBox::Data(Current) $no ; ObsBox::Select"
+   bind $id <Key-Down>                         "set ObsBox::Data(Current) $no ; ObsBox::Select"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -1033,42 +1032,6 @@ proc ObsBox::RestrictSet { No Var Value } {
 
    set data($Var) $Value
    ObsBox::Restrict $No
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <ObsBox::Scroll>
-# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer un scroll dans la liste et reafficher le tout
-#
-# Parametres   :
-#   <No>       : Numero de boite
-#   <Incr>     : Direction du scroll (1 ou -1)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc ObsBox::Scroll { No Incr } {
-
-   set idx [lindex [.obsbox${No}.data.list curselection] 0]
-
-   set ObsBox::Data(Current) $No
-
-   if { $idx!="" } {
-
-      set nidx [expr $idx+$Incr]
-
-      if { $nidx>=0 && $nidx<[.obsbox${No}.data.list index end] } {
-         .obsbox${No}.data.list selection clear $idx
-         .obsbox${No}.data.list selection set $nidx
-         .obsbox${No}.data.list see $nidx
-      }
-   }
-
-   ObsBox::Select
 }
 
 #-------------------------------------------------------------------------------
