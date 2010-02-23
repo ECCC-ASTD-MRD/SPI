@@ -1410,7 +1410,7 @@ proc SPI::IcoDraw { Frame args } {
                   #----- Affchage du texte
                   if { $Ico(Id) && $id!=""  } {
                      $Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text "$id" -fill $col \
-                        -tags "$group TEXT$group" -anchor sw -font XFont10
+                        -tags "$group TEXT$group" -anchor sw -font XFontIcon
                      $Frame.page.canvas bind $tag <Enter> ""
                      $Frame.page.canvas bind $tag <Leave> ""
                   } else {

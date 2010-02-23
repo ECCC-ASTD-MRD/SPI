@@ -293,6 +293,8 @@ proc SPI::Init { } {
    font create XFont20 -family Courier -weight bold -size -20
    font create XFont24 -family Courier -weight bold -size -24
 
+   font create XFontIcon -family Arial -weight bold -size -10
+
    option add *selectColor            $GDefs(ColorHighLight)
    option add *background             $GDefs(ColorFrame)
    option add *foreground             black
@@ -670,6 +672,8 @@ proc SPI::WindowMenu { } {
    Areas::CreateWidget .menu.disp.menu
 
    menu .menu.disp.menu.icons -tearoff 1
+      .menu.disp.menu.icons add command -label "[lindex $Lbl(Font) $GDefs(Lang)] ..."  \
+         -command "FontBox::Create . \"Page::UpdateItems \$Page::Data(Frame)\" XFontIcon"
       .menu.disp.menu.icons add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -variable SPI::Ico(Id) -onvalue True -offvalue False\
          -command "Page::UpdateItems \$Page::Data(Frame)"
       .menu.disp.menu.icons add checkbutton -label [lindex $Lbl(Icon) $GDefs(Lang)] -variable SPI::Ico(Icon) -onvalue True -offvalue False\

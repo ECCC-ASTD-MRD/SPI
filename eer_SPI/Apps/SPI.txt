@@ -49,6 +49,7 @@ namespace eval SPI {
    set Lbl(Export)         { "Exporter" "Export" }
    set Lbl(Field)          { "Champs" "Fields" }
    set Lbl(File)           { "Fichier" "File" }
+   set Lbl(Font)           { "Police" "Font" }
    set Lbl(Graph)          { "Graphiques" "Graphs" }
    set Lbl(Help)           { "Aide" "Help" }
    set Lbl(Icon)           { "Icône" "Icon" }
