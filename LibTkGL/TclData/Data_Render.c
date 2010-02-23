@@ -1344,6 +1344,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Ref->Grid[0]!='V') {
       idx0=Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2;
       dp=2.0/FFCellResolution(VP,Proj,pos[idx0],pos[idx0+Field->Def->NI+1]);
+      if (Field->Spec->InterNb)
+         dp>>=2;
       dp=dp<1?1:dp;
    }
 
