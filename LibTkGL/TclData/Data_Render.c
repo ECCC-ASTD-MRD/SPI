@@ -81,7 +81,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
    for (n=0;n<NbInter;n++) {
       /*If the interval is not within the value limits, skip*/
-      if (Inter[n]>=Field->Stat->Max || Inter[n]<=Field->Stat->Min)
+      if (Inter[n]>=Field->Stat->Max)
          continue;
 
       /*Create/Reset gridcell parsing flags*/
