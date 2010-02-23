@@ -1460,7 +1460,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          }
       } else if (strcmp(gtok[n],"NO")==0) {
          loc->No=(char**)malloc(nb*sizeof(char*));
-      } else if (strcmp(gtok[n],"LAT")!=0 && strcmp(gtok[n],"LON")!=0 && strcmp(gtok[n],"ELEV")!=0 && strcmp(gtok[n],"ELEVTYPE")!=0 && strcmp(gtok[n],"SIZE")!=0 && strcmp(gtok[n],"ID")!=0) {
+      } else if (strcmp(gtok[n],"LAT")!=0 && strcmp(gtok[n],"LON")!=0 && strcmp(gtok[n],"ELEV")!=0 && strcmp(gtok[n],"ELEVTYPE")!=0 && strcmp(gtok[n],"ID")!=0) {
          loc->NbInfo++;
       }
    }
@@ -1482,6 +1482,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          if (ntok!=gntok) {
             Tcl_AppendResult(Interp,"\n   Obs_LoadASCII :  Invalid number of item on following line\n",bytes,(char*)NULL);
             fclose(stream);
+            Tcl_Free((char*)tok);
             return(TCL_ERROR);
          }
 
@@ -1539,14 +1540,23 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                if (tok[n][0]=='-' && tok[n][1]=='\0') {
                   ((float*)obs->Def->Data[0])[nb]=obs->Def->NoData;
                } else {
-                  Tcl_SplitList(Interp,tok[n],&nltok,&ltok); /* In case of vectorial data*/
-                  for(k=0;k<nltok;k++) {
-                     if (!obs->Def->Data[k]) {
-                        obs->Def->Data[k]=(char*)calloc(FSIZE3D(obs->Def),TData_Size[TD_Float32]);
+                  /* Split the list of values in case of vectorial data*/
+                  if ((err=Tcl_SplitList(Interp,tok[n],&nltok,&ltok))==TCL_OK) {
+                     for(k=0;k<nltok;k++) {
+                        if (!obs->Def->Data[k]) {
+                           if (!(obs->Def->Data[k]=(char*)calloc(FSIZE3D(obs->Def),TData_Size[TD_Float32]))) {
+                              Tcl_AppendResult(Interp,"\n   Obs_LoadASCII : Unable to allocate memory for vectorial components",(char*)NULL);
+                              err=TCL_ERROR;
+                              break;
+                           }
+                           obs->Def->NC=k;
+                        }
+                        Data_FromString(ltok[k],obs->Def,k,nb);
                      }
-                     Data_FromString(ltok[k],obs->Def,k,nb);
+                     Tcl_Free((char*)ltok);
+                  } else {
+                     Tcl_AppendResult(Interp,"\n   Obs_LoadASCII : Problems while reading data components",(char*)NULL);
                   }
-                  Tcl_Free((char*)ltok);
                }
             } else {                                         /*Information*/
                if (!loc->Head[hd])
@@ -1564,7 +1574,6 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    fclose(stream);
 
    /* Figure out the stats*/
-
    for(n=0;n<ntok;n++) {
       sprintf(name,"%s.%i",&gtok[n][5],ObsNo+n);
       if ((obs=Obs_Get(name))) {

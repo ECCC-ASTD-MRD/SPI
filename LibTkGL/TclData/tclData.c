@@ -1100,8 +1100,7 @@ TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Pick=def->Poly=NULL;
 
    for(i=0;i<Dim;i++) {
-      def->Data[i]=(char*)calloc(NI*NJ*NK,TData_Size[Type]);
-      if (!def->Data[i]) {
+      if (!(def->Data[i]=(char*)calloc(NI*NJ*NK,TData_Size[Type]))) {
          Data_DefFree(def);
          return(NULL);
       }
