@@ -231,11 +231,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step","-ztype",
-                                 "-geovector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
+                                 "-gridvector","-icon","-mark","-style","-mapall","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
-                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,ZTYPE,GEOVECTOR,ICON,MARK,STYLE,MAPALL,
+                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE };
 
    if (!Spec) {
@@ -963,11 +963,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
-         case GEOVECTOR:
+         case GRIDVECTOR:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->GeoVector));
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->GridVector));
             } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->GeoVector);
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->GridVector);
             }
             break;
       }
@@ -1224,7 +1224,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->RenderVector=from->RenderVector;
    to->RenderValue=from->RenderValue;
    to->RenderVol=from->RenderVol;
-   to->GeoVector=from->GeoVector;
+   to->GridVector=from->GridVector;
 
    to->ZType=NULL;
    if (from->ZType)
@@ -1343,7 +1343,7 @@ TDataSpec *DataSpec_New(){
    spec->ValFactor=1.0;
    spec->ValDelta=0.0;
    spec->MapFactor=0.0f;
-   spec->GeoVector=1;
+   spec->GridVector=1;
    spec->Cube[0]=1;spec->Cube[1]=1;spec->Cube[2]=1;
    spec->Cube[3]=10;spec->Cube[4]=1;spec->Cube[5]=1;
    spec->Axis='X';

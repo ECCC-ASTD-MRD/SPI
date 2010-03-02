@@ -135,7 +135,7 @@ typedef struct TDataSpec {
    double      ValDelta;            /*Facteur delta d'ajustement des valeurs*/
    double      MapFactor;           /*Facteur d'index dans la palette*/
    int         MapAll;              /*Applique la palette aux vectoriel*/
-   int         GeoVector;           /*Orientation des donnees vectorielles*/
+   int         GridVector;          /*Orientation des donnees vectorielles*/
 
    int         RangeNb;             /*Nombre de range*/
    float       Range[DATASPEC_MAX]; /*Liste des ranges*/

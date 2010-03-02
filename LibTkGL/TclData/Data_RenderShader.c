@@ -520,7 +520,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       if (Field->Spec->InterNb)
          dp>>=2;
       dp=dp<1?1:dp;
-
    }
 
    /*Grille avec loop sur la longitude*/

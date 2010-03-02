@@ -1588,11 +1588,11 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
 void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   float   *lat,*lon,*x,*y,size,theta=0.0;
-   double  len,u,v,w,i0,j0,i1,j1;
+   float   *lat,*lon,*x,*y,size,theta,thetad;
+   double  len,u,v,uv,w,i0,j0,i1,j1;
    Vect3d  pix;
    Coord   coo;
-   int     n=0,mem,i,j,idx,dz;
+   int     n=0,mem,i,j,idx,idc,dz;
    char    buf[32];
 
    if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline)
@@ -1625,31 +1625,50 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          if (Field->Def->Data[2]) {
             for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
                if (i+1<Field->Def->NI) {
+                  /*We calculat the section orientation for rotate the vector accordingly*/
                   if (Field->Ref->RefFrom) {
+                     /*If we have the georef it's coming from*/
                      Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i0,&j0,Field->Ref->Lat[i],Field->Ref->Lon[i],1,1);
                      Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i1,&j1,Field->Ref->Lat[i+1],Field->Ref->Lon[i+1],1,1);
-                     theta=90.0+RAD2DEG(atan2(i1-i0,j1-j0));
+                     theta=atan2(i1-i0,j1-j0);
                   } else {
-                     theta=90.0;
+                     /*Otherwise, use the cut orientation*/
+                     theta=-COURSE(DEG2RAD(Field->Ref->Lat[i]),DEG2RAD(Field->Ref->Lon[i]),DEG2RAD(Field->Ref->Lat[i+1]),DEG2RAD(Field->Ref->Lon[i+1]));
+//                     theta=0.0;
                   }
+                  thetad=90.0+RAD2DEG(theta);
+
                }
                for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
                   idx=j*Field->Def->NI+i;
-                  Def_Get(Field->Def,0,idx,u);
-                  Def_Get(Field->Def,2,idx,w);
+
+                  /*If the speed if between the defined range*/
                   Def_GetMod(Field->Def,idx,len);
                   if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
                      if (Field->Spec->MapAll) {
-                        VAL2COL(idx,Field->Spec,len);
+                        VAL2COL(idc,Field->Spec,len);
                         if (Interp) {
-                           CMap_PostscriptColor(Interp,Field->Spec->Map,idx);
+                           CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
                         } else {
-                           glColor4ubv(Field->Spec->Map->Color[idx]);
+                           glColor4ubv(Field->Spec->Map->Color[idc]);
                         }
                      }
+
+                     /*Get the components*/
+                     Def_Get(Field->Def,0,idx,u);
+                     Def_Get(Field->Def,2,idx,w);
+
+                     /*If the horizontal components are not section oriented but geographicaly N-S E-W*/
+                     if (!Field->Spec->GridVector) {
+                        Def_Get(Field->Def,1,idx,v);
+                        uv=hypot(u,v);
+                        u=uv*cos(atan2(v,u)-theta);
+                     }
+
+                     /*Resize the arrow on the speed*/
                      size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                      if (Interp) glFeedbackInit(256,GL_2D);
-                     Data_RenderBarbule(Field->Spec->RenderVector,0,theta,Field->Ref->Lat[i],Field->Ref->Lon[i],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]),len,RAD2DEG(atan2(u,w)),size,Proj);
+                     Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]),len,RAD2DEG(atan2(u,w)),size,Proj);
                      if (Interp) glFeedbackProcess(Interp,GL_2D);
                   }
                }
@@ -1661,19 +1680,20 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
             for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
                idx=j*Field->Def->NI+i;
-               Def_Get(Field->Def,0,idx,u);
-               Def_Get(Field->Def,1,idx,v);
                Def_GetMod(Field->Def,idx,len);
                Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
                if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
                   if (Field->Spec->MapAll) {
-                     VAL2COL(idx,Field->Spec,len);
+                     VAL2COL(idc,Field->Spec,len);
                      if (Interp) {
-                        CMap_PostscriptColor(Interp,Field->Spec->Map,idx);
+                        CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
                      } else {
-                        glColor4ubv(Field->Spec->Map->Color[idx]);
+                        glColor4ubv(Field->Spec->Map->Color[idc]);
                      }
                   }
+                  Def_Get(Field->Def,0,idx,u);
+                  Def_Get(Field->Def,1,idx,v);
+
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
                   Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[0]),len,180+RAD2DEG(atan2(u,v)),size,Proj);
@@ -1729,21 +1749,21 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 
-         if (Field->Spec->GeoVector) {
+         if (Field->Spec->GridVector) {
             c_gdllwdval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          } else {
             c_gdllvval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          }
 #endif
          while (n--) {
-            if (Field->Spec->GeoVector) {
+            if (Field->Spec->GridVector) {
                if (x[n]<=Field->Spec->Max && x[n]>=Field->Spec->Min) {
                   if (Field->Spec->MapAll) {
-                     VAL2COL(idx,Field->Spec,x[n]);
+                     VAL2COL(idc,Field->Spec,x[n]);
                      if (Interp) {
-                        CMap_PostscriptColor(Interp,Field->Spec->Map,idx);
+                        CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
                      } else {
-                        glColor4ubv(Field->Spec->Map->Color[idx]);
+                        glColor4ubv(Field->Spec->Map->Color[idc]);
                      }
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,x[n]);
@@ -1755,11 +1775,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                len=hypot(x[n],y[n]);
                if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
                   if (Field->Spec->MapAll) {
-                     VAL2COL(idx,Field->Spec,len);
+                     VAL2COL(idc,Field->Spec,len);
                      if (Interp) {
-                        CMap_PostscriptColor(Interp,Field->Spec->Map,idx);
+                        CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
                      } else {
-                        glColor4ubv(Field->Spec->Map->Color[idx]);
+                        glColor4ubv(Field->Spec->Map->Color[idc]);
                      }
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
