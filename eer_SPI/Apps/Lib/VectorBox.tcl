@@ -43,7 +43,7 @@ namespace eval VectorBox {
    set Data(LockY)    False
    set Data(LockZ)    False
 
-   set Lbl(Geo)     { "Geospatial" "Geospatial" }
+   set Lbl(GridVec) { "Orienté grille" "Grid oriented" }
    set Lbl(Params)  { "Parametres" "Parameters" }
    set Lbl(Size)    { "Dimension" "Dimension" }
    set Lbl(Sample)  { "Echantillonage" "Sampling" }
@@ -53,15 +53,15 @@ namespace eval VectorBox {
    set Lbl(Apply)   { "Appliquer" "Apply" }
    set Lbl(Stream)  { "Ligne de courant" "Streamline" }
 
-   set Bubble(Size)   { "Largeur des lignes de courants" "Streamline width" }
-   set Bubble(Step)   { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
-   set Bubble(Sample) { "Espacement des lignes de courants\npixel(2D) / grille(3D)" "Streamline sampling\npixel(2D) / gridpt(3D)" }
-   set Bubble(Geo)    { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
-   set Bubble(Cube)   { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
-   set Bubble(Select) { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
-   set Bubble(Real)   { "Applique les paramêtres interactivement" "Apply parameters interactively" }
-   set Bubble(Apply)  { "Appliquer les paramêtres" "Apply the parameters" }
-   set Bubble(Close)  { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
+   set Bubble(Size)    { "Largeur des lignes de courants" "Streamline width" }
+   set Bubble(Step)    { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
+   set Bubble(Sample)  { "Espacement des lignes de courants\npixel(2D) / grille(3D)" "Streamline sampling\npixel(2D) / gridpt(3D)" }
+   set Bubble(GridVec) { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
+   set Bubble(Cube)    { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
+   set Bubble(Select)  { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
+   set Bubble(Real)    { "Applique les paramêtres interactivement" "Apply parameters interactively" }
+   set Bubble(Apply)   { "Appliquer les paramêtres" "Apply the parameters" }
+   set Bubble(Close)   { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
 }
 
 #----------------------------------------------------------------------------
@@ -151,12 +151,12 @@ proc VectorBox::Create { Parent Apply } {
          scale $fr.sample.sc -from 1 -to 10 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Sample) -length 150 -relief flat -bd 1 -orient horizontal \
             -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
          pack $fr.sample.sc -fill x -padx 2 -expand true
-         checkbutton $fr.geo -text [lindex $Lbl(Geo) $GDefs(Lang)] -variable FSTD::Param(Geo) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
+         checkbutton $fr.geo -text [lindex $Lbl(GridVec) $GDefs(Lang)] -variable FSTD::Param(GridVec) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
       pack $fr.size $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
 
    Bubble::Create $fr.size.sc   $Bubble(Size)
    Bubble::Create $fr.sample.sc $Bubble(Sample)
-   Bubble::Create $fr.geo       $Bubble(Geo)
+   Bubble::Create $fr.geo       $Bubble(GridVec)
 
    #----- Commandes
 

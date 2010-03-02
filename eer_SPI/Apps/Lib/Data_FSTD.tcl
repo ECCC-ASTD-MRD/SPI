@@ -112,7 +112,7 @@ namespace eval FSTD {
    set Param(Sample)        4              ;#Sampling des points vectoriels
    set Param(Step)          0.25           ;#Step de calcul des streamlines
    set Param(Size)          10.0           ;#Facteur de dimensionnemenr
-   set Param(Geo)           1              ;#Reference geographique
+   set Param(GridVec)       1              ;#Reference geographique des composantes de vecteurs
    set Param(Width)         1              ;#Largeur des segments
 
    set Param(Factor)        0              ;#Facteur d'ajustement
@@ -714,7 +714,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Step)      [dataspec configure $Spec -step]
    set Param(Min)       [dataspec configure $Spec -min]
    set Param(Max)       [dataspec configure $Spec -max]
-   set Param(Geo)       [dataspec configure $Spec -geovector]
+   set Param(GridVec)   [dataspec configure $Spec -gridvector]
    set Param(Vector)    [dataspec configure $Spec -rendervector]
    set Param(Axis)      [dataspec configure $Spec -axis]
 
@@ -786,7 +786,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -mapall $Param(MapAll) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
-      -topographyfactor $Param(TopoFac) -sample $Param(Sample) -step $Param(Step) -geovector $Param(Geo) \
+      -topographyfactor $Param(TopoFac) -sample $Param(Sample) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) \
       -intervals $inter -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 

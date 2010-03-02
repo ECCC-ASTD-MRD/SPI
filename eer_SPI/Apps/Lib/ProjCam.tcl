@@ -128,7 +128,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
    set Viewport::Map(Grabbed) [clock click -milliseconds]
 
    #----- Calculer les deltas centraux
-
    set dlat [expr $Lat1-$Lat0]
 
    if { $Lon1<$Lon0 } {
@@ -138,7 +137,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
    }
 
    #----- Centrer la projection
-
    set lat [expr $Lat0+$dlat/2.0]
    set lon [Viewport::CheckCoord [expr $Lon0+$dlon/2.0]]
 
@@ -157,13 +155,12 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
    projection configure $Frame -location $lat $lon
    $Frame.page.canvas itemconf $VP -frame 0
    update idletasks
+
    if { $OpenGL::Param(Res)!=1 } {
-   puts stderr $res
       projection configure $Frame -mapres $res
    }
 
    #----- Initialiser aux limites
-
    set w [lindex [$Frame.page.canvas itemconfigure $VP -width] 4]
    set h [lindex [$Frame.page.canvas itemconfigure $VP -height] 4]
 
@@ -173,7 +170,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
    set y1 0
 
    #----- Determiner les minmax
-
    if { [llength [set c [$VP -project $Lat0 $Lon0 0 True]]] } {
       set x [lindex $c 0]
       set y [lindex $c 1]
@@ -210,7 +206,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
    }
 
    #----- Check pour inversion
-
    if { $x0>$x1 } {
       set x $x0
       set x0 $x1
@@ -238,7 +233,6 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
       set Data(Name) ""
 
       #----- Appliquer le recul
-
       if { $Off!=0.0 } {
          set lens [expr $lens-$lens*$Off]
       }
