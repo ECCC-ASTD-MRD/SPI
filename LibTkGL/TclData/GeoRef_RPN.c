@@ -38,7 +38,7 @@ int      GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,dou
 int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 
-   /*--------------------------------------------------------------------------------------------------------------
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNDistance>
  * Creation     : Mars 2007 J.P. Gauthier - CMC/CMOE
  *
@@ -364,6 +364,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
      *Y=-1.0;
      return(0);
    }
+
    return(1);
 }
 

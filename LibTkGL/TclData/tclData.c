@@ -552,7 +552,13 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                }
             }
 
-            /*Loop on vertical levels*/
+            /*if we're in nearest mode*/
+            if (Field[f]->Spec->InterpDegree[0]=='N') {
+               i=ROUND(i);
+               j=ROUND(j);
+            }
+
+           /*Loop on vertical levels*/
             for(k=0;k<Field[0]->Def->NK;k++) {
 
                idx=k*NbF*NbC+n*NbF+f;
@@ -2027,7 +2033,7 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
                            if (Field->Def->NC==1) {
-                              Def_GetMod(Field->Def,FIDX2D(Field->Def,ni,nj),dval);
+                              Def_GetMod(Field->Def,FIDX3D(Field->Def,ni,nj,Field->Def->Level),dval);
                               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
                            } else if (Field->Def->NC==2) {
                               sub=Tcl_NewListObj(0,NULL);
@@ -2780,7 +2786,7 @@ int Data_ValSet(TData *Field,float I,float J,float Val) {
       Field->Stat=NULL;
    }
 
-   idx=ROUND(J)*Field->Def->NI+ROUND(I);
+   idx=FIDX3D(Field->Def,ROUND(I),ROUND(J),Field->Def->Level);
    Val=SPEC2VAL(Field->Spec,Val);
    Def_Set(Field->Def,0,idx,Val);
    return 1;
