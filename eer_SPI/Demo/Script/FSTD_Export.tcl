@@ -31,8 +31,8 @@ fstdfile open FILEIN read $file
 fstdfield read FLD FILEIN -1 "" -1 -1 -1 "" "UV"
 
 colormap create CMAP
-colormap read CMAP DataIn/REC_Col.std1.rgba
-fstdfield configure FLD -colormap CMAP
+colormap read CMAP DataIn/OTH_ASAR.rgba
+fstdfield configure FLD -colormap CMAP -min 0 -max 50
 
 #----- Recuperer les limites du champs
 set extent [georef limit [fstdfield define FLD -georef]]
