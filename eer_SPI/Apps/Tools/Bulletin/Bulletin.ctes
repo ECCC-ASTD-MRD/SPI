@@ -28,6 +28,8 @@ namespace eval Bulletin {
    set Param(Title)   { "Bulletins Volcaniques"  "Volcanic Ash Bulletins" }
    set Param(Geom)    { 900x400+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)    False                                       ;#Docking
+   set Param(Path)    /users/dor/afse/eer/projets/volcanic_ash
+   set Param(PathTmp) /tmp/eer_TmpBulletins_[pid]
 
    set Data(Active) 0                     ;#Flag d'activation de l'outils
    set Data(Canvas) ""                    ;#Canvas Actif
@@ -43,10 +45,7 @@ namespace eval Bulletin {
 
    set Bul(Lst)          {}
    set Bul(Doing)        ""
-   set Bul(Path)         "/users/dor/afse/eer/volcanic_ash/data"
    set Bul(Courant)      ""
-   set Bul(PathTmp)      "/tmp/eer_TmpBulletins_[pid]"
-   set Bul(PathScript)   "/users/dor/afse/eer/volcanic_ash/bao"
    set Bul(Courant_Name) ""
    set Bul(Archives)     {}
 

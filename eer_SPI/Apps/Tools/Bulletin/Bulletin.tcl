@@ -59,11 +59,12 @@ proc Bulletin::CommandToggle { Cmd1 Sleep1 Cmd2 Sleep2 } {
 #----------------------------------------------------------------------------
 
 proc Bulletin::DatesMenu { } {
+   variable Param
    variable Bul
 
    #----- Extraire le repertoire
 
-   set dirlist [exec ls $Bul(Path)]
+   set dirlist [exec ls $Param(Path)/data]
    set Bul(Archives) {}
    set mois_lst { xxx Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec }
 
@@ -214,22 +215,23 @@ proc Bulletin::Draw { Draw Zoom } {
 
 proc Bulletin::InsertArchives { Nom } {
    variable Bul
+   variable Param
 
    .bulletin config -cursor watch
    update idletasks
 
    #----- Efface les anciens fichiers d'archives
 
-   file delete -force $Bul(PathTmp)
-   file mkdir $Bul(PathTmp)
+   file delete -force $Param(PathTmp)
+   file mkdir $Param(PathTmp)
 
    set path [pwd]
-   cd $Bul(PathTmp)
+   cd $Param(PathTmp)
 
    #----- Decompresse les archives selectionnees
 
-   Log::Print INFO "Getting archives $Bul(Path)/$Nom"
-   catch { exec tar xf $Bul(Path)/$Nom }
+   Log::Print INFO "Getting archives $Param(Path)/data/$Nom"
+   catch { exec tar xf $Param(Path)/data/$Nom }
 
    #----- Insere les archives dans la liste de bulletins
 
@@ -239,7 +241,7 @@ proc Bulletin::InsertArchives { Nom } {
    catch { .bulletin.mid.frm.scrllist delete 0 end }
    foreach bulle $file_lst {
 
-      lappend Bul(Lst) $Bul(PathTmp)/$bulle
+      lappend Bul(Lst) $Param(PathTmp)/$bulle
       .bulletin.mid.frm.scrllist insert end $bulle
    }
 
@@ -263,8 +265,9 @@ proc Bulletin::InsertArchives { Nom } {
 
 proc Bulletin::InsertBull { } {
    variable Bul
+   variable Param
 
-   set file_lst [exec ls -1r $Bul(Path)]
+   set file_lst [exec ls -1r $Param(Path)/data]
 
    catch { .bulletin.mid.frm.scrllist delete 0 end }
    set Bul(Lst) {}
@@ -274,7 +277,7 @@ proc Bulletin::InsertBull { } {
       if { [string compare [string range $bulle 11 14] "tar"] != 0 \
            && [string compare [string range $bulle 0 2] "ash"] == 0 } {
 
-         lappend Bul(Lst) $Bul(Path)/$bulle
+         lappend Bul(Lst) $Param(Path)/data/$bulle
          .bulletin.mid.frm.scrllist insert end $bulle
       }
    }
@@ -346,6 +349,7 @@ proc Bulletin::PrintCommand { Widget } {
 
 proc Bulletin::ReadCurrent { } {
    global GDefs
+   variable Param
    variable Bul
    variable Msg
 
@@ -354,8 +358,8 @@ proc Bulletin::ReadCurrent { } {
    set Bul(Doing) "[lindex $Msg(Courant) $GDefs(Lang)] ($time)"
    update idletasks
 
-   if { ![file exists $Bul(PathTmp)] } {
-      file mkdir $Bul(PathTmp)
+   if { ![file exists $Param(PathTmp)] } {
+      file mkdir $Param(PathTmp)
    }
 
    #----- relire la liste des bulletins au cas ou il y en aurait des nouveau
@@ -373,20 +377,20 @@ proc Bulletin::ReadCurrent { } {
    #----- si on a deja un courant dans la liste, le supprimer
 
    if { $Bul(Courant_Name) != "" } {
-      file delete $Bul(PathTmp)/$Bul(Courant_Name)
+      file delete $Param(PathTmp)/$Bul(Courant_Name)
    }
 
    #----- Recherher les nouveau courants pour l'heure actuelle
 
    set Bul(Courant_Name) "ash_courant_$time"
 
-   catch { exec $Bul(PathScript)/volcanic_script $Bul(PathTmp)/tmp/$Bul(Courant_Name) }
-   file rename $Bul(PathTmp)/tmp/$Bul(Courant_Name) $Bul(PathTmp)/$Bul(Courant_Name)
+   catch { exec $Param(Path)/volcanic_script_spi.sh $Param(PathTmp)/tmp/$Bul(Courant_Name) }
+   file rename $Param(PathTmp)/tmp/$Bul(Courant_Name) $Param(PathTmp)/$Bul(Courant_Name)
 
    #----- Inserer un item courant dans la liste
 
    .bulletin.mid.frm.scrllist insert 0 $Bul(Courant_Name)
-   set Bul(Lst) [linsert $Bul(Lst) 0 $Bul(PathTmp)/$Bul(Courant_Name)]
+   set Bul(Lst) [linsert $Bul(Lst) 0 $Param(PathTmp)/$Bul(Courant_Name)]
 
    #----- Affiche le contenu du fichier courant.
 
@@ -571,9 +575,9 @@ proc Bulletin::SearchNext { TextWidget Direct } {
 
 proc Bulletin::Close { } {
    variable Data
-   variable Bul
+   variable Param
 
-   file delete -force $Bul(PathTmp)
+   file delete -force $Param(PathTmp)
    set Data(Active) 0
    destroy .bulletin
 
