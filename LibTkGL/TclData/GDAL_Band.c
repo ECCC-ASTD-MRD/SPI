@@ -1415,7 +1415,16 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                   } else {
                      Def_Set(ToDef,0,idxk,ToDef->NoData);
                   }
-           }
+            }
+         }
+
+         /*Copy first column to last if it's repeated*/
+         if (ToRef->Type&GRID_REPEAT) {
+            idxt=k*nij;
+            for(y=ToRef->Y0;y<=ToRef->Y1;y++,idxt+=ToDef->NI) {
+               Def_Get(ToDef,0,idxt,vx);
+               Def_Set(ToDef,0,idxt+ToDef->NI-1,vx);
+            }
          }
       }
    }

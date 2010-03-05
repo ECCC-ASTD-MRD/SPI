@@ -39,6 +39,32 @@ int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lo
 int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_Expand>
+ * Creation     : Mars 2005 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Effectuer l'expansion des axes de la grilles selon les >> ^^.
+ *
+ * Parametres    :
+ *   <Ref>       : Pointeur sur la reference geographique
+ *
+ * Retour       :
+ *
+ * Remarques   :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void GeoRef_Expand(TGeoRef *Ref) {
+
+   if (Ref->Id>=0 && !Ref->AX && Ref->Grid[0]=='Z') {
+      Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
+      Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
+      EZLock_RPNInt();
+      c_gdgaxes(Ref->Id,Ref->AX,Ref->AY);
+      EZUnLock_RPNInt();
+   }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_RPNDistance>
  * Creation     : Mars 2007 J.P. Gauthier - CMC/CMOE
  *
@@ -136,7 +162,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
    }
 
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
-   if (C<Def->NC && X>=Ref->X0 && Y>=Ref->Y0 && Z>=0 && X<=Ref->X1 && Y<=Ref->Y1 && Z<=Def->NK-1) {
+   if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<=(Ref->X1+0.5) && Y<=(Ref->Y1+0.5) && Z<=Def->NK-1) {
       valid=1;
 
       /*Index memoire du niveau desire*/
@@ -230,7 +256,7 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */
 
    /*Verifier si la grille est valide et que l'on est dans la grille*/
-   if (Ref->Id<0 || X<Ref->X0 || Y<Ref->Y0 || X>Ref->X1 || Y>Ref->Y1) {
+   if (Ref->Id<0 || X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
       if (!Extrap || Ref->Id<0) {
          *Lat=-999.0;
          *Lon=-999.0;
@@ -258,17 +284,6 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    *Lon=lon>180?lon-=360:lon;
 
    return(1);
-}
-
-void GeoRef_Expand(TGeoRef *Ref) {
-
-   if (Ref->Id>=0 && !Ref->AX && Ref->Grid[0]=='Z') {
-      Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
-      Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
-      EZLock_RPNInt();
-      c_gdgaxes(Ref->Id,Ref->AX,Ref->AY);
-      EZUnLock_RPNInt();
-   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -352,7 +367,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       *Y=j-1.0;
 
       /*Si on est a l'interieur de la grille*/
-      if (*X>Ref->X1 || *Y>Ref->Y1 || *X<Ref->X0 || *Y<Ref->Y0) {
+      if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {
          if (!Extrap) {
             *X=-1.0;
             *Y=-1.0;
