@@ -1979,7 +1979,7 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    if { !$Force } {
-      if { [Dialog::Default . 300 WARNING "" 1 $Lbl(Yes) $Lbl(No)] } {
+      if { [Dialog::Default . 300 WARNING $Msg(ProjectRead) "" 1 $Lbl(Yes) $Lbl(No)] } {
          return
       }
    }

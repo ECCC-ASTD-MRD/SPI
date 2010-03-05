@@ -504,6 +504,10 @@ proc Viewport::ConfigGet { Frame VP } {
    variable Data
    variable Resources
 
+   if { ![projection is $Frame] } {
+      return
+   }
+
    set sec                 [projection configure $Frame -date]
    set Data(Seconds$Frame) [expr $sec-$Data(Seconds)]
 
@@ -622,6 +626,10 @@ proc Viewport::ConfigSet { Frame } {
    variable Data
    variable Map
    variable Resources
+
+   if { ![projection is $Frame] } {
+      return
+   }
 
    set Map(Type$Frame)   $Map(Type)
    set Map(GeoRef$Frame) $Map(GeoRef)
@@ -1750,7 +1758,7 @@ proc Viewport::ParamFrame { Frame Apply } {
    labelframe $Data(Frame).left.scale -text "Elevation"
       scale $Data(Frame).left.scale.height -orient horizontal -from 1 -to 100\
          -showvalue true -variable Viewport::Map(Elev) -relief flat \
-         -command "if { \[projection configure \$Page::Data(Frame) -scale\]!=\$Viewport::Map(Elev) } { Viewport::ParamSet }; $Apply configure -state normal; catch " -width 14 -sliderlength 8 -bd 1 -resolution 0.1
+         -command "if { \[projection is  \$Page::Data(Frame)\] && \[projection configure \$Page::Data(Frame) -scale\]!=\$Viewport::Map(Elev) } { Viewport::ParamSet }; $Apply configure -state normal; catch " -width 14 -sliderlength 8 -bd 1 -resolution 0.1
       pack $Data(Frame).left.scale.height -side left -fill x -expand true -padx 2 -pady 2
 
    pack $Data(Frame).left.ras -side top -fill x
