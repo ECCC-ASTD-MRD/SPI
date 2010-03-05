@@ -33,7 +33,7 @@ namespace eval Log { } {
    set Param(Level)     DEBUG                 ;#Log level
    set Param(Time)      False                 ;#Print the time
    set Param(Proc)      True                  ;#Print the calling proc
-   set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to stro the log files
+   set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(Mail)      ""
    set Param(MailTitle) "Job Info"
    set Param(JobId)     ""
@@ -176,7 +176,7 @@ proc Log::Print { Type Message } {
          if { [llength [set logs [lrange [lsort -decreasing [glob -nocomplain $Param(Path)/*.log]] 3 end]]] } {
             eval file delete $logs
          }
-         set Param(Out) [open $Data(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log w]
+         set Param(Out) [open $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log w]
       } else {
          if { [file exists $Param(Out)] } {
             file rename $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]
@@ -243,12 +243,16 @@ proc Log::Mail { Subject File } {
    }
 
    if { ![file exists $File] || ![file readable $File] } {
-      set file /dev/null
-   }
-
-   if { $env(EER_ARCH)=="IRIX64" } {
-      eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
+      if { $env(EER_ARCH)=="IRIX64" } {
+         eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail)
+      } else {
+         eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail)
+      }
    } else {
-      eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
+      if { $env(EER_ARCH)=="IRIX64" } {
+         eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
+      } else {
+         eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
+      }
    }
 }

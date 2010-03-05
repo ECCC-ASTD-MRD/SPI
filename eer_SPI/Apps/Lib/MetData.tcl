@@ -19,6 +19,7 @@
 #   MetData::FormatDATEV      { Field { Min False } }
 #   MetData::GetLatestRun     { Path }
 #   MetData::GetLatestStamp   { Path }
+#   MetData::GetStampFromFile { File }
 #   MetData::GetMode          { Files }
 #   MetData::StampModulo      { Stamp Sec }
 #   MetData::GridDefineLL     { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
@@ -191,7 +192,29 @@ proc MetData::GetLatestRun { Path } {
 proc MetData::GetLatestStamp { Path } {
 
    set file  [lindex [lsort -dictionary [glob -tails -directory $Path \[1-2\]*_???]] end]
-   set stamp [fstdstamp fromseconds [clock scan "[string range $file 0 7] [string range $file 8 9]"]]
+   return [MetData::GetStampFromFile $file]
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <MetData::GetStampFromFile>
+# Creation : Mars 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer le stamp d'un fichier
+#
+# Parametres :
+#  <File>    : Fichier de donnes meteo
+#
+# Retour     :
+#  <Stamp>   : Stamp de la date de validite du debut de la run
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc MetData::GetStampFromFile { File } {
+
+   set File [file tail $File]
+   set stamp [fstdstamp fromseconds [clock scan "[string range $File 0 7] [string range $File 8 9]"]]
    return $stamp
 }
 
