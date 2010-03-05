@@ -127,16 +127,17 @@ proc MLDP::Launch { } {
       }
 
       if { $Sim(Model)=="MLDP1" } {
-         exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++ $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
+         exec echo "#!/bin/sh\n\nssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++ $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
+            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
          set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++ $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
+            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi  -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >$Sim(Path)/tmp/Model_Launch.out } Message]
       } else {
-         exec echo "ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++ $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbCPUsMeteo) -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
+         exec echo "#!/bin/sh\n\nssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++ $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
+            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbCPUsMeteo) -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
          set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++ $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbCPUsMeteo) -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
+            -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbCPUsMeteo) -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >$Sim(Path)/tmp/Model_Launch.out } Message]
       }
+      exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
 
       if { $ErrorCode } {
          Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"

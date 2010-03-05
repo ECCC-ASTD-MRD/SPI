@@ -1269,10 +1269,11 @@ proc MLCD::Launch { } {
       #----- Copy needed file to run host:directory.
       Model::ParamsCopy MLCD
 
-      exec echo "soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
-         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/soumet.out
+      exec echo "#!/bin/sh\n\nsoumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
+         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+      exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
       set ErrorCode [catch { exec soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
-         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/soumet.out } Message]
+         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/Model_Launch.out } Message]
 
       if { $ErrorCode } {
          Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"
