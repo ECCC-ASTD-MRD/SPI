@@ -70,7 +70,7 @@ THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:
 (username: eerca99 password: emerg1)
 
 http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
-http://www.arl.noaa.gov/rsmc-bin/jntrsmc.pl
+https://ready.arl.noaa.gov/rsmc2-bin/jntrsmc.pl
 http://www.bom.gov.au/cgi-bin/reg/EER/jntrsmc.pl
 
 
