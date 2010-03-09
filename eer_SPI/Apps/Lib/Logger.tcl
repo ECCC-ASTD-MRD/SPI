@@ -30,10 +30,12 @@ namespace eval Log { } {
    variable Param
 
    set Param(Out)       stdout                ;#Output file/channel
+   set Param(OutFile)   ""                    ;#Output filename
    set Param(Level)     DEBUG                 ;#Log level
    set Param(Time)      False                 ;#Print the time
    set Param(Proc)      True                  ;#Print the calling proc
    set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to store the log files
+   set Param(Mode)      SCRIPT                ;#Mode du logger (SCRIPT,ALL)
    set Param(Mail)      ""
    set Param(MailTitle) "Job Info"
    set Param(JobId)     ""
@@ -107,7 +109,9 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
-   Log::Mail "Job started" $Param(Out)
+   if { $Param(Mode)=="ALL" } {
+      Log::Mail "Job started" $Param(OutFile)
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -140,9 +144,11 @@ proc Log::End { { Status 0 } } {
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
    if { $Status==0 } {
-      Log::Mail "Job finished (NORMAL)" $Param(Out)
+      if { $Param(Mode)=="ALL" } {
+         Log::Mail "Job finished (NORMAL)" $Param(OutFile)
+      }
    } else {
-      Log::Mail "Job finished (ERROR)" $Param(Out)
+      Log::Mail "Job finished (ERROR)" $Param(OutFile)
    }
 
    exit $Status
@@ -176,13 +182,14 @@ proc Log::Print { Type Message } {
          if { [llength [set logs [lrange [lsort -decreasing [glob -nocomplain $Param(Path)/*.log]] 3 end]]] } {
             eval file delete $logs
          }
-         set Param(Out) [open $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log w]
+         set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log
       } else {
          if { [file exists $Param(Out)] } {
             file rename $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]
          }
-         set Param(Out) [open $Param(Out) w]
+         set Param(OutFile) $Param(Out)
       }
+      set Param(Out) [open $Param(OutFile) w]
    }
 
    #----- If the message is within the specified log level
@@ -238,7 +245,7 @@ proc Log::Mail { Subject File } {
    global env
    variable Param
 
-   if { $Param(Mail)=="" } {
+   if { $Param(Mail)==""  } {
       return
    }
 
