@@ -98,7 +98,7 @@ proc SatData::Close { } {
 #-------------------------------------------------------------------------------
 
 proc SatData::DataExtract { InFile } {
-   global GDefs
+   global GDefs env
    variable Data
    variable Msg
 
@@ -120,9 +120,6 @@ proc SatData::DataExtract { InFile } {
       catch { exec ssh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out" }
    } else {
       Log::Print ERROR "Option 2 not available right now, sorry! ( $GDefs(FrontEnd) $GDefs(Host) )"
-      if { $trace } {
-         Dialog::Error .satdata $message
-      }
    }
 }
 
