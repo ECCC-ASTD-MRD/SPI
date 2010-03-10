@@ -121,14 +121,15 @@ proc Log::Start { Job Version { Input "" } } {
 # But      : Afficher une message de fin standard.
 #
 # Parametres  :
-#    <status> : Code de retour de la job (0=ok, sinon erreur)
+#    <Status> : Code de retour de la job (0=ok, sinon erreur)
+#    <Exit>   : Sortie du prorgamme (Default=True)
 #
 # Retour:
 #
 # Remarques :
 #----------------------------------------------------------------------------
 
-proc Log::End { { Status 0 } } {
+proc Log::End { { Status 0 } { Exit True } } {
    variable Param
 
    set Param(SecEnd) [clock seconds]
@@ -151,7 +152,9 @@ proc Log::End { { Status 0 } } {
       Log::Mail "Job finished (ERROR)" $Param(OutFile)
    }
 
-   exit $Status
+   if { $Exit } {
+      exit $Status
+   }
 }
 
 #----------------------------------------------------------------------------
