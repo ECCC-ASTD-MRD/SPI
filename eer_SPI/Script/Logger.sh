@@ -35,7 +35,7 @@
 
 #----- Check for environment settings
 LOG_LEVEL=${LOG_LEVEL:=INFO}
-LOG_MODE=${LOG_MODE:=""}
+LOG_MODE=${LOG_MODE:=SCRIPT}
 LOG_MAIL=${LOG_MAIL:=""}
 LOG_MAILTITLE=${LOG_MAILTITLE:="Job Info"}
 LOG_JOBID=${LOG_JOBID:=""}
@@ -75,24 +75,37 @@ function realpath {
    echo $fname
 }
 
+function Log_MailIf {
+
+   subject=${1}
+   file=${2}
+
+   if [[ ${LOG_MODE} = "ALL" ]]; then
+      Log_Mail $subject $file
+   fi
+}
+
 function Log_Mail {
 
    subject=${1}
    file=${2}
-   auto=${3}
 
-   if [[ ${LOG_MAIL} = "" || ! ${LOG_MODE} = $auto ]] ; then
+   if [[ ${LOG_MAIL} = "" ]] ; then
       return 0
    fi
 
-   if [[ ! -r ${file} ]] ;then
-      file=/dev/null
-   fi
-
-   if [[ ${EER_ARCH} = IRIX64 ]] ; then
-      mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
-   else
-      mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
+   if [[ -r ${file} ]] ;then
+      if [[ ${EER_ARCH} = IRIX64 ]] ; then
+         mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
+      else
+         mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
+      fi
+   else 
+      if [[ ${EER_ARCH} = IRIX64 ]] ; then
+         echo -e $file | mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL}
+      else
+         echo -e $file | mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL}
+      fi
    fi
 }
 
@@ -103,7 +116,7 @@ function Log_Start {
    LogVersion=${2}
    in=${3}
 
-  #----- Simulation run time ID.
+   #----- Simulation run time ID.
    if [[ ${LOG_JOBID} = "" ]] ; then
       #----- Define run time ID if not defined.
       LOG_JOBID=`date +%Y%m%d%H%M%S`
@@ -149,16 +162,17 @@ function Log_Start {
    Log_Print MUST "Start time          : `date +\"%c %Z\"`"
    Log_Print MUST "-------------------------------------------------------------------------------\n"
 
-   Log_Mail "Job started" ${LOG_FILE}
+   Log_MailIf "Job started" ${LOG_FILE}
 }
 
 function Log_End {
 
    status=${1}
+   exitnow=${2}
    LogSecEnd=${SECONDS}
 
    Log_Print MUST "\n -------------------------------------------------------------------------------"
-   if [[ ${status} -eq 0 ]] ; then
+   if [[ ${status} -eq 0 ]]; then
       Log_Print MUST "Status              : Job has terminated successfully."
    else
       Log_Print MUST "Status              : Job has encountered some errors."
@@ -167,10 +181,14 @@ function Log_End {
    Log_Print MUST "Total running time  : $(Log_Time `expr ${LogSecEnd} - ${LogSecStart}`)"
    Log_Print MUST "-------------------------------------------------------------------------------\n"
 
-   if [[ ${status} -eq 0 ]] ; then
-      Log_Mail "Job finished (NORMAL)" ${LOG_FILE}
+   if [[ ${status} -eq 0 ]]; then
+      Log_MailIf "Job finished (NORMAL)" ${LOG_FILE}
    else
-      Log_Mail "Job finished (ERROR)" ${LOG_FILE} AUTO
+      Log_Mail "Job finished (ERROR)" ${LOG_FILE}
+   fi
+
+   if [[ ${exitnow} = "" ]]; then
+      exit $status
    fi
 }
 
@@ -204,12 +222,12 @@ function Log_Print {
       fi
 
       if [[ ${LOG_FILE} = "" ]] ; then
-         echo "${levels}${datetime}${msg} ${time}"
+         echo -e "${levels}${datetime}${msg} ${time}"
       else
-         echo "${levels}${datetime}${msg} ${time}" >> ${LOG_FILE}
+         echo -e "${levels}${datetime}${msg} ${time}" >> ${LOG_FILE}
       fi
       if [[ $level = "ERROR" ]] ; then
-         echo "${levels}${datetime}${msg} ${time}" 1>&2
+         echo -e "${levels}${datetime}${msg} ${time}" 1>&2
          if [[ ${LOG_OC} != "" ]]; then
             oclog x "${LOG_OC}\n\n${levels}${datetime}${msg} ${time}"
          fi

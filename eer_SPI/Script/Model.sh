@@ -385,7 +385,7 @@ Model_PoolSet DONE ${MODEL_EXITSTATUS}
 Model_CopyLog
 #Model_CopyTrace
 
-Log_End ${MODEL_EXITSTATUS}
+Log_End ${MODEL_EXITSTATUS} False
 Model_CleanUp
 
 exit ${MODEL_EXITSTATUS}
