@@ -25,6 +25,7 @@ set tests {
    {FSTD_Voir.tcl DataIn/2005102612_012c}
    FSTD_Funcs.tcl
    FSTD_GridFunc.tcl
+   FSTD_GetPressure.tcl
    FSTD_8HourAverage.tcl
    FSTD_CalcES2HR.tcl
    FSTD_DrainDensity.tcl
