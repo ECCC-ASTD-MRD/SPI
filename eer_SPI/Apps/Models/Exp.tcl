@@ -86,7 +86,9 @@ namespace eval Exp {
                             "Do you want to delete the joint statement ?" }
    set Msg(JointStatement) { "Etes-vous certain de vouloir transferer le joint statement ?" \
                             "Do you really want to send the joint statement ?" }
-   set Msg(SendJoint)     { "Transfert en cours" "Transferring data" }
+   set Msg(SendProducts)  { "Transfert des produits RSMC en cours" "Transferring RSMC products" }
+   set Msg(SendJoint)     { "Transfert des message commun en cours" "Transferring joint statement" }
+   set Msg(SetLead)       { "Definition du leader RSMC" "Defining lead RSMC" }
    set Msg(SuppressExp)   { "La suppression de l'experience supprimera definitivement toutes les simulations\
                              qui y son contenue.\n\nVoulez-vous supprimer cette experience ?" \
                             "Deleting this experiment will definitively erase all the simulations in it.\n\n\
@@ -987,7 +989,6 @@ proc Exp::ProductRSMCJointData { } {
    if { [Dialog::Default . 400 WARNING $Msg(JointData) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
-
    set join [Dialog::Default . 400 WARNING $Msg(JointClear) "" 0 $Lbl(Yes) $Lbl(No)]
 
    #----- setup le repertoire et le fichier concernant la run du modele meteo utilise.
@@ -996,6 +997,8 @@ proc Exp::ProductRSMCJointData { } {
 
    #----- on recupere l'index de la region afin de determiner la region RSMC correspondante.
    set region [expr [ogrlayer pick RSMC "$Exp::Data(Lat) $Exp::Data(Lon) "] + 1]
+
+   Dialog::Wait . $Msg(SetLead)
 
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
@@ -1007,24 +1010,23 @@ proc Exp::ProductRSMCJointData { } {
       file delete -force $path/leadrsmc.txt
    }
 
+   Dialog::Wait . $Msg(SendProducts)
+
    #----- cree le fichier pour la date.
    if { $run == "Unavailable" } {
       exec echo "Unavailable" > $path/CA_DATE.TXT
    } else {
       exec echo [clock format [clock seconds] -format "%Y%m%d${run}_%H%M" -gmt true] > $path/CA_DATE.TXT
    }
-
-   Dialog::Message . $Msg(SendJoint)
-
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
    catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 }
-
    if { !$join } {
+      Dialog::Wait . $Msg(SendJoint)
       catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html }
    }
 
-   destroy .msgbox
+   Dialog::WaitDestroy
    . config -cursor left_ptr
 }
 
@@ -1064,7 +1066,10 @@ proc Exp::ProductRSMCJointStatement { File } {
       return
    }
 
+   Dialog::Wait . $Msg(SendJoint)
    catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html }
+
+   Dialog::WaitDestroy
    . config -cursor left_ptr
 }
 

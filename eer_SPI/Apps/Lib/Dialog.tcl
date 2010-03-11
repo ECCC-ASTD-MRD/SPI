@@ -15,7 +15,7 @@
 #    Dialog::Default      { Master Width Type Text Extra Default args }
 #    Dialog::Info         { Master Text { Extra "" } }
 #    Dialog::Wait         { Master Text { Extra "" } }
-#    Dialog::WaitDestroy  { }
+#    Dialog::WaitDestroy  { { Ask False } }
 #    Dialog::Error        { Master Text { Extra "" } }
 #    Dialog::ErrorListing { Master Text List }
 #    Dialog::Message      { Master Text { Extra "" } }
@@ -43,14 +43,18 @@ namespace eval Dialog { } {
    variable Lbl
    variable Bubble
 
-   set Lbl(Ok)      { "Ok" "Ok" }
-   set Lbl(Cancel)  { "Annuler" "Cancel" }
+   set Lbl(Ok)       { "Ok" "Ok" }
+   set Lbl(Continue) { "Continuer" "Continue" }
+   set Lbl(Cancel)   { "Annuler" "Cancel" }
 
    set Lbl(WARNING)  { "Avertissement" "Warning" }
    set Lbl(INFO)     { "Information" "Information" }
    set Lbl(MESSAGE)  { "Message" "Message" }
    set Lbl(ERROR)    { "Erreur" "Error" }
    set Lbl(QUESTION) { "Question ?" "Question ?" }
+
+   set Lbl(Running)  { "Une processus est en cours, voulez-vous continuer et tuer ce processus ou annuler ?"
+                       "A process is currently running, do you wich to continue and kill it or cancel ?" }
 
    set Bubble(Print) { "Impressiondu contenue" "Print window content" }
    set Bubble(Save)  { "Sauvegarde du contenu" "Save window content" }
@@ -400,14 +404,24 @@ proc Dialog::Wait { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::WaitDestroy { } {
+proc Dialog::WaitDestroy { { Ask False } } {
+   variable Lbl
 
    if { ![info exists ::tk_version] } {
-      return
+      return True
    }
 
-   destroy .dlgwait
-   update idletasks
+   if { [winfo exists .dlgwait] } {
+
+      if { $Ask } {
+         if { [Dialog::Default . 400 INFO $Lbl(Running) "" 1 $Lbl(Continue) $Lbl(Cancel)] } {
+            return False
+         }
+      }
+      destroy .dlgwait
+      update idletasks
+   }
+   return True
 }
 
 #----------------------------------------------------------------------------

@@ -1818,30 +1818,34 @@ proc SPI::Progress { Percent { Info "" } { Var "" } } {
 proc SPI::Quit { { Code 0 } } {
    variable Data
 
-   #----- Cleanup des outils
-   foreach tool $SPI::Param(Tools) {
-      upvar #0 ${tool}::Data(Active) active
-      if { $active } {
-         eval set proc \[info procs ::${tool}::Close\]
-         if { $proc!="" } {
-            eval ${tool}::Close
+   #----- Check if any process is running
+   if { [Dialog::WaitDestroy True] } {
+
+      #----- Cleanup des outils
+      foreach tool $SPI::Param(Tools) {
+         upvar #0 ${tool}::Data(Active) active
+         if { $active } {
+            eval set proc \[info procs ::${tool}::Close\]
+            if { $proc!="" } {
+               eval ${tool}::Close
+            }
          }
       }
+
+      fstdfield   wipe
+      observation wipe
+      trajectory  wipe
+      ogrlayer    wipe
+      gdalband    wipe
+      dataspec    wipe
+      graphitem   wipe
+      graphaxis   wipe
+
+      glrender -shutdown
+
+      Log::Print INFO "System: Exiting"
+      exit $Code
    }
-
-   fstdfield   wipe
-   observation wipe
-   trajectory  wipe
-   ogrlayer    wipe
-   gdalband    wipe
-   dataspec    wipe
-   graphitem   wipe
-   graphaxis   wipe
-
-   glrender -shutdown
-
-   Log::Print INFO "System: Exiting"
-   exit $Code
 }
 
 #-------------------------------------------------------------------------------
