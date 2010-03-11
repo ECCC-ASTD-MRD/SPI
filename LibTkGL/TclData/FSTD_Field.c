@@ -630,7 +630,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
  *
  *----------------------------------------------------------------------------
  */
-int ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref) {
+int ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref) {
 
    int   l,deet,ip1,ip2,ip3,ig1,ig2,ig3,ig4,bit;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
@@ -639,7 +639,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef
    char  var[5];
    char  lbl[13];
 
-   l = c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","HY");
+   l = c_fstinf(Unit,&ni,&nj,&nk,DateV,"",-1,-1,-1,"X","HY");
    if (l>=0) {
        l = c_fstprm(l,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
                     &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
@@ -653,7 +653,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef
    return(l>=0);
 }
 
-int ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int DateV,TGeoRef *Ref) {
+int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
 
    int   key,l,deet,ip1,ip2,ip3,ig1,ig2,ig3,ig4,bit;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
@@ -663,7 +663,7 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int IP2,int IP3,char *Etiket,int Date
    char  lbl[13];
    double *buf;
 
-   key=l=c_fstinf(Unit,&ni,&nj,&nk,DateV,Etiket,-1,IP2,IP3,"X","!!");
+   key=l=c_fstinf(Unit,&ni,&nj,&nk,DateV,"",-1,-1,-1,"X","!!");
    if (l>=0) {
        l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
                     &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
@@ -733,9 +733,9 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
          i=0;
          Field->Ref->Top=1e-32;
          FSTD_FileSet(NULL,fid);
-         if (ZRef_DecodeRPNHybrid(fid->Id,i,i,"",i,Field->Ref)) {
+         if (ZRef_DecodeRPNHybrid(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
             i=1;
-         } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,i,i,"",i,Field->Ref)) {
+         } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
             i=1;
          }
          FSTD_FileUnset(NULL,fid);

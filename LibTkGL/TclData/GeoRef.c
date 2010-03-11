@@ -1397,51 +1397,60 @@ int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1
    }
 
    /*Test for limit source inclusion into destination*/
+   x0=y0=1e32;
+   x1=y1=-1e32;
+   x=0;
+
    if (!in) {
-      x=0;
       Ref1->Project(Ref1,Ref1->X0,Ref1->Y0,&lat,&lon,0,1);
-      x+=Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1);
+      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+         x0=Ref1->X0;y0=Ref1->Y0;
+         x++;
+      }
       Ref1->Project(Ref1,Ref1->X0,Ref1->Y1,&lat,&lon,0,1);
-      x+=Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1);
+      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+         x0=Ref1->X0;y1=Ref1->Y1;
+         x++;
+      }
       Ref1->Project(Ref1,Ref1->X1,Ref1->Y0,&lat,&lon,0,1);
-      x+=Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1);
+      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+         x1=Ref1->X1;y0=Ref1->Y0;
+         x++;
+      }
       Ref1->Project(Ref1,Ref1->X1,Ref1->Y1,&lat,&lon,0,1);
-      x+=Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1);
-      if (x==4) {
-         *X0=Ref1->X0; *Y0=Ref1->Y0;
-         *X1=Ref1->X1; *Y1=Ref1->Y1;
+      if (Ref0->UnProject(Ref0,&di,&dj,lat,lon,0,1)) {
+         x1=Ref1->X1;y1=Ref1->Y1;
+      }
+      *X0=x0; *Y0=y0;
+      *X1=x1; *Y1=y1;
+
+      if (x>=3) {
          in=1;
       }
    }
 
    if (!in) {
-      x0=y0=1e32;
-      x1=y1=-1e32;
 
       /*Project Ref0 Border within Ref1 and get limits*/
-      for(x=Ref0->X0,y=Ref0->Y0;x<=Ref0->X1;x++) {
-         Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
+      for(x=Ref0->X0;x<=Ref0->X1;x++) {
+         Ref0->Project(Ref0,x,Ref0->Y0,&lat,&lon,0,1);
+         Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
+         x0=FMIN(x0,di); y0=FMIN(y0,dj);
+         x1=FMAX(x1,di); y1=FMAX(y1,dj);
+
+         Ref0->Project(Ref0,x,Ref0->Y1,&lat,&lon,0,1);
          Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
          x0=FMIN(x0,di); y0=FMIN(y0,dj);
          x1=FMAX(x1,di); y1=FMAX(y1,dj);
       }
 
-      for(x=Ref0->X0,y=Ref0->Y1;x<=Ref0->X1;x++) {
-         Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
+      for(y=Ref0->Y0;y<=Ref0->Y1;y++) {
+         Ref0->Project(Ref0,Ref0->X0,y,&lat,&lon,0,1);
          Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
          x0=FMIN(x0,di); y0=FMIN(y0,dj);
          x1=FMAX(x1,di); y1=FMAX(y1,dj);
-      }
 
-      for(y=Ref0->Y0,x=Ref0->X0;y<=Ref0->Y1;y++) {
-         Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
-         Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
-         x0=FMIN(x0,di); y0=FMIN(y0,dj);
-         x1=FMAX(x1,di); y1=FMAX(y1,dj);
-      }
-
-      for(y=Ref0->Y0,x=Ref0->X1;y<=Ref0->Y1;y++) {
-         Ref0->Project(Ref0,x,y,&lat,&lon,0,1);
+         Ref0->Project(Ref0,Ref0->X1,y,&lat,&lon,0,1);
          Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
          x0=FMIN(x0,di); y0=FMIN(y0,dj);
          x1=FMAX(x1,di); y1=FMAX(y1,dj);

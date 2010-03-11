@@ -94,20 +94,20 @@ TFSTDVector *FSTD_VectorTableCheck(char *Var,int *Idx) {
 static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj    *obj;
-   TData      *field;
+   TData      *field,*p0;
    FSTD_Head  *head;
    float       dlat,dlon,dd60,dgrw,x,y,level=0.0;
    int         ip1,n,kind;
    char        buf[50];
    double      tmp;
-   int         idx;
+   int         idx,idxk,i,j,k;
 
    double dxg1,dxg2,dxg3,dxg4;
    float  xg1,xg2,xg3,xg4;
    int    ig1,ig2,ig3,ig4;
 
-   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zgrid","zfilter",NULL };
-   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER };
+   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zgrid","zfilter","pressure",NULL };
+   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER,PRESSURE };
 
    Tcl_ResetResult(Interp);
 
@@ -164,12 +164,51 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_WrongNumArgs(Interp,2,Objv,"field");
             return(TCL_ERROR);
          }
-         field=Data_Get(Tcl_GetString(Objv[2]));
+         if (!(field=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"invalid field :",Tcl_GetString(Objv[2]),(char*)NULL);
+            return(TCL_ERROR);
+         }
          head=((FSTD_Head*)(field->Head));
 #ifdef LNK_FSTD
          f77name(cigaxg)(field->Ref->Grid,&ig1,&ig2,&ig3,&ig4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
          f77name(mscale)(field->Def->Data[0],&ig3,&ig1,&ig2,&field->Def->NI,&field->Def->NJ);
 #endif
+         break;
+
+      case PRESSURE:
+
+         if(Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"field p0");
+            return(TCL_ERROR);
+         }
+
+         if (!(field=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"invalid field :",Tcl_GetString(Objv[2]),(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (!(p0=Data_Get(Tcl_GetString(Objv[3])))) {
+            Tcl_AppendResult(Interp,"invalid pressure field :",Tcl_GetString(Objv[3]),(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         if (field->Ref->Top==0.0 && field->Ref->Ref==0.0) {
+            if (!ZRef_DecodeRPNLevelParams(field)) {
+               Tcl_AppendResult(Interp,"Could not find level paramaters from file",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+         for(k=0;k<field->Def->NK;k++) {
+            idxk=k*FSIZE2D(field->Def);
+            idx=0;
+            for(j=0;j<field->Def->NJ;j++) {
+               for(i=0;i<field->Def->NI;i++) {
+                  idx++;
+                  Def_Get(p0->Def,0,idx,tmp);
+                  tmp=Data_Level2Pressure(field->Ref,field->Ref->Levels[k],tmp,k);
+                  Def_Set(field->Def,0,idxk+idx,tmp);
+               }
+            }
+         }
          break;
 
       case CXGAIG:
