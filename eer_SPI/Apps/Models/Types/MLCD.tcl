@@ -1205,8 +1205,8 @@ proc MLCD::CreateScriptInput { } {
       puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
       puts $file "LOG_TIME=$Model::Param(LogTime)"
 
-      if { $Model::Param(Auto) } {
-         puts $file "LOG_MODE=AUTO"
+      if { !$Model::Param(Auto) } {
+         puts $file "LOG_MODE=ALL"
       }
 
       puts $file ""
