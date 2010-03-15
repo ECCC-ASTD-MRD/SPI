@@ -980,7 +980,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[2] || !Field->Spec->Width || !Field->Spec->Outline) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[2] || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll)) {
       return(0);
    }
 
