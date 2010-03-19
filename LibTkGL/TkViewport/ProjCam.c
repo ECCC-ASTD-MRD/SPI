@@ -285,6 +285,7 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(cam->Lens));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->Lens);
+               cam->Lens=cam->Lens<=0?1.0:cam->Lens;
             }
             break;
 
