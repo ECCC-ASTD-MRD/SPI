@@ -1601,7 +1601,6 @@ proc Page::Update { { Frame "" } { VP True } } {
    }
 
    #----- Get the log2 lens
-
    set l [format "%.2f" [expr log10([projcam configure $Frame -lens])/log10(2)]]
    if { $l!=$Page::Data(L$Frame) } {
       set Page::Data(L$Frame) $l

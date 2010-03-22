@@ -847,10 +847,10 @@ proc Animator::Play { } {
             set id [format "%04i" $no]
          }
 
-         set PrintBox::Print(FullName) $Play(Filename)_$id
+         set PrintBox::Param(FullName) $Play(Filename)_$id
          set PrintBox::Print(Type)     File
 
-         set Play(Label)  "[lindex $Lbl(Print) $GDefs(Lang)] $PrintBox::Print(FullName)"
+         set Play(Label)  "[lindex $Lbl(Print) $GDefs(Lang)] $PrintBox::Param(FullName)"
          PrintBox::Print $Play(Page) 0 0 [Page::CanvasWidth $Play(Page)] [Page::CanvasHeight $Play(Page)]
          set Play(Label)  "[lindex $Lbl(Done) $GDefs(Lang)] $id"
          incr no
