@@ -2247,6 +2247,7 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
 
 #----- Demmarage de l'application
 SPI::Splash "Initializing interface"
+SPI::Init
 
 #----- Initialisations de certaines fonctions et package
 Areas::Init
@@ -2257,7 +2258,6 @@ if { [file exists $SPI::Param(Default)] } {
    source $SPI::Param(Default)
 }
 
-SPI::Init
 SPI::Window
 SPI::WindowMenu
 SPI::Params
