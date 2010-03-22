@@ -34,6 +34,7 @@ namespace eval Areas {
 
    set Lbl(Id)   { "Identification" "Identification" }
    set Lbl(All)  { "Toutes" "All" }
+   set Lbl(Fill) { "Remplissage" "Fill" }
 
    set Data(Layers) {}
    set Data(Languages) { FRANCAIS ENGLISH }
@@ -71,8 +72,8 @@ proc Areas::CreateWidget { Parent } {
       $Parent.areas add cascade -label $l -menu $Parent.areas.t$no
       menu $Parent.areas.t$no -tearoff 1
 
-      set Data(Id$l) False
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display $layer"
+      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Fill) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Fill$layer) -command "Areas::DisplayFill \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId \"$layer\""
       foreach l $layer {
          $Parent.areas.t$no add separator
@@ -146,9 +147,9 @@ proc Areas::Read { File Fill Line { Field "" } } {
       foreach layer [ogrfile open $file read $file] {
          set l [lindex $layer 2]
          eval ogrlayer read $l $layer
-         ogrlayer configure $l -width 2 -font XFont14 -activeoutline $Line -activefill $Fill -transparency 50
+         ogrlayer configure $l -width 4 -font XFont16 -activeoutline $Line -activefill $Fill -transparency 50
 
-         set Data(Type$l) {}
+         set Data(FillColor$l) $Fill
 
          if { $Field!="" } {
             set Data(Field$l) $Field
@@ -158,6 +159,9 @@ proc Areas::Read { File Fill Line { Field "" } } {
       }
       lappend layerid $l
    }
+   set Data(Id$layerid) False
+   set Data(Fill$layerid) True
+
    lappend Data(Layers) $layerid
 }
 
@@ -258,7 +262,7 @@ proc Areas::DisplayToggle { Type No } {
 # But      : Affiche ou supprime l'identificateur de la region.
 #
 # Parametres :
-#  <args>    : Liste des identificateurs de la liste de regions.
+#  <Types>   : Liste des identificateurs de la liste de regions.
 #  <Display> : Affichage ou non
 #
 # Retour:
@@ -280,6 +284,40 @@ proc Areas::DisplayId { Types { Display "" } } {
          ogrlayer define $type -label $Data(Field$type)
       } else {
          ogrlayer define $type -label {}
+      }
+   }
+   Page::Update $Page::Data(Frame)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Areas::DisplayFill>
+# Creation : Aout 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche ou supprime le remplissage des regions.
+#
+# Parametres :
+#  <Types>   : Liste des identificateurs de la liste de regions.
+#  <Display> : Affichage ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Areas::DisplayFill { Types { Display "" } } {
+   global GDefs
+   variable Data
+
+   foreach type $Types {
+      if { $Display!="" } {
+         set Data(Fill$Types) $Display
+      }
+
+      if { $Data(Fill$Types) } {
+         ogrlayer configure $type -activefill $Data(FillColor$type)
+      } else {
+         ogrlayer configure $type -activefill {}
       }
    }
    Page::Update $Page::Data(Frame)
