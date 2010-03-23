@@ -254,15 +254,15 @@ proc Log::Mail { Subject File } {
 
    if { ![file exists $File] || ![file readable $File] } {
       if { $env(EER_ARCH)=="IRIX64" } {
-         eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail)
+         eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail)
       } else {
-         eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail)
+         eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail)
       }
    } else {
       if { $env(EER_ARCH)=="IRIX64" } {
-         eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
+         eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail) < $File
       } else {
-         eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId)\" $Param(Mail) < $File
+         eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail) < $File
       }
    }
 }
