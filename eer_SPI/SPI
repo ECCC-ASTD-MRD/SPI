@@ -45,7 +45,7 @@ do
          SERVER=$RANDOM
          echo "Batch mode: Initializing Xvfb with :$SERVER"
 
-         ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} &
+         ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} >/dev/null 2>&1 &
          PID_XVFB=$!
 
          LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
@@ -55,7 +55,7 @@ do
 
       #----- In case of problem with the whole script, kill Xvfb stuff
 
-      trap "(kill $PID_XVFB; rm -f /tmp/.X11-unix/X${SERVER}) 1> /dev/null 2>&1" 0 1 2 3 13 15
+      trap "(kill $PID_XVFB; rm -f /tmp/.X11-unix/X${SERVER}) >/dev/null 2>&1" 0 1 2 3 13 15
 
       #----- Export virtual display
 
@@ -81,9 +81,9 @@ do
 done
 
 #----- Testing hardware capabilities
-if [[ ($SOFT -eq 0) ]]
+if [[ $SOFT -eq 0 ]]
 then
-   if [[ `${SPI_PATH}/Apps/Lib/System.tcl` -eq 0 ]]
+   if [[ `glxinfo | grep -c direct` -eq 0 ]]
    then
       SOFT=1
    fi
@@ -91,7 +91,7 @@ fi
 
 #----- check for software mode
 
-if [[ ($SOFT -eq 1) ]]
+if [[ $SOFT -eq 1 ]]
 then
    export LD_LIBRARY_PATH=${SPI_SHARED}/GL:${LD_LIBRARY_PATH}
    export LD_PRELOAD=${SPI_SHARED}/GL/libGL.so
