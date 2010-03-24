@@ -135,6 +135,10 @@ proc Macro::URPMap::Clean { } {
 
 }
 
-#----- Lire les parametres si il y en a
-if { $argc>0 } { set Macro::URPMap::Param(Radars) [lindex $argv 0] }
-if { $argc>1 } { set Macro::URPMap::Param(Date)   [lindex $argv 1] }
+proc Macro::URPMap::Args { } {
+   global argv argc
+
+   #----- Lire les parametres si il y en a
+   if { $argc>0 } { set Macro::URPMap::Param(Radars) [lindex $argv 0] }
+   if { $argc>1 } { set Macro::URPMap::Param(Date)   [lindex $argv 1] }
+}

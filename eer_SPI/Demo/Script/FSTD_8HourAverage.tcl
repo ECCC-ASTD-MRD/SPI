@@ -29,6 +29,9 @@ puts \n[file tail [info script]]
 set fields [fstdfile open 1 read  DataIn/2005120600_012]
 fstdfile open 2 write DataOut/FSTD_8HourAverage.fstd
 
+puts stderr [fstdfile info 1 DATEV]
+exit
+
 #----- Recuperer les TICTAC
 
 fstdfield read TIC 1 -1 "" -1 -1 -1 "" >>

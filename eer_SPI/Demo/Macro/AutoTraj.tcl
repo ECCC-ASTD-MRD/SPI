@@ -123,10 +123,14 @@ proc Macro::AutoTraj::Clean { } {
 
 }
 
-#----- Lire les parametres si il y en a
-if { $argc>0 } { set Macro::AutoTraj::Param(Path)   [lindex $argv 0] }
-if { $argc>1 } { set Macro::AutoTraj::Param(Format) [lindex $argv 1] }
-if { $argc>2 } { set Macro::AutoTraj::Param(Height) [lindex $argv 2] }
-if { $argc>3 } { set Macro::AutoTraj::Param(Legend) [lindex $argv 3] }
-if { $argc>4 } { set Macro::AutoTraj::Param(Graph)  [lindex $argv 4] }
+proc Macro::AutoTraj::Args { } {
+   global argv argc
+
+   #----- Lire les parametres si il y en a
+   if { $argc>0 } { set Macro::AutoTraj::Param(Path)   [lindex $argv 0] }
+   if { $argc>1 } { set Macro::AutoTraj::Param(Format) [lindex $argv 1] }
+   if { $argc>2 } { set Macro::AutoTraj::Param(Height) [lindex $argv 2] }
+   if { $argc>3 } { set Macro::AutoTraj::Param(Legend) [lindex $argv 3] }
+   if { $argc>4 } { set Macro::AutoTraj::Param(Graph)  [lindex $argv 4] }
+}
 

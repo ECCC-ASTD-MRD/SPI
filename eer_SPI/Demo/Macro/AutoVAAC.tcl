@@ -114,6 +114,10 @@ proc Macro::AutoVAAC::Clean { } {
    fstdfield free VAACFLD2 VAACFLD3 VAACFLD4
 }
 
-#----- Lire les parametres si il y en a
-if { $argc>0 } { set Macro::AutoVAAC::Param(Path)   [lindex $argv 0] }
-if { $argc>1 } { set Macro::AutoVAAC::Param(Format) [lindex $argv 1] }
+proc Macro::AutoVAAC::Args { } {
+   global argv argc
+
+   #----- Lire les parametres si il y en a
+   if { $argc>0 } { set Macro::AutoVAAC::Param(Path)   [lindex $argv 0] }
+   if { $argc>1 } { set Macro::AutoVAAC::Param(Format) [lindex $argv 1] }
+}

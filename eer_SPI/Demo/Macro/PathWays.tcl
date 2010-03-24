@@ -154,6 +154,10 @@ proc Macro::PathWays::Clean { } {
    trajectory free $Data(Parcels)
 }
 
-#----- Lire les parametres si il y en a
-if { $argc>0 } { set Macro::PathWays::Param(Path)   [lindex $argv 0] }
-if { $argc>1 } { set Macro::TrajPlot::Param(Format) [lindex $argv 1] }
+proc Macro::PathWays::Args { } {
+   global argv argc
+
+   #----- Lire les parametres si il y en a
+   if { $argc>0 } { set Macro::PathWays::Param(Path)   [lindex $argv 0] }
+   if { $argc>1 } { set Macro::TrajPlot::Param(Format) [lindex $argv 1] }
+}

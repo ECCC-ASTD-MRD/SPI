@@ -29,15 +29,15 @@ set layer [ogrfile open SHPFILE read DataIn/ghy_000f06a_e.shp]
 eval ogrlayer read SPHLAYER [lindex $layer 0]
 
 #----- Open the destination file
-catch { file delete -force DataOut/OGR_Simplify.shp  }
+catch { eval file delete -force [glob DataOut/OGR_Simplify.*]  }
 ogrfile open NEWSHPFILE write DataOut/OGR_Simplify.shp "ESRI Shapefile"
 
 #----- Simplify the polygons with 0.1 degrees of tolerance (file is in latlon)
-ogrlayer stats SPHLAYER -simplify 0.1
+ogrlayer stats SPHLAYER -simplify 0.01
 
 #----- Save result
 ogrlayer write SPHLAYER NEWSHPFILE
 
 #----- Close the files
-ogrfile close SHPFILE
 ogrfile close NEWSHPFILE
+ogrfile close SHPFILE
