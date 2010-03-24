@@ -622,7 +622,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
                         nb31=bufr_descriptor_get_ivalue(bcv);
                         if (nb31!=ddo->dpbm->nb_codes) {
-                           fprintf(stderr,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,ddo->dpbm->nb_codes);
+                           fprintf(stdout,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,ddo->dpbm->nb_codes);
                         }
                      }
                   }
@@ -711,7 +711,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
                         nb31=bufr_descriptor_get_ivalue(bcv);
                         if (nb31!=sset->BDDO->dpbm->nb_codes) {
-                           fprintf(stderr,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,sset->BDDO->dpbm->nb_codes);
+                           fprintf(stdout,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,sset->BDDO->dpbm->nb_codes);
                         }
                      }
                   }
@@ -1001,7 +1001,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
       if (n>2 && BCV->value->af) {
          Tcl_ListObjIndex(Interp,Obj,2,&obj);
          Tcl_GetLongFromObj(Interp,obj,&BCV->value->af->bits);
-         fprintf(stderr,"---- %i\n",BCV->value->af->bits);
+         fprintf(stdout,"---- %i\n",BCV->value->af->bits);
      }
 
       /*?????*/

@@ -179,7 +179,7 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
       }
 
       if (key<0) {
-         fprintf(stderr,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
+         fprintf(stdout,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
          return(0);
       } else {
          if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
@@ -323,11 +323,11 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
       EZLock_RPNField();
       idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
       if (idx<0) {
-         fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+         fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
          idx=c_fstinf(head->FID->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
       }
       if (idx<0) {
-         fprintf(stderr,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (GZ)\n");
+         fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (GZ)\n");
       } else {
          if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
          c_fstluk(gz,idx,&i,&j,&k);
@@ -488,7 +488,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,"GZ");
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
-               fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding modulator (GZ) (%f(%i)), using constant pressure\n",Field->Ref->Levels[j],ip1);
+               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding modulator (GZ) (%f(%i)), using constant pressure\n",Field->Ref->Levels[j],ip1);
             } else {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
                c_fstluk(gz,idx,&ni,&nj,&nk);
@@ -541,7 +541,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          if (Field->Spec->Topo) {
             idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
-                fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+                fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
                 idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
              }
              if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
@@ -552,7 +552,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          }
          if (idx<0) {
             if (gz) { free(gz); gz=NULL; };
-            fprintf(stderr,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[Level],ip1);
+            fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[Level],ip1);
          } else {
             if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
             c_fstluk(gz,idx,&ni,&nj,&nk);
@@ -648,7 +648,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref) {
        Ref->Coef[1]=0.0f;
        Ref->Ref=ig1;
    } else {
-      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).\n");
+      fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).\n");
    }
    return(l>=0);
 }
@@ -689,18 +689,18 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
                   }
                }
                if (j==nj) {
-                  fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %i in lookup table.\n",Ref->Levels[k]);
+                  fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %i in lookup table.\n",Ref->Levels[k]);
                }
             }
          } else {
-            fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not read !! field (c_fstluk).\n");
+            fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not read !! field (c_fstluk).\n");
          }
          free(buf);
       } else {
-         fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not get info on !! field (c_fstprm).\n");
+         fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not get info on !! field (c_fstprm).\n");
       }
    } else {
-      fprintf(stderr,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).\n");
+      fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).\n");
    }
    return(l>=0);
 }
@@ -1018,7 +1018,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    }
 
    /*Verifier la compatibilite entre source et destination*/
-   if (!Data_DefCompat(FieldTo->Def,FieldFrom->Def)) {
+   if (!DataDef_Compat(FieldTo->Def,FieldFrom->Def)) {
       FieldTo->Ref=GeoRef_Resize(FieldTo->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldTo->Def->NK,FieldFrom->Ref->LevelType,FieldFrom->Ref->Levels);
    }
    FieldTo->Ref->LevelType=FieldFrom->Ref->LevelType;
@@ -1472,7 +1472,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_Free((char*)list);
                tm=tra;
                if (!GDALInvGeoTransform(tra,inv)) {
-                  fprintf(stderr,"(WARNING) FSTD_FieldDefine: Unable to generate the inverse transform matrix\n");
+                  fprintf(stdout,"(WARNING) FSTD_FieldDefine: Unable to generate the inverse transform matrix\n");
                   im=NULL;
                } else {
                   im=inv;
@@ -1527,17 +1527,10 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   return(TCL_ERROR);
                }
 
-               if (Field->Ref->Lat) free(Field->Ref->Lat);
-               if (Field->Ref->Lon) free(Field->Ref->Lon);
-
-               Field->Ref->Lat=(float*)malloc(FSIZE2D(fieldAY->Def)*sizeof(float));
-               Field->Ref->Lon=(float*)malloc(FSIZE2D(fieldAX->Def)*sizeof(float));
-               if (!Field->Ref->Lat || !Field->Ref->Lon) {
-                  Tcl_AppendResult(Interp,"Unable to allocate memory for grid descriptors",(char*)NULL);
+               if (!GeoRef_Positional(Field->Ref,fieldAX->Def,fieldAY->Def)) {
+                  Tcl_AppendResult(Interp,"unable to initialize positional data",(char*)NULL);
                   return(TCL_ERROR);
                }
-               memcpy(Field->Ref->Lat,fieldAY->Def->Data[0],FSIZE2D(fieldAY->Def)*sizeof(float));
-               memcpy(Field->Ref->Lon,fieldAX->Def->Data[0],FSIZE2D(fieldAX->Def)*sizeof(float));
 
                if (Field->Ref->Grid[0]=='Z' || Field->Ref->Grid[0]=='Y') {
                   head=(FSTD_Head*)fieldAX->Head;
@@ -1545,8 +1538,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   Field->Ref->Id=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
                   EZUnLock_RPNInt();
                }
+               if (Field->Stat) { free(Field->Stat); Field->Stat=NULL; }
+
                GeoRef_Qualify(Field->Ref);
                Data_Clean(Field,1,1,1);
+
                return(TCL_OK);
             }
             break;
@@ -2372,7 +2368,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
       k1=LevelTo;
    }
    /*Augmenter la dimension du tableau*/
-   if (!Data_DefResize(Field->Def,ni,nj,nk)) {
+   if (!DataDef_Resize(Field->Def,ni,nj,nk)) {
       fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
       FSTD_FileUnset(Interp,head->FID);
       EZUnLock_RPNField();
@@ -2380,7 +2376,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
    }
 
 #ifdef DEBUG
-   fprintf(stderr,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
+   fprintf(stdout,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
 #endif
    /*Recuperer le data*/
    for(k=0;k<Field->Def->NK;k++) {

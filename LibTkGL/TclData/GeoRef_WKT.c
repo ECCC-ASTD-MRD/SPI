@@ -30,6 +30,7 @@
  *
  *=========================================================
  */
+
 #include "tclData.h"
 
 int      GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY);
@@ -175,10 +176,10 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 */
 int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-   double x,y,z=0.0;
-   int    s,dx,ok;
+   double dx,dy,x,y,z=0.0;
+   int    sx,sy,d,ok;
 
-   if (X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5) || X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5)) {
+   if (X>=(Ref->X1+0.5) || Y>=(Ref->Y1+0.5) || X<=(Ref->X0-0.5) || Y<=(Ref->Y0-0.5)) {
       if (!Extrap) {
          *Lon=-999.0;
          *Lat=-999.0;
@@ -189,19 +190,33 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    /* In case of non-uniform grid, figure out where in the position vector we are */
    if (Ref->Grid[1]=='Z') {
       if (Ref->Lon && Ref->Lat) {
-         s=floor(X);
-         X=s==X?Ref->Lon[s]:ILIN(Ref->Lon[s],Ref->Lon[s+1],X-s);
+         sx=floor(X);sx=CLAMP(sx,Ref->X0,Ref->X1);
+         X=sx==X?Ref->Lon[sx]:ILIN(Ref->Lon[sx],Ref->Lon[sx+1],X-sx);
 
-         dx=Ref->X1-Ref->X0+1;
-         s=floor(Y);
-         Y=s==Y?Ref->Lat[s*dx]:ILIN(Ref->Lat[s*dx],Ref->Lat[(s+1)*dx],Y-s);
+         d=Ref->X1-Ref->X0+1;
+         sy=floor(Y);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
+         Y=sy==Y?Ref->Lat[sy*d]:ILIN(Ref->Lat[sy*d],Ref->Lat[(sy+1)*d],Y-sy);
       }
-   }
-   if (Ref->Grid[1]=='Y') {
+   } else if (Ref->Grid[1]=='Y') {
       if (Ref->Lon && Ref->Lat) {
-         s=ROUND(Y)*(Ref->X1-Ref->X0+1)+ROUND(X);
-         X=Ref->Lon[s];
-         Y=Ref->Lat[s];
+         sx=floor(X);sx=CLAMP(sx,Ref->X0,Ref->X1);
+         sy=floor(Y);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
+         dx=X-sx;;
+         dy=Y-sy;
+
+         d=sy*(Ref->X1-Ref->X0+1)+sx;
+         X=Ref->Lon[d];
+         Y=Ref->Lat[d];
+
+         if (++sx<=Ref->X1) {
+            d=sy*(Ref->X1-Ref->X0+1)+sx;
+            X+=(Ref->Lon[d]-X)*dx;
+         }
+
+         if (++sy<=Ref->Y1) {
+            d=sy*(Ref->X1-Ref->X0+1)+(sx-1);
+            Y+=(Ref->Lat[d]-Y)*dy;
+         }
       }
    }
 
@@ -259,8 +274,8 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */
 int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   double x,y,z=0.0;
-   int    s,dx,ok;
+   double x,y,z=0.0,d=1e32;
+   int    s,dx,dy,ok,idx;
 
    if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 
@@ -295,42 +310,60 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
 
       /* In case of non-uniform grid, figure out where in the position vector we are */
       if (Ref->Grid[1]=='Z') {
-         s=Ref->X0;
-         /*Check if vector is increasing*/
-         if (Ref->Lon[s]<Ref->Lon[s+1]) {
-            while(s<=Ref->X1 && *X>Ref->Lon[s]) s++;
-         } else {
-            while(s<=Ref->X1 && *X<Ref->Lon[s]) s++;
-         }
-         if (s>Ref->X0) {
-             /*We're in so interpolate postion*/
-             if (s<=Ref->X1) {
-                *X=(*X-Ref->Lon[s-1])/(Ref->Lon[s]-Ref->Lon[s-1])+s-1;
-             } else {
-                *X=(*X-Ref->Lon[Ref->X1])/(Ref->Lon[Ref->X1]-Ref->Lon[Ref->X1-1])+s-1;
-             }
-         } else {
-            /*We're out so extrapolate position*/
-            *X=(*X-Ref->Lon[0])/(Ref->Lon[1]-Ref->Lon[0])+s;
-         }
+         if (Ref->Lon && Ref->Lat) {
+            s=Ref->X0;
+            /*Check if vector is increasing*/
+            if (Ref->Lon[s]<Ref->Lon[s+1]) {
+               while(s<=Ref->X1 && *X>Ref->Lon[s]) s++;
+            } else {
+               while(s<=Ref->X1 && *X<Ref->Lon[s]) s++;
+            }
+            if (s>Ref->X0) {
+               /*We're in so interpolate postion*/
+               if (s<=Ref->X1) {
+                  *X=(*X-Ref->Lon[s-1])/(Ref->Lon[s]-Ref->Lon[s-1])+s-1;
+               } else {
+                  *X=(*X-Ref->Lon[Ref->X1])/(Ref->Lon[Ref->X1]-Ref->Lon[Ref->X1-1])+s-1;
+               }
+            } else {
+               /*We're out so extrapolate position*/
+               *X=(*X-Ref->Lon[0])/(Ref->Lon[1]-Ref->Lon[0])+s;
+            }
 
-         s=Ref->Y0;dx=Ref->X1-Ref->X0+1;
-         /*Check if vector is increasing*/
-         if (Ref->Lat[s*dx]<Ref->Lat[(s+1)*dx]) {
-            while(s<=Ref->Y1 && *Y>Ref->Lat[s*dx]) s++;
-         } else {
-            while(s<=Ref->Y1 && *Y<Ref->Lat[s*dx]) s++;
+            s=Ref->Y0;dx=Ref->X1-Ref->X0+1;
+            /*Check if vector is increasing*/
+            if (Ref->Lat[s*dx]<Ref->Lat[(s+1)*dx]) {
+               while(s<=Ref->Y1 && *Y>Ref->Lat[s*dx]) s++;
+            } else {
+               while(s<=Ref->Y1 && *Y<Ref->Lat[s*dx]) s++;
+            }
+            if (s>Ref->Y0) {
+               /*We're in so interpolate postion*/
+               if (s<=Ref->Y1) {
+                  *Y=(*Y-Ref->Lat[(s-1)*dx])/(Ref->Lat[s*dx]-Ref->Lat[(s-1)*dx])+s-1;
+               } else {
+                  *Y=(*Y-Ref->Lat[Ref->Y1*dx])/(Ref->Lat[Ref->Y1*dx]-Ref->Lat[(Ref->Y1-1)*dx])+s-1;
+               }
+            } else {
+               /*We're out so extrapolate position*/
+               *Y=(*Y-Ref->Lat[0])/(Ref->Lat[dx]-Ref->Lat[0])+s;
+            }
          }
-         if (s>Ref->Y0) {
-             /*We're in so interpolate postion*/
-            if (s<=Ref->Y1) {
-                *Y=(*Y-Ref->Lat[(s-1)*dx])/(Ref->Lat[s*dx]-Ref->Lat[(s-1)*dx])+s-1;
-             } else {
-                *Y=(*Y-Ref->Lat[Ref->Y1*dx])/(Ref->Lat[Ref->Y1*dx]-Ref->Lat[(Ref->Y1-1)*dx])+s-1;
-             }
-         } else {
-            /*We're out so extrapolate position*/
-            *Y=(*Y-Ref->Lat[0])/(Ref->Lat[dx]-Ref->Lat[0])+s;
+      }
+
+      if (Ref->Grid[1]=='Y') {
+         if (Ref->Lon && Ref->Lat) {
+            for(dy=0;dy<=(Ref->Y1-Ref->Y0);dy++) {
+               for(dx=0;dx<=(Ref->X1-Ref->X0);dx++) {
+
+                  idx=dy*(Ref->X1-Ref->X0+1)+dx;
+                  s=fabs(Lon-Ref->Lon[idx])+fabs(Lat-Ref->Lat[idx]);
+
+                  if (s<d) {
+                     *X=dx;*Y=dy;d=s;
+                  }
+               }
+            }
          }
       }
 
@@ -413,7 +446,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    } else {
       string=strdup(REFDEFAULT);
       Ref->Spatial=OSRNewSpatialReference(string);
-      fprintf(stderr,"(WARNING) GeoRef_WKTSet: Unable to find spatial reference, assuming default (latlon)\n");
+      fprintf(stdout,"(WARNING) GeoRef_WKTSet: Unable to find spatial reference, assuming default (latlon)\n");
    }
    Ref->String=string;
 
@@ -426,7 +459,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
          OSRDestroySpatialReference(llref);
       }
    } else {
-      fprintf(stderr,"(WARNING) GeoRef_WKTSet: Unable to get spatial reference\n");
+      fprintf(stdout,"(WARNING) GeoRef_WKTSet: Unable to get spatial reference\n");
    }
 
    Ref->Project=GeoRef_WKTProject;

@@ -2244,7 +2244,7 @@ int SetglCanvas(TkCanvas *canvasPtr) {
    /* Make the context current if it is not already*/
    if (Tk_WindowId(canvasPtr->tkwin)!=glXGetCurrentDrawable() || GLRender->GLCon!=glXGetCurrentContext()) {
       if (!glXMakeContextCurrent(canvasPtr->display,Tk_WindowId(canvasPtr->tkwin),Tk_WindowId(canvasPtr->tkwin),GLRender->GLCon)) {
-         fprintf(stderr,"SetglCanvas: Could not make the rendering context current.\n");
+         fprintf(stderr,"(ERROR) SetglCanvas: Could not make the rendering context current.\n");
          return 0;
       } else {
          glDefineParams();

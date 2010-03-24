@@ -45,6 +45,7 @@
 #include "eerUtils.h"
 #include "tclUtils.h"
 #include "EZTile.h"
+#include "tclDataDef.h"
 
 #define GRID_NONE     0x0
 #define GRID_REGULAR  0x1
@@ -193,6 +194,7 @@ TGeoRef* GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *Strin
 void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRGeometryH Geometry);
 TGeoRef* GeoRef_RDRCheck(double Lat,double Lon,double Height,double Radius,double ResR,double ResA);
 void     GeoRef_Expand(TGeoRef *Ref);
+int      GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef);
 
 void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1,int Y1);
 void  GeoScan_Clear(TGeoScan *Scan);

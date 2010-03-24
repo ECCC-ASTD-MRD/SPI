@@ -1705,6 +1705,50 @@ int GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGra
       if (VX->V[i]!=VX->NoData && VY->V[i]!=VY->NoData) {
          avgx+=VX->V[i];
          avgy+=VY->V[i];
+         vn++;
+      }
+   }
+   avgx/=vn;
+   avgy/=vn;
+
+   for(i=0;i<n;i++) {
+      if (VX->V[i]!=VX->NoData && VY->V[i]!=VY->NoData) {
+         x0=(VX->V[i]-avgx);
+         ssxy+=x0*(VY->V[i]-avgy);
+         ssxx+=x0*x0;
+      }
+   }
+   b=ssxy/ssxx;
+   a=avgy-b*avgx;
+
+   VECTORMIN(VX,x0);
+   VECTORMAX(VX,x1);
+
+   y0=a+b*x0;
+   y1=a+b*x1;
+
+   y0=Y0+AXISVALUE(AxisY,y0);
+   y1=Y0+AXISVALUE(AxisY,y1);
+
+   x0=X0+AXISVALUE(AxisX,x0);
+   x1=X0+AXISVALUE(AxisX,x1);
+
+   V[0][0]=x0; V[0][1]=y0; V[0][2]=0.0;
+   V[1][0]=x1; V[1][1]=y1; V[1][2]=0.0;
+
+   return(2);
+}
+
+int GraphItem_FitLinear2(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
+
+   double ssxx,ssxy,avgx,avgy,a,b,y0,y1,x0,x1;
+   int i,vn,n=VX->N<VY->N?VX->N:VY->N;
+
+   ssxx=ssxy=avgx=avgy=vn=0.0;
+   for(i=0;i<n;i++) {
+      if (VX->V[i]!=VX->NoData && VY->V[i]!=VY->NoData) {
+         avgx+=VX->V[i];
+         avgy+=VY->V[i];
          ssxx+=VX->V[i]*VX->V[i];
          ssxy+=VX->V[i]*VY->V[i];
          vn++;

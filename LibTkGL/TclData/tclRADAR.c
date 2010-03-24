@@ -308,7 +308,7 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
             return TCL_ERROR;
          }
-         Data_DefClear(rad->Def);
+         DataDef_Clear(rad->Def);
          break;
 
      case FREE:

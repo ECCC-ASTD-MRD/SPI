@@ -149,12 +149,12 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
             type=GDALGetDataTypeByName(Tcl_GetString(Objv[6]));
-            if (!(band->Def=Data_DefNew(width,height,1,space,GDAL_Type[type]))) {
+            if (!(band->Def=DataDef_New(width,height,1,space,GDAL_Type[type]))) {
                Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Unable to allocate band",(char*)NULL);
                return(TCL_ERROR);
             }
          } else {
-            band->Def=Data_DefNew(0,0,0,0,TD_Unknown);
+            band->Def=DataDef_New(0,0,0,0,TD_Unknown);
          }
          break;
 
@@ -354,7 +354,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                         }
                         table[k]=band->Def->NoData;
                         if (nk!=band->Def->NK) {
-                           band->Def=Data_DefResize(band->Def,band->Def->NI,band->Def->NJ,nk);
+                           band->Def=DataDef_Resize(band->Def,band->Def->NI,band->Def->NJ,nk);
                            for(k=0;k<FSIZE3D(band->Def);k++) {
                               Def_Set(band->Def,0,k,0);
                            }
@@ -499,7 +499,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          Tcl_GetIntFromObj(Interp,Objv[4],&x0);
          Tcl_GetIntFromObj(Interp,Objv[5],&y0);
 
-         Data_DefTile(band->Def,comb->Def,x0,y0);
+         DataDef_Tile(band->Def,comb->Def,x0,y0);
          return(TCL_OK);
          break;
 
@@ -803,7 +803,7 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
          GDAL_BandDestroy(Interp,Name);
       } else {
          if (!Def && band->Def) {
-            Data_DefFree(band->Def);
+            DataDef_Free(band->Def);
             band->Def=NULL;
          }
          return(band);
@@ -819,7 +819,7 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
    memcpy(&band->Tex,&Band->Tex,sizeof(TGeoTex));
 
    if (Def) {
-      band->Def=Data_DefCopy(Band->Def);
+      band->Def=DataDef_Copy(Band->Def);
       if (!band->Def) {
          Tcl_AppendResult(Interp,"\n   GDAL_BandCopy : Unable to allocate data definition",(char*)NULL);
          return(NULL);
@@ -868,7 +868,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
       if (band->Stat)      free(band->Stat);
       if (band->Tag)       Tcl_DecrRefCount(band->Tag);
       if (band->GCPs)      free(band->GCPs);
-      if (band->Def)       Data_DefFree(band->Def);
+      if (band->Def)       DataDef_Free(band->Def);
       if (band->Ref)       GeoRef_Destroy(Interp,band->Ref->Name);
 
       free(band);

@@ -356,7 +356,7 @@ int Data_Free(TData *Field) {
 
       /*Liberer l'espace de donnees*/
       Data_Clean(Field,1,1,1);
-      Data_DefFree(Field->Def);
+      DataDef_Free(Field->Def);
 
       /*Liberer l'espace du descriptif*/
       if (Field->Stat) free(Field->Stat);
@@ -380,7 +380,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    field=Data_Get(Name);
    if (field==Field) {
       if (!Def && field->Def) {
-         Data_DefFree(field->Def);
+         DataDef_Free(field->Def);
          field->Def=NULL;
       }
       return(field);
@@ -669,13 +669,13 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       field=(TData*)Tcl_GetHashValue(entry);
 
       if (NI*NJ*NK==0) {
-         Data_DefFree(field->Def);
+         DataDef_Free(field->Def);
          field->Def=NULL;
       } else {
          /* Si les dimensions sont correctes et les composantes sont ls memes*/
          if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || TData_Size[field->Def->Type]!=TData_Size[Type]) {
-            Data_DefFree(field->Def);
-            if (!(field->Def=Data_DefNew(NI,NJ,NK,Dim,Type))) {
+            DataDef_Free(field->Def);
+            if (!(field->Def=DataDef_New(NI,NJ,NK,Dim,Type))) {
                Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data",(char *)NULL);
                return(NULL);
             }
@@ -729,7 +729,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       field->Map=NULL;
 
       if (NI*NJ*NK) {
-         if (!(field->Def=Data_DefNew(NI,NJ,NK,Dim,Type))) {
+         if (!(field->Def=DataDef_New(NI,NJ,NK,Dim,Type))) {
             Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data",(char *)NULL);
             return(NULL);
          }
@@ -975,7 +975,7 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Data_DefSort>
+ * Nom      : <DataDef_Sort>
  * Creation : Octobre 2005- J.P. Gauthier - CMC/CMOE
  *
  * But      : Trier une liste de TDataDef pour diverses stats.
@@ -991,7 +991,7 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
  *
  *----------------------------------------------------------------------------
 */
-int Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List){
+int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
 
    Tcl_Obj   *obj;
    TDataDef **def;
@@ -1001,7 +1001,7 @@ int Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List){
    double    *v;
 
    if (!List) {
-      Tcl_AppendResult(Interp,"\n   Data_DefSort: Empty list",(char*)NULL);
+      Tcl_AppendResult(Interp,"\n   DataDef_Sort: Empty list",(char*)NULL);
       return TCL_ERROR;
    }
    Tcl_ListObjLength(Interp,List,&nobj);
@@ -1016,11 +1016,11 @@ int Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List){
       } else if (obs=Obs_Get(Tcl_GetString(obj))) {
          def[n]=obs->Def;
       } else {
-         Tcl_AppendResult(Interp,"\n   Data_DefSort: Invalid field of observation",(char*)NULL);
+         Tcl_AppendResult(Interp,"\n   DataDef_Sort: Invalid field of observation",(char*)NULL);
          return TCL_ERROR;
       }
       if (i!=0 && i!=FSIZE2D(def[n])) {
-         Tcl_AppendResult(Interp,"\n   Data_DefSort: Invalid dimensions",(char*)NULL);
+         Tcl_AppendResult(Interp,"\n   DataDef_Sort: Invalid dimensions",(char*)NULL);
          return TCL_ERROR;
       }
       i=FSIZE2D(def[n]);
@@ -1039,462 +1039,6 @@ int Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List){
    free(v);
    free(def);
    return TCL_OK;
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefNew>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Initialiser la structure TDataDef.
- *
- * Parametres :
- *  <NI>      : Dimension du champs a allouer
- *  <NJ>      : Dimension du champs a allouer
- *  <NK>      : Dimension du champs a allouer
- *  <Dim>     : Nombre de composantes
- *  <Type>    : Type de donnnes
- *
- * Retour:
- *  <Def>:      Nouvelle structure
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-TDataDef *Data_DefNew(int NI,int NJ,int NK,int Dim,TData_Type Type){
-
-   int       i;
-   TDataDef *def;
-
-   def=(TDataDef*)malloc(sizeof(TDataDef));
-   if (!def)
-     return(NULL);
-
-   def->NI=NI;
-   def->NJ=NJ;
-   def->NK=NK;
-   def->NC=abs(Dim);
-   def->Container=abs(Dim)==0;
-   def->CellDim=2;
-   def->NoData=nan("NaN");
-   def->Level=0;
-
-   def->Limits[0][0]=0;
-   def->Limits[1][0]=0;
-   def->Limits[2][0]=0;
-   def->Limits[0][1]=NI-1;
-   def->Limits[1][1]=NJ-1;
-   def->Limits[2][1]=NK-1;
-
-   def->CoordLimits[0][0]=-180;
-   def->CoordLimits[0][1]=180;
-   def->CoordLimits[1][0]=-90;
-   def->CoordLimits[1][1]=90;
-
-   def->Sample=1;
-
-   /* Allocate data vector */
-   def->Data[0]=NULL;
-   def->Data[1]=NULL;
-   def->Data[2]=NULL;
-   def->Data[3]=NULL;
-   def->Type=Type;
-   def->Buffer=NULL;
-   def->Accum=NULL;
-   def->Mask=NULL;
-   def->Pres=NULL;
-   def->Pick=def->Poly=NULL;
-
-   for(i=0;i<Dim;i++) {
-      if (!(def->Data[i]=(char*)calloc(NI*NJ*NK,TData_Size[Type]))) {
-         Data_DefFree(def);
-         return(NULL);
-      }
-   }
-   def->Mode=def->Data[0];
-
-   return(def);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefCompat>
- * Creation : Mars 2009- J.P. Gauthier - CMC/CMOE
- *
- * But      : Verifier les dimensiont entre 2 Def et les ajuster en consequence.
- *
- * Parametres :
- *  <DefTo>   : Definition a redimensionner
- *  <DefTFrom>: Definition de laquelle redimensionner
- *
- * Retour:
- *  <Compat>  : Compatibles?
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int Data_DefCompat(TDataDef *DefTo,TDataDef *DefFrom) {
-
-   int ch=1;
-
-   if (DefTo->Mode && DefTo->Mode!=DefTo->Data[0]) {
-      free(DefTo->Mode);
-   }
-   DefTo->Mode=NULL;
-
-   /*Verifier la dimension verticale*/
-   if (DefTo->NK!=DefFrom->NK) {
-      if (DefTo->Data[1]) {
-         free(DefTo->Data[1]);
-         DefTo->Data[1]=NULL;
-      }
-      if (DefTo->Data[2]) {
-         free(DefTo->Data[2]);
-         DefTo->Data[2]=NULL;
-      }
-      if (DefTo->Data[1]) {
-         free(DefTo->Data[1]);
-         DefTo->Data[1]=NULL;
-      }
-      if (DefTo->Data[0]) {
-         free(DefTo->Data[0]);
-      }
-      DefTo->NK=DefFrom->NK;
-      DefTo->Data[0]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
-      ch=0;
-   }
-
-   /*Verifier la 2ieme composantes*/
-   if (DefFrom->Data[1]) {
-      if (!DefTo->Data[1]) {
-         DefTo->Data[1]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
-      }
-
-      /*Verifier la 3ieme composantes*/
-      if (DefFrom->Data[2]) {
-         if (!DefTo->Data[2]) {
-            DefTo->Data[2]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
-         }
-         DefTo->NC=3;
-      } else {
-         if (DefTo->Data[2]) {
-            free(DefTo->Data[2]);
-            DefTo->Data[2]=NULL;
-         }
-         DefTo->NC=2;
-      }
-   } else {
-     if (DefTo->Data[1]) {
-         free(DefTo->Data[1]);
-         DefTo->Data[1]=NULL;
-      }
-      if (DefTo->Data[2]) {
-         free(DefTo->Data[2]);
-         DefTo->Data[2]=NULL;
-      }
-      DefTo->NC=1;
-   }
-
-   return(ch);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefResize>
- * Creation : Avril 2004- J.P. Gauthier - CMC/CMOE
- *
- * But      : Redimensionner le champs de donnees.
- *
- * Parametres :
- *  <Def>     : Definition a redimensionner
- *  <NI>      : Dimension du champs a allouer
- *  <NJ>      : Dimension du champs a allouer
- *  <NK>      : Dimension du champs a allouer
- *
- * Retour:
- *  <Def>:      Nouvelle structure
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-TDataDef *Data_DefResize(TDataDef *Def,int NI,int NJ,int NK){
-
-   int i;
-
-   if (!Def)
-     return(NULL);
-
-   if (!Def->Container && (Def->NI!=NI || Def->NJ!=NJ || Def->NK!=NK)) {
-      Def->NI=NI;
-      Def->NJ=NJ;
-      Def->NK=NK;
-
-      Def->Limits[0][0]=0;
-      Def->Limits[1][0]=0;
-      Def->Limits[2][0]=0;
-      Def->Limits[0][1]=NI-1;
-      Def->Limits[1][1]=NJ-1;
-      Def->Limits[2][1]=NK-1;
-
-      Def->CoordLimits[0][0]=-180;
-      Def->CoordLimits[0][1]=180;
-      Def->CoordLimits[1][0]=-90;
-      Def->CoordLimits[1][1]=90;
-
-      Def->Sample=1;
-
-      if (Def->Mode && Def->Mode!=Def->Data[0]) {
-         free(Def->Mode);
-         Def->Mode=NULL;
-      }
-
-      for(i=0;i<4;i++) {
-         if (Def->Data[i]) {
-            if (!(Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*TData_Size[Def->Type]))) {
-               Data_DefFree(Def);
-               return(NULL);
-            }
-         }
-      }
-      Def->Mode=Def->Data[0];
-
-      if (Def->Buffer)     free(Def->Buffer); Def->Buffer=NULL;
-      if (Def->Accum)      free(Def->Accum);  Def->Accum=NULL;
-      if (Def->Mask)       free(Def->Mask);   Def->Mask=NULL;
-      if (Def->Pres>0x1)   free(Def->Pres);   Def->Pres=NULL;
-   }
-   return(Def);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefFree>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Liberer la structure TDataDef.
- *
- * Parametres :
- *  <Def>     : Structure a liberer
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Data_DefFree(TDataDef *Def){
-
-   if (Def) {
-      if (!Def->Container) {
-         if (Def->Mode && Def->Mode!=Def->Data[0]) free(Def->Mode);
-         if (Def->Data[0])            free(Def->Data[0]);
-         if (Def->Data[1])            free(Def->Data[1]);
-         if (Def->Data[2])            free(Def->Data[2]);
-         if (Def->Data[3])            free(Def->Data[3]);
-      }
-
-      if (Def->Buffer)     free(Def->Buffer);
-      if (Def->Accum)      free(Def->Accum);
-      if (Def->Mask)       free(Def->Mask);
-      if (Def->Pres>0x1)   free(Def->Pres);
-      if (Def->Poly)       OGR_G_DestroyGeometry(Def->Poly);
-//      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
-
-      free(Def);
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefClear>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Reinitialiser la structure de definitions des donnees
- *
- * Parametres :
- *  <Def>     : Structure a reinitialiser
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Data_DefClear(TDataDef *Def){
-
-   int n,i;
-
-   for(n=0;n<DSIZE(Def->Data);n++) {
-      for(i=0;i<FSIZE3D(Def);i++) {
-         Def_Set(Def,n,i,Def->NoData);
-      }
-   }
-   if (Def->Buffer) {
-      free(Def->Buffer);
-      Def->Buffer=NULL;
-   }
-   if (Def->Accum) {
-      free(Def->Accum);
-      Def->Accum=NULL;
-   }
-   if (Def->Mask) {
-      free(Def->Mask);
-      Def->Mask=NULL;
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefCopy>
- * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
- *
- * But      : Copier une structure TDataDef.
- *
- * Parametres :
- *  <Def>     : Structure a copier
- *
- * Retour:
- *  <def>     : Pointeur sur le copie de la structure
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-TDataDef *Data_DefCopy(TDataDef *Def){
-
-   int       i;
-   TDataDef *def;
-
-   if (Def) {
-      def=(TDataDef*)malloc(sizeof(TDataDef));
-      def->Container=Def->Container;
-      def->CellDim=Def->CellDim;
-      def->NI=Def->NI;
-      def->NJ=Def->NJ;
-      def->NK=Def->NK;
-      def->NC=Def->NC;
-      def->NoData=Def->NoData;
-      def->Type=Def->Type;
-      def->Level=Def->Level;
-      def->Buffer=NULL;
-      def->Accum=NULL;
-      def->Mask=NULL;
-      def->Pres=NULL;
-      def->Pick=def->Poly=NULL;
-      def->Sample=def->Sample;
-
-      memcpy(def->Limits,Def->Limits,6*sizeof(int));
-      memcpy(def->CoordLimits,Def->CoordLimits,4*sizeof(double));
-
-      for(i=0;i<4;i++) {
-         if (def->Container) {
-            def->Data[i]=Def->Data[i];
-         } else {
-            if (Def->Data[i]) {
-               def->Data[i]=(char*)malloc(Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]);
-//               def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,Def->Type>=6?TData_Size[Def->Type]:TData_Size[6]);
-//            def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,sizeof(float));
-               memcpy(def->Data[i],Def->Data[i],Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]);
-            } else {
-               def->Data[i]=NULL;
-            }
-         }
-      }
-      def->Mode=def->Data[0];
-   }
-
-   return(def);
-}
-
-TDataDef *Data_DefCopyPromote(TDataDef *Def,TData_Type Type){
-
-   int       i;
-   TDataDef *def;
-
-   if (Def) {
-      def=(TDataDef*)malloc(sizeof(TDataDef));
-      def->Container=0;
-      def->CellDim=Def->CellDim;
-      def->NI=Def->NI;
-      def->NJ=Def->NJ;
-      def->NK=Def->NK;
-      def->NC=Def->NC;
-      def->NoData=Def->NoData;
-      def->Type=Type;
-      def->Level=Def->Level;
-      def->Buffer=NULL;
-      def->Accum=NULL;
-      def->Mask=NULL;
-      def->Pres=NULL;
-      def->Pick=def->Poly=NULL;
-      def->Sample=def->Sample;
-
-      memcpy(def->Limits,Def->Limits,6*sizeof(int));
-      memcpy(def->CoordLimits,Def->Limits,4*sizeof(double));
-
-      for(i=0;i<4;i++) {
-         if (Def->Data[i]) {
-            def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,TData_Size[def->Type]);
-         } else {
-            def->Data[i]=NULL;
-         }
-      }
-      def->Mode=def->Data[0];
-   }
-
-   return(def);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_DefTile>
- * Creation : Novembre 2007- J.P. Gauthier - CMC/CMOE
- *
- * But      : Copier les donnees d'un TDataDef dans un autres (Tiling).
- *
- * Parametres :
- *  <DefTo>   : Destination
- *  <DefTile> : Tuile
- *  <X0>      : Point de depart de la tuile en X
- *  <Y0>      : Point de depart de la tuile en Y
- *
- * Retour:
- *  <Code>    : In(1) ou Out(0)
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int Data_DefTile(TDataDef *DefTo,TDataDef *DefTile,int X0, int Y0) {
-
-   int    x,y,dx,dy,x0,y0,x1,y1,c;
-   unsigned long idxf,idxd;
-   double val;
-
-   x0=X0<0?-X0:0;
-   y0=Y0<0?-Y0:0;
-
-   x1=DefTile->NI+X0>DefTo->NI?DefTo->NI:DefTile->NI;
-   y1=DefTile->NJ+Y0>DefTo->NJ?DefTo->NJ:DefTile->NJ;
-
-   if (x0>DefTo->NI || x1<0 || y0>DefTo->NJ || y1<0) {
-      return(0);
-   }
-
-   dy=Y0;
-   for (y=y0;y<=y1;y++) {
-      dx=X0;
-      for (x=x0;x<=x1;x++) {
-         for(c=0;c<DefTile->NC;c++) {
-            if (DefTo->Data[c]) {
-               idxf=FIDX2D(DefTile,x,y);
-               Def_Get(DefTile,0,idxf,val);
-
-               idxd=FIDX2D(DefTo,dx,dy);
-               Def_Set(DefTo,0,idxd,val);
-            }
-         }
-         dx++;
-      }
-      dy++;
-   }
-   return(1);
 }
 
 /*----------------------------------------------------------------------------

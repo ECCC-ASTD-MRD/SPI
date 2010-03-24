@@ -67,21 +67,21 @@ EXTCHAR [A-Za-z0-9_.:#~]
 {CHAR}+{EXTCHAR}* {
    if((yylval.Func = FuncGet(FuncF,yytext)))  {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Found a matrix to float function token: %s\n", yytext);
+      fprintf(stdout,"(DEBUG) Found a matrix to float function token: %s\n", yytext);
 #endif
       return T_FNCT_F;
    }
 
    if((yylval.Func = FuncGet(FuncM,yytext)))  {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Found a matrix to matrix function token: %s\n", yytext);
+      fprintf(stdout,"(DEBUG) Found a matrix to matrix function token: %s\n", yytext);
 #endif
       return T_FNCT_M;
    }
 
    if((yylval.Func = FuncGet(FuncD,yytext)))  {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Found a matrix derivative function token: %s\n", yytext);
+      fprintf(stdout,"(DEBUG) Found a matrix derivative function token: %s\n", yytext);
 #endif
       return T_FNCT_D;
    }
@@ -94,7 +94,7 @@ EXTCHAR [A-Za-z0-9_.:#~]
       GMode=GMode==T_VAL?T_FLD:GMode;
       if((yylval.Data=yylval.Field->Def)) {
 #ifdef DEBUG
-        fprintf(stderr,"(DEBUG) Found a T_DATA(Field) token: %s\n", yytext);
+        fprintf(stdout,"(DEBUG) Found a T_DATA(Field) token: %s\n", yytext);
 #endif
         return T_DATA;
       }
@@ -106,7 +106,7 @@ EXTCHAR [A-Za-z0-9_.:#~]
 
       if((yylval.Data=yylval.Band->Def)) {
 #ifdef DEBUG
-        fprintf(stderr,"(DEBUG) Found a T_DATA(Band) token: %s\n", yytext);
+        fprintf(stdout,"(DEBUG) Found a T_DATA(Band) token: %s\n", yytext);
 #endif
         return T_DATA;
       }
@@ -120,7 +120,7 @@ EXTCHAR [A-Za-z0-9_.:#~]
 
       if((yylval.Data=yylval.Obs->Def)) {
 #ifdef DEBUG
-        fprintf(stderr,"(DEBUG) Found a T_DATA(Obs) token: %s\n", yytext);
+        fprintf(stdout,"(DEBUG) Found a T_DATA(Obs) token: %s\n", yytext);
 #endif
         return T_DATA;
       }
@@ -134,14 +134,14 @@ EXTCHAR [A-Za-z0-9_.:#~]
 
       if((yylval.Data=Vector_GetDef(yylval.Vec))) {
 #ifdef DEBUG
-        fprintf(stderr,"(DEBUG) Found a T_DATA(Vector) token: %s\n", yytext);
+        fprintf(stdout,"(DEBUG) Found a T_DATA(Vector) token: %s\n", yytext);
 #endif
         return T_DATA;
       }
    }
 
 #ifdef DEBUG
-      fprintf(stderr, "(DEBUG) Found an error: %s\n", yytext);
+      fprintf(stdout, "(DEBUG) Found an error: %s\n", yytext);
 #endif
    return T_ERROR;
 }

@@ -46,7 +46,7 @@ void GLShader_InfoLog(GLhandleARB Object) {
    if (len>2) {
       log=(GLcharARB*)malloc(len);
       if (!log) {
-         fprintf(stderr,"(WARNING) glInfoLog: Could not allocate log buffer\n");
+         fprintf(stdout,"(WARNING) glInfoLog: Could not allocate log buffer\n");
       } else {
          glGetInfoLogARB(Object,len,chr,log);
          printf("(DEBUG) glInfoLog:\n%s\n",log);

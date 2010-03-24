@@ -302,7 +302,6 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
    long                lval,lval2,lev;
 
   err=f77name(wkoffit)(Name);
-   fprintf(stderr,"---- %i\n",err);
   if (GRIB_FileGet(Id)) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return TCL_ERROR;

@@ -2042,26 +2042,26 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
    /* GLX Version */
    gl=glXQueryVersion(GLRender->XDisplay,&glmaj,&glmin);
    if (gl) {
-      fprintf(stderr,"(INFO) glXCanvasInit: GLX Version %i.%i\n",glmaj,glmin);
+      fprintf(stdout,"(INFO) glXCanvasInit: GLX Version %i.%i\n",glmaj,glmin);
    } else {
       fprintf(stderr,"(ERROR) glXCanvasInit: Could not find GLX extensions\n");
       return(TCL_ERROR);
    }
 
    if (GLRender->GLCon) {
-      fprintf(stderr,"(INFO) glXCanvasInit: Context already created\n");
+      fprintf(stdout,"(INFO) glXCanvasInit: Context already created\n");
    } else {
 
       GLRender->GLConfig=glXChooseFBConfig(GLRender->XDisplay,GLRender->XScreenNo,attrTrue,&GLRender->GLConfigNb);
       if (!GLRender->GLConfigNb) {
-         fprintf(stderr,"(WARNING) glXCanvasInit: Unable to select a standard configuration, trying for minimal\n");
+         fprintf(stdout,"(WARNING) glXCanvasInit: Unable to select a standard configuration, trying for minimal\n");
          GLRender->GLConfig=glXChooseFBConfig(GLRender->XDisplay,GLRender->XScreenNo,attrMin,&GLRender->GLConfigNb);
          if (!GLRender->GLConfigNb) {
             fprintf(stderr,"(ERROR) glXCanvasInit: Unable to select a minimal configuration\n");
             return(TCL_ERROR);
          }
       }
-      fprintf(stderr,"(INFO) glXCanvasInit: Found %i available configuration\n",GLRender->GLConfigNb);
+      fprintf(stdout,"(INFO) glXCanvasInit: Found %i available configuration\n",GLRender->GLConfigNb);
 
       GLRender->GLCon=glXCreateNewContext(GLRender->XDisplay,GLRender->GLConfig[0],GLX_RGBA_TYPE,NULL,GLRender->GLDirect);
       GLRender->GLVis=glXGetVisualFromFBConfig(GLRender->XDisplay,GLRender->GLConfig[0]);
@@ -2069,18 +2069,18 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
          fprintf(stderr,"(ERROR) glXCanvasInit: Could not get a valid visual\n");
          return(TCL_ERROR);
       } else {
-         fprintf(stderr,"(INFO) glXCanvasInit: Visual of %i bit depth selected\n",GLRender->GLVis->depth);
+         fprintf(stdout,"(INFO) glXCanvasInit: Visual of %i bit depth selected\n",GLRender->GLVis->depth);
       }
 
       if (glXIsDirect(GLRender->XDisplay,GLRender->GLCon)) {
-         fprintf(stderr,"(INFO) glXCanvasInit: Using direct rendering context\n");
+         fprintf(stdout,"(INFO) glXCanvasInit: Using direct rendering context\n");
          GLRender->ShaderAvailable=1;
       } else {
-         fprintf(stderr,"(INFO) glXCanvasInit: Using nondirect rendering context\n");
+         fprintf(stdout,"(INFO) glXCanvasInit: Using nondirect rendering context\n");
          GLRender->ShaderAvailable=0;
       }
 
-      fprintf(stderr,"(INFO) glXCanvasInit: Creating TrueColor colormap\n");
+      fprintf(stdout,"(INFO) glXCanvasInit: Creating TrueColor colormap\n");
       GLRender->XColormap=XCreateColormap(GLRender->XDisplay,RootWindowOfScreen(GLRender->XScreen),GLRender->GLVis->visual,AllocNone);
 
       /*Generer les primitives de base*/

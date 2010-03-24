@@ -1651,7 +1651,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
       for (i=0;i<bufr_count_datasubset(dts);i++) {
          if (!(subset=bufr_get_datasubset(dts,i))) {
-            fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Invalid subset");
+            fprintf(stdout,"(WARNING) MetObs_LoadBUFR: Invalid subset");
             continue;
          }
 
@@ -1665,7 +1665,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          for (j=0;j<bufr_datasubset_count_descriptor(subset);j++) {
             if (!(bcv=bufr_datasubset_get_descriptor(subset,j))) {
-               fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Invalid subset code");
+               fprintf(stdout,"(WARNING) MetObs_LoadBUFR: Invalid subset code");
                continue;
             }
 
@@ -1685,7 +1685,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                /*If this code has a value*/
                if (bcv->value) {
                   if (!(eb=MetObs_BUFRFindTableCode(bcv->descriptor))) {
-                     fprintf(stderr,"(WARNING) MetObs_LoadBUFR: Could not find element code (%i) int tables",bcv->descriptor);
+                     fprintf(stdout,"(WARNING) MetObs_LoadBUFR: Could not find element code (%i) int tables",bcv->descriptor);
                   } else {
                      Tcl_SetIntObj(obj,eb->descriptor);
                      if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {

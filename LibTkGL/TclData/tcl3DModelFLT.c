@@ -79,19 +79,19 @@ int Model_LoadFLT(T3DModel *M,char *Path) {
    NMT=0;
    GCOL[0]=GCOL[1]=GCOL[2]=GCOL[3]=0.0;
 
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Projection Type %i\n",flt->header->projectionType);
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Ellipsoid Type %i\n",flt->header->earthEllipsoidModel);
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Coordinates units %i\n",flt->header->coordUnits);
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Origin %f,%f\n",flt->header->originDBLatitude,flt->header->originDBLongitude);
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Extent %f,%f - %f,%f\n",flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Projection Type %i\n",flt->header->projectionType);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Ellipsoid Type %i\n",flt->header->earthEllipsoidModel);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Coordinates units %i\n",flt->header->coordUnits);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Origin %f,%f\n",flt->header->originDBLatitude,flt->header->originDBLongitude);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Extent %f,%f - %f,%f\n",flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
 
    M->NObj=ModelFLT_NodeCount(flt->header,FLTRECORD_OBJECT,0);
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Found %i object\n",M->NObj);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i object\n",M->NObj);
    Model_ObjAdd(M,M->NObj);
 
    M->NMt=ModelFLT_NodeCount(flt->header,FLTRECORD_MATERIAL,0);
    M->NMt=1024;
-   fprintf(stderr,"(DEBUG) Model_LoadFLT: Found %i material\n",M->NMt);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i material\n",M->NMt);
    M->Mt=(TMaterial*)calloc(M->NMt,sizeof(TMaterial));
 
    ModelFLT_NodeProcess(M,flt->header,flt);
@@ -374,12 +374,12 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          NFCE=-1;
          GOBJ->NFc=ModelFLT_NodeCount(Node,FLTRECORD_FACE,0);
          GOBJ->Fc=(TFace*)calloc(GOBJ->NFc,sizeof(TFace));
-         fprintf(stderr,"(DEBUG) ModelFLT_NodeProcess: Found %i Face\n",GOBJ->NFc);
+         fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Face\n",GOBJ->NFc);
 
          NVR=0;
          GOBJ->NVr=ModelFLT_NodeCount(Node,FLTRECORD_VERTEXLIST,1);
          GOBJ->Vr=(Vect3f*)calloc(GOBJ->NVr,sizeof(Vect3f));
-         fprintf(stderr,"(DEBUG) ModelFLT_NodeProcess: Found %i Vertex\n",GOBJ->NVr);
+         fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Vertex\n",GOBJ->NVr);
          break;
 
       case FLTRECORD_GROUP:

@@ -171,6 +171,144 @@ void GeoScan_Clear(TGeoScan *Scan) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoScan_Get>
+ * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Reprojeter et extraire les valeurs a ces points
+ *
+ * Parametres   :
+ *  <Scan>      : Buffer de reprojection
+ *  <FromDef>   : Data definition source
+ *  <Dim>       : Dimension dee cellules de grilles (1=point, 2=area)
+ *
+ * Retour       : Dimension des resultats
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
+
+   register int idx,x,y,n=0;
+   int          d=0,sz,dd;
+   double       x0,y0,x1,y1;
+   double      *transform=NULL;
+
+   dd=Dim-1;
+   Scan->N=0;
+
+   /*WKT grid type*/
+   if (Scan->FromRef->Grid[0]=='W') {
+      transform=Scan->FromRef->Transform;
+      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
+         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
+         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
+            if (x<=Scan->X1 && y<=Scan->Y1) {
+               Scan->V[Scan->N++]=idx;
+            }
+
+            if (!Scan->Valid) {
+               x0=dd?x-0.5:x;
+               y0=dd?y-0.5:y;
+               if (transform) {
+                  Scan->X[n]=transform[0]+transform[1]*x0+transform[2]*y0;
+                  Scan->Y[n]=transform[3]+transform[4]*x0+transform[5]*y0;
+               } else {
+                  Scan->X[n]=x0;
+                  Scan->Y[n]=y0;
+               }
+            }
+         }
+      }
+      if (!Scan->Valid && Scan->FromRef->Function) {
+         OCTTransform(Scan->FromRef->Function,n,Scan->X,Scan->Y,NULL);
+      }
+
+      d=dd?2:1;
+      sz=8;
+   /*Y Grid type*/
+   } else if (Scan->FromRef->Grid[0]=='Y') {
+      for(n=0;n<FromDef->NI;n++,idx++) {
+         Scan->V[n]=idx;
+         if (!Scan->Valid) {
+            ((float*)Scan->X)[n]=Scan->FromRef->Lon[idx];
+            ((float*)Scan->Y)[n]=Scan->FromRef->Lat[idx];
+         }
+      }
+      d=1;
+      sz=4;
+      Scan->N=n;
+   /*Other RPN grids*/
+   } else {
+      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
+         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
+         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
+            if (x<=Scan->X1 && y<=Scan->Y1) {
+               Scan->V[Scan->N++]=idx;
+            }
+
+            if (!Scan->Valid) {
+               ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
+               ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
+            }
+         }
+      }
+      if (!Scan->Valid) {
+         EZLock_RPNInt();
+         c_gdllfxy(Scan->FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+         EZUnLock_RPNInt();
+      }
+      d=dd?2:1;
+      sz=4;
+   }
+
+   /*Project to destination grid*/
+   if (!Scan->Valid) {
+      if (Scan->ToRef->Grid[0]=='W') {
+         transform=Scan->ToRef->InvTransform;
+         if (sz==4) {
+            for(x=n-1;x>=0;x--) {
+               Scan->X[x]=(double)((float*)Scan->X)[x];
+               Scan->Y[x]=(double)((float*)Scan->Y)[x];
+            }
+         }
+
+         if (Scan->ToRef->Function)
+            OCTTransform(Scan->ToRef->InvFunction,n,Scan->X,Scan->Y,NULL);
+
+         if (transform) {
+            for(x=0;x<n;x++) {
+               x0=transform[0]+transform[1]*Scan->X[x]+transform[2]*Scan->Y[x];
+               y0=transform[3]+transform[4]*Scan->X[x]+transform[5]*Scan->Y[x];
+               Scan->X[x]=x0;
+               Scan->Y[x]=y0;
+            }
+         }
+      } else {
+         if (sz==8) {
+            for(x=0;x<n;x++) {
+               /*RPN functions go from 0 to 360 instead of -180 to 180*/
+               x0=Scan->X[x]<0?Scan->X[x]+360:Scan->X[x];
+               y0=Scan->Y[x];
+               ((float*)Scan->X)[x]=x0;
+               ((float*)Scan->Y)[x]=y0;
+            }
+         }
+
+         EZLock_RPNInt();
+         c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+         EZUnLock_RPNInt();
+
+         for(x=n-1;x>=0;x--) {
+            Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
+            Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
+         }
+      }
+   }
+   return(d);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoFunc_RadialPointRatio>
  * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
  *
@@ -685,7 +823,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                   tm=tra;
                   if (!GDALInvGeoTransform(tra,inv)) {
-                     fprintf(stderr,"(WARNING) GeoRef_Define: Unable to generate the inverse transform matrix\n");
+                     fprintf(stdout,"(WARNING) GeoRef_Define: Unable to generate the inverse transform matrix\n");
                      im=NULL;
                   } else {
                      im=inv;
@@ -722,7 +860,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                   im=inv;
                   if (!GDALInvGeoTransform(inv,tra)) {
-                     fprintf(stderr,"(WARNING) GeoRef_Define: Unable to generate the transform matrix\n");
+                     fprintf(stdout,"(WARNING) GeoRef_Define: Unable to generate the transform matrix\n");
                      tm=NULL;
                   } else {
                      tm=tra;
@@ -1183,7 +1321,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 
       if (GeoRef_Equal(ref,Ref,3)) {
 #ifdef DEBUG
-         fprintf(stderr,"(DEBUG) GeoRef_Find: Found existing georef\n");
+         fprintf(stdout,"(DEBUG) GeoRef_Find: Found existing georef\n");
 #endif
          GeoRef_Free(Ref);
          GeoRef_Incr(ref);
@@ -1195,7 +1333,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
    TclY_UnlockHash();
 
 #ifdef DEBUG
-   fprintf(stderr,"(DEBUG) GeoRef_Find: New georef\n");
+   fprintf(stdout,"(DEBUG) GeoRef_Find: New georef\n");
 #endif
    /*Otherwise, create a new one*/
    ref=Ref;
@@ -1692,5 +1830,69 @@ int GeoRef_Valid(TGeoRef *Ref) {
    if (co[0].Lat<-91 || co[0].Lat>91.0 || co[1].Lat<-91 || co[1].Lat>91.0) {
       return(0);
    }
+   return(1);
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GeoRef_Positional>
+ * Creation     : Mars 2010 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Assigner des vecteurs de positions X et Y
+ *
+ * Parametres   :
+ *   <Ref>      : Pointeur sur la reference
+ *   <XDef>     : Data definition des positions en X
+ *   <YDef>     : Data definition des positions en Y
+ *
+ * Retour       : Dimension des resultats
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
+
+   int d;
+
+   /*Clear arrays*/
+   if (Ref->Lat) free(Ref->Lat);
+   if (Ref->Lon) free(Ref->Lon);
+
+   Ref->Lat=(float*)malloc(FSIZE2D(YDef)*sizeof(float));
+   Ref->Lon=(float*)malloc(FSIZE2D(XDef)*sizeof(float));
+
+   if (!Ref->Lat || !Ref->Lon) {
+      return(0);
+   }
+
+   /*Assign positionals, if size is float, just memcopy otherwise, assign*/
+   if (XDef->Type==TD_Float32) {
+      memcpy(Ref->Lon,XDef->Data[0],FSIZE2D(XDef)*sizeof(float));
+   } else {
+      for(d=0;d<FSIZE2D(XDef);d++) {
+         Def_Get(XDef,0,d,Ref->Lon[d]);
+      }
+   }
+
+   if (YDef->Type==TD_Float32) {
+      memcpy(Ref->Lat,YDef->Data[0],FSIZE2D(YDef)*sizeof(float));
+   } else {
+      for(d=0;d<FSIZE2D(YDef);d++) {
+         Def_Get(YDef,0,d,Ref->Lat[d]);
+      }
+   }
+
+   /*Set secondary gridtype to Y for the project/unproject functions to work correctly*/
+   Ref->Grid[1]='Y';
+
+   /*Get rid of transforms anf projection functions*/
+   if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
+   if (Ref->InvTransform) free(Ref->InvTransform); Ref->InvTransform=NULL;
+   if (Ref->Function) {
+      OCTDestroyCoordinateTransformation(Ref->Function);
+      Ref->Function=NULL;
+   }
+
    return(1);
 }

@@ -127,7 +127,7 @@ exp:
 
    | exp T_OPEN_BRA T_INT T_CLOSE_BRA {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Component Indexing\n");
+      fprintf(stdout,"(DEBUG) Component Indexing\n");
 #endif
       if (!$1 || !$1->Data[(int)$3]) {
          yyerror("Invalid component index");
@@ -144,7 +144,7 @@ exp:
 
    | T_OPEN_BRA exp T_CLOSE_BRA {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Vector Length\n");
+      fprintf(stdout,"(DEBUG) Vector Length\n");
 #endif
       $$=Calc_Length($2);
 
@@ -156,7 +156,7 @@ exp:
 
    | T_AROB exp T_AROB {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Vector Dir\n");
+      fprintf(stdout,"(DEBUG) Vector Dir\n");
 #endif
       $$=Calc_Dir($2);
 
@@ -168,7 +168,7 @@ exp:
 
    | exp T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Slicing over I\n");
+      fprintf(stdout,"(DEBUG) Slicing over I\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0) {
          yyerror("Invalid index");
@@ -185,7 +185,7 @@ exp:
 
    | exp T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Slice setting over I\n");
+      fprintf(stdout,"(DEBUG) Slice setting over I\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0) {
          yyerror("Invalid index");
@@ -202,7 +202,7 @@ exp:
 
    | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Slicing over J\n");
+      fprintf(stdout,"(DEBUG) Slicing over J\n");
 #endif
       if (!$1 || (int)$5>$1->NJ-1 || (int)$5<0) {
          yyerror("Invalid index");
@@ -219,7 +219,7 @@ exp:
 
    | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Slice setting over J\n");
+      fprintf(stdout,"(DEBUG) Slice setting over J\n");
 #endif
       if (!$1 || (int)$5>$1->NJ-1 || (int)$5<0) {
          yyerror("Invalid index");
@@ -236,7 +236,7 @@ exp:
 
    | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Slicing over K\n");
+      fprintf(stdout,"(DEBUG) Slicing over K\n");
 #endif
       if (!$1 || (int)$7>$1->NK-1 || (int)$7<0) {
          yyerror("Invalid index");
@@ -253,7 +253,7 @@ exp:
 
    | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Slice setting over K\n");
+      fprintf(stdout,"(DEBUG) Slice setting over K\n");
 #endif
       if (!$1 || (int)$7>$1->NK-1 || (int)$7<0) {
          yyerror("Invalid index");
@@ -270,7 +270,7 @@ exp:
 
    | exp T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Value Indexing\n");
+      fprintf(stdout,"(DEBUG) Value Indexing\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0) {
          yyerror("Invalid grid index");
@@ -287,7 +287,7 @@ exp:
 
    | exp T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Value Setting\n");
+      fprintf(stdout,"(DEBUG) Value Setting\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0) {
          yyerror("Invalid grid index");
@@ -304,7 +304,7 @@ exp:
 
    | exp T_OPEN_PAR T_INT T_COMMA T_INT T_COMMA T_INT T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Value Indexing\n");
+      fprintf(stdout,"(DEBUG) Value Indexing\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0 || (int)$7>$1->NK-1 || (int)$7<0) {
          yyerror("Invalid grid-level index");
@@ -321,7 +321,7 @@ exp:
 
    | exp T_OPEN_PAR T_INT T_COMMA T_INT T_COMMA T_INT T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Value Setting\n");
+      fprintf(stdout,"(DEBUG) Value Setting\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0 || (int)$7>$1->NK-1 || (int)$7<0) {
          yyerror("Invalid grid-level index");
@@ -338,7 +338,7 @@ exp:
 
    | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Range Indexing\n");
+      fprintf(stdout,"(DEBUG) Range Indexing\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0) {
          yyerror("Invalid grid range");
@@ -355,7 +355,7 @@ exp:
 
    | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Range Setting\n");
+      fprintf(stdout,"(DEBUG) Range Setting\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0) {
          yyerror("Invalid grid range");
@@ -372,7 +372,7 @@ exp:
 
    | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Range Indexing\n");
+      fprintf(stdout,"(DEBUG) Range Indexing\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 ||
           (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0 ||
@@ -391,7 +391,7 @@ exp:
 
    | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR T_ASSIGN exp {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Range Setting\n");
+      fprintf(stdout,"(DEBUG) Range Setting\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 ||
           (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NI-1 || (int)$12<0 ||
@@ -410,7 +410,7 @@ exp:
 
    | T_FNCT_F T_OPEN_PAR T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       $$=Calc_Matrix1(NULL,(TFunc1*)$1->Func,0,0,$1->Type);
 
@@ -422,7 +422,7 @@ exp:
 
    | T_FNCT_F T_OPEN_PAR exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=1) {
          yyerror("(T_FNCT_F): Invalid number of arguments");
@@ -439,7 +439,7 @@ exp:
 
    | T_FNCT_F T_OPEN_PAR exp T_COMMA exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=2) {
          yyerror("(T_FNCT_F): Invalid number of arguments");
@@ -456,7 +456,7 @@ exp:
 
    | T_FNCT_M T_OPEN_PAR exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=1) {
          yyerror("(T_FNCT_M): Invalid number of arguments");
@@ -473,7 +473,7 @@ exp:
 
    | T_FNCT_M T_OPEN_PAR exp T_COMMA exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr, "(DEBUG) Function (2) call: %s\n", $1->Name);
+      fprintf(stdout, "(DEBUG) Function (2) call: %s\n", $1->Name);
 #endif
       if ($1->Args!=2) {
          yyerror("(T_FNCT_M): Invalid number of arguments");
@@ -490,7 +490,7 @@ exp:
 
    | T_FNCT_M T_OPEN_PAR exp T_COMMA exp T_COMMA exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr, "(DEBUG) Function (3) call: \n", $1->Name);
+      fprintf(stdout, "(DEBUG) Function (3) call: \n", $1->Name);
 #endif
       if ($1->Args!=3) {
          yyerror("(T_FNCT_M): Invalid number of arguments");
@@ -507,7 +507,7 @@ exp:
 
    | T_FNCT_D T_OPEN_PAR exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=1) {
          yyerror("(T_FNCT_D): Invalid number of arguments");
@@ -524,7 +524,7 @@ exp:
 
    | T_FNCT_D T_OPEN_PAR exp T_COMMA exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr, "(DEBUG) Function (2) call: %s\n", $1->Name);
+      fprintf(stdout, "(DEBUG) Function (2) call: %s\n", $1->Name);
 #endif
       if ($1->Args!=2) {
          yyerror("(T_FNCT_D): Invalid number of arguments");
@@ -541,7 +541,7 @@ exp:
 
    | T_FNCT_D T_OPEN_PAR exp T_COMMA exp T_COMMA exp T_CLOSE_PAR {
 #ifdef DEBUG
-      fprintf(stderr, "(DEBUG) Function (3) call: \n", $1->Name);
+      fprintf(stdout, "(DEBUG) Function (3) call: \n", $1->Name);
 #endif
       if ($1->Args!=3) {
          yyerror("(T_FNCT_D): Invalid number of arguments");
@@ -564,13 +564,13 @@ exp:
       Tcl_ResetResult(GInterp);
 
 #ifdef DEBUG
-      fprintf(stderr, "(DEBUG) FSTD_FieldRead finished\n");
+      fprintf(stdout, "(DEBUG) FSTD_FieldRead finished\n");
 #endif
       GFieldP=GField;
       GField=Data_Get("TMPXXXXXX");
       GMode=GMode==T_VAL?T_FLD:GMode;
 
-      $$ = GData[++GDataN]=Data_DefCopy(GField->Def);
+      $$ = GData[++GDataN]=DataDef_Copy(GField->Def);
 
       if (!$$) {
          yyerror("FSTD_Field failed (T_FIELD_FUNC): Critical!");
@@ -588,7 +588,7 @@ exp:
       }
 
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) T_DATA:%p $$:%p\n",(void*)$1,(void*)$$);
+      fprintf(stdout,"(DEBUG) T_DATA:%p $$:%p\n",(void*)$1,(void*)$$);
 #endif
    }
 

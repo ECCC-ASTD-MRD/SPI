@@ -800,7 +800,7 @@ void GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
          }
       }
    } else {
-      fprintf(stderr,"(WARNING) GDB_GeoTess: Unable to obtain valid tesselator\n");
+      fprintf(stdout,"(WARNING) GDB_GeoTess: Unable to obtain valid tesselator\n");
    }
 }
 
@@ -1867,7 +1867,7 @@ int GDB_TileResolution(GDB_Data *GDB,double Dist) {
       GDB_TileFreeAll(GDB,GDB_FORCE);
    }
 #ifdef DEBUG
-   fprintf(stderr,"(DEBUG) GDB_TileResolution: Current GDB resolution: (%i,%i)\n",GDB->DegT,res);
+   fprintf(stdout,"(DEBUG) GDB_TileResolution: Current GDB resolution: (%i,%i)\n",GDB->DegT,res);
 #endif
    return(res);
 }

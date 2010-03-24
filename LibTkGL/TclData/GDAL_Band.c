@@ -158,9 +158,9 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    }
 
    if (band->Def)
-      Data_DefFree(band->Def);
+      DataDef_Free(band->Def);
 
-   if (!(band->Def=Data_DefNew(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
+   if (!(band->Def=DataDef_New(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: Could not allocate memory",(char*)NULL);
       return(TCL_ERROR);
    }
@@ -226,7 +226,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
                return(TCL_ERROR);
             }
          } else {
-            fprintf(stderr,"(DEBUG) GDAL_BandRead: Delaying read\n");
+            fprintf(stdout,"(DEBUG) GDAL_BandRead: Delaying read\n");
          }
       } else if (Idxs[i]!=-1) {
          Tcl_AppendResult(Interp,"GDAL_BandRead: Invalid file handle",(char*)NULL);
@@ -787,7 +787,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                         Tcl_ListObjAppendElement(Interp,list,item);
                      }
       #ifdef DEBUG
-                     fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
       #endif
                   }
 
@@ -832,13 +832,13 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                      Tcl_ListObjAppendElement(Interp,list,item);
                   }
 #ifdef DEBUG
-                  fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                  fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
 #endif
                }
             }
          }
 #ifdef DEBUG
-         fprintf(stderr,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
+         fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
 #endif
       }
 
@@ -915,7 +915,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          tr=OCTNewCoordinateTransformation(Layer->Ref->Spatial,Ref->Spatial);
    } else {
       if (Ref->Grid[0]=='W')
-         fprintf(stderr,"(WARNING) Data_GridOGR: Unable to create coordinate transformation, assuming both referential are the same\n");
+         fprintf(stdout,"(WARNING) Data_GridOGR: Unable to create coordinate transformation, assuming both referential are the same\n");
    }
 
    if (!Def->Pick)
@@ -946,7 +946,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          /*Copie de la geometrie et transformation dans le bon referentiel*/
          if (tr) {
             if (pr==1 && OGR_G_Transform(geom,tr)!=OGRERR_NONE) {
-               fprintf(stderr,"(WARNING) Data_GridOGR: Unable to reproject geometry to local spatial reference\n");
+               fprintf(stdout,"(WARNING) Data_GridOGR: Unable to reproject geometry to local spatial reference\n");
                pr=0;
             }
          } else {
@@ -983,7 +983,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
             if (!(x1<0 || x0>Def->NI || y0>Def->NJ || y1<0)) {
                nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1,0);
 #ifdef DEBUG
-               fprintf(stderr,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,x0,y0,x1,y1);
+               fprintf(stdout,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,x0,y0,x1,y1);
 #endif
             }
          }
@@ -991,7 +991,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
       }
    }
 #ifdef DEBUG
-   fprintf(stderr,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
+   fprintf(stdout,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
 #endif
    if (tr)
       OCTDestroyCoordinateTransformation(tr);
@@ -1034,127 +1034,6 @@ void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
       ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
       OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
    }
-}
-
-int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
-
-   register int idx,x,y,n=0;
-   int          d=0,sz,dd;
-   double       x0,y0,x1,y1;
-   double      *transform=NULL;
-
-   dd=Dim-1;
-   Scan->N=0;
-
-   /*WKT grid type*/
-   if (Scan->FromRef->Grid[0]=='W') {
-      transform=Scan->FromRef->Transform;
-      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
-         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
-         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
-            if (x<=Scan->X1 && y<=Scan->Y1) {
-               Scan->V[Scan->N++]=idx;
-            }
-
-            if (!Scan->Valid) {
-               x0=dd?x-0.5:x;
-               y0=dd?y-0.5:y;
-               if (transform) {
-                  Scan->X[n]=transform[0]+transform[1]*x0+transform[2]*y0;
-                  Scan->Y[n]=transform[3]+transform[4]*x0+transform[5]*y0;
-               } else {
-                  Scan->X[n]=x0;
-                  Scan->Y[n]=y0;
-               }
-            }
-         }
-      }
-      if (!Scan->Valid && Scan->FromRef->Function) {
-         OCTTransform(Scan->FromRef->Function,n,Scan->X,Scan->Y,NULL);
-      }
-
-      d=dd?2:1;
-      sz=8;
-   /*Y Grid type*/
-   } else if (Scan->FromRef->Grid[0]=='Y') {
-      for(n=0;n<FromDef->NI;n++,idx++) {
-         Scan->V[n]=idx;
-         if (!Scan->Valid) {
-            ((float*)Scan->X)[n]=Scan->FromRef->Lon[idx];
-            ((float*)Scan->Y)[n]=Scan->FromRef->Lat[idx];
-         }
-      }
-      d=1;
-      sz=4;
-      Scan->N=n;
-   /*Other RPN grids*/
-   } else {
-      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
-         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
-         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
-            if (x<=Scan->X1 && y<=Scan->Y1) {
-               Scan->V[Scan->N++]=idx;
-            }
-
-            if (!Scan->Valid) {
-               ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
-               ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
-            }
-         }
-      }
-      if (!Scan->Valid) {
-         EZLock_RPNInt();
-         c_gdllfxy(Scan->FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
-         EZUnLock_RPNInt();
-      }
-      d=dd?2:1;
-      sz=4;
-   }
-
-   /*Project to destination grid*/
-   if (!Scan->Valid) {
-      if (Scan->ToRef->Grid[0]=='W') {
-         transform=Scan->ToRef->InvTransform;
-         if (sz==4) {
-            for(x=n-1;x>=0;x--) {
-               Scan->X[x]=(double)((float*)Scan->X)[x];
-               Scan->Y[x]=(double)((float*)Scan->Y)[x];
-            }
-         }
-
-         if (Scan->ToRef->Function)
-            OCTTransform(Scan->ToRef->InvFunction,n,Scan->X,Scan->Y,NULL);
-
-         if (transform) {
-            for(x=0;x<n;x++) {
-               x0=transform[0]+transform[1]*Scan->X[x]+transform[2]*Scan->Y[x];
-               y0=transform[3]+transform[4]*Scan->X[x]+transform[5]*Scan->Y[x];
-               Scan->X[x]=x0;
-               Scan->Y[x]=y0;
-            }
-         }
-      } else {
-         if (sz==8) {
-            for(x=0;x<n;x++) {
-               /*RPN functions go from 0 to 360 instead of -180 to 180*/
-               x0=Scan->X[x]<0?Scan->X[x]+360:Scan->X[x];
-               y0=Scan->Y[x];
-               ((float*)Scan->X)[x]=x0;
-               ((float*)Scan->Y)[x]=y0;
-            }
-         }
-
-         EZLock_RPNInt();
-         c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
-         EZUnLock_RPNInt();
-
-         for(x=n-1;x>=0;x--) {
-            Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
-            Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
-         }
-      }
-   }
-   return(d);
 }
 
 /*----------------------------------------------------------------------------
@@ -2002,12 +1881,13 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
    int         i,j,idx,nidx,nlst,order=1;
    double      tra[6],inv[6],*tm=NULL,*im=NULL;
-   GDAL_Band  *band;
+   GDAL_Band  *band,*xband,*yband;
    TGeoRef    *ref;
    Tcl_Obj    *obj,*lst;
 
-   static CONST char *sopt[] = { "-active","-mask","-georef","-projection","-transform","-invtransform","-indexed","-gcps","-width","-height","-nb","-type",NULL };
-   enum        opt {  ACTIVE,MASK,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,GCPS,WIDTH,HEIGHT,NB,TYPE };
+   static CONST char *sopt[] = { "-active","-mask","-georef","-projection","-transform","-invtransform","-indexed","-gcps","-width",
+                                 "-height","-nb","-type","-positional",NULL };
+   enum        opt {  ACTIVE,MASK,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2030,7 +1910,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                band->OGRMask=OGR_GeometryGet(Tcl_GetString(Objv[++i]));
                if (band->OGRMask) {
                   if (OGR_G_TransformTo(band->OGRMask,band->Ref->Spatial)!=OGRERR_NONE) {
-                     fprintf(stderr,"(WARNING) GDAL_BandDefine: Unable to reproject mask geometry to local spatial reference\n");
+                     fprintf(stdout,"(WARNING) GDAL_BandDefine: Unable to reproject mask geometry to local spatial reference\n");
                   }
                }
             }
@@ -2202,6 +2082,33 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             }
             break;
 
+         case POSITIONAL:
+            if (Objc<3) {
+               Tcl_WrongNumArgs(Interp,0,Objv,"Band XBand YBand");
+               return(TCL_ERROR);
+            } else {
+               xband=GDAL_BandGet(Tcl_GetString(Objv[++i]));
+               if (!xband) {
+                  Tcl_AppendResult(Interp,"invalid X Axis field :",Tcl_GetString(Objv[i]),(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               yband=GDAL_BandGet(Tcl_GetString(Objv[++i]));
+               if (!yband) {
+                  Tcl_AppendResult(Interp,"invalid Y Axis field :",Tcl_GetString(Objv[i]),(char*)NULL);
+                  return(TCL_ERROR);
+               }
+
+               if (!GeoRef_Positional(band->Ref,xband->Def,yband->Def)) {
+                  Tcl_AppendResult(Interp,"unable to initialize positional data",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               if (band->Stat) { free(band->Stat); band->Stat=NULL; }
+
+               GeoRef_Qualify(band->Ref);
+               Data_Clean(band,1,1,1);
+            }
+            break;
+
          case PROJECTION:
              if (Objc==1) {
                if (band->Ref && band->Ref->String)
@@ -2252,7 +2159,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   }
                   tm=tra;
                   if (!GDALInvGeoTransform(tra,inv)) {
-                     fprintf(stderr,"(WARNING) GDAL_BandDefine: Unable to generate the inverse transform matrix\n");
+                     fprintf(stdout,"(WARNING) GDAL_BandDefine: Unable to generate the inverse transform matrix\n");
                      im=NULL;
                   } else {
                      im=inv;
@@ -2299,7 +2206,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   }
                   im=inv;
                   if (!GDALInvGeoTransform(inv,tra)) {
-                     fprintf(stderr,"(WARNING) GDAL_BandDefine: Unable to generate the transform matrix\n");
+                     fprintf(stdout,"(WARNING) GDAL_BandDefine: Unable to generate the transform matrix\n");
                      tm=NULL;
                   } else {
                      tm=tra;
@@ -2355,9 +2262,17 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
 
    /*Initialiser la structure*/
    if (!Band->Stat)
-      Band->Stat=(TDataStat*)malloc(4*sizeof(TDataStat));
+      Band->Stat=(TDataStat*)malloc(Band->Def->NC*sizeof(TDataStat));
 
    for (c=0;c<Band->Def->NC;c++) {
+
+      Band->Stat[c].MinLoc.Lat=0;
+      Band->Stat[c].MinLoc.Lon=0;
+      Band->Stat[c].MinLoc.Elev=0;
+      Band->Stat[c].MaxLoc.Lat=0;
+      Band->Stat[c].MaxLoc.Lon=0;
+      Band->Stat[c].MaxLoc.Elev=0;
+
       if (Band->Band[c]) {
          GeoTex_Lock();
          GDALComputeRasterMinMax(Band->Band[c],TRUE,minmax);
@@ -2395,13 +2310,6 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
 
          if (n)
             Band->Stat[c].Avg/=n;
-
-         Band->Stat[c].MinLoc.Lat=0;
-         Band->Stat[c].MinLoc.Lon=0;
-         Band->Stat[c].MinLoc.Elev=0;
-         Band->Stat[c].MaxLoc.Lat=0;
-         Band->Stat[c].MaxLoc.Lon=0;
-         Band->Stat[c].MaxLoc.Elev=0;
 
          if (Band->Ref && Band->Ref->Project) {
             /*Recuperer les coordonnees latlon des min max*/

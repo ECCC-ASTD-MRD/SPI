@@ -237,7 +237,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
             Tcl_WrongNumArgs(Interp,2,Objv,"obslist");
             return(TCL_ERROR);
          }
-         return Data_DefSort(Interp,Objv[2]);
+         return DataDef_Sort(Interp,Objv[2]);
          break;
 
       case COPY:
@@ -572,9 +572,9 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                obs->Loc->Nb=idx;
 
                if (!obs->Def) {
-                  obs->Def=Data_DefNew(obs->Loc->Nb,1,1,1,TD_Float32);
+                  obs->Def=DataDef_New(obs->Loc->Nb,1,1,1,TD_Float32);
                } else {
-                  obs->Def=Data_DefResize(obs->Def,obs->Loc->Nb,1,1);
+                  obs->Def=DataDef_Resize(obs->Def,obs->Loc->Nb,1,1);
                }
                obs->Def->NoData=-999.0;
 
@@ -634,7 +634,7 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
          Obs_FreeHash(Interp,Name);
       } else {
          if (!Def && new->Def) {
-            Data_DefFree(new->Def);
+            DataDef_Free(new->Def);
             new->Def=NULL;
          }
          return(new);
@@ -663,7 +663,7 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
    new->Tag=NULL;
 
    if (Def) {
-      new->Def=Data_DefCopy(Obs->Def);
+      new->Def=DataDef_Copy(Obs->Def);
       if (!new->Def) {
          Tcl_AppendResult(Interp,"\n   Obs_Copy : Unable to allocate data definition",(char*)NULL);
          return(NULL);
@@ -929,7 +929,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Tcl_ListObjIndex(Interp,List,i,&obj);
       obs0=Obs_Get(Tcl_GetString(obj));
       array0=Token[0]=='I'?obs0->Loc->Id:obs0->Loc->No;
-      def=Data_DefNew(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
+      def=DataDef_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
       def->NoData=-999.0;
 
       /*Parse the locations*/
@@ -960,7 +960,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
 
       obs0->Loc=loc;
       loc->Ref++;
-      Data_DefFree(obs0->Def);
+      DataDef_Free(obs0->Def);
       obs0->Def=def;
    }
    return TCL_OK;
@@ -1060,7 +1060,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Tcl_ListObjIndex(Interp,List,i,&obj);
       obs0=Obs_Get(Tcl_GetString(obj));
       array0=Token[0]=='I'?obs0->Loc->Id:obs0->Loc->No;
-      def=Data_DefNew(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
+      def=DataDef_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
       def->NoData=-999.0;
 
       /*Parse the locations*/
@@ -1096,7 +1096,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
 
       obs0->Loc=loc;
       loc->Ref++;
-      Data_DefFree(obs0->Def);
+      DataDef_Free(obs0->Def);
       obs0->Def=def;
    }
    return(TCL_OK);
@@ -1192,7 +1192,7 @@ static int Obs_FreeHash(Tcl_Interp *Interp,char *Name) {
 */
 void Obs_Free(TObs *Obs) {
 
-   Data_DefFree(Obs->Def);
+   DataDef_Free(Obs->Def);
 
    if (Obs->Tag)                 Tcl_DecrRefCount(Obs->Tag);
    if (Obs_LocFree(Obs->Loc)==0) free(Obs->Loc);
@@ -1440,7 +1440,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          sprintf(name,"%s.#%i",&gtok[n][5],ObsNo+n);
          if (Obs_Create(Interp,name)==TCL_OK) {
             obs=Obs_Get(name);
-            obs->Def=Data_DefNew(nb,1,1,1,TD_Float32);
+            obs->Def=DataDef_New(nb,1,1,1,TD_Float32);
             obs->Def->NoData=-999.0;
             obs->Loc=loc;
             loc->Ref++;

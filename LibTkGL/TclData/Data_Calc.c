@@ -239,7 +239,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Ex
    /* Free temporary data */
    for(i=0;i<=GDataN;i++) {
       if (GData[i]!=GResult)
-         Data_DefFree(GData[i]);
+         DataDef_Free(GData[i]);
          GData[i]=NULL;
    }
 

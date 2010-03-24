@@ -1079,7 +1079,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          sec=clock();
          while (((clock()-sec)<(60*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
          if ((clock()-sec)>=(60*CLOCKS_PER_SEC)) {
-            fprintf(stderr,"(WARNING) ViewportDisplay: Waited too long for data, rendering anyway\n");
+            fprintf(stdout,"(WARNING) ViewportDisplay: Waited too long for data, rendering anyway\n");
          }
          vp->Update=1;
       }
@@ -1614,7 +1614,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    sec=clock();
    while (((clock()-sec)<(30*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
    if ((clock()-sec)>=(30*CLOCKS_PER_SEC)) {
-      fprintf(stderr,"(WARNING) ViewportToPostscript: Warning, waited too long for data, rendering anyway\n");
+      fprintf(stdout,"(WARNING) ViewportToPostscript: Warning, waited too long for data, rendering anyway\n");
    }
 
    /* Setup the tile rendering engine */

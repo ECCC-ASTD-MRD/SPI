@@ -72,7 +72,7 @@ int LUDecompose(double *Matrix,int N,int *Perm,int *d) {
             amax=dum;
       }
       if (amax<TINY_VALUE) {
-         fprintf(stderr,"(WARNING) LUDecompose: Singular matrix");
+         fprintf(stdout,"(WARNING) LUDecompose: Singular matrix");
          return(0);
       }
       vv[i]=1.0/amax;
@@ -278,7 +278,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
       krig.V=(double*)malloc(krig.N*sizeof(double));
 
       if (!krig.Matrix || !krig.Weight || !krig.V) {
-         fprintf(stderr,"(WARNING) FFKrigging: Unable to allocate calculation matrices\n");
+         fprintf(stderr,"(ERROR) FFKrigging: Unable to allocate calculation matrices\n");
          return(0);
       }
      /* Calculate distance between known points*/
@@ -288,7 +288,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
             krig.Weight[idx0]=hypot(Pos[i][0]-Pos[j][0],Pos[i][1]-Pos[j][1]);
 
             if (krig.Weight[idx0]==0 && i!=j) {
-               fprintf(stderr,"(WARNING) FFKrigging: Two observations have the same location, krigging operation will not continue\n");
+               fprintf(stderr,"(ERROR) FFKrigging: Two observations have the same location, krigging operation will not continue\n");
                return(0);
             }
          }

@@ -674,7 +674,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   obj=Objv[7];
                }
                /*Check compatibility between source and destination*/
-               if (!Data_DefCompat(field0->Def,field1->Def)) {
+               if (!DataDef_Compat(field0->Def,field1->Def)) {
                   field0->Ref=GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->LevelType,field1->Ref->Levels);
                }
                field0->Ref->LevelType=field1->Ref->LevelType;
@@ -698,7 +698,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                            Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
                         }
                         if (nk!=field0->Def->NK) {
-                           field0->Def=Data_DefResize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
+                           field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
                            for(key=0;key<FSIZE3D(field0->Def);key++) {
                               Def_Set(field0->Def,0,key,0);
                            }
@@ -765,7 +765,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                         }
                         table[k]=field0->Def->NoData;
                         if (nk!=field0->Def->NK) {
-                           field0->Def=Data_DefResize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
+                           field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
                            for(k=0;k<FSIZE3D(field0->Def);k++) {
                               Def_Set(field0->Def,0,k,0);
                            }
@@ -933,7 +933,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_WrongNumArgs(Interp,2,Objv,"fldlist");
             return(TCL_ERROR);
          }
-         return Data_DefSort(Interp,Objv[2]);
+         return DataDef_Sort(Interp,Objv[2]);
          break;
 
       case CONFIGURE:
@@ -1051,7 +1051,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return TCL_ERROR;
          }
 
-         Data_DefClear(field0->Def);
+         DataDef_Clear(field0->Def);
          break;
 
       case IS:

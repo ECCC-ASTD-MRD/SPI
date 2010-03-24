@@ -18,7 +18,7 @@ YACCFLAGS  =
 OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
 	Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o Vertex.o \
 	GeoTex.o GeoRef.o GeoRef_RPN.o GeoRef_WKT.o GeoRef_RDR.o \
-	tclVector.o tclDataSpec.o tclData.o tclCMap.o tclTraj.o tclObs.o \
+	tclVector.o tclDataDef.o tclDataSpec.o tclData.o tclCMap.o tclTraj.o tclObs.o \
 	tclFSTD.o FSTD_Field.o FSTD_Export.o \
 	tclGDAL.o GDAL_Band.o tcl3DModel.o  tcl3DModel3DS.o tcl3DModelFLT.o \
 	tclOGR.o OGR_Layer.o OGR_Geometry.o OGR_Math.o \
