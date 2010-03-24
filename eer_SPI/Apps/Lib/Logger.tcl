@@ -70,6 +70,8 @@ proc Log::Start { Job Version { Input "" } } {
    variable Param
 
    set Param(SecStart) [clock seconds]
+   set Param(Job)      $Job
+   set Param(Version)  $Version
 
   #----- Simulation run time ID.
    if { $Param(JobId)=="" } {
@@ -216,7 +218,7 @@ proc Log::Print { Type Message } {
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
          if { $Param(OCLog)!=""  } {
-            exec oclog x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}"
+            exec oclog $Param(Job) x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}"
          }
       }
 
