@@ -87,7 +87,7 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "Run ID              : $Param(JobId)"
 
    if { $Param(Mail)!="" } {
-      Log::Print MUST "E-mail Address      : $Param(Mail)"
+      Log::Print MUST "E-mail Address      : [join $Param(Mail) "\n                      "]"
    }
 
    #----- Queue stuff
