@@ -146,6 +146,10 @@ proc Log::End { { Status 0 } { Exit True } } {
    Log::Print MUST "Total running time  : [clock format [expr $Param(SecEnd)-$Param(SecStart)] -format "%H:%M:%S" -gmt True]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
+   if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
+      close $Param(Out)
+   }
+
    if { $Status==0 } {
       if { $Param(Mode)=="ALL" } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
