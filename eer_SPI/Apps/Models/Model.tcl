@@ -155,6 +155,7 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
+   set Error(Host)                { "L'hote sélectionné ne peut être rejoint, utilisation de l'hote local." "Selected host cannot be reached, using local host." }
    set Error(EMail)               { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
    set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
                                     "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
@@ -495,12 +496,17 @@ proc Model::ParamsCheck { Model { Get True } } {
    global   GDefs
    global   env
    variable Param
+   variable Error
 
    #----- Set host architecture.
    if { $Param(Host)==$GDefs(Host) } {
       set Param(Arch) $GDefs(Arch)
    } else {
-      set Param(Arch) [exec ssh $Param(Host) exec uname -s]
+      if { [catch { set Param(Arch) [exec ssh $Param(Host) exec uname -s] } ] } {
+         Dialog::Error . $Error(Host)
+         set Param(Host) $GDefs(Host)
+         set Param(Arch) $GDefs(Arch)
+      }
    }
 
    #----- Set flag indicating if using 'soumet' command or not.
