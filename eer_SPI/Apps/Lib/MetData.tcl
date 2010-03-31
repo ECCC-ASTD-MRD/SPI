@@ -42,6 +42,7 @@ catch { SPI::Splash "Loading Widget Package MetData 1.0" }
 namespace eval MetData { } {
    variable Data
    variable Param
+   variable Const
 
    set Param(Path) /data/gridpt/dbase
 
@@ -53,6 +54,10 @@ namespace eval MetData { } {
    }
 
    set Data(ProgMax)  240   ;#Max prog usable
+
+   set Const(Deg2Rad)     0.017453292519943295474371680598
+   set Const(PIRad)       3.141592653589793238462643383279503
+   set Const(EarthRadius) 6371005.0
 }
 
 #----------------------------------------------------------------------------
@@ -88,8 +93,7 @@ proc MetData::TextCode { Text } {
          scan [string index $Text $i] "%c" code
          fstdfield stats METDATATEXTCODE -gridvalue $i 0 $code
       }
-  }
-
+   }
    return METDATATEXTCODE
 }
 
@@ -611,6 +615,45 @@ proc MetData::GridDefineUTM { Lat0 Lon0 Lat1 Lon1 Res { Field "" } } {
       }
       fstdfield define $Field -georef UTMREF
    }
+}
+
+#---------------------------------------------------------------------------
+# Name      : <gMetData::GridLLDelta>
+# Creation  :  May 2006 - G. Mercier - CMC/CMOE.
+#
+# But      : compute the delta lat/lon for the central point in the grid.
+#
+# Parametres :
+#   <Lat0>  : South-W corner lat
+#   <Lon0>  : South-W corner lon
+#   <Lat1>  : North-E corner lat
+#   <Lon1>  : North-E corner lon
+#   <Delta> : distance increment(meters) between two grid points
+#
+# Return : [list dlat dlon]
+#
+# Remark :
+#
+#---------------------------------------------------------------------------
+
+proc MetData::GridLLDelta { Lat0 Lon0 Lat1 Lon1 Delta } {
+   variable Const
+
+   #----- Calculate ranges
+   set dlat  [expr double([expr abs($Lat1 - $Lat0)])]
+   set dlon  [expr double([expr abs($Lon1 - $Lon0)])]
+
+   #----- Calculate distances between in km in the ranges (for X, we use average)
+   set latavg [expr (($Lat0 + $Lat1)/ 2.0)*$Const(Deg2Rad)]
+
+   set dx [expr ($dlon * $Const(Deg2Rad)) * $Const(EarthRadius) * cos($latavg)]
+   set dy [expr ($dlat * $Const(Deg2Rad)) * $Const(EarthRadius)]
+
+   #----- Get number of points along the axis
+   set nx [expr int(ceil($dx / $Delta))]
+   set ny [expr int(ceil($dy / $Delta))]
+
+   return [list [expr ($dlat/$ny)] [expr ($dlon/$nx)]]
 }
 
 #-------------------------------------------------------------------------------
