@@ -26,7 +26,7 @@ puts \n[file tail [info script]]
 
 #----- Afficher la liste des formats reconnus
 
-puts [gdalfile format]
+puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier GTIF
 

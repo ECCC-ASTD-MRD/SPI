@@ -26,7 +26,7 @@ puts \n[file tail [info script]]
 
 #----- Afficher la liste des formats reconnus
 
-puts [ogrfile format]
+puts "   Available formats:\n\t\t[join [ogrfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier SHP
 
