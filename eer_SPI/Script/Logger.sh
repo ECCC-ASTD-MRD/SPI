@@ -81,7 +81,7 @@ function Log_MailIf {
    file=${2}
 
    if [[ ${LOG_MODE} = "ALL" ]]; then
-      Log_Mail $subject $file
+      Log_Mail "$subject" $file
    fi
 }
 
@@ -100,11 +100,11 @@ function Log_Mail {
       else
          mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL} < ${file}
       fi
-   else 
+   else
       if [[ ${EER_ARCH} = IRIX64 ]] ; then
-         echo -e $file | mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL}
+         printf $file | mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL}
       else
-         echo -e $file | mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL}
+         printf $file | mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${LOG_MAIL}
       fi
    fi
 }
@@ -208,28 +208,28 @@ function Log_Print {
    fi
 
    #----- Check for event time
-   datetime=" "
+   datetime=""
    if [[ ${LOG_TIME} -eq 1 ]]; then
-      datetime=" ($(date)) "
+      datetime="($(date)) "
    fi
 
    if [[ ${lvl} -le ${LogLevelNo} ]]; then
       if [[ ${level} = "MUST" ]] ; then
-         datetime=" "
+         datetime=""
          levels=""
       else
-         levels="(${level})"
+         levels="(${level}) "
       fi
 
       if [[ ${LOG_FILE} = "" ]] ; then
-         echo -e "${levels}${datetime}${msg} ${time}"
+         printf "${datetime}${levels}${msg} ${time}"
       else
-         echo -e "${levels}${datetime}${msg} ${time}" >> ${LOG_FILE}
+         printf "${datetime}${levels}${msg} ${time}" >> ${LOG_FILE}
       fi
       if [[ $level = "ERROR" ]] ; then
-         echo -e "${levels}${datetime}${msg} ${time}" 1>&2
+         printf "${datetime}${levels}${msg} ${time}" 1>&2
          if [[ ${LOG_OC} != "" ]]; then
-            oclog x "${LOG_OC}\n\n${levels}${datetime}${msg} ${time}"
+            oclog ${LogJob} x "${LOG_OC}\n\n${datetime}${levels}${msg} ${time}"
          fi
       fi
    fi
