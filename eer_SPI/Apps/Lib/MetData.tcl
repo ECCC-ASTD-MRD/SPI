@@ -35,16 +35,17 @@
 #
 #===============================================================================
 
-package provide MetData 1.0
+package provide MetData 1.1
 
-catch { SPI::Splash "Loading Widget Package MetData 1.0" }
+catch { SPI::Splash "Loading Widget Package MetData 1.1" }
 
 namespace eval MetData { } {
+   global env
    variable Data
    variable Param
    variable Const
 
-   set Param(Path) /data/gridpt/dbase
+   set Param(Path) $env(CMCGRIDF)
 
    #----- Lire les diverses definitions
 
