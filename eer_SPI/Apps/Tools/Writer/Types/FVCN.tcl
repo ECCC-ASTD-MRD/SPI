@@ -1036,7 +1036,6 @@ proc Writer::FVCN::LayoutInit { Pad } {
       $Pad.optvolcano.menu add command -label Select -command "Locator::Window 0"
       $Pad.optvolcano.menu add separator
       $Pad.optvolcano.menu add command -label UNKNOWN -command { Writer::FVCN::Site "" UNKNOWN "" "" "" "" }
-      $Pad.optvolcano.menu add command -label UNNAMED -command { Writer::FVCN::Site "" UNNAMED "" "" "" "" }
 
    menubutton $Pad.optcode -bg white -bd 0 -menu $Pad.optcode.menu -image opt -width $Writer::Data(Height) -height $Writer::Data(Height)
    menu $Pad.optcode.menu -bd 1 -tearoff 0 -activeborderwidth 0 -bg white
