@@ -116,10 +116,10 @@ proc SatData::DataExtract { InFile } {
 
    #----- execute the converter program.
 
-   if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-      catch { exec ssh pollux -l $GDefs(FrontEndUser) ". ~/.profile; /users/dor/afsh/sat/bin/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g \"$Data(Grille)\" > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out" }
-   } else {
-      Log::Print ERROR "Option 2 not available right now, sorry! ( $GDefs(FrontEnd) $GDefs(Host) )"
+   set ErrorCode [catch { exec /users/dor/afse/eer/script/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out } Message ]
+
+   if { $ErrorCode } {
+      Log::Print ERROR "Can't process hdf rawdata :\n\n$Message"
    }
 }
 
@@ -180,16 +180,23 @@ proc SatData::DataGet { }  {
    #----- Si un fichier autre est choisit
 
    foreach item [.satdata.seluser.ch.list curselection] {
-      #ST SatData::DataExtract [.satdata.seluser.ch.list get $item] $Data(ResultFile) $Data(UserPath) U
       SatData::DataExtract $SatData::Data(UserPath)/[.satdata.seluser.ch.list get $item]
-      catch { exec editfst2000 -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 }
-      catch { exec pgsm2000 -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
+
+      set ErrorCode [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } Message ]
+      if { $ErrorCode } {
+         Log::Print ERROR "Can't editfst SAT_$file :\n\n$Message"
+      }
+
+      set ErrorCode [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
  SORTIE(STD,1000,A)
  LIREE('Z9','O',-1,0,0,4,'        ')
 C ---- canal 5 pour les cas d'archives.
  MOINSE('Z9','O',-1,0,0,5,'        ')
  ECRITS('Z9',-16,-1,0,0,45,'O','',-1,IMPRIM)
-ENDPGSM" }
+ENDPGSM" } Message ]
+      if { $ErrorCode } {
+         Log::Print ERROR "Can't pgsm SAT_$file :\n\n$Message"
+      }
 
       InfoFrame::Incr .satdata.info.msg 1
    }
@@ -201,20 +208,26 @@ ENDPGSM" }
       foreach c { nV } {
          foreach item [.satdata.sel.s$sat.ch.c$c.list curselection] {
             set file [.satdata.sel.s$sat.ch.c$c.list get $item]
-            #ST SatData::DataExtract $file $Data(ResultFile) $Data(CPath$sat)$Data(C$c) $c
             SatData::DataExtract $file
 
             #----- Calcul du 4-5.
 
             InfoFrame::Msg .satdata.info.msg "[lindex $Msg(45) $GDefs(Lang)] $item."
-            catch { exec editfst2000 -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 }
-            catch { exec pgsm2000 -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
+            set ErrorCode [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } Message ]
+            if { $ErrorCode } {
+               Log::Print ERROR "Can't editfst SAT_$file :\n\n$Message"
+            }
+
+            set ErrorCode [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
  SORTIE(STD,1000,A)
  LIREE('Z9','O',-1,0,0,4,'        ')
 C ---- canal 5 pour GOES 11 ou canal 6 pour GOES 12.
  MOINSE('Z9','O',-1,0,0,${ch5ou6},'        ')
  ECRITS('Z9',-16,-1,0,0,45,'O','',-1,IMPRIM)
-ENDPGSM" }
+ENDPGSM" } Message ]
+            if { $ErrorCode } {
+               Log::Print ERROR "Can't pgsm SAT_$file :\n\n$Message"
+            }
 
             InfoFrame::Incr .satdata.info.msg 1
          }

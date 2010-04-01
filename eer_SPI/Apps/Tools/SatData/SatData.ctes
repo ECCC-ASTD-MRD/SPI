@@ -14,6 +14,7 @@
 #===============================================================================
 
 namespace eval SatData {
+   global env
    variable Data
    variable Param
 
@@ -47,8 +48,8 @@ namespace eval SatData {
    set Data(ViewUSER)      0
    set Data(PathMETEOSAT)  /data/cmds/afsh/sat/test/m6/reception/imager
    set Data(PathGMS)       /data/cmds/afsh/sat/test/j5/reception/imager
-   set Data(PathGOES11)    /data/sat/g11/raw/imager/
-   set Data(PathGOES12)    /data/sat/g12/raw/imager/
+   set Data(PathGOES11)    $env(CMCSAT)/g11/raw/imager/
+   set Data(PathGOES12)    $env(CMCSAT)/g12/raw/imager/
    set Data(CPathGOES11)   $Data(PathGOES11)
    set Data(CPathGOES12)   $Data(PathGOES12)
    set Data(CnV)           allbands
