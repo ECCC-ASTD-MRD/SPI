@@ -116,10 +116,10 @@ proc SatData::DataExtract { InFile } {
 
    #----- execute the converter program.
 
-   set ErrorCode [catch { exec /users/dor/afse/eer/script/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out } Message ]
+   set err [catch { exec /users/dor/afse/eer/script/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out } msg ]
 
-   if { $ErrorCode } {
-      Log::Print ERROR "Can't process hdf rawdata :\n\n$Message"
+   if { $err } {
+      Log::Print ERROR "Can't process hdf rawdata :\n\n$msg"
    }
 }
 
@@ -182,20 +182,20 @@ proc SatData::DataGet { }  {
    foreach item [.satdata.seluser.ch.list curselection] {
       SatData::DataExtract $SatData::Data(UserPath)/[.satdata.seluser.ch.list get $item]
 
-      set ErrorCode [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } Message ]
-      if { $ErrorCode } {
-         Log::Print ERROR "Can't editfst SAT_$file :\n\n$Message"
+      set err [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
+      if { $err } {
+         Log::Print ERROR "Can't editfst SAT_$file :\n\n$msg"
       }
 
-      set ErrorCode [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
+      set err [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
  SORTIE(STD,1000,A)
  LIREE('Z9','O',-1,0,0,4,'        ')
 C ---- canal 5 pour les cas d'archives.
  MOINSE('Z9','O',-1,0,0,5,'        ')
  ECRITS('Z9',-16,-1,0,0,45,'O','',-1,IMPRIM)
-ENDPGSM" } Message ]
-      if { $ErrorCode } {
-         Log::Print ERROR "Can't pgsm SAT_$file :\n\n$Message"
+ENDPGSM" } msg ]
+      if { $err } {
+         Log::Print ERROR "Can't pgsm SAT_$file :\n\n$msg"
       }
 
       InfoFrame::Incr .satdata.info.msg 1
@@ -213,20 +213,20 @@ ENDPGSM" } Message ]
             #----- Calcul du 4-5.
 
             InfoFrame::Msg .satdata.info.msg "[lindex $Msg(45) $GDefs(Lang)] $item."
-            set ErrorCode [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } Message ]
-            if { $ErrorCode } {
-               Log::Print ERROR "Can't editfst SAT_$file :\n\n$Message"
+            set err [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
+            if { $err } {
+               Log::Print ERROR "Can't editfst SAT_$file :\n\n$msg"
             }
 
-            set ErrorCode [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
+            set err [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
  SORTIE(STD,1000,A)
  LIREE('Z9','O',-1,0,0,4,'        ')
 C ---- canal 5 pour GOES 11 ou canal 6 pour GOES 12.
  MOINSE('Z9','O',-1,0,0,${ch5ou6},'        ')
  ECRITS('Z9',-16,-1,0,0,45,'O','',-1,IMPRIM)
-ENDPGSM" } Message ]
-            if { $ErrorCode } {
-               Log::Print ERROR "Can't pgsm SAT_$file :\n\n$Message"
+ENDPGSM" } msg ]
+            if { $err } {
+               Log::Print ERROR "Can't pgsm SAT_$file :\n\n$msg"
             }
 
             InfoFrame::Incr .satdata.info.msg 1
