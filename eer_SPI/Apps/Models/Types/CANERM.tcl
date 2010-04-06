@@ -506,14 +506,14 @@ proc CANERM::Launch { } {
       Model::ParamsCopy CANERM
 
       #----- Launching with soumet.
-      exec echo "#!/bin/sh\n\nssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
-         -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+      exec echo "#!/bin/sh\n\nord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+         -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
-      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Model::Param(Host) . ~/.profile\; soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
-         -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >$Sim(Path)/tmp/Model_Launch.out } Message]
+      eval set err \[catch \{ exec ord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+         -cm 800M -t 3600 -listing $env(HOME)/listings/eer_Experiment $Model::Param(Op) -queue $Model::Param(Queue) >$Sim(Path)/tmp/Model_Launch.out \} msg\]
 
-      if { $ErrorCode } {
-         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+      if { $err } {
+         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed:\n\n\t$msg"
 #         return False
       }
       Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."

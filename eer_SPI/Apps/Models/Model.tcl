@@ -679,6 +679,7 @@ proc Model::ParamsMetData { Model } {
 
 proc Model::ParamsMetDataDir { Model { Get True } } {
    global GDefs
+   global env
    variable Param
 
    upvar ${Model}::Sim sim
@@ -687,45 +688,30 @@ proc Model::ParamsMetDataDir { Model { Get True } } {
       #----- Check for remote path
       set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $Param(DBaseDiag) }]
    } else {
+
+      #----- Define meto path
+      set dbops $env(CMCGRIDF)
+      set dbeer $env(CMCGRIDF)
+
+      if { [info exists GDefs(Host_$Param(Host))] } {
+         set dbops $Param(Host):[lindex $GDefs(Host_$Param(Host)) 1]
+         set dbeer $Param(Host):[lindex $GDefs(Host_$Param(Host)) 2]
+      }
+      if { $sim(Model)=="MLDP1" && $sim(Meteo)=="reg"} {
+         set MetData::Param(Path) $dbeer
+      } else {
+         set MetData::Param(Path) $dbops
+      }
+
       #----- Set met database by default.
       MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
 
-      if { $sim(Meteo)=="reg" } {
-
-         if { [lsearch -exact $GDefs(BackEnds) $Param(Host)] != -1 } {
-            #----- Set met database on back-end.
-            if { $sim(Model)=="MLDP1" } {
-               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
-               set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/eer/afse/mldp/dbase/prog/regeta"
-            } else {
-               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/regeta2"
-               set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/regeta"
-            }
-         } else {
-            #----- Set met database on host.
-            if { $sim(Model)=="MLDP1" } {
-               set Param(DBaseDiag) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
-               set Param(DBaseProg) "/data/cmod8/afseeer/mldp/dbase/prog/regeta"
-            }
-         }
-      } elseif { $sim(Meteo)=="glb" } {
-
-         if { [lsearch -exact $GDefs(BackEnds) $Param(Host)] != -1 } {
-            #----- Set met database on back-end.
-            if { $sim(Model)=="MLDP1" } {
-               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
-            } else {
-               set Param(DBaseDiag) "$Param(Host):/fs/ops/cmo/gridpt/dbase/trial/glbeta2"
-            }
-            set Param(DBaseProg) "$Param(Host):/fs/ops/cmo/gridpt/dbase/prog/glbeta"
-         } else {
-            #----- Set met database on host.
-            if { $sim(Model)=="MLDP1" } {
-               set Param(DBaseDiag) "/data/gridpt/dbase/prog/glbeta"
-            }
-         }
+      #----- Set met database by default.
+      if { $sim(Model)=="MLDP1" } {
+         set Param(DBaseDiag) $Param(DBaseProg)
       }
    }
+
    if { $Get } {
       set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls [lindex [split $Param(DBaseDiag) :] end] }]
    }
@@ -862,8 +848,8 @@ proc Model::ParamsQueues { } {
    global GDefs
    variable Param
 
-   if { [info exists GDefs(BackEnd$Param(Host))] } {
-      set Param(Queues) [lindex $GDefs(BackEnd$Param(Host)) 0]
+   if { [info exists GDefs(Host_$Param(Host))] } {
+      set Param(Queues) [lindex $GDefs(Host_$Param(Host)) 0]
    } else {
       set Param(Queues)  ""
    }
@@ -872,10 +858,10 @@ proc Model::ParamsQueues { } {
    catch {
       Option::Set $Param(Frame).params.queue $Param(Queues)
 
-      if { $Param(Queue)=="" } {
-         Option::Disable $Param(Frame).params.queue
-      } else {
+      if { [llength $Param(Queues)] } {
          Option::Enable $Param(Frame).params.queue
+      } else {
+         Option::Disable $Param(Frame).params.queue
       }
    }
 }
@@ -1014,6 +1000,12 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
 
    TabFrame::Create .modelnew.params 1 ${Data(Modelbase)}::ParamsCheck
    pack .modelnew.params -side top -fill both -expand true -padx 5 -pady 5
+
+   #----- Define default host if not already done
+   eval set hosts \${${Data(Modelbase)}::Sim(Hosts)}
+   if { [lsearch -exact $hosts $Param(Host)]==-1 } {
+       set Param(Host) [lindex $hosts 0]
+   }
 
    #----- Model specific parameters
    switch $Mode {
@@ -1260,8 +1252,8 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
    if { $Param(Remote) } {
       if { $Param(Arch) == "AIX" } {
-         set sim(PathRun)  "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${simp}"
-         set sim(PathPrev) "[lindex $GDefs(BackEnd$Param(Host)) 2]/eer_Experiment/${expp}_${prevp}"
+         set sim(PathRun)  "[lindex $GDefs(Host_$Param(Host)) 3]/eer_Experiment/${expp}_${simp}"
+         set sim(PathPrev) "[lindex $GDefs(Host_$Param(Host)) 3]/eer_Experiment/${expp}_${prevp}"
       } else {
          Dialog::Error . $Error(Path) "\n\t($Param(Host):$sim(Path))"
          set sim(Path)     ""
@@ -1432,9 +1424,11 @@ proc Model::ParamValidateQueue { } {
    variable Lbl
    variable Warning
 
-   if { $Param(Queue) == "production" } {
+   set Param(Op) ""
+   if { $Param(Queue)=="production" || [string range $Param(Queue) 0 1]=="op" } {
+      set Param(Op) -op
       if { [Dialog::Default $Param(Frame) 400 WARNING $Warning(Queue) "" 1 $Lbl(Yes) $Lbl(No)] } {
-         set Param(Queue) "development"
+#         set Param(Queue) "development"
          return 0
       }
    }

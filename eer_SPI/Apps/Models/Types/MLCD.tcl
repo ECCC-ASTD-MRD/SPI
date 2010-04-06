@@ -1199,7 +1199,7 @@ proc MLCD::CreateScriptInput { } {
 
    set file [open $Sim(Path)/tmp/Model_MLCD.in w 0644]
       puts $file "#----- Logger specific parameters"
-      puts $file "LOG_MAIL=$Model::Param(EMail)"
+      puts $file "LOG_MAIL=\"$Model::Param(EMail)\""
       puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLCD.out"
       puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
@@ -1269,14 +1269,14 @@ proc MLCD::Launch { } {
       #----- Copy needed file to run host:directory.
       Model::ParamsCopy MLCD
 
-      exec echo "#!/bin/sh\n\nsoumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
-         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+      exec echo "#!/bin/sh\n\nord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
+         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
-      set ErrorCode [catch { exec soumet+++  $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
-         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment -cl $Model::Param(Queue) >>$Sim(Path)/tmp/Model_Launch.out } Message]
+      eval set err \[catch \{ exec ord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLCD.in -mach $Model::Param(Host) \
+         -t 3600 -cm 1G -listing $env(HOME)/listings/eer_Experiment $Model::Param(Op) -queue $Model::Param(Queue) >>$Sim(Path)/tmp/Model_Launch.out \} msg\]
 
-      if { $ErrorCode } {
-         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed.\n\n$Message"
+      if { $err } {
+          Log::Print ERROR "Submitting the job on $Model::Param(Host) failed:\n\n\t$msg"
 #         return False
       }
       Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."

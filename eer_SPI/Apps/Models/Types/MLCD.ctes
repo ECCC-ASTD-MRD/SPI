@@ -128,6 +128,9 @@ namespace eval MLCD {
 
    set Sim(Epsilon) 1.0e-05 ; #----- Epsilon value.
 
-   #----- Add Local machine to list of available hosts.
-   set Sim(Hosts) $GDefs(Host)
+   #----- Add front-end machine to list of available hosts.
+   set Sim(Hosts) $GDefs(FrontEnds)
+   if { [lsearch -exact $Sim(Hosts) $GDefs(Host)]==-1 } {
+      set Sim(Hosts) [linsert $Sim(Hosts) 0 $GDefs(Host)]
+   }
 }

@@ -89,5 +89,4 @@ namespace eval MLDP {
 
    #----- Add back-end machines to list of hosts.
    set Sim(Hosts) [concat $GDefs(BackEnds) $Sim(Hosts)]
-   set Model::Param(Host) [lindex $Sim(Hosts) 0]
 }
