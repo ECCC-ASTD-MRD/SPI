@@ -35,12 +35,13 @@ namespace eval Log { } {
    set Param(Time)      False                 ;#Print the time
    set Param(Proc)      True                  ;#Print the calling proc
    set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to store the log files
-   set Param(Mode)      SCRIPT                ;#Mode du logger (SCRIPT,ALL)
+   set Param(Mode)      SCRIPT                ;#Mode du logger (SCRIPT,DAEMON,ALL)
    set Param(Mail)      ""
    set Param(MailTitle) "Job Info"
    set Param(JobId)     ""
    set Param(OCLog)     ""
    set Param(SecTime)  [clock seconds]
+   set Param(SecLog)   $Param(SecTime)
    set Param(SecStart) $Param(SecTime)
    set Param(SecEnd)   $Param(SecTime)
    set Param(Job)      "Unknown"
@@ -70,6 +71,7 @@ proc Log::Start { Job Version { Input "" } } {
    variable Param
 
    set Param(SecStart) [clock seconds]
+   set Param(SecLog)   $Param(SecStart)
    set Param(Job)      $Job
    set Param(Version)  $Version
 
@@ -199,6 +201,16 @@ proc Log::Print { Type Message } {
          set Param(OutFile) $Param(Out)
       }
       set Param(Out) [open $Param(OutFile) w]
+   }
+
+   #----- Check if we need to split the log file
+   if { $Param(Mode)=="DEAMON" && [expr [clock seconds]-$Param(SecLog)]>86400 } {
+      if { [file exists $Param(OutFile)] } {
+         close $Param(Out)
+         file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]
+         set Param(Out) [open $Param(OutFile) w]
+      }
+      incr Param(SecLog) 86400
    }
 
    #----- If the message is within the specified log level
