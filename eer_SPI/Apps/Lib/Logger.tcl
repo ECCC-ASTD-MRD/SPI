@@ -204,7 +204,7 @@ proc Log::Print { Type Message } {
    }
 
    #----- Check if we need to split the log file
-   if { $Param(Mode)=="DEAMON" && [expr [clock seconds]-$Param(SecLog)]>86400 } {
+   if { $Param(Mode)=="DAEMON" && [expr [clock seconds]-$Param(SecLog)]>86400 } {
       if { [file exists $Param(OutFile)] } {
          close $Param(Out)
          file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]
