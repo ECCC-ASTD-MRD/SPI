@@ -36,6 +36,16 @@ set GDefs(ColorLight)     gray70
 set GDefs(ColorOff)       gray60
 set GDefs(ColorHighLight) yellow
 
+#----- Parametres de Log
+namespace eval Log {
+
+   set Param(Out)       stdout                ;#Output file/channel
+   set Param(OutFile)   ""                    ;#Output filename
+   set Param(Level)     INFO                  ;#Log level
+   set Param(Time)      False                 ;#Print the time
+   set Param(Proc)      False                 ;#Print the calling proc
+}
+
 #----- Parametres de SPI
 namespace eval SPI {
    set Param(Geom)           1024x768     ;#Geometrie de ;'interface
