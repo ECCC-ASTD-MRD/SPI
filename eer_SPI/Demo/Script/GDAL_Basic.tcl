@@ -50,7 +50,11 @@ puts "   Pixel projection 100 100 -> $ll -> $xy"
 gdalfile close GDAL
 
 puts "    Creating a band "
-gdalband create NEWRASTER 9000 9000 1 Byte
+gdalband create NEWRASTER 900 900 1 Byte
+
+gdalfile open NEWFILE write DataOut/GDAL_Basic.envi "ENVI"
+gdalband write NEWRASTER NEWFILE
+gdalfile close NEWFILE
 
 puts "    Freeing a band "
 gdalband free NEWRASTER
