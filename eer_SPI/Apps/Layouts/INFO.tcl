@@ -68,15 +68,15 @@ namespace eval INFO {
    set Data(BlaBlaHead) "PLEASE FIND ENCLOSED THE SET OF MAPS FOR THIS SCENARIO.
 THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:"
 
-   set Data(BlaBlaBody) "http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
+   set Data(BlaBlaMaps) "http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
 https://ready.arl.noaa.gov/rsmc2-bin/jntrsmc.pl
 http://www.bom.gov.au/cgi-bin/reg/EER/jntrsmc.pl
 
 
 THE METEROLOGICAL FIELDS WILL NOT BE FAXED TO YOU BUT CAN BE RETRIEVED ON
-THE INTERNET AT THE FOLLOWING WEB PAGE:
-(username: eerca99 password: emerg1)
+THE INTERNET AT THE FOLLOWING WEB PAGE:"
 
+   set Data(BlaBlaMeteo) "http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
 http://eer.cmc.ec.gc.ca/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/meteo
 (These will not be faxed to you)
 
@@ -462,7 +462,7 @@ proc INFO::Detail { Frame } {
 
    #---- Insert default blabla
    if { $Sim(Model)=="CANERM" || ([regexp MLDP $Sim(Model)] && $Sim(SrcType)=="accident") } {
-      set text   "$Data(BlaBlaHead)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaBody)"
+      set text   "$Data(BlaBlaHead)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaMaps)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaMeteo)"
       $Frame.blabla delete 0.0 end
       $Frame.blabla insert 0.0 $text
       $canvas itemconfigure TEXT -text $text
