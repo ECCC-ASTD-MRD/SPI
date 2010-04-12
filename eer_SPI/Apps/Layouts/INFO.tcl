@@ -609,7 +609,7 @@ proc INFO::RSMCJoin { Frame } {
    variable Lbl
    variable Msg
 
-   if { $Sim(Name)=="" } {
+   if { $Sim(NameExp)=="" } {
       return
    }
 
@@ -617,14 +617,14 @@ proc INFO::RSMCJoin { Frame } {
       return
    }
 
-   set path "$Exp::Param(Path)/$Sim(NoExp)_$Sim(Name)/Output/RSMCJoin"
+   set path "$Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)/Output/RSMCJoin"
 
    if { ![file exists $path] } {
       file mkdir $path
    }
 
    PrintBox::Image $Frame gif $path/CVRCA
-   PrintBox::Postscript $Frame $path/CVRCA 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame] portrait "8.5_x_11"
+   PrintBox::Postscript $Frame $path/CVRCA 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame] "8.5_x_11"
 }
 
 #----------------------------------------------------------------------------
