@@ -1679,16 +1679,18 @@ proc MLCD::ValidateModelTab { } {
    set Sim(Duration) [expr int($Sim(DurMin)*60)] ; #----- Simulation duration [s].
 
    #----- Verify if emission starting time or simulation duration have been modified.
-   if { $Sim(AccSeconds)!=$Sim(OldSeconds) || $Sim(DurMin)!=$Sim(OldDurMin) } {
+   if { !$Sim(Auto) } {
+      if { $Sim(AccSeconds)!=$Sim(OldSeconds) || $Sim(DurMin)!=$Sim(OldDurMin) } {
 
-      #----- Verify if meteorological parameters have been modified or not.
-      if { [MLCD::MeteoParametersModified] } {
+         #----- Verify if meteorological parameters have been modified or not.
+         if { [MLCD::MeteoParametersModified] } {
 
-         #----- Ask user if re-initializing meteo data when meteo parameters are modified.
-         MLCD::AskIfInitMeteoData
-      } else {
-         #----- Re-initialize meteo data without asking user when meteo parameters are not modified.
-         MLCD::InitMeteoData
+            #----- Ask user if re-initializing meteo data when meteo parameters are modified.
+            MLCD::AskIfInitMeteoData
+         } else {
+            #----- Re-initialize meteo data without asking user when meteo parameters are not modified.
+            MLCD::InitMeteoData
+         }
       }
    }
 
