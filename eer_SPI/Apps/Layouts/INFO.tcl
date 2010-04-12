@@ -65,11 +65,10 @@ namespace eval INFO {
                           "Total deposition map(s)"
                           "Trajectory(ies)" }
    set Data(Situations) { "--- EXERCISE ONLY !!! ---" "--- THIS IS NOT AN EXERCISE !!! ---" }
-   set Data(BlaBla) "PLEASE FIND ENCLOSED THE SET OF MAPS FOR THIS SCENARIO.
-THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:
-(username: eerca99 password: emerg1)
+   set Data(BlaBlaHead) "PLEASE FIND ENCLOSED THE SET OF MAPS FOR THIS SCENARIO.
+THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:"
 
-http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
+   set Data(BlaBlaBody) "http://eer.cmc.ec.gc.ca/eer-bin/jntrsmc.pl
 https://ready.arl.noaa.gov/rsmc2-bin/jntrsmc.pl
 http://www.bom.gov.au/cgi-bin/reg/EER/jntrsmc.pl
 
@@ -463,9 +462,10 @@ proc INFO::Detail { Frame } {
 
    #---- Insert default blabla
    if { $Sim(Model)=="CANERM" || ([regexp MLDP $Sim(Model)] && $Sim(SrcType)=="accident") } {
+      set text   "$Data(BlaBlaHead)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaBody)"
       $Frame.blabla delete 0.0 end
-      $Frame.blabla insert 0.0 $Data(BlaBla)
-      $canvas itemconfigure TEXT -text $Data(BlaBla)
+      $Frame.blabla insert 0.0 $text
+      $canvas itemconfigure TEXT -text $text
    }
 
    bind $Frame.blabla <Any-KeyRelease> "$canvas itemconfigure TEXT -text \[$Frame.blabla get 0.0 end\]"

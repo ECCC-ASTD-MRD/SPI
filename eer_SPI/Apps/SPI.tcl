@@ -1848,6 +1848,33 @@ proc SPI::Quit { { Code 0 } } {
    }
 }
 
+#---------------------------------------------------------------------------
+# Nom      : <SPI::Password>
+# Creation : Avril 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Extrair le mot de passe d'un usager dans le fichier .password.
+#
+# Parametres :
+#   <User>   : Usager
+#
+# Retour     : Mot de passe
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc SPI::Password { User } {
+   global env
+
+   set line ""
+
+   #----- Get the user line (We have to catch cause grep gives an exit 1)
+   catch { set line [exec grep eerca99 $env(HOME)/.spi/.password] }
+
+   #----- Extract password (user=password)
+   return [lindex [split $line =] end]
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <SPI::ObjectAdd>
 # Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE -
