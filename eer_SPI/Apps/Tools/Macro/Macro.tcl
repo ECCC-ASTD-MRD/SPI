@@ -135,11 +135,10 @@ proc Macro::Doing { Msg } {
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   if { $SPI::Param(Batch) } {
-      if { $Msg!="" } {
-         puts stdout "(DOING) ${stackproc}: $Msg"
-      }
-   } else {
+   if { $Msg!="" } {
+      puts stdout "(DOING) ${stackproc}: $Msg"
+   }
+   if { !$SPI::Param(Batch) } {
       set Data(Job) $Msg
       update idletasks
    }
