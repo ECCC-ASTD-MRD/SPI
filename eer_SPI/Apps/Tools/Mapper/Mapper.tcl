@@ -485,6 +485,8 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } { Full False } } {
    set Data(Band2$File) ""
    set Data(Band3$File) ""
    set Data(Bands$File) {}
+   set Data(BandX$File) ""
+   set Data(BandY$File) ""
 
    if  { [llength $Bands]>=1 } {
       set Data(Band0$File) [lindex $Bands 0]
@@ -524,6 +526,39 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } { Full False } } {
    }
 
    return True
+}
+
+proc Mapper::ReadPos { File BandX BandY } {
+   global GDefs errorInfo
+   variable Data
+   variable Msg
+
+   if  { ![info exists Data(Id$File)] } {
+      return
+   }
+
+   set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
+   update idletasks;
+
+   set err [catch { gdalband read BandX$File [list $BandX] } errmsg ]
+   if { $err } {
+      error $errmsg $errorInfo
+   }
+
+   set err [catch { gdalband read BandY$File [list $BandY] } errmsg ]
+   if { $err } {
+      error $errmsg $errorInfo
+   }
+
+   gdalband define $File -positional BandX$File BandY$File
+
+   set Data(Proj)       [gdalband define $File -projection]
+   set Data(Trans)      [gdalband define $File -transform]
+   set Data(InvTrans)   [gdalband define $File -invtransform]
+
+   set Data(BandX$File) $BandX
+   set Data(BandY$File) $BandY
+   set Data(Job) ""
 }
 
 proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
@@ -634,6 +669,8 @@ proc Mapper::ParamsGDALGet { Object } {
    set Data(Green) $Data(Band1$Object)
    set Data(Blue)  $Data(Band2$Object)
    set Data(Alpha) $Data(Band3$Object)
+   set Data(BandX) $Data(BandX$Object)
+   set Data(BandY) $Data(BandY$Object)
 
    Mapper::UpdateItems $Data(Frame)
 }
@@ -663,6 +700,10 @@ proc Mapper::ParamsGDALSet { Object } {
 
    if { $Data(Band0$Object)!=$Data(Red) || $Data(Band1$Object)!=$Data(Green) || $Data(Band2$Object)!=$Data(Blue) || $Data(Band3$Object)!=$Data(Alpha) } {
       Mapper::ReadBand $Object [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)]
+   }
+
+   if { $Data(BandX$Object)!=$Data(BandX) || $Data(BandY$Object)!=$Data(BandY) } {
+      Mapper::ReadPos $Object $Data(BandX) $Data(BandY)
    }
 
    gdalband configure $Object -texsample $Data(Sample) -texres $Data(Resolution) -texsize $Data(Texture) -transparency $Data(Tran) \
@@ -1052,7 +1093,6 @@ proc Mapper::DrawInit  { Frame VP } {
 
    set Data(InfoId)  ""
    set Data(InfoObs) ""
-
 
    Mapper::PickOGR $VP $Viewport::Map(X) $Viewport::Map(Y)
 }

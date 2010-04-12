@@ -155,6 +155,7 @@ namespace eval Mapper { } {
    set Bubble(Projection)    { "Description du système de coordonnées géographiques (WKT)" "Geographical coordinate system description (WKT)" }
    set Bubble(Transform)     { "Matrice de transformation avant et inverse (dx sx rx dy ry sy)" "Transform matrix and inverse (dx sx rx dy ry sy)" }
    set Bubble(CurveBand)     { "Sélection du canal/bande pour lequel vous soulez modifier la courbe" "Select the channel/band for which you want to change the curve" }
+   set Bubble(PosArray)      { "Sélection des canaux/bandes contenant les positions des pixels" "Select the channels/bands containing pixel locations" }
    set Bubble(Curve)         { "Sélection de la courbe a appliquer" "Sélect which curve to apply" }
    set Bubble(Transparency)  { "Facteur de transparence" "Transparency factor" }
    set Bubble(Resolution)    { "Facteur de diminution de la résolution" "Diminutive resolution factor" }

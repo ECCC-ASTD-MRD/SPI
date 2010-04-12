@@ -539,6 +539,21 @@ proc Mapper::ParamsGDAL { Object Tab } {
             pack $Data(Frame1).proj.val -side right -fill both -expand true -padx 5 -pady 5
          pack  $Data(Frame1).proj -side top -fill both -expand true -padx 5 -pady 5
 
+         labelframe $Data(Frame1).pos -text [lindex $Lbl(Position) $GDefs(Lang)]
+            frame $Data(Frame1).pos.x
+               label $Data(Frame1).pos.x.lbl -text X -width 6 -anchor w
+               ComboBox::Create $Data(Frame1).pos.x.val Mapper::Data(BandX) noedit sorted nodouble -1 "" 1 8 ""
+               pack $Data(Frame1).pos.x.lbl -side left
+               pack $Data(Frame1).pos.x.val -side left -fill x -expand true
+            frame $Data(Frame1).pos.y
+               label $Data(Frame1).pos.y.lbl -text Y -width 6 -anchor w
+               ComboBox::Create $Data(Frame1).pos.y.val Mapper::Data(BandY) noedit sorted nodouble -1 "" 1 8 ""
+               pack $Data(Frame1).pos.y.lbl -side left
+               pack $Data(Frame1).pos.y.val -side left -fill x -expand true
+            pack $Data(Frame1).pos.x -side top -fill x -padx 5
+            pack $Data(Frame1).pos.y -side top -fill x -padx 5
+         pack $Data(Frame1).pos -side top -fill x -padx 5 -pady 5 -ipady 2
+
          labelframe $Data(Frame1).trans -text [lindex $Lbl(Trans) $GDefs(Lang)]
             frame $Data(Frame1).trans.fwd
                label $Data(Frame1).trans.fwd.lbl -text [lindex $Lbl(Forward) $GDefs(Lang)] -width 8 -anchor nw
@@ -557,6 +572,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
          Bubble::Create $Data(Frame1).projhead.tab  $Bubble(ProjRef)
          Bubble::Create $Data(Frame1).proj $Bubble(Projection)
          Bubble::Create $Data(Frame1).trans $Bubble(Transform)
+         Bubble::Create $Data(Frame1).pos   $Bubble(PosArray)
 
       set Data(Frame3) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Meta) $GDefs(Lang)] False ""]
          frame $Data(Frame3).meta
@@ -664,6 +680,13 @@ proc Mapper::ParamsGDAL { Object Tab } {
    ComboBox::DelAll $Data(Frame2).band.alpha.val False
    ComboBox::Add $Data(Frame2).band.alpha.val ""
    ComboBox::AddList $Data(Frame2).band.alpha.val $Data(Band$Object)
+
+   ComboBox::DelAll $Data(Frame1).pos.x.val False
+   ComboBox::Add $Data(Frame1).pos.x.val ""
+   ComboBox::AddList $Data(Frame1).pos.x.val $Data(Band$Object)
+   ComboBox::DelAll $Data(Frame1).pos.y.val False
+   ComboBox::Add $Data(Frame1).pos.y.val ""
+   ComboBox::AddList $Data(Frame1).pos.y.val $Data(Band$Object)
 
    bind $Data(Frame2).col.curve.info.min <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) False } }
    bind $Data(Frame2).col.curve.info.max <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) False } }
