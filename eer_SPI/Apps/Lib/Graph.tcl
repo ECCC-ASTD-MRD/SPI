@@ -105,7 +105,7 @@ namespace eval Graph {
    set Data(Graph)        ""                     ;#Id du graph courant
    set Data(GraphParams)  ""                     ;#Id du graph courant
    set Data(Show)         False
-   set Data(ShowCoord)    False
+   set Data(ShowCoord)    True
    set Data(ShowGrid)     False
    set Data(ToolMode)     Data
    set Data(Update)       True
