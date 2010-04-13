@@ -65,12 +65,12 @@ int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
  * Retour:
  *
  * Remarques :
- *
+ *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
 int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
-   int n,i,j,ci,cj,i0,i1,j0,j1,len;
+   int n,i,j,ci,cj,i0,i1,j0,j1,len,side;
    unsigned long d,sz;
    unsigned char *buf=NULL;
    TArray *array;
@@ -104,11 +104,11 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
       /*As long as we did not check all gridpoint (Worse case)*/
       while(d++<sz) {
 
-         /*We loop on the gridpoints by going around the grid limits smaller and smaller square*/
-         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; } /* Check lower right corner */
-         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; } /* Check upper right corner */
-         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; } /* Check upper left corner */
-         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; } /* Check lower left corner */
+         /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
+         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
+         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
+         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   /* Check upper left corner */
+         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=0xF^FF_BOTTOM; } /* Check lower left corner */
 
          /*When we get to the center, we're done*/
          if (i1<=i0 || j1<=j0) {
@@ -120,12 +120,12 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
-            len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
+            len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
               if ((array=TArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
-                  FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,3);
+                  FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
                } else {
                   fprintf(stderr,"(ERROR) Data_GetContour: Unable to alloc memory for contour %f",Inter[n]);
                }
@@ -435,7 +435,7 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 */
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int  c;
+   int  c=0;
    char buf[256];
    TList *list;
    TArray *array;
@@ -551,9 +551,9 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 */
 void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int  n,c,d,delta;
+   int  n,c,delta;
    char buf[256];
-   double th,dx,dy,dnx,dny;
+   double th,dx,dy,dnx,dny,d;
    TList *list;
    TArray *array;
    Vect3d  p1,p0;
@@ -580,9 +580,9 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
    glDisable(GL_DEPTH_TEST);
    glPolygonMode(GL_FRONT,GL_FILL);
-   glReadBuffer(GL_STENCIL);
+   glReadBuffer(GL_BACK);
    glEnable(GL_STENCIL_TEST);
-   glStencilFunc(GL_GEQUAL,0xf0,0x0f);
+   glStencilFunc(GL_EQUAL,0xf0,0x0f);
    glStencilOp(GL_KEEP,GL_REPLACE,GL_REPLACE);
 
    if (Field->Segments) {
@@ -622,11 +622,10 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
          }
 
          /* Check if we need to caclulate this streamline. Will it be visible */
-         n=0;
-         gluProject(array->Data[n][0],array->Data[n][1],array->Data[n][2],VP->GLModR,VP->GLProj,VP->GLView,&p1[0],&p1[1],&p1[2]);
+         gluProject(array->Data[0][0],array->Data[0][1],array->Data[0][2],VP->GLModR,VP->GLProj,VP->GLView,&p1[0],&p1[1],&p1[2]);
          d=delta;
 
-         for(++n;n<array->Size;n++) {
+         for(n=1;n<array->Size;n++) {
             Vect_Assign(p0,p1);
             gluProject(array->Data[n][0],array->Data[n][1],array->Data[n][2],VP->GLModR,VP->GLProj,VP->GLView,&p1[0],&p1[1],&p1[2]);
 

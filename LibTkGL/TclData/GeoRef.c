@@ -1884,7 +1884,8 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
    }
 
    /*Set secondary gridtype to Y for the project/unproject functions to work correctly*/
-   Ref->Grid[1]='Y';
+   if (Ref->Grid[0]=='W')
+      Ref->Grid[1]='Y';
 
    /*Get rid of transforms anf projection functions*/
    if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;

@@ -33,7 +33,7 @@
 #include <math.h>
 
 #include "tclGDAL.h"
-#include "/data/cmoe/afsr005/Archive/gpc232/gpc.h"
+#include "gpc.h"
 
 extern OGRGeometryH gpc_ogr(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
 extern int GDAL_Type[];

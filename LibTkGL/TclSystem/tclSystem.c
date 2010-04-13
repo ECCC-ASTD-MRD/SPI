@@ -310,7 +310,7 @@ static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 #else
    if ((statfs(Tcl_GetString(Objv[0]),&fs))) {
 #endif
-      Tcl_AppendResult(Interp,"System_FileSystem: Unable to get filesystem info for ",Tcl_GetString(Objv[0]),(char*)NULL);
+      Tcl_AppendResult(Interp,"System_FileSystem: Unable to get filesystem info for ",Tcl_GetString(Objv[0]),"\n\t",strerror(errno),(char*)NULL);
       return(TCL_ERROR);
    }
 
