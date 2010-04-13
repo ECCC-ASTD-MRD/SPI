@@ -364,6 +364,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *  <Z>       : Position Z en point de grille
  *  <Inter>   : Intervalle du contour
  *  <Mode>    : Type de referenciel (REF_COO,REF_GRID,REF_PROJ)
+ *  <Side>    : Cote a ne pas verifier pour le depart
  *  <Depth>   : Profondeur de subdivision
  *
  * Retour:
@@ -391,7 +392,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *
  *----------------------------------------------------------------------------
  */
-int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Depth) {
+int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth) {
 
    double        vox[4],pvox[4],mid,x,y,dx,dy,d;
    double        lat=0.0,lon=0.0;
@@ -420,7 +421,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
          /*If it's the first point, get it's voxel instersection to start with*/
          if (!side) {
             x=X;y=Y;
-            if (!(side=FFQuad_Cross(1.0,side,pvox,Inter,&x,&y))) {
+            if (!(side=FFQuad_Cross(1.0,Side,pvox,Inter,&x,&y))) {
                break;
             }
 

@@ -67,10 +67,10 @@
 
 #define SHADER_MAX 32
 
-#define glErrorCheck(EXIT) {\
+#define glErrorCheck(MSG,EXIT) {\
    GLenum err;\
    if ((err=glGetError())!=GL_NO_ERROR) {\
-      fprintf(stderr,"OpenGL Error : %s\n",gluErrorString(err));\
+      fprintf(stderr,"(GLERROR) %s: %s\n",MSG,gluErrorString(err));\
       if (EXIT) {\
          exit(1);\
       }\

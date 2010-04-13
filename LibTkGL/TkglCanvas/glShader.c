@@ -39,9 +39,7 @@ void GLShader_InfoLog(GLhandleARB Object) {
    GLsizei    len=0,*chr=NULL;
    GLcharARB *log;
 
-   glErrorCheck(0);
    glGetObjectParameterivARB(Object,GL_OBJECT_INFO_LOG_LENGTH_ARB,&len);
-   glErrorCheck(0);
 
    if (len>2) {
       log=(GLcharARB*)malloc(len);
@@ -53,7 +51,7 @@ void GLShader_InfoLog(GLhandleARB Object) {
          free(log);
       }
    }
-   glErrorCheck(0);
+   glErrorCheck("GLShader_InfoLog",0);
 }
 
 GLint GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name) {
@@ -65,7 +63,7 @@ GLint GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name) {
    if (loc==-1)
       fprintf(stderr,"(ERROR) GL_UniformGet: Unable to find uniform named \"%s\"\n",Name);
 
-   glErrorCheck(0);
+   glErrorCheck("GLShader_UniformGet",0);
    return(loc);
 }
 
@@ -78,7 +76,7 @@ GLint GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name) {
    if (loc==-1)
       fprintf(stderr,"(ERROR) GL_AttribGet: Unable to find attribute named \"%s\"\n",Name);
 
-   glErrorCheck(0);
+   glErrorCheck("GLShader_AttribGet",0);
    return(loc);
 }
 
@@ -143,7 +141,7 @@ GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc) 
 
    /* Compile the vertex shader */
    glCompileShaderARB(vert);
-   glErrorCheck(0);
+   glErrorCheck("GLShader_Install",0);
    glGetObjectParameterivARB(vert,GL_OBJECT_COMPILE_STATUS_ARB,&status);
    GLShader_InfoLog(vert);
 
@@ -152,7 +150,7 @@ GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc) 
 
    /* Compile the fragment shader */
    glCompileShaderARB(frag);
-   glErrorCheck(0);
+   glErrorCheck("GLShader_Install",0);
    glGetObjectParameterivARB(frag,GL_OBJECT_COMPILE_STATUS_ARB,&status);
    GLShader_InfoLog(frag);
 
@@ -168,7 +166,7 @@ GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc) 
 
    glLinkProgramARB(prog);
 
-   glErrorCheck(0);
+   glErrorCheck("GLShader_Install",0);
    glGetObjectParameterivARB(prog,GL_OBJECT_LINK_STATUS_ARB,&status);
    GLShader_InfoLog(prog);
 
@@ -179,6 +177,7 @@ GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc) 
    glDeleteObjectARB(vert);
    glDeleteObjectARB(frag);
 
+   glErrorCheck("GLShader_Install",0);
    return(prog);
 }
 

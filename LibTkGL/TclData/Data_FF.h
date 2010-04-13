@@ -71,7 +71,7 @@ typedef struct TKrigging {
 
 float         FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1);
 int           FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim);
-int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode,int Depth);
+int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Level,int Mode,int Side,int Depth);
 unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y);
 unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N);
 int           FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect3d *Vr,int Do);
