@@ -1222,6 +1222,7 @@ proc MLCD::CreateScriptInput { } {
       puts $file "MODEL_PRE=0"
       puts $file "MODEL_RUN=1"
       puts $file "MODEL_POST=1"
+      puts $file "MODEL_POOL=$Model::Param(Pool)"
       puts $file "MODEL_CLEAN=1"
       puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
       puts $file ""

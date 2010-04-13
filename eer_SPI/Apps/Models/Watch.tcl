@@ -1278,7 +1278,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
       return
    }
 
-   set Data(Modelbase) [Model::InitNew $Model -1 $Data(Name) $Data(Pos)]
+   set Data(Modelbase) [Model::InitNew $Model 0 $Data(Name) $Data(Pos)]
    set Data(Model)     $Model
 
    if { $Mode=="NEW" } {

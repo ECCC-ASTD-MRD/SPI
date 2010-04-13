@@ -53,6 +53,7 @@ namespace eval Model {
    set Param(Job)     ""                               ;#Current processing
 
    set Param(Auto)      False                          ;#Running mode
+   set Param(Pool)      1                              ;#Manage pool
    set Param(App)       SPI                            ;#Calling application
    set Param(LogLevel)  INFO                           ;#Log level
    set Param(LogTime)   0                              ;#Log Timing
