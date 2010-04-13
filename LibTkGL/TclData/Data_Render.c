@@ -650,20 +650,20 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                th=RAD2DEG(th);
 
                glReadPixels(p1[0],p1[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x20) continue;
+               if (s&0x30) continue;
 
                glReadPixels(p1[0]+dnx,p1[1]-dny,1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x20) continue;
+               if (s&0x30) continue;
 
                glReadPixels(p1[0]-dnx,p1[1]+dny,1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x20) continue;
+               if (s&0x30) continue;
 
                glReadPixels(p1[0]+dnx,p1[1]+dny,1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x20) continue;
+               if (s&0x30) continue;
 
                p1[0]-=dnx; p1[1]-=dny;
                glReadPixels(p1[0],p1[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x20) continue;
+               if (s&0x30) continue;
 
                /*Draw the bloc in the stencil buffer*/
                glStencilMask(0x20);

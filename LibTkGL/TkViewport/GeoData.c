@@ -1572,7 +1572,7 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <GDB_TileRender>
+ * Nom      : <GDB_TileGetData>
  * Creation : Novembre 2001 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Effectuer le rendue des tuiles (Donnees vectorielles).

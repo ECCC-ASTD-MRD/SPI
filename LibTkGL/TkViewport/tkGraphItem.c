@@ -2242,7 +2242,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
    Tk_GetFontMetrics(Data->Spec->Font,&tkm);
    dy=tkm.ascent*0.5;
 
-   glReadBuffer(GL_STENCIL);
+   glReadBuffer(GL_BACK);
    glEnable(GL_STENCIL_TEST);
    glStencilMask(0x4);
    glStencilFunc(GL_ALWAYS,0x4,0x4);
@@ -2309,7 +2309,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
                p1[1]-=dx*0.5*sin(th)+dy*0.5*sin(M_PI2-th);
                th=RAD2DEG(th);
 
-               /*Draw the boc in the stencil buffer*/
+               /*Draw the bloc in the stencil buffer*/
                glStencilMaskQuad(p1[0],p1[1],dx,dy,th,4,1);
                glDisable(GL_STENCIL_TEST);
 
