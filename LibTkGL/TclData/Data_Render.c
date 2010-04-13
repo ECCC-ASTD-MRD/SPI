@@ -190,7 +190,6 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    if (!Field || !Field->Ref || !Field->Spec || !Field->Def->Data[0]) {
       return(0);
    }
-
    Data_PreInit(Field);
 
    if (!Field->Ref->Pos || !Field->Ref->Pos[Field->Def->Level])

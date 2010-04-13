@@ -1114,7 +1114,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
                }
             }
 
-            /*Rendue des donnees vectoriellle*/
+            /*Rendue des donnees vectorielle*/
             for (i=0;i<vp->NbData;i++) {
                if ((fld=Data_Get(vp->Data[i]))) {
                   Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);

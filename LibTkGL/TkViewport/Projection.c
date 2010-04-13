@@ -1538,7 +1538,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
       }
   }
 
-   return ras;
+   return(ras);
 }
 
 /*----------------------------------------------------------------------------

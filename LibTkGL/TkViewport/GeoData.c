@@ -242,17 +242,19 @@ int GDB_ThreadQueueAdd(Tcl_ThreadId Id,Projection *Proj,GDB_Tile *Tile,GDB_DataG
       return(0);
    }
 
-   Tile->Flag++;
    qdata->Tile=Tile;
    qdata->Proc=Proc;
    qdata->Proj=Proj;
    qdata->Param1=Param1;
    qdata->Param2=Param2;
    qdata->Next=NULL;
+
+   Tcl_MutexLock(&MUTEX_GDBQUEUE);
+
+   qdata->Tile->Flag++;
    qdata->Proj->Loading++;
 
    /*Insert item into queue*/
-   Tcl_MutexLock(&MUTEX_GDBQUEUE);
    if (GDBTData->QueueEnd) {
       q=GDBTData->QueueEnd;
       q->Next=qdata;
@@ -679,7 +681,6 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
       }
 
       /*Donnees textuelles*/
-
       if (Tile->TPlace) {
          if (Tile->TPlace>(GDB_Txt*)0x1) GDB_TxtFree(Tile->TPlace);
          Tile->TPlace=NULL;
