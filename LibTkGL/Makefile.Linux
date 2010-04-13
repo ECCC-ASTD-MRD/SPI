@@ -28,10 +28,10 @@ LIB_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/$(ARCH)
 INC_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/Include
 
 # Tk Path
-TCL_SRC  = /data/cmoe/afsr005/Archive/tcl$(TCLTK_VER)
+TCL_SRC  = /cnfs/ops/cmoe/afsr005/Archive/tcl$(TCLTK_VER)
 TCL_PATH = $(LIB_PATH)/TclTk
 
-TK_SRC   = /data/cmoe/afsr005/Archive/tk$(TCLTK_VER)
+TK_SRC   = /cnfs/ops/cmoe/afsr005/Archive/tk$(TCLTK_VER)
 TK_PATH  = $(LIB_PATH)/TclTk
 
 # OpenGL librairies
