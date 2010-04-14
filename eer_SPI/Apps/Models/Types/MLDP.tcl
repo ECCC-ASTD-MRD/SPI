@@ -133,10 +133,10 @@ proc MLDP::Launch { } {
       }
 
       exec echo "#!/bin/sh\n\nord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-         -t $Sim(RunningTimeCPU) -cm $mem -cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi -listing $env(HOME)/listings/eer_Experiment -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+         -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus listing $env(HOME)/listings/eer_Experiment -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
       eval set err \[catch \{ exec ord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-         -t $Sim(RunningTimeCPU) -cm $mem $cpus -listing $env(HOME)/listings/eer_Experiment -queue $Model::Param(Queue) >$Sim(Path)/tmp/Model_Launch.out \} msg\]
+         -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $env(HOME)/listings/eer_Experiment -queue $Model::Param(Queue) >$Sim(Path)/tmp/Model_Launch.out \} msg\]
 
       if { $err } {
          Log::Print ERROR "Submitting the job on $Model::Param(Host) failed:\n\n\t$msg"
