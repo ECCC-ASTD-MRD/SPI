@@ -180,7 +180,7 @@ proc Log::End { { Status 0 } { Exit True } } {
 # Remarques :
 #----------------------------------------------------------------------------
 
-proc Log::Print { Type Message } {
+proc Log::Print { Type Message { Var "" } } {
    variable Param
 
    #----- Check for log file
@@ -213,6 +213,30 @@ proc Log::Print { Type Message } {
       incr Param(SecLog) 86400
    }
 
+   #----- Print the variable if given
+   set vars  ""
+   if { $Var!="" } {
+      if { [array size $Var] } {
+         set vars  \n
+         set len   0
+         set names [lsort [array names $Var]]
+
+         #----- Get maximum length
+         foreach name $names {
+            if { [set l [string length $name]]>$len } {
+               set len $l
+            }
+         }
+         incr len [string length $Var]
+         incr len 2
+
+         #----- Print the array
+         foreach name $names {
+            eval append vars \[format \"\t%-${len}s : %s\n\" ${Var}($name) \${${Var}($name)}\]
+         }
+      }
+   }
+
    #----- If the message is within the specified log level
    if { $Param($Type)<=$Param($Param(Level)) } {
 
@@ -241,7 +265,7 @@ proc Log::Print { Type Message } {
       if { $Type=="MUST" } {
          puts $Param(Out) "${Message}"
       } else {
-         puts $Param(Out) "${time}(${Type}) ${proc}${Message}"
+         puts $Param(Out) "${time}(${Type}) ${proc}${Message}${vars}"
       }
       flush $Param(Out)
    }
