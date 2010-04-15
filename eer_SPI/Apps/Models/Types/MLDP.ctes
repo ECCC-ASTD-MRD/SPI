@@ -61,6 +61,9 @@ namespace eval MLDP {
    #----- List of reflection levels [hyb|eta|sig].
    set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
 
+   set Sim(OutMode)              cmc                           ; #----- Output mode [cmc | argos | all].
+   set Sim(LogLevel)             low                           ; #----- Printing debugging level [low | moderate | high].
+   set Sim(Seed)                 variable                      ; #----- Initial seed for random number generator [fixed | variable].
    set Sim(DtOverTl)             1.0                           ; #----- Ratio of diffusion time step over Lagrangian time scale [dimensionless].
    set Sim(DtMin)                1.0                           ; #----- Diffusion time step minimum value [s].
    set Sim(IsIncludeHorizDiff)   ".TRUE."                      ; #----- Flag indicating if including horizontal diffusion in free atmosphere.
