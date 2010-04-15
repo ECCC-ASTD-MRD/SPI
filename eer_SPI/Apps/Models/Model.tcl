@@ -1230,6 +1230,7 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
 proc Model::ParamsPath { Model { ReqNo True } } {
    global GDefs
    variable Param
+   variable Error
 
    upvar ${Model}::Sim sim
 
