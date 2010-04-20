@@ -13,8 +13,8 @@
 # Fonctions:
 #   Log::Start { Job Version { Input "" } }
 #   Log::End   { { Status 0 } }
-#   Log::Print { Type Message }
-#   Log::Mail  { Subject File }
+#   Log::Print { Type Message { Var "" } }
+#   Log::Mail { Subject File { Address { } } }
 #
 # Remarques :
 #   Aucune
@@ -280,31 +280,36 @@ proc Log::Print { Type Message { Var "" } } {
 # Parametres  :
 #    <Subject>: Sujet du message
 #    <File>   : Fichier a envoyer
+#    <Address>: Adresse destinataire
 #
 # Retour:
 #
 # Remarques :
 #----------------------------------------------------------------------------
 
-proc Log::Mail { Subject File } {
+proc Log::Mail { Subject File { Address { } } } {
    global env
    variable Param
 
-   if { $Param(Mail)==""  } {
-      return
+   set address $Param(Mail)
+
+   if { [llength $Address] } {
+      set address $Address
    }
 
-   if { ![file exists $File] || ![file readable $File] } {
-      if { $env(EER_ARCH)=="IRIX64" } {
-         eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail)
+   if { [llength $address]  } {
+      if { ![file exists $File] || ![file readable $File] } {
+         if { $env(EER_ARCH)=="IRIX64" } {
+            eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address
+         } else {
+            eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address
+         }
       } else {
-         eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail)
-      }
-   } else {
-      if { $env(EER_ARCH)=="IRIX64" } {
-         eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail) < $File
-      } else {
-         eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $Param(Mail) < $File
+         if { $env(EER_ARCH)=="IRIX64" } {
+            eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File
+         } else {
+            eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File
+         }
       }
    }
 }
