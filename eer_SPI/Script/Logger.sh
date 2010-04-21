@@ -171,7 +171,7 @@ function Log_End {
    exitnow=${2}
    LogSecEnd=${SECONDS}
 
-   Log_Print MUST "\n -------------------------------------------------------------------------------"
+   Log_Print MUST "\n-------------------------------------------------------------------------------"
    if [[ ${status} -eq 0 ]]; then
       Log_Print MUST "Status              : Job has terminated successfully."
    else
@@ -222,12 +222,12 @@ function Log_Print {
       fi
 
       if [[ ${LOG_FILE} = "" ]] ; then
-         printf "${datetime}${levels}${msg} ${time}"
+         printf "${datetime}${levels}${msg} ${time}\n"
       else
-         printf "${datetime}${levels}${msg} ${time}" >> ${LOG_FILE}
+         printf "${datetime}${levels}${msg} ${time}\n" >> ${LOG_FILE}
       fi
       if [[ $level = "ERROR" ]] ; then
-         printf "${datetime}${levels}${msg} ${time}" 1>&2
+         printf "${datetime}${levels}${msg} ${time}\n" 1>&2
          if [[ ${LOG_OC} != "" ]]; then
             oclog ${LogJob} x "${LOG_OC}\n\n${datetime}${levels}${msg} ${time}"
          fi
