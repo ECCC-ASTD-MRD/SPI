@@ -26,6 +26,12 @@
 #   Aucune.
 #===============================================================================
 
+#----- Patch to use old model until RPB upgrades ARGOS
+ARGOS=""
+if [[ ${MLDP_OUTMODE} = "argos" ]] ;then
+   ARGOS="-ARGOS"
+fi
+
 function MLDP_Pre {
 
    taskstatus=0
@@ -42,7 +48,7 @@ function MLDP_Pre {
          fi
       fi
    else
-      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} \
+      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} ${ARGOS}\
          >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
       taskstatus=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
@@ -80,10 +86,10 @@ function MLDP_Run {
       ${MODEL_TIMER} r.mpiexec \
          -npex ${MODEL_NBMPITASKS} \
          -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
-         -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE} \
+         -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
          >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err
    else
-      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE} \
+      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
          -input ${MLDP_INPUT} \
          -print ${MLDP_LOGLEVEL} \
          -seed ${MLDP_SEED} \

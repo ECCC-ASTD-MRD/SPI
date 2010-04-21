@@ -50,6 +50,7 @@ Model="${2}"
 NbProc="${3}"
 GridSize="${4}"
 Debug="${5}"
+Ext="${6}"
 
 Log_Print INFO "Temporary directory  : ${DirTmp}"
 Log_Print INFO "Meteorological model : ${Model}"
@@ -266,7 +267,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    #-----   - 'VV' : [3D] Wind speed Y-component [kt],
    #-----   - 'WE' : [3D] Vertical Motion [s -1].
    Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
-   ${EER_DIRBIN}/metfields_mldp1 \
+   ${EER_DIRBIN}/metfields_MLDP1${Ext} \
       -iment ../meteo/${filename}.std \
       -ozsrt ../meteo/${filename}.met.std \
       -print ${Debug} \

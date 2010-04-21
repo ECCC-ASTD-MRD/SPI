@@ -50,6 +50,7 @@ Model="${2}"
 NbProc="${3}"
 GridSize="${4}"
 Debug="${5}"
+Ext="${6}"
 Debug="high"
 
 Log_Print INFO "Temporary directory  : ${DirTmp}"
@@ -333,7 +334,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    #-----   - 'SV' : [3D] Wind speed Y-component ('VV') variance [kt2],
    #-----   - 'TH' : [3D] Virtual potential temperature [K].
    Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
-   ${EER_DIRBIN}/metfields_mldp0 \
+   ${EER_DIRBIN}/metfields_MLDP0${Ext} \
       -iment ../meteo/${filename}.std \
       -ozsrt ../meteo/${filename}.met.std \
       -print ${Debug} \
