@@ -64,6 +64,7 @@ namespace eval Model {
    set Param(EMailSet)  "$env(USER)@ec.gc.ca"          ;#Username email address.
    set Param(ListEMail) $Param(EMailSet)               ;#List of email addresses.
    set Param(IsEMail)   0                              ;#Flag indicating if sending email to user for monitoring entire job (1) or not (0).
+   set Param(Listings) $env(HOME)/listings/eer_Experiment
    set Param(DBaseType) "eta"                          ;#Type od metdata
    set Param(DBaseLocal) False                         ;#Is the metdata local
    set Param(DBaseDiag) ""                             ;#Path for diag metdata
@@ -928,17 +929,22 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(AccHour)    [set sim(SimHour)  [clock format $sim(AccSeconds) -format "%H" -gmt True]]
    set sim(AccMin)     [set sim(SimMin)   [clock format $sim(AccSeconds) -format "%M" -gmt True]]
 
-   set sim(Model)    $Model
-   set sim(State)    1
-   set sim(NoPrev)   -1
-   set sim(NoSim)    -1
-   set sim(NoExp)    $No
-   set sim(Pos)      $Pos
-   set sim(NameExp)  $Name
-   set sim(Backward) False
+   set sim(Model)     $Model
+   set sim(State)     1
+   set sim(NoPrev)    -1
+   set sim(NoSim)     -1
+   set sim(NoExp)     $No
+   set sim(Pos)       $Pos
+   set sim(NameExp)   $Name
+
+   set sim(Backward)  False
+   set sim(Mode)      prog
+   set sim(Scale)     ""
+   set sim(Event)     ""
 
    set sim(ReNewMeteo) ""
    set sim(GridChanged) 0
+   set sim(Grid) 0
 
    set sim(Name)   {}
    set sim(Lat)    {}
@@ -1332,7 +1338,7 @@ proc Model::ParamsMeteoInput { Model } {
    }
 
    #----- Create ASCII file containing grid parameters.
-   if { [info exists sim(Grid)] } {
+   if { [llength $sim(Grid)]>5 } {
       exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
          [lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
          [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]] > $sim(Path)/tmp/griddef.in
@@ -1429,9 +1435,11 @@ proc Model::ParamValidateQueue { } {
    set Param(Op) ""
    if { $Param(Queue)=="production" || [string range $Param(Queue) 0 1]=="op" } {
       set Param(Op) -op
-      if { [Dialog::Default $Param(Frame) 400 WARNING $Warning(Queue) "" 1 $Lbl(Yes) $Lbl(No)] } {
+      if { [info exists ::tk_version] } {
+         if { [Dialog::Default $Param(Frame) 400 WARNING $Warning(Queue) "" 1 $Lbl(Yes) $Lbl(No)] } {
 #         set Param(Queue) "development"
-         return 0
+            return 0
+         }
       }
    }
    return 1
