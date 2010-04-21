@@ -54,39 +54,42 @@ function Model_PoolEncode {
 
 function Model_PoolSet {
 
-   POOL_ERROR=-1;
-   POOL_NEW=0;
-   POOL_DONE=1;
-   POOL_RUN=2;
-   POOL_SUSPEND=3;
+   if [[ ${MODEL_POOL} -gt 0 ]] ; then
 
-   if [[ -f ${MODEL_TMPDIR}/sim.pool ]]; then
+      POOL_ERROR=-1;
+      POOL_NEW=0;
+      POOL_DONE=1;
+      POOL_RUN=2;
+      POOL_SUSPEND=3;
 
-      master=${MODEL_LOCALDIR}/../${MODEL_NAME}${MODEL_TYPE}.pool
-      mode=${1}
-      status=${2}
+      if [[ -f ${MODEL_TMPDIR}/sim.pool ]]; then
 
-      line=`cat ${MODEL_TMPDIR}/sim.pool`
+         master=${MODEL_LOCALDIR}/../${MODEL_NAME}${MODEL_TYPE}.pool
+         mode=${1}
+         status=${2}
 
-      #----- Get pool parts
-      start=`echo ${line} | cut -d: -f1`
-      end=`echo ${line} | cut -d: -f3-`
-      state=`echo ${line} | cut -d: -f2`
+         line=`cat ${MODEL_TMPDIR}/sim.pool`
 
-      token=`echo ${state} | cut -d= -f1`
-      if [[ $status -eq 0 ]]; then
-         eval state=\"\$\{token\}=\${POOL_${mode}\}\"
-      else
-         state="${token}=${POOL_ERROR}"
-      fi
+         #----- Get pool parts
+         start=`echo ${line} | cut -d: -f1`
+         end=`echo ${line} | cut -d: -f3-`
+         state=`echo ${line} | cut -d: -f2`
 
-      #----- Replace pool info.
-      if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
-         ssh ${MODEL_USER}@${MODEL_LOCALHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
-      else
-         cp ${master} ${master}.exec
-         grep -v "${start}:.*:${end}" ${master}.exec > ${master}
-         echo "${start}:${state}:${end}" >> ${master}
+         token=`echo ${state} | cut -d= -f1`
+         if [[ $status -eq 0 ]]; then
+            eval state=\"\$\{token\}=\${POOL_${mode}\}\"
+         else
+            state="${token}=${POOL_ERROR}"
+         fi
+
+         #----- Replace pool info.
+         if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
+            ssh ${MODEL_USER}@${MODEL_LOCALHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
+         else
+            cp ${master} ${master}.exec
+            grep -v "${start}:.*:${end}" ${master}.exec > ${master}
+            echo "${start}:${state}:${end}" >> ${master}
+         fi
       fi
    fi
 }
@@ -331,6 +334,7 @@ MODEL_RUNDIR=""
 MODEL_PRE=1
 MODEL_RUN=1
 MODEL_POST=1
+MODEL_POOL=1
 MODEL_CLEAN=1
 
 MODEL_NBMPITASKS=0
@@ -345,12 +349,15 @@ MODEL_ISREMOTE=0
 MODEL_NEEDCOPY=0
 MODEL_EXITSTATUS=0
 
+#----- Set script dir. to be overriden if needed.
+MODEL_DIRSCRIPT=${EER_DIRSCRIPT}
+
 #----- Read parameters within directives input file.
 . ${1}
 
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh
-. ${EER_DIRSCRIPT}/Model_${MODEL_NAME}.sh
+. ${MODEL_DIRSCRIPT}/Model_${MODEL_NAME}.sh
 
 #----- Start the job
 Log_Start Model.sh 1.0 ${1}
@@ -382,10 +389,11 @@ fi
 Model_CopyResult
 Model_CopyMeteo
 Model_PoolSet DONE ${MODEL_EXITSTATUS}
-Model_CopyLog
-#Model_CopyTrace
 
 Log_End ${MODEL_EXITSTATUS} False
+
+Model_CopyLog
+#Model_CopyTrace
 Model_CleanUp
 
 exit ${MODEL_EXITSTATUS}
