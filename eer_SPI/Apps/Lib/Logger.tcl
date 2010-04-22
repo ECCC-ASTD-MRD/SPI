@@ -201,6 +201,7 @@ proc Log::Print { Type Message { Var "" } } {
          set Param(OutFile) $Param(Out)
       }
       set Param(Out) [open $Param(OutFile) w]
+      fconfigure $Param(Out) -buffering line
    }
 
    #----- Check if we need to split the log file
@@ -209,6 +210,7 @@ proc Log::Print { Type Message { Var "" } } {
          close $Param(Out)
          file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]
          set Param(Out) [open $Param(OutFile) w]
+         fconfigure $Param(Out) -buffering line
       }
       incr Param(SecLog) 86400
    }
@@ -267,7 +269,6 @@ proc Log::Print { Type Message { Var "" } } {
       } else {
          puts $Param(Out) "${time}(${Type}) ${proc}${Message}${vars}"
       }
-      flush $Param(Out)
    }
 }
 
