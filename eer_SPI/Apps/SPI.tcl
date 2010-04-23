@@ -699,7 +699,7 @@ proc SPI::LayoutSave { Frame Name } {
 
    #----- Parametres de la camera
    if { [llength [Page::Registered $Frame Viewport]] } {
-      if { ![Dialog::Default . 300 INFO $Msg(CamSave) 1 $Lbl(Yes) $Lbl(No)] } {
+      if { ![Dialog::Default . 300 INFO $Msg(CamSave) "" 1 $Lbl(Yes) $Lbl(No)] } {
          ProjCam::Write $Frame $file
       }
    }
