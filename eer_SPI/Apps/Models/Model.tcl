@@ -512,7 +512,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    }
 
    #----- Set flag indicating if using 'soumet' command or not.
-   if { $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
+   if { ![info exists GDefs(Host_$Param(Host))] && $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
       set Param(IsUsingSoumet) 0
    } else {
       set Param(IsUsingSoumet) 1
