@@ -67,6 +67,8 @@ namespace eval Mapper::DepotWare {
    set Msg(Clean)      { "Nettoyage du cache ..." "Cleaning cache ..." }
    set Msg(Clear)      { "Suppression du cache ..." "Deleting cache ..." }
    set Msg(Del)        { "Voulez-vous vraiment supprimer ce dépot de la liste ?" "Do you really want to remove this repository from the list ?" }
+   set Msg(Cache)      { "Ce répertoire sera nettoyé dès que le volume de données dépassera la limite permise, êtes-vous sûr de vouloir le changer ?"
+                         "This directory will be cleaned when it's size passes the limit. Are you sure you want to chenge it ?" }
 
    set Bubble(Clear)   { "Supprimer le cache" "Erase cache" }
    set Bubble(Size)    { "Taille courante du cache" "Current cache size" }
@@ -140,6 +142,32 @@ proc Mapper::DepotWare::CacheClean { } {
       set Data(CacheSize) [lindex [exec du -h $Data(CachePath)] 0]
    }
    set Mapper::Data(Job) ""
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::CacheSet>
+# Creation : Avril 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Redefinir le path du cache.
+#
+# Parametres :
+#   <Path>   : Path du cache
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::CacheSet { Path } {
+   global GDefs
+   variable Data
+   variable Msg
+   variable Lbl
+
+   if { ![Dialog::Default . 400 WARNING $Msg(Cache) "\n\n$Path\n" 0 $Lbl(Yes) $Lbl(No)] } {
+      set Data(CachePath) $Path
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -230,7 +258,7 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
       frame .mapperdepotparams.cache.path
          label .mapperdepotparams.cache.path.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
          button .mapperdepotparams.cache.path.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
-            -command  { set Mapper::DepotWare::Data(CachePath) [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
+            -command  { Mapper::DepotWare::CacheSet [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
          entry .mapperdepotparams.cache.path.ent -width 30 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CachePath)
          pack .mapperdepotparams.cache.path.lbl -side left
          pack .mapperdepotparams.cache.path.ent -side left  -fill x -expand True
