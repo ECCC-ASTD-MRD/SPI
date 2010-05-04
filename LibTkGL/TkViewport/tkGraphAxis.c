@@ -48,6 +48,7 @@ static int GraphAxis_Free(Tcl_Interp *Interp,char *Name);
 void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,int *Width,int *Height);
 void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side);
 void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side);
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclGraphAxis_Init>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
@@ -174,8 +175,8 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    char        buf[256];
    int         i,j,idx;
 
-   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-all",NULL };
-   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,ALL, };
+   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-spacing",NULL };
+   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,SPACING };
 
    axis=GraphAxis_Get(Name);
    if (!axis) {
@@ -485,11 +486,11 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
-         case ALL:
+         case SPACING:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(axis->All));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(axis->Spacing));
              } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&axis->All);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&axis->Spacing);
             }
             break;
      }
@@ -536,7 +537,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->HighLightNb=0;
    axis->HighLight=NULL;
    axis->Numbered=1;
-   axis->All=0;
+   axis->Spacing=5;
    axis->Format=0;
    axis->Dash.number=0;
    axis->Justify=TK_JUSTIFY_CENTER;
@@ -927,6 +928,7 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *DX,int 
             }
          }
       }
+      Width=-*DX;
    } else {
       if (Axis->Angle==0.0) {
          *DX=Axis->Pos[1]=='L'?-Width-15:15;
@@ -940,8 +942,9 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *DX,int 
             *DY=-h*Width-w*Height;
          }
       }
+      Width=*DY;
    }
-   return(Width);
+   return(((Axis->Angle==0 && Side&HORIZONTAL)?Width+5:Height)+Axis->Spacing);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1063,7 +1066,6 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
    char   buf[32];
    XColor *color;
    Tk_Font font;
-   Tk_FontMetrics tkm;
    Tk_TextLayout  text;
 
    if (Axis->Font) {
@@ -1082,7 +1084,6 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
       return;
    }
 
-   Tk_GetFontMetrics(font,&tkm);
    glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),font);
    glColor3us(color->red,color->green,color->blue);
    glLineWidth(Axis->Width);
@@ -1183,7 +1184,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,Axis->Inter[i]); y=Y0;
-            if (x<X0-1 || x>X1+1 || (!Axis->All && x<xp+5+(Axis->Angle==0?w:tkm.linespace)))
+            if (x<X0-1 || x>X1+1 || (Axis->Spacing && x<xp+w))
                continue;
 
             xp=x;
@@ -1210,7 +1211,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             if (y<Y1-1 || y>Y0+1)
                continue;
 
-            if (!Axis->All && y<yp+tkm.linespace && y>yp-tkm.linespace)
+            if (Axis->Spacing && y<yp+w && y>yp-w)
                continue;
 
             yp=y;
@@ -1258,7 +1259,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,it); y=Y0;
 
-            if (!Axis->All && x<xp+5+(Axis->Angle==0?w:tkm.linespace)) {
+            if (Axis->Spacing && x<xp+w) {
                inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
                continue;
             }
@@ -1284,7 +1285,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          } else {
             y=Y0-AXISVALUE(Axis,it); x=X0;
 
-            if (!Axis->All && y<yp+tkm.linespace && y>yp-tkm.linespace) {
+            if (Axis->Spacing && y<yp+w && y>yp-w) {
                inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
                continue;
             }
@@ -1386,7 +1387,6 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
    char   buf[128],lbl[128];
    XColor *color;
    Tk_Font font;
-   Tk_FontMetrics tkm;
    Tk_TextLayout  text;
    double coords[8];
 
@@ -1406,7 +1406,6 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
       return;
    }
 
-   Tk_GetFontMetrics(font,&tkm);
    Tk_CanvasPsFont(Interp,Graph->canvas,font);
    Tk_CanvasPsColor(Interp,Graph->canvas,color);
    sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Axis->Width);
@@ -1503,7 +1502,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,Axis->Inter[i]); y=Y0;
-            if (x<X0-1 || x>X1+1 || (!Axis->All && x<xp+5+(Axis->Angle==0?w:tkm.linespace)))
+            if (x<X0-1 || x>X1+1 || (Axis->Spacing && x<xp+w))
                continue;
 
             dy=Axis->Pos[0]=='L'?10:-10;
@@ -1529,7 +1528,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             if (y<Y1-1 || y>Y0+1)
                continue;
 
-            if (!Axis->All && y<yp+tkm.linespace && y>yp-tkm.linespace)
+            if (Axis->Spacing && y<yp+w && y>yp-w)
                continue;
             yp=y;
 
@@ -1574,7 +1573,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,it); y=Y0;
-            if (!Axis->All && x<xp+5+(Axis->Angle==0?w:tkm.linespace))
+            if (Axis->Spacing && x<xp+w)
                continue;
 
             xp=x;
@@ -1598,7 +1597,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          } else {
             y=Y0-AXISVALUE(Axis,it); x=X0;
-            if (!Axis->All && y<yp+tkm.linespace && y>yp-tkm.linespace) {
+            if (Axis->Spacing && y<yp+w && y>yp-w) {
                inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
             }

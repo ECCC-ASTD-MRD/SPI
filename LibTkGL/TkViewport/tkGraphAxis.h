@@ -95,7 +95,7 @@ typedef struct TGraphAxis {
    double        *HighLight;     /*Valeurs a mettre en evidence*/
    int            HighLightNb;
    int            Numbered;      /*Numerotation de l'axe*/
-   int            All;           /*Verification des overlap de label*/
+   int            Spacing;       /*Espacement des labels*/
    int            Format;        /*Format de l'axe*/
    int            Mod;           /*Forcer les limites modulo l'increment*/
 
