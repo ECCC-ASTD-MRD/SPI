@@ -486,6 +486,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
 #    <Title>  : Titre de la fenetre
 #    <Text>   : Texte a afficher.
 #    <Var>    : Variable
+#    <File>   : Boutton de selection de fichier
 #
 # Retour      :
 #    <Val>    : Valeur saisie
@@ -495,7 +496,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::Get { Master Title Text { Var "" } } {
+proc Dialog::Get { Master Title Text { Var "" } { File False } } {
    global GDefs
    global gettervalue
    variable Lbl
@@ -516,6 +517,11 @@ proc Dialog::Get { Master Title Text { Var "" } } {
       entry .dlgget.in -textvariable $Var  -relief flat -bd 1 -bg $GDefs(ColorLight)
    } else {
       entry .dlgget.in -relief flat -bd 1 -bg $GDefs(ColorLight)
+   }
+
+   if { $File } {
+      button .dlgget.in.file -image OPEN -height 12  -command { .dlgget.in delete 0 end ; .dlgget.in insert 0 [FileBox::Create . "" Load [list $FileBox::Type(ALL)]] }
+      pack .dlgget.in.file -side right -fill y
    }
    pack .dlgget.in -side top -fill x -ipady 2
    bind .dlgget.in <Return>  { .dlgget.ok invoke }

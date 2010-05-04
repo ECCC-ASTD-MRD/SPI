@@ -888,7 +888,7 @@ proc Exp::PopUp { X Y } {
          .exppop add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .exppop.product -state disabled
          .exppop add separator
          .exppop add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Exp::Suppress"
-         .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command { Exp::Store [Dialog::Get .model $Exp::Lbl(Store) $Exp::Msg(Store)] }
+         .exppop add command -label [lindex $Lbl(Store) $GDefs(Lang)] -command { Exp::Store [Dialog::Get .model $Exp::Lbl(Store) $Exp::Msg(Store) Exp::Data(StoreID) True] }
 
       #----- Menu des modeles
       menu  .exppop.new -tearoff 0 -bd 1 -type normal -activeborderwidth 1
@@ -1170,6 +1170,8 @@ proc Exp::Select { Pool } {
 
    #----- Selectionner la nouvelle experience
    set Data(Select) $Pool
+
+   set Data(StoreID) [clock format [clock seconds] -format "%Y%m%d" -gmt True]_$Data(Name)
 }
 
 #-------------------------------------------------------------------------------
@@ -1279,12 +1281,13 @@ proc Exp::Store { Id } {
 
    set code  True
    set cpath [pwd]
+   set Id    [file rootname [file tail $Id]]
 
    if { $Id!="" } {
 
       #----- Check if an archive already exists
-      set ErrorCode [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc } Message]
-      if { !$ErrorCode } {
+      set err [catch { exec ssh $Param(StoreHost) ls -1 $Param(StorePath)/$Id.cmc 2>@1 } msg]
+      if { !$err } {
          if { [Dialog::Default .model 400 WARNING $Msg(StoreExist) "" 0 $Lbl(Yes) $Lbl(No)] } {
             return False
          }
@@ -1294,21 +1297,24 @@ proc Exp::Store { Id } {
 
       #----- Build the archive
       cd  [set path [Exp::Path]]/../
-   #   set ErrorCode [catch { exec cmcarc -a [file tail $path] -f /tmp/$Id.cmc --md5 --dereference } Message]
-      set ErrorCode [catch { exec tar -zcvf /tmp/$Id.tgz [file tail $path] } Message]
-      if { $ErrorCode } {
-         Dialog::Error .model [list $Message $Message]
+
+      set arch $Id.tgz
+      file delete -force /tmp/$arch
+   #   set err [catch { exec cmcarc -a [file tail $path] -f /tmp/$arch --md5 --dereference } msg]
+      set err [catch { exec tar -zcvf /tmp/$arch [file tail $path] 2>@1 } msg]
+      if { $err } {
+         Dialog::Error .model [list $msg $msg]
          set code False
       } else {
-         #----- Copy it to CFS
+         #----- Copy it to archive host
          Dialog::Wait .model  $Msg(DoingCopy)
-         set ErrorCode [catch { exec scp /tmp/$Id.tgz $Param(StoreHost):$Param(StorePath)/$Id.tgz } Message]
-         if { $ErrorCode } {
-            Dialog::Error .model [list $Message $Message]
+         set err [catch { exec srcp /tmp/$arch $Param(StoreHost):$Param(StorePath)/$arch 2>@1 } msg]
+         if { $err } {
+            Dialog::Error .model [list $msg $msg]
             set code False
          } else {
             #----- Remove local copy
-            file delete -force /tmp/$Id.tgz
+            file delete -force /tmp/$arch
          }
       }
 
