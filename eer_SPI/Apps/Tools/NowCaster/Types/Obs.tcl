@@ -548,7 +548,6 @@ proc NowCaster::Obs::Add { Path } {
    set path [lindex $Path 0]
 
    #----- Figure out a unique number
-
    set file [file tail $path]
 
    set no [format "%02i" [llength [lsearch -all -glob [$Data(Frame).select.list get 0 end] $file*]]]
@@ -558,7 +557,6 @@ proc NowCaster::Obs::Add { Path } {
    $Data(Frame).select.list selection set end
 
    #----- Define default model
-
    set Data(Path$obs) $path
    set Data(ModelName$obs) ""
    set Data(Topo$obs)      ""
@@ -568,7 +566,6 @@ proc NowCaster::Obs::Add { Path } {
    set Data(Status$obs)    $Data(Status)
 
    #----- Read in the data
-
    if { [file isdirectory $path] } {
       set files [lsort -decreasing -dictionary [glob -nocomplain $path/*_]]
       NowCaster::Obs::Read $obs [lrange $files 0 4]

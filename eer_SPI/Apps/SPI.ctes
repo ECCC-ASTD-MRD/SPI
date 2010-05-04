@@ -49,6 +49,7 @@ namespace eval SPI {
    set Param(Loading)        "Loading"    ;#Load en cours
    set Param(Batch)          False        ;#Mode batch
    set Param(Bubble)         True         ;#Mode batch
+   set Param(Icons)          {}           ;#Fichiers icones
 
    #----- Definitions des variables internes
 

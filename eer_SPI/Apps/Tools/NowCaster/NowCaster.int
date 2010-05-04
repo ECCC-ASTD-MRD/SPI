@@ -136,6 +136,15 @@ proc NowCaster::Window { { Type "" } } {
          eval set title \$NowCaster::${type}::Param(Title)
          NowCaster::${type}::Window  [set Data(Tab[incr n]) [TabFrame::Add .nowcaster.tab 1 [lindex $title $GDefs(Lang)] True]]
       }
+
+      Bubble::Create .nowcaster.time.clock      $Bubble(Now)
+      Bubble::Create .nowcaster.time.clock.down $Bubble(Opt)
+      Bubble::Create .nowcaster.time.set        $Bubble(Scale)
+      Bubble::Create .nowcaster.time.now        $Bubble(Scale)
+      Bubble::Create .nowcaster.time.play       $Bubble(Play)
+
+      Bubble::Create .nowcaster.dock.sel $Bubble(Dock)
+      Bubble::Create .nowcaster.dock.del $Bubble(Close)
    }
 
    if { $Type!="" && [set idx [lsearch -exact $NowCaster::Data(Types) $Type]]!=-1 } {
@@ -144,12 +153,4 @@ proc NowCaster::Window { { Type "" } } {
       TabFrame::Select .nowcaster.tab 0
    }
 
-   Bubble::Create .nowcaster.time.clock      $Bubble(Now)
-   Bubble::Create .nowcaster.time.clock.down $Bubble(Opt)
-   Bubble::Create .nowcaster.time.set        $Bubble(Scale)
-   Bubble::Create .nowcaster.time.now        $Bubble(Scale)
-   Bubble::Create .nowcaster.time.play       $Bubble(Play)
-
-   Bubble::Create .nowcaster.dock.sel $Bubble(Dock)
-   Bubble::Create .nowcaster.dock.del $Bubble(Close)
 }

@@ -150,15 +150,13 @@ proc SPI::CommandLine { { Args {} }} {
       \[-tool ... ...\]                 : Start a specific tool
       \[-pane WxH ...\]                 : Dimensions of the secondary panes
       \[-side left|right|top|bottom \]  : Side on wich to put the secondary panes
-      \[-geom WxH+X+Y\]                 : Global window size
-      \[-setup\]                        : Force setup process"
+      \[-geom WxH+X+Y\]                 : Global window size"
 }
 
 #----- Parcourir la liste des parametres pre-launch
 
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
-      "setup"    { }
       "soft"     { }
       "batch"    { }
       "model"    { set SPI::Param(Exp) True }
@@ -2285,26 +2283,21 @@ if { [file exists $SPI::Param(Default)] } {
    source $SPI::Param(Default)
 }
 
-SPI::Window
-SPI::WindowMenu
-SPI::Params
-SPI::ContextMenuProj
-
 #----- Parcourir la liste des parametres post-launch
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
-      "setup"    { }
       "soft"     { }
       "batch"    { set SPI::Param(Batch) True }
       "model"    { set SPI::Param(Exp) True }
-      "nowindow" { }
-      "lang"     { }
+      "nowindow" { set SPI::Param(Window) False }
+      "geom"     { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
+      "lang"     { set GDefs(Lang) [lindex $argv [incr i]] }
       "geom"     { set i [SPI::ArgsParse $argv $argc $i 1 1 ""]  }
       "default"  { set i [SPI::ArgsParse $argv $argc $i 1 1 ""] }
       "field"    { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
       "traj"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
       "obs"      { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
-      "icon"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::IcoOpen"] }
+      "icon"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
       "args"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "set SPI::Param(Args)"] }
       "script"   { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
       "macro"    { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
@@ -2315,6 +2308,11 @@ for { set i 0 } { $i < $argc } { incr i } {
       "tool"     { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Tool)"] }
    }
 }
+
+SPI::Window
+SPI::WindowMenu
+SPI::Params
+SPI::ContextMenuProj
 
 glrender -xbatch $SPI::Param(Batch)
 
@@ -2338,6 +2336,9 @@ if { $SPI::Param(Exp) } {
 foreach tool $SPI::Param(Tool) {
    eval ${tool}::Window
 }
+
+#----- Ouvrir les fichiers icons
+SPI::IcoOpen $SPI::Param(Icons)
 
 #----- Inclusion du projet
 if { $SPI::Param(Project)!="" } {

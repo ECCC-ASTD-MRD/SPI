@@ -344,7 +344,7 @@ proc SPI::Window { } {
    variable Data
    variable Bubble
 
-   wm protocol   . WM_DELETE_WINDOW { SPI::Quit }
+   wm protocol  . WM_DELETE_WINDOW { SPI::Quit }
    wm deiconify .
 
    label .active -image MOUSE -relief raised -bd 1
