@@ -66,7 +66,8 @@ namespace eval Exp {
 
    set Msg(DoingStore)    { "Archivage en cours ..." "Archiving ..." }
    set Msg(DoingCopy)     { "Copie en cours ..." "Copying ..." }
-   set Msg(Store)         { "Veuillez entrer le nom du rapport d'incident afin d'identifier l'experience en archives."
+   set Msg(Stored)        { "L'expérience à été archivée avec succes." "The experiment has been archived with success." }
+   set Msg(Store)         { "Veuillez entrer le nom du rapport d'incident afin d'identifier l'expérience en archives."
                             "Please enter the incident report name to identify the experiment to be archived." }
    set Msg(StoreExist)    { "Une archive avec ce nom existe déja, Voulez-vous l'écraser ?"
                             "An archive by this name already exist, do you want to overwrit it ?" }
@@ -1315,6 +1316,8 @@ proc Exp::Store { Id } {
          } else {
             #----- Remove local copy
             file delete -force /tmp/$arch
+
+            Dialog::Info .model $Msg(Stored)
          }
       }
 
