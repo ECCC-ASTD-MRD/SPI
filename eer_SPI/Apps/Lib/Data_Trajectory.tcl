@@ -845,7 +845,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       }
 
       set secs [lsort -unique $secs]
-      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -highlight $datea -all True
+      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -highlight $datea -spacing 1
       graphaxis configure TRAJGRAPHAXISY -incr $incr -min $h0 -max $h1
 
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \
