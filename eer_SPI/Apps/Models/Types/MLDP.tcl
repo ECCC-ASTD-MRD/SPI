@@ -480,8 +480,13 @@ proc MLDP::CreateModelInput { } {
    #----- Concentration vertical levels.
    puts $file "\nConcentration vertical levels:"
    puts $file "[format "%-15s" [llength $Sim(VerticalLevels)]] [format "%-15s" nbcvlevel] Number of vertical levels for volumic concentration calculations."
-   foreach level $Sim(VerticalLevels) {
-      puts $file [format "%.1f" $level]
+   for { set i 0 } { $i<[llength $Sim(VerticalLevels)] } { incr i } {
+      set level [lindex $Sim(VerticalLevels) $i]
+      if { $i==0 } {
+         puts $file "[format "%-15s" [format "%.1f" $level]] [format "%-15s" cvlevels(i)] Vertical levels \[m\] for defining volumic concentration layers."
+      } else {
+         puts $file [format "%.1f" $level]
+      }
    }
 
    #----- Emission parameters.
