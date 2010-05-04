@@ -329,7 +329,7 @@ proc MLDP::CreateModelInput { } {
    #----- Input files.
    set len [expr [string length $Sim(PathRun)/meteo] + [string length [file tail [lindex $Sim(MeteoDataFiles) 0]]] + 10]
    puts $file "\nInput files:"
-   puts $file "[format "%-${len}s" [llength $Sim(MeteoDataFiles)]]]     nb_metfiles       Number of meteorological input standard files."
+   puts $file "[format "%-${len}s" [llength $Sim(MeteoDataFiles)]]     nb_metfiles       Number of meteorological input standard files."
    for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
       set filename [lindex $Sim(MeteoDataFiles) $i]
       set metfile  "$Sim(PathRun)/meteo/[file tail $filename].std"
@@ -375,7 +375,7 @@ proc MLDP::CreateModelInput { } {
    puts $file "[format "%-25s" $Sim(EmHeight)] [format "%-25s" z_src] Maximum plume height \[m\]."
    puts $file "[format "%-25s" $Sim(EmRadius)] [format "%-25s" rad_src] Horizontal dispersion source radius \[m\]."
    for { set i 0 } { $i < $nbsrc } { incr i } {
-      set coord "[lindex $Sim(Lat) $i] [lindex $Sim(Lon) $i]"
+      set coord "[lindex $Sim(Lat) $i], [lindex $Sim(Lon) $i]"
       if { $i == 0 } {
          puts $file "[format "%-25s" $coord] [format "%-25s" "lat_src(i), lon_src(i)"] Latitude and longitude coordinate of i-th source \[degrees\]."
       } else {
