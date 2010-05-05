@@ -201,8 +201,10 @@ proc MLDP::CreateScriptInput { } {
    puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
    puts $file ""
    puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
-   puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
-   puts $file "MODEL_OMPTHREADFACT=$Model::Param(OMPthreadFact)  #\[1, 2\]"
+   if { $Sim(Model)=="MLDP1" } {
+      puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
+      puts $file "MODEL_OMPTHREADFACT=$Model::Param(OMPthreadFact)  #\[1, 2\]"
+   }
    puts $file ""
    puts $file "#----- Model specific parameters"
 
