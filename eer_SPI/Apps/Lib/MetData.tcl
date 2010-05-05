@@ -45,7 +45,8 @@ namespace eval MetData { } {
    variable Param
    variable Const
 
-   set Param(Path) $env(CMCGRIDF)
+   set Param(Path) ""
+   catch { set Param(Path) $env(CMCGRIDF) }
 
    #----- Lire les diverses definitions
 
