@@ -28,6 +28,7 @@ namespace eval Watch {
    variable Param
 
    set Param(Path)        ""
+   set Param(Projects)    { VAAC RSMC CTBT FIRE BIO SPILL }
 
    #----- Variables relatives aux Watchs
    set Data(Frame)         ""
@@ -38,7 +39,6 @@ namespace eval Watch {
    set Data(BranchModel)   ""
    set Data(BranchProject) ""
    set Data(BranchSim)     ""
-
    #----- Labels
    set Lbl(New)         { "Nouveau" "New" }
    set Lbl(Yes)         { "Oui" "Yes" }
@@ -557,41 +557,19 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::GetIcon { Project } {
+proc Watch::GetType { Project } {
+   variable Param
 
-   foreach txt { VAAC RSMC CTBT FIRE BIO SPILL } no { 0 1 2 3 4 5 } {
-      if { [string first $txt $Project]!=-1 } {
-         return [lindex $Model::Resources(Icos) $no]
+   foreach proj $Param(Projects) no { 0 1 2 3 4 5 } {
+      if { [string first $proj $Project]!=-1 } {
+         return $no
       }
    }
-   return [lindex $Model::Resources(Icos) 6]
+   return 6
 }
 
-#-------------------------------------------------------------------------------
-# Nom      : <Watch::Select>
-# Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
-#
-# But      : Selectionne une watch.
-#
-# Parametres :
-#     <Source>    : La ligne descriptive de la source (watch)
-#     <Project>   : Le projet.
-#
-# Retour :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Watch::Select { Source Project } {
-   variable Data
-
-   set Data(Project) $Project
-   set Data(Name)    [lindex $Source 0]
-   set Data(Lat)     [lindex $Source 1]
-   set Data(Lon)     [lindex $Source 2]
-   set Data(Type)    [lindex $Source 3]
-   set Data(Pos)     [list [list $Data(Name) $Data(Lat) $Data(Lon) 0]]
+proc Watch::GetIcon { Project } {
+   return [lindex $Model::Resources(Icos) [Watch::GetType $Project]]
 }
 
 #-------------------------------------------------------------------------------
@@ -866,6 +844,33 @@ proc Watch::PopUpResult { Result Title X Y } {
 
    .watchpopresult entryconfigure 0 -label "$Title"
    tk_popup .watchpopresult $X $Y 0
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Watch::Select>
+# Creation : Juillet 2009 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Selectionne une watch.
+#
+# Parametres :
+#     <Source>    : La ligne descriptive de la source (watch)
+#     <Project>   : Le projet.
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Watch::Select { Source Project } {
+   variable Data
+
+   set Data(Project) $Project
+   set Data(Name)    [lindex $Source 0]
+   set Data(Lat)     [lindex $Source 1]
+   set Data(Lon)     [lindex $Source 2]
+   set Data(Type)    [Watch::GetType $Project]
+   set Data(Pos)     [list [list $Data(Name) $Data(Lat) $Data(Lon) 0]]
 }
 
 #-------------------------------------------------------------------------------
@@ -1168,6 +1173,7 @@ proc Watch::ReadProject { Project } {
       }
       set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
    }
+   set Data(Type) [Watch::GetType $Project]
 
    set Model::Param(Job) ""
    .model config -cursor left_ptr
