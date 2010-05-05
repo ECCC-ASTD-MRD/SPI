@@ -1618,11 +1618,11 @@ proc FieldParams::Window { { Field "" } } {
          entry $Data(Tab1).var.ex1 -bg $GDefs(ColorLight) -bd 1 -width 12 -textvariable FieldParams::Data(EX1) -state disabled
          entry $Data(Tab1).var.ex2 -bg $GDefs(ColorLight) -bd 1 -width 12 -textvariable FieldParams::Data(EX2) -state disabled
          entry $Data(Tab1).var.ex3 -bg $GDefs(ColorLight) -bd 1 -width 12 -textvariable FieldParams::Data(EX3) -state disabled
-      pack $Data(Tab1).lbl $Data(Tab1).var -side left -padx 5 -pady 5
+      pack $Data(Tab1).lbl $Data(Tab1).var -side left -padx 5 -pady 5 -anchor nw
 
       foreach param $Data(ParamsOut) {
-         pack $Data(Tab1).lbl.[string tolower $param] -side top -anchor w
-         pack $Data(Tab1).var.[string tolower $param] -side top -anchor w -ipady 1
+         pack $Data(Tab1).lbl.[string tolower $param] -side top -anchor nw -fill y
+         pack $Data(Tab1).var.[string tolower $param] -side top -anchor nw
       }
 
       set Data(Tab2) [TabFrame::Add .fieldboxparams.tab 1 [lindex $Lbl(Values) $GDefs(Lang)] True]
