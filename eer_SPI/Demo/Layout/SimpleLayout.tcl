@@ -3,10 +3,7 @@ namespace eval SimpleLayout { }
 proc SimpleLayout::Layout { Frame } {
    variable Data
 
-   Page::Size $Frame 0 0
-
    #----- Affichage des Viewports
-
    set Viewport::Map(Type)        "orthographic"
    set Viewport::Map(Data)        ""
    set Viewport::Map(Elev)        "1.0"
@@ -41,11 +38,11 @@ proc SimpleLayout::Layout { Frame } {
    set Viewport::Resources(Road)      "#404040"
    set Viewport::Resources(Rail)      "#ff1493"
    set Viewport::Resources(Coord)     "#000000"
+
+   Page::Size $Frame 0 0
    set Data(Viewport001) [Viewport::Create $Frame 1 1 666 679 1 1]
 
-
    #-----  Positionnement des ColorBars
-
    set ColorBar::Data(Active$Frame) 1
    set vp [Page::Registered $Frame Viewport]
    set ColorBar::Data(${Data(Viewport001)}0) [list 6.0 126.0 89 404 CBVP1TT:VP10]

@@ -48,6 +48,7 @@ proc VerifQPF24::Layout { Frame } {
    set Viewport::Resources(Util)      "#ffff00"
    set Viewport::Resources(Canal)     "#00ffff"
    set Viewport::Resources(Coord)     "#000000"
+
    set Data(Viewport001) [Viewport::Create $Frame 1 1 1585 1076 1 1]
 
    Page::UpdateItems $Frame
