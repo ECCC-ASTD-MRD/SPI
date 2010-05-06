@@ -193,7 +193,10 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       def->Sample=def->Sample;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
-      memcpy(def->CoordLimits,Def->CoordLimits,4*sizeof(double));
+      def->CoordLimits[0][0]=Def->CoordLimits[0][0];
+      def->CoordLimits[0][1]=Def->CoordLimits[0][1];
+      def->CoordLimits[1][0]=Def->CoordLimits[1][0];
+      def->CoordLimits[1][1]=Def->CoordLimits[1][1];
 
       for(i=0;i<4;i++) {
          if (def->Container) {
@@ -239,7 +242,10 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
       def->Sample=def->Sample;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
-      memcpy(def->CoordLimits,Def->Limits,4*sizeof(double));
+      def->CoordLimits[0][0]=Def->CoordLimits[0][0];
+      def->CoordLimits[0][1]=Def->CoordLimits[0][1];
+      def->CoordLimits[1][0]=Def->CoordLimits[1][0];
+      def->CoordLimits[1][1]=Def->CoordLimits[1][1];
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {

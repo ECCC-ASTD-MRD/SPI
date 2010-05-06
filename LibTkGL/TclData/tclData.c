@@ -1730,7 +1730,6 @@ extern double Radar_Height(TData *Rad,double I,double J,double K);
                   /*Clip to extent limits*/
                   if (ex=LiangBarsky_LineClip2D(GDB_VBuf[len-b+nb],GDB_VBuf[len-b+nb+1],&c1,&c2,
                      Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
-
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
