@@ -50,6 +50,7 @@ namespace eval RSMC {
    set Sim(Lat)          0
    set Sim(Lon)          0
    set Sim(Name)         ""
+   set Sim(NameExp)      ""
    set Sim(EmHeight)     0
 
    set Data(Max)        { 0 0 0 }
@@ -338,6 +339,7 @@ proc RSMC::LayoutUpdate { Frame } {
    set Sim(Lat)               0
    set Sim(Lon)               0
    set Sim(Name)              ""
+   set Sim(NameExp)           ""
    set Sim(AccYear)           0
    set Sim(AccMonth)          01
    set Sim(AccDay)            01
@@ -883,7 +885,7 @@ proc RSMC::JoinTransfert { Frame } {
    variable Lbl
    variable Msg
 
-   if { $Sim(Name) == "" } {
+   if { $Sim(NameExp) == "" } {
       return
    }
 
@@ -891,8 +893,9 @@ proc RSMC::JoinTransfert { Frame } {
       return
    }
 
-   set data [Viewport::Assigned $Frame $Page(VP) { fstdfield trajectory observation }]
-   set path "$Exp::Param(Path)/$Sim(NoExp)_$Sim(Name)/Output/RSMCJoin"
+   set data    [Viewport::Assigned $Frame $Page(VP) { fstdfield trajectory observation }]
+   set pathExp "$Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)"
+   set path    "$pathExp/Output/RSMCJoin"
 
    if { ![file exists $path] } {
       file mkdir $path
@@ -900,7 +903,7 @@ proc RSMC::JoinTransfert { Frame } {
 
    #----- Recuperer la RUN
 
-   set file [exec cat $Exp::Param(Path)/$Sim(NoExp)_$Sim(Name)/$Sim(Path)/tmp/data_std_sim.eta]
+   set file [exec cat $pathExp/$Sim(Path)/tmp/data_std_eta.in]
    set run  [string range [lindex [split [lindex $file end] "/"] end] 8 9]
    exec echo $run > $path/RUN.txt
 
@@ -930,7 +933,7 @@ proc RSMC::JoinTransfert { Frame } {
             PrintBox::Image $Frame gif $path/L${id}CA_0$no
             exec convert $path/L${id}CA_0$no.gif -resize 280x280 $path/S${id}CA_0$no.gif
 
-            PrintBox::Postscript $Frame $path/L${id}CA_0$no 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame] portrait "8.5_x_11"
+            PrintBox::Postscript $Frame $path/L${id}CA_0$no 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame] "8.5_x_11"
          }
          incr no
       }

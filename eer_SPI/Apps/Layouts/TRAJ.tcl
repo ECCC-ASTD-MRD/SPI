@@ -307,18 +307,18 @@ proc TRAJ::RSMCJoin { Frame } {
    $Frame.page.canvas config -cursor watch
    update idletasks
 
-   set path "[file dirname [trajectory define $t -PATH]]/../Output/RSMCJoin"
+   set path "[file dirname [trajectory define $t -PATH]]/../../Output/RSMCJoin"
 
    if { ![file exists $path] } {
       file mkdir $path
    }
 
-   file copy -force [trajectory define $t -PATH] $path
+   file copy -force [trajectory define $t -PATH] $path/traject.points
 
    PrintBox::Image $Frame gif $path/LTJCA
    exec convert $path/LTJCA.gif -resize 280x280 $path/STJCA.gif
 
-   PrintBox::Postscript $Frame $path/LTJCA 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame] portrait "8.5_x_11"
+   PrintBox::Postscript $Frame $path/LTJCA 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame] "8.5_x_11"
 
    $Frame.page.canvas config -cursor left_ptr
 }
@@ -383,7 +383,7 @@ proc TRAJ::SATNET { Frame Mode } {
 
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $env(HOME)/.spi/Tmp/ ; ocxcarte -t -f $no -d difax -r systime -i ${file}.gif" } MsgCatch ]
+   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.gif 100 $GDefs(TransmitUser) dorval-ib } MsgCatch ]
 
    if { $ErrCatch != 0 } {
       Log::Print ERROR "Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"
@@ -396,7 +396,7 @@ proc TRAJ::SATNET { Frame Mode } {
    catch { exec chmod 644 ${file}.png }
 
    set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
-   set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_${name}_traj_satnet.png" } MsgCatch ]
+   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_${name}_traj_satnet.png $GDefs(TransmitUser) dorval-ib } MsgCatch ]
 
    if { $ErrCatch != 0 } {
       Log::Print ERROR "Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"

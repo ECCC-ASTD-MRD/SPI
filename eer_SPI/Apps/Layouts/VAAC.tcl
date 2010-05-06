@@ -826,7 +826,7 @@ proc VAAC::Transmit { Frame } {
             if { $no!="ca0281c" && $no!="ca0282c" && $no!="ca0287c" && $no!="ca0288c" } {
                SPI::Progress +0 "Sending over WAFS"
 
-               set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $env(HOME)/.spi/Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m 0$Data(SendWAS)$Data(SendBRA)" } MsgCatch]
+               set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.pbm 0$Data(SendWAS)$Data(SendBRA) $GDefs(TransmitUser) dorval-ib } MsgCatch ]
 
                if { $ErrCatch != 0 } {
                   Log::Print ERROR "Unable to send the $file.pbm over WAFS.\n\n$MsgCatch"
@@ -836,7 +836,7 @@ proc VAAC::Transmit { Frame } {
 
                exec convert ${file}.pbm -resize 680x880 ${file}.png
                catch { exec chmod 644 ${file}.png }
-               set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png" } MsgCatch]
+               set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) dorval-ib } MsgCatch ]
 
                if { $ErrCatch != 0 } {
                   Log::Print ERROR "Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
@@ -846,7 +846,7 @@ proc VAAC::Transmit { Frame } {
          }
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
-            set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; export OPERATIONAL=YES; export JOBNAME=r1; cd $env(HOME)/.spi/Tmp/; ocxcarte -t -f $no -d difax -i ${file}.pbm -r systime -m $Data(SendSAT)00 " } MsgCatch]
+            set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.pbm $Data(SendSAT)00 $GDefs(TransmitUser) dorval-ib } MsgCatch ]
 
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to send the $file.pbm over SATNET.\n\n$MsgCatch"
@@ -856,7 +856,7 @@ proc VAAC::Transmit { Frame } {
 
             exec convert ${file}.pbm -resize 680x880 ${file}.png
             catch { exec chmod 644 ${file}.png }
-            set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f ${file}.png -s weather -D 0 -p eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png" } MsgCatch]
+            set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) dorval-ib } MsgCatch ]
 
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
