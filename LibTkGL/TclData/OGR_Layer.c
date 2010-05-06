@@ -2331,6 +2331,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             if (spec->Outline && spec->Width) {
                glEnable(GL_CULL_FACE);
                if (spec->Width<0) {
+                  glPushAttrib(GL_STENCIL_BUFFER_BIT);
                   glStencilFunc(GL_ALWAYS,0x1,0x1);
                   glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
                }
@@ -2341,8 +2342,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                } else {
                   glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
                }
-
                Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               if (spec->Width<0) {
+                  glPopAttrib();
+               }
             }
          }
 
@@ -2372,6 +2375,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             if (spec->Outline && spec->Width) {
                glEnable(GL_CULL_FACE);
                if (spec->Width<0) {
+                  glPushAttrib(GL_STENCIL_BUFFER_BIT);
                   glStencilFunc(GL_ALWAYS,0x1,0x1);
                   glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
                }
@@ -2383,6 +2387,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                   glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
                }
                Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               if (spec->Width<0) {
+                  glPopAttrib();
+               }
             }
          }
       }
@@ -2390,18 +2397,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    glDisable(GL_POLYGON_OFFSET_FILL);
    glDisable(GL_DEPTH_TEST);
-   glStencilFunc(GL_EQUAL,0x0,0xff);
-   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
 
    if (Layer->SFeature) {
-      if (Layer->FMask) {
-         glStencilFunc(GL_ALWAYS,0x2,0xff);
-         glStencilFunc(GL_EQUAL,0x2,0xff);
-         glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
-      } else {
-         glStencilFunc(GL_EQUAL,0x0,0xff);
-         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-      }
 
       for(f=0;f<Layer->NSFeature;f++) {
          if (spec->HighFill) {
@@ -2415,6 +2412,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          if (spec->HighLine && spec->Width) {
             glEnable(GL_CULL_FACE);
             if (spec->Width<0) {
+               glPushAttrib(GL_STENCIL_BUFFER_BIT);
                glStencilFunc(GL_ALWAYS,0x1,0x1);
                glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
             }
@@ -2422,6 +2420,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glPointSize(ABS(spec->Width));
             glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
             Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+            if (spec->Width<0) {
+               glPopAttrib();
+            }
          }
       }
    }
@@ -2497,6 +2498,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_LINE_STIPPLE);
    glDisableClientState(GL_VERTEX_ARRAY);
+   glStencilFunc(GL_EQUAL,0x0,0xff);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
 
    return(1);
 }
