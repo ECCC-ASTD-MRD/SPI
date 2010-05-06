@@ -117,7 +117,7 @@ proc SatData::WinDef { } {
    label .satdata.sel.lbl -text [lindex $Lbl(Data) $GDefs(Lang)] -relief raised -bd 1
    pack .satdata.sel.lbl -side left -fill y -ipadx 2
 
-   foreach sat { GOES11 GOES12 } no { 0 1 } {
+   foreach sat { GOES11 GOES13 } no { 0 1 } {
 
       frame .satdata.sel.s$sat
          checkbutton .satdata.sel.s$sat.lbl -text [lindex $Lbl($sat) $GDefs(Lang)] -selectcolor $Data(Color${sat}) -relief raised -bd 1 \
@@ -141,7 +141,7 @@ proc SatData::WinDef { } {
          pack .satdata.sel.s$sat.ch -side top
    }
 
-   pack .satdata.sel.sGOES11 .satdata.sel.sGOES12 -side left
+   pack .satdata.sel.sGOES11 .satdata.sel.sGOES13 -side left
 
    #----- Selection des donnees de l'usager.
 
