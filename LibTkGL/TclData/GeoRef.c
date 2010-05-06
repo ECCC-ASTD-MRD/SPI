@@ -1595,13 +1595,13 @@ int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1
       }
 
       /*Test for north and south pole including grid*/
-      if (Ref0->UnProject(Ref0,&di,&dj,90.0,0.0,0,1) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
-         Ref1->UnProject(Ref1,&di,&dj,90.0,0.0,1,1);
+      if (Ref0->UnProject(Ref0,&di,&dj,89.9,0.0,0,1) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
+         Ref1->UnProject(Ref1,&di,&dj,89.9,0.0,1,1);
          x0=FMIN(x0,di); y0=FMIN(y0,dj);
          x1=FMAX(x1,di); y1=FMAX(y1,dj);
       }
-      if (Ref0->UnProject(Ref0,&di,&dj,-90.0,0.0,0,1) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
-         Ref1->UnProject(Ref1,&di,&dj,-90.0,0.0,1,1);
+      if (Ref0->UnProject(Ref0,&di,&dj,-89.9,0.0,0,1) && dj>Ref0->Y0+2 && dj<Ref0->Y1-2 && di>Ref0->X0+2 && di<Ref0->X1-2) {
+         Ref1->UnProject(Ref1,&di,&dj,-89.9,0.0,1,1);
          x0=FMIN(x0,di); y0=FMIN(y0,dj);
          x1=FMAX(x1,di); y1=FMAX(y1,dj);
       }
