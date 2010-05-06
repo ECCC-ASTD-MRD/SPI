@@ -763,6 +763,7 @@ proc Writer::FVCN::UnFormatCoord { Coord } {
 
 proc Writer::FVCN::GetAdvisory { Pad Name } {
    variable Data
+   variable Param
 
    regsub -all "\[^a-zA-Z0-9-\]" $Name - name
 
@@ -817,6 +818,7 @@ proc Writer::FVCN::GetAdvisory { Pad Name } {
 proc Writer::FVCN::GetNo { Name } {
    variable Data
    variable Msg
+   variable Path
 
    regsub -all "\[^a-zA-Z0-9-\]" $Name - name
 
@@ -1582,33 +1584,41 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    exec chmod 644 $file
 
    if { $Backup } {
-      set ErrCatch [catch  { exec ssh metmgr1 -l $GDefs(TransmitUser) -n -x ". ~/.profile; export DISPLAY=$env(DISPLAY); export TERM=$env(TERM); /opt/mm/bin/amxmit -s ncp1lx $file " } MsgCatch]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1lx" } MsgCatch]
       if { $ErrCatch != 0 } {
-         Log::Print ERROR "Unable to sent the $file via metmanager.\n\n$MsgCatch"
+         Log::Print ERROR "Unable to sent the $file via metmanager on opserv.\n\n$MsgCatch"
       }
 
    } else {
-      if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-         set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; nanproc -bs -p b -f $file " } MsgCatch]
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Unable to sent the $file via nanproc.\n\n$MsgCatch"
-         }
-
-      } else {
-         set ErrCatch [catch { exec nanproc -bs -p b -f $file } MsgCatch]
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Unable to sent the $file via nanproc.\n\n$MsgCatch"
-         }
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_nanproc.ksh ${file} $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Unable to sent the $file via nanproc on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
    }
 
-   catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f $file -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.txt"  }
+   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file} eer/data/vaac/FVCN_messages/$name.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+   if { $ErrCatch != 0 } {
+      Log::Print ERROR "Unable to sent the $file via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
+   }
 
    #----- Graphical product
    if { [winfo exists $Data(Page$Pad)] } {
       PrintBox::Image $Data(Page$Pad) png $file landscape
       exec chmod 644 $file.png
-      catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; webprods -f $file.png -s weather -D 0 -p eer/data/vaac/FVCN_messages/$name.png"  }
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/FVCN_messages/$name.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Unable to sent the $file.png via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
+      }
+
+      set no2digits [string range $$Data(No$Pad) 5 6]
+
+      exec echo "PFXD$no2digits $Data(Id$Pad) $Data(Date$Pad)" > ${file}.vagid
+      exec cat ${file}.vagid ${file}.png > ${file}.vag
+
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.vag $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Unable to sent the VAG file ${file}.vag via ftppds_eer on $GDefs(TransmitHost).\n\n$MsgCatch"
+      }
    }
 
    if { !$Backup } {
@@ -2132,6 +2142,7 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
 
 proc Writer::FVCN::Write { Pad Sent } {
    variable Data
+   variable Param
 
    if { $Sent==-1 } {
       set file $Writer::Data(AutoSaveFile)

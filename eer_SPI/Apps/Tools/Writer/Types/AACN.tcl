@@ -454,24 +454,15 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
    exec chmod 644 $file
 
    if { $Backup } {
-      set ErrCatch [catch  { exec ssh metmgr1 -l $GDefs(TransmitUser) -n -x ". ~/.profile; export DISPLAY=$env(DISPLAY); export TERM=$env(TERM); /opt/mm/bin/amxmit -s $file " } MsgCatch]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv } MsgCatch]
       if { $ErrCatch != 0 } {
-         Log::Print ERROR "Unable to sent the $file via metmanager.\n\n$MsgCatch"
+         Log::Print ERROR "Unable to sent the $file via metmanager on opserv.\n\n$MsgCatch"
       }
 
    } else {
-      if { $GDefs(FrontEnd)!=$GDefs(Host) } {
-         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -l $GDefs(TransmitUser) -n -x ". ~/.profile; nanproc -bs -p b -f $file " } MsgCatch]
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Unable to sent the $file via nanproc.\n\n$MsgCatch"
-         }
-
-      } else {
-         set ErrCatch [catch  { exec nanproc -bs -p b -f $file } MsgCatch]
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Unable to sent the $file via nanproc.\n\n$MsgCatch"
-         }
-
+      set ErrCatch [catch  { exec /users/dor/afse/eer/script/CMOI_nanproc.ksh ${file} $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Unable to sent the $file via nanproc on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
    }
    file delete -force $file
