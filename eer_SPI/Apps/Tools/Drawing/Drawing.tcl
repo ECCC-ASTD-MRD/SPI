@@ -1981,6 +1981,7 @@ proc Drawing::ItemSel { Frame } {
       $Data(Tab).head.del configure -state normal
       if { $Current(Color)!="" } {
          .drawing.params.color.opt configure -fg $Current(Color)
+         $Data(Tab).items.list.box itemconfigure $Current(Item) -fg $Current(Color)
       } else {
          .drawing.params.color.opt configure -fg $GDefs(ColorFrame)
       }
@@ -2122,6 +2123,8 @@ proc Drawing::SetColor { Frame } {
    variable Current
 
    Drawing::SetIndex $Frame 4 $Current(Color)
+
+   $Data(Tab).items.list.box itemconfigure $Current(Item) -fg $Current(Color)
 
    catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -outline $Current(Color) }
    catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -foreground $Current(Color) }
