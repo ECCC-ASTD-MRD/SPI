@@ -146,7 +146,7 @@ proc Bulletin::Window { } {
       Bubble::Create .bulletin.bar.search.next     $Bubble(Forward)
       Bubble::Create .bulletin.bar.search.previous $Bubble(Backward)
       Bubble::Create .bulletin.bar.search.stop     $Bubble(Stop)
-      Bubble::Create .bulletin.bar.searche.local   $Bubble(Local)
+      Bubble::Create .bulletin.bar.search.local    $Bubble(Local)
       Bubble::Create .bulletin.bar.search.global   $Bubble(Global)
       Bubble::Create .bulletin.bar.search.entry    $Bubble(Predicat)
       Bubble::Create .bulletin.bar.draw.line       $Bubble(Line)

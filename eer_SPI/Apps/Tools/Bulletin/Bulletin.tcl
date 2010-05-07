@@ -462,6 +462,15 @@ proc Bulletin::SelectBull { Parent Position Bind } {
 
    Bulletin::TextSearch .bulletin.mid.t "VAAC" search6
    .bulletin.mid.t tag configure search6 -background darkgreen -foreground white
+
+   Bulletin::TextSearch .bulletin.mid.t "SFC/FL200" search7
+   .bulletin.mid.t tag configure search7 -background blue -foreground white
+
+   Bulletin::TextSearch .bulletin.mid.t "FL200/FL350" search8
+   .bulletin.mid.t tag configure search8 -background blue -foreground white
+
+   Bulletin::TextSearch .bulletin.mid.t "FL350/FL600" search9
+   .bulletin.mid.t tag configure search9 -background blue -foreground white
 }
 
 #----------------------------------------------------------------------------

@@ -68,6 +68,10 @@ namespace eval Bulletin {
       ASH, ASH UUA      : Blanc sur rouge
       VOLCANO, VOLCANIC : Noir sur jaune
       WV                : Noir sur orange
+      FV                : Blanc sur bleu
+      SFC/FL200         : Blanc sur bleu
+      FL200/FL350       : Blanc sur bleu
+      FL350/FL600       : Blanc sur bleu
       VAAC              : Blanc sur vert
    "
    "Display of the selected bulletins.
@@ -76,6 +80,10 @@ namespace eval Bulletin {
       ASH, ASH UUA      : White over red
       VOLCANO, VOLCANIC : Black over yellow
       WV                : Black over orange
+      FV                : White over blue
+      SFC/FL200         : White over blue
+      FL200/FL350       : White over blue
+      FL350/FL600       : White over blue
       VAAC              : White over green
    "
    }
