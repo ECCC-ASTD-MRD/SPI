@@ -212,12 +212,12 @@ proc FileBox::GetContent { { Path "" } } {
 
    set pattern $Param(Pattern)
    set dpattern *
-   if { $Param(All)} {
+   if { $Param(All) } {
       lappend pattern ".*"
       lappend dpattern ".*"
    }
 
-   if { "$Param(Path)"!="/" && !$Param(All)} {
+   if { "$Param(Path)"!="/" && !$Param(All) } {
      .filebox.files.list insert end "../"
    }
 
@@ -355,7 +355,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    set Param(Types)    $Types
    set Param(Mode)     $Mode
    set Param(Type)     [lindex $Types 0]
-   set Param(Filename)$File
+   set Param(Filename) $File
 
    #----- build widget structure.
 
@@ -827,7 +827,7 @@ proc FileBox::Select { Ok } {
           set result ""
 
           if { $Param(Filename)!="" } {
-             foreach file $Param(Filename){
+             foreach file $Param(Filename) {
                 set file "$Param(Path)/$file"
                 if { ![file isfile $file] } {
                    Dialog::Error .filebox $Error(File) "\n\n\t$file"
@@ -844,7 +844,7 @@ proc FileBox::Select { Ok } {
       "Load" {
           set result ""
 
-          foreach file $Param(Filename){
+          foreach file $Param(Filename) {
              set file "$Param(Path)/$file"
              if { ![file isfile $file] } {
                 Dialog::Error .filebox $Error(File) "\n\n\t$file"
@@ -922,11 +922,11 @@ proc FileBox::SelectList { { Exec True } } {
       if { $Exec } {
          FileBox::GetContent $Param(Path)/[lindex $files 0]
       } else {
-         set Param(Filename)""
+         set Param(Filename) ""
       }
    } else {
       set Param(Size)     [FormatSize $size]
       set Param(Nb)       "[llength $idx] [lindex $Lbl(File) $GDefs(Lang)]"
-      set Param(Filename)$files
+      set Param(Filename) $files
    }
 }
