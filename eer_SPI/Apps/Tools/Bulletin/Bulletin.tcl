@@ -155,8 +155,13 @@ proc Bulletin::Draw { Draw Zoom } {
 
    set ok [catch {
       foreach coord $text {
-         scan "$coord" "%1s%d%1s%d" da la do lo
-
+         if { [string is digit [string index $coord 0]] } {
+            #----- Try WVCN format
+            scan "$coord" "%d%1s%d%1s" la da lo do
+         } else {
+            #----- Try FV format
+            scan "$coord" "%1s%d%1s%d" da la do lo
+         }
          set lad [expr $la / 100]
          set lam [expr $la - $lad * 100]
          set la [Convert::Minute2Decimal "$lad $lam"]
