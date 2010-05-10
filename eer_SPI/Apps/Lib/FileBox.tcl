@@ -43,28 +43,29 @@ package require Bubble
 
 namespace eval FileBox {
    global env
-   variable Data
+   variable Param
    variable Type
    variable Bubble
    variable Lbl
    variable Title
    variable Error
 
-   #----- Defnitions des constantes internes
+   set Param(Path)        ""
+   set Param(Width)       0
+   set Param(Spec)        ""
+   set Param(Mode)        ""
+   set Param(Type)        ""
+   set Param(Types)       {}
+   set Param(DirList)     "$env(HOME)/.spi/FileBox"
+   set Param(All)         0
+   set Param(Sort)        File
+   set Param(Pattern)     ""
+   set Param(Result)      ""
+   set Param(Filename)    ""
+   set Param(Size)        0
+   set Param(Nb)          0
 
-   set Data(Spec)         ""
-   set Data(Result)       ""
-   set Data(Filename)     ""
-   set Data(Type)         ""
-   set Data(Mode)         ""
-   set Data(DirList)      "$env(HOME)/.spi/FileBox"
-   set Data(All)          0
-   set Data(Sort)         File
-   set Data(Size)         0
-   set Data(Nb)           0
-   set Data(Path)         ""
-
-   catch { set Data(Path) [pwd] }
+   catch { set Param(Path) [pwd] }
 
    set Type(ALL)     {All {*}}
    set Type(FSTD)    {RPN Standard file {*.fstd *.fst *}}
@@ -155,29 +156,29 @@ namespace eval FileBox {
 
 proc FileBox::GetContent { { Path "" } } {
    global GDefs
+   variable Param
    variable Lbl
    variable Msg
-   variable Data
 
    if { $Path!="" } {
-      set Data(Path) $Path
+      set Param(Path) $Path
    }
-   set Data(Path)      [file normalize $Data(Path)]
-   set Data(Width)     [expr [winfo width .filebox.header.file]/[font measure [lindex [.filebox.header.file configure -font] 4] "m"]-2]
+   set Param(Path)      [file normalize $Param(Path)]
+   set Param(Width)     [expr [winfo width .filebox.header.file]/[font measure [lindex [.filebox.header.file configure -font] 4] "m"]-2]
 
-   if { $Data(Mode)!="Save" } {
-      set Data(Filename) ""
+   if { $Param(Mode)!="Save" } {
+      set Param(Filename) ""
    }
 
    .filebox.files.list configure -bg $GDefs(ColorLight)
 
-   if { ![file isdirectory $Data(Path)] } {
+   if { ![file isdirectory $Param(Path)] } {
       .filebox.files.list delete 0 end
       .filebox.files.list configure -bg $GDefs(ColorFrame)
       return
    } else {
-      if { ![file readable $Data(Path)] } {
-         Dialog::Info .filebox $Msg(Right) "\n\n\t$Data(Path)"
+      if { ![file readable $Param(Path)] } {
+         Dialog::Info .filebox $Msg(Right) "\n\n\t$Param(Path)"
       }
    }
 
@@ -189,7 +190,7 @@ proc FileBox::GetContent { { Path "" } } {
    .filebox.path.home.back delete 1 end
    .filebox.path.home.back add separator
 
-   set list [file split $Data(Path)]
+   set list [file split $Param(Path)]
    set list [lrange $list 1 end-1]
 
    set path ""
@@ -204,50 +205,50 @@ proc FileBox::GetContent { { Path "" } } {
    #----- Cleanup de la boite
    .filebox.files.list delete 0 end
 
-   set Data(Size) 0.0
-   set Data(Spec) [string trim $Data(Spec)]
-   set Data(Nb) 0
+   set Param(Size) 0.0
+   set Param(Spec) [string trim $Param(Spec)]
+   set Param(Nb) 0
    set lines ""
 
-   set pattern $Data(Pattern)
+   set pattern $Param(Pattern)
    set dpattern *
-   if { $Data(All) } {
+   if { $Param(All)} {
       lappend pattern ".*"
       lappend dpattern ".*"
    }
 
-   if { "$Data(Path)"!="/" && !$Data(All) } {
+   if { "$Param(Path)"!="/" && !$Param(All)} {
      .filebox.files.list insert end "../"
    }
 
    #----- Recuperer les repertoires
-   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory $Data(Path) -types d -tails  $dpattern\]\]
+   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory $Param(Path) -types d -tails  $dpattern\]\]
    foreach dir $dirs {
-      if { [catch { file stat $Data(Path)/$dir info } ] } {
+      if { [catch { file stat $Param(Path)/$dir info } ] } {
          continue
       }
-      .filebox.files.list insert end [format "%-$Data(Width)s %8s %10i" ${dir}/ [file attributes $Data(Path)/$dir -owner] $info(size)]
-      set Data(Size) [expr $Data(Size)+$info(size)]
-      incr Data(Nb)
+      .filebox.files.list insert end [format "%-$Param(Width)s %8s %10i" ${dir}/ [file attributes $Param(Path)/$dir -owner] $info(size)]
+      set Param(Size) [expr $Param(Size)+$info(size)]
+      incr Param(Nb)
    }
 
    #----- Recuperer les fichiers
-   eval set files \[glob -nocomplain -directory $Data(Path) -types f -tails $pattern\]
+   eval set files \[glob -nocomplain -directory $Param(Path) -types f -tails $pattern\]
    foreach file $files {
-      if { [catch { set size [file stat $Data(Path)/$file info] } ] } {
+      if { [catch { set size [file stat $Param(Path)/$file info] } ] } {
          continue
       }
 
-      if { $Data(Spec)=="" || [string match -nocase $Data(Spec) $file] } {
+      if { $Param(Spec)=="" || [string match -nocase $Param(Spec) $file] } {
          catch {
-            lappend lines [format "%-$Data(Width)s %8s %10i" $file [file attributes $Data(Path)/$file -owner] $info(size)]
-            set Data(Size) [expr $Data(Size)+$info(size)]
-            incr Data(Nb)
+            lappend lines [format "%-$Param(Width)s %8s %10i" $file [file attributes $Param(Path)/$file -owner] $info(size)]
+            set Param(Size) [expr $Param(Size)+$info(size)]
+            incr Param(Nb)
          }
       }
    }
 
-   switch $Data(Sort) {
+   switch $Param(Sort) {
       "File"  { set lines [lsort -unique -dictionary -index 0 $lines ] }
       "Owner" { set lines [lsort -dictionary -index 1 $lines ] }
       "Size"  { set lines [lsort -decreasing -integer -index end $lines ] }
@@ -256,8 +257,8 @@ proc FileBox::GetContent { { Path "" } } {
 
    #----- Formatter les infos
 
-   set Data(Nb)   "$Data(Nb) [lindex $Lbl(File) $GDefs(Lang)]"
-   set Data(Size) [FormatSize $Data(Size)]
+   set Param(Nb)   "$Param(Nb) [lindex $Lbl(File) $GDefs(Lang)]"
+   set Param(Size) [FormatSize $Param(Size)]
 
    .filebox config -cursor left_ptr
 }
@@ -279,9 +280,9 @@ proc FileBox::GetContent { { Path "" } } {
 #----------------------------------------------------------------------------
 
 proc FileBox::GetType { } {
-   variable Data
+   variable Param
 
-   return $Data(Type)
+   return $Param(Type)
 }
 
 #----------------------------------------------------------------------------
@@ -301,12 +302,12 @@ proc FileBox::GetType { } {
 #----------------------------------------------------------------------------
 
 proc FileBox::SetPattern { } {
-   variable Data
+   variable Param
 
-   set Data(Pattern) [lindex $Data(Type) end]
+   set Param(Pattern) [lindex $Param(Type) end]
 
-   if { $Data(Pattern) == "" } {
-      set Data(Pattern) *
+   if { $Param(Pattern) == "" } {
+      set Param(Pattern) *
    }
 }
 
@@ -333,7 +334,7 @@ proc FileBox::SetPattern { } {
 
 proc FileBox::Create { Parent Path Mode Types { File "" } } {
    global GDefs env
-   variable Data
+   variable Param
    variable Type
    variable Lbl
    variable Bubble
@@ -344,17 +345,17 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
    #----- Verifier le repertoire par defaut
    if { [file isdirectory $Path] } {
-      set Data(Path) $Path
+      set Param(Path) $Path
    }
 
    if { $Mode=="Load" || $Mode=="LoadPath"} {
       lappend Types $Type(ALL)
    }
 
-   set Data(Types)    $Types
-   set Data(Mode)     $Mode
-   set Data(Type)     [lindex $Types 0]
-   set Data(Filename) $File
+   set Param(Types)    $Types
+   set Param(Mode)     $Mode
+   set Param(Type)     [lindex $Types 0]
+   set Param(Filename)$File
 
    #----- build widget structure.
 
@@ -371,7 +372,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
    frame .filebox.path -relief raised -bd 1
       label .filebox.path.label -text [lindex $Lbl(Dir) $GDefs(Lang)] -width 10 -anchor w
-      ComboBox::Create .filebox.path.name FileBox::Data(Path) editclose sorted nodouble -1 {} 40 10 "FileBox::GetContent"
+      ComboBox::Create .filebox.path.name FileBox::Param(Path) editclose sorted nodouble -1 {} 40 10 "FileBox::GetContent"
       button .filebox.path.save -image FOLDIN -bd 0 -command "FileBox::MemAdd"
       button .filebox.path.del -image FOLDOUT -bd 0 -command "FileBox::MemDel"
       menubutton .filebox.path.home -image FOLDUP -bd 0 -menu .filebox.path.home.back
@@ -386,9 +387,9 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
    frame .filebox.file -relief raised -bd 1
       label .filebox.file.label -text [lindex $Lbl(File) $GDefs(Lang)] -width 10 -anchor w
-      entry .filebox.file.name -textvariable FileBox::Data(Filename) -background $GDefs(ColorLight) -relief sunken -bd 1
-      entry .filebox.file.pattern -textvariable FileBox::Data(Spec) -background $GDefs(ColorLight) -relief sunken -bd 1 -width 9
-      checkbutton .filebox.file.hid -variable FileBox::Data(All) -bd 0 -image FOLDHID \
+      entry .filebox.file.name -textvariable FileBox::Param(Filename) -background $GDefs(ColorLight) -relief sunken -bd 1
+      entry .filebox.file.pattern -textvariable FileBox::Param(Spec) -background $GDefs(ColorLight) -relief sunken -bd 1 -width 9
+      checkbutton .filebox.file.hid -variable FileBox::Param(All) -bd 0 -image FOLDHID \
          -indicatoron false -command "FileBox::GetContent"
       pack .filebox.file.label -side left -fill y -ipadx 2
       pack .filebox.file.name -side left -fill both -expand true
@@ -397,7 +398,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
    frame .filebox.type -relief raised -bd 1
       label .filebox.type.label -text [lindex $Lbl(Type) $GDefs(Lang)] -width 10 -anchor w
-      ComboBox::Create .filebox.type.pattern FileBox::Data(Type) noedit unsorted nodouble -1 $FileBox::Data(Types) 40 5 \
+      ComboBox::Create .filebox.type.pattern FileBox::Param(Type) noedit unsorted nodouble -1 $FileBox::Param(Types) 40 5 \
          "FileBox::SetPattern; FileBox::GetContent"
       pack .filebox.type.label -side left -fill y -ipadx 2
       pack .filebox.type.pattern  -side left -fill both -expand true
@@ -405,11 +406,11 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
    frame .filebox.header
       radiobutton .filebox.header.file -text [lindex $Lbl(File) $GDefs(Lang)] -indicatoron false -bd 1 -width 1 \
-          -value File -variable FileBox::Data(Sort) -command "FileBox::GetContent"
+          -value File -variable FileBox::Param(Sort) -command "FileBox::GetContent"
       radiobutton .filebox.header.size -text [lindex $Lbl(Size) $GDefs(Lang)] -indicatoron false -bd 1 -width 11 \
-          -value Size -variable FileBox::Data(Sort) -command "FileBox::GetContent"
+          -value Size -variable FileBox::Param(Sort) -command "FileBox::GetContent"
       radiobutton .filebox.header.uid -text [lindex $Lbl(Owner) $GDefs(Lang)] -indicatoron false -bd 1 -width 7 \
-          -value Owner -variable FileBox::Data(Sort) -command "FileBox::GetContent"
+          -value Owner -variable FileBox::Param(Sort) -command "FileBox::GetContent"
       pack .filebox.header.file -side left -ipadx 2 -ipady 2 -fill x -expand true
       pack .filebox.header.uid .filebox.header.size -side left -ipadx 2 -ipady 2
    pack .filebox.header -side top -fill x
@@ -425,14 +426,14 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    pack .filebox.files -expand true -side top -fill both
 
    frame .filebox.bar -relief raised -bd 1
-      label .filebox.bar.nbfile -textvariable FileBox::Data(Nb) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 15
-      label .filebox.bar.size   -textvariable FileBox::Data(Size) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 11
+      label .filebox.bar.nbfile -textvariable FileBox::Param(Nb) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 15
+      label .filebox.bar.size   -textvariable FileBox::Param(Size) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 11
       pack  .filebox.bar.size .filebox.bar.nbfile -side right -fill y
    pack .filebox.bar -side top -fill x
 
    frame .filebox.frame1
       button .filebox.frame1.ok -text "Ok" -command "FileBox::Select 1" -bd 1
-      button .filebox.frame1.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1 -command "set FileBox::Data(Result) \"\""
+      button .filebox.frame1.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1 -command "set FileBox::Param(Result) \"\""
       pack .filebox.frame1.ok .filebox.frame1.cancel -expand true -side left -fill both
    pack .filebox.frame1 -side top -fill x
 
@@ -448,10 +449,10 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    bind .filebox.file.pattern     <Return>           { FileBox::GetContent }
    bind .filebox.files.list       <Configure>        { FileBox::GetContent }
 
-   bind .filebox                  <Return>           " FileBox::SelectList; if { \$FileBox::Data(Filename)!=\"\" } { FileBox::Select 1 } "
+   bind .filebox                  <Return>           " FileBox::SelectList; if { \$FileBox::Param(Filename)!=\"\" } { FileBox::Select 1 } "
    bind .filebox                  <Key-Up>           { FileBox::SelectList False }
    bind .filebox                  <Key-Down>         { FileBox::SelectList False }
-   bind .filebox                  <Key-Escape>       { set FileBox::Data(Result) "" }
+   bind .filebox                  <Key-Escape>       { set FileBox::Param(Result) "" }
 
   #----- Creation des bulles
 
@@ -461,7 +462,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    Bubble::Create .filebox.path.name.box $Bubble(Mem)
    Bubble::Create .filebox.file.pattern  $Bubble(Pattern)
 
-   switch $Data(Mode) {
+   switch $Param(Mode) {
 
       "Load" {
          wm title .filebox [lindex $Title(Load) $GDefs(Lang)]
@@ -491,14 +492,14 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
    set prevgrab [grab current]
    grab .filebox
-   tkwait variable FileBox::Data(Result)
+   tkwait variable FileBox::Param(Result)
    catch { destroy .filebox .fileboxpopup }
    $Parent config -cursor left_ptr
 
    if { $prevgrab!="" } {
       grab $prevgrab
    }
-   return $Data(Result)
+   return $Param(Result)
 }
 
 #----------------------------------------------------------------------------
@@ -547,7 +548,7 @@ proc FileBox::DeepLen { Path { Total 1 } } {
 
 proc FileBox::Delete { } {
    global   GDefs
-   variable Data
+   variable Param
    variable Lbl
    variable Msg
 
@@ -555,12 +556,12 @@ proc FileBox::Delete { } {
    set files ""
 
    foreach idx $idxs {
-      lappend files [string trim [string range [.filebox.files.list get $idx] 0 $Data(Width)]]
+      lappend files [string trim [string range [.filebox.files.list get $idx] 0 $Param(Width)]]
    }
 
    if { [Dialog::Default .filebox 200 WARNING $Msg(Del) "\n\n$files" 0 $Lbl(No) $Lbl(Yes)] } {
       foreach file $files {
-         file delete -force $Data(Path)/$file
+         file delete -force $Param(Path)/$file
       }
       FileBox::GetContent
    }
@@ -619,13 +620,13 @@ proc FileBox::FormatSize { Val } {
 
 proc FileBox::MemAdd { } {
    global GDefs
+   variable Param
    variable Msg
-   variable Data
 
-   if { [file isdirectory $Data(Path)] } {
-      set name $Data(Path)
+   if { [file isdirectory $Param(Path)] } {
+      set name $Param(Path)
    } else {
-      set name [file dirname $Data(Path)]
+      set name [file dirname $Param(Path)]
    }
 
    if { [ComboBox::Add .filebox.path.name $name] != -1 } {
@@ -649,12 +650,12 @@ proc FileBox::MemAdd { } {
 
 proc FileBox::MemDel { } {
    global GDefs
+   variable Param
    variable Msg
-   variable Data
 
-   if { [ComboBox::Del .filebox.path.name $Data(Path)] != -1 } {
+   if { [ComboBox::Del .filebox.path.name $Param(Path)] != -1 } {
       FileBox::MemSave
-      Dialog::Info .filebox $Msg(MemDel) "\n\n\t$Data(Path)"
+      Dialog::Info .filebox $Msg(MemDel) "\n\n\t$Param(Path)"
    }
 }
 
@@ -672,13 +673,13 @@ proc FileBox::MemDel { } {
 #----------------------------------------------------------------------------
 
 proc FileBox::MemLoad { } {
-   variable Data
+   variable Param
 
-   set p $Data(Path)
+   set p $Param(Path)
    ComboBox::DelAll .filebox.path.name
    set maxlen 40
 
-   if { ![catch { set file [open $Data(DirList) r] }]  } {
+   if { ![catch { set file [open $Param(DirList)r] }]  } {
 
       while { ![eof $file] } {
          gets $file path
@@ -692,7 +693,7 @@ proc FileBox::MemLoad { } {
       }
       close $file
    }
-   set Data(Path) $p
+   set Param(Path) $p
 }
 
 #----------------------------------------------------------------------------
@@ -709,11 +710,11 @@ proc FileBox::MemLoad { } {
 #----------------------------------------------------------------------------
 
 proc FileBox::MemSave { } {
-   variable Data
+   variable Param
 
    .filebox configure -cursor watch
 
-   set file [open $Data(DirList) w]
+   set file [open $Param(DirList)w]
 
    foreach path [ComboBox::List .filebox.path.name] {
       puts $file $path
@@ -738,7 +739,7 @@ proc FileBox::MemSave { } {
 
 proc FileBox::New { } {
    global   GDefs
-   variable Data
+   variable Param
    variable Lbl
    variable Msg
 
@@ -749,16 +750,16 @@ proc FileBox::New { } {
    wm protocol .fileboxnew WM_DELETE_WINDOW { }
    wm resizable .fileboxnew 0 0
 
-   set Data(New) ""
+   set Param(New) ""
 
    frame .fileboxnew.spec -relief raised -bd 1
       label .fileboxnew.spec.lbl -text [lindex $Lbl(Name) $GDefs(Lang)] -anchor w
-      entry .fileboxnew.spec.ent -textvariable FileBox::Data(New) -relief sunken -bd 1 -width 20 -bg $GDefs(ColorLight)
+      entry .fileboxnew.spec.ent -textvariable FileBox::Param(New) -relief sunken -bd 1 -width 20 -bg $GDefs(ColorLight)
       pack .fileboxnew.spec.lbl .fileboxnew.spec.ent -side left
 
    frame .fileboxnew.com
       button .fileboxnew.com.ok -text [lindex $Lbl(Create) $GDefs(Lang)] \
-         -relief raised -bd 1 -command { file mkdir $FileBox::Data(Path)/$FileBox::Data(New) ; destroy .fileboxnew ; FileBox::GetContent }
+         -relief raised -bd 1 -command { file mkdir $FileBox::Param(Path)/$FileBox::Param(New) ; destroy .fileboxnew ; FileBox::GetContent }
       button .fileboxnew.com.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)]\
          -relief raised -bd 1 -command { destroy .fileboxnew }
       pack .fileboxnew.com.ok .fileboxnew.com.cancel -side left -fill x -expand true
@@ -805,9 +806,9 @@ proc FileBox::Popup { X Y YL } {
 #----------------------------------------------------------------------------
 
 proc FileBox::Filename { File } {
-   variable Data
+   variable Param
 
-   if { [file extension $File]!=[set ext [file extension [lindex $Data(Pattern) 0]]] } {
+   if { [file extension $File]!=[set ext [file extension [lindex $Param(Pattern) 0]]] } {
       return $File$ext
    } else {
       return $File
@@ -816,18 +817,18 @@ proc FileBox::Filename { File } {
 
 proc FileBox::Select { Ok } {
    global   GDefs
+   variable Param
    variable Error
-   variable Data
    variable Lbl
    variable Msg
 
-   switch $Data(Mode) {
+   switch $Param(Mode) {
       "LoadPath" {
           set result ""
 
-          if { $Data(Filename)!="" } {
-             foreach file $Data(Filename) {
-                set file "$Data(Path)/$file"
+          if { $Param(Filename)!="" } {
+             foreach file $Param(Filename){
+                set file "$Param(Path)/$file"
                 if { ![file isfile $file] } {
                    Dialog::Error .filebox $Error(File) "\n\n\t$file"
                    return
@@ -835,16 +836,16 @@ proc FileBox::Select { Ok } {
                    lappend result $file
                 }
              }
-             set Data(Result) $result
-          } elseif { [file isdirectory $Data(Path)] } {
-             set Data(Result) $Data(Path)
+             set Param(Result) $result
+          } elseif { [file isdirectory $Param(Path)] } {
+             set Param(Result) $Param(Path)
           }
        }
       "Load" {
           set result ""
 
-          foreach file $Data(Filename) {
-             set file "$Data(Path)/$file"
+          foreach file $Param(Filename){
+             set file "$Param(Path)/$file"
              if { ![file isfile $file] } {
                 Dialog::Error .filebox $Error(File) "\n\n\t$file"
                 return
@@ -852,20 +853,20 @@ proc FileBox::Select { Ok } {
                 lappend result $file
              }
           }
-          set Data(Result) $result
+          set Param(Result) $result
        }
       "Save" {
-         if { [string trim $Data(Filename)]!="" } {
-            if { [file isfile $Data(Path)/$Data(Filename)] } {
-              if { [Dialog::Default .filebox 200 WARNING $Msg(Overwrite) "\n\n$Data(Path)/$Data(Filename)" 0 $Lbl(No) $Lbl(Yes)] } {
-                  set Data(Result) [FileBox::Filename $Data(Path)/$Data(Filename)]
+         if { [string trim $Param(Filename)]!="" } {
+            if { [file isfile $Param(Path)/$Param(Filename)] } {
+              if { [Dialog::Default .filebox 200 WARNING $Msg(Overwrite) "\n\n$Param(Path)/$Param(Filename)" 0 $Lbl(No) $Lbl(Yes)] } {
+                  set Param(Result) [FileBox::Filename $Param(Path)/$Param(Filename)]
                }
 
              #----- Si le path est bon
 
              } else {
-                if { [file writable [file dirname $Data(Path)/$Data(Filename)]] } {
-                   set Data(Result) [FileBox::Filename $Data(Path)/$Data(Filename)]
+                if { [file writable [file dirname $Param(Path)/$Param(Filename)]] } {
+                   set Param(Result) [FileBox::Filename $Param(Path)/$Param(Filename)]
                 } else {
                    Dialog::Error .filebox $Error(Right)
                 }
@@ -873,10 +874,10 @@ proc FileBox::Select { Ok } {
           }
        }
       "Path" {
-          if { [file isdirectory $Data(Path)] } {
-             set Data(Result) $Data(Path)
+          if { [file isdirectory $Param(Path)] } {
+             set Param(Result) $Param(Path)
           } else {
-             FileBox::GetContent $Data(Path)/$Data(Filename)
+             FileBox::GetContent $Param(Path)/$Param(Filename)
           }
       }
    }
@@ -897,8 +898,8 @@ proc FileBox::Select { Ok } {
 
 proc FileBox::SelectList { { Exec True } } {
    global GDefs
+   variable Param
    variable Lbl
-   variable Data
 
    #----- Extraire le nom selectionne
    set idx [.filebox.files.list curselection]
@@ -917,15 +918,15 @@ proc FileBox::SelectList { { Exec True } } {
       catch { set size [expr $size+[lindex $line end]] }
    }
 
-   if { [file isdirectory [lindex $Data(Path)/$files 0]] } {
+   if { [file isdirectory [lindex $Param(Path)/$files 0]] } {
       if { $Exec } {
-         FileBox::GetContent $Data(Path)/[lindex $files 0]
+         FileBox::GetContent $Param(Path)/[lindex $files 0]
       } else {
-         set Data(Filename) ""
+         set Param(Filename)""
       }
    } else {
-      set Data(Size)     [FormatSize $size]
-      set Data(Nb)       "[llength $idx] [lindex $Lbl(File) $GDefs(Lang)]"
-      set Data(Filename) $files
+      set Param(Size)     [FormatSize $size]
+      set Param(Nb)       "[llength $idx] [lindex $Lbl(File) $GDefs(Lang)]"
+      set Param(Filename)$files
    }
 }
