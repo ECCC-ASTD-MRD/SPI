@@ -461,8 +461,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
          wm geom .dlgmsg +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
       }
 
-      # ----- Creer et affiche le message.
-
+      #----- Creer et affiche le message.
       frame .dlgmsg.msg  -relief raised -bd 1
          label .dlgmsg.msg.bitmap -image DIALOG_QUESTION
          message .dlgmsg.msg.txt -aspect 1000 -text "[lindex $Text $GDefs(Lang)]$Extra"

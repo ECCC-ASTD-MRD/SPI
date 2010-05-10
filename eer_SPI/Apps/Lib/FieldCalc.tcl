@@ -79,7 +79,7 @@ namespace eval FieldCalc {
 
    #----- Erreurs
 
-   set Error(Operand)  { "FieldCalc Operand : Champs resultants invalide" "FieldCalc Operand : Invalid result field" }
+   set Error(Operand)  { "L'opérande n'est pas un champs.\n\n\tRésultat: " "Operand is not a field.\n\n\tResult: " }
 
    #----- Messagess
 
@@ -998,7 +998,7 @@ proc FieldCalc::Operand { VP Fields } {
    if { !$nout && $expr!="" } {
       set res [vexpr CALC$VP $expr]
       if { ![fstdfield is $res] } {
-         Dialog::Error . $Error(Operand) "\n\n$res" $GDefs(Lang)
+         Dialog::Info . $Error(Operand) $res
          set data $Fields
       } else {
          FSTD::Register $res
