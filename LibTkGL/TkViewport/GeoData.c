@@ -460,7 +460,7 @@ void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
    while(Geo) {
 
       /*Projeter tout les vecteurs*/
-      Geo->Box.Nb=Proj->Type->Project(Proj,(GeoVect*)Geo->Loc,NULL,Geo->Box.Nb);
+      Proj->Type->Project(Proj,(GeoVect*)Geo->Loc,NULL,Geo->Box.Nb);
 
       /*Calculer les limites de la boite*/
       if (!Proj->Type->Project(Proj,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,4)) {

@@ -515,7 +515,6 @@ Tcl_Obj* Grid_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,C
    }
 
    /*Creer les listes des points*/
-
    if (n[0]) {
       LiangBarsky_PolygonClip2D(pixs[0],n[0],pixc,&c,0,0,VP->Width,VP->Height);
       for (i=0;i<c;i++){
@@ -805,46 +804,50 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
 
       if (Proj->Geographic) {
          if (loc.Lat==-999.0 || loc.Lon==-999.0) {
-            out[e].V[2]=-999.0;
+            out[n].V[2]=-999.0;
             continue;
          } else {
-            ref->UnProject(ref,&out[e].V[0],&out[e].V[1],loc.Lat,loc.Lon,1,1);
+            ref->UnProject(ref,&out[n].V[0],&out[n].V[1],loc.Lat,loc.Lon,1,1);
          }
       } else {
-         out[e].V[0]=loc.Lon;
-         out[e].V[1]=loc.Lat;
+         out[n].V[0]=loc.Lon;
+         out[n].V[1]=loc.Lat;
       }
 
       if (ref->AX && ref->AY) {
-         if (out[e].V[0]<0) {
-            out[e].V[0]=0;
-         } else if (out[e].V[0]>=ref->X1) {
-           out[e].V[0]=ref->AX[ref->X1]-ref->AX[ref->X0];
+         s=floor(out[n].V[0]);
+         if (out[n].V[0]<0) {
+//            out[e].V[0]=0;
+            out[n].V[0]=ref->AX[0]+out[n].V[0]*(ref->AX[1]-ref->AX[0]);
+         } else if (out[n].V[0]>ref->X1) {
+            out[n].V[0]=ref->AX[ref->X1]+(out[n].V[0]-ref->X1)*(ref->AX[ref->X1]-ref->AX[ref->X1-1]);
          } else {
-            s=floor(out[e].V[0]);
-            out[e].V[0]=ILIN(ref->AX[s],ref->AX[s+1],out[e].V[0]-s)-ref->AX[ref->X0];
+            out[n].V[0]=ILIN(ref->AX[s],ref->AX[s+1],(out[n].V[0]-s));
          }
+         out[n].V[0]-=ref->AX[ref->X0];
 
-         if (out[e].V[1]<0) {
-            out[e].V[1]=0;
-         } else if (out[e].V[1]>=ref->Y1) {
-            out[e].V[1]=ref->AY[ref->Y1]-ref->AY[ref->Y0];
+         s=floor(out[n].V[1]);
+         if (out[n].V[1]<0) {
+//            out[e].V[1]=0;
+            out[n].V[1]=ref->AY[0]+out[n].V[1]*(ref->AY[1]-ref->AY[0]);
+         } else if (out[n].V[1]>ref->Y1) {
+            out[n].V[1]=ref->AY[ref->Y1]+(out[n].V[1]-ref->Y1)*(ref->AY[ref->Y1]-ref->AY[ref->Y1-1]);
          } else {
-            s=floor(out[e].V[1]);
-            out[e].V[1]=ILIN(ref->AY[s],ref->AY[s+1],out[e].V[1]-s)-ref->AY[ref->Y0];
+            out[n].V[1]=ILIN(ref->AY[s],ref->AY[s+1],(out[e].V[1]-s));
          }
+         out[n].V[1]-=ref->AY[ref->Y0];
 
          d=Proj->L*0.5;
       } else {
          d=(Proj->L-1)*0.5;
       }
 
-      out[e].V[0]=(out[e].V[0]-ref->X0)/d-Proj->LI;
-      out[e].V[1]=(out[e].V[1]-ref->Y0)/d-Proj->LJ;
-      out[e].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
+      out[n].V[0]=(out[n].V[0]-ref->X0)/d-Proj->LI;
+      out[n].V[1]=(out[n].V[1]-ref->Y0)/d-Proj->LJ;
+      out[n].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
 
       /*Si en dehors du domain*/
-      if (Nb>0 && (out[e].V[0]<-Proj->LI || out[e].V[0]>Proj->LI || out[e].V[1]<-Proj->LJ || out[e].V[1]>Proj->LJ)) {
+      if (Nb>0 && (out[n].V[0]<-Proj->LI || out[n].V[0]>Proj->LI || out[n].V[1]<-Proj->LJ || out[n].V[1]>Proj->LJ)) {
 //         out[e].V[2]=-999.0;
       } else {
          e++;
