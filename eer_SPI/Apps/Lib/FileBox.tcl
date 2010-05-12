@@ -679,7 +679,7 @@ proc FileBox::MemLoad { } {
    ComboBox::DelAll .filebox.path.name
    set maxlen 40
 
-   if { ![catch { set file [open $Param(DirList)r] }]  } {
+   if { ![catch { set file [open $Param(DirList) r] }]  } {
 
       while { ![eof $file] } {
          gets $file path
@@ -714,7 +714,7 @@ proc FileBox::MemSave { } {
 
    .filebox configure -cursor watch
 
-   set file [open $Param(DirList)w]
+   set file [open $Param(DirList) w]
 
    foreach path [ComboBox::List .filebox.path.name] {
       puts $file $path
