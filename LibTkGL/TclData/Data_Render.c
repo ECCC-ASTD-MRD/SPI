@@ -71,7 +71,6 @@ int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
    int n,i,j,ci,cj,i0,i1,j0,j1,len,side;
-   unsigned long d,sz;
    unsigned char *buf=NULL;
    TArray *array;
 
@@ -97,26 +96,16 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
       i1=Field->Def->Limits[0][1];
       j1=Field->Def->Limits[1][1];
 
-      i=i0-1;j=j0;
+      i=i0;j=j0;
       ci=1;cj=0;
-      d=0;sz=((i1-i0+2)*(j1-j0+2));
 
       /*As long as we did not check all gridpoint (Worse case)*/
-      while(d++<sz) {
-
-         /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
-         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
-         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
-         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   /* Check upper left corner */
-         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=0xF^FF_BOTTOM; } /* Check lower left corner */
+      while(1) {
 
          /*When we get to the center, we're done*/
-         if (i1<=i0 || j1<=j0) {
+         if (i1<i0 && j1<j0) {
             break;
          }
-
-         i+=ci;
-         j+=cj;
 
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
@@ -131,6 +120,15 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
                }
             }
          }
+
+         /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
+         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
+         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
+         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   /* Check upper left corner */
+         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=0xF^FF_BOTTOM; } /* Check lower left corner */
+
+         i+=ci;
+         j+=cj;
       }
    }
    if (buf)
