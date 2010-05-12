@@ -105,7 +105,6 @@ proc Macro::Error { Error } {
    global GDefs
 
    #----- Recuperer le nom de la procedure fautive
-
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
@@ -131,7 +130,6 @@ proc Macro::Doing { Msg } {
    variable Data
 
    #----- Recuperer le nom de la procedure fautive
-
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
@@ -220,14 +218,12 @@ proc Macro::Load { Paths } {
       set Data(Save$macro) False
 
       #----- Keep the source code
-
       set f [open $Data(Path$macro) r]
       while { ![eof $f] } {
          append Data(Code$macro) [gets $f ]\n
       }
 
       #----- But still source it
-
       uplevel #0 source $path
       set idx [Macro::Define $macro]
    }
@@ -262,15 +258,14 @@ proc Macro::Check { Macro } {
    variable Error
 
    #----- Check de la validite de la macro
-
    eval set proc \[info procs ::Macro::${Macro}::Execute\]
    if { $proc=="" } {
-      Dialog::Error . 400 [lindex $Error(Execute) $GDefs(Lang)] " (Macro::$Macro)"
+      Dialog::Error . $Error(Execute) " (Macro::$Macro)"
       return False
    }
 
    if { ![info exists ::Macro::${Macro}::Param(Info)] } {
-      Dialog::Error . 400 [lindex $Error(Info) $GDefs(Lang)] " (Macro::$Macro)"
+      Dialog::Error . $Error(Info) " (Macro::$Macro)"
       return False
    }
    return True
@@ -362,14 +357,12 @@ proc Macro::Execute { Macro } {
    Macro::Cursor watch
 
    #----- Check for previous macro cleanup function
-
    eval set proc \[info procs ::Macro::${Data(Current)}::Clean\]
    if { $proc!="" } {
       Macro::${Data(Current)}::Clean
    }
 
    #----- Check that it is still valid
-
    if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
       if { ![Dialog::Default . 300 WARNING $Msg(Modified) "\n\n\tMacro::$Macro" 0 $Lbl(Yes) $Lbl(No)] } {
          Macro::Load $Data(Path$Macro)
@@ -379,7 +372,6 @@ proc Macro::Execute { Macro } {
    }
 
    #----- Evaluate the source code
-
    if { [namespace exist ::Macro::$Macro] } {
       namespace delete ::Macro::$Macro
    }
@@ -388,18 +380,40 @@ proc Macro::Execute { Macro } {
    uplevel #0 $Data(Code$Macro)
 
    #----- If macro is valid
-
+   set go 1
    if { [Macro::Check $Macro] } {
 
       #----- Launch the current macro
-
       set Data(Current) $Macro
       set Data(VP)      $Viewport::Data(VP)
       set Data(Frame)   $Page::Data(Frame)
-      eval Macro::${Macro}::Execute
 
-      Page::Activate $Data(Frame)
-      Viewport::Activate $Data(Frame) $Data(VP)
+      #----- If Macro has an Args function, call it to get the args
+      eval set proc \[info procs ::Macro::${Macro}::Args\]
+      if { $proc!="" } {
+         if { [info exists Macro:::${Macro}::Param(InfoArgs)] } {
+            eval set args \$Macro:::${Macro}::Param(InfoArgs)
+            set msg [list "[lindex $Msg(Args) 0]\n\n[lindex $args 0]" "[lindex $Msg(Args) 1]\n\n[lindex $args 1]"]
+         } else {
+            set msg $Msg(Args)
+         }
+
+         #----- If needed args are entered, proceed
+         if { [set go [llength [Dialog::Get .macro $Lbl(Args) $msg ::argv]]] } {
+            set ::argc [llength $::argv]
+            puts stderr "$::argc .$::argv."
+            eval Macro::${Macro}::Args
+         }
+      }
+
+      if { $go } {
+         eval Macro::${Macro}::Execute
+
+         Page::Activate $Data(Frame)
+         Viewport::Activate $Data(Frame) $Data(VP)
+      } else {
+         set Data(Current) ""
+      }
    } else {
       set Data(Current) ""
    }
@@ -427,7 +441,6 @@ proc Macro::Reset { } {
    Macro::Cursor watch
 
    #----- Check for previous macro cleanup function
-
    eval set proc \[info procs ::Macro::${Data(Current)}::Clean\]
    if { $proc!="" } {
       Macro::${Data(Current)}::Clean
@@ -461,7 +474,6 @@ proc Macro::Save { Macro } {
    if { $Macro!="" } {
 
       #----- Check that it is still valid
-
       if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
          if { [Dialog::Default . 300 WARNING $Msg(Overwrite) "\n\n\tMacro::$Macro" 1 $Lbl(Yes) $Lbl(No)] } {
             return
@@ -502,7 +514,7 @@ proc Macro::New { Path } {
       set macro [file tail [file rootname $Path]]
 
       set f [open $Path w]
-      puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n"
+      puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n   set Param(InfoArgs)  { \"Liste dear arguments\" \"Arguments list\" }\n}\n"
       puts $f "proc Macro::${macro}::Execute { } {\n   variable Data\nvariable Param\n\n}\n"
       puts $f "proc Macro::${macro}::Clean { } {\n   variable Data\nvariable Param\n\n}\n"
       puts $f "proc Macro::${macro}::Args { } {\n   global argc argv\n\n}\n"

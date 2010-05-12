@@ -1220,7 +1220,7 @@ proc SPI::Execute { Script } {
       #----- Source the script
       namespace inscope :: source $Script
 
-      #----- If Macro the execute it
+      #----- If Macro then execute it
       set script [file rootname [file tail $Script]]
       if { [namespace exists ::Macro::$script] } {
 
