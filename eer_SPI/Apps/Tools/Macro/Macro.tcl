@@ -391,17 +391,18 @@ proc Macro::Execute { Macro } {
       #----- If Macro has an Args function, call it to get the args
       eval set proc \[info procs ::Macro::${Macro}::Args\]
       if { $proc!="" } {
+         set msg $Msg(Args)
+
          if { [info exists Macro:::${Macro}::Param(InfoArgs)] } {
             eval set args \$Macro:::${Macro}::Param(InfoArgs)
-            set msg [list "[lindex $Msg(Args) 0]\n\n[lindex $args 0]" "[lindex $Msg(Args) 1]\n\n[lindex $args 1]"]
-         } else {
-            set msg $Msg(Args)
+            if { [llength [lindex $args 0]] } {
+               set msg [list "[lindex $Msg(Args) 0]\n\n\t[join [lindex $args 0] \n\t]" "[lindex $Msg(Args) 1]\n\n[join [lindex $args 1] \n\t]"]
+            }
          }
 
          #----- If needed args are entered, proceed
          if { [set go [llength [Dialog::Get .macro $Lbl(Args) $msg ::argv]]] } {
             set ::argc [llength $::argv]
-            puts stderr "$::argc .$::argv."
             eval Macro::${Macro}::Args
          }
       }
@@ -514,10 +515,9 @@ proc Macro::New { Path } {
       set macro [file tail [file rootname $Path]]
 
       set f [open $Path w]
-      puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n   set Param(InfoArgs)  { \"Liste dear arguments\" \"Arguments list\" }\n}\n"
+      puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n"
       puts $f "proc Macro::${macro}::Execute { } {\n   variable Data\nvariable Param\n\n}\n"
       puts $f "proc Macro::${macro}::Clean { } {\n   variable Data\nvariable Param\n\n}\n"
-      puts $f "proc Macro::${macro}::Args { } {\n   global argc argv\n\n}\n"
 
       close $f
 
@@ -636,9 +636,18 @@ proc Macro::Current { } {
 proc Macro::Bubble { Index } {
    global GDefs
    variable Data
+   variable Lbl
 
-   if { [info exists ::Macro::[lindex $Data(List) $Index]::Param(Info)] } {
-      eval set info \[lindex \$Macro::[lindex $Data(List) $Index]::Param(Info) \$GDefs(Lang)\]
+   set macro [lindex $Data(List) $Index]
+   if { [info exists ::Macro::${macro}::Param(Info)] } {
+      eval set info \[lindex \$Macro::${macro}::Param(Info) \$GDefs(Lang)\]
+
+      if { [info exists Macro:::${macro}::Param(InfoArgs)] } {
+         eval set args \$Macro:::${macro}::Param(InfoArgs)
+         if { [llength [lindex $args $GDefs(Lang)]] } {
+            append info "\n\n[lindex $Lbl(Args) $GDefs(Lang)]:\n\t[join [lindex $args $GDefs(Lang)] \n\t]"
+         }
+      }
       return $info
    }
 }
