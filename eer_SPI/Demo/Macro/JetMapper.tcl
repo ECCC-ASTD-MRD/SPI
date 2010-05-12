@@ -32,6 +32,9 @@ namespace eval Macro::JetMapper { } {
    variable Icon
    variable Lbl
 
+   set Param(Info)      { "Produit WXO JetMap" "WXO JetMap product" }
+   set Param(InfoArgs)  { { "Run" "Heure" "Repertoirede sortie" "Produit (WXO+PYR)" } { "Run" "Hour" "Output directory" "Product (WXO+PYR)" } }
+
    set Param(Run)   00              ;#Run to be used
    set Param(Hour)  18              ;#Valid time of map to be generated
    set Param(Dir)   ./              ;#Where to save the maps
@@ -354,13 +357,13 @@ proc Macro::JetMapper::Print { } {
    if { [lsearch -exact $Param(Map) WXO]!=-1 } {
 
       #----- Francais
-      Macro::JetMapper::Legend TTI CMAP $Param(Intervals) 0 True
+      Macro::JetMapper::Legend TTI CMAPWXO $Param(Intervals) 0 True
       PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
 
       #----- English
-      Macro::JetMapper::Legend TTI CMAP $Param(Intervals) 1 True
+      Macro::JetMapper::Legend TTI CMAPWXO $Param(Intervals) 1 True
       PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
@@ -383,17 +386,18 @@ proc Macro::JetMapper::Execute { } {
 
    set date [string range [lindex [lsort -dictionary -increasing [glob -directory $env(CMCGRIDF)/prog/regeta/ -tails *$Param(Run)_???]] end] 0 7]
 
-   colormap create CMAP
-   colormap read CMAP $Param(Path)/JetMap.rgba
+   colormap create CMAPWXO
+   colormap read CMAPWXO $Param(Path)/JetMap.rgba
 
    colormap create CMAPPYR
    colormap read CMAPPYR $Param(Path)/JetMapPYR.rgba
 
-   font create FONT16  -family Arial -weight bold -size -18
-   font create FONT12  -family Arial -weight bold -size -16
-   font create FONT10  -family Arial -weight bold -size -12
-   font create FONT8   -family Arial -weight bold -size -10
-
+   catch {
+      font create FONT16  -family Arial -weight bold -size -18
+      font create FONT12  -family Arial -weight bold -size -16
+      font create FONT10  -family Arial -weight bold -size -12
+      font create FONT8   -family Arial -weight bold -size -10
+   }
    #----- Recuperer le champs
    fstdfile open 1 read $env(CMCGRIDF)/prog/regdiag/$date$Param(Run)_0$Param(Hour)
    fstdfile open 2 read $env(CMCGRIDF)/prog/regpres/$date$Param(Run)_0$Param(Hour)
@@ -406,8 +410,8 @@ proc Macro::JetMapper::Execute { } {
    fstdfield read PN  2 -1 "" 0     -1 -1 "" "PN"
    fstdfield read TTI 4 -1 "" -1    -1 -1 "" ""
 
-   fstdfield configure PN -color black -font FONT12 -rendertexture 0 -colormap CMAP -rendercontour 3
-   fstdfield configure NW -color black -font FONT12 -rendertexture 1 -colormap CMAP -intervals "1 2 3 4 5 6" -interpdegree NEAREST -factor 0.001
+   fstdfield configure PN -color black -font FONT12 -rendertexture 0 -colormap CMAPWXO -rendercontour 3
+   fstdfield configure NW -color black -font FONT12 -rendertexture 1 -colormap CMAPWXO -intervals "1 2 3 4 5 6" -interpdegree NEAREST -factor 0.001
 
    Macro::JetMapper::PrecipPlot 32
    Macro::JetMapper::HighLowPlot PN
@@ -429,6 +433,7 @@ proc Macro::JetMapper::Execute { } {
 proc Macro::JetMapper::Clean { } {
 
    fstdfield free  IL NW TT PN TTI UU UUT BUF
+   colormap free CMAPWXO CMAPPYR
 }
 
 proc Macro::JetMapper::Args { } {
@@ -442,3 +447,6 @@ proc Macro::JetMapper::Args { } {
       set Param(Map)   [split [lindex $argv 3] +]
    }
 }
+
+
+
