@@ -150,7 +150,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    wm transient $id .
    wm resizable $id False True
    wm maxsize   $id 320 10000
-   wm minsize   $id 320 300
+   wm minsize   $id 300 300
    wm protocol  $id WM_DELETE_WINDOW "ObsBox::Close $no"
 
    #----- Afficher la fenetre par dessus la derniere
@@ -170,16 +170,14 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
 
    frame $id.header
       SelectBox::Create $id.header.id "IDENTIFICATION" \
-         ObsBox::${spc}::Data(Id) "" 20 10 ObsBox::Restrict $no
+         ObsBox::${spc}::Data(Id) "" 21 10 ObsBox::Restrict $no
       SelectBox::Create $id.header.nb "NB" \
          ObsBox::${spc}::Data(Nb) "" 4 10 ObsBox::Restrict $no
-      SelectBox::Create $id.header.hour "HR" \
-         ObsBox::${spc}::Data(Hour) "" 2 10 ObsBox::Restrict $no
       SelectBox::Create $id.header.date "DATE" \
          ObsBox::${spc}::Data(Date) "" 11 10 ObsBox::Restrict $no
       button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "ObsBox::RestrictClear $no"
-      pack $id.header.id $id.header.nb $id.header.hour $id.header.date -side left -ipadx 3 -fill y
+      pack $id.header.id $id.header.nb $id.header.date -side left -ipadx 3 -fill y
       pack $id.header.info -side left -fill both -expand true
    pack $id.header -side top -fill x
 
@@ -735,7 +733,6 @@ proc ObsBox::Insert { No } {
 
          set sec  [observation define $obs -DATE]
          set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
-         set hour [clock format $sec -format "%H" -gmt true]
          set nb   [observation define $obs -NB]
 
          #----- Garder la liste des champs de selection
@@ -749,13 +746,10 @@ proc ObsBox::Insert { No } {
          if { [lsearch -exact $data(Nb) $nb] == -1 } {
             lappend data(Nb) $nb
          }
-         if { [lsearch -exact $data(Hour) $hour] == -1 } {
-            lappend data(Hour) $hour
-         }
 
          #----- Inserer les donnees dans la liste
 
-         set line [format "%-20s %6i %2s %12s %s" $id $nb $hour $date $obs]
+         set line [format "%-20s %6i %12s %s" $id $nb $date $obs]
          .obsbox$No.data.list insert end $line
          incr data(Read)
       }
@@ -768,7 +762,6 @@ proc ObsBox::Insert { No } {
 
    SelectBox::Insert .obsbox$No.header.id   $data(Id)
    SelectBox::Insert .obsbox$No.header.nb   $data(Nb)
-   SelectBox::Insert .obsbox$No.header.hour $data(Hour)
    SelectBox::Insert .obsbox$No.header.date $data(Date)
 
    .obsbox$No config -cursor left_ptr
@@ -809,7 +802,6 @@ proc ObsBox::Close { No } {
 
    SelectBox::Destroy .obsbox${No}.header.id
    SelectBox::Destroy .obsbox${No}.header.nb
-   SelectBox::Destroy .obsbox${No}.header.hour
    SelectBox::Destroy .obsbox${No}.header.date
 
    ListboxBubble::Destroy .obsbox${No}.data.list
@@ -965,17 +957,15 @@ proc ObsBox::Restrict { No args } {
 
          set sec  [observation define $obs -DATE]
          set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
-         set hour [clock format $sec -format "%H" -gmt true]
          set nb    [observation define $obs -NB]
 
          if { ($data(Id)   == "" || [lsearch -exact $data(Id) $id]     != -1) &&
               ($data(Nb)   == "" || [lsearch -exact $data(Nb) $nb]     != -1) &&
-              ($data(Hour) == "" || [lsearch -exact $data(Hour) $hour] != -1) &&
               ($data(Date) == "" || [lsearch -exact $data(Date) $date] != -1) } {
 
             #----- Inserer les donnees dans la liste
 
-            set line [format "%-20s %6i %2s %12s %s" $id $nb $hour $date $obs]
+            set line [format "%-20s %6i %12s %s" $id $nb $date $obs]
             .obsbox$No.data.list insert end $line
             incr data(Show)
          }
@@ -1006,7 +996,6 @@ proc ObsBox::RestrictClear { No } {
 
    SelectBox::Clear .obsbox$No.header.id   0
    SelectBox::Clear .obsbox$No.header.nb   0
-   SelectBox::Clear .obsbox$No.header.hour 0
    SelectBox::Clear .obsbox$No.header.date 1
 }
 
