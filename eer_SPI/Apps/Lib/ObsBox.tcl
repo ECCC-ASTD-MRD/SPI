@@ -149,7 +149,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    wm title     $id "[lindex $Param(Title) $GDefs(Lang)] ($Title)"
    wm transient $id .
    wm resizable $id False True
-   wm maxsize   $id 320 10000
+   wm maxsize   $id 300 10000
    wm minsize   $id 300 300
    wm protocol  $id WM_DELETE_WINDOW "ObsBox::Close $no"
 

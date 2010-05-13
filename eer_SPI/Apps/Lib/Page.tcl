@@ -731,7 +731,10 @@ proc Page::Create { Frame Width Height { Active True } } {
       set Data(Canvas)  $Frame.page.canvas
    }
 
+   #----- For some misterious reasons, we have to force aliasing once cause FSAA does not
+   #      always kick in. We then remove it at the end casu it's too slow in software mode
    glrender -fsaa $OpenGL::Param(FSAA)
+   glrender -aliasing 1
 
    #----- Creation de la fenetre de projection
 
@@ -759,6 +762,7 @@ proc Page::Create { Frame Width Height { Active True } } {
    CVText::Init $Frame.page.canvas
 
    update idletasks
+   glrender -aliasing 0
    . configure -cursor left_ptr
 }
 
