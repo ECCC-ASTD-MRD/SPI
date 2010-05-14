@@ -24,6 +24,7 @@
 #   MapBox::Create           { Parent Apply Map args }
 #   MapBox::Delete           { Widget }
 #   MapBox::List             { Widget }
+#   MapBox::ListImg          { Widget }
 #   MapBox::Save             { Widget }
 #   MapBox::Select           { Map }
 #   MapBox::Update           { }
@@ -258,7 +259,7 @@ proc MapBox::ControlColor { Canvas Id } {
    set col  [colormap configure $Data(Map) -index $idx]
    set cin  [format "%02x%02x%02x" [lindex $col 0] [lindex $col 1] [lindex $col 2]]
    set alp  [format "%02x" [lindex $col 3]]
-   set cout [ColorBox::Create .mapbox #${cin}${alp}]
+   set cout [ColorBox::Create .mapbox #$cin$alp]
 
    if { $cin!=$cout } {
       $Canvas itemconfigure CTRL$Id -fill $cout -outline $cout
@@ -521,9 +522,11 @@ proc MapBox::Create { Parent Apply Map args } {
    set fr .mapbox.fr.list
    labelframe $fr -text [lindex $Lbl(Map) $GDefs(Lang)]
       ComboBox::Create $fr.name MapBox::Data(Name) edit sorted nodouble -1 {} 1 8 { MapBox::Select $MapBox::Data(Name) }
+      button $fr.name.img -relief raised -bd 1 -image COLORMAP -command "MapBox::ListImg $fr.name" -width 16
       button $fr.save -image FOLDIN -bd 1 -command "MapBox::Save $fr.name" -relief flat -overrelief raised
       button $fr.del -image FOLDOUT -bd 1 -command "MapBox::Delete $fr.name" -relief flat -overrelief raised
       pack $fr.name -side left -fill x -expand true -padx 2
+      pack $fr.name.img -side left -fill y
       pack $fr.save $fr.del -side left -padx 2
 
       Bubble::Create $$fr.name     $Bubble(List)
@@ -701,13 +704,97 @@ proc MapBox::List { Widget } {
    set Data(List) ""
 
    #----- Lire toutes les definitions et inserer les noms dans la liste
-
    foreach file [glob $Data(Dir)/*] {
       regsub ".rgba" [file tail $file] "" pal
       lappend Data(List) $pal
    }
+   set  Data(List) [lsort $Data(List)]
+
    ComboBox::DelAll  $Widget False
    ComboBox::AddList $Widget $Data(List)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <MapBox::ListImg>
+# Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Liste des definitions de palettes en images.
+#
+# Parametres :
+#   <Widget> : Identificateur de la boite
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc MapBox::ListImg { Widget } {
+   global GDefs
+   variable Data
+
+   #---- Create Window
+   if { ![winfo exists .mapboxmaps] } {
+      toplevel .mapboxmaps
+      wm withdraw .mapboxmaps
+      wm overrideredirect .mapboxmaps 1
+      canvas .mapboxmaps.maps -relief sunken -bd 1 -yscrollcommand ".mapboxmaps.scroll set" \
+            -scrollregion "1 1 500 5000" -width 200 -height 1
+      scrollbar .mapboxmaps.scroll -orient vertical -bd 1 -width 10 -command ".mapboxmaps.maps yview"
+      bind .mapboxmaps.maps <Button-4> ".mapboxmaps.maps yview scroll -1 units"
+      bind .mapboxmaps.maps <Button-5> ".mapboxmaps.maps yview scroll 1 units"
+
+      pack .mapboxmaps.maps -side left -fill both -expand true
+      pack .mapboxmaps.scroll -side right -fill y
+   }
+   .mapboxmaps.maps delete all
+
+   #----- Activate/Deactivate
+   if { [winfo ismapped .mapboxmaps] } {
+      wm withdraw .mapboxmaps
+      grab release .mapboxmaps
+   } else {
+      set yloc [expr [winfo rooty $Widget] + [winfo height $Widget]]
+      set xloc [winfo rootx $Widget]
+      wm geometry .mapboxmaps 500x400+$xloc+$yloc
+      wm deiconify .mapboxmaps
+      raise .mapboxmaps
+      grab .mapboxmaps
+   }
+
+   colormap create CMAPTMP
+   set x 10
+   set y 10
+   set no 0
+
+   #----- Create button for each colormap
+   foreach map $Data(List) {
+      if { [lsearch -exact [image names] MAPBOXIMG$map]==-1 } {
+         colormap read CMAPTMP $Data(Dir)/$map.rgba
+         image create photo MAPBOXIMG$map -width 128 -height 15
+         colormap image CMAPTMP MAPBOXIMG$map
+
+         button .mapboxmaps.maps.m$no -text $map -image MAPBOXIMG$map -compound bottom -anchor w -bd 0 \
+            -command "MapBox::Select $map; grab release .mapboxmaps; wm withdraw .mapboxmaps "
+         bind .mapboxmaps.maps.m$no  <Button-4> ".mapboxmaps.maps yview scroll -1 units"
+         bind .mapboxmaps.maps.m$no  <Button-5> ".mapboxmaps.maps yview scroll 1 units"
+      }
+      .mapboxmaps.maps create window $x $y -anchor nw -window .mapboxmaps.maps.m$no
+
+      incr no
+      incr x 150
+      if { $x>400 } {
+         set x  10
+         incr y 50
+      }
+   }
+
+   colormap free CMAPTMP
+   update idletasks
+#   set bbox [.mapboxmaps.maps bbox all]
+#   puts $bbox
+#   .mapboxmaps.maps postscript -x 0 -y 0 -width [expr [lindex $bbox 2]+10] -height [expr [lindex $bbox 3]+10] -rotate false \
+#      -pageanchor c -colormode color -pagewidth 8i -file ~/test.ps -fontmap PrintBox::Map
 }
 
 #-------------------------------------------------------------------------------
