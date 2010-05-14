@@ -707,7 +707,7 @@ proc SPI::WindowMenu { } {
 
    menu .menu.help.menu
        .menu.help.menu add checkbutton -image BUBBLE -label [lindex $Lbl(Bubble) $GDefs(Lang)] -variable SPI::Param(Bubble) -compound left \
-         -onvalue True -offvalue False -command "Bubble::Activate"
+         -onvalue True -offvalue False -command { Bubble::Activate $SPI::Param(Bubble) }
        .menu.help.menu add separator
        .menu.help.menu add command -label [lindex $Lbl(About) $GDefs(Lang)] -command "SPI::About"
 

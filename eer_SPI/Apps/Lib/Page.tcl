@@ -732,7 +732,7 @@ proc Page::Create { Frame Width Height { Active True } } {
    }
 
    #----- For some misterious reasons, we have to force aliasing once cause FSAA does not
-   #      always kick in. We then remove it at the end casu it's too slow in software mode
+   #      always kick in. We then remove it at the end cause it's too slow in software mode
    glrender -fsaa $OpenGL::Param(FSAA)
    glrender -aliasing 1
 

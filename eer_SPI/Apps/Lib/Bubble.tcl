@@ -96,7 +96,7 @@ catch { SPI::Splash "Loading Widget Package Bubble 2.2" }
 
 namespace eval Bubble {
    variable Resources
-   variable Defs
+   variable Param
    variable Data
 
    #----- Definitions des differentes resources du widget
@@ -109,10 +109,10 @@ namespace eval Bubble {
 
    #----- Definitions des variables de traitements du widget
 
-   set Defs(State)      False       ;#Etat des bulles (Activation ou Desactivation)
-   set Defs(Delay)      500         ;#Delai d'affichage de la bulle (en Millisecondes)
-   set Defs(StateList)  ""          ;#Liste des etats des bulles de chaque widget
-   set Defs(WidgetList) ""          ;#Liste des widgets ayant une bulle
+   set Param(State)      False       ;#Etat des bulles (Activation ou Desactivation)
+   set Param(Delay)      500         ;#Delai d'affichage de la bulle (en Millisecondes)
+   set Param(StateList)  ""          ;#Liste des etats des bulles de chaque widget
+   set Param(WidgetList) ""          ;#Liste des widgets ayant une bulle
 
    #----- Definitions des variables de donnees du widget
 
@@ -136,17 +136,17 @@ namespace eval Bubble {
 #-------------------------------------------------------------------------------
 
 proc Bubble::Activate { { State -1 } } {
-   variable Defs
+   variable Param
 
    if { $State!=-1 } {
-      set Defs(State) $State
+      set Param(State) $State
    }
 
-   if { $Defs(State) } {
+   if { $Param(State) } {
 
       #----- Mode Actif
 
-      foreach widget $Defs(WidgetList) {
+      foreach widget $Param(WidgetList) {
 
          set w [lindex $widget 0]
 
@@ -164,7 +164,7 @@ proc Bubble::Activate { { State -1 } } {
 
       #----- Mode Desactiver
 
-      foreach widget $Defs(WidgetList) {
+      foreach widget $Param(WidgetList) {
 
          set w [lindex $widget 0]
 
@@ -196,7 +196,7 @@ proc Bubble::Activate { { State -1 } } {
 #-------------------------------------------------------------------------------
 
 proc Bubble::Create { Widget Hlp } {
-   variable Defs
+   variable Param
    variable Data
    variable Resources
 
@@ -218,12 +218,12 @@ proc Bubble::Create { Widget Hlp } {
    #      Si oui, on update simplement la valeur du texte d'aide
 
 
-   set idx [lsearch -exact $Defs(WidgetList) $Widget]
+   set idx [lsearch -exact $Param(WidgetList) $Widget]
 
    if { $idx == -1 } {
-      lappend Defs(WidgetList) $Widget
+      lappend Param(WidgetList) $Widget
       lappend Data(HlpList)    $Hlp
-      lappend Defs(StateList)  0
+      lappend Param(StateList)  0
    } else {
       set Data(HlpList) [lreplace $Data(HlpList) $idx $idx $Hlp]
    }
@@ -249,16 +249,16 @@ proc Bubble::Create { Widget Hlp } {
 #-------------------------------------------------------------------------------
 
 proc Bubble::Enter { Widget X Y { Delay True } } {
-   variable Defs
+   variable Param
 
    if { [llength $Widget]>1 } {
       set Widget " [lindex $Widget 0] [[lindex $Widget 0] index active] "
    }
-   set idx [lsearch -exact $Defs(WidgetList) $Widget]
-   set Defs(StateList) [lreplace $Defs(StateList) $idx $idx 0]
+   set idx [lsearch -exact $Param(WidgetList) $Widget]
+   set Param(StateList) [lreplace $Param(StateList) $idx $idx 0]
 
    if { $Delay } {
-      after $Defs(Delay) [list Bubble::Show $Widget $X $Y]
+      after $Param(Delay) [list Bubble::Show $Widget $X $Y]
    } else {
       Bubble::Show $Widget $X $Y
    }
@@ -279,13 +279,13 @@ proc Bubble::Enter { Widget X Y { Delay True } } {
 #-------------------------------------------------------------------------------
 
 proc Bubble::Leave { Widget } {
-   variable Defs
+   variable Param
 
    if { [llength $Widget]>1 } {
       set Widget " [lindex $Widget 0] [[lindex $Widget 0] index active] "
    }
-   set idx [lsearch -exact $Defs(WidgetList) $Widget]
-   set Defs(StateList) [lreplace $Defs(StateList) $idx $idx 1]
+   set idx [lsearch -exact $Param(WidgetList) $Widget]
+   set Param(StateList) [lreplace $Param(StateList) $idx $idx 1]
 
    wm state .bubble withdrawn
 }
@@ -334,13 +334,13 @@ proc Bubble::Follow { Widget X Y } {
 
 proc Bubble::Show { Widget X Y } {
    global GDefs
-   variable Defs
+   variable Param
    variable Data
    variable Resources
 
-   set idx   [lsearch -exact $Defs(WidgetList) $Widget]
+   set idx   [lsearch -exact $Param(WidgetList) $Widget]
    set hlp   [lindex [lindex $Data(HlpList) $idx] $GDefs(Lang)]
-   set state [lindex $Defs(StateList) $idx]
+   set state [lindex $Param(StateList) $idx]
 
    #----- Si le curseur est toujours sur le widget concerne, afficher
 
