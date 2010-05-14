@@ -866,10 +866,11 @@ proc MapBox::Select { Map } {
    set Data(Alpha)  [lindex $list 3]
 
    set list [colormap configure $Data(Map) -MMratio]
-   set Data(Min)    [lindex $list 0]
-   set Data(Max)    [lindex $list 1]
-   set Data(Curve)  [colormap configure $Data(Map) -curve rgba]
-   set Data(Interp) [colormap configure $Data(Map) -interp]
+   set Data(Min)      [lindex $list 0]
+   set Data(Max)      [lindex $list 1]
+   set Data(Curve)    [colormap configure $Data(Map) -curve rgba]
+   set Data(CurveIdx) [lsearch -exact $Data(Curves) $Data(Curve)]
+   set Data(Interp)   [colormap configure $Data(Map) -interp]
 
    MapBox::Update
 }
