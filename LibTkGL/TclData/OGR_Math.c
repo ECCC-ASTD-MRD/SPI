@@ -540,7 +540,7 @@ double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
    register long n=0;
    int           g=0;
    Vect3d        v;
-   double        val=0;
+   double        val=0,valg;
 
    if (Coord>=0 && Coord<=2) {
 
@@ -554,7 +554,14 @@ double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
 
       /*Boucle recursive sur les sous geometrie*/
       for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
-         val+=GPC_CoordLimit(OGR_G_GetGeometryRef(Geom,g),Coord,Mode);
+         valg=GPC_CoordLimit(OGR_G_GetGeometryRef(Geom,g),Coord,Mode);
+         if (Mode==0) {
+            val=valg<val?valg:val;
+         } else if (Mode==1) {
+            val=valg>val?valg:val;
+         } else {
+            val+=valg;
+         }
       }
 
       for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
