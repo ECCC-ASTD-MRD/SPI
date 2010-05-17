@@ -290,7 +290,7 @@ int CMap_Copy(Tcl_Interp *Interp,char *To,char *From) {
 */
 static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         idx,c;
+   int         idx,c,n;
    static CONST char *sopt[] = { "read","write","colorlist","image","create","copy","configure","control","free","is",NULL };
    enum                opt { READ,WRITE,COLORLIST,IMAGE,CREATE,COPY,CONFIGURE,CONTROL,FREE,IS };
 
@@ -385,7 +385,10 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             Tcl_WrongNumArgs(Interp,2,Objv,"cmap");
             return(TCL_ERROR);
          }
-         return(CMap_Free(Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            CMap_Free(Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case IS:
