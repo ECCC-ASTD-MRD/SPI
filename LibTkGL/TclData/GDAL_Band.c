@@ -894,12 +894,18 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    OGRGeometryH                 geom;
    OGREnvelope                  env;
 
-   /*Recuperer la valeur a calculer*/
+   /*Recuperer la valeur a utiliser dans l'interpolation*/
    if (Field) {
       if (strcmp(Field,"FEATURE_AREA")==0) {
          fld=-2;
       } else if (strcmp(Field,"FEATURE_LENGTH")==0) {
          fld=-3;
+      } else if (strcmp(Field,"ZCOORD_MIN")==0) {
+         fld=-4;
+      } else if (strcmp(Field,"ZCOORD_MAX")==0) {
+         fld=-5;
+      } else if (strcmp(Field,"ZCOORD_AVG")==0) {
+         fld=-6;
       } else {
          fld=OGR_FD_GetFieldIndex(Layer->Def,Field);
          if (fld==-1) {
@@ -933,12 +939,18 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f]));
 
          /*Get value to distribute*/
-         if (fld==-2) {
+         if (fld>=0) {
+            value=OGR_F_GetFieldAsDouble(Layer->Feature[f],fld);
+         } else if (fld==-2) {
             value=OGR_G_GetArea(geom);
          } else if (fld==-3) {
             value=GPC_Length(geom);
-         } else if (fld>=0) {
-            value=OGR_F_GetFieldAsDouble(Layer->Feature[f],fld);
+         } else if (fld==-4) {
+            GPC_CoordLimit(geom,2,0);
+         } else if (fld==-5) {
+            GPC_CoordLimit(geom,2,1);
+         } else if (fld==-6) {
+            GPC_CoordLimit(geom,2,2);
          } else {
             value=Value;
          }

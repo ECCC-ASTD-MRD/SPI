@@ -143,6 +143,7 @@ int          GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All
 int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
 double       GPC_Length(OGRGeometryH Geom);
 double       GPC_SegmentLength(OGRGeometryH Geom);
+double       GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode);
 OGRGeometryH GPC_Clip(OGRGeometryH Line,OGRGeometryH Poly);
 int          GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);
 double       GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y);

@@ -535,6 +535,42 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    return(All?t==OGR_G_GetPointCount(Geom0):t);
 }
 
+double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
+
+   register long n=0;
+   int           g=0;
+   Vect3d        v;
+   double        val=0;
+
+   if (Coord>=0 && Coord<=2) {
+
+      if (Mode==0) {         /*Minimum*/
+         val=1e32;
+      } else if (Mode==1) {  /*Maximum*/
+         val=-1e32;
+      } else {               /*Average*/
+         val=0.0;
+      }
+
+      /*Boucle recursive sur les sous geometrie*/
+      for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+         val+=GPC_CoordLimit(OGR_G_GetGeometryRef(Geom,g),Coord,Mode);
+      }
+
+      for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
+         OGR_G_GetPoint(Geom,n,&v[0],&v[1],&v[2]);
+         if (Mode==0) {
+            val=v[Coord]<val?v[Coord]:val;
+         } else if (Mode==1) {
+            val=v[Coord]>val?v[Coord]:val;
+         } else {
+            val+=v[Coord];
+         }
+      }
+   }
+   return(Mode==2?val/(n+g):val);
+}
+
 double GPC_Length(OGRGeometryH Geom) {
 
    double length=0;
