@@ -24,7 +24,21 @@ package require TclSystem
 
 set fs [lindex $argv 0]
 
-puts "File system info for $fs"
+puts "System info"
+puts "  uptime   : [system info -uptime]"
+puts "  loads    : [system info -loads]"
+puts "  totalmem : [system info -totalmem]"
+puts "  freemem  : [system info -freemem]"
+puts "  sharedmem: [system info -sharedmem]"
+puts "  buffermem: [system info -buffermem]"
+puts "  totalswap: [system info -totalswap]"
+puts "  freeswap : [system info -freeswap]"
+puts "  process  : [system info -process]"
+puts "  totalhigh: [system info -totalhigh]"
+puts "  freehigh : [system info -freehigh]"
+puts "  memunit  : [system info -memunit]"
+
+puts "\nFile system info for $fs"
 puts "   Type      : [system filesystem $fs -type]"
 puts "   Blocks    : [system filesystem $fs -blocksize -blocks -blockfree -blockused]"
 puts "   Size      : [system filesystem $fs -size]"
@@ -32,13 +46,20 @@ puts "   Free      : [system filesystem $fs -free]"
 puts "   Used      : [system filesystem $fs -used]"
 
 puts "\nSystem limit for process"
-puts "   CPU Time   : [system limit -CPU]"
-puts "   Data size  : [system limit -DATA]"
-puts "   Stack size : [system limit -STACK]"
+puts "   CPU Time   : [system limit -cpu]"
+puts "   Data size  : [system limit -data]"
+puts "   Stack size : [system limit -stack]"
 
-system limit -CPU unlimited
-puts "Stack size :[system limit -CPU]"
+system limit -stack 3600
+puts "Stack size :[system limit -stack]"
 
+puts "\nSystem usage for process"
+after 5000
+set calls [list -utime -stime -cutime -cstime -rss -shared -data -stack -minpagefault -majpagefault -swap -inblock -outblock -signal -vcswitch -ivcswitch]
+eval set vals \[system usage $calls\]
+foreach call $calls val $vals {
+   puts "   $call : $val"
+}
 #system fork
 #system daemonize -lock /tmp/test.pid
 
