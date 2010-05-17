@@ -38,14 +38,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/times.h>
+#include <sys/sysinfo.h>
 #include <sys/resource.h>
+#include <sys/syscall.h>
+#include <sys/signal.h>
+#include <sys/procfs.h>
+#include <sys/user.h>
+#include <sys/ioctl.h>
 #include <sys/vfs.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <syslog.h>
 #include <errno.h>
 #include <pwd.h>
-#include <signal.h>
 
 #include "tclUtils.h"
 

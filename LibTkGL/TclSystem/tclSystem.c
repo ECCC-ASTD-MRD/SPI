@@ -36,7 +36,9 @@
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -190,8 +192,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid;
 
-   static CONST char *sopt[] = { "daemonize","fork","limit","process","filesystem",NULL };
-   enum               opt { DAEMONIZE,FORK,LIMIT,PROCESS,FILESYSTEM };
+   static CONST char *sopt[] = { "daemonize","fork","info","limit","usage","process","filesystem",NULL };
+   enum               opt { DAEMONIZE,FORK,INFO,LIMIT,USAGE,PROCESS,FILESYSTEM };
 
    Tcl_ResetResult(Interp);
 
@@ -217,6 +219,14 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          pid=fork();
          Tcl_SetObjResult(Interp,Tcl_NewIntObj(pid));
          return(TCL_OK);
+         break;
+
+      case USAGE:
+         return(System_Usage(Interp,Objc-2,Objv+2));
+         break;
+
+      case INFO:
+         return(System_Info(Interp,Objc-2,Objv+2));
          break;
 
       case LIMIT:
@@ -438,8 +448,8 @@ int System_LimitSet(Tcl_Interp *Interp,int Resource,int Factor,Tcl_Obj *Value) {
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           i,idx;
-   static CONST char *sopt[] = { "-VMEM","-CORE","-CPU","-DATA","-FILESIZE","-LOCK","-MSGQUEUE","-NICE",
-                                 "-FILENO","-NPROC","-RMEM","-RTPRIO","-SIGPENDING","-STACK",NULL };
+   static CONST char *sopt[] = { "-vmem","-core","-cpu","-data","-filesize","-lock","-msgqueue","-nice",
+                                 "-fileno","-nproc","-rmem","-rtprio","-sigpending","-stack",NULL };
    enum        opt { VMEM,CORE,CPU,DATA,FILESIZE,LOCKS,MSGQUEUE,NICE,FILENO,NPROC,RMEM,RTPRIO,SIGPENDING,STACK };
 
    for(i=0;i<Objc;i++) {
@@ -526,6 +536,146 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    return(TCL_OK);
 }
 
+static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   int            i,idx;
+   struct sysinfo psysinfo;
+   Tcl_Obj       *obj,*sub;
+
+   static CONST char *sopt[] = { "-uptime","-loads","-totalmem","-freemem","-sharedmem","-buffermem","-totalswap","-freeswap","-process","-totalhigh","-freehigh","-memunit",NULL };
+   enum               opt { UPTIME,LOADS,TOTALMEM,FREEMEM,SHAREDMEM,BUFFERMEM,TOTALSWAP,FREESWAP,PROCESS,TOTALHIGH,FREEHIGH,MEMUNIT };
+
+   /*Fill the ps structures*/
+   if (sysinfo(&psysinfo)<0) {
+      Tcl_AppendResult(Interp,"System_Usage: Unable to get process usage",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case UPTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.uptime)); break;
+         case LOADS:
+            sub=Tcl_NewListObj(0,NULL);
+            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(psysinfo.loads[0]));
+            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(psysinfo.loads[1]));
+            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(psysinfo.loads[2]));
+            Tcl_ListObjAppendElement(Interp,obj,sub); break;
+         case TOTALMEM:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.totalram)); break;
+         case FREEMEM:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.freeram)); break;
+         case SHAREDMEM:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.sharedram)); break;
+         case BUFFERMEM:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.bufferram)); break;
+         case TOTALSWAP:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.totalswap)); break;
+         case FREESWAP:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.freeswap)); break;
+         case PROCESS:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.procs)); break;
+         case TOTALHIGH:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.totalhigh)); break;
+         case FREEHIGH:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.freehigh)); break;
+         case MEMUNIT:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(psysinfo.mem_unit)); break;
+      }
+   }
+   Tcl_SetObjResult(Interp,obj);
+   return(TCL_OK);
+}
+
+static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   int           i,idx,tick;
+   struct rusage prusage;
+   struct tms    ptms;
+   Tcl_Obj       *obj;
+
+   static CONST char *sopt[] = { "-utime","-stime","-cutime","-cstime","-rss","-shared","-data","-stack","-minpagefault","-majpagefault","-swap","-inblock","-outblock","-signal","-vcswitch","-ivcswitch",NULL };
+   enum               opt { UTIME,STIME,CUTIME,CSTIME,RSS,SHARED,DATA,STACK,MINPAGEFAULT,MAJPAGEFAULT,SWAP,INBLOCK,OUTBLOCK,SIGNAL,VCSWITCH,IVCSWITCH };
+
+   /*Fill the ps structures*/
+   if (getrusage(RUSAGE_SELF,&prusage)<0) {
+      Tcl_AppendResult(Interp,"System_Usage: Unable to get process usage",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   /*Use theses times casue theyre more precise*/
+   times(&ptms);
+   tick=sysconf(_SC_CLK_TCK);
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case UTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj((double)ptms.tms_utime/tick)); break;
+
+         case STIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj((double)ptms.tms_stime/tick)); break;
+
+         case CUTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj((double)ptms.tms_cutime/tick)); break;
+
+         case CSTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj((double)ptms.tms_cstime/tick)); break;
+
+         case RSS:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_maxrss)); break;
+
+         case SHARED:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_ixrss)); break;
+
+         case DATA:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_idrss)); break;
+
+         case STACK:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_isrss)); break;
+
+         case MINPAGEFAULT:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_minflt)); break;
+
+         case MAJPAGEFAULT:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_majflt)); break;
+
+         case SWAP:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_nswap)); break;
+
+         case INBLOCK:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_inblock)); break;
+
+         case OUTBLOCK:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_oublock)); break;
+
+         case SIGNAL:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_nsignals)); break;
+
+         case VCSWITCH:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_nvcsw)); break;
+
+         case IVCSWITCH:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.ru_nivcsw)); break;
+         }
+   }
+   Tcl_SetObjResult(Interp,obj);
+   return(TCL_OK);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <System_Process>
  * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
@@ -546,10 +696,42 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 */
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int   i,idx,fork=0;
-   char *file;
-   static CONST char *sopt[] = { "-title",NULL };
-   enum               opt { TITLE };
+   int           i,idx,fd;
+   pid_t         pid;
+   char          procfile[BUFSIZ];
+   prpsinfo_t    prpsinfo;
+//   prusage_t    prusage;
+   prstatus_t    prstatus;
+   Tcl_Obj      *obj;
+   char         *procfs="/proc";
+
+   static CONST char *sopt[] = { "-state","-nice","-uid","-gid","-pid","-ppid","-pgid","-sid","-start","-time","-childtime","-priotiry","-tty","-size","-rssize",
+                                 "-realtime","-usertime","-systemtime","-sleeptime","-stoptime","-minpagefault","-majpagefault","-swapped","-fileblocin","-fileblocout","-signal","-syscall","-ttyiochar",NULL };
+   enum               opt { STATE,NICE,UID,GID,PID,PPID,PGID,SID,START,TIME,CHILDTIME,PRIORITY,TTY,SIZE,RSSIZE,
+                            REALTIME,USERTIME,SYSTEMTIME,SLEEPTIME,STOPTIME,MINPAGEFAULT,MAJPAGEFAULT,SWAPPED,FILEBLOCIN,FILEBLOCOUT,SIGNAL,SYSCALL,TTYIOCHAR };
+
+   /*Get passed pid or uses current process pid*/
+   if (Tcl_GetString(Objv[i])[0]=='-') {
+      pid=getpid();
+   } else {
+      Tcl_GetIntFromObj(Interp,Objv[i],&pid);
+   }
+
+   sprintf(procfile,"%s/%s",procfs,Tcl_GetString(Objv[++i]));
+
+   /*Fill the ps structures*/
+   if ((fd=open(procfile,O_RDONLY))<0) {
+      return(TCL_ERROR);
+   }
+
+//   if (ioctl(fd,PIOCPSINFO,&prpsinfo)<0) {
+//      return(TCL_ERROR);
+//   }
+//   if (ioctl(fd,PIOCUSAGE,&prusage)<0) {
+//      return(TCL_ERROR);
+//   }
+
+   obj=Tcl_NewListObj(0,NULL);
 
    for(i=0;i<Objc;i++) {
 
@@ -558,14 +740,132 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
-         case TITLE:
-            if (Objc==1) {
-//               Tcl_SetObjResult(Interp,Tcl_NewStringObj(argv[0],-1));
-            } else {
-//               snprintf(argv[0],"%s",Tcl_GetString(Objv[++i]),strlen(argv[0]));
+         /*PIOCPSINFO*/
+         case STATE:
+            switch(prpsinfo.pr_sname) {
+               case 'I': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Idle",-1)); break;
+               case 'O': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("On processor",-1)); break;
+               case 'R': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Runnable",-1)); break;
+               case 'S': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Sleeping",-1)); break;
+               case 'T': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Stopped",-1)); break;
+               case 'X': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Waiting for memory",-1)); break;
+               case 'Z': Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Zombie",-1)); break;
             }
             break;
+
+         case NICE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_nice)); break;
+            break;
+
+         case UID:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_uid)); break;
+            break;
+
+         case GID:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_gid)); break;
+            break;
+
+         case PID:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pid)); break;
+            break;
+
+         case PPID:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_ppid)); break;
+            break;
+
+         case PGID:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pgrp)); break;
+            break;
+
+         case SID:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_sid)); break;
+            break;
+
+/*
+         case START:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_start)); break;
+            break;
+
+         case TIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_time)); break;
+            break;
+
+         case CHILDTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_ctime)); break;
+            break;
+
+         case PRIORITY:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pri)); break;
+            break;
+
+         case TTY:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pri)); break;
+            break;
+
+         case SIZE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_bysize)); break;
+            break;
+
+         case RSSIZE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_byrssize)); break;
+            break;
+*/
+         /*PIOCUISAGE*/
+/*         case REALTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_rtime)); break;
+            break;
+
+         case USERTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_utime)); break;
+            break;
+
+         case SYSTEMTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_stime)); break;
+            break;
+
+         case SLEEPTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_slptime)); break;
+            break;
+
+         case STOPTIME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_stoptime)); break;
+            break;
+
+         case MINPAGEFAULT:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_minf)); break;
+            break;
+
+         case MAJPAGEFAULT:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_majf)); break;
+            break;
+
+         case SWAPPED:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_nswap)); break;
+            break;
+
+         case FILEBLOCIN:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_inblk)); break;
+            break;
+
+         case FILEBLOCOUT:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_outblk)); break;
+            break;
+
+         case SIGNAL:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_sigs)); break;
+            break;
+
+         case SYSCALL:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_sysc)); break;
+            break;
+
+         case TTYIOCHAR:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_ioch)); break;
+            break;
+ */
+         /*PIOCSTATUS*/
          }
    }
+   Tcl_SetObjResult(Interp,obj);
    return(TCL_OK);
 }
