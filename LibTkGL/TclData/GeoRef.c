@@ -581,7 +581,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
       case WITHIN:
          if (Objc!=4 && Objc!=7 && Objc!=8) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"georefto lat0 lon0 lat1 lon1 [included] | georefto georeffrom");
+            Tcl_WrongNumArgs(Interp,2,Objv,"georefto (lat0 lon0 lat1 lon1 [included]) | georeffrom");
             return(TCL_ERROR);
          } else {
             ref0=GeoRef_Get(Tcl_GetString(Objv[2]));
