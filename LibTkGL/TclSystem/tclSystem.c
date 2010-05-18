@@ -538,6 +538,7 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
 static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
+   #define LINUX_SYSINFO_LOADS_SCALE 65536
    int            i,idx;
    struct sysinfo psysinfo;
    Tcl_Obj       *obj,*sub;
@@ -564,9 +565,9 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.uptime)); break;
          case LOADS:
             sub=Tcl_NewListObj(0,NULL);
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(psysinfo.loads[0]));
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(psysinfo.loads[1]));
-            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewLongObj(psysinfo.loads[2]));
+            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj((double)psysinfo.loads[0]/LINUX_SYSINFO_LOADS_SCALE));
+            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj((double)psysinfo.loads[1]/LINUX_SYSINFO_LOADS_SCALE));
+            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj((double)psysinfo.loads[2]/LINUX_SYSINFO_LOADS_SCALE));
             Tcl_ListObjAppendElement(Interp,obj,sub); break;
          case TOTALMEM:
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.totalram)); break;
