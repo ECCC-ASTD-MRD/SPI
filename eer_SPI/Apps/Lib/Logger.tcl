@@ -177,7 +177,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    #----- Activate Cylope links
    Log::CyclopeSysInfo
    Log::CyclopeProcInfo
-   Log::CyclopeEnd
+   Log::CyclopeEnd $Status
 
    if { $Exit } {
       exit $Status
@@ -383,13 +383,14 @@ Start time: $Param(SecStart)" > $path/info.txt
 # But      : Finaliser les informations du process pour cyclope.
 #
 # Parametres  :
+#    <Status> : Code de retour de la job (0=ok, sinon erreur)
 #
 # Retour:
 #
 # Remarques :
 #----------------------------------------------------------------------------
 
-proc Log::CyclopeEnd { } {
+proc Log::CyclopeEnd { Status } {
    variable Param
 
    if { $Param(Cyclope) } {
@@ -521,4 +522,3 @@ proc Log::CyclopeProcInfo { { PID "" } } {
       close $f
    }
 }
-
