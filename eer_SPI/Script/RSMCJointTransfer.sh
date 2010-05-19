@@ -160,17 +160,17 @@ done
 
 #----- copie les produits sur le serveur de Washington.
 
-cat <<EndFTP > wash.ftp_dir
-user rsmcftp ${rsmcftp}
-bin
-cd restrict/CA
-EndFTP
+#ST cat <<EndFTP > wash.ftp_dir
+#ST user rsmcftp ${rsmcftp}
+#ST bin
+#ST cd restrict/CA
+#ST EndFTP
 
-cat ftp_dir >> wash.ftp_dir
+#ST cat ftp_dir >> wash.ftp_dir
 
-echo "put rsmc.ps rsmc.ps" >> wash.ftp_dir
+#ST echo "put rsmc.ps rsmc.ps" >> wash.ftp_dir
 
-ftp -ni gus.arlhq.noaa.gov < wash.ftp_dir
+#ST ftp -ni gus.arlhq.noaa.gov < wash.ftp_dir
 
 #----- copie les produits sur le serveur de Melbourne.
 

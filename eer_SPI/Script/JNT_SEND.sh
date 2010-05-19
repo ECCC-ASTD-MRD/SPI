@@ -60,12 +60,12 @@ then
 
    #----- copie les produits sur le serveur de Washington.
 
-   ftp -n gus.arlhq.noaa.gov <<EndFTP
-bin
-user rsmcftp ${rsmcftp}
-put ${LocalFile} restrict/JNT_STMT/${RemoteName}
-chmod 644 restrict/JNT_STMT/${RemoteName}
-EndFTP
+#ST    ftp -n gus.arlhq.noaa.gov <<EndFTP
+#ST bin
+#ST user rsmcftp ${rsmcftp}
+#ST put ${LocalFile} restrict/JNT_STMT/${RemoteName}
+#ST chmod 644 restrict/JNT_STMT/${RemoteName}
+#ST EndFTP
 
    #----- copie les produits sur le serveur de Melbourne.
    #      ( a voir )

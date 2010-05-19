@@ -14,38 +14,52 @@
 #   Log::Start { Job Version { Input "" } }
 #   Log::End   { { Status 0 } }
 #   Log::Print { Type Message { Var "" } }
-#   Log::Mail { Subject File { Address { } } }
+#   Log::Mail  { Subject File { Address { } } }
+#
+#   Log::CyclopeStart    { }
+#   Log::CyclopeEnd      { }
+#   Log::CyclopeSysInfo  { }
+#   Log::CyclopeProcInfo { { PID "" } }
 #
 # Remarques :
 #   Aucune
 #
 #===============================================================================
 
-package provide Logger 1.0
+package provide Logger 1.1
+package require TclSystem
 
-catch { SPI::Splash "Loading Package Logger 1.0" }
+catch { SPI::Splash "Loading Package Logger 1.1" }
 
 namespace eval Log { } {
    global env
    variable Param
 
-   set Param(Out)       stdout                ;#Output file/channel
-   set Param(OutFile)   ""                    ;#Output filename
-   set Param(Level)     DEBUG                 ;#Log level
-   set Param(Time)      False                 ;#Print the time
-   set Param(Proc)      True                  ;#Print the calling proc
-   set Param(Path)      $env(HOME)/.spi/logs  ;#Path where to store the log files
-   set Param(Mode)      SCRIPT                ;#Mode du logger (SCRIPT,DAEMON,ALL)
-   set Param(Mail)      ""
-   set Param(MailTitle) "Job Info"
-   set Param(JobId)     ""
-   set Param(OCLog)     ""
-   set Param(SecTime)  [clock seconds]
-   set Param(SecLog)   $Param(SecTime)
-   set Param(SecStart) $Param(SecTime)
-   set Param(SecEnd)   $Param(SecTime)
-   set Param(Job)      "Unknown"
-   set Param(Version)  "Unknown"
+   set Param(Out)         stdout                ;#Output file/channel
+   set Param(OutFile)     ""                    ;#Output filename
+   set Param(Level)       DEBUG                 ;#Log level
+   set Param(Time)        False                 ;#Print the time
+   set Param(Proc)        True                  ;#Print the calling proc
+   set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
+   set Param(OCLog)       ""                    ;#Message to send to OCLOG on error
+   set Param(Warning)     0                     ;#Number of warning
+
+   set Param(SecTime)     [clock seconds]       ;#Current time
+   set Param(SecLog)      $Param(SecTime)       ;#Log time
+   set Param(SecStart)    $Param(SecTime)       ;#Start time
+   set Param(SecEnd)      $Param(SecTime)       ;#End time
+
+   set Param(MailTo)      ""                    ;#Users to which mail will be sent
+   set Param(MailTitle)   "Job Info"            ;#Mail title
+
+   set Param(Cyclope)     False                                      ;#Use Cyclope
+   set Param(CyclopePath) /home/binops/afse/eer/projets/cyclope/jobs ;#Path to Cyclope
+
+   set Param(Job)         "Unknown"             ;#Job name
+   set Param(JobVersion)  "Unknown"             ;#Job version
+   set Param(JobId)       "JOB"                 ;#Job unique identifier
+   set Param(JobPath)     ""                    ;#Job temp dir
+   set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE)
 
    array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 };
 }
@@ -67,19 +81,16 @@ namespace eval Log { } {
 #----------------------------------------------------------------------------
 
 proc Log::Start { Job Version { Input "" } } {
-   global env
+   global env argv argc
    variable Param
 
-   set Param(SecStart) [clock seconds]
-   set Param(SecLog)   $Param(SecStart)
-   set Param(Job)      $Job
-   set Param(Version)  $Version
+   set Param(SecStart)   [clock seconds]
+   set Param(SecLog)     $Param(SecStart)
+   set Param(Job)        $Job
+   set Param(JobVersion) $Version
 
-  #----- Simulation run time ID.
-   if { $Param(JobId)=="" } {
-      #----- Define run time ID if not defined.
-      set Param(JobId) [clock format [clock seconds] -format "%Y%m%d%H%M%S" -gmt True]
-   }
+   #----- Job run time ID.
+   append Param(JobId) "-[clock format [clock seconds] -format "%Y%m%d_%H%M%S" -gmt True]"
 
    Log::Print MUST "-------------------------------------------------------------------------------"
    Log::Print MUST "Script              : $Job"
@@ -88,8 +99,8 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "Architecture        : [exec uname -s]"
    Log::Print MUST "Run ID              : $Param(JobId)"
 
-   if { $Param(Mail)!="" } {
-      Log::Print MUST "E-mail Address      : [join $Param(Mail) "\n                      "]"
+   if { $Param(MailTo)!="" } {
+      Log::Print MUST "E-mail Address      : [join $Param(MailTo) "\n                      "]"
    }
 
    #----- Queue stuff
@@ -113,9 +124,12 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
-   if { $Param(Mode)=="ALL" } {
+   if { $Param(JobClass)=="INTERACTIVE" } {
       Log::Mail "Job started" $Param(OutFile)
    }
+
+   #----- Activate Cylope links
+   Log::CyclopeStart
 }
 
 #----------------------------------------------------------------------------
@@ -140,7 +154,7 @@ proc Log::End { { Status 0 } { Exit True } } {
 
    Log::Print MUST "\n-------------------------------------------------------------------------------"
    if { ${Status}==0 } {
-      Log::Print MUST "Status              : Job has terminated successfully."
+      Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
    } else {
       Log::Print MUST "Status              : Job has encountered some errors."
    }
@@ -153,12 +167,17 @@ proc Log::End { { Status 0 } { Exit True } } {
    }
 
    if { $Status==0 } {
-      if { $Param(Mode)=="ALL" } {
+      if { $Param(JobClass)=="INTERACTIVE" } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
       }
    } else {
       Log::Mail "Job finished (ERROR)" $Param(OutFile)
    }
+
+   #----- Activate Cylope links
+   Log::CyclopeSysInfo
+   Log::CyclopeProcInfo
+   Log::CyclopeEnd
 
    if { $Exit } {
       exit $Status
@@ -205,7 +224,7 @@ proc Log::Print { Type Message { Var "" } } {
    }
 
    #----- Check if we need to split the log file
-   if { $Param(Mode)=="DAEMON" && [expr [clock seconds]-$Param(SecLog)]>86400 } {
+   if { $Param(JobClass)=="DAEMON" && [expr [clock seconds]-$Param(SecLog)]>86400 } {
       if { [file exists $Param(OutFile)] } {
          close $Param(Out)
          file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]
@@ -213,6 +232,10 @@ proc Log::Print { Type Message { Var "" } } {
          fconfigure $Param(Out) -buffering line
       }
       incr Param(SecLog) 86400
+
+      #----- Print stats up til now
+      Log::CyclopeSysInfo
+      Log::CyclopeProcInfo
    }
 
    #----- Print the variable if given
@@ -256,6 +279,11 @@ proc Log::Print { Type Message { Var "" } } {
          set proc ""
       }
 
+      #----- If it is a  warning, add to count for end result
+      if { $Type=="WARNING" } {
+         incr Param(Warning)
+      }
+
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
@@ -292,7 +320,7 @@ proc Log::Mail { Subject File { Address { } } } {
    global env
    variable Param
 
-   set address $Param(Mail)
+   set address $Param(MailTo)
 
    if { [llength $Address] } {
       set address $Address
@@ -314,3 +342,183 @@ proc Log::Mail { Subject File { Address { } } } {
       }
    }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::CyclopeStart>
+# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les informations du process pour cyclope.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::CyclopeStart { } {
+   global env argv argc
+   variable Param
+
+   if { $Param(Cyclope) } {
+      set path $Param(CyclopePath)/$Param(JobId)
+
+      #----- Setup process info
+      file mkdir $path
+      exec echo "Class     : $Param(JobClass)
+Job       : $Param(Job) $Param(JobVersion)
+Command   : [info script] [split $argv]
+Path      : $Param(JobPath)
+Log       : $Param(OutFile)
+Hostname  : [info hostname]
+Arch      : [exec uname -s]
+Start time: $Param(SecStart)" > $path/info.txt
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::CyclopeEnd>
+# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Finaliser les informations du process pour cyclope.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::CyclopeEnd { } {
+   variable Param
+
+   if { $Param(Cyclope) } {
+      set path $Param(CyclopePath)/$Param(JobId)
+
+      #----- Close process info
+      exec echo "End time  : $Param(SecEnd)\nRun time  : [expr $Param(SecEnd)-$Param(SecStart)]" >> $path/info.txt
+
+      if { $Status } {
+         exec echo "Status    : Error ($Status)" >> $path/info.txt
+      } elseif { $Param(Warning) } {
+         exec echo "Status    : Warning ($Param(Warning))" >> $path/info.txt
+      } else {
+         exec echo "Status    : Success" >> $path/info.txt
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::CyclopeSysInfo>
+# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Extraire les statistiques du process pour cyclope.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::CyclopeSysInfo { } {
+   variable Param
+
+   #----- Activate Cylope links
+   if { $Param(Cyclope) } {
+      set path $Param(CyclopePath)/$Param(JobId)
+
+      set calls "-uptime -loads -totalmem -freemem -sharedmem -buffermem -totalswap -freeswap -process -totalhigh -freehigh -memunit"
+      eval set stats \[system info $calls\]
+
+      #----- Print some stats
+      set f [open $path/sysinfo.txt w]
+      puts $f [format "%-10s: %s" Hostname [info hostname]]
+      puts $f [format "%-10s: %s" Arch [exec uname -s]]
+      foreach info $calls stat $stats {
+         puts $f [format "%-10s: %s" [string totitle [string trimleft $info -]] $stat]
+      }
+      close $f
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::CyclopeProcInfo>
+# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Extraire les statistiques du process pour cyclope.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::CyclopeProcInfo { { PID "" } } {
+   variable Param
+   variable Stat
+
+   set Stat(Names) { PID Name State PPID PGRP SID STTY PTTY Flags MinFLT CMinFLT MajFLT CMajFLT UTime STime CUTime CSTime Priority Nice 0 ITRealValue
+      StartTime VSize RSS RLim StartCode EndCode Stack StackESP StackEIP SignalPending SignalBlocked SignalIgnored SignalCatched WChan NSwap CNSwap
+      SignalExit CPU RTPriority Policy }
+
+   set Stat(Infos) {
+      "Process ID"
+      "Filename of the executable"
+      "Proces state "
+      "Parent PID"
+      "Process group ID"
+      "Session"
+      "TTY"
+      "TTY's owner process group ID"
+      "Process kernel flags word"
+      "Number of minor faults"
+      "Chilren's number of minor faults"
+      "Number of major faults"
+      "Children's number of major faults"
+      "Number of user mode jiffies"
+      "Number of system mode jiffies"
+      "Chilren's number of user mode jiffies"
+      "Chilren's number of system mode jiffies"
+      "Nice value, plus fifteen"
+      "The nice value ranges"
+      "Placeholder for a removed field"
+      "Time in jiffies to SIGALRM"
+      "After boot start time in jiffies"
+      "Virtual memory size in bytes"
+      "Resident Set Size"
+      "RSS limit in bytes"
+      "Start code address"
+      "End code address"
+      "Stack start address"
+      "Stack pointer"
+      "Instruction pointer"
+      "Pending signals bitmap"
+      "Blocked signals bitmap"
+      "Ignored signals bitmap"
+      "Caught signals bitmap"
+      "Waiting channel"
+      "Pages swapped"
+      "Children's cumulative pages swapped"
+      "Signal to be sent to parent when we die"
+      "CPU number last executed on"
+      "Real-time scheduling priority"
+      "Policy" }
+
+   if { $Param(Cyclope) } {
+      set path $Param(CyclopePath)/$Param(JobId)
+
+      if { $PID=="" } {
+         set PID [pid]
+      }
+      set stats [exec cat /proc/$PID/stat]
+
+      set f [open $path/procinfo.txt w]
+      foreach info $Stat(Infos) stat $stats {
+         puts $f [format "%-40s: %s" $info $stat]
+      }
+      close $f
+   }
+}
+
