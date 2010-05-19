@@ -505,19 +505,29 @@ proc Log::CyclopeProcInfo { { PID "" } } {
       "Signal to be sent to parent when we die"
       "CPU number last executed on"
       "Real-time scheduling priority"
-      "Policy" }
+      "Policy"
+      "Unknown" }
 
    if { $Param(Cyclope) } {
       set path $Param(CyclopePath)/$Param(JobId)
+
+      set calls "-utime -stime -cutime -cstime -rss -shared -data -stack -minpagefault -majpagefault -swap -inblock -outblock -signal -vcswitch -ivcswitch"
+      eval set stats \[system usage $calls\]
+
+      #----- Print some stats
+      set f [open $path/procinfo.txt w]
+      puts $f "RUSAGE:"
+      foreach info $calls stat $stats {
+         puts $f [format "   %-10s: %s" [string totitle [string trimleft $info -]] $stat]
+      }
 
       if { $PID=="" } {
          set PID [pid]
       }
       set stats [exec cat /proc/$PID/stat]
-
-      set f [open $path/procinfo.txt w]
+      puts $f "PROCINFO:"
       foreach info $Stat(Infos) stat $stats {
-         puts $f [format "%-40s: %s" $info $stat]
+         puts $f [format "   %-40s: %s" $info $stat]
       }
       close $f
    }
