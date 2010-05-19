@@ -388,7 +388,9 @@ proc MLDP::CreateModelInput { } {
    puts $file "[format "%-25s" 11] [format "%-25s" nblevcol] Number of levels in the cumulative distribution of particles within vertical emission plume column."
    set strg   "[format "%-25s" fnp_column(i)] Cumulative fraction \[0,1\] of number of particles within vertical emission plume column."
 
-   set vert [lsearch -exact [lindex $MLDP::Sim(ListEmVerticalDist) $GDefs(Lang)] $Sim(EmVerticalDist)]
+   if { [set vert [lsearch -exact [lindex $MLDP::Sim(ListEmVerticalDist) 0] $Sim(EmVerticalDist)]]==-1 } {
+      set vert [lsearch -exact [lindex $MLDP::Sim(ListEmVerticalDist) 1] $Sim(EmVerticalDist)] } {
+   }
    switch $vert {
       0 { set distr [list "[format "%-25s" 0.000] $strg" 0.100 0.200 0.300 0.400 0.500 0.600 0.700 0.800 0.900 1.000] }
       1 { set distr [list "[format "%-25s" 0.000] $strg" 0.010 0.030 0.060 0.100 0.150 0.260 0.410 0.700 0.900 1.000] }
@@ -399,7 +401,9 @@ proc MLDP::CreateModelInput { } {
    puts $file [join $distr "\n"]
 
    #----- Particle size distribution (settling velocities).
-   set size [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)] $Sim(EmSizeDist)]
+   if { [set size [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) 0] $Sim(EmSizeDist)]]==-1 } {
+     set size [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
+   }
    puts $file "\nParticle size distribution (settling velocities):"
    set IsComputeSV ".FALSE."
    if { $Sim(SrcType) == "volcano" && $size!= 3 } {
