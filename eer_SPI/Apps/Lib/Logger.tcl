@@ -58,6 +58,7 @@ namespace eval Log { } {
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
    set Param(JobId)       "JOB"                 ;#Job unique identifier
+   set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%MZ" -gmt True] ;#----- Current date.
    set Param(JobPath)     ""                    ;#Job temp dir
    set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE)
 
@@ -373,6 +374,9 @@ Log       : $Param(OutFile)
 Hostname  : [info hostname]
 Arch      : [exec uname -s]
 Start time: $Param(SecStart)" > $path/info.txt
+
+      #----- Make file writable to be able to change status in cyclope
+      exec chmod 666 $path/info.txt
    }
 }
 
