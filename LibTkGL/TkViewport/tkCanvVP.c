@@ -1101,39 +1101,39 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
             if (!vp->Frames[vp->Frame]) {
                vp->Frames[vp->Frame]=(GLubyte*)malloc(vp->Width*vp->Height*4);
             }
+         }
 
-            /*Effectuer le rendue des champs*/
-            Projection_Render(NULL,vp,proj,GL_ALL);
-            ProjCam_Project(vp->Cam,proj);
+         /*Effectuer le rendue des champs*/
+         Projection_Render(NULL,vp,proj,GL_ALL);
+         ProjCam_Project(vp->Cam,proj);
 
-            /*Rendue des donnees raster*/
-            for (i=0;i<vp->NbData;i++) {
-               fld=Data_Get(vp->Data[i]);
-               if (fld) {
-                  Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
-               }
+         /*Rendue des donnees raster*/
+         for (i=0;i<vp->NbData;i++) {
+            fld=Data_Get(vp->Data[i]);
+            if (fld) {
+               Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
             }
+         }
 
-            /*Rendue des donnees vectorielle*/
-            for (i=0;i<vp->NbData;i++) {
-               if ((fld=Data_Get(vp->Data[i]))) {
-                  Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
-               }
-               if ((obs=Obs_Get(vp->Data[i]))) {
-                  Obs_Render(NULL,obs,vp,proj,GL_RENDER);
-               }
-               if ((met=MetObs_Get(vp->Data[i]))) {
-                  MetObs_Render(NULL,met,vp,proj,GL_RENDER);
-               }
-               if ((traj=Traj_Get(vp->Data[i]))) {
-                  Traj_Render(NULL,traj,vp,proj,GL_RENDER);
-               }
+         /*Rendue des donnees vectorielle*/
+         for (i=0;i<vp->NbData;i++) {
+            if ((fld=Data_Get(vp->Data[i]))) {
+               Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
             }
+            if ((obs=Obs_Get(vp->Data[i]))) {
+               Obs_Render(NULL,obs,vp,proj,GL_RENDER);
+            }
+            if ((met=MetObs_Get(vp->Data[i]))) {
+               MetObs_Render(NULL,met,vp,proj,GL_RENDER);
+            }
+            if ((traj=Traj_Get(vp->Data[i]))) {
+               Traj_Render(NULL,traj,vp,proj,GL_RENDER);
+            }
+         }
 
-            if (vp->Frames[vp->Frame] && GLRender->XExpose<=1 && !GLRender->TRCon) {
-               glReadBuffer(GL_BACK);
-               glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
-            }
+         if (vp->Frames[vp->Frame] && GLRender->XExpose<=1 && !GLRender->TRCon) {
+            glReadBuffer(GL_BACK);
+            glReadPixels(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,Height-vp->header.y2+((TkCanvas*)Canvas)->yOrigin,vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
          }
          ViewportUnset(vp);
       } else {

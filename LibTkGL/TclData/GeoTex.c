@@ -827,6 +827,7 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
          return(0);
       }
    }
+   Proj->Loading=0;
    return(1);
 }
 

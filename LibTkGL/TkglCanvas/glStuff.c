@@ -307,9 +307,9 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
          case XBATCH:
             if (Objc==2) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->XBatch));
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->XBatch));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&GLRender->XBatch);
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&GLRender->XBatch);
             }
             break;
 
