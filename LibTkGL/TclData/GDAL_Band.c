@@ -2381,7 +2381,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    }
 
    /*Read in data in another thread*/
-   if (GLRender->XBatch) {
+   if (GLRender->XBatch || GLRender->TRCon) {
       GeoTex_Parse(Band,&Band->Tex.Tile,Proj,VP,Band->Tex.ResN,0,0,5);
    } else {
       if (!Band->Tex.ThreadId && !VP->Secondary)
