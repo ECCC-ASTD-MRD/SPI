@@ -306,7 +306,8 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
    double        x,y,lat,lon;
-   int           idx,idxfi,all,n,f;
+   int           idx,idxfi,all,n;
+   long          f;
    GDAL_Band    *band;
    TData        *field;
    OGR_Layer    *layer;
@@ -317,8 +318,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    Tcl_Obj      *lst,*obj;
 
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
-   static CONST char *sopt[] = { "create","free","clean","clear","read","write","import","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
-   enum                opt { CREATE,FREE,CLEAN,CLEAR,READ,WRITE,IMPORT,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","free","clean","clear","read","write","import","delete","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
+   enum                opt { CREATE,FREE,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -433,10 +434,33 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case FREE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          for(n=2;n<Objc;n++) {
             OGR_LayerDestroy(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
+         break;
+
+      case DELETE:
+         if (Objc<4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer ids");
+            return(TCL_ERROR);
+         }
+         if (!(layer=OGR_LayerGet(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid layer",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         for(n=3;n<Objc;n++) {
+            if (Tcl_GetLongFromObj(Interp,Objv[n],&f)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid feature index",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            if (OGR_L_DeleteFeature(layer->Layer,f)!=OGRERR_NONE) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Cannot delete feature",(char*)NULL);
+               return(TCL_ERROR);
+            }
          }
          return(TCL_OK);
          break;
