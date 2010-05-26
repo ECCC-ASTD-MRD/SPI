@@ -1561,17 +1561,17 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    band=GDAL_BandGet(Name);
    if (!band) {
       Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Band name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (!band->Ref) {
-      return TCL_OK;
+      return(TCL_OK);
    }
 
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
@@ -1607,11 +1607,14 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case HISTOGRAM:
-            if (Objc!=2 && Objc!=7) {
+            if (Objc!=2 && Objc!=6) {
                Tcl_WrongNumArgs(Interp,2,Objv,"band index [min max bin approx]");
+               return(TCL_ERROR);
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&c);
                if (c<band->Def->NC) {
+                  if (!band->Stat)
+                     GDAL_BandGetStat(band);
                   min=band->Stat[c].Min;
                   max=band->Stat[c].Max;
                   h=256;
@@ -1622,16 +1625,20 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_GetIntFromObj(Interp,Objv[++i],&h);
                      Tcl_GetBooleanFromObj(Interp,Objv[++i],&w);
                   }
-                  histo=(int*)malloc(h*sizeof(int));
-                  GeoTex_Lock();
-                  GDALGetRasterHistogram(band->Band[c],min,max,h,histo,FALSE,w,GDALDummyProgress,NULL);
-                  GeoTex_UnLock();
-                  obj=Tcl_NewListObj(0,NULL);
-                  for(c=0;c<h;c++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(histo[c]));
-                  }
+                  if (!(histo=(int*)malloc(h*sizeof(int)))) {
+                     Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
+                     return(TCL_ERROR);
+                  } else {
+                     GeoTex_Lock();
+                     GDALGetRasterHistogram(band->Band[c],min,max,h,histo,FALSE,w,GDALDummyProgress,NULL);
+                     GeoTex_UnLock();
+                     obj=Tcl_NewListObj(0,NULL);
+                     for(c=0;c<h;c++) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(histo[c]));
+                     }
                   free(histo);
-                  Tcl_SetObjResult(Interp,obj);
+                     Tcl_SetObjResult(Interp,obj);
+                  }
                }
             }
             break;
