@@ -277,8 +277,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                /* Force assignation of spatial reference since it seems it is no done automatically*/
                geom=OGR_F_GetGeometryRef(layer->Feature[f]);
                if (!t) {
-                  geom=OGR_G_Clone(geom);
-                  OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+                  if (geom=OGR_G_Clone(geom)) {
+                     OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+                  }
                }
                Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,geom));
             } else {
@@ -2246,6 +2247,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
+   /*Generate the display lists*/
    if (!Layer->LFeature) {
       Layer->LFeature=glGenLists(Layer->NFeature);
       if (!Layer->LFeature) {
@@ -2278,7 +2280,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       return(0);
    }
 
-   if (Layer->Extrude!=-1 || Layer->Topo!=-1) {
+   /*Check for extrusion selection*/
+   if (GLRender->GLZBuf || Layer->Extrude!=-1 || Layer->Topo!=-1) {
       glEnable(GL_DEPTH_TEST);
       if (spec->Fill) {
          glEnable(GL_POLYGON_OFFSET_FILL);
@@ -2287,6 +2290,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    }
    glCullFace(GL_FRONT_AND_BACK);
 
+   /*Render the features*/
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          if (Layer->Map!=-1 && spec->Map) {
@@ -2398,6 +2402,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glDisable(GL_POLYGON_OFFSET_FILL);
    glDisable(GL_DEPTH_TEST);
 
+   /*Render the selected features*/
    if (Layer->SFeature) {
 
       for(f=0;f<Layer->NSFeature;f++) {
@@ -2427,6 +2432,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       }
    }
 
+   /*Render the feature's labels*/
    if (Layer->Label && GLRender->Resolution<=1) {
       Projection_UnClip(Proj);
 
@@ -2469,6 +2475,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
       }
 
+      /*Render the selected feature's labels*/
       if (Layer->SFeature && spec->HighLine) {
          glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
          field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);

@@ -936,7 +936,9 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
       if (Layer->Select[f]) {
 
-         geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f]));
+         if (!(geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f])))) {
+             break;
+         }
 
          /*Get value to distribute*/
          if (fld>=0) {

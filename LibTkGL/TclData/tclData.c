@@ -1241,7 +1241,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    extern Vect3d GDB_VBuf[];
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
-extern double Radar_Height(TData *Rad,double I,double J,double K);
+   extern double Radar_Height(TData *Rad,double I,double J,double K);
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
