@@ -1267,6 +1267,8 @@ proc Mapper::ParamsOGR { Object Tab } {
    $Data(Frame1).proj.val insert end $Data(Proj)
 
    ColorBox::ConfigNoColor $Data(Frame2).shape.out.col $Data(Color)
+   ColorBox::ConfigNoColor $Data(Frame2).shape.fill.val $Data(Fill)
+
    $Data(Frame3).sel.val configure -to [expr [ogrlayer define $Mapper::Data(Object) -nb]-1]
 
    ComboBox::DelAll $Data(Frame2).shape.label.val False
