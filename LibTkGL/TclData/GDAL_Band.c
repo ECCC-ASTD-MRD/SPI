@@ -948,11 +948,11 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          } else if (fld==-3) {
             value=GPC_Length(geom);
          } else if (fld==-4) {
-            GPC_CoordLimit(geom,2,0);
+            value=GPC_CoordLimit(geom,2,0);
          } else if (fld==-5) {
-            GPC_CoordLimit(geom,2,1);
+            value=GPC_CoordLimit(geom,2,1);
          } else if (fld==-6) {
-            GPC_CoordLimit(geom,2,2);
+            value=GPC_CoordLimit(geom,2,2);
          } else {
             value=Value;
          }
