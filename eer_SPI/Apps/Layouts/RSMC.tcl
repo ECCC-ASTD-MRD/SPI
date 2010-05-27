@@ -451,6 +451,15 @@ proc RSMC::LayoutUpdate { Frame } {
             "reg" { set NWPModel "GEM Regional" }
          }
 
+         #----- Get the grid resolution ( km ) for RSMC mapping.
+         foreach iscale $MLDP::Sim(ListScale) {
+		    scan $iscale "%s (%d km, %s)" tmpechelle tmpres tmpgrid
+            if { $Sim(Scale) == $tmpechelle } {
+               set Sim(GridResolution) $tmpres
+               break
+            }
+         }
+
          #----- Vertical Distribution.
          set VertDist $Sim(EmVerticalDist)
          switch $Sim(EmVerticalDist) {
