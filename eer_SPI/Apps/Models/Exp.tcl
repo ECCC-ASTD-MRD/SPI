@@ -101,6 +101,8 @@ namespace eval Exp {
    set Msg(Correct0)      { "Voulez-vous lancer le modèle" "Do you wish to launch" }
    set Msg(Correct1)      { "à partir de ces paramètres d'entrée ci-haut?" "model with the above input parameters?" }
    set Msg(Kill)          { "Arrêt de la simulation" "Terminating simulation" }
+
+   set Error(SendJoint)   { "Il y a eu un problème pendant le transfert des message commun:" "There were problems while transferring joint statement:" }
 }
 
 #-------------------------------------------------------------------------------
@@ -1003,10 +1005,10 @@ proc Exp::ProductRSMCJointData { } {
 
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
-      catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt 2>@1 } msg]
    } elseif { $region == "5" } {
       exec echo "345" > $path/leadrsmc.txt
-      catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt }
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt 2>@1 } msg]
    } else {
       file delete -force $path/leadrsmc.txt
    }
@@ -1021,10 +1023,10 @@ proc Exp::ProductRSMCJointData { } {
    }
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
-   catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 }
+   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 2>@1 } msg]
    if { !$join } {
       Dialog::Wait . $Msg(SendJoint)
-      catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html }
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html 2>@1 } msg]
    }
 
    Dialog::WaitDestroy
@@ -1051,6 +1053,7 @@ proc Exp::ProductRSMCJointStatement { File } {
    variable Param
    variable Msg
    variable Lbl
+   variable Error
 
    if { $File=="" } {
       return
@@ -1068,9 +1071,12 @@ proc Exp::ProductRSMCJointStatement { File } {
    }
 
    Dialog::Wait . $Msg(SendJoint)
-   catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html }
-
+   set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html 2>@1 } msg]
    Dialog::WaitDestroy
+
+   if { $err } {
+      Dialog::Error . $Error(SendJoint) $msg
+   }
    . config -cursor left_ptr
 }
 
