@@ -357,7 +357,7 @@ proc PrintBox::Create { Frame Mode args } {
    }
 
    if { $Mode=="SAVE" } {
-   wm title     .printbox "[lindex $Titre(PrintBoxSave) $GDefs(Lang)] $Lbl(Version)"
+      wm title     .printbox "[lindex $Titre(PrintBoxSave) $GDefs(Lang)] $Lbl(Version)"
       set frame [TabFrame::Add .printbox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
 
          frame $frame.file

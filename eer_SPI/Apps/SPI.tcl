@@ -1327,7 +1327,7 @@ proc SPI::IcoDel { Group } {
 
    if { $idx != -1 } {
       set SPI::Ico(Groups) [lreplace $SPI::Ico(Groups) $idx $idx]
-      .menu.disp.menu.icons delete 3 end
+      .menu.disp.menu.icons delete 5 end
       foreach group $SPI::Ico(Groups) {
          .menu.disp.menu.icons add checkbutton -label "$group" -variable SPI::Ico(Set$group) \
             -command "Page::UpdateItems $Page::Data(Frame)"
@@ -1361,7 +1361,7 @@ proc SPI::IcoDel { Group } {
 
 proc SPI::IcoDraw { Frame args } {
    global GDefs
-   variable Data
+   variable Param
    variable Ico
 
    if { ![winfo exists $Frame.page.canvas] } {
@@ -1401,12 +1401,12 @@ proc SPI::IcoDraw { Frame args } {
                if { [set xy [$vp -project $lat $lon $elev]]!="" && [lindex $xy 2]>=0 } {
 
                   #----- Affichage de l'icone
-                  if { $Ico(Icon) } {
+                  if { $Param(IconImage) } {
                      $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image $ico -tags "$group $tag"
                   }
 
                   #----- Affchage du texte
-                  if { $Ico(Id) && $id!=""  } {
+                  if { $Param(IconId) && $id!=""  } {
                      $Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text "$id" -fill $col \
                         -tags "$group TEXT$group" -anchor sw -font XFontIcon
                      $Frame.page.canvas bind $tag <Enter> ""
@@ -1441,7 +1441,6 @@ proc SPI::IcoDraw { Frame args } {
 proc SPI::IcoOpen { Files } {
    global GDefs
    global env
-   variable Data
    variable Error
 
    if { $Files == "" } {
