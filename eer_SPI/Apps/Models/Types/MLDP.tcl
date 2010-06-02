@@ -108,29 +108,12 @@ proc MLDP::Launch { } {
       #----- Copy needed file to run host:directory.
       Model::ParamsCopy MLDP
 
-      set memory ""
-      set mem    ""
-
-      if { $Model::Param(Arch) == "IRIX64" } {
-         set mem "2G"
-      } elseif { $Model::Param(Arch) == "AIX" && $Model::Param(Queue) == "production" } {
-         set mem "4G"
-         if { $Sim(NI) == 687 && $Sim(NJ) == 687 } {
-            set mem "9G"
-         } elseif { $Sim(NI) == 503 && $Sim(NJ) == 503 } {
-            set mem "5G"
-         } elseif { $Sim(NI) == 457 && $Sim(NJ) == 457 } {
-            set mem "4G"
-         } elseif { $Sim(NI) == 229 && $Sim(NJ) == 229 } {
-            set mem "1280M"
-         }
-      }
-
       if { $Sim(Model)=="MLDP1" } {
          set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi"
       } else {
          set cpus "-cpus $Model::Param(NbCPUsMeteo)"
       }
+      set mem 20G
 
       exec echo "#!/bin/sh\n\nord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
          -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
