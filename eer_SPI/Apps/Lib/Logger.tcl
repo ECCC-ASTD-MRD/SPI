@@ -366,16 +366,19 @@ proc Log::CyclopeStart { } {
 
       #----- Setup process info
       file mkdir $path
-      exec echo "Class     : $Param(JobClass)
-Job       : $Param(Job) $Param(JobVersion)
-Command   : [info script] [split $argv]
-Path      : $Param(JobPath)
-Log       : $Param(OutFile)
-Hostname  : [info hostname]
-Arch      : [exec uname -s]
-Start time: $Param(SecStart)" > $path/info.txt
+      set f [open $path/info.txt w 0666]
+      puts $f  "Class     : $Param(JobClass)\nJob       : $Param(Job) $Param(JobVersion)"
 
-      #----- Make file writable to be able to change status in cyclope
+      if { [info exists env(SelfJobResubmit)] } {
+         puts $f "Command   : $env(SelfJobResubmit)"
+         puts $f "Kill      : $env(SelfJobKill)"
+      } else {
+         puts $f "Command   : ssh [info hostname] [info script] [split $argv]"
+         puts $f "Kill      : ssh [info hostname] kill [pid]"
+      }
+      puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [info hostname]\nArch      : [exec uname -s]\nStart time: $Param(SecStart)"
+
+      close $f
       exec chmod 666 $path/info.txt
    }
 }
