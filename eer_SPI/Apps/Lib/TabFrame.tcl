@@ -18,7 +18,7 @@
 #    TabFrame::Add         { Tab Level Title Color }
 #    TabFrame::Create      { Tab Level Command { Width -1 } { Height -1 } }
 #    TabFrame::Clear       { Tab }
-#    TabFrame::Current     { Tab  }
+#    TabFrame::Current     { Tab }
 #    TabFrame::Delete      { Tab Level No }
 #    TabFrame::Destroy     { Tab }
 #    TabFrame::Disable     { Tab No }
@@ -28,7 +28,6 @@
 #    TabFrame::GetLevel    { Tab No }
 #    TabFrame::GetTabs     { Tab }
 #    TabFrame::Is          { Tab }
-#    TabFrame::Current     { Tab  }
 #    TabFrame::NbFrame     { Tab }
 #    TabFrame::Place       { Tab Level No Nb X Top }
 #    TabFrame::PlaceHidder { Tab No Top }
@@ -247,7 +246,7 @@ proc TabFrame::Is { Tab } {
 #
 #-------------------------------------------------------------------------------
 
-proc TabFrame::Current { Tab  } {
+proc TabFrame::Current { Tab } {
    variable Data
 
    return $Data(Current$Tab)

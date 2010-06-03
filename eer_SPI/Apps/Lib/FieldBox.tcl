@@ -290,7 +290,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
             -command ".fieldbox\$FieldBox::Data(Current).data.list selection set 0 end"
          .fieldmenu add separator
          .fieldmenu add command -label "[lindex $Lbl(Params) $GDefs(Lang)] ..." \
-            -command { FieldParams::Window }
+            -command { FieldParams::Window; FieldBox::Select  }
          .fieldmenu add command -label "[lindex $Lbl(Copy) $GDefs(Lang)] ..."\
             -command { FieldBox::FieldCopy [FileBox::Create .fieldbox$FieldBox::Data(Current) "" Save ""] }
          .fieldmenu add separator
@@ -1558,9 +1558,9 @@ proc FieldParams::Window { { Field "" } } {
       wm resizable     .fieldboxparams 1 1
       eval wm geometry .fieldboxparams $Param(Geom)
       wm transient     .fieldboxparams .
-      wm protocol      .fieldboxparams  WM_DELETE_WINDOW { Viewport::FollowerRemove FieldParams; destroy .fieldboxparams }
+      wm protocol      .fieldboxparams  WM_DELETE_WINDOW { Viewport::FollowerRemove FieldParams; FieldParams::GetInfo ""; destroy .fieldboxparams }
 
-      TabFrame::Create .fieldboxparams.tab 1 ""
+      TabFrame::Create .fieldboxparams.tab 1 "FieldParams::GetMatrix \$FieldParams::Data(Field); catch"
       set Data(Tab1) [TabFrame::Add .fieldboxparams.tab 1 [lindex $Lbl(Info) $GDefs(Lang)] True]
 
       frame $Data(Tab1).lbl
@@ -1706,6 +1706,9 @@ proc FieldParams::GetInfo { { Field "" } } {
       .fieldboxparams.cmd.apply configure -state normal
       wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]: [fstdfield define $Field -NOMVAR] ([lindex [fstdfield stats $Field -levels] [fstdfield stats $Field -level]] [fstdfield stats $Field -leveltype]) [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
    } else {
+      foreach param $Data(ParamsOut) {
+         set Data($param) ""
+      }
       .fieldboxparams.cmd.apply configure -state disabled
       wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]"
    }
@@ -1736,7 +1739,10 @@ proc FieldParams::GetMatrix { { Field "" } } {
 
    set Data(Field) $Field
 
-   if { [fstdfield is $Field] } {
+   if { [TabFrame::Current .fieldboxparams.tab]==1 && [fstdfield is $Field] } {
+
+      .fieldboxparams configure -cursor watch
+      update idletasks
 
       set rows [fstdfield define $Field -NJ]
       set cols [fstdfield define $Field -NI]
@@ -1766,6 +1772,7 @@ proc FieldParams::GetMatrix { { Field "" } } {
       for { set r $r } { $r<$rs } { incr r } {
          destroy radiobutton $Data(Tab2).data.table.r$r
       }
+      .fieldboxparams configure -cursor left_ptr
    }
 }
 
