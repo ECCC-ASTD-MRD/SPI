@@ -275,17 +275,18 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
             if (Objc<4) {
                /* Force assignation of spatial reference since it seems it is no done automatically*/
-               geom=OGR_F_GetGeometryRef(layer->Feature[f]);
-               if (!t) {
-                  if (geom=OGR_G_Clone(geom)) {
-                     OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+               if (geom=OGR_F_GetGeometryRef(layer->Feature[f])) {
+                  if (!t) {
+                     if (geom=OGR_G_Clone(geom)) {
+                        OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+                     }
                   }
+                  Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,geom));
                }
-               Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,geom));
             } else {
                if (!(geom=OGR_GeometryGet(Tcl_GetString(Objv[++i])))) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid geometry",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (t) {
@@ -295,7 +296,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                }
                if (t!=OGRERR_NONE) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unsupported geometry",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                OGR_L_CreateFeature(layer->Layer,layer->Feature[f]);
             }

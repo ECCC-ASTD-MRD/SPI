@@ -923,7 +923,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
       case CLOSE:
          if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return(OGR_FileClose(Interp,Tcl_GetString(Objv[2])));
          break;
