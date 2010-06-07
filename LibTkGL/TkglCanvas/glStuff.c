@@ -1848,6 +1848,7 @@ int glDefineParams(){
    glDisable(GL_STENCIL_TEST);
    glClearDepth(1000.0);
    glClearStencil(0x0);
+   glStencilMask(0xFF);
    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
    /*Rendering parameters*/
@@ -2104,52 +2105,52 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
  *  <Height>  : Hauteur
  *
  * Retour:
+ *   <GLXPbuffer> : PBuffer handle
  *
  * Remarques :
  *
  *----------------------------------------------------------------------------
 */
-int glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
+GLXPbuffer glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
 
    unsigned int n;
+   GLXPbuffer   pbuf;
+
    int pattr[]={ GLX_PBUFFER_WIDTH,0, GLX_PBUFFER_HEIGHT,0, GLX_LARGEST_PBUFFER,True, GLX_PRESERVED_CONTENTS,True, None };
 
-   if (!GLRender->GLPBuf) {
-      pattr[1]=*Width;
-      pattr[3]=*Height;
+   pattr[1]=*Width;
+   pattr[3]=*Height;
 
-      for (n=0;n<GLRender->GLConfigNb;n++) {
-         if ((GLRender->GLPBuf=glXCreatePbuffer(GLRender->XDisplay,GLRender->GLConfig[n],pattr)))
-            break;
-      }
+   for (n=0;n<GLRender->GLConfigNb;n++) {
+      if ((pbuf=glXCreatePbuffer(GLRender->XDisplay,GLRender->GLConfig[n],pattr)))
+         break;
+   }
 
    /* Assume that everything is ok since with mesa 6.4 and higher it returns 0 for Width and Height*/
-   //   glXQueryDrawable(GLRender->XDisplay,GLRender->GLPBuf,GLX_WIDTH,Width);
-   //   glXQueryDrawable(GLRender->XDisplay,GLRender->GLPBuf,GLX_HEIGHT,Height);
-
-      if (!GLRender->GLPBuf || *Width==0 || *Height==0) {
-         fprintf(stderr,"(ERROR) glXGetPBuffer: Unable to allocate PBuffer\n");
-         return(0);
-      }
+   if (!GLRender->GLDirect) {
+      glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_WIDTH,Width);
+      glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_HEIGHT,Height);
    }
 
-   if (!glXMakeContextCurrent(GLRender->XDisplay,GLRender->GLPBuf,GLRender->GLPBuf,GLRender->GLCon)) {
-      fprintf(stderr,"(ERROR) glXGetPBuffer: Unable to link the pbuffer to the GLXContext\n");
-      glXFreePBuffer();
+   if (!pbuf || *Width==0 || *Height==0) {
+      fprintf(stderr,"(ERROR) glXGetPBuffer: Unable to allocate PBuffer\n");
       return(0);
    }
+   if (pattr[1]!=*Width || pattr[3]!=*Height) {
+      fprintf(stderr,"(INFO) glXGetPBuffer: Maximum size available is %i x %i instead of requested is %i x %i\n",*Width,*Height,pattr[1],pattr[3]);
+   }
 
-   glDefineParams();
-   return(1);
+   return(pbuf);
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <glFreePBuffer>
+ * Nom      : <glXFreePBuffer>
  * Creation : Novembre 2003 - J.P. Gauthier
  *
  * But      : Liberer le pBuffer
  *
  * Parametres :
+ *   <PBuf>   : PBuffer handle
  *
  * Retour:
  *
@@ -2157,13 +2158,12 @@ int glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
  *
  *----------------------------------------------------------------------------
 */
-int glXFreePBuffer() {
+int glXFreePBuffer(GLXPbuffer PBuf) {
 
    glXMakeContextCurrent(GLRender->XDisplay,None,None,NULL);
 
-   if (GLRender->GLPBuf) {
-//      glXDestroyPbuffer(GLRender->XDisplay,GLRender->GLPBuf);
-//      GLRender->GLPBuf=None;
+   if (PBuf) {
+      glXDestroyPbuffer(GLRender->XDisplay,PBuf);
    }
    return(1);
 }

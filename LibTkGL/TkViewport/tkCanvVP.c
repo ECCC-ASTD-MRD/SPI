@@ -1090,7 +1090,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       }
 
       /*If update is needed or the back buffer frame is not rendered yet*/
-      if (vp->Update && (!vp->Frames[vp->Frame] || !vp->Frame)) {
+      if (vp->Update || (!vp->Frames[vp->Frame] || !vp->Frame)) {
 
          ViewportSet(vp,proj);
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);

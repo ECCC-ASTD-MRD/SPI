@@ -182,14 +182,15 @@ void  glInit(Tcl_Interp *Interp);
 void  glFontInit();
 void  glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip);
 void  glDrawStringBG(int X,int Y,int Theta,int Width,int Height,int DeltaX,int DeltaY);
-void  glXFontFree(T_glFont *glfont);
-void  glXFontTexture(Font font,int first,int count,int listbase,int *tex);
-int   glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin);
-void  glXShutDown();
-int   glXGetPixmap(Tk_Window TkWin,int *Width,int *Height);
-int   glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height);
-int   glXFreePBuffer();
-int   glXFreePixmap();
+
+void       glXFontFree(T_glFont *glfont);
+void       glXFontTexture(Font font,int first,int count,int listbase,int *tex);
+int        glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin);
+void       glXShutDown();
+int        glXGetPixmap(Tk_Window TkWin,int *Width,int *Height);
+GLXPbuffer glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height);
+int        glXFreePBuffer(GLXPbuffer PBuf);
+int        glXFreePixmap();
 
 int      glDefineParams();
 void     glBitmapFree(T_glBitmap *Bitmap);

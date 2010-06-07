@@ -2204,6 +2204,8 @@ int SetupglCanvas(TkCanvas *canvasPtr,int X,int Y,int Width,int Height) {
    glDisable(GL_CULL_FACE);
 
    /* Cleanup the screen before drawing the TkItems */
+   glStencilMask(0xFF);
+   glClearStencil(0x00);
    glClearColor(Tk_3DBorderColor(canvasPtr->bgBorder)->red/65535.0f,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->green/65535.0f,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->blue/65535.0f,1.0f);
@@ -2285,20 +2287,26 @@ int SetglCanvas(TkCanvas *canvasPtr) {
 int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,int Width,int Height) {
 
    int  w,h,wt,ht,x,y,res=0;
+   GLXPbuffer pbuf;
 
    if (!canvasPtr->tkwin)
       return 0;
 
    wt=w=Tk_Width(canvasPtr->tkwin)<canvasPtr->width?canvasPtr->width:Tk_Width(canvasPtr->tkwin);
    ht=h=Tk_Height(canvasPtr->tkwin)<canvasPtr->height?canvasPtr->height:Tk_Height(canvasPtr->tkwin);
-   wt=512;
-   ht=512;
 
-   if (!glXGetPBuffer(canvasPtr->tkwin,&wt,&ht)) {
+   if (!(pbuf=glXGetPBuffer(canvasPtr->tkwin,&wt,&ht))) {
       Tcl_AppendResult(Interp,"BufferglCanvas: Unable to allocate rendering PBuffer",(char*)NULL);
       return(TCL_ERROR);
    }
 
+   if (!glXMakeContextCurrent(GLRender->XDisplay,pbuf,pbuf,GLRender->GLCon)) {
+      fprintf(stderr,"(ERROR) BufferglCanvas: Unable to link the pbuffer to the GLXContext\n");
+      glXFreePBuffer(pbuf);
+      return(TCL_ERROR);
+   }
+
+   glDefineParams();
    SetupglCanvas(canvasPtr,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
 
    /* Setup the tile rendering engine */
@@ -2317,6 +2325,8 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
       trBeginTile(GLRender->TRCon);
 
       /* Cleanup the screen before drawing the TkItems */
+      glStencilMask(0xFF);
+      glClearStencil(0x00);
       glClearColor(Tk_3DBorderColor(canvasPtr->bgBorder)->red/65535.0f,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->green/65535.0f,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->blue/65535.0f,1.0f);
@@ -2330,9 +2340,9 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
 
    trDelete(GLRender->TRCon);
    GLRender->TRCon=NULL;
-   glXFreePBuffer();
+   glXFreePBuffer(pbuf);
 
-  return(res);
+   return(res);
 }
 
 /*----------------------------------------------------------------------------
@@ -2365,7 +2375,7 @@ static int MagnifyglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int 
    Tk_PhotoImageBlock data;
    Tk_PhotoHandle     handle;
    Tk_Item           *itemPtr;
-   int                i,xp;
+   int                i,xp,w,h;
    double             w2,h2;
 
    /*Create PBuffer to specified Tk image dimensions or whatever glX will give us*/
@@ -2375,10 +2385,21 @@ static int MagnifyglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int 
    }
    Tk_PhotoGetSize(handle,&data.width,&data.height);
 
-   if (!glXGetPBuffer(canvasPtr->tkwin,&data.width,&data.height)) {
-      Tcl_AppendResult(Interp,"MagnifyglCanvas: Unable to allocate rendering PBuffer",(char*)NULL);
+   if (!GLRender->GLPBuf) {
+      w=data.width<512?512:data.width;
+      h=data.height<512?512:data.height;
+
+      if (!(GLRender->GLPBuf=glXGetPBuffer(canvasPtr->tkwin,&w,&h))) {
+         Tcl_AppendResult(Interp,"MagnifyglCanvas: Unable to allocate rendering PBuffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+   }
+
+   if (!glXMakeContextCurrent(GLRender->XDisplay,GLRender->GLPBuf,GLRender->GLPBuf,GLRender->GLCon)) {
+      fprintf(stderr,"(ERROR) MagnifyglCanvas: Unable to link the pbuffer to the GLXContext\n");
       return(TCL_ERROR);
    }
+   glDefineParams();
 
    w2=data.width/2.0;
    h2=data.height/2.0;
@@ -2438,7 +2459,7 @@ static int MagnifyglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int 
 
    /*Copy results in Tk image*/
    i=glBuffer(Interp,Img,GL_BACK,0,0,data.width,data.height,data.height);
-   glXFreePBuffer();
+//   glXFreePBuffer(GLRender->GLPBuf);
 
    return(i);
 }
