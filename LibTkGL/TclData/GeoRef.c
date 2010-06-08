@@ -1123,6 +1123,8 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    if (Ref->AX)           free(Ref->AX);           Ref->AX=NULL;
    if (Ref->AY)           free(Ref->AY);           Ref->AY=NULL;
 
+   Ref->IG1=Ref->IG2=Ref->IG3=Ref->IG4=0;
+
    if (Ref->Pos) {
       for(n=0;n<Ref->LevelNb;n++) {
          if (Ref->Pos[n]) free(Ref->Pos[n]);
@@ -1230,6 +1232,9 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
       return(0);
    }
 
+   if (Ref0->IG1!=Ref1->IG1 || Ref0->IG2!=Ref1->IG2 || Ref0->IG3!=Ref1->IG3 || Ref0->IG4!=Ref1->IG4)
+     return(0);
+
    /*Pacth temporaire du au lagrangien qui doivent avoir des GeoRef differents*/
    if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#')
       return(0);
@@ -1309,28 +1314,29 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 
    if (!Ref) {
       Ref=GeoRef_New();
-   }
+   } else {
 
-   TclY_LockHash();
+      TclY_LockHash();
 
-   /*Look for an already existing object that could match*/
-   entry=Tcl_FirstHashEntry(&GeoRef_Table,&ptr);
+      /*Look for an already existing object that could match*/
+      entry=Tcl_FirstHashEntry(&GeoRef_Table,&ptr);
 
-   while (entry) {
-      ref=(TGeoRef*)Tcl_GetHashValue(entry);
+      while (entry) {
+         ref=(TGeoRef*)Tcl_GetHashValue(entry);
 
-      if (GeoRef_Equal(ref,Ref,3)) {
+         if (GeoRef_Equal(ref,Ref,3)) {
 #ifdef DEBUG
-         fprintf(stdout,"(DEBUG) GeoRef_Find: Found existing georef\n");
+            fprintf(stdout,"(DEBUG) GeoRef_Find: Found existing georef\n");
 #endif
-         GeoRef_Free(Ref);
-         GeoRef_Incr(ref);
-         TclY_UnlockHash();
-         return(ref);
+            GeoRef_Free(Ref);
+            GeoRef_Incr(ref);
+            TclY_UnlockHash();
+            return(ref);
+         }
+         entry=Tcl_NextHashEntry(&ptr);
       }
-      entry=Tcl_NextHashEntry(&ptr);
+      TclY_UnlockHash();
    }
-   TclY_UnlockHash();
 
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) GeoRef_Find: New georef\n");
@@ -1364,6 +1370,10 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref->Top=ref->Ref=ref->ETop=0.0;
    ref->Coef[0]=ref->Coef[1]=1.0;
    ref->A=ref->B=NULL;
+   ref->IG1==Ref->IG1;
+   ref->IG2==Ref->IG2;
+   ref->IG3==Ref->IG3;
+   ref->IG4==Ref->IG4;
 
    switch(ref->Grid[0]) {
       case 'R' :
@@ -1457,6 +1467,7 @@ TGeoRef* GeoRef_New() {
    ref->Grid[0]='X';
    ref->Grid[1]='\0';
    ref->Grid[2]='\0';
+   ref->IG1=ref->IG2=ref->IG3=ref->IG4=0;
 
    /*WKT Specific*/
    ref->String=NULL;

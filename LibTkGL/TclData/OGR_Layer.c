@@ -116,7 +116,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (layer->Ref && layer->Ref->String && strlen(layer->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),layer->Ref->String)==0) {
                } else {
                   GeoRef_Destroy(Interp,layer->Ref->Name);
-                  layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                  layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   OGR_LayerClean(layer);
                }
             }
@@ -1505,7 +1505,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
       layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord));
    }
 
-   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
+   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
    OGR_L_GetExtent(layer->Layer,&env,1);
    GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
    return(TCL_OK);
@@ -1652,7 +1652,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord));
    }
 
-   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
+   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
    OGR_L_GetExtent(layer->Layer,&env,1);
    GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
    return(TCL_OK);

@@ -117,6 +117,7 @@ typedef struct TGeoRef {
    int     Type;                                          /*Type de grille*/
    int     BD;                                            /*Bordure*/
    int     X0,Y0,Z0,X1,Y1,Z1;                             /*Grid limits*/
+   int     IG1,IG2,IG3,IG4;                               /*Grid descriptor id*/
    Vect3d **Pos;                                          /*Coordonnees des points de grilles (World)*/
 
    float *Levels;       /*Levels list*/
@@ -190,7 +191,7 @@ int      GeoRef_Valid(TGeoRef *Ref);
 
 TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta);
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
-TGeoRef* GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
+TGeoRef* GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRGeometryH Geometry);
 TGeoRef* GeoRef_RDRCheck(double Lat,double Lon,double Height,double Radius,double ResR,double ResA);
 void     GeoRef_Expand(TGeoRef *Ref);

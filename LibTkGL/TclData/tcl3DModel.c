@@ -277,7 +277,7 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                   if (mdl->Ref && mdl->Ref->String && strlen(mdl->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),mdl->Ref->String)==0) {
                   } else {
                      GeoRef_Destroy(Interp,mdl->Ref->Name);
-                     mdl->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                     mdl->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                      GeoRef_Size(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],0,mdl->Extent[1][0],mdl->Extent[1][1],1000,0);
                      Model_Clean(mdl);
                   }

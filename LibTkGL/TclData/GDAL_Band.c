@@ -180,7 +180,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    if (band->GCPs) {
       /*Get the transform from GCPs*/
-      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,NULL,NULL,NULL);
+      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,NULL,NULL,NULL);
 /*
       if (!GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,tra,TRUE)) {
           printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
@@ -193,14 +193,14 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    } else if ((meta=GDALGetMetadata(file->Set,NULL)) && GDALExtractRPCInfo(meta,&rpcinfo)) {
       /*Get the transform from RPCInfo*/
-      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,NULL,NULL,NULL);
+      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,NULL,NULL,NULL);
 
       printf("(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
       if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
          printf("(WARNING) GDAL_BandRead: Unable to fit RPC\n");
       }
    } else {
-      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,(char*)prj,tra,inv,NULL);
+      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,tra,inv,NULL);
    }
 
    GeoRef_Size(band->Ref,X0+BD,Y0+BD,0,X1-BD,Y1-BD,0,BD);
@@ -2143,10 +2143,10 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                } else {
                   ref=band->Ref;
                   if (ref) {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,Tcl_GetString(Objv[i]),band->Ref->Transform,band->Ref->InvTransform,NULL);
+                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),band->Ref->Transform,band->Ref->InvTransform,NULL);
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                    band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                    band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
                   GeoTex_ClearCoord(&band->Tex,NULL);
                }
@@ -2189,11 +2189,11 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (!band->Ref || !band->Ref->Transform || !tm || memcmp(tm,band->Ref->Transform,6*sizeof(double))!=0) {
                   ref=band->Ref;
                   if (ref) {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,band->Ref->String,tm,im,NULL);
+                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,band->Ref->String,tm,im,NULL);
                      GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,tm,im,NULL);
+                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
                   GeoTex_ClearCoord(&band->Tex,NULL);
                }
@@ -2236,11 +2236,11 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (!band->Ref || !band->Ref->InvTransform || !tm || memcmp(tm,band->Ref->InvTransform,6*sizeof(double))!=0) {
                   ref=band->Ref;
                   if (ref) {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,band->Ref->String,tm,im,NULL);
+                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,band->Ref->String,tm,im,NULL);
                      GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,tm,im,NULL);
+                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
                   GeoTex_ClearCoord(&band->Tex,NULL);
                }

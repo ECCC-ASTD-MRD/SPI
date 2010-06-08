@@ -408,8 +408,6 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
       string=strdup(String);
 
    GeoRef_Clear(Ref,0);
-   Ref->Grid[0]='W';
-   Ref->Grid[1]=Ref->Grid[2]='\0';
 
    if (Transform) {
       if (!Ref->Transform)
@@ -469,7 +467,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    Ref->Height=NULL;
 }
 
-TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    TGeoRef *ref;
 
@@ -477,6 +475,17 @@ TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *Strin
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
    GeoRef_WKTSet(ref,String,Transform,InvTransform,Spatial);
 
+   ref->Grid[1]=ref->Grid[2]='\0';
+   if (GRTYP) {
+      ref->Grid[0]=GRTYP[0];
+      ref->Grid[1]=GRTYP[1];
+   } else {
+      ref->Grid[0]='W';
+   }
+   ref->IG1=IG1;
+   ref->IG2=IG2;
+   ref->IG3=IG3;
+   ref->IG4=IG4;
    ref->LevelType=Type;
    ref->LevelNb=NK;
    ref->Levels=(float*)calloc(ref->LevelNb+1,sizeof(float));

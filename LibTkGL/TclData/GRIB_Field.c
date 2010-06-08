@@ -201,7 +201,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
    err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
    GDALInvGeoTransform(mtx,inv);
-   field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,mtx,inv,NULL);
+   field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,mtx,inv,NULL,0,0,0,0);
    GeoRef_Qualify(field->Ref);
 
    grib_get_string(head.Handle,"centre",sval,&len);

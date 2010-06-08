@@ -1437,11 +1437,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                } else {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
                      Field->Ref->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -1478,11 +1478,10 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                if (!Field->Ref || !Field->Ref->Transform || memcmp(tm,Field->Ref->Transform,6*sizeof(double))!=0) {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,Field->Ref->String,tm,im,NULL);
-                     Field->Ref->Grid[1]=ref->Grid[1];
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,tm,im,NULL);
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,tm,im,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,0,0,0,0,NULL,NULL,tm,im,NULL);
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -1564,9 +1563,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                }
                if (grtyp[0]=='W' || grtyp[1]=='W') {
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->String,ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,NULL,NULL,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,0,0,0,0,NULL,NULL,NULL,NULL,NULL);
                   }
                   Field->Ref->Grid[1]=grtyp[1];
                } else {
@@ -2197,6 +2196,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       ig1=h.IG1;
       ig2=h.IG2;
       ig3=h.IG3;
+      ig4=h.IG4;
 
       /*Here we test for W grids, by getting the subgrid format from the >> field*/
       if (grtyp[0]!='W') {
@@ -2207,7 +2207,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
                &grtyp,&ig1,&ig2,&ig3,&ig4,&pni,&pni,&pni,
                &pni,&pni,&pni,&pni);
 
-         /*This is an X grid but with associated >> ^^, so we force it to W ofor proper processing*/
+         /*This is an X grid but with associated >> ^^, so we force it to W for proper processing*/
          if (ok>=0 && t=='X') {
             grtyp[0]='W';
          }
@@ -2244,9 +2244,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
                im=inv;
             }
          }
-
-         field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,&lvl,proj,tm,im,NULL);
-         field->Ref->Grid[1]=t;
+         grtyp[1]=t;
+         field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,proj,tm,im,NULL);
 
          if (proj) free(proj);
       }
@@ -2426,10 +2425,10 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
 
    type=type==LVL_SIGMA?LVL_ETA:type;
    ref=Field->Ref;
-   if (Field->Ref->Grid[0]=='W') {
-       Field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,levels,Field->Ref->String,Field->Ref->Transform,Field->Ref->InvTransform,NULL);
+   if (ref->Grid[0]=='W') {
+       Field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);
    } else {
-       Field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,levels,Field->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,head->FID->Id);
+       Field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,levels,ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,head->FID->Id);
    }
    Field->Ref->Grid[1]=ref->Grid[1];
    GeoRef_Destroy(Interp,ref->Name);
