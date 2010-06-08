@@ -2073,7 +2073,7 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
          fprintf(stdout,"(INFO) glXCanvasInit: Visual of %i bit depth selected\n",GLRender->GLVis->depth);
       }
 
-      if (glXIsDirect(GLRender->XDisplay,GLRender->GLCon)) {
+      if ((GLRender->GLDirect=glXIsDirect(GLRender->XDisplay,GLRender->GLCon))) {
          fprintf(stdout,"(INFO) glXCanvasInit: Using direct rendering context\n");
          GLRender->ShaderAvailable=1;
       } else {
@@ -2118,18 +2118,23 @@ GLXPbuffer glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
 
    int pattr[]={ GLX_PBUFFER_WIDTH,0, GLX_PBUFFER_HEIGHT,0, GLX_LARGEST_PBUFFER,True, GLX_PRESERVED_CONTENTS,True, None };
 
-   pattr[1]=*Width;
-   pattr[3]=*Height;
+   /*Max out at 2048x2048 cause the theyre seems to be problems with the returned size if too big*/
+   pattr[1]=(*Width>2048?2048:*Width);
+   pattr[3]=(*Height>2048?2048:*Height);
 
    for (n=0;n<GLRender->GLConfigNb;n++) {
       if ((pbuf=glXCreatePbuffer(GLRender->XDisplay,GLRender->GLConfig[n],pattr)))
          break;
    }
 
-   /* Assume that everything is ok since with mesa 6.4 and higher it returns 0 for Width and Height*/
-   if (!GLRender->GLDirect) {
+   /*Check returned Width and Height to make sure they're as requested*/
+   if (GLRender->GLDirect) {
       glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_WIDTH,Width);
       glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_HEIGHT,Height);
+   } else {
+      /*In soft mode, assume that everything is ok since with mesa 6.4 and higher it returns 0 for Width and Height*/
+      *Width=pattr[1];
+      *Height=pattr[3];
    }
 
    if (!pbuf || *Width==0 || *Height==0) {
