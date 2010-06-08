@@ -71,7 +71,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALRasterBandH hband;
    GDALColorTableH hTable;
    GDALColorEntry  entry;
-   GDALDataType    type=0;
+   GDALDataType    type=GDT_Unknown;
    GDALRPCInfo     rpcinfo;
    int             c;
    double          tra[6],inv[6];
@@ -141,7 +141,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    X0=X0<0?0:X0; X1=X1>=nx?nx-1:X1;
    Y0=Y0<0?0:Y0; Y1=Y1>=ny?ny-1:Y1;
 
-   /*If size is smaller than 1 thna read the whole thing*/
+   /*If size is smaller than 1 then read the whole thing*/
    if ((nx=X1-X0+1)<=1) {
       nx=GDALGetRasterBandXSize(hband);
       X0=0;

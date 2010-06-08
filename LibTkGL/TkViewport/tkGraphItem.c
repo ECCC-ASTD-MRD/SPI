@@ -2608,6 +2608,7 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
 
    TData      *data;
    TGraphAxis *axisx,*axisy,*axisz;
+   GLXPbuffer  pbuf;
    int         w,h;
 
    axisx=GraphAxis_Get(Item->XAxis);
@@ -2621,9 +2622,18 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
 
          if (data->Spec->RenderTexture) {
             /* Setup the tile rendering engine */
-            w=512;
-            h=512;
-            glXGetPBuffer(Tk_CanvasTkwin(Graph->canvas),&w,&h);
+            w=Graph->Width;
+            h=Graph->Height;
+            if (!(pbuf=glXGetPBuffer(Tk_CanvasTkwin(Graph->canvas),&w,&h))) {
+               fprintf(stderr,"GraphItem_Postscript: Unable to allocate rendering PBuffer");
+               return;
+            }
+
+            if (!glXMakeContextCurrent(GLRender->XDisplay,pbuf,pbuf,GLRender->GLCon)) {
+               fprintf(stderr,"GraphItem_Postscript: Unable to link the pbuffer to the GLXContext");
+               glXFreePBuffer(pbuf);
+               return;
+            }
 
             glPushAttrib(GL_TRANSFORM_BIT|GL_VIEWPORT_BIT);
             GLRender->TRCon=trNew();
@@ -2647,7 +2657,7 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
             trDelete(GLRender->TRCon);
             GLRender->TRCon=NULL;
             glPopAttrib();
-            glXFreePBuffer();
+            glXFreePBuffer(pbuf);
             SetglCanvas(Graph->canvas);
          }
 

@@ -242,16 +242,14 @@ int FSTD_FieldReadMesh(TData *Field) {
             break;
 
          case 'W':
-            if (Field->Ref->Grid[1]=='Y' || Field->Ref->Grid[1]=='Z') {
+            if (Field->Ref->Grid[1]=='X' || Field->Ref->Grid[1]=='Y' || Field->Ref->Grid[1]=='Z') {
                if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
                if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
             }
 
             if (Field->Ref->Grid[1]=='Y') {
                if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0);
-               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
                if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0);
-               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
                if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
             }
             break;
@@ -2190,17 +2188,18 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    /*Creer une grille comme definie dans l'enregistrement*/
-   if (grtyp[0]=='W' || grtyp[0]=='Y' || grtyp[0]=='Z') {
+   if (grtyp[0]=='W' || grtyp[0]=='Y' || grtyp[0]=='X' || grtyp[0]=='Z') {
       int pni,pnj,ig1,ig2,ig3,ig4;
       float tmpv[6];
-      double mtx[6],inv[6],*tm,*im;
+      double mtx[6],inv[6],*tm=NULL,*im=NULL;
       char   t='\0';
 
       ig1=h.IG1;
       ig2=h.IG2;
       ig3=h.IG3;
 
-      if (grtyp[0]=='Y' || grtyp[0]=='Z') {
+      /*Here we test for W grids, by getting the subgrid format from the >> field*/
+      if (grtyp[0]!='W') {
          t=grtyp[0];
          Key=c_fstinf(file->Id,&pni,&pnj,&nk,-1,"",h.IG1,h.IG2,h.IG3,"",">>");
          ok=c_fstprm(Key,&pni,&pni,&pni,&pni,&pni,&pni,&pni,
@@ -2208,11 +2207,18 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
                &grtyp,&ig1,&ig2,&ig3,&ig4,&pni,&pni,&pni,
                &pni,&pni,&pni,&pni);
 
+         /*This is an X grid but with associated >> ^^, so we force it to W ofor proper processing*/
+         if (ok>=0 && t=='X') {
+            grtyp[0]='W';
+         }
+
+         /*This is no W grid so keep previous grtyp*/
          if (grtyp[0]!='W') {
             grtyp[0]=t;
          }
       }
 
+      /*If it is a W grid, look for PROJ and MATRIX fields*/
       if (grtyp[0]=='W') {
 
          Key=c_fstinf(file->Id,&pni,&pnj,&nk,-1,"",ig1,ig2,ig3,"","PROJ");
@@ -2239,10 +2245,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             }
          }
 
-         if (proj && im) {
-            field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,&lvl,proj,tm,im,NULL);
-            field->Ref->Grid[1]=t;
-         }
+         field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,&lvl,proj,tm,im,NULL);
+         field->Ref->Grid[1]=t;
+
          if (proj) free(proj);
       }
    }

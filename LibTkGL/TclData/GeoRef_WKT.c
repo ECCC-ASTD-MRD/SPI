@@ -427,7 +427,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
          Ref->InvTransform=(double*)calloc(6,sizeof(double));
       memcpy(Ref->InvTransform,InvTransform,6*sizeof(double));
    } else {
-      if (Ref->InvTransform) {
+     if (Ref->InvTransform) {
          free(Ref->InvTransform);
          Ref->InvTransform=NULL;
       }
@@ -475,7 +475,6 @@ TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *Strin
 
    ref=GeoRef_New();
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
-
    GeoRef_WKTSet(ref,String,Transform,InvTransform,Spatial);
 
    ref->LevelType=Type;

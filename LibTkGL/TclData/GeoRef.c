@@ -1175,11 +1175,11 @@ void GeoRef_Qualify(TGeoRef *Ref) {
 
    if (Ref) {
       if (Ref->Grid[0]=='X') {
-         Ref->Type==GRID_NONE;
+         Ref->Type=GRID_NONE;
          return;
       }
 
-      if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[1]=='Y' || Ref->Grid[1]=='Z') {
+      if (Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' || Ref->Grid[1]=='X' || Ref->Grid[1]=='Y' || Ref->Grid[1]=='Z') {
          Ref->Type|=GRID_SPARSE;
       } else {
          Ref->Type|=GRID_REGULAR;

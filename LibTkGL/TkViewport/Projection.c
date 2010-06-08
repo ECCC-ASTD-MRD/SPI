@@ -37,11 +37,8 @@
 #include <sys/types.h>
 #include "Projection.h"
 
-#ifdef LNK_GDALOGR
 #include "tclGDAL.h"
 #include "tclOGR.h"
-#endif
-
 #include "tcl3DModel.h"
 
 static Tcl_HashTable  ProjectionTable;
@@ -543,11 +540,9 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
 
    int        i;
    Tcl_Obj   *obj;
-#ifdef LNK_GDALOGR
    GDAL_Band *band;
    OGR_Layer *layer;
    T3DModel  *mdl;
-#endif
 
    GDB_TileFreeAll(Proj->Geo,Mode);
    if (Proj->VP && Proj->VP->Cam)
@@ -555,7 +550,7 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
 
    for (i=0;i<Proj->NbData;i++) {
       Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
-#ifdef LNK_GDALOGR
+
       band=GDAL_BandGet(Tcl_GetString(obj));
       if (band) {
          GDAL_BandClean(band,0,1,0);
@@ -570,7 +565,6 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
       if (mdl) {
          Model_Clean(mdl);
       }
-#endif
    }
 }
 
@@ -1454,12 +1448,9 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    Tcl_Obj   *obj;
    T3DModel  *mdl;
-   int        ras=0,i;
-
-#ifdef LNK_GDALOGR
    GDAL_Band *band;
    OGR_Layer *layer;
-#endif
+   int        ras=0,i;
 
    if (Proj->Type->Def==PROJPLANE && !Proj->Ref) {
       return(0);
@@ -1516,14 +1507,13 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
       for (i=0;i<Proj->NbData;i++) {
          Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
-#ifdef LNK_GDALOGR
+
          if ((layer=OGR_LayerGet(Tcl_GetString(obj)))) {
             ras+=OGR_LayerRender(NULL,Proj,VP,layer);
          }
          if ((band=GDAL_BandGet(Tcl_GetString(obj)))) {
             ras+=GDAL_BandRender(Proj,VP,band);
          }
-#endif
          if ((mdl=Model_Get(Tcl_GetString(obj)))) {
             ras+=Model_Render(Proj,VP,mdl);
          }

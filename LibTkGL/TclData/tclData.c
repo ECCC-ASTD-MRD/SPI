@@ -95,7 +95,6 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
 #endif
 
-#ifdef LNK_GDALOGR
    /*Initialisation du package GDAL*/
    if (TclGDAL_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
@@ -103,7 +102,6 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    /*Initialisation du package OGR*/
    if (TclOGR_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-#endif
 
   /*Initialisation du package d'observations*/
    if (TclObs_Init(Interp)==TCL_ERROR)

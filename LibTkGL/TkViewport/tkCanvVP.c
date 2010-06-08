@@ -1560,6 +1560,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
 
    Projection   *proj;
    ViewportItem *vp=(ViewportItem *)Item;
+   GLXPbuffer   pbuf;
    double       coords[8];
    int          i,ras=0,w,h;
    char         buf[100];
@@ -1603,10 +1604,14 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
 
    w=vp->Width;
    h=vp->Height;
-   w=512;
-   h=512;
-   if (!glXGetPBuffer(Tk_CanvasTkwin(Canvas),&w,&h)) {
+   if (!(pbuf=glXGetPBuffer(Tk_CanvasTkwin(Canvas),&w,&h))) {
       Tcl_AppendResult(Interp,"ViewportToPostscript: Unable to allocate rendering PBuffer",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   if (!glXMakeContextCurrent(GLRender->XDisplay,pbuf,pbuf,GLRender->GLCon)) {
+      Tcl_AppendResult(Interp,"ViewportToPostscript: Unable to link the pbuffer to the GLXContext",(char*)NULL);
+      glXFreePBuffer(pbuf);
       return(TCL_ERROR);
    }
 
@@ -1647,6 +1652,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       } else {
          glClearStencil(0x0);
       }
+      glStencilMask(0xFF);
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
       /*Generation des donnees raster*/
@@ -1703,7 +1709,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    }
 
    ViewportUnset(vp);
-   glXFreePBuffer();
+   glXFreePBuffer(pbuf);
 
    SetglCanvas(Canvas);
    return(TCL_OK);
