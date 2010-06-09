@@ -345,7 +345,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          } else {
-            ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,NULL,NULL,NULL,0,0,0,0);
+            ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL);
          }
          if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])),Tcl_GetString(Objv[4]),ref)) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);

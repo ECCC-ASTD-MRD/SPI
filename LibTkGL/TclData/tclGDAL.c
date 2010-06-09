@@ -1335,7 +1335,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    if (band && Mode!='w' && Mode!='W') {
       GDALGetGeoTransform(set,tran);
       GDALInvGeoTransform(tran,inv);
-      file->Ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band),1,LVL_UNDEF,NULL,(char*)GDALGetProjectionRef(file->Set),tran,inv,NULL,0,0,0,0);
+      file->Ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,(char*)GDALGetProjectionRef(file->Set),tran,inv,NULL);
       GeoRef_Size(file->Ref,0,0,0,GDALGetRasterBandXSize(band)-1,GDALGetRasterBandYSize(band)-1,0,0);
       GeoRef_Qualify(file->Ref);
    }

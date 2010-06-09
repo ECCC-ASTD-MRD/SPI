@@ -1288,7 +1288,7 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GraphItem_DisplayXYZ>
+ * Nom          : <GraphItem_ColorXYZ>
  * Creation     : Janvier 2007 - J.P. Gauthier - CMC/CMOE
  *
  * But          : Activer une couleur indexee
