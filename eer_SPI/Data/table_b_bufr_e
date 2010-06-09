@@ -2,6 +2,12 @@
 **
 ** LE MEME FICHIER EST AUSSI DISPONIBLE EN FRANCAIS SOUS LE NOM table_b_bufr_f.
 **
+** VERSION 014.056 Feb 01 2010 Mark McCrady
+** Added local descriptor 013228 for HWOS
+**
+** VERSION 014.055 Oct 27 2009 Mark McCrady
+** Added local descriptors 033200 033201 033202 033203 for AWOS/HWOS
+**
 ** VERSION 014.054 May 04 2009 Mark McCrady
 ** Update to version 14
 ** Added 008204
@@ -2466,6 +2472,7 @@
 013223  CLIM. PRECIP. FREQ. >=10.0 MM PERIOD  12H   %            0          0     7
 013226  SHOWALTER INDEX                             NON DEFINI   0       -128     8
 013227  TOTAL PRECIPITATION (HIGH PRECISION)        MM           3          0    21
+013228  WATER EQUIVALENT TO ACCUMULATED SNOW        KG/M**2      2         -2    16
 014192  NET POSINTEGRATED OVER SPECIFIED PERIOD     J/M**2      -4     -16384    15 M
 014193  GLOBAL SOLAR RAD. INTEGR. OVR SPECIFIED PD  J/M**2      -4          0    15 M
 014194  DIFFUSE SOLAR RAD. INTEG. OVR SPECIFIED PD  J/M**2      -4          0    15 M
@@ -2605,6 +2612,10 @@
 033197  ALTERNATIVE PER CENT CONFIDENCE #2          %            0          0     7
 033198  ALTERNATIVE PER CENT CONFIDENCE #3          %            0          0     7
 033199  ALTERNATIVE PER CENT CONFIDENCE #4          %            0          0     7
+033200  WX ELEMENT ERROR QUALITY TABLE              FLAG TABLE   0          0    64
+033201  WX ELEMENT WARNING QUALITY TABLE            FLAG TABLE   0          0    64
+033202  HWOS OVERRIDE QUALITY TABLE                 FLAG TABLE   0          0    48
+033203  HARDWARE QUALITY TABLE                      FLAG TABLE   0          0    48
 048192  O3: SFC SIGMA/ETA=1 (PPB)                   1E-9         2          0    15
 048193  O3: MAX LWR LVLS LAST 3H (PPB)              1E-9         2          0    15
 048194  O3: MAX LWR LVLS LAST 6H (PPB)              1E-9         2          0    15

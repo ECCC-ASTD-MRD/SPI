@@ -1,8 +1,14 @@
-2130 2035
+2135 2040
 **                            TABLE "B" BUFR
 **                            ===============
 **
 ** THIS FILE AVAILABLE IN ENGLISH UNDER THE NAME table_b_bufr_e
+**
+** VERSION 014.056 01 fevrier 2010 Mark McCrady
+** Ajout 1 descripteur 013228 pour HWOS
+**
+** VERSION 014.055 27 octobre 2009 Mark McCrady
+** Ajout 4 descripteurs locaux 033200 033201 033202 033203 pour AWOS/HWOS
 **
 ** VERSION 014.054 04 mai 2009 Mark McCrady
 ** Mise a jour du numero de version de l'OMM.
@@ -2473,6 +2479,7 @@
 013223  FREQ. CLIM. PRECIP. >=10.0 MM PERIODE 12H   %            0          0     7
 013226  INDICE DE SHOWALTER                         NON DEFINI   0       -128     8
 013227  PRECIPITATION TOTALE (HAUTE PRECISION)      MM           3          0    21
+013228  EQUIVALENT D'EAU A NEIGE ACCUMULEE          KG/M**2      2         -2    16
 014192  RADIATION POSITIVE NETTE, PERIODE SPECIF.   J/M**2      -4     -16384    15 M
 014193  RADIATION SOLAIRE GLOBALE, PERIODE SPECIF.  J/M**2      -4          0    15 M
 014194  RADIATION SOLAIRE DIFFUSE, PERIODE SPECIF.  J/M**2      -4          0    15 M
@@ -2612,6 +2619,10 @@
 033197  POURCENTAGE DE CONFIANCE ALTERNATIF #2      %            0          0     7
 033198  POURCENTAGE DE CONFIANCE ALTERNATIF #3      %            0          0     7
 033199  POURCENTAGE DE CONFIANCE ALTERNATIF #4      %            0          0     7
+033200  TABLE DE QUALITE - ERREUR ELEMENT MET       MARQUEURS    0          0    64
+033201  TABLE DE QUALITE - AVERTISSEMENT ELEM. MET. MARQUEURS    0          0    64
+033202  TABLE DE QUALITE - DEPASSER (HWOS)          MARQUEURS    0          0    48
+033203  TABLE DE QUALITE - EQUIPEMENT               MARQUEURS    0          0    48
 048192  O3: SFC SIGMA/ETA=1 (PPM)                   1E-9         2          0    15
 048193  O3: MAX BAS NIVEAUX DERN 3H (PPM)           1E-9         2          0    15
 048194  O3: MAX BAS NIVEAUX DERN 6H (PPM)           1E-9         2          0    15
