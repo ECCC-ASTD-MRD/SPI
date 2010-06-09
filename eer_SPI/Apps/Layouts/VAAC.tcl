@@ -700,9 +700,9 @@ proc VAAC::LayoutUpdate { Frame } {
    }
 
    if { $Sim(Model)=="MLDP0" } {
-      set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ; #----- Convert total release duration from [s] to [h].
-      set mg   [expr int(log10($Sim(EmMass)))] ; #----- Total release mass [micrograms/m3].
-      set time "C"                             ; #----- Release time function. C: Constant.
+      set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ;#----- Convert total release duration from [s] to [h].
+      set mg   [expr $Sim(EmMass)==0?0:int(log10($Sim(EmMass)))]      ;#----- Total release mass [micrograms/m3].
+      set time "C"                                                    ;#----- Release time function. C: Constant.
 
       #----- Initial vertical distribution.
       if { [regexp Uniform $Sim(EmVerticalDist)] } {
