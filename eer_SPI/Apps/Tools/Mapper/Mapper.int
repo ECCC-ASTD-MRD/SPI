@@ -1261,6 +1261,8 @@ proc Mapper::ParamsOGR { Object Tab } {
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
       TabFrame::Select .mapperparams.tab $Tab
+
+      bind $Data(Frame3).sel.val <Return> { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
    }
 
    $Data(Frame1).proj.val delete 0.0 end
@@ -1294,8 +1296,6 @@ proc Mapper::ParamsOGR { Object Tab } {
    Mapper::SelectOGR $Object
    Mapper::FeatureOGR $Object $Data(Index) False
    Mapper::TableOGR $Object $force
-
-   bind $Data(Frame3).sel.val <Return> { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
 }
 
 proc Mapper::SelectOGR { Object } {
