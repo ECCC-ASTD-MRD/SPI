@@ -197,6 +197,103 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
          return(0);
 
    glPushName(PICK_FSTDFIELD);
+   if (Mode==GL_ALL || Mode==GL_VECTOR) {
+
+      if (Field->Spec->RenderGrid)
+         Data_RenderGrid(Interp,Field,VP,(Projection*)Proj);
+
+      if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
+         Data_RenderContour(Interp,Field,VP,(Projection*)Proj);
+
+      if (Field->Spec->RenderVector==BARBULE || Field->Spec->RenderVector==ARROW)
+         Data_RenderVector(Interp,Field,VP,(Projection*)Proj);
+
+      if (Field->Spec->RenderValue)
+         Data_RenderValue(Interp,Field,VP,(Projection*)Proj,Field->Spec->RenderValue);
+   }
+
+   if (GLRender->GLZBuf) {
+      glEnable(GL_DEPTH_TEST);
+   }
+   if (Mode==GL_ALL || Mode==GL_RASTER) {
+
+      /*Verifier la presence d'une palette de couleur si elle est necessaire*/
+      if (Field->Spec->Map) {
+
+         if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V') && (!Field->Spec->RenderContour || Field->Spec->InterNb)) {
+            if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
+               if (GLRender->ShaderAvailable) {
+                  nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
+               } else {
+                  nras+=Data_RenderTexture(Field,VP,(Projection*)Proj);
+               }
+            }
+         }
+
+         if (Field->Spec->RenderVector==STREAMLINE) {
+            nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
+         }
+
+         glEnable(GL_DEPTH_TEST);
+         if (Field->Spec->RenderVector==STREAMLINE3D) {
+            if (Field->Def->Data[2]) {
+               if (Data_Grid3D(Field,Proj)) {
+                  nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
+               }
+            }
+         }
+
+         if (Field->Spec->RenderVol) {
+            if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='V') {
+               /*Recuperer les niveaux disponibles*/
+               if (Data_Grid3D(Field,Proj)) {
+                  nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
+               }
+            }
+         }
+
+         if (Field->Spec->RenderParticle) {
+            if (GLRender->ShaderAvailable) {
+               nras+=Data_RenderShaderParticle(Field,VP,(Projection*)Proj);
+            } else {
+               nras+=Data_RenderParticle(Field,VP,(Projection*)Proj);
+            }
+         }
+
+         if (Field->Spec->RangeNb) {
+            nras+=Data_RenderRange(Field,VP,(Projection*)Proj);
+         }
+
+         if (GLRender->GLZBuf) {
+            glStencilMask(0xf0);
+            glClear(GL_STENCIL_BUFFER_BIT);
+         }
+         glDisable(GL_DEPTH_TEST);
+      }
+   }
+
+   glPopName();
+   glStencilMask(0xff);
+   glStencilFunc(GL_EQUAL,0x0,0xf);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+   return(nras);
+}
+
+int Data_RenderA(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
+
+   int nras=0;
+
+   /*Verifier l'existence du champs*/
+   if (!Field || !Field->Ref || !Field->Spec || !Field->Def->Data[0]) {
+      return(0);
+   }
+   Data_PreInit(Field);
+
+   if (!Field->Ref->Pos || !Field->Ref->Pos[Field->Def->Level])
+      if (!Field->Grid(Field,Proj,Field->Def->Level))
+         return(0);
+
+   glPushName(PICK_FSTDFIELD);
 
    if (Mode==GL_ALL || Mode==GL_VECTOR) {
 

@@ -1661,7 +1661,23 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       for (i=0;i<vp->NbData;i++) {
          fld=Data_Get(vp->Data[i]);
          if (fld) {
-            ras+=Data_Render(Interp,fld,vp,proj,GL_RENDER,GL_RASTER);
+            ras+=Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
+         }
+      }
+      if (GLRender->GLZBuf) {
+         for (i=0;i<vp->NbData;i++) {
+            if ((fld=Data_Get(vp->Data[i]))) {
+               Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+            }
+            if ((obs=Obs_Get(vp->Data[i]))) {
+               Obs_Render(NULL,obs,vp,proj,GL_RENDER);
+            }
+            if ((met=MetObs_Get(vp->Data[i]))) {
+               MetObs_Render(NULL,met,vp,proj,GL_RENDER);
+            }
+            if ((traj=Traj_Get(vp->Data[i]))) {
+               Traj_Render(NULL,traj,vp,proj,GL_RENDER);
+            }
          }
       }
       ViewportUnset(vp);
@@ -1679,18 +1695,20 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    ViewportSetup(Canvas,vp,proj,0,0,0,1,1);
    Projection_Setup(vp,proj,1);
 
-   for (i=0;i<vp->NbData;i++) {
-      if ((fld=Data_Get(vp->Data[i]))) {
-         Data_Render(Interp,fld,vp,proj,GL_RENDER,GL_VECTOR);
-      }
-      if ((obs=Obs_Get(vp->Data[i]))) {
-         Obs_Render(Interp,obs,vp,proj,GL_RENDER);
-      }
-      if ((met=MetObs_Get(vp->Data[i]))) {
-         MetObs_Render(Interp,met,vp,proj,GL_RENDER);
-      }
-      if ((traj=Traj_Get(vp->Data[i]))) {
-         Traj_Render(Interp,traj,vp,proj,GL_RENDER);
+   if (!GLRender->GLZBuf) {
+      for (i=0;i<vp->NbData;i++) {
+         if ((fld=Data_Get(vp->Data[i]))) {
+            Data_Render(Interp,fld,vp,proj,GL_RENDER,GL_VECTOR);
+         }
+         if ((obs=Obs_Get(vp->Data[i]))) {
+            Obs_Render(Interp,obs,vp,proj,GL_RENDER);
+         }
+         if ((met=MetObs_Get(vp->Data[i]))) {
+            MetObs_Render(Interp,met,vp,proj,GL_RENDER);
+         }
+         if ((traj=Traj_Get(vp->Data[i]))) {
+            Traj_Render(Interp,traj,vp,proj,GL_RENDER);
+         }
       }
    }
 
