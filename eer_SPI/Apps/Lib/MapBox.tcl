@@ -92,6 +92,7 @@ namespace eval MapBox {
    set Lbl(Fix)     { "Fixe" "Fixed" }
 
    set Msg(Exist)   { "Cette palette existe deja, voulez vous la remplacer ?" "This colormap exists. Do yo wish to replace it ?" }
+   set Msg(Save)    { "Veuillez entrer le nom de la palette a sauvegarder" "Please entre the name of the colormap to be saved" }
    set Msg(Saved)   { "La palette suivante a ete sauvegardee" "The following colormap has been saved" }
    set Msg(Delete)  { "Voulez-vous vraiment supprimer cette palette ?" "Do you really want do delete this colormap ?" }
 
@@ -816,18 +817,23 @@ proc MapBox::Save { Widget } {
    variable Data
    variable Lbl
    variable Msg
+   variable Bubble
 
-   set idx [lsearch -exact $Data(List) $Data(Name)]
 
-   if { $idx!=-1 } {
-      if { [Dialog::Default .mapbox 200 WARNING $Msg(Exist) "" 0 $Lbl(Yes) $Lbl(No)] } {
-         return
+   if { [set name [Dialog::Get .mapbox $Bubble(Save) $Msg(Save)]]!="" } {
+      set idx [lsearch -exact $Data(List) $name]
+
+      if { $idx!=-1 } {
+         if { [Dialog::Default .mapbox 200 WARNING $Msg(Exist) "" 0 $Lbl(Yes) $Lbl(No)] } {
+            return
+         }
       }
-   }
-   colormap write $Data(Map) $Data(Dir)/$Data(Name).rgba
-   MapBox::List $Widget
+      colormap write $Data(Map) $Data(Dir)/$name.rgba
+      set Data(Name) $name
 
-   Dialog::Info .mapbox $Msg(Saved) "\n\n\t $Data(Name)"
+      MapBox::List $Widget
+      Dialog::Info .mapbox $Msg(Saved) "\n\n\t $name"
+   }
 }
 
 #-------------------------------------------------------------------------------
