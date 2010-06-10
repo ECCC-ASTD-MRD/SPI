@@ -178,6 +178,10 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Must create the fields before allocating the features",(char*)NULL);
                   return(TCL_ERROR);
                }
+               if (strlen(Tcl_GetString(Objv[1]))>10) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: field name too long (max 10 char)",(char*)NULL);
+                  return(TCL_ERROR);
+               }
 
                j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[1]));
                if (j!=-1) {
@@ -191,7 +195,10 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_GetIntFromObj(Interp,Objv[3],&t);
                   i++;
                }
-               OGR_FieldCreate(layer,Tcl_GetString(Objv[1]),Tcl_GetString(Objv[2]),t);
+               if (!OGR_FieldCreate(layer,Tcl_GetString(Objv[1]),Tcl_GetString(Objv[2]),t)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to create field",(char*)NULL);
+                  return(TCL_ERROR);
+               }
                i++;
             }
             break;
@@ -1369,50 +1376,58 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
  *  <Width>   : Largeur du champs
  *
  * Retour     :
- *
+ * <OGRFieldDefnH> : Field def
+ * *
  * Remarques  :
  *
  *----------------------------------------------------------------------------
 */
-void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
+OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
 
-   OGRFieldDefnH  field;
+   OGRFieldDefnH  field=NULL;
+   char           name[11];
+
+   strncpy(name,Field,10);name[10]='\0';
 
    if (strcmp(Type,"Integer")==0) {
-      field=OGR_Fld_Create(Field,OFTInteger);
+      field=OGR_Fld_Create(name,OFTInteger);
    } else if (strcmp(Type,"Real")==0) {
-      field=OGR_Fld_Create(Field,OFTReal);
+      field=OGR_Fld_Create(name,OFTReal);
       if (Width) OGR_Fld_SetPrecision(field,Width);
    } else if (strcmp(Type,"String")==0) {
-      field=OGR_Fld_Create(Field,OFTString);
+      field=OGR_Fld_Create(name,OFTString);
       if (Width) OGR_Fld_SetWidth(field,Width);
    } else if (strcmp(Type,"WideString")==0) {
-      field=OGR_Fld_Create(Field,OFTWideString);
+      field=OGR_Fld_Create(name,OFTWideString);
       if (Width) OGR_Fld_SetWidth(field,Width);
    } else if (strcmp(Type,"IntegerList")==0) {
-      field=OGR_Fld_Create(Field,OFTIntegerList);
+      field=OGR_Fld_Create(name,OFTIntegerList);
    } else if (strcmp(Type,"RealList")==0) {
-      field=OGR_Fld_Create(Field,OFTRealList);
+      field=OGR_Fld_Create(name,OFTRealList);
       if (Width) OGR_Fld_SetPrecision(field,Width);
    } else if (strcmp(Type,"StringList")==0) {
-      field=OGR_Fld_Create(Field,OFTStringList);
+      field=OGR_Fld_Create(name,OFTStringList);
       if (Width) OGR_Fld_SetWidth(field,Width);
    } else if (strcmp(Type,"WideStringList")==0) {
-      field=OGR_Fld_Create(Field,OFTWideStringList);
+      field=OGR_Fld_Create(name,OFTWideStringList);
       if (Width) OGR_Fld_SetWidth(field,Width);
    } else if (strcmp(Type,"Time")==0) {
-      field=OGR_Fld_Create(Field,OFTTime);
+      field=OGR_Fld_Create(name,OFTTime);
    } else if (strcmp(Type,"Date")==0) {
-      field=OGR_Fld_Create(Field,OFTDate);
+      field=OGR_Fld_Create(name,OFTDate);
    } else if (strcmp(Type,"DateTime")==0) {
-      field=OGR_Fld_Create(Field,OFTDateTime);
+      field=OGR_Fld_Create(name,OFTDateTime);
    } else if (strcmp(Type,"Binary")==0) {
-      field=OGR_Fld_Create(Field,OFTBinary);
+      field=OGR_Fld_Create(name,OFTBinary);
    }
+
+   if (field) {
 //   OGR_Fld_SetJustify (OGRFieldDefnH, OGRJustification)
 
-   OGR_L_CreateField(Layer->Layer,field,0);
-   Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
+      OGR_L_CreateField(Layer->Layer,field,0);
+      Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
+   }
+   return(field);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

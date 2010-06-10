@@ -92,7 +92,7 @@ void      OGR_Wipe();
 int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char **Options);
 int OGR_FileClose(Tcl_Interp *Interp,char *Id);
 
-void OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
+OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
 
 OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name);
 OGRLayerH  OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
