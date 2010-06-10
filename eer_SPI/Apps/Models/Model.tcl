@@ -528,6 +528,9 @@ proc Model::ParamsCheck { Model { Get True } } {
    Model::ParamsCPUModel
    Model::ParamsMetDataDir $Model $Get
 
+   #----- Remember selected host for this model
+   set Param(Host$Model) $Param(Host)
+
    if { $Get && [info proc ::${Model}::GetMetData]!="" } {
       if { ![${Model}::GetMetData] } {
          return False
@@ -1010,9 +1013,11 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
 
    #----- Define default host if not already done
    eval set hosts \${${Data(Modelbase)}::Sim(Hosts)}
-   if { [lsearch -exact $hosts $Param(Host)]==-1 } {
-       set Param(Host) [lindex $hosts 0]
+   if { ![info exists ::Model::Param(Host$Data(Modelbase))] || [lsearch -exact $hosts $Param(Host$Data(Modelbase))]==-1 } {
+       set Param(Host$Data(Modelbase)) [lindex $hosts 0]
    }
+   #----- Keep last host selected per model.
+   set Param(Host) $Param(Host$Data(Modelbase))
 
    #----- Model specific parameters
    switch $Mode {

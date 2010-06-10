@@ -65,8 +65,6 @@ proc TRAJECT::InitNew { Type } {
    for { set i 4 } { $i <= 25 } { incr i } {
        set Sim(Level$i)     ""
    }
-
-   set Model::Param(Host) [lindex $Sim(Hosts) 0]
 }
 
 #---------------------------------------------------------------------------

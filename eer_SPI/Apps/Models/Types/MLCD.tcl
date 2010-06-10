@@ -595,8 +595,6 @@ proc MLCD::InitNew { Type } {
    variable Sim
    variable Data
 
-   set Model::Param(Host) [lindex $Sim(Hosts) 0]
-
    set Sim(DurMin)            360                         ; #----- Simulation duration [min].
    set Sim(OutputTimeStepMin) 5                           ; #----- Output time step [min].
    set Sim(ModelTimeStepMin)  5                           ; #----- Model time step [min].
