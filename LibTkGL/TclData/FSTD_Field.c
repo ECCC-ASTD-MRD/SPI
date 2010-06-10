@@ -2201,11 +2201,14 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       /*Here we test for W grids, by getting the subgrid format from the >> field*/
       if (grtyp[0]!='W') {
          t=grtyp[0];
+         ok=-1;
          Key=c_fstinf(file->Id,&pni,&pnj,&nk,-1,"",h.IG1,h.IG2,h.IG3,"",">>");
-         ok=c_fstprm(Key,&pni,&pni,&pni,&pni,&pni,&pni,&pni,
-               &pni,&pni,&pni,&pni,typvar,nomvar,etik,
-               &grtyp,&ig1,&ig2,&ig3,&ig4,&pni,&pni,&pni,
-               &pni,&pni,&pni,&pni);
+         if (Key>0) {
+            ok=c_fstprm(Key,&pni,&pni,&pni,&pni,&pni,&pni,&pni,
+                  &pni,&pni,&pni,&pni,typvar,nomvar,etik,
+                  &grtyp,&ig1,&ig2,&ig3,&ig4,&pni,&pni,&pni,
+                  &pni,&pni,&pni,&pni);
+         }
 
          /*This is an X grid but with associated >> ^^, so we force it to W for proper processing*/
          if (ok>=0 && t=='X') {
