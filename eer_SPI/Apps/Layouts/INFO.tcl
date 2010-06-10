@@ -111,11 +111,9 @@ proc INFO::Layout { Frame } {
    variable Page
 
    #----- Initialisations des constantes relatives aux projections
-
    SPI::IcoClear
 
    Page::Size $Frame $Page(Width) $Page(Height)
-   set Page(VP) [Viewport::Create $Frame [expr $Page(Border)+5] [expr $Page(Border)+312] 140 140 0 0]
 
    INFO::LayoutToolBar $Frame
    INFO::LayoutInit    $Frame
@@ -139,8 +137,6 @@ proc INFO::Layout { Frame } {
 #----------------------------------------------------------------------------
 
 proc INFO::LayoutClear { Frame } {
-
-   Viewport::Destroy $Frame
 
    destroy $Frame.bar $Frame.name $Frame.name.list $Frame.products $Frame.products.list \
       $Frame.situ $Frame.situ.list $Frame.blabla
@@ -199,7 +195,6 @@ proc INFO::LayoutInit { Frame } {
    variable Bubble
 
    #----- Identification
-
    menubutton $Frame.name -textvariable INFO::Data(Name) -relief flat -bd 1 -bg $GDefs(ColorHighLight)\
        -font XFont20 -menu $Frame.name.list
    Bubble::Create $Frame.name $Bubble(Name)
@@ -210,7 +205,6 @@ proc INFO::LayoutInit { Frame } {
    }
 
    #----- Liste des produits
-
    menubutton $Frame.products -text "Products :" -relief flat -bd 1 -bg $GDefs(ColorHighLight) \
       -font XFont10 -menu $Frame.products.list
    Bubble::Create $Frame.products $Bubble(Products)
@@ -224,7 +218,6 @@ proc INFO::LayoutInit { Frame } {
    }
 
    #----- Type de situation d'experience
-
    menubutton $Frame.situ -textvariable INFO::Data(Situation) -relief flat -bd 1 -bg $GDefs(ColorHighLight)\
        -font XFont24 -menu $Frame.situ.list
    Bubble::Create $Frame.situ $Bubble(Situation)
@@ -235,8 +228,7 @@ proc INFO::LayoutInit { Frame } {
    }
 
    #----- Details autres (blabla)
-
-   text $Frame.blabla -height 30 -width 97 -bg white -relief flat -wrap word -highlightthickness 1 \
+   text $Frame.blabla -height 45 -width 97 -bg white -relief flat -wrap word -highlightthickness 1 \
       -yscrollcommand "$Frame.blabla yview moveto 0.0 ; catch " -font XFont10
 }
 
@@ -268,24 +260,20 @@ proc INFO::PageInit { Frame } {
       -foreground gray95 -tags HEADER
 
    #----- Creation de l'entete
-
    $canvas create line $Page(Border) $Page(Border) $Page(Border)  [expr $Page(Border)+140] [expr $Page(Width)-$Page(Border)] [expr $Page(Border)+140] \
        [expr $Page(Width)-$Page(Border)] $Page(Border) $Page(Border) $Page(Border) -fill black -tags HEADER
 
    #----- Who are we
-
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+10] -text "Meteorological Service of Canada (MSC)" \
       -fill black -tags HEADER -font XFont20
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+30] -text "$Data(Name)" \
       -fill black -tags HEADER -font XFont20
 
    #----- Where are we
-
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+50] -tags HEADER -font XFont10 -anchor n -justify left \
       -text "2121 North Service Road\nTrans-Canada Highway\nDorval, Quebec Canada\nH9P 1J3" -fill black \
 
    #----- How to reach us
-
    $canvas create text [expr $Page(Border)+50] [expr $Page(Border)+120] -text "Tel (24 Hrs) : (514) 421-4635" \
       -fill black -tags HEADER -font XFont10 -anchor w
    $canvas create text [expr $Page(Width)-$Page(Border)-50] [expr $Page(Border)+120] -text "Fax (24 Hrs) : (514) 421-4639" \
@@ -294,7 +282,6 @@ proc INFO::PageInit { Frame } {
       -fill black -tags HEADER -font XFont10 -anchor e
 
    #---- Options variables
-
    $canvas create window [expr $Page(Width)/2] [expr $Page(Border)+30] -window $Frame.name -tags "HEADER NOPRINT" -anchor c
 }
 
@@ -343,7 +330,6 @@ proc INFO::Product { Frame } {
       -fill black -tags PRODUCT -font XFont10
 
    #---- Options variables
-
    $canvas create window [expr $Page(Border)+196] [expr $Page(Border)+180] -window $Frame.products -tags "PRODUCT NOPRINT"
 }
 
@@ -378,95 +364,21 @@ proc INFO::Detail { Frame } {
    $canvas create rectangle $Page(Border) [expr $Page(Border)+273]  [expr $Page(Width)-$Page(Border)] [expr $Page(Border)+307] -fill gray \
       -outline black -tags DETAIL
 
-   $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+262] -text "Source term and dispersion model details" \
-      -fill black -tags DETAIL -font XFont20
-
    #---- Fiction ou realite ???
-
    $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+290] -text $Data(Situation) \
          -fill black -tags DETAIL -font XFont24
-
-   #----- Details de la source
-
-   if { $Data(Mode) == "VAAC" } {
-      set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) MIN]
-   } else {
-      set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
-   }
-
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+320] -text "Source name          : $Sim(Name)" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+340] -text "Source location      : $coord" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
-
-   set seconds [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true]
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+360] -text "Release date/time    : [DateStuff::StringDateFromSeconds $seconds 1 " UTC"]" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
-
-   #----- Details des produits
-
-   #----- NWP Model.
-   set NWPModel $Sim(Meteo)
-   switch $Sim(Meteo) {
-      "glb" { set NWPModel "GEM Global" }
-      "reg" { set NWPModel "GEM Regional" }
-   }
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+380] -text "Meteorological model : $NWPModel" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+400] -text "Dispersion model     : $Sim(Model)" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
-
-   set unit "Bq"
-   if { $Sim(Isotope) == "TRACER1" || $Sim(Isotope) == "TRACER2" || $Sim(Isotope) == "TRACER3" } {
-      set unit "Units"
-   }
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+420] -text "Release scenario     : $Sim(Quantity) $unit over $Sim(EmDuration) h ($Sim(Isotope))" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
-
-   if { $Sim(Model) == "CANERM" } {
-      if { $Sim(EmVerticalDist)=="" } {
-         if { $Sim(FnVert) == 0.0 } {
-            set Sim(EmVerticalDist) "Uniform"
-         }
-         if { $Sim(FnVert) < 0.0 } {
-            set Sim(EmVerticalDist) "Gaussian"
-         }
-         if { $Sim(FnVert) > 0.0 } {
-            set Sim(EmVerticalDist) "Empirical"
-         }
-      }
-      if { $Sim(EmHeight) == 0.0 } {
-         set Sim(EmHeight) 500.0 ; #----- 0 m is equivalent to 500 m in CANERM.
-      }
-   } elseif { [regexp MLDP $Sim(Model)] } {
-
-      switch $Sim(EmVerticalDist) {
-         "Uniforme"      { set Sim(EmVerticalDist) "Uniform" }
-         "Champignon"    { set Sim(EmVerticalDist) "Umbrella" }
-         "Exponentielle" { set Sim(EmVerticalDist) "Exponential" }
-         "Poisson"       { set Sim(EmVerticalDist) "Poisson" }
-         "Conique"       { set Sim(EmVerticalDist) "Conical" }
-      }
-   }
-
-   set Sim(EmVerticalDist) "$Sim(EmVerticalDist) between surface and $Sim(EmHeight) m AGL"
-
-   $canvas create text [expr $Page(Border)+160] [expr $Page(Border)+440] -text "Vertical distribution: $Sim(EmVerticalDist)" \
-      -fill black -tags DETAIL -font XFont10 -anchor w
 
    #---- Options variables
    $canvas create window [expr $Page(Width)/2] [expr $Page(Border)+290] -window $Frame.situ -tags "DETAIL NOPRINT" -anchor c
 
-   $canvas create window [expr $Page(Border)+5]  [expr $Page(Border)+455] -window $Frame.blabla -tags "DETAIL NOPRINT" -anchor nw
-   $canvas create text   [expr $Page(Border)+20] [expr $Page(Border)+460] -fill black -tags TEXT -font XFont10 -anchor nw
+   $canvas create window [expr $Page(Border)+5]  [expr $Page(Border)+330] -window $Frame.blabla -tags "DETAIL NOPRINT" -anchor nw
+   $canvas create text   [expr $Page(Border)+20] [expr $Page(Border)+335] -fill black -tags TEXT -font XFont10 -anchor nw
 
    #---- Insert default blabla
-   if { $Sim(Model)=="CANERM" || ([regexp MLDP $Sim(Model)] && $Sim(SrcType)=="accident") } {
-      set text   "$Data(BlaBlaHead)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaMaps)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaMeteo)"
-      $Frame.blabla delete 0.0 end
-      $Frame.blabla insert 0.0 $text
-      $canvas itemconfigure TEXT -text $text
-   }
+   set text   "$Data(BlaBlaHead)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaMaps)\n(username: eerca99 password: [SPI::Password eerca99])\n\n$Data(BlaBlaMeteo)"
+   $Frame.blabla delete 0.0 end
+   $Frame.blabla insert 0.0 $text
+   $canvas itemconfigure TEXT -text $text
 
    bind $Frame.blabla <Any-KeyRelease> "$canvas itemconfigure TEXT -text \[$Frame.blabla get 0.0 end\]"
    bind $Frame.blabla <FocusIn> "$canvas itemconfigure TEXT -text \[$Frame.blabla get 0.0 end\]"
@@ -531,57 +443,6 @@ proc INFO::LayoutUpdate { Frame } {
    }
 
    if { $found } {
-
-      set ListIsoSymbol $Sim(EmIsoSymbol)
-      set ListIsoQuant  $Sim(EmIsoQuantity)
-
-      if { $Sim(Model)=="CANERM" } {
-
-         set ListIsoSymbol $Sim(IsoName)
-         set ListIsoQuant  $Sim(IsoRelease)
-
-      } elseif { [regexp MLDP $Sim(Model)] } {
-
-         #----- Convert total release duration from [s] to [h].
-         set ReleaseDuration [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]]
-         set TmpRelDur [string trimright $ReleaseDuration "0"]
-         if { [string range $TmpRelDur end end] == "." } {
-            set indx [expr [string length $TmpRelDur] - 2]
-            set ReleaseDuration [string range $TmpRelDur 0 $indx]
-         }
-         set Sim(EmDuration) $ReleaseDuration
-      }
-
-      set Sim(ListIsoSymbol) [string toupper $ListIsoSymbol]
-
-      set field [lindex [Viewport::Assigned $Frame $Page(VP) fstdfield] 0]
-
-      if { $field != "" } {
-         set Data(ETICKET) [string trim [fstdfield define $field -ETIKET]]
-         set indx          [lsearch -exact $Sim(ListIsoSymbol) $Data(ETICKET)]
-
-         if { $indx != -1 } {
-            set Sim(Isotope)  [lindex $ListIsoSymbol $indx]
-            set Sim(Quantity) [lindex $ListIsoQuant $indx]
-         } else {
-            set Sim(Isotope)  $Data(ETICKET)
-            set Sim(Quantity) 0.0
-         }
-         set Sim(Quantity) [format "%.2e" $Sim(Quantity)]
-      }
-
-      #----- Determiner les valeurs par defaur selon VAAC ou RSMC
-
-      if { [lsearch -regexp $Sim(ListIsoSymbol) VOLCAN?] == -1 } {
-         set Data(Mode) RSMC
-         set Data(Name) [lindex $Data(Names) 0]
-         set Data(Ico)  @$GDefs(Dir)/Resources/Bitmap/nucleaire.ico
-      } else {
-         set Data(Mode) VAAC
-         set Data(Name) [lindex $Data(Names) 1]
-         set Data(Ico)  @$GDefs(Dir)/Resources/Bitmap/volcan.ico
-      }
-
       INFO::Product     $Frame
       INFO::Detail      $Frame
       INFO::UpdateItems $Frame
@@ -643,13 +504,5 @@ proc INFO::RSMCJoin { Frame } {
 #----------------------------------------------------------------------------
 
 proc INFO::UpdateItems { Frame } {
-   variable Sim
-   variable Data
-   variable Page
 
-   $Frame.page.canvas delete LAYOUTINFO
-
-   if { $Sim(Name)!="" && [set xy [$Page(VP) -project $Sim(Lat) $Sim(Lon) 0]] != "" } {
-      $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $Data(Ico) -foreground black -tags LAYOUTINFO
-   }
 }
