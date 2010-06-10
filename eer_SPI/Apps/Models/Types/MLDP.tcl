@@ -1296,7 +1296,7 @@ proc MLDP::SpeciesDelete { Idx } {
       #----- Forcer le dernier a vide puisque l'on est sur qu'il l'est
       set Tmp(Iso[expr $Sim(EmMaxIso)-1]) ""
 
-      MLDP::UpdateEmissionDurationsTotalQuantityAccident
+      MLDP::ScenarioAccidentUpdateEmission
    }
 }
 
@@ -1338,10 +1338,10 @@ proc MLDP::SpeciesFormat { Line } {
             set Tmp(Iso[llength $Tmp(Iso)]) $symbol
             lappend Tmp(Iso) "$symbol $halflife $drydepvel $wetscavrate"
 
-            MLDP::UpdateEmissionDurationsTotalQuantityAccident
+            MLDP::ScenarioAccidentUpdateEmission
          } else {
             #----- Display warning message if radioactive half-life is less than 15 minutes.
-            Dialog::CreatError .modelnew $Warning(HalfLife) " $symbol."
+            Dialog::Error .modelnew $Warning(HalfLife) " $symbol."
          }
       }
    }
