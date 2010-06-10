@@ -176,9 +176,9 @@ proc Log::End { { Status 0 } { Exit True } } {
    }
 
    #----- Activate Cylope links
+   Log::CyclopeEnd $Status
    Log::CyclopeSysInfo
    Log::CyclopeProcInfo
-   Log::CyclopeEnd $Status
 
    if { $Exit } {
       exit $Status
@@ -531,10 +531,13 @@ proc Log::CyclopeProcInfo { { PID "" } } {
       if { $PID=="" } {
          set PID [pid]
       }
-      set stats [exec cat /proc/$PID/stat]
+
+      #----- Got a signal 2 kill on the cat a few times so catch it for now
       puts $f "PROCINFO:"
-      foreach info $Stat(Infos) stat $stats {
-         puts $f [format "   %-40s: %s" $info $stat]
+      catch {
+         foreach info $Stat(Infos) stat [exec cat /proc/$PID/stat] {
+            puts $f [format "   %-40s: %s" $info $stat]
+         }
       }
       close $f
    }
