@@ -151,6 +151,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    set y [expr $Y0+21]
    set x [expr $X0+25]
    set i 0
+   set n 0
 
    set ids "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 
@@ -192,10 +193,19 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
       $Frame.page.canvas create text $x $y -text $lbl -tags "$Page::Data(Tag) DB$VP" -anchor sw -font $font -fill $col
       $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "$Page::Data(Tag) DB$VP" -anchor s -font $font
       $Frame.page.canvas create line $X0 $y $X1 $y -tags "$Page::Data(Tag) DB$VP" -fill #CCCCCC
+
+      if { ![winfo exists $Frame.page.canvas.up$n] } {
+         button $Frame.page.canvas.up$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
+         button $Frame.page.canvas.dn$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
+      }
+      $Frame.page.canvas.up$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n-1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
+      $Frame.page.canvas.dn$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n+1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
+      $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "$Page::Data(Tag) DB$VP NOPRINT"
+      $Frame.page.canvas create window [expr $X1-12] $y -window $Frame.page.canvas.dn$n -anchor se -tags "$Page::Data(Tag) DB$VP NOPRINT"
+      incr n
    }
 
    #----- Memo quelle est la formule ???
-
    if { [string trim $Viewport::Data(Operand$VP)]!="" } {
       set h  [font metrics XFont14 -linespace]
       set y [expr $y+$h]
