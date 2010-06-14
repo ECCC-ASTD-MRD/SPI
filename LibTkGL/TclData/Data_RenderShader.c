@@ -552,10 +552,17 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          } else {
             idx1=idx0+dp*Field->Def->NI;
          }
-         glTexCoord2f((float)i+0.5,(float)j+dp+0.5);
-         glVertex3dv(pos[idx1]);
-         glTexCoord2f((float)i+0.5,(float)j+0.5);
-         glVertex3dv(pos[idx0]);
+
+         /*Check for mask value*/
+         if (Field->Def->Mask && !Field->Def->Mask[idx0]) {
+            glEnd();
+            glBegin(GL_QUAD_STRIP);
+         } else {
+            glTexCoord2f((float)i+0.5,(float)j+dp+0.5);
+            glVertex3dv(pos[idx1]);
+            glTexCoord2f((float)i+0.5,(float)j+0.5);
+            glVertex3dv(pos[idx0]);
+         }
 
          idx0+=dp;
       }

@@ -1357,6 +1357,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          }
          idx3=idx0+dp*Field->Def->NI;
 
+         /*Check for mask value*/
+         if (Field->Def->Mask && !Field->Def->Mask[idx0]) {
+            glEnd();
+            glBegin(GL_QUADS);
+            continue;
+         }
+
          Def_GetMod(Field->Def,idxk+idx0,v0);
          Def_GetMod(Field->Def,idxk+idx3,v3);
          VAL2COL(c0,Field->Spec,v0);

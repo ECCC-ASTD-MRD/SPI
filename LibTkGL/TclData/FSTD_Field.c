@@ -2044,7 +2044,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    FSTD_Head   h;
    TFSTDVector *uvw;
    int         ok,ni,nj,nk,i,type,idx,datyp;
-   float       lvl;
+   float       lvl,*tmp;
    char        nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
    double      nhour;
 
@@ -2172,6 +2172,24 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
       /*Recuperer les donnees du champs*/
       c_fstluk(field->Def->Data[0],h.KEY,&ni,&nj,&nk);
+   }
+
+   /*Check for mask*/
+   ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
+   if (ok>0) {
+      if ((field->Def->Mask=(char*)malloc(ni*nj))) {
+         if ((tmp=(float*)malloc(ni*nj*sizeof(float)))) {
+            c_fstluk(tmp,ok,&ni,&nj,&nk);
+            for(i=0;i<ni*nj;i++) {
+               field->Def->Mask[i]=tmp[i]!=0.0;
+            }
+            free(tmp);
+        } else {
+           fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory to read mask",(char*)NULL);
+        }
+      } else {
+         fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory for mask",(char*)NULL);
+      }
    }
 
    /*Recuperer les type de niveaux et forcer ETA pour SIGMA*/
