@@ -279,127 +279,6 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    return(nras);
 }
 
-int Data_RenderA(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
-
-   int nras=0;
-
-   /*Verifier l'existence du champs*/
-   if (!Field || !Field->Ref || !Field->Spec || !Field->Def->Data[0]) {
-      return(0);
-   }
-   Data_PreInit(Field);
-
-   if (!Field->Ref->Pos || !Field->Ref->Pos[Field->Def->Level])
-      if (!Field->Grid(Field,Proj,Field->Def->Level))
-         return(0);
-
-   glPushName(PICK_FSTDFIELD);
-
-   if (Mode==GL_ALL || Mode==GL_VECTOR) {
-
-      if (!GLRender->GLZBuf) {
-         if (Field->Spec->RenderGrid)
-            Data_RenderGrid(Interp,Field,VP,(Projection*)Proj);
-
-         if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
-            Data_RenderContour(Interp,Field,VP,(Projection*)Proj);
-
-         if (Field->Spec->RenderVector==BARBULE || Field->Spec->RenderVector==ARROW)
-            Data_RenderVector(Interp,Field,VP,(Projection*)Proj);
-
-         if (Field->Spec->RenderValue)
-            Data_RenderValue(Interp,Field,VP,(Projection*)Proj,Field->Spec->RenderValue);
-      }
-   }
-
-   if (Mode==GL_ALL || Mode==GL_RASTER) {
-
-      glEnable(GL_DEPTH_TEST);
-
-      if (GLRender->GLZBuf) {
-         glEnable(GL_STENCIL_TEST);
-         glStencilMask(0x10);
-         glStencilFunc(GL_ALWAYS,0x10,0x10);
-         glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
-
-         if (Field->Spec->RenderGrid)
-            Data_RenderGrid(NULL,Field,VP,(Projection*)Proj);
-
-         if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
-            Data_RenderContour(NULL,Field,VP,(Projection*)Proj);
-
-         if (Field->Spec->RenderVector==BARBULE || Field->Spec->RenderVector==ARROW)
-            Data_RenderVector(NULL,Field,VP,(Projection*)Proj);
-
-         if (Field->Spec->RenderValue)
-            Data_RenderValue(NULL,Field,VP,(Projection*)Proj,Field->Spec->RenderValue);
-
-         glStencilMask(0xff);
-         glStencilFunc(GL_EQUAL,0x0,0x1f);
-         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-      }
-
-      /*Verifier la presence d'une palette de couleur si elle est necessaire*/
-      if (Field->Spec->Map) {
-
-         if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V') && (!Field->Spec->RenderContour || Field->Spec->InterNb)) {
-            if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
-               if (GLRender->ShaderAvailable) {
-                  nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
-               } else {
-                  nras+=Data_RenderTexture(Field,VP,(Projection*)Proj);
-               }
-            }
-         }
-
-         if (Field->Spec->RenderVector==STREAMLINE) {
-            nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
-         }
-
-         if (Field->Spec->RenderVector==STREAMLINE3D) {
-            if (Field->Def->Data[2]) {
-               if (Data_Grid3D(Field,Proj)) {
-                  nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
-               }
-            }
-         }
-
-         if (Field->Spec->RenderVol) {
-            if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='V') {
-               /*Recuperer les niveaux disponibles*/
-               if (Data_Grid3D(Field,Proj)) {
-                  nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
-               }
-            }
-         }
-
-         if (Field->Spec->RenderParticle) {
-            if (GLRender->ShaderAvailable) {
-               nras+=Data_RenderShaderParticle(Field,VP,(Projection*)Proj);
-            } else {
-               nras+=Data_RenderParticle(Field,VP,(Projection*)Proj);
-            }
-         }
-
-         if (Field->Spec->RangeNb) {
-            nras+=Data_RenderRange(Field,VP,(Projection*)Proj);
-         }
-
-         if (GLRender->GLZBuf) {
-            glStencilMask(0xf0);
-            glClear(GL_STENCIL_BUFFER_BIT);
-         }
-         glDisable(GL_DEPTH_TEST);
-      }
-   }
-
-   glPopName();
-   glStencilMask(0xff);
-   glStencilFunc(GL_EQUAL,0x0,0xf);
-   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-   return(nras);
-}
-
 /*----------------------------------------------------------------------------
  * Nom      : <Data_RenderBarbule>
  * Creation : Juin 1999 - J.P. Gauthier - CMC/CMOE
@@ -425,7 +304,7 @@ int Data_RenderA(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Pro
 */
 void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj){
 
-   double y,spd;
+   double y,spd,z;
 
    /*Check for unwanted speed values*/
    if (Speed>1e5)
@@ -434,9 +313,10 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
    glPushMatrix();
 
    /*Si on projete en 3D, effectue les transformations necessaires*/
+   z=ZM(Proj,Elev);
    if (Proj) {
       Proj->Type->Locate(Proj,Lat,Lon,1);
-      glTranslated(0.0,0.0,ZM(Proj,Elev));
+      glTranslated(0.0,0.0,z);
       glRotatef(180,1.0,0.0,0.0);
    } else {
       glTranslatef(Lat,Lon,Elev);
@@ -471,16 +351,16 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 
          /*Vecteur de base*/
          glBegin(GL_LINES);
-            glVertex2d(0.0,0.0);
-            glVertex2d(0.0,y);
+            glVertex3d(0.0,0.0,0.0);
+            glVertex3d(0.0,y,0.0);
          glEnd();
 
          /*Vitesse >50*/
          while (spd>=50.0) {
             glBegin(GL_TRIANGLES);
-            glVertex2d(0.0,y);
-            glVertex2d(0.0,y+0.4);
-            glVertex2d(0.7,y-0.2);
+            glVertex3d(0.0,y,0.0);
+            glVertex3d(0.0,y+0.4,0.0);
+            glVertex3d(0.7,y-0.2,0.0);
             spd-=50.0;
             y+=0.5;
             glEnd();
@@ -489,8 +369,8 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
          glBegin(GL_LINES);
          /*Vitesse >10*/
          while (spd>=10.0) {
-            glVertex2d(0.0,y);
-            glVertex2d(0.7,y-0.2);
+            glVertex3d(0.0,y,0.0);
+            glVertex3d(0.7,y-0.2,0.0);
             spd-=10.0;
             y+=0.25;
          }
@@ -502,8 +382,8 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
             if (Speed<10.0) {
                y+=0.25;
             }
-            glVertex2d(0.0,y);
-            glVertex2d(0.4,y-0.15);
+            glVertex3d(0.0,y,0.0);
+            glVertex3d(0.4,y-0.15,0.0);
          }
          glEnd();
       }
@@ -674,7 +554,6 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    Tk_GetFontMetrics(Field->Spec->Font,&tkm);
    dy=tkm.ascent;
 
-   glDisable(GL_DEPTH_TEST);
    glPolygonMode(GL_FRONT,GL_FILL);
    glReadBuffer(GL_BACK);
    glEnable(GL_STENCIL_TEST);
@@ -793,8 +672,6 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glMatrixMode(GL_MODELVIEW);
    glPopMatrix();
 
-   if (GLRender->GLZBuf)
-      glEnable(GL_DEPTH_TEST);
    Projection_Clip(Proj);
 }
 
@@ -1890,8 +1767,6 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          free(x);free(y);
    }
 
-   glDisable(GL_POLYGON_OFFSET_LINE);
-   glDisable(GL_POLYGON_OFFSET_FILL);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
 }
