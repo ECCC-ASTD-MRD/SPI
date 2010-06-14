@@ -233,7 +233,9 @@ int GDB_ThreadQueueAdd(Tcl_ThreadId Id,Projection *Proj,GDB_Tile *Tile,GDB_DataG
 
    GDB_ThreadQueueData *q,*qdata;
 
+   /*Is the GeoData thread created*/
    if (!GDBTData) {
+      Proc(Tile,Proj,Param1,Param2);
       return(0);
    }
 

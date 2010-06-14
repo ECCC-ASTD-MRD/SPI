@@ -197,8 +197,11 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
    if (Tkgraph_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   if (Tcl_CreateThread(&tid,GDB_ThreadProc,NULL,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS)==TCL_ERROR) {
-      fprintf(stderr,"(ERROR) Tkviewport_Init: Unable to initiate GDB thread\n");
+   /*In batch mode, bypass the geodata thread mechanism and execute in master thread*/
+   if (!GLRender->XBatch) {
+      if (Tcl_CreateThread(&tid,GDB_ThreadProc,NULL,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS)==TCL_ERROR) {
+         fprintf(stderr,"(ERROR) Tkviewport_Init: Unable to initiate GDB thread\n");
+      }
    }
 
    memset(ViewportTable,0x0,VPMAX*sizeof(ViewportItem*));
