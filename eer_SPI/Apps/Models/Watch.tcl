@@ -711,7 +711,9 @@ proc Watch::PopUpWatch { X Y } {
 
       menu .watchpopwatch.new -tearoff 0 -bd 1 -type normal -activeborderwidth 1
       foreach model $Exp::Data(Models) {
-         .watchpopwatch.new add command -label $model -command "Watch::ParamsWindow $model"
+         if { $model!="SATDATA" } {
+            .watchpopwatch.new add command -label $model -command "Watch::ParamsWindow $model"
+         }
       }
    }
 
