@@ -197,7 +197,7 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
          sy=floor(Y);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
          Y=sy==Y?Ref->Lat[sy*d]:ILIN(Ref->Lat[sy*d],Ref->Lat[(sy+1)*d],Y-sy);
       }
-   } else if (Ref->Grid[1]=='Y') {
+   } else if (Ref->Grid[1]=='X' || Ref->Grid[1]=='Y') {
       if (Ref->Lon && Ref->Lat) {
          sx=floor(X);sx=CLAMP(sx,Ref->X0,Ref->X1);
          sy=floor(Y);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
@@ -274,7 +274,7 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 */
 int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
-   double x,y,z=0.0,d=1e32;
+   double x,y,z=0.0,d=1e32,sd;
    int    s,dx,dy,ok,idx;
 
    if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
@@ -351,19 +351,21 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
          }
       }
 
-      if (Ref->Grid[1]=='Y') {
+      if (Ref->Grid[1]=='X' || Ref->Grid[1]=='Y') {
          if (Ref->Lon && Ref->Lat) {
             for(dy=0;dy<=(Ref->Y1-Ref->Y0);dy++) {
                for(dx=0;dx<=(Ref->X1-Ref->X0);dx++) {
 
                   idx=dy*(Ref->X1-Ref->X0+1)+dx;
-                  s=fabs(Lon-Ref->Lon[idx])+fabs(Lat-Ref->Lat[idx]);
+                  sd=fabs(*X-Ref->Lon[idx])+fabs(*Y-Ref->Lat[idx]);
 
-                  if (s<d) {
-                     *X=dx;*Y=dy;d=s;
+                  if (sd<d) {
+                     x=dx;y=dy;d=sd;
                   }
                }
             }
+            *X=x;
+            *Y=y;
          }
       }
 
