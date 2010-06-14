@@ -1112,13 +1112,17 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
             fld=Data_Get(vp->Data[i]);
             if (fld) {
                Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
-            }
+               if (GLRender->GLZBuf)
+                  Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+           }
          }
 
          /*Rendue des donnees vectorielle*/
          for (i=0;i<vp->NbData;i++) {
-            if ((fld=Data_Get(vp->Data[i]))) {
-               Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+            if (!GLRender->GLZBuf) {
+               if ((fld=Data_Get(vp->Data[i]))) {
+                  Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+               }
             }
             if ((obs=Obs_Get(vp->Data[i]))) {
                Obs_Render(NULL,obs,vp,proj,GL_RENDER);
@@ -1662,13 +1666,13 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
          fld=Data_Get(vp->Data[i]);
          if (fld) {
             ras+=Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
+            if (GLRender->GLZBuf) {
+               Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+            }
          }
       }
       if (GLRender->GLZBuf) {
          for (i=0;i<vp->NbData;i++) {
-            if ((fld=Data_Get(vp->Data[i]))) {
-               Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
-            }
             if ((obs=Obs_Get(vp->Data[i]))) {
                Obs_Render(NULL,obs,vp,proj,GL_RENDER);
             }
