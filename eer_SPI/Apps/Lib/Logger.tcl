@@ -53,7 +53,7 @@ namespace eval Log { } {
    set Param(MailTitle)   "Job Info"            ;#Mail title
 
    set Param(Cyclope)     False                                      ;#Use Cyclope
-   set Param(CyclopePath) /home/binops/afse/eer/projets/cyclope/jobs ;#Path to Cyclope
+   set Param(CyclopePath) /home/binops/afse/eer/projets/Cyclope/jobs ;#Path to Cyclope
 
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
