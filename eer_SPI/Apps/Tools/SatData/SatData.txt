@@ -22,7 +22,7 @@ namespace eval SatData {
 
    set Lbl(Close)    { "Fermer" "Close" }
    set Lbl(Cmd)      { "Actions" "Actions" }
-   set Lbl(Data)     { "Donnees" "Data   " }
+   set Lbl(Data)     { "Données" "Data   " }
    set Lbl(Domain)   { "Domaine" "Domain " }
    set Lbl(Yes)      { "Oui" "Yes" }
    set Lbl(No)       { "Non" "No" }
@@ -30,7 +30,7 @@ namespace eval SatData {
    set Lbl(Extract)  { "Extraire" "Extract" }
    set Lbl(Out)      { "Fichier" "File   " }
    set Lbl(User)     { "Autres fichiers" "Other files" }
-   set Lbl(Path)     { "Repertoire" "Directory " }
+   set Lbl(Path)     { "Répertoire" "Directory " }
    set Lbl(GOES11)   { " GOES Ouest / GOES 11 " " GOES West / GOES 11 " }
    set Lbl(GOES13)   { " GOES Est / GOES 13 " " GOES East / GOES 13 " }
 
@@ -42,22 +42,22 @@ namespace eval SatData {
                          "Extracting channel" }
    set Msg(45)         { "Soustration des canaux 4-5 pour" \
                          "Calculating 4-5 channel for" }
-   set Msg(Data)       { "Aucune donnees a extraire" \
+   set Msg(Data)       { "Aucune données a extraire" \
                          "No data to extract" }
-   set Msg(Range)      { "Aucun domaine selectionee" \
+   set Msg(Range)      { "Aucun domaine selectioné" \
                          "No domain selected" }
 
    set Bubble(Sat)     { "Ouvre la liste des fichiers disponibles pour ce satellite"
                          "Open up the available file list for this satellite" }
-   set Bubble(User)    { "Selection de fichiers d'un autre emplacement"
+   set Bubble(User)    { "Sélection de fichiers d'un autre emplacement"
                          "Select files from another location" }
-   set Bubble(Domain)  { "Liste des domaines sauvegardes" "Saved domain list" }
-   set Bubble(SelFile) { "Selection d'un fichier de sortie" "Select an output file" }
+   set Bubble(Domain)  { "Liste des domaines sauvegardés" "Saved domain list" }
+   set Bubble(SelFile) { "Sélection d'un fichier de sortie" "Select an output file" }
    set Bubble(File)    { "Fichier de sortie" "Output file" }
-   set Bubble(Extract) { "Lancer l'extraction des donnees" "Start data extraction" }
-   set Bubble(Resol)   { "Resolution du domaine" "Domain resolution" }
-   set Bubble(Save)    { "Sauvegarde du domaine specifie" "Saves the specified domain" }
-   set Bubble(Del)     { "Suppression du domaine specifie" "Delete the specified domain" }
-   set Bubble(Mode)    { "Entre dans le mode selection (SatData)\n   Bouton gauche: Selection d'une region\n   Bouton droit : Deplacement de la region"
+   set Bubble(Extract) { "Lancer l'extraction des données" "Start data extraction" }
+   set Bubble(Resol)   { "Résolution du domaine" "Domain resolution" }
+   set Bubble(Save)    { "Sauvegarde du domaine spécifié" "Saves the specified domain" }
+   set Bubble(Del)     { "Suppression du domaine spécifié" "Delete the specified domain" }
+   set Bubble(Mode)    { "Entre dans le mode sélection (SatData)\n   Bouton gauche: Sélection d'une région\n   Bouton droit : Déplacement de la région"
                          "Enter selection mode (SatData)\n   Left button : Select an area\n   Right button: Move the selected area" }
 }

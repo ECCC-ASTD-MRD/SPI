@@ -32,22 +32,22 @@ namespace eval Bulletin {
    set Lbl(Pour)         { " Pour " " For " }
    set Lbl(Quit)         { "Quitter" "Quit" }
    set Lbl(Recherche)    { "Rechercher..." "Search..." }
-   set Lbl(Selection)    { "Selection" "Selected" }
+   set Lbl(Selection)    { "Sélection" "Selected" }
    set Lbl(Tout)         { "Tout" "Everything" }
    set Lbl(Global)       { "Global" "Global" }
    set Lbl(Local)        { "Local" "Local" }
    set Lbl(Search)       { "Recherche"  "Search" }
-   set Lbl(SearchEnd)    { "Recherche terminee" "Search done" }
+   set Lbl(SearchEnd)    { "Recherche terminée" "Search done" }
 
    #----- Liste des definitions des Textes.
 
    set Msg(Courant)      { "Extraction des bulletins courants" \
                            "Extracting current bulletins" }
-   set Msg(Fin)          { "La fin des bulletins a ete atteinte" \
+   set Msg(Fin)          { "La fin des bulletins à été atteinte" \
                            "We reached the end of the bulletins" }
    set Msg(Recherche)    { "Recherche en cours:" "Searching:" }
-   set Msg(Cancel)       { "Recherche annulee" "Search cancelled" }
-   set Msg(Selection)    { "Une selection existe dans la fenetre des bulletins. Que voulez-vous imprimer ?" \
+   set Msg(Cancel)       { "Recherche annulée" "Search cancelled" }
+   set Msg(Selection)    { "Une sélection existe dans la fenêtre des bulletins. Que voulez-vous imprimer ?" \
                            "There is a selection in the text widget. What do you want to print ?" }
    set Msg(Coords)       { "Problème dans la conversion des coordonnées sélectionnées." \
                            "An error occured while converting selected coordinates." }
@@ -56,13 +56,13 @@ namespace eval Bulletin {
 
    set Bubble(List) {
    "Cette liste contient tous les bulletins
-   pour le mois selectionne."
+   pour le mois sélectionné."
    "This list contains every bulletins for the current
    selected month."
    }
 
    set Bubble(Msg) {
-   "Affichage des bulletins selectionnes dans la liste.
+   "Affichage des bulletins sélectionnés dans la liste.
    Les mots importants sont colore:
 
       ASH, ASH UUA      : Blanc sur rouge
@@ -90,14 +90,14 @@ namespace eval Bulletin {
 
    set Bubble(Current) {
    "Extraction des bulletins
-   les plus recents"
+   les plus récents"
    "Extract the most recent
    bulletins"
    }
 
    set Bubble(Date) {
    "Ce champs indique pour quel mois les bulletins sont
-   affiches mais en plus, il sert a selectionner le mois
+   affichés mais en plus, il sert a sélectionner le mois
    que l'on veut visionner. Appuyer dessus pour obtenir
    une liste des mois disponibles et ainsi afficher les
    bulletins de ce mois"
@@ -122,5 +122,5 @@ namespace eval Bulletin {
    set Bubble(Stop)      { "Termine la recherche en cours" "Cancels the current search" }
    set Bubble(Local)     { "Recherche dans le bulletin courant" "Searches in the current bulletin" }
    set Bubble(Global)    { "Recherche dans tous les\nbulletins du mois courant" "Searches in the current\nmonth bulletins" }
-   set Bubble(Predicat)  { "Predicat de recherche\n(Expression reguliere)" "Search predicate\n(Regular expression)" }
+   set Bubble(Predicat)  { "Prédicat de recherche\n(Expression reguliere)" "Search predicate\n(Regular expression)" }
 }

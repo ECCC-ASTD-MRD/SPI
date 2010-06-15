@@ -46,13 +46,13 @@ namespace eval Writer {
 
    #----- Definitions des messages
 
-   set Msg(Send)       { "Ce message va etre transmis sur les circuits" "This message will be transmitted over the circuits" }
-   set Msg(Sent)       { "Le message e ete transmis" "The message has been transmitted" }
+   set Msg(Send)       { "Ce message va être transmis sur les circuits" "This message will be transmitted over the circuits" }
+   set Msg(Sent)       { "Le message à été transmis" "The message has been transmitted" }
    set Msg(Save)       { "Voulez-vous sauvegarder ce message ?" "Do you want to save this message ?" }
-   set Msg(Exist)      { "Ce fichier existe deja, voulez vous le reecrire ?" "This file exists, do you want to overwrite it ?" }
-   set Msg(Handle)     { "Ce message ne peut etre sauvegader" "This message cannot be saved" }
-   set Msg(RET)        { "La mise a jour d'une retransmission n'est pas permise" "Update of retransmission is not allowed" }
-   set Msg(NEW)        { "La mise a jour ou la correction d'un nouveau message n'est pas permise" "Update or correction of a new message is not allowed" }
+   set Msg(Exist)      { "Ce fichier existe déja, voulez vous le réecrire ?" "This file exists, do you want to overwrite it ?" }
+   set Msg(Handle)     { "Ce message ne peut être sauvegader" "This message cannot be saved" }
+   set Msg(RET)        { "La mise à jour d'une retransmission n'est pas permise" "Update of retransmission is not allowed" }
+   set Msg(NEW)        { "La mise à jour ou la correction d'un nouveau message n'est pas permise" "Update or correction of a new message is not allowed" }
 
    #----- Definitions des textes des bulles d'aides
 

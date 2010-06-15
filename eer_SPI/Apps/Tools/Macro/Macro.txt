@@ -26,8 +26,8 @@ namespace eval Macro { } {
    set Lbl(No)           { "Non" "No" }
    set Lbl(Args)         { "Arguments" "Arguments" }
 
-   set Error(Execute)    { "La fonction \"Execute\" n'est pas definie" "The \"Execute\" function is not defined" }
-   set Error(Info)       { "La description (Info) de la macro n'est pas definie" "The macro description (Info) is no defined" }
+   set Error(Execute)    { "La fonction \"Execute\" n'est pas définie" "The \"Execute\" function is not defined" }
+   set Error(Info)       { "La description (Info) de la macro n'est pas définie" "The macro description (Info) is no defined" }
    set Error(Fault)      { "Macro fautive" "Faulty macro" }
 
    set Bubble(Start)     { "Exécution de la macro sélectionnée" "Exectute selected macro" }
@@ -35,7 +35,7 @@ namespace eval Macro { } {
    set Bubble(Load)      { "Lire un fichier de macro" "Read a macro file" }
    set Bubble(Save)      { "Sauvegarder la macro courante" "Save the current macro" }
    set Bubble(Del)       { "Supprimer la macro courante de la liste de macros" "Remove the current macro from the list" }
-   set Bubble(Clean)     { "Reinitialisation de la macro courante (Appel a la fonction Clean)" "Clean up current macro (Call Clean function" }
+   set Bubble(Clean)     { "Réinitialisation de la macro courante (Appel a la fonction Clean)" "Clean up current macro (Call Clean function" }
 
    set Msg(Args)         { "Veuillez enter les arguments:" "Please type in the arguments:" }
    set Msg(Save)         { "La macro suivante n'a pas été sauvegardée, désirez-vous la sauvegarder ?" "The following macro has not been saved, do you wish to do so ?" }

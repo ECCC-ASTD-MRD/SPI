@@ -39,7 +39,7 @@ namespace eval Mapper { } {
    set Lbl(Mask)         { "Masque" "Mask" }
    set Lbl(Topo)         { "Topographie " "Topography  " }
    set Lbl(Table)        { "Table" "Table" }
-   set Lbl(Extrude)      { "Extrude     " "Extrude     " }
+   set Lbl(Extrude)      { "Extrusion   " "Extrude     " }
    set Lbl(Field)        { "Champs" "Field" }
    set Lbl(Max)          { "Nombre maximum de colone" "Maximum numbre of column" }
    set Lbl(Font)         { "Police" "Font" }
@@ -58,7 +58,7 @@ namespace eval Mapper { } {
    set Lbl(Position)     { "Position" "Position" }
    set Lbl(Rotation)     { "Rotation" "Rotation" }
    set Lbl(Resolution)   { "Résolution" "Resolution" }
-   set Lbl(Scale)        { "Echelle" "Scaling" }
+   set Lbl(Scale)        { "Échelle" "Scaling" }
    set Lbl(Invert)       { "Inversion" "Invert" }
    set Lbl(Material)     { "Matériel" "Material" }
    set Lbl(Red)          { "Rouge" "Red" }
@@ -69,7 +69,7 @@ namespace eval Mapper { } {
    set Lbl(Emis)         { "Emissive" "Emissive" }
    set Lbl(Diff)         { "Diffuse" "Diffuse" }
    set Lbl(Spec)         { "Specular" "Specular" }
-   set Lbl(Shin)         { "Reflection" "Shininess" }
+   set Lbl(Shin)         { "Réflection" "Shininess" }
    set Lbl(Tran)         { "Transparence" "Transparency" }
    set Lbl(Texture)      { "Texture" "Texture" }
    set Lbl(Light)        { "Illumination" "Illuminate" }
@@ -95,8 +95,8 @@ namespace eval Mapper { } {
    set Lbl(ZoomAll)      { "Zoom aux limites globales" "Zoom to global extent" }
    set Lbl(ZoomFull)     { "Zoom pleine résolution" "Zoom to full resolution" }
    set Lbl(Sample)       { "Attaches" "Sampling" }
-   set Lbl(Select)       { "Selection" "Select" }
-   set Lbl(Cut)          { "Decouper" "Crop" }
+   set Lbl(Select)       { "Sélection" "Select" }
+   set Lbl(Cut)          { "Découper" "Crop" }
    set Lbl(Clip)         { "Appliquer la coupe" "Clip to polygon" }
    set Lbl(Image)        { "Image" "Raster" }
    set Lbl(Ref)          { "Référenciel" "Referencial" }
@@ -110,7 +110,7 @@ namespace eval Mapper { } {
    set Lbl(Histo)        { "Histogramme" "Histogram" }
    set Lbl(Burn)         { "Persistance" "Persistance" }
 
-   set Lbl(Icon)         { "Icone" "Icon" }
+   set Lbl(Icon)         { "Icône" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }
    set Lbl(SysCoord)     { "Système de coordonnées" "Coordinate system" }
    set Lbl(MeridianPM)   { "Méridien" "Meridian" }
@@ -130,7 +130,7 @@ namespace eval Mapper { } {
    set Msg(File)      { "Impossible d'ouvrir le fichier spécifié" "Unable to open the specified file" }
    set Msg(Read)      { "Lecture des données ..." "Reading data ..." }
    set Msg(Render)    { "Allocation ..." "Allocating ..." }
-   set Msg(Index)     { "Une donnee est associée a cet geometrie. Désirez-vous l'afficher ?"
+   set Msg(Index)     { "Une donnée est associée a cet géometrie. Désirez-vous l'afficher ?"
                         "Data is associated with this geometrie. Would you like to display it ?" }
    set Msg(BadFile)   { "Impossible d'ouvrir le fichier. Type de fichier non reconnu" "Unable to open file. Unknown file type" }
    set Msg(Deep)      { "L'arborescence contient beaucoup de fichier, le processus peut être long.\n\n\tVoulez vous continuer ?"

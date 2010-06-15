@@ -70,7 +70,7 @@ namespace eval NowCaster::Obs { } {
    set Lbl(Flat)    { "Projeté" "Projected" }
    set Lbl(Info)    { "Information" "Information" }
    set Lbl(Pos)     { "Position" "Position" }
-   set Lbl(Elem)    { "Elements" "Elements" }
+   set Lbl(Elem)    { "Élements" "Elements" }
    set Lbl(Report)  { "Rapports" "Reports" }
    set Lbl(Find)    { "Trouver une station" "Find station" }
    set Lbl(Surface) { "Surface" "Surface" }

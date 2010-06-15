@@ -27,5 +27,5 @@ namespace eval YourToolHere {
 
    #----- Bulles d'aides
 
-   set Bubble(Mode)    { "Mode de selection de l'outils" "Tool selection mode" }
+   set Bubble(Mode)    { "Mode de sélection de l'outils" "Tool selection mode" }
 }

@@ -35,18 +35,18 @@ namespace eval MetInfo {
    set Msg(Msg)      { "Recherche des observations..." "Searching observations..." }
    set Msg(Complete) { "Observations savegardées dans " "Observations saved in "}
    set Msg(Empty)    { "Aucune observation de type "  "No observation of type "}
-   set Msg(SelectVide) { "Aucune selection" "No selection" }
+   set Msg(SelectVide) { "Aucune sélection" "No selection" }
 
 
-   set Bubble(Stat)    { "Nombre de station a l'interieur de la region selectionee"
+   set Bubble(Stat)    { "Nombre de station a l'interieur de la region sélectionée"
                          "Number of station within\nthe selected area" }
-   set Bubble(Station) { "Liste des stations situees a\nl'interieur de la region selectionee"
+   set Bubble(Station) { "Liste des stations situées a\nl'intérieur de la région sélectionée"
                          "List of stations within\nthe selected area" }
    set Bubble(Type)    { "Liste des types de observations disponibles" "Available observations types" }
    set Bubble(File)    { "Liste fichiers de observations disponibles" "Available observations file list" }
-   set Bubble(List)    { "Observations correspondant a la\nselection pour la station choisie"
+   set Bubble(List)    { "Observations correspondant a la\nsélection pour la station choisie"
                          "Observations found for the selected station" }
-   set Bubble(Msg)     { "Nombre de observations recuperer" "Number of found observations" }
-   set Bubble(Mode)    { "Entre dans le mode selection (MetInfo)\n   Bouton gauche: Selection d'une region\n   Bouton droit : Deplacement de la region\nLa selection demarre la recherche des stations\na l'interieur de la region et les affichent"
+   set Bubble(Msg)     { "Nombre de observations récupérer" "Number of found observations" }
+   set Bubble(Mode)    { "Entre dans le mode sélection (MetInfo)\n   Bouton gauche: Sélection d'une region\n   Bouton droit : Déplacement de la region\nLa sélection démarre la recherche des stations\na l'inéerieur de la région et les affichent"
                          "Enter selection mode (MetInfo)\n   Left button : Select an area\n   Right button: Move the selected area\nThe selection starts the search for\nincluded stations and displays them" }
 }
