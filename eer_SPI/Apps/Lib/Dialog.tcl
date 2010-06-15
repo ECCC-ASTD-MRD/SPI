@@ -118,7 +118,7 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
 
    frame .dlgdef.top -relief raised -bd 1
       label .dlgdef.top.bitmap -image $icon
-      message .dlgdef.top.msg -width $Width -text [lindex $Text $GDefs(Lang)]
+      message .dlgdef.top.msg -width $Width -text "[lindex $Text $GDefs(Lang)]$Extra"
       pack .dlgdef.top.bitmap .dlgdef.top.msg -side left -expand 1 -fill both -padx 3m -pady 3m
     pack .dlgdef.top -side top -fill both -expand true
 
