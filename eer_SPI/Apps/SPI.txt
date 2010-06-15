@@ -37,7 +37,7 @@ namespace eval SPI {
    set Lbl(Cancel)         { "Annuler" "Cancel" }
    set Lbl(Clock)          { "Horloge" "Clock" }
    set Lbl(Close)          { "Fermer" "Close" }
-   set Lbl(Colorbar)       { "Echelle de couleur" "Colorbar scale" }
+   set Lbl(Colorbar)       { "Échelle de couleur" "Colorbar scale" }
    set Lbl(Compass)        { "Compas" "Compass" }
    set Lbl(Data)           { "Données" "Data" }
    set Lbl(Del)            { "Supprimer" "Delete" }
@@ -56,8 +56,8 @@ namespace eval SPI {
    set Lbl(Icons)          { "Icônes" "Icons" }
    set Lbl(Id)             { "Identifications" "Identifications" }
    set Lbl(Layout)         { "Page" "Layout" }
-   set Lbl(GeoLegend)      { "Légende geographique" "Geographical legend" }
-   set Lbl(DataBar)        { "Légende des donnees" "Data legend" }
+   set Lbl(GeoLegend)      { "Légende géographique" "Geographical legend" }
+   set Lbl(DataBar)        { "Légende des données" "Data legend" }
    set Lbl(Logo)           { "Logo" "Logo" }
    set Lbl(Link)           { "Pointeur commun" "Cursor link" }
    set Lbl(Miniport)       { "Encart/Loupe" " Inset/Magnifier" }
@@ -73,7 +73,7 @@ namespace eval SPI {
    set Lbl(PageNew)        { "Nouvelle page" "New page" }
    set Lbl(PageDel)        { "Supprimer la page" "Delete page" }
    set Lbl(PageOut)        { "Page externe" "External page" }
-   set Lbl(Params)         { "Paramètres" "Parameters" }
+   set Lbl(Params)         { "Paramêtres" "Parameters" }
    set Lbl(Print)          { "Impression ..." "Print ..." }
    set Lbl(Image)          { "Sauvegarde image ..." "Save image ..." }
    set Lbl(ProjectLoad)    { "Ouvrir un projet ..." "Open project ..." }
@@ -81,7 +81,7 @@ namespace eval SPI {
    set Lbl(ProjectItems)   { "Items a sauvegarder" "Items to save" }
    set Lbl(Quit)           { "Quitter" "Quit" }
    set Lbl(Save)           { "Sauvegarder" "Save" }
-   set Lbl(Scale)          { "Echelle" "Scale" }
+   set Lbl(Scale)          { "Échelle" "Scale" }
    set Lbl(FileRPN)        { "Standard (RPN)" "Standard (RPN)" }
    set Lbl(FileGRIB)       { "GRIB (Edition 1-2)" "GRIB (Edition 1-2)" }
    set Lbl(Test)           { "Chaine \"Test\"" "String \"Test\"" }
@@ -120,12 +120,12 @@ namespace eval SPI {
    set Lbl(Left)           { "Gauche" "Left" }
    set Lbl(Top)            { "Haut" "Bas" }
    set Lbl(Bottom)         { "Bas" "Bottom" }
-   set Lbl(FrameSave)      { "Définir comme defaut" "Set as default" }
+   set Lbl(FrameSave)      { "Définir comme défaut" "Set as default" }
 
    #----- Definition des bulles d'aides
 
    set Bubble(Model)       { "Modélisation" "Modeling" }
-   set Bubble(Graph)       { "Ajout et paramètresdes graphs" "Add and parameterize graphs" }
+   set Bubble(Graph)       { "Ajout et paramètres des graphs" "Add and parameterize graphs" }
    set Bubble(Params)      { "Paramètres des données" "Data parameters" }
    set Bubble(Print)       { "Impression de la page courante" "Print current page" }
    set Bubble(Image)       { "Sauvegarde l'image de la page courante" "Save current page image" }
@@ -173,13 +173,13 @@ namespace eval SPI {
 
    #----- Definition des messages
 
-   set Msg(LayoutName)     { "Veuillez spéfifier le nom de la mise-en-page." "Please enter the page layout name." }
-   set Msg(CamName)        { "Veuillez spéfifier le nom de la camera." "Please enter the camera name." }
-   set Msg(CamSave)        { "Voulez-vous inclure les paramètres de camera dans de modèle de page ?" "Do you want to include the camera parameters in this page layout ?" }
-   set Msg(LayoutErase)    { "Etes-vous certain de vouloir supprimer ce modèle de page ?" "Do you really want to delete this page layout ?" }
-   set Msg(LayoutOver)     { "Ce modèle de page existe deja. Voulez-vous le remplacer ?" "This page layout exists. Do you want to overwrite it ?" }
-   set Msg(LayoutSaved)    { "Definition de mise-en-page sauvegardee." "Page layout saved." }
-   set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModelisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnees Geographiques   : Michel Grenier\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          Réal D'Amours" }
+   set Msg(LayoutName)     { "Veuillez spécifier le nom de la mise-en-page." "Please enter the page layout name." }
+   set Msg(CamName)        { "Veuillez spécifier le nom de la caméra." "Please enter the camera name." }
+   set Msg(CamSave)        { "Voulez-vous inclure les paramètres de caméra dans de modèle de page ?" "Do you want to include the camera parameters in this page layout ?" }
+   set Msg(LayoutErase)    { "Êtes-vous certain de vouloir supprimer ce modèle de page ?" "Do you really want to delete this page layout ?" }
+   set Msg(LayoutOver)     { "Ce modèle de page existe déja. Voulez-vous le remplacer ?" "This page layout exists. Do you want to overwrite it ?" }
+   set Msg(LayoutSaved)    { "Définition de mise-en-page sauvegardée." "Page layout saved." }
+   set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModélisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnées Géographiques   : Michel Grenier\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          Réal D'Amours" }
    set Msg(Id)             { "Développé au Centre Meteorologique Canadien\npar le groupe des urgences (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n"
                              "Developped at the Canadian Meteorological Center\nby the emergency division (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n" }
    set Msg(Adress)         { "2121 Voie de service nord\nRoute transcanadienne\nMontreal, Quebec\nH9P 1J3\n"
@@ -187,7 +187,7 @@ namespace eval SPI {
    set Msg(Mail)           { "Liste de distribution: spi-users@cmc.ec.gc.ca\n" "Mailing list: spi-users@cmc.ec.gc.ca" }
    set Msg(ProjectRead)    { "Toutes les pages existantes seront détruite et le travail courant sera perdu.\n\nVoulez-vous continuer ?"
                              "Every existing pages will be destroyed and you will loos you current work.\n\nDo you wish to continue ?" }
-   set Msg(Page)           { "Ajouter cet item dans une nouvelle fenetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
+   set Msg(Page)           { "Ajouter cet item dans une nouvelle fênetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
    set Msg(Locked)         { "La mise-en-page de la page courante ne peut être changée, que voulez-vous faire ?"
                              "Current page layout cannot be changed, what do you want to do ?" }
 

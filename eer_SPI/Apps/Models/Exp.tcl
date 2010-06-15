@@ -53,14 +53,14 @@ namespace eval Exp {
 
    set Lbl(New)                { "Nouveau" "New" }
    set Lbl(Product)            { "Produits" "Products" }
-   set Lbl(RSMCFax)            { "Generation du FAX RSMC" "Generate RSMC FAX" }
+   set Lbl(RSMCFax)            { "Génération du FAX RSMC" "Generate RSMC FAX" }
    set Lbl(RSMCJointData)      { "Transmission des sorties RSMC vers les pages webs communes" "Transmit RSMC output to common web pages" }
    set Lbl(RSMCJointStatement) { "Transmission du Joint Statement RSMC vers les pages webs communes" "Transmit RSMC joint statement to common web pages" }
    set Lbl(Store)              { "Archiver" "Store" }
    set Lbl(Suppress)           { "Supprimer" "Delete" }
    set Lbl(Yes)                { "Oui" "Yes" }
    set Lbl(No)                 { "Non" "No" }
-   set Lbl(Params)             { "Parametres" "Parameters" }
+   set Lbl(Params)             { "Paramêtres" "Parameters" }
 
    #----- Messages
 
@@ -75,28 +75,28 @@ namespace eval Exp {
                             "Invalid experiment path.\n Unable to find the eer_ExpList file" }
    set Msg(Coord)         { "Les coordonnées de la source sont invalides"
                             "The specified source coordinates are invalid" }
-   set Msg(Pos)           { "Auncune localisation n'a ete specifiee"
+   set Msg(Pos)           { "Auncune localisation n'à été spécifiée"
                             "No localisation have been specified" }
-   set Msg(Name)          { "Le nom de l'experience ou de l'une des localisations n'a pas ete specifie"
+   set Msg(Name)          { "Le nom de l'expérience ou de l'une des localisations n'à pas été spécifié"
                             "The experiment name or the name of one the localisation has not been specified" }
-   set Msg(Fax)           { "Generation du fax dans le fichier suivant:"
+   set Msg(Fax)           { "Génération du fax dans le fichier suivant:"
                             "Generating fax to the following file:" }
-   set Msg(JointData)     { "Etes-vous certain de vouloir transferer les cartes RSMC commune ?" \
+   set Msg(JointData)     { "Êtes-vous certain de vouloir transférer les cartes RSMC commune ?" \
                             "Do you really want to send the RSMC joint format maps ?" }
-   set Msg(JointClear)    { "Voulez vous supprimer le joint statement ?" \
+   set Msg(JointClear)    { "Voulez-vous supprimer le joint statement ?" \
                             "Do you want to delete the joint statement ?" }
-   set Msg(JointStatement) { "Etes-vous certain de vouloir transferer le joint statement ?" \
+   set Msg(JointStatement) { "Êtes-vous certain de vouloir transférer le joint statement ?" \
                             "Do you really want to send the joint statement ?" }
    set Msg(SendProducts)  { "Transfert des produits RSMC en cours" "Transferring RSMC products" }
    set Msg(SendJoint)     { "Transfert des message commun en cours" "Transferring joint statement" }
-   set Msg(SetLead)       { "Definition du leader RSMC" "Defining lead RSMC" }
-   set Msg(SuppressExp)   { "La suppression de l'experience supprimera definitivement toutes les simulations\
-                             qui y son contenue.\n\nVoulez-vous supprimer cette experience ?" \
+   set Msg(SetLead)       { "Définition du leader RSMC" "Defining lead RSMC" }
+   set Msg(SuppressExp)   { "La suppression de l'expérience supprimera definitivement toutes les simulations\
+                             qui y son contenue.\n\nVoulez-vous supprimer cette expérience ?" \
                             "Deleting this experiment will definitively erase all the simulations in it.\n\n\
                              Do you really want to delete this experiment ?" }
-   set Msg(SuppressDone)  { "Suppression terminee !" \
+   set Msg(SuppressDone)  { "Suppression terminée !" \
                             "Suppressing done !" }
-   set Msg(SuppressError) { "Impossible de supprimer les repertoires de l'experience suivante:" \
+   set Msg(SuppressError) { "Impossible de supprimer les repertoires de l'expérience suivante:" \
                             "Unable to suppress the following experiment directory" }
    set Msg(Correct0)      { "Voulez-vous lancer le modèle" "Do you wish to launch" }
    set Msg(Correct1)      { "à partir de ces paramètres d'entrée ci-haut?" "model with the above input parameters?" }

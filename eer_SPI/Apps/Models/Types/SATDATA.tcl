@@ -16,11 +16,11 @@ namespace eval SATDATA {
    variable Lvl
 
    set Lbl(No)        { "Non" "No" }
-   set Lbl(Result)    { "Resultats" "Results" }
+   set Lbl(Result)    { "Résultats" "Results" }
    set Lbl(Suppress)  { "Supprimer" "Delete" }
    set Lbl(Yes)       { "Oui" "Yes" }
 
-   set Msg(Suppress) { "Supprimer les donnees satellites de" "Delete satellite data from" }
+   set Msg(Suppress) { "Supprimer les données satellites de" "Delete satellite data from" }
 }
 
 #-------------------------------------------------------------------------------

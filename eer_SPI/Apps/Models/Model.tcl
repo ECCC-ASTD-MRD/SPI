@@ -89,7 +89,7 @@ namespace eval Model {
 
    set Lbl(Launch)              { "Lancement" "Launch" }
    set Lbl(LaunchModel)         { "Lancer" "Launch" }
-   set Lbl(Params)              { "Paramètres" "Parameters" }
+   set Lbl(Params)              { "Paramêtres" "Parameters" }
    set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
    set Lbl(Queue)               { "Type de queue  " "Queue type     " }
    set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
