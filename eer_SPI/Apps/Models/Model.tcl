@@ -167,6 +167,7 @@ namespace eval Model {
    set Error(DateTimeMetFiles)    { "La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
                                     "The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
    set Error(Path)                { "Le répertoire de simulation n'est pas accessible sur l'hote d'exécution." "Simulation path is not accessible on remote host" }
+   set Error(EmHeight)            { "La masse doit être positive." "Mass must be positive." }
 
    set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
@@ -180,7 +181,7 @@ namespace eval Model {
    set Warning(EMail2)     { "\tNouveau courriel    :" "\tNew email     :" }
    set Warning(EMail3)     { "\tCourriel par défaut :" "\tDefault email :" }
 
-   set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogramme." "Please enter explosive mass in kilograms." }
+   set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogrammes." "Please enter explosive mass in kilogram." }
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
 
@@ -224,12 +225,16 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
 proc Model::ComputeKaboomHeight { } {
    variable Lbl
    variable Msg
+   variable Error
 
-   if { [set boom [Dialog::Get . $Lbl(EmHeight) $Msg(EmHeight)\]]]!="" } {
-      return [expr int(3160.0*(pow($boom/1000000.0,0.268)))]
-   } else {
-      return 0
+   if { [set boom [Dialog::Get . $Lbl(EmHeight) $Msg(EmHeight)]]!="" } {
+      if { [string is double -strict $boom] && $boom>0 } {
+         return [expr int(3160.0*(pow($boom/1000000.0,0.268)))]
+      } else {
+         Dialog::Error .modelnew $Error(EmHeight)
+      }
    }
+   return 1
 }
 
 proc Model::GetMetData { Model } {
