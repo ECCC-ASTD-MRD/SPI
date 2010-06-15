@@ -614,19 +614,19 @@ proc SPI::WindowMenu { } {
          -command "SPI::DrawGeoLegend \$Page::Data(Frame)"
       .menu.disp.menu add separator
       .menu.disp.menu add checkbutton -label [lindex $Lbl(DataBar) $GDefs(Lang)] -variable SPI::Data(ShowDataBar) \
-         -command "DataBar::Update \$Page::Data(Frame) \$SPI::Data(ShowDataBar)"
+         -command "DataBar::Update \$Page::Data(Frame) \$SPI::Data(ShowDataBar)"  -accelerator "Ctrl-L"
       .menu.disp.menu add checkbutton -label [lindex $Lbl(Colorbar) $GDefs(Lang)] -variable SPI::Data(ShowColorBar) \
-         -command "ColorBar::Update \$Page::Data(Frame) \$SPI::Data(ShowColorBar)" -onvalue 1 -offvalue 0
+         -command "ColorBar::Update \$Page::Data(Frame) \$SPI::Data(ShowColorBar)" -accelerator "Ctrl-C" -onvalue 1 -offvalue 0
       .menu.disp.menu add separator
       .menu.disp.menu add cascade -label [lindex $Lbl(Graph) $GDefs(Lang)] -menu .menu.disp.menu.graph
       .menu.disp.menu add cascade -label [lindex $Lbl(Traj) $GDefs(Lang)] -menu .menu.disp.menu.traj
       .menu.disp.menu add cascade -label [lindex $Lbl(Areas) $GDefs(Lang)] -menu .menu.disp.menu.areas
       .menu.disp.menu add cascade -label [lindex $Lbl(Icons) $GDefs(Lang)] -menu .menu.disp.menu.icons
       .menu.disp.menu add separator
-      .menu.disp.menu add checkbutton -label [lindex $Lbl(Miniport) $GDefs(Lang)] -variable SPI::Data(ShowMini) -onvalue 1 -offvalue 0 \
+      .menu.disp.menu add checkbutton -label [lindex $Lbl(Miniport) $GDefs(Lang)] -variable SPI::Data(ShowMini) -onvalue 1 -offvalue 0 -accelerator "Ctrl-m" \
          -command { if { $SPI::Data(ShowMini) } { Miniport::Create $Page::Data(Frame) 10 10 250 250 1 32 } else { Miniport::Destroy $Page::Data(Frame) } }
       .menu.disp.menu add command -label [lindex $Lbl(Viewport) $GDefs(Lang)] \
-         -command "SPI::ObjectAdd Viewport; Page::ModeSelect $Page::Data(Mode) $Page::Data(Frame)"
+         -command "SPI::ObjectAdd Viewport; Page::ModeSelect $Page::Data(Mode) $Page::Data(Frame)" -accelerator "Ctrl-v"
 
    menu .menu.disp.menu.graph -tearoff 1
       foreach graph $Graph::Data(Types) {
@@ -668,6 +668,10 @@ proc SPI::WindowMenu { } {
    bind . <Alt-a> ".menu.tools.menu invoke 0"
    bind . <Alt-c> ".menu.tools.menu invoke 1"
    bind . <Alt-m> ".menu.tools.menu invoke 2"
+   bind . <Control-l> ".menu.disp.menu invoke 8"
+   bind . <Control-c> ".menu.disp.menu invoke 9"
+   bind . <Control-m> ".menu.disp.menu invoke 16"
+   bind . <Control-v> ".menu.disp.menu invoke 17"
 
    Areas::CreateWidget .menu.disp.menu
 
