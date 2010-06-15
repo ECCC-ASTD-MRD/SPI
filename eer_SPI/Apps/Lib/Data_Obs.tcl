@@ -113,14 +113,14 @@ namespace eval Obs {
 
    set Lbl(Map)            { "Palette" "Colormap" }
    set Lbl(Texture)        { "Texture" "Texture" }
-   set Lbl(Data)           { "Donnees" "Data" }
+   set Lbl(Data)           { "Données" "Data" }
    set Lbl(Obs)            { "Observations" "Observations" }
    set Lbl(Color)          { "Couleur  " "Color" }
-   set Lbl(Icon)           { "Icones" "Icons" }
+   set Lbl(Icon)           { "Icônes" "Icons" }
    set Lbl(Intervals)      { "Intervalles" "Intervals" }
    set Lbl(Conv)           { "Conv " "Conv " }
    set Lbl(Value)          { "Valeur " "Values " }
-   set Lbl(Unit)           { "Unites " "Units  " }
+   set Lbl(Unit)           { "Unité  " "Units  " }
    set Lbl(Desc)           { "Desc   " "Desc   " }
    set Lbl(Size)           { "Dimension" "Size" }
    set Lbl(Vector)         { "Vecteur " "Vector " }
@@ -134,37 +134,37 @@ namespace eval Obs {
 
    #----- Definitions des Bulles d'aides
 
-   set Bubble(Icon)     { "Affichage des icones"
+   set Bubble(Icon)     { "Affichage des icônes"
                           "Display icons" }
-   set Bubble(Color)    { "Couleur d'affichage non-texture"
+   set Bubble(Color)    { "Couleur d'affichage non-texturé"
                           "Non textured color" }
-   set Bubble(Font)     { "Police de caracteres pour l'information"
+   set Bubble(Font)     { "Police de caractères pour l'information"
                           "Font used to display information" }
-   set Bubble(Info)     { "Selection de l'information a afficher pour la donnee"
-                          "Selection of the information you wish to plot for the data" }
-   set Bubble(Coord)    { "Affichage des coordonnees spatiales"
+   set Bubble(Info)     { "Sélection de l'information a afficher pour la donnée"
+                          "Sélection of the information you wish to plot for the data" }
+   set Bubble(Coord)    { "Affichage des coordonnées spatiales"
                           "Display spatial coordinates" }
    set Bubble(Traj)     { "Affichage de la trajectoire"
                           "Display trajectory" }
-   set Bubble(Texture)  { "Utilisation de la couleur pour representer\nl'echelle de grandeur relative des valeurs"
+   set Bubble(Texture)  { "Utilisation de la couleur pour représenter\nl'échelle de grandeur relative des valeurs"
                           "Use colors to display relative value scale difference" }
-   set Bubble(Info)     { "Affichage de l'information\npour tous les points de donnees"
+   set Bubble(Info)     { "Affichage de l'information\npour tous les points de données"
                           "Display information about all data point" }
    set Bubble(Format)   { "Format d'affichage de la valeur"
                           "Display format of the value" }
    set Bubble(Conv)      { "Conversion appliquée aux valeurs du champs (+ Delta x Facteur)"
                            "Conversion applied to the field values (+ Delta x Factor)" }
-   set Bubble(Unit)     { "Unites de la variable specifie"
+   set Bubble(Unit)     { "Unitées de la variable specifiée"
                           "Specified variable units" }
-   set Bubble(Desc)     { "Description de la donnnes"
+   set Bubble(Desc)     { "Description de la donnnée"
                           "Data description" }
-   set Bubble(Size)     { "Dimension relatives des icones en pixels"
+   set Bubble(Size)     { "Dimension relatives des icônes en pixels"
                           "Relative pixel size of the icons" }
    set Bubble(Volume)   { "Afficher en 3D"
                           "Display in 3D" }
    set Bubble(Vector)   { "Type d'affichage vectoriel"
                           "Vectorial rendering type" }
-   set Bubble(Map)      { "Palette utilisee pour les valeurs"
+   set Bubble(Map)      { "Palette utilisée pour les valeurs"
                           "Colormap used for values" }
    set Bubble(Intervals) { "Liste des intervals (1 2 3 ... ou [0 1])"
                           "Intervals description (1 2 3 ... ou [0 1])" }

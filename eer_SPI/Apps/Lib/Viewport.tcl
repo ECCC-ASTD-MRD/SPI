@@ -189,13 +189,13 @@ namespace eval Viewport {
 
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Close)          { "Fermer" "Close" }
-   set Lbl(Extent)         { "Etendue" "Extent" }
+   set Lbl(Extent)         { "Étendue" "Extent" }
    set Lbl(Min)            { "Minimum" "Minimum" }
    set Lbl(Max)            { "Maximum" "Maximum" }
    set Lbl(Transform)      { "Transformation" "Transform" }
    set Lbl(Translation)    { "Translation" "Translation" }
    set Lbl(Rotation)       { "Rotation" "Rotation" }
-   set Lbl(Scaling)        { "Echelle" "Scaling" }
+   set Lbl(Scaling)        { "Échelle" "Scaling" }
    set Lbl(Ident)          { "Identification" "Identification" }
    set Lbl(CoordLoc)       { "Local" "Local" }
    set Lbl(CoordRef)       { "Référence" "Reference" }

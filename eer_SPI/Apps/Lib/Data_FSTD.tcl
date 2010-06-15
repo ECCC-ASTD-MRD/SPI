@@ -134,22 +134,22 @@ namespace eval FSTD {
 
    #----- Definitions des labels
 
-   set Lbl(Params)        { "Parametres..." "Parameters..." }
+   set Lbl(Params)        { "Paramêtres..." "Parameters..." }
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(Contour)       { "Contour" "Contour" }
-   set Lbl(Data)          { "Donnees" "Data" }
+   set Lbl(Data)          { "Données" "Data" }
    set Lbl(Texture)       { "Texture" "Texture" }
    set Lbl(Volume)        { "Volume" "Volume" }
    set Lbl(Display)       { "Affichage" "Display" }
    set Lbl(Conv)          { "Conv  " "Conv  " }
    set Lbl(Interp)        { "Interp " "Interp " }
    set Lbl(Value)         { "Valeur " "Values " }
-   set Lbl(Unit)          { "Unites " "Units  " }
+   set Lbl(Unit)          { "Unité  " "Units  " }
    set Lbl(Desc)          { "Desc   " "Desc   " }
    set Lbl(Field)         { "Champs" "Field" }
    set Lbl(Grid)          { "Grille" "Grid" }
    set Lbl(Particle)      { "Particule" "Particle" }
-   set Lbl(Label)         { "Etiquette" "Labels" }
+   set Lbl(Label)         { "Étiquette" "Labels" }
    set Lbl(Intervals)     { "Intervalles" "Intervals" }
    set Lbl(No)            { "Non" "No" }
    set Lbl(Map)           { "Palette" "Colormap" }
@@ -160,25 +160,25 @@ namespace eval FSTD {
 
    #----- Definitions des bulles
 
-   set Bubble(Format)    { "Selection des parametres du format de l'affichage"
+   set Bubble(Format)    { "Sélection des paramêtres du format de l'affichage"
                            "Select the display parameters" }
-   set Bubble(Unit)      { "Unites de la variable specifie"
+   set Bubble(Unit)      { "Unitées de la variable specifie"
                            "Specified variable units" }
-   set Bubble(Desc)      { "Description de la donnnes"
+   set Bubble(Desc)      { "Description de la donnnée"
                            "Data description" }
-   set Bubble(NomVar)    { "Selection du champs dont\nvous desirez modifier les parametres"
+   set Bubble(NomVar)    { "Sélection du champs dont\nvous désirez modifier les paramêtres"
                            "Select the field which you want to change the parameters" }
-   set Bubble(Mode)      { "Methode de selection des niveaux"
+   set Bubble(Mode)      { "Méthode de sélection des niveaux"
                            "Level selection method" }
-   set Bubble(Nb)        { "Nombre de niveaux determines"
+   set Bubble(Nb)        { "Nombre de niveaux déterminés"
                            "Number of levels" }
    set Bubble(Conv)      { "Conversion appliquée aux valeurs du champs (+ Delta x Facteur)"
                            "Conversion applied to the field values (+ Delta x Factor)" }
    set Bubble(Intervals) { "Liste des intervals (1 2 3 ... ou [0 1])"
                            "Intervals description (1 2 3 ... ou [0 1])" }
-   set Bubble(Font)      { "Police de caracteres pour l'information"
+   set Bubble(Font)      { "Police de caractères pour l'information"
                            "Font used to display information" }
-   set Bubble(Map)       { "Palette utilisee pour les valeurs"
+   set Bubble(Map)       { "Palette utilisée pour les valeurs"
                            "Colormap used for values" }
 }
 

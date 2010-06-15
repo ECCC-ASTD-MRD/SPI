@@ -158,7 +158,7 @@ namespace eval Graph {
    set Lbl(Graph)      { "Graphique" "Graph" }
    set Lbl(Outline)    { "Ligne" "Line" }
    set Lbl(Fill)       { "Remplissage" "Fill" }
-   set Lbl(Icon)       { "Icone" "Icon" }
+   set Lbl(Icon)       { "Icône" "Icon" }
    set Lbl(Type)       { "Type        " "Type        " }
    set Lbl(Linear)     { "Linéaire" "Linear" }
    set Lbl(Title)      { "Titre" "Title" }
@@ -195,7 +195,7 @@ namespace eval Graph {
    set Lbl(Proj)       { "Projection" "Projection" }
    set Lbl(Res)        { "Résolution" "Resolution" }
    set Lbl(Same)       { "Uniforme" "Uniform" }
-   set Lbl(Scale)      { "Echelle" "Scale" }
+   set Lbl(Scale)      { "Échelle" "Scale" }
    set Lbl(Sec)        { "Sec"   "Sec" }
    set Lbl(Select)     { "Sélection" "Select" }
    set Lbl(Stat)       { "Statistiques" "Statistics" }
@@ -211,15 +211,15 @@ namespace eval Graph {
    set Bubble(Grid)      { "Paramêtres de grillage des axes" "Axis grid parameters" }
    set Bubble(Pick)      { "Paramêtres de la sélection interactive" "Interactive selection parameters" }
    set Bubble(Axis)      { "Paramêtres des axes" "Axis parameters" }
-   set Bubble(Mode)      { "Mode de selection de coordonees dans la projection" "Coordinate selection mode" }
-   set Bubble(Reset)     { "Reinitialiser le graph" "Reinitialize the graph" }
+   set Bubble(Mode)      { "Mode de sélection de coordonées dans la projection" "Coordinate selection mode" }
+   set Bubble(Reset)     { "Réinitialiser le graph" "Reinitialize the graph" }
    set Bubble(Sheet)     { "Affichage des données du graph" "Display graph data" }
    set Bubble(Update)    { "Mise-à-jour automatique des unités et information à partir des données" "Automatic update of graph units and information from data source" }
 
    set Bubble(ItemList)  { "Liste des items par sélection de position" "List of itmes per position selection" }
-   set Bubble(ItemLine)  { "Paramtres d'affichage des lignes" "Line parameters" }
+   set Bubble(ItemLine)  { "Paramêtres d'affichage des lignes" "Line parameters" }
    set Bubble(ItemFill)  { "Paramêtres de remplissage" "Polygon filling parameters" }
-   set Bubble(ItemIcon)  { "Paramêtres des icones" "Icon parameters" }
+   set Bubble(ItemIcon)  { "Paramêtres des icônes" "Icon parameters" }
    set Bubble(ItemType)  { "Type d'affichage de l'item" "Item display type" }
    set Bubble(ObsList)   { "Liste des stations d'observations disponibles" "List of available observation stations" }
    set Bubble(ObsSearch) { "Recherche d'une station dans la liste" "Station search through the list" }
@@ -228,8 +228,8 @@ namespace eval Graph {
    set Bubble(PosDel)    { "Suppression de la sélection de position courante" "Delete the current position sélection" }
    set Bubble(Info)      { "Paramêtres de l'entête" "Header parameters" }
    set Bubble(Viewport)  { "Affichage des données sur la projection active" "Display the data on the active viewport" }
-   set Bubble(Sample)    { "Selection de la distance entre les profils" "Select the sampling distance in km" }
-   set Bubble(Fit)       { "Affichage de la courbe de regression" "Displays the fitting curve" }
+   set Bubble(Sample)    { "Sélection de la distance entre les profils" "Select the sampling distance in km" }
+   set Bubble(Fit)       { "Affichage de la courbe de régression" "Displays the fitting curve" }
    set Bubble(Select)    { "Affichage d'un interval de sélection" "Displays an interval of selection" }
    set Bubble(Stat)      { "Affichage de statistiques relatives au graph" "Displays graph statistics" }
    set Bubble(IP3)       { "Validation du IP3 lors de la recherche des champs temporels" "Validate IP3 when looking ro temporal fields" }
