@@ -780,18 +780,16 @@ proc MLDP::EmissionUpdate { } {
    if { $Tmp(Scenario) == "default" } {
       Dialog::Error .newscenario $Warning(OverwriteDefault)
       focus $Sim(ScenarioNameEntry)
-      grab .newscenario
       return 0
    }
 
    set idx [lsearch -exact $Sim(EmList) $Tmp(Scenario)]
-   set save [Dialog::Default .newscenario 400 WARNING $Warning(Save) " $Tmp(Scenario)." 0 $Lbl(No) $Lbl(Yes)]
+   set save [Dialog::Default .newscenario 400 WARNING $Warning(Save) " $Tmp(Scenario)" 0 $Lbl(No) $Lbl(Yes)]
 
    #----- Verify if release scenario name does not already exists.
    if { $save && $idx != -1 } {
-      if { ![Dialog::Default .newscenario 400 WARNING $Warning(Overwrite) " $Tmp(Scenario)." 0 $Lbl(Cancel) $Lbl(Overwrite)] } {
+      if { ![Dialog::Default .newscenario 400 WARNING $Warning(Overwrite) " $Tmp(Scenario)" 0 $Lbl(Cancel) $Lbl(Overwrite)] } {
          focus $Sim(ScenarioNameEntry)
-         grab .newscenario
          return 0
       }
    }
