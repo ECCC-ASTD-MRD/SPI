@@ -622,7 +622,7 @@ proc Writer::AACN::Write { Pad Sent } {
       if { !$Sent } {
          set file $Data(No$Pad)_${file}.msg
       } else {
-         set file $date_$Data(No$Pad)_${file}.msg
+         set file ${date}_$Data(No$Pad)_${file}.msg
       }
 
       if { $Data(Cor$Pad)!="" } {
