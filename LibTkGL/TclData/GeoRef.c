@@ -793,6 +793,8 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(ref->String,-1));
             } else {
                GeoRef_WKTSet(ref,Tcl_GetString(Objv[++i]),ref->Transform,ref->InvTransform,NULL);
+               ref->Grid[0]='W';
+               ref->Grid[1]=ref->Grid[2]='\0';
             }
             break;
 
