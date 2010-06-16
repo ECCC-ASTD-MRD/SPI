@@ -254,14 +254,15 @@ proc CANERM::CreateScriptInput { } {
    set file [open $Sim(Path)/tmp/Model_CANERM.in w 0644]
 
       puts $file "#----- Logger specific parameters"
-      puts $file "LOG_MAIL=\"$Model::Param(EMail)\""
+      puts $file "LOG_MAILTO=\"$Model::Param(EMail)\""
       puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
       puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_CANERM.out"
       puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
       puts $file "LOG_TIME=$Model::Param(LogTime)"
+      puts $file "LOG_JOBID=$Sim(Model)"
 
       if { !$Model::Param(Auto) } {
-         puts $file "LOG_MODE=INTERACTIVE"
+         puts $file "LOG_JOBCLASS=INTERACTIVE"
       }
 
       puts $file ""
