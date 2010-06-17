@@ -692,7 +692,10 @@ proc Obs::ParamInit { Obs { Spec "" } } {
       set map [dataspec configure $Spec -colormap]
       if { $map=="" } {
          set map OBSMAP$Spec
+      } else {
+        colormap copy OBSMAP$Spec $map
       }
+
       if { ![colormap is OBSMAP$Spec] } {
          colormap create OBSMAP$Spec
          colormap copy   OBSMAP$Spec OBSMAPDEFAULT

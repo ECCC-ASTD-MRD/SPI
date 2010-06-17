@@ -1006,6 +1006,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    if { ![llength $Fields] } {
       set Fields [concat $Data(List) $Data(ListTool)]
    }
+
    set current $Param(Spec)
    set exist 0
    set var   ""
