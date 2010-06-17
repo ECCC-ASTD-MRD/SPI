@@ -541,14 +541,20 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    #define LINUX_SYSINFO_LOADS_SCALE 65536
    int            i,idx;
    struct sysinfo psysinfo;
+   struct utsname putsname;
    Tcl_Obj       *obj,*sub;
 
-   static CONST char *sopt[] = { "-uptime","-loads","-totalmem","-freemem","-sharedmem","-buffermem","-totalswap","-freeswap","-process","-totalhigh","-freehigh","-memunit",NULL };
-   enum               opt { UPTIME,LOADS,TOTALMEM,FREEMEM,SHAREDMEM,BUFFERMEM,TOTALSWAP,FREESWAP,PROCESS,TOTALHIGH,FREEHIGH,MEMUNIT };
+
+   static CONST char *sopt[] = { "-name","-arch","-os","-osrelease","-osversion","-uptime","-loads","-totalmem","-freemem","-sharedmem","-buffermem","-totalswap","-freeswap","-process","-totalhigh","-freehigh","-memunit",NULL };
+   enum               opt { SNAME,SARCH,SOS,SRELEASE,SVERSION,UPTIME,LOADS,TOTALMEM,FREEMEM,SHAREDMEM,BUFFERMEM,TOTALSWAP,FREESWAP,PROCESS,TOTALHIGH,FREEHIGH,MEMUNIT };
 
    /*Fill the ps structures*/
    if (sysinfo(&psysinfo)<0) {
-      Tcl_AppendResult(Interp,"System_Usage: Unable to get process usage",(char*)NULL);
+      Tcl_AppendResult(Interp,"System_Usage: Unable to get system info",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (uname(&putsname)<0) {
+      Tcl_AppendResult(Interp,"System_Usage: Unable to get system name",(char*)NULL);
       return(TCL_ERROR);
    }
 
@@ -561,6 +567,17 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
+         case SOS:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.sysname,-1)); break;
+         case SNAME:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.nodename,-1)); break;
+         case SRELEASE:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.release,-1)); break;
+         case SVERSION:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.version,-1)); break;
+         case SARCH:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.machine,-1)); break;
+
          case UPTIME:
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.uptime)); break;
          case LOADS:
