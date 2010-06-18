@@ -496,13 +496,17 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          for(i=0;i<Field->Def->NI*Field->Def->NJ;i++) {
              Def_GetMod(Field->Def,idxk+i,buf[i]);
          }
-         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
+//         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
+         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_INTENSITY_FLOAT32_ATI,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
          free(buf);
       }
    } else {
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      // Seems that GL_FLOAT_R32_NV is not recognized on ATI cards but GL_INTENSITY_FLOAT32_ATI is recognized on NVidia
+//      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_INTENSITY_FLOAT32_ATI,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
    }
 
+glErrorCheck("1GLS",0);
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
    glUniform1iARB(GLShader_UniformGet(prog,"Data"),2);
@@ -554,7 +558,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          /*Check for mask value*/
-         if (Field->Def->Mask && !Field->Def->Mask[idx0]) {
+         if (Field->Def->Mask && (!Field->Def->Mask[idx1] || !Field->Def->Mask[idx0])) {
             glEnd();
             glBegin(GL_QUAD_STRIP);
          } else {

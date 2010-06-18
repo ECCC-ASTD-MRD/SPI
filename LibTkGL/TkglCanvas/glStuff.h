@@ -95,6 +95,7 @@
 
 enum ExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum ProgToken { PROG_FIELD=0, PROG_FIELDTEX=1, PROG_DATATEX=2, PROG_TOPOTEX=3 };
+enum GLVendor { NVIDIA=0, ATI=1, MESA=2 };
 
 /* Structure pour OpenGL */
 typedef struct GLParams  {
@@ -154,6 +155,7 @@ typedef struct GLParams  {
    GLboolean      Ext[32];          /*Liste des extensions*/
    GLboolean      Set;              /*Liste des extensions*/
    GLhandleARB    Prog[SHADER_MAX]; /*Liste des shaders*/
+   int            Vendor;           /*Graphic driver vendor*/
 
    double MagScale,MagX,MagY,MagD;   /*Magnifying paameters*/
 } GLParams;

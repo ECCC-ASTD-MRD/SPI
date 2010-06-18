@@ -124,7 +124,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
             Tcl_WrongNumArgs(Interp,2,Objv,"obsid");
             return(TCL_ERROR);
          }
-         return Obs_Create(Interp,Tcl_GetString(Objv[2]));
+         return(Obs_Create(Interp,Tcl_GetString(Objv[2])));
          break;
 
       case LOAD:
@@ -132,7 +132,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
             Tcl_WrongNumArgs(Interp,2,Objv,"file");
             return(TCL_ERROR);
          }
-         return Obs_LoadASCII(Interp,Tcl_GetString(Objv[2]),NULL);
+         return(Obs_LoadASCII(Interp,Tcl_GetString(Objv[2]),NULL));
          break;
 
       case WRITE:
@@ -140,7 +140,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
             Tcl_WrongNumArgs(Interp,2,Objv,"file { obs } title");
             return(TCL_ERROR);
          }
-         return Obs_WriteASCII(Interp,Tcl_GetString(Objv[2]),Objv[3],Tcl_GetString(Objv[4]));
+         return(Obs_WriteASCII(Interp,Tcl_GetString(Objv[2]),Objv[3],Tcl_GetString(Objv[4])));
          break;
 
       case FREE:

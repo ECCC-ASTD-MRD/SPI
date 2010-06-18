@@ -301,6 +301,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
             }
             break;
+
          case INFO:
             glInfo(Interp,Tcl_GetString(Objv[++i]));
             break;
@@ -2007,8 +2008,9 @@ void glInit(Tcl_Interp *Interp) {
 */
 int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
-   int glmin,glmaj,gl,n=0;
-   int *attrTrue;
+   int  glmin,glmaj,gl,n=0;
+   int  *attrTrue;
+   char *vendor;
 
    int attrHard[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
               GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,
@@ -2026,8 +2028,21 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
    GLRender->XScreen  = Tk_Screen(TkWin);         /* Get the XID of the application */
    GLRender->XScreenNo= Tk_ScreenNumber(TkWin);   /* Get the screen number */
 
-   /*Check for software mesa implementation*/
-   GLRender->Soft=strstr(glXGetClientString(GLRender->XDisplay,GLX_VENDOR),"Brian");
+   /*Check which implementation we are using*/
+   vendor=glXGetClientString(GLRender->XDisplay,GLX_VENDOR);
+   if (strcasestr(vendor,"NVIDIA")) {
+      GLRender->Vendor=NVIDIA;
+      GLRender->Soft=0;
+      fprintf(stdout,"(INFO) glXCanvasInit: GLX Vendor is NVidia\n");
+   } else if (strcasestr(vendor,"ATI")) {
+      GLRender->Vendor=ATI;
+      GLRender->Soft=0;
+      fprintf(stdout,"(INFO) glXCanvasInit: GLX Vendor is ATI\n");
+   } else {
+      GLRender->Vendor=MESA;
+      GLRender->Soft=1;
+      fprintf(stdout,"(INFO) glXCanvasInit: GLX Vendor is MESA\n");
+   }
 
    /*Check for full scene anti-aliasing (MESA breaks the stencil buffer when enabling FSAA)*/
    if (GLRender->Soft) {
@@ -2128,13 +2143,16 @@ GLXPbuffer glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
    }
 
    /*Check returned Width and Height to make sure they're as requested*/
-   if (GLRender->GLDirect) {
-      glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_WIDTH,Width);
-      glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_HEIGHT,Height);
-   } else {
-      /*In soft mode, assume that everything is ok since with mesa 6.4 and higher it returns 0 for Width and Height*/
-      *Width=pattr[1];
-      *Height=pattr[3];
+   if (pbuf) {
+      /*This call blows up for driver different from NVIDIAs*/
+      if (GLRender->Vendor==NVIDIA) {
+         glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_WIDTH,Width);
+         glXQueryDrawable(GLRender->XDisplay,pbuf,GLX_HEIGHT,Height);
+      } else {
+         /*In soft mode, assume that everything is ok since with mesa 6.4 and higher it returns 0 for Width and Height*/
+         *Width=pattr[1];
+         *Height=pattr[3];
+      }
    }
 
    if (!pbuf || *Width==0 || *Height==0) {
