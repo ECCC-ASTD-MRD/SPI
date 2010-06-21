@@ -65,7 +65,9 @@ function MLCD_Run {
 
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
-      Log_MailIf "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
+      if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
+         Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
+      fi
    else
       Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
       Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err

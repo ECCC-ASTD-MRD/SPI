@@ -84,7 +84,9 @@ function CANERM_Pre {
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
 
       if [[ ${taskstatus} -eq 0 ]] ; then
-         Log_MailIf "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out
+         if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
+            Log_Mail "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out
+         fi
          Log_Print INFO "Meteorological preprocessing has runned successfully."
       else
          Log_Print ERROR "Problems in metfields calculations."
@@ -203,7 +205,9 @@ function CANERM_Run {
    if [[ ${taskstatus} -eq 0 ]] ; then
       mv canerm.out ${MODEL_NAME}.out
       mv *_???[c,r] ../results
-      Log_MailIf "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}.out
+      if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
+         Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}.out
+      fi
    else
       Log_Print ERROR "${MODEL_NAME} has encountered an error."
       Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
