@@ -304,7 +304,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 */
 void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj){
 
-   double y,spd,z;
+  double y,spd,z=0;
 
    /*Check for unwanted speed values*/
    if (Speed>1e5)
@@ -313,8 +313,8 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
    glPushMatrix();
 
    /*Si on projete en 3D, effectue les transformations necessaires*/
-   z=ZM(Proj,Elev);
    if (Proj) {
+      z=ZM(Proj,Elev);
       Proj->Type->Locate(Proj,Lat,Lon,1);
       glTranslated(0.0,0.0,z);
       glRotatef(180,1.0,0.0,0.0);
