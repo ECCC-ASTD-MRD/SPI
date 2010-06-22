@@ -96,8 +96,8 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "-------------------------------------------------------------------------------"
    Log::Print MUST "Script              : $Job"
    Log::Print MUST "Version             : $Version"
-   Log::Print MUST "Hostname            : [exec hostname]"
-   Log::Print MUST "Architecture        : [exec uname -s]"
+   Log::Print MUST "Hostname            : [system info -name]"
+   Log::Print MUST "Architecture        : [system info -os]"
    Log::Print MUST "Run ID              : $Param(JobId)"
 
    if { $Param(MailTo)!="" } {
@@ -289,7 +289,11 @@ proc Log::Print { Type Message { Var "" } } {
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
          if { $Param(OCLog)!=""  } {
-            exec oclog $Param(Job) x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}"
+            set err [catch { exec oclog $Param(Job) x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}" } msg]
+            if { $err } {
+               puts stderr "${time}(ERROR) Problems while calling oclog:\n\n\t$msg"
+               puts $Param(Out) "${time}(ERROR) Problems while calling oclog:\n\n\t$msg"
+            }
          }
       }
 
@@ -322,6 +326,7 @@ proc Log::Mail { Subject File { Address { } } } {
    variable Param
 
    set address $Param(MailTo)
+   set err 0
 
    if { [llength $Address] } {
       set address $Address
@@ -330,16 +335,19 @@ proc Log::Mail { Subject File { Address { } } } {
    if { [llength $address]  } {
       if { ![file exists $File] || ![file readable $File] } {
          if { $env(EER_ARCH)=="IRIX64" } {
-            eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address
+            set err [catch { eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
          } else {
-            eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address
+            set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
          }
       } else {
          if { $env(EER_ARCH)=="IRIX64" } {
-            eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File
+            set err [catch { eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
          } else {
-            eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File
+            set err [catch { eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
          }
+      }
+      if { $err } {
+         Log_Print ERROR "Problems while mailing info to $adress:\n\n\t"
       }
    }
 }
@@ -366,7 +374,7 @@ proc Log::CyclopeStart { } {
 
       #----- Setup process info
       file mkdir $path
-      set f [open $path/info.txt w 0666]
+      set f [open $path/info.txt w 00666]
       puts $f  "Class     : $Param(JobClass)\nJob       : $Param(Job) $Param(JobVersion)"
 
       if { [info exists env(SelfJobResubmit)] } {
@@ -376,10 +384,10 @@ proc Log::CyclopeStart { } {
          puts $f "Command   : ssh [info hostname] [info script] [split $argv]"
          puts $f "Kill      : ssh [info hostname] kill [pid]"
       }
-      puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [info hostname]\nArch      : [exec uname -s]\nStart time: $Param(SecStart)"
+      puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
 
       close $f
-      exec chmod 666 $path/info.txt
+      file attributes $path/info.txt  -permissions 00666
    }
 }
 
@@ -401,18 +409,20 @@ proc Log::CyclopeEnd { Status } {
    variable Param
 
    if { $Param(Cyclope) } {
-      set path $Param(CyclopePath)/$Param(JobId)
+      set f [open $Param(CyclopePath)/$Param(JobId)/info.txt a]
 
       #----- Close process info
-      exec echo "End time  : $Param(SecEnd)\nRun time  : [expr $Param(SecEnd)-$Param(SecStart)]" >> $path/info.txt
+      puts $f "End time  : $Param(SecEnd)\nRun time  : [expr $Param(SecEnd)-$Param(SecStart)]"
 
       if { $Status } {
-         exec echo "Status    : Error ($Status)" >> $path/info.txt
+         puts $f "Status    : Error ($Status)"
       } elseif { $Param(Warning) } {
-         exec echo "Status    : Warning ($Param(Warning))" >> $path/info.txt
+         puts $f "Status    : Warning ($Param(Warning))"
       } else {
-         exec echo "Status    : Success" >> $path/info.txt
+         puts $f "Status    : Success"
       }
+
+      close $f
    }
 }
 
@@ -441,8 +451,8 @@ proc Log::CyclopeSysInfo { } {
 
       #----- Print some stats
       set f [open $path/sysinfo.txt w]
-      puts $f [format "%-10s: %s" Hostname [info hostname]]
-      puts $f [format "%-10s: %s" Arch [exec uname -s]]
+      puts $f [format "%-10s: %s" Hostname [system info -name]]
+      puts $f [format "%-10s: %s" Arch [system info -os]]
       foreach info $calls stat $stats {
          puts $f [format "%-10s: %s" [string totitle [string trimleft $info -]] $stat]
       }
