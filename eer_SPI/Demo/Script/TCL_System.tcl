@@ -25,6 +25,12 @@ package require TclSystem
 set fs [lindex $argv 0]
 
 puts "System info"
+puts "  name     : [system info -name]"
+puts "  arch     : [system info -arch]"
+puts "  os       : [system info -os]"
+puts "  release  : [system info -osrelease]"
+puts "  version  : [system info -osversion]"
+
 puts "  uptime   : [system info -uptime]"
 puts "  loads    : [system info -loads]"
 puts "  totalmem : [system info -totalmem]"

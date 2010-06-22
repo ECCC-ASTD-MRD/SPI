@@ -9,7 +9,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Projet     : Exemple de scripts.
 # Fichier    : FSTD_PrecipMedian.tcl
-# Creation   : Mars 2005 - J.P. Gauthier - CMC/CMOE
+# Creation   : Juin 2010 - J.P. Gauthier - CMC/CMOE
 # Description: Calcul de la mediane pour les precips (Faut pas tenir compte des zeros)
 #
 # Parametres :
