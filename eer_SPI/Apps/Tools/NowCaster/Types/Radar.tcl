@@ -24,7 +24,7 @@ namespace eval NowCaster::Radar { } {
    variable Bubble
 
    set Param(Title)      { "Radar" "Radar" }
-   set Param(Path)       /data/radar/rawdata
+   set Param(Path)       /cnfs/ops/production/radar/rawdata
 
    set Data(Radars)      {}
 

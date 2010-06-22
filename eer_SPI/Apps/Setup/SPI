@@ -260,7 +260,7 @@ namespace eval NowCaster {
    set Param(Dock) True
 
    namespace eval Radar {
-      set Param(Paths)    { }
+      set Param(Path)       /cnfs/ops/production/radar/rawdata
    }
 
    namespace eval Obs {
