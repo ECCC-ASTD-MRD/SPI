@@ -496,17 +496,28 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          for(i=0;i<Field->Def->NI*Field->Def->NJ;i++) {
              Def_GetMod(Field->Def,idxk+i,buf[i]);
          }
-//         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
-         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_INTENSITY_FLOAT32_ATI,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
+         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
          free(buf);
       }
    } else {
       // Seems that GL_FLOAT_R32_NV is not recognized on ATI cards but GL_INTENSITY_FLOAT32_ATI is recognized on NVidia
-//      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_INTENSITY_FLOAT32_ATI,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      glTexImage2D(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      glGetTexLevelParameteriv(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GL_TEXTURE_WIDTH,&dp);
+      if (dp) {
+         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      } else {
+         fprintf(stdout,"(WARNING) Texture is too big to fit on GPU, switching to software renderer.\n");
+         glDeleteTextures(3,tx);
+         glUseProgramObjectARB(0);
+      //   GLShader_UnInstall(prog);
+
+         glActiveTexture(GL_TEXTURE0);
+         glEnable(GL_CULL_FACE);
+         glDisable(GL_BLEND);
+         return(Data_RenderTexture(Field,VP,Proj));
+      }
    }
 
-glErrorCheck("1GLS",0);
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
    glUniform1iARB(GLShader_UniformGet(prog,"Data"),2);

@@ -2037,7 +2037,7 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 //   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Def->NI,Data->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
-   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_INTENSITY_FLOAT32_ATI,Data->Def->NI,Data->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
+   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Data->Def->NI,Data->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
 
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);

@@ -637,7 +637,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref) {
    char  var[5];
    char  lbl[13];
 
-   l = c_fstinf(Unit,&ni,&nj,&nk,DateV,"",-1,-1,-1,"X","HY");
+   l = c_fstinf(Unit,&ni,&nj,&nk,-1,"",-1,-1,-1,"X","HY");
    if (l>=0) {
        l = c_fstprm(l,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
                     &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
@@ -661,7 +661,7 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
    char  lbl[13];
    double *buf;
 
-   key=l=c_fstinf(Unit,&ni,&nj,&nk,DateV,"",-1,-1,-1,"X","!!");
+   key=l=c_fstinf(Unit,&ni,&nj,&nk,-1,"",-1,-1,-1,"X","!!");
    if (l>=0) {
        l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
                     &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
