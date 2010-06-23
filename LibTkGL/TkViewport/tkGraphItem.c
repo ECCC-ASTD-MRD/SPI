@@ -1997,11 +1997,7 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
       return;
    }
 
-   if (GLRender->GLDebug) {
-      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-   } else {
-      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-   }
+   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
    /*Do we need transparency*/
    if (Data->Spec->Map->Alpha || Data->Spec->Alpha<100) {
@@ -2032,7 +2028,7 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    if (Data->Spec->InterNb) {
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Spec->InterNb,1,0,GL_RED,GL_FLOAT,Data->Spec->Inter);
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,Data->Spec->Inter);
    }
 
    /*Setup 2D Data Texture*/
@@ -2040,7 +2036,8 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Def->NI,Data->Def->NJ,0,GL_RED,GL_FLOAT,ptr);
+//   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Def->NI,Data->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
+   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_INTENSITY_FLOAT32_ATI,Data->Def->NI,Data->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
 
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);

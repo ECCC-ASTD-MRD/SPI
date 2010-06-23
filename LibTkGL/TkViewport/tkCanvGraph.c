@@ -868,7 +868,6 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
 
       /*Clear du background*/
       if (gr->FillColor) {
-         glLineWidth(0.0);
          glPolygonMode(GL_FRONT,GL_FILL);
          glColor4us(gr->FillColor->red,gr->FillColor->green,gr->FillColor->blue,gr->Alpha*655);
          glBegin(GL_QUADS);
