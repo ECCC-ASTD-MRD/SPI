@@ -612,6 +612,7 @@ proc Mapper::DepotWare::Create { } {
       TREE set $idx name [lindex $depot 0]
       TREE set $idx type [lindex $depot 1]
 
+      #----- Make sure env variables are evaluated
       eval set path \"[lindex $depot 2]\"
       TREE set $idx path $path
    }
