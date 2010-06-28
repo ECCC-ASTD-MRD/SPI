@@ -606,13 +606,14 @@ proc Mapper::DepotWare::Create { } {
       source $env(HOME)/.spi/Mapper
    }
 
-
    foreach depot $Data(Depots) {
       set idx [TREE insert root end]
       TREE set $idx open False
       TREE set $idx name [lindex $depot 0]
       TREE set $idx type [lindex $depot 1]
-      TREE set $idx path [lindex $depot 2]
+
+      eval set path \"[lindex $depot 2]\"
+      TREE set $idx path $path
    }
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE Mapper::DepotWare::TreeId Mapper::DepotWare::TreeSelect Mapper::DepotWare::PopUp
 }
