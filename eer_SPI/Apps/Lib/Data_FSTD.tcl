@@ -843,7 +843,8 @@ proc FSTD::ParamPut { } {
 
       if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
          ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$var)
-         set Param(Unit) $MetStat::Rec(Unit$var)
+         set Param(Unit)   $MetStat::Rec(Unit$var)
+         set Param(Factor) $MetStat::Rec(Factor$var)
 
          foreach inter $MetStat::Rec(Inter$var) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
@@ -905,7 +906,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          }
 
          if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
-            dataspec configure $Spec -unit $MetStat::Rec(Unit$var)
+            dataspec configure $Spec -unit $MetStat::Rec(Unit$var) -factor $MetStat::Rec(Factor$var)
          }
       }
    }

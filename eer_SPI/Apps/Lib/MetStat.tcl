@@ -476,7 +476,6 @@ proc MetStat::RECRCLoad { File } {
          }
 
          #----- Verifier la structure de la commande
-
          if { [catch {MetStat::RECRCEval $cmd}] } {
             Dialog::Error . $Msg(RECRC) "\n\n$cmd"
          }
