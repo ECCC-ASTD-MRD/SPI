@@ -1408,8 +1408,8 @@ proc Model::ParamValidateEmail { } {
       }
 
       #----- Display warning if email is different than default one.
-      if { $Param(EMailSet) != "$env(USER)@ec.gc.ca" } {
-         set answer [Dialog::Default $Param(Frame) 400 WARNING $Warning(EMail) "\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMail)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" 1 $Lbl(Yes) $Lbl(No)]
+      if { $Param(EMailSet)!="$env(USER)@ec.gc.ca" } {
+         set answer [Dialog::Default $Param(Frame) 400 WARNING $Warning(EMail) "\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMailSet)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" 1 $Lbl(Yes) $Lbl(No)]
          if { $answer } {
             focus $Param(Frame).params.email.e
             return 0
