@@ -325,7 +325,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
          idx=c_fstinf(head->FID->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
       }
       if (idx<0) {
-         fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (GZ)\n");
+         fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (%s)\n",Field->Spec->Topo);
       } else {
          if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
          c_fstluk(gz,idx,&i,&j,&k);
@@ -483,10 +483,10 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          if (head->FID) {
             ip1=FSTD_Level2IP(Field->Ref->Levels[j],Field->Ref->LevelType);
             EZLock_RPNField();
-            idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,"GZ");
+            idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
-               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding modulator (GZ) (%f(%i)), using constant pressure\n",Field->Ref->Levels[j],ip1);
+               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[j],ip1);
             } else {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
                c_fstluk(gz,idx,&ni,&nj,&nk);
