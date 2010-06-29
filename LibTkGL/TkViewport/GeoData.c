@@ -147,7 +147,7 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
             r+=qdata->Proc(qdata->Tile,qdata->Proj,qdata->Param1,qdata->Param2);
 
             /*Redraw if needed*/
-            if (vp && r>25 && !GLRender->XBatch) {
+            if (vp && !vp->Update && r>25 && !GLRender->XBatch) {
                GDB_ThreadQueueRefresh(vp);
                r=0;
             }
