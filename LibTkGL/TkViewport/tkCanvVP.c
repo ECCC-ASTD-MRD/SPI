@@ -992,23 +992,27 @@ void ViewportRefresh(ClientData clientData,int Delay) {
 
    int i,d=0;
 
-   /*Check into viewport table for join projection*/
-   for (i=0;i<VPMAX;i++){
-      if (ViewportTable[i]==vp) d++;
+   /*If viewport is not already being updated*/
+   if (!vp->Update) {
 
-      if (ViewportTable[i] && ViewportTable[i]->canvas==vp->canvas && strcmp(ViewportTable[i]->Projection,vp->Projection)==0) {
-         ViewportTable[i]->Update=1;
-      }
-   }
+      /*Check into viewport table for join projection*/
+      for (i=0;i<VPMAX;i++){
+         if (ViewportTable[i]==vp) d++;
 
-   if (d && vp->canvas) {
-      vp->Update=1;
-      if (Delay<2000) {
-         if (!vp->Timer) {
-           vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
+         if (ViewportTable[i] && ViewportTable[i]->canvas==vp->canvas && strcmp(ViewportTable[i]->Projection,vp->Projection)==0) {
+            ViewportTable[i]->Update=1;
          }
-      } else {
-         ViewportRefresh_Canvas(vp->canvas);
+      }
+
+      if (d && vp->canvas) {
+         vp->Update=1;
+         if (Delay<2000) {
+            if (!vp->Timer) {
+            vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
+            }
+         } else {
+            ViewportRefresh_Canvas(vp->canvas);
+         }
       }
    }
 }
