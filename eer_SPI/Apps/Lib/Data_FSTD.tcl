@@ -62,7 +62,7 @@ namespace eval FSTD {
    dataspec create FLDDEFAULT
    dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
-      -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -topography GZ -sample 2 \
+      -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 \
       -intervals {}
 
    fstdfield vector { UU VV }
@@ -107,7 +107,7 @@ namespace eval FSTD {
    set Param(Mantisse)      0              ;#Dimension de la mantisse
    set Param(Color)         #000000        ;#Couleur des items vectoriels
    set Param(Dash)          ""             ;#Pattern des items vectoriels
-   set Param(Topo)          GZ             ;#Modulation 3D
+   set Param(Topo)          ""             ;#Modulation 3D
    set Param(TopoFac)       1.0            ;#Facteur de modulation 3D
    set Param(Sample)        4              ;#Sampling des points vectoriels
    set Param(Step)          0.25           ;#Step de calcul des streamlines
