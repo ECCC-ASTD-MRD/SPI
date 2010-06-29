@@ -133,6 +133,8 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
             return(NULL);
          if (!(Scan->V=(unsigned int*)realloc(Scan->V,nv*sizeof(unsigned int))))
             return(NULL);
+         if (!(Scan->D=(float*)realloc(Scan->D,nv*sizeof(float))))
+            return(NULL);
          Scan->S=nv;
       }
       Scan->N=0;
@@ -161,6 +163,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
    if (Scan->X) free(Scan->X);
    if (Scan->Y) free(Scan->Y);
    if (Scan->V) free(Scan->V);
+   if (Scan->D) free(Scan->D);
 
    if (Scan->ToRef)   GeoRef_Free(Scan->ToRef);
    if (Scan->FromRef) GeoRef_Free(Scan->FromRef);
@@ -179,6 +182,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
  * Parametres   :
  *  <Scan>      : Buffer de reprojection
  *  <FromDef>   : Data definition source
+ *  <ToDef>     : Data definition destination
  *  <Dim>       : Dimension dee cellules de grilles (1=point, 2=area)
  *
  * Retour       : Dimension des resultats
@@ -187,7 +191,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
+int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim) {
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
@@ -297,11 +301,17 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,int Dim) {
 
          EZLock_RPNInt();
          c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+         if (ToDef) {
+            c_gdxysval(Scan->ToRef->Id,Scan->D,ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
+         }
          EZUnLock_RPNInt();
 
          for(x=n-1;x>=0;x--) {
             Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
             Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
+            if (ToDef && !FIN2D(ToDef,Scan->X[x],Scan->Y[x])) {
+               Scan->D[x]=ToDef->NoData;
+            }
          }
       }
    }
