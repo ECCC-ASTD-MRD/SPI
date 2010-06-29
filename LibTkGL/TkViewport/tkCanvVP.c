@@ -1008,7 +1008,7 @@ void ViewportRefresh(ClientData clientData,int Delay) {
          vp->Update=1;
          if (Delay<2000) {
             if (!vp->Timer) {
-            vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
+               vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
             }
          } else {
             ViewportRefresh_Canvas(vp->canvas);
@@ -1097,7 +1097,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       }
 
       /*If update is needed or the back buffer frame is not rendered yet*/
-      if (vp->Update || (!vp->Frames[vp->Frame] || !vp->Frame)) {
+      if (vp->Update || (!vp->Frames[vp->Frame])) {
 
          ViewportSet(vp,proj);
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
