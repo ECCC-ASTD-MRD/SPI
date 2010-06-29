@@ -2299,6 +2299,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    /*Check for extrusion selection*/
    if (GLRender->GLZBuf || Layer->Extrude!=-1 || Layer->Topo!=-1) {
       glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LESS);
       if (spec->Fill) {
          glEnable(GL_POLYGON_OFFSET_FILL);
          glPolygonOffset(1.0,1.0);
@@ -2417,6 +2418,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    glDisable(GL_POLYGON_OFFSET_FILL);
    glDisable(GL_DEPTH_TEST);
+   glDepthFunc(GL_LEQUAL);
 
    /*Render the selected features*/
    if (Layer->SFeature) {

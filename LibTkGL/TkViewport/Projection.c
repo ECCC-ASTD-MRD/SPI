@@ -1458,7 +1458,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    glDisable(GL_STENCIL_TEST);
    glDisable(GL_DEPTH_TEST);
-   glDepthFunc(GL_LESS);
+   glDepthFunc(GL_LEQUAL);
    glDepthMask(GL_TRUE);
    glStencilMask(0xdf);
 

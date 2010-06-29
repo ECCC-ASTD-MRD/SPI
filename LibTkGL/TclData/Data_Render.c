@@ -196,6 +196,10 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       if (!Field->Grid(Field,Proj,Field->Def->Level))
          return(0);
 
+   if (GLRender->GLZBuf) {
+      glEnable(GL_DEPTH_TEST);
+   }
+
    glPushName(PICK_FSTDFIELD);
    if (Mode==GL_ALL || Mode==GL_VECTOR) {
 
@@ -213,8 +217,10 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    }
 
    if (GLRender->GLZBuf) {
-      glEnable(GL_DEPTH_TEST);
+      glEnable(GL_POLYGON_OFFSET_FILL);
+      glPolygonOffset(1.0,1.0);
    }
+
    if (Mode==GL_ALL || Mode==GL_RASTER) {
 
       /*Verifier la presence d'une palette de couleur si elle est necessaire*/
@@ -272,6 +278,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       }
    }
 
+   glDisable(GL_POLYGON_OFFSET_FILL);
    glPopName();
    glStencilMask(0xff);
    glStencilFunc(GL_EQUAL,0x0,0xf);
@@ -559,6 +566,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glEnable(GL_STENCIL_TEST);
    glStencilFunc(GL_EQUAL,0xf0,0x0f);
    glStencilOp(GL_KEEP,GL_REPLACE,GL_REPLACE);
+   glDepthMask(GL_FALSE);
 
    if (Field->Segments) {
 
@@ -667,6 +675,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
       }
    }
 
+   glDepthMask(GL_TRUE);
    glMatrixMode(GL_PROJECTION);
    glPopMatrix();
    glMatrixMode(GL_MODELVIEW);
@@ -1675,7 +1684,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[0]),len,180+RAD2DEG(atan2(u,v)),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),len,180+RAD2DEG(atan2(u,v)),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }
@@ -1747,7 +1756,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,x[n]);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[0]),x[n],y[n],size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),x[n],y[n],size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             } else {
@@ -1763,7 +1772,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[0]),len,180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),len,180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }
