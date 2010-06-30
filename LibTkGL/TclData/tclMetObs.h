@@ -105,8 +105,8 @@ typedef struct TMetObs {
    time_t   Cache;              /*How long to keep in memory*/
    time_t   Persistance;        /*How long before no valid*/
    float    NoData;             /*No data value*/
-   int      Strict;             /*Data date selection looseness*/
-   int      State;             /*Data state descriptor*/
+   long     Lag;                /*Data date selection looseness*/
+   int      State;              /*Data state descriptor*/
    int      FId;
 
    TMetLoc    *Loc;             /*Liste des localisations (stations)*/
@@ -142,7 +142,7 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
 TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int St,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data);
 TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time);
-TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,int Exact);
+TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,long Lag);
 void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);
 float         TMetElem_Value(TMetElemData *Data,int Code,int Ne,int Nv,int Nt);

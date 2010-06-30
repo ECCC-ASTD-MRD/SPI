@@ -447,8 +447,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-CODE","-REPORT","-NB","-DATE","-DATE0","-DATE1","-VALID","-STATUS","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,CODE,REPORT,NB,DATE,DATE0,DATE1,VALID,STATUS,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-CODE","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-STATUS","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,CODE,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,STATUS,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -744,7 +744,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   } else if (Objc==4) {
                      obj=Tcl_NewListObj(0,NULL);
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
-                     if ((elem=TMetElem_Find(loc,time,obs->Strict))) {
+                     if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            if (obs->State==-1 || obs->State==data->St) {
@@ -809,7 +809,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   loc=NULL;
                   obj=Tcl_NewListObj(0,NULL);
                   while (loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search)) {
-                     if ((elem=TMetElem_Find(loc,time,obs->Strict))) {
+                     if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
                            for(d=0;d<elem->NData;d++) {
                               Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
                            }
@@ -893,11 +893,24 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                 Tcl_SetObjResult(Interp,Tcl_NewLongObj(obs->Time));
             } else {
                if (Objc<3) {
-                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -VALID [time] [strict]\"",(char*)NULL);
+                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -VALID [time] [lag]\"",(char*)NULL);
                   return(TCL_ERROR);
                } else {
                   Tcl_GetLongFromObj(Interp,Objv[++i],&obs->Time);
-                  Tcl_GetBooleanFromObj(Interp,Objv[++i],&obs->Strict);
+                  Tcl_GetLongFromObj(Interp,Objv[++i],&obs->Lag);
+               }
+             }
+            break;
+
+         case LAG:
+            if (Objc==1) {
+                Tcl_SetObjResult(Interp,Tcl_NewLongObj(obs->Lag));
+            } else {
+               if (Objc<2) {
+                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -LAG [lag]\"",(char*)NULL);
+                  return(TCL_ERROR);
+               } else {
+                  Tcl_GetLongFromObj(Interp,Objv[++i],&obs->Lag);
                }
              }
             break;
@@ -982,8 +995,8 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Time   = 0;
    obs->Cache  = 0;
    obs->Persistance = 0;
-   obs->Strict = 0;
-   obs->State = -1;
+   obs->Lag    = 0;
+   obs->State  = -1;
    obs->Info   = NULL;
    obs->NbInfo = 0;
    obs->NoData = -999.0f;
@@ -1155,7 +1168,7 @@ Vect3d *MetObs_Grid(Tcl_Interp *Interp,TGeoRef *Ref,TMetObs *Obs,long Time,Tcl_O
 
             if (!skip && (Extrap || j)) {
                /*Get the element for the specific time*/
-               if ((elem=TMetElem_Find(loc,Time,Obs->Strict))) {
+               if ((elem=TMetElem_Find(loc,Time,Obs->Lag))) {
 
                   /*Get the specific data*/
                   for(n=0;n<elem->NData;n++) {
@@ -1367,7 +1380,7 @@ float TMetElem_Value(TMetElemData *Data,int Code,int Ne,int Nv,int Nt) {
    return(-999.0f);
 }
 
-TMetElem *TMetElem_Find(TMetLoc *Loc,long Time,int Exact) {
+TMetElem *TMetElem_Find(TMetLoc *Loc,long Time,long Lag) {
 
    TMetElem *elem=Loc->Elems;
 
@@ -1375,7 +1388,7 @@ TMetElem *TMetElem_Find(TMetLoc *Loc,long Time,int Exact) {
       elem=elem->Next;
    }
 
-   if (elem && elem->Time!=Time && Exact) {
+   if (elem && Lag && (Time-elem->Time)>Lag) {
       elem=NULL;
    }
    return(elem);
@@ -2418,7 +2431,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       if (Projection_Pixel(Proj,VP,loc->Coord,pix)) {
 
          /*Get the element for the specific time*/
-         if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Strict))) {
+         if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
 
             /*Fix transparency on validity time persistance and break if too old (alpha==0)*/
             if (Obs->Persistance) {
