@@ -44,7 +44,7 @@ static int           FSTDInit=0;
 
 static TFSTDVector FSTDVectorTable[256];
 static int         FSTDVectorTableSize=0;
-static int         FSTDIP1Mode=3;
+static int         FSTDvalode=3;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -378,16 +378,16 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case IP1MODE:
          if (Objc==2) {
-            if (FSTDIP1Mode==2) {
+            if (FSTDvalode==2) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEW",-1));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("OLD",-1));
             }
          } else {
             if (strcmp(Tcl_GetString(Objv[2]),"NEW")==0) {
-               FSTDIP1Mode=2;
+               FSTDvalode=2;
             } else if  (strcmp(Tcl_GetString(Objv[2]),"OLD")==0) {
-               FSTDIP1Mode=3;
+               FSTDvalode=3;
             } else {
                Tcl_AppendResult(Interp,"Wrong mode, must be NEW or OLD",(char*)NULL);
                return(TCL_ERROR);
@@ -473,7 +473,16 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[3],&datev);
-         Tcl_GetIntFromObj(Interp,Objv[5],&ip1);
+         Tcl_ListObjIndex(Interp,Objv[5],0,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
+
+         Tcl_ListObjIndex(Interp,Objv[5],1,&obj);
+         if (Tcl_GetIndexFromObj(Interp,obj,type,"type",0,&n)!=TCL_OK) {
+            Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         ip1=FSTD_Level2IP(tmpd,n);
+
          Tcl_GetIntFromObj(Interp,Objv[6],&ip2);
          Tcl_GetIntFromObj(Interp,Objv[7],&ip3);
          n=1000;
@@ -1505,7 +1514,7 @@ int FSTD_Level2IP(float Level,int Type) {
       if (Type==LVL_HYBRID) {
          mode=2;
       } else {
-         mode=FSTDIP1Mode;
+         mode=FSTDvalode;
       }
       f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
 #endif

@@ -1349,8 +1349,6 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    int      n,x,y,z=0,idx,dx;
    TGeoScan scan;
 
-   memset(&scan,0x0,sizeof(TGeoScan));
-
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Invalid band",(char*)NULL);
       return(TCL_ERROR);
@@ -1370,6 +1368,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
    }
 
+   memset(&scan,0x0,sizeof(TGeoScan));
+
    /*Check if we can reproject all in one shot, otherwise, do by scanline*/
    dx=(Band->Def->NI*Band->Def->NJ)>4194304?1:Band->Def->NI;
    for(x=0;x<Band->Def->NI;x+=dx) {
@@ -1383,7 +1383,6 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
       for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/
-//         if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,scan.X[n],scan.Y[n],Field->Def->Level,&val,&dir)) {
          val=scan.D[n];
          if (val!=(float)Field->Def->NoData) {
             VAL2COL(idx,Field->Spec,val);

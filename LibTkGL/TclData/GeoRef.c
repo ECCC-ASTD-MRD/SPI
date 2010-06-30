@@ -301,14 +301,18 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim) {
 
          EZLock_RPNInt();
          c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+         /*If we have the data of source, get it's values right now*/
          if (ToDef) {
             c_gdxysval(Scan->ToRef->Id,Scan->D,ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
          }
          EZUnLock_RPNInt();
 
+         /*Cast back to double*/
          for(x=n-1;x>=0;x--) {
             Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
             Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
+
+            /*If we're outside, set ot nodata*/
             if (ToDef && !FIN2D(ToDef,Scan->X[x],Scan->Y[x])) {
                Scan->D[x]=ToDef->NoData;
             }
