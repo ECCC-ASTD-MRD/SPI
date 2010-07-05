@@ -625,26 +625,28 @@ proc Mapper::DepotWare::Create { } {
 #
 # But      : Reinitialise les parametres de recherche.
 #
-# Parametres   :
-#
+# Parametres  :
+#   <Clear>   : Clear search params
 # Retour:
 #
 # Remarques :
 #
 #----------------------------------------------------------------------------
 
-proc Mapper::DepotWare::Reset { } {
+proc Mapper::DepotWare::Reset { { Clear False } } {
    variable Data
 
-   if { $Mapper::Data(Canvas)!="" } {
-      $Mapper::Data(Canvas) delete MAPPERSEARCH
-   }
+   if { $Clear } {
+      if { $Mapper::Data(Canvas)!="" } {
+         $Mapper::Data(Canvas) delete MAPPERSEARCH
+      }
 
-   set Data(Coo)  ""
-   set Data(Lat0)   -90.0
-   set Data(Lat1)   -90.0
-   set Data(Lon0)   -180.0
-   set Data(Lon1)   -180.0
+      set Data(Coo)  ""
+      set Data(Lat0)   -90.0
+      set Data(Lat1)   -90.0
+      set Data(Lon0)   -180.0
+      set Data(Lon1)   -180.0
+   }
 
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
 }

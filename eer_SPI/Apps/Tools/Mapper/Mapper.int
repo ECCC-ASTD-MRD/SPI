@@ -75,7 +75,7 @@ proc Mapper::Window { } {
          checkbutton $Data(Tab2).head.mode -variable Page::Data(ToolMode) -onvalue Mapper::DepotWare -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command  { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         button $Data(Tab2).head.reset -image RESET -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::DepotWare::Reset"
+         button $Data(Tab2).head.reset -image RESET -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::DepotWare::Reset True"
          button $Data(Tab2).head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command "Mapper::DepotWare::Params"
          button $Data(Tab2).head.add -image PLUS -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::DepotWare::Window"
          button $Data(Tab2).head.del -image DELETE -bd 1 -relief flat -overrelief raised -command "Mapper::DepotWare::Del \$Mapper::DepotWare::Data(Select)"
@@ -175,6 +175,8 @@ proc Mapper::Window { } {
    Bubble::Create $Data(Tab1).head.open     $Bubble(File)
 
    trace add variable Viewport::Data(Data) write Mapper::Toggler
+
+   Mapper::DepotWare::Reset
    Viewport::FollowerAdd Mapper
 }
 
