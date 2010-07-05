@@ -2535,7 +2535,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       if ((ip1=((FSTD_Head*)Field->Head)->IP1)==-1 || Field->Def->NK>1) {
          ip1=FSTD_Level2IP(Field->Ref->Levels[k],Field->Ref->LevelType);
       }
-
       /*Inscription de l'enregistrement*/
       Def_Pointer(Field->Def,0,idx,p);
       ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,

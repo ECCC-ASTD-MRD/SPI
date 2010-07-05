@@ -502,7 +502,10 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          if (Objc==7) {
             Tcl_GetBooleanFromObj(Interp,Objv[6],&compress);
          }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
+         if (!(field0=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid field (",Tcl_GetString(Objv[2]),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
          return(FSTD_FieldWrite(Interp,Tcl_GetString(Objv[3]),field0,npack,rewrite,compress));
          break;
 
