@@ -93,7 +93,6 @@ proc CHEM::LayoutUpdate { Frame } {
       set desc "Unknown"
    }
 
-   set unit [fstdfield configure $field -unit]
    set date [clock format [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)" -gmt True] -gmt True]
    set text "$desc\n\nRelease                          :
 Dispersion Model                 : $Sim(Model)
@@ -104,7 +103,7 @@ Release Starting Date-Time       : $date\n"
    switch $Sim(Model) {
       MLDP0   { append text "Simulation Duration              : $Sim(Duration) Hr(s)
 Release Duration                 : $Sim(EmTotalDuration) s
-Total Release Quantity           : $Sim(EmMass) $unit
+Total Release Quantity           : [format "%.3e" $Sim(EmIsoQuantity)] unit
 Initial Max. Plume Height        : $Sim(EmHeight) m
 Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
 NWP Meteorological Model         : $Sim(Meteo)
@@ -112,7 +111,7 @@ NWP Meteorological Data          : $Sim(Mode)"
                }
       MLDP1   { append text "Simulation Duration              : $Sim(Duration) Hr(s)
 Release Duration                 : $Sim(EmTotalDuration) s
-Total Release Quantity           : $Sim(EmMass) $unit
+Total Release Quantity           : [format "%.3e" $Sim(EmIsoQuantity)] unit
 Initial Max. Plume Height        : $Sim(EmHeight) m
 Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
 NWP Meteorological Model         : $Sim(Meteo)
@@ -120,7 +119,7 @@ NWP Meteorological Data          : $Sim(Mode)"
               }
       MLCD    { append text "Simulation Duration              : $Sim(DurMin) min
 Release Duration                 : $Sim(EmDurationMin) Min(s)
-Total Release Quantity           : $Sim(EmMass) $unit
+Total Release Quantity           : [format "%.3e" $Sim(EmMass)] unit
 Initial Max. Plume Height        : $Sim(EmTop) m
 Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
 NWP Meteorological Model         : $Sim(Meteo)
@@ -128,7 +127,7 @@ NWP Meteorological Data          : $Sim(Mode)"
               }
       CANERM  { append text "Simulation Duration              : $Sim(Duration) Hr(s)
 Release Duration                 : $Sim(EmDuration) Hr(s)
-Total Release Quantity           : $Sim(IsoRelease) $unit
+Total Release Quantity           : [format "%.3e" $Sim(IsoRelease)] unit
 Initial Max. Plume Height        : $Sim(EmHeight) m
 Initial Horiz. Dispersion Radius : NIL
 NWP Meteorological Model         : $Sim(Meteo)
