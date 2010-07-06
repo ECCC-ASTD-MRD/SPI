@@ -707,6 +707,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
                      OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                  } else {
+                     fprintf(stderr,"Bad Buffer on feature %i\n",f);
                   }
                }
             }
