@@ -497,6 +497,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
          ref0=GeoRef_New();
          ref0->Id=-(++TGeoRef_TableNo);
+         GeoRef_Incr(ref0);
 
          if (Objc==4) {
             GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL);
