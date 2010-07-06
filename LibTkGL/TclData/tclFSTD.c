@@ -44,7 +44,7 @@ static int           FSTDInit=0;
 
 static TFSTDVector FSTDVectorTable[256];
 static int         FSTDVectorTableSize=0;
-static int         FSTDvalode=3;
+static int         FSTDIP1MODE=3;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -378,16 +378,16 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case IP1MODE:
          if (Objc==2) {
-            if (FSTDvalode==2) {
+            if (FSTDIP1MODE==2) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEW",-1));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("OLD",-1));
             }
          } else {
             if (strcmp(Tcl_GetString(Objv[2]),"NEW")==0) {
-               FSTDvalode=2;
+               FSTDIP1MODE=2;
             } else if  (strcmp(Tcl_GetString(Objv[2]),"OLD")==0) {
-               FSTDvalode=3;
+               FSTDIP1MODE=3;
             } else {
                Tcl_AppendResult(Interp,"Wrong mode, must be NEW or OLD",(char*)NULL);
                return(TCL_ERROR);
@@ -473,15 +473,24 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[3],&datev);
-         Tcl_ListObjIndex(Interp,Objv[5],0,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
 
-         Tcl_ListObjIndex(Interp,Objv[5],1,&obj);
-         if (Tcl_GetIndexFromObj(Interp,obj,type,"type",0,&n)!=TCL_OK) {
-            Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
-            return(TCL_ERROR);
+         if (Tcl_GetIntFromObj(Interp,Objv[5],&ip1)==TCL_ERROR) {
+            Tcl_ResetResult(Interp);
+            Tcl_ListObjLength(Interp,Objv[5],&n);
+            if (n<2) {
+               Tcl_AppendResult(Interp,"invalid level description, must be IP1 or { level leveltype )",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            Tcl_ListObjIndex(Interp,Objv[5],0,&obj);
+            Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
+
+            Tcl_ListObjIndex(Interp,Objv[5],1,&obj);
+            if (Tcl_GetIndexFromObj(Interp,obj,type,"type",0,&n)!=TCL_OK) {
+               Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            ip1=FSTD_Level2IP(tmpd,n);
          }
-         ip1=FSTD_Level2IP(tmpd,n);
 
          Tcl_GetIntFromObj(Interp,Objv[6],&ip2);
          Tcl_GetIntFromObj(Interp,Objv[7],&ip3);
@@ -1509,15 +1518,16 @@ int FSTD_Level2IP(float Level,int Type) {
          Type=LVL_SIGMA;
       }
 
-      /*MAGL | GALCHEN | UNDEF -> MASL*/
-      if (Type==LVL_MAGL|| Type==LVL_GALCHEN) {
-         Type=LVL_MASL;
+      /*GALCHEN -> MASL*/
+      if (Type==LVL_GALCHEN) {
+         Type==LVL_MAGL;
       }
+
       /*Convertir en niveau reel*/
       if (Type==LVL_HYBRID) {
          mode=2;
       } else {
-         mode=FSTDvalode;
+         mode=FSTDIP1MODE;
       }
       f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
 #endif
