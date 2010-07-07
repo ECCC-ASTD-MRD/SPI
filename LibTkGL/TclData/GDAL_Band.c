@@ -1346,7 +1346,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    double   lat,lon,i,j;
    float    val,dir;
-   int      n,x,y,z=0,idx,dx;
+   int      n,x,y,z=0,idx,dy;
    TGeoScan scan;
 
    if (!Band) {
@@ -1371,11 +1371,11 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    memset(&scan,0x0,sizeof(TGeoScan));
 
    /*Check if we can reproject all in one shot, otherwise, do by scanline*/
-   dx=(Band->Def->NI*Band->Def->NJ)>4194304?1:Band->Def->NI;
-   for(x=0;x<Band->Def->NI;x+=dx) {
+   dy=(Band->Def->NI*Band->Def->NJ)>4194304?1:Band->Def->NJ;
+   for(y=0;y<Band->Def->NJ;y+=dy) {
 
       /*Reproject*/
-      if (!GeoScan_Init(&scan,Field->Ref,Band->Ref,x,0,x+(dx-1),Band->Def->NJ-1)) {
+      if (!GeoScan_Init(&scan,Field->Ref,Band->Ref,0,y,Band->Def->NI-1,y+(dy-1))) {
          Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
