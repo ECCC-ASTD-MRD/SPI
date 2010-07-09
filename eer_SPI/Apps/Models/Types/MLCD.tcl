@@ -58,7 +58,7 @@ proc MLCD::ParamsCheck { Tab No } {
    set Sim(Lon)          [lindex $Sim(GridSrc) 2]
 
    if { ![MLCD::ValidateModelTab] } {
-      TabFrame::Select $Tab 0
+      TabFrame::SelectPrevious $Tab
       return 0
    }
 
@@ -69,12 +69,12 @@ proc MLCD::ParamsCheck { Tab No } {
    }
 
    if { ![MLCD::ValidateEmissionTab] } {
-      TabFrame::Select $Tab 1
+      TabFrame::SelectPrevious $Tab
       return 0
    }
 
    if { !$Sim(Auto) && ![MLCD::ValidateMeteoTab] } {
-      TabFrame::Select $Tab 2
+      TabFrame::SelectPrevious $Tab
       return 0
    }
 

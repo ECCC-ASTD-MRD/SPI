@@ -570,13 +570,13 @@ proc CANERM::ParamsCheck { Tab No } {
    if { $Sim(NoPrev)==-1 } {
       if { $Sim(IsoNb)==0 } {
          Dialog::Error .modelnew $Error(NbIso)
-         TabFrame::Select $Tab 0
+         TabFrame::SelectPrevious $Tab
          return False
       }
 
       if { $Sim(EmHeight)>30000 } {
          Dialog::Error .modelnew $Error(Height)
-         TabFrame::Select $Tab 0
+         TabFrame::SelectPrevious $Tab
          return False
       }
 
