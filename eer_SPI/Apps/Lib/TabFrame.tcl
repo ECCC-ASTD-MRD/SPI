@@ -15,23 +15,25 @@
 #
 # Fonctions:
 #
-#    TabFrame::Add         { Tab Level Title Color }
-#    TabFrame::Create      { Tab Level Command { Width -1 } { Height -1 } }
-#    TabFrame::Clear       { Tab }
-#    TabFrame::Current     { Tab }
-#    TabFrame::Delete      { Tab Level No }
-#    TabFrame::Destroy     { Tab }
-#    TabFrame::Disable     { Tab No }
-#    TabFrame::Edit        { Tab Level No }
-#    TabFrame::Enable      { Tab No }
-#    TabFrame::GetLabel    { Tab No }
-#    TabFrame::GetLevel    { Tab No }
-#    TabFrame::GetTabs     { Tab }
-#    TabFrame::Is          { Tab }
-#    TabFrame::NbFrame     { Tab }
-#    TabFrame::Place       { Tab Level No Nb X Top }
-#    TabFrame::PlaceHidder { Tab No Top }
-#    TabFrame::Select      { Tab No }
+#    TabFrame::Add            { Tab Level Title Color }
+#    TabFrame::Create         { Tab Level Command { Width -1 } { Height -1 } }
+#    TabFrame::Clear          { Tab }
+#    TabFrame::Current        { Tab }
+#    TabFrame::Previous       { Tab }
+#    TabFrame::Delete         { Tab Level No }
+#    TabFrame::Destroy        { Tab }
+#    TabFrame::Disable        { Tab No }
+#    TabFrame::Edit           { Tab Level No }
+#    TabFrame::Enable         { Tab No }
+#    TabFrame::GetLabel       { Tab No }
+#    TabFrame::GetLevel       { Tab No }
+#    TabFrame::GetTabs        { Tab }
+#    TabFrame::Is             { Tab }
+#    TabFrame::NbFrame        { Tab }
+#    TabFrame::Place          { Tab Level No Nb X Top }
+#    TabFrame::PlaceHidder    { Tab No Top }
+#    TabFrame::Select         { Tab No { Command True } }
+#    TabFrame::SelectPrevious { Tab }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
@@ -194,11 +196,12 @@ proc TabFrame::Clear { Tab } {
 proc TabFrame::Create { Tab Level Command { Top 1 } { Width -1 } { Height -1 } } {
    variable Data
 
-   set Data(Nb$Tab)      0        ;# Nombre de tab
-   set Data(Level$Tab)   $Level   ;# Nombre de niveau du tab
-   set Data(Command$Tab) $Command ;# Callback de selection
-   set Data(Current$Tab) -1       ;# Onglet courant
-   set Data(Top$Tab)     $Top     ;# Position des onglets
+   set Data(Nb$Tab)       0        ;# Nombre de tab
+   set Data(Level$Tab)    $Level   ;# Nombre de niveau du tab
+   set Data(Command$Tab)  $Command ;# Callback de selection
+   set Data(Current$Tab)  -1       ;# Onglet courant
+   set Data(Previous$Tab) -1       ;#Onglet Precedent
+   set Data(Top$Tab)      $Top     ;# Position des onglets
 
    for { set i 1 } { $i <= $Level } { incr i } {
       set Data(W$i$Tab)     "" ;# Liste des tab pour un niveau
@@ -250,6 +253,12 @@ proc TabFrame::Current { Tab } {
    variable Data
 
    return $Data(Current$Tab)
+}
+
+proc TabFrame::Previous { Tab } {
+   variable Data
+
+   return $Data(Previous$Tab)
 }
 
 #-------------------------------------------------------------------------------
@@ -612,6 +621,7 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 # Parametres :
 #   <Tab>    : Frame Parent
 #   <No>     : Numero du tabulateur
+#   <Command>: Evaluer la commande associee
 #
 # Retour     :
 #
@@ -619,12 +629,19 @@ proc TabFrame::PlaceHidder { Tab No Top } {
 #
 #-------------------------------------------------------------------------------
 
-proc TabFrame::Select { Tab No } {
+proc TabFrame::SelectPrevious { Tab } {
+   variable Data
+
+   TabFrame::Select $Tab $Data(Previous$Tab) False
+}
+
+proc TabFrame::Select { Tab No { Command True } } {
    variable Data
 
    if { ![winfo exists $Tab.frame$No] } {
       return
    }
+   set Data(Previous$Tab) $Data(Current$Tab)
 
    #----- Deplacer les rangees d'onglets tabs selon l'ordre
 
@@ -659,11 +676,11 @@ proc TabFrame::Select { Tab No } {
 
    TabFrame::Place $Tab $l $No $Data(Level$Tab) -1 $Data(Top$Tab) True
 
-   #----- effectuer le Callback de selection
+   #----- Effectuer le Callback de selection
 
    set Data(Current$Tab) $No
 
-   if { $Data(Command$Tab) != "" } {
+   if { $Command && $Data(Command$Tab)!="" } {
       eval eval \$Data(Command$Tab) $Tab $No
    }
 }

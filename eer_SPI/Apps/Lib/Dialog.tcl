@@ -171,6 +171,7 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
 
 proc Dialog::Error { Master Text { Extra "" } } {
    global GDefs
+   global button
    variable Lbl
 
    if { ![info exists ::tk_version] } {
@@ -206,10 +207,11 @@ proc Dialog::Error { Master Text { Extra "" } } {
 
       # ----- Afficher le frame du bas qui va contenir le bouton retour
 
-      button .dlgerr.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command "catch { grab [lindex $previous 0] } ; destroy .dlgerr" -bd 1
+      button .dlgerr.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command "catch { grab [lindex $previous 0] } ; destroy .dlgerr; set button 1" -bd 1
       pack .dlgerr.ok -side bottom -ipadx 10 -fill x
       update idletasks
       grab .dlgerr
+      tkwait variable button
    }
 }
 
