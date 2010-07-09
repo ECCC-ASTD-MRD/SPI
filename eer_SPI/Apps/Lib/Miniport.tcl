@@ -13,7 +13,7 @@
 #
 # Fonctions:
 #
-#    Miniport::Create     { Frame X0 Y0 Width Height Active Z }
+#    Miniport::Create     { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -999 } }
 #    Miniport::Coverage   { Frame }
 #    Miniport::Lens       { Frame }
 #    Miniport::Lock       { Frame }
@@ -57,6 +57,8 @@ namespace eval Miniport { } {
 #   <Height> : Hauteur du Viewport
 #   <Active> : Fonction active (Deplacement,Agrandisement)
 #   <Z>      : Facteur de zoom out
+#   <Lat>    : Latitude focus (Optionel)
+#   <Lon>    : Longitude focus (Optionel)
 #
 # Retour:
 #
@@ -64,7 +66,7 @@ namespace eval Miniport { } {
 #
 #----------------------------------------------------------------------------
 
-proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
+proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -999 } } {
    global   GDefs
    variable Data
    variable Params
@@ -93,14 +95,12 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
    set wtag $Page::Data(Tag)MINI
 
    #----- Initialiser les variables du viewport
-
    set x0 $Viewport::Data(XMINI$Frame)
    set y0 $Viewport::Data(YMINI$Frame)
    set x1 [expr $Viewport::Data(WidthMINI$Frame)+$x0]
    set y1 [expr $Viewport::Data(HeightMINI$Frame)+$y0]
 
    #----- Creer le viewport et son pourtour
-
    projcam create MINI$Frame
    projection create MINI$Frame
    projection configure MINI$Frame -type orthographic
@@ -112,8 +112,13 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z } {
 
    $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "AREAMINI $ctag LOCK$ctag"
 
-   #----- Creer les fonction du miniport
+   #----- Centrer sur les coordonnees specifies
+   if { $Lat!=-999 && $Lon!=-999 } {
+      set Viewport::Data(CursorMINI$Frame)   False
+      projection configure MINI$Frame -location $Lat $Lon
+   }
 
+   #----- Creer les fonction du miniport
    if { $Active } {
       scale $Frame.sc$wtag -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
          -from [expr log10([lindex $Params(Lens) 0])/log10(2)] -to [expr log10([lindex $Params(Lens) end])/log10(2)] \
@@ -403,6 +408,12 @@ proc Miniport::Write { Frame File } {
 
    puts $File "   #----- Affichage de l'encart"
    puts $File ""
+
+   if { !$Viewport::Data(CursorMINI$Frame) } {
+      set coords [projection configure MINI$Frame -location]
+   } else {
+      set coords { -999 -999 }
+   }
    puts $File "   Miniport::Create \$Frame $Viewport::Data(XMINI$Frame) $Viewport::Data(YMINI$Frame) $Viewport::Data(WidthMINI$Frame)\
-                        $Viewport::Data(HeightMINI$Frame) $Viewport::Data(ActiveMINI$Frame) $Viewport::Data(ZMINI$Frame)"
+                        $Viewport::Data(HeightMINI$Frame) $Viewport::Data(ActiveMINI$Frame) $Viewport::Data(ZMINI$Frame) [lindex $coords 0] [lindex $coords 1]"
 }
