@@ -1612,11 +1612,12 @@ proc Page::Update { { Frame "" } { VP True } } {
 
    #----- Faire un update de tous les viewports
    if { $VP } {
+      set vp ""
       foreach vp [Page::Registered $Frame Viewport] {
          $Frame.page.canvas itemconf $vp -projection $Frame -frame 0
       }
 
-      if { [info exists Miniport::Data(Mini$Frame)] } {
+      if { $vp!="" && [info exists Miniport::Data(Mini$Frame)] } {
          Miniport::Lens $Frame
          Miniport::Coverage $Frame $vp
          $Frame.page.canvas itemconf MINI$Frame -update True

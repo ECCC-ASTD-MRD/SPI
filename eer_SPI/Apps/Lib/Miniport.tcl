@@ -101,10 +101,11 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
    set y1 [expr $Viewport::Data(HeightMINI$Frame)+$y0]
 
    #----- Creer le viewport et son pourtour
-   projcam create MINI$Frame
-   projection create MINI$Frame
-   projection configure MINI$Frame -type orthographic
-
+   if { ![projection is  MINI$Frame] } {
+      projcam create MINI$Frame
+      projection create MINI$Frame
+      projection configure MINI$Frame -type orthographic
+   }
    $Frame.page.canvas create viewport -x $x0 -y $y0 -width $Viewport::Data(WidthMINI$Frame) -height $Viewport::Data(HeightMINI$Frame) \
       -anchor nw -tags "MINI$Frame $ctag" -projection MINI$Frame -camera MINI$Frame -command MINI$Frame -secondary True
 
