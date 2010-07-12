@@ -2092,6 +2092,12 @@ proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } {
       if { $Lat!=-999 && $Lon!=-999 } {
          set Map(Lat) $Lat
          set Map(Lon) $Lon
+
+         if { $Map(Type$Frame)=="grid" } {
+            set ij [projection function $Frame -gridcoord $Lat $Lon]
+            set Map(GridI) [lindex $ij 0]
+            set Map(GridJ) [lindex $ij 1]
+         }
       }
 
       if { $Map(Type$Frame)=="grid" } {
@@ -2567,12 +2573,6 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 
          #----- Got to final destination
          if { $Map(Grabbed)<=$t0 } {
-            if { $Map(Type$Frame)=="grid" } {
-               set ij [projection function $Frame -gridcoord  $Lat $Lon]
-               set Map(GridI) [lindex $ij 0]
-               set Map(GridJ) [lindex $ij 1]
-            }
-
             if { $F || $T || $U } {
                set cam(CFX)    0
                set cam(CFY)    0

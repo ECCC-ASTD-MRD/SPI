@@ -427,7 +427,8 @@ proc ProjCam::Mem { Cam Name } {
 
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
-   set Data(Params$Name) "{$cam(To)} {$cam(From)} {$cam(Up)} $cam(Lens) $cam(CFX) $cam(CFY) $cam(CFZ) $cam(CTX) $cam(CTY) $cam(CTZ) $Viewport::Map(Lat) $Viewport::Map(Lon)"
+   set ll [projection configure $Frame -location]
+   set Data(Params$Name) "{$cam(To)} {$cam(From)} {$cam(Up)} $cam(Lens) $cam(CFX) $cam(CFY) $cam(CFZ) $cam(CTX) $cam(CTY) $cam(CTZ) [lindex $ll 0] [lindex $ll 1]"
 
    return $Data(Params$Name)
 }
@@ -625,7 +626,7 @@ proc ProjCam::Select { Cam Frame Name { Now False } } {
 
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
-   set Map(Grabbed) [clock click -milliseconds]
+   set Viewport::Map(Grabbed) [clock click -milliseconds]
 
    #----- Obtenir les parametres de la vue selectionnee
 
@@ -637,9 +638,8 @@ proc ProjCam::Select { Cam Frame Name { Now False } } {
    }
 
    #----- Repositionner la camera
-
    if { $Now } {
-      Viewport::Rotate  $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
+      Viewport::Rotate $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
    } else {
       Viewport::GoTo $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
    }
