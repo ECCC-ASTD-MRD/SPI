@@ -1235,7 +1235,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
    float    val,val1,*levels;
-   char     buf[32];
+   char     buf[32],mode='L';
 
    extern Vect3d GDB_VBuf[];
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
@@ -1784,6 +1784,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDCONTOUR:
+            if (Objc==2) {
+               mode=Tcl_GetString(Objv[1])[0];
+               i++;
+            }
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
                Data_GetContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
@@ -1791,31 +1795,60 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                list=Field->Segments;
 
                obj=Tcl_NewListObj(0,NULL);
+
                while(list) {
                   array=(TArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
                   ex=tr=0;
 
-                 for (n=0;n<array->Size-1;n++) {
+                  f=0;
+
+                  for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
                      if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                        if (mode=='G' || mode=='K') {
+                           if (!f) {
+                              switch(mode) {
+                                 case 'K': Tcl_AppendResult(Interp,"<LineString><coordinates>",(char*)NULL);break;
+                                 case 'G': Tcl_AppendResult(Interp," <gml:lineStringMember><gml:LineString><gml:coordinates>",(char*)NULL);break;
+                              }
+                              f=1;
+                           }
+                           snprintf(buf,32,"%.5f,%.5f ",array->Data[n][1],array->Data[n][0]);
+                           Tcl_AppendResult(Interp,buf,(char*)NULL);
+                        } else {
+                           Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                           Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                        }
                         tr=1;
                      }
                   }
                  /*If last segment was visible, add its end point*/
                   if (ex){
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                     if (mode=='G') {
+                        snprintf(buf,32,"%.5f,%.5f ",array->Data[n][1],array->Data[n][0]);
+                        Tcl_AppendResult(Interp,buf,(char*)NULL);
+                     } else {
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                     }
                   }
-                  if (tr) {
+                  if (f) {
+                     switch(mode) {
+                        case 'K': Tcl_AppendResult(Interp,"</coordinates></LineString>",(char*)NULL);break;
+                        case 'G': Tcl_AppendResult(Interp," <gml:LineString></gml:coordinates></gml:lineStringMember>",(char*)NULL);break;
+                     }
+                  }
+                  if (mode=='L' && tr) {
                      Tcl_ListObjAppendElement(Interp,obj,sub);
                   }
                   list=list->Next;
                }
-               Tcl_SetObjResult(Interp,obj);
+
+               if (mode=='L') {
+                  Tcl_SetObjResult(Interp,obj);
+               }
             }
             break;
 
