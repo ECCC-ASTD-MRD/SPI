@@ -833,7 +833,7 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
          } else if (out[n].V[1]>ref->Y1) {
             out[n].V[1]=ref->AY[ref->Y1]+(out[n].V[1]-ref->Y1)*(ref->AY[ref->Y1]-ref->AY[ref->Y1-1]);
          } else {
-            out[n].V[1]=ILIN(ref->AY[s],ref->AY[s+1],(out[e].V[1]-s));
+            out[n].V[1]=ILIN(ref->AY[s],ref->AY[s+1],(out[n].V[1]-s));
          }
          out[n].V[1]-=ref->AY[ref->Y0];
 
