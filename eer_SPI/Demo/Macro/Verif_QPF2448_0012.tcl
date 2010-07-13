@@ -121,13 +121,3 @@ proc Macro::Verif_QPF2448_0012::Clean { } {
       metobs free VERIF_SYNOP
    }
 }
-
-
-
-
-
-
-
-
-
-
