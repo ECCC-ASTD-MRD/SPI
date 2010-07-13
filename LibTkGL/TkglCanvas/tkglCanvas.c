@@ -2311,7 +2311,11 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
 
    /* Setup the tile rendering engine */
    GLRender->TRCon=trNew();
-   trTileSize(GLRender->TRCon,wt-1,ht-1,1);
+   if (wt==w && ht==h) {
+      trTileSize(GLRender->TRCon,wt,ht,0);
+   } else {
+      trTileSize(GLRender->TRCon,wt-1,ht-1,1);
+   }
    trImageSize(GLRender->TRCon,w,h);
    trOrtho(GLRender->TRCon,0,w,h,0,-1,1);
 

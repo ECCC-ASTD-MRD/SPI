@@ -36,6 +36,8 @@
 #include "tkCanvVP.h"
 #include "Projection.h"
 
+extern GLParams *GLRender;
+
 extern void  Grid_Setup();
 extern int   Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode);
 extern int   Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj,GLuint GLMode);
@@ -1066,11 +1068,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    int           i,load;
    clock_t       sec;
 
-   extern int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
-   extern int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
-   extern int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj,GLuint GLMode);
-   extern int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode);
-
    /*Take care of automated refresh handler*/
    load=vp->Loading;
    Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
@@ -1103,11 +1100,9 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
          Projection_Setup(vp,proj,1);
 
-         if (!GLRender->XBatch) {
-            /*Allouer les frames de retentions si ce n'est pas deja fait*/
-            if (!vp->Frames[vp->Frame]) {
-               vp->Frames[vp->Frame]=(GLubyte*)malloc(vp->Width*vp->Height*4);
-            }
+         /*Allouer les frames de retentions si ce n'est pas deja fait*/
+         if (!vp->Frames[vp->Frame]) {
+            vp->Frames[vp->Frame]=(GLubyte*)malloc(vp->Width*vp->Height*4);
          }
 
          /*Effectuer le rendue des champs*/
@@ -1121,7 +1116,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
                Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
                if (GLRender->GLZBuf)
                   Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
-           }
+            }
          }
 
          /*Rendue des donnees vectorielle*/
@@ -1149,11 +1144,9 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          ViewportUnset(vp);
       } else {
          /*Copy the backbuffer*/
-         if (!GLRender->XBatch) {
-            if (vp->Frames[vp->Frame]) {
-               trRasterPos2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas*)Canvas)->yOrigin));
-               glDrawPixels(vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
-            }
+         if (vp->Frames[vp->Frame]) {
+            trRasterPos2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas*)Canvas)->yOrigin));
+            glDrawPixels(vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
          }
       }
    }
