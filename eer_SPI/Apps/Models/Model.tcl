@@ -204,8 +204,7 @@ namespace eval Model {
 
 #----- Inclure les type d'experiences
 source $GDefs(Dir)/Apps/Models/Meteo.tcl
-#source $GDefs(Dir)/Apps/Models/Exp.tcl
-source /users/dor/afsr/alm/svn/eerSPI/trunk/eer_SPI/Apps/Models/Exp.tcl ; #AM
+source $GDefs(Dir)/Apps/Models/Exp.tcl
 source $GDefs(Dir)/Apps/Models/Watch.tcl
 
 #----- Inclure les types de modeles
@@ -592,6 +591,7 @@ proc Model::ParamsMetData { Model } {
    set lastdate  [fstdstamp toseconds $laststamp]
 
    set rundate   [fstdstamp toseconds $sim(RunStamp)]
+   set rundate   [clock format $rundate -format "%Y-%m-%d %T UTC" -gmt True]
 
    #----- Compute simulation duration [hr].
    set simdur [expr int([fstdstamp diff $laststamp $firststamp] + 0.5)]
@@ -1228,9 +1228,9 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
    set used [lindex $fsinfo 1]
 
    if { [expr $free/(1024.0*1024.0)]<$Max } {
-
-      set info "\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskNeed) $GDefs(Lang)] : [Convert::KBytes2Human $Max]\n[lindex $Warning(DiskAvail) $GDefs(Lang)] :[Convert::KBytes2Human $free]"
-      if { [Dialog::Default .modelnew 700 WARNING $Warning(DiskSpace) "\n$Info" 1 $Lbl(Yes) $Lbl(No)] } {
+      set Max [expr $Max*1024.0*1024.0] ; #----- Convert GB to KB.
+      set info "\n\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskCritical) $GDefs(Lang)] : [Convert::KBytes2Human $Max]\n[lindex $Warning(DiskAvailable) $GDefs(Lang)] : [Convert::KBytes2Human $free]\n[lindex $Warning(DiskUsed) $GDefs(Lang)] : [Convert::KBytes2Human $used]"
+      if { [Dialog::Default .modelnew 700 WARNING $Warning(DiskSpace) "$info" 1 $Lbl(Yes) $Lbl(No)] } {
          return False
       }
    }

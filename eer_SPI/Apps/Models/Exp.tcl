@@ -98,8 +98,7 @@ namespace eval Exp {
                             "Suppressing done !" }
    set Msg(SuppressError) { "Impossible de supprimer les repertoires de l'expérience suivante:" \
                             "Unable to suppress the following experiment directory" }
-   set Msg(Correct0)      { "Voulez-vous lancer le modèle" "Do you wish to launch" }
-   set Msg(Correct1)      { "à partir de ces paramètres d'entrée ci-haut?" "model with the above input parameters?" }
+   set Msg(Correct)       { "Voulez-vous lancer le modèle à partir des paramètres d'entrée ci-haut?" "Do you wish to launch the model with the above input parameters?" }
    set Msg(Kill)          { "Arrêt de la simulation" "Terminating simulation" }
 
    set Error(SendJoint)   { "Il y a eu un problème pendant le transfert des message commun:" "There were problems while transferring joint statement:" }
@@ -820,7 +819,7 @@ proc Exp::Params { Parent Model } {
    pack  .simparams.desc -side top -fill both -expand True
 
    #----- Demander de confirmer la selection faite par l'usager.
-   label .simparams.que -relief raised -bd 1 -text "[lindex $Msg(Correct0) $GDefs(Lang)] $Model [lindex $Msg(Correct1) $GDefs(Lang)]"
+   label .simparams.que -relief raised -bd 1 -text "[lindex $Msg(Correct) $GDefs(Lang)]"
    pack .simparams.que -anchor w -ipadx 5  -ipady 5 -fill x
 
    frame .simparams.confirm
