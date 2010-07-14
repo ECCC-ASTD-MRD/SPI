@@ -26,9 +26,6 @@ namespace eval MLDP {
 
    set Lbl(Yes)        { "Oui" "Yes" }
    set Lbl(No)         { "Non" "No " }
-   set Lbl(DiskPath)   { "Répertoire              " "directory           " }
-   set Lbl(DiskNeed)   { "Espace disque critique  " "Critical disk space " }
-   set Lbl(DiskAvail)  { "Espace disque disponible" "Available disk space" }
 
    set Lbl(Product)             { "Produits"  "Products" }
    set Lbl(Result)              { "Résultats" "Results" }
@@ -123,7 +120,7 @@ namespace eval MLDP {
    set Bubble(EmHeight)               { "Hauteur maximale du panache (m)." "Maximum plume height (m)." }
    set Bubble(MassMode)               { "Sélectionner le mode pour le calcul de la masse totale relâchée (µg).\n\n - Formule empirique de Sparks et al. (1997): La masse totale relâchée ne peut pas être éditée;\n   elle dépend de la densité d'une particule, de la hauteur du panache et de la durée effective d'émission.\n - Édition: La masse totale relâchée peut être éditée." "Select the mode for total released mass calculation (µg).\n\n - Empirical formula of Sparks et al. (1997): Total mass released cannot be edited;\n   it is a function of particle density, plume height and effective emission duration.\n - Edit: Total mass released can be edited." }
    set Bubble(Radius)                 { "Rayon de la colonne d'émission (m)." "Emission column radius (m)." }
-   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet de la vitesse de sédimentation et pour MLDP0, l'effet du dépôt gravitationnel selon la loi de Stokes et ." "Select the type of particle size distribution\nto model the effect of particle settling velocity and for MLDP0, the effect of gravitational settling according to Stokes' law." }
+   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet du dépôt gravitationnel selon la loi de Stokes." "Select the type of particle size distribution\nto model the effect of gravitational settling according to Stokes' law." }
    set Bubble(EmVerticalDist)         { "Sélectionner le type de distribution verticale\npour modéliser le panache d'émission." "Select the type of vertical distribution\nto model the released plume." }
 
    set Bubble(Scenario)               { "Scénario d'émission." "Release scenario." }
@@ -377,6 +374,4 @@ namespace eval MLDP {
                                     "Deleting the default emission scenario is prohibited." }
    set Warning(HalfLife)          { "L'isotope sélectionné a une demi-vie radioactive inférieure à 15 minutes. Cette simulation ne produira pas de résultats pertinents et intéressants. Par conséquent, veuillez sélectionner un isotope différent de" \
                                     "The selected radionclide has a radioactive half-life less than 15 minutes. This simulation will not generate relevant and interesting results. Therefore, please select a radionuclide different than" }
-   set Warning(DiskSpace)         { "L'espace disque disponible dans le répertoire de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle ?" \
-                                    "The available disk space ino the  experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute the model ?" }
 }

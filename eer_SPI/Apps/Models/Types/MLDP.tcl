@@ -385,38 +385,76 @@ proc MLDP::CreateModelInput { } {
    }
    puts $file [join $distr "\n"]
 
-   #----- Particle size distribution (settling velocities).
-   if { [set size [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) 0] $Sim(EmSizeDist)]]==-1 } {
-     set size [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
-   }
-   puts $file "\nParticle size distribution (settling velocities):"
+   #----- Particle size distribution (gravitational settling velocities).
+   set sizeIdx  [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)] $Sim(EmSizeDist)]
+   set sizeLast [expr [llength [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)]] - 1]
+
+   puts $file "\nParticle size distribution (gravitational settling velocities):"
    set IsComputeSV ".FALSE."
-   if { $Sim(SrcType) == "volcano" && $size!= 3 } {
+   if { $Sim(SrcType) == "volcano" && $sizeIdx != $sizeLast } {
       set IsComputeSV ".TRUE."
    }
    set Density $Sim(EmDensity)
 
-   puts $file "[format "%-25s" $IsComputeSV] [format "%-25s" isComputeSV] Flag indicating if computing settling velocities."
-   puts $file "[format "%-25s" .FALSE.] [format "%-25s" isWriteSV] Flag indicating if writing settling velocities to output file (Debugging purposes)."
+   puts $file "[format "%-25s" $IsComputeSV] [format "%-25s" isComputeSV] Flag indicating if computing gravitational settling velocities."
+   puts $file "[format "%-25s" .FALSE.] [format "%-25s" isWriteSV] Flag indicating if writing gravitational settling velocities to output file (Debugging purposes)."
    puts $file "[format "%-25s" $Sim(EmDensity)] [format "%-25s" density] Density of a particle \[micrograms/m3\]."
 
    if { $Sim(SrcType) == "volcano" } {
 
       #----- Number of particle diameter intervals.
-      if { $size == 0 } {
+      if { $sizeIdx == 0 } {
 
-         #----- Spurr 1992 empirical size distribution (Default distribution).
-         puts $file "[format "%-25s" 5] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
+         #----- Spurr September 1992 size distribution.
+         puts $file "[format "%-25s" 18] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
          puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
          puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
-         puts $file "4.0"
-         puts $file "8.0       0.100"
-         puts $file "16.0      0.200"
-         puts $file "31.0      0.400   Ex.: 40.0% of particles have a size (diameter) in the range 16-31 microns."
-         puts $file "62.5      0.200"
-         puts $file "125.0     0.100"
+         puts $file "0.5"
+         puts $file "1.0       0.001"
+         puts $file "2.0       0.003"
+         puts $file "4.0       0.024"
+         puts $file "8.0       0.038"
+         puts $file "16.0      0.065   Ex.: 6.5% of particles have a size (diameter) in the range 8-16 microns."
+         puts $file "31.0      0.102"
+         puts $file "62.5      0.170"
+         puts $file "125.0     0.235"
+         puts $file "250.0     0.160"
+         puts $file "500.0     0.020"
+         puts $file "1000.0    0.025"
+         puts $file "2000.0    0.055"
+         puts $file "4000.0    0.030"
+         puts $file "8000.0    0.018"
+         puts $file "16000.0   0.025"
+         puts $file "32000.0   0.020"
+         puts $file "64000.0   0.006"
+         puts $file "128000.0  0.003"
 
-      } elseif { $size == 1 || $size == 3 } {
+      } elseif { $sizeIdx == 1 } {
+
+         #----- Spurr August 1992 size distribution.
+         puts $file "[format "%-25s" 17] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
+         puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
+         puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
+         puts $file "0.5"
+         puts $file "1.0       0.001"
+         puts $file "2.0       0.002"
+         puts $file "4.0       0.016"
+         puts $file "8.0       0.025"
+         puts $file "16.0      0.055   Ex.: 5.5% of particles have a size (diameter) in the range 8-16 microns."
+         puts $file "31.0      0.080"
+         puts $file "62.5      0.110"
+         puts $file "125.0     0.115"
+         puts $file "250.0     0.230"
+         puts $file "500.0     0.060"
+         puts $file "1000.0    0.040"
+         puts $file "2000.0    0.056"
+         puts $file "4000.0    0.070"
+         puts $file "8000.0    0.070"
+         puts $file "16000.0   0.050"
+         puts $file "32000.0   0.018"
+         puts $file "64000.0   0.002"
+
+      } elseif { $sizeIdx == 2 || $sizeIdx == $sizeLast } {
 
          #----- Redoubt 1989-1990 empirical size distribution.
          puts $file "[format "%-25s" 10] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
@@ -434,7 +472,7 @@ proc MLDP::CreateModelInput { } {
          puts $file "500.0     0.153"
          puts $file "1000.0    0.066"
 
-      } elseif { $size == 2 } {
+      } elseif { $sizeIdx == 3 } {
 
          #----- Fine size distribution.
          puts $file "[format "%-25s" 4] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
@@ -450,7 +488,7 @@ proc MLDP::CreateModelInput { } {
 
    } elseif { $Sim(SrcType) == "accident" || $Sim(SrcType) == "virus" } {
 
-      #----- Empirical size distribution.
+      #----- Redoubt 1989-1990 empirical size distribution.
       puts $file "[format "%-25s" 10] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
       puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
       puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
@@ -1234,7 +1272,7 @@ proc MLDP::InitNew { Type } {
 
    if { $Sim(SrcType) == "volcano" } {
       set Sim(EmDensity)       2.500e+12 ; #----- Particle density [microgram/m3].
-      set Sim(EmSizeDist)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3] ; #----- Particle size distribution.
+      set Sim(EmSizeDist)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] end] ; #----- Particle size distribution.
       set Sim(EmIsoQuantity)   $NA
    }
 
