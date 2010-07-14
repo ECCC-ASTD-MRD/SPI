@@ -2185,6 +2185,12 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       puts $f "\n#----- Data parameters"
       set fonts {}
       set cmaps {}
+
+      #----- Force obs parameters to be defined
+      foreach obs [observation all] {
+         Obs::ParamInit $obs [observation configure $obs -dataspec]
+      }
+
       foreach spec [dataspec all] {
 
          set cmap [dataspec configure $spec -colormap]
