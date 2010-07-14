@@ -46,12 +46,16 @@ namespace eval SatData {
    set Data(ViewGOES11)    0
    set Data(ViewGOES13)    0
    set Data(ViewUSER)      0
-   set Data(PathMETEOSAT)  /data/cmds/afsh/sat/test/m6/reception/imager
-   set Data(PathGMS)       /data/cmds/afsh/sat/test/j5/reception/imager
-   set Data(PathGOES11)    $env(CMCSAT)/g11/raw/imager/
-   set Data(PathGOES13)    $env(CMCSAT)/g13/raw/imager/
-   set Data(CPathGOES11)   $Data(PathGOES11)
-   set Data(CPathGOES13)   $Data(PathGOES13)
+
+   catch {
+      set Data(PathMETEOSAT)  /data/cmds/afsh/sat/test/m6/reception/imager
+      set Data(PathGMS)       /data/cmds/afsh/sat/test/j5/reception/imager
+      set Data(PathGOES11)    $env(CMCSAT)/g11/raw/imager/
+      set Data(PathGOES13)    $env(CMCSAT)/g13/raw/imager/
+      set Data(CPathGOES11)   $Data(PathGOES11)
+      set Data(CPathGOES13)   $Data(PathGOES13)
+   }
+
    set Data(CnV)           allbands
    set Data(UserFile)      ""
    set Data(UserPath)      ""
