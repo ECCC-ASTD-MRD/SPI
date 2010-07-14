@@ -427,7 +427,8 @@ proc ProjCam::Mem { Cam Name } {
 
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
-   set ll [projection configure $Frame -location]
+   #----- Camera, projection and page (Frame) all have the same name so use the cam name for the projection
+   set ll [projection configure $Cam -location]
    set Data(Params$Name) "{$cam(To)} {$cam(From)} {$cam(Up)} $cam(Lens) $cam(CFX) $cam(CFY) $cam(CFZ) $cam(CTX) $cam(CTY) $cam(CTZ) [lindex $ll 0] [lindex $ll 1]"
 
    return $Data(Params$Name)
