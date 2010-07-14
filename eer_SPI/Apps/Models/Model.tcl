@@ -89,7 +89,7 @@ namespace eval Model {
 
    set Lbl(Launch)              { "Lancement" "Launch" }
    set Lbl(LaunchModel)         { "Lancer" "Launch" }
-   set Lbl(Params)              { "Paramêtres" "Parameters" }
+   set Lbl(Params)              { "Paramètres" "Parameters" }
    set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
    set Lbl(Queue)               { "Type de queue  " "Queue type     " }
    set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
@@ -159,27 +159,34 @@ namespace eval Model {
 
    set Error(Host)                { "L'hote sélectionné ne peut être rejoint, utilisation de l'hote local." "Selected host cannot be reached, using local host." }
    set Error(EMail)               { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
-   set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident."
-                                    "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time." }
+   set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veuillez modifier la date et/ou le temps d'émission de l'accident ou l'hôte."
+                                    "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time. Please modify the accident release date-time or the host." }
    set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
    set Error(FirstMetDateTime)    { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)     { "\tDernier temps disponible :" "\tLast available date-time  :" }
-   set Error(DateTimeMetFiles)    { "La date et le temps d'émission de l'accident ne sont pas cohérent avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
+   set Error(DateTimeMetFiles)    { "La date et le temps d'émission de l'accident ne sont pas cohérents avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
                                     "The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
    set Error(Path)                { "Le répertoire de simulation n'est pas accessible sur l'hote d'exécution." "Simulation path is not accessible on remote host" }
    set Error(EmHeight)            { "La masse doit être positive." "Mass must be positive." }
 
-   set Warning(SimDuration1)      { "Avertissement! La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
-                                    "Warning! The simulation duration will be re-initialized according to available meteorological data in database." }
+   set Warning(SimDuration1)      { "La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
+                                    "The simulation duration will be re-initialized according to available meteorological data in database." }
    set Warning(SimDuration2)      { "\tAncienne durée de simulation :" "\tOld simulation duration :" }
    set Warning(SimDuration3)      { "\tNouvelle durée de simulation :" "\tNew simulation duration :" }
 
-   set Warning(Queue)             { "Avertissement! Vous êtes sur le point de lancer le modèle en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
-                                    "Warning! You are about to launch model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
-   set Warning(EMail)      { "Avertissement! L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
-                                    "Warning! The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
-   set Warning(EMail2)     { "\tNouveau courriel    :" "\tNew email     :" }
-   set Warning(EMail3)     { "\tCourriel par défaut :" "\tDefault email :" }
+   set Warning(Queue)             { "Vous êtes sur le point de lancer le modèle en classe haute priorité sur le superordinateur du CMC. Ceci peut occasionner des répercussions importantes sur les passes opérationnelles et parallèles en cours.\n\nVeuillez consulter le superviseur de quart 24/7 à la section des Analyses et Pronostics (A&P) de la direction des opérations du CMC en personne ou par téléphone au 514-421-4635.\n\nVoulez-vous tout de même lancer le modèle via la queue opérationnelle de production?" \
+                                    "You are about to launch model with highest priority on CMC's supercomputer. This may produce some important impacts on the current operational and parallel runs.\n\nPlease consult the 24/7 shift supervisor at Analysis and Prognosis (A&P) Section from CMC's Operations Branch in person or by phone at 514-421-4635.\n\nDo you still wish to launch the model through the operational production queue?" }
+   set Warning(EMail)             { "L'adresse électronique est différente de celle par défaut. Voulez-vous surveiller la progression de la simulation par courriel avec cette nouvelle adresse?" \
+                                    "The electronic email address is different than the default one. Do you wish to monitor the progress of the simulation by email with this new address?" }
+   set Warning(EMail2)            { "\tNouveau courriel    :" "\tNew email     :" }
+   set Warning(EMail3)            { "\tCourriel par défaut :" "\tDefault email :" }
+
+   set Warning(DiskSpace)         { "L'espace disque disponible associé au répertoire principal de l'expérience est inférieur à la valeur critique d'espace disque.\n\nVoulez-vous tout de même exécuter le modèle?" \
+                                    "The available disk space associated to the main experiment diretory is less than the critical disk space value.\n\nDo you still wish to execute the model?" }
+   set Warning(DiskPath)          { "\tRépertoire principal    " "\tMain directory      " }
+   set Warning(DiskCritical)      { "\tEspace disque critique  " "\tCritical disk space " }
+   set Warning(DiskAvailable)     { "\tEspace disque disponible" "\tAvailable disk space" }
+   set Warning(DiskUsed)          { "\tEspace disque utilisé   " "\tUsed disk space     " }
 
    set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogrammes." "Please enter explosive mass in kilogram." }
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
@@ -197,7 +204,8 @@ namespace eval Model {
 
 #----- Inclure les type d'experiences
 source $GDefs(Dir)/Apps/Models/Meteo.tcl
-source $GDefs(Dir)/Apps/Models/Exp.tcl
+#source $GDefs(Dir)/Apps/Models/Exp.tcl
+source /users/dor/afsr/alm/svn/eerSPI/trunk/eer_SPI/Apps/Models/Exp.tcl ; #AM
 source $GDefs(Dir)/Apps/Models/Watch.tcl
 
 #----- Inclure les types de modeles
@@ -1164,10 +1172,13 @@ proc Model::Launch { Model } {
       return False
    }
 
-   #----- Define simulations paths
-   Model::ParamsPath ${Model}
+   #----- Check available disk space
+   if { ![Model::ParamsCheckDiskSpace $Exp::Param(Path) 5.0] } {
+      return False
+   }
 
-   if { ![Model::ParamsCheckDiskSpace $sim(Path) 5.0] } {
+   #----- Define simulations paths
+   if { [Model::ParamsPath ${Model}]=="" } {
       return False
    }
 
@@ -1197,7 +1208,7 @@ proc Model::Launch { Model } {
 #
 # Parametres :
 #   <Path>   : Repertoire
-#   <Max>    : Espace disque (en K)
+#   <Max>    : Espace disque critique (en Giga-Octets)
 #
 # Retour     :
 #   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
@@ -1213,7 +1224,6 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
 
    #----- Get disk space information.
    set fsinfo [system filesystem $Path -free -used]
-
    set free [lindex $fsinfo 0]
    set used [lindex $fsinfo 1]
 

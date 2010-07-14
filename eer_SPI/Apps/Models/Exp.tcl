@@ -60,16 +60,16 @@ namespace eval Exp {
    set Lbl(Suppress)           { "Supprimer" "Delete" }
    set Lbl(Yes)                { "Oui" "Yes" }
    set Lbl(No)                 { "Non" "No" }
-   set Lbl(Params)             { "Paramêtres" "Parameters" }
+   set Lbl(Params)             { "Paramètres" "Parameters" }
 
    #----- Messages
 
    set Msg(DoingStore)    { "Archivage en cours ..." "Archiving ..." }
    set Msg(DoingCopy)     { "Copie en cours ..." "Copying ..." }
-   set Msg(Stored)        { "L'expérience à été archivée avec succes." "The experiment has been archived with success." }
+   set Msg(Stored)        { "L'expérience à été archivée avec succès." "The experiment has been archived with success." }
    set Msg(Store)         { "Veuillez entrer le nom du rapport d'incident afin d'identifier l'expérience en archives."
                             "Please enter the incident report name to identify the experiment to be archived." }
-   set Msg(StoreExist)    { "Une archive avec ce nom existe déja, Voulez-vous l'écraser ?"
+   set Msg(StoreExist)    { "Une archive avec ce nom existe déjà, Voulez-vous l'écraser ?"
                             "An archive by this name already exist, do you want to overwrit it ?" }
    set Msg(Path)          { "Répertoire d'expériences invalides.\nImpossible de trouver le fichier eer_ExpList"
                             "Invalid experiment path.\n Unable to find the eer_ExpList file" }

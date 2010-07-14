@@ -472,7 +472,6 @@ proc CANERM::InitNew { Type } {
 
 proc CANERM::Launch { } {
    global GDefs
-   global env
    variable Sim
 
    Model::ParamsMeteoInput CANERM
@@ -500,7 +499,7 @@ proc CANERM::Launch { } {
          }
 
          Dialog::Wait . $Msg(MetGet)
-         exec $env(EER_DIRSCRIPT)/Model_MeteoCANERM.sh $Sim(Path)/tmp $Sim(Meteo) $Sim(ISauve) 1
+         exec $GDefs(Dir)/Script/Model_MeteoCANERM.sh $Sim(Path)/tmp $Sim(Meteo) $Sim(ISauve) 1
          Dialog::WaitDestroy
       }
 
@@ -508,10 +507,10 @@ proc CANERM::Launch { } {
       Model::ParamsCopy CANERM
 
       #----- Launching with soumet.
-      exec echo "#!/bin/sh\n\nord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+      exec echo "#!/bin/sh\n\nord_soumet $GDefs(Dir)/Script/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
          -cm 800M -t 3600 -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
-      eval set err \[catch \{ exec ord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
+      eval set err \[catch \{ exec ord_soumet $GDefs(Dir)/Script/Model.sh -args $Sim(PathRun)/tmp/Model_CANERM.in -mach $Model::Param(Host) \
          -cm 800M -t 3600 -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
 
@@ -522,13 +521,13 @@ proc CANERM::Launch { } {
       Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
    } else {
       Log::Print INFO "Launching model on $Model::Param(Host)"
-      exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_CANERM.in &
+      exec $GDefs(Dir)/Script/Model.sh $Sim(Path)/tmp/Model_CANERM.in &
    }
 
    if { $Sim(ReNewMeteo)!="" } {
       eval file copy -force [glob $Sim(ReNewMeteo)/../results/*m] $Sim(Path)/results
    } else {
-      exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in &
+      exec $GDefs(Dir)/Script/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(Date0)$Sim(Time0) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in &
    }
 
    return True
