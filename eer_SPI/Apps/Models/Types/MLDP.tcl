@@ -386,7 +386,9 @@ proc MLDP::CreateModelInput { } {
    puts $file [join $distr "\n"]
 
    #----- Particle size distribution (gravitational settling velocities).
-   set sizeIdx  [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)] $Sim(EmSizeDist)]
+   if { [set sizeIdx [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) 0] $Sim(EmSizeDist)]]==-1 } {
+     set sizeIdx [lsearch -exact [lindex $MLDP::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
+   }
    set sizeLast [expr [llength [lindex $MLDP::Sim(ListEmSizeDist) $GDefs(Lang)]] - 1]
 
    puts $file "\nParticle size distribution (gravitational settling velocities):"
