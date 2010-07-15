@@ -421,7 +421,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    Tk_PhotoHandle     handle;
    int                i,ix,iy,dx,dy;
 
-   /* Calculer le sdepassement si il y a */
+   /*Calculer le depassement si il y a*/
    ix=TR->CurrentColumn*TR->TileWidthNB-X;
    dx=ix<0?-ix:0;
 
@@ -429,7 +429,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    dy=iy<0?-iy:0;
 
    if (ix>Width || iy>Height || ix+TR->TileWidthNB<0 || iy+TR->TileHeightNB<0) {
-      return TCL_OK;
+      return(TCL_OK);
    }
 
    /*Recuperer le handle de l'image specifie*/
@@ -453,7 +453,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    glReadBuffer(Buffer);
    if (data.pixelPtr) {
       for(i=0;i<data.height;i++) {
-         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-TR->TileBorder+1-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
+         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
       }
 
       /* Envoyer le data dans l'image Tk */
