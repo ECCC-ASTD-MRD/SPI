@@ -96,7 +96,7 @@ namespace eval Exp {
                              Do you really want to delete this experiment ?" }
    set Msg(SuppressDone)  { "Suppression terminée !" \
                             "Suppressing done !" }
-   set Msg(SuppressError) { "Impossible de supprimer les repertoires de l'expérience suivante:" \
+   set Msg(SuppressError) { "Impossible de supprimer les répertoires de l'expérience suivante:" \
                             "Unable to suppress the following experiment directory" }
    set Msg(Correct)       { "Voulez-vous lancer le modèle à partir des paramètres d'entrée ci-haut?" "Do you wish to launch the model with the above input parameters?" }
    set Msg(Kill)          { "Arrêt de la simulation" "Terminating simulation" }
@@ -254,6 +254,7 @@ proc Exp::Create { Frame } {
 
    Bubble::Create $Frame.opt.open     $Model::Bubble(Plus)
    Bubble::Create $Frame.opt.close    $Model::Bubble(Minus)
+   Bubble::Create $Frame.opt.new      $Model::Bubble(SRC)
    Bubble::Create $Frame.opt.writer   $Writer::Param(Title)
    Bubble::Create $Frame.opt.bulletin $Bulletin::Param(Title)
    Bubble::Create $Frame.opt.bubble   $Model::Bubble(Bubble)

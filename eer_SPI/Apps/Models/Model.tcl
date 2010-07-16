@@ -112,8 +112,8 @@ namespace eval Model {
    set Lbl(Type)       { "Type d'expérience      :" "Experiment type          :" }
    set Lbl(Create)     { "Créer" "Create" }
    set Lbl(Cancel)     { "Annuler" "Cancel" }
-   set Lbl(Checked)    { "Rafraichissement effectué à" "Refresh done at" }
-   set Lbl(Checking)   { "Rafraichissement en cours..." "Refreshing simulations..." }
+   set Lbl(Checked)    { "Rafraîchissement effectué à" "Refresh done at" }
+   set Lbl(Checking)   { "Rafraîchissement en cours..." "Refreshing simulations..." }
    set Lbl(Select)     { "Sélectionner" "Select" }
    set Lbl(Watch)      { "Veilles" "Watch" }
    set Lbl(MetPath)    { "Répertoire des données météorologiques" "Meteorological data path" }
@@ -134,14 +134,14 @@ namespace eval Model {
    set Bubble(EMail)         { "Adresse de courrier électronique." "E-mail address." }
    set Bubble(LaunchModel)   { "Lancer le modèle." "Launch model." }
 
-   set Bubble(PathSel) { "Liste des dépots d'experiences disponibles" "List of experiments available" }
-   set Bubble(PathAdd) { "Ajouter un repertoire a la liste\ndes dépots d'experiences disponibles" "Add a path to the list of experiments available" }
+   set Bubble(PathSel) { "Liste des dépôts d'expériences disponibles" "List of experiments available" }
+   set Bubble(PathAdd) { "Ajouter un répertoire à la liste\ndes dépots d'expériences disponibles" "Add a path to the list of experiments available" }
    set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
-   set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
+   set Bubble(Close)   { "Fermer l'outil" "Close the tool" }
    set Bubble(Bubble)  { "Activer les bulles d'informations" "Activate information bubbles" }
    set Bubble(Plus)    { "Ouvrir toutes les branches" "Open up all branches" }
    set Bubble(Minus)   { "Fermer toutes les branches" "Close all branches" }
-   set Bubble(SRC)     { "Ouvre le sélecteur de sources" "Open the source selector" }
+   set Bubble(SRC)     { "Ouvrir le sélecteur de sources" "Open the source selector" }
    set Bubble(Name)    { "Nom de l'expérience\nCe nom sera utilisé sur tous les produits"
                          "Experiment name\nThis name will be used on every product" }
    set Bubble(Info)    { "Informations de positionnement (id,lat,lon)" "Position information (id,lat,lon)" }
