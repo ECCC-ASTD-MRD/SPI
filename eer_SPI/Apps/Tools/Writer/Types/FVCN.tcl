@@ -1584,7 +1584,7 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    exec chmod 644 $file
 
    if { $Backup } {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1lx" } MsgCatch]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the $file via metmanager on opserv.\n\n$MsgCatch"
       }
@@ -1615,9 +1615,23 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
       exec echo "PFXD$no2digits $Data(Id$Pad) $Data(Date$Pad)" > ${file}.vagid
       exec cat ${file}.vagid ${file}.png > ${file}.vag
 
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.vag $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      #----- Transfert the real VAG.
+
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.vag VAGMTL "spx-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the VAG file ${file}.vag via ftppds_eer on $GDefs(TransmitHost).\n\n$MsgCatch"
+      }
+
+      #----- Transfert the NAVCAN VAG.
+
+      set ErrCatch [catch  { exec /usr/local/env/afsisio/programs/toimv6 ${file}.png ${file}.imv6 -mono -desc "MAPS A0289C EVENT VOLCANIC ASH 00 18H" } MsgCatch ]
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Unable to convert the VAG file ${file}.imv6 via toimv6.\n\n$MsgCatch"
+      }
+
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.imv6 VAGIMV6 "pds-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Unable to sent the VAG file ${file}.imv6 via ftppds_eer on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
    }
 
