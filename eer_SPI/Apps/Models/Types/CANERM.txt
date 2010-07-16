@@ -62,7 +62,7 @@ namespace eval CANERM {
    set Lbl(Pollutant)   { "Polluants" "Pollutants" }
    set Lbl(Product)     { "Produits" "Products" }
    set Lbl(Function)    { "Fonction de dispersion" " Dispersive function" }
-   set Lbl(Params)      { "Paramêtres" "Parameters" }
+   set Lbl(Params)      { "Paramètres" "Parameters" }
 
    set Lbl(Status0)     { "Continuable"  "Continue" }
    set Lbl(Status1)     { "Terminée"     "Terminated" }
