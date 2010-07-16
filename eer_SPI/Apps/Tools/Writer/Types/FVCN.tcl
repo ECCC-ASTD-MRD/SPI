@@ -265,7 +265,7 @@ proc Writer::FVCN::Layout { Frame } {
 
    Page::Size $Frame 1015 675
 
-   set Viewport::Resources(FillCoast) #DCDCDC
+   set Viewport::Resources(FillCoast) ""
    set Viewport::Resources(FillLake)  ""
    set Viewport::Resources(Coast)     #000000      ;#Cotes
    set Viewport::Resources(Lake)      #0000ff      ;#Lacs
