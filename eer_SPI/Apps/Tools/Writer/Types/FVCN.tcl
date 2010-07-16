@@ -1629,7 +1629,7 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
          Log::Print ERROR "Unable to convert the VAG file ${file}.imv6 via toimv6.\n\n$MsgCatch"
       }
 
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.imv6 VAGIMV6 "pds-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.imv6 VAGIMV6 "spds-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the VAG file ${file}.imv6 via ftppds_eer on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
