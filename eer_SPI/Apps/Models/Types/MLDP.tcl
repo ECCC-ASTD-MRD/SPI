@@ -1150,6 +1150,7 @@ proc MLDP::InitNew { Type } {
       set Sim(Scale)                "MESO"                              ; #----- Grid resolution string.
       set Sim(Meteo)                glb                                 ; #----- Meteorological model.
       set Sim(Delta)                3                                   ; #----- Time interval for meteorological data files [hr].
+      set Sim(VarMesoscale)         1.00                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
       set Sim(Timescale)            10800                               ; #----- Lagrangian time scale [s].
       set Sim(ReflectionLevel)      0.9999                              ; #----- Reflection level [hyb|eta|sig].
       set Sim(EmNumberParticles)    50000                               ; #----- Number of particles.
@@ -1171,7 +1172,10 @@ proc MLDP::InitNew { Type } {
                                      "1 100 500 1000" \
                                      "1 50 100" \
                                      "1 50 100 500 1000" \
-                                     "1 50 100 1000" }
+                                     "1 50 100 1000" \
+                                     "1 10 50 100" \
+                                     "1 10 50 100 1000" \
+                                     "1 10 100 1000" }
 
       #----- Set source type according to experiment data type.
       if { $Type==0 || $Type==3 } {
@@ -1194,6 +1198,7 @@ proc MLDP::InitNew { Type } {
       set Sim(Scale)                "VFINE"                             ; #----- Grid resolution string.
       set Sim(Meteo)                reg                                 ; #----- Meteorological model.
       set Sim(Delta)                1                                   ; #----- Time interval for meteorological data files [hr].
+      set Sim(VarMesoscale)         0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
       set Sim(Timescale)            2700                                ; #----- Lagrangian time scale [s].
       set Sim(ReflectionLevel)      0.9990                              ; #----- Reflection level [hyb|eta|sig].
       set Sim(EmNumberParticles)    100000                              ; #----- Number of particles.
@@ -1215,7 +1220,10 @@ proc MLDP::InitNew { Type } {
                                     "0 100 500 1000" \
                                     "0 50 100" \
                                     "0 50 100 500 1000" \
-                                    "0 50 100 1000" }
+                                    "0 50 100 1000" \
+                                    "0 10 50 100" \
+                                    "0 10 50 100 1000" \
+                                    "0 10 100 1000" }
 
       #----- Set source type according to experiment data type.
       if { $Type== 4 } {
@@ -1231,7 +1239,6 @@ proc MLDP::InitNew { Type } {
    set Sim(IsMetFileSizeChecked) 0                                   ; #----- Flag indicating if met data file size has been checked (1) or not (0).
    set Sim(Event)                [lindex $Sim(ListEvent) 0]          ; #----- Type of event.
    set Sim(VerticalLevels)       [lindex $Sim(ListVerticalLevels) 0] ; #----- Vertical levels [m].
-   set Sim(VarMesoscale)         1.00                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    set Sim(EmScenario)           "default"                           ; #----- Scenario name.
@@ -1430,6 +1437,42 @@ proc MLDP::UpdateListVerticalLevels { } {
    Option::Set $Sim(VerticalLevelsFrm) $Sim(ListVerticalLevels)
    set Sim(VerticalLevels)      [lreplace $Sim(VerticalLevels) 0 0 $firstlevel] ; #----- Update vertical levels.
    set Sim(PrevReflectionLevel) $Sim(ReflectionLevel)                           ; #----- Reset previous reflection level.
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::UpdateVarMesoscale>
+# Creation   : 16 July 2010 - A. Malo - CMC/CMOE
+#
+# But        : Update horizontal wind velocity variance for mesoscale
+#              fluctuations [m2/s2] according to selected grid resolution.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::UpdateVarMesoscale { } {
+   variable Sim
+
+   set Sim(VarMesoscale) 1.00
+
+   if { $Sim(Model)=="MLDP0" } {
+
+      if { $Sim(GridRes) <= 15000 } {
+         set Sim(VarMesoscale) 0.10
+      }
+
+   } elseif { $Sim(Model)=="MLDP1" } {
+
+      if { $Sim(GridRes) <= 5000 } {
+         set Sim(VarMesoscale) 0.10
+      }
+
+   }
+
 }
 
 #----------------------------------------------------------------------------
