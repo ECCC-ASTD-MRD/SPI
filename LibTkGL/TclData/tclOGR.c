@@ -612,7 +612,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case SQLSELECT:
          if (Objc!=5 && Objc!=6) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer file sql_statement [geometry filter]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          if (Objc==6) {

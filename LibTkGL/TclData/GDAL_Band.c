@@ -894,6 +894,10 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    OGRGeometryH                 geom;
    OGREnvelope                  env;
 
+   if (!Layer->NFeature) {
+      return(TCL_OK);
+   }
+
    /*Recuperer la valeur a utiliser dans l'interpolation*/
    if (Field) {
       if (strcmp(Field,"FEATURE_AREA")==0) {

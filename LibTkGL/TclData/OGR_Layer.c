@@ -1629,6 +1629,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
    }
 
    if (!(layer=OGR_LayerCreate(Interp,Name))) {
+      Tcl_AppendResult(Interp,"OGR_LayerSQLSelect: Could not create layer: ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
 
@@ -1637,41 +1638,39 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       geom=OGR_GeometryGet(Geom);
       if (!geom) {
          Tcl_AppendResult(Interp,"OGR_LayerSQLSelect: invalid geometry: ",Geom,(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
    }
 
    layer->Layer=OGR_DS_ExecuteSQL(file->Data,Statement,geom,"generic");
-   layer->SQLed=file->Data;
 
-   if (!layer->Layer) {
-      Tcl_AppendResult(Interp,"OOGR_LayerSQLSelect: Result of SQL statement empty",(char*)NULL);
-      return(TCL_ERROR);
-   }
+   if (layer->Layer) {
+      layer->SQLed=file->Data;
 
-   layer->Def=OGR_L_GetLayerDefn(layer->Layer);
-   if (!layer->Def) {
-      Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer definition",(char*)NULL);
-      return(TCL_ERROR);
-   }
-
-   layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
-   if (layer->NFeature) {
-      layer->Feature=malloc(layer->NFeature*sizeof(OGRFeatureH));
-      layer->Select=malloc(layer->NFeature*sizeof(char));
-      memset(layer->Select,0x1,layer->NFeature);
-
-      /* Parse features */
-      OGR_L_ResetReading(layer->Layer);
-      for(i=0;i<layer->NFeature;i++) {
-         layer->Feature[i]=OGR_L_GetNextFeature(layer->Layer);
+      layer->Def=OGR_L_GetLayerDefn(layer->Layer);
+      if (!layer->Def) {
+         Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer definition",(char*)NULL);
+         return(TCL_ERROR);
       }
-      layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord));
-   }
 
-   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
-   OGR_L_GetExtent(layer->Layer,&env,1);
-   GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
+      layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
+      if (layer->NFeature) {
+         layer->Feature=malloc(layer->NFeature*sizeof(OGRFeatureH));
+         layer->Select=malloc(layer->NFeature*sizeof(char));
+         memset(layer->Select,0x1,layer->NFeature);
+
+         /* Parse features */
+         OGR_L_ResetReading(layer->Layer);
+         for(i=0;i<layer->NFeature;i++) {
+            layer->Feature[i]=OGR_L_GetNextFeature(layer->Layer);
+         }
+         layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord));
+      }
+
+      layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
+      OGR_L_GetExtent(layer->Layer,&env,1);
+      GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
+   }
    return(TCL_OK);
 }
 
