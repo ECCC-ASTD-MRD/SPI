@@ -31,7 +31,8 @@ namespace eval TRAJECT {
 
    #----- Add front-end machine to list of available hosts.
    set Sim(Hosts) $GDefs(FrontEnds)
-   if { [lsearch -exact $Sim(Hosts) $GDefs(Host)]==-1 } {
-      set Sim(Hosts) [linsert $Sim(Hosts) 0 $GDefs(Host)]
+   if { [set idx [lsearch -exact $Sim(Hosts) $GDefs(Host)]]!=-1 } {
+      set Sim(Hosts) [lreplace $Sim(Hosts) $idx $idx]
    }
+   set Sim(Hosts) [linsert $Sim(Hosts) 0 $GDefs(Host)]
 }
