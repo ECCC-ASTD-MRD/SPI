@@ -8,7 +8,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Dorval, Quebec
 #
 # Projet     : Exemple de scripts.
-# Fichier    : GDAL_IndexBuild.tcl
+# Fichier    : OGR_IndexBuild.tcl
 # Creation   : Decembre 2002 - J.P. Gauthier - CMC/CMOE
 # Description: Creation d'un index geographiqe de couverture e donnees raster
 #              dans un fichier Shapefile pouvant ensuite etre utiliser dans SPI
