@@ -20,6 +20,8 @@ exec $SPI_PATH/wish "$0" "$@"
 #
 #============================================================================
 
+puts \n[file tail [info script]]
+
 package require TkglCanvas
 
 font create FontX -family Courier -weight bold -size -12

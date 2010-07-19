@@ -20,6 +20,8 @@ exec $SPI_PATH/wish "$0" "$@"
 #
 #============================================================================
 
+puts \n[file tail [info script]]
+
 package require TkglCanvas
 package require TkViewport
 package require Img
