@@ -1487,33 +1487,37 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
 
    /* Display graph outline */
-   if (Item->Outline && Item->Width && GLMode==GL_RENDER) {
+   if (Item->Outline && Item->Width) {
       glDash(&Item->Dash);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
       glLineWidth(Item->Width);
-      glPolygonMode(GL_FRONT,GL_LINE);
+      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
       if (Item->Type==BAR || Item->Type==HISTOGRAM || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
-           for(i=0;i<vn;i++) {
-            glBegin(GL_LINE_LOOP);
-               glVertex2f(v[i][0]-db-dh,y0);
-               glVertex2f(v[i][0]-db-dh,v[i][1]);
-               glVertex2f(v[i][0]+db-dh,v[i][1]);
-               glVertex2f(v[i][0]+db-dh,y0);
-            glEnd();
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               glBegin(GL_QUADS);
+                  glVertex2f(v[i][0]-db-dh,y0);
+                  glVertex2f(v[i][0]-db-dh,v[i][1]);
+                  glVertex2f(v[i][0]+db-dh,v[i][1]);
+                  glVertex2f(v[i][0]+db-dh,y0);
+               glEnd();
+               glPopName();
            }
          } else {
-           for(i=0;i<vn;i++) {
-            glBegin(GL_LINE_LOOP);
-               glVertex2f(x0,v[i][1]-db-dh);
-               glVertex2f(v[i][0],v[i][1]-db-dh);
-               glVertex2f(v[i][0],v[i][1]+db-dh);
-               glVertex2f(x0,v[i][1]+db-dh);
-            glEnd();
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               glBegin(GL_QUADS);
+                  glVertex2f(x0,v[i][1]-db-dh);
+                  glVertex2f(v[i][0],v[i][1]-db-dh);
+                  glVertex2f(v[i][0],v[i][1]+db-dh);
+                  glVertex2f(x0,v[i][1]+db-dh);
+               glEnd();
+               glPopName();
            }
          }
-      } else if (Item->Type==LINE || Item->Type==SPLINE) {
+      } else if (Item->Type!=NONE && GLMode==GL_RENDER) {
          glBegin(GL_LINE_STRIP);
             if (Item->Fill) glVertex3dv(v0);
             for(i=0;i<vn;i++) {
@@ -1566,13 +1570,13 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          GraphItem_ColorXYZ(Interp,Graph,Item,i);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glDrawArrays(IconList[Item->Icon].Type,0,IconList[Item->Icon].Nb);
-         glPopName();
 
          if (Item->IconOutline && Item->Width) {
             glColor4us(Item->IconOutline->red,Item->IconOutline->green,Item->IconOutline->blue,Item->Alpha*Graph->Alpha*0.01*655);
             glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
             glDrawArrays(IconList[Item->Icon].Type,0,IconList[Item->Icon].Nb);
          }
+         glPopName();
          glPopMatrix();
       }
       glDisableClientState(GL_VERTEX_ARRAY);

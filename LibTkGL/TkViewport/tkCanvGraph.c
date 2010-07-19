@@ -358,7 +358,7 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
          GraphUnSet(gr);
 
-         if (glPickProcess()>1) {
+         if (glPickProcess()>0) {
             obj=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(gr->Item[GLRender->GLPick[0]],-1));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[1]));
