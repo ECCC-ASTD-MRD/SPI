@@ -1,9 +1,0 @@
-#
-#Definitons des sources actives du WEC
-#
-#Date: Avril 1999
-#Auteur: J.P. Gauthier 
-#
-#Format:
-#   Nom , Lat , Lon , Type , Sat , Traj, CANERM , C4 , C45 , CV, Level1 , level2 ,level3, Type ElevTRAJ, ElevCANERM, NbEspeces , Especes ...
-#

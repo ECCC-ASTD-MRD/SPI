@@ -1,6 +1,0 @@
-#!/bin/sh
-
-export SPI_PATH=${0%tclsh}
-. ${SPI_PATH}/version
-
-exec ${SHARED}/TclTk/bin/tclsh${TCL_VERSION} $@

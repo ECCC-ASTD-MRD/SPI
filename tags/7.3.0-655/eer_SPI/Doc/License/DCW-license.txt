@@ -1,1 +1,0 @@
-The geographical database (DBGeo) is based on DCW, approved for public release
