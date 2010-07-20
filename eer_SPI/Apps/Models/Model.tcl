@@ -159,6 +159,8 @@ namespace eval Model {
 
    set Error(Host)                { "L'hote sélectionné ne peut être rejoint, utilisation de l'hote local." "Selected host cannot be reached, using local host." }
    set Error(EMail)               { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
+   set Error(MetDBase)            { "Erreur! Les répertoires des bases de données météorologiques diagnostiques et/ou pronostiques ne sont pas définis. Veuillez spécifier les répertoires de ces bases de données." \
+                                    "Error! The directories for diagnostic and/or prognostic meteorological databases are undefined. Please specify the path for these databases." }
    set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veuillez modifier la date et/ou le temps d'émission de l'accident ou l'hôte."
                                     "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time. Please modify the accident release date-time or the host." }
    set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
@@ -576,6 +578,12 @@ proc Model::ParamsMetData { Model } {
    variable Param
 
    upvar ${Model}::Sim sim
+
+   #----- Verify if diagnostic and prognostic databases are defined.
+   if { $Param(DBaseDiag) == "" || $Param(DBaseProg) == "" } {
+      Dialog::Error . $Error(MetDBase)
+      return False
+   }
 
    if { ![llength $sim(Data)] } {
       Dialog::Error . $Error(MetFiles)
