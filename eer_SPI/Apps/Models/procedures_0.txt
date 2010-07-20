@@ -1,86 +1,41 @@
 PROCÉDURE EN CAS D'ÉVÈNEMENTS VOLCANIQUES
-     Dov Bensimon - Novembre 2006
+     Dov Bensimon - Mai 2010
 
        APPELER DU RENFORT SI NÉCESSAIRE
 
 MONITORING
 
   1. Boîte à outils (toujours ouverte)
-
   2. Ongoing traffic (fv, wv, pireps, etc.,
      en utilisant Bulletins Volcaniques
      Reçus dans la boîte à outils)
-
   3. Fax et contacts des observatoires
      volcaniques
-
      AVO
-       - sommaire pour l'Alaska les vendredis
-       - sommaire pour le Kamchatka les lundis
+       - rapports hebdomadaires pour l'Alaska
+         les vendredis
        - bulletins spéciaux;
      CVO
-       - bulletin seulement si activité
+       - rapports hebdomadaires pour les
+         Cascades les vendredis
+    KVERT
+        - sommaire quotidiens
+        - mises-à-jour regulières pour volcans
+          en activité
+    SVERT
+        - rapports hebdomadaires pour les îles
+          Kurile les lundis
 
   4. Information des autres VAAC et des MWO.
 
-SI UN ÉVÈNEMENT SE PRODUIT À L'INTÉRIEURE LA
-ZONE DE RESPONSABILITÉ DU VAAC MONTRÉAL
+Les détails des procédures sont disponibles au:
 
-  1. Émettre un message FV préventif pour les
-     cas surprise.
-     (exemple 4 dans la boîte à outils, un
-     message par évènement, transmis partout)
+https://wiki.cmc.ec.gc.ca/wiki/Activit%C3%A9s_VAAC_et_EER_de_CMOP/fr#Proc.C3.A9dures_VAAC_.28volcanique.29
 
-  2. Contacter les MWO concernés
-     (Edmonton, Sondrestrom fjord).
+CONTACTS LES PLUS FRÉQUENTS
 
-  3. Tenter de confirmer la véracité de
-     l'évènement
-     (VO, sat pix, cie aériennes,
-      consultation, etc).
+Veuillez, SVP, consulter la liste de numéros de téléphone dans la liste de contacts du VAAC sur le Wiki:
 
-  4. Regarder les photos sats
-     (générer les GOES 4-5, regarder les
-     NOAA 4-5 sur site ftp, sites WEB en
-     signets).
+https://wiki.cmc.ec.gc.ca/wiki/VAAC/Contacts_VAAC_Montreal
 
-  5. Tourner le modèle de trajectoire.
-     (transmission par fax, au site ftp ou
-     circuit SATNET)
-
-  6. Tourner CANERM si la source est connue.
-     (option de transmission)
-
-  7. Émettre  un FV ou retransmettre un
-     FV étranger
-     (un message par évènement)
-
-  8. Coordonner avec les autres centres VAAC
-     voisins.
-
-SI UN ÉVÈNEMENT SE PRODUIT PRÈS DE LA ZONE DE
-RESPONSABILITÉ DU VAAC MONTRÉAL OU SI UN ÉVÈNEMENT
-EST ANTICIPÉ
-
-  1. Informer les MWO de la situation.
-     (Edmonton, Sondrestrom fjord)
-
-  2. Regarder les photos sats, générer les
-     photos 4-5, regarder les NOAA 4-5 sur
-     site ftp.
-
-  3. Tourner le modèle de trajectoire.
-
-  4. Tourner CANERM si la source est connue.
-
-  5. Retransmettre les messages FV étranger,
-     si nécessaire.
-
-       CONTACTS LES PLUS FRÉQUENTS
-
-Veuillez, SVP, consulter la liste de numéros
-de téléphone dans  la liste de contacts de
-la boîte à malle du VAAC dans Outlook.
-
-Une copie papier de cette liste est disponible
-dans le bottin téléphonique blanc de A&P.
+Une copie papier de cette liste est disponible dans le bottin téléphonique blanc de A&P.

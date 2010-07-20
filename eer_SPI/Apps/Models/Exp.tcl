@@ -213,7 +213,7 @@ proc Exp::Create { Frame } {
 
       frame $Frame.info.proc
          text $Frame.info.proc.text -relief sunken -yscrollcommand "$Frame.info.proc.scroll set" \
-            -width 1 -height 1 -bg white -highlightthickness 0 -bd 1
+            -width 1 -height 1 -bg white -highlightthickness 0 -bd 1 -wrap word
          scrollbar $Frame.info.proc.scroll -relief sunken -command "$Frame.info.proc.text yview" -highlightthickness 0 -bd 1 \
             -width 10
          pack $Frame.info.proc.text -side left -expand true -fill both
