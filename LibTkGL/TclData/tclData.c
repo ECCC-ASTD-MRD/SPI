@@ -218,8 +218,9 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
    if (!new) {
       Tcl_AppendResult(Interp,"Data_GetShell: Field already exist",(char *)NULL);
    } else {
-      field=(TData*)malloc(sizeof(TData));
-      Tcl_SetHashValue(entry,field);
+      if (field=(TData*)malloc(sizeof(TData))) {
+         Tcl_SetHashValue(entry,field);
+      }
    }
    return(field);
 }
@@ -450,6 +451,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          Tcl_AppendResult(Interp,"Data_Cut:  Invalid Field or Grid",(char*)NULL);
          return(TCL_ERROR);
       }
+
       if (Field[f]->ReadCube)
          Field[f]->ReadCube(Interp,Field[f],0,0,0);
 
@@ -521,20 +523,21 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
             if (p && !Field[f]->Def->Pres && cut->Ref->Hgt) {
-               FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID);
-               /*In case of hybrid staggered, read !!SF, otherwise, use P0*/
-               if (cut->Ref->RefFrom->A) {
-                  if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1))) {
-                     Field[f]->Def->Pres=0x1;
-                     p=0;
+               if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
+                  /*In case of hybrid staggered, read !!SF, otherwise, use P0*/
+                  if (cut->Ref->RefFrom->A) {
+                     if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1))) {
+                        Field[f]->Def->Pres=0x1;
+                        p=0;
+                     }
+                  } else {
+                     if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
+                        Field[f]->Def->Pres=0x1;
+                        p=0;
+                     }
                   }
-               } else {
-                  if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
-                     Field[f]->Def->Pres=0x1;
-                     p=0;
-                  }
+                  FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
                }
-               FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
             }
 
             /*Get the grid cordinate*/

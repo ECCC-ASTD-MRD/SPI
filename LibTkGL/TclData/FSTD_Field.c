@@ -217,7 +217,9 @@ int FSTD_FieldReadMesh(TData *Field) {
       return(0);
 
    if ((!Field->Ref->Lat || !Field->Ref->Lon) && head->FID) {
-      FSTD_FileSet(NULL,head->FID);
+      if (FSTD_FileSet(NULL,head->FID)<0) {
+         return(0);
+      }
 
       switch(Field->Ref->Grid[0]) {
          case 'M':
@@ -317,7 +319,9 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    }
 
    if (Field->Spec->Topo && head->FID) {
-      FSTD_FileSet(NULL,head->FID);
+      if (FSTD_FileSet(NULL,head->FID)<0) {
+         return(0);
+      }
       EZLock_RPNField();
       idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
       if (idx<0) {
@@ -476,7 +480,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          return(NULL);
       }
 
-      FSTD_FileSet(NULL,head->FID);
+      if (FSTD_FileSet(NULL,head->FID)<0) {
+         return(NULL);
+      }
       for (j=0;j<Field->Def->NJ;j++) {
 
          /*Essayer de recuperer le modulateur (GZ)*/
@@ -529,7 +535,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          EZUnLock_RPNInt();
       }
 
-      FSTD_FileSet(NULL,head->FID);
+      if (FSTD_FileSet(NULL,head->FID)<0) {
+         return(NULL);
+      }
 
       /*Essayer de recuperer le GZ*/
       if (head->FID && Field->Spec->Topo) {
@@ -730,7 +738,10 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
       if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0 && (fid=((FSTD_Head*)Field->Head)->FID)) {
          i=0;
          Field->Ref->Top=1e-32;
-         FSTD_FileSet(NULL,fid);
+         if (FSTD_FileSet(NULL,fid)<0) {
+            return(i);
+         }
+
          if (ZRef_DecodeRPNHybrid(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
             i=1;
          } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
@@ -742,7 +753,9 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
       if (Field->Ref->Top==0.0 && (fid=((FSTD_Head*)Field->Head)->FID)) {
          i=0;
          Field->Ref->Top=1e-32;
-         FSTD_FileSet(NULL,fid);
+         if (FSTD_FileSet(NULL,fid)<0) {
+            return(i);
+         }
          FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&data,"PT",-1);
          FSTD_FileUnset(NULL,fid);
          if (data) {
