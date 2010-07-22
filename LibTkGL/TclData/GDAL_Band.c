@@ -1329,6 +1329,130 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <GDAL_BandFSTDCopy>
+ * Creation : Mars 2010 - E. Legault-Ouellet - CMC/CMOE
+ *
+ * But      : Interpole une coupe verticale d'un champ FSTD dans une bande
+ *            GDAL.
+ *
+ * Parametres  :
+ *  <Interp>   : Interpreteur TCL
+ *  <Band>     : Bande raster
+ *  <Field>    : Champs RPN
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+#define ScaleValue(V0,Vn,V) (Vn>V0?(V-V0)/(Vn-V0):1-(V-Vn)/(V0-Vn))
+
+int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Scale) {
+
+   double incri,incrj,posX,posY,dfy;
+   int    i,j,x,y,nidx,cidx,idx,z,lvl=0;
+   float  dir,val,*levels=NULL;
+
+   if (!Band) {
+      Tcl_AppendResult(Interp,"GDAL_BandFSTDImportV: Invalid band",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   if (!Field) {
+      Tcl_AppendResult(Interp,"GDAL_BandFSTDImportV: Invalid field",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   if (Field->Spec->Map) {
+      Data_PreInit(Field);
+      if (Band->Def->NC==1) {
+         if (Band->Spec->Map)
+            CMap_Free(Band->Spec->Map->Name);
+         Band->Spec->Map=Field->Spec->Map;
+      }
+   }
+
+   if(!Field->Ref) {
+      Tcl_AppendResult(Interp,"GDAL_BandFSTDCopy: Missing GeoRef",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   if(!Field->Ref->Levels) {
+      Tcl_AppendResult(Interp,"GDAL_BandFSTDCopy: Missing Levels",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   // Ponderates levels
+   if (Scale) {
+      levels=(float*)malloc(Field->Def->NJ * sizeof(float));
+      for(z=0; z<Field->Def->NJ; ++z) {
+         levels[z] = ScaleValue(Field->Ref->Levels[0], Field->Ref->Levels[Field->Def->NJ-1], Field->Ref->Levels[z]);
+      }
+   }
+
+   incri=(double)(Field->Def->NI)/(double)(Band->Def->NI);
+   incrj=(double)(Field->Def->NJ)/(double)(Band->Def->NJ);
+
+   // Fill image
+   for(y=0, idx=0; y<Band->Def->NJ; ++y) {
+
+      // Check at which level we are and calculate ponderate value on the Y axis
+      if (Scale) {
+         dfy =(double)y/((double)Band->Def->NJ-1.0);
+         lvl =(levels[lvl]>dfy) ? lvl : (lvl+1>Field->Def->NJ-1?Field->Def->NJ-1:lvl+1);
+         posY=(Field->Def->NJ-1)-((dfy-levels[lvl-1])/(levels[lvl]-levels[lvl-1])+lvl-1);
+      } else {
+         posY=(double)y*incrj;
+      }
+
+      for(x=0; x<Band->Def->NI; ++x) {
+         posX=(double)x*incri;
+
+         // Get interpolated value for that point (pixel)
+         if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,posX,posY,0,&val,&dir)) {
+         } else {
+            val=Field->Def->NoData;
+         }
+
+         if (val!=(float)Field->Def->NoData) {
+            VAL2COL(cidx,Field->Spec,val);
+         } else {
+            val=0.0;
+            cidx=-1;
+         }
+
+         // Get color for interpolated value and set pixel color
+         if (Field->Spec->Map) {
+            if (Band->Def->NC==1) {
+               Def_Set(Band->Def,0,idx,cidx);
+            } else {
+               for (z=0;z<Band->Def->NC;z++) {
+                  if (cidx>-1) {
+                     Def_Set(Band->Def,z,idx,Field->Spec->Map->Color[cidx][z]);
+                  } else {
+                     Def_Set(Band->Def,z,idx,0);
+                  }
+               }
+            }
+         } else {
+            if (Band->Def->NC>=1) {
+               Def_Set(Band->Def,0,idx,val);
+            }
+            if (Band->Def->NC>=2) {
+               Def_Set(Band->Def,1,idx,dir);
+            }
+         }
+        ++idx;
+      }
+   }
+   if (levels)
+      free(levels);
+
+   return(TCL_OK);
+}
+/*----------------------------------------------------------------------------
  * Nom      : <GDAL_BandFSTDImport>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
  *

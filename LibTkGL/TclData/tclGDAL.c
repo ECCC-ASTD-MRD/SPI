@@ -253,11 +253,19 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          /*Interpolate a field*/
          data=Data_Get(Tcl_GetString(Objv[3]));
          if (data) {
-            if (Objc!=4) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"band field");
+            if (Objc!=4 && Objc!=5) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"band field [scale]");
                return(TCL_ERROR);
             }
-            return(GDAL_BandFSTDImport(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),data));
+            if (data->Ref->Grid[0]=='V') {
+               space=0;
+               if (Objc==5) {
+                  Tcl_GetBooleanFromObj(Interp,Objv[4],&space);
+               }
+               return(GDAL_BandFSTDImportV(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),data,space));
+            } else {
+               return(GDAL_BandFSTDImport(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),data));
+            }
          }
 
          /*Interpolate a field
