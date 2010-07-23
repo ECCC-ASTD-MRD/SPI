@@ -1394,6 +1394,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    /* Compute item spacing and width for bar and histogram graph */
    switch(Item->Type) {
       case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2.0*(Graph->NSide*0.5-Graph->ISide-0.5); break;
+      case HISTOGRAM : db*=0.50;                   dh=-db;                                        break;
       case BAR       : db*=0.25;                   dh=0.0;                                        break;
       default        : db=0.0;                     dh=0.0;                                        break;
    }
@@ -3134,6 +3135,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    /* Compute item spacing and width for bar and histogram graph */
    switch(Item->Type) {
       case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2*(Graph->NSide*0.5-Graph->ISide-0.5); break;
+      case HISTOGRAM : db*=0.50;                   dh=-db;                                      break;
       case BAR       : db*=0.25;                   dh=0.0;                                      break;
       default        : db=0.0;                     dh=0.0;                                      break;
    }
@@ -3168,9 +3170,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
             for(i=0;i<vn;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                if ((i+1)==vn) {
-                  SETRECT(rect,X1,v[i][1],X1,y0);
+                  SETRECT(rect,v[i][0],y0,X1,v[i][1]);
                } else {
-                  SETRECT(rect,v[i][0],y0,v[i][0],v[i][1]);
+                  SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
@@ -3184,9 +3186,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
             for(i=0;i<vn;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                if ((i+1)==vn) {
-                  SETRECT(rect,x0,v[i][1],v[i][0],v[i][1]);
+                  SETRECT(rect,x0,v[i][1],v[i][0],Y1);
                } else {
-                  SETRECT(rect,v[i][0],v[i+1][1],x0,v[i+1][1]);
+                  SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
@@ -3259,22 +3261,24 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
                if ((i+1)==vn) {
-                  SETRECT(rect,X1,v[i][1],X1,y0);
+                  SETRECT(rect,v[i][0],y0,X1,v[i][1]);
                } else {
-                  SETRECT(rect,v[i][0],y0,v[i][0],v[i][1]);
+                  SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
+               sprintf(buf,"%.15g %.15g lineto\n",v[i][0],Y0);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
            }
          } else {
             for(i=0;i<vn;i++) {
-               glPushName(i);
-               GraphItem_ColorXYZ(Interp,Graph,Item,i);
                if ((i+1)==vn) {
-                  SETRECT(rect,x0,v[i][1],v[i][0],v[i][1]);
+                  SETRECT(rect,x0,v[i][1],v[i][0],Y1);
                } else {
-                  SETRECT(rect,v[i][0],v[i+1][1],x0,v[i+1][1]);
+                  SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
+               sprintf(buf,"%.15g %.15g lineto\n",X0,v[i][1]);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
             }
          }
       } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
