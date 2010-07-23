@@ -50,8 +50,9 @@ vector append SPACETIME { 10 11 12 13 }
 vector append SPACETIME { 40 21 12 63 }
 vector append SPACETIME { 20 1 121 66 }
 
-puts "   SPACETIME 0=[vector get SPACETIME 0]"
-puts "   SPACETIME.X=[vector get SPACETIME.X end-1]"
+puts "   SPACETIME 0  =[vector get SPACETIME 0]"
+puts "   SPACETIME end=[vector get SPACETIME end]"
+puts "   SPACETIME.X  =[vector get SPACETIME.X end-1]"
 
 #----- Trier selon l'item 1
 puts "   Vector before sort on Y:"
