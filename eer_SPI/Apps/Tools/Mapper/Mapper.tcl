@@ -1148,8 +1148,11 @@ proc Mapper::UpdateData { Frame args } {
 
    set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]
    update idletasks
-   projection configure $Frame -data $Viewport::Data(Data)
-   Page::Update $Frame
+
+   if { [projection is $Frame ] } {
+      projection configure $Frame -data $Viewport::Data(Data)
+      Page::Update $Frame
+   }
 
    set Data(Job) ""
 }
