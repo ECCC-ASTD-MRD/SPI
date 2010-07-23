@@ -1505,6 +1505,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             if (x<X0-1 || x>X1+1 || (Axis->Spacing && x<xp+w))
                continue;
 
+            xp=x;
             dy=Axis->Pos[0]=='L'?10:-10;
             SETLINE(coords,x,Y0,x,Y0+dy);
             Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
@@ -1552,7 +1553,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          }
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
-         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)-Axis->Angle,x+dx,y-dy,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
+         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)-Axis->Angle,x+dx,y-dy,(Axis->Angle!=0?TK_ANCHOR_SW:TK_ANCHOR_NW),TK_JUSTIFY_CENTER);
          Tk_FreeTextLayout(text);
       }
    } else {
@@ -1623,7 +1624,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          }
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
-         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)-Axis->Angle,x+dx,y-dy,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
+         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)-Axis->Angle,x+dx,y-dy,(Axis->Angle!=0?TK_ANCHOR_SW:TK_ANCHOR_NW),TK_JUSTIFY_CENTER);
          Tk_FreeTextLayout(text);
          inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
       }
