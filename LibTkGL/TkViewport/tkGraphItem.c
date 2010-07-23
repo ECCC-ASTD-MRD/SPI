@@ -1395,7 +1395,6 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    switch(Item->Type) {
       case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2.0*(Graph->NSide*0.5-Graph->ISide-0.5); break;
       case BAR       : db*=0.25;                   dh=0.0;                                        break;
-      case HISTOGRAM : db*=0.50;                   dh=-db;                                        break;
       default        : db=0.0;                     dh=0.0;                                        break;
    }
 
@@ -1432,7 +1431,43 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glColor4us(Item->Fill->red,Item->Fill->green,Item->Fill->blue,Item->Alpha*Graph->Alpha*0.01*655);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-      if (Item->Type==BAR || Item->Type==HISTOGRAM || Item->Type==WIDEBAR) {
+      if (Item->Type==HISTOGRAM) {
+         if (Item->Orient[0]=='X') {
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               glBegin(GL_QUADS);
+                  glVertex2f(v[i][0],y0);
+                  glVertex2f(v[i][0],v[i][1]);
+                  if ((i+1)==vn) {
+                     glVertex2f(X1,v[i][1]);
+                     glVertex2f(X1,y0);
+                   } else {
+                     glVertex2f(v[i+1][0],v[i][1]);
+                     glVertex2f(v[i+1][0],y0);
+                   }
+               glEnd();
+               glPopName();
+           }
+         } else {
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               glBegin(GL_QUADS);
+                  glVertex2f(x0,v[i][1]);
+                  glVertex2f(v[i][0],v[i][1]);
+                  if ((i+1)==vn) {
+                     glVertex2f(v[i][0],Y1);
+                     glVertex2f(x0,Y1);
+                  } else {
+                     glVertex2f(v[i][0],v[i+1][1]);
+                     glVertex2f(x0,v[i+1][1]);
+                  }
+               glEnd();
+               glPopName();
+           }
+         }
+      } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
                glPushName(i);
@@ -1493,7 +1528,41 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glLineWidth(Item->Width);
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
-      if (Item->Type==BAR || Item->Type==HISTOGRAM || Item->Type==WIDEBAR) {
+      if (Item->Type==HISTOGRAM) {
+         if (Item->Orient[0]=='X') {
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               glBegin(GL_QUADS);
+                  glVertex2f(v[i][0],y0);
+                  glVertex2f(v[i][0],v[i][1]);
+                  if ((i+1)==vn) {
+                     glVertex2f(X1,v[i][1]);
+                     glVertex2f(X1,y0);
+                   } else {
+                     glVertex2f(v[i+1][0],v[i][1]);
+                     glVertex2f(v[i+1][0],y0);
+                   }
+               glEnd();
+               glPopName();
+           }
+         } else {
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               glBegin(GL_QUADS);
+                  glVertex2f(x0,v[i][1]);
+                  glVertex2f(v[i][0],v[i][1]);
+                  if ((i+1)==vn) {
+                     glVertex2f(v[i][0],Y1);
+                     glVertex2f(x0,Y1);
+                  } else {
+                     glVertex2f(v[i][0],v[i+1][1]);
+                     glVertex2f(x0,v[i+1][1]);
+                  }
+               glEnd();
+               glPopName();
+           }
+         }
+      } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
                glPushName(i);
@@ -3066,7 +3135,6 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    switch(Item->Type) {
       case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2*(Graph->NSide*0.5-Graph->ISide-0.5); break;
       case BAR       : db*=0.25;                   dh=0.0;                                      break;
-      case HISTOGRAM : db*=0.50;                   dh=-db;                                      break;
       default        : db=0.0;                     dh=0.0;                                      break;
    }
 
@@ -3095,7 +3163,41 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    /* Display graph filling */
    if (Item->Fill) {
-      if (Item->Type==BAR || Item->Type==HISTOGRAM || Item->Type==WIDEBAR) {
+      if (Item->Type==HISTOGRAM) {
+         if (Item->Orient[0]=='X') {
+            for(i=0;i<vn;i++) {
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               if ((i+1)==vn) {
+                  SETRECT(rect,X1,v[i][1],X1,y0);
+               } else {
+                  SETRECT(rect,v[i][0],y0,v[i][0],v[i][1]);
+               }
+               Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
+               if (Item->Stipple) {
+                  Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
+                  glPostscriptStipple(Interp,Item->Stipple);
+               } else {
+                  Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
+               }
+           }
+         } else {
+            for(i=0;i<vn;i++) {
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               if ((i+1)==vn) {
+                  SETRECT(rect,x0,v[i][1],v[i][0],v[i][1]);
+               } else {
+                  SETRECT(rect,v[i][0],v[i+1][1],x0,v[i+1][1]);
+               }
+               Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
+               if (Item->Stipple) {
+                  Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
+                  glPostscriptStipple(Interp,Item->Stipple);
+               } else {
+                  Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
+               }
+            }
+         }
+      } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
@@ -3153,7 +3255,29 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    /* Display graph outline */
    if (Item->Outline && Item->Width) {
-      if (Item->Type==BAR || Item->Type==HISTOGRAM || Item->Type==WIDEBAR) {
+      if (Item->Type==HISTOGRAM) {
+         if (Item->Orient[0]=='X') {
+            for(i=0;i<vn;i++) {
+               if ((i+1)==vn) {
+                  SETRECT(rect,X1,v[i][1],X1,y0);
+               } else {
+                  SETRECT(rect,v[i][0],y0,v[i][0],v[i][1]);
+               }
+               Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
+           }
+         } else {
+            for(i=0;i<vn;i++) {
+               glPushName(i);
+               GraphItem_ColorXYZ(Interp,Graph,Item,i);
+               if ((i+1)==vn) {
+                  SETRECT(rect,x0,v[i][1],v[i][0],v[i][1]);
+               } else {
+                  SETRECT(rect,v[i][0],v[i+1][1],x0,v[i+1][1]);
+               }
+               Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
+            }
+         }
+      } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
                SETRECT(rect,v[i][0]-db-dh,y0,v[i][0]+db-dh,v[i][1]);
