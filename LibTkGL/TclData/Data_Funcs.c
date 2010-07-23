@@ -380,6 +380,7 @@ double slut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
          } else {
             Def_Get(MC,0,n,vc);
             Def_Set(Res,0,i,vc);
+            break;
          }
       }
    }
