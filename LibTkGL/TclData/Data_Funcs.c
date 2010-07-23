@@ -53,6 +53,7 @@ double Vnb,Vavgx,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
 TFuncDef FuncD[] = {
   { "in"        , in        , 2 , TD_UByte },
   { "lut"       , lut       , 3 , TD_Unknown },
+  { "slut"      , slut      , 3 , TD_Unknown },
   { "fkernel"   , fkernel   , 2 , TD_Unknown },
   { "fcentile"  , fcentile  , 3 , TD_Unknown },
   { "fpeel"     , fpeel     , 1 , TD_Unknown },
@@ -352,6 +353,35 @@ double in(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
          }
       }
       Def_Set(Res,0,i,vr);
+   }
+   return(0.0);
+}
+
+double slut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+
+   double va,vb,vc;
+   long   i,i0,i1,n,m;
+
+   i=FSIZE2D(MB);
+   n=FSIZE2D(MC);
+   m=i<n?i:n;
+
+   for(i=0;i<FSIZE2D(MA);i++) {
+      Def_Get(MA,0,i,va);
+
+      i0=0;i1=m-1;
+      while(i0<i1) {
+         n=(i0+i1)>>1;
+         Def_Get(MB,0,n,vb);
+         if (va<vb) {
+            i1=n-1;
+         } else if (va>vb) {
+            i0=n+1;
+         } else {
+            Def_Get(MC,0,n,vc);
+            Def_Set(Res,0,i,vc);
+         }
+      }
    }
    return(0.0);
 }
