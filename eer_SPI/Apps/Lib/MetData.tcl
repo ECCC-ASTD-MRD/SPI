@@ -429,6 +429,10 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    set pidx ""
 
    set order [lsort -dictionary -increasing [array names met *]]
+   if { ![llength $order] } {
+      Log::Print WARNING "Available filtered data is empty:\n\tLast run: $prun ($srun)\n\tAnalysis:\n\t\t[join $afile "\n\t\t"]\n\tPrognostics:\n\t\t[join $pfile "\n\t\t"]"
+      return ""
+   }
 
    if { $Mode=="F" } {
 
