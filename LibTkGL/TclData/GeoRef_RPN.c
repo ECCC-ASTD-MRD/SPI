@@ -179,7 +179,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          if (Def->Data[1]) {
             Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
          } else {
-            *Length=VertexVal(Ref,Def,ix,iy,0.0);
+            *Length=VertexVal(Ref,Def,X,Y,0.0);
          }
          return(valid);
       }
