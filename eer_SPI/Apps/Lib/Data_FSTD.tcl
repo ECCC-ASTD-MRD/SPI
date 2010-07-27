@@ -134,7 +134,7 @@ namespace eval FSTD {
 
    #----- Definitions des labels
 
-   set Lbl(Params)        { "Paramêtres..." "Parameters..." }
+   set Lbl(Params)        { "Paramètres..." "Parameters..." }
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(Contour)       { "Contour" "Contour" }
    set Lbl(Data)          { "Données" "Data" }
