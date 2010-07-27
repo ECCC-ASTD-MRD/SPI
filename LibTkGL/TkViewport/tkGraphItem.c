@@ -1355,7 +1355,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    Vect3d        *v,v0,v1,vt;
    char           buf[32];
    double        *vm,x,y,db,dh,x0,y0;
-   int            i,j,n,vn,sz,px,py,pw;
+   int            i,j,n,vn,sz,px,py,pw,hd;
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
@@ -1363,20 +1363,33 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    if (!vecx || !vecy)
       return;
 
-   n=vecx->N<vecy->N?vecx->N:vecy->N;
-
-   if (!n)
+   if (!(n=vecx->N<vecy->N?vecx->N:vecy->N))
       return;
 
-   v=(Vect3d*)malloc(n*sizeof(Vect3d));
+   /* Histograms may have on more value in the axis orientation side*/
+   if (Item->Type==HISTOGRAM) {
+      hd=Item->Orient[0]=='X'?(vecx->N>vecy->N):(vecx->N<vecy->N);
+   } else {
+      hd=0;
+   }
+   v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
 
    /* Compute graph curve points */
    db=1000.0;
    vn=0;
-   for(i=0;i<n;i++) {
-      if (vecx->V[i]!=vecx->NoData && vecy->V[i]!=vecy->NoData) {
-         v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
-         v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
+   for(i=0;i<n+hd;i++) {
+      /* Histograms check*/
+      if (i==n) {
+         x=Item->Orient[0]=='X'?vecx->V[i]:vecx->V[n-1];
+         y=Item->Orient[0]=='Y'?vecy->V[i]:vecy->V[n-1];
+      } else {
+         x=vecx->V[i];
+         y=vecy->V[i];
+      }
+
+      if (x!=vecx->NoData && y!=vecy->NoData) {
+         v[vn][0]=X0+AXISVALUE(AxisX,x);
+         v[vn][1]=Y0+AXISVALUE(AxisY,y);
          v[vn][2]=0.0;
 
          if (vn>0) {
@@ -1434,13 +1447,13 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
       if (Item->Type==HISTOGRAM) {
          if (Item->Orient[0]=='X') {
-            for(i=0;i<vn;i++) {
+            for(i=0;i<vn-hd;i++) {
                glPushName(i);
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                glBegin(GL_QUADS);
                   glVertex2f(v[i][0],y0);
                   glVertex2f(v[i][0],v[i][1]);
-                  if ((i+1)==vn) {
+                  if (!hd && (i+1)==vn) {
                      glVertex2f(X1,v[i][1]);
                      glVertex2f(X1,y0);
                    } else {
@@ -1451,13 +1464,13 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glPopName();
            }
          } else {
-            for(i=0;i<vn;i++) {
+            for(i=0;i<vn-hd;i++) {
                glPushName(i);
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                glBegin(GL_QUADS);
                   glVertex2f(x0,v[i][1]);
                   glVertex2f(v[i][0],v[i][1]);
-                  if ((i+1)==vn) {
+                  if (!hd && (i+1)==vn) {
                      glVertex2f(v[i][0],Y1);
                      glVertex2f(x0,Y1);
                   } else {
@@ -1531,12 +1544,12 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
       if (Item->Type==HISTOGRAM) {
          if (Item->Orient[0]=='X') {
-            for(i=0;i<vn;i++) {
+            for(i=0;i<vn-hd;i++) {
                glPushName(i);
                glBegin(GL_QUADS);
                   glVertex2f(v[i][0],y0);
                   glVertex2f(v[i][0],v[i][1]);
-                  if ((i+1)==vn) {
+                  if (!hd && (i+1)==vn) {
                      glVertex2f(X1,v[i][1]);
                      glVertex2f(X1,y0);
                    } else {
@@ -1547,12 +1560,12 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glPopName();
            }
          } else {
-            for(i=0;i<vn;i++) {
+            for(i=0;i<vn-hd;i++) {
                glPushName(i);
                glBegin(GL_QUADS);
                   glVertex2f(x0,v[i][1]);
                   glVertex2f(v[i][0],v[i][1]);
-                  if ((i+1)==vn) {
+                  if (!hd && (i+1)==vn) {
                      glVertex2f(v[i][0],Y1);
                      glVertex2f(x0,Y1);
                   } else {
@@ -1622,7 +1635,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glLineWidth(Item->Width);
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          glPushMatrix();
          if (Item->Orient[0]=='X') {
             glTranslated(v[i][0]-dh,v[i][1],v[i][2]);
@@ -1675,7 +1688,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       if (val) {
          px=py=pw=0;
          Tk_GetFontMetrics(Item->Font,&tkm);
-         for(i=0;i<vn;i++) {
+         for(i=0;i<vn-hd;i++) {
             if (Item->Value==4) {
                GraphAxis_Print(AxisY,buf,val->V[i],-2);
             } else {
@@ -1700,7 +1713,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    /* Display bitmaps and images */
    if (Item->Bitmap) {
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          glPushName(i);
          if (Item->Orient[0]=='X') {
             trRasterPos2i((v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2);
@@ -1726,7 +1739,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       DataFlip(data.pixelPtr,pixel,data.width,data.height,data.pixelSize);
 
       glEnable(GL_BLEND);
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          glPushName(i);
          if (Item->Orient[0]=='X') {
             trRasterPos2i((v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-data.width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+data.height/2);
@@ -3095,7 +3108,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    Vect3d    *v,v0,v1,vt;
    char       buf[256];
    double     x,y,db,dh,x0,y0;
-   int        i,j,n,vn,sz;
+   int        i,j,n,vn,sz,hd;
 
    double       rect[8];
 
@@ -3104,18 +3117,34 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    n=vecx->N<vecy->N?vecx->N:vecy->N;
 
+   /* Histograms may have on more value in the axis orientation side*/
+   if (Item->Type==HISTOGRAM) {
+      hd=Item->Orient[0]=='X'?(vecx->N>vecy->N):(vecx->N<vecy->N);
+   } else {
+      hd=0;
+   }
+   v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+
    GraphAxis_Define(AxisX,vecx,X1-X0);
    GraphAxis_Define(AxisY,vecy,Y1-Y0);
 
-   v=(Vect3d*)malloc(n*sizeof(Vect3d));
 
    /* Compute graph curve points */
    db=1000;
    vn=0;
-   for(i=0;i<n;i++) {
-      if (vecx->V[i]!=vecx->NoData && vecy->V[i]!=vecy->NoData) {
-         v[vn][0]=X0+AXISVALUE(AxisX,vecx->V[i]);
-         v[vn][1]=Y0+AXISVALUE(AxisY,vecy->V[i]);
+   for(i=0;i<n+hd;i++) {
+      /* Histograms check*/
+      if (i==n) {
+         x=Item->Orient[0]=='X'?vecx->V[i]:vecx->V[n-1];
+         y=Item->Orient[0]=='Y'?vecy->V[i]:vecy->V[n-1];
+      } else {
+         x=vecx->V[i];
+         y=vecy->V[i];
+      }
+
+      if (x!=vecx->NoData &&y!=vecy->NoData) {
+         v[vn][0]=X0+AXISVALUE(AxisX,x);
+         v[vn][1]=Y0+AXISVALUE(AxisY,y);
          v[vn][2]=0.0;
 
          /* Check font spacing */
@@ -3167,9 +3196,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    if (Item->Fill) {
       if (Item->Type==HISTOGRAM) {
          if (Item->Orient[0]=='X') {
-            for(i=0;i<vn;i++) {
+            for(i=0;i<vn-hd;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
-               if ((i+1)==vn) {
+               if (!hd && (i+1)==vn) {
                   SETRECT(rect,v[i][0],y0,X1,v[i][1]);
                } else {
                   SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
@@ -3183,9 +3212,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                }
            }
          } else {
-            for(i=0;i<vn;i++) {
+            for(i=0;i<vn-hd;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
-               if ((i+1)==vn) {
+               if (!hd && (i+1)==vn) {
                   SETRECT(rect,x0,v[i][1],v[i][0],Y1);
                } else {
                   SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
@@ -3259,8 +3288,8 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    if (Item->Outline && Item->Width) {
       if (Item->Type==HISTOGRAM) {
          if (Item->Orient[0]=='X') {
-            for(i=0;i<vn;i++) {
-               if ((i+1)==vn) {
+            for(i=0;i<vn-hd;i++) {
+               if (!hd && (i+1)==vn) {
                   SETRECT(rect,v[i][0],y0,X1,v[i][1]);
                } else {
                   SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
@@ -3270,8 +3299,8 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                Tcl_AppendResult(Interp,buf,(char*)NULL);
            }
          } else {
-            for(i=0;i<vn;i++) {
-               if ((i+1)==vn) {
+            for(i=0;i<vn-hd;i++) {
+               if (!hd && (i+1)==vn) {
                   SETRECT(rect,x0,v[i][1],v[i][0],Y1);
                } else {
                   SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
@@ -3332,7 +3361,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    /* Display Icons */
    if (Item->Icon && Item->Size) {
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          sz=Item->Size+Item->Width;
 
          if (Item->Orient[0]=='X') {
@@ -3366,7 +3395,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
 
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          if (Item->Orient[0]=='X') {
             GraphAxis_Print(AxisY,buf,vecy->V[i],-2);
          } else {
@@ -3383,7 +3412,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    /* Display bitmaps and images */
    if (Item->Bitmap) {
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          Tcl_AppendResult(Interp,"gsave\n",(char*)NULL);
          if (Item->Orient[0]=='X') {
             sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",(v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,Item->Bitmap->Width,Item->Bitmap->Height);
@@ -3403,7 +3432,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
       handle=Tk_FindPhoto(((TkCanvas*)Graph->canvas)->interp,Item->ImageString);
       Tk_PhotoGetImage(handle,&data);
 
-      for(i=0;i<vn;i++) {
+      for(i=0;i<vn-hd;i++) {
          Tcl_AppendResult(Interp,"gsave\n",(char*)NULL);
          if (Item->Orient[0]=='X') {
             sprintf(buf,"%.15g %.15g translate\n",(v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2);
