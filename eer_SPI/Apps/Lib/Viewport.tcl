@@ -100,7 +100,7 @@ namespace eval Viewport {
    set Map(CoordNum)    2            ;#Numerotation des latlon
    set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
    set Map(GeoRef)      ""           ;#Geo-reference courante (Mode Grid)
-   set Map(Grabbed)     False        ;#Etat de la vue
+   set Map(Grabbed)     0            ;#Etat de la vue
    set Map(Delay)       800.0        ;#Temps de deplacement en millisecondes
    set Map(Speed)       0.0          ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07         ;#Facteur de l'effet de ralentissement
@@ -2566,13 +2566,13 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
             #----- check if we should continue
 
             update
-            if {  ![projection is $Frame] || $Map(Grabbed)>$t0 } {
+            if { ![projection is $Frame] || $Map(Grabbed)>$t0 } {
                break;
             }
          }
 
          #----- Got to final destination
-         if { $Map(Grabbed)<=$t0 } {
+         if { $dx==0 || $Map(Grabbed)<=$t0 } {
             if { $F || $T || $U } {
                set cam(CFX)    0
                set cam(CFY)    0
