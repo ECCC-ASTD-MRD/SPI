@@ -2515,7 +2515,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  } else {
                                     glColor4us(0,0,0,alpha*65535);
                                  }
-                              }
+                                 glLineWidth(spec->Width);
+                             }
 
                               /*Get height*/
                               if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
@@ -2524,7 +2525,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
                               }
 
-                           /*Set position within projection*/
+                              /*Set position within projection*/
                               glPushMatrix();
 
                               if (Obs->Model->Flat) {
@@ -2550,7 +2551,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               if ((loc->Pix[0]!=0.0 || loc->Pix[1]!=0.0) && !line) {
                                  if (Interp)
                                     glFeedbackInit(20,GL_2D);
-                                 glLineWidth(spec->Width);
                                  glBegin(GL_LINES);
                                     glVertex3d(0,0,0);
                                     if (Obs->Model->Flat) {

@@ -35,6 +35,9 @@
 #include <string.h>
 #include "tkCanvVP.h"
 #include "Projection.h"
+#include "tclGDAL.h"
+#include "tclOGR.h"
+#include "tcl3DModel.h"
 
 extern GLParams *GLRender;
 
@@ -1065,6 +1068,9 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    TTraj        *traj;
    TObs         *obs;
    TMetObs      *met;
+   T3DModel     *mdl;
+   GDAL_Band    *band;
+   OGR_Layer    *layer;
    int           i,load;
    clock_t       sec;
 
@@ -1116,6 +1122,15 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
                Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
                if (GLRender->GLZBuf)
                   Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
+            }
+            if ((layer=OGR_LayerGet(vp->Data[i]))) {
+               OGR_LayerRender(NULL,proj,vp,layer);
+            }
+            if ((band=GDAL_BandGet(vp->Data[i]))) {
+               GDAL_BandRender(proj,vp,band);
+            }
+            if ((mdl=Model_Get(vp->Data[i]))) {
+               Model_Render(proj,vp,mdl);
             }
          }
 
@@ -1570,10 +1585,13 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    char         buf[100];
    clock_t      sec;
 
-   TData   *fld;
-   TTraj   *traj;
-   TObs    *obs;
-   TMetObs *met;
+   TData     *fld;
+   TTraj     *traj;
+   TObs      *obs;
+   TMetObs   *met;
+   T3DModel  *mdl;
+   GDAL_Band *band;
+   OGR_Layer *layer;
 
    /*Definir le font du viewport*/
    if (Tk_CanvasPsFont(Interp,Canvas,vp->tkfont) != TCL_OK) {
@@ -1669,6 +1687,15 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
             if (GLRender->GLZBuf) {
                Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
             }
+         }
+         if ((layer=OGR_LayerGet(vp->Data[i]))) {
+            ras+=OGR_LayerRender(NULL,proj,vp,layer);
+         }
+         if ((band=GDAL_BandGet(vp->Data[i]))) {
+            ras+=GDAL_BandRender(proj,vp,band);
+         }
+         if ((mdl=Model_Get(vp->Data[i]))) {
+            ras+=Model_Render(proj,vp,mdl);
          }
       }
       if (GLRender->GLZBuf) {
