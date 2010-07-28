@@ -1900,6 +1900,8 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                   OGR_G_AddPoint_2D(poly,lon,lat);
                   field[0]->Ref->Project(field[0]->Ref,i+0.5,j-0.5,&lat,&lon,1,1);
                   OGR_G_AddPoint_2D(poly,lon,lat);
+                  field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
+                  OGR_G_AddPoint_2D(poly,lon,lat);
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {
                   field[0]->Ref->Project(field[0]->Ref,i,j,&lat,&lon,1,1);
