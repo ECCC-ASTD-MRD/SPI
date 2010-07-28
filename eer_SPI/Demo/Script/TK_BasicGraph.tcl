@@ -57,6 +57,9 @@ set obss [observation load $file]
 for { set n 0 } { $n<50 } { incr n } {
 
    set id [observation define [lindex $obss 0] -ID $n]
+   if { [expr $n%5]==0 } {
+      continue
+   }
 
    foreach obs $obss {
 
@@ -64,17 +67,17 @@ for { set n 0 } { $n<50 } { incr n } {
       set val [observation define $obs -DATA $n]
       if { $val=="-" } { set val 0 }
 
-      vector append DATA [list $sec $val]
+      vector append DATA [list $sec [expr $val+10]]
       break
    }
 }
 
 #----- Configure graph axis
 graphaxis configure AXISX -font FONT1 -type LINEAR -color blue -gridcolor lightblue -dash "." -position LL -width 1  \
-   -min [vector stats DATA.X -min] -max [vector stats DATA.X -max] -intervals [lsort -increasing [vector get DATA.X]] \
+   -min [vector stats DATA.X -min] -max [expr [vector stats DATA.X -max]+300] -intervals [lsort -increasing [vector get DATA.X]] \
    -unit "Temps" -format "TIME" -angle 30
 graphaxis configure AXISY -font FONT1  -type LINEAR -color yellow -gridcolor gold -gridwidth 1 -dash "." -position LL -width 1 \
-   -min 0 -max [vector stats DATA.Y -max] -unit Pbb -increment 10
+    -min 0 -max [vector stats DATA.Y -max] -unit Pbb -increment 10 -angle 30
 
 #----- Redraw graph
 .glcanvas itemconf GRAPH -item ITEM
@@ -84,6 +87,8 @@ proc Pick { X Y } {
    puts "Picked $X $Y: [graphtest -pick $X $Y]"
 }
 
+update idletasks
+.glcanvas postscript -file DataOut/TK_BasicGraph.ps
 #image create photo TMPIMG -width 300 -height 300 -format window -data .glcanvas
 #TMPIMG write "DataOut/TK_glCanvas.png" -format png
 #TMPIMG write "DataOut/TK_glCanvas.ppm" -format ppm

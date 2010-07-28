@@ -33,10 +33,13 @@ set layers  [ogrfile open LAYERFILE read $NTSPath/${res}kindex.shp]
 eval ogrlayer read LAYER [lindex $layers 0]
 
 #----- Open indexed NTS index
+set name    [file tail $DBPath]${res}kIndex
+puts $name
+
 file mkdir $DBPath/Index
-file delete $DBPath/Index/${res}kindex.shp
-ogrfile open INDEXFILE write $DBPath/Index/${res}kindex.shp "ESRI Shapefile"
-ogrlayer create INDEXFILE INDEX "${res}Index"
+file delete $DBPath/Index/${name}.shp
+ogrfile open INDEXFILE write $DBPath/Index/${name}.shp "ESRI Shapefile"
+ogrlayer create INDEXFILE INDEX ${name}
 
 #----- copy the fields
 foreach field [ogrlayer define LAYER -field] {
@@ -74,4 +77,4 @@ for { set n 0 } { $n<[ogrlayer define LAYER -nb] } { incr n } {
 ogrfile close INDEXFILE
 ogrfile close LAYERFILE
 
-file copy -force $NTSPath/${res}kindex.prj $DBPath/Index/${res}kindex.prj
+file copy -force $NTSPath/${res}kindex.prj $DBPath/Index/${name}.prj
