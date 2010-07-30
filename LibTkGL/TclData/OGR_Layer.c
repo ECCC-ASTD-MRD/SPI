@@ -248,7 +248,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
          case CENTROID:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"index");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
 
             lst=Tcl_NewListObj(0,NULL);
@@ -266,12 +266,12 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
          case GEOMETRY:
             if (Objc<2 || Objc>4) {
                Tcl_WrongNumArgs(Interp,2,Objv,"index ?direct? ?geometry?");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&f);
             if (f<0 || f>layer->NFeature) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
 
             /* Get the direct pointer flag*/

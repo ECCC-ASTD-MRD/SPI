@@ -849,15 +849,17 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 
    gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
    gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
+//   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_NONZERO);
 
+   pnv=0;
    gluTessBeginPolygon(GLRender->GLTess,NULL);
    for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
       geom=OGR_G_GetGeometryRef(Geom,g);
-      if ((nv=OGR_GeometryProject(Proj,Ref,Layer,geom,Elev,0.0,0))) {
+      if ((nv=OGR_GeometryProject(Proj,Ref,Layer,geom,Elev,0.0,pnv))) {
 //   gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[0][0],*OGR_ArrayNr[0][1],*OGR_ArrayNr[0][2]);
          gluTessBeginContour(GLRender->GLTess);
          glBegin(GL_LINE_STRIP);
-         for(n=0;n<nv;n++) {
+         for(n=pnv;n<pnv+nv;n++) {
             glNormal3dv(*OGR_ArrayNr[n]);
             glVertex3dv(OGR_ArrayVr[n]);
             gluTessVertex(GLRender->GLTess,OGR_ArrayVr[n],OGR_ArrayVr[n]);
@@ -865,21 +867,23 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
          glEnd();
          gluTessEndContour(GLRender->GLTess);
        }
+       pnv+=nv;
    }
    gluTessEndPolygon(GLRender->GLTess);
 
    /*Process extruded polygon*/
    if (Extrude!=0.0) {
 
+      pnv=0;
       gluTessBeginPolygon(GLRender->GLTess,NULL);
       for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
          geom=OGR_G_GetGeometryRef(Geom,g);
-         if ((nv=OGR_GeometryProject(Proj,Ref,Layer,geom,Elev,Extrude,0))) {
+         if ((nv=OGR_GeometryProject(Proj,Ref,Layer,geom,Elev,Extrude,pnv))) {
 
 //      gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[0][0],*OGR_ArrayNr[0][1],*OGR_ArrayNr[0][2]);
             gluTessBeginContour(GLRender->GLTess);
             glBegin(GL_LINE_STRIP);
-            for(n=0;n<nv;n++) {
+            for(n=pnv;n<pnv+nv;n++) {
                glNormal3dv(*OGR_ArrayNr[n]);
                glVertex3dv(OGR_ArrayEx[n]);
                gluTessVertex(GLRender->GLTess,OGR_ArrayEx[n],OGR_ArrayEx[n]);
@@ -889,7 +893,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 
             /*Process sides*/
             glBegin(GL_QUAD_STRIP);
-               for(n=0;n<nv;n++) {
+               for(n=pnv;n<pnv+nv;n++) {
                   /*Calculate normal from adjacent vertices*/
                   Vect_Substract(n0,OGR_ArrayVr[n],OGR_ArrayVr[n==nv-1?0:n+1]);
                   Vect_Substract(n1,OGR_ArrayVr[n==0?nv-1:-1],OGR_ArrayVr[n]);
@@ -905,13 +909,14 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 
             /*Reset the normal otherwise the roofs (tesselation) will be bad*/
             glBegin(GL_LINES);
-               for(n=0;n<nv;n++) {
+               for(n=pnv;n<pnv+nv;n++) {
                   glNormal3dv(*OGR_ArrayNr[n]);
                   glVertex3dv(OGR_ArrayVr[n]);
                   glVertex3dv(OGR_ArrayEx[n]);
                }
             glEnd();
-        }
+         }
+         pnv+=nv;
       }
       gluTessEndPolygon(GLRender->GLTess);
    }
@@ -949,7 +954,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
    Coord         co;
 
    extern Vect3d GDB_NMap[181][361];
-   extern Vect3d GDB_VBuf[4096];
 
    if ((nv=OGR_G_GetPointCount(Geom))) {
 
@@ -959,6 +963,9 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          OGR_ArrayVr=(Vect3d*)realloc(OGR_ArrayVr,(nv+Size)*sizeof(Vect3d));
          OGR_ArrayEx=(Vect3d*)realloc(OGR_ArrayEx,(nv+Size)*sizeof(Vect3d));
          OGR_ArraySize=(nv+Size);
+#ifdef DEBUG
+         fprintf(stderr,"(DEBUG) Increasing size to %i\n",OGR_ArraySize);
+#endif
       }
       if (!OGR_ArrayVr || !OGR_ArrayEx || !OGR_ArrayNr) {
          fprintf(stderr,"(ERROR) OGR_GeometryProject: Unable to allocate temporary vertex buffer\n");
