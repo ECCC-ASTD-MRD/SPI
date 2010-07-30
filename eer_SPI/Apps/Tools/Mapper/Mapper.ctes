@@ -77,6 +77,7 @@ namespace eval Mapper { } {
    set Data(TableSort)   ""
    set Data(TableMax)    5000
    set Data(GeoRef)      ""
+   set Data(GeomOut)     "TEXT"
    set Data(RealTime)    False
    set Data(Crop)        False
    set Data(Fill)        ""

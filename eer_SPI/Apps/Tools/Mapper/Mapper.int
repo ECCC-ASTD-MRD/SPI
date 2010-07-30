@@ -1226,13 +1226,30 @@ proc Mapper::ParamsOGR { Object Tab } {
                -command { Mapper::FeatureOGR $Mapper::Data(Object) %s True } -bg $GDefs(ColorLight)
             pack $Data(Frame3).sel.lbl -side left
             pack $Data(Frame3).sel.val -side left -fill x -expand true
-         frame $Data(Frame3).meta
-            text $Data(Frame3).meta.text -relief sunken -bd 1 -wrap none -bg $GDefs(ColorLight) -yscrollcommand "$Data(Frame3).meta.scroll set" -width 0 -height 0
-            scrollbar $Data(Frame3).meta.scroll -relief sunken -command "$Data(Frame3).meta.text yview" -bd 1 -width 10
-            pack $Data(Frame3).meta.text -side left -fill both -expand true
-            pack $Data(Frame3).meta.scroll -side left -fill y
+         labelframe $Data(Frame3).fields -text [lindex $Lbl(Field) $GDefs(Lang)]
+            text $Data(Frame3).fields.text -relief sunken -bd 1 -wrap none -bg $GDefs(ColorLight) -yscrollcommand "$Data(Frame3).fields.scroll set" -width 0 -height 0
+            scrollbar $Data(Frame3).fields.scroll -relief sunken -command "$Data(Frame3).fields.text yview" -bd 1 -width 10
+            pack $Data(Frame3).fields.text -side left -fill both -expand true
+            pack $Data(Frame3).fields.scroll -side left -fill y
+
+         frame $Data(Frame3).geomtype
+            label $Data(Frame3).geomtype.lbl -text "[lindex $Lbl(Shape) $GDefs(Lang)]:" -anchor w
+            menubutton $Data(Frame3).geomtype.type -textvariable Mapper::Data(GeomOut) -menu $Data(Frame3).geomtype.type.menu
+            menu $Data(Frame3).geomtype.type.menu
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label TEXT -value TEXT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label WKT -value WKT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label KML -value KML -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label GML -value GML -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
+            pack  $Data(Frame3).geomtype.lbl $Data(Frame3).geomtype.type -side left
+
+         labelframe $Data(Frame3).geom -labelwidget $Data(Frame3).geomtype
+            text $Data(Frame3).geom.text -relief sunken -bd 1 -wrap none -bg $GDefs(ColorLight) -yscrollcommand "$Data(Frame3).geom.scroll set" -width 0 -height 0
+            scrollbar $Data(Frame3).geom.scroll -relief sunken -command "$Data(Frame3).geom.text yview" -bd 1 -width 10
+            pack $Data(Frame3).geom.text -side left -fill both -expand true
+            pack $Data(Frame3).geom.scroll -side left -fill y
          pack $Data(Frame3).sel -side top -fill x -padx 5 -pady 5
-         pack $Data(Frame3).meta -side top -fill both -expand true -padx 5 -pady 5
+         pack $Data(Frame3).fields -side top -fill both -expand true -padx 5 -pady 5
+         pack $Data(Frame3).geom -side top -fill both -expand true -padx 5 -pady 5
 
       set Data(Frame4) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Select) $GDefs(Lang)] False ""]
          frame $Data(Frame4).meta
@@ -1395,6 +1412,30 @@ proc Mapper::SelectOGRClear { Object } {
 #
 #-------------------------------------------------------------------------------
 
+proc Mapper::FeatureOGRGeom { Geom Depth } {
+   variable Data
+
+   set w [expr $Depth*3]
+   eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%s\\n\" \"\" [ogrgeometry define $Geom -type]\]
+   incr w 3
+
+   incr Depth
+   foreach geom [ogrgeometry define $Geom -geometry] {
+       Mapper::FeatureOGRGeom $geom $Depth
+   }
+
+   if { [ogrgeometry define $Geom -dimension]==2 } {
+      foreach { cx cy } [ogrgeometry define $Geom -points] {
+         eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f\\n\" \"\" $cx $cy\]
+      }
+   } else {
+      foreach { cx cy cz } [ogrgeometry define $Geom -points] {
+         eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f %.4f\\n\" \"\" $cx $cy $cz\]
+      }
+   }
+
+}
+
 proc Mapper::FeatureOGR { Object Index Locate } {
    global   GDefs
    variable Data
@@ -1413,14 +1454,22 @@ proc Mapper::FeatureOGR { Object Index Locate } {
    if { [winfo exists $Data(Frame4).meta.table] && $Data(TableSel)!=$Index } {
       $Data(Frame5).meta.table yview $Index
    }
-   $Data(Frame3).meta.text delete 0.0 end
+   $Data(Frame3).fields.text delete 0.0 end
+   $Data(Frame3).geom.text delete 0.0 end
 
    if { ![catch { set infos [ogrlayer define $Object -feature $Index] }] } {
 
       set i 0
       foreach info $infos {
-         eval $Data(Frame3).meta.text insert end \[format \"%-${w}s : %-50s\n\" \[lindex \$info 0\] \[lindex \$info 1\]\]
+         eval $Data(Frame3).fields.text insert end \[format \"%-${w}s : %-50s\n\" \[lindex \$info 0\] \[lindex \$info 1\]\]
          incr i
+      }
+
+      switch $Data(GeomOut) {
+         TEXT { Mapper::FeatureOGRGeom [ogrlayer define $Object -geometry $Index True] 0 }
+         WKT  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -wkt] }
+         KML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -kml] }
+         GML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -gml] }
       }
 
       ogrlayer define $Object -featurehighlight $Index
