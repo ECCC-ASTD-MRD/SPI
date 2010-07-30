@@ -281,7 +281,9 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
                                Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<15)-1);
                                break;
                case TD_UInt32:
-               case TD_Int32:
+               case TD_Int32:  Band->Tex.Scale[nc]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                               Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/(((unsigned int)0x1<<31)-1);
+                               break;
                case TD_Float32:
                case TD_Float64: Band->Tex.Scale[nc]=1.0/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
                                 Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc];

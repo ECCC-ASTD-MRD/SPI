@@ -2607,7 +2607,9 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
                                   Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<15)-1);
                                   break;
                   case TD_UInt32:
-                  case TD_Int32:
+                  case TD_Int32:  Band->Tex.Scale[n]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                                  Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/(((unsigned int)0x1<<31)-1);
+                                  break;
                   case TD_Float32:
                   case TD_Float64: Band->Tex.Scale[n]=1.0/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
                                    Band->Tex.Bias[n]=-Band->Spec->Map->Min[n];
