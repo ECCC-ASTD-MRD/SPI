@@ -46,6 +46,7 @@
 
 typedef struct TFSTDVector {
    char  *UU,*VV,*WW;
+   double WWFactor;
 } TFSTDVector;
 
 typedef struct FSTD_File {

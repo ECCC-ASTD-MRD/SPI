@@ -850,7 +850,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
    double i,j,dt;
    int    b,f,len,pi,pj,dz;
-   float  step;
+   float  step,*map;
    Vect3d pix;
    Coord  coo;
 
@@ -865,20 +865,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    /*Setup 1D Texture*/
-   glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,StreamMap);
-   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
    glEnable(GL_TEXTURE_1D);
-
-   if (!Field->Map) {
-      Field->Map=(float*)malloc(sizeof(float)*STREAMLEN);
-      for(len=0;len<STREAMLEN;len++) {
-         Field->Map[len]=(float)len/STREAMLEN*32;
-      }
-
-   }
+   map=FFStreamMapSetup1D(0.025);
 
    glMatrixMode(GL_TEXTURE);
    if (GLRender->Delay<2000) {
@@ -927,7 +915,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-               Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
 
                glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
@@ -965,31 +953,25 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Map) {
-      Field->Map=(float*)malloc(sizeof(float)*2*STREAMLEN);
-   }
-
    /*Setup 1D Texture*/
    if (Field->Spec->MapAll) {
       if (Field->Spec->Map->Alpha) {
          glEnable(GL_BLEND);
+      }
+      if (!Field->Map) {
+         Field->Map=(float*)malloc(sizeof(float)*2*FFSTREAMLEN);
       }
       map=Field->Map;
       glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
       glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
    } else {
-      glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,StreamMap);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-      glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
-      for(len=0;len<STREAMLEN<<1;len++) {
-         Field->Map[len]=(float)len/(STREAMLEN<<1);
-      }
+      map=FFStreamMapSetup1D(1.0);
    }
+
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
    glEnable(GL_TEXTURE_1D);
-
    glEnableClientState(GL_VERTEX_ARRAY);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
@@ -998,7 +980,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       glEnable(GL_BLEND);
    }
 
-   len=STREAMLEN;
+   len=FFSTREAMLEN;
    dz=Field->Spec->Sample;
    glLineWidth((float)Field->Spec->Width);
    glMatrixMode(GL_TEXTURE);
@@ -1012,26 +994,23 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 
          /*Get the streamline */
          b=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
-         f=FFStreamLine(Field->Ref,Field->Def,VP,&GDB_VBuf[len],(map?&map[len]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+         f=FFStreamLine(Field->Ref,Field->Def,VP,&GDB_VBuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
          /* If we have at least some part of it */
          if (b+f>2) {
-            if (map) {
+            glPushMatrix();
+            if (Field->Spec->MapAll) {
                for(c=0;c<b+f;c++) {
                   VAL2COL(idx,Field->Spec,Field->Map[c]);
-                  Field->Map[c]=idx/(float)Field->Spec->Map->NbPixels;
+                  map[c]=idx/(float)Field->Spec->Map->NbPixels;
                }
-            }
-            if (!map) {
-               glPushMatrix();
-               glScalef((float)(len<<1)/(b+f),1.0,1.0);
+            } else {
+               glScalef((float)(len)/(b+f),1.0,1.0);
                Field->Spec->TexStep+=0.000025;
                Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
                glTranslatef(-Field->Spec->TexStep,0.0,0.0);
             }
-            Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
-            if (!map) {
-               glPopMatrix();
-            }
+            Proj->Type->Render(Proj,0,&GDB_VBuf[len>>1-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
+            glPopMatrix();
          }
       }
    } else {
@@ -1040,29 +1019,26 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             for(k=Field->Spec->Cube[2];k<=Field->Spec->Cube[5];k+=dz) {
 
                /*Get the streamline */
-               f=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,map,i,j,k,len<<1,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+               f=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
 
                /* If we have at least some part of it */
                if (f>2) {
-                  if (map) {
+                  glPushMatrix();
+                  if (Field->Spec->MapAll) {
                      for(c=0;c<f;c++) {
                         VAL2COL(idx,Field->Spec,Field->Map[c]);
-                        Field->Map[c]=idx/(float)Field->Spec->Map->NbPixels;
+                        map[c]=idx/(float)Field->Spec->Map->NbPixels;
                      }
-                  }
-                  if (!map) {
-                     glPushMatrix();
-                     glScalef((float)(len<<1)/f,1.0,1.0);
+                  } else {
+                     glScalef((float)(len)/f,1.0,1.0);
                      if (GLRender->Delay<2000) {
                         Field->Spec->TexStep+=0.000025;
                         Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
                         glTranslatef(-Field->Spec->TexStep,0.0,0.0);
                      }
                   }
-                  Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,Field->Map,GL_LINE_STRIP,f,NULL,NULL);
-                  if (!map) {
-                     glPopMatrix();
-                  }
+                  Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,map,GL_LINE_STRIP,f,NULL,NULL);
+                  glPopMatrix();
                }
             }
          }

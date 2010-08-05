@@ -535,35 +535,34 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          EZUnLock_RPNInt();
       }
 
-      if (FSTD_FileSet(NULL,head->FID)<0) {
-         return(NULL);
-      }
+      if (FSTD_FileSet(NULL,head->FID)>=0) {
 
-      /*Essayer de recuperer le GZ*/
-      if (head->FID && Field->Spec->Topo) {
+         /*Essayer de recuperer le GZ*/
+         if (head->FID && Field->Spec->Topo) {
 
-         ip1=FSTD_Level2IP(Field->Ref->Levels[Level],Field->Ref->LevelType);
-         EZLock_RPNField();
-         if (Field->Spec->Topo) {
-            idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
-            if (idx<0) {
-                fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
-                idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
-             }
-             if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
-                idx=-1;
+            ip1=FSTD_Level2IP(Field->Ref->Levels[Level],Field->Ref->LevelType);
+            EZLock_RPNField();
+            if (Field->Spec->Topo) {
+               idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
+               if (idx<0) {
+                  fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+                  idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
                }
-         } else {
-            idx=-1;
+               if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
+                  idx=-1;
+                  }
+            } else {
+               idx=-1;
+            }
+            if (idx<0) {
+               if (gz) { free(gz); gz=NULL; };
+               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[Level],ip1);
+            } else {
+               if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
+               c_fstluk(gz,idx,&ni,&nj,&nk);
+            }
+            EZUnLock_RPNField();
          }
-         if (idx<0) {
-            if (gz) { free(gz); gz=NULL; };
-            fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[Level],ip1);
-         } else {
-            if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
-            c_fstluk(gz,idx,&ni,&nj,&nk);
-         }
-         EZUnLock_RPNField();
       }
 
       coord.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level])*Field->Spec->TopoFactor;
@@ -2173,6 +2172,11 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[2],ok,&ni,&nj,&nk);
+            if (uvw->WWFactor!=0.0) {
+               for(i=0;i<FSIZE2D(field->Def);i++) {
+                  field->Def->Data[2][i]*=uvw->WWFactor;
+               }
+            }
          }
       }
    } else {
@@ -2439,6 +2443,11 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
                Def_Pointer(Field->Def,2,idx,p);
                ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
                c_fstluk(p,ok,&ni,&nj,&idump);
+               if (uvw->WWFactor!=0.0) {
+                  for(i=0;i<FSIZE2D(Field->Def);i++) {
+                     Field->Def->Data[2][idx+i]*=uvw->WWFactor;
+                  }
+               }
             }
          }
 

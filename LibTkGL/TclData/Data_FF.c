@@ -799,6 +799,48 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FFStreamMapSetup1D>
+ * Creation : Juillet 2010 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Initialiser la texture et le tableau d'indices dans la texture
+ *            applique aux streamzoids
+ *
+ * Parametres :
+ *  <Delta>   : Facteur d'etirement de la palette.
+ *
+ * Retour:
+ *  <Ind>     : Pointeur sur le tableau d'indices
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+float *FFStreamMapSetup1D(double Delta) {
+
+   int len;
+
+   /*Initialiser la texture*/
+   glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,FFStreamTex);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+
+   /*Initialiser le tableau d'indices*/
+   if (!FFStreamMap) {
+      if (!(FFStreamMap=(float*)malloc(sizeof(float)*FFSTREAMLEN))) {
+         fprintf(stderr,"(ERROR) could not allocate streamline texture map\n");
+      }
+   }
+   if (FFStreamMap) {
+      for(len=0;len<FFSTREAMLEN;len++) {
+         FFStreamMap[len]=(float)len/(FFSTREAMLEN*Delta);
+      }
+   }
+   return(FFStreamMap);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FFStreamLine>
  * Creation : Janvier 2004 - J.P. Gauthier - CMC/CMOE
  *
@@ -887,8 +929,10 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       if (!ZDim) {
          /* Did we ever cross this pixel before ? */
          /* Stencil buffer reads are very slow so we only check after a few steps */
-         if (VP && c>MaxIter>>5) {
-            gluProject(Stream[idx][0],Stream[idx][1],Stream[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
+         if (c>MaxIter>>5) {
+            if (VP)
+               gluProject(Stream[idx][0],Stream[idx][1],Stream[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
+
             glReadPixels(pix[0],pix[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
             if (s&0x2) break;
             c=0;
@@ -897,9 +941,15 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       }
 
       /*Next vector*/
-      v[0]=VertexValN(Ref,Def,0,X,Y,Z);
-      v[1]=VertexValN(Ref,Def,1,X,Y,Z);
-      v[2]=ZDim?VertexValN(Ref,Def,2,X,Y,Z):0.0;
+      if (Ref->Grid[0]=='V') {
+         v[0]=VertexValN(Ref,Def,0,X,Y,Z);
+         v[1]=VertexValN(Ref,Def,2,X,Y,Z);
+         v[2]=0.0;
+      } else {
+         v[0]=VertexValN(Ref,Def,0,X,Y,Z);
+         v[1]=VertexValN(Ref,Def,1,X,Y,Z);
+         v[2]=ZDim?VertexValN(Ref,Def,2,X,Y,Z):0.0;
+      }
       dv=Vect_Norm(v);
 
       /*If we break the minimum barrier*/
@@ -915,13 +965,20 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       t=Vect_Weight(p,v);
       step=(1.0-t)*Step;
       step=step>0.25?0.25:step;
+      step=step<Step*0.5?Step*0.5:step;
       Vect_Assign(p,v);
 
       /*Use Runge Kutta method (2nd order) to find the next particle position*/
       RK(rk1,step,v)
-      rk2[0]=VertexValN(Ref,Def,0,X+rk1[0],Y,Z);
-      rk2[1]=VertexValN(Ref,Def,1,X,Y+rk1[1],Z);
-      rk2[2]=ZDim?VertexValN(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
+      if (Ref->Grid[0]=='V') {
+         rk2[0]=VertexValN(Ref,Def,0,X+rk1[0],Y,Z);
+         rk2[1]=VertexValN(Ref,Def,2,X,Y+rk1[1],Z);
+         rk2[2]=0.0;
+      } else {
+         rk2[0]=VertexValN(Ref,Def,0,X+rk1[0],Y,Z);
+         rk2[1]=VertexValN(Ref,Def,1,X,Y+rk1[1],Z);
+         rk2[2]=ZDim?VertexValN(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
+      }
       Vect_Normalize(rk2);
       RK(rk2,step,rk2)
       RKT(d,rk1,rk2)

@@ -38,9 +38,12 @@ static CONST char *GraphTypeName[] = { "NONE","LINE","SPLINE","BAR","WIDEBAR","H
 static CONST char *GraphDataName[] = { "False","True","data","xdata","ydata","zdata","speed","dir","error","high","low","median","min","max","pressure","drybulb","wetbulb","dewpoint",
    "SPREAD","HEIGHT","RELATIVEHUMIDITY" };
 
+#define STREAMLEN 2048
+extern unsigned char StreamMap[256][4];
 extern CONST char *ICONS[];
 extern TIcon IconList[];
 extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
+extern int  FFStreamLine(TGeoRef *Ref,TDataDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
 static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
@@ -58,6 +61,7 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut);
@@ -910,8 +914,12 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
          if (data->Spec->RenderContour)
             GraphItem_Display2DContour(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
 
-         if (data->Spec->RenderVector)
+         if (data->Spec->RenderVector==BARBULE || data->Spec->RenderVector==ARROW )
             GraphItem_Display2DVector(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
+
+         if (data->Spec->RenderVector==STREAMLINE)
+            GraphItem_Display2DStream(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
+
       }
    }
 
@@ -2289,6 +2297,101 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
 
    if (Data->Spec->RenderLabel && Interp)
       Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
+}
+
+void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
+
+   double i,j,dt,v0,v1;
+   int    b,f,len,dz,c;
+   float  step;
+   Vect3d pix;
+   GLuint s;
+
+   extern Vect3d GDB_VBuf[];
+
+   if (!Data || !Data->Spec->Width || !Data->Spec->Outline)
+      return;
+
+   if (GLRender->Resolution>2) {
+      return;
+   }
+
+   glMatrixMode(GL_TEXTURE);
+   if (GLRender->Delay<2000) {
+      Data->Spec->TexStep+=0.01;
+      Data->Spec->TexStep=Data->Spec->TexStep>1.0?0.0:Data->Spec->TexStep;
+  }
+
+   glEnable(GL_STENCIL_TEST);
+   glStencilMask(0x2);
+   glStencilFunc(GL_NOTEQUAL,0x2,0x2);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+   glReadBuffer(GL_STENCIL);
+
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+   glColor3us(Data->Spec->Outline->red,Data->Spec->Outline->green,Data->Spec->Outline->blue);
+   glEnable(GL_BLEND);
+
+   /*Setup 1D Texture*/
+   glEnable(GL_TEXTURE_1D);
+   glTexCoordPointer(1,GL_FLOAT,0,FFStreamMapSetup1D(0.25));
+
+   len=512;
+   dz=Data->Spec->Sample*10;
+   dt=0.0;
+
+   /*Recuperer les latlon des pixels sujets*/
+   for (pix[0]=X0;pix[0]<X1;pix[0]+=dz) {
+      for (pix[1]=Y0;pix[1]<Y1;pix[1]+=dz) {
+
+         i=AXISPPOS(AxisX,pix[0]);
+         j=AXISPPOS(AxisY,pix[1]);
+
+         /*Get the cell resolution, if not the same, to use as step size for a constant spacing*/
+         v0=fabs(pix[0]-AXISVALUE(AxisX,i+1));
+         v1=fabs(pix[1]-AXISVALUE(AxisY,j+1));
+         dt=FMAX(v0,v1);
+         step=1.0/FMAX(v0,v1);
+
+         /*Get the streamline */
+         j=Graph_Expand(Data,j);
+         b=FFStreamLine(Data->Ref,Data->Def,NULL,GDB_VBuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
+         f=FFStreamLine(Data->Ref,Data->Def,NULL,&GDB_VBuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
+
+         /* If we have at least some part of it */
+         if (b+f>10) {
+            glPushMatrix();
+            /*Translate the texture to mix the zoids*/
+            glTranslatef(-Data->Spec->TexStep-(dt+=0.15),0.0,0.0);
+
+            /*Place streamlin within graph*/
+            for(c=len-b;c<len+f;c++) {
+               GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,GDB_VBuf[c],GDB_VBuf[c]);
+            }
+            glLineWidth(Data->Spec->Width);
+            glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+            glVertexPointer(3,GL_DOUBLE,0,&GDB_VBuf[len-b]);
+
+            glDrawArrays(GL_LINE_STRIP,0,b+f);
+
+            glLineWidth(8*Data->Spec->Width);
+            glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+            glDrawArrays(GL_LINE_STRIP,0,b+f);
+
+            glPopMatrix();
+         }
+      }
+   }
+
+   glClear(GL_STENCIL_BUFFER_BIT);
+   glStencilMask(0xf);
+   glStencilFunc(GL_EQUAL,0x0,0xf);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+   glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+   glDisable(GL_TEXTURE_1D);
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 /*----------------------------------------------------------------------------

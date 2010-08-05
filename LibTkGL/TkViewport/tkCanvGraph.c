@@ -46,6 +46,7 @@ void   Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY);
 void   GraphUnSet(GraphItem *GR);
 int    Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
+double Graph_Expand(TData *Data,double Y);
 
 static int    GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
 static int    GraphToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
@@ -618,13 +619,34 @@ static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
  *
  *----------------------------------------------------------------------------
 */
+double Graph_Expand(TData *Data,double Y) {
+
+   int j;
+
+   if (Data->Ref->Grid[0]=='V') {
+      for(j=0;j<Data->Def->NJ;j++) {
+         if (Data->Ref->Levels[0]>Data->Ref->Levels[Data->Def->NJ-1]) {
+            if (Y>=Data->Ref->Levels[j]) {
+               break;
+            }
+         } else {
+            if (Y<=Data->Ref->Levels[j]) {
+               break;
+            }
+         }
+      }
+
+      Y=j+(Y-Data->Ref->Levels[j-1])/(Data->Ref->Levels[j]-Data->Ref->Levels[j-1]);
+   }
+   return(Y);
+}
+
 Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z) {
 
    Tcl_Obj    *obj;
    TGraphAxis *axis;
    TData      *data;
    double      x,y,spd;
-   int         i;
 
    obj=Tcl_NewListObj(0,NULL);
 
@@ -638,22 +660,7 @@ Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double
 
       if (Item->Data) {
          if ((data=Data_Get(Item->Data))) {
-
-            if (data->Ref->Grid[0]=='V') {
-               for(i=0;i<data->Def->NJ;i++) {
-                  if (data->Ref->Levels[0]>data->Ref->Levels[data->Def->NJ-1]) {
-                     if (y>data->Ref->Levels[i]) {
-                        break;
-                     }
-                  } else {
-                     if (y<data->Ref->Levels[i]) {
-                        break;
-                     }
-                  }
-               }
-
-               y=i+(y-data->Ref->Levels[i-1])/(data->Ref->Levels[i]-data->Ref->Levels[i-1])-1;
-            }
+            y=Graph_Expand(data,y);
             spd=VertexVal(data->Ref,data->Def,x,y,0.0);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
          }

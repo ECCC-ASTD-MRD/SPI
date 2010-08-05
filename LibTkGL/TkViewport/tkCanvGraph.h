@@ -86,4 +86,6 @@ typedef struct GraphItem  {
    GLubyte       *Frame;             /*Frame de retention*/
 } GraphItem;
 
+double Graph_Expand(TData *Data,double Y);
+
 #endif

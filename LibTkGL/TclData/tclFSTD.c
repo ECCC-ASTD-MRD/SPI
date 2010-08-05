@@ -352,7 +352,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    switch ((enum opt)idx) {
       case VECTOR:
          if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"{ U V W }");
+            Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
             return(TCL_ERROR);
          } else {
             Tcl_ListObjLength(Interp,Objv[2],&n);
@@ -364,12 +364,17 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                }
                uvw->UU=strdup(Tcl_GetString(obj));
                uvw->VV=uvw->WW=NULL;
+               uvw->WWFactor=0.0;
                Tcl_ListObjIndex(Interp,Objv[2],1,&obj);
                if (n>1) {
                   uvw->VV=strdup(Tcl_GetString(obj));
                   if (n>2) {
                      Tcl_ListObjIndex(Interp,Objv[2],2,&obj);
                      uvw->WW=strdup(Tcl_GetString(obj));
+                     if (n>3) {
+                        Tcl_ListObjIndex(Interp,Objv[2],3,&obj);
+                        Tcl_GetDoubleFromObj(Interp,obj,&uvw->WWFactor);
+                     }
                   }
                }
             }

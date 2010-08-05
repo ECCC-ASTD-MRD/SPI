@@ -48,7 +48,8 @@
 #define FF_TOP    0x04
 #define FF_LEFT   0x08
 #define FF_EQUAL  0x0F
-#define STREAMLEN 2048
+
+#define FFSTREAMLEN 2048
 
 #define NORMALIZE(U,V) {\
    float N;\
@@ -75,6 +76,7 @@ int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned ch
 unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y);
 unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N);
 int           FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect3d *Vr,int Do);
+float        *FFStreamMapSetup1D(double Delta);
 int           FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 int           FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode);
 double        FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error);
@@ -83,8 +85,8 @@ int     LUDecompose(double *Matrix,int N,int *Perm,int *d);
 void    LUBackSub(double *Matrix,int N,int *Perm,double *Vect);
 double *LUInvert(double *Matrix,int N);
 
-
-static unsigned char StreamMap[256][4] = {
+static float *FFStreamMap;
+static unsigned char FFStreamTex[256][4] = {
    { 255, 255, 255 ,255},
    { 255, 255, 255 ,254},
    { 255, 255, 255 ,253},
