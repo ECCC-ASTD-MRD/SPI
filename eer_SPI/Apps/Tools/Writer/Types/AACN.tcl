@@ -454,7 +454,7 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
    exec chmod 644 $file
 
    if { $Backup } {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv } MsgCatch]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the $file via metmanager on opserv.\n\n$MsgCatch"
       }
