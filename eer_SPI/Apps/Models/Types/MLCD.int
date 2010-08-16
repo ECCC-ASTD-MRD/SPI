@@ -273,7 +273,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
 
    #----- Meteorological model.
    frame $frame.auto.data.met
-   Option::Create $frame.auto.data.met.model [lindex $Lbl(ObsMetModel) $GDefs(Lang)] { MLCD::Sim(Meteo) } 0 7 $MLCD::Sim(ListMeteo) "MLCD::SetMetDataDir \$MLCD::Sim(Meteo)"
+   Option::Create $frame.auto.data.met.model [lindex $Lbl(ObsMetModel) $GDefs(Lang)] { MLCD::Sim(Meteo) } 0 7 $MLCD::Sim(ListMeteo) "Model::ParamsCheck MLCD False"
    button $frame.auto.data.met.path -image OPEN -relief flat -bd 0 -overrelief raised -command "Model::ParamsMetPath"
    pack $frame.auto.data.met.model -side left -padx 2 -fill x -expand true
    pack $frame.auto.data.met.path -side left
