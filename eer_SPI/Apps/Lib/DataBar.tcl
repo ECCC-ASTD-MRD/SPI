@@ -145,7 +145,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP" -fill white -outline black
    $Frame.page.canvas create line [expr $X0+20] [expr $Y0+20] [expr $X0+20] $Y1 -tags "$Page::Data(Tag) DB$VP" -fill #CCCCCC
 
-   $Frame.page.canvas create image [expr $X0+2] [expr $Y0+1] -image DATABARLOGO -anchor nw -tags "$Page::Data(Tag) DB$VP"
+   $Frame.page.canvas create image [expr $X0+2] [expr $Y0+2] -image DATABARLOGO -anchor nw -tags "$Page::Data(Tag) DB$VP"
    $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "$Page::Data(Tag) DB$VP TXTDB$VP CVTEXT"
 
    set y [expr $Y0+21]

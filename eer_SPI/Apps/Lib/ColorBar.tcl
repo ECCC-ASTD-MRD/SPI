@@ -180,7 +180,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
       } else {
          set x  [$Frame.page.canvas itemcget $VP -x]
          set y  [$Frame.page.canvas itemcget $VP -y]
-         set h  [$Frame.page.canvas itemcget $VP -height]
+         set h  [expr [$Frame.page.canvas itemcget $VP -height] -1]
          set w  90
 
          incr h
