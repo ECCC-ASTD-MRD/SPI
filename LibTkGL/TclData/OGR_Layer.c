@@ -551,7 +551,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    OGR_Layer    *layer,*layerop;
    TGeoRef      *ref,*ref0;
    OGRCoordinateTransformationH tr=NULL;
-   OGREnvelope   env;
+   OGREnvelope   env,lim;
    OGRGeometryH  geom,geomop,new,prev,uni;
    Tcl_Obj      *lst,*obj;
    char          buf[32];
@@ -646,7 +646,24 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
 
       case EXTENT:
-         OGR_L_GetExtent(layer->Layer,&env,1);
+         if (Objc>1) {
+            /*If a recalculation is needed*/
+            env.MinX=env.MinY=1e32;
+            env.MaxX=env.MaxY=-1e32;
+
+            for(f=0;f<layer->NFeature;f++) {
+               if (layer->Select[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  OGR_G_GetEnvelope(geom,&lim);
+                  env.MinX=lim.MinX<env.MinX?lim.MinX:env.MinX;
+                  env.MinY=lim.MinY<env.MinY?lim.MinY:env.MinY;
+                  env.MaxX=lim.MaxX>env.MaxX?lim.MaxX:env.MaxX;
+                  env.MaxY=lim.MaxY>env.MaxY?lim.MaxY:env.MaxY;
+               }
+            }
+         } else {
+            /*Otherwise, use the on defined in the layer*/
+            OGR_L_GetExtent(layer->Layer,&env,1);
+         }
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MinX));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MinY));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxX));
