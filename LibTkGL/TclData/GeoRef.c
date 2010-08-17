@@ -1911,17 +1911,19 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
       }
    }
 
+   /*Get rid of transforms and projection functions if the positionnale are already in latlon (GDAL case)*/
+   if (Ref->Grid[1]=='\0') {
+      if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
+      if (Ref->InvTransform) free(Ref->InvTransform); Ref->InvTransform=NULL;
+      if (Ref->Function) {
+         OCTDestroyCoordinateTransformation(Ref->Function);
+         Ref->Function=NULL;
+      }
+   }
+
    /*Set secondary gridtype to Y for the project/unproject functions to work correctly*/
    if (Ref->Grid[0]=='W')
       Ref->Grid[1]='Y';
-
-   /*Get rid of transforms anf projection functions*/
-   if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
-   if (Ref->InvTransform) free(Ref->InvTransform); Ref->InvTransform=NULL;
-   if (Ref->Function) {
-      OCTDestroyCoordinateTransformation(Ref->Function);
-      Ref->Function=NULL;
-   }
 
    return(1);
 }

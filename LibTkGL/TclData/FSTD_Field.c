@@ -340,6 +340,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    /*Precalculer les tableaux de particules dans l'espace*/
    if (Field->Ref->Lat && Field->Ref->Lon) {
+               fprintf(stderr,"s;dkf;ldsf;ds;fsdfsdfsn");
       z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level]);
       for (i=0;i<Field->Def->NI;i++) {
          for (j=0;j<Field->Def->NJ;j++) {
@@ -1446,7 +1447,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                ++i;
                if (Field->Ref && Field->Ref->String && strlen(Field->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),Field->Ref->String)==0) {
-               } else {
+              } else {
                   ref=Field->Ref;
                   if (ref) {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
@@ -1551,8 +1552,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                GeoRef_Qualify(Field->Ref);
                Data_Clean(Field,1,1,1);
-
-               return(TCL_OK);
             }
             break;
 
@@ -1575,11 +1574,10 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                }
                if (grtyp[0]=='W' || grtyp[1]=='W') {
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,grtyp,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,0,0,0,0,NULL,NULL,NULL,NULL,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,grtyp,0,0,0,0,NULL,NULL,NULL,NULL);
                   }
-                  Field->Ref->Grid[1]=grtyp[1];
                } else {
                   if (grtyp[0]=='L' || grtyp[0]=='N' || grtyp[0]=='S') {
                      if (Objc>3 && (Tcl_GetDoubleFromObj(Interp,Objv[i+1],&dxg1)!=TCL_ERROR)) {
