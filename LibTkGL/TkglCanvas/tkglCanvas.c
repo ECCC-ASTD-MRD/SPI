@@ -2190,12 +2190,12 @@ static void glCanvasWorldChanged(instanceData)
 int SetupglCanvas(TkCanvas *canvasPtr,int X,int Y,int Width,int Height) {
 
    /* Set the viewport */
-   glViewport(0,0,Width,Height);
+   glViewport(0,0,Width-X,Height-Y);
 
    /* Set the projection matrix */
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   gluOrtho2D(X,Width,Height,Y);
+   gluOrtho2D(X,X+Width-1,Y+Height-1,Y);
 
    /* Set the modelview matrix */
    glMatrixMode(GL_MODELVIEW);
@@ -2307,14 +2307,14 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
    }
 
    glDefineParams();
-   SetupglCanvas(canvasPtr,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
+   SetupglCanvas(canvasPtr,0,0,w,h);
 
    /* Setup the tile rendering engine */
    GLRender->TRCon=trNew();
    if (wt==w && ht==h) {
       trTileSize(GLRender->TRCon,wt,ht,0);
    } else {
-      trTileSize(GLRender->TRCon,wt-1,ht-1,1);
+      trTileSize(GLRender->TRCon,wt-2,ht-2,1);
    }
    trImageSize(GLRender->TRCon,w,h);
    trOrtho(GLRender->TRCon,0,w,h,0,-1,1);
@@ -2339,6 +2339,7 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
 
       res=trBuffer(Interp,Img,GL_BACK,X,Y,Width,Height,GLRender->TRCon);
    } while (trEndTile(GLRender->TRCon));
+
    canvasPtr->xOrigin=x;
    canvasPtr->yOrigin=y;
 

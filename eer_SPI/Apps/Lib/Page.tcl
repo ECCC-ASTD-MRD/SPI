@@ -524,8 +524,8 @@ proc Page::ActiveFull { Type Frame Id Full } {
    variable Map
 
    if { $Full } {
-      bind $Frame.page.canvas <Configure> "update idletasks ; ${Type}::Resize $Frame $Id 1 1 \[expr \[Page::CanvasWidth $Frame\]-1\] \[Page::CanvasHeight $Frame\] 0"
-      eval ${Type}::Resize $Frame $Id 1 1 [expr [Page::CanvasWidth $Frame]-1] [expr [Page::CanvasHeight $Frame]-1] 0
+      bind $Frame.page.canvas <Configure> "update idletasks ; ${Type}::Resize $Frame $Id 0 0 \[expr \[Page::CanvasWidth $Frame\]-1\] \[expr \[Page::CanvasHeight $Frame\]-1\] 0"
+      eval ${Type}::Resize $Frame $Id 0 0 [expr [Page::CanvasWidth $Frame]-1] [expr [Page::CanvasHeight $Frame]-1] 0
    } else {
       bind $Frame.page.canvas <Configure> ""
    }

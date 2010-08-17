@@ -377,7 +377,7 @@ void trRasterPos2i(int X,int Y) {
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       glLoadIdentity();
-      glOrtho(0.0,GLRender->TRCon->CurrentTileWidth,GLRender->TRCon->CurrentTileHeight,0.0,-1.0,1.0);
+      glOrtho(0.0,GLRender->TRCon->CurrentTileWidth-1,GLRender->TRCon->CurrentTileHeight-1,0.0,-1.0,1.0);
 
       glRasterPos2i(0,0);
       glBitmap(0,0,0.0f,0.0f,X,Y,NULL);
@@ -427,7 +427,6 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
 
    iy=TR->ImageHeight-(TR->CurrentRow*TR->TileHeightNB+TR->TileHeightNB)-Y;
    dy=iy<0?-iy:0;
-
    if (ix>Width || iy>Height || ix+TR->TileWidthNB<0 || iy+TR->TileHeightNB<0) {
       return(TCL_OK);
    }
@@ -437,7 +436,6 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
 
    /*Definire les parametres du block de donnees */
    Tk_PhotoSetSize(Interp,handle,Width,Height);
-//TK84   Tk_PhotoSetSize(handle,Width,Height);
 
    data.width=TR->TileWidthNB-dx;
    data.height=TR->TileHeightNB-dy;
@@ -453,12 +451,11 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    glReadBuffer(Buffer);
    if (data.pixelPtr) {
       for(i=0;i<data.height;i++) {
-         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
+         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
       }
 
       /* Envoyer le data dans l'image Tk */
       Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-//TK84      Tk_PhotoPutBlock(handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
       free(data.pixelPtr);
    } else {
       return TCL_ERROR;

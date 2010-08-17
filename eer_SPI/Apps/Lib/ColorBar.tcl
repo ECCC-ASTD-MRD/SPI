@@ -229,11 +229,11 @@ proc ColorBar::Set { Frame VP No Id Field } {
          $Frame.bo$tag.menu add separator
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFactor) $GDefs(Lang)] -variable ColorBar::Data(Factor$tag) -onvalue True -offvalue False \
             -command "$Frame.page.canvas itemconfigure $tag -showfactor \$ColorBar::Data(Factor$tag); Page::Update $Frame"
-      $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h-1] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
+      $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
       Shape::BindMove  $Frame.page.canvas $tag ColorBar::Move $Frame.page.canvas $tag
       Shape::BindScale $Frame.page.canvas $tag [expr $x+$w] [expr $y+$h] "ColorBar::Scale $Frame.page.canvas $tag"
-      Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h-1] ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+      Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h] ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
 
       lappend Data(List$Frame) $tag
    }
