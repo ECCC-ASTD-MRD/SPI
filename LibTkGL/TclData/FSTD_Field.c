@@ -340,7 +340,6 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    /*Precalculer les tableaux de particules dans l'espace*/
    if (Field->Ref->Lat && Field->Ref->Lon) {
-               fprintf(stderr,"s;dkf;ldsf;ds;fsdfsdfsn");
       z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level]);
       for (i=0;i<Field->Def->NI;i++) {
          for (j=0;j<Field->Def->NJ;j++) {
