@@ -176,7 +176,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             } else {
                if (layer->NFeature!=0) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Must create the fields before allocating the features",(char*)NULL);
-                  return(TCL_ERROR);
+//                  return(TCL_ERROR);
                }
                if (strlen(Tcl_GetString(Objv[1]))>10) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: field name too long (max 10 char)",(char*)NULL);
@@ -1443,7 +1443,9 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
    if (field) {
 //   OGR_Fld_SetJustify (OGRFieldDefnH, OGRJustification)
 
-      OGR_L_CreateField(Layer->Layer,field,0);
+      if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
+         return(NULL);
+      }
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
    }
    return(field);
@@ -1969,7 +1971,9 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
    }
 
    for(f=0;f<Layer->NFeature;f++) {
-      OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
+      if (Layer->Select[f]) {
+         OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
+      }
    }
    return(TCL_OK);
 }
@@ -2062,8 +2066,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                          break;
                case 'W': if (area>0.999) {
                            val0+=val1;
-                         } else {
-                           area=0.0;
                          }
                          break;
                case 'A': accum[f]+=1.0;
