@@ -406,8 +406,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
 
-         if (Tcl_GetString(Objv[5])[0]!='C' && Tcl_GetString(Objv[5])[0]!='W' && Tcl_GetString(Objv[5])[0]!='I' && Tcl_GetString(Objv[5])[0]!='N') {
-            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : interpolation type, must be, WITHIN, INTERSECT, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
+         if (Tcl_GetString(Objv[5])[0]!='A' && Tcl_GetString(Objv[5])[0]!='C' && Tcl_GetString(Objv[5])[0]!='W' && Tcl_GetString(Objv[5])[0]!='I' && Tcl_GetString(Objv[5])[0]!='N') {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : interpolation type, must be, WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
             return(TCL_ERROR);
          }
 

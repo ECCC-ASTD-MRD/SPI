@@ -2013,7 +2013,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    ring=OGR_G_CreateGeometry(wkbLinearRing);
    OGR_G_AddGeometryDirectly(cell,ring);
 
-   if (Mode=='N') {
+   if (Mode=='N' || Mode=='A') {
       accum=(double*)calloc(Layer->NFeature,sizeof(double));
       if (!accum) {
          Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate accumulation buffer",(char*)NULL);
@@ -2055,12 +2055,22 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             Tcl_GetDoubleFromObj(Interp,item,&area);
 
             val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-            val0+=val1*area;
-            OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
-            if (Mode=='N') {
-               accum[f]+=area;
+            switch(Mode) {
+               case 'N': accum[f]+=area;
+               case 'C': val0+=val1*area;
+                         break;
+               case 'W': if (area>0.999) {
+                           val0+=val1;
+                         } else {
+                           area=0.0;
+                         }
+                         break;
+               case 'A': accum[f]+=1.0;
+               case 'I': val0+=val1;
+                         break;
             }
+            OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
          }
       }
    } else {
@@ -2105,7 +2115,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         switch(Mode) {
                            case 'N': accum[f]+=r;
                            case 'C': val0+=val1*r;
-                                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                                      break;
                            case 'W': if (r>0.999) {
                                         val0+=val1;
@@ -2113,6 +2122,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                                         r=0.0;
                                      }
                                      break;
+                           case 'A': accum[f]+=1.0;
                            case 'I': val0+=val1;
                                      break;
                         }
@@ -2145,7 +2155,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
   }
 
    /*Finalize and reassign*/
-   if (Final && Mode=='N') {
+   if (Final && (Mode=='N' || Mode=='A')) {
       for(f=0;f<Layer->NFeature;f++) {
          val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
          if (accum[f]!=0.0) {
