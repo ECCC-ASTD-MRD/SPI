@@ -522,6 +522,7 @@ proc CANERM::Launch { } {
       Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
    } else {
       Log::Print INFO "Launching model on $Model::Param(Host)"
+      exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_CANERM.in" >$Sim(Path)/tmp/Model_Launch.sh
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_CANERM.in &
    }
 

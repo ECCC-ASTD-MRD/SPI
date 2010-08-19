@@ -1603,7 +1603,7 @@ proc MLDP::ValidateTimeSteps { } {
    }
 
    #----- Update emission starting time.
-   MLDP::UpdateEmissionStartingTime
+   Model::FitAccTime MLDP
 
    return 1
 }

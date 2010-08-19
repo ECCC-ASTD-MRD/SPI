@@ -498,36 +498,3 @@ proc MLDP::PopUp { X Y } {
 
    tk_popup .mldppopup $X $Y 0
 }
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::UpdateEmissionStartingTime>
-# Creation   : 22 March 2004 - A. Malo - CMC/CMOE
-#
-# But        : Update emission starting time.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::UpdateEmissionStartingTime { } {
-   variable Sim
-
-   set sec [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt true]
-
-   set min [string trimleft $Sim(AccMin) 0]
-   if { $min == "" } {
-      set min 0
-   }
-   set min [expr int(double($min)/double($Sim(ModelTimeStepMin))+0.5) * $Sim(ModelTimeStepMin)]
-
-   set Sim(AccSeconds) [expr $sec + $min*60]
-   set Sim(AccMin)     [clock format $Sim(AccSeconds) -format "%M" -gmt true]
-   set Sim(AccHour)    [clock format $Sim(AccSeconds) -format "%H" -gmt true]
-   set Sim(AccDay)     [clock format $Sim(AccSeconds) -format "%d" -gmt true]
-   set Sim(AccMonth)   [clock format $Sim(AccSeconds) -format "%m" -gmt true]
-   set Sim(AccYear)    [clock format $Sim(AccSeconds) -format "%Y" -gmt true]
-}

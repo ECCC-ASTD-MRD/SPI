@@ -624,6 +624,9 @@ proc MLCD::InitNew { Type } {
    set Sim(EmTop)             1.0             ; #----- Emission top [m].
    set Sim(EmRadius)          1.0             ; #----- Emission radius [m].
 
+   #----- Update emission starting time.
+   Model::FitAccTime MLCD
+
    #----- Initialize meteorological parameters.
    MLCD::InitMeteoData 0
 }
@@ -1283,6 +1286,7 @@ proc MLCD::Launch { } {
       Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
    } else {
       Log::Print INFO "Launching model on $Model::Param(Host)"
+      exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLCD.in" >$Sim(Path)/tmp/Model_Launch.sh
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLCD.in &
    }
    return True
@@ -1663,6 +1667,9 @@ proc MLCD::ValidateModelTab { } {
    variable Sim
    variable Data
    variable Error
+
+   #----- Update emission starting time.
+   Model::FitAccTime MLCD
 
    #----- Verify that simulation duration is an integer positive value.
    set idx ""

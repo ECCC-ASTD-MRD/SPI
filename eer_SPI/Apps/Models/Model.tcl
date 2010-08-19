@@ -992,6 +992,43 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom        : <Model::FitAccTime>
+# Creation   : 22 March 2004 - A. Malo - CMC/CMOE
+#
+# But        : Fit accident time using model time step.
+#
+# Parametres :
+#  <Model>   : Model
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::FitAccTime { Model } {
+   variable Sim
+
+   set modelbase [string trimright [string trimright $Model 0] 1]
+   upvar ${modelbase}::Sim sim
+
+   set sec [clock scan "$sim(AccYear)$sim(AccMonth)$sim(AccDay) $sim(AccHour):00" -gmt true]
+
+   set min [string trimleft $sim(AccMin) 0]
+   if { $min=="" } {
+      set min 0
+   }
+   set min [expr int(double($min)/double($sim(ModelTimeStepMin))+0.5) * $sim(ModelTimeStepMin)]
+
+   set sim(AccSeconds) [expr $sec + $min*60]
+   set sim(AccMin)     [clock format $sim(AccSeconds) -format "%M" -gmt true]
+   set sim(AccHour)    [clock format $sim(AccSeconds) -format "%H" -gmt true]
+   set sim(AccDay)     [clock format $sim(AccSeconds) -format "%d" -gmt true]
+   set sim(AccMonth)   [clock format $sim(AccSeconds) -format "%m" -gmt true]
+   set sim(AccYear)    [clock format $sim(AccSeconds) -format "%Y" -gmt true]
+}
+
+#----------------------------------------------------------------------------
 # Nom        : <Model::ParamsWindow>
 # Creation   : 2 October 2007 - A. Malo - CMC/CMOE
 #

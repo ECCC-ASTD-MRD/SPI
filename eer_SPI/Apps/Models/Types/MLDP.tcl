@@ -129,8 +129,9 @@ proc MLDP::Launch { } {
       Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
 
    } else {
+      Log::Print INFO "Launching model on $Model::Param(Host)"
+      exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in" >$Sim(Path)/tmp/Model_Launch.sh
       exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
-      Log::Print INFO "Job launched on $Model::Param(Host)."
    }
    return True
 }
@@ -1291,7 +1292,7 @@ proc MLDP::InitNew { Type } {
    set Tmp(OutputTimeStepMin) $Sim(OutputTimeStepMin) ; #----- Temporary variable for output time step.
    set Tmp(Delta)             $Sim(Delta)             ; #----- Temporary variable for time interval between met data files.
 
-   MLDP::UpdateEmissionStartingTime
+   Model::FitAccTime MLDP
 }
 
 #----------------------------------------------------------------------------
