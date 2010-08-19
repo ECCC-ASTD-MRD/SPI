@@ -945,7 +945,7 @@ proc Exp::ProductRSMCFax { } {
 
    set path $Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin
 
-   Dialog::Message . $Msg(Fax) "\n\n\t$path/rsmc_fax.ps"
+   Dialog::Wait . $Msg(Fax) "\n\n\t$path/rsmc_fax.ps"
 
    set nbre [lindex [exec wc -w $path/IP2List.txt] 0]
 
@@ -961,7 +961,7 @@ proc Exp::ProductRSMCFax { } {
 
    exec chmod 644 $path/rsmc_fax.ps
 
-   destroy .msgbox
+   Dialog::WaitDestroy
    . config -cursor left_ptr
 }
 
