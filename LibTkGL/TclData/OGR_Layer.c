@@ -1999,6 +1999,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
    int          i,j,f,n=0,p=0,pt,len=-1,rw;
    double       val0,val1,area,*accum=NULL,r,rt,dp;
+   char         buf[64];
    OGRGeometryH cell,ring,inter;
    OGREnvelope  env0,*env1=NULL;
    Tcl_Obj      *obji,*objj,*lst,*item=NULL;
@@ -2185,10 +2186,8 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                /*Append this gridpoint intersections to the index*/
                if (n) {
                   if (chan) {
-                     Tcl_WriteObj(chan,Tcl_NewIntObj(i));
-                     Tcl_WriteChars(chan,"\n",1);
-                     Tcl_WriteObj(chan,Tcl_NewIntObj(j));
-                     Tcl_WriteChars(chan,"\n",1);
+                     sprintf(buf,"%i\n%i\n",i,j);
+                     Tcl_WriteChars(chan,buf,strlen(buf));
                      Tcl_WriteObj(chan,item);
                      Tcl_WriteChars(chan,"\n",1);
                      Tcl_DecrRefCount(item);
