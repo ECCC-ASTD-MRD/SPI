@@ -30,6 +30,7 @@
  *=========================================================
  */
 
+#include <string.h>
 #include <strings.h>
 
 #include "tclOGR.h"
@@ -830,11 +831,115 @@ void OGR_LayerFree(OGR_Layer *Layer) {
  * Retour       : Une structure OGR_Layer ou un pointeur NULL si rien trouve.
  *
  * Remarques    :
- *
+ *    - On essaie avec le nom complet et si ca ne marche pas, on essaie en elenvant la derniere partie
+ *      apres le dernier point, au cas ou un champs serait specifier (LAYER.FIELD)
  *---------------------------------------------------------------------------------------------------------------
 */
 OGR_Layer* OGR_LayerGet(char *Name) {
-   return((OGR_Layer*)TclY_HashGet(&OGR_LayerTable,Name));
+
+   OGR_Layer *layer;
+   char      *name;
+
+   if (!(layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,Name))) {
+      name=strndup(Name,rindex(Name,'.')-Name);
+      layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,name);
+      free(name);
+   };
+
+   return(layer);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerToDef>
+ * Creation     : Aout 2010 J.P. Gauthier
+ *
+ * But          : Retourner la representation TDataDef du champs de la couche.
+ *
+ * Parametres   :
+ *   <Layer>    : Couche
+ *   <Field>    : Nom du vecteur
+ *
+ * Retour       : Representation TDataDef
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
+
+   TDataDef  *def=NULL;
+   TData_Type type=TD_Unknown;
+   int        i,f,n=0;
+   double     val;
+
+   /*Get the field index*/
+   if ((i=OGR_FD_GetFieldIndex(Layer->Def,Field))>-1) {
+
+      /*Get the data type of the field*/
+      switch (OGR_Fld_GetType(OGR_FD_GetFieldDefn(Layer->Def,i))) {
+         case OFTInteger: type=TD_Int32; break;
+         case OFTReal   : type=TD_Float64; break;
+         default        : type=TD_Unknown;
+      }
+
+      /*If the field is not int or float, exit*/
+      if (type!=TD_Unknown) {
+
+         /*Count number of features to use*/
+         for(f=0;f<Layer->NFeature;f++) {
+            if (Layer->Select[f]) n++;
+         }
+
+         /*Get the data in*/
+         def=DataDef_New(n,1,1,1,type);
+
+         for(f=0;f<Layer->NFeature;f++) {
+            if (Layer->Select[f]) {
+               val=OGR_F_GetFieldAsDouble(Layer->Feature[f],i);
+               Def_Set(def,0,f,val);
+            }
+         }
+      }
+   }
+   return(def);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerFromDef>
+ * Creation     : Aout 2010 J.P. Gauthier
+ *
+ * But          : Remettre le contenue d'un DataDef dans un champ de couche.
+ *
+ * Parametres   :
+ *   <Layer>    : Couche
+ *   <Field>    : Nom du vecteur
+ *   <Def>      : data definition
+ *
+ * Retour       : Couche valide
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
+
+   int    i,f;
+   double val;
+
+   /*Get the field index*/
+   if ((i=OGR_FD_GetFieldIndex(Layer->Def,Field))>-1) {
+
+      /*Put the results in*/
+      for(f=0;f<Layer->NFeature;f++) {
+         if (Layer->Select[f]) {
+            Def_Get(Def,0,f,val);
+            OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
+         }
+      }
+      return(Layer);
+   } else {
+      return(NULL);
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -965,7 +1070,9 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
    OGR_File *file=NULL;
 
    if ((file=(OGR_File*)TclY_HashDel(&OGR_FileTable,Id))) {
-      OGR_DS_Destroy(file->Data);
+//      if (file->Mode!='a' && file->Mode!='A') {
+         OGR_DS_Destroy(file->Data);
+//      }
 
       free(file->Id);
       free(file);
@@ -1104,6 +1211,7 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
       file->Name=strdup(Name);
       file->Driver=driver;
       file->Data=source;
+
       OGR_FilePut(Interp,file);
    }
 

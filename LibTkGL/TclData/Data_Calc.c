@@ -47,6 +47,7 @@ Tcl_Interp   *GInterp;
 TData_Type    GType;
 TData        *GField,*GFieldP;
 GDAL_Band    *GBand;
+OGR_Layer    *GLayer;
 TObs         *GObs;
 TVector      *GVec;
 TDataDef     *GResult;
@@ -117,6 +118,15 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is band\n");
+#endif
+            break;
+
+         case T_LAYER:
+            if ((GLayer=OGR_LayerGet(Name))) {
+               GLayer=OGR_LayerFromDef(GLayer,rindex(Name,'.')+1,Data);
+            }
+#ifdef DEBUG
+            fprintf(stderr,"(DEBUG) Calc_Update: Result is layer\n");
 #endif
             break;
 
@@ -210,6 +220,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Ex
    GBand     = NULL;
    GObs      = NULL;
    GVec      = NULL;
+   GLayer    = NULL;
    GResult   = NULL;
    GExcept   = Except;
    GType     = Type;

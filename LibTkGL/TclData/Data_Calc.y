@@ -28,6 +28,7 @@ int yyerror(char* s);
   TObs       *Obs;            /*!< If we found an observation */
   TVector    *Vec;            /*!< If we found a vector */
   GDAL_Band  *Band;           /*!< If we found a band */
+  OGR_Layer  *Layer;          /*!< If we found a layer */
   TFuncDef   *Func;           /*!< If we found a function */
   enum {
     OP_ADD,                   /*!< Addition operator */

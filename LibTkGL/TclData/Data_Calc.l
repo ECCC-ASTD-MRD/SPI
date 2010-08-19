@@ -16,6 +16,7 @@ extern char      *curPos;
 extern int        stopGuard;
 extern TData     *GField,*GFieldP;
 extern GDAL_Band *GBand;
+extern OGR_Layer *GLayer;
 extern TObs      *GObs;
 extern TVector   *GVec;
 extern TData_Type GType;
@@ -140,6 +141,17 @@ EXTCHAR [A-Za-z0-9_.:#~]
       }
    }
 
+   if((yylval.Layer=OGR_LayerGet(yytext))) {
+      GLayer=GLayer?GLayer:yylval.Layer;
+      GMode=GMode==T_VAL?T_LAYER:GMode;
+
+      if ((yylval.Data=OGR_LayerToDef(yylval.Layer,rindex(yytext,'.')+1))) {
+#ifdef DEBUG
+        fprintf(stdout,"(DEBUG) Found a T_DATA(OGR) token: %s\n", yytext);
+#endif
+        return T_DATA;
+      }
+   }
 #ifdef DEBUG
       fprintf(stdout, "(DEBUG) Found an error: %s\n", yytext);
 #endif

@@ -37,14 +37,16 @@
 #include "tclFSTD.h"
 #include "tclGDAL.h"
 #include "tclObs.h"
+#include "tclOGR.h"
 #include "tclVector.h"
 #include "Data_Matrix.h"
 
-#define T_VAL  0
-#define T_FLD  1
-#define T_OBS  2
-#define T_VEC  3
-#define T_BAND 4
+#define T_VAL   0
+#define T_FLD   1
+#define T_OBS   2
+#define T_VEC   3
+#define T_BAND  4
+#define T_LAYER 5
 
 int  Calc_Parse(Tcl_Interp* Interp,int Except,char* Champ,TData_Type Type,char* Expr);
 int  Calc_Validate(Tcl_Interp* Interp);
