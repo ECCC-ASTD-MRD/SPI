@@ -447,20 +447,20 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    data.offset[3]=0;
    data.pixelPtr=(GLubyte*)malloc(data.width*data.height*data.pixelSize*sizeof(GLubyte));
 
-   /* Recuperer le buffer OpenGL */
-   glReadBuffer(Buffer);
+   /* Recuperer le buffer OpenGL en inversant en Y*/
    if (data.pixelPtr) {
+      glReadBuffer(Buffer);
       for(i=0;i<data.height;i++) {
-         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
+         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
       }
 
       /* Envoyer le data dans l'image Tk */
       Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
       free(data.pixelPtr);
    } else {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

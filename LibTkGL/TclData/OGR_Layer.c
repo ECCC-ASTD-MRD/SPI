@@ -1997,11 +1997,12 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 */
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,f,n,p,pt,len=-1;
+   int          i,j,f,n=0,p=0,pt,len=-1,rw;
    double       val0,val1,area,*accum=NULL,r,rt,dp;
    OGRGeometryH cell,ring,inter;
    OGREnvelope  env0,*env1=NULL;
-   Tcl_Obj      *lst,*item=NULL;
+   Tcl_Obj      *obji,*objj,*lst,*item=NULL;
+   Tcl_Channel  chan=NULL;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid layer",(char*)NULL);
@@ -2025,8 +2026,23 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       }
    }
 
-   /*Check for included index list*/
-   if (List) {
+   /*Check for included channel or list containing index*/
+   if ((chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
+      obji=Tcl_NewObj();
+      objj=Tcl_NewObj();
+      lst=Tcl_NewObj();
+
+      f=Tcl_GetsObj(chan,obji);
+      f=Tcl_GetsObj(chan,objj);
+      if (f>0) {
+         p=1;
+      } else {
+         if (!(rw&TCL_WRITABLE)) {
+            Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+   } else if (List) {
       lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
       if (!lst) {
          item=Tcl_NewListObj(0,NULL);
@@ -2035,22 +2051,37 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          List=lst;
       }
       Tcl_ListObjLength(Interp,List,&len);
+      p=len;
    }
 
-   /*Wouou we have the index list*/
-   if (len>1) {
-      for(n=0;n<len;n+=3) {
-         Tcl_ListObjIndex(Interp,List,n,&lst);
-         Tcl_GetIntFromObj(Interp,lst,&i);
-         Tcl_ListObjIndex(Interp,List,n+1,&lst);
-         Tcl_GetIntFromObj(Interp,lst,&j);
+   /*Wouou we have the index*/
+   if (p) {
+
+      /*As long as the file or the list is not empty*/
+      while((chan && !Tcl_Eof(chan)) || n<len) {
+
+         /*Get the gridpoint*/
+         if (!chan) {
+            Tcl_ListObjIndex(Interp,List,n++,&obji);
+            Tcl_ListObjIndex(Interp,List,n++,&objj);
+         }
+         Tcl_GetIntFromObj(Interp,obji,&i);
+         Tcl_GetIntFromObj(Interp,objj,&j);
 
          Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
          if (isnan(val1) || val1==FromDef->NoData) {
             continue;
          }
 
-         Tcl_ListObjIndex(Interp,List,n+2,&lst);
+         /*Get the geometry intersections*/
+         if (chan) {
+            Tcl_SetObjLength(lst,0);
+            Tcl_GetsObj(chan,lst);
+         } else {
+            Tcl_ListObjIndex(Interp,List,n++,&lst);
+         }
+
+         /*Loop on the intersections*/
          Tcl_ListObjLength(Interp,lst,&pt);
          for(p=0;p<pt;p+=2) {
             Tcl_ListObjIndex(Interp,lst,p,&item);
@@ -2074,15 +2105,21 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             }
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
          }
+         if (chan) {
+            Tcl_SetObjLength(obji,0);
+            Tcl_SetObjLength(objj,0);
+            Tcl_GetsObj(chan,obji);
+            Tcl_GetsObj(chan,objj);
+         }
       }
    } else {
 
+      /*Damn, we dont have the index*/
       if (!(env1=(OGREnvelope*)calloc(Layer->NFeature,sizeof(OGREnvelope)))) {
          Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate envelope buffer",(char*)NULL);
          return(TCL_ERROR);
       }
 
-      /*Damn, we dont have it*/
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
 
@@ -2097,7 +2134,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
                OGR_G_GetEnvelope(ring,&env0);
 
-               if (List)
+               if (List || chan)
                   item=Tcl_NewListObj(0,NULL);
 
                /*Check which feature intersects with the cell*/
@@ -2144,11 +2181,22 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      }
                   }
                }
-               /*Append this gridpoint intersections info to the list*/
-               if (List && n) {
-                  Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
-                  Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
-                  Tcl_ListObjAppendElement(Interp,List,item);
+
+               /*Append this gridpoint intersections to the index*/
+               if (n) {
+                  if (chan) {
+                     Tcl_WriteObj(chan,Tcl_NewIntObj(i));
+                     Tcl_WriteChars(chan,"\n",1);
+                     Tcl_WriteObj(chan,Tcl_NewIntObj(j));
+                     Tcl_WriteChars(chan,"\n",1);
+                     Tcl_WriteObj(chan,item);
+                     Tcl_WriteChars(chan,"\n",1);
+                     Tcl_DecrRefCount(item);
+                  } else if (List) {
+                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
+                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
+                     Tcl_ListObjAppendElement(Interp,List,item);
+                  }
                }
             }
          }

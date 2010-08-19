@@ -2307,7 +2307,6 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
    }
 
    glDefineParams();
-   SetupglCanvas(canvasPtr,0,0,w,h);
 
    /* Setup the tile rendering engine */
    GLRender->TRCon=trNew();
@@ -2317,7 +2316,7 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
       trTileSize(GLRender->TRCon,wt-2,ht-2,1);
    }
    trImageSize(GLRender->TRCon,w,h);
-   trOrtho(GLRender->TRCon,0,w,h,0,-1,1);
+   trOrtho(GLRender->TRCon,0,w-1,h-1,0,-1,1);
 
    x=canvasPtr->xOrigin;
    y=canvasPtr->yOrigin;
@@ -2335,7 +2334,7 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->green/65535.0f,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->blue/65535.0f,1.0f);
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-      DisplayglCanvasItems((ClientData)canvasPtr,0,0,w,h);
+      DisplayglCanvasItems((ClientData)canvasPtr,X,Y,Width,Height);
 
       res=trBuffer(Interp,Img,GL_BACK,X,Y,Width,Height,GLRender->TRCon);
    } while (trEndTile(GLRender->TRCon));
