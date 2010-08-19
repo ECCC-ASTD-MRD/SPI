@@ -452,13 +452,7 @@ proc RSMC::LayoutUpdate { Frame } {
          }
 
          #----- Get the grid resolution ( km ) for RSMC mapping.
-         foreach iscale $MLDP::Sim(ListScale) {
-		    scan $iscale "%s (%d km, %s)" tmpechelle tmpres tmpgrid
-            if { $Sim(Scale) == $tmpechelle } {
-               set Sim(GridResolution) $tmpres
-               break
-            }
-         }
+         set Sim(GridResolution) [expr int([lindex $Sim(Grid) 5]/1000.0)]
 
          #----- Vertical Distribution.
          set VertDist $Sim(EmVerticalDist)
