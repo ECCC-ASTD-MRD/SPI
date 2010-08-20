@@ -142,7 +142,7 @@ set Data(Secs) [lsort -unique -increasing $Data(Secs)]
 
 set f [open $Param(Path)/$Param(Date).txt w]
 
-puts $f [format "%-8s %-14s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s" Station Date ObsSPD ObsDIR ObsTmp 15kmSPD 15kmDIR 15KmTmp 2.5kmSPD 2.5kmDIR 2.5KmTmp 1kmSPR 1kmDIR 1KmTmp]
+puts $f [format "%-8s %-14s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s %8s" Station Date ObsSPD ObsDIR ObsTmp 15kmSPD 15kmDIR 15KmTmp 2.5kmSPD 2.5kmDIR 2.5KmTmp 1kmSPD 1kmDIR 1KmTmp]
 foreach sec $Data(Secs) {
    foreach id $Param(Stations) {
       set str [format "%-8s %-14s" $id [clock format $sec -format "%Y%m%d %H:%M"]]

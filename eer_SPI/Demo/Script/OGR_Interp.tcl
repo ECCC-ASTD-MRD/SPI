@@ -26,8 +26,14 @@ puts \n[file tail [info script]]
 
 #----- Open the shapefile
 
-set layer [ogrfile open OLDFILE read DataIn/timezone.shp]
-eval ogrlayer read OLD [lindex $layer 0]
+catch { eval file delete [glob DataOut/OGR_Interp.*] }
+
+file copy DataIn/Volcano.shp DataOut/OGR_Interp.shp
+file copy DataIn/Volcano.dbf DataOut/OGR_Interp.dbf
+file copy DataIn/Volcano.shx DataOut/OGR_Interp.shx
+
+set layer [ogrfile open SHPFILE append DataOut/OGR_Interp.shp]
+eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Read the data to be summed
 
@@ -36,25 +42,34 @@ fstdfield read DATAFIELD DATAFILE -1 "" -1 12 -1 "" "AV"
 
 #----- Clear the file that will be used to sum the data
 
-ogrlayer clear OLD ZONE 0.0
+ogrlayer define LAYER -field ZONE Real
+ogrlayer clear LAYER ZONE
+
+#----- Open a file to save the index for future reuse for faster processing
+#      if the file is empty, it will be filled with the index
+#      otherwise, it will be used as an index
+set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
 
 #----- Do the sum in conservative mode splitting the grid cell in 1 segment
-#      the list variable will be filled with the used indices
+puts "   Interpolating field values into layer"
+#ogrlayer interp LAYER DATAFIELD ZONE CONSERVATIVE 1 True $f
+ogrlayer interp LAYER DATAFIELD ZONE AVERAGE 1 True $f
 
-ogrlayer interp OLD DATAFIELD ZONE CONSERVATIVE 1 True list
+puts "   Minimum: [ogrlayer stats LAYER -min ZONE]"
+puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
 
-puts "Minimum: [ogrlayer stats OLD -min ZONE]"
-puts "Maximum: [ogrlayer stats OLD -max ZONE]"
+puts "   Applying calculus log(LAYER.ZONE+100)"
+vexpr LAYER.ZONE log(LAYER.ZONE+100)
 
-#----- Save the index since it can be reused for faster processing
+puts "   Minimum: [ogrlayer stats LAYER -min ZONE]"
+puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
 
-set f [open DataOut/OGR_Interp2.txt w]
-puts $f $list
 close $f
 
 #----- Save the result in another file
+catch { eval file delete [glob DataOut/OGR_Interp2.*] }
+ogrfile open FILE write DataOut/OGR_Interp2.shp "ESRI Shapefile"
+ogrlayer write LAYER FILE
+ogrfile close FILE
 
-catch { file delete  DataOut/OGR_Interp2.shp }
-ogrfile open NEWFILE write DataOut/OGR_Interp2.shp "ESRI Shapefile"
-ogrlayer write OLD NEWFILE
-ogrfile close NEWFILE
+#ogrfile close SHPFILE

@@ -45,6 +45,8 @@ fstdfield read FLD FSTDIN -1 "" -1 -1 -1  "" "ELEV"
 
 #----- Selectionner le radar XFT
 ogrlayer define LAYER -featureselect { { ID == XFT } }
+puts "Global extent    :[ogrlayer stats LAYER -extent]"
+puts "Selection extent :[ogrlayer stats LAYER -extent True]"
 foreach mode { FAST WITHIN INTERSECT CONSERVATIVE NORMALIZED_CONSERVATIVE ALIASED POINT_CONSERVATIVE LENGTH_CONSERVATIVE LENGTH_NORMALIZED_CONSERVATIVE LENGTH_ALIASED } {
    puts "Testing mode $mode."
    vexpr FLD FLD<<0
