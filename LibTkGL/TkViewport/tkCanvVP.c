@@ -925,7 +925,6 @@ static void ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP){
    }
 
    /*Store the information in the item header.*/
-
    VP->header.x1 = x ;
    VP->header.y1 = y ;
    VP->header.x2 = x + VP->Width;
@@ -1226,7 +1225,7 @@ void ViewportOrtho(ViewportItem *VP){
    glPushMatrix();
    glLoadIdentity();
 
-   gluOrtho2D(0,VP->Width,0,VP->Height);
+   gluOrtho2D(0,VP->Width-1,0,VP->Height-1);
 }
 
 void ViewportUnOrtho(ViewportItem *VP){
@@ -1338,9 +1337,9 @@ void ViewportClear(ViewportItem *VP,int Page) {
       glVertex3i(VP->header.x2,VP->header.y1,-1);
    } else {
       glVertex3i(0,0,-1);
-      glVertex3i(0,VP->Height,-1);
-      glVertex3i(VP->Width,VP->Height,-1);
-      glVertex3i(VP->Width,0,-1);
+      glVertex3i(0,VP->Height-1,-1);
+      glVertex3i(VP->Width-1,VP->Height-1,-1);
+      glVertex3i(VP->Width-1,0,-1);
    }
    glEnd();
    glEnable(GL_CULL_FACE);
