@@ -280,6 +280,8 @@ proc Mapper::Params { { Display False } } {
       return
    }
 
+   set Data(Init) True
+
    $Data(Canvas) configure -cursor watch
    .mapper configure -cursor watch
    update idletasks;
@@ -303,6 +305,7 @@ proc Mapper::Params { { Display False } } {
       destroy .mapperparams
    }
 
+   set Data(Init) False
    $Data(Canvas) configure -cursor left_ptr
    .mapper configure -cursor left_ptr
 }

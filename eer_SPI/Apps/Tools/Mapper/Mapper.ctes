@@ -42,6 +42,7 @@ namespace eval Mapper { } {
    set Data(Frame)  ""                    ;#Frame actif
    set Data(VP)     ""                    ;#Viewport actif
 
+   set Data(Init)  False                  ;#Flag d'initialisation de l'interface
    set Data(Job)   ""
    set Data(Sel)   ""
    set Data(Mode)  ""

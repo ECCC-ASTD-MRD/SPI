@@ -693,6 +693,10 @@ proc Mapper::ParamsGDALGet { Object } {
 proc Mapper::ParamsGDALSet { Object } {
    variable Data
 
+   if { $Data(Init) } {
+      return
+   }
+
    $Data(Canvas) configure -cursor watch
    .mapperparams configure -cursor watch
    .mapper configure -cursor watch
@@ -794,6 +798,9 @@ proc Mapper::ParamsModelGet { Object } {
 proc Mapper::ParamsModelSet { Object } {
    variable Data
 
+   if { $Data(Init) } {
+      return
+   }
    $Data(Canvas) configure -cursor watch
    .mapperparams configure -cursor watch
    .mapper configure -cursor watch
@@ -919,6 +926,10 @@ proc Mapper::ParamsOGRGet { Object } {
 
 proc Mapper::ParamsOGRSet { Object } {
    variable Data
+
+   if { $Data(Init) } {
+      return
+   }
 
    $Data(Canvas) configure -cursor watch
    .mapperparams configure -cursor watch
