@@ -224,7 +224,7 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
             if (multi) {
                for (n=0;n<OGR_G_GetGeometryCount(multi);n++) {
                   geom=OGR_G_GetGeometryRef(multi,n);
-                  if (GPC_Intersect(geom,ring)) {
+                  if (GPC_Intersect(geom,ring,NULL,NULL)) {
                      OGR_G_AddGeometryDirectly(geom,ring);
                      break;
                   }
@@ -267,11 +267,19 @@ OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1) {
    return(geom);
 }
 
-int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
 
-   int n0,n1,t0,t1,npt=0;
-   Vect3d v0,v1;
-   OGRGeometryH pt;
+   int          n0,n1,t0,t1,npt=0;
+   Vect3d       v0,v1;
+   OGRGeometryH pt,geom;
+   OGREnvelope  env;
+
+   /*Check if enveloppe overlap*/
+   if (Env0 && Env1) {
+      if (!OGR_G_EnvelopeIntersect((*Env0),(*Env1))) {
+         return(0);
+      }
+   }
 
    /*It can't be within if it's not a within polygon*/
    if (OGR_G_GetGeometryType(Geom1)!=wkbPolygon && OGR_G_GetGeometryType(Geom1)!=wkbMultiPolygon && OGR_G_GetGeometryType(Geom1)!=wkbLinearRing) {
@@ -281,7 +289,9 @@ int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    /*Boucle recursive sur les sous geometrie*/
    if (OGR_G_GetGeometryType(Geom0)!=wkbPolygon && (n0=OGR_G_GetGeometryCount(Geom0))) {
       for(n0=0;n0<OGR_G_GetGeometryCount(Geom0);n0++) {
-         if (!GPC_Within(OGR_G_GetGeometryRef(Geom0,n0),Geom1)) {
+         geom=OGR_G_GetGeometryRef(Geom0,n0);
+         OGR_G_GetEnvelope(geom,&env);
+         if (!GPC_Within(geom,Geom1,&env,Env1)) {
             return(0);
          } else {
             npt++;
@@ -292,7 +302,9 @@ int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
    if (OGR_G_GetGeometryType(Geom1)!=wkbPolygon && (n1=OGR_G_GetGeometryCount(Geom1))) {
       for(n1=0;n1<OGR_G_GetGeometryCount(Geom1);n1++) {
-         if (!GPC_Within(Geom0,OGR_G_GetGeometryRef(Geom1,n1))) {
+         geom=OGR_G_GetGeometryRef(Geom1,n1);
+         OGR_G_GetEnvelope(geom,&env);
+         if (!GPC_Within(Geom0,geom,Env0,&env)) {
             return(0);
          }
       }
@@ -327,16 +339,26 @@ int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    return(GPC_PointPolyIntersect(Geom0,Geom1,1));
 }
 
-int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
+int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
 
-   int n0,n1,t0,t1,npt;
-   Vect3d v0,v1;
-   OGRGeometryH pt;
+   int          n0,n1,t0,t1,npt;
+   Vect3d       v0,v1;
+   OGRGeometryH pt,geom;
+   OGREnvelope  env;
+
+   /*Check if enveloppe overlap*/
+   if (Env0 && Env1) {
+      if (!OGR_G_EnvelopeIntersect((*Env0),(*Env1))) {
+         return(0);
+      }
+   }
 
    /*Boucle recursive sur les sous geometrie*/
    if (OGR_G_GetGeometryType(Geom0)!=wkbPolygon && (n0=OGR_G_GetGeometryCount(Geom0))) {
       for(n0=0;n0<OGR_G_GetGeometryCount(Geom0);n0++) {
-         if (GPC_Intersect(OGR_G_GetGeometryRef(Geom0,n0),Geom1)) {
+         geom=OGR_G_GetGeometryRef(Geom0,n0);
+         OGR_G_GetEnvelope(geom,&env);
+         if (GPC_Intersect(geom,Geom1,&env,Env1)) {
             return(1);
          }
       }
@@ -344,7 +366,9 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
    if (OGR_G_GetGeometryType(Geom1)!=wkbPolygon && (n1=OGR_G_GetGeometryCount(Geom1))) {
       for(n1=0;n1<OGR_G_GetGeometryCount(Geom1);n1++) {
-         if (GPC_Intersect(Geom0,OGR_G_GetGeometryRef(Geom1,n1))) {
+         geom=OGR_G_GetGeometryRef(Geom1,n1);
+         OGR_G_GetEnvelope(geom,&env);
+         if (GPC_Intersect(Geom0,geom,Env0,&env)) {
             return(1);
          }
       }
@@ -394,7 +418,7 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    if (t0==0) {
       if (t1==0) {
          return(GPC_PointPointIntersect(Geom0,Geom1,0));
-      } if (t1==1){
+      } else if (t1==1){
          return(GPC_PointLineIntersect(Geom0,Geom1,0));
       } else {
          return(GPC_PointPolyIntersect(Geom0,Geom1,0));
@@ -407,9 +431,8 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
       } else {
          if (GPC_PointPolyIntersect(Geom0,Geom1,0)) {
             return(1);
-         } else {
-            return(GPC_LinePolyIntersect(Geom0,Geom1,0));
          }
+         return(GPC_LinePolyIntersect(Geom0,Geom1,0));
       }
    } else {
       if (t1==0) {
@@ -417,13 +440,15 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
       } else if (t1==1) {
          return(GPC_LinePolyIntersect(Geom1,Geom0,0));
       } else {
-         if (GPC_PointPolyIntersect(Geom1,Geom0,0)) {
+         /*We test ordered with the one with the most points cause it's theoratically faster
+           since as soon as a point is inside the other one, we break*/
+         if (GPC_PointPolyIntersect(n0>n1?Geom1:Geom0,n0>n1?Geom0:Geom1,0)) {
             return(1);
-         } if (GPC_PointPolyIntersect(Geom0,Geom1,0)) {
-            return(1);
-         } else  {
-            return(GPC_LinePolyIntersect(Geom1,Geom0,0));
          }
+         if (GPC_PointPolyIntersect(n0>n1?Geom0:Geom1,n0>n1?Geom1:Geom0,0)) {
+            return(1);
+         }
+         return(GPC_LinePolyIntersect(Geom1,Geom0,0));
       }
    }
    return(0);
@@ -493,10 +518,10 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
          OGR_G_GetPoint(Geom1,n1,&v1[0][0],&v1[0][1],&v1[0][2]);
          OGR_G_GetPoint(Geom1,nn,&v1[1][0],&v1[1][1],&v1[1][2]);
 
-         if ((((v1[0][1]<=v0[1]) && (v0[1]<v1[1][1])) || ((v1[1][1]<=v0[1]) && (v0[1]<v1[0][1]))) &&
-            (v0[0]<(v1[1][0]-v1[0][0])*(v0[1]-v1[0][1])/(v1[1][1]-v1[0][1])+v1[0][0])) {
+         if (((v1[0][1]<=v0[1] && v0[1]<v1[1][1]) || (v1[1][1]<=v0[1] && v0[1]<v1[0][1])) &&
+            (v0[0]<((v1[1][0]-v1[0][0])*(v0[1]-v1[0][1])/(v1[1][1]-v1[0][1])+v1[0][0]))) {
                c=!c;
-        }
+         }
       }
       if (c) {
          t++;
@@ -607,7 +632,7 @@ double GPC_SegmentLength(OGRGeometryH Geom) {
    return(length);
 }
 
-/* 0----Intersection dosn't exists                                           */
+/* 0----Intersection doesn't exists                                          */
 /* 1----Intersection exists.                                                 */
 /* 2----two line segments are parallel.                                      */
 /* 3----two line segments are collinear, but not overlap.                    */

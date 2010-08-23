@@ -531,6 +531,7 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    double        dx,dy,dp=0.0,val=0.0;
    int           x,y,n=0,idx2,idx3;
    OGRGeometryH  inter=NULL;
+   OGREnvelope   envg,envp;
 
    /* Setup the intersecting area */
    TRANSFORM(Ref,dx,dy,X0-0.5,Y0-0.5);
@@ -543,10 +544,13 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    TRANSFORM(Ref,dx,dy,X1+0.5,Y0-0.5);
    OGR_G_SetPoint(Def->Pick,3,dx,dy,0);
 
+   OGR_G_GetEnvelope(Def->Pick,&envp);
+   OGR_G_GetEnvelope(Geom,&envg);
+
    val=Value;
 
    /* Test for intersection */
-   if ((Area>0.0 || Mode!='C' || Mode!='N' || Mode!='A') && GPC_Intersect(Geom,Def->Pick)) {
+   if ((Area>0.0 || Mode!='C' || Mode!='N' || Mode!='A') && GPC_Intersect(Geom,Def->Pick,&envg,&envp)) {
 
       /* If this is a single pixel */
       if (X0==X1 && Y0==Y1) {
@@ -589,7 +593,8 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
          }
 
          /* Are we within */
-         if (Mode!='W' || GPC_Within(Def->Poly,Geom)) {
+         OGR_G_GetEnvelope(Def->Poly,&envp);
+         if (Mode!='W' || GPC_Within(Def->Poly,Geom,&envp,&envg)) {
             Def_Set(Def,0,idx3,val);
 
             if (Mode=='N' && Def->Buffer) {
@@ -904,12 +909,14 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          fld=-2;
       } else if (strcmp(Field,"FEATURE_LENGTH")==0) {
          fld=-3;
-      } else if (strcmp(Field,"ZCOORD_MIN")==0) {
+      } else if (strcmp(Field,"FEATURE_ID")==0) {
          fld=-4;
-      } else if (strcmp(Field,"ZCOORD_MAX")==0) {
+      } else if (strcmp(Field,"ZCOORD_MIN")==0) {
          fld=-5;
-      } else if (strcmp(Field,"ZCOORD_AVG")==0) {
+      } else if (strcmp(Field,"ZCOORD_MAX")==0) {
          fld=-6;
+      } else if (strcmp(Field,"ZCOORD_AVG")==0) {
+         fld=-7;
       } else {
          fld=OGR_FD_GetFieldIndex(Layer->Def,Field);
          if (fld==-1) {
@@ -952,10 +959,12 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          } else if (fld==-3) {
             value=GPC_Length(geom);
          } else if (fld==-4) {
-            value=GPC_CoordLimit(geom,2,0);
+            value=f;
          } else if (fld==-5) {
-            value=GPC_CoordLimit(geom,2,1);
+            value=GPC_CoordLimit(geom,2,0);
          } else if (fld==-6) {
+            value=GPC_CoordLimit(geom,2,1);
+         } else if (fld==-7) {
             value=GPC_CoordLimit(geom,2,2);
          } else {
             value=Value;

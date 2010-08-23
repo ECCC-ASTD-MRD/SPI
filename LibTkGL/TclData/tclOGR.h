@@ -45,7 +45,7 @@
 
 #include "gpc.h"
 
-#define OGR_G_EnvelopeIntersect(ENV0,ENV1) (ENV0.MinX<=ENV1.MaxX && ENV0.MaxX>=ENV1.MinX && ENV0.MinY<=ENV1.MaxY && ENV0.MaxY>=ENV1.MinY)
+#define OGR_G_EnvelopeIntersect(ENV0,ENV1) (!(ENV0.MaxX<ENV1.MinX || ENV0.MinX>ENV1.MaxX || ENV0.MaxY<ENV1.MinY || ENV0.MinY>ENV1.MaxY))
 
 typedef struct OGR_File {
    OGRDataSourceH  Data;
@@ -137,8 +137,8 @@ void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
 OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
 void         GPC_New(gpc_polygon *Poly);
 int          GPC_QSortInter(const Vect3d *A,const Vect3d *B);
-int          GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1);
-int          GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
+int          GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
+int          GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
 int          GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
 int          GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
 int          GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);

@@ -2145,40 +2145,38 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                   if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
                      OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1[f]);
 
-                  if (OGR_G_EnvelopeIntersect(env0,env1[f])) {
-                     if (GPC_Intersect(cell,OGR_F_GetGeometryRef(Layer->Feature[f]))) {
-                        inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
-                        dp=OGR_G_GetArea(inter);
-                        r=dp/area;
-                        rt+=r;
-                        val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-                        switch(Mode) {
-                           case 'N': accum[f]+=r;
-                           case 'C': val0+=val1*r;
-                                     break;
-                           case 'W': if (r>0.999) {
-                                        val0+=val1;
-                                     } else {
-                                        r=0.0;
-                                     }
-                                     break;
-                           case 'A': accum[f]+=1.0;
-                           case 'I': val0+=val1;
-                                     break;
-                        }
-                        OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+                  if (GPC_Intersect(cell,OGR_F_GetGeometryRef(Layer->Feature[f]),&env0,&env1[f])) {
+                     inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
+                     dp=OGR_G_GetArea(inter);
+                     r=dp/area;
+                     rt+=r;
+                     val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+                     switch(Mode) {
+                        case 'N': accum[f]+=r;
+                        case 'C': val0+=val1*r;
+                                    break;
+                        case 'W': if (r>0.999) {
+                                       val0+=val1;
+                                    } else {
+                                       r=0.0;
+                                    }
+                                    break;
+                        case 'A': accum[f]+=1.0;
+                        case 'I': val0+=val1;
+                                    break;
+                     }
+                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
-                        /*Append intersection info to the list*/
-                        if (List && r>0.0) {
-                           n++;
-                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
-                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
-                        }
+                     /*Append intersection info to the list*/
+                     if (List && r>0.0) {
+                        n++;
+                        Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
+                        Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
+                     }
 
-                        /*If its full, select next cell*/
-                        if (rt>0.999) {
-                           break;
-                        }
+                     /*If its full, select next cell*/
+                     if (rt>0.999) {
+                        break;
                      }
                   }
                }
@@ -2611,6 +2609,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    Tcl_Obj     *obj;
    OGRGeometryH geom,pick;
+   OGREnvelope  envg,envp;
    double       x,y,lat,lon,d=1e32;
    int          nobj,n=0,nd=0;
    long         f;
@@ -2650,17 +2649,19 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
          OGR_G_AddPoint_2D(pick,x,y);
       }
    }
+   OGR_G_GetEnvelope(pick,&envp);
 
    /*Trouve la feature en intersection*/
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
+            OGR_G_GetEnvelope(geom,&envg);
             /*Test delon le mode*/
             switch(Mode) {
-               case 0: n=GPC_Intersect(geom,pick); break;       //INTERSECT
-               case 1: n=GPC_Within(geom,pick); break;          //INSIDE
-               case 2: n=!GPC_Intersect(geom,pick); break;      //OUTSIDE
-               case 3: x=OGR_G_Distance(geom,pick);             //NEAREST
+               case 0: n=GPC_Intersect(geom,pick,&envg,&envp); break;   //INTERSECT
+               case 1: n=GPC_Within(geom,pick,&envg,&envp); break;      //INSIDE
+               case 2: n=!GPC_Intersect(geom,pick,&envg,&envp); break;  //OUTSIDE
+               case 3: x=OGR_G_Distance(geom,pick);                     //NEAREST
                        if (x<d) {
                           d=x;
                           nd=f;
