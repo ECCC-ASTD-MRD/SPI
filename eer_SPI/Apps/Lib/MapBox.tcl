@@ -47,6 +47,7 @@ namespace eval MapBox {
    set Data(Curves)   { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC }
    set Data(CurveIdx) 3
    set Data(Name)     ""
+   set Data(Init)     False  ;#Flag d'initialisation de l'interface
 
    set Data(Red)      100      ;#Pourcentage de rouge dans la palette
    set Data(Green)    100      ;#Pourcentage de vert dans la palette
@@ -165,9 +166,11 @@ namespace eval MapBox {
 proc MapBox::Config { args } {
    variable Data
 
-   colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
-      -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp)
-   MapBox::Update
+   if { !$Data(Init) } {
+      colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
+         -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp)
+      MapBox::Update
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -515,6 +518,7 @@ proc MapBox::Create { Parent Apply Map args } {
 
    set Data(Command) $Apply
    set Data(Map)     $Map
+   set Data(Init)    True
 
    colormap image $Data(Map) MAPBOXIMG
 
@@ -649,6 +653,7 @@ proc MapBox::Create { Parent Apply Map args } {
 
    MapBox::Select ""
    TabFrame::Select .mapbox.tab 0
+   set Data(Init) False
 }
 
 #-------------------------------------------------------------------------------
