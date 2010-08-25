@@ -32,6 +32,33 @@
 
 #include "tclOGR.h"
 
+static Vect3d* GPC_Geom[2];
+static unsigned int GPC_GeomNb=0;
+
+static int GPC_ToVect3d(OGRGeometryH Geom,int No) {
+
+   unsigned int i,n;
+
+   n=OGR_G_GetPointCount(Geom);
+   if (n>GPC_GeomNb) {
+      GPC_GeomNb=n;
+#ifdef DEBUG
+      fprintf(stderr,"(DEBUG) Increasing GPC_Geom buffer to %i\n",GPC_GeomNb);
+#endif
+      GPC_Geom[0]=(Vect3d*)realloc(GPC_Geom[0],GPC_GeomNb*sizeof(Vect3d));
+      GPC_Geom[1]=(Vect3d*)realloc(GPC_Geom[1],GPC_GeomNb*sizeof(Vect3d));
+
+      if (!GPC_Geom[0] || !GPC_Geom[1]) {
+         fprintf(stderr,"(ERROR) Could not allocate GPC_Geom buffer\n");
+         return(0);
+      }
+   }
+   for(i=0;i<n;i++) {
+      OGR_G_GetPoint(Geom,i,&GPC_Geom[No][i][0],&GPC_Geom[No][i][1],&GPC_Geom[No][i][2]);
+   }
+   return(n);
+}
+
 int GPC_QSortInter(const Vect3d *A,const Vect3d *B){
 
    if (*A[2]<*B[2]) {
@@ -415,32 +442,34 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
    }
 
    /*Demarrer les tests selon les type de geometrie*/
-   if (t0==0) {
-      if (t1==0) {
-         return(GPC_PointPointIntersect(Geom0,Geom1,0));
-      } else if (t1==1){
-         return(GPC_PointLineIntersect(Geom0,Geom1,0));
-      } else {
-         return(GPC_PointPolyIntersect(Geom0,Geom1,0));
-      }
-   } else if (t0==1) {
-      if (t1==0) {
-         return(GPC_PointLineIntersect(Geom1,Geom0,0));
-      } else if (t1==1) {
-         return(GPC_LinePolyIntersect(Geom0,Geom1));
-      } else {
-         return(GPC_PolyPolyIntersect(Geom0,Geom1));
-      }
-   } else {
-      if (t1==0) {
-         return(GPC_PointPolyIntersect(Geom1,Geom0,0));
-      } else if (t1==1) {
-         return(GPC_LinePolyIntersect(Geom1,Geom0));
-      } else {
-         if (GPC_PolyPolyIntersect(Geom0,Geom1)) {
-            return(1);
+   if (n0 && n1) {
+      if (t0==0) {
+         if (t1==0) {
+            return(GPC_PointPointIntersect(Geom0,Geom1,0));
+         } else if (t1==1){
+            return(GPC_PointLineIntersect(Geom0,Geom1,0));
+         } else {
+            return(GPC_PointPolyIntersect(Geom0,Geom1,0));
          }
-         return(GPC_PointPolyIntersect(Geom1,Geom0,0));
+      } else if (t0==1) {
+         if (t1==0) {
+            return(GPC_PointLineIntersect(Geom1,Geom0,0));
+         } else if (t1==1) {
+            return(GPC_LinePolyIntersect(Geom0,Geom1));
+         } else {
+            return(GPC_PolyPolyIntersect(Geom0,Geom1));
+         }
+      } else {
+         if (t1==0) {
+            return(GPC_PointPolyIntersect(Geom1,Geom0,0));
+         } else if (t1==1) {
+            return(GPC_LinePolyIntersect(Geom1,Geom0));
+         } else {
+            if (GPC_PolyPolyIntersect(Geom0,Geom1)) {
+               return(1);
+            }
+            return(GPC_PointPolyIntersect(Geom1,Geom0,0));
+         }
       }
    }
    return(0);
@@ -448,18 +477,14 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
 
 int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n,t=0;
-   Vect3d        v0,v1;
+   unsigned long n0,n1,g0,g1,t=0;
 
-   n=OGR_G_GetPointCount(Geom1);
+   g0=GPC_ToVect3d(Geom0,0);
+   g1=GPC_ToVect3d(Geom1,1);
 
-   for(n0=0;n0<OGR_G_GetPointCount(Geom0);n0++) {
-      OGR_G_GetPoint(Geom0,n0,&v0[0],&v0[1],&v0[2]);
-
-      for(n1=0;n1<n;n1++) {
-         OGR_G_GetPoint(Geom1,0,&v1[0],&v1[1],&v1[2]);
-
-         if (v0[0]==v1[0] && v0[1]==v1[1]) {
+   for(n0=0;n0<g0;n0++) {
+      for(n1=0;n1<g1;n1++) {
+         if (Vect_Equal(GPC_Geom[0][n0],GPC_Geom[1][n1])) {
             t++;
             if (!All)
                return(1);
@@ -471,17 +496,18 @@ int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
 int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n,t=0,i;
+   unsigned long n0,n1,g0,g1,t=0,i;
    Vect3d        v0,v1[2];
 
-   n=OGR_G_GetPointCount(Geom1);
+   g0=GPC_ToVect3d(Geom0,0);
+   g1=GPC_ToVect3d(Geom1,1);
 
-   for(n0=0;n0<OGR_G_GetPointCount(Geom0);n0++) {
-      OGR_G_GetPoint(Geom0,n0,&v0[0],&v0[1],&v0[2]);
+   for(n0=0;n0<g0;n0++) {
+      Vect_Assign(v0,GPC_Geom[0][n0]);
 
-      for(n1=0;n1<n-1;n1++) {
-         OGR_G_GetPoint(Geom1,n1,&v1[0][0],&v1[0][1],&v1[0][2]);
-         OGR_G_GetPoint(Geom1,n1+1,&v1[1][0],&v1[1][1],&v1[1][2]);
+      for(n1=0;n1<g1-1;n1++) {
+         Vect_Assign(v1[0],GPC_Geom[1][n1]);
+         Vect_Assign(v1[1],GPC_Geom[1][n1+1]);
 
          i=GPC_SegmentIntersect(v0,v0,v1[0],v1[1],NULL);
          if (i==1 || i==4 || i==5) {
@@ -496,25 +522,25 @@ int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
 int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   register long n0,n1,n,nn,t=0;
+   unsigned long n0,n1,g0,g1,n11,t=0;
    int           c=0;
    Vect3d        v0,v1[2];
 
-   n=OGR_G_GetPointCount(Geom1);
+   g0=GPC_ToVect3d(Geom0,0);
+   g1=GPC_ToVect3d(Geom1,1);
 
-   for(n0=0;n0<OGR_G_GetPointCount(Geom0);n0++) {
-      OGR_G_GetPoint(Geom0,n0,&v0[0],&v0[1],&v0[2]);
+   for(n0=0;n0<g0;n0++) {
+      Vect_Assign(v0,GPC_Geom[0][n0]);
 
       c=0;
 
-      for(n1=0,nn=n-2;n1<n-1;nn=n1++) {
-         OGR_G_GetPoint(Geom1,n1,&v1[0][0],&v1[0][1],&v1[0][2]);
-         OGR_G_GetPoint(Geom1,nn,&v1[1][0],&v1[1][1],&v1[1][2]);
+      for(n1=0,n11=g1-1;n1<g1;n11=n1++) {
+         Vect_Assign(v1[0],GPC_Geom[1][n1]);
+         Vect_Assign(v1[1],GPC_Geom[1][n11]);
 
          /*Check for point insidness*/
-         if (((v1[0][1]<=v0[1] && v0[1]<v1[1][1]) || (v1[1][1]<=v0[1] && v0[1]<v1[0][1])) &&
-            (v0[0]<((v1[1][0]-v1[0][0])*(v0[1]-v1[0][1])/(v1[1][1]-v1[0][1])+v1[0][0]))) {
-               c=!c;
+         if (OGR_PointInside(v0,v1[0],v1[1])) {
+            c=!c;
          }
       }
       if (c) {
@@ -524,29 +550,29 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
          }
       }
    }
-   return(All?t==OGR_G_GetPointCount(Geom0):t);
+   return(All?t==g0:t);
 }
 
 int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
-   register long n0,n1,n,nn;
+   unsigned long n0,n1,g0,g1,n11;
    int           c,d,i;
    Vect3d        v0[2],v1[2];
 
-   n=OGR_G_GetPointCount(Geom1);
+   g0=GPC_ToVect3d(Geom0,0);
+   g1=GPC_ToVect3d(Geom1,1);
 
-   OGR_G_GetPoint(Geom0,0,&v0[0][0],&v0[0][1],&v0[0][2]);
-   for(n0=0;n0<OGR_G_GetPointCount(Geom0)-1;n0++) {
-//      OGR_G_GetPoint(Geom0,n0,&v0[0][0],&v0[0][1],&v0[0][2]);
-      OGR_G_GetPoint(Geom0,n0+1,&v0[1][0],&v0[1][1],&v0[1][2]);
+   for(n0=0;n0<(g0-2);n0++) {
 
+      Vect_Assign(v0[0],GPC_Geom[0][n0]);
+      Vect_Assign(v0[1],GPC_Geom[0][n0+1]);
       c=0;
       d=0;
 
-//      OGR_G_GetPoint(Geom1,n-2,&v1[0][0],&v1[0][1],&v1[0][2]);
-      for(n1=0,nn=n-2;n1<n-1;nn=n1++) {
-         OGR_G_GetPoint(Geom1,nn,&v1[0][0],&v1[0][1],&v1[0][2]);
-         OGR_G_GetPoint(Geom1,n1,&v1[1][0],&v1[1][1],&v1[1][2]);
+      for(n1=0,n11=g1-2;n1<(g1-1);n11=n1++) {
+
+         Vect_Assign(v1[0],GPC_Geom[1][n1]);
+         Vect_Assign(v1[1],GPC_Geom[1][n11]);
 
          /*Check for segment intersection*/
          i=GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL);
@@ -555,35 +581,33 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
          }
 
          /*Check for point insidness*/
-         if (((v1[0][1]<=v0[0][1] && v0[0][1]<v1[1][1]) || (v1[1][1]<=v0[0][1] && v0[0][1]<v1[0][1])) &&
-            (v0[0][0]<((v1[1][0]-v1[0][0])*(v0[0][1]-v1[0][1])/(v1[1][1]-v1[0][1])+v1[0][0]))) {
-               c=!c;
+         if (OGR_PointInside(v0[0],v1[0],v1[1])) {
+            c=!c;
          }
-//         Vect_Assign(v1[0],v1[1]);
       }
       if (c) {
          return(1);
       }
-      Vect_Assign(v0[0],v0[1]);
    }
    return(0);
 }
 
 int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
-   register long n0,n1,n;
+   unsigned long n0,n1,g0,g1;
    int           i;
    Vect3d        v0[2],v1[2];
 
-   n=OGR_G_GetPointCount(Geom1);
+   g0=GPC_ToVect3d(Geom0,0);
+   g1=GPC_ToVect3d(Geom1,1);
 
-   for(n0=0;n0<OGR_G_GetPointCount(Geom0)-1;n0++) {
-      OGR_G_GetPoint(Geom0,n0,&v0[0][0],&v0[0][1],&v0[0][2]);
-      OGR_G_GetPoint(Geom0,n0+1,&v0[1][0],&v0[1][1],&v0[1][2]);
+   for(n0=0;n0<g0-1;n0++) {
+      Vect_Assign(v0[0],GPC_Geom[0][n0]);
+      Vect_Assign(v0[1],GPC_Geom[0][n0+1]);
 
-      for(n1=0;n1<n-1;n1++) {
-         OGR_G_GetPoint(Geom1,n1,&v1[0][0],&v1[0][1],&v1[0][2]);
-         OGR_G_GetPoint(Geom1,n1+1,&v1[1][0],&v1[1][1],&v1[1][2]);
+      for(n1=0;n1<g1-1;n1++) {
+         Vect_Assign(v1[0],GPC_Geom[1][n1]);
+         Vect_Assign(v1[1],GPC_Geom[1][n1+1]);
 
          /*Check for segment intersection*/
          i=GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL);

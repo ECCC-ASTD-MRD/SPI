@@ -799,7 +799,6 @@ void OGR_LayerFree(OGR_Layer *Layer) {
       OGR_F_Destroy(Layer->Feature[n]);
    }
 
-   OGR_FD_Release(Layer->Def);
    Layer->Def=NULL;
 
    if (Layer->Select)   free(Layer->Select);
