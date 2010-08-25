@@ -92,8 +92,6 @@ typedef struct TGraphAxis {
    double         Angle;         /*Text angle*/
    double         Incr;          /*Increment*/
    double         Delta;         /*Delta de deplacement en pixel par unite d'increment*/
-   double        *HighLight;     /*Valeurs a mettre en evidence*/
-   int            HighLightNb;
    int            Numbered;      /*Numerotation de l'axe*/
    int            Spacing;       /*Espacement des labels*/
    int            Format;        /*Format de l'axe*/
@@ -110,8 +108,12 @@ typedef struct TGraphAxis {
    double         Mark;          /*Affichage des barres d'increments*/
    XColor        *Color;         /*Couleur*/
    int            Width;         /*Largeur de l'echelle*/
+   double        *Grid;          /*Valeurs ou mettre la grille*/
+   int            GridNb;
    XColor        *GridColor;     /*Couleur de la grille*/
    int            GridWidth;     /*Largeur de la grille*/
+   double        *HighLight;     /*Valeurs a mettre en evidence*/
+   int            HighLightNb;
    XColor        *HighLightColor;/*Couleur de la grille*/
    int            HighLightWidth;/*Largeur de la grille*/
 } TGraphAxis;

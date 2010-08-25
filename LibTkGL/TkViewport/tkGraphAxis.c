@@ -175,8 +175,8 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    char        buf[256];
    int         i,j,idx;
 
-   static CONST char *sopt[] = { "-color","-width","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-spacing",NULL };
-   enum                opt { COLOR,WIDTH,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,SPACING };
+   static CONST char *sopt[] = { "-color","-width","-grid","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-spacing",NULL };
+   enum                opt { COLOR,WIDTH,GRID,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,SPACING };
 
    axis=GraphAxis_Get(Name);
    if (!axis) {
@@ -210,6 +210,32 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             } else {
                if (axis->GridColor) Tk_FreeColor(axis->GridColor);
                axis->GridColor=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+            }
+            break;
+
+         case GRID:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for (j=0;j<axis->GridNb;j++){
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(axis->Grid[j]));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               /*Recuperation des niveaux*/
+               Tcl_ListObjLength(Interp,Objv[++i],&axis->GridNb);
+
+               if (axis->Grid) {
+                  free(axis->Grid);
+                  axis->Grid=NULL;
+               }
+
+               if (axis->GridNb) {
+                  axis->Grid=(double*)malloc(axis->GridNb*sizeof(double));
+                  for (j=0;j<axis->GridNb;j++){
+                     Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
+                     Tcl_GetDoubleFromObj(Interp,obj,&axis->Grid[j]);
+                  }
+               }
             }
             break;
 
@@ -530,6 +556,8 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Max=0.0;
    axis->Color=NULL;
    axis->Width=0;
+   axis->GridNb=0;
+   axis->Grid=NULL;
    axis->GridColor=NULL;
    axis->GridWidth=0;
    axis->HighLightColor=NULL;
@@ -631,6 +659,7 @@ void GraphAxis_Clear(TGraphAxis *Axis) {
 
    if (Axis->Inter)          free(Axis->Inter);
    if (Axis->HighLight)      free(Axis->HighLight);
+   if (Axis->Grid)           free(Axis->Grid);
    if (Axis->Label)          Tcl_Free((char*)Axis->Label);
    if (Axis->Unit)           free(Axis->Unit);
    if (Axis->Color)          Tk_FreeColor(Axis->Color);
@@ -1194,7 +1223,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
                glVertex2f(x,Y0+dy);
             glEnd();
 
-            if (Axis->GridWidth && x!=X0) {
+            if (!Axis->Grid && Axis->GridWidth && x!=X0) {
                if (Axis->GridColor)
                   glColor3us(Axis->GridColor->red,Axis->GridColor->green,Axis->GridColor->blue);
                glDash(&Axis->Dash);
@@ -1221,7 +1250,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
                glVertex2f(X0+dx,y);
             glEnd();
 
-            if (Axis->GridWidth && y!=Y0) {
+            if (!Axis->Grid && Axis->GridWidth && y!=Y0) {
                if (Axis->GridColor)
                   glColor3us(Axis->GridColor->red,Axis->GridColor->green,Axis->GridColor->blue);
                glDash(&Axis->Dash);
@@ -1270,7 +1299,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
                glVertex2i(x,Y0+dy);
             glEnd();
 
-            if (Axis->GridWidth && x!=X0) {
+            if (!Axis->Grid && Axis->GridWidth && x!=X0) {
                if (Axis->GridColor)
                   glColor3us(Axis->GridColor->red,Axis->GridColor->green,Axis->GridColor->blue);
                glDash(&Axis->Dash);
@@ -1297,7 +1326,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
                glVertex2i(X0+dx,y);
             glEnd();
 
-            if (Axis->GridWidth && y!=Y0) {
+            if (!Axis->Grid && Axis->GridWidth && y!=Y0) {
                if (Axis->GridColor)
                   glColor3us(Axis->GridColor->red,Axis->GridColor->green,Axis->GridColor->blue);
                glDash(&Axis->Dash);
@@ -1315,6 +1344,38 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          Tk_FreeTextLayout(text);
          inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
       }
+   }
+
+   /* Draw Grid */
+   if (Axis->GridNb && Axis->GridWidth && Axis->GridColor) {
+      for(i=0;i<Axis->GridNb;i++) {
+
+         glLineWidth(Axis->GridWidth);
+         glColor3us(Axis->GridColor->red,Axis->GridColor->green,Axis->GridColor->blue);
+         glDash(&Axis->Dash);
+
+         if (Side&HORIZONTAL) {
+            x=X0+AXISVALUE(Axis,Axis->Grid[i]);
+            if (x<X0-1 || x>X1+1)
+               continue;
+
+             glBegin(GL_LINES);
+               glVertex2i(x,Graph->yg[0]);
+               glVertex2i(x,Graph->yg[1]);
+            glEnd();
+         } else {
+            y=Y0-AXISVALUE(Axis,Axis->Grid[i]);
+            if (y<Y1-1 || y>Y0+1)
+               continue;
+
+            glBegin(GL_LINES);
+               glVertex2i(Graph->xg[0],y);
+               glVertex2i(Graph->xg[1],y);
+            glEnd();
+         }
+      }
+      glColor3us(color->red,color->green,color->blue);
+      glDisable(GL_LINE_STIPPLE);
    }
 
    /* Draw Highlight */
@@ -1511,7 +1572,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
             Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
 
-            if (Axis->GridWidth && x!=X0) {
+            if (!Axis->Grid && Axis->GridWidth && x!=X0) {
                if (Axis->GridColor)
                   Tk_CanvasPsColor(Interp,Graph->canvas,Axis->GridColor);
                glPostscriptDash(Interp,&Axis->Dash,Axis->GridWidth);
@@ -1538,7 +1599,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
             Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
 
-            if (Axis->GridWidth && y!=Y0) {
+            if (!Axis->Grid && Axis->GridWidth && y!=Y0) {
                if (Axis->GridColor)
                   Tk_CanvasPsColor(Interp,Graph->canvas,Axis->GridColor);
                glPostscriptDash(Interp,&Axis->Dash,Axis->GridWidth);
@@ -1583,7 +1644,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
             Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
 
-            if (Axis->GridWidth && x!=X0) {
+            if (!Axis->Grid && Axis->GridWidth && x!=X0) {
                if (Axis->GridColor)
                   Tk_CanvasPsColor(Interp,Graph->canvas,Axis->GridColor);
                glPostscriptDash(Interp,&Axis->Dash,Axis->GridWidth);
@@ -1609,7 +1670,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
             Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
 
-            if (Axis->GridWidth && y!=Y0) {
+            if (!Axis->Grid && Axis->GridWidth && y!=Y0) {
                if (Axis->GridColor)
                   Tk_CanvasPsColor(Interp,Graph->canvas,Axis->GridColor);
                glPostscriptDash(Interp,&Axis->Dash,Axis->GridWidth);
@@ -1628,6 +1689,33 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
          Tk_FreeTextLayout(text);
          inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
       }
+   }
+
+   /* Draw Grid */
+   if (Axis->GridNb && Axis->GridWidth && Axis->GridColor) {
+      for(i=0;i<Axis->GridNb;i++) {
+
+         Tk_CanvasPsColor(Interp,Graph->canvas,Axis->GridColor);
+         glPostscriptDash(Interp,&Axis->Dash,Axis->GridWidth);
+
+         if (Side&HORIZONTAL) {
+            x=X0+AXISVALUE(Axis,Axis->Grid[i]);
+            if (x<X0-1 || x>X1+1)
+               continue;
+
+            SETLINE(coords,x,Graph->yg[0],x,Graph->yg[1]);
+            Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
+         } else {
+            y=Y0-AXISVALUE(Axis,Axis->Grid[i]);
+            if (y<Y1-1 || y>Y0+1)
+               continue;
+
+            SETLINE(coords,Graph->xg[0],y,Graph->xg[1],y);
+            Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
+         }
+      }
+      sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin stroke\n",Axis->GridWidth);
+      Tcl_AppendResult(Interp,buf," stroke\n",(char*)NULL);
    }
 
    /* Draw Highlight */
