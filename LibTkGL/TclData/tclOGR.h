@@ -130,7 +130,7 @@ Tcl_Obj*           OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Ge
 
 int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode);
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
-int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
+int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
 void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
 void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
@@ -142,7 +142,8 @@ int          GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *En
 int          GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
 int          GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
 int          GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
+int          GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
+int          GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
 double       GPC_Length(OGRGeometryH Geom);
 double       GPC_SegmentLength(OGRGeometryH Geom);

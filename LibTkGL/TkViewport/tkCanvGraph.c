@@ -39,14 +39,16 @@ static int tkCanvGraphInit=0;
 extern TData* Data_Get(char *Field);
 static int glCanvasWidgetCmd(ClientData clientData,Tcl_Interp *interp,int argc,Tcl_Obj *CONST argv[]);
 
-void   Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
-void   Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
-void   Graph_RenderTexture(GraphItem *Gr,TData *Field,int Tile);
-void   Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
-void   GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY);
-void   GraphUnSet(GraphItem *GR);
-int    Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
-double Graph_Expand(TData *Data,double Y);
+void     Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
+void     Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
+void     Graph_RenderTexture(GraphItem *Gr,TData *Field,int Tile);
+void     Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
+void     GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY);
+void     GraphUnSet(GraphItem *GR);
+int      Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
+double   Graph_Expand(TData *Data,double Y);
+Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
+Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
 
 static int    GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
 static int    GraphToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
@@ -319,6 +321,15 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case PROJECT:
+         if(Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"x y item");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
+         Tcl_GetDoubleFromObj(Interp,Objv[3],&y);
+         item=GraphItem_Get(Tcl_GetString(Objv[5]));
+
+         return Graph_Project(Interp,gr,item,x,y,z,ex);
          break;
 
       case HEADER:
@@ -599,19 +610,14 @@ static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Graph_UnProject>
+ * Nom      : <Graph_Expand>
  * Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
- * But      : This procedure is invoked to draw a pixmap item in a given
- *       drawable.
+ * But      : Apply vertical expansion factors
  *
  * Parametres :
- *  <Interp>  : Interpreteur Tcl
- *  <GR>      : Graph
- *  <Item>    : Item to use
- *  <X>       : X Coordinate
+ *  <Data>    : DataDef
  *  <Y>       : Y Coordinate
- *  <Extrap>  : Extrapolation en dehors du graph (0=none,1=extrap,-1=limit)
  *
  * Retour:
  *
@@ -641,7 +647,63 @@ double Graph_Expand(TData *Data,double Y) {
    return(Y);
 }
 
-Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z) {
+/*----------------------------------------------------------------------------
+ * Nom      : <Graph_UnProject>
+ * Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : This procedure is invoked to draw a pixmap item in a given
+ *       drawable.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur Tcl
+ *  <GR>      : Graph
+ *  <Item>    : Item to use
+ *  <X>       : X Coordinate
+ *  <Y>       : Y Coordinate
+ *  <Extrap>  : Extrapolation en dehors du graph (0=none,1=extrap,-1=limit)
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Graph_Project(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap) {
+
+   Tcl_Obj    *obj;
+   TGraphItem *item=NULL;
+   int         i;
+
+   X-=GR->xg[0];
+   Y=GR->yg[0]-Y;
+
+   if (X<0 || X>(GR->xg[1]-GR->xg[0]) || Y<0 || Y>(GR->yg[0]-GR->yg[1])) {
+      if (!Extrap) {
+         Tcl_AppendResult(Interp,"",(char*)NULL);
+         return(TCL_OK);
+      } else if (Extrap==-1) {
+         X=X<0?0:X;
+         X=X>(GR->xg[1]-GR->xg[0])?(GR->xg[1]-GR->xg[0]):X;
+         Y=Y<0?0:Y;
+         Y=Y>(GR->yg[0]-GR->yg[1])?(GR->yg[0]-GR->yg[1]):Y;
+      }
+   }
+
+   if (Item) {
+      Tcl_SetObjResult(Interp,Graph_ProjectItem(Interp,Item,X,Y,Z));
+   } else {
+      obj=Tcl_NewListObj(0,NULL);
+      for(i=0;i<GR->NItem;i++) {
+         item=GraphItem_Get(GR->Item[i]);
+         Tcl_ListObjAppendElement(Interp,obj,Graph_ProjectItem(Interp,item,X,Y,Z));
+      }
+      Tcl_SetObjResult(Interp,obj);
+   }
+
+   return(TCL_OK);
+}
+
+Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z) {
 
    Tcl_Obj    *obj;
    TGraphAxis *axis;
@@ -652,23 +714,46 @@ Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double
 
    if (Item->XAxis && Item->YAxis) {
       axis=GraphAxis_Get(Item->XAxis);
-      x=AXISPPOS(axis,X);
+      x=AXISVALUE(axis,X);
       axis=GraphAxis_Get(Item->YAxis);
-      y=AXISPPOS(axis,Y);
+      y=AXISVALUE(axis,Y);
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y));
 
       if (Item->Data) {
+/*
          if ((data=Data_Get(Item->Data))) {
             y=Graph_Expand(data,y);
             spd=VertexVal(data->Ref,data->Def,x,y,0.0);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
          }
+*/
       }
    }
    return(obj);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <Graph_UnProject>
+ * Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : This procedure is invoked to draw a pixmap item in a given
+ *       drawable.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur Tcl
+ *  <GR>      : Graph
+ *  <Item>    : Item to use
+ *  <X>       : X Coordinate
+ *  <Y>       : Y Coordinate
+ *  <Extrap>  : Extrapolation en dehors du graph (0=none,1=extrap,-1=limit)
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
 int Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap) {
 
    Tcl_Obj    *obj;
@@ -702,6 +787,34 @@ int Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,
    }
 
    return(TCL_OK);
+}
+
+Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z) {
+
+   Tcl_Obj    *obj;
+   TGraphAxis *axis;
+   TData      *data;
+   double      x,y,spd;
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   if (Item->XAxis && Item->YAxis) {
+      axis=GraphAxis_Get(Item->XAxis);
+      x=AXISPPOS(axis,X);
+      axis=GraphAxis_Get(Item->YAxis);
+      y=AXISPPOS(axis,Y);
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y));
+
+      if (Item->Data) {
+         if ((data=Data_Get(Item->Data))) {
+            y=Graph_Expand(data,y);
+            spd=VertexVal(data->Ref,data->Def,x,y,0.0);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
+         }
+      }
+   }
+   return(obj);
 }
 
 /*----------------------------------------------------------------------------

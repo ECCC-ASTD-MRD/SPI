@@ -799,10 +799,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
       OGR_F_Destroy(Layer->Feature[n]);
    }
 
-//   for(n=0;n<OGR_FD_GetFieldCount(Layer->Def);n++) {
-//      OGR_Fld_Destroy(OGR_FD_GetFieldDefn(Layer->Def,n));
-//   }
-//   OGR_FD_Release(Layer->Def);
+   OGR_FD_Release(Layer->Def);
    Layer->Def=NULL;
 
    if (Layer->Select)   free(Layer->Select);
@@ -934,6 +931,7 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
          if (Layer->Select[f]) {
             Def_Get(Def,0,f,val);
             OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
+            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
       }
       return(Layer);
@@ -1069,7 +1067,7 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
 
    OGR_File *file=NULL;
 
-   if ((file=(OGR_File*)TclY_HashDel(&OGR_FileTable,Id))) {
+  if ((file=(OGR_File*)TclY_HashDel(&OGR_FileTable,Id))) {
 //      if (file->Mode!='a' && file->Mode!='A') {
          OGR_DS_Destroy(file->Data);
 //      }

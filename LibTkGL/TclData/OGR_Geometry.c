@@ -496,7 +496,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
             return(TCL_ERROR);
          }
-         if (GPC_Intersect(g0,g1)) {
+         if (GPC_Intersect(g0,g1,NULL,NULL)) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));

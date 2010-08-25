@@ -240,7 +240,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   return TCL_ERROR;
                } else {
                   field=OGR_FD_GetFieldDefn(layer->Def,j);
-                  return(OGR_SetTypeObj(Interp,Objv[++i],field,layer->Feature[f],j));
+                  return(OGR_SetTypeObj(Interp,Objv[++i],layer->Layer,field,layer->Feature[f],j));
                }
             }
             break;
@@ -1239,7 +1239,7 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
    return(obj);
 }
 
-int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
+int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
    int          n,nb,year,month,day,hour,min,sec,tz,dt,tm;
    time_t       time;
@@ -1292,6 +1292,7 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRFieldDefnH Field,OGRFeatur
       case OFTBinary:
          break;
    }
+   OGR_L_SetFeature(Layer,Feature);
    return(TCL_OK);
 }
 
@@ -1447,6 +1448,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
          return(NULL);
       }
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
+//      OGR_Fld_Destroy(field);
    }
    return(field);
 }
@@ -1597,7 +1599,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    }
 
    for(f=0;f<OGR_FD_GetFieldCount(layer->Def);f++) {
-      OGR_L_CreateField(olayer,OGR_FD_GetFieldDefn(layer->Def,f),TRUE);
+      OGR_L_CreateField(olayer,OGR_FD_GetFieldDefn(layer->Def,f),0);
    }
 
    for(f=0;f<layer->NFeature;f++) {
@@ -1606,7 +1608,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
       OGR_L_CreateFeature(olayer,feature);
    }
 
-   OGR_FD_Destroy(defn);
+//   OGR_FD_Destroy(defn);
 
    return(TCL_OK);
 }
@@ -1959,6 +1961,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 
    int f;
+   OGRFeatureH feat;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerClear: Invalid layer",(char*)NULL);
@@ -1973,6 +1976,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
+         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
       }
    }
    return(TCL_OK);
@@ -2105,6 +2109,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                          break;
             }
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
          if (chan) {
             Tcl_SetObjLength(obji,0);
@@ -2179,6 +2184,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         break;
                      }
                   }
+                  OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
                }
 
                /*Append this gridpoint intersections to the index*/
@@ -2208,6 +2214,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          if (accum[f]!=0.0) {
             val0/=accum[f];
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
       }
    }
@@ -2605,6 +2612,27 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    return(1);
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_Pick>
+ * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Selectionner des features selon un point ou une region.
+ *
+ * Parametres  :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Layer>    : Couche
+ *   <Geom>     : Geometrie de recherche
+ *   <List>     : Liste de coordonnees latlon (si pas de Geom)
+ *   <All>      : Selectionne tout ou la premiere feature satisfaisante
+ *   <Mode>     : Mode de selection (INTERSECT,INSIDE,OUTSIDE,NEAREST)
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode) {
 
    Tcl_Obj     *obj;
