@@ -1384,7 +1384,6 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
 
          glLineWidth(Axis->HighLightWidth);
          glColor3us(Axis->HighLightColor->red,Axis->HighLightColor->green,Axis->HighLightColor->blue);
-         glDash(&Axis->Dash);
 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,Axis->HighLight[i]);
@@ -1723,7 +1722,6 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
       for(i=0;i<Axis->HighLightNb;i++) {
 
          Tk_CanvasPsColor(Interp,Graph->canvas,Axis->HighLightColor);
-         glPostscriptDash(Interp,&Axis->Dash,Axis->HighLightWidth);
 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,Axis->HighLight[i]);

@@ -1165,14 +1165,14 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int 
    glPushMatrix();
 
    glLoadIdentity();
-   trViewport(GLRender->TRCon,x,y,w*GLRender->MagScale,h*GLRender->MagScale);
+   trViewport(GLRender->TRCon,x,y-1,w*GLRender->MagScale,h*GLRender->MagScale);
 
    /*If pick coordinates are specified*/
    if (PickX || PickY) {
       glPickInit(PickX-((TkCanvas*)Canvas)->xOrigin,PickY+((TkCanvas*)Canvas)->yOrigin,2.0,2.0);
    }
    /*Ajuster la projection pour garder un aspect correct*/
-   glOrtho(0,w,0,h,-1,1);
+   glOrtho(0,w-1,0,h-1,-1,1);
 
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
