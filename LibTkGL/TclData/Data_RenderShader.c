@@ -317,7 +317,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    /*Setup 1D Texture*/
-   glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,StreamMap);
+   glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,FFStreamMap);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
@@ -325,9 +325,9 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glEnable(GL_TEXTURE_1D);
 
    if (!Field->Map) {
-      Field->Map=(float*)malloc(sizeof(float)*STREAMLEN);
-      for(len=0;len<STREAMLEN;len++) {
-         Field->Map[len]=(float)len/STREAMLEN*32;
+      Field->Map=(float*)malloc(sizeof(float)*FFSTREAMLEN);
+      for(len=0;len<FFSTREAMLEN;len++) {
+         Field->Map[len]=(float)len/FFSTREAMLEN*32;
       }
 
    }
