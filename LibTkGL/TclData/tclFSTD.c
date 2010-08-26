@@ -1525,11 +1525,11 @@ int FSTD_Level2IP(float Level,int Type) {
 
       /*GALCHEN -> MASL*/
       if (Type==LVL_GALCHEN) {
-         Type==LVL_MAGL;
+         Type=LVL_MAGL;
       }
 
-      /*Convertir en niveau reel*/
-      if (Type==LVL_HYBRID) {
+     /*Convertir en niveau reel*/
+      if (Type==LVL_HYBRID || Type==LVL_MAGL) {
          mode=2;
       } else {
          mode=FSTDIP1MODE;
