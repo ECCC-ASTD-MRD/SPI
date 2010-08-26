@@ -88,8 +88,10 @@ puts  "   Obj area            : [ogrgeometry stats POINT -area]"
 ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH="South America" }
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
-set reqlayer Volcano
-ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN (\"South America\",\"Tau Ceti\")"
-puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
+#set reqlayer Volcano
+#ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN (\"South America\",\"Tau Ceti\")"
+#puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
+ogrlayer free LAYER0
+ogrlayer free LAYERRESULT
 ogrfile close FILE0

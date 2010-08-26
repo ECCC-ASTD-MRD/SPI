@@ -89,5 +89,3 @@ fstdfield write TIC FILE -32 True
 fstdfield write TAC FILE -32 True
 fstdfield write TZH FILE -32 True
 fstdfile close FILE
-
-exit

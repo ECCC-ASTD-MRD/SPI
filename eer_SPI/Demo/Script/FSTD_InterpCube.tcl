@@ -70,7 +70,6 @@ foreach var { TT UU GZ } {
    fstdfield gridinterp GRID FROM
 
    #----- Interpoler verticalement sur les niveaux galchen
-
    fstdfield verticalinterp TO GRID GZFROM GZFROM
    fstdfield write TO 2 -32 True
 }

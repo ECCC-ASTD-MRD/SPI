@@ -24,6 +24,8 @@ package require TclData
 
 puts \n[file tail [info script]]
 
+fstdfield ip1mode NEW
+
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
 set levels { 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 }

@@ -66,10 +66,4 @@ puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
 
 close $f
 
-#----- Save the result in another file
-catch { eval file delete [glob DataOut/OGR_Interp2.*] }
-ogrfile open FILE write DataOut/OGR_Interp2.shp "ESRI Shapefile"
-ogrlayer write LAYER FILE
-ogrfile close FILE
-
-#ogrfile close SHPFILE
+ogrfile close SHPFILE
