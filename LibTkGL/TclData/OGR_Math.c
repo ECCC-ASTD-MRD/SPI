@@ -491,7 +491,7 @@ int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
          }
       }
    }
-   return(All?t==OGR_G_GetPointCount(Geom0):t);
+   return(All?t==g0:t);
 }
 
 int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
@@ -517,7 +517,7 @@ int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
          }
       }
    }
-   return(All?t==OGR_G_GetPointCount(Geom0):t);
+   return(All?t==g0:t);
 }
 
 int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
