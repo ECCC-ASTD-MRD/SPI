@@ -963,7 +963,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
    OGR_File  *file;
    Tcl_Obj   *obj;
 
-   int          idx,nidx,i,code;
+   int          n,idx,nidx,i,code;
    char        *driver=NULL;
    const char **list=NULL;
 
@@ -1023,11 +1023,14 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          break;
 
       case CLOSE:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileid");
             return(TCL_ERROR);
          }
-         return(OGR_FileClose(Interp,Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            OGR_FileClose(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case FILENAME:

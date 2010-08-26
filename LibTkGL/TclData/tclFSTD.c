@@ -1120,7 +1120,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int                idx,itype,type;
+   int                n,idx,itype,type;
    FSTD_File         *file=NULL;
 
    static CONST char *types[] = { "ALL","NOMVAR","DATEV","IP1" };
@@ -1162,11 +1162,14 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case CLOSE:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileid");
             return(TCL_ERROR);
          }
-         return(FSTD_FileClose(Interp,Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            FSTD_FileClose(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case FILENAME:

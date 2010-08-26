@@ -108,7 +108,7 @@ int TclRadar_Init(Tcl_Interp *Interp) {
 static int Radar_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    Radar_File         *file;
-   int                idx;
+   int                n,idx;
    static CONST char *sopt[] = { "open","close","filename",NULL };
    enum               opt { OPEN,CLOSE,FILENAME };
 
@@ -133,11 +133,14 @@ static int Radar_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
 
       case CLOSE:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileid");
             return(TCL_ERROR);
          }
-         return (Radar_FileClose(Interp,Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            Radar_FileClose(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case FILENAME:

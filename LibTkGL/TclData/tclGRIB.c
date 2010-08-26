@@ -44,7 +44,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         id,idx;
+   int         n,id,idx;
    static CONST char *sopt[] = { "open","close",NULL };
    enum                opt { OPEN,CLOSE };
 
@@ -69,11 +69,14 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case CLOSE:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileid");
             return(TCL_ERROR);
          }
-         return(GRIB_FileClose(Interp,Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            GRIB_FileClose(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
    }
 

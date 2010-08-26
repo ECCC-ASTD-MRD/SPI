@@ -931,7 +931,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    Tcl_Obj     *obj;
 
    double      x,y,lat0,lon0,lat1,lon1;
-   int         idx,i,in;
+   int         n,idx,i,in;
    char        buf[256],**meta,*dri=NULL;
    static CONST char *sopt[] = { "open","close","format","driver","width","height","georef","metadata","project","unproject","within","filename","error",NULL };
    enum                opt { OPEN,CLOSE,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,ERROR };
@@ -1115,11 +1115,14 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case CLOSE:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileid");
+            return(TCL_ERROR);
          }
-         return(GDAL_FileClose(Interp,Tcl_GetString(Objv[2])));
+         for(n=2;n<Objc;n++) {
+            GDAL_FileClose(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case FILENAME:
