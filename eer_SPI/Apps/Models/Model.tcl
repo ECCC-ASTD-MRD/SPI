@@ -1405,7 +1405,7 @@ proc Model::ParamsMeteoInput { Model } {
 
    #----- Create ASCII file containing grid parameters.
    if { [llength $sim(Grid)]>5 } {
-      exec echo [format "%.0f,%.0f,%.1f,%.1f,%.1f,%.1f,%s" \
+      exec echo [format "%.0f,%.0f,%.7f,%.7f,%.7f,%.7f,%s" \
          [lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
          [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]] > $sim(Path)/tmp/griddef.in
    }
