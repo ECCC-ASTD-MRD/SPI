@@ -2262,41 +2262,23 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <OGR_LayerRender>
- * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+ * Nom          : <OGR_LayerParse>
+ * Creation     : August 2010 J.P. Gauthier - CMC/CMOE
  *
- * But          : Rendu de la bande raster.
- *
- * Parametres  :
- *   <Interp>   : Interpreteur Tcl
- *   <Proj>     : La projection courante
- *   <VP>       : Le viewport ou le rendu doit etre fait
- *   <Layer>    : Couche a afficher
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <OGR_ThreadProc>
- * Creation     : Avril 2007 J.P. Gauthier - CMC/CMOE
- *
- * But          : Lire les donnees des tuiles et calculer les points d'attaches dans une sceonde thread.
+ * But          : Effecture les reprojections de la geometrie de la couche.
  *
  * Parametres   :
- *   <clientData>: Bande
+ *   <Layer>    : Couche a afficher
+ *   <Proj>     : La projection courante
+ *   <Delay>    : Mode refresh interactif
  *
  * Retour       :
- *   <...>      : Code de reussite
+ *   <Nb>       : Nombre de feature reprojetees
  *
  * Remarques    :
- *
+ *    - En activant le delay, on active un refresh du viewport apres 1/4 de secondes
  *---------------------------------------------------------------------------------------------------------------
 */
-
-Tcl_ThreadCreateType OGR_ThreadProc(ClientData clientData);
 
 int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
@@ -2331,6 +2313,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
       glEndList();
 
       Layer->GFeature++;
+      /*Refrech viewport if it's been too long*/
       if (Delay && (clock()-sec)>(0.25*CLOCKS_PER_SEC)) {
          Proj->Loading+=(Layer->GFeature-t);
          Tcl_CreateTimerHandler(0,ViewportRefresh_Canvas,Proj->VP->canvas);
@@ -2338,6 +2321,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
       }
    }
 
+   /*Make sure we reset the loading flag when done*/
    if (Layer->GFeature==Layer->NFeature) {
       Proj->Loading=0;
       if (Delay)
@@ -2346,6 +2330,24 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
    return(t);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerRender>
+ * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Rendu de la bande raster.
+ *
+ * Parametres  :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Proj>     : La projection courante
+ *   <VP>       : Le viewport ou le rendu doit etre fait
+ *   <Layer>    : Couche a afficher
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer) {
 
    int     f,idx=-1,x,y,g,id;
