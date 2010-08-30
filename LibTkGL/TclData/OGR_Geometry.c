@@ -1019,7 +1019,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
  *
  * Parametres :
  *  <Proj>    : Projection
- *  <VP>      : Viewport
  *  <Ref>     : Referentiel
  *  <Layer>   : Layer d'origine
  *  <Geom>    : Geometrie
@@ -1032,7 +1031,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
  *
  *----------------------------------------------------------------------------
 */
-void OGR_GeometryRender(Projection *Proj,ViewportItem *VP,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
+void OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
    OGRGeometryH       subgeom;
    OGRwkbGeometryType type;
@@ -1048,7 +1047,7 @@ void OGR_GeometryRender(Projection *Proj,ViewportItem *VP,TGeoRef *Ref,OGR_Layer
    if (nv && type!=wkbPolygon) {
       for(n=0;n<nv;n++) {
          subgeom=OGR_G_GetGeometryRef(Geom,n);
-         OGR_GeometryRender(Proj,VP,Ref,Layer,subgeom,Elev,Extrude);
+         OGR_GeometryRender(Proj,Ref,Layer,subgeom,Elev,Extrude);
       }
    }
 

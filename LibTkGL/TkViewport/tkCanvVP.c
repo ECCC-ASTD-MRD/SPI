@@ -1094,7 +1094,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       }
 
       /*Force update on XExposure event (if in hardware mode) and backbuffer refresh*/
-      if ((GLRender->XExpose>0 && !GLRender->Soft) || !vp->Frames[vp->Frame]) {
+      if ((GLRender->XExpose>0 && !GLRender->Soft) || !vp->Frames[vp->Frame] || load) {
          vp->Update=1;
       }
 

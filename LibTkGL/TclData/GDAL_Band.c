@@ -2816,7 +2816,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glStencilMask(0x04);
       glStencilFunc(GL_ALWAYS,0x4,0x4);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-      OGR_GeometryRender(Proj,VP,Band->Ref,NULL,Band->OGRMask,0.0,0.0);
+      OGR_GeometryRender(Proj,Band->Ref,NULL,Band->OGRMask,0.0,0.0);
       glStencilFunc(GL_EQUAL,0x04,0x04);
       glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
       glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);

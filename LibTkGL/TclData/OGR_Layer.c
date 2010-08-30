@@ -69,9 +69,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    int            i,idx,j,f,t;
    double         x,y,a;
 
-   static CONST char *sopt[] = { "-active","-type","-space","-field","-name","-feature","-nb","-geometry","-centroid","-map","-projection","-georef",
+   static CONST char *sopt[] = { "-active","-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-projection","-georef",
                                  "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-featuremask","-label",NULL };
-   enum                opt { ACTIVE,TYPE,SPACE,FIELD,NAME,FEATURE,NB,GEOMETRY,CENTROID,MAP,PROJECTION,GEOREF,
+   enum                opt { ACTIVE,TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,PROJECTION,GEOREF,
                              MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,FEATUREMASK,LABEL };
 
    layer=OGR_LayerGet(Name);
@@ -322,6 +322,12 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   layer->NFeature=f;
                }
                Tcl_SetObjResult(Interp,Tcl_NewLongObj(layer->NFeature));
+            }
+            break;
+
+         case NBREADY:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(layer->GFeature));
             }
             break;
 
@@ -1473,6 +1479,7 @@ void OGR_LayerClean(OGR_Layer *Layer) {
    if (Layer && Layer->LFeature) {
       glDeleteLists(Layer->LFeature,Layer->NFeature);
       Layer->LFeature=0;
+      Layer->GFeature=0;
    }
 }
 
@@ -2272,15 +2279,81 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_ThreadProc>
+ * Creation     : Avril 2007 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Lire les donnees des tuiles et calculer les points d'attaches dans une sceonde thread.
+ *
+ * Parametres   :
+ *   <clientData>: Bande
+ *
+ * Retour       :
+ *   <...>      : Code de reussite
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+
+Tcl_ThreadCreateType OGR_ThreadProc(ClientData clientData);
+
+int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
+
+   Vect3d        vr;
+   int           f,t;
+   double        elev=0.0,extr=0.0;
+   OGRGeometryH  geom;
+   clock_t       sec;
+
+   t=Layer->GFeature;
+
+   sec=clock();
+
+   /*Generate the display lists*/
+   for(f=Layer->GFeature;f<Layer->NFeature;f++) {
+
+      glNewList(Layer->LFeature+f,GL_COMPILE);
+
+      if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
+         if (Layer->Topo>0)
+            elev=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Topo-1);
+
+         if (Layer->Extrude!=-1)
+            extr=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Extrude);
+
+         OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->TopoFactor,extr*Layer->ExtrudeFactor);
+         OGR_Box(Proj,Layer);
+         GPC_Centroid2D(geom,&vr[0],&vr[1]);
+         Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].Lat,&Layer->Loc[f].Lon,1,1);
+         Layer->Loc[f].Elev=0.0;
+      }
+      glEndList();
+
+      Layer->GFeature++;
+      if (Delay && (clock()-sec)>(0.25*CLOCKS_PER_SEC)) {
+         Proj->Loading+=(Layer->GFeature-t);
+         Tcl_CreateTimerHandler(0,ViewportRefresh_Canvas,Proj->VP->canvas);
+         break;
+      }
+   }
+
+   if (Layer->GFeature==Layer->NFeature) {
+      Proj->Loading=0;
+      if (Delay)
+         Tcl_CreateTimerHandler(0,ViewportRefresh_Canvas,Proj->VP->canvas);
+   }
+   return(t);
+}
+
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer) {
 
-   int     f,gen=0,idx=-1,x,y;
+   int     f,idx=-1,x,y,g,id;
    Vect3d  vr;
    char    lbl[256];
-   double  elev=0.0,extr=0.0,val,sz;
+   double  val,sz;
 
    OGRFieldDefnH field;
-   OGRGeometryH  geom;
    TDataSpec     *spec=Layer->Spec;
 
    extern TIcon IconList[];
@@ -2298,6 +2371,23 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    if (!GeoRef_Valid(Layer->Ref)) {
       fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid georeference\n");
       return(0);
+   }
+
+   if (!Layer->LFeature) {
+      Layer->LFeature=glGenLists(Layer->NFeature);
+      if (!Layer->LFeature) {
+         fprintf(stderr,"(ERROR) OGR_LayerRender: Unable to allocate display list.\n");
+         return(0);
+      }
+   }
+
+   /*Read in data in another thread*/
+   if (Layer->GFeature!=Layer->NFeature) {
+      if (GLRender->XBatch || GLRender->TRCon) {
+         g=OGR_LayerParse(Layer,Proj,0);
+      } else {
+         g=OGR_LayerParse(Layer,Proj,1);
+      }
    }
 
    OGR_LayerPreInit(Layer);
@@ -2347,39 +2437,6 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-   /*Generate the display lists*/
-   if (!Layer->LFeature) {
-      Layer->LFeature=glGenLists(Layer->NFeature);
-      if (!Layer->LFeature) {
-         fprintf(stderr,"(ERROR) OGR_LayerRender: Unable to allocate display list.\n");
-      } else {
-         gen=1;
-      }
-      for(f=0;f<Layer->NFeature;f++) {
-
-         if (gen) glNewList(Layer->LFeature+f,GL_COMPILE);
-
-         if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
-            if (Layer->Topo>0)
-               elev=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Topo-1);
-
-            if (Layer->Extrude!=-1)
-               extr=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Extrude);
-
-            OGR_GeometryRender(Proj,VP,Layer->Ref,Layer,geom,elev*Layer->TopoFactor,extr*Layer->ExtrudeFactor);
-            OGR_Box(Proj,Layer);
-            GPC_Centroid2D(geom,&vr[0],&vr[1]);
-            Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].Lat,&Layer->Loc[f].Lon,1,1);
-            Layer->Loc[f].Elev=0.0;
-         }
-         if (gen) glEndList();
-      }
-   }
-
-   if (!Layer->LFeature) {
-      return(0);
-   }
-
    /*Check for extrusion selection*/
    if (GLRender->GLZBuf || Layer->Extrude!=-1 || Layer->Topo!=-1) {
       glEnable(GL_DEPTH_TEST);
@@ -2392,7 +2449,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glCullFace(GL_FRONT_AND_BACK);
 
    /*Render the features*/
-   for(f=0;f<Layer->NFeature;f++) {
+   for(f=0;f<Layer->GFeature;f++) {
       if (Layer->Select[f]) {
          if (Layer->Map!=-1 && spec->Map) {
             val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
@@ -2508,63 +2565,87 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    if (Layer->SFeature) {
 
       for(f=0;f<Layer->NSFeature;f++) {
-         if (spec->HighFill) {
-            glDisable(GL_CULL_FACE);
-            glLineWidth(0.0);
-            glPointSize(0.0);
-            glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
-            Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
-         }
 
-         if (spec->HighLine && spec->Width) {
-            glEnable(GL_CULL_FACE);
-            if (spec->Width<0) {
-               glPushAttrib(GL_STENCIL_BUFFER_BIT);
-               glStencilFunc(GL_ALWAYS,0x1,0x1);
-               glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+         /*If it's already been projected*/
+         if (f<Layer->GFeature) {
+            if (spec->HighFill) {
+               glDisable(GL_CULL_FACE);
+               glLineWidth(0.0);
+               glPointSize(0.0);
+               glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
+               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
             }
-            glLineWidth(ABS(spec->Width));
-            glPointSize(ABS(spec->Width));
-            glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
-            Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
-            if (spec->Width<0) {
-               glPopAttrib();
+
+            if (spec->HighLine && spec->Width) {
+               glEnable(GL_CULL_FACE);
+               if (spec->Width<0) {
+                  glPushAttrib(GL_STENCIL_BUFFER_BIT);
+                  glStencilFunc(GL_ALWAYS,0x1,0x1);
+                  glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+               }
+               glLineWidth(ABS(spec->Width));
+               glPointSize(ABS(spec->Width));
+               glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
+               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               if (spec->Width<0) {
+                  glPopAttrib();
+               }
             }
          }
       }
    }
 
-   /*Render the feature's labels*/
-   if (Layer->Label && GLRender->Resolution<=1) {
-      Projection_UnClip(Proj);
+   /*Render the feature's labels only if they're all projected*/
+   if (Layer->NFeature==Layer->GFeature) {
+      if (Layer->Label && GLRender->Resolution<=1) {
+         Projection_UnClip(Proj);
 
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glLoadIdentity();
+         glMatrixMode(GL_MODELVIEW);
+         glPushMatrix();
+         glLoadIdentity();
 
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix();
-      glLoadIdentity();
+         glMatrixMode(GL_PROJECTION);
+         glPushMatrix();
+         glLoadIdentity();
 
-      if (GLRender->TRCon) {
-         x=GLRender->TRCon->CurrentColumn*GLRender->TRCon->TileWidthNB-GLRender->TRCon->TileBorder;
-         y=GLRender->TRCon->CurrentRow*GLRender->TRCon->TileHeightNB-GLRender->TRCon->TileBorder;
-         gluOrtho2D(0,GLRender->TRCon->CurrentTileWidth,0,GLRender->TRCon->CurrentTileHeight);
-         glTranslated(-x,y,0);
-      } else {
-         gluOrtho2D(0,VP->Width,0,VP->Height);
-      }
+         if (GLRender->TRCon) {
+            x=GLRender->TRCon->CurrentColumn*GLRender->TRCon->TileWidthNB-GLRender->TRCon->TileBorder;
+            y=GLRender->TRCon->CurrentRow*GLRender->TRCon->TileHeightNB-GLRender->TRCon->TileBorder;
+            gluOrtho2D(0,GLRender->TRCon->CurrentTileWidth,0,GLRender->TRCon->CurrentTileHeight);
+            glTranslated(-x,y,0);
+         } else {
+            gluOrtho2D(0,VP->Width,0,VP->Height);
+         }
 
-      glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),spec->Font);
+         glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),spec->Font);
 
-      if (spec->Outline) {
-         glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
-         field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
+         if (spec->Outline) {
+            glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+            field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
 
-         for(f=0;f<Layer->NFeature;f++) {
-            if (Layer->Select[f]) {
-               if (Projection_Pixel(Proj,VP,Layer->Loc[f],vr)) {
-                  OGR_SingleTypeString(lbl,field,Layer->Feature[f],Layer->Label[0]);
+            for(f=0;f<Layer->GFeature;f++) {
+               if (Layer->Select[f]) {
+                  if (Projection_Pixel(Proj,VP,Layer->Loc[f],vr)) {
+                     OGR_SingleTypeString(lbl,field,Layer->Feature[f],Layer->Label[0]);
+                     vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
+                     vr[1]+=5;
+                     if (Interp) {
+                        glPostscriptText(Interp,VP->canvas,lbl,vr[0],vr[1],0,spec->Outline,0.0,0.5,0.0);
+                     } else {
+                        glDrawString(vr[0],vr[1],0,lbl,strlen(lbl),0,0);
+                     }
+                  }
+               }
+            }
+         }
+
+         /*Render the selected feature's labels*/
+         if (Layer->SFeature && spec->HighLine) {
+            glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
+            field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
+            for(f=0;f<Layer->NSFeature;f++) {
+               if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
+                  OGR_SingleTypeString(lbl,field,Layer->Feature[Layer->SFeature[f]],Layer->Label[0]);
                   vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
                   vr[1]+=5;
                   if (Interp) {
@@ -2575,30 +2656,12 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                }
             }
          }
-      }
+         glPopMatrix();
+         glMatrixMode(GL_MODELVIEW);
+         glPopMatrix();
 
-      /*Render the selected feature's labels*/
-      if (Layer->SFeature && spec->HighLine) {
-         glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
-         field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
-         for(f=0;f<Layer->NSFeature;f++) {
-            if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
-               OGR_SingleTypeString(lbl,field,Layer->Feature[Layer->SFeature[f]],Layer->Label[0]);
-               vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
-               vr[1]+=5;
-               if (Interp) {
-                  glPostscriptText(Interp,VP->canvas,lbl,vr[0],vr[1],0,spec->Outline,0.0,0.5,0.0);
-               } else {
-                  glDrawString(vr[0],vr[1],0,lbl,strlen(lbl),0,0);
-               }
-            }
-         }
+         Projection_Clip(Proj);
       }
-      glPopMatrix();
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-
-      Projection_Clip(Proj);
    }
 
    glEnable(GL_CULL_FACE);

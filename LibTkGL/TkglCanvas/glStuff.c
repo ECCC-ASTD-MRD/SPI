@@ -47,6 +47,8 @@ static float glArrayArrow[14] = { 0.0f,0.0f,0.5f,-1.0f,0.2f,-1.0f,0.2f,-2.0f,-0.
 static Tcl_HashTable glFontIdTable;
 static Tcl_HashTable glBitmapTable;
 
+TCL_DECLARE_MUTEX(MUTEX_GL);
+
 static char *ExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression","GL_ARB_vertex_buffer_object",NULL };
 static char *ProgString[]={ "Field","FieldTex","DataTex","TopoTex",NULL };
 
@@ -2300,3 +2302,15 @@ void glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]) 
    glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0;
 };
 
+/* Thread mutex functions*/
+void glLock() {
+   if (!GLRender->XBatch) {
+      Tcl_MutexLock(&MUTEX_GL);
+   }
+}
+
+void glUnLock() {
+   if (!GLRender->XBatch) {
+      Tcl_MutexUnlock(&MUTEX_GL);
+   }
+}

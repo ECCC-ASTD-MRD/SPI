@@ -690,6 +690,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Min          = 0.0;
    layer->Max          = 0.0;
 
+   layer->GFeature   =0;
    layer->NFeature   =0;
    layer->LFeature   =0;
    layer->NSFeature  =0;

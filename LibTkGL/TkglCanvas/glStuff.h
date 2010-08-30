@@ -229,6 +229,9 @@ void      glTessError(GLenum Err);
 GLdouble *glTessTmpGet();
 void      glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]);
 
+void      glLock();
+void      glUnLock();
+
 int      trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR);
 void     trRasterPos2i(int X,int Y);
 #endif

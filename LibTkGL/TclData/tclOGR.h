@@ -74,6 +74,7 @@ typedef struct OGR_Layer {
    int           Mask,FMask;   /*Masque*/
    GLuint        LFeature;
    long          NFeature;
+   long          GFeature;
    long         *SFeature;
    int           NSFeature;
    int          *Label;
@@ -125,7 +126,7 @@ OGRGeometryH*      OGR_GeometryGet(char *Name);
 int                OGR_GeometrySet(Tcl_Interp *Interp,OGRGeometryH Geom,Tcl_Obj *Desc);
 int                OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name);
 int                OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned long Size);
-void               OGR_GeometryRender(Projection *Proj,ViewportItem *VP,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude);
+void               OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude);
 Tcl_Obj*           OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom);
 Tcl_Obj*           OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geom);
 
