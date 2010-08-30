@@ -622,8 +622,27 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
       }
    }
    set Data(Job) ""
+   Mapper::Progress $layer
 
    return True
+}
+
+proc Mapper::Progress { Object } {
+   global GDefs
+   variable Lbl
+
+   if { [ogrlayer is $Object] } {
+      set ready [ogrlayer define $Object -nbready]
+      set total [ogrlayer define $Object -nb]
+
+      if { $ready!=$total } {
+         set pc [expr double($ready)/$total*100.0]
+         SPI::Progress $pc "[lindex $Lbl(Process) $GDefs(Lang)] $Object [format "%.0f" ${pc}]%"
+         after 100 Mapper::Progress $Object
+         return
+      }
+   }
+   SPI::Progress 0 ""
 }
 
 #-------------------------------------------------------------------------------
@@ -975,6 +994,8 @@ proc Mapper::ParamsOGRSet { Object } {
 
    Page::Update     $Page::Data(Frame)
    ColorBar::Update $Page::Data(Frame)
+
+   Mapper::Progress $Object
 
    $Data(Canvas) configure -cursor left_ptr
    .mapperparams configure -cursor left_ptr
