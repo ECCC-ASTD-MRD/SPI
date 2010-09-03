@@ -714,9 +714,17 @@ proc Viewport::Follow { Frame VP X Y } {
    catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
    set Page::Data(Altitude) $Map(AltCursor)
 
-   #----- Activation du pointeur commun
+   $Frame.page.canvas delete COORDLINK SQUARECURSOR
 
-   $Frame.page.canvas delete COORDLINK
+   #----- Activation du curseur carre
+
+   if { $Page::Data(Square) } {
+      $Frame.page.canvas create line [expr $X-$Page::Data(Square)] [expr $Y-$Page::Data(Square)] [expr $X-$Page::Data(Square)] [expr $Y+$Page::Data(Square)] \
+          [expr $X+$Page::Data(Square)] [expr $Y+$Page::Data(Square)] [expr $X+$Page::Data(Square)] [expr $Y-$Page::Data(Square)] [expr $X-$Page::Data(Square)] [expr $Y-$Page::Data(Square)] \
+          -width 2 -fill red -tags "$Page::Data(Tag)$VP SQUARECURSOR"
+   }
+
+   #----- Activation du pointeur commun
 
    if { $Page::Data(CoordLink) } {
       foreach frame $Page::Data(Frames) {

@@ -153,13 +153,15 @@ namespace eval Page {
    set Data(Y)          0           ;#Coordonnee de base
    set Data(Grid)       0           ;#Grille de snap
    set Data(Snap)       5           ;#intervalle de snap
+   set Data(Square)     0           ;#Dimension du curseur carre
+
 
    set Data(Tag)        PAGE        ;#Tag identifiant la projection
 
    set Data(Coord)      ""          ;#Coordonnees a l'interieur de la page
    set Data(CoordUnit)  DEG         ;#Type d'unite des coordonnees
    set Data(CoordLink)  False       ;#Curseur commun
-   set Data(CoordPrec) 10           ;#Precision des coordonnees
+   set Data(CoordPrec)  10          ;#Precision des coordonnees
    set Data(Value)      ""          ;#Valeur a l'interieur de la page
    set Data(Altitude)   ""          ;#Altitude a l'interieur de la page
    set Data(Mode)       Zoom        ;#Mode de manipulation

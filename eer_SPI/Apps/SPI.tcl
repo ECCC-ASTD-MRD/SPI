@@ -1730,7 +1730,7 @@ proc SPI::FileOpen { Box Type Title Extension Files } {
 #
 #----------------------------------------------------------------------------
 
-proc SPI::ToolMode { Tool Mode { Off False } } {
+proc SPI::ToolMode { Tool Mode { Off False } { Square 0 } } {
    variable Param
 
    if { $Tool=="" } {
@@ -1762,6 +1762,7 @@ proc SPI::ToolMode { Tool Mode { Off False } } {
    }
    set Page::Data(DrawMode) $Tool
    set Page::Data(ToolMode) $Tool
+   set Page::Data(Square)   $Square
 }
 
 #---------------------------------------------------------------------------

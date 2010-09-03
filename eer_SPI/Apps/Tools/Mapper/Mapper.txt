@@ -126,6 +126,12 @@ namespace eval Mapper { } {
    set Lbl(Proj)         { "Nom de la projection" "Projection's name" }
    set Lbl(Spheroid)     { "Nom du sphéroïde" "Spheroid's name" }
 
+   set Lbl(All)          { "Tous" "All" }
+   set Lbl(Pixel)        { "Point" "Pixel" }
+   set Lbl(Small)        { "Petit" "Small" }
+   set Lbl(Medium)       { "Moyen" "Medium" }
+   set Lbl(Large)        { "Large" "Large" }
+
    set Msg(NoFeature) { "La couche ne continent aucun item" "The layer contains no features" }
    set Msg(GeoRef)    { "La géo-référence est invalide" "Invalid geo-reference" }
    set Msg(File)      { "Impossible d'ouvrir le fichier spécifié" "Unable to open the specified file" }

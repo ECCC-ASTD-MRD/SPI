@@ -97,6 +97,8 @@ namespace eval Mapper { } {
    set Data(ValueMin)    0
    set Data(ValueMax)    0
    set Data(NoData)      ""
+   set Data(PickSize)    2
+   set Data(PickAll)     False
 
    set Data(GDALFormats) {
       {Arc/Info Binary Grid {*.adf}}

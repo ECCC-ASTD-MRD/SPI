@@ -1068,41 +1068,34 @@ proc Mapper::PickOGR { VP X Y } {
    variable Msg
    variable Lbl
 
-   #----- Pixel pick
-
-#  set co0 [$Viewport::Data(VP) -unproject $X $Y]
-#  set coords [list [lindex $co0 0] [lindex $co0 1]]
-
-   #----- Line pick
-
-#   set co0 [$Viewport::Data(VP) -unproject [expr $X-2] [expr $Y-2]]
-#   set co1 [$Viewport::Data(VP) -unproject [expr $X+2] [expr $Y+2]]
-#   set coords [list [lindex $co0 0] [lindex $co0 1] [lindex $co1 0] [lindex $co1 1]]
-
-   #----- Rectangle pick
-
-   set co0 [$VP -unproject [expr $X-2] [expr $Y-2]]
-   set co1 [$VP -unproject [expr $X+2] [expr $Y-2]]
-   set co2 [$VP -unproject [expr $X+2] [expr $Y+2]]
-   set co3 [$VP -unproject [expr $X-2] [expr $Y+2]]
-   set coords [list [lindex $co0 0] [lindex $co0 1] [lindex $co1 0] [lindex $co1 1] [lindex $co2 0] [lindex $co2 1] [lindex $co3 0] [lindex $co3 1] [lindex $co0 0] [lindex $co0 1]]
+   if { !$Data(PickSize) } {
+      #----- Pixel pick
+      set co0 [$Viewport::Data(VP) -unproject $X $Y]
+      set co1 $co0
+      set coords [list [lindex $co0 0] [lindex $co0 1]]
+   } else {
+      #----- Rectangle pick
+      set co0 [$VP -unproject [expr $X-$Data(PickSize)] [expr $Y-$Data(PickSize)]]
+      set co1 [$VP -unproject [expr $X+$Data(PickSize)] [expr $Y-$Data(PickSize)]]
+      set co2 [$VP -unproject [expr $X+$Data(PickSize)] [expr $Y+$Data(PickSize)]]
+      set co3 [$VP -unproject [expr $X-$Data(PickSize)] [expr $Y+$Data(PickSize)]]
+      set coords [list [lindex $co0 0] [lindex $co0 1] [lindex $co1 0] [lindex $co1 1] [lindex $co2 0] [lindex $co2 1] [lindex $co3 0] [lindex $co3 1] [lindex $co0 0] [lindex $co0 1]]
+   }
 
    #----- Est-ce que les coordonnees sont valides
-
    if { [lindex $co0 0]==-999.0 || [lindex $co1 0]==-999.0 } {
       return
    }
    for { set i [expr [llength $Viewport::Data(Data)]-1] } { $i>=0 } { incr i -1 } {
       set object [lindex $Viewport::Data(Data) $i]
       if { [ogrlayer is $object] } {
-         if { [set Data(Index) [lindex [ogrlayer pick $object $coords] 0]]!="" } {
+         if { [set Data(Index) [lindex [ogrlayer pick $object $coords $Data(PickAll)] 0]]!="" } {
 
             set Data(Object) $object
             Mapper::ParamsOGRGet $Data(Object)
             Mapper::ParamsOGR $Data(Object) 2
 
             #----- Check if this is an index to some other data
-
             if { ![catch { set files [ogrlayer define $object -feature $Data(Index) IDX_PATH]}] } {
 
                if { $files!="" } {
@@ -1141,7 +1134,7 @@ proc Mapper::DrawInit  { Frame VP } {
    Mapper::PickOGR $VP $Viewport::Map(X) $Viewport::Map(Y)
 }
 
-proc Mapper::Draw      { Frame VP } {
+proc Mapper::Draw     { Frame VP } {
 }
 
 proc Mapper::DrawDone { Frame VP } {

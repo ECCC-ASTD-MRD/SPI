@@ -97,9 +97,24 @@ proc Mapper::Window { } {
       bind $Data(Tab2).list.canvas <Button-5> "$Data(Tab2).list.canvas yview scroll 1 units"
 
       frame $Data(Tab1).head
-         checkbutton $Data(Tab1).head.mode -variable Page::Data(ToolMode) -onvalue Mapper -offvalue SPI \
-            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-            -command  { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         checkbutton $Data(Tab1).head.mode -variable Page::Data(ToolMode) -onvalue Mapper -offvalue SPI -width 28 \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command  {
+               if { $Page::Data(ToolMode)=="Mapper" } {
+                  SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize)
+               } else {
+                  SPI::ToolMode $Page::Data(ToolMode) Data True
+               } }
+         menubutton $Data(Tab1).head.mode.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab1).head.mode.down.menu
+         place $Data(Tab1).head.mode.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
+         menu $Data(Tab1).head.mode.down.menu
+         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Pixel) $GDefs(Lang)]  -variable Mapper::Data(PickSize) -value 0 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Small) $GDefs(Lang)]  -variable Mapper::Data(PickSize) -value 2 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Medium) $GDefs(Lang)] -variable Mapper::Data(PickSize) -value 5 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Large) $GDefs(Lang)]  -variable Mapper::Data(PickSize) -value 10 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+#         $Data(Tab1).head.mode.down.menu add separator
+#         $Data(Tab1).head.mode.down.menu add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -variable Mapper::Data(PickAll) -onvalue True -offvalue False
+
          button $Data(Tab1).head.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[concat \[list \$FileBox::Type(ALL)\] \$Mapper::Data(GDALFormats) \$Mapper::Data(OGRFormats)\]\]"
          button $Data(Tab1).head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command "Mapper::Params True"
          button $Data(Tab1).head.loc -image FINGER -bd 0 -relief flat -overrelief raised -command "Mapper::Locate"
@@ -1392,7 +1407,7 @@ proc Mapper::SelectOGRClear { Object } {
       set Select(Op$Object$field) ""
       set Select(Val$Object$field) ""
    }
-   ogrlayer define $Object -featurehighlight ""
+   ogrlayer define $Object -featurehighlight {}
 
    Mapper::TableOGR $Object True
    Page::Update $Page::Data(Frame)
