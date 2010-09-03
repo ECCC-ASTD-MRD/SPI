@@ -562,7 +562,7 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
 
-   for(n0=0;n0<(g0-2);n0++) {
+   for(n0=0;n0<(g0-1);n0++) {
 
       Vect_Assign(v0[0],GPC_Geom[0][n0]);
       Vect_Assign(v0[1],GPC_Geom[0][n0+1]);
