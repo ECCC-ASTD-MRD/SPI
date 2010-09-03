@@ -24,7 +24,6 @@ namespace eval SPI {
 
    #----- Definitions des labels
 
-   set Lbl(Geo)            { "Données géographiques" "Geographical data" }
    set Lbl(About)          { "Apropos ..." "About ..." }
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Animator)       { "Animation ..." "Animation ..." }
@@ -67,7 +66,8 @@ namespace eval SPI {
    set Lbl(Obs)            { "Observations (OBS)" "Observations (OBS)" }
    set Lbl(MetObs)         { "Observations météo (BURP/BUFR)" "Met Observations (BURP/BUFR)" }
    set Lbl(Radar)          { "Volume radar (IRIS)" "Radar volume scan (IRIS)" }
-   set Lbl(GDALOGR)        { "Données géographiques (GDAL/OGR)" "Geographical data (GDAL/OGR)" }
+   set Lbl(GeoOGR)         { "Couches vectorielles (OGR)" "Vectorial layers (OGR)" }
+   set Lbl(GeoGDAL)        { "Couches matricielles (GDAL)" "Raster layers (GDAL)" }
    set Lbl(Open)           { "Ouvrir un fichier" "Open file" }
    set Lbl(PageOther)      { "Autre page" "Other page" }
    set Lbl(PageNew)        { "Nouvelle page" "New page" }

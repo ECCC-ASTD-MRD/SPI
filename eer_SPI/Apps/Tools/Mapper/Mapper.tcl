@@ -401,6 +401,7 @@ proc Mapper::GetColor { } {
 # Parametres :
 #   <Files>  : Fichiers a lire
 #   <Full>   : Lectur complete ou partielle
+#   <Mode>   : Mode de donnees (ANY,GDAL ou OGR
 #
 # Retour    :
 #
@@ -408,7 +409,7 @@ proc Mapper::GetColor { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::Read { Files { Full False } } {
+proc Mapper::Read { Files { Full False } { Mode ANY } } {
    global   GDefs
    variable Data
    variable Msg
@@ -424,8 +425,19 @@ proc Mapper::Read { Files { Full False } } {
    update idletasks;
 
    foreach file $Files {
-      if { ![Mapper::ReadBand $file "" 2 $Full] && ![Mapper::ReadLayer $file] } {
-         Dialog::Error . $Msg(BadFile)
+       switch $Mode {
+          ANY  { if { ![Mapper::ReadBand $file "" 2 $Full] && ![Mapper::ReadLayer $file] } {
+                    Dialog::Error . $Msg(BadFile)
+                 }
+               }
+          GDAL { if { ![Mapper::ReadBand $file "" 2 $Full] } {
+                    Dialog::Error . $Msg(BadFile)
+                 }
+               }
+          OGR  { if { ![Mapper::ReadLayer $file] } {
+                    Dialog::Error . $Msg(BadFile)
+                 }
+               }
       }
       Mapper::UpdateData $Page::Data(Frame)
    }
@@ -637,7 +649,7 @@ proc Mapper::Progress { Object } {
 
       if { $ready!=$total } {
          set pc [expr double($ready)/$total*100.0]
-         SPI::Progress $pc "[lindex $Lbl(Process) $GDefs(Lang)] $Object [format "%.0f" ${pc}]%"
+         SPI::Progress $pc "[lindex $Lbl(Process) $GDefs(Lang)] $Object [format "%.1f" ${pc}]%"
          after 100 Mapper::Progress $Object
          return
       }
