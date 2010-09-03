@@ -1298,7 +1298,10 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
       case OFTBinary:
          break;
    }
-   OGR_L_SetFeature(Layer,Feature);
+
+   if (OGR_F_GetGeometryRef(Feature)) {
+      OGR_L_SetFeature(Layer,Feature);
+   }
    return(TCL_OK);
 }
 
