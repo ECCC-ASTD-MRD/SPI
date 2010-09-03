@@ -119,6 +119,7 @@ proc Areas::Init { } {
    Areas::Read $GDefs(Dir)/Data/Volcano.shp                                      #AA0000 #FF0000
    Areas::Read $GDefs(Dir)/Data/TimeZone.shp                                     #AAAA00 #FFFF00 TZ
    Areas::Read $GDefs(Dir)/Data/RADAR.shp                                        #AAAAAA #FFFFFF ID
+   Areas::Read $GDefs(Dir)/Data/GEM.shp                                          #00C0CA #000000 NAME
 }
 
 #----------------------------------------------------------------------------
