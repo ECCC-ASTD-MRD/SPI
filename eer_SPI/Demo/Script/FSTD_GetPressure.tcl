@@ -49,8 +49,7 @@ fstdfield write TAC FILEOUT 0 True
 fstdfield define TTHYB -NOMVAR PRES
 fstdfield write TTHYB FILEOUT 0 True
 
-fstdfile close FILEIN
-fstdfile close FILEOUT
+fstdfile close FILEIN FILEOUT
 
 puts "   Processing pressure for eta levels"
 
@@ -80,5 +79,4 @@ fstdfield write TAC FILEOUT 0 True
 fstdfield define TTHYB -NOMVAR PRES
 fstdfield write TTHYB FILEOUT 0 True
 
-fstdfile close FILEIN
-fstdfile close FILEOUT
+fstdfile close FILEIN FILEOUT

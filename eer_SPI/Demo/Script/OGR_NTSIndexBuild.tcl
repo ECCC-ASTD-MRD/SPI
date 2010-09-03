@@ -74,7 +74,6 @@ for { set n 0 } { $n<[ogrlayer define LAYER -nb] } { incr n } {
    ogrlayer define INDEX -geometry $n True [ogrlayer define LAYER -geometry $n]
 }
 
-ogrfile close INDEXFILE
-ogrfile close LAYERFILE
+ogrfile close INDEXFILE LAYERFILE
 
 file copy -force $NTSPath/${res}kindex.prj $DBPath/Index/${name}.prj

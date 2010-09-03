@@ -68,5 +68,4 @@ fstdfield write TIC 2 0 True
 fstdfield write TAC 2 0 True
 fstdfield write MEDIAN 2 0 Fals
 
-fstdfile close 1
-fstdfile close 2
+fstdfile close 1 2

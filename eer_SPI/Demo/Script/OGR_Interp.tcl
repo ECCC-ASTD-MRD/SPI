@@ -49,7 +49,7 @@ ogrlayer clear LAYER ZONE
 #      if the file is empty, it will be filled with the index
 #      otherwise, it will be used as an index
 set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
-
+#
 #----- Do the sum in conservative mode splitting the grid cell in 1 segment
 puts "   Interpolating field values into layer"
 #ogrlayer interp LAYER DATAFIELD ZONE CONSERVATIVE 1 True $f

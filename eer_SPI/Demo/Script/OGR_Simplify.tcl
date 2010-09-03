@@ -39,5 +39,4 @@ ogrlayer stats SPHLAYER -simplify 0.01
 ogrlayer write SPHLAYER NEWSHPFILE
 
 #----- Close the files
-ogrfile close NEWSHPFILE
-ogrfile close SHPFILE
+ogrfile close NEWSHPFILE SHPFILE

@@ -63,8 +63,8 @@ foreach model $Param(Models) {
    set Data(EAMSPD$model) 0
    set Data(EAMDIR$model) 0
    set Data(EAMTMP$model) 0
-   set Data(BiasSPDNB) 0
-   set Data(BiasTMPNB) 0
+   set Data(BiasSPDNB$model) 0
+   set Data(BiasTMPNB$model) 0
 
    #----- Loop on files
    foreach file [glob $Param(ModelPath)/$Param(Date)??_???_${model}] {
@@ -119,7 +119,7 @@ foreach model $Param(Models) {
                set Data(BiasDIR$model) [expr $Data(BiasDIR$model)+$dir]
                set Data(EAMSPD$model)  [expr $Data(EAMSPD$model)+abs($mspd-$ospd)]
                set Data(EAMDIR$model)  [expr $Data(EAMDIR$model)+abs($dir)]
-               incr Data(BiasSPDNB)
+               incr Data(BiasSPDNB$model)
             }
 
             if { [set mtmp [fstdfield stats MODELTT -coordvalue [lindex $coo 0] [lindex $coo 1]]]=="-" } {
@@ -127,7 +127,7 @@ foreach model $Param(Models) {
             } else {
                 set Data(BiasTMP$model) [expr $Data(BiasTMP$model)+($mtmp-$otmp)]
                 set Data(EAMTMP$model)  [expr $Data(EAMTMP$model)+abs($mtmp-$otmp)]
-                incr Data(BiasTMPNB)
+                incr Data(BiasTMPNB$model)
             }
 
             set Data($model$sec$id) [list $mspd $mdir $mtmp $ospd $odir $otmp]
@@ -165,14 +165,14 @@ foreach sec $Data(Secs) {
 #----- Print Bias
 set str [format "%-8s %-14s %8s %8s %8s" BIAS "" "" "" ""]
 foreach model $Param(Models) {
-   append str [format " %8.3f %8.3f %8.3f" [expr $Data(BiasSPD$model)/$Data(BiasSPDNB)] [expr $Data(BiasDIR$model)/$Data(BiasSPDNB)] [expr $Data(BiasTMP$model)/$Data(BiasTMPNB)]]
+   append str [format " %8.3f %8.3f %8.3f" [expr $Data(BiasSPD$model)/$Data(BiasSPDNB$model)] [expr $Data(BiasDIR$model)/$Data(BiasSPDNB$model)] [expr $Data(BiasTMP$model)/$Data(BiasTMPNB$model)]]
 }
 puts $f $str
 
 #----- Print EAM
 set str [format "%-8s %-14s %8s %8s %8s" EAM "" "" "" ""]
 foreach model $Param(Models) {
-   append str [format " %8.3f %8.3f %8.3f" [expr $Data(EAMSPD$model)/$Data(BiasSPDNB)] [expr $Data(EAMDIR$model)/$Data(BiasSPDNB)] [expr $Data(EAMTMP$model)/$Data(BiasTMPNB)]]
+   append str [format " %8.3f %8.3f %8.3f" [expr $Data(EAMSPD$model)/$Data(BiasSPDNB$model)] [expr $Data(EAMDIR$model)/$Data(BiasSPDNB$model)] [expr $Data(EAMTMP$model)/$Data(BiasTMPNB$model)]]
 }
 puts $f $str
 

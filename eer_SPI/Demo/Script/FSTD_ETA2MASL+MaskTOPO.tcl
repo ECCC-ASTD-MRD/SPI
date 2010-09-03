@@ -80,5 +80,4 @@ foreach var { HU TH } {
    fstdfield write TO OUT 0 True
 }
 
-fstdfile close IN
-fstdfile close OUT
+fstdfile close IN OUT

@@ -56,5 +56,4 @@ foreach mode { FAST WITHIN INTERSECT CONSERVATIVE NORMALIZED_CONSERVATIVE ALIASE
 }
 ogrfile close VECFILE
 
-fstdfile close FSTDIN
-fstdfile close FSTDOUT
+fstdfile close FSTDIN FSTDOUT

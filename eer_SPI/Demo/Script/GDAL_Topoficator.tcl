@@ -89,7 +89,5 @@ for { set x 0 } { $x<$w } { incr x } {
 gdalband write TOPOOUT FILEOUT
 
 #----- on ferme tout et bye bye
-gdalfile close FILEIN
-gdalfile close FILEOUT
-gdalfile close FILETOPO
+gdalfile close FILEIN FILEOUT FILETOPO
 

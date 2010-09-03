@@ -85,7 +85,7 @@ proc Macro::OA4Pan::Execute { } {
 
    catch { font create FONTCB -family arial -weight bold -size 10 -slant italic -underline 0 -overstrike 0 }
 
-fstdfield define O3FLD -NOMVAR _O3
+   fstdfield define O3FLD -NOMVAR _O3
    fstdfield configure O3FLD -color black -intervals "0 10 20 30 40 50 60 70 80 90 100 110 120"  \
 	   -rendertexture 1 -colormap CMAP -value INTEGER 0 -font FONTCB -unit ppbv
 

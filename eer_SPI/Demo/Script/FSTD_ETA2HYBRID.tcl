@@ -64,5 +64,4 @@ foreach var $vars {
 }
 
 #----- Close the files
-fstdfile close MESO
-fstdfile close MESOSTRATO
+fstdfile close MESO MESOSTRATO

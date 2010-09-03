@@ -91,5 +91,4 @@ fstdfield write LAKESUM FSTDOUT -32 False
 fstdfield define LAKEAREA -NOMVAR LARE
 fstdfield write LAKEAREA FSTDOUT -32 False
 
-fstdfile close FSTDIN
-fstdfile close FSTDOUT
+fstdfile close FSTDIN FSTDOUT

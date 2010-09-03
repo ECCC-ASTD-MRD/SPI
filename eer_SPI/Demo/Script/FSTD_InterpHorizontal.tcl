@@ -43,5 +43,4 @@ foreach var { TT UU GZ } {
    fstdfield write GRID 2 -16 True
 }
 
-fstdfile close 1
-fstdfile close 2
+fstdfile close 1 2

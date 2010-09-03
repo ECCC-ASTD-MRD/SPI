@@ -24,7 +24,7 @@ package require TclData
 
 puts \n[file tail [info script]]
 
-catch { file delete DataOut./FSTD_InterpConservative.fstd }
+catch { file delete DataOut/FSTD_InterpConservative.fstd }
 
 fstdfile open 1 read DataIn/2005120600_012
 fstdfile open 2 read DataIn/2005102612_012
@@ -33,14 +33,17 @@ fstdfile open 3 write DataOut/FSTD_InterpConservative.fstd
 fstdfield read TO 2 -1 "" -1 -1 -1 "" "P0"
 fstdfield stats TO -nodata 0.0
 
+set f [open DataOut/FSTD_InterpConservative.idx { RDWR CREAT }]
+
 foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
    fstdfield read IN 1 $fld
    fstdfield clear TO
    fstdfield define TO -IP1 [fstdfield define IN -IP1]
    fstdfield gridinterp TO IN CONSERVATIVE 1 index
+#   fstdfield gridinterp TO IN CONSERVATIVE 1 $f
    fstdfield write TO 3 -32 False
 }
 
-fstdfile close 1
-fstdfile close 2
-fstdfile close 3
+close $f
+
+fstdfile close 1 2 3

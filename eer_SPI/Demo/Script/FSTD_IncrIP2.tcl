@@ -49,5 +49,4 @@ foreach var { TT UU } {
    fstdfield write FLD 2 0 True
 }
 
-fstdfile close 1
-fstdfile close 2
+fstdfile close 1 2

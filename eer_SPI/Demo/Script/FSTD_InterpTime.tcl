@@ -47,5 +47,4 @@ for { set hour 0.1 } { $hour < 3 } { set hour [expr $hour+0.1] } {
    fstdfield write TX 2 -32 False
 }
 
-fstdfile close 1
-fstdfile close 2
+fstdfile close 1 2

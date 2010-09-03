@@ -61,9 +61,7 @@ fstdfield read TIC 2 -1 "" -1 -1 -1 "" ">>"
 fstdfield read TAC 2 -1 "" -1 -1 -1 "" "^^"
 fstdfield write TIC 3 -32 True
 fstdfield write TAC 3 -32 True
-fstdfile close 1
-fstdfile close 2
-fstdfile close 3
+fstdfile close 1 2 3
 
 #----- Test l'ouverture de plus de 1000 fichiers
 puts "\nTesting multiple file open:"
