@@ -1189,7 +1189,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       glColor4us(0x00,0x00,0x00,16384);
       glDrawCircle(64,GL_POLYGON);
       glColor4us(0xFFFF,0xFFFF,0x00,32768);
-      glDrawArc(0,(load%360),10,GL_POLYGON,0);
+      glDrawArc(0,((load%100)/100.0*360),10,GL_POLYGON,0);
       glDisable(GL_BLEND);
       glPopMatrix();
    }

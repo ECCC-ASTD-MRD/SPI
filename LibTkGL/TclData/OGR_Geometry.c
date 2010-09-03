@@ -843,20 +843,24 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
 */
 void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
-   unsigned long g,n,nv,pnv;
+   unsigned long g,n,nv=0,pnv;
    Vect3d        nr,n0,n1;
    OGRGeometryH  geom;
 
-   gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
-   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
-//   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_NONZERO);
-
-   pnv=0;
-   gluTessBeginPolygon(GLRender->GLTess,NULL);
-   for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+   /*Reproject polygon vertices. Do it first to keep vertex adress fixed*/
+   for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
       geom=OGR_G_GetGeometryRef(Geom,g);
       if ((nv=OGR_GeometryProject(Proj,Ref,Layer,geom,Elev,0.0,pnv))) {
-//   gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[0][0],*OGR_ArrayNr[0][1],*OGR_ArrayNr[0][2]);
+         pnv+=nv;
+      }
+   }
+
+   /*Tessellate polygon*/
+   gluTessBeginPolygon(GLRender->GLTess,NULL);
+   for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+      geom=OGR_G_GetGeometryRef(Geom,g);
+      if ((nv=OGR_G_GetPointCount(geom))) {
+         gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[pnv][0],*OGR_ArrayNr[pnv][1],*OGR_ArrayNr[pnv][2]);
          gluTessBeginContour(GLRender->GLTess);
          glBegin(GL_LINE_STRIP);
          for(n=pnv;n<pnv+nv;n++) {
@@ -866,21 +870,27 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
          }
          glEnd();
          gluTessEndContour(GLRender->GLTess);
+         pnv+=nv;
        }
-       pnv+=nv;
    }
    gluTessEndPolygon(GLRender->GLTess);
 
    /*Process extruded polygon*/
    if (Extrude!=0.0) {
 
-      pnv=0;
-      gluTessBeginPolygon(GLRender->GLTess,NULL);
-      for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+      for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
          geom=OGR_G_GetGeometryRef(Geom,g);
          if ((nv=OGR_GeometryProject(Proj,Ref,Layer,geom,Elev,Extrude,pnv))) {
+            pnv+=nv;
+         }
+      }
 
-//      gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[0][0],*OGR_ArrayNr[0][1],*OGR_ArrayNr[0][2]);
+      gluTessBeginPolygon(GLRender->GLTess,NULL);
+      for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+         geom=OGR_G_GetGeometryRef(Geom,g);
+         if ((nv=OGR_G_GetPointCount(geom))) {
+
+            gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[pnv][0],*OGR_ArrayNr[pnv][1],*OGR_ArrayNr[pnv][2]);
             gluTessBeginContour(GLRender->GLTess);
             glBegin(GL_LINE_STRIP);
             for(n=pnv;n<pnv+nv;n++) {
@@ -895,8 +905,8 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
             glBegin(GL_QUAD_STRIP);
                for(n=pnv;n<pnv+nv;n++) {
                   /*Calculate normal from adjacent vertices*/
-                  Vect_Substract(n0,OGR_ArrayVr[n],OGR_ArrayVr[n==nv-1?0:n+1]);
-                  Vect_Substract(n1,OGR_ArrayVr[n==0?nv-1:-1],OGR_ArrayVr[n]);
+                  Vect_Substract(n0,OGR_ArrayVr[n],OGR_ArrayVr[n==(pnv+nv)-1?0:n+1]);
+                  Vect_Substract(n1,OGR_ArrayVr[n==0?(pnv+nv)-1:n-1],OGR_ArrayVr[n]);
                   Vect_Add(nr,n0,n1);
                   nr[2]=0.0;
                   Vect_Mul(nr,nr,*OGR_ArrayNr[n]);
@@ -915,8 +925,8 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
                   glVertex3dv(OGR_ArrayEx[n]);
                }
             glEnd();
-         }
-         pnv+=nv;
+            pnv+=nv;
+        }
       }
       gluTessEndPolygon(GLRender->GLTess);
    }

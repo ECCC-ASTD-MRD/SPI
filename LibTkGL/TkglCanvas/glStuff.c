@@ -55,6 +55,31 @@ static char *ProgString[]={ "Field","FieldTex","DataTex","TopoTex",NULL };
 static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int  glInfo(Tcl_Interp *Interp,char *Argv);
 
+/* Tesselator functions*/
+#define GLMAXTESS 1024
+
+static GLdouble glTessTmp[GLMAXTESS][3];
+static GLuint   glTessNo=0;
+
+void glTessError(GLenum Err) {
+   fprintf(stderr,"(ERROR) TessError: %s\n",gluErrorString(Err));
+}
+
+GLdouble *glTessTmpGet() {
+   return glTessTmp[(glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0)];
+}
+
+static void glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]) {
+
+   glTessTmp[glTessNo][0]=coords[0];
+   glTessTmp[glTessNo][1]=coords[1];
+   glTessTmp[glTessNo][2]=coords[2];
+   *Out=glTessTmp[glTessNo];
+
+   /*Iterate through the temporary tessselation vertices*/
+   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0;
+};
+
 /*----------------------------------------------------------------------------
  * Nom      : <glGetProcInfo>
  * Creation : Septembre 1998 - J.P. Gauthier - CMC/CMOE
@@ -1987,6 +2012,9 @@ void glInit(Tcl_Interp *Interp) {
    gluTessCallback(GLRender->GLTess,GLU_TESS_END,(_GLUfuncptr)glEnd);
    gluTessCallback(GLRender->GLTess,GLU_TESS_COMBINE,(_GLUfuncptr)glTessCombine);
    gluTessCallback(GLRender->GLTess,GLU_TESS_ERROR,(_GLUfuncptr)glTessError);
+
+   gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
+   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_NONZERO);
 }
 
 /*----------------------------------------------------------------------------
@@ -2274,43 +2302,4 @@ int glXFreePixmap() {
       GLRender->XPix=None;
    }
    return(1);
-}
-
-/* Tesselator functions*/
-
-#define GLMAXTESS 1000
-
-GLdouble glTessTmp[GLMAXTESS][3];
-GLuint   glTessNo=0;
-
-void glTessError(GLenum Err) {
-   fprintf(stderr,"(ERROR) TessError: %s\n",gluErrorString(Err));
-}
-
-GLdouble *glTessTmpGet() {
-   return glTessTmp[(glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0)];
-}
-
-void glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]) {
-
-   glTessTmp[glTessNo][0]=coords[0];
-   glTessTmp[glTessNo][1]=coords[1];
-   glTessTmp[glTessNo][2]=coords[2];
-   *Out=glTessTmp[glTessNo];
-
-   /*Iterate through the temporary tessselation vertices*/
-   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0;
-};
-
-/* Thread mutex functions*/
-void glLock() {
-   if (!GLRender->XBatch) {
-      Tcl_MutexLock(&MUTEX_GL);
-   }
-}
-
-void glUnLock() {
-   if (!GLRender->XBatch) {
-      Tcl_MutexUnlock(&MUTEX_GL);
-   }
 }

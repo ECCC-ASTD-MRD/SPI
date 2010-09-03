@@ -213,8 +213,6 @@ void     glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int 
 int      glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,int angle,int x,int y,Tk_Anchor anchor,Tk_Justify justify);
 GLuint   glStencilMaskCheck(int X,int Y,int Width,int Height,int Ref);
 void     glStencilMaskQuad(int X,int Y,int Width,int Height,int Theta,int DX,int DY);
-void     glTessError(GLenum Err);
-void     glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]);
 int      glTextureFit(int Size,float Tolerance);
 int      glFontUse(Display *Disp,Tk_Font FontId);
 GLushort glDash(Tk_Dash *Dash);
@@ -227,10 +225,6 @@ int      glPickProcess();
 
 void      glTessError(GLenum Err);
 GLdouble *glTessTmpGet();
-void      glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]);
-
-void      glLock();
-void      glUnLock();
 
 int      trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR);
 void     trRasterPos2i(int X,int Y);

@@ -2180,7 +2180,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
                      /*Append intersection info to the list*/
-                     if (List && r>0.0) {
+                     if ((List || chan) && r>0.0) {
                         n++;
                         Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
                         Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
@@ -2288,6 +2288,10 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
    OGRGeometryH  geom;
    clock_t       sec;
 
+   if (Layer->GFeature==Layer->NFeature) {
+      return(0);
+   }
+
    t=Layer->GFeature;
 
    sec=clock();
@@ -2313,16 +2317,19 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
       glEndList();
 
       Layer->GFeature++;
+
       /*Refrech viewport if it's been too long*/
       if (Delay && (clock()-sec)>(0.25*CLOCKS_PER_SEC)) {
-         Proj->Loading+=(Layer->GFeature-t);
+         Proj->Loading=(double)(Layer->GFeature*100.0/Layer->NFeature);
+         Proj->Loading=Proj->Loading<=0?1:Proj->Loading;
          Tcl_CreateTimerHandler(0,ViewportRefresh_Canvas,Proj->VP->canvas);
          break;
       }
    }
 
-   /*Make sure we reset the loading flag when done*/
+   /*Make sure we reset the loading flag*/
    if (Layer->GFeature==Layer->NFeature) {
+      t=0;
       Proj->Loading=0;
       if (Delay)
          Tcl_CreateTimerHandler(0,ViewportRefresh_Canvas,Proj->VP->canvas);
@@ -2384,14 +2391,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    }
 
    /*Read in data in another thread*/
-   if (Layer->GFeature!=Layer->NFeature) {
-      if (GLRender->XBatch || GLRender->TRCon) {
-         g=OGR_LayerParse(Layer,Proj,0);
-      } else {
-         g=OGR_LayerParse(Layer,Proj,1);
-      }
-   }
-
+   g=OGR_LayerParse(Layer,Proj,(GLRender->XBatch || GLRender->TRCon)?0:1);
    OGR_LayerPreInit(Layer);
 
    glDash(&spec->Dash);
@@ -2451,7 +2451,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glCullFace(GL_FRONT_AND_BACK);
 
    /*Render the features*/
-   for(f=0;f<Layer->GFeature;f++) {
+   for(f=g;f<Layer->GFeature;f++) {
       if (Layer->Select[f]) {
          if (Layer->Map!=-1 && spec->Map) {
             val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
