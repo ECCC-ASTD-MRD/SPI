@@ -312,14 +312,14 @@ proc Info::Find { Path Set args } {
    variable Token
 
    #----- Initialiser le tableau d'arguments de recherche
-   set line [list .* .* .* .* .* .* .* .* .* .* .* .* .* .* .*]
+   set line [lrepeat 15 {[^:]*}]
 
    #----- Initialiser les arguments de recherche specifies
    foreach { item value } $args {
       set idx [lsearch -exact $Token($Set) $item]
 
       if { $idx!=-1 && $idx<=15 } {
-         set line [lreplace $line $idx $idx ".*=$value"]
+         set line [lreplace $line $idx $idx "\[^:\]*=$value"]
       }
    }
 
