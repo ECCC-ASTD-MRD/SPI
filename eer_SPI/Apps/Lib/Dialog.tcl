@@ -20,6 +20,7 @@
 #    Dialog::ErrorListing { Master Text List }
 #    Dialog::Message      { Master Text { Extra "" } }
 #    Dialog::Get          { Master Title Text { Var "" } }
+#    Dialog::Give         { Master Title Text Info }
 #    Dialog::Text         { Id Title File Width Height }
 #    Dialog::TextSave     { Text File }
 #    Dialog::TextSearch   { Widget String Tag args }
@@ -46,6 +47,7 @@ namespace eval Dialog { } {
    set Lbl(Ok)       { "Ok" "Ok" }
    set Lbl(Continue) { "Continuer" "Continue" }
    set Lbl(Cancel)   { "Annuler" "Cancel" }
+   set Lbl(Clip)     { "Copier vers le presse-papier" "Copy to clipboard" }
 
    set Lbl(WARNING)  { "Avertissement" "Warning" }
    set Lbl(INFO)     { "Information" "Information" }
@@ -65,6 +67,7 @@ namespace eval Dialog { } {
       image create photo DIALOG_WARNING  -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Alert.gif
       image create photo DIALOG_QUESTION -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Tick.gif
       image create photo DIALOG_INFO     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Info.gif
+      image create photo DIALOG_CLIP     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Clip.gif
    }
 }
 
@@ -541,6 +544,56 @@ proc Dialog::Get { Master Title Text { Var "" } { File False } } {
    tkwait variable gettervalue
    destroy .dlgget
    return $gettervalue
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::Give>
+# Creation : Septembre 2010 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Aficher une valeur de retour + Presse-papier.
+#
+# Parametres  :
+#    <Master> : Fenetre toplevel auquel l'aide est reliee.
+#    <Title>  : Titre de la fenetre
+#    <Text>   : Texte a afficher.
+#    <Info>   : Information
+#
+# Retour      :
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Dialog::Give { Master Title Text Info } {
+   global GDefs
+   global gettervalue
+   variable Lbl
+
+   toplevel .dlggive -class Dialog
+   wm title .dlggive [lindex $Title $GDefs(Lang)]
+   wm transient .dlggive $Master
+   wm geom .dlggive +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+
+   frame .dlggive.msg -relief raised -bd 1
+      label .dlggive.msg.bitmap -image DIALOG_CLIP
+      message .dlggive.msg.txt -aspect 1000 -text [lindex $Text $GDefs(Lang)]
+      pack .dlggive.msg.bitmap -side left -ipadx 10 -ipady 10
+      pack .dlggive.msg.txt -side left -fill x -expand True -ipadx 10 -ipady 10
+   pack .dlggive.msg -side top  -fill x -expand True
+
+   text .dlggive.out -relief flat -bd 1 -bg $GDefs(ColorLight) -height 3
+   .dlggive.out insert 0.0 $Info
+   pack .dlggive.out -side top -fill both -ipady 2
+
+   frame .dlggive.cmd
+      button .dlggive.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
+      button .dlggive.copy -text [lindex $Lbl(Clip) $GDefs(Lang)] -command { clipboard clear; clipboard append [.dlggive.out get 0.0 end] } -bd 1
+      pack .dlggive.copy .dlggive.ok -side left -fill x  -expand True
+   pack .dlggive.cmd -side top -fill x
+
+   focus .dlggive.out
+   update idletasks
 }
 
 #----------------------------------------------------------------------------

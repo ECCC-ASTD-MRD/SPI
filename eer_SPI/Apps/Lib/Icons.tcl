@@ -177,6 +177,7 @@ image create photo VCRREWIND   -file $GDefs(Dir)/Resources/Image/Icon/VCRRewind.
 image create photo VCRFORWIND  -file $GDefs(Dir)/Resources/Image/Icon/VCRForwind.gif
 image create photo VCRCYCLE    -file $GDefs(Dir)/Resources/Image/Icon/VCRCycle.gif
 image create photo VCRSAVE     -file $GDefs(Dir)/Resources/Image/Icon/VCRSave.gif
+image create photo VCRWEB      -file $GDefs(Dir)/Resources/Image/Icon/VCRWeb.gif
 image create photo VCRLOCK     -file $GDefs(Dir)/Resources/Image/Icon/Lock.gif
 image create photo VCRUNLOCK   -file $GDefs(Dir)/Resources/Image/Icon/UnLock.gif
 

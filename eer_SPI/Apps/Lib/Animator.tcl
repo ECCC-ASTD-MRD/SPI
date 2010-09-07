@@ -20,7 +20,8 @@
 #   Animator::GetPlayList      { }
 #   Animator::Limits           { }
 #   Animator::Play             { }
-#   Animator::PlayFile         { }
+#   Animator::PlayFile         { { Filename "" } }
+#   Animator::PlayWeb          { }
 #   Animator::Step             { Index }
 #   Animator::StepTo           { Idx }
 #   Animator::FlyPath          { Cam Type }
@@ -35,9 +36,9 @@
 #
 #===============================================================================
 
-package provide Animator 4.0
+package provide Animator 4.1
 
-catch { SPI::Splash "Loading Widget Package Animator 4.0" }
+catch { SPI::Splash "Loading Widget Package Animator 4.1" }
 
 #----- Definitions des constantes
 
@@ -47,53 +48,63 @@ namespace eval Animator {
    variable Fly
    variable Lbl
    variable Param
+   variable Error
 
    set Param(Title)    { "Animateur" "Animator" }
-   set Param(Geom)     { 275x275+[winfo rootx $Parent]+[winfo rooty $Parent] }
+   set Param(Geom)     { 305x275+[winfo rootx $Parent]+[winfo rooty $Parent] }
    set Param(Version)  4.0
+
+   set Param(WebHost)      0               ;#Hote pour leas animations web
+   set Param(WebDest)      0               ;#Path pour les animations web
+   set Param(WebURL)       ""              ;#Web adress
+   set Param(WebExt)       png             ;#Extension des images pour l'animation web
+   set Param(WebKeyChars)  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+   set Param(WebKeyLen)    20              ;#Length of the web key
 
    #----- Variable relative au playback
 
-   set Play(Cache)       0               ;#Cache des pixmaps de frame
-   set Play(IP3)         1               ;#Validation du IP3 en recherche de champs
-   set Play(Cycle)       0               ;#Bouclage de l'animation
-   set Play(Stop)        1               ;#Variable de surveillance de l'evenement d'arret
-   set Play(Frame)       0               ;#Liste des frames temporel
-   set Play(Frames)      ""              ;#Liste des frames temporel
-   set Play(Length)      0               ;#Longueur du data
-   set Play(Idx)         0               ;#Numero de frame en cours
-   set Play(Idx0)        0               ;#Index de depart
-   set Play(Idx1)        0               ;#Index de fin
-   set Play(VPs)         ""              ;#Liste des viewports
-   set Play(Dir)         0               ;#Direction du play (-1 back, 0 stop, 1 forward)
-   set Play(Delai)       0               ;#Delai entre les frames en milliemes de secondes
-   set Play(Label)       ""              ;#Identification du traitement courant
-   set Play(Canvas)      ""              ;#Canvas dans lequel on anime
-   set Play(Page)        ""              ;#Frame dans lequel on anime
-   set Play(Filename)    ""              ;#Fichier des frames
-   set Play(File)        0               ;#Enregistrement des frames
-   set Play(Type)        DATE            ;#Type d'animation
-   set Play(Types)       "DATE IP1 IP2 IP3 ETIKET"
-   set Play(Data)        {}              ;#Data a animer
+   set Play(Cache)        0               ;#Cache des pixmaps de frame
+   set Play(IP3)          1               ;#Validation du IP3 en recherche de champs
+   set Play(Cycle)        0               ;#Bouclage de l'animation
+   set Play(Stop)         1               ;#Variable de surveillance de l'evenement d'arret
+   set Play(Frame)        0               ;#Liste des frames temporel
+   set Play(Frames)       ""              ;#Liste des frames temporel
+   set Play(Length)       0               ;#Longueur du data
+   set Play(Idx)          0               ;#Numero de frame en cours
+   set Play(Idx0)         0               ;#Index de depart
+   set Play(Idx1)         0               ;#Index de fin
+   set Play(VPs)          ""              ;#Liste des viewports
+   set Play(Dir)          0               ;#Direction du play (-1 back, 0 stop, 1 forward)
+   set Play(Delai)        0               ;#Delai entre les frames en milliemes de secondes
+   set Play(Label)        ""              ;#Identification du traitement courant
+   set Play(Canvas)       ""              ;#Canvas dans lequel on anime
+   set Play(Page)         ""              ;#Frame dans lequel on anime
+   set Play(Filename)     ""              ;#Fichier des frames
+   set Play(File)         0               ;#Enregistrement des frames
+   set Play(Type)         DATE            ;#Type d'animation
+   set Play(Types)        { DATE IP1 IP2 IP3 ETIKET }
+   set Play(Data)         {}              ;#Data a animer
 
-   set Fly(Speed)        5               ;#Vitesse du vol
-   set Fly(List)         {}              ;#Liste des pointrs de controles
-   set Fly(Frame)        0
-   set Fly(WayNo)        0
-   set Fly(Length)       0                           ;#Nombre maximum de frames
-   set Fly(Controls)     {}                          ;#
-   set Fly(From)         ""                          ;#Liste des positions
-   set Fly(Up)           ""                          ;#Liste des aspects
-   set Fly(Show)         0                           ;#Affichage des fly points
-   set Fly(Lat)          ""                          ;#Liste des latitudes
-   set Fly(Lon)          ""                          ;#Liste des longitudes
-   set Fly(Path)         DEFAULT                     ;#Path courant
-   set Fly(Paths)       { AROUND CIRCLE TO THROUGH }
+   set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
+
+   set Fly(Speed)         5               ;#Vitesse du vol
+   set Fly(List)          {}              ;#Liste des pointrs de controles
+   set Fly(Frame)         0
+   set Fly(WayNo)         0
+   set Fly(Length)        0                           ;#Nombre maximum de frames
+   set Fly(Controls)      {}                          ;#
+   set Fly(From)          ""                          ;#Liste des positions
+   set Fly(Up)            ""                          ;#Liste des aspects
+   set Fly(Show)          0                           ;#Affichage des fly points
+   set Fly(Lat)           ""                          ;#Liste des latitudes
+   set Fly(Lon)           ""                          ;#Liste des longitudes
+   set Fly(Path)          DEFAULT                     ;#Path courant
+   set Fly(Paths)        { AROUND CIRCLE TO THROUGH }
 
    #----- Definitions des labels
 
    set Lbl(Convert)        { "Conversion vers" "Converting to" }
-   set Lbl(Done)           { "Fin image" "Done frame" }
+   set Lbl(Done)           { "Fin" "Done" }
    set Lbl(Empty)          { "Vide" "Empty" }
    set Lbl(Stop)           { "Pause" "Stop" }
    set Lbl(Print)          { "Impression" "Printing" }
@@ -102,6 +113,13 @@ namespace eval Animator {
    set Lbl(Data)           { "Données" "Data" }
    set Lbl(Fly)            { "Survol" "Flyby" }
    set Lbl(On)             { "Animer selon" "Animate on" }
+   set Lbl(Copy)           { "Copie des images" "Copying images" }
+   set Lbl(Web)            { "Creation de la page" "Creating page" }
+
+   set Lbl(FileNameEnter)  { "Entrer le nom de base des fichiers images qui seront générés :" \
+                             "Enter image files base name :" }
+   set Lbl(FileNameTitle)  { "Nom du fichier" "File name" }
+   set Lbl(WebURL)         { "L'url de l'animation web est le suivant :" "The web animation url is :" }
 
    #----- Definitions des bulles d'aide
 
@@ -112,6 +130,7 @@ namespace eval Animator {
    set Bubble(Forwind)     { "Retour a la fin" "Go to end" }
    set Bubble(PlayBack)    { "Jouer vers l'arriere" "Play backward" }
    set Bubble(PlayFile)    { "Enregistrer les images" "Save the frames to file" }
+   set Bubble(PlayWeb)     { "Enregistrer les images sur une page web" "Save the frames to file on a web page" }
    set Bubble(StepBack)    { "Une image vers l'arriere" "Step on frame backward" }
    set Bubble(Stop)        { "Stop" "Stop" }
    set Bubble(StepForward) { "Une image vers l'avant" "Step one frame forward" }
@@ -133,6 +152,11 @@ namespace eval Animator {
    set Bubble(FlySpeed)  { "Vitesse du survol" "Flyby speed" }
 
    catch { package require Bubble ; IdBubble False }
+
+   #----- Messages d'erreur
+
+   set Error(WebAnimMake)  { "Une erreur est survenue lors de la génération de l'animation web." "An error occured while generating web animation." }
+   set Error(WebAnimXfer)  { "Une erreur est survenue lors du transfert de l'animation web." "An error occured during web animation transmission." }
 }
 
 proc Animator::Close { } {
@@ -290,8 +314,16 @@ proc Animator::Window { { Parent .} } {
       radiobutton .anim.comm.playfile  -image VCRSAVE -bd 1 -variable Animator::Play(File) -indicatoron False -value 1  -selectcolor "" \
          -command { Animator::PlayFile }
       pack .anim.comm.off .anim.comm.cache .anim.comm.cycle .anim.comm.playback .anim.comm.stepback .anim.comm.rewind \
-           .anim.comm.stop .anim.comm.forwind .anim.comm.stepforward .anim.comm.playforward .anim.comm.playfile\
-           -side left -fill both -expand true
+           .anim.comm.stop .anim.comm.forwind .anim.comm.stepforward .anim.comm.playforward .anim.comm.playfile \
+          -side left -fill both -expand true
+
+      #----- If the web animator script is available
+      if { [file exists $GDefs(Dir)/Script/e.image_animator] && [file executable $GDefs(Dir)/Script/e.image_animator] } {
+         radiobutton .anim.comm.playweb -image VCRWEB -bd 1 -variable Animator::Play(Web) -indicatoron False -value 1  -selectcolor "" \
+            -command { Animator::PlayWeb }
+         pack .anim.comm.playweb -side left -fill both -expand true
+      }
+
    pack .anim.comm -side top -fill x -padx 2 -pady 2
 
    #----- Creation des bulles d'aides
@@ -306,6 +338,7 @@ proc Animator::Window { { Parent .} } {
    Bubble::Create .anim.comm.stepforward $Bubble(StepForward)
    Bubble::Create .anim.comm.playforward $Bubble(PlayForward)
    Bubble::Create .anim.comm.playfile    $Bubble(PlayFile)
+   Bubble::Create .anim.comm.playweb     $Bubble(PlayWeb)
    Bubble::Create .anim.comm.off         $Bubble(Off)
    Bubble::Create .anim.params.lapse     $Bubble(Delai)
    Bubble::Create .anim.params.frame     $Bubble(Scroll)
@@ -450,9 +483,12 @@ proc Animator::Limits { } {
 
    set idx1 [expr $Play(Length)>$Fly(Length)?$Play(Length):$Fly(Length)]
 
-   .anim.params.frame configure -to $idx1
-   .anim.params.idx0  configure -to $idx1
-   .anim.params.idx1  configure -to $idx1
+   #----- If interface is up
+   if { [winfo exists .anim.params] } {
+      .anim.params.frame configure -to $idx1
+      .anim.params.idx0  configure -to $idx1
+      .anim.params.idx1  configure -to $idx1
+   }
 
    set Play(Idx0)  0
    set Play(Idx1)  $idx1
@@ -559,6 +595,7 @@ proc Animator::GetPlayListField { } {
             update
             if { $Play(Stop) } {
                set Play(File)  0
+               set Play(Web) 0
                set Play(Dir) 0
                Animator::EmptyPlayList
                return
@@ -609,6 +646,7 @@ proc Animator::GetPlayListObs { } {
             update
             if { $Play(Stop) } {
                set Play(File)  0
+               set Play(Web) 0
                set Play(Dir) 0
                Animator::EmptyPlayList
                return
@@ -659,6 +697,7 @@ proc Animator::GetPlayListTraj { } {
             update
             if { $Play(Stop) } {
                set Play(File)  0
+               set Play(Web) 0
                set Play(Dir) 0
                Animator::EmptyPlayList
                return
@@ -764,6 +803,7 @@ proc Animator::Play { } {
 
    if { ![llength $Play(Frames)] && !$Fly(Length) } {
       set Play(File) 0
+      set Play(Web) 0
       set Play(Dir)  0
       set Play(Stop) 1
       return
@@ -842,12 +882,12 @@ proc Animator::Play { } {
       if { $Play(File) } {
 
          if { $Play(Type)=="DATE" && $info!="" && !$Fly(Length) } {
-            set id [clock format $info -format "%Y%m%d_%H%M%S" -gmt true]
+            set id [clock format $info -format "%Y%m%d_%H%M%S" -gmt true]_UTC
          } else {
             set id [format "%04i" $no]
          }
 
-         set PrintBox::Param(FullName) $Play(Filename)_$id
+         set PrintBox::Param(FullName) $Play(Filename)_${id}
          set PrintBox::Print(Type)     File
 
          set Play(Label)  "[lindex $Lbl(Print) $GDefs(Lang)] $PrintBox::Param(FullName)"
@@ -868,6 +908,7 @@ proc Animator::Play { } {
 
       update
       if { $Play(Stop) } {
+         set Play(Web) 0
          break
       }
 
@@ -917,7 +958,8 @@ proc Animator::Play { } {
 #
 # But      : Enregistrer les frames sur disque.
 #
-# Parametres :
+# Parametres   :
+#   <Filename> : Nom du fichier
 #
 # Retour:
 #
@@ -925,11 +967,15 @@ proc Animator::Play { } {
 #
 #----------------------------------------------------------------------------
 
-proc Animator::PlayFile { } {
+proc Animator::PlayFile { { Filename "" } } {
    global GDefs
    variable Play
 
-   set Play(Filename) [FileBox::Create . "" Save $PrintBox::Type(RASTER)]
+   if { $Filename=="" } {
+      set Play(Filename) [FileBox::Create . "" Save $PrintBox::Type(RASTER)]
+   } else {
+      set Play(Filename) $Filename
+   }
 
    if { $Play(Filename)!="" } {
       set PrintBox::Print(Device) [string trimleft [file extension $Play(Filename)] "."]
@@ -940,9 +986,113 @@ proc Animator::PlayFile { } {
       set Play(Stop)      0
       Animator::Play
     } else {
-     set Play(File)       0
-     set Play(Dir)        0
+      set Play(File)      0
+      set Play(Dir)       0
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Animator::PlayWeb>
+# Creation : Aout 2010 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Enregistrer les frames et les transferer sur un serveur.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Animator::PlayWeb { } {
+   global env
+   global GDefs
+   variable Play
+   variable Param
+   variable Lbl
+   variable Error
+
+   if { !$Play(Web) || $Param(WebHost)=="" || $Param(WebDest)=="" } {
+      return
+   }
+
+   #----- Get a name from user but default to current experiment if there is any
+   if { $Model::Param(Show) && $Exp::Data(No)!="" && $Exp::Data(Name)!="" } {
+      set Play(Filename) $Exp::Data(No)_$Exp::Data(Name)
+   } else {
+      set Play(Filename) ""
+   }
+   set filename [Dialog::Get . $Lbl(FileNameTitle) $Lbl(FileNameEnter) Animator::Play(Filename)]
+   if { $filename=="" } {
+      set Play(Web) 0
+      return
+   }
+
+   #----- Find a random directory name hard to guess and whom name doesn't exist
+   set nbchars [string length $Param(WebKeyChars)]
+
+   while { True } {
+      #----- Generate a key
+      set randstr ""
+      for { set i 0 } { $i<$Param(WebKeyLen) } { incr i } {
+         append randstr [string index $Param(WebKeyChars) [expr int(rand()*$nbchars)]]
+      }
+
+      #----- Make sure it does not already exists
+      set base "$env(HOME)/.spi/Tmp/$randstr"
+      if { ![file exists $base] && [catch { exec ssh $Param(WebHost) "mkdir '$Param(WebDest)/$randstr'" }]==0 } {
+         break
+      }
+   }
+   file mkdir [set path $base/$filename]
+
+   #----- Generate image files
+   set Play(File)   1
+   set Play(WebURLPath) $Param(WebURL)/$randstr/$filename/anim.html
+   Animator::PlayFile $path/$filename.$Param(WebExt)
+
+   #----- If user cancelled or an error occured
+   if { !$Play(Web) } {
+      catch { file delete -force $base }
+      catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+      return
+   }
+   set Play(Web) 0
+
+   #----- Generate animation files
+   set Play(Label) "[lindex $Lbl(Web) $GDefs(Lang)]"
+   update idletasks
+   set err [catch { exec $GDefs(Dir)/Script/e.image_animator -p $path -b $filename -e $Param(WebExt) } msg]
+   if { $err } {
+      Dialog::Error .anim $Error(WebAnimMake) "\n$msg"
+      catch { file delete -force $base }
+      catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+      return
+   }
+
+   #----- Set permissions
+   catch { eval exec chmod 644 [glob $path/*] }
+   catch { exec chmod 755 $path }
+   catch { exec chmod 751 $base }
+
+   #----- Transfer files
+   set Play(Label) "[lindex $Lbl(Copy) $GDefs(Lang)]"
+   update idletasks
+   set err [catch { exec scp -rp $base $Param(WebHost):$Param(WebDest) } msg]
+   if { $err } {
+      Dialog::Error .anim $Error(WebAnimXfer) "\n$msg"
+      catch { file delete -force $base }
+      catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+      return
+   }
+
+   #----- Give the user the url path
+   Dialog::Give .anim { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath)
+
+   catch { file delete -force $base }
+   set Play(Label) "[lindex $Lbl(Done) $GDefs(Lang)]"
+   update idletasks
 }
 
 #----------------------------------------------------------------------------
