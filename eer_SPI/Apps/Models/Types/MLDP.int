@@ -449,6 +449,7 @@ proc MLDP::PopUp { X Y } {
       menu .mldppopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
           .mldppopup.product add command -label "VAAC" -command { MLDP::CallProduct $Page::Data(Frame) result VAAC }
           .mldppopup.product add command -label "RSMC" -command { MLDP::CallProduct $Page::Data(Frame) result RSMC }
+          .mldppopup.product add command -label "CHEM" -command { MLDP::CallProduct $Page::Data(Frame) result CHEM }
           .mldppopup.product add command -label "INFO" -command { MLDP::CallProduct $Page::Data(Frame) result INFO }
           .mldppopup.product add command -label "METF" -command { MLDP::CallProduct $Page::Data(Frame) metf   METF }
           .mldppopup.product add separator
