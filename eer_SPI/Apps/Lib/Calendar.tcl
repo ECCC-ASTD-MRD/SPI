@@ -16,6 +16,8 @@
 #     Calendar::Create      { Frame Label Var Width { Cmd "" } }
 #     Calendar::Decrease    { Frame }
 #     Calendar::Increase    { Frame }
+#     Calendar::Enable      { Frame }
+#     Calendar::Disable     { Frame }
 #     Calendar::Invoke      { Frame Second }
 #     Calendar::Update      { Frame  }
 #     Calendar::Select      { Frame { Day "" } }
@@ -124,6 +126,58 @@ proc Calendar::Create { Frame Label Var Width { Cmd "" } } {
    }
 
    trace variable $Var w "Calendar::Set $Frame \$$Var"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Calendar::Disable>
+# Creation : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE -
+#
+# But      : Disable le widget.
+#
+# Parametres  :
+#   <Frame>   : Identificateur du Frame.
+#
+# Retour      :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Calendar::Disable { Frame } {
+   global GDefs
+
+   if { ![winfo exists $Frame] } {
+      return
+   }
+
+   $Frame.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
+   $Frame.b configure -state disabled
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Calendar::Enable>
+# Creation : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE -
+#
+# But      : Affiche une interface de calendrier.
+#
+# Parametres  :
+#   <Frame>   : Identificateur du Frame.
+#
+# Retour      :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Calendar::Enable { Frame } {
+   global GDefs
+
+   if { ![winfo exists $Frame] } {
+      return
+   }
+
+   $Frame.e configure -state normal -disabledbackground $GDefs(ColorLight) -disabledforeground black
+   $Frame.b configure -state normal
 }
 
 #----------------------------------------------------------------------------

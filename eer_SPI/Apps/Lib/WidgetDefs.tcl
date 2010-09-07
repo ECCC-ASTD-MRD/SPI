@@ -29,7 +29,7 @@
 #
 #    Option::Create          { Frame Label Var Edit Width List Cmd args }
 #    Option::Disable         { Frame }
-#    Option::Enable          { Frame }
+#    Option::Enable          { Frame { Edit True } }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
@@ -159,15 +159,21 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
 }
 
 proc Option::Disable { Frame } {
+   global GDefs
 
-   $Frame.e configure -state disabled
+   $Frame.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
    $Frame.b configure -state disabled
 }
 
-proc Option::Enable { Frame } {
+proc Option::Enable { Frame { Edit True } } {
+   global GDefs
 
    $Frame.e configure -state normal
    $Frame.b configure -state normal
+
+   if { !$Edit } {
+      $Frame.e configure -state disabled -disabledbackground $GDefs(ColorLight) -disabledforeground black
+   }
 }
 
 #-------------------------------------------------------------------------------

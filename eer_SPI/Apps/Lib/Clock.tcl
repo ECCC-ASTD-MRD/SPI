@@ -11,6 +11,11 @@
 # Description: Permet grace a une interface de slelectionner l'heure.
 #
 # Fonctions:
+#   Clock::Create  { Frame Label Var args }
+#   Clock::Disable { Frame }
+#   Clock::Enable  { Frame }
+#   Clock::Incr    { Widget Inc Fill }
+#   Clock::Check   { Val Fill Min Max }
 #
 # Remarques :
 #   Aucune
@@ -106,6 +111,72 @@ proc Clock::Create { Frame Label Var args } {
    bind $Frame.hh <Any-KeyRelease>   "Clock::Incr $Frame 0 0"
 #   bind $Frame.hh <ButtonRelease-1>  "$Frame.hh selection range 0 end"
    bind $Frame.hh <ButtonRelease-1>  "tk_popup $Frame.hh.lst \[winfo rootx $Frame\] \[expr \[winfo rooty $Frame\]+\[winfo height $Frame\]\]"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Clock::Disable>
+# Creation : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Disable le widget.
+#
+# Parametres  :
+#   <Frame>   : Identificateur du Frame.
+#
+# Retour      :
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Clock::Disable { Frame } {
+   global GDefs
+
+   if { ![winfo exists $Frame] } {
+      return
+   }
+
+   $Frame.inc.up configure -state disabled
+   $Frame.inc.down configure -state disabled
+
+   bind $Frame.hh <ButtonRelease-1> ""
+   if { [winfo exists $Frame.mm] } {
+      $Frame.mm configure -state disabled
+   }
+   $Frame.hh configure -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Clock::Enable>
+# Creation : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Enable le widget.
+#
+# Parametres  :
+#   <Frame>   : Identificateur du Frame.
+#
+# Retour      :
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Clock::Enable { Frame } {
+   global GDefs
+
+   if { ![winfo exists $Frame] } {
+      return
+   }
+
+   $Frame.inc.up configure -state normal
+   $Frame.inc.down configure -state normal
+
+   bind $Frame.hh <ButtonRelease-1> "tk_popup $Frame.hh.lst \[winfo rootx $Frame\] \[expr \[winfo rooty $Frame\]+\[winfo height $Frame\]\]"
+   if { [winfo exists $Frame.mm] } {
+      $Frame.mm configure -state normal
+   }
+   $Frame.hh configure -disabledbackground $GDefs(ColorLight) -disabledforeground black
 }
 
 #----------------------------------------------------------------------------
