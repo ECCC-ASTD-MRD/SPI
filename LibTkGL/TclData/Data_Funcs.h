@@ -89,6 +89,9 @@ double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB);
 double fcentile(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
 double fpeel(TDataDef *Res,TDataDef *MA);
 
+/*Table operators*/
+double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB);
+
 /*Matrix reduction operations*/
 double stat_all(TDataDef *MA,TDataDef *MB);   /* All stats */
 double stat_na(TDataDef *MA,TDataDef *MB);    /* Number of rejected values */

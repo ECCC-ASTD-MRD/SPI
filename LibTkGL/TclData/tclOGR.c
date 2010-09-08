@@ -866,7 +866,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 
    TDataDef  *def=NULL;
    TData_Type type=TD_Unknown;
-   int        i,f,n=0;
+   int        i,f;
    double     val;
 
    /*Get the field index*/
@@ -882,19 +882,12 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
       /*If the field is not int or float, exit*/
       if (type!=TD_Unknown) {
 
-         /*Count number of features to use*/
-         for(f=0;f<Layer->NFeature;f++) {
-            if (Layer->Select[f]) n++;
-         }
-
          /*Get the data in*/
-         def=DataDef_New(n,1,1,1,type);
+         def=DataDef_New(Layer->NFeature,1,1,1,type);
 
          for(f=0;f<Layer->NFeature;f++) {
-            if (Layer->Select[f]) {
-               val=OGR_F_GetFieldAsDouble(Layer->Feature[f],i);
-               Def_Set(def,0,f,val);
-            }
+            val=OGR_F_GetFieldAsDouble(Layer->Feature[f],i);
+            Def_Set(def,0,f,val);
          }
       }
    }

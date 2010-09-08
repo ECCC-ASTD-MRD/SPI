@@ -71,6 +71,8 @@ TFuncDef FuncD[] = {
   { "ddxysecond", ddxysecond, 1 , TD_Float32 },
   { "dprofcurve", dprofcurve, 1 , TD_Float32 },
   { "dtangcurve", dtangcurve, 1 , TD_Float32 },
+
+  { "tcount"    , tcount    , 2 , TD_Int32 },
   { NULL        , NULL      , 0 , TD_Unknown }
 };
 
@@ -163,6 +165,32 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   }
 
   return(NULL);
+}
+
+double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
+
+   double        v,vb,va;
+   unsigned long i,j,idx,idxi,k;
+
+   /*Parse matrix*/
+   for(j=0;j<MB->NJ;j++) {
+      idx=j*MB->NI;
+      for(i=0;i<MB->NI;i++) {
+         idxi=idx+i;
+
+         /*Increment result table at matrix value's index*/
+         Def_Get(MB,0,idxi,vb);
+         k=vb;
+         if (k>Table->NI-1) {
+            fprintf(stderr,"(WARNING) Index overflow (tcount) : %i\n",k);
+            return(0.0);
+         }
+         Def_Get(Res,0,k,va)
+         va++;
+         Def_Set(Res,0,k,va);
+      }
+   }
+   return(0.0);
 }
 
 double fpeel(TDataDef *Res,TDataDef *MA) {
