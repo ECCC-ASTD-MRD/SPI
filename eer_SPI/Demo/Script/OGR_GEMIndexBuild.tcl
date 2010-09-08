@@ -9,8 +9,8 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Projet     : Exemple de scripts.
 # Fichier    : OGR_GEMIndexBuild.tcl
-# Creation   : Mars 2008 - J.P. Gauthier - CMC/CMOE
-# Description: Creer un index des diverses grilles GEM
+# Creation   : Septembre 2010 - J.P. Gauthier - CMC/CMOE
+# Description: Creer un index de couverture des diverses grilles GEM
 #
 # Parametres :
 #

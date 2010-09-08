@@ -130,6 +130,8 @@ proc SPI::About { } {
 proc SPI::Dock { Frame } {
 
    pack $Frame -before .pan -side right -fill y -anchor n
+
+#   .pan add $Frame
 }
 
 #-------------------------------------------------------------------------------

@@ -181,13 +181,14 @@ double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
          /*Increment result table at matrix value's index*/
          Def_Get(MB,0,idxi,vb);
          k=vb;
-         if (k>Table->NI-1) {
+
+         if (k<Table->NI) {
+            Def_Get(Res,0,k,va)
+            va++;
+            Def_Set(Res,0,k,va);
+         } else {
             fprintf(stderr,"(WARNING) Index overflow (tcount) : %i\n",k);
-            return(0.0);
          }
-         Def_Get(Res,0,k,va)
-         va++;
-         Def_Set(Res,0,k,va);
       }
    }
    return(0.0);

@@ -23,10 +23,10 @@
 #
 #             ~/www/mandats/rsmc/usagers/jnt_rsmc/restrict/JNT_STMT/jntreg34.html
 #
-#     noaa : le ftp 'gus.arlhq.noaa.gov' avec user ( voir ci-bas ) dans
+#     noaa : le ftp 'arlftp.arlhq.noaa.gov' avec user ( voir ci-bas ) dans
 #
-#             restrict/JNT_STMT/jnttest.html
-#             ( /pub/rsmc/restrict/JNT_STMT/jntreg34.html )
+#             jnttest.html
+#             ( /jntreg34.html )
 #
 #     autr : le ftp 'ftp.bom.gov.au' avec user ( voir ci-bas ) dans
 #
@@ -160,17 +160,16 @@ done
 
 #----- copie les produits sur le serveur de Washington.
 
-#ST cat <<EndFTP > wash.ftp_dir
-#ST user rsmcftp ${rsmcftp}
-#ST bin
-#ST cd restrict/CA
-#ST EndFTP
+cat <<EndFTP > wash.ftp_dir
+user rsmc02 ${arlftp}
+bin
+EndFTP
 
-#ST cat ftp_dir >> wash.ftp_dir
+cat ftp_dir >> wash.ftp_dir
 
-#ST echo "put rsmc.ps rsmc.ps" >> wash.ftp_dir
+echo "put rsmc.ps rsmc.ps" >> wash.ftp_dir
 
-#ST ftp -ni gus.arlhq.noaa.gov < wash.ftp_dir
+ftp -ni arlftp.arlhq.noaa.gov < wash.ftp_dir
 
 #----- copie les produits sur le serveur de Melbourne.
 
