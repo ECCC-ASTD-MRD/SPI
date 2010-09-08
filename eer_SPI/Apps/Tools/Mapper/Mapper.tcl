@@ -1089,8 +1089,9 @@ proc Mapper::PickOGR { VP X Y } {
    for { set i [expr [llength $Viewport::Data(Data)]-1] } { $i>=0 } { incr i -1 } {
       set object [lindex $Viewport::Data(Data) $i]
       if { [ogrlayer is $object] } {
-         if { [set Data(Index) [lindex [ogrlayer pick $object $coords $Data(PickAll)] 0]]!="" } {
+         if { [set idx [lindex [ogrlayer pick $object $coords $Data(PickAll)] 0]]!="" } {
 
+            set Data(Index) $idx
             set Data(Object) $object
             Mapper::ParamsOGRGet $Data(Object)
             Mapper::ParamsOGR $Data(Object) 2

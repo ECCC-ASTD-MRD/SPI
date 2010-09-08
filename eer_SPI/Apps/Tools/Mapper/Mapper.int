@@ -1254,10 +1254,10 @@ proc Mapper::ParamsOGR { Object Tab } {
             label $Data(Frame3).geomtype.lbl -text "[lindex $Lbl(Shape) $GDefs(Lang)]:" -anchor w
             menubutton $Data(Frame3).geomtype.type -textvariable Mapper::Data(GeomOut) -menu $Data(Frame3).geomtype.type.menu
             menu $Data(Frame3).geomtype.type.menu
-               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label TEXT -value TEXT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
-               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label WKT -value WKT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
-               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label KML -value KML -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
-               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label GML -value GML -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) True }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label TEXT -value TEXT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label WKT -value WKT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label KML -value KML -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) }
+               $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label GML -value GML -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) }
             pack  $Data(Frame3).geomtype.lbl $Data(Frame3).geomtype.type -side left
 
          labelframe $Data(Frame3).geom -labelwidget $Data(Frame3).geomtype
@@ -1331,7 +1331,7 @@ proc Mapper::ParamsOGR { Object Tab } {
    catch { colormap image $Mapper::Data(Object) OGRMAPImg }
 
    Mapper::SelectOGR $Object
-   Mapper::FeatureOGR $Object $Data(Index) False
+   Mapper::FeatureOGR $Object $Data(Index)
    Mapper::TableOGR $Object $force
 }
 
@@ -1454,7 +1454,7 @@ proc Mapper::FeatureOGRGeom { Geom Depth } {
 
 }
 
-proc Mapper::FeatureOGR { Object Index Locate } {
+proc Mapper::FeatureOGR { Object Index { Locate False } } {
    global   GDefs
    variable Data
 
@@ -1497,14 +1497,15 @@ proc Mapper::FeatureOGR { Object Index Locate } {
          set coords [ogrlayer project $Object [lindex $coords 0] [lindex $coords 1]]
       }
 
+      set Data(Index)    $Index
+      set Data(TableSel) $Index
+
       if { $Locate && [llength $coords] } {
          SPI::Locate [lindex $coords 0] [lindex $coords 1]
       } else {
          Page::Update $Page::Data(Frame)
       }
    }
-   set Data(Index)    $Index
-   set Data(TableSel) $Index
 }
 
 proc Mapper::TableOGR { Object { Force False } } {
@@ -1555,8 +1556,9 @@ proc Mapper::TableOGR { Object { Force False } } {
          radiobutton $Data(Frame5).meta.table.r$r -variable Mapper::Data(TableSel) -indicatoron False -bd 1
       }
       catch {  $Data(Frame5).meta.table.r$r configure -text $Mapper::Table($r,0) -value $Mapper::Table($r,0) \
-         -command "$Data(Frame5).meta.table selection clear all; $Data(Frame5).meta.table selection set $r,1 $r,$col;
-            Mapper::FeatureOGR \$Mapper::Data(Object) $Mapper::Table($r,0) True" }
+         -command "$Data(Frame5).meta.table selection clear all;
+                   $Data(Frame5).meta.table selection set $r,1 $r,$col;
+                   Mapper::FeatureOGR \$Mapper::Data(Object) $Mapper::Table($r,0) True" }
       $Data(Frame5).meta.table window configure $r,0 -window $Data(Frame5).meta.table.r$r -sticky nsew
    }
    for { set r $r } { $r<$rs } { incr r } {
