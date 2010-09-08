@@ -193,8 +193,6 @@ double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
                Def_Get(Res,0,k,va)
                va+=1.0;
                Def_Set(Res,0,k,va);
-            } else {
-               fprintf(stderr,"(WARNING) Index overflow (tcount) : %i\n",k);
             }
          }
       }
