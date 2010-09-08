@@ -196,7 +196,7 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
             Poly->hole[Poly->num_contours+g]=(g==0?FALSE:TRUE);
             Poly->contour[Poly->num_contours+g].vertex=(nb?(gpc_vertex*)malloc(nb*sizeof(gpc_vertex)):NULL);
 
-           for (n=0;n<nb;n++) {
+            for (n=0;n<nb;n++) {
                OGR_G_GetPoint(geom,n,&Poly->contour[Poly->num_contours+g].vertex[n].x,&Poly->contour[Poly->num_contours+g].vertex[n].y,&tmpd);
             }
          }

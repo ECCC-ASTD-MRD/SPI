@@ -692,33 +692,35 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       }
 
       /*Check for included channel or list containing index*/
-      if (chan || (chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
-         /*Make sure its flushed and reset in case were on the second pass or more (k)*/
-         Tcl_Seek(chan,0,SEEK_SET);
-         obji=Tcl_NewObj();
-         objj=Tcl_NewObj();
-         lst=Tcl_NewObj();
+      if (List) {
+         if (chan || (chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
+            /*Make sure its flushed and reset in case were on the second pass or more (k)*/
+            Tcl_Seek(chan,0,SEEK_SET);
+            obji=Tcl_NewObj();
+            objj=Tcl_NewObj();
+            lst=Tcl_NewObj();
 
-         f=Tcl_GetsObj(chan,obji);
-         f=Tcl_GetsObj(chan,objj);
-         if (f>0) {
-            p=1;
-         } else {
-            if (!(rw&TCL_WRITABLE)) {
-               Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
-               return(TCL_ERROR);
+            f=Tcl_GetsObj(chan,obji);
+            f=Tcl_GetsObj(chan,objj);
+            if (f>0) {
+               p=1;
+            } else {
+               if (!(rw&TCL_WRITABLE)) {
+                  Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
+                  return(TCL_ERROR);
+               }
             }
-         }
-      } else if (List) {
-         lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
-         if (!lst) {
-            item=Tcl_NewListObj(0,NULL);
-            List=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
          } else {
-            List=lst;
+            lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
+            if (!lst) {
+               item=Tcl_NewListObj(0,NULL);
+               List=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
+            } else {
+               List=lst;
+            }
+            Tcl_ListObjLength(Interp,List,&len);
+            p=len;
          }
-         Tcl_ListObjLength(Interp,List,&len);
-         p=len;
       }
 
       /*Wouou we have the index list*/
@@ -890,217 +892,6 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                         Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
                         Tcl_ListObjAppendElement(Interp,List,item);
                      }
-                  }
-#ifdef DEBUG
-                  fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
-#endif
-               }
-            }
-         }
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
-#endif
-      }
-
-      /*Finalize and reassign*/
-      idx3=FSIZE2D(ToDef)*k;
-      if (Final && Mode=='N') {
-         for(n=0;n<FSIZE2D(ToDef);n++) {
-            if (ToDef->Buffer[n]!=0.0) {
-               Def_Get(ToDef,0,idx3+n,val0);
-               val0/=ToDef->Buffer[n];
-               Def_Set(ToDef,0,idx3+n,val0);
-            }
-         }
-      }
-   }
-
-   OGR_G_DestroyGeometry(ring);
-   OGR_G_DestroyGeometry(cell);
-
-   return(TCL_OK);
-}
-
-int Data_GridConservative1(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
-
-   int          i,j,n,nt,p,pt,pi,pj,len=-1,idx2,idx3,wrap,w=0,k=0;
-   double       val0,val1,area,x,y,z;
-   OGRGeometryH cell,ring;
-   OGREnvelope  env;
-   Tcl_Obj      *list=NULL,*lst,*item=NULL;
-
-   cell=OGR_G_CreateGeometry(wkbPolygon);
-   ring=OGR_G_CreateGeometry(wkbLinearRing);
-
-   if (!ToDef->Pick)
-      ToDef->Pick=OGR_G_CreateGeometry(wkbLinearRing);
-
-   if (!ToDef->Poly) {
-      ToDef->Poly=OGR_G_CreateGeometry(wkbPolygon);
-      OGR_G_AddGeometryDirectly(ToDef->Poly,ToDef->Pick);
-   }
-
-   /*Allocate area buffer if needed*/
-   if (Mode=='N' && !ToDef->Buffer) {
-      ToDef->Buffer=(double*)malloc(FSIZE2D(ToDef)*sizeof(double));
-      if (!ToDef->Buffer) {
-         Tcl_AppendResult(Interp,"Data_GridConservative: Unable to allocate area buffer",(char*)NULL);
-         return(TCL_ERROR);
-      }
-   }
-
-   /*Process on level at a time*/
-   for (k=0;k<ToDef->NK;k++) {
-
-      if (ToDef->Buffer) {
-         memset(ToDef->Buffer,0x0,FSIZE2D(ToDef)*sizeof(double));
-      }
-
-      /*Check for included index list*/
-      if (List) {
-         lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
-         if (!lst) {
-            item=Tcl_NewListObj(0,NULL);
-            list=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
-         } else {
-            list=lst;
-         }
-         Tcl_ListObjLength(Interp,list,&len);
-      }
-
-      /*Wouou we have the index list*/
-      if (len>1) {
-         for(n=0;n<len;n+=3) {
-            Tcl_ListObjIndex(Interp,list,n,&lst);
-            Tcl_GetIntFromObj(Interp,lst,&i);
-            Tcl_ListObjIndex(Interp,list,n+1,&lst);
-            Tcl_GetIntFromObj(Interp,lst,&j);
-
-            Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
-            if (isnan(val1) || val1==FromDef->NoData) {
-               continue;
-            }
-
-            Tcl_ListObjIndex(Interp,list,n+2,&lst);
-            Tcl_ListObjLength(Interp,lst,&pt);
-            for(p=0;p<pt;p+=3) {
-               Tcl_ListObjIndex(Interp,lst,p,&item);
-               Tcl_GetIntFromObj(Interp,item,&pi);
-               Tcl_ListObjIndex(Interp,lst,p+1,&item);
-               Tcl_GetIntFromObj(Interp,item,&pj);
-               Tcl_ListObjIndex(Interp,lst,p+2,&item);
-               Tcl_GetDoubleFromObj(Interp,item,&area);
-
-               idx2=FIDX2D(ToDef,pi,pj);
-               idx3=FIDX3D(ToDef,pi,pj,k);
-               Def_Get(ToDef,0,idx3,val0);
-               if (isnan(val0) || val0==ToDef->NoData)
-                  val0=0.0;
-               val0+=val1*area;
-               Def_Set(ToDef,0,idx3,val0);
-
-               if (Mode=='N') {
-                  ToDef->Buffer[idx2]+=area;
-               }
-            }
-         }
-      } else {
-
-         /*Damn, we dont have the index, do the long run*/
-         for(j=0;j<FromDef->NJ;j++) {
-            for(i=0;i<FromDef->NI;i++) {
-
-               /*Project the source gridcell into the destination*/
-               wrap=OGR_GridCell(ring,ToRef,FromRef,i,j,Prec);
-
-               /*Are we crossing the wrap around*/
-               if (wrap<0) {
-                  /*If so, move the wrapped points (assumed greater than NI/2) to the other side*/
-                  for(p=0;p<-wrap;p++) {
-                     OGR_G_GetPoint(ring,p,&x,&y,&z);
-                     if (x>ToDef->NI>>1) {
-                        x-=ToDef->NI;
-                        OGR_G_SetPoint_2D(ring,p,x,y);
-                     }
-                  }
-
-                  /*Process the cell*/
-                  OGR_G_Empty(cell);
-                  OGR_G_AddGeometry(cell,ring);
-                  area=OGR_G_GetArea(cell);
-
-                  if (area>0.0) {
-                     Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
-                     /*If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results*/
-                     if (isnan(val1) || val1==FromDef->NoData) {
-                        if (list) {
-                           val1=0.0;
-                        } else {
-                           continue;
-                        }
-                     }
-
-                     /*Use enveloppe limits to initialize the initial lookup range*/
-                     OGR_G_GetEnvelope(ring,&env);
-                     env.MaxX+=0.5;env.MaxY+=0.5;
-                     env.MinX=env.MinX<0?0:env.MinX;
-                     env.MinY=env.MinY<0?0:env.MinY;
-                     env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
-                     env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
-
-                     if (list)
-                        item=Tcl_NewListObj(0,NULL);
-
-                     nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k);
-                     if (list && n) {
-                        Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(i));
-                        Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(j));
-                        Tcl_ListObjAppendElement(Interp,list,item);
-                     }
-      #ifdef DEBUG
-                     fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
-      #endif
-                  }
-
-                  /*We have to process the part that was out of the grid limits so translate everything NI points*/
-                  for(p=0;p<-wrap;p++) {
-                     OGR_G_GetPoint(ring,p,&x,&y,&z);
-                     x+=ToDef->NI;
-                     OGR_G_SetPoint_2D(ring,p,x,y);
-                  }
-               }
-
-               OGR_G_Empty(cell);
-               OGR_G_AddGeometry(cell,ring);
-               area=OGR_G_GetArea(cell);
-
-               if (area>0.0) {
-                  Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
-                  if (isnan(val1) || val1==FromDef->NoData) {
-                     /*If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results*/
-                     if (list) {
-                        val1=0.0;
-                     } else {
-                        continue;
-                     }
-                  }
-
-                  /*Use enveloppe limits to initialize the initial lookup range*/
-                  OGR_G_GetEnvelope(ring,&env);
-                  env.MaxX+=0.5;env.MaxY+=0.5;
-                  env.MinX=env.MinX<0?0:env.MinX;
-                  env.MinY=env.MinY<0?0:env.MinY;
-                  env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
-                  env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
-
-                  if (list)
-                     item=Tcl_NewListObj(0,NULL);
-
-                  nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k);
-                  if (list && n) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(i));
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_NewIntObj(j));
-                     Tcl_ListObjAppendElement(Interp,list,item);
                   }
 #ifdef DEBUG
                   fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
