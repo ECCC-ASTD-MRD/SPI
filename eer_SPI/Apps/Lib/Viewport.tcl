@@ -2488,7 +2488,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 
    #----- Do only if we have the power to
 
-   if { $OpenGL::Param(Res)==1 } {
+   if { $OpenGL::Param(Res)==1 && ![projection loading $Frame] } {
 
       #----- If we are far enough
 

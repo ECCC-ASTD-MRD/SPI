@@ -1414,15 +1414,14 @@ proc Mapper::SelectOGRClear { Object } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::FeatureOGR>
+# Nom      : <Mapper::FeatureOGRGeom>
 # Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Recuperer les donnees d'une feature specifique
+# But      : Extraire la geometrie d'une featrue
 #
 # Parametres :
-#   <Object> : Donnee geographique a parametrer
-#   <Index>  : Index de l'item
-#   <Locate> : Centre sur l'item
+#   <Object> : Donnee geographique (feature)
+#   <Depth>  : Profondeur de la geometrie courante (Recursion)
 #
 # Retour    :
 #
@@ -1451,8 +1450,24 @@ proc Mapper::FeatureOGRGeom { Geom Depth } {
          eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f %.4f\\n\" \"\" $cx $cy $cz\]
       }
    }
-
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::FeatureOGR>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer les donnees d'une feature specifique
+#
+# Parametres :
+#   <Object> : Donnee geographique a parametrer
+#   <Index>  : Index de l'item
+#   <Locate> : Centre sur l'item (Default False)
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc Mapper::FeatureOGR { Object Index { Locate False } } {
    global   GDefs
