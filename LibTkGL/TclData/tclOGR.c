@@ -319,8 +319,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    Tcl_Obj      *lst,*obj;
 
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
-   static CONST char *sopt[] = { "create","free","clean","clear","read","write","import","delete","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
-   enum                opt { CREATE,FREE,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","free","sync","clean","clear","read","write","import","delete","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
+   enum                opt { CREATE,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -337,7 +337,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case CREATE:
          if (Objc!=5 && Objc!=6) {
             Tcl_WrongNumArgs(Interp,2,Objv,"file Id layer [georef]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (Objc==6) {
             ref=GeoRef_Get(Tcl_GetString(Objv[5]));
@@ -357,24 +357,31 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case READ:
          if (Objc<5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer file index");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetIntFromObj(Interp,Objv[4],&idxfi);
-         return OGR_LayerRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),idxfi);
+         return(OGR_LayerRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),idxfi));
          break;
 
       case WRITE:
          if (Objc<4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer file");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return OGR_LayerWrite(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]));
+         return(OGR_LayerWrite(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])));
+         break;
+
+      case SYNC:
+         layer=OGR_LayerGet(Tcl_GetString(Objv[2]));
+         for(f=0;f<layer->NFeature;f++) {
+            OGR_L_SetFeature(layer->Layer,layer->Feature[f]);
+         }
          break;
 
       case IMPORT:
          if (Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer fields");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          return(OGR_LayerImport(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),Objv[3]));
@@ -921,11 +928,9 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
 
       /*Put the results in*/
       for(f=0;f<Layer->NFeature;f++) {
-         if (Layer->Select[f]) {
-            Def_Get(Def,0,f,val);
-            OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
-            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
-         }
+         Def_Get(Def,0,f,val);
+         OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
+//         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
       }
       return(Layer);
    } else {

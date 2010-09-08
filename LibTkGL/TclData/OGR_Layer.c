@@ -1986,7 +1986,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
-         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+//         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
       }
    }
    return(TCL_OK);
@@ -2119,7 +2119,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                          break;
             }
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+//            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
          if (chan) {
             Tcl_SetObjLength(obji,0);
@@ -2194,7 +2194,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         break;
                      }
                   }
-                  OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+//                  OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
                }
 
                /*Append this gridpoint intersections to the index*/
@@ -2224,7 +2224,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          if (accum[f]!=0.0) {
             val0/=accum[f];
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+//            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
       }
    }

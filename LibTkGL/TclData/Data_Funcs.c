@@ -170,7 +170,14 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
 double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
 
    double        v,vb,va;
-   unsigned long i,j,idx,idxi,k;
+   unsigned long i,j,idx,idxi,k,nt;
+
+   /*Initialise to input table*/
+   nt=FSIZE2D(Table);
+   for(i=0;i<nt;i++) {
+      Def_Get(Table,0,i,v);
+      Def_Set(Res,0,i,v);
+   }
 
    /*Parse matrix*/
    for(j=0;j<MB->NJ;j++) {
@@ -180,14 +187,15 @@ double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
 
          /*Increment result table at matrix value's index*/
          Def_Get(MB,0,idxi,vb);
-         k=vb;
-
-         if (k<Table->NI) {
-            Def_Get(Res,0,k,va)
-            va++;
-            Def_Set(Res,0,k,va);
-         } else {
-            fprintf(stderr,"(WARNING) Index overflow (tcount) : %i\n",k);
+         if (vb!=MB->NoData) {
+            k=vb;
+            if (k>=0 && k<nt) {
+               Def_Get(Res,0,k,va)
+               va+=1.0;
+               Def_Set(Res,0,k,va);
+            } else {
+               fprintf(stderr,"(WARNING) Index overflow (tcount) : %i\n",k);
+            }
          }
       }
    }
