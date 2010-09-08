@@ -77,8 +77,8 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    unsigned char      zc;
    double             lat,lon;
    Projection        *proj;
-   static CONST char *sopt[] = { "create","configure","function","destroy","clean","is","data",NULL };
-   enum               opt { CREATE,CONFIGURE,FUNCTION,DESTROY,CLEAN,IS,DATA };
+   static CONST char *sopt[] = { "create","configure","function","destroy","clean","is","data","loading",NULL };
+   enum               opt { CREATE,CONFIGURE,FUNCTION,DESTROY,CLEAN,IS,DATA,LOADING };
 
    Tcl_ResetResult(Interp);
 
@@ -95,40 +95,40 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case CREATE:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return Projection_Create(Interp,Tcl_GetString(Objv[2]));
+         return(Projection_Create(Interp,Tcl_GetString(Objv[2])));
          break;
 
       case CONFIGURE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return Projection_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(Projection_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
       case FUNCTION:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return Projection_Function(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(Projection_Function(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
       case DESTROY:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return Projection_Destroy(Interp,Tcl_GetString(Objv[2]));
+         return(Projection_Destroy(Interp,Tcl_GetString(Objv[2])));
          break;
 
       case CLEAN:
         proj=Projection_Get(Tcl_GetString(Objv[2]));
          if (!proj) {
             Tcl_AppendResult(Interp,"\n   Projection_Cmd: Projection name unknown: \"",Tcl_GetString(Objv[2]),"\"",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (strcmp(proj->Type->Name,"grid")==0) {
             Grid_Setup(Interp,proj);
@@ -141,7 +141,7 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case DATA:
         if (Objc<6) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name [-BATHYMETRY|-TOPOGRAPHY|-MASK|-TYPE] lat lon");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          proj=Projection_Get(Tcl_GetString(Objv[2]));
          Tcl_GetDoubleFromObj(Interp,Objv[4],&lat);
@@ -176,13 +176,22 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (Projection_Get(Tcl_GetString(Objv[2]))) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
          }
+         break;
+
+      case LOADING:
+        proj=Projection_Get(Tcl_GetString(Objv[2]));
+         if (!proj) {
+            Tcl_AppendResult(Interp,"\n   Projection_Cmd: Projection name unknown: \"",Tcl_GetString(Objv[2]),"\"",(char *)NULL);
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Loading));
          break;
    }
    return TCL_OK;
