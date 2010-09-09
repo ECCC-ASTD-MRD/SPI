@@ -1299,9 +1299,6 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
          break;
    }
 
-   if (OGR_F_GetGeometryRef(Feature)) {
-      OGR_L_SetFeature(Layer,Feature);
-   }
    return(TCL_OK);
 }
 
@@ -1986,7 +1983,6 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
-//         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
       }
    }
    return(TCL_OK);
@@ -2042,31 +2038,33 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    }
 
    /*Check for included channel or list containing index*/
-   if ((chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
-      obji=Tcl_NewObj();
-      objj=Tcl_NewObj();
-      lst=Tcl_NewObj();
+   if (List) {
+      if ((chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
+         obji=Tcl_NewObj();
+         objj=Tcl_NewObj();
+         lst=Tcl_NewObj();
 
-      f=Tcl_GetsObj(chan,obji);
-      f=Tcl_GetsObj(chan,objj);
-      if (f>0) {
-         p=1;
-      } else {
-         if (!(rw&TCL_WRITABLE)) {
-            Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
-            return(TCL_ERROR);
+         f=Tcl_GetsObj(chan,obji);
+         f=Tcl_GetsObj(chan,objj);
+         if (f>0) {
+            p=1;
+         } else {
+            if (!(rw&TCL_WRITABLE)) {
+               Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
+               return(TCL_ERROR);
+            }
          }
-      }
-   } else if (List) {
-      lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
-      if (!lst) {
-         item=Tcl_NewListObj(0,NULL);
-         List=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
       } else {
-         List=lst;
+         lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
+         if (!lst) {
+            item=Tcl_NewListObj(0,NULL);
+            List=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
+         } else {
+            List=lst;
+         }
+         Tcl_ListObjLength(Interp,List,&len);
+         p=len;
       }
-      Tcl_ListObjLength(Interp,List,&len);
-      p=len;
    }
 
    /*Wouou we have the index*/
@@ -2119,7 +2117,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                          break;
             }
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-//            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
          if (chan) {
             Tcl_SetObjLength(obji,0);
@@ -2194,7 +2191,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         break;
                      }
                   }
-//                  OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
                }
 
                /*Append this gridpoint intersections to the index*/
@@ -2224,7 +2220,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          if (accum[f]!=0.0) {
             val0/=accum[f];
             OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-//            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
          }
       }
    }

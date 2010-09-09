@@ -933,8 +933,8 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    double      x,y,lat0,lon0,lat1,lon1;
    int         n,idx,i,in;
    char        buf[256],**meta,*dri=NULL;
-   static CONST char *sopt[] = { "open","close","format","driver","width","height","georef","metadata","project","unproject","within","filename","error",NULL };
-   enum                opt { OPEN,CLOSE,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,ERROR };
+   static CONST char *sopt[] = { "open","close","createcopy","format","driver","width","height","georef","metadata","project","unproject","within","filename","error",NULL };
+   enum                opt { OPEN,CLOSE,CREATECOPY,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,ERROR };
 
    Tcl_ResetResult(Interp);
 
@@ -971,6 +971,14 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (Objc==6)
             dri=Tcl_GetString(Objv[5]);
          return(GDAL_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),dri,NULL));
+         break;
+
+      case CREATECOPY:
+         if(Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"filename bands driver");
+            return(TCL_ERROR);
+         }
+         return(GDAL_FileCreateCopy(Interp,Objv[3],Tcl_GetString(Objv[2]),Tcl_GetString(Objv[4])));
          break;
 
       case FORMAT:
@@ -1352,6 +1360,136 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    }
 
    GDAL_FilePut(Interp,file);
+
+   return(TCL_OK);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GDAL_FileCreateCopy>
+ * Creation     : Septembre 2010 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Ecrire les donnees d'une bande raster en utilisant le mode copy
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <Bands>    : Liste des bandes a sauvegarder
+ *   <Name>     : Path du fichier
+ *   <Driver>   : Driver a utiliser
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Driver) {
+
+   Tcl_Obj        *obj;
+   GDAL_Band      *band;
+   GDALColorTableH htable;
+   GDALColorEntry  centry;
+   GDALDatasetH    dts,vds;
+   GDALDriverH     dr;
+   int             i,ns,nc,n;
+   char           *str,buf[64],*csl[2];
+
+   Tcl_ListObjLength(Interp,Bands,&ns);
+   if (!ns) {
+      Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: No band specified",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   Tcl_ListObjIndex(Interp,Bands,0,&obj);
+   nc=0;
+   for(n=0;n<ns;n++) {
+      band=GDAL_BandGet(Tcl_GetString(obj));
+      if (!band) {
+         Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Invalid band ",Tcl_GetString(obj),(char*)NULL);
+         return(TCL_ERROR);
+      }
+      nc+=band->Def->NC;
+   }
+
+   /*Create an in memory dataset*/
+   if (!(dr=GDALGetDriverByName("MEM"))) {
+      Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Could not initialise VRT driver",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   vds=GDALCreate(dr,"",band->Def->NI,band->Def->NJ,0,TD2GDAL[band->Def->Type],NULL);
+
+   /*Set the georeference stuff*/
+   if (band->NbGCPs) {
+      /*Set GCPS*/
+      GDALSetGCPs(vds,band->NbGCPs,band->GCPs,band->Ref->String);
+   } else {
+      /*Set Transform*/
+      if (band->Ref) {
+         if (band->Ref->Transform)
+            GDALSetGeoTransform(vds,band->Ref->Transform);
+
+         if (band->Ref->Spatial) {
+            OSRExportToWkt(band->Ref->Spatial,&str);
+            GDALSetProjection(vds,str);
+            OGRFree(str);
+         }
+      }
+   }
+
+   nc=0;
+   for(n=0;n<ns;n++) {
+      Tcl_ListObjIndex(Interp,Bands,n,&obj);
+      band=GDAL_BandGet(Tcl_GetString(obj));
+
+      /*Write every band*/
+      for(i=0;i<band->Def->NC;i++) {
+
+         /*Pass in the memory address of the data*/
+         sprintf(buf,"DATAPOINTER=%li",band->Def->Data[i]);
+         csl[0]=buf;csl[1]=NULL;
+         GDALAddBand(vds,TD2GDAL[band->Def->Type],csl);
+
+         /*Set band description if any*/
+         band->Band[i]=GDALGetRasterBand(vds,nc+1);
+         if (band->Spec->Desc)
+            GDALSetDescription(band->Band[i],band->Spec->Desc);
+
+         /*Set nodata value if any*/
+         if (!isnan(band->Def->NoData))
+            GDALSetRasterNoDataValue(band->Band[i],band->Def->NoData);
+
+         /*Set the colormap if any*/
+         if (nc==0 && band->Spec->Map) {
+            htable=GDALCreateColorTable(GPI_RGB);
+            for (i=0;i<band->Spec->Map->NbPixels;i++) {
+               centry.c1=band->Spec->Map->Color[i][0];
+               centry.c2=band->Spec->Map->Color[i][1];
+               centry.c3=band->Spec->Map->Color[i][2];
+               centry.c4=band->Spec->Map->Color[i][3];
+               GDALSetColorEntry(htable,i,&centry);
+            }
+            GDALSetRasterColorTable(band->Band[i],htable);
+
+            if (band->Tex.Indexed) {
+               GDALSetRasterColorInterpretation(band->Band[i],GCI_PaletteIndex);
+            }
+         }
+         nc++;
+      }
+   }
+
+   if (!(dr=GDALGetDriverByName(Driver))) {
+      Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Invalid driver ",Driver,(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   dts=GDALCreateCopy(dr,Name,vds,FALSE,NULL,NULL,NULL);
+
+   if (dts) {
+      GDALClose(dts);
+   } else {
+      Tcl_AppendResult(Interp,"Could not create dataset ",Name,(char*)NULL);
+      return(TCL_ERROR);
+   }
 
    return(TCL_OK);
 }
