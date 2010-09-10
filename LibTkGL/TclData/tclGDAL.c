@@ -1396,7 +1396,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
    GDALColorEntry  centry;
    GDALDatasetH    dts,vds;
    GDALDriverH     dr;
-   int             i,ns,nc,n;
+   int             i,ns,nc,n,c;
    char           *str,buf[64],*csl[2];
 
    Tcl_ListObjLength(Interp,Bands,&ns);
@@ -1466,12 +1466,12 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
          /*Set the colormap if any*/
          if (nc==0 && band->Spec->Map) {
             htable=GDALCreateColorTable(GPI_RGB);
-            for (i=0;i<band->Spec->Map->NbPixels;i++) {
-               centry.c1=band->Spec->Map->Color[i][0];
-               centry.c2=band->Spec->Map->Color[i][1];
-               centry.c3=band->Spec->Map->Color[i][2];
-               centry.c4=band->Spec->Map->Color[i][3];
-               GDALSetColorEntry(htable,i,&centry);
+            for (c=0;c<band->Spec->Map->NbPixels;c++) {
+               centry.c1=band->Spec->Map->Color[c][0];
+               centry.c2=band->Spec->Map->Color[c][1];
+               centry.c3=band->Spec->Map->Color[c][2];
+               centry.c4=band->Spec->Map->Color[c][3];
+               GDALSetColorEntry(htable,c,&centry);
             }
             GDALSetRasterColorTable(band->Band[i],htable);
 
