@@ -653,9 +653,15 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return TCL_ERROR;
          }
 
+         a=band->Def->NoData;
+
          for(n=0;n<DSIZE(band->Def->Data);n++) {
+            /*If clearing values are specified*/
+            if (Objc>(3+n)) {
+               Tcl_GetDoubleFromObj(Interp,Objv[3+n],&a);
+            }
             for(i=0;i<FSIZE3D(band->Def);i++) {
-               Def_Set(band->Def,n,i,band->Def->NoData);
+               Def_Set(band->Def,n,i,a);
             }
          }
          if (band->Def->Buffer) {
