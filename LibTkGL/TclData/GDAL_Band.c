@@ -1581,19 +1581,17 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          if (val!=(float)Field->Def->NoData) {
             VAL2COL(idx,Field->Spec,val);
          } else {
-            val=0.0;
+            dir=val=Band->Def->NoData;
             idx=-1;
          }
 
          if (Field->Spec->Map) {
-            if (Band->Def->NC==1) {
-               Def_Set(Band->Def,0,scan.V[n],idx);
-            } else {
-               for (z=0;z<Band->Def->NC;z++) {
-                  if (idx>-1) {
+            if (idx>-1) {
+               if (Band->Def->NC==1) {
+                  Def_Set(Band->Def,0,scan.V[n],idx);
+               } else {
+                  for (z=0;z<Band->Def->NC;z++) {
                      Def_Set(Band->Def,z,scan.V[n],Field->Spec->Map->Color[idx][z]);
-                  } else {
-                     Def_Set(Band->Def,z,scan.V[n],0);
                   }
                }
             }
