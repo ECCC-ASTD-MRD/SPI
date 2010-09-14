@@ -66,4 +66,5 @@ puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
 
 close $f
 
+ogrlayer sync LAYER
 ogrfile close SHPFILE

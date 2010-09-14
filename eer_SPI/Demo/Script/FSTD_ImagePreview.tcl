@@ -33,7 +33,7 @@ colormap read CMAP DataIn/REC_Col.std1.rgba
 
 fstdfile open 1 read DataIn/2005102612_012
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" TT
-fstdfield configure FLD -colormap CMAP
+fstdfield configure FLD -colormap CMAP -intervals { -80 -70 -60 -50 }
 
 #----- Generere le preview
 

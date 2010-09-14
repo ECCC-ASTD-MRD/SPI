@@ -24,6 +24,8 @@ package require TclData
 
 puts \n[file tail [info script]]
 
+eval file delete  [glob DataOut/GDAL_Basic.*]
+
 #----- Afficher la liste des formats reconnus
 
 puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
@@ -52,9 +54,16 @@ gdalfile close GDAL
 puts "    Creating a band "
 gdalband create NEWRASTER 900 900 1 Byte
 
+puts "    Saving direct mode"
 gdalfile open NEWFILE write DataOut/GDAL_Basic.envi "ENVI"
 gdalband write NEWRASTER NEWFILE
 gdalfile close NEWFILE
+
+puts "    Saving copy mode (PNG)"
+gdalband stats NEWRASTER -nodata 100
+gdalband clear NEWRASTER
+
+gdalfile createcopy  DataOut/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"
 
 puts "    Freeing a band "
 gdalband free NEWRASTER
