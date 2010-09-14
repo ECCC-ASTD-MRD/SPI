@@ -69,7 +69,7 @@ proc Macro::Verif_QPF2448_0012::Execute { } {
       -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals $Param(Intervals)
 
    Macro::Doing "Reading precip field"
-   fstdfile open VERIF_REGFILE read /data/gridpt/dbase/prog/regdiag/${stamp48}_048
+   fstdfile open VERIF_REGFILE read $env(CMCGRIDF)/prog/regdiag/${stamp48}_048
    fstdfield read VERIF_REGFIELD VERIF_REGFILE -1 "" -1 48 24 P PR
    set valid [fstdstamp toseconds [fstdfield define VERIF_REGFIELD -DATEV]]
 
@@ -78,14 +78,14 @@ proc Macro::Verif_QPF2448_0012::Execute { } {
 
 
    Macro::Doing "Reading surface obs shef"
-   metobs create VERIF_SHEF /data/ade/dbase/surface/shef/${stamp}_
+   metobs create VERIF_SHEF $env(CMCADE)/dbase/surface/shef/${stamp}_
    metobs define VERIF_SHEF -VALID $valid False
    metmodel define [metobs define VERIF_SHEF -MODEL] -items { { 0 0 13023 { } } } -spacing 10
    metmodel configure [metobs define VERIF_SHEF -MODEL] 13023 -dataspec VERIF_SPECSHEF
 
 
    Macro::Doing "Reading surface obs synop"
-   metobs create VERIF_SYNOP /data/ade/dbase/surface/synop/${stamp}_pcp
+   metobs create VERIF_SYNOP $env(CMCADE)/dbase/surface/synop/${stamp}_pcp
    metobs define VERIF_SYNOP -VALID $valid False
    metmodel define [metobs define VERIF_SYNOP -MODEL] -items { { 0 0 13023 { } } } -spacing 10
    metmodel configure [metobs define VERIF_SYNOP -MODEL] 13023 -dataspec VERIF_SPECSYNOP
