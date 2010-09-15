@@ -1249,100 +1249,51 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                di1=val+ToDef->NI;
             }
 
-            /*Check if we need to loop*/
-            if (dj0==dj1 && di0==di1) {
-               idxt=dj0*ToDef->NI+di0;
+            for(ndj=dj0;ndj<=dj1;ndj++) {
+               idxj=ndj*ToDef->NI;
+               for(ndi=di0;ndi<=di1;ndi++) {
+                  idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
 
-               /*Skip if no mask*/
-               if (!ToDef->Mask || ToDef->Mask[idxt]) {
+                  /*Skip if no mask*/
+                  if (!ToDef->Mask || ToDef->Mask[idxt]) {
 
-                  /*If the previous value is nodata, initialize the counter*/
-                  if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                     fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
-                  }
+                     /*If the previous value is nodata, initialize the counter*/
+                     if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
+                        fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                     }
 
-                  switch(Mode) {
-                     case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
-                                                break;
-                     case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
-                                                break;
-                     case TD_SUM              : fld[idxt]+=vx;
-                                                break;
-                     case TD_VARIANCE         : acc[idxt]++;
-                                                Def_Get(TmpDef,0,idxt,val);
-                                                fld[idxt]+=(vx-val)*(vx-val);
-                                                break;
-                     case TD_SQUARE           : acc[idxt]++;
-                                                fld[idxt]+=vx*vx;
-                                                break;
-                     case TD_COUNT            : acc[idxt]++;
-                     case TD_AVERAGE          :
-                     case TD_NORMALIZED_COUNT : if (Table) {
-                                                   t=0;
-                                                   while(t<ToDef->NK) {
-                                                      if (vx==Table[t] && t<ToDef->NK) {
-                                                         if (Mode!=TD_COUNT) acc[idxt]++;
-                                                         fld[t*nij+idxt]+=1.0;
-                                                         break;
-                                                      }
-                                                      t++;
-                                                   }
-                                                } else {
-                                                   if (Mode!=TD_COUNT) acc[idxt]++;
-                                                   if (vx!=FromDef->NoData)
-                                                      fld[idxt]+=vx;
-                                                }
-                                                break;
-                  }
-               }
-
-            } else {
-               for(ndj=dj0;ndj<=dj1;ndj++) {
-                  idxj=ndj*ToDef->NI;
-                  for(ndi=di0;ndi<=di1;ndi++) {
-                     idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
-
-                     /*Skip if no mask*/
-                     if (!ToDef->Mask || ToDef->Mask[idxt]) {
-
-                        /*If the previous value is nodata, initialize the counter*/
-                        if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                           fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
-                        }
-
-                        switch(Mode) {
-                           case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
-                                                      break;
-                           case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
-                                                      break;
-                           case TD_SUM              : fld[idxt]+=vx;
-                                                      break;
-                           case TD_VARIANCE         : acc[idxt]++;
-                                                      Def_Get(TmpDef,0,idxt,val);
-                                                      fld[idxt]+=(vx-val)*(vx-val);
-                                                      break;
-                           case TD_SQUARE           : acc[idxt]++;
-                                                      fld[idxt]+=vx*vx;
-                                                      break;
-                           case TD_COUNT            : acc[idxt]++;
-                           case TD_AVERAGE          :
-                           case TD_NORMALIZED_COUNT : if (Table) {
-                                                         t=0;
-                                                         while(t<ToDef->NK) {
-                                                            if (vx==Table[t] && t<ToDef->NK) {
-                                                               if (Mode!=TD_COUNT) acc[idxt]++;
-                                                               fld[t*nij+idxt]+=1.0;
-                                                               break;
-                                                            }
-                                                            t++;
+                     switch(Mode) {
+                        case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
+                                                   break;
+                        case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
+                                                   break;
+                        case TD_SUM              : fld[idxt]+=vx;
+                                                   break;
+                        case TD_VARIANCE         : acc[idxt]++;
+                                                   Def_Get(TmpDef,0,idxt,val);
+                                                   fld[idxt]+=(vx-val)*(vx-val);
+                                                   break;
+                        case TD_SQUARE           : acc[idxt]++;
+                                                   fld[idxt]+=vx*vx;
+                                                   break;
+                        case TD_COUNT            : acc[idxt]++;
+                        case TD_AVERAGE          :
+                        case TD_NORMALIZED_COUNT : if (Table) {
+                                                      t=0;
+                                                      while(t<ToDef->NK) {
+                                                         if (vx==Table[t] && t<ToDef->NK) {
+                                                            if (Mode!=TD_COUNT) acc[idxt]++;
+                                                            fld[t*nij+idxt]+=1.0;
+                                                            break;
                                                          }
-                                                      } else {
-                                                         if (Mode!=TD_COUNT) acc[idxt]++;
-                                                         if (vx!=FromDef->NoData)
-                                                            fld[idxt]+=vx;
+                                                         t++;
                                                       }
-                                                      break;
-                        }
+                                                   } else {
+                                                      if (Mode!=TD_COUNT) acc[idxt]++;
+                                                      if (vx!=FromDef->NoData)
+                                                         fld[idxt]+=vx;
+                                                   }
+                                                   break;
                      }
                   }
                }
