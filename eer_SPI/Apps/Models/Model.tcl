@@ -77,6 +77,7 @@ namespace eval Model {
    set Param(ListNbOMPthreads)  { 1 }
    set Param(OMPthreadFact)     1                     ;#Integer multiplicative factor to apply to number of OpenMP threads [1|2].
    set Param(ListOMPthreadFact) { 1 }
+   set Param(Submit)            ord_soumet            ;#Queue launcher
 
    set Data(Job)    ""                    ;#Texte de processus
    set Data(Active) 0                     ;#Flag d'activation de l'outils

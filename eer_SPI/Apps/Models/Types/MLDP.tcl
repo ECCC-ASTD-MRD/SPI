@@ -115,10 +115,10 @@ proc MLDP::Launch { } {
       }
       set mem 20G
 
-      exec echo "#!/bin/sh\n\nord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
+      exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
          -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
-      eval set err \[catch \{ exec ord_soumet $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
+      eval set err \[catch \{ exec $Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
          -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
 
