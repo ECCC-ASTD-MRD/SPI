@@ -813,17 +813,17 @@ static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
    if (vp->BGColor) Tk_FreeColor(vp->BGColor);
    if (vp->FGColor) Tk_FreeColor(vp->FGColor);
 //   Tk_FreeColor(vp->ColorCoast);
-   Tk_FreeColor(vp->ColorLake);
-   Tk_FreeColor(vp->ColorRiver);
-   Tk_FreeColor(vp->ColorPolit);
-   Tk_FreeColor(vp->ColorAdmin);
-   Tk_FreeColor(vp->ColorCity);
-   Tk_FreeColor(vp->ColorPlace);
-   Tk_FreeColor(vp->ColorRoad);
-   Tk_FreeColor(vp->ColorRail);
-   Tk_FreeColor(vp->ColorUtil);
-   Tk_FreeColor(vp->ColorCanal);
-   Tk_FreeColor(vp->ColorCoord);
+   if (vp->ColorLake)   Tk_FreeColor(vp->ColorLake);
+   if (vp->ColorRiver)  Tk_FreeColor(vp->ColorRiver);
+   if (vp->ColorPolit)  Tk_FreeColor(vp->ColorPolit);
+   if (vp->ColorAdmin)  Tk_FreeColor(vp->ColorAdmin);
+   if (vp->ColorCity)   Tk_FreeColor(vp->ColorCity);
+   if (vp->ColorPlace)  Tk_FreeColor(vp->ColorPlace);
+   if (vp->ColorRoad)   Tk_FreeColor(vp->ColorRoad);
+   if (vp->ColorRail)   Tk_FreeColor(vp->ColorRail);
+   if (vp->ColorUtil)   Tk_FreeColor(vp->ColorUtil);
+   if (vp->ColorCanal)  Tk_FreeColor(vp->ColorCanal);
+   if (vp->ColorCoord)  Tk_FreeColor(vp->ColorCoord);
    if (vp->ColorFCoast) Tk_FreeColor(vp->ColorFCoast);
    if (vp->ColorFLake)  Tk_FreeColor(vp->ColorFLake);
 
