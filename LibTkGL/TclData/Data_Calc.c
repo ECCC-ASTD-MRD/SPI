@@ -51,7 +51,7 @@ OGR_Layer    *GLayer;
 TObs         *GObs;
 TVector      *GVec;
 TDataDef     *GResult;
-TDataDef     *GData[256];
+TDataDef     *GData[1024];
 int           GDataN;
 int           GMode;
 char         *curPos;
@@ -125,6 +125,8 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
             if ((GLayer=OGR_LayerGet(Name))) {
                GLayer=OGR_LayerFromDef(GLayer,rindex(Name,'.')+1,Data);
             }
+            /*For layers, we copy back the data so we don't need the Def anymore*/
+            DataDef_Free(Data);
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is layer\n");
 #endif
@@ -143,6 +145,8 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          case T_VEC:
             GVec=Vector_Copy(Interp,GVec,Name);
             memcpy(GVec->V,Data->Data[0],n*TData_Size[GVec->Def->Type]);
+            /*For vectors, we copy back the data so we don't need the Def anymore*/
+            DataDef_Free(Data);
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is vector\n");
 #endif

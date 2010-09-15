@@ -21,6 +21,8 @@ extern TObs      *GObs;
 extern TVector   *GVec;
 extern TData_Type GType;
 extern int        GMode;
+extern TDataDef **GData;
+extern int        GDataN;
 
 /*
  * This macro redefines input for flex, iterating over a global
@@ -146,6 +148,9 @@ EXTCHAR [A-Za-z0-9_.:#~]
       GMode=GMode==T_VAL?T_LAYER:GMode;
 
       if ((yylval.Data=OGR_LayerToDef(yylval.Layer,rindex(yytext,'.')+1))) {
+         /*Add it to the temp arrays to be freed*/
+         GDataN++;
+         GData[GDataN]=yylval.Data;
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(OGR) token: %s\n", yytext);
 #endif
