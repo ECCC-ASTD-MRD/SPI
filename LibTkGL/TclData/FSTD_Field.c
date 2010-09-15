@@ -64,6 +64,7 @@ static int FSTD_Type[]={ 1,10,6,2,7,10,10,3 };
 TData_Type FSTD_TypeCheck(int Type,int Size) {
 
    switch(FSTD_Type[Type]) {
+      case TD_Binary:
       case TD_Float32: Type=Size>32?TD_Float64:TD_Float32;                    break;
       case TD_UInt32:  Type=Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt32;  break;
       case TD_Int32:   Type=Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int32;     break;
@@ -2295,8 +2296,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    if (field->Spec->Desc)
       free(field->Spec->Desc);
+
    field->Spec->Desc=strdup(h.NOMVAR);
-   field->Def->Type=FSTD_Type[datyp];
    memcpy(field->Head,&h,sizeof(FSTD_Head));
 
 #endif
