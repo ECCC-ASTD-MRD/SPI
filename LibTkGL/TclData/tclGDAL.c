@@ -115,8 +115,8 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-   static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","is","project","unproject","all","wipe",NULL };
-   enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,IS,PROJECT,UNPROJECT,ALL,WIPE };
+   static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","all","wipe",NULL };
+   enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -545,14 +545,14 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
             }
             Tcl_SetObjResult(Interp,obj);
-            return TCL_OK;
+            return(TCL_OK);
          }
          break;
 
       case UNPROJECT:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band lat lon");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          obj=Tcl_NewListObj(0,NULL);
@@ -562,7 +562,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          if (!band) {
             Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Invalid band",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          } else {
             if (band->Ref && band->Ref->UnProject(band->Ref,&x,&y,lat,lon,1,1)) {
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
@@ -572,7 +572,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
             }
             Tcl_SetObjResult(Interp,obj);
-            return TCL_OK;
+            return(TCL_OK);
          }
 
          break;
@@ -580,12 +580,12 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case CONFIGURE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          band=GDAL_BandGet(Tcl_GetString(Objv[2]));
          if (!band) {
             Tcl_AppendResult(Interp,"invalid band",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          if (!band->Stat)
@@ -621,23 +621,37 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case DEFINE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return GDAL_BandDefine(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(GDAL_BandDefine(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
       case STATS:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return GDAL_BandStat(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         return(GDAL_BandStat(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
+
+      case MAPIMAGE:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"band ?option?");
+            return(TCL_ERROR);
+         }
+         band=GDAL_BandGet(Tcl_GetString(Objv[2]));
+         if (!band) {
+            Tcl_AppendResult(Interp,"invalid band",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         return(GDAL_GetMapImage(Interp,band));
+         break;
+
 
       case CLEAN:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          GDAL_BandClean(GDAL_BandGet(Tcl_GetString(Objv[2])),1,1,1);
          break;
@@ -645,12 +659,12 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case CLEAR:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          band=GDAL_BandGet(Tcl_GetString(Objv[2]));
          if (!band) {
             Tcl_AppendResult(Interp,"invalid band",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          a=band->Def->NoData;
@@ -680,7 +694,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (GDAL_BandGet(Tcl_GetString(Objv[2]))) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -1496,6 +1510,55 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       Tcl_AppendResult(Interp,"Could not create dataset ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
+
+   return(TCL_OK);
+}
+
+int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
+
+   Tcl_Obj *obj;
+   double   incry,val;
+   int      cidx,idx,x,y;
+
+   if (!Band || !Band->Spec || !Band->Spec->Map) {
+      Tcl_AppendResult(Interp,"GDAL_GetMapImage: Invalid field or missing colormap",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (Band->Def->NC!=1 && Band->Def->NC!=3 && Band->Def->NC!=4) {
+      Tcl_AppendResult(Interp,"GDAL_GetMapImage: Invalid number of bands, must be 1, 3 or 4",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   /*Get value increment*/
+   incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ);
+
+   for(y=0;y<Band->Def->NJ;y++) {
+      /*Get color for this pixel*/
+      val=Band->Spec->Min+y*incry;
+      VAL2COL(cidx,Band->Spec,val);
+
+      /*Add to the list of values*/
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
+
+       /*Set the pixel value for the whole width*/
+      for(x=0;x<Band->Def->NI;x++) {
+         idx=(Band->Def->NJ-y-1)*Band->Def->NI+x;
+         if (Band->Def->NC==1) {
+            Def_Set(Band->Def,0,idx,cidx);
+         } else {
+            Def_Set(Band->Def,0,idx,Band->Spec->Map->Color[cidx][0]);
+            Def_Set(Band->Def,1,idx,Band->Spec->Map->Color[cidx][1]);
+            Def_Set(Band->Def,2,idx,Band->Spec->Map->Color[cidx][2]);
+            if (Band->Def->NC==4) {
+               Def_Set(Band->Def,3,idx,Band->Spec->Map->Color[cidx][3]);
+            }
+         }
+      }
+   }
+
+   Tcl_SetObjResult(Interp,obj);
 
    return(TCL_OK);
 }
