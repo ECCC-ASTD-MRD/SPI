@@ -1518,7 +1518,7 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
 
    Tcl_Obj *obj;
    double   incry,val;
-   int      cidx,idx,x,y;
+   int      cidx,idx,x,y,n;
 
    if (!Band || !Band->Spec || !Band->Spec->Map) {
       Tcl_AppendResult(Interp,"GDAL_GetMapImage: Invalid field or missing colormap",(char*)NULL);
@@ -1528,31 +1528,66 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
       Tcl_AppendResult(Interp,"GDAL_GetMapImage: Invalid number of bands, must be 1, 3 or 4",(char*)NULL);
       return(TCL_ERROR);
    }
+   DataSpec_Define(Band->Spec);
 
    obj=Tcl_NewListObj(0,NULL);
 
-   /*Get value increment*/
-   incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ);
+   if (Band->Spec->InterNb) {
 
-   for(y=0;y<Band->Def->NJ;y++) {
-      /*Get color for this pixel*/
-      val=Band->Spec->Min+y*incry;
-      VAL2COL(cidx,Band->Spec,val);
+      /*Get value increment*/
+      incry=(double)Band->Spec->InterNb/Band->Def->NJ;
+      n=0;
+      for(y=0;y<Band->Def->NJ;y++) {
 
-      /*Add to the list of values*/
-      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
+         /*Get color for this pixel*/
+         n=y*incry;
+         VAL2COL(cidx,Band->Spec,Band->Spec->Inter[n]);
 
-       /*Set the pixel value for the whole width*/
-      for(x=0;x<Band->Def->NI;x++) {
-         idx=(Band->Def->NJ-y-1)*Band->Def->NI+x;
-         if (Band->Def->NC==1) {
-            Def_Set(Band->Def,0,idx,cidx);
-         } else {
-            Def_Set(Band->Def,0,idx,Band->Spec->Map->Color[cidx][0]);
-            Def_Set(Band->Def,1,idx,Band->Spec->Map->Color[cidx][1]);
-            Def_Set(Band->Def,2,idx,Band->Spec->Map->Color[cidx][2]);
-            if (Band->Def->NC==4) {
-               Def_Set(Band->Def,3,idx,Band->Spec->Map->Color[cidx][3]);
+         /*Add to the list of values*/
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
+
+         /*Set the pixel value for the whole width*/
+         for(x=0;x<Band->Def->NI;x++) {
+            idx=(Band->Def->NJ-y-1)*Band->Def->NI+x;
+            if (Band->Def->NC==1) {
+               Def_Set(Band->Def,0,idx,cidx);
+            } else {
+               Def_Set(Band->Def,0,idx,Band->Spec->Map->Color[cidx][0]);
+               Def_Set(Band->Def,1,idx,Band->Spec->Map->Color[cidx][1]);
+               Def_Set(Band->Def,2,idx,Band->Spec->Map->Color[cidx][2]);
+               if (Band->Def->NC==4) {
+                  Def_Set(Band->Def,3,idx,Band->Spec->Map->Color[cidx][3]);
+               }
+            }
+         }
+      }
+
+
+   } else {
+      /*Get value increment*/
+      incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ);
+
+      for(y=0;y<Band->Def->NJ;y++) {
+
+         /*Get color for this pixel*/
+         val=Band->Spec->Min+y*incry;
+         VAL2COL(cidx,Band->Spec,val);
+
+         /*Add to the list of values*/
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
+
+         /*Set the pixel value for the whole width*/
+         for(x=0;x<Band->Def->NI;x++) {
+            idx=(Band->Def->NJ-y-1)*Band->Def->NI+x;
+            if (Band->Def->NC==1) {
+               Def_Set(Band->Def,0,idx,cidx);
+            } else {
+               Def_Set(Band->Def,0,idx,Band->Spec->Map->Color[cidx][0]);
+               Def_Set(Band->Def,1,idx,Band->Spec->Map->Color[cidx][1]);
+               Def_Set(Band->Def,2,idx,Band->Spec->Map->Color[cidx][2]);
+               if (Band->Def->NC==4) {
+                  Def_Set(Band->Def,3,idx,Band->Spec->Map->Color[cidx][3]);
+               }
             }
          }
       }
