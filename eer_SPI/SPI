@@ -28,12 +28,12 @@ do
 
       #----- Starts xvfb, best to use an absolute path
 
-      if [[ -f /software/cmc/bin/Xvfb ]]
-      then
-         XVFB="/software/cmc/bin/Xvfb"
-      elif [[ -f /usr/bin/X11/Xvfb ]]
+      if [[ -f /usr/bin/X11/Xvfb ]]
       then
          XVFB="/usr/bin/X11/Xvfb"
+      elif [[ -f /usr/bin/Xvfb ]]
+      then
+         XVFB="/usr/bin/Xvfb"
       else
          XVFB="Xvfb"
       fi

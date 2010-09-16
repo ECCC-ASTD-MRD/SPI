@@ -1222,6 +1222,7 @@ proc SPI::Execute { Script } {
 
       #----- If Macro then execute it
       set script [file rootname [file tail $Script]]
+
       if { [namespace exists ::Macro::$script] } {
 
          #----- If Macro has an Args function, call it to get the args
