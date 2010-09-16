@@ -21,7 +21,7 @@ extern TObs      *GObs;
 extern TVector   *GVec;
 extern TData_Type GType;
 extern int        GMode;
-extern TDataDef **GData;
+extern TDataDef  *GData[1024];
 extern int        GDataN;
 
 /*
