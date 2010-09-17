@@ -58,14 +58,20 @@
       VAL=IDX/SPEC->MapFactor+SPEC->Min;\
    }\
 }
+//         IDX=(VAL>=SPEC->Inter[l])?((l+1)*SPEC->MapFactor):IDX;
 
 #define VAL2COL(IDX,SPEC,VAL) {\
    int l;\
    IDX=-2;\
    if (SPEC->InterNb>0) {\
-      for(l=0;l<SPEC->InterNb;l++) \
-         IDX=(VAL>=SPEC->Inter[l])?((l+1)*SPEC->MapFactor):IDX;\
-   } else if (VAL<=SPEC->Max && VAL>=SPEC->Min) {\
+      for(l=0;l<SPEC->InterNb;l++) { \
+         if (VAL>=SPEC->Inter[l]) { \
+            IDX=(l+1)*SPEC->MapFactor; \
+         } else { \
+            break; \
+         } \
+      } \
+   } else if ((VAL<=SPEC->Max || SPEC->MapAbove) && (VAL>=SPEC->Min || SPEC->MapBellow)) {\
       IDX=(VAL-SPEC->Min)*SPEC->MapFactor;\
       IDX=IDX<0?0:IDX;\
       IDX=IDX>SPEC->Map->NbPixels-1?SPEC->Map->NbPixels-1:IDX;\
@@ -135,6 +141,7 @@ typedef struct TDataSpec {
    double      ValDelta;            /*Facteur delta d'ajustement des valeurs*/
    double      MapFactor;           /*Facteur d'index dans la palette*/
    int         MapAll;              /*Applique la palette aux vectoriel*/
+   int         MapAbove,MapBellow;  /*Applique la palette en dehors des limites min max*/
    int         GridVector;          /*Orientation des donnees vectorielles*/
 
    int         RangeNb;             /*Nombre de range*/
