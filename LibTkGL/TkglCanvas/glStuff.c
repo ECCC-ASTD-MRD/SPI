@@ -2015,6 +2015,7 @@ void glInit(Tcl_Interp *Interp) {
 
    gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
    gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_NONZERO);
+//   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_POSITIVE);
 }
 
 /*----------------------------------------------------------------------------

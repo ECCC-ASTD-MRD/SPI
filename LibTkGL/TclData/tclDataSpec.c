@@ -231,7 +231,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step","-ztype",
-                                 "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
+                                 "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,

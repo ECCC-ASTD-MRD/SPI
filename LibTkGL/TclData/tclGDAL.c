@@ -1519,6 +1519,7 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
    Tcl_Obj *obj;
    double   incry,val;
    int      cidx,idx,x,y,n;
+   char     buf[32];
 
    if (!Band || !Band->Spec || !Band->Spec->Map) {
       Tcl_AppendResult(Interp,"GDAL_GetMapImage: Invalid field or missing colormap",(char*)NULL);
@@ -1544,7 +1545,8 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
          VAL2COL(cidx,Band->Spec,Band->Spec->Inter[n]);
 
          /*Add to the list of values*/
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
+         DataSpec_Format(Band->Spec,VAL2SPEC(Band->Spec,Band->Spec->Inter[n]),buf);
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(buf,-1));
 
          /*Set the pixel value for the whole width*/
          for(x=0;x<Band->Def->NI;x++) {
@@ -1562,7 +1564,6 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
          }
       }
 
-
    } else {
       /*Get value increment*/
       incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ);
@@ -1574,7 +1575,8 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
          VAL2COL(cidx,Band->Spec,val);
 
          /*Add to the list of values*/
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
+         DataSpec_Format(Band->Spec,VAL2SPEC(Band->Spec,val),buf);
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(buf,-1));
 
          /*Set the pixel value for the whole width*/
          for(x=0;x<Band->Def->NI;x++) {
