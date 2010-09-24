@@ -121,6 +121,7 @@ TFuncDef FuncM[] = {
   { "dif"   , (TFunc*)dif   , 2 , TD_Unknown },
   { "fmod"  , (TFunc*)fmod  , 2 , TD_Unknown },
   { "pow"   , (TFunc*)pow   , 2 , TD_Unknown },
+  { "frand" , (TFunc*)frand , 3 , TD_Unknown },
   { "clamp" , (TFunc*)clamp , 3 , TD_Unknown },
   { "?"     , (TFunc*)ifelse, 3 , TD_Unknown },
   { "ifelse", (TFunc*)ifelse, 3 , TD_Unknown },
@@ -1177,4 +1178,8 @@ double ifelse(double a,double b,double c) {
       return(b);
    }
    return(c);
+}
+
+double frand(double a,double b,double c) {
+   return(b+((c-b)*(rand()/(RAND_MAX+1.0))));
 }

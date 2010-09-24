@@ -152,4 +152,6 @@ double max(double a,double b);
 double clamp(double a,double b,double c);
 double ifelse(double a,double b,double c);
 
+double frand(double a,double b,double c);
+
 #endif
