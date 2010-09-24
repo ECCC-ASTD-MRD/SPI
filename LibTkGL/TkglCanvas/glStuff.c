@@ -47,8 +47,6 @@ static float glArrayArrow[14] = { 0.0f,0.0f,0.5f,-1.0f,0.2f,-1.0f,0.2f,-2.0f,-0.
 static Tcl_HashTable glFontIdTable;
 static Tcl_HashTable glBitmapTable;
 
-TCL_DECLARE_MUTEX(MUTEX_GL);
-
 static char *ExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression","GL_ARB_vertex_buffer_object",NULL };
 static char *ProgString[]={ "Field","FieldTex","DataTex","TopoTex",NULL };
 
@@ -1913,7 +1911,6 @@ int glDefineParams(){
       glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    }
 
-   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
    glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 
    /*Parse needed extensions*/

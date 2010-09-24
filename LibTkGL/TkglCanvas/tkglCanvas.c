@@ -2307,6 +2307,7 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
    }
 
    glDefineParams();
+   SetupglCanvas(canvasPtr,0,0,w,h);
 
    /* Setup the tile rendering engine */
    GLRender->TRCon=trNew();
