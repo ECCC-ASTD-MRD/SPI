@@ -607,7 +607,6 @@ proc MLDP::GetMetData { } {
    #----- Get available meteorological files.
    set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
    set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
-   set Sim(Mode)     [MetData::GetMode $Sim(Data)]
 
    Dialog::WaitDestroy
 

@@ -655,15 +655,16 @@ proc Model::ParamsMetData { Model } {
       }
    }
 
+   #----- checki if we have enough data
+   if { [llength $sim(Data)]<2 } {
+      Dialog::Error . $Error(MetFiles)
+      return False
+   }
+
    #----- List of met data files.
    set sim(MeteoDataFiles) {}
    foreach data $sim(Data) {
       lappend sim(MeteoDataFiles) [lindex $data 2]
-   }
-
-   if { [llength $sim(Data)]<2 } {
-      Dialog::Error . $Error(MetFiles)
-      return False
    }
 
    #----- Set simulation date-time.
@@ -681,10 +682,13 @@ proc Model::ParamsMetData { Model } {
    set first [lindex [lindex $sim(Data) 0] 0]
    set last  [lindex [lindex $sim(Data) end] 0]
 
-   if { $sim(RunStamp) < $first || $sim(RunStamp) > $last } {
+   if { $sim(RunStamp)<$first || $sim(RunStamp)>$last } {
       Dialog::Error . $Error(DateTimeMetFiles)
       return False
    }
+
+   set sim(Mode) [MetData::GetMode $sim(Data)]
+
    return True
 }
 

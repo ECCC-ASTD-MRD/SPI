@@ -600,7 +600,7 @@ proc MLCD::InitNew { Type } {
    set Sim(ModelTimeStepMin)  5                           ; #----- Model time step [min].
 
    #----- Initialize general and concentrations parameters.
-   set Sim(Mode)           0        ; #----- Forward mode: 0; Backward mode: 1.
+   set Sim(Backward)       False    ; #----- Forward mode: 0; Backward mode: 1.
    set Sim(IsSigma)        1        ; #----- Mesoscale velocity fluctuations is on.
    set Sim(IsRanVar)       1        ; #----- Variable generator of gaussian numbers is on.
    set Sim(IsDiag)         0        ; #----- No diagnostics output file is generated.
@@ -1229,7 +1229,11 @@ proc MLCD::CreateScriptInput { } {
       puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
       puts $file ""
       puts $file "#----- Model specific parameters"
-      puts $file "MLCD_MODE=$Sim(Mode)"
+      if { $Sim(Backward) } {
+         puts $file "MLCD_MODE=1"
+      } else {
+         puts $file "MLCD_MODE=0"
+      }
       puts $file "MLCD_EMISSION=$Sim(PathRun)/tmp/input.dat"
       puts $file "MLCD_WIND=$Sim(PathRun)/tmp/winddata.dat"
       puts $file "MLCD_POS=$Sim(PathRun)/results/pos"
