@@ -37,11 +37,11 @@
 #include "flt.h"
 
 static T3DObject *GOBJ=NULL;
-static int        NVR,NFCE,NOBJ,NMT;
+static int        NVR,NFCE,NOBJ,NMT,NSW;
 static float      GCOL[4]={ 0.0,0.0,0.0,0.0 };
 
 int Model_LoadFLT(T3DModel *M,char *Path);
-int ModelFLT_NodeCount(FltNode *Node,int Type,int Nb);
+int ModelFLT_NodeCount(FltNode *Node,int Type);
 int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -62,7 +62,8 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
 */
 int Model_LoadFLT(T3DModel *M,char *Path) {
 
-   FltFile *flt;
+   FltFile     *flt;
+   unsigned int nobj;
 
    if (!(flt=fltOpen(Path))) {
       return(0);
@@ -85,16 +86,17 @@ int Model_LoadFLT(T3DModel *M,char *Path) {
    fprintf(stdout,"(DEBUG) Model_LoadFLT: Origin %f,%f\n",flt->header->originDBLatitude,flt->header->originDBLongitude);
    fprintf(stdout,"(DEBUG) Model_LoadFLT: Extent %f,%f - %f,%f\n",flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
 
-   M->NObj=ModelFLT_NodeCount(flt->header,FLTRECORD_OBJECT,0);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i object\n",M->NObj);
-   Model_ObjAdd(M,M->NObj);
+   nobj=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_OBJECT);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i object\n",nobj);
+   Model_ObjAdd(M,nobj);
 
-   M->NMt=ModelFLT_NodeCount(flt->header,FLTRECORD_MATERIAL,0);
+   M->NMt=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_MATERIAL);
    M->NMt=1024;
    fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i material\n",M->NMt);
    M->Mt=(TMaterial*)calloc(M->NMt,sizeof(TMaterial));
 
-   ModelFLT_NodeProcess(M,flt->header,flt);
+   ModelFLT_NodeProcess(M,(FltNode*)(flt->header),flt);
+   fprintf(stdout,"(DEBUG) Model_LoadFLT: Processed\n");
 
    fltClose(flt);
    fltFileFree(flt);
@@ -102,18 +104,16 @@ int Model_LoadFLT(T3DModel *M,char *Path) {
    return(1);
 }
 
-int ModelFLT_NodeCount(FltNode *Node,int Type,int Nb) {
+int ModelFLT_NodeCount(FltNode *Node,int Type) {
 
-   FltVertexList *vert=(FltVertexList*)Node;
-
-   int i,n=0;
+   unsigned int i,n=0;
 
    if (Node->type==Type) {
-      n+=(Nb?vert->numVerts:1);
+      n+=(Node->type==FLTRECORD_VERTEXLIST?((FltVertexList*)Node)->numVerts:1);
    }
 
    for (i=0;i<Node->numChildren;i++)
-      n+=ModelFLT_NodeCount(Node->child[i],Type,Nb);
+      n+=ModelFLT_NodeCount(Node->child[i],Type);
 
    return(n);
 }
@@ -127,7 +127,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    FltMaterial          *mat;
    FltMultiTexture      *tex,*mtex=(FltMultiTexture*)Node;
    char                  path[MAX_PATHLEN],file[MAX_PATHLEN];
-   int                   i,v,m;
+   unsigned int          i,v,m;
    TMaterial             tmat;
 
    attr=Node->attr;
@@ -233,12 +233,12 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 #ifdef DEBUG
          printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_FACE\n");
 #endif
-         NFCE++;
-
-        /*Skip hidden faces*/
-         if (face->miscFlags & FLTFACEMF_HIDDEN) {
+         /*Skip hidden faces*/
+         if (!GOBJ->Fc || (face->miscFlags & FLTFACEMF_HIDDEN)) {
             break;
          }
+
+         NFCE++;
 
          /*Face Color*/
          if (face->textureWhite) {
@@ -269,7 +269,8 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          /*Check for textures*/
          if (face->texturePatternIndex!=-1) {
             FltTexture *t=fltLookupTexture(FLT,face->texturePatternIndex);
-            strcpy(tmat.Path,t->ID);
+            if (t)
+               strcpy(tmat.Path,t->ID);
          }
 
          /*Insert into model material list*/
@@ -296,11 +297,14 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 
       case FLTRECORD_VERTEXLIST:
 #ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_VERTEXLIST\n");
+         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_VERTEXLIST (%i)\n",vert->numVerts);
 #endif
-         GOBJ->Fc[NFCE].NIdx=vert->numVerts;
-         GOBJ->Fc[NFCE].Idx=(unsigned int*)malloc(GOBJ->Fc[NFCE].NIdx*sizeof(unsigned int));
+         if (!GOBJ->Fc || !GOBJ->Vr || NSW) {
+            break;
+         }
 
+         GOBJ->Fc[NFCE].NIdx=vert->numVerts;
+         GOBJ->Fc[NFCE].Idx=(unsigned int*)calloc(GOBJ->Fc[NFCE].NIdx,sizeof(unsigned int));
          if (!GOBJ->Nr && (vert->list[0]->localFlags & FVHAS_NORMAL))  GOBJ->Nr=(Vect3f*)malloc(GOBJ->NVr*sizeof(Vect3f));
          if (!GOBJ->Tx && (vert->list[0]->localFlags & FVHAS_TEXTURE)) GOBJ->Tx=(Vect3f*)malloc(GOBJ->NVr*sizeof(Vect3f));
          if (!GOBJ->Cl && (vert->list[0]->localFlags & FVHAS_COLOR))   GOBJ->Cl=(Vect4f*)malloc(GOBJ->NVr*sizeof(Vect4f));
@@ -308,16 +312,20 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          /*Vertices*/
          for(v=0;v<vert->numVerts;v++) {
             i=NVR+v;
-            if ((vert->list[v]->localFlags & FVHAS_NORMAL) && GOBJ->Nr) {
+            if (GOBJ->Nr && (vert->list[v]->localFlags & FVHAS_NORMAL)) {
                GOBJ->Nr[i][0]=vert->list[v]->i; GOBJ->Nr[i][1]=vert->list[v]->j;GOBJ->Nr[i][2]=vert->list[v]->k;
             }
-           if ((vert->list[v]->localFlags & FVHAS_TEXTURE) && GOBJ->Tx) {
+            if (GOBJ->Tx && (vert->list[v]->localFlags & FVHAS_TEXTURE)) {
                GOBJ->Tx[i][0]=vert->list[v]->u; GOBJ->Tx[i][1]=-vert->list[v]->v;GOBJ->Tx[i][2]=0.0;
             }
-            if ((vert->list[v]->localFlags & FVHAS_COLOR) && GOBJ->Cl) {
+            if (GOBJ->Cl &&(vert->list[v]->localFlags & FVHAS_COLOR)) {
                fltLookupColor(FLT,vert->list[v]->colorIndex,&GOBJ->Cl[i][0],&GOBJ->Cl[i][1],&GOBJ->Cl[i][2],&GOBJ->Cl[i][3]);
             }
-            GOBJ->Vr[i][0]=vert->list[v]->x;GOBJ->Vr[i][1]=vert->list[v]->y;GOBJ->Vr[i][2]=vert->list[v]->z;
+            if (GOBJ->Vr) {
+               GOBJ->Vr[i][0]=vert->list[v]->x;GOBJ->Vr[i][1]=vert->list[v]->y;GOBJ->Vr[i][2]=vert->list[v]->z;
+            } else {
+               fprintf(stderr,"(ERROR) Object vertices list has not been initialized (%i)\n",GOBJ->NVr);
+            }
 #ifdef DEBUG
             printf("(DEBUG) ModelFLT_NodeProcess: Vertex(%i) (%f,%f,%f)\n",v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
 #endif
@@ -327,9 +335,9 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_MULTITEXTURE:
+/*
          glEnable(GL_TEXTURE_2D);
 
-/*
          if (mtex->mask & FLTMT_HASLAYER1) {
             tex=fltLookupTexture(FLT,mtex->layer[0].index);
             glBindTexture(GL_TEXTURE_2D,gggg);
@@ -358,26 +366,30 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 #ifdef DEBUG
          printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_SWITCH\n");
 #endif
+         /*We have to bypass the switch (no clue what they're used for*/
+         NSW=1;
          break;
       case FLTRECORD_DOF:
 #ifdef DEBUG
          printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_DOF\n");
 #endif
          break;
+
       case FLTRECORD_OBJECT:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_OBJECT\n");
-#endif
          NOBJ++;
+         NSW=0;
+#ifdef DEBUG
+         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_OBJECT (%i)\n",NOBJ);
+#endif
          GOBJ=&(M->Obj[NOBJ]);
 
          NFCE=-1;
-         GOBJ->NFc=ModelFLT_NodeCount(Node,FLTRECORD_FACE,0);
+         GOBJ->NFc=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
          GOBJ->Fc=(TFace*)calloc(GOBJ->NFc,sizeof(TFace));
          fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Face\n",GOBJ->NFc);
 
          NVR=0;
-         GOBJ->NVr=ModelFLT_NodeCount(Node,FLTRECORD_VERTEXLIST,1);
+         GOBJ->NVr=ModelFLT_NodeCount(Node,FLTRECORD_VERTEXLIST);
          GOBJ->Vr=(Vect3f*)calloc(GOBJ->NVr,sizeof(Vect3f));
          fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Vertex\n",GOBJ->NVr);
          break;

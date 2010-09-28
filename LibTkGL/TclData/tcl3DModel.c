@@ -1018,7 +1018,7 @@ void Model_NormalCompute(T3DModel *M) {
 
       /*Face normals*/
       for (f=0;f<obj->NFc;f++) {
-         if (obj->Fc[f].NIdx>2) {
+         if (obj->Fc[f].NIdx>2 && obj->Vr) {
             Vect_Assign(vr[0],obj->Vr[obj->Fc[f].Idx[0]]);
             Vect_Assign(vr[1],obj->Vr[obj->Fc[f].Idx[1]]);
             Vect_Assign(vr[2],obj->Vr[obj->Fc[f].Idx[2]]);
@@ -1117,11 +1117,11 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
 
 int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
-   int        i,j,o,idx;
-   Vect3d     vr;
-   Vect3f     vrf;
-   T3DObject *obj;
-   char      *path=NULL;
+   unsigned int i,j,o,idx;
+   Vect3d       vr;
+   Vect3f       vrf;
+   T3DObject   *obj;
+   char        *path=NULL;
 
    extern GLint Texture_Read(char *File);
 
@@ -1170,7 +1170,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
    /*Create display lists*/
    if (!M->Obj[0].GLId) {
-      for(o=0;o<M->NObj;o++) {
+      for(o=200;o<M->NObj;o++) {
          obj=&M->Obj[o];
          if (!obj->GLId) {
 
@@ -1204,26 +1204,32 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
                for (j=0;j<obj->Fc[i].NIdx;j++) {
                   idx=obj->Fc[i].Idx[j];
+                  if (idx<0) {
+                     fprintf(stderr,"(ERROR) Model_Render: Invalid vertex index (%i) for obj %i on face %i\n",idx,o,i);
+                     break;
+                  }
 
                   if (obj->Tx) glTexCoord3fv(obj->Tx[idx]);
                   if (obj->Nr) glNormal3fv(obj->Nr[idx]);
                   if (obj->Cl) glColor4fv(obj->Cl[idx]);
 
                   /*Projection to georef*/
-                  if (M->Ref) {
-                     M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
-                     M->Co.Elev=obj->Vr[idx][2];
+                  if (obj->Vr) {
+                     if (M->Ref) {
+                        M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
+                        M->Co.Elev=obj->Vr[idx][2];
 
-                     Proj->Type->Project(Proj,&M->Co,&vr,1);
-                     Vect_Assign(vrf,vr);
-                     glVertex3fv(vrf);
-                  } else {
-                     glVertex3fv(obj->Vr[idx]);
+                        Proj->Type->Project(Proj,&M->Co,&vr,1);
+                        Vect_Assign(vrf,vr);
+                        glVertex3fv(vrf);
+                     } else {
+                        glVertex3fv(obj->Vr[idx]);
+                     }
+                     Vect_Min(obj->Extent[0],obj->Extent[0],obj->Vr[idx]);
+                     Vect_Max(obj->Extent[1],obj->Extent[1],obj->Vr[idx]);
                   }
-                  Vect_Min(obj->Extent[0],obj->Extent[0],obj->Vr[idx]);
-                  Vect_Max(obj->Extent[1],obj->Extent[1],obj->Vr[idx]);
-               }
-               glEnd();
+              }
+              glEnd();
             }
             glDisable(GL_TEXTURE_2D);
             glEndList();
