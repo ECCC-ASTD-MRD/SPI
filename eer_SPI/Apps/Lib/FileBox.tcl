@@ -222,7 +222,7 @@ proc FileBox::GetContent { { Path "" } } {
    }
 
    #----- Recuperer les repertoires
-   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory \"$Param(Path)\" -types d -tails  $dpattern\]\]
+   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory \"$Param(Path)\" -types d -tails $dpattern\]\]
    foreach dir $dirs {
       if { [catch { file stat $Param(Path)/$dir info } ] } {
          continue
@@ -234,7 +234,6 @@ proc FileBox::GetContent { { Path "" } } {
 
    #----- Recuperer les fichiers
    eval set files \[glob -nocomplain -directory \"$Param(Path)\" -types f -tails $pattern\]
-   puts stderr $files
    foreach file $files {
       if { [catch { set size [file stat $Param(Path)/$file info] } ] } {
          continue
