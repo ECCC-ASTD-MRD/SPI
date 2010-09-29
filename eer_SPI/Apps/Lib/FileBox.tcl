@@ -222,7 +222,7 @@ proc FileBox::GetContent { { Path "" } } {
    }
 
    #----- Recuperer les repertoires
-   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory $Param(Path) -types d -tails  $dpattern\]\]
+   eval set dirs \[lsort -dictionary \[glob -nocomplain -directory \"$Param(Path)\" -types d -tails  $dpattern\]\]
    foreach dir $dirs {
       if { [catch { file stat $Param(Path)/$dir info } ] } {
          continue
@@ -233,7 +233,8 @@ proc FileBox::GetContent { { Path "" } } {
    }
 
    #----- Recuperer les fichiers
-   eval set files \[glob -nocomplain -directory $Param(Path) -types f -tails $pattern\]
+   eval set files \[glob -nocomplain -directory \"$Param(Path)\" -types f -tails $pattern\]
+   puts stderr $files
    foreach file $files {
       if { [catch { set size [file stat $Param(Path)/$file info] } ] } {
          continue
@@ -914,11 +915,16 @@ proc FileBox::SelectList { { Exec True } } {
    #----- Get the total selection file size
    foreach id $idx {
       set line [.filebox.files.list get $id]
-      lappend files "[string trim [lindex $line 0]]"
+      if { [llength $line]==1 } {
+         set file [string trim $line]
+      } else {
+         set file [lrange $line 0 end-2]
+      }
+      lappend files $file
       catch { set size [expr $size+[lindex $line end]] }
    }
 
-   if { [file isdirectory [lindex $Param(Path)/$files 0]] } {
+   if { [file isdirectory $Param(Path)/[lindex $files 0]] } {
       if { $Exec } {
          FileBox::GetContent $Param(Path)/[lindex $files 0]
       } else {
