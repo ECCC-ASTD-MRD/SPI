@@ -1018,6 +1018,11 @@ void Model_NormalCompute(T3DModel *M) {
 
       /*Face normals*/
       for (f=0;f<obj->NFc;f++) {
+         if (obj->Fc[f].Idx[0]<0 || obj->Fc[f].Idx[0]>32768) {
+            Vect_Init(nr[f],0.0,0.0,1.0);
+            Vect_Init(tmp[f],0.0,0.0,1.0);
+            break;
+         }
          if (obj->Fc[f].NIdx>2 && obj->Vr) {
             Vect_Assign(vr[0],obj->Vr[obj->Fc[f].Idx[0]]);
             Vect_Assign(vr[1],obj->Vr[obj->Fc[f].Idx[1]]);
@@ -1170,7 +1175,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
    /*Create display lists*/
    if (!M->Obj[0].GLId) {
-      for(o=200;o<M->NObj;o++) {
+      for(o=0;o<M->NObj;o++) {
          obj=&M->Obj[o];
          if (!obj->GLId) {
 
@@ -1179,7 +1184,6 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
             Vect_Init(obj->Extent[0],1e32,1e32,1e32);
             Vect_Init(obj->Extent[1],-1e32,-1e32,-1e32);
-
             for (i=0;i<obj->NFc;i++) {
                if (obj->Fc[i].Mt) {
                   glMaterialf(GL_FRONT,GL_SHININESS,obj->Fc[i].Mt->Shi);
@@ -1204,8 +1208,8 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
                for (j=0;j<obj->Fc[i].NIdx;j++) {
                   idx=obj->Fc[i].Idx[j];
-                  if (idx<0) {
-                     fprintf(stderr,"(ERROR) Model_Render: Invalid vertex index (%i) for obj %i on face %i\n",idx,o,i);
+                  if (idx<0 || idx>32768) {
+                     fprintf(stderr,"(ERROR) Model_Render: Invalid vertex index (%u) for obj %u on face %u\n",idx,o,i);
                      break;
                   }
 
@@ -1230,7 +1234,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                   }
               }
               glEnd();
-            }
+           }
             glDisable(GL_TEXTURE_2D);
             glEndList();
 

@@ -313,7 +313,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          for(v=0;v<vert->numVerts;v++) {
             i=NVR+v;
             if (GOBJ->Nr && (vert->list[v]->localFlags & FVHAS_NORMAL)) {
-               GOBJ->Nr[i][0]=vert->list[v]->i; GOBJ->Nr[i][1]=vert->list[v]->j;GOBJ->Nr[i][2]=vert->list[v]->k;
+               GOBJ->Nr[i][0]=vert->list[v]->i; GOBJ->Nr[i][1]=vert->list[v]->j;GOBJ->Nr[i][2]=-vert->list[v]->k;
             }
             if (GOBJ->Tx && (vert->list[v]->localFlags & FVHAS_TEXTURE)) {
                GOBJ->Tx[i][0]=vert->list[v]->u; GOBJ->Tx[i][1]=-vert->list[v]->v;GOBJ->Tx[i][2]=0.0;
@@ -386,12 +386,15 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          NFCE=-1;
          GOBJ->NFc=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
          GOBJ->Fc=(TFace*)calloc(GOBJ->NFc,sizeof(TFace));
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Face\n",GOBJ->NFc);
-
+#endif
          NVR=0;
          GOBJ->NVr=ModelFLT_NodeCount(Node,FLTRECORD_VERTEXLIST);
          GOBJ->Vr=(Vect3f*)calloc(GOBJ->NVr,sizeof(Vect3f));
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Vertex\n",GOBJ->NVr);
+#endif
          break;
 
       case FLTRECORD_GROUP:
