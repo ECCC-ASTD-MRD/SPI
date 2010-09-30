@@ -240,6 +240,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   return TCL_ERROR;
                } else {
                   field=OGR_FD_GetFieldDefn(layer->Def,j);
+                  layer->Update=1;
                   return(OGR_SetTypeObj(Interp,Objv[++i],layer->Layer,field,layer->Feature[f],j));
                }
             }
@@ -1412,6 +1413,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 
    OGRFieldDefnH  field=NULL;
    char           name[11];
+   int            f;
 
    strncpy(name,Field,10);name[10]='\0';
 
@@ -1450,23 +1452,62 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
    if (field) {
 //   OGR_Fld_SetJustify (OGRFieldDefnH, OGRJustification)
 
+      /*Update the curretn structure if we need to*/
+      OGR_LayerUpdate(Layer);
+
+      /*Add the field to the structure*/
       if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
          return(NULL);
       }
+
+      /*Reload the features to be in sync*/
+      OGR_L_ResetReading(Layer->Layer);
+      for(f=0;f<Layer->NFeature;f++) {
+         OGR_F_Destroy(Layer->Feature[f]);
+         Layer->Feature[f]=OGR_L_GetNextFeature(Layer->Layer);
+      }
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
+      Layer->Update=1;
 //      OGR_Fld_Destroy(field);
    }
    return(field);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerUpdate>
+ * Creation     : Septembre 2010 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Mettre a jour les donnees de la couche
+ *
+ * Parametres   :
+ *  <Layer>     : Couche
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void OGR_LayerUpdate(OGR_Layer *Layer) {
+
+   int f;
+
+   if (Layer->Update) {
+      for(f=0;f<Layer->NFeature;f++) {
+         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+      }
+      Layer->Update=0;
+   }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <OGR_LayerClean>
  * Creation     : Juillet 2004 J.P. Gauthier - CMC/CMOE
  *
- * But          : Supprimer les textures et positions
+ * But          : Supprimer les display list d'OpenGL
  *
  * Parametres   :
- *   <Band>     : Bande
+ *  <Layer>     : Couche
  *
  * Retour       :
  *
@@ -1615,8 +1656,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
       OGR_L_CreateFeature(olayer,feature);
    }
 
-//   OGR_FD_Destroy(defn);
-
+   layer->Update=0;
    return(TCL_OK);
 }
 
@@ -1968,7 +2008,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 
    int f;
-   OGRFeatureH feat;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerClear: Invalid layer",(char*)NULL);
@@ -1983,6 +2022,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
+         Layer->Update=1;
       }
    }
    return(TCL_OK);
@@ -2228,6 +2268,8 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
    if (accum)
       free(accum);
+
+   Layer->Update=1;
 
    return(TCL_OK);
 }

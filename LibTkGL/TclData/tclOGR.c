@@ -372,10 +372,11 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case SYNC:
-         layer=OGR_LayerGet(Tcl_GetString(Objv[2]));
-         for(f=0;f<layer->NFeature;f++) {
-            OGR_L_SetFeature(layer->Layer,layer->Feature[f]);
+         if (!(layer=OGR_LayerGet(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid layer",(char*)NULL);
+            return(TCL_ERROR);
          }
+         OGR_LayerUpdate(layer);
          break;
 
       case IMPORT:
@@ -684,6 +685,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Spec->RenderTexture=1;
 
    /*Initialisation de la structure layer*/
+   layer->Update       = 0;
    layer->Mask         = 0;
    layer->FMask        = 0;
    layer->Topo         = -1;
@@ -931,6 +933,7 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
          Def_Get(Def,0,f,val);
          OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
       }
+      Layer->Update=1;
       return(Layer);
    } else {
       return(NULL);
@@ -1069,11 +1072,7 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
 
    if ((file=(OGR_File*)TclY_HashDel(&OGR_FileTable,Id))) {
       OGR_DS_SyncToDisk(file->Data);
-
-      /*For some unknown reason yet, this sgefaults on dataset openned in append mode*/
-      if (file->Mode!='a' && file->Mode!='A') {
-         OGR_DS_Destroy(file->Data);
-      }
+      OGR_DS_Destroy(file->Data);
 
       free(file->Id);
       free(file);

@@ -65,12 +65,13 @@ typedef struct OGR_Layer {
    OGRFeatureDefnH  Def;
 
    OGRDataSourceH   SQLed;
-   char         *Select;
+   char            *Select;
 
    TGeoRef      *Ref;          /*GeoReference*/
    TDataSpec    *Spec;         /*Specification des donnees*/
 
    Vect3d        Vr[2];
+   int           Update;
    int           Mask,FMask;   /*Masque*/
    GLuint        LFeature;
    long          NFeature;
@@ -99,6 +100,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 OGR_Layer*       OGR_LayerCreate(Tcl_Interp *Interp,char *Name);
 OGRLayerH        OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
 void             OGR_LayerClean(OGR_Layer *Layer);
+void             OGR_LayerUpdate(OGR_Layer *Layer);
 int              OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value);
 int              OGR_LayerDestroy(Tcl_Interp *Interp,char *Name);
 int              OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
