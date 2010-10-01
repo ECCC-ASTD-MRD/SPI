@@ -779,10 +779,13 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
  * Nom          : <GDALBand_Clean>
  * Creation     : Juillet 2004 J.P. Gauthier - CMC/CMOE
  *
- * But          : Supprimer les textures et positions
+ * But          : Supprimer les textures et positions d'une bande
  *
  * Parametres   :
  *   <Band>     : Bande
+ *   <Map>      : Clean de la Texture
+ *   <Pos>      : Clean des Positions
+ *   <Seg>      : Clean des Contours
  *
  * Retour       :
  *
@@ -802,6 +805,24 @@ void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
    }
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GDALBand_CleanAll>
+ * Creation     : Juillet 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Supprimer les textures et positions de toutes les bandes en memoire
+ *
+ * Parametres   :
+ *   <Band>     : Bande
+ *   <Map>      : Clean de la Texture
+ *   <Pos>      : Clean des Positions
+ *   <Seg>      : Clean des Contours
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 
    GDAL_Band      *band;
@@ -821,6 +842,24 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
    TclY_UnlockHash();
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GDAL_BandCopy>
+ * Creation     : Juillet 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Copier une bande dans une autre
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Band>     : Bande a copier
+ *   <Name>     : Nom de la nouvelle bande destination
+ *   <Def>      : Flag pouir copier le datadef
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
 
    GDAL_Band *band;
@@ -1514,6 +1553,22 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
    return(TCL_OK);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GDAL_GetMapImage>
+ * Creation     : Septembre 2010 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Remplir un bande gdal avec la representation de la palette
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <Band>     : Bande
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
 
    Tcl_Obj *obj;
