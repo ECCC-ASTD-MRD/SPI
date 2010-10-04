@@ -117,7 +117,8 @@ proc ColorBox::CreateSel { Widget Var args } {
       $Widget configure -fg $GDefs(ColorFrame)
    }
 
-   bind $Widget <ButtonRelease-1> "set $Var \[ColorBox::Create $Widget \$$Var\] ; if { \$$Var!=\"\" } { catch { $Widget config -fg \$$Var } } else { $Widget configure -fg $GDefs(ColorFrame) }  ;eval $args"
+
+   bind $Widget <ButtonRelease-1> "set $Var \[ColorBox::Create $Widget \$$Var\] ; if { \$$Var!=\"\" } { catch { $Widget config -fg \$$Var } } else { $Widget configure -fg $GDefs(ColorFrame) } ;eval $args"
 }
 
 #------------------------------------------------------------------------------
@@ -128,7 +129,7 @@ proc ColorBox::CreateSel { Widget Var args } {
 #
 # Parametres :
 #   <Parent> : Path du parent
-#   <args>   : Couleur initiale
+#   <Color>  : Couleur initiale
 #
 # Retour:
 #
@@ -137,7 +138,7 @@ proc ColorBox::CreateSel { Widget Var args } {
 #
 #-------------------------------------------------------------------------------
 
-proc ColorBox::Create { Parent args } {
+proc ColorBox::Create { Parent { Color "" } } {
    global   GDefs
    variable Data
    variable Lbl
@@ -153,9 +154,9 @@ proc ColorBox::Create { Parent args } {
 
    set Data(Current) ""
 
-   if { $args!="" } {
-      set Data(Current) [string toupper [string range $args 0 6]]
-      if { [string length $args]>7 } {
+   if { $Color!="" } {
+      set Data(Current) [string toupper [string range $Color 0 6]]
+      if { [string length $Color]>7 } {
          set Data(Alpha) True
       } else {
          set Data(Alpha) False
@@ -307,7 +308,7 @@ proc ColorBox::Create { Parent args } {
 
       update
       set Data(State) 1
-      scan "$args" "%1s%02x%02x%02x%02x" b Data(R) Data(G) Data(B) Data(A)
+      scan "$Color" "%1s%02x%02x%02x%02x" b Data(R) Data(G) Data(B) Data(A)
       ColorBox::UpdateHSV
    }
 
