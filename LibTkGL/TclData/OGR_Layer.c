@@ -2080,6 +2080,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    /*Check for included channel or list containing index*/
    if (List) {
       if ((chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
+         Tcl_Seek(chan,0,SEEK_SET);
          obji=Tcl_NewObj();
          objj=Tcl_NewObj();
          lst=Tcl_NewObj();
