@@ -695,6 +695,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
             }
             field->Def->NC=Dim;
          }
+         field->Def->Type=Type;
       }
       /*Liberer les donnees secondaires*/
       Data_Clean(field,1,1,1);

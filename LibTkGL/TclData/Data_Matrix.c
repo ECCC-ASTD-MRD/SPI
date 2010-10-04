@@ -189,7 +189,7 @@ TDataDef* Calc_MatrixFloat(double Val) {
       type=TD_Float64;
    }
 
-   GData[GDataN]=DataDef_New(1,1,1,1,GType?GType:type);
+   GData[GDataN]=DataDef_New(1,1,1,1,(GType?GType:type));
    Def_Set(GData[GDataN],0,0,Val);
 
    return(GData[GDataN]);
@@ -226,7 +226,7 @@ TDataDef* Calc_MatrixInt(long Val) {
    }
    type=TD_Int32;
 
-   GData[GDataN]=DataDef_New(1,1,1,1,GType?GType:type);
+   GData[GDataN]=DataDef_New(1,1,1,1,(GType?GType:type));
    Def_Set(GData[GDataN],0,0,Val);
    return(GData[GDataN]);
 }
@@ -251,7 +251,7 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
 #endif
 
    GDataN++;
-   GData[GDataN]=DataDef_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),GType?GType:A->Type);
+   GData[GDataN]=DataDef_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),(GType?GType:A->Type));
 
 #ifdef LNK_FSTD
    if (FSIZE3D(GData[GDataN])==1) {
@@ -312,7 +312,7 @@ TDataDef* Calc_Index(TDataDef* A,int Index) {
 #endif
 
    GDataN++;
-   GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,GType?GType:A->Type);
+   GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
    memcpy(GData[GDataN]->Data[0],A->Data[Index],FSIZE3D(A)*TData_Size[A->Type]);
    return(GData[GDataN]);
@@ -336,7 +336,7 @@ TDataDef* Calc_IndexValue(TDataDef* A,int I,int J,int K) {
 
    GDataN++;
 
-   GData[GDataN]=DataDef_New(1,1,1,DSIZE(A->Data),GType?GType:A->Type);
+   GData[GDataN]=DataDef_New(1,1,1,DSIZE(A->Data),(GType?GType:A->Type));
 
    while(A->Data[n]) {
       Def_Get(A,n,(FSIZE2D(A)*K)+J*A->NI+I,v);
@@ -356,7 +356,7 @@ TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1)
 #endif
 
    GDataN++;
-   GData[GDataN]=DataDef_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),GType?GType:A->Type);
+   GData[GDataN]=DataDef_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),(GType?GType:A->Type));
 
    for(k=K0,kn=0;k<=K1;k++,kn++) {
 //      GData[GDataN]->GridLevels[kn]=A->GridLevels[k];
@@ -386,7 +386,7 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
    switch(D) {
       case 0:
          i=N;
-         GData[++GDataN]=DataDef_New(A->NJ,A->NK,1,DSIZE(A->Data),GType?GType:A->Type);
+         GData[++GDataN]=DataDef_New(A->NJ,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
@@ -401,7 +401,7 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
 
       case 1:
          j=N;
-         GData[++GDataN]=DataDef_New(A->NI,A->NK,1,DSIZE(A->Data),GType?GType:A->Type);
+         GData[++GDataN]=DataDef_New(A->NI,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
@@ -417,7 +417,7 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
       case 2:
          k=N;
          n=0;
-         GData[++GDataN]=DataDef_New(A->NI,A->NJ,1,DSIZE(A->Data),GType?GType:A->Type);
+         GData[++GDataN]=DataDef_New(A->NI,A->NJ,1,DSIZE(A->Data),(GType?GType:A->Type));
 //         GData[GDataN]->GridLevels[0]=A->GridLevels[k];
          while(A->Data[n]) {
             Def_Pointer(A,n,FSIZE2D(A)*k,p);
@@ -493,7 +493,7 @@ TDataDef* Calc_Length(TDataDef* A) {
    if (!A->Data[1]) {
       GData[GDataN]=DataDef_Copy(A);
    } else {
-      GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,GType?GType:A->Type);
+      GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
       for(i=0;i<FSIZE3D(A);i++) {
          Def_Get(A,0,i,v[0]);
@@ -524,7 +524,7 @@ TDataDef* Calc_Dir(TDataDef* A) {
    if (!A->Data[1]) {
       GData[GDataN]=DataDef_Copy(A);
    } else {
-      GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,GType?GType:A->Type);
+      GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
       spd=(float*)malloc(FSIZE2D(A)*sizeof(float));
       x=fx=(float*)malloc(FSIZE2D(A)*sizeof(float));
@@ -569,11 +569,11 @@ TDataDef* Calc_Matrix1(TDataDef* A,TFunc1 *Func,int Iterate,int Matrix,TData_Typ
    GDataN++;
 
    if (Iterate) {
-      GData[GDataN]=DataDef_CopyPromote(A,GType?GType:(Type?Type:A->Type));
+      GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:(Type?Type:A->Type)));
       Calc_Iterate1(GData[GDataN],A,Func);
    } else {
       if (Matrix) {
-         GData[GDataN]=DataDef_CopyPromote(A,GType?GType:A->Type);
+         GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:A->Type));
          ((TFunc*)Func)(GData[GDataN],A);
       } else {
          GData[GDataN]=DataDef_New(1,1,1,1,TD_Float64);
@@ -612,11 +612,11 @@ TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matr
 
    if (Iterate) {
       t=DEFSELECTTYPE(A,B);
-      GData[GDataN]=DataDef_CopyPromote(m,GType?GType:(Type?Type:t->Type));
+      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:t->Type)));
       Calc_Iterate2(GData[GDataN],A,B,Func);
    } else {
       if (Matrix) {
-         GData[GDataN]=DataDef_CopyPromote(A,GType?GType:A->Type);
+         GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:A->Type));
          ((TFunc*)Func)(GData[GDataN],A,B);
       } else {
          GData[GDataN]=DataDef_New(1,1,1,1,TD_Float64);
@@ -663,11 +663,11 @@ TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iter
    if (Iterate) {
       t=DEFSELECTTYPE(B,C);
       t=DEFSELECTTYPE(A,t);
-      GData[GDataN]=DataDef_CopyPromote(m,GType?GType:(Type?Type:t->Type));
+      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:t->Type)));
       Calc_Iterate3(GData[GDataN],A,B,C,Func);
    } else {
       if (Matrix) {
-         GData[GDataN]=DataDef_CopyPromote(A,GType?GType:A->Type);
+         GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:A->Type));
          ((TFunc*)Func)(GData[GDataN],A,B,C);
       } else {
          GData[GDataN]=DataDef_New(1,1,1,1,TD_Float64);

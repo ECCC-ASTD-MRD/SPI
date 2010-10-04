@@ -1154,30 +1154,19 @@ double or(double a,double b) {
 }
 
 double min(double a,double b) {
-   if (a<=b)
-      return(a);
-   return(b);
+   return(a<=b?a:b);
 }
 
 double max(double a,double b) {
-   if (a>=b)
-      return(a);
-   return(b);
+   return(a>=b?a:b);
 }
 
 double clamp(double a,double b,double c) {
-   if (a<=b)
-      return(b);
-   if (a>=c)
-      return(c);
-   return(a);
+   return(a<=b?b:(a>=c?c:a));
 }
 
 double ifelse(double a,double b,double c) {
-   if (a!=0.0) {
-      return(b);
-   }
-   return(c);
+   return(a!=0.0?b:c);
 }
 
 double frand(double a,double b,double c) {
