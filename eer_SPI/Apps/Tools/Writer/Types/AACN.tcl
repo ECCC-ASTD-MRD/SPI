@@ -343,7 +343,7 @@ proc Writer::AACN::PrintCommand { Canvas } {
    variable Data
 
    set file [Writer::AACN::Format $Writer::Data(Pad)]
-   set PrintBox::Print(FullName) [string trimright $PrintBox::Print(FullName) ".$PrintBox::Print(Device)"]
+   set PrintBox::Param(FullName) [string trimright $PrintBox::Param(FullName) ".$PrintBox::Print(Device)"]
 
    PrintBox::PrintTXT $file
    PrintBox::Destroy

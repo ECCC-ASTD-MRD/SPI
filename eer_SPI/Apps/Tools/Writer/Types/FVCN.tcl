@@ -1218,13 +1218,12 @@ proc Writer::FVCN::PrintCommand { Canvas } {
    variable Data
 
    set file [Writer::FVCN::Format $Writer::Data(Pad) $Data(Mode$Writer::Data(Pad))]
-   set PrintBox::Print(FullName) [string trimright $PrintBox::Print(FullName) ".$PrintBox::Print(Device)"]
+   set PrintBox::Param(FullName) [string trimright $PrintBox::Param(FullName) ".$PrintBox::Print(Device)"]
 
    PrintBox::PrintTXT $file
 
    #----- Graphical product
    if { [winfo exists $Data(Page$Writer::Data(Pad))] } {
-      set PrintBox::Print(FullName) $PrintBox::Print(FullName)
       set PrintBox::Print(Angle) landscape
       PrintBox::PrintCommand $Data(Page$Writer::Data(Pad))
    }
