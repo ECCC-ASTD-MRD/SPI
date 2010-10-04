@@ -11,7 +11,7 @@ YACC = bison
 OS        = $(shell uname -s)
 PROC      = $(shell uname -m)
 ARCH      = $(OS)_$(PROC)
-LIB_VER   = 7.4.0
+LIB_VER   = 7.4.1
 TCLTK_VER = 8.5.7
 TCLTK_BASE= 8.5
 
