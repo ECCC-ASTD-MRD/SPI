@@ -724,22 +724,36 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->InterModeParam=tmp;
                   cmap=cseg=1;
                }
+               if (Spec->InterVals) {
+                  Tcl_DecrRefCount(Spec->InterVals);
+                  Spec->InterVals=NULL;
+               }
             }
             break;
 
          case INTERVALS:
             if (Objc==1) {
-               obj=Tcl_NewListObj(0,NULL);
-               for (ii=0;ii<Spec->InterNb;ii++){
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Spec,Spec->Inter[ii])));
+               if (Spec->InterVals) {
+                  Tcl_SetObjResult(Interp,Spec->InterVals);
+               } else {
+                  obj=Tcl_NewListObj(0,NULL);
+                  for (ii=0;ii<Spec->InterNb;ii++){
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Spec,Spec->Inter[ii])));
+                  }
+                  Tcl_SetObjResult(Interp,obj);
                }
-               Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
                if (nobj>DATASPEC_MAX) {
                   Tcl_AppendResult(Interp,"DataSpec_Config: too many levels, maximum is DATASPEC_MAX",(char*) NULL);
                   return(TCL_ERROR);
                }
+
+               if (Spec->InterVals) {
+                  Tcl_DecrRefCount(Spec->InterVals);
+               }
+               Spec->InterVals=Objv[i];
+               Tcl_IncrRefCount(Spec->InterVals);
 
                /*Determine si ils sont nouveaux*/
                new=0;
@@ -1207,6 +1221,10 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       Tcl_IncrRefCount(from->InterLabels);
    to->InterLabels=from->InterLabels;
 
+   if (from->InterVals)
+      Tcl_IncrRefCount(from->InterVals);
+   to->InterVals=from->InterVals;
+
    to->RangeNb=from->RangeNb;
    to->PosNb=from->PosNb;
    to->InterNb=from->InterNb;
@@ -1343,6 +1361,7 @@ TDataSpec *DataSpec_New(){
    spec->InterNb=0;
    spec->InterMode=0;
    spec->InterLabels=NULL;
+   spec->InterVals=NULL;
    spec->InterModeParam=0.0;
    spec->InterO=0;
    spec->InterM=0;
@@ -1424,6 +1443,7 @@ int DataSpec_Free(TDataSpec *Spec){
    if (Spec->Font)        Tk_FreeFont(Spec->Font);
    if (Spec->Stipple)     glBitmapFree(Spec->Stipple);
    if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);
+   if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);
 
    if (Spec->InterpDegree) free(Spec->InterpDegree);
    if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);
