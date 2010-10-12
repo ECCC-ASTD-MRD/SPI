@@ -267,9 +267,10 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
       }
    } else {
       if (GField->Ref->Id<=-1 || GFieldP->Ref->Id<=-1) {
-         Data_GridInterpolate(NULL,GField->Ref,GData[GDataN],GFieldP->Ref,B);
+         Data_GridInterpolate(NULL,'L',GField->Ref,GData[GDataN],GFieldP->Ref,B);
       } else {
          switch(Degree) {
+            case 1:c_ezsetopt("INTERP_DEGREE","NEAREST");break;
             case 2:c_ezsetopt("INTERP_DEGREE","LINEAR");break;
             case 3:c_ezsetopt("INTERP_DEGREE","CUBIC");break;
          }

@@ -379,7 +379,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   free(table);
                return(code);
             } else {
-               return(Data_GridInterpolate(Interp,band->Ref,band->Def,comb->Ref,comb->Def));
+               return(Data_GridInterpolate(Interp,Tcl_GetString(Objv[4])[0],band->Ref,band->Def,comb->Ref,comb->Def));
             }
             break;
          }

@@ -749,6 +749,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
  *
  * Parametres   :
  *   <Interp>   : L'interpreteur Tcl
+ *   <Degree>   : Degree d'interpolation (N:Nearest, L:Lineaire)
  *   <ToRef>    : Reference du champs destination
  *   <ToDef>    : Description du champs destination
  *   <FromRef>  : Reference du champs source
@@ -760,7 +761,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
+int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
 
    float    val,dir;
    int      x,y,x0,y0,x1,y1,idx,ex,dy;
@@ -799,11 +800,11 @@ int Data_GridInterpolate(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoR
          Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-      GeoScan_Get(&scan,ToDef,1);
+      GeoScan_Get(&scan,ToDef,NULL,1);
 
       for(idx=0;idx<scan.N;idx++){
          /*Get the value of the data field at this latlon coordinate*/
-         if (FromRef->Value(FromRef,FromDef,'L',0,scan.X[idx],scan.Y[idx],FromDef->Level,&val,&dir)) {
+         if (FromRef->Value(FromRef,FromDef,Degree,0,scan.X[idx],scan.Y[idx],FromDef->Level,&val,&dir)) {
             if (val!=FromDef->NoData && !isnan(val)) {
                Def_Set(ToDef,0,scan.V[idx],val);
             } else {

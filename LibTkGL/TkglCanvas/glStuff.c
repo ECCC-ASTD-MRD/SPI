@@ -2011,8 +2011,7 @@ void glInit(Tcl_Interp *Interp) {
    gluTessCallback(GLRender->GLTess,GLU_TESS_ERROR,(_GLUfuncptr)glTessError);
 
    gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
-   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_NONZERO);
-//   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_POSITIVE);
+   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
 }
 
 /*----------------------------------------------------------------------------

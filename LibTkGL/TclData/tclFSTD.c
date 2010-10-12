@@ -808,7 +808,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   free(table);
                return(key);
             } else {
-               return(Data_GridInterpolate(Interp,field0->Ref,field0->Def,band->Ref,band->Def));
+               return(Data_GridInterpolate(Interp,Tcl_GetString(Objv[4])[0],field0->Ref,field0->Def,band->Ref,band->Def));
             }
             break;
          }
