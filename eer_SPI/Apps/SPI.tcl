@@ -158,7 +158,7 @@ proc SPI::CommandLine { { Args {} }} {
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "soft"     { }
-      "batch"    { }
+      "batch"    { set SPI::Param(Batch) True }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { set SPI::Param(Window) False }
       "geom"     { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
@@ -182,8 +182,14 @@ for { set i 0 } { $i < $argc } { incr i } {
 
 SPI::Splash "Sourcing packages"
 
-#----- Fonctions en librairie.
+#----- Try for threads
 catch { package require Thread }
+
+#----- Source GL and set batch flag
+package require OpenGL
+glrender -xbatch $SPI::Param(Batch)
+
+#----- Fonctions en librairie.
 package require Tktable
 package require http
 package require tdom
@@ -2320,8 +2326,6 @@ SPI::Window
 SPI::WindowMenu
 SPI::Params
 SPI::ContextMenuProj
-
-glrender -xbatch $SPI::Param(Batch)
 
 #----- Creation des pages
 set layout $SPI::Param(Layout)
