@@ -180,7 +180,8 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
       }
 
       if (key<0) {
-         fprintf(stdout,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
+         // Too many warnings so we catch it later
+         // fprintf(stdout,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
          return(0);
       } else {
          if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
@@ -304,8 +305,10 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    double     z;
    float     *gz=NULL;
 
-   if (!FSTD_FieldReadMesh(Field))
+   if (!FSTD_FieldReadMesh(Field)) {
+      fprintf(stderr,"(Warning) FSTD_FieldGetMesh: Could not find grid definition components");
       return(0);
+   }
 
    /*Allocate memory for various levels*/
    if (!Field->Ref->Pos)
@@ -314,7 +317,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    if (!Field->Ref->Pos[Level]) {
       Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
       if (!Field->Ref->Pos[Level]) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+         fprintf(stderr,"(ERROR) FSTD_FieldGetMesh: Not enough memory to calculate gridpoint location");
          return(NULL);
       }
    }
@@ -756,7 +759,9 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
          if (FSTD_FileSet(NULL,fid)<0) {
             return(i);
          }
-         FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&data,"PT",-1);
+         if (!FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&data,"PT",-1)) {
+            fprintf(stdout,"(WARNING) ZRef_DecodeRPNLevelParams: Could not find top pressure field (PT)\n");
+         }
          FSTD_FileUnset(NULL,fid);
          if (data) {
             Field->Ref->Top=data[0];
