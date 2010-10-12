@@ -123,7 +123,7 @@ Total Release Quantity           : [format "%.3e" $Sim(EmMass)] unit
 Initial Max. Plume Height        : $Sim(EmTop) m
 Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
 NWP Meteorological Model         : $Sim(Meteo)
-NWP Meteorological Data          : $Sim(Mode)"
+NWP Meteorological Data          : "
               }
       CANERM  { append text "Simulation Duration              : $Sim(Duration) Hr(s)
 Release Duration                 : $Sim(EmDuration) Hr(s)
