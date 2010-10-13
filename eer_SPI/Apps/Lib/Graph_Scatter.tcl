@@ -615,7 +615,7 @@ proc Graph::Scatter::Stats { GR } {
    upvar #0 Graph::Scatter::Scatter${GR}::Data  data
 
    if { $graph(Stat) } {
-      set data(Stat) [Graph::Stat::Create $data(Frame) 1 1 250 400 True 0]
+      set data(Stat) [Graph::Stat::Create $data(Frame) 1 1 250 450 True 0]
       Graph::Stat::Graph $data(Stat)
   } else {
       Graph::Destroy $data(Frame) $data(Stat) Stat

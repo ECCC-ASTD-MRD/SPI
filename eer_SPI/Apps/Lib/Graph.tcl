@@ -112,8 +112,8 @@ namespace eval Graph {
    set Data(Pos)          ""
    set Data(PosNo)        -1
    set Data(Frame)        ""
-   set Data(Stats)       { R2 VARx VARy VARxy RMSE NRMSE ME NME MNE LMNE MB NMB MNB LMNB MFB MFE a b Ea Eb AVGx AVGy NA RNA n }
-   set Data(Funcs)       { scor svarx svary scov srmse snrmse sme snme smne slmne smb snmb smnb slmnb smfb smfe srega sregb serra serrb savgx savgy sna srna snb }
+   set Data(Stats)       { R2 VARx VARy VARxy RMSE NRMSE ME NME MNE LMNE MB NMB MNB LMNB MFB MFE a b Ea Eb AVGx AVGy MINx MAXx MINy MAXy NA RNA n }
+   set Data(Funcs)       { scor svarx svary scov srmse snrmse sme snme smne slmne smb snmb smnb slmnb smfb smfe srega sregb serra serrb savgx savgy sminx smaxx sminy smaxy sna srna snb }
 
    set Graph(Identitys)   { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
    set Graph(Dashs)       { \"\" "_" "." ".._" "..._" "...__" }
@@ -401,9 +401,9 @@ proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
       catch { $Frame.page.canvas itemconfigure GRAPH$GR -x $X0 -y $Y0 -width $Data(Width$GR) -height $Data(Height$GR) }
 
       if { $Data(Active$GR) } {
-         $Frame.page.canvas coords BS$Page::Data(Tag)$GR $X1 [expr $Y1-1]
-         $Frame.page.canvas coords BM$Page::Data(Tag)$GR [expr $X1-11] [expr $Y1-1]
-         $Frame.page.canvas coords BF$Page::Data(Tag)$GR [expr $X1-22] [expr $Y1-1]
+         $Frame.page.canvas coords BS$Page::Data(Tag)$GR $X1 $Y1
+         $Frame.page.canvas coords BM$Page::Data(Tag)$GR [expr $X1-11] $Y1
+         $Frame.page.canvas coords BF$Page::Data(Tag)$GR [expr $X1-22] $Y1
          $Frame.page.canvas coords BD$Page::Data(Tag)$GR $X1 $Y0
       }
    }
