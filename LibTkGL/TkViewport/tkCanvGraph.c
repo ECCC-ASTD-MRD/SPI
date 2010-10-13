@@ -674,21 +674,6 @@ int Graph_Project(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,do
    TGraphItem *item=NULL;
    int         i;
 
-   X-=GR->xg[0];
-   Y=GR->yg[0]-Y;
-
-   if (X<0 || X>(GR->xg[1]-GR->xg[0]) || Y<0 || Y>(GR->yg[0]-GR->yg[1])) {
-      if (!Extrap) {
-         Tcl_AppendResult(Interp,"",(char*)NULL);
-         return(TCL_OK);
-      } else if (Extrap==-1) {
-         X=X<0?0:X;
-         X=X>(GR->xg[1]-GR->xg[0])?(GR->xg[1]-GR->xg[0]):X;
-         Y=Y<0?0:Y;
-         Y=Y>(GR->yg[0]-GR->yg[1])?(GR->yg[0]-GR->yg[1]):Y;
-      }
-   }
-
    if (Item) {
       Tcl_SetObjResult(Interp,Graph_ProjectItem(Interp,Item,X,Y,Z));
    } else {
@@ -699,7 +684,6 @@ int Graph_Project(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,do
       }
       Tcl_SetObjResult(Interp,obj);
    }
-
    return(TCL_OK);
 }
 
@@ -721,13 +705,10 @@ Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y));
 
       if (Item->Data) {
-/*
          if ((data=Data_Get(Item->Data))) {
-            y=Graph_Expand(data,y);
-            spd=VertexVal(data->Ref,data->Def,x,y,0.0);
+            spd=VertexVal(data->Ref,data->Def,X,Y,0.0);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
          }
-*/
       }
    }
    return(obj);
