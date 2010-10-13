@@ -45,7 +45,7 @@
  * @see init_record
  */
 
-double Vnb,Vavgx,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
+double Vnb,Vminx,Vmaxx,Vavgx,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmb,Vmnb,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna;
 
@@ -86,6 +86,10 @@ TFuncDef FuncF[] = {
   { "savg"  , stat_avg    , 1 , TD_Float64 },
   { "savgx" , stat_avgx   , 1 , TD_Float64 },
   { "savgy" , stat_avgy   , 1 , TD_Float64 },
+  { "sminx" , stat_minx   , 1 , TD_Float64 },
+  { "smaxx" , stat_maxx   , 1 , TD_Float64 },
+  { "sminy" , stat_miny   , 1 , TD_Float64 },
+  { "smaxy" , stat_maxy   , 1 , TD_Float64 },
   { "svar"  , stat_varx   , 1 , TD_Float64 },
   { "svarx" , stat_varx   , 1 , TD_Float64 },
   { "svary" , stat_vary   , 1 , TD_Float64 },
@@ -762,6 +766,8 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    unsigned long i,n;
 
    Vcorr=Vnb=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=0.0;
+   Vminy=Vminx=HUGE_VAL;
+   Vmaxy=Vmaxx=-HUGE_VAL;
 
    if ((n=FSIZE3D(MA))==0) {
       return;
@@ -783,6 +789,11 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
             continue;
          }
       }
+
+      Vminx=va<Vminx?va:Vminx;
+      Vmaxx=va>Vmaxx?va:Vmaxx;
+      Vminy=vb<Vminy?vb:Vminy;
+      Vmaxy=vb>Vmaxy?vb:Vmaxy;
 
       Vavgx+=va;
       Vssx+=va*va;
@@ -995,6 +1006,30 @@ double stat_avgy(TDataDef *MA) {
    if (MA)
       stat_core(MA,NULL);
    return(Vavgy);
+}
+
+double stat_minx(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vminx);
+}
+
+double stat_miny(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vminy);
+}
+
+double stat_maxx(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vmaxx);
+}
+
+double stat_maxy(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vmaxy);
 }
 
 double stat_regb(TDataDef *MA,TDataDef *MB) {

@@ -125,6 +125,10 @@ double stat_max(TDataDef *M);                 /* Maximum */
 double stat_avg(TDataDef *M);                 /* Average */
 double stat_avgx(TDataDef *M);                /* Average X*/
 double stat_avgy(TDataDef *M);                /* Average Y*/
+double stat_minx(TDataDef *M);                /* Minimum X*/
+double stat_miny(TDataDef *M);                /* Minimum Y*/
+double stat_maxx(TDataDef *M);                /* Maximum X*/
+double stat_maxy(TDataDef *M);                /* Maximum Y*/
 
 /*Base operators*/
 double add(double a,double b);
