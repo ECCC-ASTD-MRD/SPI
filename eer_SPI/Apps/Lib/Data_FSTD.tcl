@@ -896,12 +896,12 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 
       if { !$set } {
          #----- Override particle fields params
-         if { [fstdfield define $Field -GRTYP]=="Y"|| [fstdfield define $Field -NOMVAR]=="ZH"} {
+         if { [fstdfield define $Field -GRTYP]=="Y" || [fstdfield define $Field -NOMVAR]=="ZH" } {
             dataspec configure $Spec -renderparticle 2
          }
 
          #----- Override vectorial fields params
-         if { [fstdfield stats $Field -component]>1   } {
+         if { [fstdfield stats $Field -component]>1 } {
             dataspec configure $Spec -rendervector BARBULE -rendertexture 0
          }
 
