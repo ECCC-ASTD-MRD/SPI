@@ -184,6 +184,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *  <FromDef>   : Data definition source
  *  <ToDef>     : Data definition destination
  *  <Dim>       : Dimension dee cellules de grilles (1=point, 2=area)
+ *  <Degree>    : Interpolation degree
  *
  * Retour       : Dimension des resultats
  *
@@ -191,7 +192,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim) {
+int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *Degree) {
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
@@ -303,6 +304,8 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim) {
          c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
          /*If we have the data of source, get it's values right now*/
          if (ToDef) {
+            if (Degree)
+               c_ezsetopt("INTERP_DEGREE",Degree);
             c_gdxysval(Scan->ToRef->Id,Scan->D,ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
          }
          EZUnLock_RPNInt();

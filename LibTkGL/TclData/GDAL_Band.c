@@ -1191,7 +1191,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
             Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
             return(TCL_ERROR);
          }
-         s=GeoScan_Get(&GScan,FromDef,NULL,FromDef->CellDim);
+         s=GeoScan_Get(&GScan,FromDef,NULL,FromDef->CellDim,NULL);
 
          /*Loop over source data*/
          dx=0;
@@ -1525,7 +1525,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-      GeoScan_Get(&scan,Band->Def,Field->Def,1);
+      GeoScan_Get(&scan,Band->Def,Field->Def,1,Field->Spec->InterpDegree);
 
       for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/

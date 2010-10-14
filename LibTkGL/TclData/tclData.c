@@ -800,7 +800,7 @@ int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef 
          Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-      GeoScan_Get(&scan,ToDef,NULL,1);
+      GeoScan_Get(&scan,ToDef,NULL,1,NULL);
 
       for(idx=0;idx<scan.N;idx++){
          /*Get the value of the data field at this latlon coordinate*/
