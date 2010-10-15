@@ -318,7 +318,7 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
    loc.C.Lon=Lon;
    loc.C.Elev=0.0;
 
-   if (Grid_Project(Proj,&loc,NULL,1)) {
+   if (Grid_Project(Proj,&loc,NULL,-1)) {
       if (Undo) {
          glTranslated(loc.V[0],loc.V[1],0.0);
       } else {
@@ -740,7 +740,7 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
       return;
 
    if (Proj->Geographic) {
-      ref->UnProject(ref,&ni,&nj,Proj->Lat,Proj->Lon,0,1);
+      ref->UnProject(ref,&ni,&nj,Proj->Lat,Proj->Lon,1,1);
       Proj->I=ni;
       Proj->J=nj;
    }

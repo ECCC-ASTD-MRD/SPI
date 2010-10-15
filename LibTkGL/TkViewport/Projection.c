@@ -668,8 +668,12 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->I);
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->J);
 
+               /*Enforce limits*/
+               proj->I=proj->I<proj->Ref->X0?proj->Ref->X0:(proj->I>proj->Ref->X1?proj->Ref->X1:proj->I);
+               proj->J=proj->J<proj->Ref->Y0?proj->Ref->Y0:(proj->J>proj->Ref->Y1?proj->Ref->Y1:proj->J);
+
                if (proj->Ref && proj->Geographic) {
-                  proj->Ref->Project(proj->Ref,proj->I,proj->J,&lat,&lon,1,1);
+                  proj->Ref->Project(proj->Ref,proj->I,proj->J,&lat,&lon,0,1);
                   proj->Lat=lat;
                   proj->Lon=lon;
                } else {
