@@ -2166,6 +2166,11 @@ proc Viewport::RotateDo { Frame VP X Y } {
       set Map(GridJ)  [expr $Map(GridJ) + ($Map(GridJRot)-$j)]
 
       projection configure $Frame -gridpoint $Map(GridI) $Map(GridJ)
+
+      #----- Get back the position since it could've been clamped
+      set ij [projection configure $Frame -gridpoint]
+      set Map(GridI) [lindex $ij 0]
+      set Map(GridJ) [lindex $ij 1]
    } else {
       set latlon [$VP -unproject $X $Y]
       set lat [lindex $latlon 0]
