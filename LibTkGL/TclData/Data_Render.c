@@ -135,6 +135,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
    if (buf)
       free(buf);
 
+   GDB_VBufferCheck();
    return(1);
 }
 
@@ -1891,7 +1892,8 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       glEnable(GL_STENCIL_TEST);
    }
 
-   return 1;
+   GDB_VBufferCheck();
+   return(1);
 }
 
 /*----------------------------------------------------------------------------

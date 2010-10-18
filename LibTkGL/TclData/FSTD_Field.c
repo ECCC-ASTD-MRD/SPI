@@ -315,7 +315,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
       Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->LevelNb,sizeof(Vect3d*));
 
    if (!Field->Ref->Pos[Level]) {
-      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
+      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->Ref->Pos[Level]) {
          fprintf(stderr,"(ERROR) FSTD_FieldGetMesh: Not enough memory to calculate gridpoint location");
          return(NULL);
@@ -470,7 +470,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->LevelNb,sizeof(Vect3d*));
 
    if (!Field->Ref->Pos[Level]) {
-      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Field->Def)*sizeof(Vect3d));
+      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->Ref->Pos[Level]) {
          fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
          return(NULL);
