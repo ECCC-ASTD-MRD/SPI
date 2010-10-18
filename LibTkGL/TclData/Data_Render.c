@@ -111,18 +111,17 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
-            len=FFContour_Quad(Field->Ref,Field->Def,NULL,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
+            len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
               if ((array=TArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
-                  FFContour_Quad(Field->Ref,Field->Def,array->Data,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
+                  GDB_VBufferCopy(array->Data,len);
                } else {
                   fprintf(stderr,"(ERROR) Data_GetContour: Unable to alloc memory for contour %f",Inter[n]);
                }
             }
          }
-
          /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
          if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
          if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
@@ -851,10 +850,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    double i,j,dt;
    int    b,f,len,pi,pj,dz;
    float  step,*map;
-   Vect3d pix;
+   Vect3d pix,*vbuf;
    Coord  coo;
-
-   extern Vect3d GDB_VBuf[];
 
    if (GLRender->Resolution>2) {
       return(0);
@@ -885,9 +882,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glEnable(GL_BLEND);
 
    pi=pj=-1;
-   len=512;
    dz=Field->Spec->Sample*10;
    dt=0.0;
+   len=512;
+
+   vbuf=GDB_VBufferAlloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
@@ -906,8 +905,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
                step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi+1,pj+1)]);
             }
             /*Get the streamline */
-            b=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,0);
-            f=FFStreamLine(Field->Ref,Field->Def,VP,&GDB_VBuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,0);
+            b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,0);
+            f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,0);
 
             /* If we have at least some part of it */
             glPushMatrix();
@@ -915,11 +914,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-               Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
 
                glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
             }
             glPopMatrix();
          }
@@ -942,8 +941,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    int    i,j,k,k0,k1;
    int    n,b,f,c,len,dz,idx;
    float  *map=NULL;
-
-   extern Vect3d GDB_VBuf[];
+   Vect3d *vbuf;
 
    if (GLRender->Resolution>2) {
       return(0);
@@ -985,6 +983,9 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    glLineWidth((float)Field->Spec->Width);
    glMatrixMode(GL_TEXTURE);
 
+   vbuf=GDB_VBufferAlloc(len*2+1);
+
+
    /*Recuperer les latlon des pixels sujets*/
    if (Field->Spec->PosNb) {
       for(n=0;n<Field->Spec->PosNb;n++) {
@@ -993,8 +994,8 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
          k=Field->Spec->Pos[n][2];
 
          /*Get the streamline */
-         b=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
-         f=FFStreamLine(Field->Ref,Field->Def,VP,&GDB_VBuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+         b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+         f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
          /* If we have at least some part of it */
          if (b+f>2) {
             glPushMatrix();
@@ -1009,7 +1010,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
                glTranslatef(-Field->Spec->TexStep,0.0,0.0);
             }
-            Proj->Type->Render(Proj,0,&GDB_VBuf[len>>1-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
+            Proj->Type->Render(Proj,0,&vbuf[len>>1-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
             glPopMatrix();
          }
       }
@@ -1019,7 +1020,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             for(k=Field->Spec->Cube[2];k<=Field->Spec->Cube[5];k+=dz) {
 
                /*Get the streamline */
-               f=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+               f=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
 
                /* If we have at least some part of it */
                if (f>2) {
@@ -1037,7 +1038,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                         glTranslatef(-Field->Spec->TexStep,0.0,0.0);
                      }
                   }
-                  Proj->Type->Render(Proj,0,GDB_VBuf,NULL,NULL,map,GL_LINE_STRIP,f,NULL,NULL);
+                  Proj->Type->Render(Proj,0,vbuf,NULL,NULL,map,GL_LINE_STRIP,f,NULL,NULL);
                   glPopMatrix();
                }
             }
@@ -1793,12 +1794,12 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
   /*Creer la liste de vertex par niveaux*/
    if (!Field->Segments) {
       for (i=0;i<Field->Spec->InterNb;i++) {
-         len=FFMarchingCube(Field->Ref,Field->Def,Proj,Field->Spec->Inter[i],NULL,0);
-         if (len>1) {
-            array=TArray_Alloc(Field->Spec->Inter[i],2*len);
+         len=FFMarchingCube(Field->Ref,Field->Def,Proj,Field->Spec->Inter[i]);
+         if (len>6) {
+            array=TArray_Alloc(Field->Spec->Inter[i],len);
             if (array) {
                Field->Segments=TList_Add(Field->Segments,array);
-               FFMarchingCube(Field->Ref,Field->Def,Proj,Field->Spec->Inter[i],array->Data,1);
+               GDB_VBufferCopy(array->Data,len);
             } else {
                fprintf(stderr,"(ERROR) Data_RenderVolume: Unable to alloc memory for volume data %f",Field->Spec->Inter[i]);
             }

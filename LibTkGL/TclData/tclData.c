@@ -1236,13 +1236,13 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    TData   *fld;
    TList   *list;
    TArray  *array;
+   Vect3d  *vbuf;
    int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int      nb,len,nobj;
    double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
    float    val,val1,*levels;
    char     buf[32],mode='L';
 
-   extern Vect3d GDB_VBuf[];
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
    extern double Radar_Height(TData *Rad,double I,double J,double K);
 
@@ -1684,27 +1684,29 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
             if (Field->Def->Data[1]) {
-               b=FFStreamLine(Field->Ref,Field->Def,NULL,GDB_VBuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_GRID,0);
-               f=FFStreamLine(Field->Ref,Field->Def,NULL,&GDB_VBuf[len],NULL,dx,0,dy,len,dval,dv,dl,REF_GRID,0);
+               vbuf=GDB_VBufferAlloc(len*2+1);
+
+               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_GRID,0);
+               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,dval,dv,dl,REF_GRID,0);
                obj=Tcl_NewListObj(0,NULL);
                ex=0;
 
                /*Loop on all streamline points*/
                for (nb=0;nb<b+f-1;nb++) {
                   /*Clip to extent limits*/
-                  if (ex=LiangBarsky_LineClip2D(GDB_VBuf[len-b+nb],GDB_VBuf[len-b+nb+1],&c1,&c2,
+                  if (ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
                      Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1])) {
 
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
                   }
                }
                /*If last segment was visible, add its end point*/
                if (ex){
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
                }
                Tcl_SetObjResult(Interp,obj);
             }
@@ -1723,26 +1725,28 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
             if (Field->Def->Data[1]) {
-               b=FFStreamLine(Field->Ref,Field->Def,NULL,GDB_VBuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_COOR,0);
-               f=FFStreamLine(Field->Ref,Field->Def,NULL,&GDB_VBuf[len],NULL,dx,dy,0,len,dval,dv,dl,REF_COOR,0);
+               vbuf=GDB_VBufferAlloc(len*2+1);
+
+               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_COOR,0);
+               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,dval,dv,dl,REF_COOR,0);
                obj=Tcl_NewListObj(0,NULL);
                ex=0;
 
                /*Loop on all streamline points*/
                for (nb=0;nb<b+f-1;nb++) {
                   /*Clip to extent limits*/
-                  if (ex=LiangBarsky_LineClip2D(GDB_VBuf[len-b+nb],GDB_VBuf[len-b+nb+1],&c1,&c2,
+                  if (ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
                      Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
                   }
                }
                /*If last segment was visible, add its end point*/
                if (ex) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][0]));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][1]));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GDB_VBuf[len-b+nb][2]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
                }
                Tcl_SetObjResult(Interp,obj);
             }

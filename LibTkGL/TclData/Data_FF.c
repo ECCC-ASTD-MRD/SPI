@@ -392,13 +392,14 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *
  *----------------------------------------------------------------------------
  */
-int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth) {
+int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth) {
 
    double        vox[4],pvox[4],mid,x,y,dx,dy,d;
    double        lat=0.0,lon=0.0;
    unsigned int  md,flag,depth,index,m,next=1;
    unsigned char side=0;
    unsigned long idx,n=0;
+   Vect3d        *vbuf;
 
    while(X>=Def->Limits[0][0] && X<=Def->Limits[0][1]-1 && Y>=Def->Limits[1][0] && Y<=Def->Limits[1][1]-1) {
 
@@ -408,7 +409,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
          idx=Def->NI*Y+X;
 
          /*Check if we've already parsed this voxel from this side*/
-         flag=!Line?side:side<<4;
+         flag=side;
          if (PMatrix[idx]&flag) break;
          PMatrix[idx]|=flag;
 
@@ -432,11 +433,11 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
             else if (side&FF_RIGHT)  { side=FF_LEFT;   while(depth--) { index<<=4; d=1.0/(md<<=1); if (y<(dy+d)) { index|=0x1; } else { index|=0x8;dy+=d; } } }
             else if (side&FF_LEFT)   { side=FF_RIGHT;  while(depth--) { index<<=4; d=1.0/(md<<=1); if (y<(dy+d)) { index|=0x2; } else { index|=0x4;dy+=d; } } }
 
-            if (Line) {
+            if (vbuf=GDB_VBufferAlloc(n+1)) {
                switch(Mode) {
-                  case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(Line[n],lat,lon,0.0);break;
-                  case REF_PROJ : VertexLoc(Ref,Def,Line[n],x,y,Z);break;
-                  case REF_GRID : Vect_Init(Line[n],x,y,Z);break;
+                  case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
+                  case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
+                  case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
                }
             }
             n++;
@@ -482,11 +483,11 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,Vect3d *Line,unsigned char *PMatri
 
       /*Get the segment intersection coordinate within the voxel*/
       if (side=FFQuad_Cross(d,side,vox,Inter,&x,&y)) {
-         if (Line) {
+         if (vbuf=GDB_VBufferAlloc(n+1)) {
             switch(Mode) {
-               case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(Line[n],lat,lon,0.0);break;
-               case REF_PROJ : VertexLoc(Ref,Def,Line[n],x,y,Z);break;
-               case REF_GRID : Vect_Init(Line[n],x,y,Z);break;
+               case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
+               case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
+               case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
             }
          }
          n++;
@@ -645,7 +646,6 @@ unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,un
  *  <Proj>    : Parametres de la projection
  *  <Level>   : Valeur de l'isosurface
  *  <Vr>      : Vecteurs resultants
- *  <Do>      : Pass (1st, count, second, process
  *
  * Retour:
  *
@@ -653,13 +653,13 @@ unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,un
  *
  *----------------------------------------------------------------------------
 */
-int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect3d *Vr,int Do) {
+int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level) {
 
    int    n,i,j,k;
    int    cubeidx,vridx=0;
    int    idxj,idxj1,idxk,idxk1,idxi;
    double cube[2][4];
-   Vect3d vrlist[12],p0,p1;
+   Vect3d vrlist[12],p0,p1,*vbuf;
 
 #ifdef DEBUG
    if (Do) {
@@ -768,22 +768,20 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect
 
             /* Create the triangle */
             for (n=0;TriTable[cubeidx][n]!=-1;n+=3) {
-               if (Do) {
-                  VertexLoc(Ref,Def,Vr[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
-                  VertexLoc(Ref,Def,Vr[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
-                  VertexLoc(Ref,Def,Vr[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);
+               if (vbuf=GDB_VBufferAlloc(vridx+6)) {
+                  VertexLoc(Ref,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
+                  VertexLoc(Ref,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
+                  VertexLoc(Ref,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);
 
                   /*Find normals from gradient within a single voxel*/
-                  Vect_Assign(Vr[vridx]  ,vrlist[TriTable[cubeidx][n]]);
-                  Vect_Assign(Vr[vridx+2],vrlist[TriTable[cubeidx][n+1]]);
-                  Vect_Assign(Vr[vridx+4],vrlist[TriTable[cubeidx][n+2]]);
+                  Vect_Assign(vbuf[vridx]  ,vrlist[TriTable[cubeidx][n]]);
+                  Vect_Assign(vbuf[vridx+2],vrlist[TriTable[cubeidx][n+1]]);
+                  Vect_Assign(vbuf[vridx+4],vrlist[TriTable[cubeidx][n+2]]);
 
-                  VertexGradient(Ref,Def,Vr[vridx]);Vect_Mul(Vr[vridx],Vr[vridx],Proj->LightPos);        Vect_Normalize(Vr[vridx]);
-                  VertexGradient(Ref,Def,Vr[vridx+2]);Vect_Mul(Vr[vridx+2],Vr[vridx+2],Proj->LightPos);  Vect_Normalize(Vr[vridx+2]);
-                  VertexGradient(Ref,Def,Vr[vridx+4]);Vect_Mul(Vr[vridx+4],Vr[vridx+4],Proj->LightPos);  Vect_Normalize(Vr[vridx+4]);
+                  VertexGradient(Ref,Def,vbuf[vridx])  ;Vect_Mul(vbuf[vridx],  vbuf[vridx],Proj->LightPos);    Vect_Normalize(vbuf[vridx]);
+                  VertexGradient(Ref,Def,vbuf[vridx+2]);Vect_Mul(vbuf[vridx+2],vbuf[vridx+2],Proj->LightPos);  Vect_Normalize(vbuf[vridx+2]);
+                  VertexGradient(Ref,Def,vbuf[vridx+4]);Vect_Mul(vbuf[vridx+4],vbuf[vridx+4],Proj->LightPos);  Vect_Normalize(vbuf[vridx+4]);
                   vridx+=6;
-               } else {
-                  vridx+=3;
                }
             }
          }
@@ -791,9 +789,7 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level,Vect
    }
 
 #ifdef DEBUG
-   if (Do) {
-      fprintf(stderr,"(DEBUG) FFMarchingCube: Done processing (%i Vertex)\n",vridx/3);
-   }
+   fprintf(stderr,"(DEBUG) FFMarchingCube: Done processing (%i Vertex)\n",vridx/3);
 #endif
    return(vridx);
 }

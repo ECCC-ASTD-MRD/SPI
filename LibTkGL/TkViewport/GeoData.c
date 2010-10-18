@@ -44,7 +44,6 @@
 static GDB_Geo  *GeoPtr;
 static GDB_Txt  *TxtPtr;
 
-Vect3d GDB_VBuf[4096];
 Vect3d GDB_NMap[181][361];
 
 void  GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Data *GDB);
@@ -65,6 +64,41 @@ void  GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Col
 void  GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
 
 GLuint Texture_Read(char *File);
+
+static Vect3d      *GDB_VBuffer=NULL;
+static unsigned int GDB_VBufferSize=0;
+static unsigned int GDB_VBufferIncr=512;
+static unsigned int GDB_VBufferMax=524288;
+
+Vect3d *GDB_VBufferCopy(Vect3d *To,unsigned int Size) {
+
+  return((Vect3d*)memcpy(To,GDB_VBuffer,Size*sizeof(Vect3d)));
+}
+
+void *GDB_VBufferCheck(Vect3d *To,unsigned int Size) {
+
+  if (GDB_VBufferSize<GDB_VBufferMax) {
+     GDB_VBuffer=realloc(GDB_VBuffer,GDB_VBufferMax*sizeof(Vect3d));
+     GDB_VBufferSize=GDB_VBufferMax;
+  }
+}
+
+Vect3d *GDB_VBufferAlloc(unsigned int Size) {
+
+   Vect3d *buf=GDB_VBuffer;
+
+   if (GDB_VBufferSize<Size) {
+      fprintf(stderr,"(DEBUG) GDB_VBufferAlloc: Reallocating GDB_VBuffer to %o\n",Size);
+      Size=Size+GDB_VBufferIncr;
+      if (buf=realloc(GDB_VBuffer,Size*sizeof(Vect3d))) {
+         GDB_VBuffer=buf;
+         GDB_VBufferSize=Size;
+      } else {
+         fprintf(stderr,"(ERROR) GDB_VBufferAlloc: Could not allocate coordinate buffer GDB_VBuffer\n");
+      }
+   }
+   return(buf);
+}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GDB_ThreadProc>
@@ -1334,11 +1368,12 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
 */
 void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta) {
 
-   Coord  loc;
-   int    dc,dr,dt=1;
-   float  dx,dy;
-   float  dtx,dty,tx,ty;
-   float  d;
+   Coord   loc;
+   Vect3d *vbuf;
+   int     dc,dr,dt=1;
+   float   dx,dy;
+   float   dtx,dty,tx,ty;
+   float   d;
 
    register int     x,y;
    register short  *map=Topo->Map;
@@ -1358,6 +1393,8 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    }
 
+   vbuf=GDB_VBufferAlloc(height);
+
    if (!map) {
 
       /*On divise chaque tuile par 5 afin de creer une courbure*/
@@ -1371,7 +1408,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       for(tx=-dtx,x=0;x<=Delta;x+=dc,tx+=dtx) {
 
          if (Proj->Type->Def==PROJCYLIN) {
-            d=CYLFLIP(Proj->L,GDB_VBuf[x][0]);
+            d=CYLFLIP(Proj->L,vbuf[x][0]);
             glTranslated(d,0.0,0.0);
          }
          glBegin(GL_QUAD_STRIP);
@@ -1384,19 +1421,19 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                   loc.Lon=Lon0+x-dc;
                   glNormal3dv(GDB_NMap[(int)loc.Lat+90][(int)loc.Lon+180]);
                }
-               glVertex3dv(GDB_VBuf[y]);
+               glVertex3dv(vbuf[y]);
             }
 
             loc.Lat=Lat0+Delta-y;
             loc.Lon=Lon0+x;
-            Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&GDB_VBuf[y],1);
+            Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&vbuf[y],1);
 
             if (x) {
                glTexCoord2f(tx+dtx,ty);
                if (Proj->Sun) {
                   glNormal3dv(GDB_NMap[(int)loc.Lat+90][(int)loc.Lon+180]);
                }
-               glVertex3dv(GDB_VBuf[y]);
+               glVertex3dv(vbuf[y]);
             }
          }
          glEnd();
@@ -1453,24 +1490,24 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                else
                   glColor3ub(128,128,128);
 
-               glNormal3dv(GDB_VBuf[y]);
+               glNormal3dv(vbuf[y]);
                glVertex3dv(Topo->Vr[dr-dt]);
             }
 
-            GDB_VBuf[y][0]=-(map[dc+1]-map[dc-1]);
-            GDB_VBuf[y][1]=map[dc+width]-map[dc-width];
-            GDB_VBuf[y][2]=ABS(map[dc]);
+            vbuf[y][0]=-(map[dc+1]-map[dc-1]);
+            vbuf[y][1]=map[dc+width]-map[dc-width];
+            vbuf[y][2]=ABS(map[dc]);
 
             if (Proj->Sun && x>1) {
-               GDB_VBuf[y][2]=0.0;
+               vbuf[y][2]=0.0;
 
-               Vect_SMul(GDB_VBuf[y],GDB_VBuf[y],0.001);
-               Vect_Add(GDB_VBuf[y],GDB_VBuf[y],Topo->Vr[dr-dt]);
+               Vect_SMul(vbuf[y],vbuf[y],0.001);
+               Vect_Add(vbuf[y],vbuf[y],Topo->Vr[dr-dt]);
             }
-            if (GDB_VBuf[y][0]==0.0 && GDB_VBuf[y][1]==0.0 && GDB_VBuf[y][2]==0.0) {
-               GDB_VBuf[y][2]=1.0;
+            if (vbuf[y][0]==0.0 && vbuf[y][1]==0.0 && vbuf[y][2]==0.0) {
+               vbuf[y][2]=1.0;
             } else {
-               Vect_Normalize(GDB_VBuf[y]);
+               Vect_Normalize(vbuf[y]);
             }
 
             if (x>1) {
@@ -1481,7 +1518,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                else
                   glColor3ub(128,128,128);
 
-               glNormal3dv(GDB_VBuf[y]);
+               glNormal3dv(vbuf[y]);
                glVertex3dv(Topo->Vr[dr]);
             }
          }

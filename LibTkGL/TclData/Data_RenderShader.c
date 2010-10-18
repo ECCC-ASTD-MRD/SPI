@@ -303,7 +303,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    double i,j,dt;
    int    b,f,len,pi,pj,dz;
    float  step;
-   Vect3d pix;
+   Vect3d pix,*vbuf;
    Coord  coo;
 
    extern Vect3d GDB_VBuf[];
@@ -349,9 +349,11 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glEnable(GL_BLEND);
 
    pi=pj=-1;
-   len=512;
    dz=Field->Spec->Sample*10;
    dt=0.0;
+   len=512;
+
+   vbuf=GDB_VBufferAlloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
@@ -372,8 +374,8 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
 
             /*Get the streamline */
-            b=FFStreamLine(Field->Ref,Field->Def,VP,GDB_VBuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,0);
-            f=FFStreamLine(Field->Ref,Field->Def,VP,&GDB_VBuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,0);
+            b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,0);
+            f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,0);
 
             /* If we have at least some part of it */
             glPushMatrix();
@@ -381,11 +383,11 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-               Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
 
                glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               Proj->Type->Render(Proj,0,&GDB_VBuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
             }
             glPopMatrix();
          }

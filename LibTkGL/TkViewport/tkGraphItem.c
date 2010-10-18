@@ -2304,10 +2304,8 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    double i,j,dt,v0,v1;
    int    b,f,len,dz,c;
    float  step;
-   Vect3d pix;
+   Vect3d pix,*vbuf;
    GLuint s;
-
-   extern Vect3d GDB_VBuf[];
 
    if (!Data || !Data->Spec->Width || !Data->Spec->Outline)
       return;
@@ -2337,9 +2335,11 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    glEnable(GL_TEXTURE_1D);
    glTexCoordPointer(1,GL_FLOAT,0,FFStreamMapSetup1D(0.25));
 
-   len=512;
    dz=Data->Spec->Sample*10;
    dt=0.0;
+   len=512;
+
+   vbuf=GDB_VBufferAlloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=X0;pix[0]<X1;pix[0]+=dz) {
@@ -2356,8 +2356,8 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
 
          /*Get the streamline */
          j=Graph_Expand(Data,j);
-         b=FFStreamLine(Data->Ref,Data->Def,NULL,GDB_VBuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
-         f=FFStreamLine(Data->Ref,Data->Def,NULL,&GDB_VBuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
+         b=FFStreamLine(Data->Ref,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
+         f=FFStreamLine(Data->Ref,Data->Def,NULL,&vbuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
 
          /* If we have at least some part of it */
          if (b+f>10) {
@@ -2367,11 +2367,11 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
 
             /*Place streamlin within graph*/
             for(c=len-b;c<len+f;c++) {
-               GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,GDB_VBuf[c],GDB_VBuf[c]);
+               GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,vbuf[c],vbuf[c]);
             }
             glLineWidth(Data->Spec->Width);
             glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-            glVertexPointer(3,GL_DOUBLE,0,&GDB_VBuf[len-b]);
+            glVertexPointer(3,GL_DOUBLE,0,&vbuf[len-b]);
 
             glDrawArrays(GL_LINE_STRIP,0,b+f);
 
