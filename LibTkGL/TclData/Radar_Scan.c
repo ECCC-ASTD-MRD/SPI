@@ -450,7 +450,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
       Rad->Ref->Pos=(Vect3d**)calloc(Rad->Ref->LevelNb,sizeof(Vect3d*));
 
    if (!Rad->Ref->Pos[Level]) {
-      Rad->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE3D(Rad->Def)*sizeof(Vect3d));
+      Rad->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Rad->Def)*sizeof(Vect3d));
       if (!Rad->Ref->Pos[Level]) {
          fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
          return(NULL);

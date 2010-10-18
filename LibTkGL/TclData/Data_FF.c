@@ -661,14 +661,6 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level) {
    double cube[2][4];
    Vect3d vrlist[12],p0,p1,*vbuf;
 
-#ifdef DEBUG
-   if (Do) {
-      fprintf(stderr,"(DEBUG) FFMarchingCube: Processing volume\n");
-   } else {
-      fprintf(stderr,"(DEBUG) FFMarchingCube: Checking volume dimension\n");
-   }
-#endif
-
    for (k=Def->Limits[2][0];k<Def->Limits[2][1];k++) {
       idxk=FSIZE2D(Def)*k;
       idxk1=idxk+FSIZE2D(Def);
