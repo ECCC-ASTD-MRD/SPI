@@ -185,7 +185,7 @@ SPI::Splash "Sourcing packages"
 #----- Try for threads
 catch { package require Thread }
 
-#----- Source GL and set batch flag
+#----- Source GL and set batch flag early for threading mechanism
 package require OpenGL
 glrender -xbatch $SPI::Param(Batch)
 

@@ -357,13 +357,13 @@ proc Model::ParamsMetPath { } {
 
    frame .metpath.diag -relief raised -bd 1
      button .metpath.diag.select -text [lindex $Lbl(Diag) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set Model::Param(DBaseDiag) $path } }
+        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set Model::Param(DBaseType) user; set Model::Param(DBaseDiag) $path } }
      entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseDiag) -relief sunken -bd 1 -width 40
      pack .metpath.diag.select .metpath.diag.path -side left -fill y
 
    frame .metpath.prog -relief raised -bd 1
      button .metpath.prog.select -text [lindex $Lbl(Prog) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]; if { $path != "" } { set Model::Param(DBaseProg) $path } }
+        -command { set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]; if { $path != "" } { set Model::Param(DBaseType) user; set Model::Param(DBaseProg) $path } }
      entry .metpath.prog.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseProg) -relief sunken -bd 1 -width 40
      pack .metpath.prog.select .metpath.prog.path -side left -fill y
 
@@ -527,7 +527,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    }
 
    #----- Set flag indicating if using 'soumet' command or not.
-   if { ![info exists GDefs(Host_$Param(Host))] && $Param(Host)==$GDefs(Host) && $Param(Arch)=="Linux" } {
+   if { ![info exists GDefs(Host_$Param(Host))] || $Param(Host)==$GDefs(Host) } {
       set Param(IsUsingSoumet) 0
    } else {
       set Param(IsUsingSoumet) 1
@@ -546,7 +546,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    #----- Remember selected host for this model
    set Param(Host$Model) $Param(Host)
 
-   if { $Get && [info proc ::${Model}::GetMetData]!="" } {
+   if { $Get && $Model!="MLCD" && [info proc ::${Model}::GetMetData]!="" } {
       if { ![${Model}::GetMetData] } {
          return False
       }

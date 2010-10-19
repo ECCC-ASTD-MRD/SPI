@@ -131,7 +131,7 @@ proc MLDP::Launch { } {
    } else {
       Log::Print INFO "Launching model on $Model::Param(Host)"
       exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in" >$Sim(Path)/tmp/Model_Launch.sh
-      exec $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
+      exec ssh -n $Model::Param(Host) $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
    }
    return True
 }
