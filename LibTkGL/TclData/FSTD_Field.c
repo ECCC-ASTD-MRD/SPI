@@ -376,7 +376,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
             Vect_Init(Field->Ref->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
          }
       }
-      Proj->Type->Project(Proj,Field->Ref->Pos[Level],NULL,FSIZE3D(Field->Def));
+      Proj->Type->Project(Proj,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
    }
 
    if (gz)

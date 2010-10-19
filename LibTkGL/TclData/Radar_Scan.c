@@ -493,7 +493,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
             }
          }
       }
-      ((Projection*)Proj)->Type->Project(((Projection*)Proj),Rad->Ref->Pos[Level],NULL,FSIZE3D(Rad->Def));
+      ((Projection*)Proj)->Type->Project(((Projection*)Proj),Rad->Ref->Pos[Level],NULL,FSIZE2D(Rad->Def));
    }
    return(Rad->Ref->Pos);
 }

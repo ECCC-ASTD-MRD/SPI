@@ -398,8 +398,10 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
    double        lat=0.0,lon=0.0;
    unsigned int  md,flag,depth,index,m,next=1;
    unsigned char side=0;
-   unsigned long idx,n=0;
+   unsigned long idx,n=0,dz;
    Vect3d        *vbuf;
+
+   dz=Z*FSIZE2D(Def);
 
    while(X>=Def->Limits[0][0] && X<=Def->Limits[0][1]-1 && Y>=Def->Limits[1][0] && Y<=Def->Limits[1][1]-1) {
 
@@ -414,7 +416,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
          PMatrix[idx]|=flag;
 
          /*Get the voxel values*/
-         idx+=Z;       Def_GetMod(Def,idx,pvox[0]);
+         idx+=dz;      Def_GetMod(Def,idx,pvox[0]);
          idx++;        Def_GetMod(Def,idx,pvox[1]);
          idx+=Def->NI; Def_GetMod(Def,idx,pvox[2]);
          idx--;        Def_GetMod(Def,idx,pvox[3]);
@@ -644,8 +646,7 @@ unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,un
  *  <Ref>     : GeoReference
  *  <Def>     : Definitions des donnees
  *  <Proj>    : Parametres de la projection
- *  <Level>   : Valeur de l'isosurface
- *  <Vr>      : Vecteurs resultants
+ *  <Value>   : Valeur de l'isosurface
  *
  * Retour:
  *
@@ -653,7 +654,7 @@ unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,un
  *
  *----------------------------------------------------------------------------
 */
-int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level) {
+int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
 
    int    n,i,j,k;
    int    cubeidx,vridx=0;
@@ -683,14 +684,14 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level) {
 
             /*Find index from side table*/
             cubeidx = 0;
-            if (cube[0][0] < Level) cubeidx |= 1;
-            if (cube[0][1] < Level) cubeidx |= 2;
-            if (cube[0][2] < Level) cubeidx |= 4;
-            if (cube[0][3] < Level) cubeidx |= 8;
-            if (cube[1][0] < Level) cubeidx |= 16;
-            if (cube[1][1] < Level) cubeidx |= 32;
-            if (cube[1][2] < Level) cubeidx |= 64;
-            if (cube[1][3] < Level) cubeidx |= 128;
+            if (cube[0][0] < Value) cubeidx |= 1;
+            if (cube[0][1] < Value) cubeidx |= 2;
+            if (cube[0][2] < Value) cubeidx |= 4;
+            if (cube[0][3] < Value) cubeidx |= 8;
+            if (cube[1][0] < Value) cubeidx |= 16;
+            if (cube[1][1] < Value) cubeidx |= 32;
+            if (cube[1][2] < Value) cubeidx |= 64;
+            if (cube[1][3] < Value) cubeidx |= 128;
 
             /* Cube is entirely in/out of the surface */
             if (EdgeTable[cubeidx] == 0)
@@ -700,62 +701,62 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level) {
             if (EdgeTable[cubeidx] & 1) {
                Vect_Init(p0,i,j,k);
                Vect_Init(p1,i+1,j,k);
-               VertexInterp(vrlist[0],p0,p1,cube[0][0],cube[0][1],Level);
+               VertexInterp(vrlist[0],p0,p1,cube[0][0],cube[0][1],Value);
             }
             if (EdgeTable[cubeidx] & 2) {
                Vect_Init(p0,i+1,j,k);
                Vect_Init(p1,i+1,j+1,k);
-               VertexInterp(vrlist[1],p0,p1,cube[0][1],cube[0][2],Level);
+               VertexInterp(vrlist[1],p0,p1,cube[0][1],cube[0][2],Value);
             }
             if (EdgeTable[cubeidx] & 4) {
                Vect_Init(p0,i+1,j+1,k);
                Vect_Init(p1,i,j+1,k);
-               VertexInterp(vrlist[2],p0,p1,cube[0][2],cube[0][3],Level);
+               VertexInterp(vrlist[2],p0,p1,cube[0][2],cube[0][3],Value);
             }
             if (EdgeTable[cubeidx] & 8) {
                Vect_Init(p0,i,j+1,k);
                Vect_Init(p1,i,j,k);
-               VertexInterp(vrlist[3],p0,p1,cube[0][3],cube[0][0],Level);
+               VertexInterp(vrlist[3],p0,p1,cube[0][3],cube[0][0],Value);
             }
             if (EdgeTable[cubeidx] & 16) {
                Vect_Init(p0,i,j,k+1);
                Vect_Init(p1,i+1,j,k+1);
-               VertexInterp(vrlist[4],p0,p1,cube[1][0],cube[1][1],Level);
+               VertexInterp(vrlist[4],p0,p1,cube[1][0],cube[1][1],Value);
             }
             if (EdgeTable[cubeidx] & 32) {
                Vect_Init(p0,i+1,j,k+1);
                Vect_Init(p1,i+1,j+1,k+1);
-               VertexInterp(vrlist[5],p0,p1,cube[1][1],cube[1][2],Level);
+               VertexInterp(vrlist[5],p0,p1,cube[1][1],cube[1][2],Value);
             }
             if (EdgeTable[cubeidx] & 64) {
                Vect_Init(p0,i+1,j+1,k+1);
                Vect_Init(p1,i,j+1,k+1);
-               VertexInterp(vrlist[6],p0,p1,cube[1][2],cube[1][3],Level);
+               VertexInterp(vrlist[6],p0,p1,cube[1][2],cube[1][3],Value);
             }
             if (EdgeTable[cubeidx] & 128) {
                Vect_Init(p0,i,j+1,k+1);
                Vect_Init(p1,i,j,k+1);
-               VertexInterp(vrlist[7],p0,p1,cube[1][3],cube[1][0],Level);
+               VertexInterp(vrlist[7],p0,p1,cube[1][3],cube[1][0],Value);
             }
             if (EdgeTable[cubeidx] & 256) {
                Vect_Init(p0,i,j,k);
                Vect_Init(p1,i,j,k+1);
-               VertexInterp(vrlist[8],p0,p1,cube[0][0],cube[1][0],Level);
+               VertexInterp(vrlist[8],p0,p1,cube[0][0],cube[1][0],Value);
             }
             if (EdgeTable[cubeidx] & 512) {
                Vect_Init(p0,i+1,j,k);
                Vect_Init(p1,i+1,j,k+1);
-               VertexInterp(vrlist[9],p0,p1,cube[0][1],cube[1][1],Level);
+               VertexInterp(vrlist[9],p0,p1,cube[0][1],cube[1][1],Value);
             }
             if (EdgeTable[cubeidx] & 1024) {
                Vect_Init(p0,i+1,j+1,k);
                Vect_Init(p1,i+1,j+1,k+1);
-               VertexInterp(vrlist[10],p0,p1,cube[0][2],cube[1][2],Level);
+               VertexInterp(vrlist[10],p0,p1,cube[0][2],cube[1][2],Value);
             }
             if (EdgeTable[cubeidx] & 2048) {
                Vect_Init(p0,i,j+1,k);
                Vect_Init(p1,i,j+1,k+1);
-               VertexInterp(vrlist[11],p0,p1,cube[0][3],cube[1][3],Level);
+               VertexInterp(vrlist[11],p0,p1,cube[0][3],cube[1][3],Value);
             }
 
             /* Create the triangle */

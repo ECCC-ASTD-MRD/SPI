@@ -2021,7 +2021,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Field->Ref->STH=sin(DEG2RAD(Field->Ref->Levels[n]));
                   }
                   Field->Def->Level=n;
-                  Data_Clean(Field,0,0,1);
+
+                  /*For contours, we'll have to recalculate them*/
+                  if (Field->Spec->RenderContour)
+                     Data_Clean(Field,0,0,1);
                }
             }
             break;
