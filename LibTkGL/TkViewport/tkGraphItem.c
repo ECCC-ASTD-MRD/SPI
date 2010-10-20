@@ -2199,14 +2199,29 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
 void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut){
 
    int    d[2];
-   double y,v[2];
+   double y,v[2],h[2];
 
    d[0]=floor(VIn[0]);
    d[1]=floor(VIn[1]);
-   v[0]=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]]:Data->Ref->Levels[d[1]]):d[1];
-//   v[0]=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[d]:d;
-   v[1]=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+d[0]]:Data->Ref->Levels[d[1]+1]):d[1]+1;
-//   v[1]=Data->Ref->Grid[0]=='V'?Data->Ref->Levels[d+1]:d+1;
+
+   if (Data->Ref->Grid[0]=='V') {
+      if (Data->Spec->ZType && Data->Ref->Hgt) {
+         h[0]=Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]];
+         h[1]=Data->Ref->Hgt[d[1]*Data->Def->NI+(d[0]+1)];
+         v[0]=ILIN(h[0],h[1],VIn[0]-d[0]);
+
+         h[0]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+d[0]];
+         h[1]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+(d[0]+1)];
+         v[1]=ILIN(h[0],h[1],VIn[0]-d[0]);
+      } else {
+         v[0]=Data->Ref->Levels[d[1]];
+         v[1]=Data->Ref->Levels[d[1]+1];
+      }
+   } else {
+      v[0]=d[1];
+      v[1]=d[1]+1;
+   }
+
    y=ILIN(v[0],v[1],VIn[1]-d[1]);
 
    VOut[0]=X0+AXISVALUE(AxisX,VIn[0]);
