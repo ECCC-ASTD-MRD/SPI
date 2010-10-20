@@ -446,7 +446,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
          }
       }
 
-      /*Find the sub-voxel in a quad tree way to the needed splitting resoution*/
+      /*Find the sub-voxel in a quad tree way to the needed splitting resolution*/
       depth=Depth;
       md=1;d=1.0;x=X;y=Y;
       vox[0]=pvox[0];vox[1]=pvox[1];vox[2]=pvox[2];vox[3]=pvox[3];

@@ -98,6 +98,7 @@ int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *In
 
       i=i0;j=j0;
       ci=1;cj=0;
+      side=0xF^FF_BOTTOM;
 
       /*As long as we did not check all gridpoint (Worse case)*/
       while(1) {
