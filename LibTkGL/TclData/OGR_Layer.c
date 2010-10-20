@@ -2547,7 +2547,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                } else {
                   glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
                }
-               Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
                if (spec->Width<0) {
                   glPopAttrib();
                }
@@ -2569,7 +2569,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             } else {
                glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
             }
-            Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+            Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
 
             glDisable(GL_LIGHTING);
             glDisable(GL_LIGHT0);
@@ -2591,7 +2591,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                } else {
                   glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
                }
-               Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
                if (spec->Width<0) {
                   glPopAttrib();
                }
@@ -2616,7 +2616,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                glLineWidth(0.0);
                glPointSize(0.0);
                glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
-               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
             }
 
             if (spec->HighLine && spec->Width) {
@@ -2629,7 +2629,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                glLineWidth(ABS(spec->Width));
                glPointSize(ABS(spec->Width));
                glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
-               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,Layer->Vr[0],Layer->Vr[1]);
+               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
                if (spec->Width<0) {
                   glPopAttrib();
                }

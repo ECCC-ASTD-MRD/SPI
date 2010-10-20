@@ -37,15 +37,13 @@
 #include "GeoData.h"
 
 /*Prototypes*/
-
 int  Azimuth_Init(Tcl_Interp *Interp);
 void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Azimuth_Locate(Projection *Proj,double Lat,double Lon,int Undo);
-void Azimuth_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
+void Azimuth_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
 
 /*Fonctions de transformations*/
-
 unsigned long AzimuthDist_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           AzimuthDist_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 unsigned long AzimuthArea_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
@@ -319,32 +317,20 @@ int AzimuthArea_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *----------------------------------------------------------------------------
 */
 
-void Azimuth_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1) {
-
-   int stride=0;
-
-   if (Nb<0) {
-      if (Nb<-2) {
-         stride=-Nb-1;
-         Nb=2;
-      } else {
-         stride=0;
-         Nb=-Nb;
-      }
-   }
+void Azimuth_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1) {
 
    if (Data) {
-      glVertexPointer(3,GL_DOUBLE,stride*sizeof(double)*3,Data);
+      glVertexPointer(3,GL_DOUBLE,Stride*sizeof(double)*3,Data);
 
       /*Activer les couleurs par "vertex"*/
       if (Col) {
          glEnableClientState(GL_COLOR_ARRAY);
-         glColorPointer(4,GL_UNSIGNED_BYTE,stride*4,Col);
+         glColorPointer(4,GL_UNSIGNED_BYTE,Stride*4,Col);
       }
 
       if (Tex) {
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(1,GL_FLOAT,stride,Tex);
+         glTexCoordPointer(1,GL_FLOAT,Stride,Tex);
       }
 
       if (Idx) {

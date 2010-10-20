@@ -596,7 +596,7 @@ void GDB_TileClear(Projection *Proj,GDB_Tile *Tile,XColor *Color,GLuint MaskIn) 
       glDisable(GL_STENCIL_TEST);
    }
 
-   Proj->Type->Render(Proj,0,Tile->Box.Vr,NULL,NULL,NULL,GL_QUADS,4,Tile->Box.Vr[0],Tile->Box.Vr[2]);
+   Proj->Type->Render(Proj,0,Tile->Box.Vr,NULL,NULL,NULL,GL_QUADS,4,0,Tile->Box.Vr[0],Tile->Box.Vr[2]);
 }
 
 /*----------------------------------------------------------------------------
@@ -1234,7 +1234,7 @@ void GDB_GeoRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,int Width,XC
 
          state=GDB_Loc(Geo->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height);
          if ((state==GDB_LOW && !Low) || state==GDB_VIS || Proj->Type->Def==PROJCYLIN) {
-            Proj->Type->Render(Proj,0,Geo->Loc,NULL,NULL,NULL,GL_LINE_STRIP,Geo->Box.Nb,Geo->Box.Vr[0],Geo->Box.Vr[2]);
+            Proj->Type->Render(Proj,0,Geo->Loc,NULL,NULL,NULL,GL_LINE_STRIP,Geo->Box.Nb,0,Geo->Box.Vr[0],Geo->Box.Vr[2]);
          }
 
          if (Interp)
@@ -1320,7 +1320,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
                   GDB_GeoTess(Interp,Geo);
                   n++;
                }
-               Proj->Type->Render(Proj,Geo->List,NULL,NULL,NULL,NULL,0,0,Geo->Box.Vr[0],Geo->Box.Vr[2]);
+               Proj->Type->Render(Proj,Geo->List,NULL,NULL,NULL,NULL,0,0,0,Geo->Box.Vr[0],Geo->Box.Vr[2]);
             }
          }
          Geo=Geo->Next;

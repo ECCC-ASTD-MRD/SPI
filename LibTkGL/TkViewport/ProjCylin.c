@@ -37,19 +37,17 @@
 #include "GeoData.h"
 
 /*Prototypes*/
-
 int  Cylin_Init(Tcl_Interp *Interp);
 void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo);
-void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
+void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
 void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode);
 void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 
 /*Fonctions de transformations*/
-
 unsigned long Cylin_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           Cylin_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 Tcl_Obj*      Cylin_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
@@ -372,22 +370,17 @@ void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode) {
    glVertex3dv(in1);
 }
 
-void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mode,int Nb) {
+void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mode,int Nb,int Stride) {
 
-   int    i,stride;
+   int    i,n;
    Vect3d p0;
 
-   if (Nb<0) {
-      stride=-Nb-1;
-      Nb=-Nb;
-   } else {
-      stride=1;
-   }
-
    Vect_Assign(p0,Data[0]);
+   Stride=Stride==0?1:Stride;
+   n=Nb*Stride;
 
    if (Mode==GL_LINES) {
-      for(i=0;i<Nb;i+=stride) {
+      for(i=0;i<n;i+=Stride) {
          glBegin(Mode);
             if (Col) glColor4ubv(&Col[i*4]);
             if (Tex) glTexCoord1f(Tex[i]);
@@ -398,7 +391,7 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
        }
    } else if (Mode==GL_POINTS) {
       glBegin(Mode);
-         for(i=0;i<Nb;i+=stride) {
+         for(i=0;i<n;i+=Stride) {
              if (Col) glColor4ubv(&Col[i*4]);
              if (Tex) glTexCoord1f(Tex[i]);
              Cylin_Vertex(Data[i],p0,Proj->L,Mode);
@@ -407,13 +400,11 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
    } else {
       glBegin(Mode);
          Cylin_Vertex(Data[0],p0,Proj->L,Mode);
-         for(i=stride;i<Nb;i+=stride) {
+         for(i=Stride;i<n;i+=Stride) {
             if (Col) glColor4ubv(&Col[i*4]);
             if (Tex) glTexCoord1f(Tex[i]);
-            Cylin_Vertex(Data[i],Data[i-stride],Proj->L,Mode);
+            Cylin_Vertex(Data[i],Data[i-Stride],Proj->L,Mode);
          }
-         if (stride>1)
-            Cylin_Vertex(Data[Nb-1],Data[Nb-1-stride],Proj->L,Mode);
       glEnd();
    }
 }
@@ -440,37 +431,26 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
  *----------------------------------------------------------------------------
 */
 
-void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1) {
+void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1) {
 
-   int    stride=0;
    short  f0=0,f1=0;
 
    if (!V0 && Data) {
-      Cylin_RenderArray(Proj,Data,Col,Tex,Mode,Nb);
+      Cylin_RenderArray(Proj,Data,Col,Tex,Mode,Nb,Stride);
       return;
    }
 
-   if (Nb<0) {
-      if (Nb<-2) {
-         stride=-Nb-1;
-         Nb=2;
-      } else {
-         stride=0;
-         Nb=-Nb;
-      }
-   }
-
    if (Data) {
-      glVertexPointer(3,GL_DOUBLE,stride*sizeof(double)*3,Data);
+      glVertexPointer(3,GL_DOUBLE,Stride*sizeof(double)*3,Data);
 
       /*Activer les couleurs par "vertex"*/
       if (Col) {
          glEnableClientState(GL_COLOR_ARRAY);
-         glColorPointer(4,GL_UNSIGNED_BYTE,stride*4,Col);
+         glColorPointer(4,GL_UNSIGNED_BYTE,Stride*4,Col);
       }
       if (Tex) {
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(1,GL_FLOAT,stride,Tex);
+         glTexCoordPointer(1,GL_FLOAT,Stride,Tex);
       }
    }
 

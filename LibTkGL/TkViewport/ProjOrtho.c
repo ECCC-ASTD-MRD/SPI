@@ -38,17 +38,15 @@
 #include <math.h>
 
 /*Prototypes*/
-
 int    Ortho_Init(Tcl_Interp *Interp);
 void   Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void   Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void   Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int    Ortho_Locate(Projection *Proj,double Lat,double Lon,int Undo);
-void   Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
+void   Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
 double CircleIntersect(Coord Pt0,Coord Pt1,int R,Vect3d Mid,Projection *Proj,ViewportItem *VP);
 
 /*Fonctions de transformations*/
-
 unsigned long Ortho_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           Ortho_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 Tcl_Obj*      Ortho_ProjectPoint(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,Coord Pt1,int Any);
@@ -470,32 +468,20 @@ int Ortho_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  *----------------------------------------------------------------------------
 */
-void Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1) {
-
-   int stride=0;
-
-   if (Nb<0) {
-      if (Nb<-2) {
-         stride=-Nb-1;
-         Nb=2;
-      } else {
-         stride=0;
-         Nb=-Nb;
-      }
-   }
+void Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1) {
 
    if (Data) {
-      glVertexPointer(3,GL_DOUBLE,stride*sizeof(double)*3,Data);
+      glVertexPointer(3,GL_DOUBLE,Stride*sizeof(double)*3,Data);
 
       /*Activer les couleurs par "vertex"*/
       if (Col) {
          glEnableClientState(GL_COLOR_ARRAY);
-         glColorPointer(4,GL_UNSIGNED_BYTE,stride*4,Col);
+         glColorPointer(4,GL_UNSIGNED_BYTE,Stride*4,Col);
       }
 
       if (Tex) {
          glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-         glTexCoordPointer(1,GL_FLOAT,stride,Tex);
+         glTexCoordPointer(1,GL_FLOAT,Stride,Tex);
       }
 
       if (Idx) {

@@ -37,18 +37,16 @@
 #include "GeoData.h"
 
 /*Prototypes*/
-
 int  Grid_Init(Tcl_Interp *Interp);
 void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo);
-void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
+void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
 void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode);
 void Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
 
 /*Fonctions de transformations*/
-
 unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
 int           Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 int           Grid_ProjectPath(Tcl_Interp *Interp,Projection *Proj,Coord Pt1,Coord Pt2,double Dist);
@@ -392,42 +390,35 @@ void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
  *
  *----------------------------------------------------------------------------
 */
-void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1) {
+void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1) {
 
    Vect3d prev;
-   int    i,stride;
-
-   if (Nb<0) {
-      stride=-Nb-2;
-      Nb=-Nb;
-   } else {
-      stride=0;
-   }
+   int    i,n;
 
    if (Data) {
       if (Mode==GL_LINE_STRIP) {
          Vect_Init(prev,0.0,0.0,0.0);
-         stride++;
+         Stride=Stride==0?1:Stride;
+         n=Nb*Stride;
          glBegin(Mode);
-            for(i=0;i<Nb;i+=stride) {
+            for(i=0;i<n;i+=Stride) {
                if (Tex) glTexCoord1f(Tex[i]);
                Grid_Vertex(Data[i],prev,Proj->LI,Mode);
             }
          glEnd();
       } else {
          /*Traiter les tableau en Array , c'est plus efficace*/
-         glVertexPointer(3,GL_DOUBLE,stride*sizeof(float)*3,Data);
-         glNormalPointer(GL_DOUBLE,stride*sizeof(float)*3,Data);
+         glVertexPointer(3,GL_DOUBLE,Stride*sizeof(float)*3,Data);
 
          /*Activer les couleurs par "vertex"*/
          if (Col) {
             glEnableClientState(GL_COLOR_ARRAY);
-            glColorPointer(4,GL_UNSIGNED_BYTE,stride*4,Col);
+            glColorPointer(4,GL_UNSIGNED_BYTE,Stride*4,Col);
          }
 
          if (Tex) {
             glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            glTexCoordPointer(1,GL_FLOAT,stride,Tex);
+            glTexCoordPointer(1,GL_FLOAT,Stride,Tex);
          }
 
          if (Idx) {

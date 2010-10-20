@@ -482,7 +482,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
             }
          }
 
-         Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,GL_LINE_STRIP,array->Size,NULL,NULL);
+         Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,GL_LINE_STRIP,array->Size,0,NULL,NULL);
 
          if (Interp)
             glFeedbackProcess(Interp,GL_2D);
@@ -722,7 +722,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    glPointSize(Field->Spec->RenderGrid+0.1);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
-   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),NULL,NULL);
+   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),0,NULL,NULL);
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
@@ -730,7 +730,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    if (Field->Ref->Grid[0]=='M') {
       glPolygonMode(GL_FRONT,GL_LINE);
       glLineWidth(1.0);
-      Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,NULL,NULL);
+      Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
    }
    glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -822,7 +822,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Projeter les particules*/
    glPointSize(Field->Spec->RenderParticle+0.1);
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,NULL,NULL);
+   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,0,NULL,NULL);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_TEXTURE_1D);
    glDisable(GL_BLEND);
@@ -916,11 +916,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
 
                glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
             }
             glPopMatrix();
          }
@@ -1012,7 +1012,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
                glTranslatef(-Field->Spec->TexStep,0.0,0.0);
             }
-            Proj->Type->Render(Proj,0,&vbuf[len>>1-b],NULL,NULL,map,GL_LINE_STRIP,b+f,NULL,NULL);
+            Proj->Type->Render(Proj,0,&vbuf[len>>1-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
             glPopMatrix();
          }
       }
@@ -1040,7 +1040,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                         glTranslatef(-Field->Spec->TexStep,0.0,0.0);
                      }
                   }
-                  Proj->Type->Render(Proj,0,vbuf,NULL,NULL,map,GL_LINE_STRIP,f,NULL,NULL);
+                  Proj->Type->Render(Proj,0,vbuf,NULL,NULL,map,GL_LINE_STRIP,f,0,NULL,NULL);
                   glPopMatrix();
                }
             }
@@ -1188,7 +1188,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glLineWidth(1.0);
    if (Field->Spec->InterpDegree[0]=='L') {
       glEnableClientState(GL_VERTEX_ARRAY);
-      Proj->Type->Render(Proj,0,pos,Field->Ref->Idx,NULL,Field->Map,GL_TRIANGLES,Field->Ref->NIdx,NULL,NULL);
+      Proj->Type->Render(Proj,0,pos,Field->Ref->Idx,NULL,Field->Map,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
       glDisableClientState(GL_VERTEX_ARRAY);
    } else {
       glBegin(GL_TRIANGLES);

@@ -383,11 +383,11 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,Field->Map,GL_LINE_STRIP,b+f,0,NULL,NULL);
 
                glLineWidth(8*Field->Spec->Width);
                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,NULL,NULL);
+               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
             }
             glPopMatrix();
          }

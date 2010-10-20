@@ -78,7 +78,7 @@ typedef struct Projection {
 } Projection;
 
 typedef int           (Projection_CallLocate)       (Projection *Proj,double Lat,double Lon,int Undo);
-typedef void          (Projection_CallRender)       (Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,Vect3d V0,Vect3d V1);
+typedef void          (Projection_CallRender)       (Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
 typedef void          (Projection_CallDraw)         (Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 typedef int           (Projection_CallUnProject)    (ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix);
 typedef unsigned long (Projection_CallProject)      (const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);

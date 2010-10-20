@@ -992,33 +992,25 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
       glColor3us(0x00,0x00,0x00);
 
+      for(i=0,n=0;i<Traj->NPr;i++) {
+         if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
+            co.Lat=Traj->Pr[i].Co.Lat;
+            co.Lon=Traj->Pr[i].Co.Lon;
+            co.Elev=0.0;
+            Proj->Type->Project(Proj,&Traj->Pr[i].Co,&vbuf[n*2],1);
+            Proj->Type->Project(Proj,&co,&vbuf[n*2+1],1);
+            n++;
+         }
+      }
+
       /*Shadow (Ground zero)*/
       if (spec->Width>0 && (spec->Style==3 || spec->Style==4)) {
-         for(i=0,n=0;i<Traj->NPr;i++) {
-            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               co.Lat=Traj->Pr[i].Co.Lat;
-               co.Lon=Traj->Pr[i].Co.Lon;
-               co.Elev=0.0;
-               Proj->Type->Project(Proj,&co,&vbuf[n],1);
-               n++;
-            }
-         }
-         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
+         Proj->Type->Render(Proj,0,&vbuf[1],NULL,NULL,NULL,GL_LINE_STRIP,n,2,NULL,NULL);
       }
 
       /*Height markers*/
       if (spec->Width>0 && (spec->Style==2 || spec->Style==4)) {
-         for(i=0,n=0;i<Traj->NPr;i++) {
-            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               co.Lat=Traj->Pr[i].Co.Lat;
-               co.Lon=Traj->Pr[i].Co.Lon;
-               co.Elev=0.0;
-               Proj->Type->Project(Proj,&Traj->Pr[i].Co,&vbuf[n*2],1);
-               Proj->Type->Project(Proj,&co,&vbuf[n*2+1],1);
-               n++;
-            }
-         }
-         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_LINES,n*2,NULL,NULL);
+         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_LINES,n*2,0,NULL,NULL);
       }
 
       if (spec->Outline) {
@@ -1029,18 +1021,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
       if (spec->Style==5) {
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          glDisable(GL_CULL_FACE);
-
-         for(i=0,n=0;i<Traj->NPr;i++) {
-            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               co.Lat=Traj->Pr[i].Co.Lat;
-               co.Lon=Traj->Pr[i].Co.Lon;
-               co.Elev=0.0;
-               Proj->Type->Project(Proj,&Traj->Pr[i].Co,&vbuf[n*2],1);
-               Proj->Type->Project(Proj,&co,&vbuf[n*2+1],1);
-               n++;
-            }
-         }
-         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_QUAD_STRIP,n*2,NULL,NULL);
+         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_QUAD_STRIP,n*2,0,NULL,NULL);
          glEnable(GL_CULL_FACE);
       }
 
@@ -1048,13 +1029,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
       /*Single Trajectory*/
       if (spec->Width>0 && spec->Style!=0 && spec->Style!=5) {
-         for(i=0,n=0;i<Traj->NPr;i++) {
-            if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
-               Proj->Type->Project(Proj,&Traj->Pr[i].Co,&vbuf[n],1);
-               n++;
-            }
-         }
-         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_LINE_STRIP,n,NULL,NULL);
+         Proj->Type->Render(Proj,0,vbuf,NULL,NULL,NULL,GL_LINE_STRIP,n,2,NULL,NULL);
       }
 
       if (Interp)
