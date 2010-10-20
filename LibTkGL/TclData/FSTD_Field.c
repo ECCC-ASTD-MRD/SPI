@@ -1120,7 +1120,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
                n=0;
                while(FieldTo->Def->Data[n]) {
                   if (ok) {
-                     val=VertexValN(FieldFrom->Ref,FieldFrom->Def,n,di,dj,k);
+                     val=VertexVal(FieldFrom->Ref,FieldFrom->Def,n,di,dj,k);
                   } else {
                      val=FieldTo->Def->NoData;
                   }

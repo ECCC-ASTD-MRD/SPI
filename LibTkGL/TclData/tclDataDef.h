@@ -125,6 +125,63 @@ switch(Def->Type) {\
    }\
 }
 
+#define Def_GetQuadMod(Def,Idx,Val) {\
+switch(Def->Type) {\
+   case TD_Unknown:Val[0]=Val[1]=Val[2]=Val[3]=0.0;break;\
+   case TD_Binary: Val[0]=Val[1]=Val[2]=Val[3]=0.0;break;\
+   case TD_UByte:  Val[0]=((unsigned char*)Def->Mode)[Idx[0]];\
+                   Val[1]=((unsigned char*)Def->Mode)[Idx[1]];\
+                   Val[2]=((unsigned char*)Def->Mode)[Idx[2]];\
+                   Val[3]=((unsigned char*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_Byte:   Val[0]=((char*)Def->Mode)[Idx[0]];\
+                   Val[1]=((char*)Def->Mode)[Idx[1]];\
+                   Val[2]=((char*)Def->Mode)[Idx[2]];\
+                   Val[3]=((char*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_UInt16: Val[0]=((unsigned short*)Def->Mode)[Idx[0]];\
+                   Val[1]=((unsigned short*)Def->Mode)[Idx[1]];\
+                   Val[2]=((unsigned short*)Def->Mode)[Idx[2]];\
+                   Val[3]=((unsigned short*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_Int16:  Val[0]=((short*)Def->Mode)[Idx[0]];\
+                   Val[1]=((short*)Def->Mode)[Idx[1]];\
+                   Val[2]=((short*)Def->Mode)[Idx[2]];\
+                   Val[3]=((short*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_UInt32: Val[0]=((unsigned int*)Def->Mode)[Idx[0]];\
+                   Val[1]=((unsigned int*)Def->Mode)[Idx[1]];\
+                   Val[2]=((unsigned int*)Def->Mode)[Idx[2]];\
+                   Val[3]=((unsigned int*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_Int32:  Val[0]=((int*)Def->Mode)[Idx[0]];\
+                   Val[1]=((int*)Def->Mode)[Idx[1]];\
+                   Val[2]=((int*)Def->Mode)[Idx[2]];\
+                   Val[3]=((int*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_UInt64: Val[0]=((unsigned long long*)Def->Mode)[Idx[0]];\
+                   Val[1]=((unsigned long long*)Def->Mode)[Idx[1]];\
+                   Val[2]=((unsigned long long*)Def->Mode)[Idx[2]];\
+                   Val[3]=((unsigned long long*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_Int64:  Val[0]=((long long*)Def->Mode)[Idx[0]];\
+                   Val[1]=((long long*)Def->Mode)[Idx[1]];\
+                   Val[2]=((long long*)Def->Mode)[Idx[2]];\
+                   Val[3]=((long long*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_Float32:Val[0]=((float*)Def->Mode)[Idx[0]];\
+                   Val[1]=((float*)Def->Mode)[Idx[1]];\
+                   Val[2]=((float*)Def->Mode)[Idx[2]];\
+                   Val[3]=((float*)Def->Mode)[Idx[3]];\
+                   break;\
+   case TD_Float64:Val[0]=((double*)Def->Mode)[Idx[0]];\
+                   Val[1]=((double*)Def->Mode)[Idx[1]];\
+                   Val[2]=((double*)Def->Mode)[Idx[2]];\
+                   Val[3]=((double*)Def->Mode)[Idx[3]];\
+                   break;\
+   }\
+}
+
 #define Def_Get(Def,Comp,Idx,Val) {\
 switch(Def->Type) {\
    case TD_Unknown:Val=0.0;break;\

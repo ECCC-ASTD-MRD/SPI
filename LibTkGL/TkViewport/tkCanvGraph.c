@@ -706,7 +706,7 @@ Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y
 
       if (Item->Data) {
          if ((data=Data_Get(Item->Data))) {
-            spd=VertexVal(data->Ref,data->Def,X,Y,0.0);
+            spd=VertexVal(data->Ref,data->Def,-1,X,Y,0.0);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
          }
       }
@@ -790,7 +790,7 @@ Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double
       if (Item->Data) {
          if ((data=Data_Get(Item->Data))) {
             y=Graph_Expand(data,y);
-            spd=VertexVal(data->Ref,data->Def,x,y,0.0);
+            spd=VertexVal(data->Ref,data->Def,-1,x,y,0.0);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
          }
       }

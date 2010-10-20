@@ -572,8 +572,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
                /*If it is vectors, reproject along xsection axis*/
                if (cut->Def->Data[1]) {
-                  vi=VertexValN(Field[f]->Ref,Field[f]->Def,0,i,j,k);
-                  vj=VertexValN(Field[f]->Ref,Field[f]->Def,1,i,j,k);
+                  vi=VertexVal(Field[f]->Ref,Field[f]->Def,0,i,j,k);
+                  vj=VertexVal(Field[f]->Ref,Field[f]->Def,1,i,j,k);
                   vij=hypot(vi,vj);
                   zeta=atan2(vj,vi)-theta;
 
@@ -581,7 +581,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   Def_Set(cut->Def,1,idx,vij*sin(zeta));
 
                   if (cut->Def->Data[2]) {
-                     vi=VertexValN(Field[f]->Ref,Field[f]->Def,2,i,j,k);
+                     vi=VertexVal(Field[f]->Ref,Field[f]->Def,2,i,j,k);
                      Def_Set(cut->Def,2,idx,vi);
                   }
 #ifdef DEBUG
@@ -589,7 +589,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
 #endif
                } else {
-                  vij=VertexVal(Field[f]->Ref,Field[f]->Def,i,j,k);
+                  vij=VertexVal(Field[f]->Ref,Field[f]->Def,-1,i,j,k);
                   Def_Set(cut->Def,0,idx,vij);
                }
             }

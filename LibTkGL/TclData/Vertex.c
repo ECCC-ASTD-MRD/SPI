@@ -83,9 +83,9 @@ void VertexGradient(TGeoRef *Ref,TDataDef *Def,Vect3d Nr) {
    Vect3d v;
 
    Vect_Assign(v,Nr);
-   Nr[0]=VertexVal(Ref,Def,v[0]-0.5,v[1],v[2])-VertexVal(Ref,Def,v[0]+0.5,v[1],v[2]);
-   Nr[1]=VertexVal(Ref,Def,v[0],v[1]-0.5,v[2])-VertexVal(Ref,Def,v[0],v[1]+0.5,v[2]);
-   Nr[2]=VertexVal(Ref,Def,v[0],v[1],v[2]-0.5)-VertexVal(Ref,Def,v[0],v[1],v[2]+0.5);
+   Nr[0]=VertexVal(Ref,Def,-1,v[0]-0.5,v[1],v[2])-VertexVal(Ref,Def,-1,v[0]+0.5,v[1],v[2]);
+   Nr[1]=VertexVal(Ref,Def,-1,v[0],v[1]-0.5,v[2])-VertexVal(Ref,Def,-1,v[0],v[1]+0.5,v[2]);
+   Nr[2]=VertexVal(Ref,Def,-1,v[0],v[1],v[2]-0.5)-VertexVal(Ref,Def,-1,v[0],v[1],v[2]+0.5);
 
 //   Vect_Mul(Nr,Nr,v);
 }
@@ -322,8 +322,8 @@ void VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int
 */
 int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
 
-   Vect3d v00,v01,v10,v11,vt0,vt1,**pos;
-   int    i,j,k,k1,idxj,idxj1;
+   Vect3d v00,v01,v10,v11,v0,v1,**pos;
+   int    i,j,k,k1;
    int    idx0,idx1,idx2,idx3;
 
    if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
@@ -335,50 +335,42 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    j=floor(Y);Y-=j;
    k=floor(Z);Z-=k;
 
-   idxj=Def->NI*j;
-
-   /*Get gridpoint indexes and check for close match*/
-   if (Y<TINY_VALUE) {
-      idxj1=idxj;
-   } else {
-      idxj1=Def->NI*(j+1);
-   }
-
-   idx0=idxj+i;
-   idx3=idxj1+i;
-
-   if (X<TINY_VALUE) {
-      idx1=idx0;
-      idx2=idx3;
-   } else {
-      idx1=idx0+1;
-      idx2=idx3+1;
-   }
+   /*Get gridpoint indexes*/
+   idx0=j*Def->NI+i;
+   idx1=idx0+1;
+   idx3=idx0+Def->NI;
+   idx2=idx3+1;
 
    /*3D Interpolation case*/
-   if (Z>=TINY_VALUE) {
+   if (Z>TINY_VALUE) {
 
       k1=k+1;
 
-      /*Interpolate over X*/
-      Vect_InterpC(v00,pos[k][idx0],pos[k][idx1],X);
-      Vect_InterpC(v01,pos[k][idx3],pos[k][idx2],X);
-      Vect_InterpC(v10,pos[k1][idx0],pos[k1][idx1],X);
-      Vect_InterpC(v11,pos[k1][idx3],pos[k1][idx2],X);
-
-      /*Interpolate over Y*/
-      Vect_InterpC(vt0,v00,v01,Y);
-      Vect_InterpC(vt1,v10,v11,Y);
-
-      /*Interpolate over Z*/
-      Vect_InterpC(Vr,vt0,vt1,Z);
+      Vect_InterpC(v00,pos[k][idx0],pos[k1][idx0],Z);
+      Vect_InterpC(v10,pos[k][idx1],pos[k1][idx1],Z);
+      Vect_InterpC(v11,pos[k][idx2],pos[k1][idx2],Z);
+      Vect_InterpC(v01,pos[k][idx3],pos[k1][idx3],Z);
    } else {
-      /*Interpolate over X*/
-      Vect_InterpC(v00,pos[k][idx0],pos[k][idx1],X);
-      Vect_InterpC(v01,pos[k][idx3],pos[k][idx2],X);
+      Vect_Assign(v00,pos[k][idx0]);
+      Vect_Assign(v10,pos[k][idx1]);
+      Vect_Assign(v01,pos[k][idx3]);
+      Vect_Assign(v11,pos[k][idx2]);
+   }
 
-      /*Interpolate over Y*/
-      Vect_InterpC(Vr,v00,v01,Y);
+   /*Interpolate over X*/
+   if (X>TINY_VALUE) {
+      Vect_InterpC(v0,v00,v10,X);
+      Vect_InterpC(v1,v01,v11,X);
+   }  else {
+      Vect_Assign(v0,v00);
+      Vect_Assign(v1,v01);
+   }
+
+   /*Interpolate over Y*/
+   if (Y>TINY_VALUE) {
+      Vect_InterpC(Vr,v0,v1,Y);
+   } else {
+      Vect_Assign(Vr,v0);
    }
    return(1);
 }
@@ -393,6 +385,7 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
  * Parametres :
  *   <Ref>    : Georeference
  *   <Def>    : Definition des donnees
+ *   <Idx>    : Composantes (-1=mode)
  *   <X>      : Position en X
  *   <Y>      : Position en Y
  *   <Z>      : Position en Z (z<0, Interpolation 2D seulement)
@@ -403,185 +396,64 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
  *
  *----------------------------------------------------------------------------
 */
-float VertexVal(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z) {
+float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
 
-   int    i,j,k,idxi,idxj,idxj1,idxk=0,idxk1;
-   double val0,val1,val2,val3,cube[2][4];
-   int    idx0,idx1,idx2,idx3;
-
-   if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
-      return(0.0f);
-   }
-
-   i=floor(X);X-=i;
-   j=floor(Y);Y-=j;
-
-   idxj=Def->NI*j;
-
-   /*Get gridpoint indexes and check for close match*/
-   if (Y<TINY_VALUE) {
-      idxj1=idxj;
-   } else {
-      idxj1=Def->NI*(j+1);
-   }
-
-   idx0=idxj+i;
-   idx3=idxj1+i;
-
-   if (X<TINY_VALUE) {
-      idx1=idx0;
-      idx2=idx3;
-   } else {
-      idx1=idx0+1;
-      idx2=idx3+1;
-   }
-
-   /*3D Interpolation case*/
-   if (Z>0) {
-      k=floor(Z);Z-=k;
-
-      idxk=FSIZE2D(Def)*k;
-      if (Z<TINY_VALUE) {
-         idxk1=idxk;
-      } else {
-         idxk1=FSIZE2D(Def)*(k+1);
-      }
-
-      idxi=idx0+idxk1;  Def_GetMod(Def,idxi,cube[1][0]);
-      idxi=idx1+idxk1;  Def_GetMod(Def,idxi,cube[1][1]);
-      idxi=idx3+idxk1;  Def_GetMod(Def,idxi,cube[1][3]);
-      idxi=idx2+idxk1;  Def_GetMod(Def,idxi,cube[1][2]);
-   }
-
-   idxi=idx0+idxk;  Def_GetMod(Def,idxi,cube[0][0]);
-   idxi=idx1+idxk;  Def_GetMod(Def,idxi,cube[0][1]);
-   idxi=idx3+idxk;  Def_GetMod(Def,idxi,cube[0][3]);
-   idxi=idx2+idxk;  Def_GetMod(Def,idxi,cube[0][2]);
-
-   /*3D Interpolation case*/
-   if (Z>0) {
-      /*Interpolate over X*/
-      val0=ILIN(cube[0][0],cube[0][1],X);
-      val1=ILIN(cube[1][0],cube[1][1],X);
-      val2=ILIN(cube[0][3],cube[0][2],X);
-      val3=ILIN(cube[1][3],cube[1][2],X);
-
-      /*Interpolate over Y*/
-      val0=ILIN(val0,val2,Y);
-      val1=ILIN(val1,val3,Y);
-
-      /*Interpolate over Z*/
-      return(ILIN(val0,val1,Z));
-   } else {
-      /*Interpolate over X*/
-      val0=ILIN(cube[0][0],cube[0][1],X);
-      val2=ILIN(cube[0][3],cube[0][2],X);
-
-      /*Interpolate over Y*/
-      return(ILIN(val0,val2,Y));
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <VertexValN>
- * Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Interpoler lineairement la valeur d'un point
- *            a l'interieur d'un voxel pour une seule composante
- *
- * Parametres :
- *   <Ref>    : Georeference
- *   <Def>    : Definition des donnees
- *   <X>      : Position en X
- *   <Y>      : Position en Y
- *   <Z>      : Position en Z (z<0, Interpolation 2D seulement)
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-float VertexValN(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
-
-   int   i,j,k,idxi[4],idxj,idxj1,idxk=0,idxk1;
-   float val0,val1,val2,val3,cube[2][4];
-   int   idx0,idx1,idx2,idx3;
+   Vect3d **pos;
+   double   cube[2][4];
+   int      i,j,k,idx[4],idxk;
 
    if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
-      return(0.0f);
+      return(0);
    }
 
+   pos=Ref->Pos;
    i=floor(X);X-=i;
    j=floor(Y);Y-=j;
+   k=floor(Z);Z-=k;
 
-   idxj=Def->NI*j;
+   /*Get gridpoint indexes*/
+   idxk=FSIZE2D(Def)*k;
 
-   /*Get gridpoint indexes and check for close match*/
-   if (Y<TINY_VALUE) {
-      idxj1=idxj;
+   idx[0]=idxk+j*Def->NI+i;
+   idx[1]=idx[0]+1;
+   idx[3]=idx[0]+Def->NI;
+   idx[2]=idx[3]+1;
+   if (idx==-1) {
+      Def_GetQuadMod(Def,idx,cube[0]);
    } else {
-      idxj1=Def->NI*(j+1);
-   }
-
-   idx0=idxj+i;
-   idx3=idxj1+i;
-
-   if (X<TINY_VALUE) {
-      idx1=idx0;
-      idx2=idx3;
-   } else {
-      idx1=idx0+1;
-      idx2=idx3+1;
+      Def_GetQuad(Def,Idx,idx,cube[0]);
    }
 
    /*3D Interpolation case*/
-   if (Z>0) {
-      k=floor(Z);Z-=k;
+   if (Z>TINY_VALUE) {
 
-      idxk=FSIZE2D(Def)*k;
-      if (Z<TINY_VALUE) {
-         idxk1=idxk;
+      idxk=FSIZE2D(Def);
+      idx[0]+=idxk;
+      idx[1]+=idxk;
+      idx[3]+=idxk;
+      idx[2]+=idxk;
+      if (idx==-1) {
+         Def_GetQuadMod(Def,idx,cube[1]);
       } else {
-         idxk1=FSIZE2D(Def)*(k+1);
+         Def_GetQuad(Def,Idx,idx,cube[1]);
       }
 
-      idxi[0]=idx0+idxk1;
-      idxi[1]=idx1+idxk1;
-      idxi[3]=idx3+idxk1;
-      idxi[2]=idx2+idxk1;
-      Def_GetQuad(Def,Idx,idxi,cube[1]);
+      cube[0][0]=ILIN(cube[0][0],cube[1][0],Z);
+      cube[0][1]=ILIN(cube[0][1],cube[1][1],Z);
+      cube[0][2]=ILIN(cube[0][2],cube[1][2],Z);
+      cube[0][3]=ILIN(cube[0][3],cube[1][3],Z);
    }
 
-   /* Get the grid points value */
-
-   idxi[0]=idx0+idxk;
-   idxi[1]=idx1+idxk;
-   idxi[3]=idx3+idxk;
-   idxi[2]=idx2+idxk;
-   Def_GetQuad(Def,Idx,idxi,cube[0]);
-
-   /*3D Interpolation case*/
-   if (Z>0) {
-      /*Interpolate over X*/
-      val0=ILIN(cube[0][0],cube[0][1],X);
-      val1=ILIN(cube[1][0],cube[1][1],X);
-      val2=ILIN(cube[0][3],cube[0][2],X);
-      val3=ILIN(cube[1][3],cube[1][2],X);
-
-      /*Interpolate over Y*/
-      val0=ILIN(val0,val2,Y);
-      val1=ILIN(val1,val3,Y);
-
-      /*Interpolate over Z*/
-      return(ILIN(val0,val1,Z));
-   } else {
-      /*Interpolate over X*/
-      val0=ILIN(cube[0][0],cube[0][1],X);
-      val2=ILIN(cube[0][3],cube[0][2],X);
-
-      /*Interpolate over Y*/
-      return(ILIN(val0,val2,Y));
+   /*Interpolate over X*/
+   if (X>TINY_VALUE) {
+      cube[0][0]=ILIN(cube[0][0],cube[0][1],X);
+      cube[0][3]=ILIN(cube[0][3],cube[0][2],X);
    }
+
+   /*Interpolate over Y*/
+   if (Y>TINY_VALUE) {
+      cube[0][0]=ILIN(cube[0][0],cube[0][3],Y);
+   }
+
+   return(cube[0][0]);
 }
-

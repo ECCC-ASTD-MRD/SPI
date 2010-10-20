@@ -44,8 +44,7 @@ int Bary_Interp(Vect3d B,Vect3d P,Vect3d P0,Vect3d P1,Vect3d P2);
 
 void  VertexGradient(TGeoRef *Ref,TDataDef *Def,Vect3d Nr);
 int   VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z);
-float VertexVal(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z);
-float VertexValN(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z);
+float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z);
 void  VertexInterp(Vect3d Pi,Vect3d P0,Vect3d P1,double V0,double V1,double Level);
 void  VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,double V0,double V1,double V2,double V3,int Depth,int Base);
 void  VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,int Base);

@@ -130,7 +130,7 @@ int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,do
          mem+=iy*Def->NI+ix;
          Def_Get(Def,C,mem,*Length);
       } else {
-         *Length=VertexValN(Ref,Def,C,Azimuth,Bin,Sweep);
+         *Length=VertexVal(Ref,Def,C,Azimuth,Bin,Sweep);
       }
       valid=1;
    }

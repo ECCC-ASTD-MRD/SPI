@@ -141,11 +141,11 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             *ThetaXY=180+RAD2DEG(atan2(x,y));
          }
       } else {
-         *Length=VertexVal(Ref,Def,X,Y,Z);
+         *Length=VertexVal(Ref,Def,-1,X,Y,Z);
          /*Pour un champs vectoriel*/
          if (Def->Data[1]) {
-            x=VertexValN(Ref,Def,0,X,Y,Z);
-            y=VertexValN(Ref,Def,1,X,Y,Z);
+            x=VertexVal(Ref,Def,0,X,Y,Z);
+            y=VertexVal(Ref,Def,1,X,Y,Z);
             *ThetaXY=180+RAD2DEG(atan2(x,y));
          }
       }

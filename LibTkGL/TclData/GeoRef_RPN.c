@@ -179,7 +179,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          if (Def->Data[1]) {
             Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
          } else {
-            *Length=VertexVal(Ref,Def,X,Y,0.0);
+            *Length=VertexVal(Ref,Def,-1,X,Y,0.0);
          }
          return(valid);
       }
@@ -213,7 +213,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                c_gdxysval(Ref->Id,Length,p0,&x,&y,1);
                EZUnLock_RPNInt();
             } else {
-               *Length=VertexValN(Ref,Def,C,X,Y,Z);
+               *Length=VertexVal(Ref,Def,C,X,Y,Z);
             }
          }
       }

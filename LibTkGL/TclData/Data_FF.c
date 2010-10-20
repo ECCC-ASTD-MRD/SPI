@@ -931,13 +931,13 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
 
       /*Next vector*/
       if (Ref->Grid[0]=='V') {
-         v[0]=VertexValN(Ref,Def,0,X,Y,Z);
-         v[1]=VertexValN(Ref,Def,2,X,Y,Z);
+         v[0]=VertexVal(Ref,Def,0,X,Y,Z);
+         v[1]=VertexVal(Ref,Def,2,X,Y,Z);
          v[2]=0.0;
       } else {
-         v[0]=VertexValN(Ref,Def,0,X,Y,Z);
-         v[1]=VertexValN(Ref,Def,1,X,Y,Z);
-         v[2]=ZDim?VertexValN(Ref,Def,2,X,Y,Z):0.0;
+         v[0]=VertexVal(Ref,Def,0,X,Y,Z);
+         v[1]=VertexVal(Ref,Def,1,X,Y,Z);
+         v[2]=ZDim?VertexVal(Ref,Def,2,X,Y,Z):0.0;
       }
       dv=Vect_Norm(v);
 
@@ -960,13 +960,13 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       /*Use Runge Kutta method (2nd order) to find the next particle position*/
       RK(rk1,step,v)
       if (Ref->Grid[0]=='V') {
-         rk2[0]=VertexValN(Ref,Def,0,X+rk1[0],Y,Z);
-         rk2[1]=VertexValN(Ref,Def,2,X,Y+rk1[1],Z);
+         rk2[0]=VertexVal(Ref,Def,0,X+rk1[0],Y,Z);
+         rk2[1]=VertexVal(Ref,Def,2,X,Y+rk1[1],Z);
          rk2[2]=0.0;
       } else {
-         rk2[0]=VertexValN(Ref,Def,0,X+rk1[0],Y,Z);
-         rk2[1]=VertexValN(Ref,Def,1,X,Y+rk1[1],Z);
-         rk2[2]=ZDim?VertexValN(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
+         rk2[0]=VertexVal(Ref,Def,0,X+rk1[0],Y,Z);
+         rk2[1]=VertexVal(Ref,Def,1,X,Y+rk1[1],Z);
+         rk2[2]=ZDim?VertexVal(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
       }
       Vect_Normalize(rk2);
       RK(rk2,step,rk2)
@@ -1017,15 +1017,15 @@ int FFStreamPatch(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,flo
       c++;
 */
       /* Next vector */
-      u=VertexValN(Ref,Def,0,I,J,0);
-      v=VertexValN(Ref,Def,1,I,J,0);
+      u=VertexVal(Ref,Def,0,I,J,0);
+      v=VertexVal(Ref,Def,1,I,J,0);
       NORMALIZE(u,v);
 
       /* Use Runge Kutta method (2nd order) to find the next particle position */
       uk1=Step*u;
       vk1=Step*v;
-      uk2=VertexValN(Ref,Def,0,I+uk1,J,0);
-      vk2=VertexValN(Ref,Def,1,I,J+vk1,0);
+      uk2=VertexVal(Ref,Def,0,I+uk1,J,0);
+      vk2=VertexVal(Ref,Def,1,I,J+vk1,0);
       NORMALIZE(uk2,vk2);
       uk2*=Step;
       vk2*=Step;
