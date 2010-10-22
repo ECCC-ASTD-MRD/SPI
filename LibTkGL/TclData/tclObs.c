@@ -1943,7 +1943,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          VAL2COL(idx,Obs->Spec,val);
       } else {
          if (Obs->Spec->InterNb) {
-            if (val>=Obs->Spec->Inter[0] && val<=Obs->Spec->Inter[Obs->Spec->InterNb-1]) {
+            if (val>=Obs->Spec->Inter[0]) {
                idx=0;
             }
          } else {
@@ -2080,7 +2080,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       idx=-1;
       val=((float*)Obs->Def->Data[0])[i];
       if (Obs->Spec->InterNb) {
-         if (val>=Obs->Spec->Inter[0] && val<=Obs->Spec->Inter[Obs->Spec->InterNb-1]) {
+         if (val>=Obs->Spec->Inter[0]) {
             idx=0;
          }
       } else {
