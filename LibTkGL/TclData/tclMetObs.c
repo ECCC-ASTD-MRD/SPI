@@ -1588,7 +1588,7 @@ int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float H
 
       /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
  //     if (!Multi || strcmp(PrevId,Id)!=0)
-         loc=TMetLoc_FindWithCoord(Obs,NULL,Id,Lat,Lon,-999.0,MET_TYPEID,Multi);
+      loc=TMetLoc_FindWithCoord(Obs,NULL,Id,Lat,Lon,-999.0,MET_TYPEID,Multi);
 
       strcpy(PrevId,Id);
 
@@ -2424,8 +2424,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    while(loc) {
 
       line=0;
-      if (GLMode==GL_SELECT)
+      if (GLMode==GL_SELECT) {
+         if (n && !(n%100) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
+            break;
+         }
          glPushName(n);
+      }
 
       /*Check if visible*/
       if (Projection_Pixel(Proj,VP,loc->Coord,pix)) {
