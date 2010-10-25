@@ -85,6 +85,7 @@ typedef struct ViewportItem  {
    int Frame;                     /*Retention du rendue pour animation*/
    int Update;                    /*Indicateur de reaffichage*/
    int Realloc;                   /*Indicateur de reallocation des structures*/
+   int ForcePick;                 /*Indicateur de finalisation de pick*/
    double Ratio;                  /*Ratio de hauteur/largeur/Cam aspect*/
    int Secondary;                 /*Indicateur d'importance*/
 

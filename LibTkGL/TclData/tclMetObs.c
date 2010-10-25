@@ -2425,7 +2425,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
       line=0;
       if (GLMode==GL_SELECT) {
-         if (n && !(n%100) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
+         if (!VP->ForcePick && (n && !(n%100)) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
             break;
          }
          glPushName(n);

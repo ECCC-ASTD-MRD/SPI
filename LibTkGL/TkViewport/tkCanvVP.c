@@ -273,6 +273,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->Projection  = NULL;
    vp->Update      = 1;
    vp->Realloc     = 1;
+   vp->ForcePick   = 1;
    vp->Frame       = 0;
    vp->Data        = NULL;
    vp->DataStr     = NULL;
@@ -580,14 +581,17 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             break;
 
          case PICK:
-            if (Objc!=4 && Objc!=5){
-               Tcl_WrongNumArgs(Interp,2,Objv,"x y [type]");
+            if (Objc<4 || Objc>6){
+               Tcl_WrongNumArgs(Interp,2,Objv,"x y [type] [force]");
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
             Tcl_GetDoubleFromObj(Interp,Objv[3],&y);
 
-            if (Objc==5) {
+            vp->ForcePick=1;
+            pick=PICK_ALL;
+
+            if (Objc>=5) {
                pick=PICK_NONE;
                Tcl_ListObjLength(Interp,Objv[4],&np);
                for(n=0;n<np;n++) {
@@ -603,8 +607,10 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                      pick|=PICK_FSTDFIELD;
                   }
                }
-            } else {
-               pick=PICK_ALL;
+            }
+
+            if (Objc>=6) {
+               Tcl_GetBooleanFromObj(Interp,Objv[5],&vp->ForcePick);
             }
 
             trViewport(GLRender->TRCon,(int)vp->x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-(vp->y+vp->Height),vp->Width,vp->Height);
@@ -652,6 +658,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[3]));
                Tcl_SetObjResult(Interp,obj);
             }
+            vp->ForcePick=1;
             break;
          }
    }
