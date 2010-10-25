@@ -1527,32 +1527,29 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
       GeoScan_Get(&scan,Band->Def,Field->Def,1,Field->Spec->InterpDegree);
 
-      for(n=0;n<scan.N;n++){
+     for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/
          val=scan.D[n];
          if (val!=(float)Field->Def->NoData) {
-            VAL2COL(idx,Field->Spec,val);
-         } else {
-            dir=val=Band->Def->NoData;
-            idx=-1;
-         }
+            if (Field->Spec->Map) {
+               VAL2COL(idx,Field->Spec,val);
 
-         if (Field->Spec->Map) {
-            if (idx>-1) {
-               if (Band->Def->NC==1) {
-                  Def_Set(Band->Def,0,scan.V[n],idx);
-               } else {
-                  for (z=0;z<Band->Def->NC;z++) {
-                     Def_Set(Band->Def,z,scan.V[n],Field->Spec->Map->Color[idx][z]);
+               if (idx>-1) {
+                  if (Band->Def->NC==1) {
+                     Def_Set(Band->Def,0,scan.V[n],idx);
+                  } else {
+                     for (z=0;z<Band->Def->NC;z++) {
+                        Def_Set(Band->Def,z,scan.V[n],Field->Spec->Map->Color[idx][z]);
+                     }
                   }
                }
-            }
-         } else {
-            if (Band->Def->NC>=1) {
-               Def_Set(Band->Def,0,scan.V[n],val);
-            }
-            if (Band->Def->NC>=2) {
-               Def_Set(Band->Def,1,scan.V[n],dir);
+            } else {
+               if (Band->Def->NC>=1) {
+                  Def_Set(Band->Def,0,scan.V[n],val);
+               }
+               if (Band->Def->NC>=2) {
+                  Def_Set(Band->Def,1,scan.V[n],dir);
+               }
             }
          }
       }
