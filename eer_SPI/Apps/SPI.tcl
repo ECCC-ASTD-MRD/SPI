@@ -133,7 +133,8 @@ proc SPI::CommandLine { { Args {} }} {
 
    Log::Print ERROR "Wrong arguments $Args, must be:\n
       \[-tclsh ...\]                    : Launch a tcl script through SPI's environment (No Tk)
-      \[-soft\]                         : Launch in software mode
+      \[-soft\]                         : Force software OpenGL mode
+      \[-hard\]                         : Force hardware OpenGL mode
       \[-batch\]                        : Launch in batch mode (No screen rendering)
       \[-default ... ...\]              : Use the file specified as the default parameter definition
       \[-lang 0|1\]                     : Select language (0 Francais, 1 English)
@@ -158,6 +159,7 @@ proc SPI::CommandLine { { Args {} }} {
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "soft"     { }
+      "hard"     { }
       "batch"    { set SPI::Param(Batch) True }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { set SPI::Param(Window) False }
@@ -2300,6 +2302,7 @@ if { [file exists $SPI::Param(Default)] } {
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "soft"     { }
+      "hard"     { }
       "batch"    { set SPI::Param(Batch) True }
       "model"    { set SPI::Param(Exp) True }
       "nowindow" { set SPI::Param(Window) False }
