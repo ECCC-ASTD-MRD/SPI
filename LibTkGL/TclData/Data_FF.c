@@ -158,7 +158,7 @@ void LUBackSub(double *Matrix,int N,int *Perm,double *Vect) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FFKriggingValue>
+ * Nom      : <FFKrigging_Value>
  * Creation : Janvier 2005 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Recuperer la valeur d'un point specifique selon les variogrammes
@@ -178,14 +178,24 @@ void LUBackSub(double *Matrix,int N,int *Perm,double *Vect) {
  *
  *----------------------------------------------------------------------------
  */
-double FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error) {
+double FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error) {
 
    int     i,j,idxi;
-   double  z=0.0,d,t;
+   double  z=0.0,d,t,d0,d1;
 
-   /* Calculate distance between estimated point */
+   /*Calculate distance between estimated point*/
    for (i=0;i<Krig->N-1;i++) {
-      d=hypot(Pos[i][0]-X,Pos[i][1]-Y);
+      d0=Pos[i][0]-X;
+      if (Krig->Wrap>0) {
+         if (d0>=0.0) {
+            d1=(Krig->Wrap-Pos[i][0])+X;
+         } else {
+            d0=-d0;
+            d1=(Krig->Wrap-X)+Pos[i][0];
+         }
+         d0=d0<d1?d0:d1;
+      }
+      d=hypot(d0,Pos[i][1]-Y);
       t=d/Krig->A;
 
       switch(Krig->Mode) {
@@ -222,7 +232,6 @@ double FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Err
    for(i=0;i<Krig->N-1;i++) {
       z+=Krig->Weight[i]*Pos[i][2];
    }
-//   z=z<0?0:z;
 
    /* Calculated the error variance */
    if (Error) {
@@ -256,7 +265,8 @@ double FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Err
  * Retour     :
  *
  * Remarques :
- *
+ *   - This code is an adaptation of Chao-yi Lang's code available at:
+ *       http://www.nbb.cornell.edu/neurobio/land/oldstudentprojects/cs490-94to95/clang/kriging.html
  *----------------------------------------------------------------------------
  */
 int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode) {
@@ -264,7 +274,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
    TKrigging krig;
 
    int i,j,idx0,idx1;
-   double t,da;
+   double t,da,d0,d1;
 
    if (NPos) {
       krig.N=NPos+1;
@@ -272,6 +282,8 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
       krig.C1=C1;
       krig.A=(A<=0?1:A);
       krig.Mode=Mode;
+      krig.Wrap=(Ref->Type&GRID_WRAP)?Ref->X1:0;
+//      krig.Wrap=0.0;
 
       krig.Matrix=(double*)malloc(krig.N*krig.N*sizeof(double));
       krig.Weight=(double*)malloc(krig.N*krig.N*sizeof(double));
@@ -281,11 +293,23 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
          fprintf(stderr,"(ERROR) FFKrigging: Unable to allocate calculation matrices\n");
          return(0);
       }
-     /* Calculate distance between known points*/
+
+      /*Calculate distance between known points*/
       for (j=0;j<NPos;j++) {
          for (i=0;i<NPos;i++) {
             idx0=i*krig.N+j;
-            krig.Weight[idx0]=hypot(Pos[i][0]-Pos[j][0],Pos[i][1]-Pos[j][1]);
+
+            d0=Pos[i][0]-Pos[j][0];
+            if (krig.Wrap>0) {
+               if (d0>=0.0) {
+                  d1=(krig.Wrap-Pos[i][0])+Pos[j][0];
+               } else {
+                  d0=-d0;
+                  d1=(krig.Wrap-Pos[j][0])+Pos[i][0];
+               }
+               d0=d0<d1?d0:d1;
+            }
+            krig.Weight[idx0]=hypot(d0,Pos[i][1]-Pos[j][1]);
 
             if (krig.Weight[idx0]==0 && i!=j) {
                fprintf(stderr,"(ERROR) FFKrigging: Two observations have the same location, krigging operation will not continue\n");
@@ -294,7 +318,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
          }
       }
 
-      /* Calculate variograms */
+      /*Calculate variograms*/
       for (i=0;i<krig.N-1;i++) {
          krig.Matrix[i*krig.N+krig.N-1]=1;
          krig.Matrix[(krig.N-1)*krig.N+i]=1;
@@ -334,9 +358,9 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
       krig.Matrix=LUInvert(krig.Matrix,krig.N);
 
       /* Fill in the field */
-      for(i=0;i<Def->NI;i++) {
-         for(j=0;j<Def->NJ;j++) {
-            t=FFKriggingValue(&krig,Pos,i,j,NULL);
+      for(j=0;j<Def->NJ;j++) {
+         for(i=0;i<Def->NI;i++) {
+            t=FFKrigging_Value(&krig,Pos,i,j,NULL);
             Def_Set(Def,0,j*Def->NI+i,t);
          }
       }
@@ -345,6 +369,97 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
       free(krig.Weight);
       free(krig.V);
    }
+   return(1);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FFContour>
+ * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Recuperer la liste des segments de contours
+ *
+ * Parametres :
+ *  <Mode>    : Type de referenciel (REF_COOR,REF_GRID,REF_PROJ)
+ *  <Field>   : Champs
+ *  <Proj>    : Parametres de la projection
+ *  <NbInter> : Nombre d'intervalle
+ *  <Inter>   : Liste des intervals
+ *
+ * Retour:
+ *
+ * Remarques :
+ *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
+ *----------------------------------------------------------------------------
+*/
+int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
+
+   int n,i,j,ci,cj,i0,i1,j0,j1,len,side;
+   unsigned char *buf=NULL;
+   TArray *array;
+
+   /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
+   if (Mode==REF_COOR && !Field->Ref)
+      return(0);
+
+   for (n=0;n<NbInter;n++) {
+      /*If the interval is not within the value limits, skip*/
+      if (Inter[n]>=Field->Stat->Max)
+         continue;
+
+      /*Create/Reset gridcell parsing flags*/
+      if (!buf) {
+         buf=(unsigned char*)calloc(FSIZE2D(Field->Def),sizeof(char));
+      } else {
+         memset(buf,0x0,FSIZE2D(Field->Def));
+      }
+
+      /*Calculate contours within the specified coverage limits*/
+      i0=Field->Def->Limits[0][0];
+      j0=Field->Def->Limits[1][0];
+      i1=Field->Def->Limits[0][1];
+      j1=Field->Def->Limits[1][1];
+
+      i=i0;j=j0;
+      ci=1;cj=0;
+      side=0xF^FF_BOTTOM;
+
+      /*As long as we did not check all gridpoint (Worse case)*/
+      while(1) {
+
+         /*When we get to the center, we're done*/
+         if (i1<i0 && j1<j0) {
+            break;
+         }
+         i1=i1<i0?i0:i1;
+         j1=j1<j0?j0:j1;
+
+         /*If we this gridpoint has'nt yet been visited*/
+         if (!buf[Field->Def->NI*j+i]) {
+           len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
+            /*If we found a least 1 segment, keep it*/
+            if (len>1) {
+               if ((array=TArray_Alloc(Inter[n],len))) {
+                  Field->Segments=TList_Add(Field->Segments,array);
+                  GDB_VBufferCopy(array->Data,len);
+               } else {
+                 fprintf(stderr,"(ERROR) FFContour: Unable to alloc memory for contour %f",Inter[n]);
+               }
+            }
+         }
+         /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
+         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
+         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
+         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   /* Check upper left corner */
+         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=0xF^FF_BOTTOM; } /* Check lower left corner */
+
+         i+=ci;
+         j+=cj;
+      }
+   }
+   if (buf)
+      free(buf);
+
+   GDB_VBufferCheck();
    return(1);
 }
 
@@ -396,9 +511,9 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
 
    double        vox[4],pvox[4],mid,x,y,dx,dy,d;
    double        lat=0.0,lon=0.0;
-   unsigned int  md,flag,depth,index,m,next=1;
+   unsigned int  md,flag,depth,index,m,next=1,n=0;
    unsigned char side=0;
-   unsigned long idx,n=0,dz;
+   unsigned long idx,pidx[4],dz;
    Vect3d        *vbuf;
 
    dz=Z*FSIZE2D(Def);
@@ -416,15 +531,16 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
          PMatrix[idx]|=flag;
 
          /*Get the voxel values*/
-         idx+=dz;      Def_GetMod(Def,idx,pvox[0]);
-         idx++;        Def_GetMod(Def,idx,pvox[1]);
-         idx+=Def->NI; Def_GetMod(Def,idx,pvox[2]);
-         idx--;        Def_GetMod(Def,idx,pvox[3]);
+         pidx[0]=idx+dz;
+         pidx[1]=pidx[0]+1;
+         pidx[3]=pidx[0]+Def->NI;
+         pidx[2]=pidx[3]+1;
+         Def_GetQuadMod(Def,pidx,pvox);
 
          /*If it's the first point, get it's voxel instersection to start with*/
          if (!side) {
             x=X;y=Y;
-            if (!(side=FFQuad_Cross(1.0,Side,pvox,Inter,&x,&y))) {
+            if (!(side=FFContour_QuadCross(1.0,Side,pvox,Inter,&x,&y))) {
                break;
             }
 
@@ -435,14 +551,14 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
             else if (side&FF_RIGHT)  { side=FF_LEFT;   while(depth--) { index<<=4; d=1.0/(md<<=1); if (y<(dy+d)) { index|=0x1; } else { index|=0x8;dy+=d; } } }
             else if (side&FF_LEFT)   { side=FF_RIGHT;  while(depth--) { index<<=4; d=1.0/(md<<=1); if (y<(dy+d)) { index|=0x2; } else { index|=0x4;dy+=d; } } }
 
-            if (vbuf=GDB_VBufferAlloc(n+1)) {
+            if ((vbuf=GDB_VBufferAlloc(n+1))) {
                switch(Mode) {
                   case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
                   case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
                   case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
                }
+               n++;
             }
-            n++;
          }
       }
 
@@ -484,17 +600,17 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
       if (Inter==vox[3]) vox[3]+=mid*0.001;
 
       /*Get the segment intersection coordinate within the voxel*/
-      if (side=FFQuad_Cross(d,side,vox,Inter,&x,&y)) {
-         if (vbuf=GDB_VBufferAlloc(n+1)) {
+      if (side=FFContour_QuadCross(d,side,vox,Inter,&x,&y)) {
+         if ((vbuf=GDB_VBufferAlloc(n+1))) {
             switch(Mode) {
                case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
                case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
                case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
             }
+            n++;
          }
-         n++;
          /*Move the index to the nearby voxel*/
-         index=FF_Contour_QuadIndex(index,side,&X,&Y,&next);
+         index=FFContour_QuadIndex(index,side,&X,&Y,&next);
       } else {
          break;
       }
@@ -503,7 +619,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FFQuad_Cross>
+ * Nom      : <FFContour_QuadCross>
  * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Determiner le point de croisement d'un voxel
@@ -522,7 +638,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
  * Remarques :
  *----------------------------------------------------------------------------
  */
-unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
+unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
 
    unsigned char out=FF_NONE;
 
@@ -546,7 +662,7 @@ unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double I
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FF_Contour_QuadIndex>
+ * Nom      : <FFContour_QuadIndex>
  * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Cacluler l'index du voxel voisin selon le cote d'entree
@@ -564,7 +680,7 @@ unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double I
  * Remarques :
  *----------------------------------------------------------------------------
  */
-unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
+unsigned long FFContour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
 
    unsigned char m;
 
@@ -578,30 +694,30 @@ unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,un
       } else if (Side&FF_LEFT) {
          Index<<=4;Index|=0x2;
       } else if (Side&FF_TOP) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x8;
       } else if (Side&FF_RIGHT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x2;
       }
    } else if (m&0x2) {
       if (Side&FF_BOTTOM) {
          Index<<=4;Index|=0x4;
       } else if (Side&FF_LEFT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x1;
       } else if (Side&FF_TOP) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x4;
       } else if (Side&FF_RIGHT) {
          Index<<=4;Index|=0x1;
       }
    } else if (m&0x4) {
       if (Side&FF_BOTTOM) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x2;
       } else if (Side&FF_LEFT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x8;
       } else if (Side&FF_TOP) {
          Index<<=4;Index|=0x2;
@@ -610,14 +726,14 @@ unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,un
       }
    } else if (m&0x8) {
       if (Side&FF_BOTTOM) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x1;
       } else if (Side&FF_LEFT) {
          Index<<=4;Index|=0x4;
       } else if (Side&FF_TOP) {
          Index<<=4;Index|=0x1;
       } else if (Side&FF_RIGHT) {
-         Index=FF_Contour_QuadIndex(Index,Side,X,Y,N);
+         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
          Index<<=4;Index|=0x4;
       }
    } else {
@@ -761,7 +877,7 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
 
             /* Create the triangle */
             for (n=0;TriTable[cubeidx][n]!=-1;n+=3) {
-               if (vbuf=GDB_VBufferAlloc(vridx+6)) {
+               if ((vbuf=GDB_VBufferAlloc(vridx+6))) {
                   VertexLoc(Ref,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
                   VertexLoc(Ref,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
                   VertexLoc(Ref,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);
@@ -771,7 +887,7 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
                   Vect_Assign(vbuf[vridx+2],vrlist[TriTable[cubeidx][n+1]]);
                   Vect_Assign(vbuf[vridx+4],vrlist[TriTable[cubeidx][n+2]]);
 
-                  VertexGradient(Ref,Def,vbuf[vridx])  ;Vect_Mul(vbuf[vridx],  vbuf[vridx],Proj->LightPos);    Vect_Normalize(vbuf[vridx]);
+                  VertexGradient(Ref,Def,vbuf[vridx])  ;Vect_Mul(vbuf[vridx],  vbuf[vridx]  ,Proj->LightPos);  Vect_Normalize(vbuf[vridx]);
                   VertexGradient(Ref,Def,vbuf[vridx+2]);Vect_Mul(vbuf[vridx+2],vbuf[vridx+2],Proj->LightPos);  Vect_Normalize(vbuf[vridx+2]);
                   VertexGradient(Ref,Def,vbuf[vridx+4]);Vect_Mul(vbuf[vridx+4],vbuf[vridx+4],Proj->LightPos);  Vect_Normalize(vbuf[vridx+4]);
                   vridx+=6;
@@ -782,7 +898,7 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
    }
 
 #ifdef DEBUG
-   fprintf(stderr,"(DEBUG) FFMarchingCube: Done processing (%i Vertex)\n",vridx/3);
+   fprintf(stderr,"(DEBUG) FFMarchingCube: Done processing (%i Vertex)\n",vridx/2);
 #endif
    return(vridx);
 }

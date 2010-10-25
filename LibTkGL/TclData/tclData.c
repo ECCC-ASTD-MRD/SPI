@@ -1755,7 +1755,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case GRIDCONTOUR:
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               Data_GetContour(REF_GRID,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+               FFContour(REF_GRID,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
 
                list=Field->Segments;
                obj=Tcl_NewListObj(0,NULL);
@@ -1799,7 +1799,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               Data_GetContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+               FFContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
 
                list=Field->Segments;
 

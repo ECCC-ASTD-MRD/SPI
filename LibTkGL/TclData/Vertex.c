@@ -331,9 +331,9 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    }
 
    pos=Ref->Pos;
-   i=floor(X);X-=i;
-   j=floor(Y);Y-=j;
-   k=floor(Z);Z-=k;
+   i=X;X-=i;
+   j=Y;Y-=j;
+   k=Z;Z-=k;
 
    /*Get gridpoint indexes*/
    idx0=j*Def->NI+i;
@@ -407,18 +407,18 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
    }
 
    pos=Ref->Pos;
-   i=floor(X);X-=i;
-   j=floor(Y);Y-=j;
-   k=floor(Z);Z-=k;
+   i=X;X-=i;
+   j=Y;Y-=j;
+   k=Z;Z-=k;
 
    /*Get gridpoint indexes*/
-   idxk=FSIZE2D(Def)*k;
+   idxk=FSIZE2D(Def);
 
-   idx[0]=idxk+j*Def->NI+i;
+   idx[0]=idxk*k+j*Def->NI+i;
    idx[1]=idx[0]+1;
    idx[3]=idx[0]+Def->NI;
    idx[2]=idx[3]+1;
-   if (idx==-1) {
+   if (Idx==-1) {
       Def_GetQuadMod(Def,idx,cube[0]);
    } else {
       Def_GetQuad(Def,Idx,idx,cube[0]);
@@ -427,12 +427,11 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
    /*3D Interpolation case*/
    if (Z>TINY_VALUE) {
 
-      idxk=FSIZE2D(Def);
       idx[0]+=idxk;
       idx[1]+=idxk;
       idx[3]+=idxk;
       idx[2]+=idxk;
-      if (idx==-1) {
+      if (Idx==-1) {
          Def_GetQuadMod(Def,idx,cube[1]);
       } else {
          Def_GetQuad(Def,Idx,idx,cube[1]);

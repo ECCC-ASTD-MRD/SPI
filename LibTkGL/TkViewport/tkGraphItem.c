@@ -2242,7 +2242,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
 
    /*Les contours sont-ils definit*/
    if (Data->Spec->InterNb && (!Data->Segments || Data->Def->NK==1)) {
-      Data_GetContour(REF_GRID,Data,NULL,Data->Spec->InterNb,Data->Spec->Inter);
+      FFContour(REF_GRID,Data,NULL,Data->Spec->InterNb,Data->Spec->Inter);
    }
 
    if (Data->Spec->RenderLabel && Interp)

@@ -70,27 +70,33 @@ static unsigned int GDB_VBufferSize=0;
 static unsigned int GDB_VBufferIncr=512;
 static unsigned int GDB_VBufferMax=524288;
 
-Vect3d *GDB_VBufferCopy(Vect3d *To,unsigned int Size) {
+Vect3d* GDB_VBufferCopy(Vect3d *To,unsigned int Size) {
 
-  return((Vect3d*)memcpy(To,GDB_VBuffer,Size*sizeof(Vect3d)));
+   if (GDB_VBuffer && Size<=GDB_VBufferSize) {
+      return((Vect3d*)memcpy(To,GDB_VBuffer,Size*sizeof(Vect3d)));
+   } else {
+      fprintf(stderr,"(DEBUG) GDB_VBufferCopy: Invalid size (%i>%i)\n",Size,GDB_VBufferSize);
+      return(NULL);
+   }
 }
 
-void *GDB_VBufferCheck(Vect3d *To,unsigned int Size) {
+unsigned int GDB_VBufferCheck() {
 
-  if (GDB_VBufferSize<GDB_VBufferMax) {
-     GDB_VBuffer=realloc(GDB_VBuffer,GDB_VBufferMax*sizeof(Vect3d));
-     GDB_VBufferSize=GDB_VBufferMax;
-  }
+   if (GDB_VBufferSize>GDB_VBufferMax) {
+      GDB_VBuffer=(Vect3d*)realloc(GDB_VBuffer,GDB_VBufferMax*sizeof(Vect3d));
+      GDB_VBufferSize=GDB_VBufferMax;
+   }
+   return(GDB_VBufferSize);
 }
 
-Vect3d *GDB_VBufferAlloc(unsigned int Size) {
+Vect3d* GDB_VBufferAlloc(unsigned int Size) {
 
    Vect3d *buf=GDB_VBuffer;
 
    if (GDB_VBufferSize<Size) {
-      fprintf(stderr,"(DEBUG) GDB_VBufferAlloc: Reallocating GDB_VBuffer to %o\n",Size);
-      Size=Size+GDB_VBufferIncr;
-      if (buf=realloc(GDB_VBuffer,Size*sizeof(Vect3d))) {
+      Size=(Size/GDB_VBufferIncr+1)*GDB_VBufferIncr;
+      fprintf(stderr,"(DEBUG) GDB_VBufferAlloc: Reallocating GDB_VBuffer to %i\n",Size);
+      if ((buf=(Vect3d*)realloc(GDB_VBuffer,Size*sizeof(Vect3d)))) {
          GDB_VBuffer=buf;
          GDB_VBufferSize=Size;
       } else {

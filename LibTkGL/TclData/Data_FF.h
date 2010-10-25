@@ -65,6 +65,7 @@ typedef struct TKrigging {
    double *Matrix;
    double *Weight;
    double *V;
+   int     Wrap;
    int     N;
    int     Mode;
    double  C0,C1,A;
@@ -72,14 +73,17 @@ typedef struct TKrigging {
 
 float         FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1);
 int           FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim);
+
+int           FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter);
 int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth);
-unsigned char FFQuad_Cross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y);
-unsigned long FF_Contour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N);
+unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y);
+unsigned long FFContour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N);
+
 int           FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level);
 float        *FFStreamMapSetup1D(double Delta);
 int           FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 int           FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode);
-double        FFKriggingValue(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error);
+double        FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error);
 
 int     LUDecompose(double *Matrix,int N,int *Perm,int *d);
 void    LUBackSub(double *Matrix,int N,int *Perm,double *Vect);

@@ -1900,7 +1900,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
          OGR_F_SetFieldDouble(Layer->Feature[n],0,field[0]->Spec->Inter[n]);
 
          Data_Clean(field[0],0,0,1);
-         Data_GetContour(REF_COOR,field[0],NULL,1,&field[0]->Spec->Inter[n]);
+         FFContour(REF_COOR,field[0],NULL,1,&field[0]->Spec->Inter[n]);
          cont=OGR_G_CreateGeometry(wkbMultiLineString);
 
          list=field[0]->Segments;

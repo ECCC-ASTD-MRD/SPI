@@ -36,7 +36,6 @@
 void  Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 void  Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,int Y,char *Id,char* Val);
 
-int   Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter);
 void  Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 void  Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 void  Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
@@ -48,97 +47,6 @@ void  Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 void  Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_GetContour>
- * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Recuperer la liste des segments de contours
- *
- * Parametres :
- *  <Mode>    : Type de referenciel (REF_COOR,REF_GRID,REF_PROJ)
- *  <Field>   : Champs
- *  <Proj>    : Parametres de la projection
- *  <NbInter> : Nombre d'intervalle
- *  <Inter>   : Liste des intervals
- *
- * Retour:
- *
- * Remarques :
- *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
- *----------------------------------------------------------------------------
-*/
-int Data_GetContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
-
-   int n,i,j,ci,cj,i0,i1,j0,j1,len,side;
-   unsigned char *buf=NULL;
-   TArray *array;
-
-   /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
-   if (Mode==REF_COOR && !Field->Ref)
-      return(0);
-
-   for (n=0;n<NbInter;n++) {
-      /*If the interval is not within the value limits, skip*/
-      if (Inter[n]>=Field->Stat->Max)
-         continue;
-
-      /*Create/Reset gridcell parsing flags*/
-      if (!buf) {
-         buf=(unsigned char*)calloc(FSIZE2D(Field->Def),sizeof(char));
-      } else {
-         memset(buf,0x0,FSIZE2D(Field->Def));
-      }
-
-      /*Calculate contours within the specified coverage limits*/
-      i0=Field->Def->Limits[0][0];
-      j0=Field->Def->Limits[1][0];
-      i1=Field->Def->Limits[0][1];
-      j1=Field->Def->Limits[1][1];
-
-      i=i0;j=j0;
-      ci=1;cj=0;
-      side=0xF^FF_BOTTOM;
-
-      /*As long as we did not check all gridpoint (Worse case)*/
-      while(1) {
-
-         /*When we get to the center, we're done*/
-         if (i1<i0 && j1<j0) {
-            break;
-         }
-         i1=i1<i0?i0:i1;
-         j1=j1<j0?j0:j1;
-
-         /*If we this gridpoint has'nt yet been visited*/
-         if (!buf[Field->Def->NI*j+i]) {
-            len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
-            /*If we found a least 1 segment, keep it*/
-            if (len>1) {
-              if ((array=TArray_Alloc(Inter[n],len))) {
-                  Field->Segments=TList_Add(Field->Segments,array);
-                  GDB_VBufferCopy(array->Data,len);
-               } else {
-                  fprintf(stderr,"(ERROR) Data_GetContour: Unable to alloc memory for contour %f",Inter[n]);
-               }
-            }
-         }
-         /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
-         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
-         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
-         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   /* Check upper left corner */
-         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=0xF^FF_BOTTOM; } /* Check lower left corner */
-
-         i+=ci;
-         j+=cj;
-      }
-   }
-   if (buf)
-      free(buf);
-
-   GDB_VBufferCheck();
-   return(1);
-}
 
 /*----------------------------------------------------------------------------
  * Nom      : <Data_Render>
@@ -429,7 +337,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 
    /*Les contours sont-ils definit*/
    if (Field->Spec->InterNb && !Field->Segments) {
-      Data_GetContour(REF_PROJ,Field,Proj,Field->Spec->InterNb,Field->Spec->Inter);
+      FFContour(REF_PROJ,Field,Proj,Field->Spec->InterNb,Field->Spec->Inter);
    }
 
    /* Render the contours */
