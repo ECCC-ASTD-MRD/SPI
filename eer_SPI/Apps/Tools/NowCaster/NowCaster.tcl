@@ -176,7 +176,9 @@ proc NowCaster::SetTimeScale { Sec0 { Sec1 0 } } {
 
    set sec0 [clock scan "-1 $Data(PlayRange)" -base $Data(Sec1) -gmt True]
 #   set Data(Sec0) [expr $sec0>$Data(Sec0)?$sec0:$Data(Sec0)]
+
    .nowcaster.time.set configure -from $Data(Sec0) -to $Data(Sec1) -resolution $Data(PlayDelay)
+   NowCaster::Cast $Data(Sec1)
 }
 
 #-------------------------------------------------------------------------------

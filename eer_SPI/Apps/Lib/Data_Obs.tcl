@@ -358,7 +358,7 @@ proc Obs::ParamFrame { Frame Apply } {
                  $Param(Icons) Obs::Param(Icon) Obs::ParamSet 0 -relief groove -bd 2
                ColorBox::CreateSel $Data(Frame).def.r.disp.p.col Obs::Param(Color) Obs::ParamSet
                IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/Resources/Bitmap \
-                  "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
+                  "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                   Obs::Param(Width) "Obs::ParamSet" 0 -relief groove -bd 2
                checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable Obs::Param(MapAll) -onvalue 1 -offvalue 0 \
                   -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Obs::ParamSet } -indicatoron false
