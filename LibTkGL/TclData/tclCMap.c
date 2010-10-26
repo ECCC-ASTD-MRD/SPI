@@ -552,7 +552,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
                   Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (Objc==2) {
@@ -565,7 +565,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                   Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                   if (ii<0 || ii>(CMap->NbPixels-1)) {
                      Tcl_AppendResult(Interp,"CMap_Config: Curve index out of range",(char *) NULL);
-                     return TCL_ERROR;
+                     return(TCL_ERROR);
                   }
                   if (Objc==3) {
                      Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Curve[ii][index==4?0:index]));
@@ -601,7 +601,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
                   Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (Objc==2) {
@@ -1224,6 +1224,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
    CMap->NbPixels=0;
    CMap->Interp=1;
+   CMap->InvertX[0]=0;
 
    fp = fopen(RGBAFile,"r");
    if (fp == NULL) {
@@ -1233,10 +1234,12 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
    /*Read parameters*/
    fgets(buf,256,fp);
-   sscanf(buf,"%i %i %i %i %i %i %s %i",&CMap->RatioMin,&CMap->RatioMax,&CMap->Ratio[0],&CMap->Ratio[1],&CMap->Ratio[2],&CMap->Ratio[3],CMap->Type[0],&CMap->Interp);
+   sscanf(buf,"%i %i %i %i %i %i %s %i %i",&CMap->RatioMin,&CMap->RatioMax,&CMap->Ratio[0],&CMap->Ratio[1],&CMap->Ratio[2],&CMap->Ratio[3],CMap->Type[0],&CMap->Interp,&CMap->InvertX[0]);
    sprintf(CMap->Type[1],CMap->Type[0]);
    sprintf(CMap->Type[2],CMap->Type[0]);
    sprintf(CMap->Type[3],CMap->Type[0]);
+
+   CMap->InvertX[3]=CMap->InvertX[2]=CMap->InvertX[1]=CMap->InvertX[0];
 
    /*Read control point definitions*/
    while (fgets(buf,256,fp)) {
@@ -1304,7 +1307,7 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    }
 
    /*Parametres de la palette*/
-   sprintf(buf,"%i %i %i %i %i %i %s %i\n",CMap->RatioMin,CMap->RatioMax,CMap->Ratio[0],CMap->Ratio[1],CMap->Ratio[2],CMap->Ratio[3],CMap->Type[0],CMap->Interp);
+   sprintf(buf,"%i %i %i %i %i %i %s %i %i\n",CMap->RatioMin,CMap->RatioMax,CMap->Ratio[0],CMap->Ratio[1],CMap->Ratio[2],CMap->Ratio[3],CMap->Type[0],CMap->Interp,CMap->InvertX[0]);
    fputs(buf,fp);
 
    /*Points de controle*/
