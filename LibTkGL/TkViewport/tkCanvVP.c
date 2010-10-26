@@ -592,8 +592,8 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             pick=PICK_ALL;
 
             if (Objc>=5) {
-               pick=PICK_NONE;
                Tcl_ListObjLength(Interp,Objv[4],&np);
+               if (np) pick=PICK_NONE;
                for(n=0;n<np;n++) {
                   Tcl_ListObjIndex(Interp,Objv[4],n,&obj);
 
