@@ -1746,7 +1746,7 @@ void Obs_PreInit(TObs *Obs) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Obs_RenderIcon>
+ * Nom      : <Obs_Render>
  * Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Effectuer le rendu
@@ -2188,6 +2188,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    glMatrixMode(GL_MODELVIEW);
    glPolygonMode(GL_FRONT,GL_FILL);
    glLineWidth(1.0);
+   glPushName(PICK_OBS);
 
    if (Obs->Spec->Outline) {
       glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
@@ -2202,13 +2203,16 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    }
 
    for(i=0;i<Obs->Loc->Nb;i++) {
+      glPushName(i);
       Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
+      glPopName();
    }
 
    if (Interp) {
       i=glFeedbackProcess(Interp,GL_2D);
       Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
    }
+   glPopName();
 }
 
 /*----------------------------------------------------------------------------
