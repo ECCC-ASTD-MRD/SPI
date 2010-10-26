@@ -1607,6 +1607,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
 #ifdef LNK_FSTD
          /*Recuperer les informations sur les vents et leurs localisations*/
+         EZLock_RPNInt();
          c_gdxyfll(Field->Ref->Id,x,y,lat,lon,n);
 
          mem=0;i=0;
@@ -1629,6 +1630,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          } else {
             c_gdllvval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          }
+         EZUnLock_RPNInt();
 #endif
          while (n--) {
             if (Field->Spec->GridVector) {
