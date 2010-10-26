@@ -436,6 +436,7 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
            len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
+
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
                if ((array=TArray_Alloc(Inter[n],len))) {
@@ -446,7 +447,7 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
                }
             }
          }
-         /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
+        /*We loop on the gridpoints by going around the grid limits in smaller and smaller square*/
          if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  /* Check lower right corner */
          if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    /* Check upper right corner */
          if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   /* Check upper left corner */
@@ -500,10 +501,6 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
  *   Le deplacement se fait par un index d'une profondeur maximale de 4 pour que la valeur puisse
  *   etre represente dans entier (4*4 bit);
  *   PMatrix    Permet de savoir si un voxel a deja ete visite
- *
- *   2 PASS algorithm :
- *   1st PASS - Calculating the length of a contour line (if Line NULL)
- *   2nd PASS - Keep the position of the contour line in the Line array
  *
  *----------------------------------------------------------------------------
  */

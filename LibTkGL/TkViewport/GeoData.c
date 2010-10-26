@@ -75,7 +75,7 @@ Vect3d* GDB_VBufferCopy(Vect3d *To,unsigned int Size) {
    if (GDB_VBuffer && Size<=GDB_VBufferSize) {
       return((Vect3d*)memcpy(To,GDB_VBuffer,Size*sizeof(Vect3d)));
    } else {
-      fprintf(stderr,"(DEBUG) GDB_VBufferCopy: Invalid size (%i>%i)\n",Size,GDB_VBufferSize);
+      fprintf(stderr,"(ERROR) GDB_VBufferCopy: Invalid size (%i>%i)\n",Size,GDB_VBufferSize);
       return(NULL);
    }
 }
@@ -95,7 +95,9 @@ Vect3d* GDB_VBufferAlloc(unsigned int Size) {
 
    if (GDB_VBufferSize<Size) {
       Size=(Size/GDB_VBufferIncr+1)*GDB_VBufferIncr;
+#ifdef DEBUG
       fprintf(stderr,"(DEBUG) GDB_VBufferAlloc: Reallocating GDB_VBuffer to %i\n",Size);
+#endif
       if ((buf=(Vect3d*)realloc(GDB_VBuffer,Size*sizeof(Vect3d)))) {
          GDB_VBuffer=buf;
          GDB_VBufferSize=Size;

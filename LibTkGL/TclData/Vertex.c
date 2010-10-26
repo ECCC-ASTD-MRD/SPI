@@ -338,7 +338,7 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    /*Get gridpoint indexes*/
    idx0=j*Def->NI+i;
    idx1=idx0+1;
-   idx3=idx0+Def->NI;
+   idx3=(j==Def->NJ-1)?idx0:idx0+Def->NI;
    idx2=idx3+1;
 
    /*3D Interpolation case*/
@@ -372,6 +372,7 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    } else {
       Vect_Assign(Vr,v0);
    }
+
    return(1);
 }
 
@@ -416,7 +417,7 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
 
    idx[0]=idxk*k+j*Def->NI+i;
    idx[1]=idx[0]+1;
-   idx[3]=idx[0]+Def->NI;
+   idx[3]=(j==Def->NJ-1)?idx[0]:idx[0]+Def->NI;
    idx[2]=idx[3]+1;
    if (Idx==-1) {
       Def_GetQuadMod(Def,idx,cube[0]);
