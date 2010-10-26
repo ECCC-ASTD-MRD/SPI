@@ -56,7 +56,8 @@ namespace eval MapBox {
    set Data(Min)      0        ;#Minimum dans la palette
    set Data(Max)      100      ;#Maximum dans la palette
    set Data(Curve)    LINEAR   ;#Courbe d'etendue des couleurs
-   set Data(Interp)   1        ;#Interpolation des couleurs
+   set Data(Interp)   ""       ;#Interpolation des couleurs
+   set Data(Invert)   0        ;#Inverse de la courbe de distribution
    set Data(List)     ""       ;#Liste des noms de palettes
 
    set Data(Map)      ""                            ;#Colormap a editer
@@ -91,6 +92,7 @@ namespace eval MapBox {
    set Lbl(Color)   { "Couleur" "Color" }
    set Lbl(Smooth)  { "Lisse" "Smooth" }
    set Lbl(Fix)     { "Fixe" "Fixed" }
+   set Lbl(Invert)  { "Inverse" "Invert" }
 
    set Msg(Exist)   { "Cette palette existe deja, voulez vous la remplacer ?" "This colormap exists. Do yo wish to replace it ?" }
    set Msg(Save)    { "Veuillez entrer le nom de la palette a sauvegarder" "Please entre the name of the colormap to be saved" }
@@ -168,7 +170,7 @@ proc MapBox::Config { args } {
 
    if { !$Data(Init) } {
       colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
-         -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp)
+         -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp) -invertx rgba $Data(Invert)
       MapBox::Update
    }
 }
@@ -550,8 +552,10 @@ proc MapBox::Create { Parent Apply Map args } {
             -relief sunken -bd 1 -overrelief raised -offrelief flat -command "MapBox::Config" -text [lindex $Lbl(Smooth) $GDefs(Lang)]
          radiobutton $fr.interp.sc0 -value 0 -variable MapBox::Data(Interp) -indicatoron False \
             -relief sunken -bd 1 -overrelief raised -offrelief flat -command "MapBox::Config" -text [lindex $Lbl(Fix) $GDefs(Lang)]
+         checkbutton $fr.interp.inv -offvalue 0 -onvalue 1 -variable MapBox::Data(Invert) -indicatoron False \
+            -relief sunken -bd 1 -overrelief raised -offrelief flat -command "MapBox::Config" -text [lindex $Lbl(Invert) $GDefs(Lang)]
          pack $fr.interp.lbl -side left
-         pack $fr.interp.sc1 $fr.interp.sc0  -side left -fill both -expand true
+         pack $fr.interp.sc1 $fr.interp.sc0 $fr.interp.inv  -side left -fill both -expand true
      frame $fr.min
          label $fr.min.lbl -text [lindex $Lbl(Min) $GDefs(Lang)] -width 7 -anchor w
          label $fr.min.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Min) -anchor w
@@ -882,6 +886,7 @@ proc MapBox::Select { Map } {
    set Data(Curve)    [colormap configure $Data(Map) -curve rgba]
    set Data(CurveIdx) [lsearch -exact $Data(Curves) $Data(Curve)]
    set Data(Interp)   [colormap configure $Data(Map) -interp]
+   set Data(Invert)   [lindex [colormap configure $Data(Map) -invertx] 0]
 
    MapBox::Update
 }
