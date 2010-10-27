@@ -257,17 +257,19 @@ void Data_GetStat(TData *Field){
       } else {
          Field->Def->Mode=(char*)realloc(Field->Def->Mode,FSIZE3D(Field->Def)*TData_Size[Field->Def->Type]);
       }
-      for (k=0;k<Field->Def->NK;k++) {
-        idxk=FSIZE2D(Field->Def)*k;
-        for (j=0;j<Field->Def->NJ;j++) {
-            idx=idxk+j*Field->Def->NI;
-            for (i=0;i<Field->Def->NI;i++,idx++) {
-               mode=0;
-               for (d=0;d<Field->Def->NC;d++) {
-                  Def_Get(Field->Def,d,idx,val);
-                  mode+=val*val;
+      if (Field->Def->Mode) {
+         for (k=0;k<Field->Def->NK;k++) {
+         idxk=FSIZE2D(Field->Def)*k;
+         for (j=0;j<Field->Def->NJ;j++) {
+               idx=idxk+j*Field->Def->NI;
+               for (i=0;i<Field->Def->NI;i++,idx++) {
+                  mode=0;
+                  for (d=0;d<Field->Def->NC;d++) {
+                     Def_Get(Field->Def,d,idx,val);
+                     mode+=val*val;
+                  }
+                  Def_SetMod(Field->Def,idx,sqrt(mode));
                }
-               Def_SetMod(Field->Def,idx,sqrt(mode));
             }
          }
       }
@@ -1089,36 +1091,37 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
    data.offset[1]=1;
    data.offset[2]=2;
    data.offset[3]=3;
-   data.pixelPtr=(unsigned char*)calloc(data.width*data.height*4,sizeof(unsigned char));
 
-   /*Creer l'image de la palette*/
-   incrj=(double)(Field->Def->NJ)/(data.height+1);
-   incri=(double)(Field->Def->NI)/(data.width+1);
+   if (data.pixelPtr=(unsigned char*)calloc(data.width*data.height*4,sizeof(unsigned char))) {
 
-   for(y=0,idx=0;y<data.height;y++) {
-      for(x=0;x<data.width;x++) {
-         i=(double)x*incri;
-         j=Field->Def->NJ-(double)y*incrj;
-         nidx=j*Field->Def->NI+i;
-         Def_GetMod(Field->Def,nidx,val);
-         if (val!=Field->Def->NoData) {
-            VAL2COL(cidx,Field->Spec,val);
+      /*Creer l'image de la palette*/
+      incrj=(double)(Field->Def->NJ)/(data.height+1);
+      incri=(double)(Field->Def->NI)/(data.width+1);
 
-            data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][0];
-            data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][1];
-            data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][2];
-            data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][3];
+      for(y=0,idx=0;y<data.height;y++) {
+         for(x=0;x<data.width;x++) {
+            i=(double)x*incri;
+            j=Field->Def->NJ-(double)y*incrj;
+            nidx=j*Field->Def->NI+i;
+            Def_GetMod(Field->Def,nidx,val);
+            if (val!=Field->Def->NoData) {
+               VAL2COL(cidx,Field->Spec,val);
+
+               data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][0];
+               data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][1];
+               data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][2];
+               data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][3];
+            }
          }
       }
+
+      /*Envoyer le data dans l'image Tk*/
+      Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+
+      free(data.pixelPtr);
    }
 
-   /*Envoyer le data dans l'image Tk*/
-   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-//TK84   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-
-   free(data.pixelPtr);
-
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

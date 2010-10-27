@@ -1799,12 +1799,14 @@ TList* TList_Add(TList *List,void *Data) {
 
    TList *node=(TList*)malloc(sizeof(TList));
 
-   node->Next=List;
-   node->Prev=NULL;
-   node->Data=Data;
+   if (node) {
+      node->Next=List;
+      node->Prev=NULL;
+      node->Data=Data;
 
-   if (List)
-     List->Prev=node;
+      if (List)
+         List->Prev=node;
+   }
    return(node);
 }
 

@@ -174,8 +174,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
    int       i;
    TDataDef *def;
 
-   if (Def) {
-      def=(TDataDef*)malloc(sizeof(TDataDef));
+   if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
       def->Container=Def->Container;
       def->CellDim=Def->CellDim;
       def->NI=Def->NI;
@@ -202,8 +201,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
          if (def->Container) {
             def->Data[i]=Def->Data[i];
          } else {
-            if (Def->Data[i]) {
-               def->Data[i]=(char*)malloc(Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]);
+            if (Def->Data[i] && (def->Data[i]=(char*)malloc(Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]))) {
 //               def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,Def->Type>=6?TData_Size[Def->Type]:TData_Size[6]);
 //            def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,sizeof(float));
                memcpy(def->Data[i],Def->Data[i],Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]);
@@ -214,7 +212,6 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       }
       def->Mode=def->Data[0];
    }
-
    return(def);
 }
 
@@ -223,8 +220,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
    int       i;
    TDataDef *def;
 
-   if (Def) {
-      def=(TDataDef*)malloc(sizeof(TDataDef));
+   if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
       def->Container=0;
       def->CellDim=Def->CellDim;
       def->NI=Def->NI;

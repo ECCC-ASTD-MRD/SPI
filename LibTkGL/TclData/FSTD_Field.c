@@ -336,7 +336,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
          fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (%s)\n",Field->Spec->Topo);
       } else {
          if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
-         c_fstluk(gz,idx,&i,&j,&k);
+         if (gz)  c_fstluk(gz,idx,&i,&j,&k);
       }
       EZUnLock_RPNField();
       FSTD_FileUnset(NULL,head->FID);
@@ -499,7 +499,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[j],ip1);
             } else {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
-               c_fstluk(gz,idx,&ni,&nj,&nk);
+               if (gz)  c_fstluk(gz,idx,&ni,&nj,&nk);
             }
             EZUnLock_RPNField();
          }
@@ -563,7 +563,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->Levels[Level],ip1);
             } else {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
-               c_fstluk(gz,idx,&ni,&nj,&nk);
+               if (gz)  c_fstluk(gz,idx,&ni,&nj,&nk);
             }
             EZUnLock_RPNField();
          }
@@ -2266,8 +2266,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (Key<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Projection description field does not exist (c_fstinf failed)",(char*)NULL);
          } else {
-            proj=(char*)malloc(pni*pnj*4);
-            c_fstluk(proj,Key,&pni,&pnj,&nk);
+            if (proj=(char*)malloc(pni*pnj*4)) {
+               c_fstluk(proj,Key,&pni,&pnj,&nk);
+            }
          }
 
          Key=c_fstinf(file->Id,&pni,&pnj,&nk,-1,"",ig1,ig2,ig3,"","MTRX");
