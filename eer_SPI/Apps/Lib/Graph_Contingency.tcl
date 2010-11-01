@@ -985,9 +985,11 @@ proc Graph::Contingency::Update { Frame { GR {} } } {
 
       if { $data(FrameData)==$Frame && $Frame!="" } {
 
-         $data(FrameData).page.canvas configure -cursor watch
-         $data(Canvas) configure -cursor watch
-         update idletasks
+         catch {
+            $data(FrameData).page.canvas configure -cursor watch
+            $data(Canvas) configure -cursor watch
+            update idletasks
+         }
 
          if { [Page::Registered All Viewport $data(VP)]!=-1 } {
             Graph::Contingency::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) { fstdfield observation }]
@@ -998,8 +1000,10 @@ proc Graph::Contingency::Update { Frame { GR {} } } {
             Graph::Contingency::ItemDefine $gr $pos $data(Pos$pos)
          }
 
-         $data(Canvas) configure -cursor left_ptr
-         $data(FrameData).page.canvas configure -cursor left_ptr
+         catch {
+            $data(Canvas) configure -cursor left_ptr
+            $data(FrameData).page.canvas configure -cursor left_ptr
+         }
       }
    }
 }

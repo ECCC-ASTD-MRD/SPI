@@ -869,9 +869,11 @@ proc Graph::Scatter::Update { Frame { GR {} } } {
 
       if { $data(FrameData)==$Frame } {
 
-         $data(FrameData).page.canvas configure -cursor watch
-         $data(Canvas) configure -cursor watch
-         update idletasks
+         catch {
+            $data(FrameData).page.canvas configure -cursor watch
+            $data(Canvas) configure -cursor watch
+            update idletasks
+         }
 
          #----- Recuperer les donnees
 
@@ -886,8 +888,10 @@ proc Graph::Scatter::Update { Frame { GR {} } } {
          }
          Graph::PosSet $gr Scatter
 
-         $data(Canvas) configure -cursor left_ptr
-         $data(FrameData).page.canvas configure -cursor left_ptr
+         catch {
+            $data(Canvas) configure -cursor left_ptr
+            $data(FrameData).page.canvas configure -cursor left_ptr
+         }
       }
    }
 }

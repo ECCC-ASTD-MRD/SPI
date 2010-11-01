@@ -725,9 +725,11 @@ proc Graph::Section::Update { Frame { GR {} } } {
 
       if { $Graph::Data(Link$gr) && $data(FrameData)==$Frame } {
 
-         $data(FrameData).page.canvas configure -cursor watch
-         $data(Canvas) configure -cursor watch
-         update idletasks
+         catch {
+            $data(FrameData).page.canvas configure -cursor watch
+            $data(Canvas) configure -cursor watch
+            update idletasks
+         }
 
          #----- Recuperer les donnees
 
@@ -748,8 +750,10 @@ proc Graph::Section::Update { Frame { GR {} } } {
          Graph::PosSet $gr Section
          Graph::Section::FieldShow $gr
 
-         $data(Canvas) configure -cursor left_ptr
-         $data(FrameData).page.canvas configure -cursor left_ptr
+         catch {
+            $data(Canvas) configure -cursor left_ptr
+            $data(FrameData).page.canvas configure -cursor left_ptr
+         }
       }
    }
 }

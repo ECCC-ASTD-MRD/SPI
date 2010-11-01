@@ -811,12 +811,10 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
    if { $Map(Speed)==0.0 } {
       set data [$VP -pick $X $Y { trajectory observation metobs } False]
 
-      if { [llength $data] } {
-         set obj [lindex $data 1]
+      if { [llength $data] && [set tag [lindex $data 2]]!="" && [set obj [lindex $data 1]]!="" } {
          set id ""
          switch [lindex $data 0] {
-            "trajectory"  { set tag    [lindex $data 2]
-                            set parcel [trajectory define $obj -PARCEL $tag]
+            "trajectory"  { set parcel [trajectory define $obj -PARCEL $tag]
                             set info  "[trajectory define $obj -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
                             set coord  [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
                             set id     [trajectory define $obj -ID]
@@ -824,15 +822,13 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             append Page::Data(Value) "$id:$vals "
                           }
             "observation" {
-                            set tag   [lindex $data 2]
                             set info  [observation define $obj -ID $tag]
                             set coord [observation define $obj -COORD $tag]
                             set id    $obj
                             set vals  [observation define $obj -DATA $tag]
                             append Page::Data(Value) "$id:$vals "
                           }
-            "metobs"      { set tag   [lindex $data 2]
-                            set info  [lindex [metobs define $obj -ID $tag]]
+            "metobs"      { set info  [lindex [metobs define $obj -ID $tag]]
                             set coord [metobs define $obj -COORD $tag]
                             set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
                             set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]

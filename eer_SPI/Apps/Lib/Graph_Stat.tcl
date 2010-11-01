@@ -304,14 +304,18 @@ proc Graph::Stat::Update { Frame { GR {} } } {
 
          if { $frame==$Frame } {
 
-            $frame.page.canvas configure -cursor watch
-            $data(Canvas) configure -cursor watch
-            update idletasks
+            catch {
+               $frame.page.canvas configure -cursor watch
+               $data(Canvas) configure -cursor watch
+               update idletasks
+            }
 
             Graph::Stat::Graph $GR
 
-            $data(Canvas) configure -cursor left_ptr
-            $frame.page.canvas configure -cursor left_ptr
+            catch {
+               $data(Canvas) configure -cursor left_ptr
+               $frame.page.canvas configure -cursor left_ptr
+            }
          }
       }
    }
