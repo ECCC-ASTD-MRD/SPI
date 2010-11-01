@@ -52,6 +52,7 @@ typedef struct GDAL_File {
    char        *Name;
    char        *Id;
    char         Mode;
+   int          Sub;
 } GDAL_File;
 
 typedef struct GDAL_Band {

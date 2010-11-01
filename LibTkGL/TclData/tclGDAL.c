@@ -1227,8 +1227,15 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
 
    GDAL_File *file=NULL;
+   int        si;
+   char       subid[1024];
 
    if ((file=(GDAL_File*)TclY_HashDel(&GDAL_FileTable,Id))) {
+      for(si=0;si<file->Sub;si++) {
+         snprintf(subid,"%s%04i",1024,Id,si/2);
+         GDAL_FileClose(Interp,subid);
+      }
+
       GDALClose(file->Set);
       if (file->Ref)
          GeoRef_Destroy(Interp,file->Ref->Name);
@@ -1320,8 +1327,8 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    GDALRasterBandH band=NULL;
    GDALDriverH     driver=NULL;
    GDAL_File      *file;
-   int             i;
-   char            buf[256];
+   int             i,si=0;
+   char            buf[1024];
    char          **sub,*subid,*idx,*desc;
    double          tran[6],inv[6];
 
@@ -1368,20 +1375,20 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
          subid=(char*)malloc(strlen(Id)+4);
 
          /* Loop over bands */
-         for (i=0;sub[i]!=NULL;i++) {
-            sprintf(subid,"%s%03i",Id,i/2);
+         for (si=0;sub[si]!=NULL;si++) {
+            snprintf(subid,"%s%04i",1024,Id,si/2);
 
             /*Check for follow up descriptor*/
             desc=NULL;
-            if (sub[i+1]!=NULL) {
-               idx=index(sub[i+1],'=');
+            if (sub[si+1]!=NULL) {
+               idx=index(sub[si+1],'=');
                if (*(idx-1)=='C') {
                   desc=idx+1;
                }
             }
 
             /*Read sub dataset*/
-            idx=index(sub[i],'=');
+            idx=index(sub[si],'=');
             if (*(idx-1)=='E') {
                GDAL_FileOpen(Interp,subid,Mode,idx+1,NULL,desc);
             }
@@ -1406,6 +1413,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    file->Id=strdup(Id);
    realpath(Name,buf);
    file->Name=strdup(buf);
+   file->Sub=si;
    file->Set=set;
    file->Ref=NULL;
 
