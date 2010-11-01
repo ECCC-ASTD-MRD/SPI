@@ -113,7 +113,7 @@ proc MLDP::Launch { } {
       } else {
          set cpus "-cpus $Model::Param(NbCPUsMeteo)"
       }
-      set mem 20G
+      set mem 40G
 
       exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
          -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
