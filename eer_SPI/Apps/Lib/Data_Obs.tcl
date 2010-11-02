@@ -521,7 +521,6 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(IntervalParam) [lindex $mode 1]
 
    set Param(Font)      [dataspec configure $Spec -font]
-#   set Param(Font)      OBSFONTDEFAULT
    set Param(Factor)    [dataspec configure $Spec -factor]
    set Param(Delta)     [dataspec configure $Spec -delta]
    set Param(Unit)      [dataspec configure $Spec -unit]

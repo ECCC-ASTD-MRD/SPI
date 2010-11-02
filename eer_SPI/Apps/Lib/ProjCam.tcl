@@ -973,27 +973,6 @@ proc ProjCam::Zoom { Cam Frame Lens { Store False } } {
    }
 }
 
-proc ProjCam::ZoomOri { Cam Frame Lens { Store False } } {
-
-   upvar #0 ProjCam::Data${Cam}::Cam  cam
-
-   set t0 [set Viewport::Map(Grabbed) [clock click -milliseconds]]
-
-   if { $Store } {
-      lappend cam(LLens) [list $cam(Lens) $Viewport::Map(Lat) $Viewport::Map(Lon)]
-   }
-   set cam(Lens) $Lens
-   set Data(Name) ""
-
-   projcam configure $Frame -lens $Lens
-
-   update
-   if { $Viewport::Map(Grabbed)<=$t0 } {
-      Viewport::Resolution $Frame 1
-      Page::Update $Frame
-   }
-}
-
 #----------------------------------------------------------------------------
 # Nom      : <ProjCam::ZoomIn>
 # Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE

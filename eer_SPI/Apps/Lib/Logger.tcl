@@ -347,7 +347,7 @@ proc Log::Mail { Subject File { Address { } } } {
          }
       }
       if { $err } {
-         Log_Print ERROR "Problems while mailing info to $adress:\n\n\t"
+         Log_Print ERROR "Problems while mailing info to $address:\n\n\t"
       }
    }
 }
