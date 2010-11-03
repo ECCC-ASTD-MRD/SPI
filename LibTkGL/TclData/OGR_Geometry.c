@@ -71,13 +71,13 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    geom=OGR_GeometryGet(Name);
    if (!geom) {
       Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Geometry name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
@@ -349,11 +349,11 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    g0=OGR_GeometryGet(Name);
    if (!g0) {
       Tcl_AppendResult(Interp,"\n   OGR_GeometryStat: Geometry name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"option",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -361,25 +361,25 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case TRANSFORM:
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"[georeffrom] georefto");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (Objc==3) {
             ref=GeoRef_Get(Tcl_GetString(Objv[2]));
             if (!ref || !ref->Spatial) {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryStat: Georef name unknown or invalid spatial reference: \"",Tcl_GetString(Objv[2]),"\"",(char *)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             ref0=GeoRef_Get(Tcl_GetString(Objv[1]));
             if (!ref0 || !ref0->Spatial) {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryStat: Georef name unknown or invalid spatial reference: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             OGR_G_AssignSpatialReference(g0,ref0->Spatial);
          } else {
             ref=GeoRef_Get(Tcl_GetString(Objv[1]));
             if (!ref || !ref->Spatial) {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryStat: Georef name unknown or invalid spatial reference: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
          }
          OGR_G_TransformTo(g0,ref->Spatial);
@@ -388,7 +388,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case DISTANCE:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryStat: Invalid geometry",(char*)NULL);
@@ -424,7 +424,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case BUFFER:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"dist nseg");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
          Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
@@ -438,7 +438,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case INTERSECTION:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -451,7 +451,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case UNION:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -464,7 +464,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case DIFFERENCE:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -477,7 +477,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case SYMMETRICDIFFERENCE:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -490,7 +490,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case INTERSECT:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -506,7 +506,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case EQUAL:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
         if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -522,7 +522,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case DISJOINT:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -538,7 +538,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case TOUCH:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -554,7 +554,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case CROSS:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -570,7 +570,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case WITHIN:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -586,7 +586,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case CONTAIN:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -602,7 +602,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case OVERLAP:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(g1=OGR_GeometryGet(Tcl_GetString(Objv[1])))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
@@ -618,13 +618,13 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case SIMPLIFY:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
          GPC_Simplify(dist,g0);
          break;
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

@@ -732,7 +732,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
                      OGR_F_SetGeometryDirectly(layer->Feature[f],new);
                   } else {
-                     fprintf(stderr,"Bad Buffer on feature %i\n",f);
+                     fprintf(stderr,"OGR_LayerStats: Bad Buffer on feature %i\n",f);
                   }
                }
             }
@@ -1336,6 +1336,7 @@ void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
  *
  * Parametres :
  *  <Buf>     : Chaine a recuperer
+ *  <Spec>    : Data specification
  *  <Field>   : Structure Champs a recuperer
  *  <Feature> : Feature
  *  <Index>   : Index du champs recuperer
@@ -1347,7 +1348,7 @@ void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
  *
  *----------------------------------------------------------------------------
 */
-void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
+void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
    int   year,month,day,hour,min,sec,tz;
 
@@ -1357,7 +1358,8 @@ void OGR_SingleTypeString(char *Buf,OGRFieldDefnH Field,OGRFeatureH Feature,int 
          break;
 
       case OFTReal:
-         sprintf(Buf,"%f",OGR_F_GetFieldAsDouble(Feature,Index));
+         DataSpec_Format(Spec,VAL2SPEC(Spec,OGR_F_GetFieldAsDouble(Feature,Index)),Buf);
+//         sprintf(Buf,"%f",OGR_F_GetFieldAsDouble(Feature,Index));
          break;
 
       case OFTString:
@@ -2669,7 +2671,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             for(f=0;f<Layer->GFeature;f++) {
                if (Layer->Select[f]) {
                   if (Projection_Pixel(Proj,VP,Layer->Loc[f],vr)) {
-                     OGR_SingleTypeString(lbl,field,Layer->Feature[f],Layer->Label[0]);
+                     OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[f],Layer->Label[0]);
                      vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
                      vr[1]+=5;
                      if (Interp) {
@@ -2688,7 +2690,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
             for(f=0;f<Layer->NSFeature;f++) {
                if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
-                  OGR_SingleTypeString(lbl,field,Layer->Feature[Layer->SFeature[f]],Layer->Label[0]);
+                  OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[Layer->SFeature[f]],Layer->Label[0]);
                   vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
                   vr[1]+=5;
                   if (Interp) {
