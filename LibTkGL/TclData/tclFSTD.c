@@ -1367,6 +1367,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       if (ok<0) {
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed)",(char *)NULL);
          ok=c_fclos(File->Id);
+         EZUnLock_RPNFile();
          return(-1);
       }
 
