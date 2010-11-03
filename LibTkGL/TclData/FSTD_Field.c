@@ -648,6 +648,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref) {
    char  var[5];
    char  lbl[13];
 
+   EZLock_RPNField();
    l = c_fstinf(Unit,&ni,&nj,&nk,-1,"",-1,-1,-1,"X","HY");
    if (l>=0) {
        l = c_fstprm(l,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
@@ -659,6 +660,7 @@ int ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref) {
    } else {
       fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).\n");
    }
+   EZUnLock_RPNField();
    return(l>=0);
 }
 
@@ -672,6 +674,7 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
    char  lbl[13];
    double *buf;
 
+   EZLock_RPNField();
    key=l=c_fstinf(Unit,&ni,&nj,&nk,-1,"",-1,-1,-1,"X","!!");
    if (l>=0) {
        l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
@@ -711,6 +714,7 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
    } else {
       fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).\n");
    }
+   EZUnLock_RPNField();
    return(l>=0);
 }
 
@@ -2074,8 +2078,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       Key=c_fstinf(file->Id,&ni,&nj,&nk,DateV,Eticket,IP1,IP2,IP3,TypVar,NomVar);
       if (Key<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Specified field does not exist (c_fstinf failed)",(char*)NULL);
-         FSTD_FileUnset(Interp,file);
          EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
       }
    }
@@ -2097,8 +2101,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    if (ok<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not get field information for ",Name," (c_fstprm failed)",(char*)NULL);
-      FSTD_FileUnset(Interp,file);
       EZUnLock_RPNField();
+      FSTD_FileUnset(Interp,file);
       return(TCL_ERROR);
    }
 
@@ -2120,8 +2124,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    if ((uvw=FSTD_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
       field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),dtype);
       if (!field) {
-         FSTD_FileUnset(Interp,file);
          EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
       }
 
@@ -2138,8 +2142,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
          if (ok<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find first component field ",uvw->UU," (c_fstinf failed)",(char*)NULL);
-            FSTD_FileUnset(Interp,file);
             EZUnLock_RPNField();
+            FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[0],ok,&ni,&nj,&nk);
@@ -2154,8 +2158,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
          if (ok<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find second component field ",uvw->VV," (c_fstinf failed)",(char*)NULL);
-            FSTD_FileUnset(Interp,file);
             EZUnLock_RPNField();
+            FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[1],ok,&ni,&nj,&nk);
@@ -2170,8 +2174,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
          if (ok<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find third component field ",uvw->WW," (c_fstinf failed)",(char*)NULL);
-            FSTD_FileUnset(Interp,file);
             EZUnLock_RPNField();
+            FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
             c_fstluk(field->Def->Data[2],ok,&ni,&nj,&nk);
@@ -2355,8 +2359,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
    c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,idxs,&nk,512);
 
    if (nk<=1) {
-      FSTD_FileUnset(Interp,head->FID);
       EZUnLock_RPNField();
+      FSTD_FileUnset(Interp,head->FID);
       return(0);
    }
 
@@ -2416,8 +2420,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
    /*Augmenter la dimension du tableau*/
    if (!DataDef_Resize(Field->Def,ni,nj,nk)) {
       fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
-      FSTD_FileUnset(Interp,head->FID);
       EZUnLock_RPNField();
+      FSTD_FileUnset(Interp,head->FID);
       return(0);
    }
 
@@ -2463,8 +2467,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
 
          if (ok<0) {
             fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
-            FSTD_FileUnset(Interp,head->FID);
             EZUnLock_RPNField();
+            FSTD_FileUnset(Interp,head->FID);
             return(0);
          }
       }
@@ -2487,8 +2491,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
       Data_Clean(Field,1,1,1);
    }
 
-   FSTD_FileUnset(Interp,head->FID);
    EZUnLock_RPNField();
+   FSTD_FileUnset(Interp,head->FID);
 
    Data_GetStat(Field);
 #endif

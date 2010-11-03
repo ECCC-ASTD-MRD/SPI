@@ -539,12 +539,14 @@ TDataDef* Calc_Dir(TDataDef* A) {
          }
       }
 
+      EZLock_RPNInt();
       for(k=0;k<A->NK;k++) {
          Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);
          c_gdxywdval(GField->Ref->Id,spd,p,p0,p1,fx,fy,FSIZE2D(A));
       }
+      EZUnLock_RPNInt();
 
       free(fx);
       free(fy);
