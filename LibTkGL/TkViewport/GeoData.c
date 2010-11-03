@@ -1401,8 +1401,6 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    }
 
-   vbuf=GDB_VBufferAlloc(height);
-
    if (!map) {
 
       /*On divise chaque tuile par 5 afin de creer une courbure*/
@@ -1411,6 +1409,8 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       dty=1.0/(Delta/(Delta/5.0));
       loc.Elev=0.0;
       loc.Lon=Lon0;
+
+      vbuf=GDB_VBufferAlloc(Delta*dc);
 
       /*Construction de la surface en serie de quad dans la verticale*/
       for(tx=-dtx,x=0;x<=Delta;x+=dc,tx+=dtx) {
@@ -1449,8 +1449,9 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
             glTranslated(-d,0.0,0.0);
          }
       }
-
    } else {
+
+      vbuf=GDB_VBufferAlloc(height);
 
       /* Calculer la position de la tuile*/
       if (!Topo->Vr) {
