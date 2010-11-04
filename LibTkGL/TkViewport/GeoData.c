@@ -1388,12 +1388,24 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    int              width=Topo->Width;
    int              height=Topo->Height;
 
+   GLfloat emi[4]  = { 0.12, 0.12, 0.12, 1.0 };
+   GLfloat amb[4]  = { 0.97, 0.97, 0.97, 1.0 };
+   GLfloat spe[4]  = { 1.0, 1.0, 1.0, 1.0 };
+//   GLfloat dif[4]  = { 0.25, 0.25, 0.25, 1.0 };
+   GLfloat dif[4]  = { 0.9, 0.9, 0.9, 1.0 };
+   GLfloat shi     = 100.0;
+
    if (GLRender->Resolution>2) {
       dt=2;
    }
 
-   glColor3ub(255,255,255);
    glNormal3dv(Proj->Nr);
+
+   glMaterialf(GL_FRONT,GL_SHININESS,shi);
+   glMaterialfv(GL_FRONT,GL_AMBIENT,amb);
+   glMaterialfv(GL_FRONT,GL_DIFFUSE,dif);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,spe);
+   glMaterialfv(GL_FRONT,GL_EMISSION,emi);
 
    if (Topo->Tex!=-1) {
       glEnable(GL_TEXTURE_2D);
@@ -1825,7 +1837,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   glPolygonMode(GL_FRONT,GL_FILL);
                   glEnable(GL_LIGHTING);
                   glEnable(GL_LIGHT0);
-                  glEnable(GL_COLOR_MATERIAL);
                   glEnable(GL_DEPTH_TEST);
                }
                GDB_MapRender(Proj,&tile->Topo,lat,lon,GDB->DegT);
@@ -1843,7 +1854,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    }
 
    glDisable(GL_DEPTH_TEST);
-   glDisable(GL_COLOR_MATERIAL);
    glDisable(GL_LIGHTING);
    glDisable(GL_LIGHT0);
    return(ras);
