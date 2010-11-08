@@ -980,7 +980,7 @@ proc NowCaster::Obs::ModelSave { } {
          set var  [lindex $desc 0]
          Obs::ParamGet $var
          lappend mparam "dataspec configure \"$var\" -factor $Obs::Param(Factor) -value $Obs::Param(Order) $Obs::Param(Mantisse) -size $Obs::Param(Size)\
-            -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\" -unit \"$Obs::Param(Unit)\" -rendercontour $Obs::Param(Contour)\
+            -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\" -unit \"$Obs::Param(Unit)\" -width $Obs::Param(Width)\
             -rendervector $Obs::Param(Vector) -rendertexture $Obs::Param(Texture) -rendervolume $Obs::Param(Volume)\
             -rendercoord $Obs::Param(Coord) -rendervalue $Obs::Param(Value) -renderlabel $Obs::Param(Label)\
             -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Intervals)\" -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)"
