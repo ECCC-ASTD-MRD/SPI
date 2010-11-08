@@ -328,14 +328,13 @@ int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelo
    }
 
    if (OGR_G_GetGeometryType(Geom1)!=wkbPolygon && (n1=OGR_G_GetGeometryCount(Geom1))) {
-      for(n1=0;n1<OGR_G_GetGeometryCount(Geom1);n1++) {
+     for(n1=0;n1<OGR_G_GetGeometryCount(Geom1);n1++) {
          geom=OGR_G_GetGeometryRef(Geom1,n1);
          OGR_G_GetEnvelope(geom,&env);
-         if (!GPC_Within(Geom0,geom,Env0,&env)) {
-            return(0);
+         if (GPC_Within(Geom0,geom,Env0,&env)) {
+            return(1);
          }
       }
-      return(1);
    }
 
    /*Verifier l'inclusion dans les trous pour les polygones*/
