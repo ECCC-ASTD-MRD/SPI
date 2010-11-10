@@ -199,8 +199,8 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
    ProjCam *cam=NULL;
    int      idx,i,n;
 
-   static CONST char *sopt[] = { "-to","-from","-up","-lens","-show",NULL };
-   enum                opt { TO,FROM,UP,LENS,SHOW };
+   static CONST char *sopt[] = { "-perspective","-to","-from","-up","-lens","-show",NULL };
+   enum                opt { PERSPECTIVE,TO,FROM,UP,LENS,SHOW };
 
    cam=ProjCam_Get(Name);
    if (!cam) {
@@ -214,6 +214,14 @@ static int ProjCam_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
       }
 
       switch ((enum opt)idx) {
+         case PERSPECTIVE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(cam->Perspective));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&cam->Perspective);
+            }
+            break;
+
          case TO:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -473,13 +481,14 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
    Vect_Init(cam->From    ,0.0,0.0,2.0);
    Vect_Init(cam->To      ,0.0,0.0,1.0);
    Vect_Init(cam->Up      ,0.0,1.0,0.0);
-   cam->Lens=1.0;
-   cam->NbC=0;
-   cam->Frame=0;
-   cam->Show=0;
-   cam->Update=0;
-   cam->Pix=0.0;
-   cam->Controls=NULL;
+   cam->Perspective  = 0;
+   cam->Lens         = 1.0;
+   cam->NbC          = 0;
+   cam->Frame        = 0;
+   cam->Show         = 0;
+   cam->Update       = 0;
+   cam->Pix          = 0.0;
+   cam->Controls     = NULL;
 
    ProjCam_ParamsInit(cam);
 

@@ -62,7 +62,6 @@ typedef struct Projection {
    Vect4f                LightPos; /*Position du soleil dans l'espace GL*/
    Vect3d                Nr;       /*Normale*/
    int                   Sun;      /*Activation du soleil*/
-   int                   Ortho;    /*Mode orthorgaphique*/
    int                   Loading;  /*Indicateur de lecture en arriere plan*/
    int                   MinSize;  /*Dimension minimale des features a afficher*/
    float                 L,LI,LJ;         /*Longueur des axes*/

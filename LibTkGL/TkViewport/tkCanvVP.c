@@ -1278,6 +1278,8 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       z=4.0*VP->Cam->Clip;
    }
 
+//   VP->Cam->Perspective=1;
+
    /*Ajuster la projection pour garder un aspect correct*/
    if ((VP->Width/Proj->LI)>(VP->Height/Proj->LJ)) {
       as=(double)VP->Width/VP->Height;
@@ -1285,34 +1287,38 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       if (Tile) {
          trOrtho(GLRender->TRCon,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect,z);
       } else {
-         if (Proj->Ortho) {
-            glOrtho(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect,z);
-         } else {
+         if (VP->Cam->Perspective) {
             dl*=0.35;
-            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,1.0+z*0.80);
+            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,3.0+z*0.80);
+         } else {
+            glOrtho(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect,z);
          }
       }
+
    } else {
       as=(double)VP->Height/VP->Width;
       dl=Proj->LI;
       if (Tile) {
          trOrtho(GLRender->TRCon,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
       } else {
-         if (Proj->Ortho) {
-            glOrtho(-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
-         } else {
+         if (VP->Cam->Perspective) {
             dl*=0.35;
-            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,1.0+z*0.80);
+            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,3.0+z*0.80);
+         } else {
+            glOrtho(-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
          }
       }
    }
+
+   VP->Cam->DOV[1]=VP->Cam->DOV[0]=VP->Cam->Aspect*as*dl;
+   VP->Cam->FOV[1]=VP->Cam->FOV[0]=atan(VP->Cam->DOV[0]*0.5);
 
    /*Effectuer les manipulations aux niveau du modele*/
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
    /*In case of perspective projection*/
-   if (!Proj->Ortho) {
+   if (VP->Cam->Perspective) {
       glTranslatef (0.0, 0.0,-1.0);
    }
 

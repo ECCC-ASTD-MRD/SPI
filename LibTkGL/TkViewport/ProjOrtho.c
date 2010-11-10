@@ -190,6 +190,14 @@ void Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       /*Recuperer le rayon du globe*/
       delt=((VP->Width>VP->Height)?VP->Height>>1:VP->Width>>1)/VP->Cam->Aspect;
 
+      if (VP->ColorFLake && VP->ColorFCoast) {
+         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
+         glDisable(GL_STENCIL_TEST);
+         glPolygonMode(GL_FRONT,GL_FILL);
+         gluSphere(GLRender->GLQuad,1,64,64);
+         glEnable(GL_STENCIL_TEST);
+      }
+
       /*Afficher les contours du globe*/
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
@@ -203,11 +211,12 @@ void Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glScaled(delt,delt,1.0);
 
       if (VP->ColorFLake && VP->ColorFCoast) {
-         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
+/*         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
          glDisable(GL_STENCIL_TEST);
          glPolygonMode(GL_FRONT,GL_FILL);
          glDrawCircle(64,GL_POLYGON);
          glEnable(GL_STENCIL_TEST);
+*/
       } else {
          glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
          glLineWidth(ABS(Proj->Geo->Params.Coast));
@@ -757,6 +766,10 @@ int Ortho_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterSphere(VP->Cam->Basis,VP->Cam->A,obj,r)) {
 
+      if (VP->Cam->Perspective) {
+         obj[0]*=obj[2];
+         obj[1]*=obj[2];
+      }
       r=hypot(obj[0],obj[1]);
 
       if (r<=1.0) {

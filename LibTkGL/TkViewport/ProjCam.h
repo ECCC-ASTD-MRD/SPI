@@ -49,6 +49,8 @@ typedef struct ProjCam {
    int             Show;
    int             Update;
    double          Lens,Dist,A,Aspect,Clip,Frame,Pix;
+   int             Perspective;
+   double          FOV[2],DOV[2];
 } ProjCam;
 
 

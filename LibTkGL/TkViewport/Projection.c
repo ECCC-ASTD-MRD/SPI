@@ -604,9 +604,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    int         i,tok,idx;
    double      lat,lon,ni,nj,tmp;
 
-   static CONST char *sopt[] = { "-ortho","-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
+   static CONST char *sopt[] = { "-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
                                  "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis","-minsize",NULL };
-   enum                opt { ORTHO,LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
+   enum                opt { LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
                              MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS,MINSIZE };
 
    proj=Projection_Get(Name);
@@ -622,14 +622,6 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
       }
 
       switch ((enum opt)idx) {
-         case ORTHO:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(proj->Ortho));
-            } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&proj->Ortho);
-            }
-            break;
-
          case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -1062,15 +1054,14 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
 
    /*Initialiaser les valeurs des parametres*/
 
-   proj->PixDist   = 0.0;
-   proj->Type      = NULL;
-   proj->Data      = NULL;
-   proj->NbData    = 0;
-   proj->Date      = 0;
-   proj->Sun       = 0;
-   proj->Loading   = 0;
-   proj->MinSize   = 5;
-   proj->Ortho     = 1;
+   proj->PixDist     = 0.0;
+   proj->Type        = NULL;
+   proj->Data        = NULL;
+   proj->NbData      = 0;
+   proj->Date        = 0;
+   proj->Sun         = 0;
+   proj->Loading     = 0;
+   proj->MinSize     = 5;
 
    /*Parametres commun*/
    proj->Scale        = 1;

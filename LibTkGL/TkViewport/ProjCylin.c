@@ -759,11 +759,21 @@ unsigned long Cylin_Project(const Projection* restrict const Proj,GeoVect *Loc,G
 int Cylin_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    Vect3d obj;
-   double depth=1.0;
+   double depth=0.0;
 
    gluUnProject(Pix[0],VP->Height-Pix[1],depth,VP->GLModS,VP->GLProj,VP->GLView,&obj[0],&obj[1],&obj[2]);
 
+
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
+
+      if (VP->Cam->Perspective) {
+         obj[0]*=obj[2];
+         obj[1]*=obj[2];
+      }
+/*   VP->Cam->FOV[0]=atan2(obj[0],obj[2]);
+   VP->Cam->FOV[1]=atan2(obj[1],obj[2]);
+   obj[0]=tan(VP->Cam->FOV[0]);
+   obj[1]=tan(VP->Cam->FOV[1]);*/
 
       Loc->Lon=Proj->Lon+obj[0]*90.0;
       Loc->Lat=Proj->Lat+obj[1]*90.0;
