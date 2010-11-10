@@ -130,31 +130,29 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    }
 
-   /*Figure out dimensions to read , if passed in limits are 0, read the whole thing*/
-   rx=ry=1;
-
-   /*Add border to dimensions to read*/
-   X0-=BD;X1+=BD;
-   Y0-=BD;Y1+=BD;
-
-   /*Check for limit overflow*/
-   X0=X0<0?0:X0; X1=X1>=nx?nx-1:X1;
-   Y0=Y0<0?0:Y0; Y1=Y1>=ny?ny-1:Y1;
-
-   /*If size is smaller than 1 then read the whole thing*/
-   if ((nx=X1-X0+1)<1) {
+   /*If size is not specified, then read the whole thing*/
+   if (X0==-1 || Y0==-1 || X1==-1 || Y1==-1) {
       nx=GDALGetRasterBandXSize(hband);
       X0=0;
       X1=nx-1;
       BD=0;
       rx=0;
-   }
-   if ((ny=Y1-Y0+1)<1) {
+
       ny=GDALGetRasterBandYSize(hband);
       Y0=0;
       Y1=ny-1;
       BD=0;
       ry=0;
+   } else {
+      /*Add border to dimensions to read*/
+      X0-=BD;X1+=BD;
+      Y0-=BD;Y1+=BD;
+
+      /*Check for limit overflow*/
+      X0=X0<0?0:X0; X1=X1>=nx?nx-1:X1;
+      Y0=Y0<0?0:Y0; Y1=Y1>=ny?ny-1:Y1;
+
+      rx=ry=1;
    }
 
    if (band->Def)

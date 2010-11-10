@@ -452,7 +452,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                }
             }
          }
-         x0=y0=x1=y1=bd=0;
+         x0=y0=x1=y1=-1;bd=0;
          if (Objc==5) {
             Tcl_GetBooleanFromObj(Interp,Objv[4],&full);
          }
