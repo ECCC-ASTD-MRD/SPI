@@ -24,7 +24,7 @@ package require TclData
 
 puts \n[file tail [info script]]
 
-eval file delete  [glob DataOut/GDAL_Basic.*]
+catch { eval file delete [glob -nocomplain DataOut/GDAL_Basic.*] }
 
 #----- Afficher la liste des formats reconnus
 

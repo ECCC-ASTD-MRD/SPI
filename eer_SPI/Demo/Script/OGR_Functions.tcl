@@ -44,7 +44,7 @@ puts  "   Reference projection: [georef define $ref0 -projection]"
 ogrlayer stats LAYER0 -transform LLREF $ref0
 
 #----- Make a buffer on the layer
-#ogrlayer stats LAYER0 -buffer .001 3
+#ogrlayer stats LAYER0 -buffer 1.1 10
 
 #----- simplify the geometry
 ogrlayer stats LAYER0 -simplify  3
@@ -80,9 +80,15 @@ set inter [ogrgeometry stats $geom0 -intersection $geom1]
 puts  "   Intersection area   : [ogrgeometry stats $inter -area]"
 
 #----- Let's create a point
-ogrgeometry create POINT Polygon
-ogrgeometry define POINT -points { 10 10 11 11 20 11 10 10 }
-puts  "   Obj area            : [ogrgeometry stats POINT -area]"
+ogrgeometry create POLY "Polygon"
+ogrgeometry create RING "Linear Ring"
+ogrgeometry define RING -points { 10 10 11 11 20 11 10 10 }
+ogrgeometry define POLY -geom True RING
+puts  "   Obj area            : [ogrgeometry stats POLY -area]"
+puts  "   Obj points          : [ogrgeometry define [ogrgeometry define POLY -geom] -points]"
+
+set geom [ogrgeometry stats POLY -buffer 1.0 10]
+puts  "   Obj buffered points : [ogrgeometry define [ogrgeometry define $geom -geom] -points]"
 
 #----- Try some sql
 ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH="South America" }

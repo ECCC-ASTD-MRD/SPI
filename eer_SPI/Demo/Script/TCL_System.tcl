@@ -57,7 +57,7 @@ puts "   Data size  : [system limit -data]"
 puts "   Stack size : [system limit -stack]"
 
 system limit -stack 3600
-puts "Stack size :[system limit -stack]"
+puts "   Stack new size :[system limit -stack]"
 
 puts "\nSystem usage for process"
 after 5000
