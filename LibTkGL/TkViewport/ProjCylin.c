@@ -766,7 +766,7 @@ int Cylin_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
 
-      if (VP->Cam->Perspective) {
+      if (Proj->Perspective) {
          obj[0]*=obj[2];
          obj[1]*=obj[2];
       }

@@ -75,6 +75,7 @@ typedef struct Projection {
    ViewportItem         *VP;              /*Definitions des parametres d'affichages du Viewport*/
    TGeoRef              *Ref;             /*GeoReference des donnees projection grille*/
    int                   Geographic;      /*Indicateur de projection geographique*/
+   int                   Perspective;     /*Affichage en perspective*/
 } Projection;
 
 typedef int           (Projection_CallLocate)       (Projection *Proj,double Lat,double Lon,int Undo);

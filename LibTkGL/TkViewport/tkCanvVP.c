@@ -1278,8 +1278,6 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       z=4.0*VP->Cam->Clip;
    }
 
-//   VP->Cam->Perspective=1;
-
    /*Ajuster la projection pour garder un aspect correct*/
    if ((VP->Width/Proj->LI)>(VP->Height/Proj->LJ)) {
       as=(double)VP->Width/VP->Height;
@@ -1287,7 +1285,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       if (Tile) {
          trOrtho(GLRender->TRCon,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect,z);
       } else {
-         if (VP->Cam->Perspective) {
+         if (Proj->Perspective) {
             dl*=0.35;
             glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,3.0+z*0.80);
          } else {
@@ -1301,7 +1299,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       if (Tile) {
          trOrtho(GLRender->TRCon,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
       } else {
-         if (VP->Cam->Perspective) {
+         if (Proj->Perspective) {
             dl*=0.35;
             glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,3.0+z*0.80);
          } else {
@@ -1318,7 +1316,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    glLoadIdentity();
 
    /*In case of perspective projection*/
-   if (VP->Cam->Perspective) {
+   if (Proj->Perspective) {
       glTranslatef (0.0, 0.0,-1.0);
    }
 

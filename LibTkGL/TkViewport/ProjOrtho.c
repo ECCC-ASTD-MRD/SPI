@@ -766,7 +766,7 @@ int Ortho_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
    if (Vect_InterSphere(VP->Cam->Basis,VP->Cam->A,obj,r)) {
 
-      if (VP->Cam->Perspective) {
+      if (Proj->Perspective) {
          obj[0]*=obj[2];
          obj[1]*=obj[2];
       }
