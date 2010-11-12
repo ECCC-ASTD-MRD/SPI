@@ -222,13 +222,13 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_ListObjAppendElement(Interp,sublst,Tcl_NewStringObj(OGR_Fld_GetNameRef(field),-1));
                   Tcl_ListObjAppendElement(Interp,sublst,OGR_GetTypeObj(Interp,field,layer->Feature[f],j));
                   Tcl_ListObjAppendElement(Interp,lst,sublst);
-                  Tcl_SetObjResult(Interp,lst);
                }
+               Tcl_SetObjResult(Interp,lst);
             } else if (Objc==3) {
                j=OGR_F_GetFieldIndex(layer->Feature[f],Tcl_GetString(Objv[++i]));
                if (j<0) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid Field",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                } else {
                   field=OGR_FD_GetFieldDefn(layer->Def,j);
                   Tcl_SetObjResult(Interp,OGR_GetTypeObj(Interp,field,layer->Feature[f],j));
@@ -237,7 +237,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                j=OGR_F_GetFieldIndex(layer->Feature[f],Tcl_GetString(Objv[++i]));
                if (j<0) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid Field",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                } else {
                   field=OGR_FD_GetFieldDefn(layer->Def,j);
                   layer->Update=1;
@@ -953,7 +953,7 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
    }
 
    if (n==1 && ((fls && !vls) || (!fls && vls))) {
-      Tcl_AppendResult(Interp,"\n   OGR_LayerSelect: Invalid predicate types",(char*)NULL);
+      Tcl_AppendResult(Interp,"\n   OGR_LayerSelectTest: Invalid predicate types",(char*)NULL);
       return(0);
    }
 
@@ -1045,10 +1045,11 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
 */
 int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 
-   Tcl_Obj *st,*it,*op,*val,*fd;
-   int      f,n,i,ns,nf,fld,ni,len,err;
-   regex_t *exp=NULL;
-   char    *msg;
+   Tcl_Obj      *st,*it,*op,*val,*fd;
+   int           f,n,i,ns,nf,fld,ni,len,err;
+   regex_t      *exp=NULL;
+   char         *msg;
+   OGRFieldDefnH defn=NULL;
 
    Tcl_ListObjLength(Interp,Predicates,&ns);
 
@@ -1085,6 +1086,14 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
          return(TCL_OK);
       }
 
+      /*Get the specified feature field*/
+      fld=OGR_FD_GetFieldIndex(Layer->Def,Tcl_GetString(it));
+      if (fld==-1) {
+         Tcl_AppendResult(Interp,"\n   OGR_LayerSelect: Invalid field",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      defn=OGR_FD_GetFieldDefn(Layer->Def,fld);
+
       /*In case of regexp selection*/
       if (strcmp(Tcl_GetString(op),"~=")==0) {
          exp=(regex_t*)malloc(sizeof(regex_t));
@@ -1102,18 +1111,13 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
       /*Parse every feature*/
       for(f=0;f<Layer->NFeature;f++) {
 
-         /*Get the specified feature field*/
-         fld=OGR_FD_GetFieldIndex(Layer->Def,Tcl_GetString(it));
-         if (fld==-1) {
-            Tcl_AppendResult(Interp,"\n   OGR_LayerSelect: Invalid field",(char*)NULL);
-            return(TCL_ERROR);
-         }
-         fd=OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(Layer->Def,fld),Layer->Feature[f],fld);
+         fd=OGR_GetTypeObj(Interp,defn,Layer->Feature[f],fld);
 
          /*Test for validity*/
          if (!OGR_LayerSelectTest(Interp,fd,val,op,exp)) {
             Layer->Select[f]=0;
          }
+         Tcl_DecrRefCount(fd);
       }
       if (exp) {
          regfree(exp);
@@ -1250,12 +1254,6 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
 
    int          n,nb,year,month,day,hour,min,sec,tz,dt,tm;
    time_t       time;
-   char         **clist;
-   const int    *ilist;
-   const double *dlist;
-   Tcl_Obj       *obj;
-
-   obj=Tcl_NewObj();
 
    switch (OGR_Fld_GetType(Field)) {
       case OFTInteger:
