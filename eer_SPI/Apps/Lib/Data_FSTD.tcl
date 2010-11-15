@@ -755,7 +755,6 @@ proc FSTD::ParamGet { { Spec "" } } {
 
 proc FSTD::ParamSet { { Spec "" } } {
    variable Param
-   variable Params
    variable Data
 
    if { $Spec=="" } {
@@ -767,6 +766,7 @@ proc FSTD::ParamSet { { Spec "" } } {
    }
 
    set inter $Param(Intervals)
+   set label {}
    set min   ""
    set max   ""
 
@@ -782,13 +782,23 @@ proc FSTD::ParamSet { { Spec "" } } {
       set inter {}
    }
 
+   if { [string first "(" $Param(Intervals)]!=-1 } {
+      set inter {}
+      foreach { val } [split $Param(Intervals) )] {
+         if { [llength [set val [split $val (]]]>1 } {
+            lappend inter [lindex $val 0]
+            lappend label [lindex $val 1]
+         }
+      }
+   }
+
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) -mapall $Param(MapAll) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) \
-      -intervals $inter -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam)
+      -intervals $inter -interlabels $label -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 
    catch { $Data(ApplyButton) configure -state normal }
 

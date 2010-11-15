@@ -502,7 +502,6 @@ proc Obs::ParamFrame { Frame Apply } {
 proc Obs::ParamGet { { Spec "" } } {
    variable Data
    variable Param
-   variable Resources
 
    if { $Spec=="" } {
       set Spec $Param(Spec)
@@ -572,7 +571,6 @@ proc Obs::ParamGet { { Spec "" } } {
 proc Obs::ParamSet { { Spec "" } } {
    variable Data
    variable Param
-   variable Resources
 
    if { $Spec=="" } {
       set Spec $Param(Spec)
@@ -583,9 +581,9 @@ proc Obs::ParamSet { { Spec "" } } {
    }
 
    set inter $Param(Intervals)
+   set label {}
    set min   ""
    set max   ""
-   set var   [dataspec configure $Spec -desc]
 
    #----- Verifier pour un range plutot que des niveaux
 
@@ -599,15 +597,20 @@ proc Obs::ParamSet { { Spec "" } } {
       set inter {}
    }
 
-   if { $Param(IntervalMode)!="NONE" } {
-      dataspec configure $Spec -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam)
-   } else {
-      dataspec configure $Spec -min $min -max $max -intervals $inter -intervalmode $Param(IntervalMode) $Param(IntervalParam)
+   if { [string first "(" $Param(Intervals)]!=-1 } {
+      set inter {}
+      foreach { val } [split $Param(Intervals) )] {
+         if { [llength [set val [split $val (]]]>1 } {
+            lappend inter [lindex $val 0]
+            lappend label [lindex $val 1]
+         }
+      }
    }
 
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -width $Param(Width) -font $Param(Font) -colormap $Param(Map) \
       -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
-      -rendervolume $Param(Volume) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo)
+      -rendervolume $Param(Volume) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo) \
+      -min $min -max $max -intervals $inter -interlabels $label -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 
    catch { $Data(ApplyButton) configure -state normal }
 }
