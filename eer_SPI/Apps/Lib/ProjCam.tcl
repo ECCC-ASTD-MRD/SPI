@@ -259,7 +259,8 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
 #----------------------------------------------------------------------------
 
 proc ProjCam::Create { Cam } {
-   variable Data
+   variable Param
+
 
    if { [projcam is $Cam] } {
       return
@@ -282,9 +283,9 @@ proc ProjCam::Create { Cam } {
    }
 
    projcam create $Cam
-   projcam configure $Cam -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To) -up $ProjCam::Param(Up)
-   projcam define $Cam -circleto $ProjCam::Param(CTX)  $ProjCam::Param(CTY) $ProjCam::Param(CFZ)
-   projcam define $Cam -circlefrom $ProjCam::Param(CFX)  $ProjCam::Param(CFY) $ProjCam::Param(CFZ)
+   projcam configure $Cam -lens $Param(Lens) -from $Param(From) -to $Param(To) -up $Param(Up)
+   projcam define $Cam -circleto $Param(CTX)  $Param(CTY) $Param(CFZ)
+   projcam define $Cam -circlefrom $Param(CFX)  $Param(CFY) $Param(CFZ)
 }
 
 #----------------------------------------------------------------------------

@@ -104,7 +104,7 @@ namespace eval Viewport {
    set Map(Delay)       800.0        ;#Temps de deplacement en millisecondes
    set Map(Speed)       0.0          ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07         ;#Facteur de l'effet de ralentissement
-
+   set Map(Perspective) False        ;#Affichage en perspective
    set Map(Type)        orthographic;#Type de projection
 
    set Map(ZAxis)       0
@@ -640,7 +640,7 @@ proc Viewport::ConfigSet { Frame } {
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
-      -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) \
+      -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
       -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
 
    set ll [projection configure $Frame -location]
@@ -658,7 +658,7 @@ proc Viewport::ConfigSet { Frame } {
       projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
-         -sun $Map(Sun) -minsize $Map(MinSize) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
+         -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
      $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
@@ -1300,7 +1300,7 @@ proc Viewport::Do { Frame } {
       -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
       -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapplace $Map(Place) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
-      -data $Data(Data$Frame) -minsize $Map(MinSize)
+      -data $Data(Data$Frame) -minsize $Map(MinSize) -perspective $Map(Perspective)
 
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
 
@@ -1703,7 +1703,14 @@ proc Viewport::ParamFrame { Frame Apply } {
       ComboBox::Create $Data(Frame).proj.type Viewport::Map(Type) noedit sorted nodouble -1 $Map(Types) 12 4 "set Viewport::Map(GeoRef) \"\"; Viewport::ParamSet ; $Apply configure -state normal"
       button $Data(Frame).proj.def -image WORLD -relief flat -bd 0 -overrelief raised -command { Viewport::ParamProj $Viewport::Map(GeoRef) }
       pack $Data(Frame).proj.def -side left -padx 2
-      pack $Data(Frame).proj.type -side left -fill x -padx 2 -expand true
+      pack $Data(Frame).proj.type -side left -fill x -expand true
+
+      frame $Data(Frame).proj.sunk -relief sunken -bd 1
+         checkbutton $Data(Frame).proj.sunk.persp  -text "Perspective"  -variable Viewport::Map(Perspective) \
+            -indicatoron false -command "$Apply configure -state normal" -onvalue True -offvalue False -bd 1
+         pack $Data(Frame).proj.sunk.persp -side left -ipadx 2
+      pack $Data(Frame).proj.sunk -side left -fill x -padx 2
+
    pack $Data(Frame).proj -side top -fill x -padx 5 -pady 5
 
    frame $Data(Frame).left
@@ -2787,7 +2794,7 @@ proc Viewport::Setup { Frame } {
    projection configure $Frame -location $Map(Lat) $Map(Lon) -type $Map(Type$Frame) -georef $Map(GeoRef$Frame) \
       -mapres $Map(Res) -mask $Map(Mask) -scale $Map(Elev) \
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
-      -mapcity $Map(City) -maproad $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) -mapplace $Map(Place) \
+      -mapcity $Map(City) -maproad $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) -mapplace $Map(Place) -perspective $Map(Perspective) \
       -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Seconds$Frame)
 }
 
@@ -2998,6 +3005,7 @@ proc Viewport::Write { Frame File } {
       puts $File ""
 
       puts $File "   set Viewport::Map(Type)        \"[projection configure $Frame -type]\""
+      puts $File "   set Viewport::Map(Perspective) \"[projection configure $Frame -perspective]\""
       puts $File "   set Viewport::Map(Data)        \"[projection configure $Frame -data]\""
       puts $File "   set Viewport::Map(Elev)        \"[projection configure $Frame -scale]\""
       puts $File "   set Viewport::Map(Delay)       $Viewport::Map(Delay)"
