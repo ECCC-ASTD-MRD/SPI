@@ -552,9 +552,10 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 */
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           j,f,fop,fn,idx,nseg;
+   int           j,fop,fn,idx,nseg;
    double        x,y,lat,lon,tol,val,min,max;
    long         *table,y0,y1;
+   unsigned long f;
    OGR_Layer    *layer,*layerop;
    TGeoRef      *ref,*ref0;
    OGRCoordinateTransformationH tr=NULL;
@@ -1046,7 +1047,8 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
 int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 
    Tcl_Obj      *st,*it,*op,*val,*fd;
-   int           f,n,i,ns,nf,fld,ni,len,err;
+   int           n,i,ns,nf,fld,ni,len,err;
+   unsigned long f;
    regex_t      *exp=NULL;
    char         *msg;
    OGRFieldDefnH defn=NULL;
@@ -1144,7 +1146,7 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 */
 void OGR_LayerLimit(OGR_Layer *Layer) {
 
-   int    f;
+   unsigned long f;
    double val,min,max;
 
    min=1e32;
@@ -1413,7 +1415,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 
    OGRFieldDefnH  field=NULL;
    char           name[11];
-   int            f;
+   unsigned long  f;
 
    strncpy(name,Field,10);name[10]='\0';
 
@@ -1490,7 +1492,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 */
 void OGR_LayerUpdate(OGR_Layer *Layer) {
 
-   int f;
+   unsigned long f;
 
    if (Layer->Update) {
       for(f=0;f<Layer->NFeature;f++) {
@@ -1547,7 +1549,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    OGR_File   *file=NULL;
    OGR_Layer  *layer=NULL;
    OGREnvelope env;
-   int         i;
+   unsigned long f;
 
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
@@ -1582,8 +1584,8 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 
       /* Parse features */
       OGR_L_ResetReading(layer->Layer);
-      for(i=0;i<layer->NFeature;i++) {
-         if (!(layer->Feature[i]=OGR_L_GetNextFeature(layer->Layer))) {
+      for(f=0;f<layer->NFeature;f++) {
+         if (!(layer->Feature[f]=OGR_L_GetNextFeature(layer->Layer))) {
             Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read features",(char*)NULL);
             return(TCL_ERROR);
          }
@@ -1618,8 +1620,8 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 */
 int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 
-   char     **opt=NULL;
-   int        f;
+   char        **opt=NULL;
+   unsigned long f;
 
    OGR_File  *file=NULL;
    OGR_Layer *layer=NULL;
@@ -1680,12 +1682,12 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 */
 int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom) {
 
-   OGR_File    *file=NULL;
-   OGR_Layer   *layer;
-   OGRGeometryH geom;
-   OGREnvelope  env;
+   OGR_File     *file=NULL;
+   OGR_Layer    *layer;
+   OGRGeometryH  geom;
+   OGREnvelope   env;
 
-   int         i;
+   unsigned long f;
 
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
@@ -1729,8 +1731,8 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 
          /* Parse features */
          OGR_L_ResetReading(layer->Layer);
-         for(i=0;i<layer->NFeature;i++) {
-            layer->Feature[i]=OGR_L_GetNextFeature(layer->Layer);
+         for(f=0;f<layer->NFeature;f++) {
+            layer->Feature[f]=OGR_L_GetNextFeature(layer->Layer);
          }
          layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord));
       }
@@ -2007,7 +2009,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 */
 int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 
-   int f;
+   unsigned long f;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerClear: Invalid layer",(char*)NULL);
@@ -2047,13 +2049,14 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 */
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,f,n=0,p=0,pt,len=-1,rw;
-   double       val0,val1,area,*accum=NULL,r,rt,dp;
-   char         buf[64];
-   OGRGeometryH cell,ring,inter;
-   OGREnvelope  env0,*env1=NULL;
+   int           i,j,n=0,p=0,pt,len=-1,rw;
+   unsigned long f;
+   double        val0,val1,area,*accum=NULL,r,rt,dp;
+   char          buf[64];
+   OGRGeometryH  cell,ring,inter;
+   OGREnvelope   env0,*env1=NULL;
    Tcl_Obj      *obji,*objj,*lst,*item=NULL;
-   Tcl_Channel  chan=NULL;
+   Tcl_Channel   chan=NULL;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid layer",(char*)NULL);
@@ -2324,7 +2327,8 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
 int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
    Vect3d        vr;
-   int           f,t;
+   int           t;
+   unsigned long f;
    double        elev=0.0,extr=0.0;
    OGRGeometryH  geom;
    clock_t       sec;
@@ -2741,13 +2745,13 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 */
 int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode) {
 
-   Tcl_Obj     *obj;
-   OGRGeometryH geom,pick;
-   OGREnvelope  envg,envp;
-   double       x,y,lat,lon,d=1e32;
-   int          nobj,n=0,nd=0;
-   long         f;
-   char         buf[32];
+   Tcl_Obj      *obj;
+   OGRGeometryH  geom,pick;
+   OGREnvelope   envg,envp;
+   double        x,y,lat,lon,d=1e32;
+   int           nobj,n=0,nd=0;
+   unsigned long f;
+   char          buf[32];
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_Pick : Invalid layer",(char*)NULL);

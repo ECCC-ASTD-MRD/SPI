@@ -67,25 +67,25 @@ typedef struct OGR_Layer {
    OGRDataSourceH   SQLed;
    char            *Select;
 
-   TGeoRef      *Ref;          /*GeoReference*/
-   TDataSpec    *Spec;         /*Specification des donnees*/
+   TGeoRef       *Ref;          /*GeoReference*/
+   TDataSpec     *Spec;         /*Specification des donnees*/
 
-   Vect3d        Vr[2];
-   int           Update;
-   int           Mask,FMask;   /*Masque*/
-   GLuint        LFeature;
-   long          NFeature;
-   long          GFeature;
-   long         *SFeature;
-   int           NSFeature;
-   int          *Label;
-   int           NLabel;
+   Vect3d         Vr[2];
+   int            Update;
+   int            Mask,FMask;   /*Masque*/
+   GLuint         LFeature;
+   unsigned long  NFeature;
+   unsigned long  GFeature;
+   unsigned long *SFeature;
+   unsigned long  NSFeature;
+   int           *Label;
+   int            NLabel;
 
-   int           Map;
-   int           Topo,Extrude;
-   double        TopoFactor,ExtrudeFactor;
-   double        Min,Max;
-   Coord        *Loc;          /* Position simple */
+   int            Map;
+   int            Topo,Extrude;
+   double         TopoFactor,ExtrudeFactor;
+   double         Min,Max;
+   Coord         *Loc;          /* Position simple */
 } OGR_Layer;
 
 OGR_File* OGR_FileGet(Tcl_Interp *Interp,char *Id);
