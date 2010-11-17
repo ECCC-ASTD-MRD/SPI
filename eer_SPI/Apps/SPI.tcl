@@ -808,10 +808,14 @@ proc SPI::LayoutSaveItems { Frame File } {
    if { $SPI::Data(ShowTrajGraph$Frame) } {
       puts $File ""
       puts $File "   set SPI::Data(ShowTrajGraph\$Frame) 1"
-      set c [$Frame.page.canvas coords TRAJGRAPHFRAME]
-      puts $File "   Trajectory::Graph \$Frame [lindex $c 0] [lindex $c 1] [lindex $c 2]  [lindex $c 3] \$Trajectory::Data(List)"
+      set c [$Frame.page.canvas coords TRAJGRAPH]
+      set x0 [lindex $c 0]
+      set y0 [lindex $c 1]
+      set x1 [expr $x0+[lindex [$Frame.page.canvas itemconfigure TRAJGRAPH -width] end]]
+      set y1 [expr $y0+[lindex [$Frame.page.canvas itemconfigure TRAJGRAPH -height] end]]
+      puts $File "   Trajectory::Graph \$Frame $x0 $y0 $x1 $y1 \$Trajectory::Data(List)"
       puts $File "   Shape::BindMove  \$Frame.page.canvas TRAJGRAPH"
-      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJGRAPH [lindex $c 2]  [lindex $c 3] \"Trajectory::GraphScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
+      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJGRAPH $x1 $y1 \"Trajectory::GraphScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
    }
 
    if { $SPI::Data(ShowTrajHeight$Frame) } {
