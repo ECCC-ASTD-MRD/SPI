@@ -357,13 +357,13 @@ proc Model::ParamsMetPath { } {
 
    frame .metpath.diag -relief raised -bd 1
      button .metpath.diag.select -text [lindex $Lbl(Diag) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]; if { $path != "" } { set Model::Param(DBaseType) user; set Model::Param(DBaseDiag) $path } }
+        -command { if { [set path [FileBox::Create . $Model::Param(DBaseDiag) Path "" ]]!="" } { set Model::Param(DBaseType) user; set Model::Param(DBaseDiag) $path } }
      entry .metpath.diag.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseDiag) -relief sunken -bd 1 -width 40
      pack .metpath.diag.select .metpath.diag.path -side left -fill y
 
    frame .metpath.prog -relief raised -bd 1
      button .metpath.prog.select -text [lindex $Lbl(Prog) $GDefs(Lang)] -relief groove -bd 2 \
-        -command { set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]; if { $path != "" } { set Model::Param(DBaseType) user; set Model::Param(DBaseProg) $path } }
+        -command { if { [set path [FileBox::Create . $Model::Param(DBaseProg) Path "" ]]!="" } { set Model::Param(DBaseType) user; set Model::Param(DBaseProg) $path } }
      entry .metpath.prog.path -bg $GDefs(ColorLight) -textvariable Model::Param(DBaseProg) -relief sunken -bd 1 -width 40
      pack .metpath.prog.select .metpath.prog.path -side left -fill y
 
@@ -541,7 +541,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    Model::ParamsQueues
    Model::ParamsCPUMeteo
    Model::ParamsCPUModel
-   Model::ParamsMetDataDir $Model $Get
+   Model::ParamsMetDataDir $Model
 
    #----- Remember selected host for this model
    set Param(Host$Model) $Param(Host)
@@ -708,17 +708,14 @@ proc Model::ParamsMetData { Model } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::ParamsMetDataDir { Model { Get True } } {
+proc Model::ParamsMetDataDir { Model } {
    global GDefs
    global env
    variable Param
 
    upvar ${Model}::Sim sim
 
-   if { $Param(DBaseType)=="user" } {
-      #----- Check for remote path
-      set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $Param(DBaseDiag) }]
-   } else {
+   if { $Param(DBaseType)!="user" } {
 
       #----- Define meto path
       set dbops $env(CMCGRIDF)
@@ -743,9 +740,8 @@ proc Model::ParamsMetDataDir { Model { Get True } } {
       }
    }
 
-   if { $Get } {
-      set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls [lindex [split $Param(DBaseDiag) :] end] }]
-   }
+   #----- Check for remote path
+   set Param(DBaseLocal) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls [lindex [split $Param(DBaseDiag) :] end] }]
 }
 
 #----------------------------------------------------------------------------
