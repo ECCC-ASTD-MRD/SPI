@@ -58,7 +58,7 @@ function MLDP_Pre {
             Log_Mail "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out
          fi
       else
-         Log_Print ERROR "Problems in metfield calculations."
+         Log_Print ERROR "Problems in metfield calculations, Meteorological data might be being written, if this is the case, wait 10 minutes before trying again."
          Log_Mail "Meteorological preprocessing done (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
       fi
    fi

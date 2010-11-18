@@ -86,6 +86,7 @@ cat <<EOF_PGSM_METEO > pgsm.dir
  IP3ENT=0
  HEURE(-1)
 C
+ EXTRAP(VOISIN)
  CONV(H ,0.0,1.0,100.0)
  CONV(HR,0.0,1.0,0.0,1.0)
  CONV(FN,0.0,1.0,0.0,1.0)
