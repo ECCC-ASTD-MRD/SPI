@@ -341,6 +341,8 @@ MODEL_NBMPITASKS=0
 MODEL_NBOMPTHREADS=0
 MODEL_OMPTHREADFACT=0
 
+MODEL_ISRESTARTABLE=0
+
 #----- Initialize internal variables.
 MODEL_RUNTYPE="local"
 MODEL_TMPDIR=""
@@ -388,7 +390,11 @@ fi
 #----- Job finished
 Model_CopyResult
 Model_CopyMeteo
-Model_PoolSet DONE ${MODEL_EXITSTATUS}
+if [[ ${MODEL_ISRESTARTABLE} -eq 1 ]] ; then
+   Model_PoolSet NEW ${MODEL_EXITSTATUS}
+else
+   Model_PoolSet DONE ${MODEL_EXITSTATUS}
+fi
 
 Log_End ${MODEL_EXITSTATUS} False
 
