@@ -125,10 +125,6 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    Coord   loc;
    Vect3d  pix,prev;
 
-   if (!Interp) {
-      Grid_DrawGlobe(Interp,VP,Proj);
-   }
-
    /*Latlons*/
    if (Proj->Geo->Params.CoordLoc) {
 

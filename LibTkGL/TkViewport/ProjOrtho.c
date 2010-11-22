@@ -174,71 +174,60 @@ void Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    char    buf[256];
    double  delt;
 
-   if (Proj->Geo->Params.Coast) {
-
-      if (Interp) {
-         glFeedbackInit(3000,GL_2D);
-         if (VP->ColorFLake && VP->ColorFCoast) {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
-         } else {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
-         }
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-      }
-
-      /*Recuperer le rayon du globe*/
-      delt=((VP->Width>VP->Height)?VP->Height>>1:VP->Width>>1)/VP->Cam->Aspect;
-
+   if (Interp) {
+      glFeedbackInit(3000,GL_2D);
       if (VP->ColorFLake && VP->ColorFCoast) {
-         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
-         glDisable(GL_STENCIL_TEST);
-         glPolygonMode(GL_FRONT,GL_FILL);
-         gluSphere(GLRender->GLQuad,1,64,64);
-         glEnable(GL_STENCIL_TEST);
-      }
-
-      /*Afficher les contours du globe*/
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix();
-      glLoadIdentity();
-      gluOrtho2D(0,VP->Width,0,VP->Height);
-
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glLoadIdentity();
-      glTranslated(Proj->ZPos[0],Proj->ZPos[1],0.0);
-      glScaled(delt,delt,1.0);
-
-      if (VP->ColorFLake && VP->ColorFCoast) {
-/*         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
-         glDisable(GL_STENCIL_TEST);
-         glPolygonMode(GL_FRONT,GL_FILL);
-         glDrawCircle(64,GL_POLYGON);
-         glEnable(GL_STENCIL_TEST);
-*/
+         Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
       } else {
+         Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
+      }
+      sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
+      Tcl_AppendResult(Interp,buf,(char*)NULL);
+   }
+
+   /*Recuperer le rayon du globe*/
+   delt=((VP->Width>VP->Height)?VP->Height>>1:VP->Width>>1)/VP->Cam->Aspect;
+
+   if (VP->ColorFLake && VP->ColorFCoast) {
+      gluQuadricNormals(GLRender->GLQuad,GLU_SMOOTH);
+      glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
+      glDisable(GL_STENCIL_TEST);
+      glPolygonMode(GL_FRONT,GL_FILL);
+      gluSphere(GLRender->GLQuad,1,64,64);
+      glEnable(GL_STENCIL_TEST);
+   } else {
+
+      /*Afficher les contours du globe seulement si pas en perspective car sinon ca cause probleme*/
+      if (!Proj->Perspective) {
+         glMatrixMode(GL_PROJECTION);
+         glPushMatrix();
+         glLoadIdentity();
+         gluOrtho2D(0,VP->Width,0,VP->Height);
+
+         glMatrixMode(GL_MODELVIEW);
+         glPushMatrix();
+         glLoadIdentity();
+         glTranslated(Proj->ZPos[0],Proj->ZPos[1],0.0);
+         glScaled(delt,delt,1.0);
+
          glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
          glLineWidth(ABS(Proj->Geo->Params.Coast));
          glDrawCircle(64,GL_LINE_STRIP);
-      }
-      glPopMatrix();
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();
 
-      if (Interp)
-         glFeedbackProcess(Interp,GL_2D);
+         glPopMatrix();
+         glMatrixMode(GL_PROJECTION);
+         glPopMatrix();
+      }
    }
+
+   if (Interp)
+      glFeedbackProcess(Interp,GL_2D);
 }
 
 void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[256];
    double  lat,lon,delt;
-
-   if (!Interp) {
-      Ortho_DrawGlobe(Interp,VP,Proj);
-   }
 
    /*Affichage des latlons*/
    if (Proj->Geo->Params.CoordLoc) {
@@ -493,11 +482,14 @@ void Ortho_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,ch
          glTexCoordPointer(1,GL_FLOAT,Stride,Tex);
       }
 
+      glEnableClientState(GL_NORMAL_ARRAY);
+      glNormalPointer(GL_DOUBLE,Stride*sizeof(double)*3,Data);
       if (Idx) {
          glDrawElements(Mode,Nb,GL_UNSIGNED_INT,Idx);
       } else {
          glDrawArrays(Mode,0,Nb);
       }
+      glDisableClientState(GL_NORMAL_ARRAY);
       glDisableClientState(GL_COLOR_ARRAY);
       glDisableClientState(GL_TEXTURE_COORD_ARRAY);
    }

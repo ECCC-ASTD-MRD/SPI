@@ -77,59 +77,53 @@ void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[256];
 
-   if (Proj->Geo->Params.Coast) {
-      if (Interp) {
-         glFeedbackInit(20,GL_2D);
-         if (VP->ColorFLake && VP->ColorFCoast) {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
-         } else {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
-         }
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-      }
-
-      /*Pourtour de la carte*/
+   if (Interp) {
+      glFeedbackInit(20,GL_2D);
       if (VP->ColorFLake && VP->ColorFCoast) {
-         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
-         glDisable(GL_STENCIL_TEST);
-         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-         glBegin(GL_POLYGON);
-            glVertex3d(-2.0+Proj->L,-1.0,1.0);
-            glVertex3d(2.0+Proj->L,-1.0,1.0);
-            glVertex3d(2.0+Proj->L,1.0,1.0);
-            glVertex3d(-2.0+Proj->L,1.0,1.0);
-            glVertex3d(-2.0+Proj->L,-1.0,1.0);
-         glEnd();
-         glEnable(GL_STENCIL_TEST);
-
-         if (Interp)
-            glFeedbackProcess(Interp,GL_2D);
+         Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
+      } else {
+         Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
       }
+      sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
+      Tcl_AppendResult(Interp,buf,(char*)NULL);
+   }
 
-      glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      glLineWidth(ABS(Proj->Geo->Params.Coast));
-      glBegin(GL_LINE_STRIP);
+   /*Pourtour de la carte*/
+   if (VP->ColorFLake && VP->ColorFCoast) {
+      glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
+      glDisable(GL_STENCIL_TEST);
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+      glBegin(GL_POLYGON);
          glVertex3d(-2.0+Proj->L,-1.0,1.0);
          glVertex3d(2.0+Proj->L,-1.0,1.0);
          glVertex3d(2.0+Proj->L,1.0,1.0);
          glVertex3d(-2.0+Proj->L,1.0,1.0);
          glVertex3d(-2.0+Proj->L,-1.0,1.0);
       glEnd();
+      glEnable(GL_STENCIL_TEST);
 
       if (Interp)
          glFeedbackProcess(Interp,GL_2D);
    }
+
+   glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
+   glLineWidth(ABS(Proj->Geo->Params.Coast));
+   glBegin(GL_LINE_STRIP);
+      glVertex3d(-2.0+Proj->L,-1.0,1.0);
+      glVertex3d(2.0+Proj->L,-1.0,1.0);
+      glVertex3d(2.0+Proj->L,1.0,1.0);
+      glVertex3d(-2.0+Proj->L,1.0,1.0);
+      glVertex3d(-2.0+Proj->L,-1.0,1.0);
+   glEnd();
+
+   if (Interp)
+      glFeedbackProcess(Interp,GL_2D);
 }
 
 void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    double  x,y,incr;
    char    buf[256];
-
-   if (!Interp) {
-      Cylin_DrawGlobe(Interp,VP,Proj);
-   }
 
    /*Latlons*/
    if (Proj->Geo->Params.CoordLoc) {

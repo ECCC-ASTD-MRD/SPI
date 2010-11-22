@@ -1273,9 +1273,9 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    }
 
    if (Proj->Type->Def==PROJGLOBE) {
-      z=VP->Cam->Clip;
+      z=Proj->Perspective?1.0+VP->Cam->Clip*0.85:VP->Cam->Clip;
    } else {
-      z=4.0*VP->Cam->Clip;
+      z=Proj->Perspective?3.0+VP->Cam->Clip*0.85:4.0*VP->Cam->Clip;
    }
 
    /*Ajuster la projection pour garder un aspect correct*/
@@ -1287,7 +1287,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       } else {
          if (Proj->Perspective) {
             dl*=0.35;
-            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,3.0+z*0.80);
+            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,z);
          } else {
             glOrtho(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect,z);
          }
@@ -1301,7 +1301,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       } else {
          if (Proj->Perspective) {
             dl*=0.35;
-            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,3.0+z*0.80);
+            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,z);
          } else {
             glOrtho(-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
          }

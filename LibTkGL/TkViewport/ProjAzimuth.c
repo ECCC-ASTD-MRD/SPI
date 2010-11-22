@@ -73,39 +73,36 @@ void Azimuth_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
    char    buf[256];
 
-   if (Proj->Geo->Params.Coast) {
-
-      if (Interp) {
-         glFeedbackInit(3000,GL_2D);
-         if (VP->ColorFLake && VP->ColorFCoast) {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
-         } else {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
-         }
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-      }
-
-      glTranslated(0.0,0.0,1.0);
+   if (Interp) {
+      glFeedbackInit(3000,GL_2D);
       if (VP->ColorFLake && VP->ColorFCoast) {
-         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
-         glDisable(GL_STENCIL_TEST);
-         glPolygonMode(GL_FRONT,GL_FILL);
-         glDrawCircle(64,GL_POLYGON);
-         if (Interp)
-            glFeedbackProcess(Interp,GL_2D);
+         Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
+      } else {
+         Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
       }
+      sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
+      Tcl_AppendResult(Interp,buf,(char*)NULL);
+   }
 
-      glEnable(GL_STENCIL_TEST);
-      glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      glLineWidth(ABS(Proj->Geo->Params.Coast));
-      glDrawCircle(64,GL_LINE_STRIP);
-
-      glTranslated(0.0,0.0,-1.0);
-
+   glTranslated(0.0,0.0,1.0);
+   if (VP->ColorFLake && VP->ColorFCoast) {
+      glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
+      glDisable(GL_STENCIL_TEST);
+      glPolygonMode(GL_FRONT,GL_FILL);
+      glDrawCircle(64,GL_POLYGON);
       if (Interp)
          glFeedbackProcess(Interp,GL_2D);
    }
+
+   glEnable(GL_STENCIL_TEST);
+   glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
+   glLineWidth(ABS(Proj->Geo->Params.Coast));
+   glDrawCircle(64,GL_LINE_STRIP);
+
+   glTranslated(0.0,0.0,-1.0);
+
+   if (Interp)
+      glFeedbackProcess(Interp,GL_2D);
 }
 
 void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
@@ -113,40 +110,6 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    char    buf[256];
    Coord   co;
    Vect3d  vr;
-
-   if (Proj->Geo->Params.Coast) {
-
-      if (Interp) {
-         glFeedbackInit(3000,GL_2D);
-         if (VP->ColorFLake && VP->ColorFCoast) {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
-         } else {
-            Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
-         }
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-      }
-
-      glTranslated(0.0,0.0,1.0);
-      if (VP->ColorFLake && VP->ColorFCoast && !Interp) {
-         glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
-         glDisable(GL_STENCIL_TEST);
-         glPolygonMode(GL_FRONT,GL_FILL);
-         glDrawCircle(64,GL_POLYGON);
-         if (Interp)
-            glFeedbackProcess(Interp,GL_2D);
-      }
-
-      glEnable(GL_STENCIL_TEST);
-      glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-      glLineWidth(ABS(Proj->Geo->Params.Coast));
-      glDrawCircle(64,GL_LINE_STRIP);
-
-      glTranslated(0.0,0.0,-1.0);
-
-      if (Interp)
-         glFeedbackProcess(Interp,GL_2D);
-   }
 
    /*Affichage des latlons*/
    if (Proj->Geo->Params.CoordLoc) {

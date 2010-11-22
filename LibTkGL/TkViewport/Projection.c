@@ -1501,8 +1501,18 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
          }
 
          /*Afficher les parties dependantes de la projection*/
-         if (Proj->Type->DrawFirst)
+         if (!Interp && Proj->Type->DrawGlobe)
+             Proj->Type->DrawGlobe(Interp,VP,Proj);
+
+         if (Proj->Type->DrawFirst) {
+            glDisable(GL_LIGHTING);
+            glDisable(GL_LIGHT0);
             Proj->Type->DrawFirst(Interp,VP,Proj);
+            if (Proj->Sun) {
+               glEnable(GL_LIGHTING);
+               glEnable(GL_LIGHT0);
+            }
+         }
 
          if (Interp) {
             GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK^GDB_FILL);
@@ -1701,6 +1711,16 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       glLightfv(GL_LIGHT0,GL_DIFFUSE,diff[Proj->Sun?1:0]);
       glMaterialfv(GL_FRONT,GL_SPECULAR,ref[Proj->Sun?1:0]);
       glLightfv(GL_LIGHT0,GL_POSITION,Proj->LightPos);
+   }
+
+   if (Proj->Sun) {
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+      glEnable(GL_COLOR_MATERIAL);
+   } else {
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glDisable(GL_COLOR_MATERIAL);
    }
 }
 

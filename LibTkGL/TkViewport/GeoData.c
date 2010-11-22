@@ -477,7 +477,8 @@ void GDB_GeoFree(GDB_Geo *Geo) {
       if (tmp->List) {
          glDeleteLists(tmp->List,1);
       }
-      free(tmp->Loc);
+      if (tmp->Loc) free(tmp->Loc);
+
       free(tmp);
    }
 }
@@ -1715,7 +1716,7 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
 int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
    GDB_Tile *tile;
-   int       x,y,res=0,ras=0;
+   int       x,y,res=0,ras=0,ilat,ilon;
    float     lat,lon;
 
    if (GDB->Res<0) {
@@ -1763,6 +1764,10 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                GDB_TileGetData(tile,GDB,Proj);
             }
 
+//            ilat=(int)((tile->Box.Co[0].Lat+tile->Box.Co[2].Lat)*0.5)+90;
+//            ilon=(int)((tile->Box.Co[0].Lon+tile->Box.Co[2].Lon)*0.5)+180;
+//            glNormal3dv(GDB_NMap[ilat][ilon]);
+
             if (Mode & GDB_MASK) {
                if (GDB->Params.Mask && tile->FCoast && tile->FLake) {
                   if (GDB->Params.Mask==GDB_LAND) {
@@ -1791,6 +1796,9 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   GDB_FillRender(Interp,Proj,tile->FLakeIn,Proj->VP->ColorFLake,0xff);
                }
             }
+
+            glDisable(GL_LIGHTING);
+            glDisable(GL_LIGHT0);
 
             if (Mode & GDB_VECTOR) {
                if (GDB->Params.Coast && tile->Coast) {
@@ -1829,19 +1837,29 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->VP->ColorPlace,0);
                }
             }
+            if (Proj->Sun) {
+               glEnable(GL_LIGHTING);
+               glEnable(GL_LIGHT0);
+            }
 
             if ((Mode & GDB_RASTER) && (GDB->Params.Text || GDB->Params.Topo || GDB->Params.Bath)) {
                if (GLRender->GLDebug) {
                   glPolygonMode(GL_FRONT,GL_LINE);
                } else {
                   glPolygonMode(GL_FRONT,GL_FILL);
-                  glEnable(GL_LIGHTING);
-                  glEnable(GL_LIGHT0);
-                  glEnable(GL_DEPTH_TEST);
                }
+               glEnable(GL_DEPTH_TEST);
+               glEnable(GL_LIGHTING);
+               glEnable(GL_LIGHT0);
+               glDisable(GL_COLOR_MATERIAL);
                GDB_MapRender(Proj,&tile->Topo,lat,lon,GDB->DegT);
 //               GDB_MapRenderShader(Proj,&tile->Topo,lat,lon,GDB->DegT);
-                  ras++;
+               ras++;
+               glEnable(GL_COLOR_MATERIAL);
+               if (!Proj->Sun) {
+                  glDisable(GL_LIGHTING);
+                  glDisable(GL_LIGHT0);
+               }
             }
          }
       }
@@ -1854,8 +1872,6 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    }
 
    glDisable(GL_DEPTH_TEST);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_LIGHT0);
    return(ras);
 }
 
@@ -1930,7 +1946,6 @@ int GDB_TileResolution(GDB_Data *GDB,double Dist) {
 #endif
    return(res);
 }
-
 /*----------------------------------------------------------------------------
  * Nom      : <GDB_TxtFree>
  * Creation : Decembre 2001 - J.P. Gauthier - CMC/CMOE

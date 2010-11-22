@@ -67,7 +67,7 @@ GLdouble *glTessTmpGet() {
    return glTessTmp[(glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0)];
 }
 
-static void glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *Out[3]) {
+static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdouble *Out[3]) {
 
    glTessTmp[glTessNo][0]=coords[0];
    glTessTmp[glTessNo][1]=coords[1];
@@ -75,8 +75,14 @@ static void glTessCombine(GLdouble coords[3],void *d[4],GLfloat w[4],GLdouble *O
    *Out=glTessTmp[glTessNo];
 
    /*Iterate through the temporary tessselation vertices*/
-   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0;
+   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo++:0;
 };
+
+static void glTessVertex(GLdouble Vertex[3]) {
+
+   glNormal3dv(Vertex);
+   glVertex3dv(Vertex);
+}
 
 /*----------------------------------------------------------------------------
  * Nom      : <glGetProcInfo>
@@ -1865,7 +1871,7 @@ int glDefineParams(){
    /*Buffer parameters*/
    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    glPixelStorei(GL_PACK_ALIGNMENT,1);
-   glDisable(GL_NORMALIZE);
+   glEnable(GL_NORMALIZE);
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_STENCIL_TEST);
@@ -2005,7 +2011,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->MagX=GLRender->MagY=GLRender->MagD=0;
 
    gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
-   gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glVertex3dv);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glTessVertex);
    gluTessCallback(GLRender->GLTess,GLU_TESS_END,(_GLUfuncptr)glEnd);
    gluTessCallback(GLRender->GLTess,GLU_TESS_COMBINE,(_GLUfuncptr)glTessCombine);
    gluTessCallback(GLRender->GLTess,GLU_TESS_ERROR,(_GLUfuncptr)glTessError);
@@ -2013,6 +2019,7 @@ void glInit(Tcl_Interp *Interp) {
    gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
    gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
 }
+
 
 /*----------------------------------------------------------------------------
  * Nom      : <glXCanvasInit>

@@ -137,6 +137,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    for(n=0;n<FSIZE2D(Field->Def);n++) {
       Def_Get(Field->Def,0,n,val);
       glVertexAttrib1fARB(att0,val);
+      glNormal3dv(pos[n]);
       glVertex3dv(pos[n]);
    }
    glEnd();
@@ -576,8 +577,10 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             glBegin(GL_QUAD_STRIP);
          } else {
             glTexCoord2f((float)i+0.5,(float)j+dp+0.5);
+//            glNormal3dv(pos[idx1]);
             glVertex3dv(pos[idx1]);
             glTexCoord2f((float)i+0.5,(float)j+0.5);
+//            glNormal3dv(pos[idx0]);
             glVertex3dv(pos[idx0]);
          }
 

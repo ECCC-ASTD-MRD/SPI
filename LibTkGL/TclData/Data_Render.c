@@ -1797,9 +1797,11 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       glCullFace(GL_BACK);
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisableClientState(GL_NORMAL_ARRAY);
-      glDisable(GL_LIGHTING);
-      glDisable(GL_LIGHT0);
-      glDisable(GL_COLOR_MATERIAL);
+      if (!Proj->Sun) {
+         glDisable(GL_LIGHTING);
+         glDisable(GL_LIGHT0);
+         glDisable(GL_COLOR_MATERIAL);
+      }
       glEnable(GL_STENCIL_TEST);
    }
 
