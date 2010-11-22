@@ -1523,9 +1523,10 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
+
       GeoScan_Get(&scan,Band->Def,Field->Def,1,Field->Spec->InterpDegree);
 
-     for(n=0;n<scan.N;n++){
+      for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/
          val=scan.D[n];
          if (val!=(float)Field->Def->NoData) {
@@ -1553,6 +1554,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
    }
    GeoScan_Clear(&scan);
+
    return(TCL_OK);
 }
 

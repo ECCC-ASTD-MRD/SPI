@@ -94,7 +94,6 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
    int nd,nv;
 
    /*Check for geoscan validity, so we can use the same as previous*/
-//   if (Scan->ToRef==To && Scan->FromRef==From && From->Grid[0]!='Y' && From->Grid[0]!='#' && Scan->X0==X0 && Scan->Y0==Y0 && Scan->X1==X1 && Scan->Y1==Y1) {
    if (GeoRef_Equal(Scan->ToRef,To,3) && GeoRef_Equal(Scan->FromRef,From,3) && Scan->X0==X0 && Scan->Y0==Y0 && Scan->X1==X1 && Scan->Y1==Y1) {
       Scan->Valid=1;
    } else {
@@ -103,6 +102,12 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
       Scan->X1=X1;
       Scan->Y1=Y1;
 
+      if (Scan->ToRef)  GeoRef_Free(Scan->ToRef);
+      Scan->ToRef=GeoRef_Copy(To);
+      if (Scan->FromRef)  GeoRef_Free(Scan->FromRef);
+      Scan->FromRef=GeoRef_Copy(From);
+
+/*
       if (Scan->ToRef) {
          Scan->ToRef->Lat=NULL;
          Scan->ToRef->Lon=NULL;
@@ -120,6 +125,7 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
       Scan->FromRef=GeoRef_HardCopy(From);
       Scan->FromRef->Lat=From->Lat;
       Scan->FromRef->Lon=From->Lon;
+*/
 
       /*Adjust scan buffer sizes*/
       Scan->DX=X1-X0+1;
@@ -170,7 +176,7 @@ void GeoScan_Clear(TGeoScan *Scan) {
 
    Scan->FromRef=Scan->ToRef=NULL;
    Scan->X=Scan->Y=NULL;
-   Scan->V=NULL;
+   Scan->V=Scan->D=NULL;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -231,6 +237,7 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
 
       d=dd?2:1;
       sz=8;
+
    /*Y Grid type*/
    } else if (Scan->FromRef->Grid[0]=='Y') {
       for(n=0;n<FromDef->NI;n++,idx++) {
@@ -243,6 +250,7 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
       d=1;
       sz=4;
       Scan->N=n;
+
    /*Other RPN grids*/
    } else {
       for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
@@ -270,6 +278,28 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
    /*Project to destination grid*/
    if (!Scan->Valid) {
       if (Scan->ToRef->Grid[0]=='W') {
+         for(x=n-1;x>=0;x--) {
+            if (sz==4) {
+               x0=(double)((float*)Scan->X)[x];
+               y0=(double)((float*)Scan->Y)[x];
+            } else {
+               x0=Scan->X[x];
+               y0=Scan->Y[x];
+
+            }
+            if (Scan->ToRef->UnProject(Scan->ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
+
+               if (ToDef) {
+                  Scan->ToRef->Value(Scan->ToRef,ToDef,Degree[0],0,Scan->X[x],Scan->Y[x],0,&Scan->D[x],NULL);
+               } else {
+                  /*If we're outside, set to nodata*/
+                  if (ToDef)
+                      Scan->D[x]=ToDef->NoData;
+               }
+            }
+         }
+
+/*
          transform=Scan->ToRef->InvTransform;
          if (sz==4) {
             for(x=n-1;x>=0;x--) {
@@ -289,6 +319,7 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
                Scan->Y[x]=y0;
             }
          }
+*/
       } else {
          if (sz==8) {
             for(x=0;x<n;x++) {
@@ -315,7 +346,7 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
             Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
             Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
 
-            /*If we're outside, set ot nodata*/
+            /*If we're outside, set to nodata*/
             if (ToDef && !FIN2D(ToDef,Scan->X[x],Scan->Y[x])) {
                Scan->D[x]=ToDef->NoData;
             }
