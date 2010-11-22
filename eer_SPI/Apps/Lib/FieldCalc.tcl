@@ -1408,7 +1408,7 @@ proc FieldCalc::WidgetOps { Frame } {
 
    frame $Frame.cmd
       button $Frame.cmd.equal -text "   =  "  -bd 1 -command { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
-      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
+      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) ""; set FieldCalc::Data(Formula) "";  FieldCalc::FormulaSet; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
       button $Frame.cmd.int2  -text "<<" -command "FieldCalc::InsertOperator <<" -bd 1
       button $Frame.cmd.int3  -text "<<<" -command "FieldCalc::InsertOperator <<<" -bd 1
       button $Frame.cmd.idx   -text "\[\]" -command "FieldCalc::InsertOperator \\\[\\\]" -bd 1
