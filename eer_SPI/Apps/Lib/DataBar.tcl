@@ -146,9 +146,9 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    $Frame.page.canvas delete DBDEL$VP
 
    if { [llength [$Frame.page.canvas find withtag $VP]] } {
-      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP VPINCLUDE" -fill white -outline black
+      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP VPINTRUDE" -fill white -outline black
    } else {
-      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP VPINCLUDE" -fill white -outline black
+      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP VPINTRUDE" -fill white -outline black
    }
 
    $Frame.page.canvas create line [expr $X0+20] [expr $Y0+20] [expr $X0+20] $Y1 -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -fill #CCCCCC

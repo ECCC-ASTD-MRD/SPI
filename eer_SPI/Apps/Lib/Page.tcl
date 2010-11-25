@@ -909,7 +909,7 @@ proc Page::Destroy { Frame } {
 proc Page::MaskItem { Frame } {
    variable Param
 
-   set items [$Frame.page.canvas find withtag VPINCLUDE]
+   set items [$Frame.page.canvas find withtag VPINTRUDE]
 
    foreach vp [Page::Registered $Frame Viewport] {
       $Frame.page.canvas itemconfigure $vp -maskwidth $Param(Intrusion) -maskitem $items

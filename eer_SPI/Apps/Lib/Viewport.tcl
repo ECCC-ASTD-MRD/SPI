@@ -1175,7 +1175,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
       -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp \
-      -maskitem [$Frame.page.canvas find withtag VPINCLUDE] -maskwidth $Page::Param(Intrusion)
+      -maskitem [$Frame.page.canvas find withtag VPINTRUDE] -maskwidth $Page::Param(Intrusion)
 
    if { $Active } {
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
