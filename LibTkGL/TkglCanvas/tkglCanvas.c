@@ -509,6 +509,7 @@ Tk_Item *Tk_glGetItem(ClientData clientData,Tcl_Obj *Obj) {
    if (TagSearchScan(canvasPtr,Obj,&searchPtr)==TCL_OK) {
       itemPtr=TagSearchFirst(searchPtr);
    }
+   TagSearchDestroy(searchPtr);
 #endif
    return(itemPtr);
 }

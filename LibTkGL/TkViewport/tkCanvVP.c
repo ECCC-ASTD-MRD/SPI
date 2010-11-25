@@ -1248,7 +1248,7 @@ static int ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item) 
    Tcl_Obj      *obj;
    Vect3d        clips[5],v[5];
    double        vps[4];
-   int           i,n,nbclips,c0,c1;
+   int           i,j,n,nbclips,c0,c1;
 
    /*Mask inslusions*/
    if (vp->MaskItem.Array) {
@@ -1313,9 +1313,9 @@ static int ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item) 
                glLineWidth(vp->BDWidth);
                glColor3us(vp->FGColor->red,vp->FGColor->green,vp->FGColor->blue);
                glBegin(GL_LINES);
-               for(i=0;i<n-1;i++) {
-                  Vect_Assign(clips[0],v[i]);
-                  Vect_Assign(clips[1],v[i+1]);
+               for(j=0;j<n-1;j++) {
+                  Vect_Assign(clips[0],v[j]);
+                  Vect_Assign(clips[1],v[j+1]);
                   if (LiangBarsky_LineClip2D(clips[0],clips[1],&c0,&c1,vps[0],vps[1],vps[2],vps[3])) {
                      if (Interp) {
                         coords[0]=clips[0][0]; coords[1]=clips[0][1];
@@ -1333,6 +1333,7 @@ static int ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item) 
             }
          }
       }
+      Tcl_DecrRefCount(obj);
    }
 }
 
