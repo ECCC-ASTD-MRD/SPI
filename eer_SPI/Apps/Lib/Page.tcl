@@ -494,7 +494,6 @@ proc Page::ActiveScale { Type Frame Id X Y U } {
    set x [winfo rootx $Frame.page.canvas]
    set y [winfo rooty $Frame.page.canvas]
 
-   #----- Test canvas limits
    if { $X<=$x || $Y<=$y || $X>=[expr [winfo width $Frame.page.canvas]+$x] || $Y>=[expr [winfo height $Frame.page.canvas]+$y] } {
       return
    }

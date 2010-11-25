@@ -2640,22 +2640,24 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
       set Y0  [lindex $coo 1]
    }
 
-   if { [set dx [expr $X1-$X0]]>80 } {
+   if { [set dx [expr $X1-$X0]]>180 } {
       set px [expr $Data(Width$VP)-$dx]
       set Data(Width$VP) $dx
    }  else {
       set px $Data(Width$VP)
+      set X1 [expr $X0+$Data(Width$VP)]
    }
 
-   if { [set dy [expr $Y1-$Y0]]>80 } {
+   if { [set dy [expr $Y1-$Y0]]>180 } {
       set py [expr $Data(Height$VP)-$dy]
       set Data(Height$VP) $dy
    }  else {
       set py $Data(Height$VP)
+      set Y1 [expr $Y0+$Data(Height$VP)]
    }
 
-   set Data(X$VP)      $X0
-   set Data(Y$VP)      $Y0
+   set Data(X$VP) $X0
+   set Data(Y$VP) $Y0
 
    $cv itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
 
