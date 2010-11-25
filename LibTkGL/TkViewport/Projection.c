@@ -1782,7 +1782,7 @@ int LiangBarsky_LineClip2D(Vect3d Pt1,Vect3d Pt2,int *C1,int *C2,double X0,doubl
          }
       }
    }
-   return visible;
+   return(visible);
 }
 
 /*----------------------------------------------------------------------------
@@ -1861,10 +1861,11 @@ int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double 
    double deltax,deltay;            /*Direction du segment*/
    Vect3d pt;                       /*Coordonnees temporaires*/
 
-   register int i;
+   register int i,n;
 
    *OutNb=0;
    Vect_Assign(pt,Pt[0]);
+   n=0;
 
    for(i=0;i<Nb;i++){
 
@@ -1939,8 +1940,10 @@ int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double 
                /*La ligne croise un coin intermediaire du rectangle de clipping*/
                /*Il faut ajouter le segment de coin*/
                if (tinx<tiny) {
+                  n++;
                   LIANGCOPY(xout,yin,OutPt,*OutNb);
                } else {
+                  n++;
                   LIANGCOPY(xin,yout,OutPt,*OutNb);
                }
             }
@@ -1954,8 +1957,10 @@ int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double 
 
                   /*Selectioner le bon cote d'intersection*/
                   if (tinx>tiny) {
+                     n++;
                      LIANGCOPY(xin,pt[1]+tinx*deltay,OutPt,*OutNb);
                   } else {
+                     n++;
                      LIANGCOPY(pt[0]+tiny*deltax,yin,OutPt,*OutNb);
                   }
                }
@@ -1964,8 +1969,10 @@ int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double 
                   /*Selectioner le bon cote d'intersection*/
                   if (toutx<touty) {
                      LIANGCOPY(xout,pt[1]+toutx*deltay,OutPt,*OutNb);
+                     n++;
                   } else {
                      LIANGCOPY(pt[0]+touty*deltax,yout,OutPt,*OutNb);
+                     n++;
                   }
                } else {
                   /*Garder le point de fin*/
@@ -1979,5 +1986,5 @@ int LiangBarsky_PolygonClip2D(Vect3d *Pt,int Nb,Vect3d *OutPt,int *OutNb,double 
       }
       Vect_Assign(pt,Pt[i]);
    }
-   return i;
+   return(n);
 }

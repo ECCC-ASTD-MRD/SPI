@@ -2020,7 +2020,6 @@ void glInit(Tcl_Interp *Interp) {
    gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
 }
 
-
 /*----------------------------------------------------------------------------
  * Nom      : <glXCanvasInit>
  * Creation : Aout 2002 - J.P. Gauthier & David Dube

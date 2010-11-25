@@ -48,8 +48,13 @@
 #define NBFRAMEMAX 512
 #define VPY(VP,Y) ((((TkCanvas*)VP->canvas)->yOrigin+VP->Height)-Y)
 
-/*The structure below defines the record for each pixmap item.*/
+typedef struct Obj2Array {
+   int    Nb;     /*Nombre de donnees associees*/
+   char **Array;  /*Liste des donnees associees*/
+   char  *String; /*Liste des donnees associees (String)*/
+} Obj2Array;
 
+/*The structure below defines the record for each pixmap item.*/
 typedef struct ViewportItem  {
    Tk_Item header;                /*Generic stuff that's the same for all types*/
    Tk_Canvas canvas;              /*Pointeur sur le canvas contenant le viewport*/
@@ -79,9 +84,9 @@ typedef struct ViewportItem  {
    char *Projection;              /*Projection utilisee*/
    char *CamStr;                  /*Camera utilisee (String)*/
    ProjCam *Cam;                  /*Camera utilisee*/
-   char **Data;                   /*Liste des donnees associees*/
-   char *DataStr;                 /*Liste des donnees associees (String)*/
-   int NbData;                    /*Nombre de donnees associees*/
+   Obj2Array MaskItem;            /*Mask items*/
+   Obj2Array DataItem;            /*Liste des donnees associees*/
+   int MaskWidth;                 /*Mask width*/
    int Frame;                     /*Retention du rendue pour animation*/
    int Update;                    /*Indicateur de reaffichage*/
    int Realloc;                   /*Indicateur de reallocation des structures*/
@@ -123,6 +128,7 @@ static void   ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp);
 static void   ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Drawt,int X,int Y,int Width,int Height);
 static void   ViewportScale(Tk_Canvas Canvas,Tk_Item *Item, double OriginX,double OriginY,double ScaleX,double ScaleY);
 static void   ViewportTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY);
+static int    ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item);
 
 int Tkviewport_Init(Tcl_Interp *Interp);
 

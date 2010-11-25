@@ -1389,7 +1389,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    int              width=Topo->Width;
    int              height=Topo->Height;
 
-   GLfloat emi[4]  = { 0.12, 0.12, 0.12, 1.0 };
+   GLfloat emi[4]  = { 0.012, 0.012, 0.012, 1.0 };
    GLfloat amb[4]  = { 0.97, 0.97, 0.97, 1.0 };
    GLfloat spe[4]  = { 1.0, 1.0, 1.0, 1.0 };
 //   GLfloat dif[4]  = { 0.25, 0.25, 0.25, 1.0 };

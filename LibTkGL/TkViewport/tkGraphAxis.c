@@ -725,7 +725,7 @@ void GraphAxis_Wipe() {
  * Parametres   :
  *   <Axis>     : Axe
  *   <Vec>      : Vecteur de donnees associes
- *   <Delta>    :
+ *   <Delta>    : Longueur de l'axe en pixels
  *
  * Retour       :
  *

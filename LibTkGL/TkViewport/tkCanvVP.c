@@ -51,11 +51,11 @@ static int   VP_CamParseProc  _ANSI_ARGS_((ClientData clientData,Tcl_Interp *int
 static char *VP_CamPrintProc  _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
 static int   VP_ProjParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
 static char *VP_ProjPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
-static int   VP_DataParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
-static char *VP_DataPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
+static int   VP_ArrayParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
+static char *VP_ArrayPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
 
 static Tk_CustomOption CamOption   = { (Tk_OptionParseProc*)VP_CamParseProc,VP_CamPrintProc,(ClientData)NULL };
-static Tk_CustomOption DataOption  = { (Tk_OptionParseProc*)VP_DataParseProc,VP_DataPrintProc,(ClientData)NULL };
+static Tk_CustomOption ArrayOption = { (Tk_OptionParseProc*)VP_ArrayParseProc,VP_ArrayPrintProc,(ClientData)NULL };
 static Tk_CustomOption ProjOption  = { (Tk_OptionParseProc*)VP_ProjParseProc,VP_ProjPrintProc,(ClientData)NULL };
 static Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
 
@@ -122,11 +122,15 @@ static Tk_ConfigSpec configSpecs[] = {
    { TK_CONFIG_STRING,"-command",(char*)NULL,(char *)NULL,
         (char *)NULL,Tk_Offset(ViewportItem,Command),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM,"-projection",(char *)NULL,(char *)NULL,
-        (char *)NULL,0,TK_CONFIG_NULL_OK,&ProjOption },
+        (char *)NULL,Tk_Offset(ViewportItem,Projection),TK_CONFIG_NULL_OK,&ProjOption },
    { TK_CONFIG_CUSTOM,"-data",(char *)NULL,(char *)NULL,
-        (char *)NULL,0,TK_CONFIG_NULL_OK,&DataOption },
+        (char *)NULL,Tk_Offset(ViewportItem,DataItem),TK_CONFIG_NULL_OK,&ArrayOption },
+   { TK_CONFIG_CUSTOM,"-maskitem",(char *)NULL,(char *)NULL,
+        (char *)NULL,Tk_Offset(ViewportItem,MaskItem),TK_CONFIG_NULL_OK,&ArrayOption },
+   { TK_CONFIG_PIXELS,"-maskwidth",(char *)NULL,(char *)NULL,
+        "0",Tk_Offset(ViewportItem,MaskWidth),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM,"-camera",(char *)NULL,(char *)NULL,
-        (char *)NULL,0,TK_CONFIG_NULL_OK,&CamOption },
+        (char *)NULL,Tk_Offset(ViewportItem,Cam),TK_CONFIG_NULL_OK,&CamOption },
    { TK_CONFIG_INT,"-frame",(char *)NULL,(char *)NULL,
         "-1",Tk_Offset(ViewportItem,Frame),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM,"-tags",(char *)NULL,(char *)NULL,
@@ -275,11 +279,11 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->Realloc     = 1;
    vp->ForcePick   = 1;
    vp->Frame       = 0;
-   vp->Data        = NULL;
-   vp->DataStr     = NULL;
-   vp->NbData      = 0;
    vp->Ratio       = 0;
    vp->Secondary   = 0;
+   vp->MaskWidth   = 10;
+   vp->MaskItem.Array=vp->MaskItem.String=NULL;vp->MaskItem.Nb=0;
+   vp->DataItem.Array=vp->DataItem.String=NULL;vp->DataItem.Nb=0;
 
    vp->Loading     = 0;
    vp->ThreadId    = Tcl_GetCurrentThread();
@@ -620,18 +624,18 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             Projection_Setup(vp,proj,0);
 
             /*Rendue des donnees vectorielle*/
-            for (i=0;i<vp->NbData;i++) {
+            for (i=0;i<vp->DataItem.Nb;i++) {
                glPushName(i);
-               if ((pick&PICK_FSTDFIELD) && (data=Data_Get(vp->Data[i]))) {
+               if ((pick&PICK_FSTDFIELD) && (data=Data_Get(vp->DataItem.Array[i]))) {
                   Data_Render(NULL,data,vp,proj,GL_SELECT,GL_VECTOR);
                }
-               if ((pick&PICK_OBS) && (obs=Obs_Get(vp->Data[i]))) {
+               if ((pick&PICK_OBS) && (obs=Obs_Get(vp->DataItem.Array[i]))) {
                   Obs_Render(NULL,obs,vp,proj,GL_SELECT);
                }
-               if ((pick&PICK_METOBS) && (met=MetObs_Get(vp->Data[i]))) {
+               if ((pick&PICK_METOBS) && (met=MetObs_Get(vp->DataItem.Array[i]))) {
                   MetObs_Render(NULL,met,vp,proj,GL_SELECT);
                }
-               if ((pick&PICK_TRAJ) && (traj=Traj_Get(vp->Data[i]))) {
+               if ((pick&PICK_TRAJ) && (traj=Traj_Get(vp->DataItem.Array[i]))) {
                   Traj_Render(NULL,traj,vp,proj,GL_SELECT);
                }
                glPopName();
@@ -646,10 +650,10 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                   case PICK_FSTDFIELD: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("fstdfield",-1)); break;
                }
 
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(vp->Data[GLRender->GLPick[0]],-1));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(vp->DataItem.Array[GLRender->GLPick[0]],-1));
 
                switch(GLRender->GLPick[1]) {
-                  case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(MetObs_GetTag(MetObs_Get(vp->Data[GLRender->GLPick[0]]),GLRender->GLPick[2]),-1)); break;
+                  case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(MetObs_GetTag(MetObs_Get(vp->DataItem.Array[GLRender->GLPick[0]]),GLRender->GLPick[2]),-1)); break;
                   case PICK_TRAJ:
                   case PICK_OBS:
                   case PICK_FSTDFIELD: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[2])); break;
@@ -839,9 +843,13 @@ static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
       Tcl_Free((char*)vp->Command);
    }
 
-   if (vp->Data) {
-      free(vp->DataStr);
-      Tcl_Free((char*)vp->Data);
+   if (vp->DataItem.Array) {
+      free(vp->DataItem.String);
+      Tcl_Free((char*)vp->DataItem.Array);
+   }
+   if (vp->MaskItem.Array) {
+      free(vp->MaskItem.String);
+      Tcl_Free((char*)vp->MaskItem.Array);
    }
 
    /*Cleanup the projection in case it used a viewport field*/
@@ -963,8 +971,8 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
 
    if (VP) {
       if (Data) {
-         for (i=0;i<VP->NbData;i++) {
-            fld=Data_Get(VP->Data[i]);
+         for (i=0;i<VP->DataItem.Nb;i++) {
+            fld=Data_Get(VP->DataItem.Array[i]);
             if (fld)
                Data_Clean(fld,1,1,1);
          }
@@ -1069,6 +1077,8 @@ int ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask) {
 static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,int X,int Y,int Width,int Height){
 
    ViewportItem *vp=(ViewportItem*)Item;
+   Tk_Item      *item;
+   Tcl_Obj      *obj;
    Projection   *proj;
    TData        *fld;
    TTraj        *traj;
@@ -1079,6 +1089,9 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    OGR_Layer    *layer;
    int           i,load;
    clock_t       sec;
+   Vect3d        clips[5],v[5];
+   double        vps[4];
+   int           n,nbclips,c0,c1;
 
    /*Take care of automated refresh handler*/
    load=vp->Loading;
@@ -1122,38 +1135,38 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          ProjCam_Project(vp->Cam,proj);
 
          /*Rendue des donnees raster*/
-         for (i=0;i<vp->NbData;i++) {
-            fld=Data_Get(vp->Data[i]);
+         for (i=0;i<vp->DataItem.Nb;i++) {
+            fld=Data_Get(vp->DataItem.Array[i]);
             if (fld) {
                Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
                if (GLRender->GLZBuf)
                   Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
             }
-            if ((layer=OGR_LayerGet(vp->Data[i]))) {
+            if ((layer=OGR_LayerGet(vp->DataItem.Array[i]))) {
                OGR_LayerRender(NULL,proj,vp,layer);
             }
-            if ((band=GDAL_BandGet(vp->Data[i]))) {
+            if ((band=GDAL_BandGet(vp->DataItem.Array[i]))) {
                GDAL_BandRender(proj,vp,band);
             }
-            if ((mdl=Model_Get(vp->Data[i]))) {
+            if ((mdl=Model_Get(vp->DataItem.Array[i]))) {
                Model_Render(proj,vp,mdl);
             }
          }
 
          /*Rendue des donnees vectorielle*/
-         for (i=0;i<vp->NbData;i++) {
+         for (i=0;i<vp->DataItem.Nb;i++) {
             if (!GLRender->GLZBuf) {
-               if ((fld=Data_Get(vp->Data[i]))) {
+               if ((fld=Data_Get(vp->DataItem.Array[i]))) {
                   Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
                }
             }
-            if ((obs=Obs_Get(vp->Data[i]))) {
+            if ((obs=Obs_Get(vp->DataItem.Array[i]))) {
                Obs_Render(NULL,obs,vp,proj,GL_RENDER);
             }
-            if ((met=MetObs_Get(vp->Data[i]))) {
+            if ((met=MetObs_Get(vp->DataItem.Array[i]))) {
                MetObs_Render(NULL,met,vp,proj,GL_RENDER);
             }
-            if ((traj=Traj_Get(vp->Data[i]))) {
+            if ((traj=Traj_Get(vp->DataItem.Array[i]))) {
                Traj_Render(NULL,traj,vp,proj,GL_RENDER);
             }
          }
@@ -1185,6 +1198,9 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       glEnd();
    }
 
+   /*Mask inslusions*/
+   ViewportIntrusion(NULL,Canvas,Item);
+
    /*Loading data*/
    if (load && !GLRender->TRCon) {
       glMatrixMode(GL_PROJECTION);
@@ -1203,6 +1219,121 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    vp->Update =0;
    vp->Realloc=0;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ViewportIntrusion>
+ * Creation : Novembre 2010
+ *
+ * But      : This procedure is invoked to draw an intrusion into th viewport.
+ *
+ * Parametres :
+ *  <Interp>  : Tcl Interpreter
+ *  <Canvas>  : Canvas that contains item
+ *  <Item>    : Item to be displayed
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item) {
+
+   ViewportItem *vp=(ViewportItem *)Item;
+   double       coords[8];
+   char         buf[100];
+
+   Tk_Item      *item;
+   Tcl_Obj      *obj;
+   Vect3d        clips[5],v[5];
+   double        vps[4];
+   int           i,n,nbclips,c0,c1;
+
+   /*Mask inslusions*/
+   if (vp->MaskItem.Array) {
+
+      obj=Tcl_NewObj();
+      for(i=0;i<vp->MaskItem.Nb;i++) {
+
+         Tcl_SetStringObj(obj,vp->MaskItem.Array[i],-1);
+         if (!(item=Tk_glGetItem(Canvas,obj))) {
+            continue;
+         }
+
+         n=5;
+         vps[0]=vp->header.x1-vp->BDWidth;
+         vps[1]=vp->header.y1-vp->BDWidth;
+         vps[2]=vp->header.x2+vp->BDWidth;
+         vps[3]=vp->header.y2+vp->BDWidth;
+
+         Vect_Init(v[0],item->x1+1,item->y1+1,0.0);
+         Vect_Init(v[1],item->x2-1,item->y1+1,0.0);
+         Vect_Init(v[2],item->x2-1,item->y2-1,0.0);
+         Vect_Init(v[3],item->x1+1,item->y2-1,0.0);
+
+         if (INSIDE(v[0],vps[0],vps[1],vps[2],vps[3]) || INSIDE(v[1],vps[0],vps[1],vps[2],vps[3]) ||
+             INSIDE(v[2],vps[0],vps[1],vps[2],vps[3]) || INSIDE(v[3],vps[0],vps[1],vps[2],vps[3])) {
+
+            /*Get the box corners*/
+            Vect_Init(v[0],item->x1-vp->MaskWidth,item->y1-vp->MaskWidth,0.0);
+            Vect_Init(v[1],item->x2+vp->MaskWidth,item->y1-vp->MaskWidth,0.0);
+            Vect_Init(v[2],item->x2+vp->MaskWidth,item->y2+vp->MaskWidth,0.0);
+            Vect_Init(v[3],item->x1-vp->MaskWidth,item->y2+vp->MaskWidth,0.0);
+            Vect_Init(v[4],item->x1-vp->MaskWidth,item->y1-vp->MaskWidth,0.0);
+
+            /*Clip the polygon interior to define the intrusion*/
+            if (LiangBarsky_PolygonClip2D(v,n,clips,&nbclips,vps[0],vps[1],vps[2],vps[3])) {
+
+               if (Interp) {
+                  coords[0]=clips[0][0]; coords[1]=clips[0][1];
+                  coords[2]=clips[1][0]; coords[3]=clips[1][1];
+                  coords[4]=clips[2][0]; coords[5]=clips[2][1];
+                  coords[6]=clips[3][0]; coords[7]=clips[3][1];
+                  Tk_CanvasPsColor(Interp,Canvas,Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder));
+                  Tk_CanvasPsPath(Interp,Canvas,coords,4);
+                  Tcl_AppendResult(Interp,"closepath fill\n",(char*)NULL);
+                  sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",vp->BDWidth);
+                  Tcl_AppendResult(Interp,buf,(char*)NULL);
+                  Tk_CanvasPsColor(Interp,Canvas,vp->FGColor);
+               } else {
+                  glPolygonMode(GL_FRONT,GL_FILL);
+                  glColor3us(Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder)->red,
+                     Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder)->green,Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder)->blue);
+
+                  glBegin(GL_QUADS);
+                     glVertex2d(clips[0][0]-((TkCanvas*)Canvas)->xOrigin,clips[0][1]-((TkCanvas*)Canvas)->yOrigin);
+                     glVertex2d(clips[1][0]-((TkCanvas*)Canvas)->xOrigin,clips[1][1]-((TkCanvas*)Canvas)->yOrigin);
+                     glVertex2d(clips[2][0]-((TkCanvas*)Canvas)->xOrigin,clips[2][1]-((TkCanvas*)Canvas)->yOrigin);
+                     glVertex2d(clips[3][0]-((TkCanvas*)Canvas)->xOrigin,clips[3][1]-((TkCanvas*)Canvas)->yOrigin);
+                  glEnd();
+               }
+
+               /*Clip the coutour per line segment so as to only drwa the intrusion*/
+               glLineWidth(vp->BDWidth);
+               glColor3us(vp->FGColor->red,vp->FGColor->green,vp->FGColor->blue);
+               glBegin(GL_LINES);
+               for(i=0;i<n-1;i++) {
+                  Vect_Assign(clips[0],v[i]);
+                  Vect_Assign(clips[1],v[i+1]);
+                  if (LiangBarsky_LineClip2D(clips[0],clips[1],&c0,&c1,vps[0],vps[1],vps[2],vps[3])) {
+                     if (Interp) {
+                        coords[0]=clips[0][0]; coords[1]=clips[0][1];
+                        coords[2]=clips[1][0]; coords[3]=clips[1][1];
+                        Tk_CanvasPsPath(Interp,Canvas,coords,2);
+                     } else {
+                        glVertex2d(clips[0][0]-((TkCanvas*)Canvas)->xOrigin,clips[0][1]-((TkCanvas*)Canvas)->yOrigin);
+                        glVertex2d(clips[1][0]-((TkCanvas*)Canvas)->xOrigin,clips[1][1]-((TkCanvas*)Canvas)->yOrigin);
+                     }
+                  }
+                  if (Interp)
+                    Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
+               }
+               glEnd();
+            }
+         }
+      }
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -1355,10 +1486,10 @@ void ViewportClear(ViewportItem *VP,int Page) {
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glBegin(GL_QUADS);
    if (Page) {
-      glVertex3i(VP->header.x1,VP->header.y1,-1);
-      glVertex3i(VP->header.x1,VP->header.y2,-1);
-      glVertex3i(VP->header.x2,VP->header.y2,-1);
-      glVertex3i(VP->header.x2,VP->header.y1,-1);
+      glVertex3i(VP->header.x1-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y1-((TkCanvas*)VP->canvas)->yOrigin,-1);
+      glVertex3i(VP->header.x1-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y2-((TkCanvas*)VP->canvas)->yOrigin,-1);
+      glVertex3i(VP->header.x2-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y2-((TkCanvas*)VP->canvas)->yOrigin,-1);
+      glVertex3i(VP->header.x2-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y1-((TkCanvas*)VP->canvas)->yOrigin,-1);
    } else {
       glVertex3i(0,0,-1);
       glVertex3i(0,VP->Height-1,-1);
@@ -1703,33 +1834,33 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       /*Generation des donnees raster*/
       ViewportSet(vp,proj);
       ras+=Projection_Render(Interp,vp,proj,GL_RASTER);
-      for (i=0;i<vp->NbData;i++) {
-         fld=Data_Get(vp->Data[i]);
+      for (i=0;i<vp->DataItem.Nb;i++) {
+         fld=Data_Get(vp->DataItem.Array[i]);
          if (fld) {
             ras+=Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_RASTER);
             if (GLRender->GLZBuf) {
                Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
             }
          }
-         if ((layer=OGR_LayerGet(vp->Data[i]))) {
+         if ((layer=OGR_LayerGet(vp->DataItem.Array[i]))) {
             ras+=OGR_LayerRender(NULL,proj,vp,layer);
          }
-         if ((band=GDAL_BandGet(vp->Data[i]))) {
+         if ((band=GDAL_BandGet(vp->DataItem.Array[i]))) {
             ras+=GDAL_BandRender(proj,vp,band);
          }
-         if ((mdl=Model_Get(vp->Data[i]))) {
+         if ((mdl=Model_Get(vp->DataItem.Array[i]))) {
             ras+=Model_Render(proj,vp,mdl);
          }
       }
       if (GLRender->GLZBuf) {
-         for (i=0;i<vp->NbData;i++) {
-            if ((obs=Obs_Get(vp->Data[i]))) {
+         for (i=0;i<vp->DataItem.Nb;i++) {
+            if ((obs=Obs_Get(vp->DataItem.Array[i]))) {
                Obs_Render(NULL,obs,vp,proj,GL_RENDER);
             }
-            if ((met=MetObs_Get(vp->Data[i]))) {
+            if ((met=MetObs_Get(vp->DataItem.Array[i]))) {
                MetObs_Render(NULL,met,vp,proj,GL_RENDER);
             }
-            if ((traj=Traj_Get(vp->Data[i]))) {
+            if ((traj=Traj_Get(vp->DataItem.Array[i]))) {
                Traj_Render(NULL,traj,vp,proj,GL_RENDER);
             }
          }
@@ -1750,17 +1881,17 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    Projection_Setup(vp,proj,1);
 
    if (!GLRender->GLZBuf) {
-      for (i=0;i<vp->NbData;i++) {
-         if ((fld=Data_Get(vp->Data[i]))) {
+      for (i=0;i<vp->DataItem.Nb;i++) {
+         if ((fld=Data_Get(vp->DataItem.Array[i]))) {
             Data_Render(Interp,fld,vp,proj,GL_RENDER,GL_VECTOR);
          }
-         if ((obs=Obs_Get(vp->Data[i]))) {
+         if ((obs=Obs_Get(vp->DataItem.Array[i]))) {
             Obs_Render(Interp,obs,vp,proj,GL_RENDER);
          }
-         if ((met=MetObs_Get(vp->Data[i]))) {
+         if ((met=MetObs_Get(vp->DataItem.Array[i]))) {
             MetObs_Render(Interp,met,vp,proj,GL_RENDER);
          }
-         if ((traj=Traj_Get(vp->Data[i]))) {
+         if ((traj=Traj_Get(vp->DataItem.Array[i]))) {
             Traj_Render(Interp,traj,vp,proj,GL_RENDER);
          }
       }
@@ -1779,6 +1910,9 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       Tk_CanvasPsPath(Interp,Canvas,coords,4);
       Tcl_AppendResult(Interp,"closepath stroke\n",(char*)NULL);
    }
+
+   /*Mask inslusions*/
+   ViewportIntrusion(Interp,Canvas,Item);
 
    ViewportUnset(vp);
    glXFreePBuffer(pbuf);
@@ -1855,7 +1989,7 @@ static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int O
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <VP_DataParseProc>
+ * Nom      : <VP_ArrayParseProc>
  * Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Cette procedure sert a extraire la valeur de la vue.
@@ -1875,24 +2009,25 @@ static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int O
  *
  *----------------------------------------------------------------------------
 */
-static int VP_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
 
-   ViewportItem *vp  =(ViewportItem*)WidgRec;
+   ViewportItem *vp=(ViewportItem*)WidgRec;
+   Obj2Array *array=(Obj2Array*)(WidgRec+Offset);
 
-   if (vp->Data) {
-      free(vp->DataStr);
-      Tcl_Free((char*)vp->Data);
-      vp->Data=NULL;
-      vp->NbData=0;
+   if (array->Array) {
+      free(array->String);
+      Tcl_Free((char*)array->Array);
+      array->Array=array->String=NULL;
+      array->Nb=0;
    }
-   vp->DataStr=strdup(Value);
-   Tcl_SplitList(Interp,Value,&vp->NbData,&vp->Data);
+   array->String=strdup(Value);
+   Tcl_SplitList(Interp,Value,&array->Nb,&array->Array);
 
    return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <VP_DataPrintProc>
+ * Nom      : <VP_ArrayPrintProc>
  * Creation :
  *
  * But      : Cette procedure sert a extraire la valeur des donnees associees.
@@ -1911,11 +2046,12 @@ static int VP_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,c
  *
  *----------------------------------------------------------------------------
 */
-static char *VP_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+static char *VP_ArrayPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    ViewportItem *vp=(ViewportItem *)WidgRec;
+   Obj2Array *array=(Obj2Array*)(WidgRec+Offset);
 
-   return(vp->DataStr);
+   return(array->String);
 }
 
 /*----------------------------------------------------------------------------
