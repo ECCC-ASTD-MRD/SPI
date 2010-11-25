@@ -702,8 +702,8 @@ proc Trajectory::Graph { Frame X0 Y0 X1 Y1 TrajId } {
          graphaxis create TRAJGRAPHAXISY
 
          graphaxis configure TRAJGRAPHAXISX -font XFont10 -color black -position LL -width 1 -highoffset 0.01 -format 00HH/MMDD \
-            -highlightcolor black -highlightwidth 1
-         graphaxis configure TRAJGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -gridwidth 1 -dash . -position LL -width 1
+            -highlightcolor black -highlightwidth 1 -highoffset 10
+         graphaxis configure TRAJGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -gridwidth 1 -dash . -position LL -width 1 -highoffset 10
       }
       Trajectory::GraphPlot $Frame $TrajId
    }
