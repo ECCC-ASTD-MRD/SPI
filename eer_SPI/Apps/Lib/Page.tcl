@@ -75,6 +75,7 @@
 #    Page::Create          { Frame Width Height }
 #    Page::CursorInfo      { Frame X Y Info { Graph "" } }
 #    Page::Destroy         { Frame }
+#    Page::MaskItem        { Frame }
 #    Page::ModeCam         { Frame VP }
 #    Page::ModeData        { Frame VP }
 #    Page::ModeDraw        { Frame VP }
@@ -891,6 +892,31 @@ proc Page::Destroy { Frame } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Page::MaskItem>
+# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Assigner les items de masquage intrusif dans la page aux vues
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::MaskItem { Frame } {
+   variable Param
+
+   set items [$Frame.page.canvas find withtag VPINCLUDE]
+
+   foreach vp [Page::Registered $Frame Viewport] {
+      $Frame.page.canvas itemconfigure $vp -maskwidth $Param(Intrusion) -maskitem $items
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Page::ModeCam>
 # Creation : Aout 1999 - J.P. Gauthier - CMC/CMOE
 #
@@ -1236,8 +1262,10 @@ proc Page::ModeZoom { Frame VP } {
 #----------------------------------------------------------------------------
 
 proc Page::ParamApply { } {
+   variable Data
 
-   Page::Size $Page::Data(Frame) $Page::Data(Width) $Page::Data(Height)
+   Page::Size $Data(Frame) $Data(Width) $Data(Height)
+   Page::MaskItem $Data(Frame)
 }
 
 #----------------------------------------------------------------------------

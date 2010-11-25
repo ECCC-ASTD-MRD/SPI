@@ -107,11 +107,11 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
       projection configure MINI$Frame -type orthographic
    }
    $Frame.page.canvas create viewport -x $x0 -y $y0 -width $Viewport::Data(WidthMINI$Frame) -height $Viewport::Data(HeightMINI$Frame) \
-      -anchor nw -tags "MINI$Frame $ctag" -projection MINI$Frame -camera MINI$Frame -command MINI$Frame -secondary True
+      -anchor nw -tags "MINI$Frame $ctag VPINCLUDE" -projection MINI$Frame -camera MINI$Frame -command MINI$Frame -secondary True
 
    Viewport::ConfigSet $Frame
 
-   $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "AREAMINI $ctag LOCK$ctag"
+   $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "MINIAREA $ctag LOCK$ctag"
 
    if { [info exists Viewport::Data(Data$Frame)] } {
       set Data(VP$Frame) [lindex $Viewport::Data(Data$Frame) 0]
@@ -176,6 +176,7 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
    }
    $Frame.page.canvas bind MINI$Frame <Button-3> "tk_popup .mapmenu %X %Y 0"
 
+   Page::MaskItem $Frame
    Page::ModeZoom $Frame MINI$Frame
    Page::Update   $Frame
 
@@ -207,7 +208,7 @@ proc Miniport::Coverage { Frame { VP "" } } {
          set VP [lindex [Page::Registered $Frame Viewport] 0]
       }
 
-      $Frame.page.canvas itemconfigure AREAMINI -fill $Viewport::Data(ColorMINI$Frame)
+      $Frame.page.canvas itemconfigure MINIAREA -fill $Viewport::Data(ColorMINI$Frame)
 
       if { [projcam configure MINI$Frame -lens]<[projcam configure $Frame -lens] } {
 
@@ -225,8 +226,8 @@ proc Miniport::Coverage { Frame { VP "" } } {
 
          set xy  [MINI$Frame -projectline TRUE [list [lindex $ll0 0] [lindex $ll0 1] 0.0 [lindex $ll1 0] [lindex $ll1 1] 0.0 \
             [lindex $ll2 0] [lindex $ll2 1] 0.0 [lindex $ll3 0] [lindex $ll3 1] 0.0 [lindex $ll0 0] [lindex $ll0 1] 0.0]]
-         catch { $Frame.page.canvas coords AREAMINI [lindex $xy 0] }
-         $Frame.page.canvas raise AREAMINI MINI$Frame
+         catch { $Frame.page.canvas coords MINIAREA [lindex $xy 0] }
+         $Frame.page.canvas raise MINIAREA MINI$Frame
       } else {
 
          #----- Coverage dans le viewport
@@ -243,11 +244,11 @@ proc Miniport::Coverage { Frame { VP "" } } {
 
          set xy  [$VP -projectline TRUE [list [lindex $ll0 0] [lindex $ll0 1] 0.0 [lindex $ll1 0] [lindex $ll1 1] 0.0 \
             [lindex $ll2 0] [lindex $ll2 1] 0.0 [lindex $ll3 0] [lindex $ll3 1] 0.0 [lindex $ll0 0] [lindex $ll0 1] 0.0]]
-         catch { $Frame.page.canvas coords AREAMINI [lindex $xy 0] }
-         $Frame.page.canvas lower AREAMINI MINI$Frame
+         catch { $Frame.page.canvas coords MINIAREA [lindex $xy 0] }
+         $Frame.page.canvas lower MINIAREA MINI$Frame
       }
    } else {
-      $Frame.page.canvas coords AREAMINI $Viewport::Data(XMINI$Frame) $Viewport::Data(YMINI$Frame) \
+      $Frame.page.canvas coords MINIAREA $Viewport::Data(XMINI$Frame) $Viewport::Data(YMINI$Frame) \
          $Viewport::Data(XMINI$Frame) $Viewport::Data(YMINI$Frame)
    }
 }

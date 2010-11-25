@@ -636,19 +636,19 @@ proc Viewport::ConfigSet { Frame } {
 
    Viewport::ForceGrid $Frame
 
-   projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask)\
+   projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
       -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
       -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
 
-   set ll [projection configure $Frame -location]
+   set ll       [projection configure $Frame -location]
    set Map(Lat) [lindex $ll 0]
    set Map(Lon) [lindex $ll 1]
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) -maskwidth $Page::Param(Intrusion) \
+      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -1174,7 +1174,8 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
-      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -maskitem [list MINI$Frame FRDB$vp] -maskwidth $Page::Param(Intrusion)
+      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp \
+      -maskitem [$Frame.page.canvas find withtag VPINCLUDE] -maskwidth $Page::Param(Intrusion)
 
    if { $Active } {
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
