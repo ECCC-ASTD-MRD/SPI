@@ -1174,7 +1174,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
-      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp
+      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -maskitem MINI$Frame -maskwidth 10
 
    if { $Active } {
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
@@ -2640,26 +2640,33 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
       set Y0  [lindex $coo 1]
    }
 
-   if { [set dx [expr $X1-$X0]]>25 && [set dy [expr $Y1-$Y0]]>25 } {
+   if { [set dx [expr $X1-$X0]]>80 } {
       set px [expr $Data(Width$VP)-$dx]
-      set py [expr $Data(Height$VP)-$dy]
-
-      set Data(X$VP)      $X0
-      set Data(Y$VP)      $Y0
-      set Data(Width$VP)  $dx
-      set Data(Height$VP) $dy
-
-      $cv itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
-
-      if { $Data(Active$VP) } {
-         $cv coords BS$Page::Data(Tag)$VP $X1 $Y1
-         $cv coords BM$Page::Data(Tag)$VP [expr $X1-11] $Y1
-         $cv coords BF$Page::Data(Tag)$VP [expr $X1-22] $Y1
-         $cv coords BD$Page::Data(Tag)$VP $X1 $Y0
-         $cv coords SC$Page::Data(Tag)$VP [expr $X1-150-35] $Y1
-      }
-      Viewport::ResizeDepend $Frame $VP $px $py
+      set Data(Width$VP) $dx
+   }  else {
+      set px $Data(Width$VP)
    }
+
+   if { [set dy [expr $Y1-$Y0]]>80 } {
+      set py [expr $Data(Height$VP)-$dy]
+      set Data(Height$VP) $dy
+   }  else {
+      set py $Data(Height$VP)
+   }
+
+   set Data(X$VP)      $X0
+   set Data(Y$VP)      $Y0
+
+   $cv itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
+
+   if { $Data(Active$VP) } {
+      $cv coords BS$Page::Data(Tag)$VP $X1 $Y1
+      $cv coords BM$Page::Data(Tag)$VP [expr $X1-11] $Y1
+      $cv coords BF$Page::Data(Tag)$VP [expr $X1-22] $Y1
+      $cv coords BD$Page::Data(Tag)$VP $X1 $Y0
+      $cv coords SC$Page::Data(Tag)$VP [expr $X1-150-35] $Y1
+   }
+   Viewport::ResizeDepend $Frame $VP $px $py
 
    if { !$Limit } {
       $Frame.page.canvas config -cursor watch

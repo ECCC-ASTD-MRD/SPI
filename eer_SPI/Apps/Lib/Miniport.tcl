@@ -113,6 +113,10 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
 
    $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "AREAMINI $ctag LOCK$ctag"
 
+   if { [info exists Viewport::Data(Data$Frame)] } {
+      set Data(VP$Frame) [lindex $Viewport::Data(Data$Frame) 0]
+   }
+
    #----- Centrer sur les coordonnees specifies
    if { $Lat!=-999 && $Lon!=-999 } {
       set Viewport::Data(CursorMINI$Frame)   False
