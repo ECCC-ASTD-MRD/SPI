@@ -385,31 +385,45 @@ proc Graph::Labels { Type GR Title UnitX UnitY } {
 proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
    variable Data
 
+   set cv $Frame.page.canvas
+
    if { $X0==-999 } {
-      set coo [$Frame.page.canvas coords GRAPH$GR]
+      set coo [$cv coords GRAPH$GR]
       set X0 [lindex $coo 0]
       set Y0 [lindex $coo 1]
    }
 
-   if { [expr $X1-$X0]>25 && [expr $Y1-$Y0]>25 } {
-      set Data(X$GR)      $X0
-      set Data(Y$GR)      $Y0
-      set Data(Width$GR)  [expr $X1-$X0]
-      set Data(Height$GR) [expr $Y1-$Y0]
+   if { [set dx [expr $X1-$X0]]>80 } {
+      set px [expr $Data(Width$GR)-$dx]
+      set Data(Width$GR) $dx
+   }  else {
+      set px $Data(Width$GR)
+      set X1 [expr $X0+$Data(Width$GR)]
+   }
 
-      catch { $Frame.page.canvas coords GRAPH$GR $X0 $Y0 $X1 $Y1 }
-      catch { $Frame.page.canvas itemconfigure GRAPH$GR -x $X0 -y $Y0 -width $Data(Width$GR) -height $Data(Height$GR) }
+   if { [set dy [expr $Y1-$Y0]]>80 } {
+      set py [expr $Data(Height$GR)-$dy]
+      set Data(Height$GR) $dy
+   }  else {
+      set py $Data(Height$GR)
+      set Y1 [expr $Y0+$Data(Height$GR)]
+   }
 
-      if { $Data(Active$GR) } {
-         $Frame.page.canvas coords BS$Page::Data(Tag)$GR $X1 $Y1
-         $Frame.page.canvas coords BM$Page::Data(Tag)$GR [expr $X1-11] $Y1
-         $Frame.page.canvas coords BF$Page::Data(Tag)$GR [expr $X1-22] $Y1
-         $Frame.page.canvas coords BD$Page::Data(Tag)$GR $X1 $Y0
-      }
+   set Data(X$GR)      $X0
+   set Data(Y$GR)      $Y0
+
+   catch { $cv coords GRAPH$GR $X0 $Y0 $X1 $Y1 }
+   catch { $cv itemconfigure GRAPH$GR -x $X0 -y $Y0 -width $Data(Width$GR) -height $Data(Height$GR) }
+
+   if { $Data(Active$GR) } {
+      $Frame.page.canvas coords BS$Page::Data(Tag)$GR $X1 $Y1
+      $Frame.page.canvas coords BM$Page::Data(Tag)$GR [expr $X1-11] $Y1
+      $Frame.page.canvas coords BF$Page::Data(Tag)$GR [expr $X1-22] $Y1
+      $Frame.page.canvas coords BD$Page::Data(Tag)$GR $X1 $Y0
    }
 
    if { !$Limit } {
-      $Frame.page.canvas config -cursor watch
+      $cv config -cursor watch
       update idletasks
 
       set type $Data(Type$GR)
@@ -419,7 +433,7 @@ proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
       Graph::${type}::Graph $GR
 
       update idletasks
-      $Frame.page.canvas config -cursor left_ptr
+      $cv config -cursor left_ptr
    }
 }
 
