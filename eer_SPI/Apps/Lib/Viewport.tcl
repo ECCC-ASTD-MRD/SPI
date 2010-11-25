@@ -648,7 +648,7 @@ proc Viewport::ConfigSet { Frame } {
    set Map(Lon) [lindex $ll 1]
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) \
+      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) -maskwidth $Page::Param(Intrusion) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -718,9 +718,9 @@ proc Viewport::Follow { Frame VP X Y } {
 
    #----- Activation du curseur carre
 
-   if { $Page::Data(Square) } {
-      $Frame.page.canvas create line [expr $X-$Page::Data(Square)] [expr $Y-$Page::Data(Square)] [expr $X-$Page::Data(Square)] [expr $Y+$Page::Data(Square)] \
-          [expr $X+$Page::Data(Square)] [expr $Y+$Page::Data(Square)] [expr $X+$Page::Data(Square)] [expr $Y-$Page::Data(Square)] [expr $X-$Page::Data(Square)] [expr $Y-$Page::Data(Square)] \
+   if { $Page::Param(Square) } {
+      $Frame.page.canvas create line [expr $X-$Page::Param(Square)] [expr $Y-$Page::Param(Square)] [expr $X-$Page::Param(Square)] [expr $Y+$Page::Param(Square)] \
+          [expr $X+$Page::Param(Square)] [expr $Y+$Page::Param(Square)] [expr $X+$Page::Param(Square)] [expr $Y-$Page::Param(Square)] [expr $X-$Page::Param(Square)] [expr $Y-$Page::Param(Square)] \
           -width 2 -fill red -tags "$Page::Data(Tag)$VP SQUARECURSOR"
    }
 
@@ -1174,7 +1174,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
-      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -maskitem MINI$Frame -maskwidth 10
+      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -maskitem [list MINI$Frame FRDB$vp] -maskwidth $Page::Param(Intrusion)
 
    if { $Active } {
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
@@ -2671,12 +2671,12 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
    Viewport::ResizeDepend $Frame $VP $px $py
 
    if { !$Limit } {
-      $Frame.page.canvas config -cursor watch
+      $cv config -cursor watch
       update idletasks
 
       Page::Update $Frame
 
-      $Frame.page.canvas config -cursor left_ptr
+      $cv config -cursor left_ptr
    }
 }
 

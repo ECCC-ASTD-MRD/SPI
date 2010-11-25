@@ -137,7 +137,13 @@ package require MapBox
 
 namespace eval Page {
    variable Data
+   variable Param
    variable Lbl
+
+   set Param(Grid)      0           ;#Grille de snap
+   set Param(Snap)      5           ;#intervalle de snap
+   set Param(Intrusion) 0           ;#Allow for viewport intrusions
+   set Param(Square)    0           ;#Dimension du curseur carre
 
    #----- Definitions des constantes pour la projection
 
@@ -151,9 +157,6 @@ namespace eval Page {
    set Data(Height)     0           ;#Hauteur de la page courante
    set Data(X)          0           ;#Coordonnee de base
    set Data(Y)          0           ;#Coordonnee de base
-   set Data(Grid)       0           ;#Grille de snap
-   set Data(Snap)       5           ;#intervalle de snap
-   set Data(Square)     0           ;#Dimension du curseur carre
 
 
    set Data(Tag)        PAGE        ;#Tag identifiant la projection
@@ -170,9 +173,11 @@ namespace eval Page {
 
    #----- Definitions des labels
 
-   set Lbl(Grid)           { "Grille"    "Grid" }
+   set Lbl(Grid)           { "Grille d'attache"    "Snap grid" }
    set Lbl(Display)        { "Afficher"  "Display" }
-   set Lbl(Size)           { "Dimension" "Size" }
+   set Lbl(Size)           { "Dimensions" "Size" }
+   set Lbl(Intrusion)      { "Intrusion dans les vues" "Allow viewport intrusions" }
+   set Lbl(Others)         { "Autres" "Others" }
 }
 
 proc VertexAdd    { Frame VP X Y } { }
@@ -429,6 +434,7 @@ proc Page::ActiveUnWrap { Frame Object } {
 #----------------------------------------------------------------------------
 
 proc Page::ActiveMove { Type Frame Id X Y } {
+   variable Param
    variable Data
    variable Map
 
@@ -441,8 +447,8 @@ proc Page::ActiveMove { Type Frame Id X Y } {
 
    set tag $Page::Data(Tag)$Id
 
-   set X [$Frame.page.canvas canvasx $X $Page::Data(Snap)]
-   set Y [$Frame.page.canvas canvasy $Y $Page::Data(Snap)]
+   set X [$Frame.page.canvas canvasx $X $Param(Snap)]
+   set Y [$Frame.page.canvas canvasy $Y $Param(Snap)]
 
    set dx [expr $X-$Page::Data(X)]
    set dy [expr $Y-$Page::Data(Y)]
@@ -489,6 +495,7 @@ proc Page::ActiveMove { Type Frame Id X Y } {
 #----------------------------------------------------------------------------
 
 proc Page::ActiveScale { Type Frame Id X Y U } {
+   variable Param
    variable Data
 
    set x [winfo rootx $Frame.page.canvas]
@@ -498,8 +505,8 @@ proc Page::ActiveScale { Type Frame Id X Y U } {
       return
    }
 
-   set X [$Frame.page.canvas canvasx [expr $X-$x] $Page::Data(Snap)]
-   set Y [$Frame.page.canvas canvasy [expr $Y-$y] $Page::Data(Snap)]
+   set X [$Frame.page.canvas canvasx [expr $X-$x] $Param(Snap)]
+   set Y [$Frame.page.canvas canvasy [expr $Y-$y] $Param(Snap)]
 
    set ${Type}::Data(Full$Id) 0
    eval ${Type}::Resize $Frame $Id -999 -999 $X $Y $U
@@ -1258,20 +1265,29 @@ proc Page::ParamFrame { Frame Apply } {
    set frame [TabFrame::Add $Frame 1 "Page" False ""]
    labelframe $frame.size -text [lindex $Lbl(Size) $GDefs(Lang)]
       frame $frame.size.pix
-         entry $frame.size.pix.width -textvariable Page::Data(Width) -width 5 -bd 1 -bg $GDefs(ColorLight) -validate key -vcmd "string is integer %P"
-         entry $frame.size.pix.height  -textvariable Page::Data(Height) -width 5 -bd 1 -bg $GDefs(ColorLight) -validate key -vcmd "string is integer %P"
+         entry $frame.size.pix.width -textvariable Page::Data(Width) -width 7 -bd 1 -bg $GDefs(ColorLight) -validate key -vcmd "string is integer %P"
+         entry $frame.size.pix.height  -textvariable Page::Data(Height) -width 7 -bd 1 -bg $GDefs(ColorLight) -validate key -vcmd "string is integer %P"
          label $frame.size.pix.x -text " X "
-         pack $frame.size.pix.width $frame.size.pix.x $frame.size.pix.height -side left
-      pack  $frame.size.pix -side top -padx 5
+         label $frame.size.pix.lbl -text " pixels"
+         pack $frame.size.pix.width $frame.size.pix.x $frame.size.pix.height $frame.size.pix.lbl -side left -fill x -expand true
+      pack  $frame.size.pix -side top -padx 5 -ipady 2 -fill x -expand true
 
    labelframe $frame.grid -text [lindex $Lbl(Grid) $GDefs(Lang)]
       checkbutton $frame.grid.show -text [lindex $Lbl(Display) $GDefs(Lang)] \
-         -variable Page::Data(Grid) -command "Page::SnapGrid \$Page::Data(Frame)" -indicatoron false -bd 1
+         -variable Page::Param(Grid) -command "Page::SnapGrid \$Page::Data(Frame)" -indicatoron false -bd 1
       scale $frame.grid.size -orient horizontal -from 1 -to 100 \
-         -showvalue true -variable Page::Data(Snap) -relief flat -width 14 -sliderlength 8 -length 150 -bd 1 -resolution 1 \
+         -showvalue true -variable Page::Param(Snap) -relief flat -width 14 -sliderlength 8 -length 150 -bd 1 -resolution 1 \
          -command "Page::SnapGrid  \$Page::Data(Frame) ; catch"
       pack $frame.grid.show $frame.grid.size -side top -fill x -expand true -padx 2
-   pack $frame.size $frame.grid -side top -anchor w -padx 5 -pady 5
+   pack $frame.size $frame.grid -side top -anchor w -padx 5 -pady 5 -fill x
+
+   labelframe $frame.oth -text [lindex $Lbl(Others) $GDefs(Lang)]
+      frame $frame.oth.def -relief sunken -bd 1
+         checkbutton $frame.oth.def.intr  -text [lindex $Lbl(Intrusion) $GDefs(Lang)] -variable Page::Param(Intrusion) \
+            -indicatoron false -command "$Apply configure -state normal" -onvalue 10 -offvalue 0 -bd 1
+         pack $frame.oth.def.intr -side top -fill x
+      pack $frame.oth.def -side top -fill x
+   pack  $frame.oth -padx 5 -pady 2 -side top -fill x
 
    bind $frame.size.pix.width  <Key> "$Apply configure -state normal"
    bind $frame.size.pix.height <Key> "$Apply configure -state normal"
@@ -1689,16 +1705,16 @@ proc Page::UpdateItems { Frame } {
 #----------------------------------------------------------------------------
 
 proc Page::SnapGrid { Frame } {
-   variable Data
+   variable Param
 
    $Frame.page.canvas delete PAGEGRID
 
-   if { $Data(Grid) } {
+   if { $Param(Grid) } {
 
-      if { $Data(Snap) > 1 } {
+      if { $Param(Snap) > 1 } {
 
-         for { set x 0 } { $x < [winfo width $Frame.page.canvas] } { incr x $Data(Snap) } {
-            for { set y 0 } { $y < [winfo height $Frame.page.canvas] } { incr y $Data(Snap) } {
+         for { set x 0 } { $x < [winfo width $Frame.page.canvas] } { incr x $Param(Snap) } {
+            for { set y 0 } { $y < [winfo height $Frame.page.canvas] } { incr y $Param(Snap) } {
                $Frame.page.canvas create line $x $y [expr $x+1] $y -tags "PAGEGRID NOPRINT" -fill black
             }
          }
@@ -1726,9 +1742,10 @@ proc Page::SnapGrid { Frame } {
 #----------------------------------------------------------------------------
 
 proc Page::SnapRef { Frame X Y } {
+   variable Param
    variable Data
 
-   set Data(X) [$Frame.page.canvas canvasx $X $Page::Data(Snap)]
-   set Data(Y) [$Frame.page.canvas canvasy $Y $Page::Data(Snap)]
+   set Data(X) [$Frame.page.canvas canvasx $X $Param(Snap)]
+   set Data(Y) [$Frame.page.canvas canvasy $Y $Param(Snap)]
 }
 

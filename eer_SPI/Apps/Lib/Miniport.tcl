@@ -38,7 +38,7 @@ namespace eval Miniport { } {
    set Lbl(Data)       { "Afficher les données" "Display data" }
    set Lbl(Relative)   { "Relatif" "Relative" }
    set Lbl(Cursor)     { "Suivre le curseur" "Follow mouse" }
-   set Lbl(Color)      { "Couleur" "Color" }
+   set Lbl(Color)      { "Couleur de la région visible" "Color of view area" }
    set Lbl(Ortho)      { "Orthographique" "Orthographic" }
    set Lbl(Cylin)      { "Cylindrique" "Cylindric" }
 }

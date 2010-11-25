@@ -1910,8 +1910,8 @@ proc Shape::Move { Canvas Tags X Y { Direct False } } {
       set dx $X
       set dy $Y
    } else {
-      set X [$Canvas canvasx $X $Page::Data(Snap)]
-      set Y [$Canvas canvasy $Y $Page::Data(Snap)]
+      set X [$Canvas canvasx $X $Page::Param(Snap)]
+      set Y [$Canvas canvasy $Y $Page::Param(Snap)]
 
       set dx [expr $X-$Data(X0)]
       set dy [expr $Y-$Data(Y0)]
@@ -1958,8 +1958,8 @@ proc Shape::Scale { Canvas Tag X Y args } {
       return
    }
 
-   set X [$Canvas canvasx [expr $X-$x] $Page::Data(Snap)]
-   set Y [$Canvas canvasy [expr $Y-$y] $Page::Data(Snap)]
+   set X [$Canvas canvasx [expr $X-$x] $Page::Param(Snap)]
+   set Y [$Canvas canvasy [expr $Y-$y] $Page::Param(Snap)]
 
    if { [eval $args $X $Y] } {
       $Canvas coords BS$Tag $X $Y
@@ -1989,8 +1989,8 @@ proc Shape::Scale { Canvas Tag X Y args } {
 proc Shape::Set { Canvas Tag X Y } {
    variable Data
 
-   set Data(X0) [$Canvas canvasx $X $Page::Data(Snap)]
-   set Data(Y0) [$Canvas canvasy $Y $Page::Data(Snap)]
+   set Data(X0) [$Canvas canvasx $X $Page::Param(Snap)]
+   set Data(Y0) [$Canvas canvasy $Y $Page::Param(Snap)]
 
    glrender -xexpose -1
 
