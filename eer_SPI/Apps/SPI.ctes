@@ -50,8 +50,9 @@ namespace eval SPI {
    set Param(Batch)          False        ;#Mode batch
    set Param(Bubble)         True         ;#Mode batch
    set Param(Icons)          {}           ;#Fichiers icones
-   set Param(IconId)         False         ;#Affichage des descriptifs des icones
-   set Param(IconImage)      True          ;#Affichage des icones des icones
+   set Param(IconId)         False        ;#Affichage des descriptifs des icones
+   set Param(IconImage)      True         ;#Affichage des icones des icones
+   set Param(IconCircle)     0            ;#Affichage d'un rayou autour d'une icone
 
    #----- Definitions des variables internes
 

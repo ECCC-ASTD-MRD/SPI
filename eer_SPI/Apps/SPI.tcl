@@ -1380,7 +1380,6 @@ proc SPI::IcoDraw { Frame args } {
    if { ![winfo exists $Frame.page.canvas] } {
       return
    }
-
    eval $Frame.page.canvas delete $Ico(Groups)
 
    foreach group $Ico(Groups) {
@@ -1413,14 +1412,23 @@ proc SPI::IcoDraw { Frame args } {
                #----- Projection des coordonnées
                if { [set xy [$vp -project $lat $lon $elev]]!="" && [lindex $xy 2]>=0 } {
 
+                  set x [lindex $xy 0]
+                  set y [lindex $xy 1]
+
                   #----- Affichage de l'icone
                   if { $Param(IconImage) } {
-                     $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image $ico -tags "$group $tag"
+                     $Frame.page.canvas create image $x $y -image $ico -tags "$group $tag"
+                  }
+
+                  if { $Param(IconCircle) } {
+                     if { [llength [set coords [$vp -projectcircle $lat $lon $Param(IconCircle)]]] } {
+                        eval $Frame.page.canvas create polygon $coords -fill \"\" -outline $col -width 2 -dash . -tags \"$group $tag\"
+                     }
                   }
 
                   #----- Affchage du texte
                   if { $Param(IconId) && $id!=""  } {
-                     $Frame.page.canvas create text [expr [lindex $xy 0]+10] [expr [lindex $xy 1]-10] -text "$id" -fill $col \
+                     $Frame.page.canvas create text [expr $x+10] [expr $y-10] -text "$id" -fill $col \
                         -tags "$group TEXT$group" -anchor sw -font XFontIcon
                      $Frame.page.canvas bind $tag <Enter> ""
                      $Frame.page.canvas bind $tag <Leave> ""
