@@ -1837,7 +1837,7 @@ proc Page::WidgetShow { Canvas Tag X Y Visible } {
    if { ![llength $Tag] } {
       if { !$Visible && !$Page::Param(Widget) } {
          $Canvas itemconfigure NOPRINT -state hidden
-      } else {
+      } elseif { $Page::Param(Widget) } {
          $Canvas itemconfigure NOPRINT -state normal
       }
    } else {

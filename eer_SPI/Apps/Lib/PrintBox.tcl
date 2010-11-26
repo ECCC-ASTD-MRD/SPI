@@ -642,8 +642,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    #----- Configurer la bordure du Canvas a 0 pour ne pas que l'image
    #      depasse sur les cotes
 
-   $Frame.page.canvas move NOPRINT -10000 -10000
-   update idletasks
+   $Frame.page.canvas itemconfigure NOPRINT -state hidden
 
    #----- Generer le postscript en verifiant l'aspect du canvas par rapport au format et
    #      a l'orientation de la page selectionnee pour agrandir au maximum
@@ -710,9 +709,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    }
 
    #----- Remettre la bordure a sa valeur d'origine
-
-   update idletasks
-   $Frame.page.canvas move NOPRINT 10000 10000
+   Page::WidgetShow $Frame.page.canvas {} 0 0 True
 
    InfoFrame::Incr .printbox.job 1
 }
