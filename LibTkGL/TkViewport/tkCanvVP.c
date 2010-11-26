@@ -350,8 +350,8 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    Coord         loc0,loc1,co[1000];
    double        x,y,h,d;
 
-   static CONST char *sopt[] = { "-ungrid","-grid","-unproject","-project","-projectline","-distxy","-distpix","-distll","-bearing","-circle","-pick",NULL };
-   enum                opt { UNGRID,GRID,UNPROJECT,PROJECT,PROJECTLINE,DISTXY,DISTPIX,DISTLL,BEARING,CIRCLE,PICK };
+   static CONST char *sopt[] = { "-ungrid","-grid","-unproject","-project","-projectline","-projectcircle","-distxy","-distpix","-distll","-bearing","-circle","-pick",NULL };
+   enum                opt { UNGRID,GRID,UNPROJECT,PROJECT,PROJECTLINE,PROJECTCIRCLE,DISTXY,DISTPIX,DISTLL,BEARING,CIRCLE,PICK };
 
    proj=Projection_Get(vp->Projection);
 
@@ -486,6 +486,42 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             }
             nco=Projection_Map(Interp,co,Tcl_GetString(Objv[2])[0],Objv[3]);
             Tcl_SetObjResult(Interp,proj->Type->ProjectLine(Interp,vp,proj,co,nco));
+            break;
+
+         case PROJECTCIRCLE:
+            if (Objc!=5){
+               Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist");
+               return(TCL_ERROR);
+            }
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
+            Tcl_GetDoubleFromObj(Interp,Objv[4],&d);
+
+            loc0.Lat=DEG2RAD(loc0.Lat);
+            loc0.Lon=DEG2RAD(loc0.Lon);
+            d=M2RAD(d);
+
+            obj=Tcl_NewListObj(0,NULL);
+            for(n=0;n<=360;n++) {
+               x=DEG2RAD(n);
+
+               loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
+               loc1.Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
+               loc1.Lat=RAD2DEG(loc1.Lat);loc1.Lon=RAD2DEG(loc1.Lon);
+
+               proj->Type->Project(proj,(GeoVect*)&loc1,(GeoVect*)&pt0,1);
+               gluProject(pt0[0],pt0[1],pt0[2],vp->GLModR,vp->GLProj,vp->GLView,&pt1[0],&pt1[1],&pt1[2]);
+
+               /*Repositionner dans le referentiel de Tcl*/
+               pt1[1]=vp->Height-pt1[1];
+               pt1[2]=1.0-pt1[2];
+
+               if (INSIDE(pt1,0,0,vp->Width,vp->Height)) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(pt1[0]+vp->x));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(pt1[1]+vp->y));
+               }
+            }
+            Tcl_SetObjResult(Interp,obj);
             break;
 
          case DISTXY:
