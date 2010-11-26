@@ -1806,8 +1806,8 @@ proc Page::SnapRef { Frame X Y } {
 proc Page::WidgetBind { Frame Tag } {
 
    #----- bindings de placement des bouttons
-   $Frame.page.canvas bind $Tag <Leave> "Page::WidgetShow %W $Tag %x %y 0"
-   $Frame.page.canvas bind $Tag <Enter> "Page::WidgetShow %W $Tag %x %y 1"
+   $Frame.page.canvas bind $Tag <Leave> "+Page::WidgetShow %W $Tag %x %y 0"
+   $Frame.page.canvas bind $Tag <Enter> "+Page::WidgetShow %W $Tag %x %y 1"
 
    Page::WidgetShow $Frame.page.canvas {} 0 0 0
 }
