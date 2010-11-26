@@ -1809,7 +1809,7 @@ proc Page::WidgetBind { Frame Tag } {
    $Frame.page.canvas bind $Tag <Leave> "Page::WidgetShow %W $Tag %x %y 0"
    $Frame.page.canvas bind $Tag <Enter> "Page::WidgetShow %W $Tag %x %y 1"
 
-   Page::WidgetShow $Frame.page.canvas $Tag 0 0 0
+   Page::WidgetShow $Frame.page.canvas {} 0 0 0
 }
 
 #----------------------------------------------------------------------------

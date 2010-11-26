@@ -639,9 +639,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
    PrintBox::FontMap
 
-   #----- Configurer la bordure du Canvas a 0 pour ne pas que l'image
-   #      depasse sur les cotes
-
+   #----- Remove control widgets
    $Frame.page.canvas itemconfigure NOPRINT -state hidden
 
    #----- Generer le postscript en verifiant l'aspect du canvas par rapport au format et
