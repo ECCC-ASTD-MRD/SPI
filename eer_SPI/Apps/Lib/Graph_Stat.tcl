@@ -79,8 +79,8 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
    set data(Frame)     $Frame
 
    $data(Canvas) create rectangle $X0 $Y0 [expr $X0+$Width] [expr $Y0+$Height] -outline black -fill $Graph::Color(Graph) \
-        -tags "$tag GRAPH$gr GRAPHOUT$gr" -width 1
-   $data(Canvas) create text [expr $X0+5] [expr $Y0+5] -anchor nw -fill black -tags "$tag GRAPH$gr GRAPHTEXT$gr" -font $Graph::Font(Graph)
+        -tags "$tag $gr GRAPHOUT$gr" -width 1
+   $data(Canvas) create text [expr $X0+5] [expr $Y0+5] -anchor nw -fill black -tags "$tag $gr GRAPHTEXT$gr" -font $Graph::Font(Graph)
 
    if { $Graph::Data(Graph)!="" && $Graph::Data(Type)!="Stat" } {
       set data(Graph)     $Graph::Data(Graph)
@@ -199,7 +199,7 @@ proc Graph::Stat::Graph { GR { Items {} } } {
       }
 
       eval $data(Canvas) create text [expr $x+5] $y -text \$text$item -fill \[graphitem configure $item -outline\] -font $Graph::Font(Graph) \
-         -tags \"$Page::Data(Tag)$GR GRAPH$GR GRAPHITEM$GR\" -anchor nw
+         -tags \"$Page::Data(Tag)$GR $GR GRAPHITEM$GR\" -anchor nw
 
       set x [lindex [$data(Canvas) bbox GRAPHITEM$GR] 2]
    }

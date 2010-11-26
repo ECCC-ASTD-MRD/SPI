@@ -98,12 +98,12 @@ proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full } {
    set data(Canvas)    $Frame.page.canvas
    set data(Frame)     $Frame
 
-   $data(Canvas) bind GRAPHUPDATE$gr <Any-KeyRelease> "$data(Canvas) itemconfigure GRAPH$gr -update True"
+   $data(Canvas) bind GRAPHUPDATE$gr <Any-KeyRelease> "$data(Canvas) itemconfigure $gr -update True"
 
    set id [$data(Canvas) create text $X0 $Y0  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text [lindex $Lbl(Title) $GDefs(Lang)] \
       -font $Graph::Font(Graph) -fill black -anchor nw -justify center]
    $data(Canvas) create graph -x $X0 -y $Y0 -width $Width -height $Height -anchor nw -xlegend 5 -ylegend 5 -command $gr \
-       -fg black -bg $Graph::Color(Frame) -fill $Graph::Color(Graph) -tags "$tag GRAPH$gr" -font $Graph::Font(Graph) -title $id
+       -fg black -bg $Graph::Color(Frame) -fill $Graph::Color(Graph) -tags "$tag $gr" -font $Graph::Font(Graph) -title $id
    $data(Canvas) raise $id
 
   #----- Creation des unite de l'echelle
@@ -171,7 +171,7 @@ proc Graph::Time::Coord { Frame GR X Y } {
    set Page::Data(Coord) ""
    set Page::Data(Value) ""
 
-   if  { [llength [set items [lindex [$data(Canvas) itemconfigure GRAPH$GR -item] end]]] } {
+   if  { [llength [set items [lindex [$data(Canvas) itemconfigure $GR -item] end]]] } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
       if { [llength $coords]==2 } {
@@ -437,9 +437,9 @@ proc Graph::Time::Graph { GR } {
    graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
-   set id [lindex [$data(Canvas) itemconfigure GRAPH$GR -title] end]
+   set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
-   $data(Canvas) itemconfigure GRAPH$GR -item $data(Items) -bd $Graph::Width(Frame) \
+   $data(Canvas) itemconfigure $GR -item $data(Items) -bd $Graph::Width(Frame) \
       -fg $Graph::Color(FG) -bg $Graph::Color(BG) -fill $Graph::Color(Fill) -font $Graph::Font(Graph)
 
    update idletasks
@@ -465,7 +465,7 @@ proc Graph::Time::Init { Frame } {
    global   GDefs
    variable Data
 
-   set gr GR[incr Graph::Data(Nb)]
+   set gr GRAPH[incr Graph::Data(Nb)]
 
    namespace eval Time$gr {
       variable Data
@@ -599,7 +599,7 @@ proc Graph::Time::ItemAdd { GR Item } {
       lappend data(Items) $Item
       Graph::Time::ItemDefault $GR $Item
    }
-   $data(Canvas) itemconfigure GRAPH$GR -item $data(Items)
+   $data(Canvas) itemconfigure $GR -item $data(Items)
 }
 
 #-------------------------------------------------------------------------------
@@ -660,7 +660,7 @@ proc Graph::Time::ItemDel { GR Item } {
       set data(Items) [lreplace $data(Items) $idx $idx]
 
       $data(Canvas) delete [graphitem configure $Item -desc]
-      $data(Canvas) itemconfigure GRAPH$GR -item $data(Items)
+      $data(Canvas) itemconfigure $GR -item $data(Items)
 
       vector free $Item
       graphitem free $Item

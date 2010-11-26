@@ -111,7 +111,7 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
 
    Viewport::ConfigSet $Frame
 
-   $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "MINIAREA $ctag LOCK$ctag"
+   $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "MINIAREA LOCK$ctag"
 
    if { [info exists Viewport::Data(Data$Frame)] } {
       set Data(VP$Frame) [lindex $Viewport::Data(Data$Frame) 0]
@@ -166,17 +166,18 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
       #----- bindings de deplacement
 
       bind $Frame.bm$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
-      bind $Frame.bm$wtag <B1-Motion>          "Page::ActiveMove Viewport $Frame MINI$Frame %X %Y"
+      bind $Frame.bm$wtag <B1-Motion>          "Page::ActiveMove Viewport $Frame MINI$Frame %X %Y;Miniport::Coverage $Frame"
 
       #----- bindings de scaling
 
       bind $Frame.bs$wtag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
-      bind $Frame.bs$wtag <B1-Motion>          "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 1"
-      bind $Frame.bs$wtag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 0"
+      bind $Frame.bs$wtag <B1-Motion>          "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 1;Miniport::Coverage $Frame"
+      bind $Frame.bs$wtag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame MINI$Frame %X %Y 0;Miniport::Coverage $Frame"
    }
    $Frame.page.canvas bind MINI$Frame <Button-3> "tk_popup .mapmenu %X %Y 0"
 
    Page::MaskItem $Frame
+   Page::WidgetBind $Frame $ctag
    Page::ModeZoom $Frame MINI$Frame
    Page::Update   $Frame
 
@@ -205,7 +206,7 @@ proc Miniport::Coverage { Frame { VP "" } } {
    if { $Viewport::Data(LocationMINI$Frame) } {
 
       if { $VP=="" } {
-         set VP [lindex [Page::Registered $Frame Viewport] 0]
+         set VP $Miniport::Data(VP$Frame)
       }
 
       $Frame.page.canvas itemconfigure MINIAREA -fill $Viewport::Data(ColorMINI$Frame)
@@ -372,7 +373,7 @@ proc Miniport::Destroy { Frame } {
       set ctag $Page::Data(Tag)MINI$Frame
       set wtag $Page::Data(Tag)MINI
 
-      $Frame.page.canvas delete $ctag BS$ctag BM$ctag BF$ctag BD$ctag
+      $Frame.page.canvas delete $ctag BS$ctag BM$ctag BF$ctag BD$ctag MINIAREA
       destroy $Frame.sc$wtag $Frame.bs$wtag $Frame.bm$wtag $Frame.bf$wtag $Frame.bf$wtag.menu
       projcam destroy MINI$Frame
       projection destroy MINI$Frame

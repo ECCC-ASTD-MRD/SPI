@@ -1178,7 +1178,6 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -maskitem [$Frame.page.canvas find withtag VPINTRUDE] -maskwidth $Page::Param(Intrusion)
 
    if { $Active } {
-      Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
       scale $Frame.sc$vp -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
          -from [expr log10(0.5)/log10(2)] -to [expr log10(131072)/log10(2)] \
          -variable Page::Data(L$Frame) -command "ProjCam::Zoom $Frame $Frame \[expr pow(2,\$Page::Data(L$Frame))\]; catch"
@@ -1186,6 +1185,8 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       bind $Frame.sc$vp <ButtonRelease-1> "Viewport::Resolution $Frame 1"
 
       $Frame.page.canvas create window [expr $x1-150-35] $y1  -window $Frame.sc$vp -anchor sw -tags "SC$Page::Data(Tag)$vp NOPRINT" -width 151
+
+      Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
    }
 
    Viewport::Activate $Frame $vp
@@ -1193,7 +1194,6 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
 
    Page::ActiveFull Viewport $Frame $vp $Full
    Page::Register $Frame Viewport $vp
-
 
    update idletasks
    $Frame.page.canvas configure -cursor left_ptr

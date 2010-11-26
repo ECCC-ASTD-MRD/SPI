@@ -124,6 +124,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
    Shape::BindFull  $Frame.page.canvas DB$VP [expr $x1-11] $y1 DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
 
    Page::MaskItem $Frame
+   Page::WidgetBind $Frame DB$VP
 }
 
 proc DataBar::SetTitle { Frame VP Title } {
@@ -207,8 +208,8 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
       }
       $Frame.page.canvas.up$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n-1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
       $Frame.page.canvas.dn$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n+1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
-      $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "$Page::Data(Tag) DB$VP DBDEL$VP NOPRINT"
-      $Frame.page.canvas create window [expr $X1-12] $y -window $Frame.page.canvas.dn$n -anchor se -tags "$Page::Data(Tag) DB$VP DBDEL$VP NOPRINT"
+      $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "$Page::Data(Tag) DB$VP DBDEL$VP UDDB$VP NOPRINT"
+      $Frame.page.canvas create window [expr $X1-12] $y -window $Frame.page.canvas.dn$n -anchor se -tags "$Page::Data(Tag) DB$VP DBDEL$VP UDDB$VP NOPRINT"
       incr n
    }
 

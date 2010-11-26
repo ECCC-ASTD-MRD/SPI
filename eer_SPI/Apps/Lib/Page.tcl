@@ -96,6 +96,8 @@
 #    Page::UpdateItems     { Frame }
 #    Page::SnapGrid        { Frame }
 #    Page::SnapRef         { Frame X Y }
+#    Page::WidgetBind      { Frame Tag }
+#    Page::WidgetShow      { Frame Tag X Y Visible }
 #
 #    VertexAdd    { Frame VP X Y }
 #    VertexDelete { Frame VP }
@@ -143,7 +145,9 @@ namespace eval Page {
 
    set Param(Grid)      0           ;#Grille de snap
    set Param(Snap)      5           ;#intervalle de snap
+   set Param(Widget)    False       ;#Affichage des widgets
    set Param(Intrusion) 0           ;#Allow for viewport intrusions
+   set Param(Widget)    0           ;#Control widget
    set Param(Square)    0           ;#Dimension du curseur carre
 
    #----- Definitions des constantes pour la projection
@@ -178,6 +182,7 @@ namespace eval Page {
    set Lbl(Display)        { "Afficher"  "Display" }
    set Lbl(Size)           { "Dimensions" "Size" }
    set Lbl(Intrusion)      { "Intrusion dans les vues" "Allow viewport intrusions" }
+   set Lbl(Widget)         { "Affichage des boutons de contrôle" "Display control widgets" }
    set Lbl(Others)         { "Autres" "Others" }
 }
 
@@ -306,20 +311,21 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
    $Frame.page.canvas create window $X1 $Y0           -window $Frame.bd$tag -anchor ne -tags "BD$tag NOPRINT"
 
    #----- bindings de fullscreen
-
    eval Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)
 
-   #----- bindings de deplacement
+   #----- bindings de placement des bouttons
+   Page::WidgetBind $Frame $Id
 
-   bind $Frame.bm$tag <ButtonPress-1>   "Page::ActiveTag $Type $Frame $Id %X %Y $Args"
-   bind $Frame.bm$tag <B1-Motion>       "Page::ActiveMove $Type $Frame $Id %X %Y"
+   #----- bindings de deplacement
+   bind $Frame.bm$tag <ButtonPress-1>   "Page::ActiveTag   $Type $Frame $Id %X %Y $Args"
+   bind $Frame.bm$tag <B1-Motion>       "Page::ActiveMove  $Type $Frame $Id %X %Y"
    bind $Frame.bm$tag <ButtonRelease-1> "Page::ActiveUnTag $Type $Frame $Id"
 
    #----- bindings de scaling
-
-   bind $Frame.bs$tag <ButtonPress-1>   "Page::ActiveTag $Type $Frame $Id %X %Y $Args"
+   bind $Frame.bs$tag <ButtonPress-1>   "Page::ActiveTag   $Type $Frame $Id %X %Y $Args"
    bind $Frame.bs$tag <B1-Motion>       "Page::ActiveScale $Type $Frame $Id %X %Y 1"
    bind $Frame.bs$tag <ButtonRelease-1> "Page::ActiveUnTag $Type $Frame $Id; Page::ActiveScale ${Type} $Frame $Id %X %Y 0"
+
 }
 
 #----------------------------------------------------------------------------
@@ -1266,6 +1272,7 @@ proc Page::ParamApply { } {
 
    Page::Size $Data(Frame) $Data(Width) $Data(Height)
    Page::MaskItem $Data(Frame)
+   Page::WidgetShow $Data(Canvas) {} 0 0 0
 }
 
 #----------------------------------------------------------------------------
@@ -1313,7 +1320,9 @@ proc Page::ParamFrame { Frame Apply } {
       frame $frame.oth.def -relief sunken -bd 1
          checkbutton $frame.oth.def.intr  -text [lindex $Lbl(Intrusion) $GDefs(Lang)] -variable Page::Param(Intrusion) \
             -indicatoron false -command "$Apply configure -state normal" -onvalue 10 -offvalue 0 -bd 1
-         pack $frame.oth.def.intr -side top -fill x
+         checkbutton $frame.oth.def.widget  -text [lindex $Lbl(Widget) $GDefs(Lang)] -variable Page::Param(Widget) \
+            -indicatoron false -command "$Apply configure -state normal" -onvalue True -offvalue False -bd 1
+         pack $frame.oth.def.intr $frame.oth.def.widget -side top -fill x
       pack $frame.oth.def -side top -fill x
    pack  $frame.oth -padx 5 -pady 2 -side top -fill x
 
@@ -1777,3 +1786,98 @@ proc Page::SnapRef { Frame X Y } {
    set Data(Y) [$Frame.page.canvas canvasy $Y $Param(Snap)]
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Page::WidgetBind>
+# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Installation des evenements de gestion estion de
+#               l'activation/desactivation des widgets actifs
+#
+# Parametres :
+#   <Frame>  : Identificateur de canvas
+#   <Tag>    : Tag de l'objet
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::WidgetBind { Frame Tag } {
+
+   #----- bindings de placement des bouttons
+   $Frame.page.canvas bind $Tag <Leave> "Page::WidgetShow %W $Tag %x %y 0"
+   $Frame.page.canvas bind $Tag <Enter> "Page::WidgetShow %W $Tag %x %y 1"
+
+   Page::WidgetShow $Frame.page.canvas $Tag 0 0 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::WidgetShow>
+# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Gestion de l'acrivation/desactivation des widgets actifs
+#
+# Parametres :
+#   <Canvas> : Identificateur de canvas
+#   <Tag>    : Tag de l'objet
+#   <X>      : Coordonnee en X du deplacement
+#   <Y>      : Coordonnee en Y du deplacement
+#   <Visible>: Visibilite ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::WidgetShow { Canvas Tag X Y Visible } {
+   variable Data
+
+   if { ![llength $Tag] } {
+      if { !$Visible && !$Page::Param(Widget) } {
+         $Canvas itemconfigure NOPRINT -state hidden
+      } else {
+         $Canvas itemconfigure NOPRINT -state normal
+      }
+   } else {
+
+      if { !$Visible && !$Page::Param(Widget) } {
+
+         set coords [$Canvas bbox $Tag]
+         if { !($X>=[lindex $coords 0] && $X<=[lindex $coords 2] && $Y>=[lindex $coords 1] && $Y<=[lindex $coords 3]) } {
+            $Canvas itemconfigure SC$Data(Tag)$Tag -state hidden
+            $Canvas itemconfigure BS$Data(Tag)$Tag -state hidden
+            $Canvas itemconfigure BM$Data(Tag)$Tag -state hidden
+            $Canvas itemconfigure BF$Data(Tag)$Tag -state hidden
+            $Canvas itemconfigure BD$Data(Tag)$Tag -state hidden
+            $Canvas itemconfigure BO$Data(Tag)$Tag -state hidden
+            $Canvas itemconfigure UD$Data(Tag)$Tag -state hidden
+
+            $Canvas itemconfigure SC$Tag -state hidden
+            $Canvas itemconfigure BS$Tag -state hidden
+            $Canvas itemconfigure BM$Tag -state hidden
+            $Canvas itemconfigure BF$Tag -state hidden
+            $Canvas itemconfigure BD$Tag -state hidden
+            $Canvas itemconfigure BO$Tag -state hidden
+            $Canvas itemconfigure UD$Tag -state hidden
+         }
+      } else {
+         $Canvas itemconfigure SC$Data(Tag)$Tag -state normal
+         $Canvas itemconfigure BS$Data(Tag)$Tag -state normal
+         $Canvas itemconfigure BM$Data(Tag)$Tag -state normal
+         $Canvas itemconfigure BF$Data(Tag)$Tag -state normal
+         $Canvas itemconfigure BD$Data(Tag)$Tag -state normal
+         $Canvas itemconfigure BO$Data(Tag)$Tag -state normal
+         $Canvas itemconfigure UD$Data(Tag)$Tag -state normal
+
+         $Canvas itemconfigure SC$Tag -state normal
+         $Canvas itemconfigure BS$Tag -state normal
+         $Canvas itemconfigure BM$Tag -state normal
+         $Canvas itemconfigure BF$Tag -state normal
+         $Canvas itemconfigure BD$Tag -state normal
+         $Canvas itemconfigure BO$Tag -state normal
+         $Canvas itemconfigure UD$Tag -state normal
+      }
+   }
+}

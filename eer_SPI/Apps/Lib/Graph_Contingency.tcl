@@ -465,9 +465,9 @@ proc Graph::Contingency::Page { GR } {
    #----- Creation des partie fixes du graph
 
    if { $Graph::Width(Frame) } {
-      $data(Canvas) create rectangle $Graph::Data(X$GR) $Graph::Data(Y$GR) [expr $Graph::Data(Width$GR)+$Graph::Data(X$GR)] [expr $Graph::Data(Height$GR)+$Graph::Data(Y$GR)] -outline black  -fill $Graph::Color(Frame) -width $Graph::Width(Frame) -tags "$tag GRAPH$GR"
+      $data(Canvas) create rectangle $Graph::Data(X$GR) $Graph::Data(Y$GR) [expr $Graph::Data(Width$GR)+$Graph::Data(X$GR)] [expr $Graph::Data(Height$GR)+$Graph::Data(Y$GR)] -outline black  -fill $Graph::Color(Frame) -width $Graph::Width(Frame) -tags "$tag $GR"
    } else {
-      $data(Canvas) create rectangle $Graph::Data(X$GR) $Graph::Data(Y$GR) [expr $Graph::Data(Width$GR)+$Graph::Data(X$GR)] [expr $Graph::Data(Height$GR)+$Graph::Data(Y$GR)] -outline "" -fill "" -width 0 -tags "$tag GRAPH$GR"
+      $data(Canvas) create rectangle $Graph::Data(X$GR) $Graph::Data(Y$GR) [expr $Graph::Data(Width$GR)+$Graph::Data(X$GR)] [expr $Graph::Data(Height$GR)+$Graph::Data(Y$GR)] -outline "" -fill "" -width 0 -tags "$tag $GR"
    }
    $data(Canvas) create rectangle $graph(X0) $graph(Y0) $graph(X1) $graph(Y1) -outline $Graph::Color(Scale) -fill $Graph::Color(Graph) -tags "$tag"
 

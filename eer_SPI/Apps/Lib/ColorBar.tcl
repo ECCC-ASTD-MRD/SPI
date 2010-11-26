@@ -236,6 +236,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
       Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h] ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
 
       Page::MaskItem $Frame
+      Page::WidgetBind $Frame $tag
 
       lappend Data(List$Frame) $tag
    }

@@ -357,7 +357,7 @@ proc Graph::Labels { Type GR Title UnitX UnitY } {
 
    upvar #0 Graph::${Type}::${Type}${GR}::Data  data
 
-   $data(Canvas) itemconfigure [lindex [$data(Canvas) itemconfigure GRAPH$GR -title] end] -text $Title
+   $data(Canvas) itemconfigure [lindex [$data(Canvas) itemconfigure $GR -title] end] -text $Title
    $data(Canvas) itemconfigure [graphaxis configure axisx$GR -unit] -text $UnitX
    $data(Canvas) itemconfigure [graphaxis configure axisy$GR -unit] -text $UnitY
 }
@@ -388,7 +388,7 @@ proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
    set cv $Frame.page.canvas
 
    if { $X0==-999 } {
-      set coo [$cv coords GRAPH$GR]
+      set coo [$cv coords $GR]
       set X0 [lindex $coo 0]
       set Y0 [lindex $coo 1]
    }
@@ -412,8 +412,8 @@ proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
    set Data(X$GR)      $X0
    set Data(Y$GR)      $Y0
 
-   catch { $cv coords GRAPH$GR $X0 $Y0 $X1 $Y1 }
-   catch { $cv itemconfigure GRAPH$GR -x $X0 -y $Y0 -width $Data(Width$GR) -height $Data(Height$GR) }
+   catch { $cv coords $GR $X0 $Y0 $X1 $Y1 }
+   catch { $cv itemconfigure $GR -x $X0 -y $Y0 -width $Data(Width$GR) -height $Data(Height$GR) }
 
    if { $Data(Active$GR) } {
       $Frame.page.canvas coords BS$Page::Data(Tag)$GR $X1 $Y1
@@ -460,7 +460,7 @@ proc Graph::Resolution { Frame Type Res } {
 
    if { $Res==1 } {
       foreach graph [Page::Registered $Frame Graph::${Type}] {
-         $Frame.page.canvas itemconf GRAPH$graph -update True
+         $Frame.page.canvas itemconf $graph -update True
       }
    }
 }
@@ -605,9 +605,9 @@ proc Graph::Mode { Type GR { Zoom False } } {
 
    if { $Zoom } {
 
-      $data(Canvas) bind GRAPH$GR                <Motion>        "if { \[$GR -header %x %y\] } { $data(Canvas) configure -cursor hand1 } else { $data(Canvas) configure -cursor left_ptr }
+      $data(Canvas) bind $GR                <Motion>        "if { \[$GR -header %x %y\] } { $data(Canvas) configure -cursor hand1 } else { $data(Canvas) configure -cursor left_ptr }
                                                                   Graph::${Type}::Coord $Page::Data(Frame) $GR \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind GRAPH$GR                <Leave>         "set Page::Data(Coord) \"\";set Page::Data(Value) \"\""
+      $data(Canvas) bind $GR                <Leave>         "set Page::Data(Coord) \"\";set Page::Data(Value) \"\""
 
       #----- Evenements de zoom
 
@@ -622,9 +622,9 @@ proc Graph::Mode { Type GR { Zoom False } } {
 
       #----- Evenements de rotation
 
-      $data(Canvas) bind GRAPH$GR <ButtonPress-1>   "Graph:LegendMoveInit $data(Frame) $data(Canvas) $GR $Type %x %y"
-      $data(Canvas) bind GRAPH$GR <B1-Motion>       "Graph:LegendMove $data(Frame) $data(Canvas) $GR $Type %x %y"
-      $data(Canvas) bind GRAPH$GR <ButtonRelease-1> "Graph:LegendMoveDone $data(Frame) $data(Canvas) $GR $Type"
+      $data(Canvas) bind $GR <ButtonPress-1>   "Graph:LegendMoveInit $data(Frame) $data(Canvas) $GR $Type %x %y"
+      $data(Canvas) bind $GR <B1-Motion>       "Graph:LegendMove $data(Frame) $data(Canvas) $GR $Type %x %y"
+      $data(Canvas) bind $GR <ButtonRelease-1> "Graph:LegendMoveDone $data(Frame) $data(Canvas) $GR $Type"
    }
 }
 
@@ -992,7 +992,7 @@ proc Graph::ItemConfigure { GR Type Item } {
    if { $item!="" } {
       $data(Canvas) itemconfigure [graphitem configure $Item -desc] -font $Graph::Item(Font) -fill $Graph::Item(Outline)
    }
-   $data(Canvas) itemconfigure GRAPH$GR -bg $Graph::Color(BG)
+   $data(Canvas) itemconfigure $GR -bg $Graph::Color(BG)
 }
 
 proc Graph::ItemSelect { Item } {
@@ -1564,8 +1564,8 @@ proc Graph:LegendMoveInit { Frame Canvas GR Type X Y } {
 
    if { [set Data(Legend) [$GR -header $X $Y]] } {
 
-      set Data(XLegend) [lindex [$Canvas itemconfigure GRAPH$GR -xlegend] end]
-      set Data(YLegend) [lindex [$Canvas itemconfigure GRAPH$GR -ylegend] end]
+      set Data(XLegend) [lindex [$Canvas itemconfigure $GR -xlegend] end]
+      set Data(YLegend) [lindex [$Canvas itemconfigure $GR -ylegend] end]
 
       set Data(X) $X
       set Data(Y) $Y
@@ -1598,7 +1598,7 @@ proc Graph:LegendMove { Frame Canvas GR Type X Y } {
    variable Data
 
    if { $Data(Legend) } {
-      $Canvas itemconfigure GRAPH$GR -xlegend [expr $Data(XLegend)+($X-$Data(X))] -ylegend [expr $Data(YLegend)+($Y-$Data(Y))]
+      $Canvas itemconfigure $GR -xlegend [expr $Data(XLegend)+($X-$Data(X))] -ylegend [expr $Data(YLegend)+($Y-$Data(Y))]
    } else {
       Graph::Translate $Frame $Type $GR [$Canvas canvasx $X] [$Canvas canvasy $Y]
    }
