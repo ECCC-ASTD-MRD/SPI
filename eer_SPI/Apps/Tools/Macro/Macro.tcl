@@ -94,6 +94,7 @@ proc Macro::Close { } {
 #
 # Parametres :
 #   <Error>  : Message d'erreur dans les 2+ langues sous forme de liste
+#   <Extra>  : Texte supplementaire.
 #
 # Retour    :
 #
@@ -101,14 +102,14 @@ proc Macro::Close { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Macro::Error { Error } {
+proc Macro::Error { Error { Extra "" } } {
    global GDefs
 
    #----- Recuperer le nom de la procedure fautive
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   Dialog::Error .macro $Error " (${stackproc})"
+   Dialog::Error .macro $Error " (${stackproc})$Extra"
 }
 
 #-------------------------------------------------------------------------------
@@ -150,6 +151,7 @@ proc Macro::Doing { Msg } {
 #
 # Parametres :
 #   <Info>   : Message
+#   <Extra>  : Texte supplementaire.
 #
 # Retour    :
 #
@@ -157,12 +159,12 @@ proc Macro::Doing { Msg } {
 #
 #-------------------------------------------------------------------------------
 
-proc Macro::Info { Info } {
+proc Macro::Info { Info { Extra "" } } {
 
    set stacklist [info level -1]
    set stackproc [lindex $stacklist 0]
 
-   Dialog::Info .macro [list $Info $Info] " (${stackproc})"
+   Dialog::Info .macro [list $Info $Info] " (${stackproc})$Extra"
 }
 
 #-------------------------------------------------------------------------------
