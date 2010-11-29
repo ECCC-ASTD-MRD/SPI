@@ -1809,6 +1809,7 @@ proc Page::WidgetBind { Frame Tag } {
    $Frame.page.canvas bind $Tag <Leave> "+Page::WidgetShow %W $Tag %x %y 0"
    $Frame.page.canvas bind $Tag <Enter> "+Page::WidgetShow %W $Tag %x %y 1"
 
+   $Frame.page.canvas lower NOPRINT
    Page::WidgetShow $Frame.page.canvas {} 0 0 0
 }
 
@@ -1845,7 +1846,7 @@ proc Page::WidgetShow { Canvas Tag X Y Visible } {
       if { !$Visible && !$Page::Param(Widget) } {
 
          set coords [$Canvas bbox $Tag]
-         if { !($X>=[lindex $coords 0] && $X<=[lindex $coords 2] && $Y>=[lindex $coords 1] && $Y<=[lindex $coords 3]) } {
+         if { !($X>0 && $X>[lindex $coords 0] && $X<[lindex $coords 2] && $Y>[lindex $coords 1] && $Y<[lindex $coords 3]) } {
             $Canvas itemconfigure SC$Data(Tag)$Tag -state hidden
             $Canvas itemconfigure BS$Data(Tag)$Tag -state hidden
             $Canvas itemconfigure BM$Data(Tag)$Tag -state hidden

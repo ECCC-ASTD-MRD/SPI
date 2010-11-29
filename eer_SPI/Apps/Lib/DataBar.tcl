@@ -14,20 +14,26 @@
 # Fonctions:
 #    DataBar::Active     { Frame }
 #    DataBar::Create     { Frame VP No Id }
+#    DataBar::SetTitle   { Frame VP Title }
+#    DataBar::Draw       { Frame VP X0 Y0 X1 Y1 }
+#    DataBar::IdField    { Field }
+#    DataBar::IdObs      { Obs }
+#    DataBar::IdMetObs   { MetObs }
+#    DataBar::IdTraj     { Traj }
 #    DataBar::Destroy    { Frame VP No }
 #    DataBar::DestroyAll { Frame }
+#    DataBar::Full       { Frame Tag VP { Pix 0 } }
 #    DataBar::Move       { Canvas Tag0 Tag1 }
 #    DataBar::Scale      { Canvas Tag0 Tag1 X Y }
-#    DataBar::SetTitle   { Frame VP Title }
 #    DataBar::Update     { Frame { State -1 } }
 #    DataBar::UpdateVP   { Frame VP List }
 #    DataBar::Write      { Frame File }
 #
 #===============================================================================
 
-package provide DataBar 1.1
+package provide DataBar 1.2
 
-catch { SPI::Splash "Loading Canvas Package DataBar 1.1" }
+catch { SPI::Splash "Loading Canvas Package DataBar 1.2" }
 
 namespace eval DataBar {
    global GDefs
@@ -42,7 +48,7 @@ namespace eval DataBar {
 
 #------------------------------------------------------------------------------
 # Nom      : <DataBar::Active>
-# Creation : Octobre 20013 - J.P. Gauthier - CMC/CMOE -
+# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE -
 #
 # But     : Detrminer l'etat de la databar
 #
@@ -119,13 +125,30 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    DataBar::Draw $Frame $VP $x0 $y0 $x1 $y1
 
-   Shape::BindMove  $Frame.page.canvas DB$VP DataBar::Move $Frame $VP DB$VP
+   Shape::BindMove  $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
    Shape::BindScale $Frame.page.canvas DB$VP $x1 $y1 "DataBar::Scale $Frame $VP DB$VP"
    Shape::BindFull  $Frame.page.canvas DB$VP [expr $x1-11] $y1 DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
 
    Page::MaskItem $Frame
    Page::WidgetBind $Frame DB$VP
 }
+
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::SetTitle>
+# Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Definir le titre de la legende
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#   <Title>  : Titre
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
 
 proc DataBar::SetTitle { Frame VP Title } {
    variable Data
@@ -134,6 +157,26 @@ proc DataBar::SetTitle { Frame VP Title } {
 
    $Frame.page.canvas itemconfigure TXTDB$VP -text $Data(Title$Frame)
 }
+
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::Draw>
+# Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Afficher la legende
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#   <X0>     : Coordonee X du coin superieur gauche
+#   <Y0>     : Coordonee Y du coin superieur gauche
+#   <X1>     : Coordonee X du coin inferieur droit
+#   <Y1>     : Coordonee Y du coin inferieur droit
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
 
 proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    global GDefs
@@ -224,6 +267,21 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    }
 }
 
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::IdField>
+# Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer le texte de la legend pour le type de donnee "fstdfield"
+#
+# Parametres :
+#   <Field>  : Identificateur de la donnee
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
+
 proc DataBar::IdField { Field } {
    global GDefs
 
@@ -244,6 +302,21 @@ proc DataBar::IdField { Field } {
    return $lbl
 }
 
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::IdObs>
+# Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer le texte de la legend pour le type de donnee "observation"
+#
+# Parametres :
+#   <Obs>    : Identificateur de la donnee
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
+
 proc DataBar::IdObs { Obs } {
    global GDefs
 
@@ -253,6 +326,21 @@ proc DataBar::IdObs { Obs } {
    return $lbl
 }
 
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::IdMetObs>
+# Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer le texte de la legend pour le type de donnee "metobs"
+#
+# Parametres :
+#   <MetObs> : Identificateur de la donnee
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
+
 proc DataBar::IdMetObs { MetObs } {
    global GDefs
 
@@ -261,6 +349,21 @@ proc DataBar::IdMetObs { MetObs } {
 
    return $lbl
 }
+
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::IdTraj>
+# Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer le texte de la legend pour le type de donnee "trajectory"
+#
+# Parametres :
+#   <Traj>    : Identificateur de la donnee
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
 
 proc DataBar::IdTraj { Traj } {
    global GDefs

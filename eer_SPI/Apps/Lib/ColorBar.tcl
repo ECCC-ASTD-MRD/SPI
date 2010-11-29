@@ -13,6 +13,7 @@
 #
 # Fonctions:
 #    ColorBar::Active     { Frame }
+#    ColorBar::Tag        { VP Id }
 #    ColorBar::Create     { Frame VP X0 Y0 Width Height { Fields { } } }
 #    ColorBar::Set        { Frame VP No Id Field }
 #    ColorBar::Destroy    { Frame VP No }
@@ -22,13 +23,13 @@
 #    ColorBar::Scale      { Canvas Tag X Y }
 #    ColorBar::Update     { Frame { State -1 } }
 #    ColorBar::UpdateVP   { Frame VP List }
-#    proc ColorBar::Write { Frame File }
+#    ColorBar::Write      { Frame File }
 #
 #===============================================================================
 
-package provide ColorBar 1.1
+package provide ColorBar 1.2
 
-catch { SPI::Splash "Loading Canvas Package ColorBar 1.1" }
+catch { SPI::Splash "Loading Canvas Package ColorBar 1.2" }
 
 namespace eval ColorBar {
    variable Data
@@ -58,7 +59,7 @@ namespace eval ColorBar {
 
 #------------------------------------------------------------------------------
 # Nom      : <ColorBar::Active>
-# Creation : Octobre 20013 - J.P. Gauthier - CMC/CMOE -
+# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE -
 #
 # But     : Detrminer l'etat de la colorbar
 #
@@ -82,7 +83,23 @@ proc ColorBar::Active { Frame } {
    }
 }
 
-proc ColorBar::Id { VP Id } {
+#------------------------------------------------------------------------------
+# Nom      : <ColorBar::Tag>
+# Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer le tag unique pour la donnee
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Retour:
+#   <Active> : Active ou non
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
+
+proc ColorBar::Tag { VP Id } {
   return [string map { : "-" "/" "-" . "-" } CB$VP[join $Id ""]]
 }
 
@@ -109,7 +126,7 @@ proc ColorBar::Create { Frame VP X0 Y0 Width Height } {
 
    set No 0
    set Id -1
-   set tag [ColorBar::Id $VP $Id]:$VP$No
+   set tag [ColorBar::Tag $VP $Id]:$VP$No
 
    set Data(Active$Frame) 1
    set Data(Full$tag)     0
@@ -159,7 +176,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
       return
    }
 
-   set tag [ColorBar::Id $VP $Id]:$VP$No
+   set tag [ColorBar::Tag $VP $Id]:$VP$No
 
    if { ![info exists Data(List$Frame)] } {
       set Data(List$Frame) {}
