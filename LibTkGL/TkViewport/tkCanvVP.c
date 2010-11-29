@@ -489,20 +489,25 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             break;
 
          case PROJECTCIRCLE:
-            if (Objc!=5){
-               Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist");
+            if (Objc!=5 && Objc!=6){
+               Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist [deg]");
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
             Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
             Tcl_GetDoubleFromObj(Interp,Objv[4],&d);
 
+            np=10;
+            if (Objc==6) {
+               Tcl_GetIntFromObj(Interp,Objv[5],&np);
+            }
+
             loc0.Lat=DEG2RAD(loc0.Lat);
             loc0.Lon=DEG2RAD(loc0.Lon);
             d=M2RAD(d);
 
             obj=Tcl_NewListObj(0,NULL);
-            for(n=0;n<=360;n++) {
+            for(n=0;n<=360;n+=np) {
                x=DEG2RAD(n);
 
                loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
