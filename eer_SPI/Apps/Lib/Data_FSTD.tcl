@@ -668,7 +668,6 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 proc FSTD::ParamGet { { Spec "" } } {
    variable Data
    variable Param
-   variable Resources
 
    if { $Spec=="" } {
       set Spec $Param(Spec)
@@ -735,6 +734,15 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) " $Param(Max)\]"
       }
    }
+
+   if { [llength [set interlabels [dataspec configure $Spec -interlabels]]] } {
+      set inters $Param(Intervals)
+      set Param(Intervals) ""
+      foreach label $interlabels inter $inters {
+         append Param(Intervals) "$inter ($label) "
+      }
+   }
+
    FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam)
 }
 
