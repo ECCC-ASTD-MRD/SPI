@@ -75,7 +75,7 @@ static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdoubl
    *Out=glTessTmp[glTessNo];
 
    /*Iterate through the temporary tessselation vertices*/
-   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo++:0;
+   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0;
 };
 
 static void glTessVertex(GLdouble Vertex[3]) {

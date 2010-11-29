@@ -1334,7 +1334,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
          }
          Geo=Geo->Next;
 
-         /*After some tessalation, give back control to application*/
+         /*After some tesselation, give back control to application*/
          if (n>10) {
             ViewportRefresh_Canvas(Proj->VP->canvas);
             break;
@@ -1392,7 +1392,6 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    GLfloat emi[4]  = { 0.012, 0.012, 0.012, 1.0 };
    GLfloat amb[4]  = { 0.97, 0.97, 0.97, 1.0 };
    GLfloat spe[4]  = { 1.0, 1.0, 1.0, 1.0 };
-//   GLfloat dif[4]  = { 0.25, 0.25, 0.25, 1.0 };
    GLfloat dif[4]  = { 0.9, 0.9, 0.9, 1.0 };
    GLfloat shi     = 100.0;
 
