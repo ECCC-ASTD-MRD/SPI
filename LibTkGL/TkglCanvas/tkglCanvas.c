@@ -2530,21 +2530,50 @@ static void DisplayglCanvasItems(ClientData clientData,int X,int Y,int Width,int
    }
 }
 
+#include <sys/time.h>
+int timeval_subtract(struct timeval *Result,struct timeval *T0,struct timeval *T1) {
+
+   int nsec;
+
+   /* Perform the carry for the later subtraction by updating y. */
+   if (T0->tv_usec<T1->tv_usec) {
+      nsec=(T1->tv_usec-T0->tv_usec)/1000000+1;
+      T1->tv_usec-=1000000*nsec;
+      T1->tv_sec+=nsec;
+   }
+   if (T0->tv_usec-T1->tv_usec>1000000) {
+      nsec=(T1->tv_usec-T0->tv_usec)/1000000;
+      T1->tv_usec+=1000000*nsec;
+      T1->tv_sec-=nsec;
+   }
+
+   Result->tv_sec =T0->tv_sec-T1->tv_sec;
+   Result->tv_usec=T0->tv_usec-T1->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return(T0->tv_sec<T1->tv_sec);
+}
+
 static void DisplayglCanvas(ClientData clientData) {
 
-   TkCanvas *canvasPtr = (TkCanvas *) clientData;  /* Pointer on the Canvas to be displayed */
-   Tk_Window tkwin = canvasPtr->tkwin;             /* Pointer on the tkwindow */
+   TkCanvas      *canvasPtr = (TkCanvas *) clientData;  /* Pointer on the Canvas to be displayed */
+   Tk_Window      tkwin     = canvasPtr->tkwin;         /* Pointer on the tkwindow */
+   struct timeval time0,time1;
 
    if (!SetglCanvas(canvasPtr))
       goto done;
 
-   GLRender->RenderTime=glGetProcInfo(&GLRender->MemRes);
+   gettimeofday(&time0,NULL);
+
    DisplayglCanvasItems(clientData,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
    GLRender->XExpose=GLRender->XExpose>=0?0:GLRender->XExpose;
 
    /* Swap the buffers to display the TkglItems */
    glXSwapBuffers(canvasPtr->display,Tk_WindowId(canvasPtr->tkwin));
-   GLRender->RenderTime=(glGetProcInfo(&GLRender->MemRes)-GLRender->RenderTime)/(double)CLOCKS_PER_SEC;
+
+   gettimeofday(&time1,NULL);
+   timeval_subtract(&time0,&time1,&time0);
+   GLRender->RenderTime=time0.tv_sec+((double)time0.tv_usec)*1e-6;
 
    /* Draw the window borders, if needed. */
    canvasPtr->flags &= ~REDRAW_BORDERS;

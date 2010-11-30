@@ -199,7 +199,6 @@ void     glBitmapFree(T_glBitmap *Bitmap);
 int      glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset);
 char    *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr);
 int      glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,int Height);
-double   glGetProcInfo(double *Mem);
 GLfloat *glFeedbackInit(int Size,int GLMode);
 int      glFeedbackProcess(Tcl_Interp *Interp,int GLMode);
 int      glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Height);

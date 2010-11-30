@@ -85,33 +85,6 @@ static void glTessVertex(GLdouble Vertex[3]) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <glGetProcInfo>
- * Creation : Septembre 1998 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Calcul du temps processeur d'une job.
- *
- * Parametres :
- *
- * Retour:
- *  <sec>     : Temps en secondes.
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-double glGetProcInfo(double *Mem){
-
-   clock_t       sec=0.0;
-   struct rusage us;
-
-   sec=clock();
-   getrusage(RUSAGE_SELF,&us);
-   *Mem=us.ru_maxrss;
-
-   return(sec);
-}
-
-/*----------------------------------------------------------------------------
  * Nom      : <glInfo>
  * Creation : Septembre 2000 - J.P. Gauthier - CMC/CMOE
  *
@@ -229,8 +202,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int      idx;
    Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-stat","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay",NULL };
-   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,STAT,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY };
+   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay",NULL };
+   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY };
 
    Tcl_ResetResult(Interp);
 
@@ -314,11 +287,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             break;
 
-         case STAT:
-            obj=Tcl_NewListObj(0,NULL);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GLRender->RenderTime));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GLRender->MemRes));
-            Tcl_SetObjResult(Interp,obj);
+         case TIME:
+            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(GLRender->RenderTime));
             break;
 
          case SHADERAVAILABLE:
@@ -1998,7 +1968,6 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->RenderTime      = 0.0;
    GLRender->Resolution      = 1;
    GLRender->ShaderAvailable = 1;
-   GLRender->MemRes          = 0.0;
    GLRender->GLTess          = gluNewTess();
    GLRender->GLQuad          = gluNewQuadric();
    GLRender->TRCon           = NULL;
