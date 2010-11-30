@@ -938,6 +938,14 @@ proc Mapper::ParamsOGRGet { Object } {
          append Data(Intervals) " $Data(Max)\]"
       }
    }
+
+   if { [llength [set interlabels [ogrlayer configure $Object -interlabels]]] } {
+      set inters $Data(Intervals)
+      set Data(Intervals) ""
+      foreach label $interlabels inter $inters {
+         append Data(Intervals) "$inter ($label) "
+      }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -970,6 +978,7 @@ proc Mapper::ParamsOGRSet { Object } {
    #----- Verifier pour un range plutot que des niveaux
 
    set inter $Data(Intervals)
+   set label {}
    set min   ""
    set max   ""
 
@@ -983,12 +992,22 @@ proc Mapper::ParamsOGRSet { Object } {
       set inter {}
    }
 
+   if { [string first "(" $Data(Intervals)]!=-1 } {
+      set inter {}
+      foreach { val } [split $Data(Intervals) )] {
+         if { [llength [set val [split $val (]]]>1 } {
+            lappend inter [lindex $val 0]
+            lappend label [lindex $val 1]
+         }
+      }
+   }
+
 #   ogrlayer configure $Object -stipple $Data(Stipple)
 #   ogrlayer configure $Object -font OGRFONT
 
    ogrlayer configure $Object -dash $Data(Dash) -colormap $Data(ColorMap) -outline $Data(Color) -activeoutline $Data(Highlight) \
       -icon $Data(Icon) -size $Data(Size) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
-      -min $min -max $max -intervals $inter -value $Data(Order) $Data(Mantisse)
+      -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse)
 
    if { $Data(FillSel) } {
       ogrlayer configure $Object -fill $Data(Fill)
