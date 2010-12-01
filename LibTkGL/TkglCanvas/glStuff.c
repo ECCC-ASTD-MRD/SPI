@@ -42,7 +42,7 @@
 GLParams *GLRender;  /* Structure globale des parametres OpenGL */
 
 static float glArrayCircle[2*360*ARCSTEP+2];
-static float glArrayArrow[14] = { 0.0f,0.0f,0.5f,-1.0f,0.2f,-1.0f,0.2f,-2.0f,-0.2f,-2.0f,-0.2f,-1.0f,-0.5f,-1.0f };
+static float glArrayArrow[14] = { 0.0f,0.0f, 0.25f,-0.5f, 0.1f,-0.5f, 0.1f,-1.0f, -0.1f,-1.0f, -0.1f,-0.5f, -0.25f,-0.5f };
 
 static Tcl_HashTable glFontIdTable;
 static Tcl_HashTable glBitmapTable;

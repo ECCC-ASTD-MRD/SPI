@@ -89,8 +89,6 @@ static Tk_ConfigSpec ColorbarSpecs[] = {
         "right", Tk_Offset(ColorbarItem,BarSide),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_BOOLEAN, "-showfactor",(char*)NULL,(char*) NULL,
         "1", Tk_Offset(ColorbarItem,ShowFactor),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_STRING,"-orient",(char*)NULL,(char *)NULL,
-        (char *)NULL,Tk_Offset(ColorbarItem,Orient),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_END,(char *)NULL,(char *)NULL,(char *)NULL,(char *)NULL,0,0 }
 };
 
@@ -186,7 +184,6 @@ int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
    cb->NbData     = 0;
    cb->Alpha      = 100;
    cb->Id         = 1;
-   cb->Orient     = NULL;
    cb->BarSplit   = 0;
    cb->BarWidth   = 15;
    cb->BarBorder  = 0;
@@ -419,15 +416,22 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
    OGR_Layer    *layer=NULL;
    GDAL_Band    *band=NULL;
 
-   int          y0=0,y1,y2,yh=0,i,inc=0;
+   int          dv=0,y1,y2,yh=0,x1,x2,i,inc=0;
    int          w,h,x,y;
 
    glShadeModel(GL_FLAT);
    glEnable(GL_SCISSOR_TEST);
 
    if (cb->NbData) {
-      inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
-      y1=cb->header.y1;
+      if (cb->Width<cb->Height) {
+         inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
+         y1=cb->header.y1;
+         x1=cb->header.x1;
+      } else {
+         inc=(cb->header.x2-cb->header.x1-5*(cb->NbData-1))/cb->NbData;
+         y1=cb->header.y1;
+         x1=cb->header.x1;
+      }
    }
 
    glPushMatrix();
@@ -435,7 +439,13 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
 
    for (i=0;i<cb->NbData;i++) {
 
-      y2=y1+inc-1;
+      if (cb->Width<cb->Height) {
+         y2=y1+inc-1;
+         x2=cb->header.x2;
+      } else {
+         x2=x1+inc-1;
+         y2=cb->header.y2;
+      }
 
       if (GLRender->MagScale>1)
          Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
@@ -457,19 +467,19 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
          glPolygonMode(GL_FRONT,GL_FILL);
          glColor4us(cb->BGColor->red,cb->BGColor->green,cb->BGColor->blue,cb->Alpha*655);
          glBegin(GL_QUADS);
-            glVertex2i(cb->header.x1,y1);
-            glVertex2i(cb->header.x1,y2);
-            glVertex2i(cb->header.x2,y2);
-            glVertex2i(cb->header.x2,y1);
+            glVertex2i(x1,y1);
+            glVertex2i(x1,y2);
+            glVertex2i(x2,y2);
+            glVertex2i(x2,y1);
          glEnd();
 
          glPolygonMode(GL_FRONT,GL_LINE);
          glColor4us(cb->FGColor->red,cb->FGColor->green,cb->FGColor->blue,cb->Alpha*655);
          glBegin(GL_QUADS);
-            glVertex2i(cb->header.x1,y1);
-            glVertex2i(cb->header.x1,y2);
-            glVertex2i(cb->header.x2,y2);
-            glVertex2i(cb->header.x2,y1);
+            glVertex2i(x1,y1);
+            glVertex2i(x1,y2);
+            glVertex2i(x2,y2);
+            glVertex2i(x2,y1);
          glEnd();
          glDisable(GL_BLEND);
       }
@@ -497,21 +507,22 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
          glFontUse(Disp,spec->Font);
       }
 
-      yh=Colorbar_RenderId(NULL,cb,spec,y1);
-      yh+=Colorbar_RenderContour(NULL,cb,spec,y1+yh);
-
-      if (spec->RenderVector && spec->RenderVector<3) {
-         Colorbar_RenderVector(NULL,cb,spec,y2);
-         y0=105;
+      /*Check orientation*/
+      if (cb->Width<cb->Height) {
+         /*Vertical*/
+         yh=Colorbar_RenderId(NULL,cb,spec,y1);
+         yh+=Colorbar_RenderContour(NULL,cb,spec,y1+yh);
+         dv=Colorbar_RenderVector(NULL,cb,spec,y1,y2);
+         Colorbar_RenderTexture(NULL,cb,spec,y1+yh,y2-dv);
+         y1=y2+5;
       } else {
-         y0=0;
+         /*Horizontal*/
+         yh=Colorbar_HRenderId(NULL,cb,spec,y1);
+         yh+=Colorbar_RenderContour(NULL,cb,spec,y1+yh);
+         dv=Colorbar_HRenderVector(NULL,cb,spec,x1,x2);
+         Colorbar_HRenderTexture(NULL,cb,spec,x1,x2-dv);
+         x1=x2+5;
       }
-
-      if (spec->RenderTexture || spec->RenderParticle || spec->MapAll) {
-         Colorbar_RenderTexture(NULL,cb,spec,y1+yh,y2-y0);
-      }
-
-      y1=y2+5;
    }
 
    glPopMatrix();
@@ -607,7 +618,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
  * Nom      : <Colorbar_RenderId>
  * Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Effectue l'affichage de l'entete.
+ * But      : Effectue l'affichage de l'entete dans l'orientation verticale
  *
  * Parametres :
  *  <Interp>  : Interpreteur TCL
@@ -636,7 +647,7 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
 
       if (CB->ShowFactor) {
          if (Spec->ValDelta!=0.0) {
-            sprintf(buf,"+ %1.2e",Spec->ValDelta);
+            snprintf(buf,256,"[+%1.2e]",Spec->ValDelta);
 
             y+=CB->tkm.linespace+2;
             if (Interp) {
@@ -647,7 +658,7 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
          }
 
          if (Spec->ValFactor!=1.0) {
-            sprintf(buf,"x %1.2e",Spec->ValFactor);
+            snprintf(buf,256,"[x%1.2e]",Spec->ValFactor);
 
             y+=CB->tkm.linespace+2;
             if (Interp) {
@@ -659,14 +670,69 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
       }
 
       if (Spec->Unit && Spec->Unit[0]!='\0') {
+         snprintf(buf,256,"(%s)",Spec->Unit);
          y+=CB->tkm.linespace+2;
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,Spec->Unit,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
          } else {
-            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,Spec->Unit,Spec);
+            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
          }
       }
 
+      return(y+5);
+   } else {
+      return(0);
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_HRenderId>
+ * Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage de l'entete dans l'orientation horizontale.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Specification des donnees
+ *  <Y1>      : Coordonne Y
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Colorbar_HRenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
+
+   char buf[512];
+   int y;
+
+   if (CB->Id && Spec->Font && Spec->Outline) {
+      sprintf(buf,"%s ",Spec->Desc);
+
+      if (CB->ShowFactor) {
+         if (Spec->ValDelta!=0.0) {
+            if (Spec->ValFactor!=1.0) {
+               sprintf(buf,"%s[+ %1.2e x %1.2e] ",buf,Spec->ValDelta,Spec->ValFactor);
+            } else {
+               sprintf(buf,"%s[+ %1.2e] ",buf,Spec->ValDelta);
+            }
+         } else if (Spec->ValFactor!=1.0) {
+            sprintf(buf,"%s[x %1.2e] ",buf,Spec->ValFactor);
+         }
+      }
+
+      if (Spec->Unit && Spec->Unit[0]!='\0') {
+         sprintf(buf,"%s(%s)",buf,Spec->Unit);
+      }
+
+      y=CB->tkm.linespace;
+      if (Interp) {
+         glPostscriptText(Interp,CB->canvas,buf,CB->header.x1+5,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,0.0,1.0,0.0);
+      } else {
+         Colorbar_RenderText(CB,CB->header.x1+5,Y1+y,TK_JUSTIFY_LEFT,buf,Spec);
+      }
       return(y+5);
    } else {
       return(0);
@@ -702,21 +768,22 @@ void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text
       } else {
          glDrawString(X,Y,0,Text,strlen(Text),0,1);
       }
-  }
+   }
 }
 
 /*----------------------------------------------------------------------------
  * Nom      : <Colorbar_RenderTexture>
  * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Effectue l'affichage de la colorbar des valeurs.
+ * But      : Effectue l'affichage de la colorbar des valeurs dans
+ *            l'orientation verticale.
  *
  * Parametres :
  *  <Interp>  : Interpreteur TCL
  *  <CB>      : Colorbar item
  *  <Spec>    : Specification des donnees
- *  <Y1>      : Coordonne Y
- *  <Y2>      : Coordonne Y
+ *  <Y1>      : Coordonne Y haut
+ *  <Y2>      : Coordonne Y bas
  *
  * Retour:
  *
@@ -732,10 +799,11 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
    char     buf[128],*lbl;
    Tcl_Obj *obj;
 
-   if (!Spec->Map)
+   if ((!Spec->RenderTexture && !Spec->RenderParticle && !Spec->MapAll) || !Spec->Map)
       return;
 
    glPolygonMode(GL_FRONT,GL_FILL);
+
    height=Y2-Y1-10;
 
    /*De quel cote est le texte*/
@@ -832,8 +900,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
          }
       }
 
-   /* Dans le cas ou le champs est continue */
-
+   /*Dans le cas ou le champs est continue*/
    } else {
       if (Spec->Map->Alpha) {
          glEnable(GL_BLEND);
@@ -935,16 +1002,18 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Colorbar_RenderVector>
+ * Nom      : <Colorbar_HRenderTexture>
  * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Effectue l'affichage de la colorbar des valeurs.
+ * But      : Effectue l'affichage de la colorbar des valeurs dans
+ *           l'orientation horizontale.
  *
  * Parametres :
  *  <Interp>  : Interpreteur TCL
  *  <CB>      : Colorbar item
- *  <Spec>    : Data specification
- *  <Y2>      : Coordonne Y
+ *  <Spec>    : Specification des donnees
+ *  <Y1>      : Coordonne Y haut
+ *  <Y2>      : Coordonne Y bas
  *
  * Retour:
  *
@@ -952,16 +1021,249 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
  *
  *----------------------------------------------------------------------------
 */
-void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y2){
+void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X1,int X2){
 
-   int        size,xt,x0;
+   int      idx,i,py0,py1,px0,px1,y0,y1,xt,n=0;
+   double   x=0,incr,txt,txtr,value,height;
+   float    jps,jan;
+   char     buf[128],*lbl;
+   Tcl_Obj *obj;
+
+   if ((!Spec->RenderTexture && !Spec->RenderParticle && !Spec->MapAll) || !Spec->Map)
+      return;
+
+   glPolygonMode(GL_FRONT,GL_FILL);
+
+   height=X2-X1-10;
+   jps=0.0;
+   jan=0.0;
+
+   /*De quel cote est le texte*/
+   if (CB->BarSide==TK_JUSTIFY_RIGHT) {
+      y1=CB->header.y2-5-CB->tkm.linespace;
+      y0=y1-CB->BarWidth;
+      xt=CB->header.y2-5;
+   } else {
+      y0=CB->header.y2-(CB->BarWidth+5);
+      y1=CB->header.y2-5;
+      xt=CB->header.y2-(CB->BarWidth+10);
+   }
+
+   /*Dans la cas ou on a des intervalles*/
+   if (Spec->InterNb>0) {
+
+      x=X1+5;
+      incr=height/(double)Spec->InterNb;
+
+      /*Rendu de l'echelle*/
+      for (i=0;i<Spec->InterNb;i++) {
+
+         VAL2COL(idx,Spec,Spec->Inter[i]);
+
+         /*Afficher la couleur*/
+         if (Interp) {
+            CMap_PostscriptColor(Interp,Spec->Map,idx);
+            py0=Tk_CanvasPsY(CB->canvas,y0);
+            py1=Tk_CanvasPsY(CB->canvas,y1);
+            px0=x;
+            px1=x+incr-CB->BarSplit-1;
+            sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",px0,py0,px1,py0,px1,py1,px0,py1);
+            Tcl_AppendResult(Interp,buf," fill\n",(char*)NULL);
+
+            if (CB->BarBorder) {
+               Tk_CanvasPsColor(Interp,CB->canvas,CB->FGColor);
+                  sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",px0,py0,px1,py0,px1,py1,px0,py1);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+               sprintf(buf," %i setlinewidth 1 setlinecap 1 setlinejoin\nstroke\n",CB->BarBorder);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+            }
+         } else {
+            if (Spec->Map->Alpha) {
+               glEnable(GL_BLEND);
+            }
+            glPolygonMode(GL_FRONT,GL_FILL);
+            glColor4ubv(Spec->Map->Color[idx]);
+            glLineWidth(1.0);
+            glBegin(GL_QUADS);
+               glVertex2f(x,y0);
+               glVertex2f(x,y1);
+               glVertex2f(x+incr-CB->BarSplit,y1);
+               glVertex2f(x+incr-CB->BarSplit,y0);
+            glEnd();
+            glDisable(GL_BLEND);
+
+            if (CB->BarBorder) {
+               glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+               glLineWidth(CB->BarBorder);
+               glColor4us(CB->FGColor->red,CB->FGColor->green,CB->FGColor->blue,CB->Alpha*655);
+               glBegin(GL_QUADS);
+                  glVertex2f(x,y0);
+                  glVertex2f(x,y1);
+                 glVertex2f(x+incr-CB->BarSplit,y1);
+                 glVertex2f(x+incr-CB->BarSplit,y0);
+                glEnd();
+            }
+         }
+         x+=incr;
+      }
+
+      if (Spec->InterLabels) {
+         Tcl_ListObjLength(Interp,Spec->InterLabels,&n);
+      }
+
+      /*Rendu des valeurs l'echelle*/
+      for (i=0,x=X1+5;i<Spec->InterNb;i++,x+=incr) {
+         if (i<n) {
+            Tcl_ListObjIndex(Interp,Spec->InterLabels,i,&obj);
+            lbl=Tcl_GetString(obj);
+         } else {
+            DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Inter[i]),buf);
+            lbl=buf;
+         }
+
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,lbl,x,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+         } else {
+            Colorbar_RenderText(CB,x,xt,TK_JUSTIFY_LEFT,lbl,Spec);
+         }
+      }
+
+   /*Dans le cas ou le champs est continue*/
+   } else {
+      if (Spec->Map->Alpha) {
+         glEnable(GL_BLEND);
+      }
+      incr=height/(double)Spec->Map->NbPixels;
+
+      /*Rendu de l'echelle*/
+      glBegin(GL_QUAD_STRIP);
+
+         x=X1+5;
+         glColor4ubv(Spec->Map->Color[0]);
+         glVertex2f(x,y0);
+         glVertex2f(x,y1);
+
+         x+=incr;
+
+         for (idx=0;idx<Spec->Map->NbPixels;idx++,x+=incr) {
+
+            glColor4ubv(Spec->Map->Color[idx]);
+
+            /*Afficher la couleur*/
+
+            if (Interp) {
+               CMap_PostscriptColor(Interp,Spec->Map,idx);
+               py0=Tk_CanvasPsY(CB->canvas,y0);
+               py1=Tk_CanvasPsY(CB->canvas,y1);
+               px0=x;
+               px1=X2-5;
+
+               sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",px0,py0,px1,py0,px1,py1,px0,py1);
+               Tcl_AppendResult(Interp,buf," fill\n",(char*)NULL);
+            } else {
+               glVertex2f(x,y0);
+               glVertex2f(x,y1);
+            }
+      }
+      glEnd();
+      glDisable(GL_BLEND);
+
+      if (CB->BarBorder) {
+         px0=X1+5;
+         px1=X2-5;
+
+         if (Interp) {
+            py0=Tk_CanvasPsY(CB->canvas,y0);
+            py1=Tk_CanvasPsY(CB->canvas,y1);
+            Tk_CanvasPsColor(Interp,CB->canvas,CB->FGColor);
+               sprintf(buf,"%i %i moveto %i %i lineto %i %i lineto %i %i lineto closepath",px0,py0,px1,py0,px1,py1,px0,py1);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
+            sprintf(buf," %i setlinewidth 1 setlinecap 1 setlinejoin\nstroke\n",CB->BarBorder);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
+         } else {
+            glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+            glLineWidth(CB->BarBorder);
+            glColor4us(CB->FGColor->red,CB->FGColor->green,CB->FGColor->blue,CB->Alpha*655);
+            glBegin(GL_QUADS);
+               glVertex2f(px0,y0);
+               glVertex2f(px0,y1);
+               glVertex2f(px1,y1);
+               glVertex2f(px1,y0);
+            glEnd();
+         }
+      }
+
+      /*Rendu des valeurs l'echelle*/
+      DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Min),buf);
+      if (Interp) {
+         glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+      } else {
+         Colorbar_RenderText(CB,X1+5,xt,TK_JUSTIFY_LEFT,buf,Spec);
+      }
+      txt=Tk_TextWidth(Spec->Font,buf,strlen(buf))+CB->tkm.linespace*2;
+
+      if (Spec->Min!=Spec->Max) {
+         DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Max),buf);
+         txtr=Tk_TextWidth(Spec->Font,buf,strlen(buf));
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,buf,X2-5-txtr,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+         } else {
+            Colorbar_RenderText(CB,X2-5-txtr,xt,TK_JUSTIFY_LEFT,buf,Spec);
+         }
+         txtr=X2-5-txtr;
+         x=0;
+
+         for (idx=0;idx<Spec->Map->NbPixels;idx++,x+=incr) {
+
+            if (x>txt) {
+               COL2VAL(idx,Spec,value);
+
+               DataSpec_Format(Spec,VAL2SPEC(Spec,value),buf);
+               txt=(idx*incr)+Tk_TextWidth(Spec->Font,buf,strlen(buf))+CB->tkm.linespace*2;
+               if (txt>=txtr) {
+                  break;
+               }
+
+               if (Interp) {
+                  glPostscriptText(Interp,CB->canvas,buf,X1+x,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+               } else {
+                  Colorbar_RenderText(CB,X1+x,xt,TK_JUSTIFY_LEFT,buf,Spec);
+               }
+            }
+         }
+      }
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_RenderVector>
+ * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage des vecteurs dans l,orientation horizontale.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Data specification
+ *  <Y1>      : Coordonne Y haut
+ *  <Y2>      : Coordonne Y bas
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1,int Y2){
+
+   int        map[2],size,xt,x0,col,i,pix[5];
    char       buf[32];
-   double     inter[5],r1,r0,od,d;
+   double     inter[5],r1,r0,od,d,sz;
    float      jps,jan;
    Tk_Justify just;
 
-   if (!Spec->Outline)
-      return;
+   if (!Spec->RenderVector || Spec->RenderVector>=3 || !Spec->Outline)
+      return(0);
 
    if (Spec->RenderVector==BARBULE) {
       inter[0]=5;
@@ -969,6 +1271,7 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       inter[2]=25;
       inter[3]=50;
       inter[4]=100;
+      sz=1.0;
    } else {
       if (Spec->InterNb) {
          r0=Spec->Inter[0];
@@ -990,6 +1293,7 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       inter[1]=r0+d;
       inter[2]=r0+d*2;
       inter[3]=r0+d*3;
+      sz=0.75;
    }
 
    /*De quel cote est le texte*/
@@ -1007,68 +1311,181 @@ void Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       just=TK_JUSTIFY_RIGHT;
    }
 
-   if (Interp) {
-      Tcl_AppendResult(Interp,"1 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
-      glPostscriptRectangle(Interp,CB->canvas,CB->header.x1+5,Tk_CanvasPsY(CB->canvas,Y2-105),
-         CB->header.x2-5,Tk_CanvasPsY(CB->canvas,Y2-5),Spec->Outline,0);
-      DataSpec_Format(Spec,inter[0],buf);
-      glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-10),0,Spec->Outline,jan,1.0,jps);
-      DataSpec_Format(Spec,inter[1],buf);
-      glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-30),0,Spec->Outline,jan,1.0,jps);
-      DataSpec_Format(Spec,inter[2],buf);
-      glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-50),0,Spec->Outline,jan,1.0,jps);
-      DataSpec_Format(Spec,inter[3],buf);
-      glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-70),0,Spec->Outline,jan,1.0,jps);
-      DataSpec_Format(Spec,inter[4],buf);
-      glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-90),0,Spec->Outline,jan,1.0,jps);
-      sprintf(buf,"%i\n",Spec->Width-1);
-      Tcl_AppendResult(Interp,buf," setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
-   } else {
-      glLineWidth(1.0);
-      glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,CB->Alpha*655);
-      glPolygonMode(GL_FRONT,GL_LINE);
-      glBegin(GL_POLYGON);
-         glVertex2i(CB->header.x1+5,Y2-105);
-         glVertex2i(CB->header.x1+5,Y2-5);
-         glVertex2i(CB->header.x2-5,Y2-5);
-         glVertex2i(CB->header.x2-5,Y2-105);
-      glEnd();
-
-      DataSpec_Format(Spec,inter[0],buf);
-      Colorbar_RenderText(CB,xt,Y2-10,just,buf,Spec);
-      DataSpec_Format(Spec,inter[1],buf);
-      Colorbar_RenderText(CB,xt,Y2-30,just,buf,Spec);
-      DataSpec_Format(Spec,inter[2],buf);
-      Colorbar_RenderText(CB,xt,Y2-50,just,buf,Spec);
-      DataSpec_Format(Spec,inter[3],buf);
-      Colorbar_RenderText(CB,xt,Y2-70,just,buf,Spec);
-      DataSpec_Format(Spec,inter[4],buf);
-      Colorbar_RenderText(CB,xt,Y2-90,just,buf,Spec);
-   }
-
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
    glPolygonMode(GL_FRONT,GL_FILL);
-
-   if (Interp)
-      glFeedbackInit(200,GL_2D);
-
    glLineWidth(Spec->Width);
-   size=VECTORSIZE(Spec,inter[0]);
-   Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-13.0,0.0,inter[0],270.0,size,NULL);
-   size=VECTORSIZE(Spec,inter[1]);
-   Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-33.0,0.0,inter[1],270.0,size,NULL);
-   size=VECTORSIZE(Spec,inter[2]);
-   Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-53.0,0.0,inter[2],270.0,size,NULL);
-   size=VECTORSIZE(Spec,inter[3]);
-   Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-73.0,0.0,inter[3],270.0,size,NULL);
-   size=VECTORSIZE(Spec,inter[4]);
-   Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-93.0,0.0,inter[4],270.0,size,NULL);
+
+   if (Interp) {
+      glFeedbackInit(200,GL_2D);
+      sprintf(buf,"%i\n",Spec->Width-1);
+      Tcl_AppendResult(Interp,buf," setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
+   }
+
+   map[0]=Spec->MapBellow;
+   map[1]=Spec->MapAbove;
+   Spec->MapAbove=1;
+   Spec->MapBellow=1;
+   pix[0]=10;
+
+   for(i=0;i<5;i++) {
+      if (Spec->MapAll) {
+         VAL2COL(col,Spec,inter[i]);
+         if (Interp) {
+            CMap_PostscriptColor(Interp,Spec->Map,col);
+         } else {
+            glColor4ubv(Spec->Map->Color[col]);
+         }
+      }
+      size=VECTORSIZE(Spec,inter[i]);
+      Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-pix[i],0.0,inter[i],270.0,size,NULL);
+      pix[i+1]=pix[i]+size*sz+10;
+   }
+   Spec->MapBellow=map[0];
+   Spec->MapAbove=map[1];
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
 
    glPopMatrix();
+
+   for(i=0;i<5;i++) {
+      if (Interp) {
+         DataSpec_Format(Spec,inter[i],buf);
+         glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-pix[i]),0,Spec->Outline,jan,1.0,jps);
+      } else {
+         DataSpec_Format(Spec,inter[i],buf);
+         Colorbar_RenderText(CB,xt,Y2-pix[i],just,buf,Spec);
+      }
+   }
+
+   return(pix[5]);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Colorbar_HRenderVector>
+ * Creation : Fevrier 2002 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage des vecteurs dans l'orientation verticale.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <CB>      : Colorbar item
+ *  <Spec>    : Data specification
+ *  <Y1>      : Coordonne Y haut
+ *  <Y2>      : Coordonne Y bas
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X1,int X2){
+
+   int        map[2],size,xt,y0,y1,col,i,pix[6];
+   char       buf[32];
+   double     inter[5],r1,r0,od,d,sz;
+   float      jps,jan;
+   Tk_Justify just;
+
+   if (!Spec->RenderVector || Spec->RenderVector>=3 || !Spec->Outline)
+      return(0);
+
+   if (Spec->RenderVector==BARBULE) {
+      inter[0]=5;
+      inter[1]=10;
+      inter[2]=25;
+      inter[3]=50;
+      inter[4]=100;
+      sz=2.0;
+   } else {
+      if (Spec->InterNb) {
+         r0=Spec->Inter[0];
+         r1=Spec->Inter[Spec->InterNb-1];
+      } else {
+         r0=Spec->Min;
+         r1=Spec->Max;
+      }
+      r1=r0==r1?r1+1:r1;
+
+      od=RANGE_ORDER(r1-r0);
+      od=RANGE_INCR(od);
+
+      r0=floor(r0/od)*od;
+      r1=ceil(r1/od)*od;
+      d=(r1-r0)/4.0;
+      inter[0]=r0==0.0?od/10.0:r0;
+      inter[4]=r1;
+      inter[1]=r0+d;
+      inter[2]=r0+d*2;
+      inter[3]=r0+d*3;
+      sz=1.0;
+   }
+
+   /*De quel cote est le texte*/
+   if (CB->BarSide==TK_JUSTIFY_RIGHT) {
+      y1=CB->header.y2-5-CB->tkm.linespace;
+      y0=y1-CB->BarWidth;
+      xt=CB->header.y2-5;
+   } else {
+      y0=CB->header.y2-(CB->BarWidth+5);
+      y1=CB->header.y2-5;
+      xt=CB->header.y2-(CB->BarWidth+10);
+   }
+   jps=0.0;
+   jan=0.0;
+   just=TK_JUSTIFY_LEFT;
+
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
+   glPolygonMode(GL_FRONT,GL_FILL);
+   glLineWidth(Spec->Width);
+
+   if (Interp) {
+      glFeedbackInit(200,GL_2D);
+      sprintf(buf,"%i\n",Spec->Width-1);
+      Tcl_AppendResult(Interp,buf," setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
+   }
+
+   map[0]=Spec->MapBellow;
+   map[1]=Spec->MapAbove;
+   Spec->MapAbove=1;
+   Spec->MapBellow=1;
+   pix[0]=10;
+
+   for(i=0;i<5;i++) {
+      if (Spec->MapAll) {
+         VAL2COL(col,Spec,inter[i]);
+         if (Interp) {
+            CMap_PostscriptColor(Interp,Spec->Map,col);
+         } else {
+            glColor4ubv(Spec->Map->Color[col]);
+         }
+      }
+      size=VECTORSIZE(Spec,inter[i]);
+      Data_RenderBarbule(Spec->RenderVector,0,0.0,X2-pix[i],y0,0.0,inter[i],270.0,size,NULL);
+      pix[i]+=(size*sz);
+      pix[i+1]=pix[i]+10;
+   }
+   Spec->MapBellow=map[0];
+   Spec->MapAbove=map[1];
+
+   if (Interp)
+      glFeedbackProcess(Interp,GL_2D);
+
+   glPopMatrix();
+
+   for(i=0;i<5;i++) {
+      if (Interp) {
+         DataSpec_Format(Spec,inter[i],buf);
+         glPostscriptText(Interp,CB->canvas,buf,X2-pix[i],Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+      } else {
+         DataSpec_Format(Spec,inter[i],buf);
+         Colorbar_RenderText(CB,X2-pix[i],xt,just,buf,Spec);
+      }
+   }
+   return(pix[5]);
 }
 
 /*----------------------------------------------------------------------------
@@ -1247,9 +1664,10 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
    TData        *fld=NULL;
    TObs         *obs=NULL;
    OGR_Layer    *layer=NULL;
+   GDAL_Band    *band=NULL;
 
    double coords[8];
-   int    yh=0,y0=0,y1,y2,i,inc;
+   int    yh=0,dv=0,y1,y2,x1,x2,i,inc;
 
    if (Tk_CanvasPsFont(Interp,Canvas,cb->Font)!=TCL_OK) {
       return(TCL_ERROR);
@@ -1260,21 +1678,34 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
    }
 
    if (cb->NbData) {
-      inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
-      y1=cb->header.y1;
+      if (cb->Width<cb->Height) {
+         inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
+         y1=cb->header.y1;
+         x1=cb->header.x1;
+      } else {
+         inc=(cb->header.x2-cb->header.x1-5*(cb->NbData-1))/cb->NbData;
+         y1=cb->header.y1;
+         x1=cb->header.x1;
+      }
    }
 
    for (i=0;i<cb->NbData;i++) {
 
-      y2=y1+inc;
+      if (cb->Width<cb->Height) {
+         y2=y1+inc;
+         x2=cb->header.x2;
+      } else {
+         x2=x1+inc;
+         y2=cb->header.y2;
+      }
 
       Tcl_AppendResult(Interp,"% Postscript de la colorbar\n1 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
 
       /*Coordonnee du viewport*/
-      coords[0]=cb->header.x1 ; coords[1]=y1;
-      coords[2]=cb->header.x2 ; coords[3]=y1;
-      coords[4]=cb->header.x2 ; coords[5]=y2;
-      coords[6]=cb->header.x1 ; coords[7]=y2;
+      coords[0]=x1; coords[1]=y1;
+      coords[2]=x2; coords[3]=y1;
+      coords[4]=x2; coords[5]=y2;
+      coords[6]=x1; coords[7]=y2;
 
       /*Creer le background*/
       if (cb->BGColor) {
@@ -1293,6 +1724,8 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
          spec=obs->Spec;
       } else if (layer=OGR_LayerGet(cb->Data[i])) {
          spec=layer->Spec;
+      } else if (band=GDAL_BandGet(cb->Data[i])) {
+         spec=band->Spec;
       } else {
          spec=DataSpec_Get(cb->Data[i]);
       }
@@ -1300,25 +1733,25 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
       if (!spec)
          continue;
 
-      if (spec->Font) {
+      if (spec->Font)
          Tk_CanvasPsFont(Interp,Canvas,spec->Font);
+
+      /*Check orientation*/
+      if (cb->Width<cb->Height) {
+         /*Vertical*/
          yh=Colorbar_RenderId(Interp,cb,spec,y1);
-      }
-
-      yh+=Colorbar_RenderContour(Interp,cb,spec,y1+yh);
-
-      if (spec->RenderVector && spec->RenderVector<3) {
-         Colorbar_RenderVector(Interp,cb,spec,y2);
-         y0=105;
+         yh+=Colorbar_RenderContour(Interp,cb,spec,y1+yh);
+         dv=Colorbar_RenderVector(Interp,cb,spec,y1,y2);
+         Colorbar_RenderTexture(Interp,cb,spec,y1+yh,y2-dv);
+         y1=y2+5;
       } else {
-         y0=0;
+         /*Horizontal*/
+         yh=Colorbar_HRenderId(Interp,cb,spec,y1);
+         yh+=Colorbar_RenderContour(Interp,cb,spec,y1+yh);
+         dv=Colorbar_HRenderVector(Interp,cb,spec,x1,x2);
+         Colorbar_HRenderTexture(Interp,cb,spec,x1,x2-dv);
+         x1=x2+5;
       }
-
-
-      if (spec->RenderTexture || spec->RenderParticle || spec->MapAll) {
-         Colorbar_RenderTexture(Interp,cb,spec,y1+yh,y2-y0);
-      }
-      y1=y2+5;
 
       Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
       /*Creer le pourtour*/
