@@ -44,8 +44,8 @@ namespace eval ColorBar {
    set Lbl(BarThin)   { "Barre mince" "Thin bar" }
    set Lbl(BarMedium) { "Barre moyenne" "Medium bar" }
    set Lbl(BarWide)   { "Barre large" "Wide bar" }
-   set Lbl(BarLeft)   { "Barre à gauche" "Bar to the left" }
-   set Lbl(BarRight)  { "Barre à droite" "Bar to the right" }
+   set Lbl(BarLeft)   { "Barre à gauche/bas" "Bar to the left/bottom" }
+   set Lbl(BarRight)  { "Barre à droite/haut" "Bar to the right/top" }
 
    set Param(Full)   0
    set Param(BG)     white

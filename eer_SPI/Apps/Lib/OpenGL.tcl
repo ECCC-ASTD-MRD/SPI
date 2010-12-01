@@ -184,13 +184,12 @@ proc OpenGL::Update { } {
    variable Stat
    variable Param
 
-   set sec [glrender -time]
-
    if { !$Param(Res) } {
       set OpenGL::Param(Res)  [expr [glrender -direct]?1:10]
    }
 
-   #----- si les informations resources sont affichees
+   set sec [glrender -time]
+
    set Stat(RenderTime)  [format "%6.4f sec" $sec]
    catch { set Stat(FPS) [format "%5.3f fps" [expr 1.0/$sec]] }
    set Stat(MemUsage)    [format "%2.3f Mb" [system usage -rss]]
