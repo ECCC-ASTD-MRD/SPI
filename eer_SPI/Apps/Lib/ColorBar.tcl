@@ -216,7 +216,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
       }
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
-         -data $Field -tags "$Page::Data(Tag) CB$VP $tag VPINTRUDE" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
+         -data $Field -tags "$Page::Data(Tag) CB$VP VPINTRUDE $tag" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
          -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag) -showfactor $Data(Factor$tag)
 
       menubutton $Frame.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
