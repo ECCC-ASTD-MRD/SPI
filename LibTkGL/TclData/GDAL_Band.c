@@ -783,6 +783,8 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
                /*Project the source gridcell into the destination*/
                wrap=OGR_GridCell(ring,ToRef,FromRef,i,j,Prec);
+               if (!wrap)
+                  continue;
 
                /*Are we crossing the wrap around*/
                if (wrap<0) {

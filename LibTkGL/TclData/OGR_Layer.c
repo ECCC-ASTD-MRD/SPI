@@ -1818,7 +1818,16 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
    RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
    OGR_G_SetPoint_2D(Geom,pt++,x,y);
 
-   return((RefTo->Type&GRID_WRAP && ((x1-x0)>((RefTo->X1-RefTo->X0)>>1)))?-pt:pt);
+   /*If the cell is outside the destination limits*/
+   if (x0<RefTo->X0 && x1>RefTo->X1) {
+      return(0);
+   }
+
+   if ((x1-x0)>((RefTo->X1-RefTo->X0)>>1) && RefTo->Type&GRID_WRAP ) {
+      return(-pt);
+   }
+
+   return(pt);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
