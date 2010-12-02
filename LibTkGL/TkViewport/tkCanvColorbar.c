@@ -1053,7 +1053,7 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
    if (Spec->InterNb>0) {
 
       x=X1+5;
-      incr=height/(double)Spec->InterNb;
+      incr=(height+CB->BarSplit)/(double)Spec->InterNb;
 
       /*Rendu de l'echelle*/
       for (i=0;i<Spec->InterNb;i++) {
@@ -1099,9 +1099,9 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
                glBegin(GL_QUADS);
                   glVertex2f(x,y0);
                   glVertex2f(x,y1);
-                 glVertex2f(x+incr-CB->BarSplit,y1);
-                 glVertex2f(x+incr-CB->BarSplit,y0);
-                glEnd();
+                  glVertex2f(x+incr-CB->BarSplit,y1);
+                  glVertex2f(x+incr-CB->BarSplit,y0);
+               glEnd();
             }
          }
          x+=incr;

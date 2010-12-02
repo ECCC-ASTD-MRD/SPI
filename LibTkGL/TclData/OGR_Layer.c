@@ -1823,6 +1823,7 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
       return(0);
    }
 
+   /*If we are on the wrap boundary*/
    if ((x1-x0)>((RefTo->X1-RefTo->X0)>>1) && RefTo->Type&GRID_WRAP ) {
       return(-pt);
    }
