@@ -1056,7 +1056,6 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
       raise .nowcasterinfo
    } else {
       toplevel .nowcasterinfo
-      wm title .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs"
       wm transient .nowcasterinfo .
       wm geometry .nowcasterinfo 800x600
 
@@ -1167,6 +1166,8 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
 
       TabFrame::Select .nowcasterinfo.tab 0
     }
+
+    wm title .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs"
 }
 
 proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
@@ -1310,14 +1311,15 @@ proc NowCaster::Obs::Find { Obs { Id "" } } {
    }
    set Data(Id) [string toupper $Data(Id)]
 
-   set coord [metobs define $Obs -COORD $Data(Id)]
-   Viewport::GoTo $Page::Data(Frame) [lindex $coord 0] [lindex $coord 1]
    if { [winfo exists .nowcasterinfo] } {
       set Data(InfoObs) $Obs
       set Data(InfoId)  $Data(Id)
       set Data(InfoTag) $Data(Id)
       NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag) $Data(InfoAll)
    }
+
+   set coord [metobs define $Obs -COORD $Data(Id)]
+   Viewport::GoTo $Page::Data(Frame) [lindex $coord 0] [lindex $coord 1]
 }
 
 #-------------------------------------------------------------------------------
