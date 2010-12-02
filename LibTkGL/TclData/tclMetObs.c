@@ -1994,6 +1994,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             elems=(int*)realloc(elems,sz1*sizeof(int));
             eb=(EntryTableB**)realloc(eb,sz1*sizeof(EntryTableB*));
          }
+
          if (nelem*nval*nt>sz2) {
             sz2=nelem*nval*nt;
             tblval=(int*)realloc(tblval,sz2*sizeof(int));

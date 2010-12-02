@@ -65,7 +65,7 @@ int    ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc
 void   ColorbarDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp);
 void   ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Drawt,int X,int Y,int Width,int Height);
 void   ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB);
-int    Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1);
+int    Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X1,int X2,int Y1);
 int    Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1);
 void   Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CM,TDataSpec *Spec,int Y1,int Y2);
 int    Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CM,TDataSpec *Spec,int Y1,int Y2);
