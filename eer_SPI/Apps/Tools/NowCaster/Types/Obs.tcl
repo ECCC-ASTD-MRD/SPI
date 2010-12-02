@@ -567,7 +567,7 @@ proc NowCaster::Obs::Add { Path } {
 
    #----- Read in the data
    if { [file isdirectory $path] } {
-      set files [lsort -decreasing -dictionary [glob -nocomplain $path/*_]]
+      set files [lsort -decreasing -dictionary [glob -nocomplain $path/2*_]]
       NowCaster::Obs::Read $obs [lrange $files 0 4]
    } else {
       foreach file $Path {
