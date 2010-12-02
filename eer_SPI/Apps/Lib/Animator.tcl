@@ -801,7 +801,7 @@ proc Animator::Play { } {
       Animator::GetPlayList
    }
 
-   if { ![llength $Play(Frames)] && !$Fly(Length) } {
+   if { [llength $Play(Frames)]<=1 && !$Fly(Length) } {
       set Play(File) 0
       set Play(Web) 0
       set Play(Dir)  0
