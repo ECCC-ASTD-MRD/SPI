@@ -1338,7 +1338,7 @@ static int ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item) 
                   Tcl_AppendResult(Interp,buf,(char*)NULL);
                   Tk_CanvasPsColor(Interp,Canvas,vp->FGColor);
                } else {
-                  glPolygonMode(GL_FRONT,GL_FILL);
+                  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
                   glColor3us(Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder)->red,
                      Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder)->green,Tk_3DBorderColor(((TkCanvas*)Canvas)->bgBorder)->blue);
 

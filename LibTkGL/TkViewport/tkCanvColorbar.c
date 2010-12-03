@@ -441,9 +441,11 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
 
       if (cb->Width<cb->Height) {
          y2=y1+inc-1;
+         y2=y2>cb->header.y2?cb->header.y2:y2;
          x2=cb->header.x2;
       } else {
          x2=x1+inc-1;
+         x2=x2>cb->header.x2?cb->header.x2:x2;
          y2=cb->header.y2;
       }
 
@@ -1691,10 +1693,12 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
    for (i=0;i<cb->NbData;i++) {
 
       if (cb->Width<cb->Height) {
-         y2=y1+inc;
+         y2=y1+inc-1;
+         y2=y2>cb->header.y2?cb->header.y2:y2;
          x2=cb->header.x2;
       } else {
-         x2=x1+inc;
+         x2=x1+inc-1;
+         x2=x2>cb->header.x2?cb->header.x2:x2;
          y2=cb->header.y2;
       }
 
