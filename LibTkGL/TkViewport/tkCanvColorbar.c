@@ -1211,7 +1211,7 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
          } else {
             Colorbar_RenderText(CB,X2-5-txtr,xt,TK_JUSTIFY_LEFT,buf,Spec);
          }
-         txtr=X2-5-txtr;
+         txtr=X2-5-txtr-X1;
          x=0;
 
          for (idx=0;idx<Spec->Map->NbPixels;idx++,x+=incr) {
@@ -1220,7 +1220,7 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
                COL2VAL(idx,Spec,value);
 
                DataSpec_Format(Spec,VAL2SPEC(Spec,value),buf);
-               txt=(idx*incr)+Tk_TextWidth(Spec->Font,buf,strlen(buf))+CB->tkm.linespace*2;
+               txt+=Tk_TextWidth(Spec->Font,buf,strlen(buf))+CB->tkm.linespace*2;
                if (txt>=txtr) {
                   break;
                }
