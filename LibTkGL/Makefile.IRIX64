@@ -9,7 +9,7 @@ YACC = bison
 # Target architecture
 
 ARCH      = IRIX64
-LIB_VER   = 7.4.0
+LIB_VER   = 7.4.1
 TCLTK_VER = 8.5.7
 TCLTK_BASE= 8.5
 
@@ -21,8 +21,8 @@ CDEBUGFLAGS =
 LDDEBUGFLAGS=
 CCOPTIONS   = -O2
 
-LIB_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/$(ARCH)
-INC_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/Include
+LIB_PATH  = ../../eer_SPI/Lib/$(ARCH)
+INC_PATH  = ../../eer_SPI/Lib/Include
 
 # Tk Path
 TCL_SRC  = /data/cmoe/afsr005/Archive/tcl$(TCLTK_VER)

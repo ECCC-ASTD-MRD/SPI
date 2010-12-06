@@ -24,8 +24,8 @@ LDDEBUGFLAGS = --warn-once --no-undefined
 LDDEBUGFLAGS =
 CCOPTIONS    = -O2 -funroll-all-loops -finline-functions -fPIC
 
-LIB_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/$(ARCH)
-INC_PATH  = /home/afsr/005/Projects/eerSPI/eer_SPI/Lib/Include
+LIB_PATH  = ../../eer_SPI/Lib/$(ARCH)
+INC_PATH  = ../../eer_SPI/Lib/Include
 
 # Tk Path
 TCL_SRC  = /cnfs/ops/cmoe/afsr005/Archive/tcl$(TCLTK_VER)
