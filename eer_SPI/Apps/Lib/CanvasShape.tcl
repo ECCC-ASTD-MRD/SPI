@@ -1815,7 +1815,7 @@ proc Shape::BindMove { Canvas Tags args } {
    $Canvas bind $tag <ButtonPress-1>   "Shape::Set $Canvas $tag %X %Y"
    $Canvas bind $tag <ButtonRelease-1> "Shape::UnSet $Canvas $tag"
 
-   if { $args!="" } {
+   if { [llength $args] } {
       $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y ; $args"
    } else {
       $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y"

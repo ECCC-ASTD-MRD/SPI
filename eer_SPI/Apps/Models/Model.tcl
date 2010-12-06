@@ -211,7 +211,6 @@ source $GDefs(Dir)/Apps/Models/Exp.tcl
 source $GDefs(Dir)/Apps/Models/Watch.tcl
 
 #----- Inclure les types de modeles
-source $GDefs(Dir)/Apps/Models/Types/CANERM.tcl
 source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
@@ -1135,7 +1134,7 @@ proc Model::ParamsLaunch { Model Frame } {
    pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
    Bubble::Create $tabframe.params.queue $Bubble(Queue)
 
-   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" || $sim(Model)=="CANERM" } {
+   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" } {
       #----- Nb CPUs for meteorological preprocessing.
       Option::Create $tabframe.params.metcpu [lindex $Lbl(MetCPU) $GDefs(Lang)] Model::Param(NbCPUsMeteo) 0 -1 $Model::Param(ListNbCPUsMeteo) ""
       pack $tabframe.params.metcpu -side top -anchor w -padx 2 -fill x

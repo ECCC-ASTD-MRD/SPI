@@ -181,7 +181,7 @@ proc TRAJECT::ParamsCheck { Tab No } {
 # Nom        : <TRAJECT::CreateModelInput>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But        : Creer le fichier "ersinp" contenant les parametres pour CANERM.
+# But        : Creer le fichier d'entree du modele.
 #
 # Parametres :
 #
