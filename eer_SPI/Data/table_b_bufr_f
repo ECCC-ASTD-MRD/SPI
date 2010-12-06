@@ -4,6 +4,9 @@
 **
 ** THIS FILE AVAILABLE IN ENGLISH UNDER THE NAME table_b_bufr_e
 **
+** VERSION 014.057 07 september 2010 Mark McCrady
+** Modifie Champ de Donnees (32 bits a 31) pour 4 descripteurs locaux 033200 033201 033202 033203
+**
 ** VERSION 014.056 01 fevrier 2010 Mark McCrady
 ** Ajout 1 descripteur 013228 pour HWOS
 **
@@ -2619,10 +2622,10 @@
 033197  POURCENTAGE DE CONFIANCE ALTERNATIF #2      %            0          0     7
 033198  POURCENTAGE DE CONFIANCE ALTERNATIF #3      %            0          0     7
 033199  POURCENTAGE DE CONFIANCE ALTERNATIF #4      %            0          0     7
-033200  TABLE DE QUALITE - ERREUR ELEMENT MET       MARQUEURS    0          0    64
-033201  TABLE DE QUALITE - AVERTISSEMENT ELEM. MET. MARQUEURS    0          0    64
-033202  TABLE DE QUALITE - DEPASSER (HWOS)          MARQUEURS    0          0    48
-033203  TABLE DE QUALITE - EQUIPEMENT               MARQUEURS    0          0    48
+033200  TABLE DE QUALITE - ERREUR ELEMENT MET       MARQUEURS    0          0    31
+033201  TABLE DE QUALITE - AVERTISSEMENT ELEM. MET. MARQUEURS    0          0    31
+033202  TABLE DE QUALITE - DEPASSER (HWOS)          MARQUEURS    0          0    31
+033203  TABLE DE QUALITE - EQUIPEMENT               MARQUEURS    0          0    31
 048192  O3: SFC SIGMA/ETA=1 (PPM)                   1E-9         2          0    15
 048193  O3: MAX BAS NIVEAUX DERN 3H (PPM)           1E-9         2          0    15
 048194  O3: MAX BAS NIVEAUX DERN 6H (PPM)           1E-9         2          0    15
