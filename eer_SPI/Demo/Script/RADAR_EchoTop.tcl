@@ -77,7 +77,7 @@ fstdfield write GRIDLLTAC FILE -32 True
 foreach file [glob DataIn/*IRIS*] {
    puts "   Processing file $file"
    set scans [radarfile open RADARSITE read $file]
-   set out   [open [file tail DataOut/$file] w]
+   set out   [open DataOut/[file tail $file] w]
 
    #----- Read the first volume scan
    radarscan read SCAN1 RADARSITE 0
