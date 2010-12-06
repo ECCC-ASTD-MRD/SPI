@@ -4,6 +4,7 @@ export SPI_PATH=${0%SPI}
 . ${SPI_PATH}/.profile_spi
 
 SOFT=0
+HARD=0
 HOST=`hostname`
 SCREEN=0
 X_GEO='1024x768'
@@ -51,7 +52,7 @@ do
          LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
       done
 
-      echo "Batch mode: Done initializing Xvfb"
+      echo "(INFO) Batch mode: Done initializing Xvfb"
 
       #----- In case of problem with the whole script, kill Xvfb stuff
 
@@ -71,6 +72,12 @@ do
       SOFT=1
    fi
 
+   if [[ $flag = "-hard" ]]
+   then
+      HARD=1
+      SOFT=0
+   fi
+
    if [[ $flag = "-tclsh" ]]
    then
       ${SPI_SHARED}/TclTk/bin/tclsh${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" $@
@@ -81,7 +88,7 @@ do
 done
 
 #----- Testing hardware capabilities
-if [[ $SOFT -eq 0 ]]
+if [ \( $SOFT -eq 0 \) -a \( $HARD -eq 0 \) ]
 then
    if [[ `glxinfo | grep -c direct` -eq 0 ]]
    then

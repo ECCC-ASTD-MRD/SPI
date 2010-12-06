@@ -3,4 +3,4 @@
 export SPI_PATH=${0%wish}
 . ${SPI_PATH}/.profile_spi
 
-exec ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "$@"
+${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "$@"

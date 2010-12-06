@@ -17,8 +17,8 @@ export GDAL_DATA=${SPI_PATH}/Data/epsg_csv/
 export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/Data/table_b_bufr
 
 #----- Force GRIB Tables
-export GRIB_TEMPLATE_PATH==${SPI_PATH}/Data/templates
-export GRIB_DEFINITION_PATH==${SPI_PATH}/Data/definitions
+export GRIB_TEMPLATE_PATH=${SPI_PATH}/Data/templates
+export GRIB_DEFINITION_PATH=${SPI_PATH}/Data/definitions
 
 #----- EER Modeling variables
 export EER_ARCH=`uname -s`
