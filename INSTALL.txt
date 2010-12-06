@@ -3,10 +3,10 @@ Installation procedures
 
 Documentation:
 - Application and librairie documentation can be found on the CMC wiki at https://wiki.cmc.ec.gc.ca/wiki/SPI/Doc
-- Example scritps and macro are available in the Demo directory of your SPI installation path
+- Example scripts and macro are available in the Demo directory of your SPI installation path
 
 Compatibility:
-This package has been compiled with gcc 4.1.2 an tested on the following system:
+- This package has been compiled with gcc 4.1.2 (32bit) and tested on the following system:
 
    - Debian (Sarge) 2.6.18
 
@@ -14,28 +14,27 @@ Assumptions:
 - Installation and execution of the SPI software will be performed as a specific user and installed in the SPI directory of this user.
 - All commands will be relative to the user's home directory (ie all install and working paths will start with ~/).
 - The installation shell is ksh compatible (can usually be obtained with the command $echo $SHELL)
+- Note to shell newbies, all commands used in this installation document can be explained by their online manual. To access their manual, simply type:
+   man <command>
 
-Note to shell newbies, all commands used in this installation document can be explained by their online manual. To
-access this manual, simply type:
-   man <program name>
+System requirements:
 
-   1 System requirements:
+  Hardware:
 
-     Hardware:
+     Any Intel/AMD processor
+     2G ram
+     32Mb Graphic card (NVIDIA por favor)
+     3G Disk space (For installation)
 
-        Pentium IV 2Ghz
-        1G ram
-        16Mb Graphic card (NVIDIA por favor)
-        3G Disk space (For installation)
+   Software:
 
-     Software:
+     Xvfb       (For batch mode)
+     ImageMagik (For image output)
 
-        Xvfb       (For batch mode)
-        ImageMagik (For image output)
+     Graphic drivers for direct rendering (use glxinfo to confirm)
+     XServer configured with 24 or 32 bit depth
 
-        XServer configured with 24 or 32 bit depth
-
-   2 Installation:
+Installation:
 
    A) Packages description
 
@@ -57,26 +56,26 @@ access this manual, simply type:
    B) Decompressing the packages
 
       - You will need to install the geographical database (DBGEO_?.zip) first by decompressing it
-        into it's final installation directory if it has'nt been installed before.
+      into it's final installation directory if it has'nt been installed before.
 
-        This will take up to 2.3 Gig for the global coverage
+      This will take up to 2.3 Gig for the global coverage
 
-          unzip DBGeo_R.zip -d [your geo_path]
-          unzip DBGeo_T.zip -d [your geo_path]
-          unzip DBGeo_V.zip -d [your geo_path]
+         unzip DBGeo_R.zip -d [your geo_path]
+         unzip DBGeo_T.zip -d [your geo_path]
+         unzip DBGeo_V.zip -d [your geo_path]
 
-          or
+         or
 
-          tar -zxvf DBGeo.tgz -C [your geo_path]
+         tar -zxvf DBGeo.tgz -C [your geo_path]
 
       - Next, You may go on with the SPI package by untarring it to a temporary
-        directory since it will install itself somewhere else later.
+      directory since it will install itself somewhere else later.
 
          tar -zxvf SPI-x.x.x.tgz -C [your temp_path]
 
    C) Package installation
 
-       - Call the "Install" script with the installation path as the first parameter
+      - Call the "Install" script with the installation path as the first parameter
          This script will create a SPI directory and install itself there.
 
          ./Install [your spi_path]
@@ -84,44 +83,70 @@ access this manual, simply type:
    D) Profile setup.
 
       - You will have to define the GDB_PATH variable to the location of the geographical database for SPI to use it:
-        Depending on the shell you are using, this might mean:
+      Depending on the shell you are using, this might mean:
 
-        sh/ksh/bash
-           add this line to the .profile or .profile_usr
+      sh/ksh/bash
+         add this line to the .profile or .profile_usr
 
-           export GDB_PATH=[your geo_path]/data
+         export GDB_PATH=[your geo_path]/data
 
-        csh
+      csh
 
-           add this line to the .cshrc
+         add this line to the .cshrc
 
-           setenv GDB_PATH [your geo_path]/data
+         setenv GDB_PATH [your geo_path]/data
 
       - If you want to run scripts, you will have to define an environment variable pointing to the path
-        where you installed SPI. Depending on the shell you are using, this might mean:
+      where you installed SPI. Depending on the shell you are using, this might mean:
 
-        sh/ksh/bash
+      sh/ksh/bash
 
-           add this line to the .profile or .profile_usr
+         add this line to the .profile or .profile_usr
 
-           export SPI_PATH=[your spi_path]
+         export SPI_PATH=[your spi_path]
 
-        csh
+      csh
 
-           add this line to the .cshrc
+         add this line to the .cshrc
 
-           setenv SPI_PATH [your spi_path]
+         setenv SPI_PATH [your spi_path]
 
    E) Run SPI.
 
       - You can now launch SPI by calling
 
-        [your  spi_path]/SPI
+      [your  spi_path]/SPI
 
-        or
+      or
 
-        $SPI_PATH/SPI
+      $SPI_PATH/SPI
 
-        The first time you run it SPI will create a setup directory called .spi in
-        your home directory where the parameters are saved. You can edit theses files, primarily
-        the one called ~/.spi/SPI, carefully to configure SPI to your likings.
+      The first time you run it SPI will create a setup directory called .spi in
+      your home directory where the parameters are saved. You can edit theses files, primarily
+      the one called ~/.spi/SPI, carefully to configure SPI to your likings.
+
+Developers:
+- The package comes with two distinct parts, the Tcl code (eer_SPI directory) and the Tcl extensions (LibTkGL directory)
+- To build the Tcl extensions, go in the LibTkGL directory and use the "makeit" script. The built libraries will be copied to the eer_SPI/Lib/$ARCH directory
+- SPI needs a lot of support libraries which have already been precompiled for you convenience in the eer_SPI/Lib/$ARCH directory
+- Should you want to try new versions of theses support librairies, you should place them in this  eer_SPI/Lib/$ARCH directory and the include files in eer_SPI/Lib/Include
+
+     Tcl/Tk 8.5.7
+     thread2.6.5
+     Tktable2.10
+     tls1.5
+
+     DOM-0.8.2
+     gdal-1.7.1
+        geos-3.2.1
+        expat-2.0.1
+        curl-7.20.0
+        sqlite-3.6.23
+        mysql-5.1
+        jasper-1.900.1
+        hdf-4.2.5
+        hdf5-1.6.10
+        postgresql-8.4.1
+
+
+
