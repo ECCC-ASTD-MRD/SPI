@@ -309,9 +309,7 @@ int GDB_ThreadQueueAdd(Tcl_ThreadId Id,Projection *Proj,GDB_Tile *Tile,GDB_DataG
    Tcl_MutexUnlock(&MUTEX_GDBQUEUE);
 
    /*Wake up thread*/
-//   Tcl_MutexUnlock(&MUTEX_GDB);
    Tcl_ConditionNotify(&GDBTData->CondWait);
-//   Tcl_MutexUnlock(&MUTEX_GDB);
 
    return(1);
 }
@@ -655,7 +653,7 @@ void GDB_TileFreeAll(GDB_Data *GDB,int Type) {
 */
 void GDB_TileFree(GDB_Tile *Tile,int Force) {
 
-//   GDB_ThreadQueueRemove(0x0,Tile);
+   Tcl_MutexLock(&MUTEX_GDBDATA);
 
    if (Force==GDB_FORCE) {
       Tile->Box.Nb=0;
@@ -735,6 +733,7 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
          Tile->TCity=NULL;
       }
    }
+   Tcl_MutexUnlock(&MUTEX_GDBDATA);
 }
 
 /*----------------------------------------------------------------------------

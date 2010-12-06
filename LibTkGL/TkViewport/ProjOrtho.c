@@ -175,7 +175,7 @@ void Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  delt;
 
    if (Interp) {
-      glFeedbackInit(3000,GL_2D);
+      glFeedbackInit(40000,GL_2D);
       if (VP->ColorFLake && VP->ColorFCoast) {
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
       } else {

@@ -1431,7 +1431,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
    glDepthFunc(GL_LESS);
    glDepthMask(GL_TRUE);
    if (VP->BGColor)
-      glClearColor(VP->BGColor->red/65535.0f,VP->BGColor->green/65535.0f,VP->BGColor->blue/65535.0f,1.0f);
+      glClearColor(VP->BGColor->red/65535.0f,VP->BGColor->green/65535.0f,VP->BGColor->blue/65535.0f,0.0f);
    glEnable(GL_CULL_FACE);
    glMatrixMode(GL_PROJECTION);
 
