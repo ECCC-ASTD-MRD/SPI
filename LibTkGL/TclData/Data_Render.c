@@ -1472,7 +1472,6 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
    /*Calculer la dimension generale*/
    size=VP->Ratio*Field->Spec->Size;
-   dz=Field->Spec->Sample*10;
 
    /*Afficher toutes les barbules*/
    glMatrixMode(GL_MODELVIEW);
@@ -1579,47 +1578,72 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          if (Field->Ref->Id<0)
             return;
 
-         /*Allouer la memoire pour les donnees*/
-         mem=(VP->Width*VP->Height)/dz*sizeof(float);
-         lat=(float*)malloc(mem);
-         lon=(float*)malloc(mem);
+         if (Field->Spec->SampleType=='P') {
+            dz=Field->Spec->Sample*10;
 
-         /*Recuperer les latlon des pixels sujets*/
-         for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
-            for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
+            /*Allouer la memoire pour les donnees*/
+            mem=(VP->Width*VP->Height)/dz*sizeof(float);
+            lat=(float*)malloc(mem);
+            lon=(float*)malloc(mem);
 
-               Proj->Type->UnProject(VP,Proj,&coo,pix);
-               if (coo.Lat!=-999.0) {
-                  lat[n]=coo.Lat;
-                  lon[n]=(coo.Lon<0?coo.Lon+360:coo.Lon);
-                  n++;
+            /*Recuperer les latlon des pixels sujets*/
+            for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
+               for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
+
+                  Proj->Type->UnProject(VP,Proj,&coo,pix);
+                  if (coo.Lat!=-999.0) {
+                     lat[n]=coo.Lat;
+                     lon[n]=(coo.Lon<0?coo.Lon+360:coo.Lon);
+                     n++;
+                  }
                }
             }
-         }
 
-         /*Allouer l'espaces memoire pour les retours d'ezscint*/
-         mem=n*sizeof(float);
-         x=(float*)malloc(mem);
-         y=(float*)malloc(mem);
+            /*Allouer l'espaces memoire pour les retours d'ezscint*/
+            mem=n*sizeof(float);
+            x=(float*)malloc(mem);
+            y=(float*)malloc(mem);
 
-#ifdef LNK_FSTD
-         /*Recuperer les informations sur les vents et leurs localisations*/
-         EZLock_RPNInt();
-         c_gdxyfll(Field->Ref->Id,x,y,lat,lon,n);
+            /*Recuperer les informations sur les vents et leurs localisations*/
+            EZLock_RPNInt();
+            c_gdxyfll(Field->Ref->Id,x,y,lat,lon,n);
+            EZUnLock_RPNInt();
 
-         mem=0;i=0;
-         while (mem<n) {
-            if (x[mem]<=Field->Def->NI && y[mem]<=Field->Def->NJ && x[mem]>=1 && y[mem]>=1) {
-               lat[i]=lat[mem];
-               lon[i]=lon[mem];
-               i++;
+            mem=0;i=0;
+            while (mem<n) {
+               if (x[mem]<=Field->Def->NI && y[mem]<=Field->Def->NJ && x[mem]>=1 && y[mem]>=1) {
+                  lat[i]=lat[mem];
+                  lon[i]=lon[mem];
+                  i++;
+               }
+               mem++;
             }
-            mem++;
+            n=i;
+         } else {
+
+            /*Allouer la memoire pour les donnees*/
+            mem=FSIZE2D(Field->Def);
+            lat=(float*)malloc(mem*sizeof(float));
+            lon=(float*)malloc(mem*sizeof(float));
+
+            EZLock_RPNInt();
+            c_gdll(Field->Ref->Id,lat,lon);
+            EZUnLock_RPNInt();
+
+            n=0;
+            for(i=0;i<mem;i+=Field->Spec->Sample) {
+               lat[n]=lat[i];
+               lon[n]=lon[i];
+               n++;
+            }
+
+            x=(float*)malloc(n*sizeof(float));
+            y=(float*)malloc(n*sizeof(float));
          }
-         n=i;
 
          mem=FSIZE2D(Field->Def)*Field->Def->Level;
 
+         EZLock_RPNInt();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 
          if (Field->Spec->GridVector) {
@@ -1628,7 +1652,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             c_gdllvval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          }
          EZUnLock_RPNInt();
-#endif
+
          while (n--) {
             if (Field->Spec->GridVector) {
                if (x[n]<=Field->Spec->Max && x[n]>=Field->Spec->Min) {

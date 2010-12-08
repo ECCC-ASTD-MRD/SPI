@@ -238,13 +238,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    static CONST char *sopt[] = { "-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
-                                 "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step","-ztype",
+                                 "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-sampletype","-step","-ztype",
                                  "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
                                  "-light","-sprite","-wmo",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
-                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
+                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO };
 
    if (!Spec) {
@@ -933,6 +933,26 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case SAMPLETYPE:
+            if (Objc==1) {
+               if (Spec->SampleType=='G') {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("GRID",-1));
+               } else {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("PIXEL",-1));
+               }
+            } else {
+               i++;
+               if (strcmp(Tcl_GetString(Objv[i]),"GRID")==0) {
+                  Spec->SampleType='G';
+               } else  if (strcmp(Tcl_GetString(Objv[i]),"PIXEL")==0) {
+                  Spec->SampleType='P';
+               } else {
+                  Tcl_AppendResult(Interp,"DataSpec_Config: wrong value, must be [ GRID | PIXEL ]",(char*) NULL);
+                  return(TCL_ERROR);
+               }
+            }
+            break;
+
          case STEP:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->Step));
@@ -1263,6 +1283,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Width=from->Width;
    to->Size=from->Size;
    to->Sample=from->Sample;
+   to->SampleType=from->SampleType;
    to->Step=from->Step;
    to->Min=from->Min;
    to->Max=from->Max;
@@ -1397,6 +1418,7 @@ TDataSpec *DataSpec_New(){
    spec->Width=1;
    spec->Size=10.0f;
    spec->Sample=4;
+   spec->SampleType='P';
    spec->Step=0.25;
    spec->Min=nanf("NaN");
    spec->Max=nanf("NaN");

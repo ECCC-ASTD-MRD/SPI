@@ -2652,6 +2652,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               if (spec->WMO && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
+                                 /*Load up the symbols if not done yet*/
                                  if (!WMO_Symbol1) {
                                     WMO_Symbol1=Tk_GetFont(Interp,GLRender->TkWin,"-misc-weathersymbols-medium-r-normal--20-0-0-0-p-0-microsoft-symbol");
                                  }
