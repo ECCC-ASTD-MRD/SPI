@@ -2054,7 +2054,6 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    char   buf[128];
    Vect3d vr;
    Coord  co;
-   Tk_FontMetrics tkm;
    float val;
 
    if (!Obs->Spec->Font) {
@@ -2072,7 +2071,6 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    glLoadIdentity();
    gluOrtho2D(0,VP->Width,0,VP->Height);
 
-   Tk_GetFontMetrics(Obs->Spec->Font,&tkm);
    glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Obs->Spec->Font);
 
    /*Display icons*/
@@ -2119,10 +2117,10 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
                if (!sz) {
                   dx=-Tk_TextWidth(Obs->Spec->Font,buf,strlen(buf))/2;
-                  dy=-tkm.linespace/2;
+                  dy=-Obs->Spec->TKM.linespace/2;
                }
                glPrint(Interp,VP->canvas,buf,vr[0]+sz+dx,vr[1]+sz+dy,0);
-               y-=tkm.linespace;
+               y-=Obs->Spec->TKM.linespace;
             }
             if (Obs->Spec->RenderLabel) {
                if (Obs->Loc->No)
@@ -2132,17 +2130,17 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
                if (!sz) {
                   dx=-Tk_TextWidth(Obs->Spec->Font,buf,strlen(buf))/2;
-                  dy=-tkm.linespace/2;
+                  dy=-Obs->Spec->TKM.linespace/2;
                }
                glPrint(Interp,VP->canvas,buf,vr[0]+sz+dx,vr[1]+sz+dy+y,0);
-               y-=tkm.linespace;
+               y-=Obs->Spec->TKM.linespace;
             }
 
             if (Obs->Spec->RenderCoord) {
                sprintf(buf,"(%.4f, %.4f)",Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon);
                if (!sz) {
                   dx=-Tk_TextWidth(Obs->Spec->Font,buf,strlen(buf))/2;
-                  dy=-tkm.linespace/2;
+                  dy=-Obs->Spec->TKM.linespace/2;
                }
                glPrint(Interp,VP->canvas,buf,vr[0]+sz+dx,vr[1]+sz+dy+y,0);
             }

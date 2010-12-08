@@ -46,6 +46,9 @@ static long          MetRepNo=0;
 static unsigned int  MetLocNo=0;
 static int           MetObsInit=0;
 
+static Tk_Font WMO_Symbol1=NULL;
+static Tk_Font WMO_Symbol2=NULL;
+
 static CONST char *LVLTYPE[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN" };
 
 static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -2556,6 +2559,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               if ((loc->Pix[0]!=0.0 || loc->Pix[1]!=0.0) && !line) {
                                  if (Interp)
                                     glFeedbackInit(20,GL_2D);
+
                                  glBegin(GL_LINES);
                                     glVertex3d(0,0,0);
                                     if (Obs->Model->Flat) {
@@ -2564,6 +2568,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                        glVertex3d(dx,dy,0.0);
                                     }
                                  glEnd();
+
                                  if (Interp) {
                                     glFeedbackProcess(Interp,GL_2D);
                                     Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
@@ -2587,7 +2592,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               /*Positionner dans le modele*/
                               glTranslated(dx,dy,0.0);
 
-                              iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue-2;
+                              iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue+(spec->WMO?1:0);
 
                               if (id && spec->RenderLabel) iy--;
                               if (id && spec->RenderCoord) iy--;
@@ -2599,17 +2604,17 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     } else {
                                        snprintf(buf,128,"%s",loc->Id);
                                     }
-                                    MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
+                                    MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                  }
 
                                  if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                                     snprintf(buf,128,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
-                                    MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dx);
+                                    MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                  }
                                  id=1;
                               }
 
-                              if (spec->RenderVector && MET_VALID(val,Obs->NoData)) {
+                              if (spec->RenderVector && MET_VALID(val,Obs->NoData) && !(spec->WMO && val<5.0)) {
                                  dir=TMetElem_Value(data,Obs->Model->Items[i].Code[1],ne,v,0);
                                  if (MET_VALID(dir,Obs->NoData)) {
                                     if (spec->Map && spec->MapAll) {
@@ -2644,6 +2649,58 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                                  DataSpec_Format(spec,VAL2SPEC(spec,val),buf);
                                  MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                              }
+
+                              if (spec->WMO && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
+                                 if (!WMO_Symbol1) {
+                                    WMO_Symbol1=Tk_GetFont(Interp,GLRender->TkWin,"-misc-weathersymbols-medium-r-normal--20-0-0-0-p-0-microsoft-symbol");
+                                 }
+                                  if (!WMO_Symbol2) {
+                                    WMO_Symbol2=Tk_GetFont(Interp,GLRender->TkWin,"-macromedia-meteo_b-medium-r-normal--20-0-0-0-p-0-microsoft-symbol");
+                                 }
+                                if (spec->WMO==1) { /*N*/
+                                    if (val>=0 && val<=9) {
+                                       spec->Font=WMO_Symbol2;
+                                       Tk_GetFontMetrics(spec->Font,&spec->TKM);
+                                       sprintf(buf,"%c",(int)val+83);
+                                       MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                                    }
+                                 } else if (spec->WMO==2) { /*WW*/
+                                    if (val>=4 && val<=99) {
+                                       spec->Font=WMO_Symbol1;
+                                       Tk_GetFontMetrics(spec->Font,&spec->TKM);
+                                       sprintf(buf,"%c",(int)val+100);
+                                       MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                                    }
+                                 } else if (spec->WMO==3) { /*CL*/
+                                    if (val>=1 && val<=9) {
+                                       spec->Font=WMO_Symbol2;
+                                       Tk_GetFontMetrics(spec->Font,&spec->TKM);
+                                       sprintf(buf,"%c",(int)val+34);
+                                       MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                                    }
+                                 } else if (spec->WMO==4) { /*CM*/
+                                    if (val>=1 && val<=9) {
+                                       spec->Font=WMO_Symbol2;
+                                       Tk_GetFontMetrics(spec->Font,&spec->TKM);
+                                       sprintf(buf,"%c",(int)val+44);
+                                       MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                                    }
+                                 } else if (spec->WMO==5) { /*CH*/
+                                    if (val>=1 && val<=9) {
+                                       spec->Font=WMO_Symbol2;
+                                       Tk_GetFontMetrics(spec->Font,&spec->TKM);
+                                       sprintf(buf,"%c",(int)val+55);
+                                       MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                                    }
+                                 } else if (spec->WMO==6) { /*A*/
+                                    if (val>=0 && val<=8) {
+                                       spec->Font=WMO_Symbol2;
+                                       Tk_GetFontMetrics(spec->Font,&spec->TKM);
+                                       sprintf(buf,"%c",(int)val+93);
+                                       MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
+                                    }
+                                 }
                               }
 
                               if (spec->Icon) {
@@ -2781,7 +2838,6 @@ int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Val
 */
 void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportItem *VP,Projection *Proj,int Line,int DX,int DY) {
 
-   Tk_FontMetrics tkm;
    double dx=0,dy=0,sz=0;
 
    if (!Spec->Font || !String) {
@@ -2793,7 +2849,6 @@ void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportI
       dy=DY;
    }
 
-   Tk_GetFontMetrics(Spec->Font,&tkm);
    glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Spec->Font);
 
    if (Spec->Icon) {
@@ -2801,9 +2856,10 @@ void MetObs_RenderInfo(Tcl_Interp *Interp,TDataSpec *Spec,char *String,ViewportI
       dx+=sz+2;
    } else {
       dx-=Tk_TextWidth(Spec->Font,String,strlen(String))/2;
+      dy-=(Spec->TKM.linespace/2);
    }
 
-   dy+=sz+(Line+1)*2*(tkm.linespace/2);
+   dy+=sz+(Line-1)*2*(Spec->TKM.linespace/2);
 
    glPrint(Interp,VP->canvas,String,dx,dy,0);
 }

@@ -449,7 +449,6 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    TList *list;
    TArray *array;
    Vect3d  p1,p0;
-   Tk_FontMetrics tkm;
    GLuint s;
 
    if (GLRender->Resolution>1 || !Field->Ref || !Field->Spec->Font || (!Field->Spec->Outline && !Field->Spec->MapAll) || !Field->Spec->InterNb) {
@@ -467,8 +466,8 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glLoadIdentity();
    gluOrtho2D(0,VP->Width,0,VP->Height);
 
-   Tk_GetFontMetrics(Field->Spec->Font,&tkm);
-   dy=tkm.ascent;
+
+   dy=Field->Spec->TKM.ascent;
 
    glPolygonMode(GL_FRONT,GL_FILL);
    glReadBuffer(GL_BACK);
@@ -667,15 +666,13 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
 void Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,int Y,char *Id,char* Val){
 
    int            txth,dtx;
-   Tk_FontMetrics tkm;
 
    if (!Spec->Font) {
       return;
    }
 
-   Tk_GetFontMetrics(Spec->Font,&tkm);
-   txth=tkm.linespace*2;
-   dtx=tkm.ascent*0.5;
+   txth=Spec->TKM.linespace*2;
+   dtx=Spec->TKM.ascent*0.5;
 
    if (Interp) {
       glPostscriptText(Interp,VP->canvas,"*",X-Tk_TextWidth(Spec->Font,"*",1)/2,Y-dtx,0,Spec->Outline,0.0,0.5,0.0);

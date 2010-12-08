@@ -1488,7 +1488,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    if (Mode==GL_ALL || Mode==GL_VECTOR) {
 
       if (Proj->Geographic) {
-   //   GDB_StarRender(Interp,Proj);
+//      GDB_StarRender(Interp,Proj);
 
          /*Initialiser le mask des donnees vectorielles*/
          glEnable(GL_STENCIL_TEST);

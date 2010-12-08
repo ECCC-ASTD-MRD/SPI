@@ -575,55 +575,61 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
    int             new;
    unsigned int    f0,f1;
    Font            fid;
-   char            key[64];
+   char           *key;
    T_glFont       *glfont=NULL;
    XFontStruct    *def;
 
-   fid=Tk_FontId(FontId);
-   sprintf(key,"%s",Tk_NameOfFont(FontId));
-   entry=Tcl_FindHashEntry(&glFontIdTable,key);
+   if (GLRender->TkFont!=FontId) {
 
-   if (entry) {
-      glfont=(T_glFont*)Tcl_GetHashValue(entry);
+      fid=Tk_FontId(FontId);
+      key=Tk_NameOfFont(FontId);
+      entry=Tcl_FindHashEntry(&glFontIdTable,key);
 
-      if (glfont->fid!=fid) {
-         /*Free font*/
-         glXFontFree(glfont);
-         glfont=NULL;
+      if (entry) {
+         glfont=(T_glFont*)Tcl_GetHashValue(entry);
+
+         if (glfont->fid!=fid) {
+            /*Free font*/
+            glXFontFree(glfont);
+            glfont=NULL;
+         }
       }
-   }
 
-   if (!glfont) {
-      /* Get the font */
-      glfont=(T_glFont*)malloc(sizeof(T_glFont));
-      glfont->fid=fid;
-      def=XQueryFont(Disp,fid);
-      if (!def) {
-         fprintf(stderr,"(ERROR) glFontSet: Unable to get font information.\n");
+      if (!glfont) {
+         /* Get the font */
+         glfont=(T_glFont*)malloc(sizeof(T_glFont));
+         glfont->fid=fid;
+         def=XQueryFont(Disp,fid);
+         if (!def) {
+            fprintf(stderr,"(ERROR) glFontSet: Unable to get font information.\n");
+         }
+         f0=def->min_char_or_byte2;
+         f1=def->max_char_or_byte2;
+
+         glfont->nchar=(GLuint)f1+1;
+         glfont->list=glGenLists(glfont->nchar);
+         glfont->tex=(GLuint*)malloc(glfont->nchar*sizeof(GLuint));
+         glGenTextures(glfont->nchar,glfont->tex);
+
+         if (!glfont->list || !glfont->tex)
+            fprintf(stderr,"(ERROR) glFontSet: Unable to allocate font display list.\n");
+
+   //      glXUseXFont(def->fid,f0,f1-f0+1,base+f0);
+         glXFontTexture(def->fid,f0,f1-f0+1,glfont->list+f0,glfont->tex);
+
+         if (!entry)
+            entry=Tcl_CreateHashEntry(&glFontIdTable,key,&new);
+
+         Tcl_SetHashValue(entry,glfont);
       }
-      f0=def->min_char_or_byte2;
-      f1=def->max_char_or_byte2;
 
-      glfont->nchar=(GLuint)f1+1;
-      glfont->list=glGenLists(glfont->nchar);
-      glfont->tex=(GLuint*)malloc(glfont->nchar*sizeof(GLuint));
-      glGenTextures(glfont->nchar,glfont->tex);
+      glListBase(glfont->list);
 
-      if (!glfont->list || !glfont->tex)
-         fprintf(stderr,"(ERROR) glFontSet: Unable to allocate font display list.\n");
-
-//      glXUseXFont(def->fid,f0,f1-f0+1,base+f0);
-      glXFontTexture(def->fid,f0,f1-f0+1,glfont->list+f0,glfont->tex);
-
-      if (!entry)
-         entry=Tcl_CreateHashEntry(&glFontIdTable,key,&new);
-
-      Tcl_SetHashValue(entry,glfont);
+      GLRender->TkFont=FontId;
+      return(glfont->list);
+   } else {
+      return(1);
    }
-
-   glListBase(glfont->list);
-
-   return(glfont->list);
 }
 
 /*----------------------------------------------------------------------------
@@ -1942,6 +1948,8 @@ void glInit(Tcl_Interp *Interp) {
 
    /*Initialisation des parametres*/
 
+   GLRender->TkWin           = NULL;
+   GLRender->TkFont          = NULL;
    GLRender->XColormap       = 0;
    GLRender->XDisplay        = NULL;
    GLRender->XScreen         = NULL;
@@ -2023,6 +2031,7 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
 
    /*Setup some useful pointers*/
+   GLRender->TkWin    = TkWin;                    /* Tk window */
    GLRender->XDisplay = Tk_Display(TkWin);        /* Get the XDisplay of the main window */
    GLRender->XScreen  = Tk_Screen(TkWin);         /* Get the XID of the application */
    GLRender->XScreenNo= Tk_ScreenNumber(TkWin);   /* Get the screen number */

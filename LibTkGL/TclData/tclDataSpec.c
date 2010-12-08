@@ -48,6 +48,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*" };
 CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
 CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
+CONST char *WMOS[]    = { "NONE","N","WW","CL","CM","CH","A","UV" };
 
 TIcon IconList[]={
  { GL_POINT,     1, { 0.0,0.0 } },
@@ -128,15 +129,22 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
   switch ((enum opt)idx) {
       case CREATE:
-         if(Objc!=3) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id");
             return TCL_ERROR;
          }
-         if (!DataSpec_Create(Interp,Tcl_GetString(Objv[2]))) {
+         if (!(spec=DataSpec_Create(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
          }
-         break;
 
+         if (Objc>3) {
+            if (DataSpec_Config(Interp,spec,Objc-3,Objv+3)==TCL_OK) {
+               return(TCL_OK);
+            } else {
+               return(TCL_ERROR);
+            }
+         }
+         break;
 
       case FREE:
          if(Objc!=3) {
@@ -231,12 +239,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-step","-ztype",
-                                 "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation","-light","-sprite",NULL };
+                                 "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
+                                 "-light","-sprite","-wmo",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
-                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE };
+                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO };
 
    if (!Spec) {
       Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
@@ -603,6 +612,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                if (Spec->Font) Tk_FreeFont(Spec->Font);
                Spec->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               Tk_GetFontMetrics(Spec->Font,&Spec->TKM);
             }
             break;
 
@@ -1000,6 +1010,16 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->GridVector);
             }
             break;
+
+         case WMO:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(WMOS[Spec->WMO],-1));
+            } else {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],WMOS,"type",0,&Spec->WMO)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
+            }
+            break;
       }
    }
 
@@ -1261,6 +1281,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->RenderValue=from->RenderValue;
    to->RenderVol=from->RenderVol;
    to->GridVector=from->GridVector;
+   to->WMO=from->WMO;
 
    to->ZType=NULL;
    if (from->ZType)
@@ -1281,9 +1302,10 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       glBitmapParseProc(NULL,Interp,Tk_MainWindow(Interp),from->Stipple->Name,(char*)&to->Stipple,0);
 
    to->Font=NULL;
-   if (from->Font)
+   if (from->Font) {
       to->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfFont(from->Font),-1));
-
+      Tk_GetFontMetrics(to->Font,&to->TKM);
+   }
    to->Fill=NULL;
    if (from->Fill)
       to->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfColor(from->Fill),-1));
@@ -1402,6 +1424,7 @@ TDataSpec *DataSpec_New(){
    spec->RenderVector=VNONE;
    spec->RenderValue=0;
    spec->RenderVol=0;
+   spec->WMO=0;
 
    return(spec);
 }

@@ -60,7 +60,7 @@ int TclMetModel_Init(Tcl_Interp *Interp) {
    }
    Tcl_CreateObjCommand(Interp,"metmodel",MetModel_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -226,7 +226,7 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
    int       i,j,n,d,k,idx;
 
    static CONST char *sopt[] = { "-items","-spacing","-flat","-topography",NULL };
-   enum                opt { ITEMS,SPACING,FLAT,TOPOGRAPHY };
+   enum                opt { ITEMS,SPACING,FLAT,TOPOGRAPHY,WMO };
 
    mdl=MetModel_Get(Name);
    if (!mdl) {

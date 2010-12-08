@@ -105,8 +105,11 @@ typedef struct GLParams  {
    double MemRes;               /*Memoire residente utilisee (Mb)*/
    int    ShaderAvailable;      /*Est-ce que l'implementation est capable de Shader*/
 
-   /*Parametres X*/
+   /*Parametres Tk*/
+   Tk_Window    TkWin;          /*Current Tk window*/
+   Tk_Font      TkFont;         /*Current Tk Font*/
 
+   /*Parametres X*/
    Colormap      XColormap;     /*Window colormap*/
    int           XMode;         /*Mode de rendue (Color index ou RGB)*/
    int           XBatch;        /*Mode de rendue en batch*/
@@ -117,7 +120,6 @@ typedef struct GLParams  {
    int           XExpose;
 
    /*Parametres OpenGL*/
-
    TRcontext    *TRCon;         /*Contexte du Tile Renderer*/
 
 #ifdef WIN32
