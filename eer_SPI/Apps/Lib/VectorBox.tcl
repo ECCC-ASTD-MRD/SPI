@@ -52,16 +52,18 @@ namespace eval VectorBox {
    set Lbl(Close)   { "Fermer" "Close" }
    set Lbl(Apply)   { "Appliquer" "Apply" }
    set Lbl(Stream)  { "Ligne de courant" "Streamline" }
+   set Lbl(Grid)    { "Grille" "Grid" }
+   set Lbl(Pixel)   { "Pixel" "Pixel" }
 
-   set Bubble(Size)    { "Largeur des lignes de courants" "Streamline width" }
-   set Bubble(Step)    { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
-   set Bubble(Sample)  { "Espacement des lignes de courants\npixel(2D) / grille(3D)" "Streamline sampling\npixel(2D) / gridpt(3D)" }
-   set Bubble(GridVec) { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
-   set Bubble(Cube)    { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
-   set Bubble(Select)  { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
-   set Bubble(Real)    { "Applique les paramêtres interactivement" "Apply parameters interactively" }
-   set Bubble(Apply)   { "Appliquer les paramêtres" "Apply the parameters" }
-   set Bubble(Close)   { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
+   set Bubble(Size)       { "Largeur des lignes de courants" "Streamline width" }
+   set Bubble(Step)       { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
+   set Bubble(Sample)     { "Espacement des lignes de courants\npixel(2D) / grille(3D)" "Streamline sampling\npixel(2D) / gridpt(3D)" }
+   set Bubble(GridVec)    { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
+   set Bubble(Cube)       { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
+   set Bubble(Select)     { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
+   set Bubble(Real)       { "Applique les paramêtres interactivement" "Apply parameters interactively" }
+   set Bubble(Apply)      { "Appliquer les paramêtres" "Apply the parameters" }
+   set Bubble(Close)      { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
 }
 
 #----------------------------------------------------------------------------
@@ -92,7 +94,7 @@ proc VectorBox::Create { Parent Apply } {
    }
 
    toplevel     .vecbox
-   wm geom      .vecbox =235x215+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm geom      .vecbox =235x235+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
    wm transient .vecbox .
    wm resizable .vecbox 0 0
    wm title     .vecbox "VectorBox 1.0"
@@ -148,9 +150,14 @@ proc VectorBox::Create { Parent Apply } {
             -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
          pack $fr.size.sc -fill x -padx 2 -expand true
       labelframe $fr.sample -text [lindex $Lbl(Sample) $GDefs(Lang)]
-         scale $fr.sample.sc -from 1 -to 10 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Sample) -length 150 -relief flat -bd 1 -orient horizontal \
+         scale $fr.sample.sc -from 1 -to 25 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Sample) -length 150 -relief flat -bd 1 -orient horizontal \
             -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
-         pack $fr.sample.sc -fill x -padx 2 -expand true
+         frame $fr.sample.type -relief sunken -bd 1
+         radiobutton $fr.sample.type.pixel -text [lindex $Lbl(Pixel) $GDefs(Lang)] -variable FSTD::Param(SampleType) -value PIXEL -relief raised -bd 1 -indicatoron false
+         radiobutton $fr.sample.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -variable FSTD::Param(SampleType) -value GRID -relief raised -bd 1 -indicatoron false
+         pack $fr.sample.sc $fr.sample.type -fill x -side top -padx 2 -expand true
+         pack $fr.sample.type.pixel $fr.sample.type.grid -fill x -side left -expand true
+
          checkbutton $fr.geo -text [lindex $Lbl(GridVec) $GDefs(Lang)] -variable FSTD::Param(GridVec) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
       pack $fr.size $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
 
