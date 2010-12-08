@@ -108,6 +108,9 @@ fi
 ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
 code=$?
 
+#----- Load up the fonts
+xset -display $DISPLAY +fp ${SPI_PATH}/Resources/Font
+
 if [[ ($PID_XVFB -ne 0) ]]
 then
    kill $PID_XVFB 1> /dev/null 2>&1
