@@ -986,7 +986,6 @@ proc NowCaster::Obs::ModelSave { } {
             -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Intervals)\" -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)"
          incr m
       }
-#      puts $f "\"$model\" { $msave } [metmodel define $model -spacing] [metmodel define $model -flat] [metmodel define $model -topography] { $mparam }"
       puts $f "\"$model\" { $msave } { $mparam }"
    }
    close $f

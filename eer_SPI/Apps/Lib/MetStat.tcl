@@ -456,6 +456,7 @@ proc MetStat::RECRCLoad { File } {
       if { [string first "VECTEUR" [string toupper $line]]!=-1 } {
           fstdfield vector [string map { vecteur "" VECTEUR "" "(" "" ")" "" "'" \" "," " " } $line]
           gets $file line
+          continue
       }
 
       #----- Check for "defvar" directive

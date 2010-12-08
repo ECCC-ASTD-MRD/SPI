@@ -53,7 +53,7 @@ namespace eval OpenGL {
 
    set Lbl(Info)        { "Information" "Information" }
    set Lbl(Resources)   { "Ressources" "Resources" }
-   set Lbl(Params)      { "Parametres" "Parameters" }
+   set Lbl(Params)      { "Paramètres" "Parameters" }
    set Lbl(Alias)       { "Anti-aliasing" "Anti-aliasing" }
    set Lbl(ZBuf)        { "Cohérence de profondeur (ZBuffer)" "Depth coherence (ZBuffer)" }
    set Lbl(Low)         { "Interactivité basse résolution" "Low resolution interactivity" }
