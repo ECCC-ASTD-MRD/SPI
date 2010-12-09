@@ -346,7 +346,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {

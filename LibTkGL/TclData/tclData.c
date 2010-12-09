@@ -443,35 +443,45 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC) {
 
    TData *cut;
-   unsigned int  n,k,f,p=1;
+   unsigned int  n,k,f,p;
    unsigned long idx;
    double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij,p0;
 
    /*Recuperer la grille dans l'espace des champs de base*/
+   p=1;
    for(f=0;f<NbF;f++) {
       if (!Field[f] || Field[f]->Ref->Grid[0]=='V') {
          Tcl_AppendResult(Interp,"Data_Cut:  Invalid Field or Grid",(char*)NULL);
          return(TCL_ERROR);
       }
+      /*If those are 3D fields*/
+      if (Field[f]->Def->NK>1) {
 
-      if (Field[f]->ReadCube)
-         Field[f]->ReadCube(Interp,Field[f],0,0,0);
+         /*Try to read HY for hybrid levels*/
+         if (!ZRef_DecodeRPNLevelParams(Field[f])) {
+            Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
+         }
 
-      /*Try to read HY for hybrid levels*/
-      if (!ZRef_DecodeRPNLevelParams(Field[f])) {
-         Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
-      }
-
-      if (Field[f]->Ref->LevelType==LVL_PRES || Field[f]->Ref->LevelType==LVL_ANGLE || Field[f]->Ref->LevelType==LVL_GALCHEN || Field[f]->Ref->LevelType==LVL_MASL || Field[f]->Ref->LevelType==LVL_MAGL || Field[f]->Ref->LevelType==LVL_UNDEF) {
+         /*Check if we need to get the pressure levels*/
+         if (Field[f]->Ref->LevelType==LVL_PRES || Field[f]->Ref->LevelType==LVL_ANGLE || Field[f]->Ref->LevelType==LVL_GALCHEN || Field[f]->Ref->LevelType==LVL_MASL || Field[f]->Ref->LevelType==LVL_MAGL || Field[f]->Ref->LevelType==LVL_UNDEF) {
+            p=0;
+         }
+      } else {
          p=0;
       }
    }
 
-   cut=Data_Valid(Interp,Cut,NbF*NbC,Field[0]->Def->NK,1,DSIZE(Field[0]->Def->Data),Field[0]->Def->Type);
+   if (Field[0]->Def->NK>1) {
+      cut=Data_Valid(Interp,Cut,NbF*NbC,Field[0]->Def->NK,1,DSIZE(Field[0]->Def->Data),Field[0]->Def->Type);
+   } else {
+      cut=Data_Valid(Interp,Cut,NbC,NbF,1,DSIZE(Field[0]->Def->Data),Field[0]->Def->Type);
+   }
+
    Field[0]->Set(cut);
    Field[0]->Copy(cut->Head,Field[0]->Head);
+
    cut->Ref=GeoRef_Reference(Field[0]->Ref);
-   cut->Ref->Grid[0]='V';
+   cut->Ref->Grid[0]=(Field[0]->Def->NK>1?'V':'X');
    cut->Ref->LevelType=Field[0]->Ref->LevelType;
    cut->Ref->ETop=Field[0]->Ref->ETop;
    cut->Ref->Top=Field[0]->Ref->Top;
@@ -487,7 +497,11 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       if (Field[0]->Spec->Topo) cut->Spec->Topo=strdup(Field[0]->Spec->Topo);
    }
 
-   GeoRef_Size(cut->Ref,0,0,0,NbF*NbC-1,Field[0]->Def->NK-1,0,0);
+   if (Field[0]->Def->NK>1) {
+      GeoRef_Size(cut->Ref,0,0,0,NbF*NbC-1,Field[0]->Def->NK-1,0,0);
+   } else {
+      GeoRef_Size(cut->Ref,0,0,0,NbC-1,NbF-1,0,0);
+   }
    GeoRef_Qualify(cut->Ref);
 
    if (!NbC || !NbF)
@@ -561,10 +575,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                j=ROUND(j);
             }
 
-           /*Loop on vertical levels*/
+            /*Loop on vertical levels*/
             for(k=0;k<Field[0]->Def->NK;k++) {
 
-               idx=k*NbF*NbC+n*NbF+f;
+               idx=(Field[0]->Def->NK>1)?(k*NbF*NbC+n*NbF+f):(f*NbC+n);
 
                /*Convert level to pressure*/
                if (Field[f]->Def->Pres>0x1 && cut->Ref->Hgt) {
@@ -588,7 +602,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   }
 #ifdef DEBUG
                   fprintf(stderr,"(DEBUG) %f (%f,%f) [%f,%f] =%f %f (%f) v=%f %f (%f)\n",theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
-                  vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
+                     vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
 #endif
                } else {
                   vij=VertexVal(Field[f]->Ref,Field[f]->Def,-1,i,j,k);
@@ -604,7 +618,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    fprintf(stderr,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
 #endif
 
-   return(TCL_OK);
+  return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
