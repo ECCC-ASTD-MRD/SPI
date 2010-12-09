@@ -756,22 +756,25 @@ proc Graph::DataSheet { Type GR } {
    eval set title \[lindex \$Graph::${Type}::Lbl(Title) $GDefs(Lang)\]
    set text [Dialog::Text .graphdata "[lindex $Lbl(Data) $GDefs(Lang)]: $title" "" 60 20]
 
-   $text insert end "Title : $title\n"
+   $text insert end "Title      : $title\n"
 
    foreach item $data(Items) {
       if { [graphitem is $item] } {
 
-         $text insert end "Item  : [lindex [$data(Canvas) itemconfigure [graphitem configure $item -desc] -text] end]\n"
+         $text insert end "Item       : [lindex [$data(Canvas) itemconfigure [graphitem configure $item -desc] -text] end]\n"
          set pos [lindex [split $item _] 0]
+         $text insert end "Unit X     : $graph(UnitX)\n"
+         $text insert end "Unit Y     : $graph(UnitY)\n"
          $text insert end "Coordinates: $data(Pos$pos)\n"
-         $text insert end "Unit X: $graph(UnitX)\n"
-         $text insert end "Unit Y: $graph(UnitY)\n"
 
          #----- Graph Raster
          set ditem [graphitem configure $item -data]
          if { $ditem!="" } {
+            if { [fstdfield define $ditem -GRTYP]=="V" } {
+               $text insert end "Levels     :[fstdfield stats $ditem -levels]\n"
+            }
             for { set j 0 } { $j < [fstdfield define $ditem -NJ] } { incr j } {
-               $text insert end "\n[format "%-20e" [lindex [fstdfield stats $ditem -levels] $j]]"
+               $text insert end "\n"
                for { set i 0 } { $i < [fstdfield define $ditem -NI] } { incr i } {
                   $text insert end [format "%-20e" [fstdfield stats $ditem -gridvalue $i $j]]
                }

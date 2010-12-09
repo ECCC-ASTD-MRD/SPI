@@ -175,7 +175,7 @@ proc Graph::Hovmoller::Coord { Frame GR X Y } {
    if  { [llength [set items [lindex [$data(Canvas) itemconfigure $GR -item] end]]] } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
-      if { [llength $coords]>=2 && [set idx [lindex $coords 1]]<[llength $data(Dates)]} {
+      if { [llength $data(Dates)] && [llength $coords]>=2 } {
          set idx [lindex $coords 1]
          set sec0 [lindex $data(Dates) [expr int($idx)]]
          set sec1 [lindex $data(Dates) [expr int($idx)+1]]
@@ -503,18 +503,6 @@ proc Graph::Hovmoller::Params { Parent GR } {
             -command "Graph::Hovmoller::Graph $GR" -bd 1 \
             -variable Graph::Hovmoller::Hovmoller${GR}::Data(DateF) -onvalue False -offvalue True
          pack $Parent.scale.type.ip3 $Parent.scale.type.date -side top -fill x
-      frame $Parent.scale.valy -relief sunken -bd 1
-         label $Parent.scale.valy.lbl -text "Y"
-         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::Hovmoller::Graph $GR" -bd 1 \
-            -variable Graph::Hovmoller::Hovmoller${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::Hovmoller::Hovmoller${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-         pack $Parent.scale.valy.scale -side left -fill y
-
-#         Calendar::Create $Parent.scale.date0 [lindex $Graph::Lbl(From) $GDefs(Lang)] Graph::Hovmoller::Hovmoller${GR}::Data(Date0) -1 "Graph::Hovmoller::Graph $GR"
-#         Calendar::Create $Parent.scale.date1 [lindex $Graph::Lbl(To) $GDefs(Lang)] Graph::Hovmoller::Hovmoller${GR}::Data(Date1) -1 "Graph::Hovmoller::Graph $GR"
 
       frame $Parent.scale.date0
          entry $Parent.scale.date0.ent -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
@@ -526,16 +514,14 @@ proc Graph::Hovmoller::Params { Parent GR } {
          label $Parent.scale.date1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)]
          pack  $Parent.scale.date1.lbl -side left -fill y
          pack $Parent.scale.date1.ent -side left -fill both  -expand true
-      pack $Parent.scale.type $Parent.scale.valy $Parent.scale.date0 $Parent.scale.date1 -side top -padx 2 -pady 2 -fill x
+      pack $Parent.scale.type $Parent.scale.date0 $Parent.scale.date1 -side top -padx 2 -pady 2 -fill x
    pack $Parent.scale -side top -fill x -padx 5
 
    Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
    Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
-   Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
    Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
    Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
 
-   bind $Parent.scale.valy.list <Return>    "Graph::Hovmoller::Graph $GR"
    bind $Parent.scale.date0.ent <Return>    "Graph::Hovmoller::Graph $GR"
    bind $Parent.scale.date1.ent <Return>    "Graph::Hovmoller::Graph $GR"
 }

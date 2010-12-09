@@ -178,7 +178,7 @@ proc Graph::TimeSection::Coord { Frame GR X Y } {
 
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
-      if { [llength $coords]>=2 && [set idx [lindex $coords 0]]<[llength $data(Dates)]} {
+      if { [llength $data(Dates)] && [llength $coords]>=2 } {
          set idx [lindex $coords 0]
          set sec0 [lindex $data(Dates) [expr int($idx)]]
          set sec1 [lindex $data(Dates) [expr int($idx)+1]]
