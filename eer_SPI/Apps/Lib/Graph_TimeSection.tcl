@@ -800,6 +800,7 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
       set fields {}
       foreach field $data(Data$Data) {
          lappend fields [lindex $field 1]
+         vector append $Item.X [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
       }
       fstdfield vertical TIMECUT$Item $fields $data(Pos$Pos)
       FSTD::Register TIMECUT$Item
@@ -807,10 +808,6 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
       set graph(UnitY)  [fstdfield stats TIMECUT$Item -leveltype]
 
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data TIMECUT$Item
-
-      foreach field $fields {
-         vector append $Item.X [fstdstamp toseconds [fstdfield define $field -DATEV]]
-      }
    }
 }
 

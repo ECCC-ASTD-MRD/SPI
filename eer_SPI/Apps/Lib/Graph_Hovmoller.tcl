@@ -5,51 +5,50 @@
 # Dorval, Quebec
 #
 # Projet   : Librairie d'objects visuel interactifs
-# Fichier  : Graph_Section.tcl
+# Fichier  : Graph_Hovmoller.tcl
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Ce package s'occupe de l'affichage et de la manipulation de graphs
-#              de profil verticaux
+#              de serie temporelle
 #
 # Fonctions:
 #
-#    Graph::Section::Create       { Frame X0 Y0 Width Height Active Full }
-#    Graph::Section::Coord        { Frame GR X Y }
-#    Graph::Section::Destroy      { Frame GR }
-#    Graph::Section::Graph        { GR { Pos False } }
-#    Graph::Section::Init         { Frame }
-#    Graph::Section::Params       { Parent GR }
-#    Graph::Section::ItemAdd      { GR Item }
-#    Graph::Section::ItemDefault  { GR Item }
-#    Graph::Section::ItemDel      { GR Item }
-#    Graph::Section::ItemDefine   { GR Pos Coords { Update True } }
-#    Graph::Section::ItemUnDefine { GR Pos }
-#    Graph::Section::ItemData     { GR Pos Item Data }
-#    Graph::Section::Update       { Frame { GR {} } }
-#    Graph::Section::UpdateItems  { Frame { GR { } } }
-#    Graph::Section::Data         { GR Data }
-#    Graph::Section::Resolution   { VP Field }
-#    Graph::Section::VertexAdd    { Frame VP X Y }
-#    Graph::Section::VertexDelete { Frame VP }
-#    Graph::Section::VertexFollow { Frame VP X Y Scan }
-#    Graph::Section::Sample       { GR VP Coord { Res 0 } }
-#    Graph::Section::FieldShow    { GR }
+#    Graph::Hovmoller::Create       { Frame X0 Y0 Width Height Active Full }
+#    Graph::Hovmoller::Coord        { Frame GR X Y }
+#    Graph::Hovmoller::Clean        { GR }
+#    Graph::Hovmoller::Destroy      { Frame GR }
+#    Graph::Hovmoller::DrawInit     { Frame VP }
+#    Graph::Hovmoller::Draw         { Frame VP }
+#    Graph::Hovmoller::DrawDone     { Frame VP }
+#    Graph::Hovmoller::MoveInit     { Frame VP }
+#    Graph::Hovmoller::Move         { Frame VP }
+#    Graph::Hovmoller::MoveDone     { Frame VP }
+#    Graph::Hovmoller::Graph        { GR }
+#    Graph::Hovmoller::Init         { Frame }
+#    Graph::Hovmoller::Params       { Parent GR }
+#    Graph::Hovmoller::ItemAdd      { GR Item }
+#    Graph::Hovmoller::ItemDefault  { GR Item }
+#    Graph::Hovmoller::ItemDel      { GR Item }
+#    Graph::Hovmoller::ItemDefine   { GR Pos Coords { Update True } }
+#    Graph::Hovmoller::ItemUnDefine { GR Pos }
+#    Graph::Hovmoller::ItemData     { GR Pos Item Data }
+#    Graph::Hovmoller::Update       { Frame { GR {} } }
+#    Graph::Hovmoller::UpdateItems  { Frame { GR { } } }
+#    Graph::Hovmoller::Data         { GR { Data { } } { Files { } } }
 #
 #===============================================================================
 
-namespace eval Graph::Section { } {
+namespace eval Graph::Hovmoller { } {
    variable Lbl
    variable Msg
 
-   set Lbl(Title)     { "Coupe verticale" "Vertical cross-section" }
-   set Lbl(Grid)      { "Grille" "Grid" }
-   set Lbl(Pres)      { "Pression" "Pressure" }
+   set Lbl(Title)     { "Hovmoller" "Hovmoller" }
 
    set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Create>
+# Nom      : <Graph::Hovmoller::Create>
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Crrer l'object graph et ses structures
@@ -69,12 +68,12 @@ namespace eval Graph::Section { } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True } } {
+proc Graph::Hovmoller::Create { Frame X0 Y0 Width Height Active Full } {
    global GDefs
    variable Data
    variable Lbl
 
-   set gr [Graph::Section::Init $Frame]
+   set gr [Graph::Hovmoller::Init $Frame]
    set tag $Page::Data(Tag)$gr
 
    if { $Full } {
@@ -90,12 +89,11 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(Link$gr)     $Link      ;#Liaison des donnees a l'interface
    set Graph::Data(ToolMode$gr) Draw       ;#Mode de selection
-   set Graph::Data(Type$gr)     Section    ;#Type de graph
+   set Graph::Data(Type$gr)     Hovmoller  ;#Type de graph
 
-   upvar #0 Graph::Section::Section${gr}::Data  data
-   upvar #0 Graph::Section::Section${gr}::Graph graph
+   upvar #0 Graph::Hovmoller::Hovmoller${gr}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${gr}::Graph graph
 
    set data(Canvas)    $Frame.page.canvas
    set data(Frame)     $Frame
@@ -104,12 +102,12 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
 
    set id [$data(Canvas) create text $X0 $Y0  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text [lindex $Lbl(Title) $GDefs(Lang)] \
       -font $Graph::Font(Graph) -fill black -anchor nw -justify center]
-   $data(Canvas) create graph -x $X0 -y $Y0 -width $Width -height $Height -anchor nw -legend 0 -command $gr \
-       -fg black -bg $Graph::Color(Frame) -fill $Graph::Color(Graph) -tags "$tag $gr" -font $Graph::Font(Graph) \
+   $data(Canvas) create graph -x $X0 -y $Y0 -width $Width -height $Height -anchor nw -xlegend 5 -ylegend 5 -command $gr \
+       -fg black -bg $Graph::Color(Frame) -fill $Graph::Color(Graph) -tags "$tag $gr" -font $Graph::Font(Graph) -title $id \
        -legend False -title $id
    $data(Canvas) raise $id
 
-   #----- Creation des unite de l'echelle
+  #----- Creation des unite de l'echelle
 
    graphaxis create axisx$gr
    graphaxis create axisy$gr
@@ -127,31 +125,28 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
       set data(FrameData) $Viewport::Data(Frame$data(VP))
-      Graph::Section::Update $data(FrameData) $gr
+      Graph::Hovmoller::Update $data(FrameData) $gr
    } else {
       set data(VP)        ""
       set data(FrameData) ""
    }
 
-   Graph::Activate $Frame $gr Section
-
-   if { $Graph::Data(Link$gr) } {
-      Graph::Mode Section $gr True
-      Graph::PosAdd $gr Section
-   }
+   Graph::Activate $Frame $gr Hovmoller
+   Graph::Mode Hovmoller $gr True
+   Graph::PosAdd $gr Hovmoller
 
    #----- Creer les fonction du mode actif
 
    if { $Active } {
-      Page::ActiveWrapper Graph $Frame $gr $X0 $Y0 [expr $Width+$X0] [expr $Height+$Y0] Section
+      Page::ActiveWrapper Graph $Frame $gr $X0 $Y0 [expr $Width+$X0] [expr $Height+$Y0] Hovmoller
    }
-   Page::Register $Frame Graph::Section $gr
+   Page::Register $Frame Graph::Hovmoller $gr
 
    return $gr
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::Coord>
+# Nom      : <Graph::Hovmoller::Coord>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Evalue les valeurs de concentrations et de date a la position du curseur
@@ -169,10 +164,10 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::Coord { Frame GR X Y } {
+proc Graph::Hovmoller::Coord { Frame GR X Y } {
    global   GDefs
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    set Page::Data(Coord) ""
    set Page::Data(Value) ""
@@ -180,8 +175,13 @@ proc Graph::Section::Coord { Frame GR X Y } {
    if  { [llength [set items [lindex [$data(Canvas) itemconfigure $GR -item] end]]] } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
-      if { [llength $coords]>=2 } {
-         set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]] [lindex $Graph::Lbl(Pos) $GDefs(Lang)]:[format "%.3f" [lindex $coords 0]]"
+      if { [llength $coords]>=2 && [set idx [lindex $coords 1]]<[llength $data(Dates)]} {
+         set idx [lindex $coords 1]
+         set sec0 [lindex $data(Dates) [expr int($idx)]]
+         set sec1 [lindex $data(Dates) [expr int($idx)+1]]
+         set sec [expr $sec0+($idx-int($idx))*($sec1-$sec0)]
+         set date [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
+         set Page::Data(Coord) "$date"
 
          foreach item $items {
             set field [graphitem configure $item -data]
@@ -189,15 +189,35 @@ proc Graph::Section::Coord { Frame GR X Y } {
                append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
             }
          }
-         if { $data(Proj) } {
+      }
+   }
+}
 
-         }
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::Hovmoller::Clean>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Supprimer les donnees associees aux coordonees.
+#
+# Parametres :
+#   <GR>     : Identificateur du Graph
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::Hovmoller::Clean { GR } {
+
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Graph graph
+
+   foreach item $data(Data) {
+      foreach field $data(Data$item) {
+         fstdfield free [lindex $field 1]
       }
    }
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Destroy>
+# Nom      : <Graph::Hovmoller::Destroy>
 # Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Supprimer un viewport ainsi que tout ses widgets
@@ -212,33 +232,36 @@ proc Graph::Section::Coord { Frame GR X Y } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::Destroy { Frame GR } {
+proc Graph::Hovmoller::Destroy { Frame GR } {
    variable Data
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
-   #----- Liberer l'allocation des champs
-
-   Animator::EmptyPlayList
+   foreach item $data(Data) {
+      foreach field $data(Data$item) {
+         fstdfield free [lindex $field 1]
+      }
+   }
+   Graph::Hovmoller::Clean $GR
 
    #----- Supprimer le graph et ses items
 
-   $Frame.page.canvas delete $Page::Data(Tag)$GR ID$Page::Data(Tag)$GR
+   $Frame.page.canvas delete $Page::Data(Tag)$GR
    if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHSECTION$GR
+      $data(FrameData).page.canvas delete GRAPHHOVMOLLER$GR
    }
 
    #----- Supprimer ses items
 
    foreach pos $data(Pos) {
-      Graph::Section::ItemUnDefine $GR $pos
+      Graph::Hovmoller::ItemUnDefine $GR $pos
    }
 
-   namespace delete Section$GR
+   namespace delete Hovmoller$GR
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::Graph>
+# Nom      : <Graph::Hovmoller::Graph>
 # Creation : Fevrier 1999 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Affiche le graphique des series temporelles.
@@ -253,80 +276,113 @@ proc Graph::Section::Destroy { Frame GR } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::Graph { GR { Pos False } } {
+proc Graph::Hovmoller::Graph { GR { Pos False } } {
+   global GDefs
    variable Data
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
-   upvar #0 Graph::Section::Section${GR}::Graph graph
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Graph graph
 
    if { ![llength $data(Items)] } {
       return
    }
 
    if { $Pos } {
-      Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Section::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
+      Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Hovmoller::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
    }
    $data(Canvas) config -cursor watch
    update idletasks
 
    #----- Recalculer les valeurs
-   set data(XMin)   1e200
-   set data(XMax)  -1e200
-   set data(YMin)   1e200
-   set data(YMax)  -1e200
-   set data(Levels) {}
-   set yincr  0
-   set xincr  0
+   set data(XMin)  1e200
+   set data(XMax) -1e200
+   set data(YMin)  1e200
+   set data(YMax) -1e200
+   set data(Dates) {}
+   set yincr 0
+   set xincr 0
    set mod True
 
-   #----- Extraire les limites des valeurs
+   #----- Afficher le graph
+
    foreach item $data(Items) {
-      if { [fstdfield is GRAPHSECTION$item] } {
-         #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats GRAPHSECTION$item -pressurelevels]]] } {
-            set data(Levels) $levels
-            fstdfield configure GRAPHSECTION$item -ztype PRESSURE
-         } else {
-            set data(Levels) [fstdfield stats GRAPHSECTION$item -levels]
-            fstdfield configure GRAPHSECTION$item -ztype NONE
-         }
-         set data(XMin)   0
-         set data(XMax)   [expr [fstdfield define GRAPHSECTION$item -NI]-1]
+      set data(Dates) [concat $data(Dates) [vector get $item.Y]]
+      set data(XMin)   0
+      if { [fstdfield is GRAPHHOVMOLLER$item] } {
+         set data(XMax)  [expr [fstdfield define GRAPHHOVMOLLER$item -NI]-1]
       }
    }
 
-   #----- Verifier la selection de l'usager
-   if { ![set l [llength $graph(YInter)]] } {
-      set data(YMin) [lindex $data(Levels) 0]
-      set data(YMax) [lindex $data(Levels) end]
+   set data(Dates) [lsort -unique -real -increasing $data(Dates)]
+   set data(YMin)  [lindex $data(Dates) 0]
+   set data(YMax)  [lindex $data(Dates) end]
 
-      if { $graph(YScale)=="LOGARITHMIC" } {
-         set yinter ""
-         set yincr 1
-      } else {
-         set yinter $data(Levels)
-      }
+   if { ![llength $data(Dates)] } {
+      return
+   }
+
+   if { $data(Date0)!="" } {
+      set data(YMin) [clock scan $data(Date0) -gmt True]
+   }
+   if { $data(Date1)!="" } {
+      set data(YMax) [clock scan $data(Date1) -gmt True]
+   }
+
+   #----- Verifier la selection de l'usager
+   if { ![llength $graph(YInter)] } {
+      set dates $data(Dates)
    } else {
+      set dates $graph(YInter)
       set data(YMin) [lindex $graph(YInter) 0]
       set data(YMax) [lindex $graph(YInter) end]
-      if { $l==2 } {
-         set yinter {}
-      } else {
-         set yinter $graph(YInter)
-      }
    }
 
    set graph(XInter) $data(DCoords)
    set graph(XLabel) [lrange $Graph::Graph(Identitys) 0 [expr [llength $data(DCoords)]-1]]
 
-   if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
-      set mod False
+   if { $data(DateF) } {
+      set diff [expr $data(YMax)-$data(YMin)]
+
+      if { $diff <= 120 } {
+         set graph(UnitY) "[lindex $Graph::Lbl(Since) $GDefs(Lang)] [DateStuff::StringDateFromSeconds $data(YMin) $GDefs(Lang)] ([lindex $Graph::Lbl(Sec) $GDefs(Lang)])"
+         set data(Time)  S
+      } elseif { $diff <=7200 } {
+         set graph(UnitY) "[lindex $Graph::Lbl(Since) $GDefs(Lang)] [DateStuff::StringDateFromSeconds $data(YMin) $GDefs(Lang)] ([lindex $Graph::Lbl(Min) $GDefs(Lang)])"
+         set data(Time)  M
+      } elseif { $diff <=1296000 } {
+         set graph(UnitY) "[lindex $Graph::Lbl(Since) $GDefs(Lang)] [DateStuff::StringDateFromSeconds $data(YMin) $GDefs(Lang)] ([lindex $Graph::Lbl(Hour) $GDefs(Lang)])"
+         set data(Time)  H
+      } else {
+         set graph(UnitY) "[lindex $Graph::Lbl(Since) $GDefs(Lang)] [DateStuff::StringDateFromSeconds $data(YMin) $GDefs(Lang)] ([lindex $Graph::Lbl(Day) $GDefs(Lang)])"
+         set data(Time)  D
+      }
+
+      graphaxis configure axisy$GR -angle $Graph::Font(Angle)
+   } else {
+      set data(Time)    DATE
+      set graph(UnitY)  [lindex $Graph::Lbl(Date) $GDefs(Lang)]
+      graphaxis configure axisy$GR -angle 45
    }
+
+   set yinter {}
+   set ydates {}
+   set i -1
+
+   foreach date $dates {
+      lappend ydates [Graph::TimeFormat $date $data(Time) $data(YMin)]
+      lappend yinter [incr i]
+   }
+   set data(YMin)  0
+   set data(YMax)  [expr [fstdfield define GRAPHHOVMOLLER$item -NJ]-1]
+
    if { [llength $graph(ZYInter)] } {
       set data(YMin) [lindex $graph(ZYInter) 0]
       set data(YMax) [lindex $graph(ZYInter) 1]
+      set mod False
+   }
+   if { [llength $graph(ZXInter)] } {
+      set data(XMin) [lindex $graph(ZXInter) 0]
+      set data(XMax) [lindex $graph(ZXInter) 1]
       set mod False
    }
 
@@ -343,24 +399,20 @@ proc Graph::Section::Graph { GR { Pos False } } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -labels $ydates \
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
    $data(Canvas) itemconfigure $GR -item $data(Items) -bd $Graph::Width(Frame) \
       -fg $Graph::Color(FG) -bg $Graph::Color(BG) -fill $Graph::Color(Fill) -font $Graph::Font(Graph)
 
-   if { $data(Proj) } {
-      $data(FrameData).page.canvas itemconfigure $data(VP) -frame 0
-   }
-
    update idletasks
    $data(Canvas) config -cursor left_ptr
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Init>
+# Nom      : <Graph::Hovmoller::Init>
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Initialisation des variables du graph.
@@ -374,17 +426,18 @@ proc Graph::Section::Graph { GR { Pos False } } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::Init { Frame } {
+proc Graph::Hovmoller::Init { Frame } {
    global   GDefs
    variable Data
 
    set gr GR[incr Graph::Data(Nb)]
 
-   namespace eval Section$gr {
+   namespace eval Hovmoller$gr {
       variable Data
       variable Graph
 
       set Data(Items)    {}           ;#Liste des items
+      set Data(IP3)             True      ;#Valider les IP3
       set Data(Pos)      {}           ;#Liste des positions
       set Data(Data)     {}           ;#Liste des champs selectionnees
       set Data(Proj)     0            ;#Mode projection
@@ -400,83 +453,95 @@ proc Graph::Section::Init { Frame } {
 
       set Graph(YScale)   LINEAR                                               ;#Type d'echelle en Y
       set Graph(XScale)   LINEAR                                               ;#Type d'echelle en Y
-      set Graph(UnitY)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"          ;#Descriptif de l'echelle des valeur en Y
+      set Graph(UnitY)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"     ;#Descriptif de l'echelle des valeur en Y
       set Graph(UnitX)    "[lindex $Graph::Lbl(Pos) $GDefs(Lang)]"             ;#Descriptif de l'echelle des valeur en X
       set Graph(XInter)   ""               ;#Liste des niveau specifie par l'usager
       set Graph(YInter)   ""               ;#Liste des niveau specifie par l'usager
       set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
       set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
-      set Graph(ZType)    GRID             ;#Type de niveaux (GRID,PRESSSURE)
    }
    return $gr
 }
-#-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::Params>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::Hovmoller::Params>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Creer le frame des widgets des options
+# But      : Widgets des parametres
 #
 # Parametres :
-#   <Parent> : Frame dans lequel creer les widgets
+#   <Parent> : Fenetre parent
 #   <GR>     : Identificateur du Graph
+#
+# Retour:
 #
 # Remarques :
 #
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 
-proc Graph::Section::Params { Parent GR } {
+proc Graph::Hovmoller::Params { Parent GR } {
    global   GDefs
-   variable Lbl
 
-   labelframe $Parent.disp -text [lindex $Graph::Lbl(Disp) $GDefs(Lang)]
-      frame $Parent.disp.mode -relief sunken -bd 1
-         checkbutton $Parent.disp.mode.proj  -text [lindex $Graph::Lbl(Proj) $GDefs(Lang)] -variable Graph::Section::Section${GR}::Data(Proj) -bd 1\
-            -onvalue 1 -offvalue 0 -indicatoron false -command "Graph::Section::FieldShow $GR"
-         pack $Parent.disp.mode.proj -side top -fill x
-      pack $Parent.disp.mode -side top -fill x
-   pack $Parent.disp -side top -fill x -pady 5
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data data
 
    labelframe $Parent.res -text [lindex $Graph::Lbl(Res) $GDefs(Lang)]
-      entry $Parent.res.cur -textvariable Graph::Section::Section${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
-      scale $Parent.res.sc  -variable Graph::Section::Section${GR}::Data(Res) -resolution 1 -width 16 -sliderlength 8 -showvalue False\
+      entry $Parent.res.cur -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
+      scale $Parent.res.sc  -variable Graph::Hovmoller::Hovmoller${GR}::Data(Res) -resolution 1 -width 16 -sliderlength 8 -showvalue False\
          -orient horizontal -bd 1 -from 1 -to 100000
-      checkbutton $Parent.res.auto -text * -indicatoron false -bd 1 -variable Graph::Section::Section${GR}::Data(ResBest) \
-         -onvalue True -offvalue False -command "Graph::Section::Resolution; Graph::Section::Graph $GR True"
+      checkbutton $Parent.res.auto -text * -indicatoron false -bd 1 -variable Graph::Hovmoller::Hovmoller${GR}::Data(ResBest) \
+         -onvalue True -offvalue False -command "Graph::Hovmoller::Resolution; Graph::Hovmoller::Graph $GR True"
       pack  $Parent.res.sc -side left -fill x -expand true -padx 2
       pack  $Parent.res.cur $Parent.res.auto -side left -padx 2
    pack $Parent.res -side top -fill x -pady 5
 
    labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
+      frame $Parent.scale.type -relief sunken -bd 1
+         checkbutton $Parent.scale.type.ip3 -text [lindex $Graph::Lbl(IP3) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Hovmoller::Update $data(FrameData) $GR" -bd 1 \
+            -variable Graph::Hovmoller::Hovmoller${GR}::Data(IP3) -onvalue True -offvalue False
+         checkbutton $Parent.scale.type.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Hovmoller::Graph $GR" -bd 1 \
+            -variable Graph::Hovmoller::Hovmoller${GR}::Data(DateF) -onvalue False -offvalue True
+         pack $Parent.scale.type.ip3 $Parent.scale.type.date -side top -fill x
       frame $Parent.scale.valy -relief sunken -bd 1
          label $Parent.scale.valy.lbl -text "Y"
          checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::Section::Graph $GR" -bd 1 \
-            -variable Graph::Section::Section${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::Section::Section${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
+            -command "Graph::Hovmoller::Graph $GR" -bd 1 \
+            -variable Graph::Hovmoller::Hovmoller${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
+         entry $Parent.scale.valy.list -textvariable Graph::Hovmoller::Hovmoller${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
          pack $Parent.scale.valy.lbl -side left -fill y
          pack $Parent.scale.valy.list -side left -fill x  -expand true
          pack $Parent.scale.valy.scale -side left -fill y
-      pack $Parent.scale.valy -side top -padx 2 -pady 2 -fill x
-      frame $Parent.scale.type -relief sunken -bd 1
-         radiobutton $Parent.scale.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Section::Graph $GR" -bd 1 -variable Graph::Section::Section${GR}::Graph(ZType) -value GRID
-         radiobutton $Parent.scale.type.pres -text [lindex $Lbl(Pres) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Section::Graph $GR" -bd 1 -variable Graph::Section::Section${GR}::Graph(ZType) -value PRESSURE
-         pack $Parent.scale.type.grid $Parent.scale.type.pres -side left -fill x -expand True
-      pack $Parent.scale.type -side top -padx 2 -fill x
-   pack $Parent.scale -side top -fill x -padx 5 -pady 5
 
-   Bubble::Create $Parent.disp.mode  $Graph::Bubble(Viewport)
-   Bubble::Create $Parent.scale.valy $Graph::Bubble(ScaleY)
-   Bubble::Create $Parent.res.list   $Graph::Bubble(Sample)
+#         Calendar::Create $Parent.scale.date0 [lindex $Graph::Lbl(From) $GDefs(Lang)] Graph::Hovmoller::Hovmoller${GR}::Data(Date0) -1 "Graph::Hovmoller::Graph $GR"
+#         Calendar::Create $Parent.scale.date1 [lindex $Graph::Lbl(To) $GDefs(Lang)] Graph::Hovmoller::Hovmoller${GR}::Data(Date1) -1 "Graph::Hovmoller::Graph $GR"
 
-   bind $Parent.res.cur         <Return>          "Graph::Section::Graph $GR True"
-   bind $Parent.res.sc          <ButtonRelease-1> "Graph::Section::Graph $GR True"
-   bind $Parent.scale.valy.list <Return>          "Graph::Section::Graph $GR"
+      frame $Parent.scale.date0
+         entry $Parent.scale.date0.ent -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
+         label $Parent.scale.date0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)]
+         pack  $Parent.scale.date0.lbl -side left -fill y
+         pack $Parent.scale.date0.ent -side left -fill both -expand true
+      frame $Parent.scale.date1
+         entry $Parent.scale.date1.ent -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Date1) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
+         label $Parent.scale.date1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)]
+         pack  $Parent.scale.date1.lbl -side left -fill y
+         pack $Parent.scale.date1.ent -side left -fill both  -expand true
+      pack $Parent.scale.type $Parent.scale.valy $Parent.scale.date0 $Parent.scale.date1 -side top -padx 2 -pady 2 -fill x
+   pack $Parent.scale -side top -fill x -padx 5
+
+   Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
+   Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
+   Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
+   Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
+   Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
+
+   bind $Parent.scale.valy.list <Return>    "Graph::Hovmoller::Graph $GR"
+   bind $Parent.scale.date0.ent <Return>    "Graph::Hovmoller::Graph $GR"
+   bind $Parent.scale.date1.ent <Return>    "Graph::Hovmoller::Graph $GR"
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::ItemAdd>
+# Nom      : <Graph::Hovmoller::ItemAdd>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Creer un nouvel item de graph
@@ -489,25 +554,29 @@ proc Graph::Section::Params { Parent GR } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::ItemAdd { GR Item } {
+proc Graph::Hovmoller::ItemAdd { GR Item } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { [lsearch -exact $data(Items) $Item]==-1 } {
+      vector free   $Item
+      vector create $Item
+      vector dim    $Item { X Y }
+
       set id [$data(Canvas) create text -100 -100  -tags "$Page::Data(Tag)$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem create $Item
       graphitem configure $Item -desc $id
 
       lappend data(Items) $Item
-      Graph::Section::ItemDefault $GR $Item
+      Graph::Hovmoller::ItemDefault $GR $Item
 
       $data(Canvas) itemconfigure $GR -item $data(Items)
    }
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::ItemDefault>
+# Nom      : <Graph::Hovmoller::ItemDefault>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Configurer les parametres initiaux d'un items
@@ -520,9 +589,9 @@ proc Graph::Section::ItemAdd { GR Item } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::ItemDefault { GR Item } {
+proc Graph::Hovmoller::ItemDefault { GR Item } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    set Graph::Item(Outline)     ""
    set Graph::Item(FillColor)   #FFFFFF
@@ -537,11 +606,11 @@ proc Graph::Section::ItemDefault { GR Item } {
    set Graph::Item(Stipple)     -1
    set Graph::Item(Image)       ""
 
-   Graph::ItemConfigure $GR Section $Item
+   Graph::ItemConfigure $GR Hovmoller $Item
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::ItemDel>
+# Nom      : <Graph::Hovmoller::ItemDel>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Supprimer un item de graph et ses resources
@@ -554,9 +623,9 @@ proc Graph::Section::ItemDefault { GR Item } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::ItemDel { GR Item } {
+proc Graph::Hovmoller::ItemDel { GR Item } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { [set idx [lsearch -exact $data(Items) $Item]]!=-1 } {
       set data(Items) [lreplace $data(Items) $idx $idx]
@@ -564,21 +633,16 @@ proc Graph::Section::ItemDel { GR Item } {
       $data(Canvas) itemconfigure $GR -item $data(Items)
       $data(Canvas) delete [graphitem configure $Item -desc]
 
+      vector    free $Item
       graphitem free $Item
-      fstdfield free GRAPHSECTION$Item
+      fstdfield free GRAPHHOVMOLLER$Item
 
-      FSTD::UnRegister GRAPHSECTION$Item
-
-      set list [lindex [$data(FrameData).page.canvas itemconfigure $data(VP) -data] 4]
-      if { [set idx [lsearch -exact $list GRAPHSECTION$Item]]!=-1 } {
-         set list [lreplace $list $idx $idx]
-         $data(FrameData).page.canvas itemconfigure $data(VP) -data $list
-      }
+      FSTD::UnRegister GRAPHHOVMOLLER$Item
    }
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::ItemDefine>
+# Nom      : <Graph::Hovmoller::ItemDefine>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Gestion des items. Generer les itmes necessaires selon les donnees
@@ -593,17 +657,17 @@ proc Graph::Section::ItemDel { GR Item } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
+proc Graph::Hovmoller::ItemDefine { GR Pos Coords { Update True } } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { $Pos=="" } {
       return
    }
 
-   if { [info exists Graph::Section::Section${GR}::Data(Items$Pos)] } {
+   if { [info exists Graph::Hovmoller::Hovmoller${GR}::Data(Items$Pos)] } {
       foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
-         Graph::Section::ItemDel $GR $item
+         Graph::Hovmoller::ItemDel $GR $item
       }
    }
 
@@ -614,23 +678,23 @@ proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
    set data(Pos$Pos)   $Coords
    set i -1
 
-   Graph::Idle $GR Section
+   Graph::Idle $GR Hovmoller
 
    foreach field $data(Data) {
       set item ${Pos}_Item[incr i]
       lappend data(Items$Pos) $item
 
-      Graph::Section::ItemAdd $GR $item
-      Graph::Section::ItemData $GR $Pos $item $field
+      Graph::Hovmoller::ItemAdd $GR $item
+      Graph::Hovmoller::ItemData $GR $Pos $item $field
    }
 
-   Graph::Section::UpdateItems $data(FrameData) $GR
-   Graph::Section::Graph $GR
-   Graph::UnIdle $GR Section
+   Graph::Hovmoller::UpdateItems $data(FrameData) $GR
+   Graph::Hovmoller::Graph $GR
+   Graph::UnIdle $GR Hovmoller
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::ItemUnDefine>
+# Nom      : <Graph::Hovmoller::ItemUnDefine>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Gestion des items. Supression des items relatif a une position
@@ -643,13 +707,13 @@ proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::ItemUnDefine { GR Pos } {
+proc Graph::Hovmoller::ItemUnDefine { GR Pos } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { [set idx [lsearch -exact $data(Pos) $Pos]]!=-1 } {
       foreach item $data(Items$Pos) {
-         Graph::Section::ItemDel $GR $item
+         Graph::Hovmoller::ItemDel $GR $item
       }
 
       set data(Pos) [lreplace $data(Pos)  $idx $idx]
@@ -658,7 +722,7 @@ proc Graph::Section::ItemUnDefine { GR Pos } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::ItemData>
+# Nom      : <Graph::Hovmoller::ItemData>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Recuperer les donnees d'un item
@@ -673,19 +737,21 @@ proc Graph::Section::ItemUnDefine { GR Pos } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::ItemData { GR Pos Item Data } {
+proc Graph::Hovmoller::ItemData { GR Pos Item Data } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
-   upvar #0 Graph::Section::Section${GR}::Graph graph
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Graph graph
 
   if { [graphitem is $Item] } {
       if { [fstdfield is $Data] && [llength $data(Pos$Pos)] } {
 
-         fstdfield vertical GRAPHSECTION$Item $Data $data(Pos$Pos)
-         set graph(UnitY) [fstdfield stats GRAPHSECTION$Item -leveltype]
-
-         FSTD::Register GRAPHSECTION$Item
-         graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSECTION$Item
+         foreach field $data(Data$Data) {
+            lappend fields [lindex $field 1]
+            vector append $Item.Y [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
+         }
+         fstdfield vertical GRAPHHOVMOLLER$Item $fields $data(Pos$Pos)
+         FSTD::Register GRAPHHOVMOLLER$Item
+         graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHHOVMOLLER$Item
       } else {
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data ""
       }
@@ -693,7 +759,7 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::Update>
+# Nom      : <Graph::Hovmoller::Update>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Effectuer le "Refresh" des items sur la projection.
@@ -707,43 +773,36 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::Update { Frame { GR {} } } {
+proc Graph::Hovmoller::Update { Frame { GR {} } } {
    variable Data
 
    if { ![llength $GR] } {
-      set GR [Page::Registered All Graph::Section]
+      set GR [Page::Registered All Graph::Hovmoller]
    }
 
    foreach gr $GR {
 
-      upvar #0 Graph::Section::Section${gr}::Data  data
+      upvar #0 Graph::Hovmoller::Hovmoller${gr}::Data  data
 
-      if { $Graph::Data(Link$gr) && $data(FrameData)==$Frame } {
+      if { $data(FrameData)==$Frame } {
 
          catch {
             $data(FrameData).page.canvas configure -cursor watch
             $data(Canvas) configure -cursor watch
             update idletasks
          }
-
          #----- Recuperer les donnees
 
-        if { [Page::Registered All Viewport $data(VP)]!=-1 } {
-            if { [info exist Animator::Play(Data$data(VP))] } {
-               Graph::Section::Data $gr $Animator::Play(Data$data(VP))
-            } else {
-               Graph::Section::Data $gr $Viewport::Data(Data$data(VP))
-               set list $Viewport::Data(Data$data(VP))
-            }
+         if { [Page::Registered All Viewport $data(VP)]!=-1 } {
+            Graph::Hovmoller::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) fstdfield]
          }
 
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Section::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Hovmoller::ItemDefine $gr $pos $data(Pos$pos)
          }
-         Graph::PosSet $gr Section
-         Graph::Section::FieldShow $gr
+         Graph::PosSet $gr Hovmoller
 
          catch {
             $data(Canvas) configure -cursor left_ptr
@@ -754,7 +813,7 @@ proc Graph::Section::Update { Frame { GR {} } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::UpdateItems>
+# Nom      : <Graph::Hovmoller::UpdateItems>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Effectuer le "Refresh" des items sur la projection.
@@ -768,27 +827,28 @@ proc Graph::Section::Update { Frame { GR {} } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::UpdateItems { Frame { GR { } } } {
+proc Graph::Hovmoller::UpdateItems { Frame { GR { } } } {
    global GDefs
    variable Data
    variable Lbl
 
    if { ![llength $GR] } {
-      set GR [Page::Registered All Graph::Section]
+      set GR [Page::Registered All Graph::Hovmoller]
    }
 
    foreach gr $GR {
 
-      upvar #0 Graph::Section::Section${gr}::Data  data
+      upvar #0 Graph::Hovmoller::Hovmoller${gr}::Data  data
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHSECTION$gr
+         $Frame.page.canvas delete GRAPHHOVMOLLER$gr
+
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSECTION$gr SAMPLE $data(Coords)
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHHOVMOLLER$gr SAMPLE $data(Coords)
             }
          }
       }
@@ -796,52 +856,89 @@ proc Graph::Section::UpdateItems { Frame { GR { } } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::Data>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
+# Nom      : <Graph::Hovmoller::Data>
+# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Calculer un profil aux coordonees specifiees.
+# But      : Recupere les champs correspondants disponibles.
 #
 # Parametres :
-#   <GR>     : Identificateur du Graph
-#   <Data>   : Donnees a utilise
+#   <GR>     : Indentificateur du Graph
+#   <Data>   : Liste des donnees disponibles
+#   <Files>  : Liste des fichiers a scanner
+#
+# Retour    :
+#
+# Remarque :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::Data { GR Data } {
-   global GDefs
+proc Graph::Hovmoller::Data { GR { Data { } } { Files { } } } {
+   global   GDefs
    variable Msg
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
-   upvar #0 Graph::Section::Section${GR}::Graph graph
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Graph graph
 
-   SPI::Progress 0 [lindex $Msg(Reading) $GDefs(Lang)]
+   SPI::Progress 0
 
-   #----- Recuperer les champs correspondants du viewport actif
+   Graph::Hovmoller::Clean $GR
+
+   SPI::Progress 5 [lindex $Msg(Reading) $GDefs(Lang)]
+
+   #----- Recuperer la suite temporelle pour chaque champs
 
    set data(Data)   {}
+   set data(ObsIds) {}
+   set nb [expr 95.0/([llength $Data]+1)]
+   set sec ""
+   SPI::Progress +$nb [lindex $Msg(Reading) $GDefs(Lang)]
 
-   set fields {}
-   foreach field $Data {
-      if { [fstdfield is $field] } {
-         set grtyp [fstdfield define $field -GRTYP]
-         if { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
-            fstdfield readcube $field
-            if { [fstdfield define $field -NK]>1 } {
-               lappend fields $field
-            }
+   foreach item $Data {
+
+      if { ![llength $Files] } {
+         if { [set box [lindex [fstdfield stats $item -tag] 2]]=="" } {
+               continue
          }
+         set fids [FieldBox::GetFID $box]
+      } else {
+         set fids $Files
       }
+
+      if { $data(IP3) } {
+         set ip3 [fstdfield define $item -IP3]
+      } else {
+         set ip3 -1
+      }
+
+      set data(Data$item) [MetData::FindAll HOVMOLLER$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
+         -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
+
+      #----- Set the interpolation degree to the same
+
+      set interp [fstdfield configure $item -interpdegree]
+      foreach field $data(Data$item) {
+         fstdfield configure $field -interpdegree $interp
+      }
+
+      #---- Trier temporellement les champs
+
+      set i 0
+      foreach id $data(Data$item) {
+         set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
+         lset data(Data$item) $i "$sec $id"
+         incr i
+      }
+      set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
+      lappend data(Data) $item
+
+      SPI::Progress +$nb "[lindex $Msg(Reading) $GDefs(Lang)] $sec"
    }
-   SPI::Progress 0 ""
 
-   #----- Applique le calcul MACRO au cubes de donnees
-
-   set data(Data) [FieldCalc::Operand $data(VP) $fields]
    SPI::Progress 0
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Resolution>
+# Nom      : <Graph::Hovmoller::Resolution>
 # Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Determiner la resolution optimale du sampling des pointts de coupes.
@@ -854,10 +951,10 @@ proc Graph::Section::Data { GR Data } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::Resolution { } {
+proc Graph::Hovmoller::Resolution { } {
 
    set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { $data(VP)=="" || $data(Field)=="" } {
       return
@@ -884,7 +981,7 @@ proc Graph::Section::Resolution { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::VertexAdd>
+# Nom      : <Graph::Hovmoller::VertexAdd>
 # Creation : Ocotbre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Ajout d'un point a la coupe.
@@ -901,10 +998,10 @@ proc Graph::Section::Resolution { } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::VertexAdd { Frame VP X Y } {
+proc Graph::Hovmoller::VertexAdd { Frame VP X Y } {
 
    set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { $VP==-1 } {
       return
@@ -913,7 +1010,7 @@ proc Graph::Section::VertexAdd { Frame VP X Y } {
    if { $VP!=$data(VP) } {
       set data(VP)        $VP
       set data(FrameData) $Frame
-      Graph::Section::Update $Frame $Graph::Data(Graph)
+      Graph::Hovmoller::Update $Frame $Graph::Data(Graph)
    }
    set data(Field) [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]
 
@@ -926,17 +1023,17 @@ proc Graph::Section::VertexAdd { Frame VP X Y } {
    set grtyp [fstdfield define $data(Field) -GRTYP]
    if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
 
-      Graph::Section::Resolution
+      Graph::Hovmoller::Resolution
       lappend data(Coords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
 
       #----- Afficher la base de la coupes et en recuperer les coordonnees lat-lon
 
-      Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Section::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
+      Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Hovmoller::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
    }
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::VertexDelete>
+# Nom      : <Graph::Hovmoller::VertexDelete>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      :Suppression d'un point a la coupe.
@@ -951,21 +1048,21 @@ proc Graph::Section::VertexAdd { Frame VP X Y } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::VertexDelete { Frame VP } {
+proc Graph::Hovmoller::VertexDelete { Frame VP } {
 
    set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { $VP!=-1 } {
       set data(Coords) [lreplace $data(Coords) end-1 end]
 
-      Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Section::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
+      Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Hovmoller::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
    }
    $data(Canvas) delete VERTEXFOLLOW
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::VertexFollow>
+# Nom      : <Graph::Hovmoller::VertexFollow>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Affiche une ligne entre le dernier vertex creer et la position du
@@ -983,12 +1080,12 @@ proc Graph::Section::VertexDelete { Frame VP } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
+proc Graph::Hovmoller::VertexFollow { Frame VP X Y Scan } {
    global GDefs
    variable Lbl
 
    set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { $VP==-1 } {
       if { $data(VP)=="" } {
@@ -1005,20 +1102,20 @@ proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
          lappend data(FCoords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
       }
 
-      $Frame.page.canvas delete GRAPHSECTION$Graph::Data(Graph)
-      set coords [lrange [Graph::Section::Sample $Graph::Data(Graph) $VP $data(FCoords)] 0 end-4]
+      $Frame.page.canvas delete GRAPHHOVMOLLER$Graph::Data(Graph)
+      set coords [lrange [Graph::Hovmoller::Sample $Graph::Data(Graph) $VP $data(FCoords)] 0 end-4]
       set id [graphitem configure [lindex $data(Items$Graph::Data(Pos)) 0] -desc]
       set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-      Graph::ItemPos $Frame $VP $coords "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSECTION$GR SAMPLE $data(FCoords)
+      Graph::ItemPos $Frame $VP $coords "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHHOVMOLLER$GR SAMPLE $data(FCoords)
 
       if { $Scan && [llength $data(FCoords)]>2 } {
-         Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords
+         Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords
       }
    }
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Sample>
+# Nom      : <Graph::Hovmoller::Sample>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Calculer le path de coupe et points intermediaire selon la resolution.
@@ -1035,9 +1132,9 @@ proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Section::Sample  { GR VP Coord { Res 0 } } {
+proc Graph::Hovmoller::Sample  { GR VP Coord { Res 0 } } {
 
-   upvar #0 Graph::Section::Section${GR}::Data  data
+   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
 
    if { [llength $Coord]==2 } {
       return $Coord
@@ -1061,46 +1158,4 @@ proc Graph::Section::Sample  { GR VP Coord { Res 0 } } {
    }
 
    return $coords
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Graph::Section::FieldShow>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Mise a jour de l'affichage des coupes.
-#
-# Parametres :
-#   <GR>     : Identificateur du Graph
-#
-#-------------------------------------------------------------------------------
-
-proc Graph::Section::FieldShow { GR } {
-
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   if { $data(FrameData)!="" } {
-
-      set list [lindex [$data(FrameData).page.canvas itemconfigure $data(VP) -data] 4]
-      set did 0
-
-      foreach item $data(Items) {
-         set fld [graphitem configure $item -data]
-         set idx [lsearch -exact $list $fld]
-
-         if { $data(Proj) } {
-            if { $idx==-1 && [fstdfield is $fld] } {
-               lappend list $fld
-               set did 1
-            }
-         } else {
-            if { $idx!=-1 } {
-               set list [lreplace $list $idx $idx]
-               set did 1
-            }
-         }
-      }
-      if { $did } {
-         $data(FrameData).page.canvas itemconfigure $data(VP) -frame 0 -data $list
-      }
-   }
 }

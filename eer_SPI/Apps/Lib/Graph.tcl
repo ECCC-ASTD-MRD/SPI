@@ -100,8 +100,7 @@ namespace eval Graph {
 
    set Data(Nb)           0                      ;#Nombre de graph
    set Data(Type)         ""                     ;#Type du graph courant
-   set Data(Types)        "Compare Contingency Frequence Profile Scatter Section Time TimeSection" ;#Liste des types de graph
-   set Data(Types)        "Contingency Scatter Profile Time Section TimeSection" ;#Liste des types de graph
+   set Data(Types)        "Contingency Scatter Profile Time Section TimeSection Hovmoller" ;#Liste des types de graph
    set Data(Graph)        ""                     ;#Id du graph courant
    set Data(GraphParams)  ""                     ;#Id du graph courant
    set Data(Show)         False
@@ -252,6 +251,7 @@ source $GDefs(Dir)/Apps/Lib/Graph_Frequence.tcl
 source $GDefs(Dir)/Apps/Lib/Graph_Compare.tcl
 source $GDefs(Dir)/Apps/Lib/Graph_TimeSection.tcl
 source $GDefs(Dir)/Apps/Lib/Graph_Stat.tcl
+source $GDefs(Dir)/Apps/Lib/Graph_Hovmoller.tcl
 
 #----------------------------------------------------------------------------
 # Nom      : <Graph::Activate>

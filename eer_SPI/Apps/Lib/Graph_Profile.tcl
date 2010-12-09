@@ -624,6 +624,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    set i -1
 
    Graph::Idle $GR Profile
+
    foreach field $data(Data) {
       set item ${Pos}_Item[incr i]
       lappend data(Items$Pos) $item

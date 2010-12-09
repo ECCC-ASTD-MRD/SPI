@@ -465,7 +465,7 @@ proc Graph::Time::Init { Frame } {
    global   GDefs
    variable Data
 
-   set gr GRAPH[incr Graph::Data(Nb)]
+   set gr GR[incr Graph::Data(Nb)]
 
    namespace eval Time$gr {
       variable Data
