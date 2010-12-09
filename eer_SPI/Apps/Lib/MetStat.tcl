@@ -447,16 +447,24 @@ proc MetStat::RECRCLoad { File } {
    while { ![eof $file] } {
 
       set first [string range $line 0 0]
-      if { $first=="#" || $first=="*" } {
+      if { $first=="#" || $first=="*" || $first=="C" || $first=="c" } {
          gets $file line
          continue
       }
 
       #----- Check for "vecteur" directive
       if { [string first "VECTEUR" [string toupper $line]]!=-1 } {
-          fstdfield vector [string map { vecteur "" VECTEUR "" "(" "" ")" "" "'" \" "," " " } $line]
-          gets $file line
-          continue
+         set lst [string map { vecteur "" VECTEUR "" "(" "" ")" "" "'" \" "," " " } $line]
+         set comps {}
+         foreach comp $lst {
+            #----- Get rid of empty components
+            if { [string length [string trim $comp]] } {
+               lappend comps $comp
+            }
+         }
+         fstdfield vector $comps
+         gets $file line
+         continue
       }
 
       #----- Check for "defvar" directive
@@ -469,8 +477,7 @@ proc MetStat::RECRCLoad { File } {
 
             #----- Concatener toutes les lignes en une commande
             set first [string range $line 0 0]
-
-            if { $first!="#" && $first!="*" } {
+            if { $first!="#" && $first!="*" && $first!="C" && $first!="c" } {
                set cmd "$cmd[string trim $line]"
             }
             gets $file line
@@ -478,7 +485,7 @@ proc MetStat::RECRCLoad { File } {
 
          #----- Verifier la structure de la commande
          if { [catch {MetStat::RECRCEval $cmd}] } {
-            Dialog::Error . $Msg(RECRC) "\n\n$cmd"
+            Dialog::Error . $Msg(RECRC) " $File:\n\n$cmd"
          }
       } else {
          gets $file line
