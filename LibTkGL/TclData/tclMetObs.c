@@ -2492,6 +2492,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    TDataSpec    *spec;
    EntryTableB  *eb;
    Vect3d        pix;
+   Coord         co;
    char          buf[128];
    double        z,val,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk;
@@ -2539,6 +2540,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    /*For all of the sations*/
    loc=Obs->Loc;
    n=0;
+   co.Elev=0.0;
+
    while(loc) {
 
       line=0;
@@ -2550,7 +2553,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       }
 
       /*Check if visible*/
-      if (Projection_Pixel(Proj,VP,loc->Coord,pix)) {
+      if (loc->Grid[0]!=0.0 || Projection_Pixel(Proj,VP,loc->Coord,pix)) {
 
          /*Get the element for the specific time*/
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
@@ -2596,7 +2599,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                         else if (cdata->Code[e]->descriptor==6002)
                            clon=e;
                      }
-                     if (clat!=-1 || clon!=-1) {
+                     if (clat!=-1 && clon!=-1) {
                         break;
                      }
                   }
@@ -2641,6 +2644,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     continue;
                               }
 
+                              /*Check coordinates for grouped data*/
+                              if (clat!=-1 && clon!=-1) {
+                                 co.Lat=MetObs_GetData(cdata,clat,0,t);
+                                 co.Lon=MetObs_GetData(cdata,clon,0,t);
+                                 if (!Projection_Pixel(Proj,VP,co,pix)) {
+                                    continue;
+                                }
+                              }
+
                               if (Interp) {
                                  Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
                                  Tcl_AppendResult(Interp,"1.0 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
@@ -2671,7 +2683,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                               } else {
                                  if (clat!=-1 && clon!=-1) {
-                                    Proj->Type->Locate(Proj,MetObs_GetData(cdata,clat,0,t),MetObs_GetData(cdata,clon,0,t),1);
+                                    Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
                                  } else {
                                     Proj->Type->Locate(Proj,loc->Coord.Lat,loc->Coord.Lon,1);
                                  }
