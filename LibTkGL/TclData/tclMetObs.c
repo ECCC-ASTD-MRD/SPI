@@ -729,10 +729,10 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         Tcl_ListObjAppendElement(Interp,obj,sub);
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
-                           /*Check for selected state*/
-                           if (obs->Family && !((data->Family>>3&0x7)==obs->Family)) {
+                           /*Check for selected family*/
+                           if (obs->Family==-1 || (data->Family>>3&0x7)==obs->Family) {
                               /*Check for data bktyp matching*/
-                              if ((data->Type>>6&0x1)==obs->Type) {
+                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
                                        for(v=0;v<data->Nv;v++) {
@@ -759,8 +759,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected state*/
-                           if (obs->Family && !((data->Family>>3&0x7)==obs->Family)) {
-                              if ((data->Type>>6&0x1)==obs->Type) {
+                           if (obs->Family==-1 || (data->Family>>3&0x7)==obs->Family) {
+                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
                                     for(v=0;v<data->Nv;v++) {
@@ -828,9 +828,16 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   obj=Tcl_NewListObj(0,NULL);
                   while (loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search)) {
                      if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
-                           for(d=0;d<elem->NData;d++) {
-                              Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+                        for(d=0;d<elem->NData;d++) {
+                           data=elem->EData[d];
+                           /*Check for selected family*/
+                           if (obs->Family==-1 || (data->Family>>3&0x7)==obs->Family) {
+                              /*Check for data bktyp matching*/
+                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                                 Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+                              }
                            }
+                        }
                      }
                   }
                   Tcl_SetObjResult(Interp,obj);
@@ -1063,9 +1070,9 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Cache    = 0;
    obs->Persistance = 0;
    obs->Lag      = 0;
-   obs->Family   = 0;
-   obs->Type     = 0;
-   obs->SType    = 0;
+   obs->Family   = -1;
+   obs->Type     = -1;
+   obs->SType    = -1;
    obs->CodeType = 0;
    obs->Marker   = 0x0;
    obs->MarkerOp = 'O';
@@ -2600,12 +2607,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   data=elem->EData[d];
 
                   /*Check for data family matching*/
-                  if (Obs->Family && !((data->Family>>3&0x7)==Obs->Family)) {
+                  if (Obs->Family>-1 && !((data->Family>>3&0x7)==Obs->Family)) {
                      continue;
                   }
 
                   /*Check for data bktyp matching*/
-                  if (!((data->Type>>6&0x1)==Obs->Type)) {
+                  if (Obs->Type>-1 && !((data->Type>>6&0x1)==Obs->Type)) {
                      continue;
                   }
 
