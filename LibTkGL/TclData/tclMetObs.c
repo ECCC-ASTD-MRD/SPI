@@ -2540,7 +2540,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    /*For all of the sations*/
    loc=Obs->Loc;
    n=0;
-   co.Elev=0.0;
 
    while(loc) {
 
@@ -2644,10 +2643,19 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     continue;
                               }
 
+                              /*Get height*/
+                              if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
+                                 z=k;
+                              } else {
+                                 z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
+                              }
+
                               /*Check coordinates for grouped data*/
                               if (clat!=-1 && clon!=-1) {
                                  co.Lat=MetObs_GetData(cdata,clat,0,t);
                                  co.Lon=MetObs_GetData(cdata,clon,0,t);
+                                 co.Elev=z;
+
                                  if (!Projection_Pixel(Proj,VP,co,pix)) {
                                     continue;
                                 }
@@ -2664,13 +2672,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                                  glLineWidth(spec->Width);
                              }
-
-                              /*Get height*/
-                              if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
-                                 z=k;
-                              } else {
-                                 z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
-                              }
 
                               /*Set position within projection*/
                               glPushMatrix();
@@ -2875,6 +2876,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       }
       if (GLMode==GL_SELECT)
          glPopName();
+
       loc=loc->Next;
       n++;
    }
