@@ -41,7 +41,8 @@
 
 #include "tclMetDataset.h"
 
-#define MetObs_GetData(MD,E,V,T) (MD->Data[(T*MD->Nv+V)*MD->Ne+E])
+#define MetObs_GetData(MD,E,V,T)   (MD->Data?(MD->Data[(T*MD->Nv+V)*MD->Ne+E]):-999.0f)
+#define MetObs_GetMarker(MD,E,V,T) (MD->Marker?(MD->Marker[(T*MD->Nv+V)*MD->Ne+E]):0)
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
 #define MET_VALID(V,N)  (V!=-979.0f && V!=-980.0f && V!=-999.0f && V!=N)
 #define MET_TYPEID   0x0
@@ -64,7 +65,9 @@ typedef struct TMetModel {
 typedef struct TMetElemData {
 
    int           Nv,Nt,Ne;        /*Data dimensions*/
-   int           St;              /*Data state descriptor*/
+   int           Family;          /*Data Family descriptor*/
+   int           Type,SType;      /*Data Type descriptor*/
+   int          *Marker;          /*Data markers*/
    float        *Data;            /*Donnees temporelles et spatiales*/
    EntryTableB **Code;            /*Codes de la donnee*/
 } TMetElemData;
@@ -106,7 +109,11 @@ typedef struct TMetObs {
    time_t   Persistance;        /*How long before no valid*/
    float    NoData;             /*No data value*/
    long     Lag;                /*Data date selection looseness*/
-   int      State;              /*Data state descriptor*/
+   int      Family;             /*Data family descriptor*/
+   int      Type,SType;         /*Data family descriptor*/
+   int      Marker;             /*Data marker descriptor*/
+   char     MarkerOp;           /*Data marker operator*/
+   char     CodeType;           /*Data type*/
    int      FId;
 
    TMetLoc    *Loc;             /*Liste des localisations (stations)*/
@@ -139,7 +146,7 @@ TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type);
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi);
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev);
 
-TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int St,int Ne,int Nv,int Nt,float *Data,EntryTableB **Entry);
+TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Type,int SType,int Ne,int Nv,int Nt,float *Data,int *Marker,EntryTableB **Entry);
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data);
 TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time);
 TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,long Lag);
