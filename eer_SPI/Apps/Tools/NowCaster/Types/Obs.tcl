@@ -58,13 +58,15 @@ namespace eval NowCaster::Obs { } {
       { 21  2097152  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
    set Param(Familys) {
-      { 00100  0 { "Tous les bulletins" "All bulletin" } }
+      { -     -1 { "Tous les bulletins" "All bulletin" } }
+      { 00100  0 { "Bulletin initial" "Initial bulletin" } }
       { 00100  1 { "Bulletin corrigé" "Corrected bulletin" } }
       { 01000  2 { "Bulletin répété" "Repeated bulletin" } }
       { 01100  3 { "Bulletin corrigé suite à une intervention humaine locale" "Corrected bulletin by a local human intervantion" } }
       { 10000  4 { "Réservé" "Reserved" } } }
 
    set Param(Types) {
+      { - -1 { "Toutes les données" "All data" } }
       { 0  0 { "Données de surface" "Surface data" } }
       { 1  1 { "Données en altitude" "Upper air data" } } }
 
@@ -76,8 +78,8 @@ namespace eval NowCaster::Obs { } {
    set Data(Topo)        ""
    set Data(CurrentObs)  NONE
    set Data(Marker)      0
-   set Data(Type)        0
-   set Data(Family)      0
+   set Data(Type)        -1
+   set Data(Family)      -1
    set Data(Spacing)     25
    set Data(Flat)        0
    set Data(Elems)       { }
@@ -753,6 +755,11 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       }
    }
    Obs::ParamUpdate
+
+   #----- Update reports
+   if { [winfo exists .nowcasterinfo] } {
+      NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag) $Data(InfoAll)
+   }
 }
 
 #-------------------------------------------------------------------------------
