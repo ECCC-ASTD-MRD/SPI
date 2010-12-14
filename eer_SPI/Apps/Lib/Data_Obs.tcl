@@ -74,7 +74,7 @@ namespace eval Obs {
 
    set Data(List)           {}
    set Data(ListTool)       {}
-   set Data(BubbleGraph)    True
+   set Param(BubbleGraph)   True
 
    #----- Parametres des obs
 
@@ -191,8 +191,9 @@ namespace eval Obs {
 
 proc Obs::InfoGraph { Obs Tag Elem } {
    variable Data
+   variable Param
 
-   if { !$Data(BubbleGraph) } {
+   if { !$Param(BubbleGraph) } {
       return
    }
 

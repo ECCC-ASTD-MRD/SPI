@@ -178,7 +178,7 @@ proc NowCaster::Obs::Window { Frame } {
          -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
          -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
       checkbutton $Frame.head.graph -image BUBBLEGRAPH -relief sunken -bd 1 -overrelief raised -offrelief flat -anchor w -selectcolor $GDefs(ColorLight)\
-         -variable Obs::Data(BubbleGraph) -onvalue True -offvalue False -indicatoron False
+         -variable Obs::Param(BubbleGraph) -onvalue True -offvalue False -indicatoron False
       button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 2 }
       menubutton $Frame.head.add -image PLUS -bd 0 -relief flat -menu $Frame.head.add.list
       button $Frame.head.del -image DELETE -bd 1 -relief flat -overrelief raised \
