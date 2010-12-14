@@ -15,7 +15,6 @@
 #
 #    Graph::Frequence::Create        { Frame X0 Y0 Width Height Active Full }
 #    Graph::Frequence::Coord         { Frame GR X Y }
-#    Graph::Frequence::Destroy       { Frame GR }
 #    Graph::Frequence::DrawInit      { Frame VP }
 #    Graph::Frequence::Draw          { Frame VP }
 #    Graph::Frequence::DrawDone      { Frame VP }
@@ -180,42 +179,6 @@ proc Graph::Frequence::Coord { Frame GR X Y } {
          set Page::Data(Value) "$Page::Data(Value) $graph(UnitY): [lindex $coords 1]"
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Frequence::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un viewport ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Frequence::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Frequence::Frequence${GR}::Data  data
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHFREQUENCE$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Frequence::ItemUnDefine $GR $pos
-   }
-   namespace delete Frequence$GR
 }
 
 #----------------------------------------------------------------------------

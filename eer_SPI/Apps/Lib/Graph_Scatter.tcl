@@ -15,7 +15,7 @@
 #
 #    Graph::Scatter::Create        { Frame X0 Y0 Width Height Active Full }
 #    Graph::Scatter::Coord         { Frame GR X Y }
-#    Graph::Scatter::Destroy       { Frame GR }
+#    Graph::Scatter::Clean         { GR }
 #    Graph::Scatter::DrawInit      { Frame VP }
 #    Graph::Scatter::Draw          { Frame VP }
 #    Graph::Scatter::DrawDone      { Frame VP }
@@ -180,44 +180,24 @@ proc Graph::Scatter::Coord { Frame GR X Y } {
    }
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Scatter::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::Scatter::Clean>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
 #
-# But      : Supprimer un viewport ainsi que tout ses widgets
+# But      : Supprimer les donnees associees aux coordonees.
 #
 # Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
+#   <GR>     : Identificateur du Graph
 #
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-proc Graph::Scatter::Destroy { Frame GR } {
-   variable Data
+proc Graph::Scatter::Clean { GR } {
 
    upvar #0 Graph::Scatter::Scatter${GR}::Data  data
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHSCATTER$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Scatter::ItemUnDefine $GR $pos
-   }
 
    if { $data(Stat)!="" && [llength [$Frame.page.canvas find withtag GRAPHSTAT$data(Stat)]] } {
       Graph::Destroy $data(Frame) $data(Stat) Stat
    }
-   namespace delete Scatter$GR
 }
 
 #----------------------------------------------------------------------------

@@ -145,9 +145,8 @@ namespace eval Page {
 
    set Param(Grid)      0           ;#Grille de snap
    set Param(Snap)      5           ;#intervalle de snap
-   set Param(Widget)    False       ;#Affichage des widgets
+   set Param(Widget)    True        ;#Affichage des widgets
    set Param(Intrusion) 0           ;#Allow for viewport intrusions
-   set Param(Widget)    0           ;#Control widget
    set Param(Square)    0           ;#Dimension du curseur carre
 
    #----- Definitions des constantes pour la projection

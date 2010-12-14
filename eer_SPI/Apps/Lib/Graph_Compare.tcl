@@ -15,7 +15,6 @@
 #
 #    Graph::Compare::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Compare::Coord        { Frame GR X Y }
-#    Graph::Compare::Destroy      { Frame GR }
 #    Graph::Compare::DrawInit     { Frame VP }
 #    Graph::Compare::Draw         { Frame VP }
 #    Graph::Compare::DrawDone     { Frame VP }
@@ -173,42 +172,6 @@ proc Graph::Compare::Coord { Frame GR X Y } {
          set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [lindex $coords 1]"
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Compare::Destroy>
-# Creation : Janvier 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un viewport ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Compare::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Compare::Compare${GR}::Data  data
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHCOMPARE$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Compare::ItemUnDefine $GR $pos
-   }
-   namespace delete Compare$GR
 }
 
 #----------------------------------------------------------------------------

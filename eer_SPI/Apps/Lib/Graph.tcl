@@ -538,10 +538,28 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
 
       Graph::DeActivate $GR $Type
       Graph::ParamsOff $Frame $Type $GR
-      Graph::${Type}::Destroy $Frame $GR
+
+      #----- Cleanup graphs specifics
+      if { [info procs ::Graph::${Type}::Clean]!="" } {
+         Graph::${Type}::Clean $GR
+      }
+
+      upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+
+      #----- Supprimer les pointeurs
+      $Frame.page.canvas delete $Page::Data(Tag)$GR
+      if { $data(FrameData)!="" } {
+         $data(FrameData).page.canvas delete GRAPH[string toupper $Type]$GR
+      }
+
+      #----- Supprimer les items
+      foreach pos $data(Pos) {
+         Graph::${Type}::ItemUnDefine $GR $pos
+      }
+      #----- Supprimer le namespace du graph
+      namespace delete ::Graph::${Type}::${Type}$GR
 
       #----- Supprimer les variables du viewport
-
       unset Data(Full$GR)
       unset Data(Active$GR)
       unset Data(X$GR)

@@ -15,7 +15,6 @@
 #
 #    Graph::Contingency::Create         { Frame X0 Y0 Width Height Active Full }
 #    Graph::Contingency::Coord          { Frame GR X Y }
-#    Graph::Contingency::Destroy        { Frame GR }
 #    Graph::Contingency::DrawInit       { Frame VP }
 #    Graph::Contingency::Draw           { Frame VP }
 #    Graph::Contingency::DrawDone       { Frame VP }
@@ -158,42 +157,6 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Coord { Frame GR X Y } {
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Contingency::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un viewport ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Contingency::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Contingency::Contingency${GR}::Data  data
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHCONTINGENCY$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Contingency::ItemUnDefine $GR $pos
-   }
-   namespace delete Contingency$GR
 }
 
 #----------------------------------------------------------------------------

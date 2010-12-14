@@ -14,7 +14,6 @@
 # Fonctions:
 #
 #    Graph::Stat::Create  { Frame X0 Y0 Width Height Active Full }
-#    Graph::Stat::Destroy { Frame GR }
 #    Graph::Stat::Graph   { GR }
 #    Graph::Stat::Init    { Frame }
 #    Graph::Stat::Params  { Parent GR }
@@ -102,37 +101,6 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
    Page::Register $Frame Graph::Stat $gr
 
    return $gr
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Stat::Destroy>
-# Creation : Aout 2005 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un graph ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Stat::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Stat::Stat${GR}::Data  data
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-#   if { $data(FrameData)!="" } {
-#      $data(FrameData).page.canvas delete GRAPHSTAT$GR
-#   }
-
-   namespace delete Stat$GR
 }
 
 #-------------------------------------------------------------------------------
@@ -232,6 +200,8 @@ proc Graph::Stat::Init { Frame } {
    namespace eval Stat$gr {
       variable Data
       variable Graph
+
+      set Data(Pos)             {}        ;#Liste des positions
 
       set Graph(UnitY)    "" ;#Descriptif de l'echelle des valeur en Y
       set Graph(UnitX)    "" ;#Descriptif de l'echelle des valeur en X

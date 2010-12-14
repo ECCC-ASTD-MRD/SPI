@@ -16,7 +16,6 @@
 #    Graph::Hovmoller::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Hovmoller::Coord        { Frame GR X Y }
 #    Graph::Hovmoller::Clean        { GR }
-#    Graph::Hovmoller::Destroy      { Frame GR }
 #    Graph::Hovmoller::DrawInit     { Frame VP }
 #    Graph::Hovmoller::Draw         { Frame VP }
 #    Graph::Hovmoller::DrawDone     { Frame VP }
@@ -176,10 +175,10 @@ proc Graph::Hovmoller::Coord { Frame GR X Y } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
       if { [llength $data(Dates)] && [llength $coords]>=2 } {
-         set idx [lindex $coords 1]
+         set idx  [lindex $coords 1]
          set sec0 [lindex $data(Dates) [expr int($idx)]]
          set sec1 [lindex $data(Dates) [expr int($idx)+1]]
-         set sec [expr $sec0+($idx-int($idx))*($sec1-$sec0)]
+         set sec  [expr $sec0+($idx-int($idx))*($sec1-$sec0)]
          set date [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
          set Page::Data(Coord) "$date"
 
@@ -207,57 +206,12 @@ proc Graph::Hovmoller::Coord { Frame GR X Y } {
 proc Graph::Hovmoller::Clean { GR } {
 
    upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Graph graph
 
    foreach item $data(Data) {
       foreach field $data(Data$item) {
          fstdfield free [lindex $field 1]
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Hovmoller::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un viewport ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Hovmoller::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-
-   foreach item $data(Data) {
-      foreach field $data(Data$item) {
-         fstdfield free [lindex $field 1]
-      }
-   }
-   Graph::Hovmoller::Clean $GR
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHHOVMOLLER$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Hovmoller::ItemUnDefine $GR $pos
-   }
-
-   namespace delete Hovmoller$GR
 }
 
 #-------------------------------------------------------------------------------

@@ -15,7 +15,7 @@
 #
 #    Graph::Profile::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Profile::Coord        { Frame GR X Y }
-#    Graph::Profile::Destroy      { Frame GR }
+#    Graph::Profile::Clean        { GR }
 #    Graph::Profile::DrawInit     { Frame VP }
 #    Graph::Profile::Draw         { Frame VP }
 #    Graph::Profile::DrawDone     { Frame VP }
@@ -181,43 +181,20 @@ proc Graph::Profile::Coord { Frame GR X Y } {
    }
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Profile::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::Profile::Clean>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
 #
-# But      : Supprimer un viewport ainsi que tout ses widgets
+# But      : Supprimer les donnees associees aux coordonees.
 #
 # Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
+#   <GR>     : Identificateur du Graph
 #
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-proc Graph::Profile::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Profile::Profile${GR}::Data  data
+proc Graph::Profile::Clean { GR } {
 
    fstdfield free GRAPHPROFILE
-
-   #----- Supprimer le graph
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHPROFILE$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Profile::ItemUnDefine $GR $pos
-   }
-
-   namespace delete Profile$GR
 }
 
 #----------------------------------------------------------------------------

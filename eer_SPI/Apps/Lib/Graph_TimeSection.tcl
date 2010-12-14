@@ -17,7 +17,6 @@
 #    Graph::TimeSection::Coord        { Frame GR X Y }
 #    Graph::TimeSection::Clean        { GR }
 #    Graph::TimeSection::DrawInit     { Frame VP }
-#    Graph::TimeSection::Destroy      { Frame GR }
 #    Graph::TimeSection::Draw         { Frame VP }
 #    Graph::TimeSection::DrawDone     { Frame VP }
 #    Graph::TimeSection::MoveInit     { Frame VP }
@@ -210,52 +209,12 @@ proc Graph::TimeSection::Coord { Frame GR X Y } {
 proc Graph::TimeSection::Clean { GR } {
 
    upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
-   upvar #0 Graph::TimeSection::TimeSection${GR}::Graph graph
 
    foreach item $data(Data) {
       foreach field $data(Data$item) {
          fstdfield free [lindex $field 1]
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::TimeSection::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un viewport ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::TimeSection::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
-
-   Graph::TimeSection::Clean $GR
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHTIMECUT$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::TimeSection::ItemUnDefine $GR $pos
-   }
-
-   namespace delete TimeSection$GR
 }
 
 #----------------------------------------------------------------------------
@@ -344,14 +303,14 @@ proc Graph::TimeSection::Graph { GR } {
    foreach item $data(Items) {
       set data(Dates) [concat $data(Dates) [vector get $item.X]]
 
-      if { [fstdfield is TIMECUT$item] } {
+      if { [fstdfield is TIMESECTION$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats TIMECUT$item -pressurelevels]]] } {
+         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats TIMESECTION$item -pressurelevels]]] } {
             set data(Levels) $levels
-            fstdfield configure TIMECUT$item -ztype PRESSURE
+            fstdfield configure TIMESECTION$item -ztype PRESSURE
          } else {
-            set data(Levels) [fstdfield stats TIMECUT$item -levels]
-            fstdfield configure TIMECUT$item -ztype NONE
+            set data(Levels) [fstdfield stats TIMESECTION$item -levels]
+            fstdfield configure TIMESECTION$item -ztype NONE
          }
       } else {
          return
@@ -434,7 +393,7 @@ proc Graph::TimeSection::Graph { GR } {
    }
 
    set data(XMin)  0
-   set data(XMax)  [expr [fstdfield define TIMECUT$item -NI]-1]
+   set data(XMax)  [expr [fstdfield define TIMESECTION$item -NI]-1]
 
    if { [llength $graph(ZXInter)] } {
       set data(XMin) [lindex $graph(ZXInter) 0]
@@ -663,6 +622,7 @@ proc Graph::TimeSection::ItemDefault { GR Item } {
 
    Graph::ItemConfigure $GR TimeSection $Item
 }
+
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::TimeSection::ItemDel>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
@@ -688,9 +648,9 @@ proc Graph::TimeSection::ItemDel { GR Item } {
 
       vector    free $Item
       graphitem free $Item
-      fstdfield free TIMECUT$Item
+      fstdfield free TIMESECTION$Item
 
-      FSTD::UnRegister TIMECUT$Item
+      FSTD::UnRegister TIMESECTION$Item
    }
 }
 
@@ -802,12 +762,12 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
          lappend fields [lindex $field 1]
          vector append $Item.X [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
       }
-      fstdfield vertical TIMECUT$Item $fields $data(Pos$Pos)
-      FSTD::Register TIMECUT$Item
+      fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
+      FSTD::Register TIMESECTION$Item
 
-      set graph(UnitY)  [fstdfield stats TIMECUT$Item -leveltype]
+      set graph(UnitY)  [fstdfield stats TIMESECTION$Item -leveltype]
 
-      graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data TIMECUT$Item
+      graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data TIMESECTION$Item
    }
 }
 
@@ -896,12 +856,12 @@ proc Graph::TimeSection::UpdateItems { Frame { GR { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHTIMECUT$gr
+         $Frame.page.canvas delete GRAPHTIMESECTION$gr
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIMECUT$gr
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIMESECTION$gr
             }
          }
       }
@@ -963,7 +923,7 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
          }
 
          SPI::Progress 0 [lindex $Msg(Reading) $GDefs(Lang)]
-         set lst [MetData::FindAll TIMECUT$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
+         set lst [MetData::FindAll TIMESECTION$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
             -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
          SPI::Progress 5 [lindex $Msg(Reading) $GDefs(Lang)]
          set nb [expr 95.0/[llength $lst]]

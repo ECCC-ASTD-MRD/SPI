@@ -16,7 +16,6 @@
 #    Graph::Time::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Time::Coord        { Frame GR X Y }
 #    Graph::Time::Clean        { GR }
-#    Graph::Time::Destroy      { Frame GR }
 #    Graph::Time::DrawInit     { Frame VP }
 #    Graph::Time::Draw         { Frame VP }
 #    Graph::Time::DrawDone     { Frame VP }
@@ -197,57 +196,12 @@ proc Graph::Time::Coord { Frame GR X Y } {
 proc Graph::Time::Clean { GR } {
 
    upvar #0 Graph::Time::Time${GR}::Data  data
-   upvar #0 Graph::Time::Time${GR}::Graph graph
 
    foreach item $data(Data) {
       foreach field $data(Data$item) {
          fstdfield free [lindex $field 1]
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Time::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer un viewport ainsi que tout ses widgets
-#
-# Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Time::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Time::Time${GR}::Data  data
-
-   foreach item $data(Data) {
-      foreach field $data(Data$item) {
-         fstdfield free [lindex $field 1]
-      }
-   }
-   Graph::Time::Clean $GR
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHTIME$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Time::ItemUnDefine $GR $pos
-   }
-
-   namespace delete Time$GR
 }
 
 #----------------------------------------------------------------------------

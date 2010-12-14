@@ -15,7 +15,7 @@
 #
 #    Graph::Section::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Section::Coord        { Frame GR X Y }
-#    Graph::Section::Destroy      { Frame GR }
+#    Graph::Section::Clean        { GR }
 #    Graph::Section::Graph        { GR { Pos False } }
 #    Graph::Section::Init         { Frame }
 #    Graph::Section::Params       { Parent GR }
@@ -196,45 +196,20 @@ proc Graph::Section::Coord { Frame GR X Y } {
    }
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Destroy>
-# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::Section::Clean>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE -
 #
-# But      : Supprimer un viewport ainsi que tout ses widgets
+# But      : Supprimer les donnees associees aux coordonees.
 #
 # Parametres :
-#   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
+#   <GR>     : Identificateur du Graph
 #
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-proc Graph::Section::Destroy { Frame GR } {
-   variable Data
-
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   #----- Liberer l'allocation des champs
+proc Graph::Section::Clean { GR } {
 
    Animator::EmptyPlayList
-
-   #----- Supprimer le graph et ses items
-
-   $Frame.page.canvas delete $Page::Data(Tag)$GR ID$Page::Data(Tag)$GR
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHSECTION$GR
-   }
-
-   #----- Supprimer ses items
-
-   foreach pos $data(Pos) {
-      Graph::Section::ItemUnDefine $GR $pos
-   }
-
-   namespace delete Section$GR
 }
 
 #-------------------------------------------------------------------------------
