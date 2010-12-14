@@ -1421,14 +1421,15 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    return(loc);
 }
 
-float TMetElem_Height(TMetElemData *Data,int Code,int Ne,int Nv,int Nt) {
+float TMetElem_Height(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt) {
 
-   int   e;
+   int   e,ne;
    float v;
 
+   ne=Ne;
    for(e=0;e<Data->Ne;e++) {
       if (Data->Code[e]->descriptor==Code) {
-         if ((Ne--)==0) {
+         if ((ne--)==0) {
             v=MetObs_GetData(Data,e,Nv,Nt);
             if (v!=-999.0f) {
                if (strcmp(Data->Code[e]->unit,"PA")==0) {
@@ -1445,13 +1446,14 @@ float TMetElem_Height(TMetElemData *Data,int Code,int Ne,int Nv,int Nt) {
    return(-999.0f);
 }
 
-float TMetElem_Value(TMetElemData *Data,int Code,int Ne,int Nv,int Nt) {
+float TMetElem_Value(const TMetElemData* restrict const Data,const int Code,int Ne,const int Nv,const int Nt) {
 
-   int e;
+   int e,ne;
 
+   ne=Ne;
    for(e=0;e<Data->Ne;e++) {
       if (Code==Data->Code[e]->descriptor) {
-         if ((Ne--)==0) {
+         if ((ne--)==0) {
             return(MetObs_GetData(Data,e,Nv,Nt));
          }
       }
@@ -1459,7 +1461,7 @@ float TMetElem_Value(TMetElemData *Data,int Code,int Ne,int Nv,int Nt) {
    return(-999.0f);
 }
 
-TMetElem *TMetElem_Find(TMetLoc *Loc,long Time,long Lag) {
+TMetElem *TMetElem_Find(const TMetLoc* restrict const Loc,const long Time,const long Lag) {
 
    TMetElem *elem=Loc->Elems;
 
@@ -1499,7 +1501,7 @@ int TMetElemData_Same(TMetElemData *Data0,TMetElemData *Data1) {
       return(0);
    }
 
-   if (Data0->Code && Data1->Code && memcmp(Data0->Code,Data1->Code,Data0->Ne*Data0->Nv*Data0->Nt*sizeof(float))!=0) {
+   if (Data0->Code && Data1->Code && memcmp(Data0->Code,Data1->Code,Data0->Ne*sizeof(int))!=0) {
       return(0);
    }
 
@@ -1600,17 +1602,18 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Ty
    data->Type=Type;
    data->SType=SType;
 
-   if (Marker) {
-      data->Marker=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int));
-      memcpy(data->Marker,Marker,data->Ne*data->Nv*data->Nt*sizeof(int));
-   } else {
-      data->Marker=NULL;
-   }
    if (Data) {
       data->Data=(float*)malloc(data->Ne*data->Nv*data->Nt*sizeof(float));
       memcpy(data->Data,Data,data->Ne*data->Nv*data->Nt*sizeof(float));
    } else {
       data->Data=NULL;
+   }
+
+   if (Marker) {
+      data->Marker=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int));
+      memcpy(data->Marker,Marker,data->Ne*data->Nv*data->Nt*sizeof(int));
+   } else {
+      data->Marker=NULL;
    }
 
    if (Codes) {
@@ -2137,8 +2140,9 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          /*Get the elements code list and cache it within obs object*/
          c=0;
          for(e=0;e<nelem;e++) {
-            if (mkr) ((int*)eb)[e]-=200000;
-
+            if (mkr) {
+               ((int*)eb)[e]-=200000;
+            }
             c=((int*)eb)[e];
 
             if (eb[e]=MetObs_BUFRFindTableCode(c)) {
@@ -2541,6 +2545,20 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       eb=NULL;
    }
 
+   /*Initialize rendering parameters per model items*/
+   for(i=0;i<Obs->Model->NItem;i++) {
+      if ((spec=Obs->Model->Items[i].Spec)) {
+
+         /*Get value limits*/
+         if (isnan(spec->Min) || isnan(spec->Max))
+               MetObs_GetStat(Obs,&Obs->Model->Items[i]);
+
+         /*Define rendering parameters*/
+         DataSpec_Intervals(spec,spec->Min,spec->Max);
+         DataSpec_Define(spec);
+      }
+   }
+
    /*For all of the sations*/
    loc=Obs->Loc;
    n=0;
@@ -2555,8 +2573,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          glPushName(n);
       }
 
-      /*Check if visible*/
+      /*Check if visible or delay test for grouped data (loc->Grid)*/
       if (loc->Grid[0]!=0.0 || Projection_Pixel(Proj,VP,loc->Coord,pix)) {
+
+         z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
 
          /*Get the element for the specific time*/
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
@@ -2564,9 +2584,25 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             /*Fix transparency on validity time persistance and break if too old (alpha==0)*/
             if (Obs->Persistance) {
                alpha=1.0-((double)(Obs->Time-elem->Time)/Obs->Persistance);
-               alpha=alpha<0.0?0:alpha;
-               if (alpha==0.0) {
+               if (alpha<=0.0) {
                   break;
+               }
+            }
+
+            /*For grouped data, find location record indexes*/
+            clat=clon=-1;
+            if (loc->Grid[0]!=0.0 && loc->Grid[1]!=0.0) {
+               for(d=0;d<elem->NData;d++) {
+                  cdata=elem->EData[d];
+                  for(e=0;e<cdata->Ne;e++) {
+                     if (cdata->Code[e]->descriptor==5002 || cdata->Code[e]->descriptor==5001)
+                        clat=e;
+                     else if (cdata->Code[e]->descriptor==6002 || cdata->Code[e]->descriptor==6001)
+                        clon=e;
+                  }
+                  if (clat!=-1 && clon!=-1) {
+                     break;
+                  }
                }
             }
 
@@ -2581,32 +2617,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   glDisable(GL_BLEND);
                }
 
-               /*Assigner les limites d'affichage*/
-               if (isnan(spec->Min) || isnan(spec->Max))
-                   MetObs_GetStat(Obs,&Obs->Model->Items[i]);
-
-               DataSpec_Intervals(spec,spec->Min,spec->Max);
-               DataSpec_Define(spec);
-
                if (GLMode==GL_SELECT)
                   glPushName(i);
-
-               /*check for grouped data*/
-               clat=clon=-1;
-               if (loc->Grid[0]!=0.0 && loc->Grid[1]!=0.0) {
-                  for(d=0;d<elem->NData;d++) {
-                     cdata=elem->EData[d];
-                     for(e=0;e<cdata->Ne;e++) {
-                        if (cdata->Code[e]->descriptor==5002)
-                           clat=e;
-                        else if (cdata->Code[e]->descriptor==6002)
-                           clon=e;
-                     }
-                     if (clat!=-1 && clon!=-1) {
-                        break;
-                     }
-                  }
-               }
 
                /*Loop on the data*/
                for(d=0;d<elem->NData;d++) {
@@ -2647,11 +2659,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     continue;
                               }
 
-                              /*Get height*/
+                              /*Get height if specified*/
                               if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
                                  z=k;
-                              } else {
-                                 z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
                               }
 
                               /*Check coordinates for grouped data*/
@@ -2675,7 +2685,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     glColor4us(0,0,0,alpha*65535);
                                  }
                                  glLineWidth(spec->Width);
-                             }
+                              }
 
                               /*Set position within projection*/
                               glPushMatrix();

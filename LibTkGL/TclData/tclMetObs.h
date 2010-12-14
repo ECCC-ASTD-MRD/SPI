@@ -149,11 +149,11 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
 TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Type,int SType,int Ne,int Nv,int Nt,float *Data,int *Marker,EntryTableB **Entry);
 TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemData *Data);
 TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time);
-TMetElem     *TMetElem_Find(TMetLoc *Loc,long Time,long Lag);
+TMetElem     *TMetElem_Find(const TMetLoc* restrict const Loc,const long Time,const long Lag);
 void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);
-float         TMetElem_Value(TMetElemData *Data,int Code,int Ne,int Nv,int Nt);
-float         TMetElem_Height(TMetElemData *Data,int Code,int Ne,int Nv,int Nt);
+float         TMetElem_Value(const TMetElemData* restrict const Data,const int Code,int Ne,const int Nv,const int Nt);
+float         TMetElem_Height(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt);
 
 void          TMetElemData_Free(TMetElemData *Data);
 
