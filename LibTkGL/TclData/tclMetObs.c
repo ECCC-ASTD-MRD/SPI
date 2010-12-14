@@ -2501,6 +2501,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
+   if (GLRender->Resolution>2) {
+      return(0);
+   }
+
    if (!Obs->Model) {
       return(0);
    }
@@ -2849,9 +2853,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               glPopMatrix();
-                              /*Skip the rest if in select mode and a valid one has been drawn*/
-                              if (GLMode==GL_SELECT && MET_VALID(val,Obs->NoData))
-                                 break;
 
                               /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
                               if (clat==-1 && (!eb || Proj->Scale==1.0)) {
