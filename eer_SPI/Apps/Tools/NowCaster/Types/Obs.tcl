@@ -1561,7 +1561,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
             .nowcasterinfo.tab.frame0.info.text insert end "\n---------------------------------------------------------------\n"
             .nowcasterinfo.tab.frame0.info.text insert end [NowCaster::Obs::InfoBKType $report]\n\n
             foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
-               .nowcasterinfo.tab.frame0.info.text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
+                .nowcasterinfo.tab.frame0.info.text insert end [format "%06i %-43s (%-10s): %g\n" $code $desc  $unit $value]
             }
 #         metreport free $report
          }
