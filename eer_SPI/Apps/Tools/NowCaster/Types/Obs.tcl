@@ -58,17 +58,266 @@ namespace eval NowCaster::Obs { } {
       { 21  2097152  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
    set Param(Familys) {
-      { -     -1 { "Tous les bulletins" "All bulletin" } }
-      { 00100  0 { "Bulletin initial" "Initial bulletin" } }
-      { 00100  1 { "Bulletin corrigé" "Corrected bulletin" } }
-      { 01000  2 { "Bulletin répété" "Repeated bulletin" } }
-      { 01100  3 { "Bulletin corrigé suite à une intervention humaine locale" "Corrected bulletin by a local human intervantion" } }
-      { 10000  4 { "Réservé" "Reserved" } } }
+      { 100  4 4 { "Bulletin nouveau" "New bulletin" } }
+      { 001  1 1 { "Bulletin corrigé" "Corrected bulletin" } }
+      { 010 -1 2 { "Bulletin répété" "Repeated bulletin" } } }
 
    set Param(Types) {
       { - -1 { "Toutes les données" "All data" } }
       { 0  0 { "Données de surface" "Surface data" } }
       { 1  1 { "Données en altitude" "Upper air data" } } }
+
+   set Param(BKTypes) {
+      { 000000  0  { "Observations (ADE)" "Observation (ADE)" } }
+      { 000001  1 { "Observations brutes (non décodées)" "Raw observation (not decoded)" } }
+      { 000010  2 { "Données dérivées, entrée à l'AO en altitude, modèle global" "Derivate data, global model altitude OA" } }
+      { 000011  3 { "Données dérivées, entrée à l'AO en altitude, modèle régional" "Derivate data, regional model altitude OA" } }
+      { 000100  4 { "Données dérivées, entrée à l'AO de surface, modèle global" "Derivate data, global model surface OA" } }
+      { 000101  5 { "Données dérivées, entrée à l'AO de surface, modèle régional" "Derivate data, regional model surface OA" } }
+      { 000110  6 { "Données vues par l'AO en altitude, modèle global" "Global model altitude OA data used" } }
+      { 000111  7 { "Données vues par l'AO en altitude, modèle régional" "Regional model altitude OA data used" } }
+      { 001000  8 { "Données vues par l'AO de surface, modèle global" "Global model surface OA data used" } }
+      { 001001  9 { "Données vues par l'AO de surface, modèle régional" "Regional model surface OA data used" } }
+      { 001010 10 { "Profils verticaux, AO en altitude, modèle global" "Global model altitude vertical profile OA data" } }
+      { 001011 11 { "Profils verticaux, AO en altitude, modèle régional" "Regional model altitude vertical profile OA data" } }
+      { 001100 12  { "En réserve" "Reserved" } }
+      { 001101 13  { "En réserve" "Reserved" } }
+      { 001110 14 { "Valeurs analysées (incluant résidus) par AO en altitude, modèle global" "Global model OA analysed altitude values (inclufing residuals)" } }
+      { 001111 15 { "Valeurs analysées (incluant résidus) par AO en altitude, modèle régional" "Regional model OA analysed altitude values (inclufing residuals)" } }
+      { 010000 16 { "Valeurs analysées (incluant résidus) par AO de surface, modèle global" "Global model OA analysed surface values (inclufing residuals)" } }
+      { 010001 17 { "Valeurs analysées (incluant résidus) par AO de surface, modèle régional" "Regional model OA analysed surface values (inclufing residuals)" } }
+      { 010010 18 { "Prévisions, modèle global" "Global model prognostics" } }
+      { 010011 19 { "Prévisions, modèle régional" "Regional model prognostics" } }
+      { 010100 20 { "Statistiques des éléments du temps (projet PENSÉ)" "Weather elements statistics (PENSÉ project)" } }
+      { 010101 21 { "Statistiques des éléments du temps (filtres de Kalman, projet PENSÉ)" "Weather elements statistics (PENSÉ project, kalman filters)" } }
+      { 010110 22 { "Données SSMI" "SSMI data" } }
+      { 010111 23 { "Prévisions, système d'ensemble global" "Global ensemble suite prognostics" } }
+      { 011000 24 { "Prévisions, système d'ensemble régional" "Regional ensemble suite prognostics" } }
+      { 011001 25 { "Prévisions probabilistes" "Probabilistic prognostics" } }
+      { 011010 26 { "Prévisions déterministes" "Deterministic prognostics" } }
+      { 011011 27 { "QC éléments du temps (QCOBS)" "QC Weathe elements (QCOBS)" } } }
+
+   for { set b 0 } { $b<63 } { incr b } {
+      set Param(BKSTypes0-$b) { }
+      set Param(BKSTypes1-$b) { }
+   }
+
+   set Param(BKSTypes0-0) {
+      { 0000 0 { "Valeur observée" "Observed value" } }
+      { 0001 1 { "Correction de la postition et/ou de l'identificateur" "Correction of position and/or identificator" } } }
+   set Param(BKSTypes1-0) {
+      { 0000  0 { "Non défini" "Undefined" } }
+      { 0001  1 { "RADAT (TEMP) ou Ts de SATOB ou SATEM ou TOVS/température" "RADAT (TEMP) or Ts of SATOB or SATEM or TOVS/température" } }
+      { 0010  2 { "Partie A (SATEM, TEMP, PILOT, SATOB) ou TOVS/luminance" "A Partie (SATEM, TEMP, PILOT, SATOB) or TOVS/luminance" } }
+      { 0011  3 { "Partie B (SATEM, TEMP, PILOT)" "B Part (SATEM, TEMP, PILOT)" } }
+      { 0100  4 { "Partie C (SATEM, TEMP, PILOT)" "C Part (SATEM, TEMP, PILOT)" } }
+      { 0101  5 { "Partie D (SATEM, TEMP, PILOT)" "D Part (SATEM, TEMP, PILOT)" } }
+      { 0110  6 { "Délais de réception pour messages à parties multiples (ex. SATEM, TEMP, PILOT et SATOB)" "Reception delai for multiple part messages (ex. SATEM, TEMP, PILOT et SATOB)" } }
+      { 0111  7 { "Statistiques d'observations" "Observation statistics" } }
+      { 1000  8 { "statistiques de champs" "Field statistics" } }
+      { 1001  9 { "statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "statistiques de différences" "Difference statistics" } }
+      { 1011 11 { "Bloc A, SSMI, (19H, 19V, 22V, 37H, 37V) *64" "Bloc A, SSMI, (19H, 19V, 22V, 37H, 37V) *64" } }
+      { 1100 12 { "Bloc B, SSMI, (85H, 85V) *128 points, 1/2" "Bloc B, SSMI, (85H, 85V) *128 points, 1/2" } }
+      { 1101 13 { "Bloc C, SSMI, (85H, 85V) *128 points, 2/2" "Bloc C, SSMI, (85H, 85V) *128 points, 2/2" } } }
+
+   set Param(BKSTypes0-1) $Param(BKSTypes0-0)
+   set Param(BKSTypes1-1) $Param(BKSTypes1-0)
+
+   set Param(BKSTypes0-2) {
+      { 0000  0 { "Non défini sauf pour TEMP et PILOT" "Undefined but TEMP and PILOT" } }
+      { 0001  1 { "Surface provenant d'un SYNOP (défini pour TEMP et PILOT seulement)" "SYNOP surface (defined for TEMP and PILOT only)" } }
+      { 0010  2 { "Surface provenant d'un TEMP (défini pour TEMP et PILOT seulement)" "TEMP surface (defined for TEMP and PILOT only)" } }
+      { 0011  3 { "Surface provenant d'un SA (défini pour TEMP et PILOT seulement)" "SA surface (defined for TEMP and PILOT only)" } }
+      { 0100  4 { "En réserve" "Reserved" } }
+      { 0101  5 { "En réserve" "Reserved" } }
+      { 0110  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences" "Difference statistics" } } }
+   set Param(BKSTypes1-2) {
+      { 0000  0 { "Non défini" "Undefined" } }
+      { 0001  1 { "En réserve" "Reserved" } }
+      { 0001  2 { "En réserve" "Reserved" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "Statistiques d'observations" "Observation statistics" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences" "Difference statistics" } } }
+
+   set Param(BKSTypes0-3) $Param(BKSTypes0-2)
+   set Param(BKSTypes1-3) $Param(BKSTypes1-2)
+
+   set Param(BKSTypes0-4) {
+      { 0000  0 { "Non défini" "Undefined" } }
+      { 0001  1 { "En réserve" "Reserved" } }
+      { 0001  2 { "En réserve" "Reserved" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences" "Difference statistics" } } }
+   set Param(BKSTypes1-4) { }
+
+   set Param(BKSTypes0-5) $Param(BKSTypes0-4)
+   set Param(BKSTypes1-5) $Param(BKSTypes1-4)
+
+   set Param(BKSTypes0-6) {
+      { 0000  0 { "Valeur observée" "Observed value" } }
+      { 0001  1 { "Probabilité d'erreur du QCvar" "Error probability from QCvar" } }
+      { 0001  2 { "En réserve" "Reserved" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences (résidus)" "Difference statistics (residual)" } }
+      { 1011 11 { "Statistiques de résidus" "Residual statistics" } }
+      { 1100 12 { "Statistiques de NN résidus" "Residual NN statistics" } }
+      { 1101 13 { "En réserve" "Reserved" } }
+      { 1110 14 { "Statistiques d'erreur d'observation" "Observation error statistics" } }
+      { 1111 15 { "Statistiques d'erreur de prévision" "Prognostic error statistics" } } }
+   set Param(BKSTypes1-6) {
+      { 0000  0 { "Valeur observée" "Observed value" } }
+      { 0001  1 { "Probabilité d'erreur du QCvar" "Error probability from QCvar" } }
+      { 0001  2 { "En réserve" "Reserved" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences (résidus)" "Difference statistics (residual)" } }
+      { 1011 11 { "Statistiques de résidus" "Residual statistics" } }
+      { 1100 12 { "Statistiques de NN résidus" "Residual NN statistics" } }
+      { 1101 13 { "En réserve" "Reserved" } }
+      { 1110 14 { "Statistiques d'erreur d'observation" "Observation error statistics" } }
+      { 1111 15 { "Statistiques d'erreur de prévision" "Prognostic error statistics" } } }
+
+   set Param(BKSTypes0-7) $Param(BKSTypes0-6)
+   set Param(BKSTypes1-7) $Param(BKSTypes1-6)
+
+   set Param(BKSTypes0-8) {
+      { 0000  0 { "Valeur observée" "Observed value" } }
+      { 0001  1 { "En réserve" "Reserved" } }
+      { 0001  2 { "En réserve" "Reserved" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques NN de champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences (résidus)" "Difference statistics (residual)" } }
+      { 1011 11 { "Statistiques de résidus" "Residual statistics" } }
+      { 1100 12 { "Statistiques de NN résidus" "Residual NN statistics" } }
+      { 1101 13 { "Statistiques d'erreur d'estimation de l'OI" "OI estimation error statistics" } }
+      { 1110 14 { "Statistiques d'erreur d'observation" "Observation error statistics" } }
+      { 1111 15 { "Statistiques d'erreur de prévision" "Prognostic error statistics" } } }
+   set Param(BKSTypes1-8) { }
+
+   set Param(BKSTypes0-9) $Param(BKSTypes0-8)
+   set Param(BKSTypes1-9) $Param(BKSTypes1-8)
+
+   set Param(BKSTypes0-10) { }
+   set Param(BKSTypes1-10) {
+      { 0000  0 { "Non défini" "Undefined" } }
+      { 0001  1 { "Prévu par champ d'essai" "Trial fied forecast" } }
+      { 0010  2 { "prévu par modèle" "Model forecast" } }
+      { 0011  3 { "Analysé" "Analysed" } } }
+
+   set Param(BKSTypes0-11) $Param(BKSTypes0-10)
+   set Param(BKSTypes1-11) $Param(BKSTypes1-10)
+
+   set Param(BKSTypes0-12) { }
+   set Param(BKSTypes1-12) { }
+
+   set Param(BKSTypes0-13) $Param(BKSTypes0-12)
+   set Param(BKSTypes1-13) $Param(BKSTypes1-12)
+
+   set Param(BKSTypes0-14) {
+      { 0000  0 { "O-A" "O-A" } }
+      { 0001  1 { "O-F" "O-F" } }
+      { 0010  2 { "O-I" "O-I" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques de NN champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences" "Difference statistics" } } }
+   set Param(BKSTypes1-14) { }
+
+   set Param(BKSTypes0-15) $Param(BKSTypes0-14)
+   set Param(BKSTypes1-15) $Param(BKSTypes1-14)
+
+   set Param(BKSTypes0-16) $Param(BKSTypes0-14)
+   set Param(BKSTypes1-16) $Param(BKSTypes1-14)
+
+   set Param(BKSTypes0-17) $Param(BKSTypes0-14)
+   set Param(BKSTypes1-17) $Param(BKSTypes1-14)
+
+   set Param(BKSTypes0-18) {
+      { 0000  0 { "Champs d'essai de AO" "OA trial fields" } }
+      { 0001  1 { "Sortie de modèle de prévisions" "Prognostic model output" } }
+      { 0010  2 { "Statistiques" "Statistics" } }
+      { 0001  3 { "En réserve" "Reserved" } }
+      { 0001  4 { "En réserve" "Reserved" } }
+      { 0001  5 { "En réserve" "Reserved" } }
+      { 0001  6 { "En réserve" "Reserved" } }
+      { 0111  7 { "En réserve" "Reserved" } }
+      { 1000  8 { "Statistiques de champs" "Field statistics" } }
+      { 1001  9 { "Statistiques de NN champs" "Field NN statistics" } }
+      { 1010 10 { "Statistiques de différences" "Difference statistics" } } }
+   set Param(BKSTypes1-18) { }
+
+   set Param(BKSTypes0-19) $Param(BKSTypes0-18)
+   set Param(BKSTypes1-19) $Param(BKSTypes1-18)
+
+   set Param(BKSTypes0-20) { }
+   set Param(BKSTypes1-20) { }
+
+   set Param(BKSTypes0-21) $Param(BKSTypes0-20)
+   set Param(BKSTypes1-21) $Param(BKSTypes1-20)
+
+   set Param(BKSTypes0-22) { }
+   set Param(BKSTypes1-22) {
+      { 0000  0 { "A (données, Multi), basse densité" "A (Multi-data), low density" } }
+      { 0001  1 { "B (données, Multi), basse densité" "B (Multi-data), low density" } }
+      { 0010  2 { "C (3-D, Multi), basse densité" "C (3-D, Multi), low density" } }
+      { 0011  3 { "D (3-D, Multi), basse densité" "D (3-D, Multi), low density" } }
+      { 0100  4 { "E (données, Multi), type de surface, basse densité" "E (Multi-data), surface type, low density" } }
+      { 0101  5 { "F (données, Multi), type de surface, basse densité" "F (Multi-data), surface type, low density" } } }
+
+   set Param(BKSTypes0-23) { }
+   set Param(BKSTypes1-23) { }
+
+   set Param(BKSTypes0-24) { }
+   set Param(BKSTypes1-24) { }
+
+   set Param(BKSTypes0-25) { }
+   set Param(BKSTypes1-25) { }
+
+   set Param(BKSTypes0-26) { }
+   set Param(BKSTypes1-26) { }
+
+   set Param(BKSTypes0-27) {
+      { 0000  0 { "Valeur observée" "Observed value" } }
+      { 0001  1 { "Valeur estimée" "Estimated value" } }
+      { 0010  2 { "Probabilité d'erreur" "Error probability" } } }
+   set Param(BKSTypes1-27) { }
+
 
    set Data(Frame)       ""
 
@@ -97,29 +346,33 @@ namespace eval NowCaster::Obs { } {
    set Tephi(Wind)  True
    set Tephi(Info)  False
 
-   set Lbl(And)     { "Et" "And" }
-   set Lbl(Or)      { "Ou" "Or" }
-   set Lbl(Var0)    { "Variable  " "Variable  " }
-   set Lbl(Var1)    { "Direction " "Direction " }
-   set Lbl(Yes)     { "Oui" "Yes" }
-   set Lbl(No)      { "Non" "No" }
-   set Lbl(Topo)    { "Élévation " "Elevation " }
-   set Lbl(Data)    { "Données" "Data" }
-   set Lbl(Model)   { "Modèle de pointage" "Plotting model" }
-   set Lbl(ModelN)  { "Modèle" "Model" }
-   set Lbl(Spacing) { "Espacement" "Spacing" }
-   set Lbl(Flat)    { "Projeté" "Projected" }
-   set Lbl(Info)    { "Information" "Information" }
-   set Lbl(Pos)     { "Position" "Position" }
-   set Lbl(Elem)    { "Élements" "Elements" }
-   set Lbl(Report)  { "Rapports" "Reports" }
-   set Lbl(Find)    { "Trouver une station" "Find station" }
-   set Lbl(Surface) { "Surface" "Surface" }
-   set Lbl(Upper)   { "Upper" "Upper" }
-   set Lbl(Tephi)   { "Tephigramme" "Tephigram" }
-   set Lbl(All)     { "Tous" "All" }
-   set Lbl(Current) { "Courant" "Current" }
-   set Lbl(Flags)   { "Flags" "Flags" }
+   set Lbl(And)      { "Et" "And" }
+   set Lbl(Or)       { "Ou" "Or" }
+   set Lbl(Var0)     { "Variable  " "Variable  " }
+   set Lbl(Var1)     { "Direction " "Direction " }
+   set Lbl(Yes)      { "Oui" "Yes" }
+   set Lbl(No)       { "Non" "No" }
+   set Lbl(Topo)     { "Élévation " "Elevation " }
+   set Lbl(Data)     { "Données" "Data" }
+   set Lbl(Model)    { "Modèle de pointage" "Plotting model" }
+   set Lbl(ModelN)   { "Modèle" "Model" }
+   set Lbl(Spacing)  { "Espacement" "Spacing" }
+   set Lbl(Flat)     { "Projeté" "Projected" }
+   set Lbl(Info)     { "Information" "Information" }
+   set Lbl(Pos)      { "Position" "Position" }
+   set Lbl(Elem)     { "Élements" "Elements" }
+   set Lbl(Report)   { "Rapports" "Reports" }
+   set Lbl(Find)     { "Trouver une station" "Find station" }
+   set Lbl(Surface)  { "Surface" "Surface" }
+   set Lbl(Upper)    { "Upper" "Upper" }
+   set Lbl(Tephi)    { "Tephigramme" "Tephigram" }
+   set Lbl(All)      { "Tous" "All" }
+   set Lbl(Current)  { "Courant" "Current" }
+   set Lbl(Flags)    { "Flags" "Flags" }
+   set Lbl(Sequence) { "Séquence " "Sequence" }
+   set Lbl(Level)    { "Niveau   " "Level   " }
+   set Lbl(Type)     { "Type     " "Type    " }
+   set Lbl(SType)    { "Sous-type" "Sub-type" }
 
    set Msg(Read)   { "Lecture des données d'observations" "Reading observation data" }
    set Msg(Exist)  { "Un model de ce nom existe déja, désirez vous le remplacer ?"
@@ -245,8 +498,9 @@ proc NowCaster::Obs::Window { Frame } {
          menubutton $Frame.elem.status.family -menu $Frame.elem.status.family.menu -text BFAM -image OPTIONS -compound right
          menu $Frame.elem.status.family.menu -tearoff 1
          foreach family $Param(Familys) {
-            $Frame.elem.status.family.menu add radiobutton -value [lindex $family 1] -label [lindex [lindex $family 2] $GDefs(Lang)] \
-               -variable NowCaster::Obs::Data(Family) -command NowCaster::Obs::ModelApply
+            set NowCaster::Obs::Data(Family[lindex $family 0]) [lindex $family 1]
+            $Frame.elem.status.family.menu add checkbutton -offvalue -1 -onvalue [lindex $family 2] -label [lindex [lindex $family 3] $GDefs(Lang)] \
+               -variable NowCaster::Obs::Data(Family[lindex $family 0]) -command NowCaster::Obs::ModelApply
          }
 
          menubutton $Frame.elem.status.type -menu $Frame.elem.status.type.menu -text BKTYP -image OPTIONS -compound right
@@ -730,10 +984,21 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set Obs $Data(Obs)
    }
 
-   set m 0x0
+   set Data(Marker) 0x00
    foreach marker $Param(Markers) {
-      incr m $Data(Marker[lindex $marker 0])
+      incr Data(Marker) $Data(Marker[lindex $marker 0])
    }
+
+   set Data(Family) -1
+   foreach family $Param(Familys) {
+      if { $Data(Family[lindex $family 0])!=-1 } {
+         if { $Data(Family)==-1 } {
+            set Data(Family) 0x00
+         }
+         set Data(Family) [expr $Data(Family)|$Data(Family[lindex $family 0])]
+      }
+   }
+
    set Data(Family$Obs) $Data(Family)
    set Data(Type$Obs)   $Data(Type)
    set Data(Marker$Obs) $Data(Marker)
@@ -742,7 +1007,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
-         -MARKER $m -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs)
+         -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs)
 
       foreach item $Data(Model$obs) {
          set desc [metobs table -desc [lindex $item 2]]
@@ -1251,6 +1516,27 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
     wm title .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs"
 }
 
+proc NowCaster::Obs::InfoBKType { Report } {
+   global GDefs
+   variable Param
+   variable Lbl
+
+   set fam   [metreport define $Report -FAMILY]
+   set type  [metreport define $Report -TYPE]
+   set stype [metreport define $Report -STYPE]
+
+   set no  [expr $fam&0x3]
+   set fam [lindex $Param(Familys) [expr $fam>>3&0x07]]
+   set alt [lindex $Param(Types)   [expr ($type>>6)+1]]
+   set bk  [lindex $Param(BKTypes) [expr $type&0x3F]]
+   set st  [lindex $Param(BKSTypes[expr ($type>>6)]-[expr $type&0x3F]) $stype]
+
+   return "[lindex $Lbl(Sequence) $GDefs(Lang)]: [lindex [lindex $fam end] $GDefs(Lang)] ($no)
+[lindex $Lbl(Level) $GDefs(Lang)]: [lindex [lindex $alt end] $GDefs(Lang)]
+[lindex $Lbl(Type) $GDefs(Lang)]: [lindex [lindex $bk end] $GDefs(Lang)]
+[lindex $Lbl(SType) $GDefs(Lang)]: [lindex [lindex $st end] $GDefs(Lang)]"
+}
+
 proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
    global GDefs
    variable Data
@@ -1272,10 +1558,8 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       foreach date $dates {
          .nowcasterinfo.tab.frame0.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true]\n"
          foreach report [metobs define $Obs -REPORT $Tag $date] {
-            .nowcasterinfo.tab.frame0.info.text insert end "---------------------------------------------------------------\n"
-            .nowcasterinfo.tab.frame0.info.text insert end "Family: [metreport define $report -FAMILY]\n"
-            .nowcasterinfo.tab.frame0.info.text insert end "Type:   [metreport define $report -TYPE]\n"
-            .nowcasterinfo.tab.frame0.info.text insert end "SType:  [metreport define $report -STYPE]\n"
+            .nowcasterinfo.tab.frame0.info.text insert end "\n---------------------------------------------------------------\n"
+            .nowcasterinfo.tab.frame0.info.text insert end [NowCaster::Obs::InfoBKType $report]\n\n
             foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
                .nowcasterinfo.tab.frame0.info.text insert end "[format %06i $code] [format %-43s $desc] ([format %-10s $unit]): $value\n"
             }
