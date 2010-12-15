@@ -730,7 +730,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           if (obs->Family==-1 || (data->Family>>3&0x7)==obs->Family) {
+                           if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
@@ -759,7 +759,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected state*/
-                           if (obs->Family==-1 || (data->Family>>3&0x7)==obs->Family) {
+                           if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
@@ -831,7 +831,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           if (obs->Family==-1 || (data->Family>>3&0x7)==obs->Family) {
+                           if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
@@ -1465,7 +1465,7 @@ TMetElem *TMetElem_Find(const TMetLoc* restrict const Loc,const long Time,const 
 
    TMetElem *elem=Loc->Elems;
 
-   while(elem && Time && Time<elem->Time) {
+   while(elem && Time && Time<=elem->Time) {
       elem=elem->Next;
    }
 
@@ -2501,7 +2501,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    double        z,val,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk;
    double        alpha=1.0;
-   int           clat,clon;
+   int           clat,clon,nobs;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2562,6 +2562,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    /*For all of the sations*/
    loc=Obs->Loc;
    n=0;
+   nobs=0;
 
    while(loc) {
 
@@ -2578,7 +2579,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
          z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
 
-         /*Get the element for the specific time*/
+         /*Get the elements group for the specific time*/
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
 
             /*Fix transparency on validity time persistance and break if too old (alpha==0)*/
@@ -2620,15 +2621,14 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                if (GLMode==GL_SELECT)
                   glPushName(i);
 
-               /*Loop on the data*/
+               /*Loop on the data elements*/
                for(d=0;d<elem->NData;d++) {
                   data=elem->EData[d];
 
-                  /*Check for data family matching*/
-                  if (Obs->Family>-1 && !((data->Family>>3&0x7)==Obs->Family)) {
+                  /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
+                  if (Obs->Family!=-1 && !(((data->Family>>3&0x07)==0x00 && Obs->Family&0x04) || (data->Family>>3&0x7)&Obs->Family)) {
                      continue;
                   }
-
                   /*Check for data bktyp matching*/
                   if (Obs->Type>-1 && !((data->Type>>6&0x1)==Obs->Type)) {
                      continue;
@@ -2861,13 +2861,14 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               if (spec->Icon) {
                                  MetObs_RenderIcon(Interp,spec,alpha,val,VP,Proj);
                               }
+                              nobs++;
 
                               glPopMatrix();
+                           }
 
-                              /*Skip the rest if no height is specified, they'll all be overlapped anyway*/
-                              if (clat==-1 && (!eb || Proj->Scale==1.0)) {
-                                 break;
-                              }
+                           /*If this is no grouped data, skip the rest if no height is specified, they'll all be overlapped anyway*/
+                           if (clat==-1 && !eb) {
+                              break;
                            }
                         }
                         /*TODO break if grouped data, until we can select the variables (ex:Per channel)*/
@@ -2904,6 +2905,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glDisable(GL_DEPTH_TEST);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_DEPTH_TEST);
+
+   if (GLRender->GLDebug)
+      fprintf(stderr,"MetObs_Render: Nb Loc=%i NbObs=%i\n",n,nobs);
+
    return(n);
 }
 
