@@ -1376,9 +1376,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
          ref=(TGeoRef*)Tcl_GetHashValue(entry);
 
          if (GeoRef_Equal(ref,Ref,3)) {
-#ifdef DEBUG
-            fprintf(stdout,"(DEBUG) GeoRef_Find: Found existing georef\n");
-#endif
+
             GeoRef_Free(Ref);
             GeoRef_Incr(ref);
             TclY_UnlockHash();
@@ -1389,9 +1387,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
       TclY_UnlockHash();
    }
 
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) GeoRef_Find: New georef\n");
-#endif
    /*Otherwise, create a new one*/
    ref=Ref;
    ref->Id=ref->Id==-1?-(++TGeoRef_TableNo):ref->Id;

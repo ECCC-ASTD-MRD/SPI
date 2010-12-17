@@ -973,9 +973,9 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          OGR_ArrayVr=(Vect3d*)realloc(OGR_ArrayVr,(nv+Size)*sizeof(Vect3d));
          OGR_ArrayEx=(Vect3d*)realloc(OGR_ArrayEx,(nv+Size)*sizeof(Vect3d));
          OGR_ArraySize=(nv+Size);
-#ifdef DEBUG
-         fprintf(stderr,"(DEBUG) Increasing size to %i\n",OGR_ArraySize);
-#endif
+
+         if (GLRender->GLDebug)
+            fprintf(stderr,"(DEBUG) Increasing size to %i\n",OGR_ArraySize);
       }
       if (!OGR_ArrayVr || !OGR_ArrayEx || !OGR_ArrayNr) {
          fprintf(stderr,"(ERROR) OGR_GeometryProject: Unable to allocate temporary vertex buffer\n");

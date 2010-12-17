@@ -291,7 +291,8 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
             }
             glPixelTransferf(sc[nc],Band->Tex.Scale[nc]);
             glPixelTransferf(bc[nc],Band->Tex.Bias[nc]*Band->Tex.Scale[nc]);
-            if (GLRender->GLDebug) fprintf(stdout,"(DEBUG) GeoTex_Texture: Normalizing factor (%i) Sc=%f Bc=%f\n",nc,Band->Tex.Scale[nc],Band->Tex.Bias[nc]);
+            if (GLRender->GLDebug)
+               fprintf(stdout,"(DEBUG) GeoTex_Texture: Normalizing factor (%i) Sc=%f Bc=%f\n",nc,Band->Tex.Scale[nc],Band->Tex.Bias[nc]);
          }
       }
    }
@@ -772,7 +773,8 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
          Tcl_MutexLock(&MUTEX_GEOTEX);
          if (!(*Tile)->Data) {
             r=1;
-            if (GLRender->GLDebug) fprintf(stdout,"(DEBUG) GeoTex_Parse: Reading tile (%i) %i - %i\n",Resolution,X0,Y0);
+            if (GLRender->GLDebug)
+               fprintf(stdout,"(DEBUG) GeoTex_Parse: Reading tile (%i) %i - %i\n",Resolution,X0,Y0);
             GeoTex_Get(Band,(*Tile));
          }
          Tcl_MutexUnlock(&MUTEX_GEOTEX);

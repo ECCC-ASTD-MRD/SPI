@@ -894,9 +894,8 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
       }
    }
 
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) FFMarchingCube: Done processing (%i Vertex)\n",vridx/2);
-#endif
+   if (GLRender->GLDebug)
+      fprintf(stderr,"(DEBUG) FFMarchingCube: Done processing (%i Vertex)\n",vridx/2);
    return(vridx);
 }
 
@@ -1157,7 +1156,8 @@ int FFStreamPatch(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,flo
       if (mj!=0.0 && dj!=0.0) {
          r=fabs((mi/mj)-(di/dj));
          r=r>1.0?1.0:1.0-r;
-         fprintf(stderr,"(DEBUG) %f %f %f %f %f\n",r,(mi/mj),(di/dj),di,dj);
+         if (GLRender->GLDebug)
+            fprintf(stderr,"(DEBUG) %f %f %f %f %f\n",r,(mi/mj),(di/dj),di,dj);
       }
       mi=di;
       mj=dj;

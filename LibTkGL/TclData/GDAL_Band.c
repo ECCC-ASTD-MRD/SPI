@@ -184,7 +184,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
           printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
       }
 */
-      printf("(DEBUG) GDAL_BandRead: Using GCPs to get transform\n");
+      if (GLRender->GLDebug)
+         fprintf(stdout,"(DEBUG) GDAL_BandRead: Using GCPs to get transform\n");
       if (!(band->Ref->GCPTransform=(void*)GDALCreateGCPTransformer(band->NbGCPs,band->GCPs,3,FALSE))) {
          printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
       }
@@ -193,7 +194,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       /*Get the transform from RPCInfo*/
       band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,NULL,NULL,NULL);
 
-      printf("(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
+      if (GLRender->GLDebug)
+         fprintf(stdout,"(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
       if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
          printf("(WARNING) GDAL_BandRead: Unable to fit RPC\n");
       }
@@ -224,7 +226,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
                return(TCL_ERROR);
             }
          } else {
-            fprintf(stdout,"(DEBUG) GDAL_BandRead: Delaying read\n");
+            if (GLRender->GLDebug)
+               fprintf(stdout,"(DEBUG) GDAL_BandRead: Delaying read\n");
          }
       } else if (Idxs[i]!=-1) {
          Tcl_AppendResult(Interp,"GDAL_BandRead: Invalid file handle",(char*)NULL);
@@ -839,9 +842,8 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                            Tcl_ListObjAppendElement(Interp,List,item);
                         }
                      }
-      #ifdef DEBUG
-                     fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
-      #endif
+                     if (GLRender->GLDebug)
+                        fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                   }
 
                   /*We have to process the part that was out of the grid limits so translate everything NI points*/
@@ -893,15 +895,13 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                         Tcl_ListObjAppendElement(Interp,List,item);
                      }
                   }
-#ifdef DEBUG
-                  fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
-#endif
+                  if (GLRender->GLDebug)
+                     fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
                }
             }
          }
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
-#endif
+         if (GLRender->GLDebug)
+            fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i total hits\n",nt);
       }
 
       /*Finalize and reassign*/
@@ -1066,17 +1066,16 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
             /*Si le feature est dans le raster*/
             if (!(x1<0 || x0>Def->NI || y0>Def->NJ || y1<0)) {
                nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1,0);
-#ifdef DEBUG
+            if (GLRender->GLDebug)
                fprintf(stdout,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,x0,y0,x1,y1);
-#endif
             }
          }
          OGR_G_DestroyGeometry(geom);
       }
    }
-#ifdef DEBUG
-   fprintf(stdout,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
-#endif
+   if (GLRender->GLDebug)
+      fprintf(stdout,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
+
    if (tr)
       OCTDestroyCoordinateTransformation(tr);
 

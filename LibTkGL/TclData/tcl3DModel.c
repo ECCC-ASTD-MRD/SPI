@@ -912,9 +912,8 @@ int Model_LoadMDL(T3DModel *M,char *Path) {
       return(0);
    }
 
-#ifdef DEBUG
-   printf("(DEBUG) Model_LoadMDL: M->NMt=%i\n",M->NMt);
-#endif
+   if (GLRender->GLDebug)
+      fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NMt=%i\n",M->NMt);
 
    if (M->NMt<=0) {
       M->NMt=1;
@@ -947,15 +946,14 @@ int Model_LoadMDL(T3DModel *M,char *Path) {
    /*Vertex list*/
    /*Number of vertex*/
    fread(&obj->NVr,sizeof(int),1,file);
-#ifdef DEBUG
-   printf("(DEBUG) Model_LoadMDL: M->NVr=%i\n",obj->NVr);
-#endif
+   if (GLRender->GLDebug)
+      fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NVr=%i\n",obj->NVr);
 
    /*Format of vertex*/
    fread(&obj->Format,sizeof(int),1,file);
-#ifdef DEBUG
-  printf("(DEBUG) Model_LoadMDL: M->Format=%i\n",obj->Format);
-#endif
+   if (GLRender->GLDebug)
+      fprintf(stdout,"(DEBUG) Model_LoadMDL: M->Format=%i\n",obj->Format);
+
    if (obj->NVr<=0 || obj->Format<=0) {
       printf("\n(ERROR) Model_LoadMDL : Invalid vertex format or number");
       fclose(file);
@@ -977,9 +975,8 @@ int Model_LoadMDL(T3DModel *M,char *Path) {
    /*Faces list*/
    /*Number of faces*/
    fread(&obj->NFc,sizeof(int),1,file);
-#ifdef DEBUG
-   printf("(DEBUG) Model_LoadMDL: M->NFc=%i\n",obj->NFc);
-#endif
+   if (GLRender->GLDebug)
+      fprintf(stderr,"(DEBUG) Model_LoadMDL: M->NFc=%i\n",obj->NFc);
 
    obj->Fc=(TFace*)malloc(obj->NFc*sizeof(TFace));
    for (i=0;i<obj->NFc;i++) {
