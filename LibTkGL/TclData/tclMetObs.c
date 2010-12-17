@@ -739,7 +739,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                                           for(t=0;t<data->Nt;t++) {
                                              /*Check for selected marker*/
                                              mk=MetObs_GetMarker(data,e,v,t);
-                                             if (obs->Marker || (obs->MarkerOp=='O' && (mk&obs->Marker)) || (obs->MarkerOp=='A' && (mk==obs->Marker))) {
+                                             if (!obs->Marker || (obs->MarkerOp=='O' && (mk&obs->Marker)) || (obs->MarkerOp=='A' && (mk==obs->Marker))) {
                                                 Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                              }
                                           }
@@ -767,7 +767,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                                           for(t=0;t<data->Nt;t++) {
                                              /*Check for selected marker*/
                                              mk=MetObs_GetMarker(data,e,v,t);
-                                             if (obs->Marker || (obs->MarkerOp=='O' && (mk&obs->Marker)) || (obs->MarkerOp=='A' && (mk==obs->Marker))) {
+                                             if (!obs->Marker || (obs->MarkerOp=='O' && (mk&obs->Marker)) || (obs->MarkerOp=='A' && (mk==obs->Marker))) {
                                                 Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                              }
                                           }
@@ -834,6 +834,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                            if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                                 /*Link the ElementData to its Obs*/
+                                 elem->EData[d]->Obs=obs;
                                  Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
                               }
                            }
@@ -1465,7 +1467,7 @@ TMetElem *TMetElem_Find(const TMetLoc* restrict const Loc,const long Time,const 
 
    TMetElem *elem=Loc->Elems;
 
-   while(elem && Time && Time<=elem->Time) {
+   while(elem && Time && Time<elem->Time) {
       elem=elem->Next;
    }
 
@@ -1497,7 +1499,7 @@ void TMetElemData_Free(TMetElemData *Data) {
 int TMetElemData_Same(TMetElemData *Data0,TMetElemData *Data1) {
 
    if (Data0->Ne!=Data1->Ne || Data0->Nv!=Data1->Nv || Data0->Nt!=Data1->Nt ||
-       Data0->Family!=Data1->Family || Data0->Type!=Data1->Type  || Data0->SType!=Data1->SType) {
+       Data0->Family!=Data1->Family) {
       return(0);
    }
 
@@ -1509,6 +1511,9 @@ int TMetElemData_Same(TMetElemData *Data0,TMetElemData *Data1) {
       return(0);
    }
 
+   if (Data0->Marker && Data1->Marker && memcmp(Data0->Marker,Data1->Marker,Data0->Ne*Data0->Nv*Data0->Nt*sizeof(int))!=0) {
+      return(0);
+   }
    return(1);
 }
 
@@ -1640,6 +1645,25 @@ TMetElemData *TMetElem_InsertCopy(TMetLoc *Loc,time_t Min,time_t Time,TMetElemDa
    return(Data);
 }
 
+TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt) {
+
+   TMetElemData *data;
+
+   data=(TMetElemData*)malloc(sizeof(TMetElemData));
+   data->Obs=NULL;
+   data->Ne=Ne;
+   data->Nv=Nv;
+   data->Nt=Nt;
+   data->Family=0x0;
+   data->Type=0x0;
+   data->SType=0x0;
+   data->Data=(float*)malloc(Ne*Nv*Nt*sizeof(float));
+   data->Code=(EntryTableB**)malloc(Ne*Nv*Nt*sizeof(EntryTableB*));
+   data->Marker=NULL;
+
+   return(data);
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetObs_Load>
  * Creation     : Mars 2008 J.P. Gauthier
@@ -1676,24 +1700,6 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       Obs->Time=Obs->Time1;
 
    return(res);
-}
-
-TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt) {
-
-   TMetElemData *data;
-
-   data=(TMetElemData*)malloc(sizeof(TMetElemData));
-   data->Ne=Ne;
-   data->Nv=Nv;
-   data->Nt=Nt;
-   data->Family=0x0;
-   data->Type=0x0;
-   data->SType=0x0;
-   data->Data=(float*)malloc(Ne*Nv*Nt*sizeof(float));
-   data->Code=(EntryTableB**)malloc(Ne*Nv*Nt*sizeof(EntryTableB*));
-   data->Marker=NULL;
-
-   return(data);
 }
 
 int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *PrevId,char *Multi) {
@@ -2089,20 +2095,16 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             code=TCL_ERROR;
             break;
          }
-         // 0x0=New, 0x8=Correction, 0x10=Repeat, 0X18=Human Correction
-//         if (bfam!=0) { continue; };
-//         if (bfam&0x8) { continue; };
-//         if (bfam&0x10) { continue; };
-//         if (bfam&0x18) { continue; };
 
-         bknat=(btyp>>11)%16;
-         bktyp=(btyp>>4)%128;
-         bkstp=(btyp)%16;
+         bknat=(btyp>>11)&0x0F;
+         bktyp=(btyp>>4)%0x7F;
+         bkstp=(btyp)&0x0F;
 
          /*Skip if empty*/
-         if ((nelem*nval*nt)==0)
+         if ((nelem*nval*nt)==0) {
+            fprintf(stdout,"(WARNING) MetObs_LoadBURP: Found empty report\n");
             continue;
-
+         }
          /*Resize temporary buffers if needed*/
          if (nelem>sz1) {
             sz1=nelem;
@@ -2123,13 +2125,13 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          /*Test for superobs ..... ta daaaaaaa*/
          if (stnid[0]=='^') {
             if (stnid[1]=='^') {
-               fprintf(stderr,"(DEBUG) ---- super duper\n");
+               fprintf(stdout,"(DEBUG) MetObs_LoadBURP: Found super duper obs\n");
             } else {
 
             }
          }
 
-         /*Skip if this is a bloc marker*/
+         /*If this is a marker bloc*/
          mkr=0;
          if (bknat==0x3 || ((int*)eb)[0]>=200000) {
             mkr=nelem*nval*nt;
@@ -2141,7 +2143,8 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          c=0;
          for(e=0;e<nelem;e++) {
             if (mkr) {
-               ((int*)eb)[e]-=200000;
+               if (((int*)eb)[e]>=200000)
+                  ((int*)eb)[e]-=200000;
             }
             c=((int*)eb)[e];
 
@@ -2907,7 +2910,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glDisable(GL_DEPTH_TEST);
 
    if (GLRender->GLDebug)
-      fprintf(stderr,"MetObs_Render: Nb Loc=%i NbObs=%i\n",n,nobs);
+      fprintf(stdout,"(DEBUG) MetObs_Render: Nb Loc=%i NbObs=%i\n",n,nobs);
 
    return(n);
 }
@@ -3202,7 +3205,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    Tcl_Obj      *obj,*sub;
    TMetElemData *data;
    EntryTableB  *eb;
-   int           ne,e,v,t,nv,nt,i,j,idx,n,nl;
+   int           ne,e,v,t,nv,nt,i,j,idx,n,nl,mk;
    float        *valf;
    double        val;
 
@@ -3292,7 +3295,10 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   sub=Tcl_NewListObj(0,NULL);
                   for(v=0;v<data->Nv;v++) {
                      for(t=0;t<data->Nt;t++) {
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                        mk=MetObs_GetMarker(data,e,v,t);
+                        if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
+                           Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                        }
                      }
                   }
                   Tcl_ListObjAppendElement(Interp,obj,sub);
@@ -3303,7 +3309,10 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                sub=Tcl_NewListObj(0,NULL);
                for(v=0;v<data->Nv;v++) {
                   for(t=0;t<data->Nt;t++) {
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,ne,v,t)));
+                     mk=MetObs_GetMarker(data,ne,v,t);
+                     if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,ne,v,t)));
+                     }
                   }
                }
                Tcl_SetObjResult(Interp,sub);
@@ -3330,7 +3339,11 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                               nv=1;
                               for(v=0;v<data->Nv;v++) {
                                  for(t=0;t<data->Nt;t++) {
-                                    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                                    /*Check for selected marker*/
+                                    mk=MetObs_GetMarker(data,e,v,t);
+                                    if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
+                                       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                                    }
                                  }
                               }
                            }

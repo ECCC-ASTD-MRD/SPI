@@ -49,6 +49,8 @@
 #define MET_TYPENO   0x1
 #define MET_TYPETG   0x2
 
+struct TMetObs;
+
 typedef struct TMetModelItem {
    int        X,Y;
    int        Code[3];
@@ -64,12 +66,13 @@ typedef struct TMetModel {
 
 typedef struct TMetElemData {
 
-   int           Nv,Nt,Ne;        /*Data dimensions*/
-   int           Family;          /*Data Family descriptor*/
-   int           Type,SType;      /*Data Type descriptor*/
-   int          *Marker;          /*Data markers*/
-   float        *Data;            /*Donnees temporelles et spatiales*/
-   EntryTableB **Code;            /*Codes de la donnee*/
+   struct TMetObs *Obs;            /*Provenance de ce MetElemData quand detache*/
+   int             Nv,Nt,Ne;        /*Data dimensions*/
+   int             Family;          /*Data Family descriptor*/
+   int             Type,SType;      /*Data Type descriptor*/
+   int            *Marker;          /*Data markers*/
+   float          *Data;            /*Donnees temporelles et spatiales*/
+   EntryTableB   **Code;            /*Codes de la donnee*/
 } TMetElemData;
 
 typedef struct TMetElem {
