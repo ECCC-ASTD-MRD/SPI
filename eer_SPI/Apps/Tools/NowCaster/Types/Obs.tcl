@@ -880,13 +880,23 @@ proc NowCaster::Obs::Add { Path } {
    set path [lindex $Path 0]
 
    #----- Figure out a unique number
-   set file [file tail $path]
+   set obs [set file [file tail $path]]
 
-   set no [format "%02i" [llength [lsearch -all -glob [$Data(Frame).select.list get 0 end] $file*]]]
-   set obs ${file}_$no
+   if { [metobs is $obs] } {
+      set no 0
+      while [metobs is $obs-$no] {
+         incr no
+      }
+      set obs $obs-$no
+   }
+#   set no [format "%02i" [llength [lsearch -all -glob [$Data(Frame).select.list get 0 end] $file*]]]
+#   set obs ${file}_$no
+
+#   set obs ${file}-$no
    lappend Data(Obs) $obs
-   $Data(Frame).select.list selection clear 0 end
-   $Data(Frame).select.list selection set end
+
+   catch { $Data(Frame).select.list selection clear 0 end
+           $Data(Frame).select.list selection set end }
 
    #----- Define default model
    set Data(Path$obs) $path

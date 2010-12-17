@@ -143,6 +143,7 @@ proc SPI::CommandLine { { Args {} }} {
       \[-field ... ...\]                : Open the specified standard files
       \[-traj ... ...\]                 : Open the specified trajectory files
       \[-obs ...\]                      : Open the specified observation files
+      \[-metobs ...\]                   : Open the specified BURP or BUFR observation files
       \[-icon ... ...\]                 : Open the specified icon files
       \[-macro ... ...\]                : Run the specified macro script
       \[-args ... ...\]                 : Arguments to be used by the previously specified script
@@ -169,6 +170,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "field"    { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
       "traj"     { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
       "obs"      { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
+      "metobs"   { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
       "icon"     { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
       "args"     { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
       "script"   { set i [SPI::ArgsParse $argv $argc $i 1 1 ""] }
@@ -2325,6 +2327,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "field"    { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
       "traj"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
       "obs"      { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
+      "metobs"   { set i [SPI::ArgsParse $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; NowCaster::Obs::Add"] }
       "icon"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
       "args"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "set SPI::Param(Args)"] }
       "script"   { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }

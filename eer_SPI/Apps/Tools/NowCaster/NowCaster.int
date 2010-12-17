@@ -74,7 +74,7 @@ proc NowCaster::Window { { Type "" } } {
          menubutton .nowcaster.time.play.down -image OPTIONS -relief flat -bd 0 -menu .nowcaster.time.play.down.menu
          place .nowcaster.time.play.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          label .nowcaster.time.now -textvariable NowCaster::Data(Date) -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight)
-         scale .nowcaster.time.set -orient horizontal -from $Data(Sec) -to $Data(Sec) -sliderlength 8 -resolution 60 -length 0\
+         scale .nowcaster.time.set -orient horizontal -from $Data(Sec0) -to $Data(Sec1) -sliderlength 8 -resolution 60 -length 0\
             -showvalue false -relief flat -bd 1 -variable NowCaster::Data(Sec) -command "NowCaster::Cast; catch" -width 18
          pack .nowcaster.time.clock -side left
          pack .nowcaster.time.now -side left -ipady 1

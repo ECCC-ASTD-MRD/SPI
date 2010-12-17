@@ -1646,7 +1646,8 @@ proc Page::Update { { Frame "" } { VP True } } {
 
    if { $Frame=="" } {
       set Frame $Page::Data(Frame)
-   } else {
+   }
+   if { $Frame=="" } {
       if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
          return
       }
