@@ -58,9 +58,9 @@ namespace eval NowCaster::Obs { } {
       { 21  2097152  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
    set Param(Familys) {
-      { 100  4 4 { "Bulletin nouveau" "New bulletin" } }
       { 001  1 1 { "Bulletin corrigé" "Corrected bulletin" } }
-      { 010 -1 2 { "Bulletin répété" "Repeated bulletin" } } }
+      { 010 -1 2 { "Bulletin répété" "Repeated bulletin" } }
+      { 100  4 4 { "Bulletin nouveau" "New bulletin" } } }
 
    set Param(Types) {
       { - -1 { "Toutes les données" "All data" } }
@@ -68,7 +68,7 @@ namespace eval NowCaster::Obs { } {
       { 1  1 { "Données en altitude" "Upper air data" } } }
 
    set Param(BKTypes) {
-      { 000000  0  { "Observations (ADE)" "Observation (ADE)" } }
+      { 000000  0 { "Observations (ADE)" "Observation (ADE)" } }
       { 000001  1 { "Observations brutes (non décodées)" "Raw observation (not decoded)" } }
       { 000010  2 { "Données dérivées, entrée à l'AO en altitude, modèle global" "Derivate data, global model altitude OA" } }
       { 000011  3 { "Données dérivées, entrée à l'AO en altitude, modèle régional" "Derivate data, regional model altitude OA" } }
@@ -80,8 +80,8 @@ namespace eval NowCaster::Obs { } {
       { 001001  9 { "Données vues par l'AO de surface, modèle régional" "Regional model surface OA data used" } }
       { 001010 10 { "Profils verticaux, AO en altitude, modèle global" "Global model altitude vertical profile OA data" } }
       { 001011 11 { "Profils verticaux, AO en altitude, modèle régional" "Regional model altitude vertical profile OA data" } }
-      { 001100 12  { "En réserve" "Reserved" } }
-      { 001101 13  { "En réserve" "Reserved" } }
+      { 001100 12 { "En réserve" "Reserved" } }
+      { 001101 13 { "En réserve" "Reserved" } }
       { 001110 14 { "Valeurs analysées (incluant résidus) par AO en altitude, modèle global" "Global model OA analysed altitude values (inclufing residuals)" } }
       { 001111 15 { "Valeurs analysées (incluant résidus) par AO en altitude, modèle régional" "Regional model OA analysed altitude values (inclufing residuals)" } }
       { 010000 16 { "Valeurs analysées (incluant résidus) par AO de surface, modèle global" "Global model OA analysed surface values (inclufing residuals)" } }
@@ -328,7 +328,7 @@ namespace eval NowCaster::Obs { } {
    set Data(CurrentObs)  NONE
    set Data(Marker)      0
    set Data(Type)        -1
-   set Data(Family)      -1
+   set Data(Family)      5
    set Data(Spacing)     25
    set Data(Flat)        0
    set Data(Elems)       { }
@@ -368,7 +368,7 @@ namespace eval NowCaster::Obs { } {
    set Lbl(Tephi)    { "Tephigramme" "Tephigram" }
    set Lbl(All)      { "Tous" "All" }
    set Lbl(Current)  { "Courant" "Current" }
-   set Lbl(Flags)    { "Flags" "Flags" }
+   set Lbl(Flags)    { "BURP Flags" "BURP Flags" }
    set Lbl(Sequence) { "Séquence " "Sequence" }
    set Lbl(Level)    { "Niveau   " "Level   " }
    set Lbl(Type)     { "Type     " "Type    " }
@@ -399,7 +399,7 @@ namespace eval NowCaster::Obs { } {
    set Bubble(Spacing)    { "Espacement entre les éléments de pointage" "Spacing between the plotted elements" }
    set Bubble(Grid)       { "Sélection du positionnement des élément\nrelativement à la position centrale en blanc" "Element position selection relative\not the central location in white" }
    set Bubble(Flat)       { "Affichage applati" "Flat display" }
-   set Bubble(Flags)      { "Sélection du type/famille d'observation" "Select type/family of observation" }
+   set Bubble(Flags)      { "Sélection du type/famille/marqueur d'observation" "Select type/family/marker of observation" }
 }
 
 #----------------------------------------------------------------------------
@@ -492,40 +492,55 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.elem.topo.sel -side left -fill x -expand True
       pack $Frame.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
 
-      frame $Frame.elem.status
-         label $Frame.elem.status.lbl -text [lindex $Lbl(Flags) $GDefs(Lang)] -width 10 -anchor w
-
-         menubutton $Frame.elem.status.family -menu $Frame.elem.status.family.menu -text BFAM -image OPTIONS -compound right
-         menu $Frame.elem.status.family.menu -tearoff 1
+   labelframe $Frame.flags -text [lindex $Lbl(Flags) $GDefs(Lang)]
+      frame $Frame.flags.bfam
+         label $Frame.flags.bfam.lbl -text BFAM -width 11 -anchor w
+         entry $Frame.flags.bfam.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Family)
+         menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         menu $Frame.flags.bfam.sel.menu -tearoff 1
          foreach family $Param(Familys) {
             set NowCaster::Obs::Data(Family[lindex $family 0]) [lindex $family 1]
-            $Frame.elem.status.family.menu add checkbutton -offvalue -1 -onvalue [lindex $family 2] -label [lindex [lindex $family 3] $GDefs(Lang)] \
-               -variable NowCaster::Obs::Data(Family[lindex $family 0]) -command NowCaster::Obs::ModelApply
+            $Frame.flags.bfam.sel.menu add checkbutton -offvalue -1 -onvalue [lindex $family 2] -label [lindex [lindex $family 3] $GDefs(Lang)] \
+               -variable NowCaster::Obs::Data(Family[lindex $family 0]) -command { NowCaster::Obs::UpdateFlags False }
          }
+         pack $Frame.flags.bfam.lbl $Frame.flags.bfam.sel -side left -fill y
+         pack $Frame.flags.bfam.ent -side left -fill x -expand True
 
-         menubutton $Frame.elem.status.type -menu $Frame.elem.status.type.menu -text BKTYP -image OPTIONS -compound right
-         menu $Frame.elem.status.type.menu -tearoff 1
+      frame $Frame.flags.bktyp
+         label $Frame.flags.bktyp.lbl -text BKTYP -width 11 -anchor w
+         menubutton $Frame.flags.bktyp.sel -menu $Frame.flags.bktyp.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         entry $Frame.flags.bktyp.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Type)
+         menu $Frame.flags.bktyp.sel.menu -tearoff 1
          foreach type $Param(Types) {
-            $Frame.elem.status.type.menu add radiobutton -value [lindex $type 1] -label [lindex [lindex $type 2] $GDefs(Lang)] \
-               -variable NowCaster::Obs::Data(Type) -command NowCaster::Obs::ModelApply
+            $Frame.flags.bktyp.sel.menu add radiobutton -value [lindex $type 1] -label [lindex [lindex $type 2] $GDefs(Lang)] \
+               -variable NowCaster::Obs::Data(Type) -command { NowCaster::Obs::UpdateFlags False }
          }
+         pack $Frame.flags.bktyp.lbl $Frame.flags.bktyp.sel -side left -fill y
+         pack $Frame.flags.bktyp.ent -side left -fill x -expand True
 
-         menubutton $Frame.elem.status.marker -menu $Frame.elem.status.marker.menu -text MARKS -image OPTIONS -compound right
-         menu $Frame.elem.status.marker.menu -tearoff 1
-         $Frame.elem.status.marker.menu add radiobutton -value AND -label [lindex $Lbl(And) $GDefs(Lang)] \
-            -variable NowCaster::Obs::Param(MarkerOp) -command NowCaster::Obs::ModelApply
-         $Frame.elem.status.marker.menu add radiobutton -value OR -label [lindex $Lbl(Or) $GDefs(Lang)] \
-            -variable NowCaster::Obs::Param(MarkerOp) -command NowCaster::Obs::ModelApply
-         $Frame.elem.status.marker.menu add separator
+      frame $Frame.flags.mark
+         label $Frame.flags.mark.lbl -text MARKER -width 11 -anchor w
+         entry $Frame.flags.mark.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Marker)
+         menubutton $Frame.flags.mark.sel -menu $Frame.flags.mark.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         menu $Frame.flags.mark.sel.menu -tearoff 1
+         $Frame.flags.mark.sel.menu add radiobutton -value AND -label [lindex $Lbl(And) $GDefs(Lang)] \
+            -variable NowCaster::Obs::Param(MarkerOp) -command NowCaster::Obs::Update
+         $Frame.flags.mark.sel.menu add radiobutton -value OR -label [lindex $Lbl(Or) $GDefs(Lang)] \
+            -variable NowCaster::Obs::Param(MarkerOp) -command NowCaster::Obs::Update
+         $Frame.flags.mark.sel.menu add separator
          foreach marker $Param(Markers) {
             set NowCaster::Obs::Data(Marker[lindex $marker 0]) 0
-            $Frame.elem.status.marker.menu add checkbutton -offvalue 0 -onvalue [lindex $marker 1] -label [format "%-5s %s" [lindex $marker 2] [lindex [lindex $marker 3] $GDefs(Lang)]] \
-               -variable NowCaster::Obs::Data(Marker[lindex $marker 0]) -command NowCaster::Obs::ModelApply
+            $Frame.flags.mark.sel.menu add checkbutton -offvalue 0 -onvalue [lindex $marker 1] -label [format "%-5s %s" [lindex $marker 2] [lindex [lindex $marker 3] $GDefs(Lang)]] \
+               -variable NowCaster::Obs::Data(Marker[lindex $marker 0]) -command { NowCaster::Obs::UpdateFlags False }
          }
+         pack $Frame.flags.mark.lbl $Frame.flags.mark.sel -side left -fill y
+         pack $Frame.flags.mark.ent -side left -fill x -expand True
 
-         pack $Frame.elem.status.lbl -side left
-         pack $Frame.elem.status.family $Frame.elem.status.type $Frame.elem.status.marker -side left
-      pack $Frame.elem.status -side top -fill x -padx 2 -pady 2 -expand True
+      pack $Frame.flags.bfam $Frame.flags.bktyp $Frame.flags.mark -side top -fill x -padx 2 -pady 2 -expand True
+
+      bind $Frame.flags.bfam.ent <Return>  { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.bktyp.ent <Return> { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.mark.ent <Return>  { NowCaster::Obs::UpdateFlags True }
 
    labelframe $Frame.model -text [lindex $Lbl(ModelN) $GDefs(Lang)]
       frame $Frame.model.sel
@@ -582,7 +597,7 @@ proc NowCaster::Obs::Window { Frame } {
          grid $Frame.model.items.def$n -row 5 -column 1 -columnspan 3 -sticky nsew
       pack $Frame.model.items -side bottom -padx 5 -pady 5
 
-   pack $Frame.find $Frame.elem $Frame.model -side top -fill x -padx 2 -pady 2
+   pack $Frame.find $Frame.elem $Frame.flags $Frame.model -side top -fill x -padx 2 -pady 2
 
    bind $Frame.select.list <ButtonRelease-1>  "catch { NowCaster::Obs::ObsSelect \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
 
@@ -962,6 +977,71 @@ proc NowCaster::Obs::PageUpdate { Obs } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Obs::UpdateFlags>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les parametres d'affichage.
+#
+# Parametres :
+#   <Manual> : Update by hand ?
+#   <Obs>    : Observation
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc NowCaster::Obs::UpdateFlags { Manual { Obs {} } } {
+   variable Data
+   variable Param
+
+   if { ![llength $Obs] } {
+      set Obs $Data(Obs)
+   }
+
+   if { $Manual } {
+      set bit 0x1
+      foreach marker $Param(Markers) {
+         set Data(Marker[lindex $marker 0]) [expr $Data(Marker)&$bit]
+         set bit [expr $bit<<1]
+      }
+
+      set bit 0x1
+      foreach family $Param(Familys) {
+         if { [expr $Data(Family)&$bit] } {
+            set Data(Family[lindex $family 0]) [expr $Data(Family)&$bit]
+         } else {
+            set Data(Family[lindex $family 0]) -1
+         }
+         set bit [expr $bit<<1]
+      }
+
+   } else {
+      set Data(Marker) 0x00
+      foreach marker $Param(Markers) {
+         set Data(Marker) [expr $Data(Marker)|$Data(Marker[lindex $marker 0])]
+      }
+
+      set Data(Family) -1
+      foreach family $Param(Familys) {
+         if { $Data(Family[lindex $family 0])!=-1 } {
+            if { $Data(Family)==-1 } {
+               set Data(Family) 0x00
+            }
+            set Data(Family) [expr $Data(Family)|$Data(Family[lindex $family 0])]
+         }
+      }
+   }
+
+   set Data(Family$Obs) $Data(Family)
+   set Data(Type$Obs)   $Data(Type)
+   set Data(Marker$Obs) $Data(Marker)
+
+   NowCaster::Obs::Update
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <NowCaster::Obs::Update>
 # Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
 #
@@ -984,25 +1064,6 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set Obs $Data(Obs)
    }
 
-   set Data(Marker) 0x00
-   foreach marker $Param(Markers) {
-      incr Data(Marker) $Data(Marker[lindex $marker 0])
-   }
-
-   set Data(Family) -1
-   foreach family $Param(Familys) {
-      if { $Data(Family[lindex $family 0])!=-1 } {
-         if { $Data(Family)==-1 } {
-            set Data(Family) 0x00
-         }
-         set Data(Family) [expr $Data(Family)|$Data(Family[lindex $family 0])]
-      }
-   }
-
-   set Data(Family$Obs) $Data(Family)
-   set Data(Type$Obs)   $Data(Type)
-   set Data(Marker$Obs) $Data(Marker)
-
    foreach obs $Obs {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
@@ -1020,6 +1081,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       }
    }
    Obs::ParamUpdate
+   NowCaster::Obs::PageUpdate $Obs
 
    #----- Update reports
    if { [winfo exists .nowcasterinfo] } {
@@ -1104,7 +1166,6 @@ proc NowCaster::Obs::ModelApply { } {
 
    if { [metobs is $Data(CurrentObs)] } {
       NowCaster::Obs::Update $Data(CurrentObs)
-      NowCaster::Obs::PageUpdate $Data(CurrentObs)
    }
 }
 
@@ -1174,7 +1235,6 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
    set Data(Model$Data(CurrentObs))     [NowCaster::Obs::ModelParse]
    if { [metobs is $Data(CurrentObs)] } {
       NowCaster::Obs::Update $Data(CurrentObs)
-      NowCaster::Obs::PageUpdate $Data(CurrentObs)
    }
 
    if { [info exists ::NowCaster::Obs::Data(Param$Model)] } {
@@ -1560,8 +1620,12 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
          foreach report [metobs define $Obs -REPORT $Tag $date] {
             .nowcasterinfo.tab.frame0.info.text insert end "\n---------------------------------------------------------------\n"
             .nowcasterinfo.tab.frame0.info.text insert end [NowCaster::Obs::InfoBKType $report]\n\n
-            foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT]  value [metreport define $report -VALUE] {
-                .nowcasterinfo.tab.frame0.info.text insert end [format "%06i %-43s (%-10s): %g\n" $code $desc  $unit $value]
+            foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT] values [metreport define $report -VALUE] {
+               .nowcasterinfo.tab.frame0.info.text insert end [format "%06i %-43s (%-10s): " $code $desc $unit]
+               foreach value $values {
+                  catch { .nowcasterinfo.tab.frame0.info.text insert end [format "%g " $value] }
+               }
+               .nowcasterinfo.tab.frame0.info.text insert end "\n"
             }
 #         metreport free $report
          }
@@ -1576,8 +1640,10 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
          .nowcasterinfo.tab.frame1.info.text insert end  "[format %06i $elem] [lindex $info 0] ([lindex $info 1])\n"
          .nowcasterinfo.tab.frame1.info.text insert end "---------------------------------------------------------------\n"
          foreach date $dates {
-            if  { [set val [metobs define $Obs -ELEMENT $Tag $elem $date]]!="" } {
-               .nowcasterinfo.tab.frame1.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] $val\n"
+            foreach value [metobs define $Obs -ELEMENT $Tag $elem $date] {
+               if { $value!="" } {
+                  .nowcasterinfo.tab.frame1.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] [format "%g " $value]\n"
+               }
             }
          }
          .nowcasterinfo.tab.frame1.info.text insert end  "\n"
