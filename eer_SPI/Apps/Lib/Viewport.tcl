@@ -660,7 +660,7 @@ proc Viewport::ConfigSet { Frame } {
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
-     $Frame.page.canvas itemconfigure MINI$Frame -font  $Resources(Font) -bg $Resources(Bkg) \
+     $Frame.page.canvas itemconfigure MINI$Frame -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -834,7 +834,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
                             set id    [lindex [metobs table -desc [lindex $item 2]] 0]
                             set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
-                            append Page::Data(Value) "$id:[join $vals " "] "
+                            append Page::Data(Value) "$id:[format "%g" [lindex $vals 0]] "
                             set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }
          }
@@ -1168,9 +1168,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
 
    Viewport::ConfigSet $Frame
 
-   #----- Creer le viewport et son pourtour
-
-   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -fg black -font FONT$Frame -bg $Resources(Bkg) \
+   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -fg black -font $Resources(Font) -bg $Resources(Bkg) \
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
@@ -2786,19 +2784,16 @@ proc Viewport::Setup { Frame } {
    set Data(VP$Frame)       ""             ;#Viewport courant dans un frame
    set Map(Type$Frame)      $Map(Type)     ;#Type de projection
    set Map(GeoRef$Frame)    $Map(GeoRef)   ;#Georef associee
-   set Data(Seconds$Frame)  [clock seconds]
    set Data(Seconds$Frame)  0
+
+   if { [lsearch -exact [font names] $Resources(Font)]==-1 } {
+      font create FONT$Frame -family courier -weight bold -size -10
+      set Resources(Font) FONT$Frame
+   }
 
    #----- Creation des objects
 
    ProjCam::Create $Frame
-
-   font create FONT$Frame -family courier -weight bold -size -10
-
-   if { [lsearch -exact [font names] $Resources(Font)]!=-1 } {
-      font configure FONT$Frame -family [font configure $Resources(Font) -family] -weight [font configure $Resources(Font) -weight] \
-         -size [font configure $Resources(Font) -size]
-   }
 
    projection create $Frame
    projection configure $Frame -location $Map(Lat) $Map(Lon) -type $Map(Type$Frame) -georef $Map(GeoRef$Frame) \
