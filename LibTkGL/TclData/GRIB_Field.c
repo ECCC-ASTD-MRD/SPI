@@ -164,7 +164,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
       return(TCL_ERROR);
    }
 
-   /*Figue out valid time*/
+   /*Figure out valid time*/
    grib_get_long(head.Handle,"date",&date);
    grib_get_long(head.Handle,"time",&time);
    head.Valid=System_DateTime2Seconds(date,time*100,1);
@@ -172,13 +172,16 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    /*Get message info*/
    err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
    err=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
-//   err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
+   err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
 
+   nk=nk==0?1:nk;
+fprintf(stderr,"----13 %li %li %li\n",ni,nj,nk);
   /*Verifier si le champs existe et est valide*/
    field=Data_Valid(Interp,Name,ni,nj,nk,1,TD_Float32);
    if (!field) {
       return(TCL_ERROR);
    }
+fprintf(stderr,"----132\n");
 
    len=FSIZE3D(field->Def);
    data=malloc(len*sizeof(double));
@@ -186,6 +189,8 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
       Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data",(char*)NULL);
       return(TCL_ERROR);
    }
+   err=grib_get_double(head.Handle,"missingValue",&field->Def->NoData);
+fprintf(stderr,"----14\n");
 
    for(i=0;i<FSIZE3D(field->Def);i++) {
       Def_Set(field->Def,0,i,data[i]);
@@ -201,16 +206,25 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
    err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
    GDALInvGeoTransform(mtx,inv);
-   field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,NULL);
+
+   char WKTstr[2048];
+   int WKTlen = 0;
+   GRIB_WKTString(Interp,head.Handle,WKTstr,&WKTlen);
+   printf("WKTString : '%s'\n", WKTstr);
+
+   field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,WKTstr,mtx,inv,NULL);
    GeoRef_Qualify(field->Ref);
 
+   len = 512;
    grib_get_string(head.Handle,"centre",sval,&len);
    fprintf(stderr,"------ %s\n",sval);
 
-   grib_get_string(head.Handle,"short_name",sval,&len);
+   len = 512;
+   grib_get_string(head.Handle,"shortName",sval,&len);
    fprintf(stderr,"------ %s\n",sval);
 
-   grib_get_string(head.Handle,"long_name",sval,&len);
+   len = 512;
+   grib_get_string(head.Handle,"parameterName",sval,&len);
    fprintf(stderr,"------ %s\n",sval);
 
 /*

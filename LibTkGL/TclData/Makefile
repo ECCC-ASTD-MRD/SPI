@@ -12,7 +12,7 @@ INCLUDES   = $(INCLUDE)
 CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
 LDFLAGS    = $(LDDEBUGFLAGS)
 LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lmut -ldrp -lurp -lgrib_api -lecbufr -lflt -leerUtils -lc
-LITCLBTK   = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE) -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
+LIBTCLTK   = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE) -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
 LEXFLAGS   =
 YACCFLAGS  =
 OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
@@ -22,7 +22,8 @@ OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
 	tclFSTD.o FSTD_Field.o FSTD_Export.o \
 	tclGDAL.o GDAL_Band.o tcl3DModel.o  tcl3DModel3DS.o tcl3DModelFLT.o \
 	tclOGR.o OGR_Layer.o OGR_Geometry.o OGR_Math.o \
-	tclRADAR.o Radar_Scan.o tclMetObs.o tclMetModel.o tclMetDataset.o tclGRIB.o GRIB_Field.o
+	tclRADAR.o Radar_Scan.o tclMetObs.o tclMetModel.o tclMetDataset.o \
+	tclGRIB.o GRIB_Field.o GRIB_WKT.o
 
 
 all: $(OBJ)

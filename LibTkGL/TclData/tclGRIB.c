@@ -44,9 +44,9 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         n,id,idx;
-   static CONST char *sopt[] = { "open","close",NULL };
-   enum                opt { OPEN,CLOSE };
+   int         n,id,idx,type;
+   static CONST char *sopt[] = { "is","open","close",NULL };
+   enum                opt { IS,OPEN,CLOSE };
 
    Tcl_ResetResult(Interp);
 
@@ -60,6 +60,20 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    }
 
    switch ((enum opt)idx) {
+      case IS:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"filename");
+            return(TCL_ERROR);
+         }
+         type=f77name(wkoffit)(Tcl_GetString(Objv[2]));
+         if (type==7) {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
+         } else {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
+         }
+         return(TCL_OK);
+         break;
+
       case OPEN:
          if(Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename");
@@ -322,8 +336,9 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
       err=grib_get_long(handle,"time",&time);
       err=grib_get_long(handle,"numberOfPointsAlongAParallel",&ni);
       err=grib_get_long(handle,"numberOfPointsAlongAMeridian",&nj);
-      err=grib_get_long(handle,"lev",&lval);
-      err=grib_get_long(handle,"typeOfLevel",&lval2);
+      err=grib_get_long(handle,"level",&lval);
+      //err=grib_get_long(handle,"typeOfLevel",&lval2);
+      err=grib_get_long(handle,"typeOfFirstFixedSurface",&lval2);
       lval2=lval2==100?LVL_PRES:(lval2==1?LVL_MAGL:(lval2==105?LVL_MAGL:(lval2==105?LVL_MASL:LVL_UNDEF)));
 
       lev=FSTD_Level2IP(lval,lval2);
