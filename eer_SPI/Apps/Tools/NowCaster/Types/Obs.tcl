@@ -1596,7 +1596,10 @@ proc NowCaster::Obs::InfoBKType { Report } {
    set stype [metreport define $Report -STYPE]
 
    set no  [expr $fam&0x3]
-   set fam [lindex $Param(Familys) [expr $fam>>3&0x07]]
+   set fam [expr $fam>>3&0x07]
+   set fam [expr $fam==0?2:$fam==1?0:1]
+
+   set fam [lindex $Param(Familys) $fam]
    set alt [lindex $Param(Types)   [expr ($type>>6)+1]]
    set bk  [lindex $Param(BKTypes) [expr $type&0x3F]]
    set st  [lindex $Param(BKSTypes[expr ($type>>6)]-[expr $type&0x3F]) $stype]
