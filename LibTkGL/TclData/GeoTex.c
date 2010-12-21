@@ -574,7 +574,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
  * Nom          : <GeoTex_Qualify>
  * Creation     : Janvier 2007 J.P. Gauthier - CMC/CMOE
  *
- * But          : CQualifire les type de donneese necessaire aux texture OpenGL selon les
+ * But          : Qualifie les type de donnees necessaire aux texture OpenGL selon les
  *                donnees de la bande.
  *
  * Parametres   :

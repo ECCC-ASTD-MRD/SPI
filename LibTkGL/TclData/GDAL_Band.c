@@ -1280,7 +1280,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                         case TD_NORMALIZED_COUNT : if (Table) {
                                                       t=0;
                                                       while(t<ToDef->NK) {
-                                                         if (vx==Table[t] && t<ToDef->NK) {
+                                                         if (vx==Table[t]) {
                                                             if (Mode!=TD_COUNT) acc[idxt]++;
                                                             fld[t*nij+idxt]+=1.0;
                                                             break;

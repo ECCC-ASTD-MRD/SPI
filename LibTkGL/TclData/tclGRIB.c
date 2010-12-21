@@ -318,7 +318,6 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
    size_t              len;
    long                lval,lval2,lev;
 
-  err=f77name(wkoffit)(Name);
   if (GRIB_FileGet(Id)) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return TCL_ERROR;
@@ -345,6 +344,7 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
       valid=System_DateTime2Seconds(date,time*100,1);
       err=grib_get_long(handle,"GRIBEditionNumber",&lval);
       sprintf(buf,"%s %i VAR TV %ld 0 0 GRIB%i %ld %ld %ld %ld 0",Id,offset,lev,lval,valid,valid,ni,nj);
+      fprintf(stderr,"%s\n",buf);
       Tcl_AppendElement(Interp,buf);
       size+=offset=ftell(fi);
    }

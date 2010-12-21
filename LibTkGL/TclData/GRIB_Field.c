@@ -181,7 +181,6 @@ fprintf(stderr,"----13 %li %li %li\n",ni,nj,nk);
    if (!field) {
       return(TCL_ERROR);
    }
-fprintf(stderr,"----132\n");
 
    len=FSIZE3D(field->Def);
    data=malloc(len*sizeof(double));
@@ -190,7 +189,6 @@ fprintf(stderr,"----132\n");
       return(TCL_ERROR);
    }
    err=grib_get_double(head.Handle,"missingValue",&field->Def->NoData);
-fprintf(stderr,"----14\n");
 
    for(i=0;i<FSIZE3D(field->Def);i++) {
       Def_Set(field->Def,0,i,data[i]);

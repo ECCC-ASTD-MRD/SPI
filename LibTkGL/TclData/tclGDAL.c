@@ -835,7 +835,7 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
       band=Tcl_GetHashValue(entry);
 
       if (band && band->Spec && band->Spec==Spec) {
-//         GDAL_BandClean(band,Map,Pos,Seg);
+         GDAL_BandClean(band,Map,Pos,Seg);
       }
       entry=Tcl_NextHashEntry(&ptr);
    }

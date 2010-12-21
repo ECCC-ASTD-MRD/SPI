@@ -2564,14 +2564,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
    /*For all of the sations*/
    loc=Obs->Loc;
-   n=0;
+   n=-1;
    nobs=0;
 
    while(loc) {
 
       line=0;
+      n++;
       if (GLMode==GL_SELECT) {
-         if (!VP->ForcePick && (n && !(n%100)) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
+         if (!VP->ForcePick && (n && !(n%10)) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
             break;
          }
          glPushName(n);
@@ -2585,11 +2586,16 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          /*Get the elements group for the specific time*/
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
 
-            /*Fix transparency on validity time persistance and break if too old (alpha==0)*/
+            /*Fix transparency on validity time persistance*/
             if (Obs->Persistance) {
                alpha=1.0-((double)(Obs->Time-elem->Time)/Obs->Persistance);
+
+               /*Continue with next location if this data is too old to be seen*/
                if (alpha<=0.0) {
-                  break;
+                  loc=loc->Next;
+                  if (GLMode==GL_SELECT)
+                     glPopName();
+                  continue;
                }
             }
 
@@ -2893,7 +2899,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          glPopName();
 
       loc=loc->Next;
-      n++;
    }
 
    glPopName();
