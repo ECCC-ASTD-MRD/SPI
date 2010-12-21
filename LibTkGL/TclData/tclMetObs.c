@@ -2571,6 +2571,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
       line=0;
       n++;
+
       if (GLMode==GL_SELECT) {
          if (!VP->ForcePick && (n && !(n%10)) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
             break;
@@ -2873,12 +2874,18 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               nobs++;
 
                               glPopMatrix();
+
+                              /*If we're dynamic, only show first of grouped data*/
+                              if (clat && GLRender->Resolution!=1) {
+                                 break;
+                              }
                            }
 
                            /*If this is no grouped data, skip the rest if no height is specified, they'll all be overlapped anyway*/
                            if (clat==-1 && !eb) {
                               break;
                            }
+
                         }
                         /*TODO break if grouped data, until we can select the variables (ex:Per channel)*/
                         if (data->Nt>1)
