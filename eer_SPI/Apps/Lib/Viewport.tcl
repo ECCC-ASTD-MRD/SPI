@@ -2835,7 +2835,7 @@ proc Viewport::UnSetup { Frame } {
 
    projection destroy $Frame
    projcam destroy $Frame
-   font delete FONT$Frame
+   catch { font delete FONT$Frame }
 }
 
 #----------------------------------------------------------------------------

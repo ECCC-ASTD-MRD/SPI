@@ -96,7 +96,7 @@ proc NowCaster::Cast { { Sec 0 } } {
          Page::UpdateCommand  $page
          Miniport::UpdateData $page
          if { [set dt [expr $Data(Sec1)-$Data(Sec0)]]!=0 } {
-            CVClock::Time        $page $Data(Sec) [expr ($Data(Sec)-$Data(Sec0))*100.0/($Data(Sec1)-$Data(Sec0))]
+            CVClock::Time $page $Data(Sec) [expr ($Data(Sec)-$Data(Sec0))*100.0/($Data(Sec1)-$Data(Sec0))]
          }
       }
    }

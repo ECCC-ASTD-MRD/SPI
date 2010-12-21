@@ -505,17 +505,20 @@ proc FieldBox::FileOpen { No File } {
       #----- Ouvrir le fichier
 
       set index ""
-      set bad [catch { set index [fstdfile open $fid read $file] }]
-      if { $bad } {
-         fstdfile close $fid
+      if { [fstdfile is $file] } {
+         set bad [catch { set index [fstdfile open $fid read $file] }]
+         if { $bad } {
+            fstdfile close
+         } else {
+            lappend data(TypeList) fstdfield
+         }
+      } elseif { [gribfile is $file] } {
          set bad [catch { set index [gribfile open $fid read $file] }]
          if { $bad } {
             gribfile close $fid
          } else {
             lappend data(TypeList) gribfield
          }
-      } else {
-         lappend data(TypeList) fstdfield
       }
 
       if { $index=="" } {
