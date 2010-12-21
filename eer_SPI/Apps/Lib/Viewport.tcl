@@ -819,14 +819,18 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set coord  [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
                             set id     [trajectory define $obj -ID]
                             set vals   [DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]
-                            append Page::Data(Value) "$id:$vals "
+                            if { [llength $vals] } {
+                               append Page::Data(Value) "$id:$vals "
+                            }
                           }
             "observation" {
                             set info  [observation define $obj -ID $tag]
                             set coord [observation define $obj -COORD $tag]
                             set id    $obj
                             set vals  [observation define $obj -DATA $tag]
-                            append Page::Data(Value) "$id:$vals "
+                            if { [llength $vals] } {
+                               append Page::Data(Value) "$id:$vals "
+                            }
                           }
             "metobs"      { set info  [lindex [metobs define $obj -ID $tag]]
                             set coord [metobs define $obj -COORD $tag]
@@ -834,7 +838,10 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
                             set id    [lindex [metobs table -desc [lindex $item 2]] 0]
                             set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
-                            append Page::Data(Value) "$id:[format "%g" [lindex $vals 0]] "
+
+                            if { [llength $vals] } {
+                               append Page::Data(Value) "$id:[format "%g" [lindex $vals 0]] "
+                            }
                             set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }
          }
