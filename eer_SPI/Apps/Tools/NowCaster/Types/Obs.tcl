@@ -694,14 +694,14 @@ proc NowCaster::Obs::Now { Sec { Check False } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <NowCaster::Obs::Read>
+# Nom      : <NowCaster::Obs::ReadProcess >
 # Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Lire un fichier de donnees.
+# But      : Extraire les information pertinentes suite a la lecture d'un fichier
+#            et afficher le resultat.
 #
 # Parametres :
-#   <Obs>    : Objet observation a modifier
-#   <File>   : Fichier a lire
+#   <Obs>    : Objet observation
 #
 # Retour    :
 #
@@ -727,6 +727,22 @@ proc NowCaster::Obs::ReadProcess { Obs } {
       NowCaster::SetTimeScale [metobs define $Obs -DATE0] [metobs define $Obs -DATE1]
    }
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Obs::Read>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lire un fichier de donnees.
+#
+# Parametres :
+#   <Obs>    : Objet observation a modifier
+#   <File>   : Fichier a lire
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Read { Obs Files } {
    global GDefs
@@ -889,10 +905,6 @@ proc NowCaster::Obs::Add { Path } {
       }
       set obs $obs-$no
    }
-#   set no [format "%02i" [llength [lsearch -all -glob [$Data(Frame).select.list get 0 end] $file*]]]
-#   set obs ${file}_$no
-
-#   set obs ${file}-$no
    lappend Data(Obs) $obs
 
    catch { $Data(Frame).select.list selection clear 0 end
@@ -1447,7 +1459,7 @@ proc NowCaster::Obs::ModelParse { } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <NowCaster::Obs::Info>
+# Nom      : <NowCaster::Obs::InfoWindow>
 # Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Recuperer toutes les informations sur un station en particulier et
@@ -1455,8 +1467,6 @@ proc NowCaster::Obs::ModelParse { } {
 #
 # Parametres :
 #   <Obs>    : Observation
-#   <Id>     : Identificateur de la station
-#   <Tag>    : Identificateur unique de la station
 #
 # Retour    :
 #
@@ -1586,6 +1596,22 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
     wm title .nowcasterinfo "[lindex $Lbl(Info) $GDefs(Lang)]: $Obs"
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Obs::InfoBKType>
+# Creation : Decembre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Extraire les informations relatives au rapport a partir des
+#            BFAM, BKTYP et BKSTYP.
+#
+# Parametres :
+#   <Report> : Rapport
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
 proc NowCaster::Obs::InfoBKType { Report } {
    global GDefs
    variable Param
@@ -1609,6 +1635,25 @@ proc NowCaster::Obs::InfoBKType { Report } {
 [lindex $Lbl(Type) $GDefs(Lang)]: [lindex [lindex $bk end] $GDefs(Lang)]
 [lindex $Lbl(SType) $GDefs(Lang)]: [lindex [lindex $st end] $GDefs(Lang)]"
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Obs::Info>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer toutes les informations sur un station en particulier et
+#            afficher le tout dans une fenetre d'edition.
+#
+# Parametres :
+#   <Obs>    : Observation
+#   <Id>     : Identificateur de la station
+#   <Tag>    : Identificateur unique de la station
+#   <All>    : Display all messages
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
    global GDefs
@@ -1719,6 +1764,20 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       }
    }
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Obs::Graph>
+# Creation : Fevrier 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Configurer et mettre a jour le tephigrammme
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc NowCaster::Obs::Graph { } {
    variable Tephi
