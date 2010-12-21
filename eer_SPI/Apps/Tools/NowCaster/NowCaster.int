@@ -121,6 +121,8 @@ proc NowCaster::Window { { Type "" } } {
             -command { NowCaster::UpdateTypes }
          .nowcaster.time.clock.down.menu add radiobutton -label " 1 Hr" -variable NowCaster::Data(Persistance) -value 3600 \
             -command { NowCaster::UpdateTypes }
+         .nowcaster.time.clock.down.menu add radiobutton -label " 3 Hrs" -variable NowCaster::Data(Persistance) -value 10800 \
+            -command { NowCaster::UpdateTypes }
          .nowcaster.time.clock.down.menu add radiobutton -label " 6 Hrs" -variable NowCaster::Data(Persistance) -value 21600 \
             -command { NowCaster::UpdateTypes }
          .nowcaster.time.clock.down.menu add radiobutton -label "12 Hrs" -variable NowCaster::Data(Persistance) -value 43200 \
