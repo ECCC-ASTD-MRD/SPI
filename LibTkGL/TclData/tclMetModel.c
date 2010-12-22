@@ -225,8 +225,8 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
    EntryTableB *eb;
    int       i,j,n,d,k,idx;
 
-   static CONST char *sopt[] = { "-items","-spacing","-flat","-topography",NULL };
-   enum                opt { ITEMS,SPACING,FLAT,TOPOGRAPHY,WMO };
+   static CONST char *sopt[] = { "-items","-spacing","-flat","-topography","-overspace",NULL };
+   enum                opt { ITEMS,SPACING,FLAT,TOPOGRAPHY,OVERSPACE };
 
    mdl=MetModel_Get(Name);
    if (!mdl) {
@@ -322,6 +322,14 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
             }
             break;
 
+         case OVERSPACE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(mdl->Overspace));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&mdl->Overspace);
+            }
+            break;
+
          case TOPOGRAPHY:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Topo,-1));
@@ -363,13 +371,14 @@ int MetModel_Create(Tcl_Interp *Interp,char *Name) {
       return(TCL_ERROR);
    }
 
-   mdl->NItem = 0;
-   mdl->NRef  = 1;
-   mdl->Space = 25;
-   mdl->Flat  = 1;
-   mdl->Items = NULL;
-   mdl->Topo  = NULL;
-   mdl->Name  = strdup(Name);
+   mdl->NItem    = 0;
+   mdl->NRef     = 1;
+   mdl->Space    = 25;
+   mdl->Flat     = 1;
+   mdl->Overspace= 0;
+   mdl->Items    = NULL;
+   mdl->Topo     = NULL;
+   mdl->Name     = strdup(Name);
 
    return(TCL_OK);
 }

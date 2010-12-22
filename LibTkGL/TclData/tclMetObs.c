@@ -2502,7 +2502,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    Coord         co;
    char          buf[128];
    double        z,val,valid,dir,dx,dy,k;
-   int           d,e,i,n,v,t,iy,idx,line,id,ne,mk;
+   int           d,e,i,n,v,t,iy,idx,line,id,ne,mk,box[4],b;
    double        alpha=1.0;
    int           clat,clon,nobs;
 
@@ -2536,7 +2536,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glLineWidth(1.0);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glDisable(GL_CULL_FACE);
-   glPushName(PICK_METOBS);
+   glEnable(GL_STENCIL_TEST);
+   glStencilFunc(GL_ALWAYS,0x80,0x80);
+   glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
 
    if (Interp)
       Tcl_AppendResult(Interp,"%% Postscript des observations meteorologiques\n",(char*)NULL);
@@ -2567,6 +2569,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    n=-1;
    nobs=0;
 
+   if (GLMode==GL_SELECT)
+      glPushName(PICK_METOBS);
+
    while(loc) {
 
       line=0;
@@ -2576,13 +2581,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          if (!VP->ForcePick && (n && !(n%10)) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {
             break;
          }
-         glPushName(n);
       }
 
       /*Check if visible or delay test for grouped data (loc->Grid)*/
       if (loc->Grid[0]!=0.0 || Projection_Pixel(Proj,VP,loc->Coord,pix)) {
-
-         z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
 
          /*Get the elements group for the specific time*/
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
@@ -2594,8 +2596,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                /*Continue with next location if this data is too old to be seen*/
                if (alpha<=0.0) {
                   loc=loc->Next;
-                  if (GLMode==GL_SELECT)
-                     glPopName();
                   continue;
                }
             }
@@ -2616,6 +2616,17 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   }
                }
             }
+
+            if (Obs->Model->Overspace && glStencilMaskCheck(pix[0]-30,pix[1]-30,60,60,0x80)) {
+               loc=loc->Next;
+               continue;
+            }
+
+            if (GLMode==GL_SELECT)
+               glPushName(n);
+
+            /*Get station height*/
+            z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
 
             /*Loop on the model items*/
             for(i=0;i<Obs->Model->NItem;i++) {
@@ -2759,6 +2770,13 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               /*Positionner dans le modele*/
                               glTranslated(dx,dy,0.0);
 
+                              /*Draw coverage into stencil buffer*/
+                              if (Obs->Model->Overspace) {
+                                 glStencilMask(0x80);
+                                 glStencilMaskQuad(-20,-20,40,40,0,Obs->Model->Overspace,Obs->Model->Overspace);
+                                 glStencilMask(0xff);
+                              }
+
                               iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue+(spec->WMO?1:0);
 
                               if (id && spec->RenderLabel) iy--;
@@ -2826,7 +2844,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                   if (!WMO_Symbol2) {
                                     WMO_Symbol2=Tk_GetFont(Interp,GLRender->TkWin,"-macromedia-meteo_b-medium-r-normal--14-0-0-0-p-0-microsoft-symbol");
                                  }
-                                if (spec->WMO==1) { /*AUTO*/
+                                 if (spec->WMO==1) { /*AUTO*/
                                     if (val==0) {
                                        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                                        glEnableClientState(GL_VERTEX_ARRAY);
@@ -2915,15 +2933,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                if (GLMode==GL_SELECT)
                   glPopName();
             }
+            if (GLMode==GL_SELECT)
+               glPopName();
          }
       }
-      if (GLMode==GL_SELECT)
-         glPopName();
-
       loc=loc->Next;
    }
 
-   glPopName();
+   if (GLMode==GL_SELECT)
+      glPopName();
 
    if (Obs->Model->Flat) {
       glPopMatrix();
@@ -2935,6 +2953,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glDisable(GL_DEPTH_TEST);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_DEPTH_TEST);
+   glStencilFunc(GL_EQUAL,0x00,0x0f);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
 
    if (GLRender->GLDebug)
       fprintf(stdout,"(DEBUG) MetObs_Render: Nb Loc=%i NbObs=%i\n",n,nobs);

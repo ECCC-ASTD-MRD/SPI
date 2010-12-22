@@ -1827,12 +1827,12 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   GDB_GeoRender(Interp,Proj,tile->Rail,ABS(GDB->Params.Rail),Proj->VP->ColorRail,0);
                }
 
-               if (GDB->Params.City && tile->TCity) {
-                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->VP->ColorCity,6);
-               }
-
                if (GDB->Params.Place && tile->TPlace) {
                   GDB_TxtRender(Interp,Proj,tile->TPlace,Proj->VP->ColorPlace,0);
+               }
+
+               if (GDB->Params.City && tile->TCity) {
+                  GDB_TxtRender(Interp,Proj,tile->TCity,Proj->VP->ColorCity,6);
                }
             }
             if (Proj->Sun) {
@@ -2076,7 +2076,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             /*If within the viewport limits*/
             if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->VP->Width && (pix[1]+y+dy+5)<Proj->VP->Height) {
 
-              /*If cnot overlapping another label*/
+              /*If not overlapping another label*/
               if (!glStencilMaskCheck(pix[0]+x,pix[1]+y,dx,dy,0x80)) {
                   if (Point) {
                      glPrint(Interp,Proj->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
