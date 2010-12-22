@@ -2501,7 +2501,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    Vect3d        pix;
    Coord         co;
    char          buf[128];
-   double        z,val,dir,dx,dy,k;
+   double        z,val,valid,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk;
    double        alpha=1.0;
    int           clat,clon,nobs;
@@ -2662,7 +2662,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                               /*Check for validity*/
                               val=MetObs_GetData(data,e,v,t);
-                              if (MET_VALID(val,Obs->NoData)) {
+                              valid=MET_VALID(val,Obs->NoData);
+
+                              if (valid) {
                                  if (val<spec->Min || val>spec->Max)
                                     continue;
                                  if (spec->InterNb && val<spec->Inter[0])
@@ -2687,7 +2689,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                               if (Interp) {
                                  Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
-                                 Tcl_AppendResult(Interp,"1.0 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
+                                 sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",spec->Width);
+                                 Tcl_AppendResult(Interp,buf,(char*)NULL);
                               } else {
                                  if (spec->Outline) {
                                     glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*65535);
@@ -2778,7 +2781,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  id=1;
                               }
 
-                              if (spec->RenderVector && MET_VALID(val,Obs->NoData) && !(spec->WMO && val<5.0)) {
+                              if (spec->RenderVector && valid && !(spec->WMO && VAL2SPEC(spec,val)<5.0)) {
                                  dir=TMetElem_Value(data,Obs->Model->Items[i].Code[1],ne,v,0);
                                  if (MET_VALID(dir,Obs->NoData)) {
                                     if (spec->Map && spec->MapAll) {
@@ -2801,7 +2804,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                               }
 
-                              if (spec->RenderValue && MET_VALID(val,Obs->NoData) && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
+                              if (spec->RenderValue && valid && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                                  if (spec->Map && spec->MapAll) {
                                     VAL2COL(idx,spec,val);
 
@@ -2818,47 +2821,59 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               if (spec->WMO && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
                                  /*Load up the symbols if not done yet*/
                                  if (!WMO_Symbol1) {
-                                    WMO_Symbol1=Tk_GetFont(Interp,GLRender->TkWin,"-misc-weathersymbols-medium-r-normal--20-0-0-0-p-0-microsoft-symbol");
+                                    WMO_Symbol1=Tk_GetFont(Interp,GLRender->TkWin,"-misc-weathersymbols-medium-r-normal--14-0-0-0-p-0-microsoft-symbol");
                                  }
                                   if (!WMO_Symbol2) {
-                                    WMO_Symbol2=Tk_GetFont(Interp,GLRender->TkWin,"-macromedia-meteo_b-medium-r-normal--20-0-0-0-p-0-microsoft-symbol");
+                                    WMO_Symbol2=Tk_GetFont(Interp,GLRender->TkWin,"-macromedia-meteo_b-medium-r-normal--14-0-0-0-p-0-microsoft-symbol");
                                  }
-                                if (spec->WMO==1) { /*N*/
+                                if (spec->WMO==1) { /*AUTO*/
+                                    if (val==0) {
+                                       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+                                       glEnableClientState(GL_VERTEX_ARRAY);
+                                       glVertexPointer(2,GL_DOUBLE,0,IconList[1].Co);
+                                       glScalef(9,9,1.0);
+                                       glTranslated(0.0,0.4,0.0);
+
+                                       if (Interp) glFeedbackInit(IconList[1].Nb*40,GL_2D);
+                                       glDrawArrays(IconList[1].Type,0,IconList[1].Nb);
+                                       if (Interp) glFeedbackProcess(Interp,GL_2D);
+                                    }
+                                 } else if (spec->WMO==2) { /*N*/
                                     if (val>=0 && val<=9) {
-                                       spec->Font=WMO_Symbol2;
+                                       spec->Font=WMO_Symbol1;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
-                                       sprintf(buf,"%c",(int)val+83);
+                                       sprintf(buf,"%c",(int)val+40);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==2) { /*WW*/
+                                 } else if (spec->WMO==3) { /*WW*/
                                     if (val>=4 && val<=99) {
                                        spec->Font=WMO_Symbol1;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+100);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==3) { /*CL*/
+                                 } else if (spec->WMO==4) { /*CL*/
                                     if (val>=1 && val<=9) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+34);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==4) { /*CM*/
+                                 } else if (spec->WMO==5) { /*CM*/
                                     if (val>=1 && val<=9) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+44);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==5) { /*CH*/
+                                 } else if (spec->WMO==6) { /*CH*/
                                     if (val>=1 && val<=9) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+55);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==6) { /*A*/
+                                 } else if (spec->WMO==7) { /*A*/
                                     if (val>=0 && val<=8) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);

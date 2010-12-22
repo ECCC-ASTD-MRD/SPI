@@ -1539,7 +1539,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                      /*Resize the arrow on the speed*/
                      size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                      if (Interp) glFeedbackInit(256,GL_2D);
-                     Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]),len,RAD2DEG(atan2(u,w)),size,Proj);
+                     Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
                      if (Interp) glFeedbackProcess(Interp,GL_2D);
                   }
                }
@@ -1567,7 +1567,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),len,180+RAD2DEG(atan2(u,v)),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,len),180+RAD2DEG(atan2(u,v)),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }
@@ -1666,7 +1666,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,x[n]);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),x[n],y[n],size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,x[n]),y[n],size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             } else {
@@ -1682,7 +1682,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),len,180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,len),180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }

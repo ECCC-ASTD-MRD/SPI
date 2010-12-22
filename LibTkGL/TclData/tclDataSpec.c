@@ -48,7 +48,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*" };
 CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
 CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
-CONST char *WMOS[]    = { "NONE","N","WW","CL","CM","CH","A","UV" };
+CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
 
 TIcon IconList[]={
  { GL_POINT,     1, { 0.0,0.0 } },
@@ -1703,7 +1703,7 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
    } else {
 
       /*Affichage Exponent*/
-      if (Spec->InterO > 3 || Spec->InterO <-2) {
+      if (Spec->InterO>3 || Spec->InterO<-2) {
          m+=Spec->InterO;
          o=2;
       } else {
@@ -1727,7 +1727,7 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
             case  3: sprintf(Str,"%.3f",Val);break;
             case  2: sprintf(Str,"%.2f",Val);break;
             case  1: sprintf(Str,"%.1f",Val);break;
-            default: sprintf(Str,"%.0f",rint(Val));
+            default: sprintf(Str,"%.0f",nearbyint(Val));
          }
          break;
       case 2: switch(m) {
@@ -1743,7 +1743,7 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
             default: sprintf(Str,"%.1e",Val);break;
          }
          break;
-      default: sprintf(Str,"%.0f",rint(Val));
+      default: sprintf(Str,"%.0f",nearbyint(Val));
          break;
    }
 }
