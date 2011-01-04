@@ -116,6 +116,9 @@ namespace eval FSTD {
    set Param(GridVec)       1              ;#Reference geographique des composantes de vecteurs
    set Param(Width)         1              ;#Largeur des segments
 
+   set Param(Inters)        {}
+   set Param(Labels)        {}
+
    set Param(Factor)        0              ;#Facteur d'ajustement
    set Param(Delta)         0              ;#Facteur d'ajustement
    set Param(Unit)          ""             ;#Type d'unite

@@ -109,6 +109,9 @@ namespace eval Obs {
    set Param(Order)         AUTO                                   ;#Format d'affichage des valeurs
    set Param(Width)         1                                      ;#Largeur des segments
 
+   set Param(Inters)        {}
+   set Param(Labels)        {}
+
    #----- Definitions des labels
 
    set Lbl(Map)            { "Palette" "Colormap" }
@@ -543,6 +546,9 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Max)       [dataspec configure $Spec -max]
    set Param(Width)     [dataspec configure $Spec -width]
 
+   set Param(Inters) $Param(Intervals)
+   set Param(Labels) {}
+
    if { $Param(Min)!=$Param(Max) } {
       set Param(Intervals) ""
       if { $Param(Min)!="" } {
@@ -553,12 +559,16 @@ proc Obs::ParamGet { { Spec "" } } {
       }
    }
 
-   if { [llength [set interlabels [dataspec configure $Spec -interlabels]]] } {
-      set inters $Param(Intervals)
+   if { [llength [set Param(Labels) [dataspec configure $Spec -interlabels]]] } {
+      set Param(Inters) $Param(Intervals)
       set Param(Intervals) ""
-      foreach label $interlabels inter $inters {
+      foreach label $Param(Labels) inter $Param(Inters) {
          append Param(Intervals) "$inter ($label) "
       }
+   }
+
+   if { $Param(Font)=="" } {
+      set Param(Font) OBSFONTDEFAULT
    }
 }
 
@@ -589,8 +599,8 @@ proc Obs::ParamSet { { Spec "" } } {
       return
    }
 
-   set inter $Param(Intervals)
-   set label {}
+   set Param(Inters) $Param(Intervals)
+   set Param(Labels) {}
    set min   ""
    set max   ""
 
@@ -598,20 +608,20 @@ proc Obs::ParamSet { { Spec "" } } {
 
    if { [set from [string first "\[" $Param(Intervals)]]!=-1 } {
       set min [lindex [string range $Param(Intervals) [incr from] end] 0]
-      set inter {}
+      set Param(Inters) {}
    }
 
    if { [set to [string first "\]" $Param(Intervals)]]!=-1 } {
       set max [lindex [string range $Param(Intervals) 0 [incr to -1]] end]
-      set inter {}
+      set Param(Inters) {}
    }
 
    if { [string first "(" $Param(Intervals)]!=-1 } {
-      set inter {}
+      set Param(Inters) {}
       foreach { val } [split $Param(Intervals) )] {
          if { [llength [set val [split $val (]]]>1 } {
-            lappend inter [lindex $val 0]
-            lappend label [lindex $val 1]
+            lappend Param(Inters) [lindex $val 0]
+            lappend Param(Labels) [lindex $val 1]
          }
       }
    }
@@ -619,7 +629,7 @@ proc Obs::ParamSet { { Spec "" } } {
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -width $Param(Width) -font $Param(Font) -colormap $Param(Map) \
       -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
       -rendervolume $Param(Volume) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo) \
-      -min $min -max $max -intervals $inter -interlabels $label -intervalmode $Param(IntervalMode) $Param(IntervalParam)
+      -min $min -max $max -intervals $Param(Inters) -interlabels $Param(Labels) -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 
    catch { $Data(ApplyButton) configure -state normal }
 }

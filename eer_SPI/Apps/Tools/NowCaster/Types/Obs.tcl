@@ -432,7 +432,7 @@ proc NowCaster::Obs::Window { Frame } {
          -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
       checkbutton $Frame.head.graph -image BUBBLEGRAPH -relief sunken -bd 1 -overrelief raised -offrelief flat -anchor w -selectcolor $GDefs(ColorLight)\
          -variable Obs::Param(BubbleGraph) -onvalue True -offvalue False -indicatoron False
-      button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 2 }
+      button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params; TabFrame::Select .params.tab 2 }
       menubutton $Frame.head.add -image PLUS -bd 0 -relief flat -menu $Frame.head.add.list
       button $Frame.head.del -image DELETE -bd 1 -relief flat -overrelief raised \
          -command "catch { NowCaster::Obs::Delete \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
@@ -473,21 +473,21 @@ proc NowCaster::Obs::Window { Frame } {
    labelframe $Frame.elem -text [lindex $Lbl(Elem) $GDefs(Lang)]
       frame $Frame.elem.var0
          label $Frame.elem.var0.lbl -text [lindex $Lbl(Var0) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $Frame.elem.var0.sel NowCaster::Obs::Data(Var0) noedit sorted nodouble -1 { } 2 15 NowCaster::Obs::ModelApply
+         ComboBox::Create $Frame.elem.var0.sel NowCaster::Obs::Data(Var0) edit sorted nodouble -1 { } 2 15 NowCaster::Obs::ModelApply
          pack $Frame.elem.var0.lbl -side left
          pack $Frame.elem.var0.sel -side left -fill x -expand True
       pack $Frame.elem.var0 -side top -fill x -padx 2 -expand True
 
       frame $Frame.elem.var1
          label $Frame.elem.var1.lbl -text [lindex $Lbl(Var1) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $Frame.elem.var1.sel NowCaster::Obs::Data(Var1) noedit sorted nodouble -1 { } 2 15 NowCaster::Obs::ModelApply
+         ComboBox::Create $Frame.elem.var1.sel NowCaster::Obs::Data(Var1) edit sorted nodouble -1 { } 2 15 NowCaster::Obs::ModelApply
          pack $Frame.elem.var1.lbl -side left
          pack $Frame.elem.var1.sel -side left -fill x -expand True
       pack $Frame.elem.var1 -side top -fill x -padx 2 -pady 2 -expand True
 
       frame $Frame.elem.topo
          label $Frame.elem.topo.lbl -text [lindex $Lbl(Topo) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $Frame.elem.topo.sel NowCaster::Obs::Data(Topo) noedit sorted nodouble -1 { } 2 15 set NowCaster::Obs::Data(Topo\$NowCaster::Obs::Data(CurrentObs)) \[lindex \$NowCaster::Obs::Data(Topo) 0\]\; NowCaster::Obs::ModelApply
+         ComboBox::Create $Frame.elem.topo.sel NowCaster::Obs::Data(Topo) edit sorted nodouble -1 { } 2 15 set NowCaster::Obs::Data(Topo\$NowCaster::Obs::Data(CurrentObs)) \[lindex \$NowCaster::Obs::Data(Topo) 0\]\; NowCaster::Obs::ModelApply
          pack $Frame.elem.topo.lbl -side left
          pack $Frame.elem.topo.sel -side left -fill x -expand True
       pack $Frame.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
@@ -627,7 +627,7 @@ proc NowCaster::Obs::Window { Frame } {
 proc NowCaster::Obs::VarSet { Var } {
 
    if { $Var!="" } {
-      return "[lindex [metobs table -desc $Var] 0] $Var"
+      return "$Var [lindex [metobs table -desc $Var] 0]"
    } else {
       return $Var
    }
@@ -1093,13 +1093,14 @@ proc NowCaster::Obs::Update { { Obs {} } } {
          -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs)
 
       foreach item $Data(Model$obs) {
-         set desc [metobs table -desc [lindex $item 2]]
-         set var  [lindex $desc 0]
-         if { ![dataspec is $var] } {
-            dataspec create $var
-            dataspec configure $var -desc $var -unit [lindex $desc end] -set 0
+         set code [lindex $item 2]
+         set desc [metobs table -desc $code]
+
+         if { ![dataspec is $code] } {
+            dataspec create $code
+            dataspec configure $code -desc [lindex $desc 0] -unit [lindex $desc end] -set 0
          }
-         metmodel configure $model [lindex $item 2] -dataspec $var
+         metmodel configure $model [lindex $item 2] -dataspec $code
       }
    }
    Obs::ParamUpdate
@@ -1142,7 +1143,7 @@ proc NowCaster::Obs::ObsSelect { Obs } {
          ComboBox::DelAll  $Data(Frame).elem.var1.sel
          ComboBox::DelAll  $Data(Frame).elem.topo.sel
           foreach elem  $Data(Elems$Obs) {
-            set info "[lindex [metobs table -desc $elem] 0] $elem"
+            set info "$elem [lindex [metobs table -desc $elem] 0]"
 
             ComboBox::Add $Data(Frame).elem.var0.sel $info
             ComboBox::Add $Data(Frame).elem.var1.sel $info
@@ -1181,7 +1182,7 @@ proc NowCaster::Obs::ModelApply { } {
       set Data(Model$Data(Item)) {}
       set Data(Set$Data(Item))   ""
    } else {
-      set Data(Model$Data(Item)) [list [lindex $Data(Var0) end] [lindex $Data(Var1) end]]
+      set Data(Model$Data(Item)) [list [lindex $Data(Var0) 0] [lindex $Data(Var1) 0]]
       set Data(Set$Data(Item))   #
    }
    set Data(Model$Data(CurrentObs)) [NowCaster::Obs::ModelParse]
@@ -1247,28 +1248,33 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
       set Data(Var1) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 1]]
 
       if { [set topo [metmodel define [metobs define $Data(CurrentObs) -MODEL] -topography]]!="" } {
-         set Data(Topo) "$topo [metobs table -code $topo]"
+         set Data(Topo) "$topo [lindex [metobs table -desc $topo] 0]"
       } else {
          set Data(Topo) ""
       }
    }
 
    set Data(ModelName$Data(CurrentObs)) $Data(ModelName)
-   set Data(Model$Data(CurrentObs))     [NowCaster::Obs::ModelParse]
-   if { [metobs is $Data(CurrentObs)] } {
-      NowCaster::Obs::Update $Data(CurrentObs)
+   if { $Data(ModelName)=="" } {
+      set Data(Model$Data(CurrentObs))     [NowCaster::Obs::ModelParse]
+   } else {
+      set Data(Model$Data(CurrentObs))     $Data(Models$Data(ModelName))
    }
 
    if { [info exists ::NowCaster::Obs::Data(Param$Model)] } {
+      set code ""
       foreach param $Data(Param$Model) {
-         set var [lindex $param 2]
-         if { ![dataspec is $var] } {
-            dataspec create $var
+         set code [lindex $param 2]
+         if { ![dataspec is $code] } {
+            dataspec create $code
          }
          eval $param
       }
-      Obs::ParamGet
+      Obs::ParamGet $code
       Obs::ParamPut
+   }
+   if { [metobs is $Data(CurrentObs)] } {
+      NowCaster::Obs::Update $Data(CurrentObs)
    }
 }
 
@@ -1405,14 +1411,15 @@ proc NowCaster::Obs::ModelSave { } {
       set m 0
       foreach item $Data(Models$model) {
 
-         set desc [metobs table -desc [lindex $item 2]]
-         set var  [lindex $desc 0]
+         set code [lindex $item 2]
          Obs::ParamGet $var
-         lappend mparam "dataspec configure \"$var\" -factor $Obs::Param(Factor) -value $Obs::Param(Order) $Obs::Param(Mantisse) -size $Obs::Param(Size)\
-            -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\" -unit \"$Obs::Param(Unit)\" -width $Obs::Param(Width)\
+         lappend mparam "dataspec configure $code -factor $Obs::Param(Factor)  -delta $Obs::Param(Delta) -value $Obs::Param(Order) $Obs::Param(Mantisse) \
+            -width $Obs::Param(Width) -size $Obs::Param(Size) -style $Obs::Param(Style) -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\"\
+            -unit \"$Obs::Param(Unit)\" -desc \"$Obs::Param(Desc)\"  -mapall $Obs::Param(MapAll) -topography $Obs::Param(Topo) \
             -rendervector $Obs::Param(Vector) -rendertexture $Obs::Param(Texture) -rendervolume $Obs::Param(Volume)\
             -rendercoord $Obs::Param(Coord) -rendervalue $Obs::Param(Value) -renderlabel $Obs::Param(Label)\
-            -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Intervals)\" -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)"
+            -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Inters)\" -interlabels \"$Obs::Param(Labels)\" \
+            -intervalmode $Obs::Param(IntervalMode) $Obs::Param(IntervalParam)"
          incr m
       }
       puts $f "\"$model\" { $msave } { $mparam }"
