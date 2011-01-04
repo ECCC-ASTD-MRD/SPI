@@ -2569,8 +2569,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    n=-1;
    nobs=0;
 
-   if (GLMode==GL_SELECT)
-      glPushName(PICK_METOBS);
+   glPushName(PICK_METOBS);
 
    while(loc) {
 
@@ -2600,6 +2599,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
             }
 
+            /*Check for overlapping*/
+            if (Obs->Model->Overspace && glStencilMaskCheck(pix[0]-30,pix[1]-30,60,60,0x80)) {
+               loc=loc->Next;
+               continue;
+            }
+
             /*For grouped data, find location record indexes*/
             clat=clon=-1;
             if (loc->Grid[0]!=0.0 && loc->Grid[1]!=0.0) {
@@ -2617,13 +2622,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
             }
 
-            if (Obs->Model->Overspace && glStencilMaskCheck(pix[0]-30,pix[1]-30,60,60,0x80)) {
-               loc=loc->Next;
-               continue;
-            }
-
-            if (GLMode==GL_SELECT)
-               glPushName(n);
+            glPushName(n);
 
             /*Get station height*/
             z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
@@ -2638,9 +2637,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                } else {
                   glDisable(GL_BLEND);
                }
-
-               if (GLMode==GL_SELECT)
-                  glPushName(i);
+               glPushName(i);
 
                /*Loop on the data elements*/
                for(d=0;d<elem->NData;d++) {
@@ -2930,24 +2927,21 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                      }
                   }
                }
-               if (GLMode==GL_SELECT)
-                  glPopName();
-            }
-            if (GLMode==GL_SELECT)
                glPopName();
+            }
+            glPopName();
          }
       }
       loc=loc->Next;
    }
 
-   if (GLMode==GL_SELECT)
-      glPopName();
 
    if (Obs->Model->Flat) {
       glPopMatrix();
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
    }
+   glPopName();
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
    glDisable(GL_DEPTH_TEST);

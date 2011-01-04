@@ -528,9 +528,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case ICON:
             if (Objc==1) {
-               if (Spec->Icon) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(ICONS[Spec->Icon],-1));
-               }
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(ICONS[Spec->Icon],-1));
             } else {
                if (!strlen(Tcl_GetString(Objv[++i]))) {
                   Spec->Icon=0;
