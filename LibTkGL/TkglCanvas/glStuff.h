@@ -212,7 +212,6 @@ void     glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1
 void     glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int Y1,int Angle,XColor *Color,float XOff,float YOff,float Justify);
 void     glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Theta,int Width,int Height,int DeltaX,int DeltaY,XColor *Color,int Clip);
 int      glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,int angle,int x,int y,Tk_Anchor anchor,Tk_Justify justify);
-GLuint   glStencilMaskCheck(int X,int Y,int Width,int Height,int Ref);
 void     glStencilMaskQuad(int X,int Y,int Width,int Height,int Theta,int DX,int DY);
 int      glTextureFit(int Size,float Tolerance);
 int      glFontUse(Display *Disp,Tk_Font FontId);

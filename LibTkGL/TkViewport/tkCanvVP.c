@@ -659,6 +659,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             }
 
             trViewport(GLRender->TRCon,(int)vp->x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-(vp->y+vp->Height),vp->Width,vp->Height);
+            glCrowdClear();
             glPickInit(x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-y,2.0,2.0);
             glGetDoublev(GL_PROJECTION_MATRIX,vp->GLPick);
             ViewportSetup(vp->canvas,vp,proj,Tk_Width(Tk_CanvasTkwin(vp->canvas)),Tk_Height(Tk_CanvasTkwin(vp->canvas)),0,0,0);
