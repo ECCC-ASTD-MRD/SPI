@@ -2548,19 +2548,20 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    }
 
    /*Initialize rendering parameters per model items*/
-   min[0]=min[1]=max[0]=max[1]=0;
+   min[0]=min[1]=max[0]=max[1]=0;n=0;
    for(i=0;i<Obs->Model->NItem;i++) {
       if ((spec=Obs->Model->Items[i].Spec)) {
 
          /*Get value limits*/
          if (isnan(spec->Min) || isnan(spec->Max))
-               MetObs_GetStat(Obs,&Obs->Model->Items[i]);
+            MetObs_GetStat(Obs,&Obs->Model->Items[i]);
 
          /*Keep model limits*/
          min[0]=FMIN(min[0],Obs->Model->Items[i].X);
          min[1]=FMIN(min[1],Obs->Model->Items[i].Y);
          max[0]=FMAX(max[0],Obs->Model->Items[i].X);
          max[1]=FMAX(max[1],Obs->Model->Items[i].Y);
+         n=FMAX(n,Obs->Model->Items[i].Spec->Size);
 
          /*Define rendering parameters*/
          DataSpec_Intervals(spec,spec->Min,spec->Max);
@@ -2568,14 +2569,16 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       }
    }
 
+   /*Add spacing for crowd coverage*/
    min[0]*=Obs->Model->Space;
    min[1]*=Obs->Model->Space;
    max[0]*=Obs->Model->Space;
    max[1]*=Obs->Model->Space;
-   min[0]-=5;
-   min[1]-=5;
-   max[0]+=5;
-   max[1]+=5;
+   n>>=1;
+   min[0]-=n;
+   min[1]-=n;
+   max[0]+=n;
+   max[1]+=n;
 
    /*For all of the sations*/
    loc=Obs->Loc;
@@ -2612,7 +2615,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
             }
 
-            if (Obs->Model->Overspace && !glCrowdCheck(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+            if (loc->Grid[0]==0.0 && Obs->Model->Overspace && !glCrowdCheck(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                loc=loc->Next;
                continue;
             }
@@ -2704,7 +2707,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                                  if (!Projection_Pixel(Proj,VP,co,pix)) {
                                     continue;
-                                }
+                                 }
+                                 if (Obs->Model->Overspace && !glCrowdCheck(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+                                    continue;
+                                 }
                               }
 
                               if (Interp) {
