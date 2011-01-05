@@ -39,6 +39,7 @@
 #include <tcl.h>
 #include "tclCMap.h"
 #include "Vector.h"
+#include "eerStruct.h"
 #include "glStuff.h"
 
 #define DATASPEC_MAX 256
@@ -79,18 +80,6 @@
 }
 
 typedef enum { VNONE,BARBULE,ARROW,STREAMLINE,STREAMLINE3D } TDataSpecVECTOR;
-
-typedef struct TArray {
-   double  Value;
-   int     Size;
-   Vect3d *Data;
-} TArray;
-
-typedef struct TList {
-   void         *Data;
-   struct TList *Next;
-   struct TList *Prev;
-} TList;
 
 typedef struct TIcon {
    int     Type;

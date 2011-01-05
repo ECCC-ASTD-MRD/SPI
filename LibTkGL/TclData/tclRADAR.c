@@ -512,14 +512,13 @@ void Radar_FileParse(RADAR_DATA *Data) {
    int v,s,r;
 
    for(v=0;v<Data->numScans;v++) {
-      if (GLRender->GLDebug)
-         fprintf(stdout,"(DEBUG) Scan %i, MaxRay : %i\n",v,Data->volScan[v]->maxNumRaysInVolume);
+      fprintf(stdout,"(DEBUG) Scan %i, MaxRay : %i\n",v,Data->volScan[v]->maxNumRaysInVolume);
+
       for(s=0;s<Data->volScan[v]->numSweeps;s++) {
-         if (GLRender->GLDebug)
-            fprintf(stdout,"(DEBUG)    Sweep %i, MaxBin : %i    Elevation Angle : %f\n",s,Data->volScan[v]->sweep[s]->maxNumBinsInSweep,Data->volScan[v]->sweep[s]->elevationAngle);
+         fprintf(stdout,"(DEBUG)    Sweep %i, MaxBin : %i    Elevation Angle : %f\n",s,Data->volScan[v]->sweep[s]->maxNumBinsInSweep,Data->volScan[v]->sweep[s]->elevationAngle);
+
          for(r=0;r<Data->volScan[v]->sweep[s]->numRays;r++) {
-            if (GLRender->GLDebug)
-               fprintf(stdout,"(DEBUG)       Ray %i, Nb Bins : %i   Range : (%i - %i)   Azimuth : (%f - %f)\n",r,
+            fprintf(stdout,"(DEBUG)       Ray %i, Nb Bins : %i   Range : (%i - %i)   Azimuth : (%f - %f)\n",r,
                Data->volScan[v]->sweep[s]->rays[r]->numBins,
                Data->volScan[v]->sweep[s]->rays[r]->startRange,
                Data->volScan[v]->sweep[s]->rays[r]->endRange,

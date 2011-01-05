@@ -39,6 +39,11 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#include "eerStruct.h"
+#include "eerUtils.h"
+
+static TList *GLCrowdList;
+
 GLParams *GLRender;  /* Structure globale des parametres OpenGL */
 
 static float glArrayCircle[2*360*ARCSTEP+2];
@@ -1688,6 +1693,59 @@ GLuint glStencilMaskCheck(int X,int Y,int Width,int Height,int Ref) {
       }
    }
    return(!ds);
+}
+
+int glCrowdCheck(int X0,int Y0,int X1,int Y1,int Delta) {
+
+   int   *box,x0,x1,y0,y1;
+   TList *node;
+
+   x0=X0-Delta;
+   x1=X1+Delta;
+   y0=Y0-Delta;
+   y1=Y1+Delta;
+
+   /*Check for bbox intersection*/
+   node=GLCrowdList;
+   while(node) {
+      box=node->Data;
+      if (VOUT(box[0],box[2],x0,x1) || VOUT(box[1],box[3],y0,y1)) {
+         /*No intersection here, continue*/
+         node=node->Next;
+      } else {
+         /*Found an intersection*/
+         return(0);
+      }
+   }
+
+   /*If no intersection found, add in node list*/
+   box=(int*)malloc(4*sizeof(int));
+   box[0]=X0; box[1]=Y0;
+   box[2]=X1; box[3]=Y1;
+
+   node=(TList*)malloc(sizeof(TList));
+   node->Next=GLCrowdList;
+   node->Prev=NULL;
+   node->Data=box;
+
+   if (GLCrowdList) {
+      GLCrowdList->Prev=node;
+   }
+   GLCrowdList=node;
+
+   return(1);
+}
+
+void glCrowdClear() {
+
+   TList *tmp;
+
+   while(GLCrowdList) {
+      tmp=GLCrowdList;
+      GLCrowdList=GLCrowdList->Next;
+      free((int*)(tmp->Data));
+      free(tmp);
+   }
 }
 
 /*----------------------------------------------------------------------------

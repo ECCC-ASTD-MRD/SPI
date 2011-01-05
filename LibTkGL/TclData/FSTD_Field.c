@@ -2425,8 +2425,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
       return(0);
    }
 
-   if (GLRender->GLDebug)
-      fprintf(stdout,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
+#ifdef DEBUG
+   fprintf(stdout,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
+#endif
 
    /*Recuperer le data*/
    for(k=0;k<Field->Def->NK;k++) {

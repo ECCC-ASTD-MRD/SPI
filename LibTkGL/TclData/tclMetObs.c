@@ -2504,7 +2504,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    double        z,val,valid,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk,box[4],b;
    double        alpha=1.0;
-   int           clat,clon,nobs;
+   int           clat,clon,nobs,min[2],max[2];
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2536,9 +2536,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glLineWidth(1.0);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glDisable(GL_CULL_FACE);
-   glEnable(GL_STENCIL_TEST);
-   glStencilFunc(GL_ALWAYS,0x80,0x80);
-   glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
 
    if (Interp)
       Tcl_AppendResult(Interp,"%% Postscript des observations meteorologiques\n",(char*)NULL);
@@ -2551,6 +2548,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    }
 
    /*Initialize rendering parameters per model items*/
+   min[0]=min[1]=max[0]=max[1]=0;
    for(i=0;i<Obs->Model->NItem;i++) {
       if ((spec=Obs->Model->Items[i].Spec)) {
 
@@ -2558,11 +2556,26 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          if (isnan(spec->Min) || isnan(spec->Max))
                MetObs_GetStat(Obs,&Obs->Model->Items[i]);
 
+         /*Keep model limits*/
+         min[0]=FMIN(min[0],Obs->Model->Items[i].X);
+         min[1]=FMIN(min[1],Obs->Model->Items[i].Y);
+         max[0]=FMAX(max[0],Obs->Model->Items[i].X);
+         max[1]=FMAX(max[1],Obs->Model->Items[i].Y);
+
          /*Define rendering parameters*/
          DataSpec_Intervals(spec,spec->Min,spec->Max);
          DataSpec_Define(spec);
       }
    }
+
+   min[0]*=Obs->Model->Space;
+   min[1]*=Obs->Model->Space;
+   max[0]*=Obs->Model->Space;
+   max[1]*=Obs->Model->Space;
+   min[0]-=5;
+   min[1]-=5;
+   max[0]+=5;
+   max[1]+=5;
 
    /*For all of the sations*/
    loc=Obs->Loc;
@@ -2599,8 +2612,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
             }
 
-            /*Check for overlapping*/
-            if (Obs->Model->Overspace && glStencilMaskCheck(pix[0]-30,pix[1]-30,60,60,0x80)) {
+            if (Obs->Model->Overspace && !glCrowdCheck(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                loc=loc->Next;
                continue;
             }
@@ -2766,13 +2778,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                               /*Positionner dans le modele*/
                               glTranslated(dx,dy,0.0);
-
-                              /*Draw coverage into stencil buffer*/
-                              if (Obs->Model->Overspace) {
-                                 glStencilMask(0x80);
-                                 glStencilMaskQuad(-20,-20,40,40,0,Obs->Model->Overspace,Obs->Model->Overspace);
-                                 glStencilMask(0xff);
-                              }
 
                               iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue+(spec->WMO?1:0);
 
@@ -2947,8 +2952,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glDisable(GL_DEPTH_TEST);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_DEPTH_TEST);
-   glStencilFunc(GL_EQUAL,0x00,0x0f);
-   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
 
    if (GLRender->GLDebug)
       fprintf(stdout,"(DEBUG) MetObs_Render: Nb Loc=%i NbObs=%i\n",n,nobs);

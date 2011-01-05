@@ -584,7 +584,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case STATS:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return OGR_LayerStat(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
          break;
@@ -592,7 +592,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case DEFINE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return(OGR_LayerDefine(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
@@ -600,7 +600,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case PICK:
          if (Objc!=4 && Objc!=5 && Objc!=6) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer coords [all] [INTERSECT|INSIDE|OUTSIDE|NEAREST]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          all=0;f=0;

@@ -1165,6 +1165,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          ViewportSet(vp,proj);
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
          Projection_Setup(vp,proj,1);
+         glCrowdClear();
 
          /*Allouer les frames de retentions si ce n'est pas deja fait*/
          if (!vp->Frames[vp->Frame]) {
@@ -1872,6 +1873,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       }
       glStencilMask(0xFF);
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+      glCrowdClear();
 
       /*Generation des donnees raster*/
       ViewportSet(vp,proj);

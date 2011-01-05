@@ -42,10 +42,6 @@ static int GPC_ToVect3d(OGRGeometryH Geom,int No) {
    n=OGR_G_GetPointCount(Geom);
    if (n>GPC_GeomNb) {
       GPC_GeomNb=n;
-
-      if (GLRender->GLDebug)
-         fprintf(stderr,"(DEBUG) Increasing GPC_Geom buffer to %i\n",GPC_GeomNb);
-
       GPC_Geom[0]=(Vect3d*)realloc(GPC_Geom[0],GPC_GeomNb*sizeof(Vect3d));
       GPC_Geom[1]=(Vect3d*)realloc(GPC_Geom[1],GPC_GeomNb*sizeof(Vect3d));
 

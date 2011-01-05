@@ -227,6 +227,9 @@ int      glPickProcess();
 void      glTessError(GLenum Err);
 GLdouble *glTessTmpGet();
 
+int  glCrowdCheck(int X0,int Y0,int X1,int Y1,int Delta);
+void glCrowdClear();
+
 int      trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR);
 void     trRasterPos2i(int X,int Y);
 #endif

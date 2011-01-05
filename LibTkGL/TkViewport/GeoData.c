@@ -2045,8 +2045,6 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
    }
 
    glFontUse(Tk_Display(Tk_CanvasTkwin(Proj->VP->canvas)),Proj->VP->tkfont);
-   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-   glStencilFunc(GL_ALWAYS,0x81,0x81);
 
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
@@ -2077,16 +2075,11 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->VP->Width && (pix[1]+y+dy+5)<Proj->VP->Height) {
 
               /*If not overlapping another label*/
-              if (!glStencilMaskCheck(pix[0]+x,pix[1]+y,dx,dy,0x80)) {
+              if (glCrowdCheck(pix[0]+x,pix[1]+y,pix[0]+x+dx,pix[1]+y+dy,10)) {
                   if (Point) {
                      glPrint(Interp,Proj->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
                   }
                   glPrint(Interp,Proj->VP->canvas,Txt->String,pix[0],pix[1],0);
-
-                  /*Write the label coverage to the stencil buffer*/
-                  glStencilMask(0x80);
-                  glStencilMaskQuad(pix[0],pix[1],dx,dy,0,10,10);
-                  glStencilMask(0xff);
                }
             }
          }
@@ -2096,7 +2089,6 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
 
    Projection_Clip(Proj);
 
-   glStencilFunc(GL_ALWAYS,0x01,0x01);
    glMatrixMode(GL_PROJECTION);
    glPopMatrix();
    glMatrixMode(GL_MODELVIEW);

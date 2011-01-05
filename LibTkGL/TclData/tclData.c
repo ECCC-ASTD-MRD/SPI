@@ -600,9 +600,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                      vi=VertexVal(Field[f]->Ref,Field[f]->Def,2,i,j,k);
                      Def_Set(cut->Def,2,idx,vi);
                   }
-                  if (GLRender->GLDebug)
-                     fprintf(stdout,"(DEBUG) %f (%f,%f) [%f,%f] =%f %f (%f) v=%f %f (%f)\n",theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
-                        vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
+#ifdef DEBUG
+                  fprintf(stdout,"(DEBUG) %f (%f,%f) [%f,%f] =%f %f (%f) v=%f %f (%f)\n",theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
+                     vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
+#endif
                } else {
                   vij=VertexVal(Field[f]->Ref,Field[f]->Def,-1,i,j,k);
                   Def_Set(cut->Def,0,idx,vij);
@@ -613,9 +614,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          }
       }
    }
-   if (GLRender->GLDebug)
-      fprintf(stdout,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
-
+#ifdef DEBUG
+   fprintf(stdout,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
+#endif
   return(TCL_OK);
 }
 
