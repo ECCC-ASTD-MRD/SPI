@@ -1496,7 +1496,7 @@ void TMetElemData_Free(TMetElemData *Data) {
    }
 }
 
-int TMetElemData_Same(TMetElemData *Data0,TMetElemData *Data1) {
+int TMetElemData_Same(const TMetElemData* restrict Data0,const TMetElemData* restrict Data1) {
 
    if (Data0->Ne!=Data1->Ne || Data0->Nv!=Data1->Nv || Data0->Nt!=Data1->Nt ||
        Data0->Family!=Data1->Family) {
@@ -1532,7 +1532,7 @@ TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time) {
    /*If we already have this time*/
    if (elem && Time==elem->Time) {
       new=elem;
-      for(n=0;n<elem->NData;n++) {
+      for(n=elem->NData-1;n>=0;n--) {
          if (TMetElemData_Same(Data,elem->EData[n])) {
             /*Check for markers/data*/
             if (elem->EData[n]->Data) {
