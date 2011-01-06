@@ -811,8 +811,9 @@ void OGR_LayerFree(OGR_Layer *Layer) {
 
    Layer->Def=NULL;
 
-   if (Layer->Select)   free(Layer->Select);
+   if (Layer->Feature)  free(Layer->Feature);
    if (Layer->SFeature) free(Layer->SFeature);
+   if (Layer->Select)   free(Layer->Select);
    if (Layer->Label)    free(Layer->Label);
    if (Layer->Loc)      free(Layer->Loc);
    if (Layer->Ref)      GeoRef_Destroy(NULL,Layer->Ref->Name);
