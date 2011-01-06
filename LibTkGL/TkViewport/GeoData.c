@@ -2075,7 +2075,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->VP->Width && (pix[1]+y+dy+5)<Proj->VP->Height) {
 
               /*If not overlapping another label*/
-              if (glCrowdCheck(pix[0]+x,pix[1]+y,pix[0]+x+dx,pix[1]+y+dy,10)) {
+              if (glCrowdPush(pix[0]+x,pix[1]+y,pix[0]+x+dx,pix[1]+y+dy,10)) {
                   if (Point) {
                      glPrint(Interp,Proj->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
                   }

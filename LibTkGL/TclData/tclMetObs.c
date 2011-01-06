@@ -2504,7 +2504,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    double        z,val,valid,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk,box[4],b;
    double        alpha=1.0;
-   int           clat,clon,nobs,min[2],max[2];
+   int           clat,clon,nobs,min[2],max[2],skip;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2615,7 +2615,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
             }
 
-            if (loc->Grid[0]==0.0 && Obs->Model->Overspace && !glCrowdCheck(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+            if (loc->Grid[0]==0.0 && Obs->Model->Overspace && !glCrowdPush(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                loc=loc->Next;
                continue;
             }
@@ -2643,6 +2643,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
 
             /*Loop on the model items*/
+            skip=1;
             for(i=0;i<Obs->Model->NItem;i++) {
                if (!(spec=Obs->Model->Items[i].Spec)) {
                   continue;
@@ -2660,7 +2661,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                   /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
                   if (Obs->Family!=-1 && !(((data->Family>>3&0x07)==0x00 && Obs->Family&0x04) || (data->Family>>3&0x7)&Obs->Family)) {
-                     continue;
+                      continue;
                   }
                   /*Check for data bktyp matching*/
                   if (Obs->Type>-1 && !((data->Type>>6&0x1)==Obs->Type)) {
@@ -2708,10 +2709,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  if (!Projection_Pixel(Proj,VP,co,pix)) {
                                     continue;
                                  }
-                                 if (Obs->Model->Overspace && !glCrowdCheck(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+                                 if (Obs->Model->Overspace && !glCrowdPush(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                                     continue;
                                  }
                               }
+
+                              skip=0;
 
                               if (Interp) {
                                  Tk_CanvasPsColor(Interp,VP->canvas,spec->Outline);
@@ -2940,6 +2943,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
                glPopName();
             }
+
+            /*It is possible nothing wa drawn so remove from crow list if so*/
+            if (Obs->Model->Overspace && skip) {
+               glCrowdPop();
+            };
+
             glPopName();
          }
       }

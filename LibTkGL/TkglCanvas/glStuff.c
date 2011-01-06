@@ -1653,10 +1653,11 @@ void glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Thet
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <glCrowdCheck>
+ * Nom      : <glCrowdPush>
  * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Controle de peuplement
+ * But      : Controle de peuplement, Verifie lsi l'espace est disponible et si
+ *            oui, ajoute a la liste de peuplement
  *
  * Parametres :
  *  <X0>       : Coordonnee X0
@@ -1672,7 +1673,7 @@ void glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Thet
  *
  *----------------------------------------------------------------------------
 */
-int glCrowdCheck(int X0,int Y0,int X1,int Y1,int Delta) {
+int glCrowdPush(int X0,int Y0,int X1,int Y1,int Delta) {
 
    int   *box,x0,x1,y0,y1;
    TList *node;
@@ -1686,7 +1687,7 @@ int glCrowdCheck(int X0,int Y0,int X1,int Y1,int Delta) {
    node=GLCrowdList;
    while(node) {
       box=node->Data;
-      if (VOUT(box[0],box[2],x0,x1) || VOUT(box[1],box[3],y0,y1)) {
+      if (VOUT(x0,x1,box[0],box[2]) || VOUT(y0,y1,box[1],box[3])) {
          /*No intersection here, continue*/
          node=node->Next;
       } else {
@@ -1714,6 +1715,32 @@ int glCrowdCheck(int X0,int Y0,int X1,int Y1,int Delta) {
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <glCrowdPop>
+ * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Controle de peuplement, supprime le dernier item ajoute.
+ *
+ * Parametres :
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void glCrowdPop() {
+
+   TList *tmp;
+
+   tmp=GLCrowdList;
+   GLCrowdList=GLCrowdList->Next;
+   GLCrowdList->Prev=NULL;
+
+   free((int*)(tmp->Data));
+   free(tmp);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <glCrowdClear>
  * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
  *
@@ -1734,6 +1761,7 @@ void glCrowdClear() {
    while(GLCrowdList) {
       tmp=GLCrowdList;
       GLCrowdList=GLCrowdList->Next;
+
       free((int*)(tmp->Data));
       free(tmp);
    }
