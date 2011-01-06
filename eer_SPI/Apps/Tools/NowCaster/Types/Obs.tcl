@@ -330,6 +330,7 @@ namespace eval NowCaster::Obs { } {
    set Data(Type)        -1
    set Data(Family)      5
    set Data(Spacing)     25
+   set Data(Crowd)       0
    set Data(Flat)        0
    set Data(Elems)       { }
    set Data(Item)        ""
@@ -357,6 +358,7 @@ namespace eval NowCaster::Obs { } {
    set Lbl(Model)    { "Modèle de pointage" "Plotting model" }
    set Lbl(ModelN)   { "Modèle" "Model" }
    set Lbl(Spacing)  { "Espacement" "Spacing" }
+   set Lbl(Crowd)    { "Peuplement" "Crowding" }
    set Lbl(Flat)     { "Projeté" "Projected" }
    set Lbl(Info)     { "Information" "Information" }
    set Lbl(Pos)      { "Position" "Position" }
@@ -397,6 +399,7 @@ namespace eval NowCaster::Obs { } {
    set Bubble(Variable1)  { "Element à afficher comme composante\ndirection en configuration vectorielle" "Direction component when\nin vectorial configuration" }
    set Bubble(Topo)       { "Variable definnisant l'élévation" "Variable definning the elevation" }
    set Bubble(Spacing)    { "Espacement entre les éléments de pointage" "Spacing between the plotted elements" }
+   set Bubble(Crowd)      { "Espacement entre les pointages (0, aucun)" "Spacing between the plottings (0, none)" }
    set Bubble(Grid)       { "Sélection du positionnement des élément\nrelativement à la position centrale en blanc" "Element position selection relative\not the central location in white" }
    set Bubble(Flat)       { "Affichage applati" "Flat display" }
    set Bubble(Flags)      { "Sélection du type/famille/marqueur d'observation" "Select type/family/marker of observation" }
@@ -556,6 +559,15 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.model.sel.new $Frame.model.sel.save $Frame.model.sel.del -side left
       pack $Frame.model.sel -side top -fill x
 
+      frame $Frame.model.crowd
+         label $Frame.model.crowd.lbl -text [lindex $Lbl(Crowd) $GDefs(Lang)] -width 11 -anchor w
+         label $Frame.model.crowd.txt -textvariable NowCaster::Obs::Data(Crowd) -width 4 -anchor w -relief sunken -bd 1 -bg $GDefs(ColorLight)
+         scale $Frame.model.crowd.val -bd 1 -relief flat -width 15 -sliderlength 10 -from 0 -to 25 -variable NowCaster::Obs::Data(Crowd) \
+            -orient horizontal -showvalue False -command { set NowCaster::Obs::Data(Crowd$NowCaster::Obs::Data(CurrentObs)) $NowCaster::Obs::Data(Crowd); NowCaster::Obs::ModelApply; catch }
+         pack $Frame.model.crowd.lbl $Frame.model.crowd.txt -side left
+         pack $Frame.model.crowd.val -side left -fill x -expand True
+      pack  $Frame.model.crowd -side bottom -anchor w -padx 2 -pady 2 -fill x
+
       frame $Frame.model.spc
          label $Frame.model.spc.lbl -text [lindex $Lbl(Spacing) $GDefs(Lang)] -width 11 -anchor w
          label $Frame.model.spc.txt -textvariable NowCaster::Obs::Data(Spacing) -width 4 -anchor w -relief sunken -bd 1 -bg $GDefs(ColorLight)
@@ -565,6 +577,7 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.model.spc.val -side left -fill x -expand True
       pack  $Frame.model.spc -side bottom -anchor w -padx 2 -pady 2 -fill x
 
+      pack  $Frame.model.spc -side bottom -anchor w -padx 2 -pady 2 -fill x
       frame $Frame.model.flat
          label $Frame.model.flat.lbl -text [lindex $Lbl(Flat) $GDefs(Lang)] -width 11 -anchor w
          checkbutton $Frame.model.flat.sel -variable NowCaster::Obs::Data(Flat) -relief sunken -bd 1 -overrelief raised -offrelief flat \
@@ -614,6 +627,7 @@ proc NowCaster::Obs::Window { Frame } {
    Bubble::Create $Frame.model.sel.new  $Bubble(ModelClear)
    Bubble::Create $Frame.model.items    $Bubble(Grid)
    Bubble::Create $Frame.model.spc      $Bubble(Spacing)
+   Bubble::Create $Frame.model.crowd    $Bubble(Crowd)
    Bubble::Create $Frame.model.flat     $Bubble(Flat)
 
    Bubble::Create $Frame.elem.var0.sel  $Bubble(Variable0)
@@ -627,7 +641,7 @@ proc NowCaster::Obs::Window { Frame } {
 proc NowCaster::Obs::VarSet { Var } {
 
    if { $Var!="" } {
-      return "$Var [lindex [metobs table -desc $Var] 0]"
+      return [list $Var [lindex [metobs table -desc $Var] 0]]
    } else {
       return $Var
    }
@@ -916,6 +930,7 @@ proc NowCaster::Obs::Add { Path } {
    set Data(Topo$obs)      ""
    set Data(Param$obs)     {}
    set Data(Spacing$obs)   $Data(Spacing)
+   set Data(Crowd$obs)     $Data(Crowd)
    set Data(Flat$obs)      $Data(Flat)
    set Data(Family$obs)    $Data(Family)
    set Data(Marker$obs)    $Data(Marker)
@@ -1088,7 +1103,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
 
    foreach obs $Obs {
       set model [metobs define $obs -MODEL]
-      metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
+      metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
          -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs)
 
@@ -1182,7 +1197,7 @@ proc NowCaster::Obs::ModelApply { } {
       set Data(Model$Data(Item)) {}
       set Data(Set$Data(Item))   ""
    } else {
-      set Data(Model$Data(Item)) [list [lindex $Data(Var0) 0] [lindex $Data(Var1) 0]]
+      set Data(Model$Data(Item)) [list [lindex [split $Data(Var0)] 0] [lindex [split $Data(Var1)] 0]]
       set Data(Set$Data(Item))   #
    }
    set Data(Model$Data(CurrentObs)) [NowCaster::Obs::ModelParse]
