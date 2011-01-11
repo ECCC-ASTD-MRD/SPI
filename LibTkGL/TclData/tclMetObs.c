@@ -2944,7 +2944,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                glPopName();
             }
 
-            /*It is possible nothing wa drawn so remove from crow list if so*/
+            /*It is possible nothing was drawn so remove from crowd list if so*/
             if (Obs->Model->Overspace && skip) {
                glCrowdPop();
             };

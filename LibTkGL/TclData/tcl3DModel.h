@@ -114,6 +114,7 @@ int  Model_Load(Tcl_Interp* Interp,char* Name,char *Path);
 int  Model_LoadFLT(T3DModel *M,char *Path);
 int  Model_LoadMDL(T3DModel *M,char *Path);
 int  Model_Load3DS(T3DModel *M,char *Path);
+int  Model_LoadDAE(T3DModel *M,char *Path);
 int  Model_Render(Projection* Proj,ViewportItem* VP,T3DModel *M);
 void Model_NormalCompute(T3DModel *M);
 

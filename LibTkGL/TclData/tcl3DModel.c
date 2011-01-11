@@ -684,8 +684,28 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
       Vect_Init(obj->Extent[0],0,0,0);
       Vect_Init(obj->Extent[1],0,0,0);
    }
-   return(Model->Obj);
+   return(&Model->Obj[Model->NObj-Nb]);
 }
+
+TFace *Model_ObjFaceAdd(T3DObject *Obj,int Nb) {
+
+   TFace *fc;
+   int    f;
+
+   Obj->NFc+=Nb;
+   if (!(Obj->Fc=(TFace*)realloc(Obj->Fc,Obj->NFc*sizeof(TFace)))) {
+      return(NULL);
+   }
+
+   for(f=Obj->NFc-Nb;f<Obj->NFc;f++) {
+      fc=&Obj->Fc[f];
+      fc->NIdx=0;
+      fc->Idx=NULL;
+      fc->Mt=NULL;
+   }
+   return(&Obj->Fc[Obj->NFc-Nb]);
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_Load>
  * Creation     : Mai 2002 J.P. Gauthier
@@ -718,8 +738,10 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
    mdl->Path=strdup(Path);
 
    if (!(c=Model_LoadMDL(mdl,Path))) {
-      if (!(c=Model_Load3DS(mdl,Path))) {
-         c=Model_LoadFLT(mdl,Path);
+      if (!(c=Model_LoadDAE(mdl,Path))) {
+         if (!(c=Model_Load3DS(mdl,Path))) {
+            c=Model_LoadFLT(mdl,Path);
+         }
       }
    }
    if (c) Model_NormalCompute(mdl);
@@ -878,124 +900,19 @@ T3DModel* Model_Get(char *Name) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Model_LoadMDL>
+ * Nom          : <Model_NormalCompute>
  * Creation     : Janvier 2003 J.P. Gauthier
  *
- * But          : Lire un fichier MDL
- *
+ * But          : Calculer les normales
+  *
  * Parametres   :
- *   <M>        : Objet Model
- *   <Path>     : Path du fichier
+ *   <M>        : Modele
  *
  * Retour       :
  *
  * Remarques    :
- *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Model_LoadMDL(T3DModel *M,char *Path) {
-
-   int       i,m;
-   T3DObject *obj;
-   FILE      *file;
-
-   if (!(file=fopen(Path,"r"))) {
-      return(0);
-   }
-
-   /*Material list*/
-   /*Number of material*/
-   fread(&M->NMt,sizeof(int),1,file);
-   if (M->NMt>256 || M->NMt<0) {
-      fclose(file);
-      M->NMt=0;
-      return(0);
-   }
-
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NMt=%i\n",M->NMt);
-#endif
-
-   if (M->NMt<=0) {
-      M->NMt=1;
-      M->Mt=(TMaterial*)malloc(sizeof(TMaterial));
-      M->Mt[0].Amb[0]=0.1;M->Mt[0].Amb[1]=0.1;M->Mt[0].Amb[2]=0.1;M->Mt[0].Amb[3]=1.0;
-      M->Mt[0].Dif[0]=0.8;M->Mt[0].Dif[1]=0.8;M->Mt[0].Dif[2]=0.8;M->Mt[0].Dif[3]=1.0;
-      M->Mt[0].Emi[0]=0.1;M->Mt[0].Emi[1]=0.1;M->Mt[0].Emi[2]=0.1;M->Mt[0].Emi[3]=1.0;
-      M->Mt[0].Spe[0]=0.1;M->Mt[0].Spe[1]=0.6;M->Mt[0].Spe[2]=0.6;M->Mt[0].Spe[3]=1.0;
-      M->Mt[0].Shi=255;
-      M->Mt[0].Dif[3]=1.0;
-      M->Mt[0].Tex=0;
-      M->Mt[0].Path[0]='\0';
-  } else {
-      M->Mt=(TMaterial*)malloc(M->NMt*sizeof(TMaterial));
-      for (i=0; i<M->NMt; i++) {
-        fread(&M->Mt[i].Amb,sizeof(float),3,file);
-        fread(&M->Mt[i].Dif,sizeof(float),3,file);
-        fread(&M->Mt[i].Emi,sizeof(float),3,file);
-        fread(&M->Mt[i].Spe,sizeof(float),3,file);
-        fread(&M->Mt[i].Shi,sizeof(float),1,file);
-        fread(&M->Mt[i].Dif[3],sizeof(float),1,file);
-        M->Mt[i].Tex=0;
-        M->Mt[i].Path[0]='\0';
-      }
-   }
-
-   Model_ObjAdd(M,1);
-   obj=&M->Obj[M->NObj-1];
-
-   /*Vertex list*/
-   /*Number of vertex*/
-   fread(&obj->NVr,sizeof(int),1,file);
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NVr=%i\n",obj->NVr);
-#endif
-
-   /*Format of vertex*/
-   fread(&obj->Format,sizeof(int),1,file);
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Model_LoadMDL: M->Format=%i\n",obj->Format);
-#endif
-
-   if (obj->NVr<=0 || obj->Format<=0) {
-      printf("\n(ERROR) Model_LoadMDL : Invalid vertex format or number");
-      fclose(file);
-      return(0);
-   }
-
-   /*Allocate data*/
-   if (obj->Format==F3VNT) obj->Tx=(Vect3f*)malloc(obj->NVr*sizeof(Vect3f));
-   if (obj->Format>=F3VN)  obj->Nr=(Vect3f*)malloc(obj->NVr*sizeof(Vect3f));
-                           obj->Vr=(Vect3f*)malloc(obj->NVr*sizeof(Vect3f));
-
-   /*Vertex list*/
-   for (i=0;i<obj->NVr;i++) {
-                              fread(&obj->Vr[i],sizeof(Vect3f),1,file);
-      if (obj->Format>=F3VN)  fread(&obj->Nr[i],sizeof(Vect3f),1,file);
-      if (obj->Format==F3VNT) fread(&obj->Tx[i],sizeof(Vect3f),1,file);
-   }
-
-   /*Faces list*/
-   /*Number of faces*/
-   fread(&obj->NFc,sizeof(int),1,file);
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) Model_LoadMDL: M->NFc=%i\n",obj->NFc);
-#endif
-
-   obj->Fc=(TFace*)malloc(obj->NFc*sizeof(TFace));
-   for (i=0;i<obj->NFc;i++) {
-      fread(&m,sizeof(int),1,file);
-      fread(&obj->Fc[i].NIdx,sizeof(unsigned char),1,file);
-
-      obj->Fc[i].Mt=m<0?&M->Mt[0]:&M->Mt[m];
-      obj->Fc[i].Idx=(unsigned int*)malloc(obj->Fc[i].NIdx*sizeof(unsigned int));
-      fread(obj->Fc[i].Idx,sizeof(int),obj->Fc[i].NIdx,file);
-   }
-   fclose(file);
-
-   return(1);
-}
-
 void Model_NormalCompute(T3DModel *M) {
 
    int v,o,f,nb=0,shared=0;
@@ -1061,15 +978,16 @@ void Model_NormalCompute(T3DModel *M) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Model_Render>
+ * Nom          : <Model_LOD>
  * Creation     : Mai 2002 J.P. Gauthier
  *
- * But          : Rendu du modele a l'ecran.
+ * But          : Verifier le niveau de details selon la vue
  *
  * Parametres  :
  *   <Proj>     : La projection courante
  *   <VP>       : Le viewport ou le rendu doit etre fait
- *   <M>        : Modele a afficher
+ *   <M>        : Modele
+ *   <Extent>   : Etendue du Modele
  *
  * Retour       :
  *
@@ -1121,6 +1039,23 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
    return(1);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_Render>
+ * Creation     : Mai 2002 J.P. Gauthier
+ *
+ * But          : Rendu du modele a l'ecran.
+ *
+ * Parametres  :
+ *   <Proj>     : La projection courante
+ *   <VP>       : Le viewport ou le rendu doit etre fait
+ *   <M>        : Modele a afficher
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
    unsigned int i,j,o,idx;
@@ -1176,6 +1111,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
    /*Create display lists*/
    if (!M->Obj[0].GLId) {
+
       for(o=0;o<M->NObj;o++) {
          obj=&M->Obj[o];
          if (!obj->GLId) {
@@ -1185,6 +1121,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
             Vect_Init(obj->Extent[0],1e32,1e32,1e32);
             Vect_Init(obj->Extent[1],-1e32,-1e32,-1e32);
+
             for (i=0;i<obj->NFc;i++) {
                if (obj->Fc[i].Mt) {
                   glMaterialf(GL_FRONT,GL_SHININESS,obj->Fc[i].Mt->Shi);

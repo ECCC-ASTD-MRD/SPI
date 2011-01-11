@@ -4,7 +4,7 @@
  * 2100 Trans-Canadienne
  * Dorval, Quebec
  *
- * Projet       : Application de photos geotiff diverses
+ * Projet       : Affichage de modele 3D
  * Fichier      : tcl3DModel3DS.c
  * Creation     : Aout2007 - J.P. Gauthier
  *
