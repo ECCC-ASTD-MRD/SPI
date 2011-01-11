@@ -967,7 +967,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
       }
 
       if (Seg && Data->Segments) {
-         TList_Clear(Data->Segments);
+         TList_Clear(Data->Segments,TArray_Free);
          Data->Segments=NULL;
       }
    }

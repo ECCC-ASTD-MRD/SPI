@@ -175,9 +175,4 @@ void       DataSpec_Intervals(TDataSpec *Spec,double Min,double Max);
 TIcon* Icon_Parse(Tcl_Interp *Interp,Tcl_Obj *List);
 void   Icon_Free(TIcon *Icon);
 
-TArray *TArray_Alloc(double Value,int Size);
-void    TArray_Free(TArray *Array);
-TList*  TList_Add(TList *List,void *Data);
-void    TList_Clear(TList *List);
-
 #endif
