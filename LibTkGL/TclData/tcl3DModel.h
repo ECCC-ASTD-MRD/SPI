@@ -31,8 +31,8 @@
  *=========================================================
  */
 
-#ifndef _MODEL_H
-#define _MODEL_H
+#ifndef _tcl3DModel_h
+#define _tcl3DModel_h
 
 #include "tkCanvVP.h"
 #include "Projection.h"
@@ -71,6 +71,7 @@ typedef struct T3DObject {
    Vect3d        Extent[2];           /*Extent*/
    int           Format;             /*Format de Vertex*/
 
+   float         *Mtx;                /*Transformation matrix*/
    Vect4f        *Cl;                 /*Color list*/
    Vect3f        *Vr;                 /*Vertex list*/
    Vect3f        *Nr;                 /*Normal list*/
@@ -117,10 +118,10 @@ int  Model_Load3DS(T3DModel *M,char *Path);
 int  Model_LoadDAE(T3DModel *M,char *Path);
 int  Model_Render(Projection* Proj,ViewportItem* VP,T3DModel *M);
 void Model_NormalCompute(T3DModel *M);
-
 void Model_ObjFree(T3DObject *Obj);
-T3DObject* Model_ObjAdd(T3DModel *Model,int Nb);
 
-T3DModel* Model_Get(char *Name);
+T3DObject* Model_ObjAdd(T3DModel *Model,int Nb);
+TFace*     Model_ObjFaceAdd(T3DObject *Obj,int Nb);
+T3DModel*  Model_Get(char *Name);
 
 #endif

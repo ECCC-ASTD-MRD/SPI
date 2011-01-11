@@ -32,89 +32,67 @@
  */
 
 #include "tcl3DModel.h"
+#include "tcl3DModelDAE.h"
 #include <string.h>
 #include <expat.h>
 
-#define DAEBUFSIZE 8192
-
-typedef struct DAEArray {
-   char         Alias;
-   char        *Id;
-   char        *Text;
-   unsigned int TextLen;
-   unsigned int Nb;
-   unsigned int Dim;
-   float       *Array;
-} DAEArray;
-
-typedef struct DAEData {
-   char      Tag[256];
-   T3DModel  *Model;
-   T3DObject *Object;
-   TFace     *Fc;
-   TList     *Arrays;
-   int        NFc,VrDim,VrType;
-   int        VrOffset,NrOffset,TxOffset;
-   DAEArray  *VrSource,*NrSource,*TxSource;
-} DAEData;
-
-int ModelDAE_ArrayExpand(DAEArray *Array) {
+int ModelDAE_SourceExpand(DAESource *Source) {
 
    char *tok,*save=NULL;
    int   n=0;
 
-   if (Array->Text) {
-      if (!Array->Array) {
-         Array->Array=(float*)malloc(Array->Nb*sizeof(float));
+   if (Source->Text) {
+      if (!Source->Array) {
+         Source->Array=(float*)malloc(Source->Nb*sizeof(float));
       }
 
       /*Parse all tokens*/
-      tok=strtok_r(Array->Text," ",&save);
+      tok=strtok_r(Source->Text," ",&save);
 
       while(tok) {
-         if (n>=Array->Nb) {
-            fprintf(stdout,"(ERROR) ModelDAE_ArrayExpand: Overflow of float-array\n");
+         if (n>=Source->Nb) {
+            fprintf(stdout,"(ERROR) ModelDAE_SourceExpand: Overflow of float-array\n");
             break;
          }
-         Array->Array[n++]=atof(tok);
+         Source->Array[n++]=atof(tok);
 
          /*Check for buffer overrun*/
-         if (save>=(Array->Text+Array->TextLen))
+         if (save>=(Source->Text+Source->TextLen))
                break;
          tok=strtok_r(NULL," ",&save);
 
       }
-      fprintf(stdout,"(DEBUG) ModelDAE_ArrayExpand: Parsed %i array values out of %i\n",n,Array->Nb);
+      fprintf(stdout,"(DEBUG) ModelDAE_SourceExpand: Parsed %i array values out of %i\n",n,Source->Nb);
 
-      free(Array->Text);
-      Array->Text=NULL;
-      Array->TextLen=0;
+      free(Source->Text);
+      Source->Text=NULL;
+      Source->TextLen=0;
    }
 
    return(n);
 }
 
-void ModelDAE_ArrayFree(DAEArray *Array) {
+void ModelDAE_SourceFree(DAESource *Source) {
 
-   if (Array->Id)    free(Array->Id);    Array->Id=NULL;
+   if (Source->Id)    free(Source->Id);    Source->Id=NULL;
 
-   if (!Array->Alias) {
-      if (Array->Text)  free(Array->Text);  Array->Text=NULL;
-      if (Array->Array) free(Array->Array); Array->Array=NULL;
+   if (!Source->Alias) {
+      if (Source->Text)  free(Source->Text);  Source->Text=NULL;
+      if (Source->Array) free(Source->Array); Source->Array=NULL;
    }
-   Array->Nb=0;
+   Source->Nb=0;
 }
 
-DAEArray *ModelDAE_ArrayFind(DAEData *Data,char* Id) {
+DAESource *ModelDAE_SourceFind(DAEData *Data,char* Id) {
 
-   DAEArray *array;
-   TList    *tmp=Data->Arrays;
+   DAESource *src;
+   TList     *tmp=Data->Sources;
 
    while(tmp) {
-      array=(DAEArray*)tmp->Data;
-      if (strcmp(array->Id,Id)==0) {
-         ModelDAE_ArrayExpand(array);
-         return((DAEArray*)tmp->Data);
+      src=(DAESource*)tmp->Data;
+      if (strcmp(src->Id,Id)==0) {
+         ModelDAE_SourceExpand(src);
+         return((DAESource*)tmp->Data);
       }
       tmp=tmp->Next;
    }
@@ -123,8 +101,8 @@ DAEArray *ModelDAE_ArrayFind(DAEData *Data,char* Id) {
 
 void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
-   DAEData  *data=(DAEData*)Data;
-   DAEArray *array,*tmp;
+   DAEData   *data=(DAEData*)Data;
+   DAESource *src,*tmp;
    int       i,nfc;
 
    if (Elem) {
@@ -133,18 +111,18 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Source tag*/
       if (strcmp(Elem,"source")==0) {
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found source\n");
-         if (!(data->Arrays=TList_Add(data->Arrays,(DAEArray*)malloc(sizeof(DAEArray))))) {
+         if (!(data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource))))) {
             fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not allocate memory for node\n");
          }
-         array=(DAEArray*)data->Arrays->Data;
-         array->Alias=0;
-         array->TextLen=0;
-         array->Text=NULL;
-         array->Array=NULL;
+         src=(DAESource*)data->Sources->Data;
+         src->Alias=0;
+         src->TextLen=0;
+         src->Text=NULL;
+         src->Array=NULL;
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
-               array->Id=strdup(Attr[i+1]);
+               src->Id=strdup(Attr[i+1]);
             }
          }
       } else
@@ -152,11 +130,11 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Array tag*/
       if (strcmp(Elem,"float_array")==0) {
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found source\n");
-         array=(DAEArray*)data->Arrays->Data;
+         src=(DAESource*)data->Sources->Data;
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"count")==0) {
-               array->Nb=atoi(Attr[i+1]);
+               src->Nb=atoi(Attr[i+1]);
             }
          }
       } else
@@ -164,11 +142,11 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Accessor tag*/
       if (strcmp(Elem,"accessor")==0) {
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found accessor\n");
-         array=(DAEArray*)data->Arrays->Data;
+         src=(DAESource*)data->Sources->Data;
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"stride")==0) {
-               array->Dim=atoi(Attr[i+1]);
+               src->Dim=atoi(Attr[i+1]);
             }
          }
       } else
@@ -176,17 +154,17 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Vertices tag*/
       if (strcmp(Elem,"vertices")==0) {
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found vertices\n");
-         data->Arrays=TList_Add(data->Arrays,(DAEArray*)malloc(sizeof(DAEArray)));
-         array=(DAEArray*)data->Arrays->Data;
-         array->Alias=1;
-         array->TextLen=0;
-         array->Text=NULL;
-         array->Array=NULL;
-         array->Nb=0;
+         data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
+         src=(DAESource*)data->Sources->Data;
+         src->Alias=1;
+         src->TextLen=0;
+         src->Text=NULL;
+         src->Array=NULL;
+         src->Nb=0;
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
-               array->Id=strdup(Attr[i+1]);
+               src->Id=strdup(Attr[i+1]);
             }
          }
       } else
@@ -200,6 +178,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Triangle tag (Faces)*/
       if (strcmp(Elem,"triangles")==0) {
          data->NFc=0;
+         data->NVr=3;
          data->VrDim=0;
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"material")==0) {
@@ -215,19 +194,38 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          }
       }  else
 
+      /*Triangle tag (Faces)*/
+      if (strcmp(Elem,"lines")==0) {
+         data->NFc=0;
+         data->NVr=2;
+         data->VrDim=0;
+         for (i=0;Attr[i];i+=2) {
+            if (strcmp(Attr[i],"material")==0) {
+            }
+            if (strcmp(Attr[i],"count")==0) {
+               data->NFc=atoi(Attr[i+1]);
+            }
+         }
+
+         if (data->NFc) {
+            fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i segments\n",data->NFc);
+            data->Fc=Model_ObjFaceAdd(data->Object,data->NFc);
+         }
+      }  else
+
       /*p array tag*/
       if (strcmp(Elem,"p")==0) {
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found p\n");
-         data->Arrays=TList_Add(data->Arrays,(DAEArray*)malloc(sizeof(DAEArray)));
-         array=(DAEArray*)data->Arrays->Data;
-         array->Alias=0;
-         array->TextLen=0;
-         array->Text=NULL;
-         array->Array=NULL;
+         data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
+         src=(DAESource*)data->Sources->Data;
+         src->Alias=0;
+         src->TextLen=0;
+         src->Text=NULL;
+         src->Array=NULL;
          data->VrDim+=1;
          data->VrType=0;
-         array->Nb=data->NFc*data->VrDim*3;
-         array->Id=strdup("p");
+         src->Nb=data->NFc*data->VrDim*data->NVr;
+         src->Id=strdup("p");
       } else
 
       /*Input definition tag*/
@@ -246,27 +244,27 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
                }
             } else if (strcmp(Attr[i],"source")==0) {
                switch(data->VrType) {
-                  case F3V:   if (!(data->VrSource=ModelDAE_ArrayFind(data,(char*)(Attr[i+1]+1)))) {
+                  case F3V:   if (!(data->VrSource=ModelDAE_SourceFind(data,(char*)(Attr[i+1]+1)))) {
                                  fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find Vr source array %s\n",Attr[i+1]);
                               }
                               break;
 
-                  case F3VN:  if (!(data->NrSource=ModelDAE_ArrayFind(data,(char*)(Attr[i+1]+1)))) {
+                  case F3VN:  if (!(data->NrSource=ModelDAE_SourceFind(data,(char*)(Attr[i+1]+1)))) {
                                  fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find Nr source array %s\n",Attr[i+1]);
                               }
                               break;
 
-                  case F3VNT: if (!(data->TxSource=ModelDAE_ArrayFind(data,(char*)(Attr[i+1]+1)))) {
+                  case F3VNT: if (!(data->TxSource=ModelDAE_SourceFind(data,(char*)(Attr[i+1]+1)))) {
                                  fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find Tx source array %s\n",Attr[i+1]);
                               }
                               break;
-                  default:   array=(DAEArray*)data->Arrays->Data;
-                             if (!(tmp=ModelDAE_ArrayFind(data,(char*)(Attr[i+1]+1)))) {
+                  default:   src=(DAESource*)data->Sources->Data;
+                             if (!(tmp=ModelDAE_SourceFind(data,(char*)(Attr[i+1]+1)))) {
                                 fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find position source array %s\n",Attr[i+1]);
                               } else {
-                                 array->Array=tmp->Array;
-                                 array->Nb=tmp->Nb;
-                                 array->Dim=tmp->Dim;
+                                 src->Array=tmp->Array;
+                                 src->Nb=tmp->Nb;
+                                 src->Dim=tmp->Dim;
                               }
                               break;
                }
@@ -292,81 +290,83 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
 void ModelDAE_EndHandler(void *Data,const char *Elem) {
 
-   DAEData  *data=(DAEData*)Data;
-   DAEArray *p;
-   int       i,f,nb;
+   DAEData   *data=(DAEData*)Data;
+   DAESource *p;
+   int        i,v,f,nb;
 
    if (Elem) {
       data->Tag[0]='\0';
 
       /*p array tag*/
       if (strcmp(Elem,"p")==0) {
-         if (!(p=ModelDAE_ArrayFind(data,"p"))) {
+         if (!(p=ModelDAE_SourceFind(data,"p"))) {
             fprintf(stderr,"(ERROR) ModelDAE_EndHandler: Can't find p source array\n");
          } else {
-            for(i=0,f=0;i<p->Nb;i+=data->VrDim*3,f++) {
-               data->Fc[f].NIdx=3;
-               data->Fc[f].Idx=(unsigned int*)malloc(3*sizeof(unsigned int));
+            for(i=0,f=0;i<p->Nb;i+=data->VrDim*data->NVr,f++) {
+               data->Fc[f].NIdx=data->NVr;
+               data->Fc[f].Idx=(unsigned int*)malloc(data->NVr*sizeof(unsigned int));
                data->Fc[f].Mt=NULL;
 
-               if (data->VrSource) {
-                  data->Fc[f].Idx[0]=p->Array[i+data->VrOffset];
-                  data->Fc[f].Idx[1]=p->Array[i+data->VrOffset+data->VrDim];
-                  data->Fc[f].Idx[2]=p->Array[i+data->VrOffset+data->VrDim+data->VrDim];
-               }
-               if (data->NrSource) {
-//                  data->Fc[f].Idx[0]=p->Array[i+data->NrOffset];
-               }
-               if (data->TxSource) {
-//                  data->Fc[f].Idx[0]=p->Array[i+data->TxOffset];
+               for(v=0;v<data->NVr;v++) {
+                  if (data->VrSource) {
+                     data->Fc[f].Idx[v]=p->Array[i+data->VrOffset+data->VrDim*v];
+                  }
+                  if (data->NrSource) {
+   //                  data->Fc[f].Idx[0]=p->Array[i+data->NrOffset];
+                  }
+                  if (data->TxSource) {
+   //                  data->Fc[f].Idx[0]=p->Array[i+data->TxOffset];
+                  }
                }
             }
-            nb=i/(data->VrDim*3);
+            nb=i/(data->VrDim*data->NVr);
             fprintf(stderr,"(DEBUG) ModelDAE_EndHandler: Parsed %i vertices\n",nb);
 
-            ModelDAE_ArrayFree(p);
-            data->Arrays=TList_Del(data->Arrays,p);
+            ModelDAE_SourceFree(p);
+            data->Sources=TList_Del(data->Sources,p);
 
             if (data->VrSource) {
                if (!data->Object->Vr) {
-                  data->Object->Vr=(Vect3f*)malloc(data->VrSource->Nb/3*sizeof(Vect3f));
-                  for(i=0;i<data->VrSource->Nb/3;i++) {
-                     data->Object->Vr[i][0]=data->VrSource->Array[3*i];
-                     data->Object->Vr[i][1]=data->VrSource->Array[3*i+1];
-                     data->Object->Vr[i][2]=data->VrSource->Array[3*i+2];
-                  }
+                  data->Object->Vr=(Vect3f*)malloc(data->VrSource->Nb/data->NVr*sizeof(Vect3f));
+                  for(i=0;i<data->VrSource->Nb/data->NVr;i++) {
+                     for(v=0;v<data->NVr;v++) {
+                        data->Object->Vr[i][v]=data->VrSource->Array[data->NVr*i+v];
+                     }
+                 }
                }
             }
             if (data->NrSource) {
                if (!data->Object->Nr) {
-                  data->Object->Nr=(Vect3f*)malloc(data->NrSource->Nb/3*sizeof(Vect3f));
-                  for(i=0;i<data->NrSource->Nb/3;i++) {
-                     data->Object->Nr[i][0]=data->NrSource->Array[3*i];
-                     data->Object->Nr[i][1]=data->NrSource->Array[3*i+1];
-                     data->Object->Nr[i][2]=data->NrSource->Array[3*i+2];
+                  data->Object->Nr=(Vect3f*)malloc(data->NrSource->Nb/data->NVr*sizeof(Vect3f));
+                  for(i=0;i<data->NrSource->Nb/data->NVr;i++) {
+                     for(v=0;v<data->NVr;v++) {
+                        data->Object->Nr[i][v]=data->NrSource->Array[data->NVr*i+v];
+                     }
                   }
                }
             }
             if (data->TxSource) {
             }
          }
+         data->VrDim=0;
+         data->VrType=0;
       }
    }
 }
 
 void ModelDAE_CharHandler(void *Data,const char *Txt,int Len) {
 
-   DAEData  *data=(DAEData*)Data;
-   DAEArray *array;
+   DAEData   *data=(DAEData*)Data;
+   DAESource *src;
 
    if (Txt && Len) {
       if (strcmp(data->Tag,"float_array")==0 || strcmp(data->Tag,"p")==0) {
-         if (!data->Arrays || !(array=(DAEArray*)data->Arrays->Data)) {
-            fprintf(stdout,"(ERROR) ModelDAE_charHandler: Array not defined yet\n");
+         if (!data->Sources || !(src=(DAESource*)data->Sources->Data)) {
+            fprintf(stdout,"(ERROR) ModelDAE_charHandler: Source not defined yet\n");
          } else {
-            array->Text=realloc(array->Text,array->TextLen+Len);
-            memcpy(array->Text+array->TextLen,Txt,Len);
-            array->TextLen+=Len;
+            src->Text=realloc(src->Text,src->TextLen+Len);
+            memcpy(src->Text+src->TextLen,Txt,Len);
+            src->TextLen+=Len;
          }
       }
    }
@@ -417,7 +417,7 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
    data=(DAEData*)malloc(sizeof(DAEData));
    data->Model=M;
    data->Object=NULL;
-   data->Arrays=NULL;
+   data->Sources=NULL;
    data->Fc=NULL;
    data->VrSource=data->NrSource=data->TxSource=NULL;
 
@@ -453,7 +453,10 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
     }
     XML_ParserFree(parser);
 
+    /*Free associates parsing data structure*/
+    TList_Clear(data->Sources,ModelDAE_SourceFree);
     free(data);
+
     fclose(file);
     return(state);
 }

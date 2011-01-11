@@ -680,6 +680,7 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
       obj->Tx=NULL;
       obj->Fc=NULL;
       obj->Cl=NULL;
+      obj->Mtx=NULL;
 
       Vect_Init(obj->Extent[0],0,0,0);
       Vect_Init(obj->Extent[1],0,0,0);
@@ -844,10 +845,11 @@ void Model_ObjFree(T3DObject *Obj) {
    int f;
 
    /*Vertex info*/
-   if (Obj->Vr) free(Obj->Vr);
-   if (Obj->Nr) free(Obj->Nr);
-   if (Obj->Tx) free(Obj->Tx);
-   if (Obj->Cl) free(Obj->Cl);
+   if (Obj->Vr)  free(Obj->Vr);
+   if (Obj->Nr)  free(Obj->Nr);
+   if (Obj->Tx)  free(Obj->Tx);
+   if (Obj->Cl)  free(Obj->Cl);
+   if (Obj->Mtx) free(Obj->Mtx);
 
    /*Face list*/
    for (f=0;f<Obj->NFc;f++)
@@ -1170,9 +1172,9 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                      Vect_Min(obj->Extent[0],obj->Extent[0],obj->Vr[idx]);
                      Vect_Max(obj->Extent[1],obj->Extent[1],obj->Vr[idx]);
                   }
-              }
-              glEnd();
-           }
+               }
+               glEnd();
+            }
             glDisable(GL_TEXTURE_2D);
             glEndList();
 
@@ -1205,6 +1207,12 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
             }
 
+            /*If a displacement matrix is specified*/
+            if (obj->Mtx) {
+               glPushMatrix();
+               glMultMatrixf(obj->Mtx);
+            }
+
             glCallList(obj->GLId);
 
             if (M->Spec->Outline && M->Spec->Width) {
@@ -1217,6 +1225,10 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                glPolygonMode(GL_FRONT,GL_LINE);
                glCallList(obj->GLId);
                glEnable(GL_LIGHTING);
+            }
+
+            if (obj->Mtx) {
+               glPopMatrix();
             }
          }
       }
