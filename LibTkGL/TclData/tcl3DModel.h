@@ -62,22 +62,32 @@ typedef struct TFace {
 } TFace;
 
 typedef struct T3DObject {
-
-   char          Name[256];
+   char         *Name;
    GLuint        GLId;                /*Identificateur de list d'affichage*/
 
    GLuint        NVr;                 /*Nombre de Vertex*/
    GLuint        NFc;                 /*Nombre de Face*/
    Vect3d        Extent[2];           /*Extent*/
-   int           Format;             /*Format de Vertex*/
+   int           Format;              /*Format de Vertex*/
 
-   float         *Mtx;                /*Transformation matrix*/
    Vect4f        *Cl;                 /*Color list*/
    Vect3f        *Vr;                 /*Vertex list*/
    Vect3f        *Nr;                 /*Normal list*/
    Vect3f        *Tx;                 /*Texture coordinate list*/
    TFace         *Fc;                 /*Face list*/
 } T3DObject;
+
+typedef struct T3DScene {
+   char         *Name;
+   float        *Mtx;                /*Transformation matrix*/
+
+   unsigned int  NObj;                /*Number of object*/
+   T3DObject    **Obj;                /*Object list*/
+
+   unsigned int  NScn;                /*Number of scene items*/
+   struct T3DScene *Scn;
+   struct T3DScene *Parent;
+} T3DScene;
 
 typedef struct T3DModel {
    char         *Path;
@@ -93,11 +103,13 @@ typedef struct T3DModel {
    Vect3f        MatrixS;             /*Scaling*/
    Vect3f        MatrixR;             /*Rotation*/
 
-   int           NObj;                /*Number of object*/
+   unsigned int  NMt;                 /*Number of materials*/
+   TMaterial    *Mt;                  /*Material list*/
+
+   unsigned int  NObj;                /*Number of object*/
    T3DObject    *Obj;                 /*Object list*/
 
-   int           NMt;                 /*Number of materials*/
-   TMaterial    *Mt;                  /*Material list*/
+   T3DScene     *Scn;                 /*Scene items*/
 } T3DModel;
 
 static int Model_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -117,10 +129,16 @@ int  Model_LoadMDL(T3DModel *M,char *Path);
 int  Model_Load3DS(T3DModel *M,char *Path);
 int  Model_LoadDAE(T3DModel *M,char *Path);
 int  Model_Render(Projection* Proj,ViewportItem* VP,T3DModel *M);
+int  Model_RenderObj(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj);
+int  Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene);
+
 void Model_NormalCompute(T3DModel *M);
 void Model_ObjFree(T3DObject *Obj);
 
+T3DScene*  Model_SceneAdd(T3DModel *Model,T3DScene* Parent,int Nb);
+T3DScene*  Model_SceneFind(T3DScene *Scene,char *Name);
 T3DObject* Model_ObjAdd(T3DModel *Model,int Nb);
+T3DObject *Model_ObjectFind(T3DModel *Model,char *Name);
 TFace*     Model_ObjFaceAdd(T3DObject *Obj,int Nb);
 T3DModel*  Model_Get(char *Name);
 

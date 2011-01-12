@@ -41,6 +41,7 @@
 
 static Tcl_HashTable ModelTable;
 static int ModelInit=0;
+static int ModelSceneDepth=0;
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_Cmd>
@@ -653,14 +654,77 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
    mdl->Obj=NULL;
    mdl->NMt=0;
    mdl->Mt=NULL;
+   mdl->Scn=NULL;
 
    return(TCL_OK);
 }
 
+T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
+
+   T3DScene    *scn,*scnp;
+   unsigned int s,nscn;
+
+   if (!Model) {
+      if (!(scn=(T3DScene*)malloc(Nb*sizeof(T3DScene)))) {
+         return(NULL);
+      }
+      nscn=Nb;
+      scnp=scn;
+   } else {
+      if (!Parent) {
+         if (Nb>1 || Model->Scn) {
+            fprintf(stderr,"(ERROR) Root scene count must be 0");
+         }
+         if (!(Model->Scn=(T3DScene*)malloc(sizeof(T3DScene)))) {
+            return(NULL);
+         }
+         nscn=1;
+         scnp=Model->Scn;
+      } else {
+         Parent->NScn+=Nb;
+         if (!(Parent->Scn=(T3DScene*)realloc(Parent->Scn,Parent->NScn*sizeof(T3DScene)))) {
+            return(NULL);
+         }
+         nscn=Parent->NScn;
+         scnp=Parent->Scn;
+      }
+   }
+
+   for(s=nscn-Nb;s<nscn;s++) {
+      scn=&scnp[s];
+
+      scn->Name=NULL;
+      scn->Mtx=NULL;
+      scn->NObj=0;
+      scn->Obj=NULL;
+      scn->NScn=0;
+      scn->Scn=NULL;
+      scn->Parent=Parent;
+   }
+   return(&scnp[nscn-Nb]);
+}
+
+T3DScene *Model_SceneFind(T3DScene *Scene,char *Name) {
+
+   T3DScene *scn=NULL;
+   int       n;
+
+   if (Scene->Name && strcmp(Scene->Name,Name)==0) {
+      return(Scene);
+   }
+
+   for(n=0;n<Scene->NScn;n++) {
+      if ((scn=Model_SceneFind(&Scene->Scn[n],Name))) {
+         break;
+      }
+   }
+   return(scn);
+}
+
 T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
 
-   T3DObject *obj;
-   int        o;
+   T3DObject   *obj;
+   unsigned int o;
 
    Model->NObj+=Nb;
    if (!(Model->Obj=(T3DObject*)realloc(Model->Obj,Model->NObj*sizeof(T3DObject)))) {
@@ -671,7 +735,7 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
       obj=&Model->Obj[o];
 
       obj->GLId=0;
-      obj->Name[0]='\0';
+      obj->Name=NULL;
       obj->NVr=0;
       obj->NFc=0;
       obj->Format=0;
@@ -680,7 +744,6 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
       obj->Tx=NULL;
       obj->Fc=NULL;
       obj->Cl=NULL;
-      obj->Mtx=NULL;
 
       Vect_Init(obj->Extent[0],0,0,0);
       Vect_Init(obj->Extent[1],0,0,0);
@@ -688,10 +751,24 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
    return(&Model->Obj[Model->NObj-Nb]);
 }
 
+T3DObject *Model_ObjectFind(T3DModel *Model,char *Name) {
+
+   T3DObject *obj=NULL;
+   int       o;
+
+   for(o=0;o<Model->NObj;o++) {
+      if (strcmp(Model->Obj[o].Name,Name)==0) {
+         obj=&Model->Obj[o];
+         break;
+      }
+   }
+   return(obj);
+}
+
 TFace *Model_ObjFaceAdd(T3DObject *Obj,int Nb) {
 
-   TFace *fc;
-   int    f;
+   TFace       *fc;
+   unsigned int f;
 
    Obj->NFc+=Nb;
    if (!(Obj->Fc=(TFace*)realloc(Obj->Fc,Obj->NFc*sizeof(TFace)))) {
@@ -845,11 +922,11 @@ void Model_ObjFree(T3DObject *Obj) {
    int f;
 
    /*Vertex info*/
-   if (Obj->Vr)  free(Obj->Vr);
-   if (Obj->Nr)  free(Obj->Nr);
-   if (Obj->Tx)  free(Obj->Tx);
-   if (Obj->Cl)  free(Obj->Cl);
-   if (Obj->Mtx) free(Obj->Mtx);
+   if (Obj->Name) free(Obj->Name);
+   if (Obj->Vr)   free(Obj->Vr);
+   if (Obj->Nr)   free(Obj->Nr);
+   if (Obj->Tx)   free(Obj->Tx);
+   if (Obj->Cl)   free(Obj->Cl);
 
    /*Face list*/
    for (f=0;f<Obj->NFc;f++)
@@ -1095,22 +1172,6 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
       }
    }
 
-   /*Position the model within geography*/
-   if (!M->Ref) {
-      Proj->Type->Locate(Proj,M->Pos[0],M->Pos[1],1);
-      /*Positionner le modele*/
-      glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Scale+EARTHRADIUS)/EARTHRADIUS);
-      /*On suppose que le modele est en metres alors on scale par rapport a la terre*/
-      glScalef(1.0/EARTHRADIUS,1.0/EARTHRADIUS,1.0/EARTHRADIUS);
-   }
-
-   /*Local matrix manipulation*/
-   glTranslatef(M->MatrixT[0],M->MatrixT[1],M->MatrixT[2]);
-   glScalef(M->MatrixS[0],M->MatrixS[1],M->MatrixS[2]);
-   glRotatef(M->MatrixR[0],1.0,0.0,0.0);
-   glRotatef(M->MatrixR[1],0.0,0.0,1.0);
-   glRotatef(M->MatrixR[2],0.0,1.0,0.0);
-
    /*Create display lists*/
    if (!M->Obj[0].GLId) {
 
@@ -1149,8 +1210,8 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                for (j=0;j<obj->Fc[i].NIdx;j++) {
                   idx=obj->Fc[i].Idx[j];
                   if (idx<0 || idx>32768) {
-                     fprintf(stderr,"(ERROR) Model_Render: Invalid vertex index (%u) for obj %u on face %u\n",idx,o,i);
-                     break;
+//                     fprintf(stderr,"(ERROR) Model_Render: Invalid vertex index (%u) for obj %u on face %u\n",idx,o,i);
+//                     break;
                   }
 
                   if (obj->Tx) glTexCoord3fv(obj->Tx[idx]);
@@ -1175,7 +1236,6 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                }
                glEnd();
             }
-            glDisable(GL_TEXTURE_2D);
             glEndList();
 
             Vect_Min(M->Extent[0],M->Extent[0],obj->Extent[0]);
@@ -1184,52 +1244,29 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
       }
    }
 
+   /*Position the model within geography*/
+   if (!M->Ref) {
+      Proj->Type->Locate(Proj,M->Pos[0],M->Pos[1],1);
+      /*Positionner le modele*/
+      glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Scale+EARTHRADIUS)/EARTHRADIUS);
+      /*On suppose que le modele est en metres alors on scale par rapport a la terre*/
+      glScalef(1.0/EARTHRADIUS,1.0/EARTHRADIUS,1.0/EARTHRADIUS);
+   }
+
+   /*Local matrix manipulation*/
+   glTranslatef(M->MatrixT[0],M->MatrixT[1],M->MatrixT[2]);
+   glScalef(M->MatrixS[0],M->MatrixS[1],M->MatrixS[2]);
+   glRotatef(M->MatrixR[0],1.0,0.0,0.0);
+   glRotatef(M->MatrixR[1],0.0,0.0,1.0);
+   glRotatef(M->MatrixR[2],0.0,1.0,0.0);
+
    if (Model_LOD(Proj,VP,M,M->Extent)) {
-      for(o=0;o<M->NObj;o++) {
-         obj=&M->Obj[o];
 
-         if (Model_LOD(Proj,VP,M,obj->Extent)) {
-            glPolygonMode(GL_FRONT,GL_FILL);
-            if (M->Spec->RenderTexture) {
-               glEnable(GL_TEXTURE_2D);
-            } else {
-               glDisable(GL_TEXTURE_2D);
-            }
-
-            if (M->Spec->Outline && M->Spec->Width) {
-               glEnable(GL_POLYGON_OFFSET_FILL);
-               glPolygonOffset(0.5,1.0);
-            }
-
-            if (M->Spec->Light) {
-               glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-            } else {
-               glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-            }
-
-            /*If a displacement matrix is specified*/
-            if (obj->Mtx) {
-               glPushMatrix();
-               glMultMatrixf(obj->Mtx);
-            }
-
-            glCallList(obj->GLId);
-
-            if (M->Spec->Outline && M->Spec->Width) {
-               glDisable(GL_LIGHTING);
-               glDisable(GL_TEXTURE_2D);
-               glDisable(GL_POLYGON_OFFSET_FILL);
-               glDash(&M->Spec->Dash);
-               glLineWidth(ABS(M->Spec->Width));
-               glColor4us(M->Spec->Outline->red,M->Spec->Outline->green,M->Spec->Outline->blue,M->Spec->Alpha*655.35);
-               glPolygonMode(GL_FRONT,GL_LINE);
-               glCallList(obj->GLId);
-               glEnable(GL_LIGHTING);
-            }
-
-            if (obj->Mtx) {
-               glPopMatrix();
-            }
+      if (M->Scn) {
+         Model_RenderScene(Proj,VP,M,M->Scn);
+      } else {
+        for(o=0;o<M->NObj;o++) {
+            Model_RenderObj(Proj,VP,M,&M->Obj[o]);
          }
       }
    }
@@ -1243,3 +1280,73 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
    return(1);
 }
+
+int Model_RenderObj(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
+
+   if (Obj && Model_LOD(Proj,VP,M,Obj->Extent)) {
+      glPolygonMode(GL_FRONT,GL_FILL);
+      if (M->Spec->RenderTexture) {
+         glEnable(GL_TEXTURE_2D);
+      } else {
+         glDisable(GL_TEXTURE_2D);
+      }
+
+      if (M->Spec->Outline && M->Spec->Width) {
+         glEnable(GL_POLYGON_OFFSET_FILL);
+         glPolygonOffset(0.5,1.0);
+      }
+
+      if (M->Spec->Light) {
+         glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+      } else {
+         glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+      }
+      glCallList(Obj->GLId);
+
+      if (M->Spec->Outline && M->Spec->Width) {
+         glDisable(GL_LIGHTING);
+         glDisable(GL_TEXTURE_2D);
+         glDisable(GL_POLYGON_OFFSET_FILL);
+         glDash(&M->Spec->Dash);
+         glLineWidth(ABS(M->Spec->Width));
+         glColor4us(M->Spec->Outline->red,M->Spec->Outline->green,M->Spec->Outline->blue,M->Spec->Alpha*655.35);
+         glPolygonMode(GL_FRONT,GL_LINE);
+         glCallList(Obj->GLId);
+         glEnable(GL_LIGHTING);
+      }
+   }
+}
+
+
+int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene) {
+
+   int i;
+
+   ModelSceneDepth++;
+//   for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
+//   fprintf(stderr,"%s\n",Scene->Name);
+
+   /*If a displacement matrix is specified*/
+   if (Scene->Mtx) {
+      glPushMatrix();
+      glMultTransposeMatrixf(Scene->Mtx);
+   }
+
+   /*Display scene objects*/
+   for(i=0;i<Scene->NObj;i++) {
+      Model_RenderObj(Proj,VP,M,Scene->Obj[i]);
+   }
+
+   /*Recursive on sub-scenes*/
+   for(i=0;i<Scene->NScn;i++) {
+      Model_RenderScene(Proj,VP,M,&Scene->Scn[i]);
+   }
+
+   if (Scene->Mtx) {
+      glPopMatrix();
+   }
+
+   ModelSceneDepth--;
+}
+
+

@@ -49,6 +49,7 @@ typedef struct DAESource {
 typedef struct DAEData {
    char      Tag[256];
    T3DModel  *Model;
+   T3DScene  *Scene,*Nodes;
    T3DObject *Object;
    TFace     *Fc;
    TList     *Sources;
