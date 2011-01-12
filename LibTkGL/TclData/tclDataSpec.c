@@ -236,13 +236,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    double    tmp,min=0.0,max=0.0;
 
    static CONST char *sopt[] = { "-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
-                                 "-rendervalue","-rendervolume","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
+                                 "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-size","-sample","-sampletype","-step","-ztype",
                                  "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
                                  "-light","-sprite","-wmo",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
-                     RENDERVALUE,RENDERVOLUME,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
+                     RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SIZE,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
                      SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO };
@@ -338,6 +338,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderValue));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderValue);
+            }
+            break;
+
+         case RENDERFACE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->RenderFace));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->RenderFace);
             }
             break;
 
@@ -1291,6 +1299,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->InterpDegree=strdup(from->InterpDegree);
    to->ExtrapDegree=strdup(from->ExtrapDegree);
    to->RenderTexture=from->RenderTexture;
+   to->RenderFace=from->RenderFace;
    to->RenderGrid=from->RenderGrid;
    to->RenderContour=from->RenderContour;
    to->RenderCoord=from->RenderCoord;
@@ -1436,6 +1445,7 @@ TDataSpec *DataSpec_New(){
    spec->ExtrapDegree=(char*)strdup("NEUTRAL");
    spec->Dash.number=0;
    spec->RenderTexture=0;
+   spec->RenderFace=1;
    spec->RenderGrid=0;
    spec->RenderContour=0;
    spec->RenderCoord=0;

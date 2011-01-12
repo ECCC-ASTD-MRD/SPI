@@ -146,6 +146,7 @@ typedef struct TDataSpec {
    char*           InterpDegree;    /*Degree d'interpolation (NEAREST,LINEAR,CUBIC)*/
    char*           ExtrapDegree;    /*Degree d'extrapolation (NEUTRAL,MAXIMUM,MINIMUM,VALUE,ABORT)*/
    int             RenderTexture;   /*Effectuer le rendue de la texture du champs*/
+   int             RenderFace;      /*Effectuer le rendue des faces*/
    int             RenderGrid;      /*Effectuer le rendue de la grille*/
    int             RenderCoord;     /*Effectuer le rendue des coordonnees*/
    int             RenderContour;   /*Effectuer le rendue des contours*/

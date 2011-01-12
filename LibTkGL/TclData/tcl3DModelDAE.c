@@ -498,12 +498,6 @@ void ModelDAE_CharHandler(void *Data,const char *Txt,int Len) {
    }
 }
 
-void
-proc_hndl(void *data, const char *target, const char *pidata) {
-  printf("\nProcessing Instruction - ");
-//  printcurrent((XML_Parser) data);
-}
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_LoadDAE>
  * Creation     : Janvier 2003 J.P. Gauthier
@@ -552,7 +546,6 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
    XML_SetUserData(parser,data);
    XML_SetElementHandler(parser,ModelDAE_StartHandler,ModelDAE_EndHandler);
    XML_SetCharacterDataHandler(parser,ModelDAE_CharHandler);
-   XML_SetProcessingInstructionHandler(parser,proc_hndl);
 
    /*Parse the XML by chunk*/
    for (;;) {
@@ -620,7 +613,6 @@ int Model_LoadKML(T3DModel *M,char *Path) {
    XML_SetUserData(parser,data);
    XML_SetElementHandler(parser,ModelDAE_StartHandler,ModelDAE_EndHandler);
    XML_SetCharacterDataHandler(parser,ModelDAE_CharHandler);
-   XML_SetProcessingInstructionHandler(parser,proc_hndl);
 
    /*Parse the XML by chunk*/
    for (;;) {

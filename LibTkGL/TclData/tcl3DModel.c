@@ -1284,24 +1284,28 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 int Model_RenderObj(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
 
    if (Obj && Model_LOD(Proj,VP,M,Obj->Extent)) {
-      glPolygonMode(GL_FRONT,GL_FILL);
-      if (M->Spec->RenderTexture) {
-         glEnable(GL_TEXTURE_2D);
-      } else {
-         glDisable(GL_TEXTURE_2D);
-      }
+      if (M->Spec->RenderFace) {
 
-      if (M->Spec->Outline && M->Spec->Width) {
-         glEnable(GL_POLYGON_OFFSET_FILL);
-         glPolygonOffset(0.5,1.0);
-      }
+         glPolygonMode(GL_FRONT,GL_FILL);
+         if (M->Spec->RenderTexture) {
+            glEnable(GL_TEXTURE_2D);
+         } else {
+            glDisable(GL_TEXTURE_2D);
+         }
 
-      if (M->Spec->Light) {
-         glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-      } else {
-         glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+         if (M->Spec->Outline && M->Spec->Width) {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(0.5,1.0);
+         }
+
+         if (M->Spec->Light) {
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+         } else {
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+         }
+
+         glCallList(Obj->GLId);
       }
-      glCallList(Obj->GLId);
 
       if (M->Spec->Outline && M->Spec->Width) {
          glDisable(GL_LIGHTING);
@@ -1310,7 +1314,7 @@ int Model_RenderObj(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj
          glDash(&M->Spec->Dash);
          glLineWidth(ABS(M->Spec->Width));
          glColor4us(M->Spec->Outline->red,M->Spec->Outline->green,M->Spec->Outline->blue,M->Spec->Alpha*655.35);
-         glPolygonMode(GL_FRONT,GL_LINE);
+         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
          glCallList(Obj->GLId);
          glEnable(GL_LIGHTING);
       }
