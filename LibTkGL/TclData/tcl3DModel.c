@@ -736,6 +736,38 @@ T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_SceneFree>
+ * Creation     : Janvier 2011 J.P. Gauthier
+ *
+ * But          : Liberation de la memoire alloue pour un arbre de scene
+ *
+ * Parametres   :
+ *   <Scene>    : Scene root de depart
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void Model_SceneFree(T3DScene *Scene) {
+
+   T3DScene *scn=NULL;
+   int       n;
+
+   if (Scene) {
+      if (Scene->Name) free(Scene->Name);
+      if (Scene->Mtx)  free(Scene->Mtx);
+      if (Scene->Obj)  free(Scene->Obj);
+
+      for(n=0;n<Scene->NScn;n++) {
+         Model_SceneFree(&Scene->Scn[n]);
+      }
+      free(Scene->Scn);
+   }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_SceneFind>
  * Creation     : Janvier 2011 J.P. Gauthier
  *
@@ -812,6 +844,41 @@ T3DObject *Model_ObjectAdd(T3DModel *Model,int Nb) {
       Vect_Init(obj->Extent[1],0,0,0);
    }
    return(&Model->Obj[Model->NObj-Nb]);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_ObjectFree>
+ * Creation     : Mai 2002 J.P. Gauthier
+ *
+ * But          : Liberation de la memoire alloue pour un Object
+ *
+ * Parametres   :
+ *   <Obj>      : Object
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void Model_ObjectFree(T3DObject *Obj) {
+
+   int f;
+
+   if (Obj) {
+      /*Vertex info*/
+      if (Obj->Name) free(Obj->Name);
+      if (Obj->Vr)   free(Obj->Vr);
+      if (Obj->Nr)   free(Obj->Nr);
+      if (Obj->Tx)   free(Obj->Tx);
+      if (Obj->Cl)   free(Obj->Cl);
+
+      /*Face list*/
+      for (f=0;f<Obj->NFc;f++)
+         free(Obj->Fc[f].Idx);
+
+      if (Obj->Fc) free(Obj->Fc);
+   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1006,10 +1073,8 @@ void Model_Free(T3DModel *M) {
       Model_ObjectFree(&M->Obj[i]);
    }
 
-   /*Scene list
-   for(i=0;i<M->NScn;i++) {
-      Model_ObjectFree(&M->Obj[i]);
-   }*/
+   /*Scene list*/
+   Model_SceneFree(M->Scn);
 
    /*Free projection*/
    if (M->Ref) {
@@ -1018,39 +1083,6 @@ void Model_Free(T3DModel *M) {
 
    if (M->Name) free(M->Name);
    if (M->Path) free(M->Path);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Model_ObjectFree>
- * Creation     : Mai 2002 J.P. Gauthier
- *
- * But          : Liberation de la memoire alloue pour un Object
- *
- * Parametres   :
- *   <Obj>      : Object
- *
- * Retour       :
- *
- * Remarques :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-void Model_ObjectFree(T3DObject *Obj) {
-
-   int f;
-
-   /*Vertex info*/
-   if (Obj->Name) free(Obj->Name);
-   if (Obj->Vr)   free(Obj->Vr);
-   if (Obj->Nr)   free(Obj->Nr);
-   if (Obj->Tx)   free(Obj->Tx);
-   if (Obj->Cl)   free(Obj->Cl);
-
-   /*Face list*/
-   for (f=0;f<Obj->NFc;f++)
-      free(Obj->Fc[f].Idx);
-
-   if (Obj->Fc) free(Obj->Fc);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

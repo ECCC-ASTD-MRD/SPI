@@ -133,15 +133,16 @@ int  Model_LoadKML(T3DModel *M,char *Path);
 int  Model_Render(Projection* Proj,ViewportItem* VP,T3DModel *M);
 int  Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj);
 int  Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene);
-
 void Model_NormalCompute(T3DModel *M);
-void Model_ObjectFree(T3DObject *Obj);
 
 T3DScene*  Model_SceneAdd(T3DModel *Model,T3DScene* Parent,int Nb);
+void       Model_SceneFree(T3DScene *Scene);
 T3DScene*  Model_SceneFind(T3DScene *Scene,char *Name);
 T3DObject* Model_ObjectAdd(T3DModel *Model,int Nb);
+void       Model_ObjectFree(T3DObject *Obj);
 T3DObject *Model_ObjectFind(T3DModel *Model,char *Name);
 TFace*     Model_ObjectFaceAdd(T3DObject *Obj,int Nb);
+
 T3DModel*  Model_Get(char *Name);
 
 #endif

@@ -86,7 +86,7 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
       } else
 
       if (strcmp(Elem,"tilt")==0) {
-         data->Model->Matrix[1]=atof(data->Buf);
+         data->Model->MatrixR[1]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"roll")==0) {
