@@ -211,12 +211,13 @@ static int Model_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *
 static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj *obj;
-   TGeoRef *ref;
-   T3DModel  *mdl;
-   int      i,idx;
+   TGeoRef  *ref;
+   T3DModel *mdl;
+   int       i,idx;
+   double    tmpd;
 
-   static CONST char *sopt[] = { "-active","-projection","-georef","-coordinate","-name",NULL };
-   enum               opt { ACTIVE,PROJECTION,GEOREF,COORDINATE,NAME };
+   static CONST char *sopt[] = { "-active","-projection","-georef","-coordinate","-name","-unitmeter",NULL };
+   enum               opt { ACTIVE,PROJECTION,GEOREF,COORDINATE,NAME,UNITMETER };
 
    mdl=Model_Get(Name);
    if (!mdl) {
@@ -236,6 +237,29 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(mdl->Active));
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&mdl->Active);
+            }
+            break;
+
+         case NAME:
+            if (Objc==1) {
+               if (mdl->Name)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Name,-1));
+            } else {
+               if (mdl->Name) free(mdl->Name); mdl->Name=NULL;
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  mdl->Name=strdup(Tcl_GetString(Objv[i]));
+            }
+            break;
+
+         case UNITMETER:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(mdl->Meter));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
+               if (tmpd!=mdl->Meter) {
+                  mdl->Meter=tmpd;
+                  Model_Clean(mdl);
+               }
             }
             break;
 
@@ -294,17 +318,6 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-            }
-            break;
-
-         case NAME:
-            if (Objc==1) {
-               if (mdl->Name)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Name,-1));
-            } else {
-               if (mdl->Name) free(mdl->Name); mdl->Name=NULL;
-               if (strlen(Tcl_GetString(Objv[++i])))
-                  mdl->Name=strdup(Tcl_GetString(Objv[i]));
             }
             break;
       }
