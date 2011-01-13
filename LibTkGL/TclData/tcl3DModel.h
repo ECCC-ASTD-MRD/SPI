@@ -90,6 +90,7 @@ typedef struct T3DScene {
 } T3DScene;
 
 typedef struct T3DModel {
+   char         *Name;
    char         *Path;
    TGeoRef      *Ref;                 /*GeoReference*/
    TDataSpec    *Spec;                /*Specification des donnees*/
@@ -128,6 +129,7 @@ int  Model_LoadFLT(T3DModel *M,char *Path);
 int  Model_LoadMDL(T3DModel *M,char *Path);
 int  Model_Load3DS(T3DModel *M,char *Path);
 int  Model_LoadDAE(T3DModel *M,char *Path);
+int  Model_LoadKML(T3DModel *M,char *Path);
 int  Model_Render(Projection* Proj,ViewportItem* VP,T3DModel *M);
 int  Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj);
 int  Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene);

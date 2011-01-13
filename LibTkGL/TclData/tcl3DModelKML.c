@@ -43,7 +43,7 @@ void ModelKML_StartHandler(void *Data,const char *Elem,const char **Attr) {
    if (Elem) {
       strncpy(data->Tag,Elem,255);
 
-      if (data->Buf)
+      if (data->Buf) {
          free(data->Buf);
          data->Buf=NULL;
          data->BufLen=0;
@@ -54,12 +54,13 @@ void ModelKML_StartHandler(void *Data,const char *Elem,const char **Attr) {
 void ModelKML_EndHandler(void *Data,const char *Elem) {
 
    KMLData   *data=(KMLData*)Data;
+   char      *buf,*c;
 
    if (Elem) {
       data->Tag[0]='\0';
 
       if (strcmp(Elem,"name")==0) {
-         data->Name=data->Buf;
+         data->Model->Name=data->Buf;
          data->Buf=NULL;
          data->BufLen=0;
       } else
@@ -69,43 +70,50 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
       } else
 
       if (strcmp(Elem,"longitude")==0) {
-         data->Lon=atof(tok);
+         data->Model->Pos[1]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"latitude")==0) {
-         data->Lat=atof(tok);
+         data->Model->Pos[0]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"altitude")==0) {
-         data->Alt=atof(tok);
+         data->Model->Pos[2]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"heading")==0) {
-         data->Rot[0]=atof(tok);
+         data->Model->MatrixR[0]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"tilt")==0) {
-         data->Rot[1]=atof(tok);
+         data->Model->Matrix[1]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"roll")==0) {
-         data->Rot[2]=atof(tok);
+         data->Model->MatrixR[2]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"x")==0) {
-         data->Scale[0]=atof(tok);
+         data->Model->MatrixS[0]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"y")==0) {
-         data->Scale[1]=atof(tok);
+         data->Model->MatrixS[1]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"z")==0) {
-         data->Scale[2]=atof(tok);
+         data->Model->MatrixS[2]=atof(data->Buf);
       } else
 
       if (strcmp(Elem,"href")==0) {
-         <href>models/model.dae</href>
+         buf=(char*)malloc(strlen(data->Path)+data->BufLen+1);
+         strcpy(buf,data->Path);
+         if (c=strrchr(buf,'/')) {
+            strcpy(c+1,data->Buf);
+            fprintf(stderr,"(DEBUG) ModelKML_EndHandler: Found Collada external ref %s\n",buf);
+         }
+         Model_LoadDAE(data->Model,buf);
+         free(buf);
       }
    }
 }
@@ -117,7 +125,7 @@ void ModelKML_CharHandler(void *Data,const char *Txt,int Len) {
    if (Txt && Len) {
       data->Buf=realloc(data->Buf,data->BufLen+Len+1);
       memcpy(data->Buf+data->BufLen,Txt,Len);
-      data->Buf+data->BufLen+Len='\0';
+      data->Buf[data->BufLen+Len]='\0';
       data->BufLen+=Len;
    }
 }
@@ -142,7 +150,7 @@ int Model_LoadKML(T3DModel *M,char *Path) {
 
    FILE      *file;
    XML_Parser parser;
-   DAEData   *data;
+   KMLData   *data;
    int        len,state=1;
    void      *buf;
 
@@ -160,6 +168,10 @@ int Model_LoadKML(T3DModel *M,char *Path) {
    /*Data to be used while parsing*/
    data=(KMLData*)malloc(sizeof(KMLData));
    data->Model=M;
+   data->Path=Path;
+   data->Buf=NULL;
+   data->BufLen=0;
+   data->AltMode='G';
 
    /*Initialise expat XML parser*/
    XML_SetUserData(parser,data);

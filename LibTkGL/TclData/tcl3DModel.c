@@ -215,8 +215,8 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
    T3DModel  *mdl;
    int      i,idx;
 
-   static CONST char *sopt[] = { "-active","-projection","-georef","-coordinate",NULL };
-   enum               opt { ACTIVE,PROJECTION,GEOREF,COORDINATE };
+   static CONST char *sopt[] = { "-active","-projection","-georef","-coordinate","-name",NULL };
+   enum               opt { ACTIVE,PROJECTION,GEOREF,COORDINATE,NAME };
 
    mdl=Model_Get(Name);
    if (!mdl) {
@@ -294,6 +294,17 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(mdl->Co.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
+            }
+            break;
+
+         case NAME:
+            if (Objc==1) {
+               if (mdl->Name)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Name,-1));
+            } else {
+               if (mdl->Name) free(mdl->Name); mdl->Name=NULL;
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  mdl->Name=strdup(Tcl_GetString(Objv[i]));
             }
             break;
       }
@@ -898,9 +909,11 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
    mdl->Path=strdup(Path);
 
    if (!(c=Model_LoadMDL(mdl,Path))) {
-      if (!(c=Model_LoadDAE(mdl,Path))) {
-         if (!(c=Model_Load3DS(mdl,Path))) {
-            c=Model_LoadFLT(mdl,Path);
+      if (!(c=Model_LoadKML(mdl,Path))) {
+         if (!(c=Model_LoadDAE(mdl,Path))) {
+            if (!(c=Model_Load3DS(mdl,Path))) {
+               c=Model_LoadFLT(mdl,Path);
+            }
          }
       }
    }
@@ -993,10 +1006,18 @@ void Model_Free(T3DModel *M) {
       Model_ObjectFree(&M->Obj[i]);
    }
 
+   /*Scene list
+   for(i=0;i<M->NScn;i++) {
+      Model_ObjectFree(&M->Obj[i]);
+   }*/
+
    /*Free projection*/
    if (M->Ref) {
       GeoRef_Destroy(NULL,M->Ref->Name);
    }
+
+   if (M->Name) free(M->Name);
+   if (M->Path) free(M->Path);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1473,7 +1494,7 @@ int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Sc
 
    /*Display scene objects*/
    for(i=0;i<Scene->NObj;i++) {
-      Model_RenderObj(Proj,VP,M,Scene->Obj[i]);
+      Model_RenderObject(Proj,VP,M,Scene->Obj[i]);
    }
 
    /*Recursive on sub-scenes*/

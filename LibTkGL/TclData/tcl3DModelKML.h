@@ -39,17 +39,12 @@
 
 typedef struct KMLData {
    char        Tag[256];
+   char        *Path;
    char        *Buf;
    unsigned int BufLen;
-   char        *Name;
    char         AltMode;
-   float        Lat,Lon,Alt,Rot[3],Scale[3];
    T3DModel    *Model;
 
 } KMLData;
-
-int        ModelDAE_SourceExpand(DAESource *Source);
-void       ModelDAE_SourceFree(DAESource *Source);
-DAESource *ModelDAE_SourceFind(DAEData *Data,char* Id);
 
 #endif
