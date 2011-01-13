@@ -118,6 +118,20 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
    if (Elem) {
       strncpy(data->Tag,Elem,255);
 
+      /*Unit tag*/
+      /*Get the unit reference more "meter", Collada uses meter as reference*/
+      if (strcmp(Elem,"unit")==0) {
+         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found unit\n");
+
+         for (i=0;Attr[i];i+=2) {
+            if (strcmp(Attr[i],"name")==0) {
+            }
+            if (strcmp(Attr[i],"meter")==0) {
+               data->Model->Meter=atof(Attr[i+1]);
+            }
+         }
+      } else
+
       /*Source tag*/
       /*Create a new source with name "id" and add to sources list*/
       if (strcmp(Elem,"source")==0) {

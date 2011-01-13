@@ -666,6 +666,7 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
    mdl->NMt=0;
    mdl->Mt=NULL;
    mdl->Scn=NULL;
+   mdl->Meter=1.0;
 
    return(TCL_OK);
 }
@@ -1400,7 +1401,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
       /*Positionner le modele*/
       glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Scale+EARTHRADIUS)/EARTHRADIUS);
       /*On suppose que le modele est en metres alors on scale par rapport a la terre*/
-      glScalef(1.0/EARTHRADIUS,1.0/EARTHRADIUS,1.0/EARTHRADIUS);
+      glScalef((1.0*M->Meter)/EARTHRADIUS,(1.0*M->Meter)/EARTHRADIUS,(1.0*M->Meter)/EARTHRADIUS);
    }
 
    /*Local matrix manipulation*/

@@ -97,6 +97,7 @@ typedef struct T3DModel {
 
    int           Active;
    Vect3d        Extent[2];          /*Extent*/
+   double        Meter;              /*Meter value (Meter is reference)*/
 
    Coord         Co;
    Vect3f        Pos;                 /*Position*/
