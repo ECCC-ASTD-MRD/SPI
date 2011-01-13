@@ -659,6 +659,26 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
    return(TCL_OK);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_SceneAdd>
+ * Creation     : Janvier 2011 J.P. Gauthier
+ *
+ * But          : Ajout d'une nouvelle scene.
+ *
+ * Parametres   :
+ *   <Model>    : Model
+ *   <Parent>   : Scene parent
+ *   <Nb>       : Nombre de scene a ajouter
+ *
+ * Retour       : Pointeur sur la nouvelle (premiere) scene(s)
+ *
+ * Remarques    :
+ *    - Les scenes sont un arbre, chaque branche est une scene avec de possible sous-scene
+ *    - Si Model est NULL, une scene orpheline est cree
+ *    - Si Parent est NULL, une scene "root" est cree dans le modele
+ *      Sinon, une sous-scene est cree dans la scene Parent
+ *---------------------------------------------------------------------------------------------------------------
+*/
 T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
 
    T3DScene    *scn,*scnp;
@@ -704,6 +724,21 @@ T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
    return(&scnp[nscn-Nb]);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_SceneFind>
+ * Creation     : Janvier 2011 J.P. Gauthier
+ *
+ * But          : Rechercher une scene.
+ *
+ * Parametres   :
+ *   <Scene>    : Scene root de depart de la recherche
+ *   <Name>     : Nom de la scene a rechercher
+ *
+ * Retour       : Pointeur sur la scene (ou NULL si non-existante)
+ *
+ * Remarques    :
+ *---------------------------------------------------------------------------------------------------------------
+*/
 T3DScene *Model_SceneFind(T3DScene *Scene,char *Name) {
 
    T3DScene *scn=NULL;
@@ -721,7 +756,24 @@ T3DScene *Model_SceneFind(T3DScene *Scene,char *Name) {
    return(scn);
 }
 
-T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_ObjectAdd>
+ * Creation     : Janvier 2011 J.P. Gauthier
+ *
+ * But          : Ajout d'un nouvel objet.
+ *
+ * Parametres   :
+ *   <Model>    : Model
+ *   <Nb>       : Nombre de scene a ajouter
+ *
+ * Retour       : Pointeur sur le nouvel (premier) objet(s)
+ *
+ * Remarques    :
+ *   - Les objets sont un tableau commun a toutes les scenes, ils sont reference directement
+ *     par celles-ci
+ *---------------------------------------------------------------------------------------------------------------
+*/
+T3DObject *Model_ObjectAdd(T3DModel *Model,int Nb) {
 
    T3DObject   *obj;
    unsigned int o;
@@ -751,6 +803,21 @@ T3DObject *Model_ObjAdd(T3DModel *Model,int Nb) {
    return(&Model->Obj[Model->NObj-Nb]);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_ObjectFind>
+ * Creation     : Janvier 2011 J.P. Gauthier
+ *
+ * But          : Rechercher un objet.
+ *
+ * Parametres   :
+ *   <Model>    : Model dans lequel rechercher
+ *   <Name>     : Nom de l'objet a rechercher
+ *
+ * Retour       : Pointeur sur l'objet (ou NULL si non-existant)
+ *
+ * Remarques    :
+ *---------------------------------------------------------------------------------------------------------------
+*/
 T3DObject *Model_ObjectFind(T3DModel *Model,char *Name) {
 
    T3DObject *obj=NULL;
@@ -765,7 +832,22 @@ T3DObject *Model_ObjectFind(T3DModel *Model,char *Name) {
    return(obj);
 }
 
-TFace *Model_ObjFaceAdd(T3DObject *Obj,int Nb) {
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_FaceAdd>
+ * Creation     : Janvier 2011 J.P. Gauthier
+ *
+ * But          : Ajout de face a un objet.
+ *
+ * Parametres   :
+ *   <Obj>      : Objet
+ *   <Nb>       : Nombre de faces a ajouter
+ *
+ * Retour       : Pointeur sur la nouvelle (premiere) face(s)
+ *
+ * Remarques    :
+ *---------------------------------------------------------------------------------------------------------------
+*/
+TFace *Model_ObjectFaceAdd(T3DObject *Obj,int Nb) {
 
    TFace       *fc;
    unsigned int f;
@@ -908,7 +990,7 @@ void Model_Free(T3DModel *M) {
 
    /*Object list*/
    for(i=0;i<M->NObj;i++) {
-      Model_ObjFree(&M->Obj[i]);
+      Model_ObjectFree(&M->Obj[i]);
    }
 
    /*Free projection*/
@@ -917,7 +999,22 @@ void Model_Free(T3DModel *M) {
    }
 }
 
-void Model_ObjFree(T3DObject *Obj) {
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_ObjectFree>
+ * Creation     : Mai 2002 J.P. Gauthier
+ *
+ * But          : Liberation de la memoire alloue pour un Object
+ *
+ * Parametres   :
+ *   <Obj>      : Object
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void Model_ObjectFree(T3DObject *Obj) {
 
    int f;
 
@@ -1266,7 +1363,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
          Model_RenderScene(Proj,VP,M,M->Scn);
       } else {
         for(o=0;o<M->NObj;o++) {
-            Model_RenderObj(Proj,VP,M,&M->Obj[o]);
+            Model_RenderObject(Proj,VP,M,&M->Obj[o]);
          }
       }
    }
@@ -1281,7 +1378,25 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    return(1);
 }
 
-int Model_RenderObj(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_RenderObject>
+ * Creation     : Mai 2002 J.P. Gauthier
+ *
+ * But          : Rendu d'un object.
+ *
+ * Parametres  :
+ *   <Proj>     : La projection courante
+ *   <VP>       : Le viewport ou le rendu doit etre fait
+ *   <M>        : Modele a afficher
+ *   <Obj>      : Object a afficher
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
 
    if (Obj && Model_LOD(Proj,VP,M,Obj->Extent)) {
       if (M->Spec->RenderFace) {
@@ -1321,14 +1436,34 @@ int Model_RenderObj(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj
    }
 }
 
-
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_RenderScene>
+ * Creation     : Mai 2002 J.P. Gauthier
+ *
+ * But          : Rendu d'une scene.
+ *
+ * Parametres  :
+ *   <Proj>     : La projection courante
+ *   <VP>       : Le viewport ou le rendu doit etre fait
+ *   <M>        : Modele a afficher
+ *   <Scene>    : Scene a afficher
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene) {
 
    int i;
 
    ModelSceneDepth++;
-//   for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
-//   fprintf(stderr,"%s\n",Scene->Name);
+
+   if (GLRender->Debug) {
+     for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
+     fprintf(stderr,"%s\n",Scene->Name);
+   }
 
    /*If a displacement matrix is specified*/
    if (Scene->Mtx) {

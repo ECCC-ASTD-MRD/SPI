@@ -461,7 +461,7 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             // holds the name of the object.
 
             // Add a new tObject node to our list of objects (like a link list)
-            Model_ObjAdd(Model,1);
+            Model_ObjectAdd(Model,1);
             // Get the name of the object and store it, then add the read bytes to our byte counter.
             currentChunk.bytes+=Model3DS_GetString(File,Model->Obj[Model->NObj-1].Name);
 

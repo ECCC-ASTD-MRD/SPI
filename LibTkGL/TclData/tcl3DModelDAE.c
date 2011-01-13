@@ -249,7 +249,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Create new geometry object with name "id"*/
       if (strcmp(Elem,"geometry")==0) {
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding geometry\n");
-         data->Object=Model_ObjAdd(data->Model,1);
+         data->Object=Model_ObjectAdd(data->Model,1);
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
                data->Object->Name=strndup(Attr[i+1],256);
@@ -273,7 +273,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
          if (data->NFc) {
             fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i faces\n",data->NFc);
-            data->Fc=Model_ObjFaceAdd(data->Object,data->NFc);
+            data->Fc=Model_ObjectFaceAdd(data->Object,data->NFc);
          }
       }  else
 
@@ -293,7 +293,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
          if (data->NFc) {
             fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i segments\n",data->NFc);
-            data->Fc=Model_ObjFaceAdd(data->Object,data->NFc);
+            data->Fc=Model_ObjectFaceAdd(data->Object,data->NFc);
          }
       }  else
 
@@ -549,80 +549,13 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
 
    /*Parse the XML by chunk*/
    for (;;) {
-      if (!(buf=XML_GetBuffer(parser,DAEBUFSIZE))) {
+      if (!(buf=XML_GetBuffer(parser,XMLBUFSIZE))) {
          fprintf(stderr,"Model_LoadDAE: Could not allocate XML IO buffer\n");
          state=0;
          break;
       }
 
-      len=fread(buf,1,DAEBUFSIZE,file);
-      if (ferror(file)) {
-         fprintf(stderr,"Model_LoadDAE: Read error on %s\n",Path);
-         state=0;
-         break;
-      }
-
-      if (!XML_ParseBuffer(parser,len,len==0)) {
-         fprintf(stderr,"Model_LoadDAE: XML Parse error at line %d:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
-         state=0;
-         break;
-      }
-
-      if (!len)
-         break;
-    }
-    XML_ParserFree(parser);
-
-    /*Free associates parsing data structure*/
-    TList_Clear(data->Sources,ModelDAE_SourceFree);
-    free(data);
-
-    fclose(file);
-    return(state);
-}
-
-int Model_LoadKML(T3DModel *M,char *Path) {
-
-   FILE      *file;
-   XML_Parser parser;
-   DAEData   *data;
-   int        len,state=1;
-   void      *buf;
-
-   /*Create expat XML parser*/
-   parser=XML_ParserCreate(NULL);
-   if (!parser) {
-      fprintf(stderr,"Model_LoadKML: Couldn't initiate XML parser\n");
-      return(0);
-   }
-
-   if (!(file=fopen(Path,"r"))) {
-      return(0);
-   }
-
-   /*Data to be used while parsing*/
-   data=(DAEData*)malloc(sizeof(DAEData));
-   data->Model=M;
-   data->Scene=NULL;
-   data->Object=NULL;
-   data->Sources=NULL;
-   data->Fc=NULL;
-   data->VrSource=data->NrSource=data->TxSource=NULL;
-
-   /*Initialise expat XML parser*/
-   XML_SetUserData(parser,data);
-   XML_SetElementHandler(parser,ModelDAE_StartHandler,ModelDAE_EndHandler);
-   XML_SetCharacterDataHandler(parser,ModelDAE_CharHandler);
-
-   /*Parse the XML by chunk*/
-   for (;;) {
-      if (!(buf=XML_GetBuffer(parser,DAEBUFSIZE))) {
-         fprintf(stderr,"Model_LoadDAE: Could not allocate XML IO buffer\n");
-         state=0;
-         break;
-      }
-
-      len=fread(buf,1,DAEBUFSIZE,file);
+      len=fread(buf,1,XMLBUFSIZE,file);
       if (ferror(file)) {
          fprintf(stderr,"Model_LoadDAE: Read error on %s\n",Path);
          state=0;

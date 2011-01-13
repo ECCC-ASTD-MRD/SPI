@@ -97,7 +97,7 @@ int Model_LoadMDL(T3DModel *M,char *Path) {
       }
    }
 
-   Model_ObjAdd(M,1);
+   Model_ObjectAdd(M,1);
    obj=&M->Obj[M->NObj-1];
 
    /*Vertex list*/

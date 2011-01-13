@@ -88,7 +88,7 @@ int Model_LoadFLT(T3DModel *M,char *Path) {
 
    nobj=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_OBJECT);
    fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i object\n",nobj);
-   Model_ObjAdd(M,nobj);
+   Model_ObjectAdd(M,nobj);
 
    M->NMt=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_MATERIAL);
    M->NMt=1024;
