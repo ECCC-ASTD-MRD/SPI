@@ -1460,7 +1460,7 @@ int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Sc
 
    ModelSceneDepth++;
 
-   if (GLRender->Debug) {
+   if (GLRender->GLDebug) {
      for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
      fprintf(stderr,"%s\n",Scene->Name);
    }

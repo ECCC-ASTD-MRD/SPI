@@ -5,7 +5,7 @@
  * Dorval, Quebec
  *
  * Projet       : Affichage de modele 3D
- * Fichier      : tcl3DModelDAE.h
+ * Fichier      : tcl3DModelKML.h
  * Creation     : Janvier 2011 - J.P. Gauthier
  *
  * Description  : Module de lecture de modele 3D en format Collada DAE
@@ -31,32 +31,22 @@
  *=========================================================
  */
 
-#ifndef _tcl3DModelDAE_h
-#define _tcl3DModelDAE_h
+
+#ifndef _tcl3DModelKML_h
+#define _tcl3DModelKML_h
 
 #define XMLBUFSIZE 8192
 
-typedef struct DAESource {
-   char         Alias;
-   char        *Id;
-   char        *Text;
-   unsigned int TextLen;
-   unsigned int Nb;
-   unsigned int Dim;
-   float       *Array;
-} DAESource;
+typedef struct KMLData {
+   char        Tag[256];
+   char        *Buf;
+   unsigned int BufLen;
+   char        *Name;
+   char         AltMode;
+   float        Lat,Lon,Alt,Rot[3],Scale[3];
+   T3DModel    *Model;
 
-typedef struct DAEData {
-   char      Tag[256];
-   T3DModel  *Model;
-   T3DScene  *Scene,*Nodes;
-   T3DObject *Object;
-   TFace     *Fc;
-   TList     *Sources;
-   int        NFc,NVr,VrDim,VrType;
-   int        VrOffset,NrOffset,TxOffset;
-   DAESource *VrSource,*NrSource,*TxSource;
-} DAEData;
+} KMLData;
 
 int        ModelDAE_SourceExpand(DAESource *Source);
 void       ModelDAE_SourceFree(DAESource *Source);

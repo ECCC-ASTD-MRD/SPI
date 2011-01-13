@@ -6,7 +6,7 @@
  *
  * Projet       : Affichage de modele 3D
  * Fichier      : tcl3DModelDAE.c
- * Creation     : Aout2007 - J.P. Gauthier
+ * Creation     : Janvier 2011 - J.P. Gauthier
  *
  * Description  : Module de lecture de modele 3D en format Collada DAE
  *
