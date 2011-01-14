@@ -205,6 +205,7 @@ int Model_LoadKML(T3DModel *M,char *Path) {
     XML_ParserFree(parser);
 
     /*Free associates parsing data structure*/
+    if (data->Buf) free(data->Buf);
     free(data);
 
     fclose(file);

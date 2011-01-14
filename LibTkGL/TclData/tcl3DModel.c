@@ -1158,66 +1158,53 @@ T3DModel* Model_Get(char *Name) {
 */
 void Model_NormalCompute(T3DModel *M) {
 
-   int v,o,f,nb=0,shared=0;
+   int v,o,f,n;
    T3DObject *obj;
+   TFace     *fc;
 
-   Vect3f *nr=NULL,*tmp=NULL,vr[3],sum;
+   Vect3f nr,vr[3];
 
    for (o=0;o<M->NObj;o++) {
       obj=&(M->Obj[o]);
 
-     if (obj->Nr || !obj->NVr) {
+      if (obj->Nr || !obj->NVr) {
          continue;
       }
 
-      if (obj->NFc>nb) {
-         nb=obj->NFc;
-         nr=(Vect3f*)realloc(nr,nb*sizeof(Vect3f));
-         tmp=(Vect3f*)realloc(tmp,nb*sizeof(Vect3f));
-      }
       obj->Nr=(Vect3f*)malloc(obj->NVr*sizeof(Vect3f));
+      for (v=0;v<obj->NVr;v++) {
+         Vect_Clear(obj->Nr[v]);
+      }
 
-      /*Face normals*/
+      /*Calculate face normal*/
       for (f=0;f<obj->NFc;f++) {
-         if (obj->Fc[f].Idx[0]<0 || obj->Fc[f].Idx[0]>32768) {
-            Vect_Init(nr[f],0.0,0.0,1.0);
-            Vect_Init(tmp[f],0.0,0.0,1.0);
-            break;
-         }
-         if (obj->Fc[f].NIdx>2 && obj->Vr) {
-            Vect_Assign(vr[0],obj->Vr[obj->Fc[f].Idx[0]]);
-            Vect_Assign(vr[1],obj->Vr[obj->Fc[f].Idx[1]]);
-            Vect_Assign(vr[2],obj->Vr[obj->Fc[f].Idx[2]]);
+         fc=&obj->Fc[f];
 
-            Vect_Substract(vr[0],vr[1],vr[0]);
-            Vect_Substract(vr[1],vr[2],vr[1]);
-            Vect3f_CrossProduct(nr[f],vr[0],vr[1]);
-            Vect_Assign(tmp[f],nr[f]);     // Save the un-normalized normal for the vertex normals
-            Vect3f_Normalize(nr[f]);
+         /* Calculate face normal*/
+         if (fc->NIdx>2) {
+            Vect_Assign(vr[0],obj->Vr[fc->Idx[0]]);
+            Vect_Assign(vr[1],obj->Vr[fc->Idx[1]]);
+            Vect_Assign(vr[2],obj->Vr[fc->Idx[2]]);
+
+            Vect_Substract(vr[1],vr[1],vr[0]);
+            Vect_Substract(vr[0],vr[2],vr[0]);
+            Vect3f_CrossProduct(nr,vr[0],vr[1]);
+            Vect3f_Normalize(nr);
          } else {
-            Vect_Init(nr[f],0.0,0.0,1.0);
-            Vect_Init(tmp[f],0.0,0.0,1.0);
+            Vect_Init(nr,0.0,0.0,0.0);
+         }
+
+         /*Add to vertex normal*/
+         for (n=0;n<fc->NIdx;n++) {
+            Vect_Add(obj->Nr[fc->Idx[n]],obj->Nr[fc->Idx[n]],nr);
          }
       }
 
-      /*Vertex normals*/
+      /*Normalize normals*/
       for (v=0;v<obj->NVr;v++) {
-         Vect_Init(sum,0.0,0.0,0.0);
-         shared=0;
-
-         for (f=0;f<obj->NFc;f++) {     // Check if the vertex is shared by another face
-            if (obj->Fc[f].Idx[0]==v || obj->Fc[f].Idx[1]==v || obj->Fc[f].Idx[2]==v) {
-               Vect_Add(sum,sum,tmp[f]); // Add the un-normalized normal of the shared face
-               shared++;
-            }
-         }
-
-         Vect_SDiv(obj->Nr[v],sum,-shared);
          Vect3f_Normalize(obj->Nr[v]);
       }
    }
-   if (nr) free(nr);
-   if (tmp) free(tmp);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1324,7 +1311,6 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    glEnable(GL_LIGHT0);
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_BLEND);
-//   glEnable(GL_COLOR_MATERIAL);
    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
    /*Parse material for texture setup*/
@@ -1351,11 +1337,11 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
             for (i=0;i<obj->NFc;i++) {
                if (obj->Fc[i].Mt) {
-                  glMaterialf(GL_FRONT,GL_SHININESS,obj->Fc[i].Mt->Shi);
-                  glMaterialfv(GL_FRONT,GL_AMBIENT,obj->Fc[i].Mt->Amb);
-                  glMaterialfv(GL_FRONT,GL_DIFFUSE,obj->Fc[i].Mt->Dif);
-                  glMaterialfv(GL_FRONT,GL_SPECULAR,obj->Fc[i].Mt->Spe);
-                  glMaterialfv(GL_FRONT,GL_EMISSION,obj->Fc[i].Mt->Emi);
+                  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,obj->Fc[i].Mt->Shi);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,obj->Fc[i].Mt->Amb);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,obj->Fc[i].Mt->Dif);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,obj->Fc[i].Mt->Spe);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,obj->Fc[i].Mt->Emi);
                   if (obj->Fc[i].Mt->Tex>0) {
                      glBindTexture(GL_TEXTURE_2D,obj->Fc[i].Mt->Tex);
                      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
@@ -1373,10 +1359,6 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
                for (j=0;j<obj->Fc[i].NIdx;j++) {
                   idx=obj->Fc[i].Idx[j];
-                  if (idx<0 || idx>32768) {
-//                     fprintf(stderr,"(ERROR) Model_Render: Invalid vertex index (%u) for obj %u on face %u\n",idx,o,i);
-//                     break;
-                  }
 
                   if (obj->Tx) glTexCoord3fv(obj->Tx[idx]);
                   if (obj->Nr) glNormal3fv(obj->Nr[idx]);
@@ -1468,7 +1450,7 @@ int Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *
    if (Obj && Model_LOD(Proj,VP,M,Obj->Extent)) {
       if (M->Spec->RenderFace) {
 
-         glPolygonMode(GL_FRONT,GL_FILL);
+         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          if (M->Spec->RenderTexture) {
             glEnable(GL_TEXTURE_2D);
          } else {

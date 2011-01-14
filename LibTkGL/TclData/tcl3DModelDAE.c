@@ -82,13 +82,15 @@ int ModelDAE_SourceExpand(DAESource *Source) {
 
 void ModelDAE_SourceFree(DAESource *Source) {
 
-   if (Source->Id)    free(Source->Id);    Source->Id=NULL;
+   if (Source) {
+      if (Source->Id)    free(Source->Id);    Source->Id=NULL;
 
-   if (!Source->Alias) {
-      if (Source->Text)  free(Source->Text);  Source->Text=NULL;
-      if (Source->Array) free(Source->Array); Source->Array=NULL;
+      if (!Source->Alias) {
+         if (Source->Text)  free(Source->Text);  Source->Text=NULL;
+         if (Source->Array) free(Source->Array); Source->Array=NULL;
+      }
+      Source->Nb=0;
    }
-   Source->Nb=0;
 }
 
 DAESource *ModelDAE_SourceFind(DAEData *Data,char* Id) {
@@ -144,6 +146,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          src->TextLen=0;
          src->Text=NULL;
          src->Array=NULL;
+         src->Id=NULL;
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
@@ -188,6 +191,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          src->TextLen=0;
          src->Text=NULL;
          src->Array=NULL;
+         src->Id=NULL;
          src->Nb=0;
 
          for (i=0;Attr[i];i+=2) {
@@ -450,6 +454,7 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
                }
             }
             if (data->NrSource) {
+/*
                if (!data->Object->Nr) {
                   data->Object->Nr=(Vect3f*)malloc(data->NrSource->Nb/data->NVr*sizeof(Vect3f));
                   for(i=0;i<data->NrSource->Nb/data->NVr;i++) {
@@ -458,7 +463,7 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
                      }
                   }
                }
-            }
+*/            }
             if (data->TxSource) {
             }
          }
