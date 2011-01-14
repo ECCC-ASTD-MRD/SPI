@@ -1360,6 +1360,10 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                for (j=0;j<obj->Fc[i].NIdx;j++) {
                   idx=obj->Fc[i].Idx[j];
 
+                  /*Test for overflow, should not happend but I've seen it on some models*/
+                  if (idx>obj->NVr) {
+                     break;
+                  }
                   if (obj->Tx) glTexCoord3fv(obj->Tx[idx]);
                   if (obj->Nr) glNormal3fv(obj->Nr[idx]);
                   if (obj->Cl) glColor4fv(obj->Cl[idx]);
