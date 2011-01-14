@@ -669,16 +669,17 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                }
             }
 
-            if (field0->Ref->Id==field1->Ref->Id) {
+            if (field1->Ref && field1->Ref->Type|GRID_SPARSE) {
+               FSTD_FieldReadMesh(field1);
+            }
+
+            /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
+            if (n<16 && field0->Ref->Id==field1->Ref->Id) {
                if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1)) {
                   return(TCL_ERROR);
                } else {
                   return(TCL_OK);
                }
-            }
-
-            if (field1->Ref && field1->Ref->Type|GRID_SPARSE) {
-               FSTD_FieldReadMesh(field1);
             }
 
             if (n==3 || n==4) {
@@ -711,6 +712,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
                }
+               fprintf(stderr,"asdhasdgsadgsagdjagsdjsa\n");
                ni=1;
                table=NULL;
                fieldt=NULL;

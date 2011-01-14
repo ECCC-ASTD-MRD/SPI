@@ -1319,23 +1319,17 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                case TD_ACCUM:
                   if (acc) {
                      Def_Set(ToDef,0,idxk,acc[x]);
-                  } else {
-                     Def_Set(ToDef,0,idxk,ToDef->NoData);
                   }
                   break;
                case TD_BUFFER:
                   if (fld) {
                      Def_Set(ToDef,0,idxk,fld[idxk]);
-                  } else {
-                     Def_Set(ToDef,0,idxk,ToDef->NoData);
                   }
                   break;
                default:
                   if (fld) {
                      if (acc && acc[x]!=0) fld[idxk]/=acc[x];
                      Def_Set(ToDef,0,idxk,fld[idxk]);
-                  } else {
-                     Def_Set(ToDef,0,idxk,ToDef->NoData);
                   }
             }
          }
