@@ -998,7 +998,7 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
          }
       }
    }
-   if (c) Model_NormalCompute(mdl);
+   if (c) Model_NormalCompute(mdl,0);
 
    return(c?TCL_OK:TCL_ERROR);
 }
@@ -1150,13 +1150,14 @@ T3DModel* Model_Get(char *Name) {
   *
  * Parametres   :
  *   <M>        : Modele
+ *   <Force>    : Force recalculation
  *
  * Retour       :
  *
  * Remarques    :
  *---------------------------------------------------------------------------------------------------------------
 */
-void Model_NormalCompute(T3DModel *M) {
+void Model_NormalCompute(T3DModel *M,int Force) {
 
    int v,o,f,n;
    T3DObject *obj;
@@ -1167,42 +1168,46 @@ void Model_NormalCompute(T3DModel *M) {
    for (o=0;o<M->NObj;o++) {
       obj=&(M->Obj[o]);
 
-      if (obj->Nr || !obj->NVr) {
+      if (!Force && (obj->Nr || !obj->NVr)) {
          continue;
       }
 
-      obj->Nr=(Vect3f*)malloc(obj->NVr*sizeof(Vect3f));
-      for (v=0;v<obj->NVr;v++) {
-         Vect_Clear(obj->Nr[v]);
-      }
+      if (!obj->Nr)
+         obj->Nr=(Vect3f*)malloc(obj->NVr*sizeof(Vect3f));
 
-      /*Calculate face normal*/
-      for (f=0;f<obj->NFc;f++) {
-         fc=&obj->Fc[f];
-
-         /* Calculate face normal*/
-         if (fc->NIdx>2) {
-            Vect_Assign(vr[0],obj->Vr[fc->Idx[0]]);
-            Vect_Assign(vr[1],obj->Vr[fc->Idx[1]]);
-            Vect_Assign(vr[2],obj->Vr[fc->Idx[2]]);
-
-            Vect_Substract(vr[1],vr[1],vr[0]);
-            Vect_Substract(vr[0],vr[2],vr[0]);
-            Vect3f_CrossProduct(nr,vr[0],vr[1]);
-            Vect3f_Normalize(nr);
-         } else {
-            Vect_Init(nr,0.0,0.0,0.0);
+      if (obj->Nr) {
+         for (v=0;v<obj->NVr;v++) {
+            Vect_Clear(obj->Nr[v]);
          }
 
-         /*Add to vertex normal*/
-         for (n=0;n<fc->NIdx;n++) {
-            Vect_Add(obj->Nr[fc->Idx[n]],obj->Nr[fc->Idx[n]],nr);
-         }
-      }
+         /*Calculate face normal*/
+         for (f=0;f<obj->NFc;f++) {
+            fc=&obj->Fc[f];
 
-      /*Normalize normals*/
-      for (v=0;v<obj->NVr;v++) {
-         Vect3f_Normalize(obj->Nr[v]);
+            /* Calculate face normal*/
+            if (fc->NIdx>2) {
+               Vect_Assign(vr[0],obj->Vr[fc->Idx[0]]);
+               Vect_Assign(vr[1],obj->Vr[fc->Idx[1]]);
+               Vect_Assign(vr[2],obj->Vr[fc->Idx[2]]);
+
+               Vect_Substract(vr[1],vr[1],vr[0]);
+               Vect_Substract(vr[0],vr[2],vr[0]);
+               Vect3f_CrossProduct(nr,vr[0],vr[1]);
+               Vect3f_Normalize(nr);
+            } else {
+               Vect_Init(nr,0.0,0.0,0.0);
+            }
+
+            /*Add to vertex normal*/
+            for (n=0;n<fc->NIdx;n++) {
+               Vect_Add(obj->Nr[fc->Idx[n]],obj->Nr[fc->Idx[n]],nr);
+            }
+         }
+
+         /*Normalize normals*/
+         for (v=0;v<obj->NVr;v++) {
+            Vect3f_Normalize(obj->Nr[v]);
+         }
       }
    }
 }

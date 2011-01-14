@@ -91,8 +91,8 @@ int Model_LoadFLT(T3DModel *M,char *Path) {
    Model_ObjectAdd(M,nobj);
 
    M->NMt=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_MATERIAL);
-   M->NMt=1024;
    fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i material\n",M->NMt);
+   M->NMt=1024;
    M->Mt=(TMaterial*)calloc(M->NMt,sizeof(TMaterial));
 
    ModelFLT_NodeProcess(M,(FltNode*)(flt->header),flt);
@@ -312,6 +312,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          /*Vertices*/
          for(v=0;v<vert->numVerts;v++) {
             i=NVR+v;
+
             if (GOBJ->Nr && (vert->list[v]->localFlags & FVHAS_NORMAL)) {
                GOBJ->Nr[i][0]=vert->list[v]->i; GOBJ->Nr[i][1]=vert->list[v]->j;GOBJ->Nr[i][2]=-vert->list[v]->k;
             }
@@ -329,6 +330,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 #ifdef DEBUG
             printf("(DEBUG) ModelFLT_NodeProcess: Vertex(%i) (%f,%f,%f)\n",v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
 #endif
+
             GOBJ->Fc[NFCE].Idx[v]=i;
          }
          NVR+=vert->numVerts;
@@ -383,9 +385,9 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 #endif
          GOBJ=&(M->Obj[NOBJ]);
 
+         NFCE=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
+         Model_ObjectFaceAdd(GOBJ,NFCE);
          NFCE=-1;
-         GOBJ->NFc=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
-         GOBJ->Fc=(TFace*)calloc(GOBJ->NFc,sizeof(TFace));
 #ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Face\n",GOBJ->NFc);
 #endif
