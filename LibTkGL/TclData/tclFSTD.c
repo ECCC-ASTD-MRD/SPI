@@ -712,7 +712,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
                }
-               fprintf(stderr,"asdhasdgsadgsagdjagsdjsa\n");
+
                ni=1;
                table=NULL;
                fieldt=NULL;
