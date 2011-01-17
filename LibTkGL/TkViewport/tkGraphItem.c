@@ -2231,11 +2231,11 @@ void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGrap
 
 void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
-   int     c;
-   char    buf[256];
-   TList  *list;
-   TArray *array;
-   Vect3d  v;
+   int       c;
+   char      buf[256];
+   TList    *list;
+   T3DArray *array;
+   Vect3d    v;
 
    if (!Data)
       return;
@@ -2273,7 +2273,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       list=Data->Segments;
 
       while(list) {
-         array=(TArray*)list->Data;
+         array=(T3DArray*)list->Data;
 
          if (Data->Spec->MapAll) {
             VAL2COL(c,Data->Spec,array->Value);
@@ -2428,14 +2428,14 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
 */
 void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
-   int  n,c,delta;
-   char buf[256];
-   double th,dx,dy,d;
-   TList *list;
-   TArray *array;
-   Vect3d  p1,p0;
+   int            n,c,delta;
+   char           buf[256];
+   double         th,dx,dy,d;
+   TList         *list;
+   T3DArray      *array;
+   Vect3d         p1,p0;
    Tk_FontMetrics tkm;
-   GLuint s;
+   GLuint         s;
 
    if (!Data->Spec->Font || !Data->Spec->Outline || !Data->Spec->InterNb) {
       return;
@@ -2467,7 +2467,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
       delta=Data->Spec->RenderLabel*100;
 
       while(list) {
-         array=(TArray*)list->Data;
+         array=(T3DArray*)list->Data;
          if (array->Size<10) {
             list=list->Next;
             continue;

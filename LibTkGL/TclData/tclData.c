@@ -967,7 +967,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
       }
 
       if (Seg && Data->Segments) {
-         TList_Clear(Data->Segments,TArray_Free);
+         TList_Clear(Data->Segments,T3DArray_Free);
          Data->Segments=NULL;
       }
    }
@@ -1248,16 +1248,16 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
 
 int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj *obj,*sub;
-   TData   *fld;
-   TList   *list;
-   TArray  *array;
-   Vect3d  *vbuf;
-   int      n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
-   int      nb,len,nobj;
-   double   dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
-   float    val,val1,*levels;
-   char     buf[32],mode='L';
+   Tcl_Obj  *obj,*sub;
+   TData    *fld;
+   TList    *list;
+   T3DArray *array;
+   Vect3d   *vbuf;
+   int       n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
+   int       nb,len,nobj;
+   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
+   float     val,val1,*levels;
+   char      buf[32],mode='L';
 
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
    extern double Radar_Height(TData *Rad,double I,double J,double K);
@@ -1778,7 +1778,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                /*Loop on all contours*/
                while(list) {
-                  array=(TArray*)list->Data;
+                  array=(T3DArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
                   ex=tr=0;
@@ -1822,7 +1822,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                obj=Tcl_NewListObj(0,NULL);
 
                while(list) {
-                  array=(TArray*)list->Data;
+                  array=(T3DArray*)list->Data;
                   array->Value;
                   sub=Tcl_NewListObj(0,NULL);
                   ex=tr=0;

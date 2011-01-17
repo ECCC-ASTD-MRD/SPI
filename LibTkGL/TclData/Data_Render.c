@@ -330,7 +330,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    int  c=0;
    char buf[256];
    TList *list;
-   TArray *array;
+   T3DArray *array;
 
    if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
@@ -376,7 +376,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       list=Field->Segments;
 
       while(list) {
-         array=(TArray*)list->Data;
+         array=(T3DArray*)list->Data;
 
          if (Interp)
             glFeedbackInit(array->Size*6,GL_2D);
@@ -447,7 +447,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    char buf[256];
    double th,dx,dy,dnx,dny,d;
    TList *list;
-   TArray *array;
+   T3DArray *array;
    Vect3d  p1,p0;
    GLuint s;
 
@@ -494,7 +494,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
       delta=Field->Spec->RenderLabel*100;
 
       while(list) {
-         array=(TArray*)list->Data;
+         array=(T3DArray*)list->Data;
          if (array->Size<10) {
             list=list->Next;
             continue;
@@ -1718,7 +1718,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int i,idx,len;
    TList  *list,*end;
-   TArray *array;
+   T3DArray *array;
 
    if (Field->Def->NK<=1) {
       return(0);
@@ -1729,7 +1729,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       for (i=0;i<Field->Spec->InterNb;i++) {
          len=FFMarchingCube(Field->Ref,Field->Def,Proj,Field->Spec->Inter[i]);
          if (len>6) {
-            array=TArray_Alloc(Field->Spec->Inter[i],len);
+            array=T3DArray_Alloc(Field->Spec->Inter[i],len);
             if (array) {
                Field->Segments=TList_Add(Field->Segments,array);
                GDB_VBufferCopy(array->Data,len);
@@ -1771,7 +1771,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
          list=end;
          while(list) {
 
-            array=(TArray*)list->Data;
+            array=(T3DArray*)list->Data;
 
             VAL2COL(idx,Field->Spec,array->Value);
             glColor4ubv(Field->Spec->Map->Color[idx]);
@@ -1786,7 +1786,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
          list=Field->Segments;
          while(list) {
 
-            array=(TArray*)list->Data;
+            array=(T3DArray*)list->Data;
 
             VAL2COL(idx,Field->Spec,array->Value);
             glColor4ubv(Field->Spec->Map->Color[idx]);
@@ -1802,7 +1802,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
          list=Field->Segments;
          while(list) {
-            array=(TArray*)list->Data;
+            array=(T3DArray*)list->Data;
 
             VAL2COL(idx,Field->Spec,array->Value);
             glColor4ubv(Field->Spec->Map->Color[idx]);

@@ -1732,12 +1732,16 @@ void glCrowdPop() {
 
    TList *tmp;
 
-   tmp=GLCrowdList;
-   GLCrowdList=GLCrowdList->Next;
-   GLCrowdList->Prev=NULL;
+   if (GLCrowdList) {
+      tmp=GLCrowdList;
+      GLCrowdList=GLCrowdList->Next;
 
-   free((int*)(tmp->Data));
-   free(tmp);
+      if (GLCrowdList)
+         GLCrowdList->Prev=NULL;
+
+      free((int*)(tmp->Data));
+      free(tmp);
+   }
 }
 
 /*----------------------------------------------------------------------------

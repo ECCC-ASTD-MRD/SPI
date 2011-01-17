@@ -393,9 +393,9 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
 */
 int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
-   int n,i,j,ci,cj,i0,i1,j0,j1,len,side;
+   int            n,i,j,ci,cj,i0,i1,j0,j1,len,side;
    unsigned char *buf=NULL;
-   TArray *array;
+   T3DArray      *array;
 
    /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
    if (Mode==REF_COOR && !Field->Ref)
@@ -439,7 +439,7 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
-               if ((array=TArray_Alloc(Inter[n],len))) {
+               if ((array=T3DArray_Alloc(Inter[n],len))) {
                   Field->Segments=TList_Add(Field->Segments,array);
                   GDB_VBufferCopy(array->Data,len);
                } else {

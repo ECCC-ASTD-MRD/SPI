@@ -1856,7 +1856,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
    char     buf[64];
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
    TList    *list;
-   TArray   *array;
+   T3DArray *array;
    TData   **field;
    Tcl_Obj  *obj;
 
@@ -1917,7 +1917,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
          list=field[0]->Segments;
          while(list) {
-            array=(TArray*)list->Data;
+            array=(T3DArray*)list->Data;
 
             geom=OGR_G_CreateGeometry(wkbLineString);
             for(k=0;k<array->Size;k++) {
