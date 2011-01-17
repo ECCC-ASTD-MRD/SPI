@@ -562,6 +562,12 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
          idx2=FIDX2D(Def,X0,Y0);
          idx3=FIDX3D(Def,X0,Y0,Z);
 
+         if (Mode=='C' || Mode=='N' || Mode=='A') {
+            Def_Get(Def,0,idx3,val);
+            if (isnan(val) || val==Def->NoData)
+               val=0.0;
+         }
+
          /* If we are computing areas */
          if (Area>0.0) {
             switch(Type) {
@@ -589,9 +595,6 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
                   dp=1.0;
                   break;
             }
-            Def_Get(Def,0,idx3,val);
-            if (isnan(val) || val==Def->NoData)
-               val=0.0;
             val+=Value*dp;
             OGR_G_DestroyGeometry(inter);
          }
@@ -1052,6 +1055,9 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
                   case 'A': area=OGR_G_GetArea(geom); break;
                   case 'L': area=GPC_Length(geom); break;
                   case 'P': area=1.0; break;
+               }
+               if (area==0.0) {
+                  continue;
                }
             } else {
                area=0.0;
