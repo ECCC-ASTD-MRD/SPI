@@ -1057,6 +1057,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
                   case 'P': area=1.0; break;
                }
                if (area==0.0) {
+                  OGR_G_DestroyGeometry(geom);
                   continue;
                }
             } else {
