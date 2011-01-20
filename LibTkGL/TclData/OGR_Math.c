@@ -171,6 +171,7 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
 
    OGRGeometryH       geom;
    OGRwkbGeometryType type;
+   gpc_vertex_list   *gpc;
    unsigned long      n,nb,g,nc;
    double             tmpd;
 
@@ -189,12 +190,13 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
          for (g=0;g<nc;g++) {
             geom=OGR_G_GetGeometryRef(Geom,g);
             nb=OGR_G_GetPointCount(geom);
-            Poly->contour[Poly->num_contours+g].num_vertices=nb;
             Poly->hole[Poly->num_contours+g]=(g==0?FALSE:TRUE);
-            Poly->contour[Poly->num_contours+g].vertex=(nb?(gpc_vertex*)malloc(nb*sizeof(gpc_vertex)):NULL);
+            gpc=&Poly->contour[Poly->num_contours+g];
+            gpc->num_vertices=nb;
+            gpc->vertex=(nb?(gpc_vertex*)malloc(nb*sizeof(gpc_vertex)):NULL);
 
             for (n=0;n<nb;n++) {
-               OGR_G_GetPoint(geom,n,&Poly->contour[Poly->num_contours+g].vertex[n].x,&Poly->contour[Poly->num_contours+g].vertex[n].y,&tmpd);
+               OGR_G_GetPoint(geom,n,&gpc->vertex[n].x,&gpc->vertex[n].y,&tmpd);
             }
          }
          Poly->num_contours+=nc;
@@ -206,8 +208,9 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
 
 void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
 
-   OGRGeometryH  geom,ring,poly=NULL,multi=NULL;
-   unsigned long n,g,nb=0;
+   OGRGeometryH     geom,ring,poly=NULL,multi=NULL;
+   gpc_vertex_list *gpc;
+   unsigned long n,g,nb=0,in;
 
    /*Check for multiple polygon (more thant 1 non-hole contour)*/
    for(n=0;n<Poly->num_contours;n++) {
@@ -222,9 +225,14 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
    /*Process external rings*/
    for(g=0;g<Poly->num_contours;g++) {
       if (!Poly->hole[g]) {
+         gpc=&Poly->contour[g];
          ring=OGR_G_CreateGeometry(wkbLinearRing);
-         for (n=0;n<Poly->contour[g].num_vertices;n++) {
-            OGR_G_AddPoint_2D(ring,Poly->contour[g].vertex[n].x,Poly->contour[g].vertex[n].y);
+         for (n=0;n<gpc->num_vertices;n++) {
+            OGR_G_AddPoint_2D(ring,gpc->vertex[n].x,gpc->vertex[n].y);
+         }
+         /*Make sure polygon is closed*/
+         if (gpc->vertex[n-1].x!=gpc->vertex[0].x || gpc->vertex[n-1].y!=gpc->vertex[0].y) {
+            OGR_G_AddPoint_2D(ring,gpc->vertex[0].x,gpc->vertex[0].y);
          }
          poly=OGR_G_CreateGeometry(wkbPolygon);
          OGR_G_AddGeometryDirectly(poly,ring);
@@ -237,21 +245,32 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
    if (!poly) {
       poly=OGR_G_CreateGeometry(wkbPolygon);
    } else {
-      /*Process internal rings*/
+      /*Process internal rings (holes)*/
       for(g=0;g<Poly->num_contours;g++) {
          if (Poly->hole[g]) {
+            gpc=&Poly->contour[g];
             ring=OGR_G_CreateGeometry(wkbLinearRing);
-            for (n=0;n<Poly->contour[g].num_vertices;n++) {
-               OGR_G_AddPoint_2D(ring,Poly->contour[g].vertex[n].x,Poly->contour[g].vertex[n].y);
+            for (n=0;n<gpc->num_vertices;n++) {
+               OGR_G_AddPoint_2D(ring,gpc->vertex[n].x,gpc->vertex[n].y);
             }
-
+            /*Make sure polygon is closed*/
+            if (gpc->vertex[n-1].x!=gpc->vertex[0].x || gpc->vertex[n-1].y!=gpc->vertex[0].y) {
+               OGR_G_AddPoint_2D(ring,gpc->vertex[0].x,gpc->vertex[0].y);
+            }
             if (multi) {
+               in=0;
+
+               /*Look for hole's parent*/
                for (n=0;n<OGR_G_GetGeometryCount(multi);n++) {
                   geom=OGR_G_GetGeometryRef(multi,n);
                   if (GPC_Intersect(geom,ring,NULL,NULL)) {
                      OGR_G_AddGeometryDirectly(geom,ring);
+                     in=1;
                      break;
                   }
+               }
+               if (!in) {
+                  fprintf(stderr,"(ERROR) GPC_ToOGR: Found a hole without parent\n");
                }
             } else {
                OGR_G_AddGeometryDirectly(poly,ring);
