@@ -1399,9 +1399,9 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       for (i=0;i<GDALGetRasterCount(set);i++) {
          band=GDALGetRasterBand(set,i+1);
          if (Desc) {
-            sprintf(buf,"%s %i \"%s:%s\" %d %d",Id,i+1,Desc,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+            sprintf(buf,"%s %i {%s:%s} %d %d",Id,i+1,Desc,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
          } else {
-            sprintf(buf,"%s %i \"%s\" %d %d",Id,i+1,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+            sprintf(buf,"%s %i {%s} %d %d",Id,i+1,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
          }
          Tcl_AppendElement(Interp,buf);
       }
