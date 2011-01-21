@@ -328,9 +328,9 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
 
    set Mode [string index $Mode 0]
 
-   #----- Get all Analysis and Prognostics available
-
+   #----- Get all Analysis available
    set afile { }
+   set astmp 0
    if { $APath!="" } {
       set lst [split $APath ":"]
       if { [llength $lst]>1 } {
@@ -342,7 +342,10 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       }
    }
 
+   #----- Get all Prognostics available
    set pfile { }
+   set prun  0
+   set pstmp 0
    if { $PPath!="" } {
       set lst [split $PPath ":"]
       if { [llength $lst]>1 } {
@@ -365,12 +368,22 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
    set Data(T1) [MetData::File2Sec [lindex $data end]]
 
    #----- Get the last run
-   set prun [lindex [split [file tail [lindex $pfile end]] _] 0]
-   set srun [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
+   if { [llength $pfile] } {
+      set prun  [lindex [split [file tail [lindex $pfile end]] _] 0]
+      set pstmp [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
+      Log::Print DEBUG "Last run  : $prun ($pstmp)"
+   }
 
-   Log::Print DEBUG "Found data:\n\tLast run: $prun ($srun)\n\tAnalysis:\n\t\t[join $afile "\n\t\t"]\n\tPrognostics:\n\t\t[join $pfile "\n\t\t"]"
+   #----- Get the last trial
+   if { [llength $afile] } {
+      set astmp [lindex [split [file tail [lindex $afile end]] _] 0]
+      set astmp [fstdstamp fromdate [string range $astmp 0 7] [string range $astmp 8 end]000000]
+      Log::Print DEBUG "Last trial: $astmp"
+   }
 
-   if { $Mixed || $Date>=$srun } {
+   Log::Print DEBUG "Found data:\n\tAnalysis:\n\t\t[join $afile "\n\t\t"]\n\tPrognostics:\n\t\t[join $pfile "\n\t\t"]"
+
+   if { $Mixed || $Date>=$pstmp } {
 
       #----- Process Prognostics
       foreach f $pfile {
@@ -390,15 +403,20 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
             set st [fstdstamp fromdate $d $h]
             set st [fstdstamp incr $st $ex]
 
-            if { [set hour [string trimleft [clock format [fstdstamp toseconds $st] -format %H -gmt True] 0]]=="" } { set hour 0 }
-            if { [expr $hour%$Delta]==0 } {
-               set met($st) $f
+            #----- Prioritize analysis if there are any
+            if { $astmp && $st>$astmp } {
+               if { [set hour [string trimleft [clock format [fstdstamp toseconds $st] -format %H -gmt True] 0]]=="" } { set hour 0 }
+
+               #----- Keep if it is on the right time interval
+               if { [expr $hour%$Delta]==0 } {
+                  set met($st) $f
+               }
             }
          }
       }
    }
 
-   if { $Mixed || $Date<$srun } {
+   if { $Mixed || $Date<$pstmp } {
 
       #----- Process Analysis
       foreach f $afile {
@@ -413,14 +431,16 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
          set st [fstdstamp incr $st $ex]
 
          if { [set hour [string trimleft [clock format [fstdstamp toseconds $st] -format %H -gmt True] 0]]=="" } { set hour 0 }
+
+         #----- Keep if it is on the right time interval
          if { [expr $hour%$Delta]==0 } {
             set met($st) $f
          }
       }
 
       #----- Dans le cas ou il manque un trial pour aller jusqu'au prog
-      if { !$Mixed && $st<$srun } {
-         set met($srun) $PPath/${prun}_000
+      if { !$Mixed && $st<$pstmp } {
+         set met($pstmp) $PPath/${prun}_000
       }
    }
 
@@ -430,7 +450,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
 
    set order [lsort -dictionary -increasing [array names met *]]
    if { ![llength $order] } {
-      Log::Print WARNING "Available filtered data is empty:\n\tLast run: $prun ($srun)\n\tAnalysis:\n\t\t[join $afile "\n\t\t"]\n\tPrognostics:\n\t\t[join $pfile "\n\t\t"]"
+      Log::Print WARNING "Available filtered data is empty"
       return ""
    }
 
