@@ -313,10 +313,11 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
    FILE               *fi;
    grib_handle        *handle;
    int                 err=0;
-   long                date,time,ni,nj,offset=0,size=0;
+   long                date,time,ni=-1,nj=-1,offset=0,size=0;
    time_t              valid;
    size_t              len;
    long                lval,lval2,lev;
+   char                sval[512];
 
   if (GRIB_FileGet(Id)) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
@@ -335,6 +336,10 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
       err=grib_get_long(handle,"time",&time);
       err=grib_get_long(handle,"numberOfPointsAlongAParallel",&ni);
       err=grib_get_long(handle,"numberOfPointsAlongAMeridian",&nj);
+      if (ni==-1) {
+         err=grib_get_long(handle,"numberOfPointsAlongXAxis",&ni);
+         err=grib_get_long(handle,"numberOfPointsAlongYAxis",&nj);
+      }
       err=grib_get_long(handle,"level",&lval);
       //err=grib_get_long(handle,"typeOfLevel",&lval2);
       err=grib_get_long(handle,"typeOfFirstFixedSurface",&lval2);
@@ -343,7 +348,10 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
       lev=FSTD_Level2IP(lval,lval2);
       valid=System_DateTime2Seconds(date,time*100,1);
       err=grib_get_long(handle,"GRIBEditionNumber",&lval);
-      sprintf(buf,"%s %i VAR TV %ld 0 0 GRIB%i %ld %ld %ld %ld 0",Id,offset,lev,lval,valid,valid,ni,nj);
+
+      len=512;
+      grib_get_string(handle,"shortName",sval,&len);
+      sprintf(buf,"%s %i %s TV %ld 0 0 GRIB%i %ld %ld %ld %ld 0",Id,offset,sval,lev,lval,valid,valid,ni,nj);
 
       Tcl_AppendElement(Interp,buf);
       size+=offset=ftell(fi);

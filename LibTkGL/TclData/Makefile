@@ -23,7 +23,7 @@ OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
 	tclGDAL.o GDAL_Band.o tclOGR.o OGR_Layer.o OGR_Geometry.o OGR_Math.o \
         tcl3DModel.o tcl3DModelMDL.o tcl3DModel3DS.o tcl3DModelFLT.o tcl3DModelDAE.o tcl3DModelKML.o \
 	tclRADAR.o Radar_Scan.o tclMetObs.o tclMetModel.o tclMetDataset.o \
-	tclGRIB.o GRIB_Field.o GRIB_WKT.o
+	tclGRIB.o GRIB_Field.o
 
 
 all: $(OBJ)

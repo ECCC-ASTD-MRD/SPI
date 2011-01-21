@@ -49,6 +49,9 @@ void    GRIB_FieldFree(TData *Data);
 void    GRIB_FieldSet(TData *Data);
 void    GRIB_HeadCopy(void *To,void *From);
 Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level);
+
+OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle);
+
 #endif
 
 

@@ -18,6 +18,12 @@
 #include "tclGRIB.h"
 #include "Projection.h"
 
+enum UNIT_TYPES { DEGREE,METRE };
+enum PARAM_TYPES { LATITUDE_OF_ORIGIN,CENTRAL_MERIDIAN,STANDARD_PARALLEL_1,STANDARD_PARALLEL_2,FALSE_EASTING,FALSE_NORTHING,SCALE_FACTOR };
+
+enum gridOpt { REGULAR_LL,REDUCED_LL,ROTATED_LL,STRETCHED_LL,STRETCHED_ROTATED_LL,MERCATOR,POLAR_STEREOGRAPHIC,LAMBERT,ALBERS,REGULAR_GG,REDUCED_GG,ROTATED_GG,STRETCHED_GG,STRETCHED_ROTATED_GG,SH,ROTATED_SH,STRETCHED_SH,STRETCHED_ROTATED_SH,SPACE_VIEW,TRIANGULAR_GRID,EQUATORIAL_AZIMUTHAL_EQUIDISTANT,AZIMUTH_RANGE,IRREGULAR_LATLON,LAMBERT_AZIMUTHAL_EQUAL_AREA,CROSS_SECTION,HOVMOLLER,TIME_SECTION,UNKNOWN,UNKNOWN_PLPRESENT };
+static CONST char *gridTypes[] = { "regular_ll","reduced_ll","rotated_ll","stretched_ll","stretched_rotated_ll","mercator","polar_stereographic","lambert","albers","regular_gg","reduced_gg","rotated_gg","stretched_gg","stretched_rotated_gg","sh","rotated_sh","stretched_sh","stretched_rotated_sh","space_view","triangular_grid","equatorial_azimuthal_equidistant","azimuth_range","irregular_latlon","lambert_azimuthal_equal_area","cross_section","Hovmoller","time_section","unknown","unknown_PLPresent",NULL };
+
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldSet>
  * Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
@@ -76,12 +82,57 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
 
    GRIB_Head *head=(GRIB_Head*)Field->Head;
    Coord      coord;
-   float      flat,flon,fele;
-   int        i,j,k,idx,ni,nj,nk,ip1;
-   int        idxi,idxk;
+   double     z;
+   int        i,j,idx;
+
+   /*Verifier la validite de la grille*/
+   if (!Field->Ref || Field->Ref->Type==GRID_NONE)
+      return(NULL);
+
+   if (Field->Ref->Pos && Field->Ref->Pos[Level])
+      return(Field->Ref->Pos[Level]);
+
+   /*Allocate memory for various levels*/
+   if (!Field->Ref->Pos)
+      Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->LevelNb,sizeof(Vect3d*));
+
+   if (!Field->Ref->Pos[Level]) {
+      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
+      if (!Field->Ref->Pos[Level]) {
+         fprintf(stderr,"(ERROR) GRIB_Grid: Not enough memory to calculate gridpoint location");
+         return(NULL);
+      }
+   }
+
+   z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level]);
+   for (i=0;i<Field->Def->NI;i++) {
+      for (j=0;j<Field->Def->NJ;j++) {
+
+         idx=j*Field->Def->NI+i;
+         coord.Elev=0.0;
+
+         /*Reproject coordinates if needed*/
+         Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
+
+         if (Field->Ref->Hgt) {
+            coord.Elev+=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Hgt[idx]);
+         } else {
+            coord.Elev+=z;
+         }
+         coord.Elev*=Field->Spec->TopoFactor;
+
+         /*Si les positions sont hors domaine, outter space*/
+         if (coord.Lat<-900.0 || coord.Lon<-900.0) {
+            coord.Elev=1e32;
+         }
+         Vect_Init(Field->Ref->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
+      }
+   }
+   ((Projection*)Proj)->Type->Project(Proj,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
 
    return(Field->Ref->Pos[Level]);
 }
+
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldFree>
  * Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
@@ -136,8 +187,11 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    GRIB_Head      head;
    grib_keys_iterator *iter;
 
+   OGRSpatialReferenceH         ref,llref=NULL;;
+   OGRCoordinateTransformationH func;
+
    int         err=0;
-   long        lval,i,ni,nj,nk=1,date,time;
+   long        lval,i,ni=-1,nj=-1,nk=1,date,time;
    size_t      len;
    double      dval;
    char        sval[512];
@@ -172,11 +226,15 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    /*Get message info*/
    err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
    err=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
+   if (ni==-1) {
+      err=grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
+      err=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
+   }
    err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
 
    nk=nk==0?1:nk;
-fprintf(stderr,"----13 %li %li %li\n",ni,nj,nk);
-  /*Verifier si le champs existe et est valide*/
+
+   /*Verifier si le champs existe et est valide*/
    field=Data_Valid(Interp,Name,ni,nj,nk,1,TD_Float32);
    if (!field) {
       return(TCL_ERROR);
@@ -197,33 +255,59 @@ fprintf(stderr,"----13 %li %li %li\n",ni,nj,nk);
 
    GRIB_FieldSet(field);
 
+   /*Create grid definition*/
    err=grib_get_long(head.Handle,"gridDefinition",&i);
-   mtx[2]=mtx[4]=0.0;
+   memset(mtx,0,6*sizeof(double));
    err=grib_get_double(head.Handle,"latitudeOfFirstGridPointInDegrees",&mtx[3]);
    err=grib_get_double(head.Handle,"longitudeOfFirstGridPointInDegrees",&mtx[0]);
-   err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
-   err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
-   GDALInvGeoTransform(mtx,inv);
 
-   char WKTstr[2048];
-   int WKTlen = 0;
-   GRIB_WKTString(Interp,head.Handle,WKTstr,&WKTlen);
-   printf("WKTString : '%s'\n", WKTstr);
+   if (ref=GRIB_WKTProjCS(Interp,head.Handle)) {
+      if (OSRIsProjected(ref)) {
+         if ((llref=OSRCloneGeogCS(ref))) {
+            if ((func=OCTNewCoordinateTransformation(llref,ref))) {
+               if (!OCTTransform(func,1,&mtx[0],&mtx[3],NULL)) {
+                  fprintf(stderr,"(ERROR) GRIB_FieldRead: unable to project transform origin\n");
+               }
+            } else {
+               fprintf(stderr,"(ERROR) GRIB_FieldRead: Unable to create transform function\n");
+            }
+            OSRDestroySpatialReference(llref);
+         } else {
+            fprintf(stderr,"(ERROR) GRIB_FieldRead: Unable to create latlon transform\n");
+         }
+         err=grib_get_double(head.Handle,"DxInMetres",&mtx[1]);
+         err=grib_get_double(head.Handle,"DyInMetres",&mtx[5]);
+     } else {
+         err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
+         err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
+     }
 
-   field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,WKTstr,mtx,inv,NULL);
-   GeoRef_Qualify(field->Ref);
+      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f\n%f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 
-   len = 512;
-   grib_get_string(head.Handle,"centre",sval,&len);
-   fprintf(stderr,"------ %s\n",sval);
+      GDALInvGeoTransform(mtx,inv);
+      field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref);
+      GeoRef_Qualify(field->Ref);
+      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",field->Ref->String);
+   }
+
+/*
+year=2010
+month=12
+day=20
+hour=0
+minute=0
+second=0
+*/
 
    len = 512;
    grib_get_string(head.Handle,"shortName",sval,&len);
-   fprintf(stderr,"------ %s\n",sval);
+   field->Spec->Desc=strdup(sval);
+
+   len = 512;
+   grib_get_string(head.Handle,"centre",sval,&len);
 
    len = 512;
    grib_get_string(head.Handle,"parameterName",sval,&len);
-   fprintf(stderr,"------ %s\n",sval);
 
 /*
    fprintf(stderr,"\n\n\n-------------------\n");
@@ -263,6 +347,198 @@ fprintf(stderr,"----13 %li %li %li\n",ni,nj,nk);
    }
    grib_keys_iterator_delete(iter);
 */
-
    return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GRIB_WKTProjCS>
+ * Creation : Novembre 2010 - E. Legault-Ouellet - CMC/CMOE
+ *
+ * But      : Point d'entree pour generer un string WKT.
+ *
+ * Parametres :
+ *  <Interp>      : Interpreteur TCL
+ *  <grib_handle> : Handle sur le message grib.
+ *  <WKTstr>      : String WKT a remplir.
+ *  <WKTlen>      : Longueur de WKTstr.
+ *
+ * Retour:
+ *    <TCL_OK>    : Le tag a ete ajoute avec succes.
+ *    <TCL_ERROR> : Une erreur est survenue avant l'ajout du tag.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+ */
+OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
+
+   OGRSpatialReferenceH ref;
+   int    err,opt,len=64;
+   char   gridType[64],buf[32];
+   double lat,lon,scale,scale2;
+   long   gribVer,lval;
+
+   // GRIB version is needed since we do not deal the same way with both file types
+   if (grib_get_long(Handle,"GRIBEditionNumber",&gribVer)!=GRIB_SUCCESS) {
+      Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get GRIB version.",(char*)NULL);
+      return(NULL);
+   }
+
+   // Get gridType Index
+   if (err=grib_get_string(Handle,"gridType",gridType, &len)) {
+      Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Could not get gridType",(char*)NULL);
+      return(NULL);
+   }
+   for (opt=0;gridTypes[opt]!=NULL;++opt) {
+      if (!strcmp(gridType,gridTypes[opt])) {
+         break;
+      }
+   }
+
+   if (!gridTypes[opt]) {
+      Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Invalid gridType \"",gridType,"\"",(char*)NULL);
+      return(NULL);
+   }
+
+   ref=OSRNewSpatialReference(NULL);
+
+   switch(opt) {
+      case REDUCED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+      case ROTATED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+      case STRETCHED_LL :           /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+      case STRETCHED_ROTATED_LL :   /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+      case REGULAR_LL :
+          /* Equirectangular spherical (EPSG:9823) or elliptical (EPSG:9842)*/
+         if (grib_get_double(Handle,"latitudeOfFirstGridPointInDegrees",&lat)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get latitudeOfFirstGridPointInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"longitudeOfFirstGridPointInDegrees",&lon)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfFirstGridPointInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         //OSRSetEquirectangular2(ref,lat,lon,0.0,0.0,0.0);
+         break;
+
+      case MERCATOR :
+         /* Mercator 1SP (ESPG:9804) or Transverse Mercator (ESPG:9807) */
+        if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"orientationOfTheGridInDegrees",&lon)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get orientationOfTheGridInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         OSRSetMercator(ref,lat,lon,1.0,0.0,0);
+         break;
+
+      case LAMBERT :
+        if (grib_get_double(Handle,"Latin1InDegrees",&scale)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get Latin1InDegrees",(char*)NULL);
+            return(NULL);
+         }
+        if (grib_get_double(Handle,"LaDtin2InDegrees",&scale2)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDtin2InDegreess",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"orientationOfTheGridInDegrees",&lon)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get orientationOfTheGridInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         OSRSetLCC(ref,scale,scale2,0.0,lon,0.0,0.0);
+         break;
+
+      case POLAR_STEREOGRAPHIC :
+         /* Equirectangular spherical (EPSG:9823) or elliptical (EPSG:9842)*/
+         if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"orientationOfTheGridInDegrees",&lon)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get orientationOfTheGridInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"projectionCentreFlag",&scale)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get projectionCentreFlag",(char*)NULL);
+            return(NULL);
+         }
+         scale=scale==1?-90:90;
+         OSRSetPS(ref,lat,lon,scale,0.0,0.0);
+         break;
+
+      case ALBERS :
+      case REGULAR_GG :
+      case REDUCED_GG :
+      case ROTATED_GG :
+      case STRETCHED_GG :
+      case STRETCHED_ROTATED_GG :
+      case SH :
+      case ROTATED_SH :
+      case STRETCHED_SH :
+      case STRETCHED_ROTATED_SH :
+      case SPACE_VIEW :
+      case TRIANGULAR_GRID :
+      case EQUATORIAL_AZIMUTHAL_EQUIDISTANT :
+      case AZIMUTH_RANGE :
+      case IRREGULAR_LATLON :
+      case LAMBERT_AZIMUTHAL_EQUAL_AREA :
+      case CROSS_SECTION :
+      case HOVMOLLER :
+      case TIME_SECTION :
+      case UNKNOWN :
+      case UNKNOWN_PLPRESENT :
+      default :
+         Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Unsupported gridType \"",gridTypes[opt],"\"",(char*)NULL);
+         return(NULL);
+   }
+
+   // Get semiMajorAxis and inverseFlattening values
+   if (gribVer==1) {
+      if (grib_get_long(Handle,"earthIsOblate",&lval)!=GRIB_SUCCESS) {
+         Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get earthIsOblate.",(char*)NULL);
+         return(NULL);
+      }
+   } else if (gribVer==2) {
+      if (grib_get_long(Handle,"shapeOfTheEarth",&lval)!=GRIB_SUCCESS) {
+         Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get shapeOfTheEarth",(char*)NULL);
+         return(NULL);
+      }
+
+      switch(lval) {
+         case 0 :
+            OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6367470.0,0.0,NULL,0.0,NULL,0.0);
+            break;
+         case 2 :
+            OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","IAU 1965",6378160.0,297.0,NULL,0.0,NULL,0.0);
+            break;
+         case 4 :
+            OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","IAG-GRS80",6378137.0,298.257222101,NULL,0.0,NULL,0.0);
+            break;
+         case 5 :
+            OSRSetWellKnownGeogCS(ref,"WGS84");
+            break;
+         case 6 :
+            OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6371229.0,0.0,NULL,0.0,NULL,0.0);
+            break;
+         case 1 :
+            /* User defined (w/ scale factor); earth is spherical (1/f=1.0) */
+         case 3 :
+            /* User defined major+minor axis IN KM (1/f = 1/((major-minor)/major) */
+         case 7 :
+            /* User defined major+minor axis IN M (1/f = 1/((major-minor)/major) */
+         case 8 :
+            OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6371200.0,0.0,NULL,0.0,NULL,0.0);
+         default :
+            sprintf(buf,"%ld", lval);
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Unsupported shapeOfTheEarth \"",buf,"\"",(char*)NULL);
+            return(NULL);
+      }
+   } else {
+      sprintf(buf,"%ld", gribVer);
+      Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Unsupported GRIB version \"",buf,"\"",(char*)NULL);
+      return(NULL);
+   }
+
+   return(ref);
 }
