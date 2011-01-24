@@ -3,11 +3,6 @@
 ARCH=`uname -s`
 MAKE=make
 
-if [ $ARCH = "IRIX64" ]
-then
-   MAKE=gmake
-fi
-
 echo ""
 echo "----- Architecture Found : $ARCH -----"
 echo ""

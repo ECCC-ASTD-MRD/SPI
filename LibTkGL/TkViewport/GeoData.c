@@ -2191,12 +2191,6 @@ GLuint Texture_Read(char *File) {
       glColorTable(GL_COLOR_TABLE,GL_RGB,nc,GL_RGB,GL_UNSIGNED_BYTE,(GLvoid*)map);
    }
 
-#ifdef _IRIX64_
-   glTexImage2D(GL_TEXTURE_2D,0,n,w,h,0,GL_ABGR_EXT,GL_UNSIGNED_BYTE,(GLvoid*)buf);
-#else
-//   gluBuild2DMipmaps(GL_TEXTURE_2D,n,w,h,GL_RGB,GL_UNSIGNED_BYTE,(GLvoid*)buf);
-   glTexImage2D(GL_TEXTURE_2D,0,n,w,h,0,GL_RGB,GL_UNSIGNED_BYTE,(GLvoid*)buf);
-#endif
    glDisable(GL_COLOR_TABLE);
 
    if (map) free(map);

@@ -315,11 +315,7 @@ static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    static CONST char *sopt[] = { "-type","-size","-free","-used","-blocksize","-blocks","-blockfree","-blockused","-files",NULL };
    enum               opt { TYPE,SIZE,FREE,USED,BLOCKSIZE,BLOCKS,BLOCKFREE,BLOCKUSED,FILES };
 
-#ifdef _IRIX64_
-   if ((statfs(Tcl_GetString(Objv[0]),&fs,sizeof(statfs),0))) {
-#else
    if ((statfs(Tcl_GetString(Objv[0]),&fs))) {
-#endif
       Tcl_AppendResult(Interp,"System_FileSystem: Unable to get filesystem info for ",Tcl_GetString(Objv[0]),"\n\t",strerror(errno),(char*)NULL);
       return(TCL_ERROR);
    }
@@ -333,11 +329,7 @@ static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
       switch ((enum opt)idx) {
          case TYPE:
-#ifdef _IRIX64_
-            switch(fs.f_fstyp) {
-#else
             switch(fs.f_type) {
-#endif
                case 0xADFF:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("AFFS",-1)); break;
                case 0x00414A53: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("EFS",-1)); break;
                case 0x137D:     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("EXT",-1)); break;
