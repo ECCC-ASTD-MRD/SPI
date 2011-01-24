@@ -467,6 +467,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } { Full False } } {
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
 
+puts stderr "---------$bands"
    if { ![llength $Bands] } {
       set Data(Band$File) $bands
 

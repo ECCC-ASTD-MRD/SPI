@@ -585,7 +585,7 @@ proc SPI::WindowMenu { } {
       .menu.file.menu.type add command -label "[lindex $Lbl(FileRPN) $GDefs(Lang)] ..." \
          -command { SPI::FileOpen NEW FieldBox "" [list $FileBox::Type(FSTD)] "" }  -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(FileGRIB) $GDefs(Lang)] ..." \
-         -command { SPI::FileOpen NEW FieldBox "" [list $FileBox::Type(GRIB)] "" }  -underline 0 -state disabled
+         -command { SPI::FileOpen NEW FieldBox "" [list $FileBox::Type(GRIB)] "" }  -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(Trajectory) $GDefs(Lang)] ..." \
          -command { SPI::FileOpen NEW TrajBox "" [list $FileBox::Type(TRAJ) $FileBox::Type(HYSPLIT)] "" } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(Obs) $GDefs(Lang)] ..." \
