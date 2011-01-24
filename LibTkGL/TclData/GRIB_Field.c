@@ -18,12 +18,6 @@
 #include "tclGRIB.h"
 #include "Projection.h"
 
-enum UNIT_TYPES { DEGREE,METRE };
-enum PARAM_TYPES { LATITUDE_OF_ORIGIN,CENTRAL_MERIDIAN,STANDARD_PARALLEL_1,STANDARD_PARALLEL_2,FALSE_EASTING,FALSE_NORTHING,SCALE_FACTOR };
-
-enum gridOpt { REGULAR_LL,REDUCED_LL,ROTATED_LL,STRETCHED_LL,STRETCHED_ROTATED_LL,MERCATOR,POLAR_STEREOGRAPHIC,LAMBERT,ALBERS,REGULAR_GG,REDUCED_GG,ROTATED_GG,STRETCHED_GG,STRETCHED_ROTATED_GG,SH,ROTATED_SH,STRETCHED_SH,STRETCHED_ROTATED_SH,SPACE_VIEW,TRIANGULAR_GRID,EQUATORIAL_AZIMUTHAL_EQUIDISTANT,AZIMUTH_RANGE,IRREGULAR_LATLON,LAMBERT_AZIMUTHAL_EQUAL_AREA,CROSS_SECTION,HOVMOLLER,TIME_SECTION,UNKNOWN,UNKNOWN_PLPRESENT };
-static CONST char *gridTypes[] = { "regular_ll","reduced_ll","rotated_ll","stretched_ll","stretched_rotated_ll","mercator","polar_stereographic","lambert","albers","regular_gg","reduced_gg","rotated_gg","stretched_gg","stretched_rotated_gg","sh","rotated_sh","stretched_sh","stretched_rotated_sh","space_view","triangular_grid","equatorial_azimuthal_equidistant","azimuth_range","irregular_latlon","lambert_azimuthal_equal_area","cross_section","Hovmoller","time_section","unknown","unknown_PLPresent",NULL };
-
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldSet>
  * Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
@@ -43,10 +37,20 @@ void GRIB_FieldSet(TData *Data){
 
    GRIB_Head *head;
 
-   if (Data->Head)
-      free(Data->Head);
+   if (Data->Head && Data->Free)
+      Data->Free(Data);
 
    head=(GRIB_Head*)malloc(sizeof(GRIB_Head));
+
+   head->FID=NULL;
+   head->Handle=NULL;
+   head->Version=0;
+   head->NOMVAR[0]='\0';
+   head->CENTER[0]='\0';
+   head->KEY=0;
+   head->IP1=0;
+   head->DATEV=0;
+   head->DATEO=0;
 
    /*Initialiser les parametres de definition du champs*/
    Data->Head=head;
@@ -134,6 +138,235 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <GRIB_FieldDefine>
+ * Creation : Janvier 2010 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la configuration des parametres RPN du champ et le retour des valeurs de
+ *            configuration si il n'y a pas de valeur specifie (seulement le token).
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Field>       : Pointeur sur les donnees du champs
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
+
+   Tcl_Obj     *obj;
+   GRIB_Head   *head=(GRIB_Head*)Field->Head;
+   TGeoRef     *ref;
+   int          i,j,idx,nidx;
+   double       tra[6],inv[6],*tm,*im;
+   const char **list;
+
+   static CONST char *sopt[] = { "-DATEO","-DATEV","-FID","-KEY","-NI","-NJ","-NK","-IP1","-NOMVAR","-CENTER","-DATA","-projection","-transform","-georef",NULL };
+   enum        opt { DATEO,DATEV,FID,KEY,NI,NJ,NK,IP1,NOMVAR,CENTER,DATA,PROJECTION,TRANSFORM,GEOREF };
+
+   if (!Field) {
+      Tcl_AppendResult(Interp,"Invalid field",(char*)NULL);
+      return TCL_ERROR;
+   }
+
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return TCL_ERROR;
+      }
+
+      switch ((enum opt)idx) {
+
+         case DATEO:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(head->DATEO));
+            } else {
+               i++;
+               Tcl_GetLongFromObj(Interp,Objv[i],&head->DATEO);
+            }
+            break;
+
+         case DATEV:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(head->DATEV));
+            } else {
+               i++;
+               Tcl_GetLongFromObj(Interp,Objv[i],&head->DATEV);
+            }
+            break;
+
+         case FID:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->FID->Id,-1));
+            } else {
+               head->FID=GRIB_FileGet(Interp,Tcl_GetString(Objv[++i]));
+            }
+            break;
+
+         case KEY:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(head->KEY));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&head->KEY);
+            }
+            break;
+
+         case NI:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NI));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Field->Def->NI);
+            }
+            break;
+
+         case NJ:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NJ));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Field->Def->NJ);
+            }
+            break;
+
+         case NK:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NK));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Field->Def->NK);
+            }
+            break;
+
+         case IP1:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(head->IP1));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&head->IP1);
+               if (!Field->Ref) {
+//                  Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->LevelType:LVL_UNDEF),(Field->Ref?Field->Ref->Levels:NULL),"X",head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
+               }
+               Field->Ref->Levels[Field->Def->Level]=FSTD_IP2Level(head->IP1,&Field->Ref->LevelType);
+            }
+            break;
+
+         case NOMVAR:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->NOMVAR,-1));
+            } else {
+               strncpy(head->NOMVAR,Tcl_GetString(Objv[++i]),4);
+               head->NOMVAR[4]='\0';
+               if (Field->Spec->Desc) free(Field->Spec->Desc);
+               Field->Spec->Desc=strdup(head->NOMVAR);
+            }
+            break;
+
+         case CENTER:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->CENTER,-1));
+            } else {
+               strncpy(head->CENTER,Tcl_GetString(Objv[++i]),4);
+               head->CENTER[4]='\0';
+            }
+            break;
+
+         case PROJECTION:
+            if (Objc==1) {
+               if (Field->Ref && Field->Ref->String)  {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->String,-1));
+               }
+            } else {
+               ++i;
+               if (Field->Ref && Field->Ref->String && strlen(Field->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),Field->Ref->String)==0) {
+              } else {
+                  ref=Field->Ref;
+                  if (ref) {
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref->Grid[1]=ref->Grid[1];
+                     GeoRef_Destroy(Interp,ref->Name);
+                  } else {
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                  }
+                  Data_Clean(Field,1,1,1);
+               }
+            }
+            break;
+
+         case TRANSFORM:
+            if (Objc==1 && Field->Ref && Field->Ref->Transform) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(j=0;j<6;j++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Transform[j]));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               if (Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&nidx,&list)==TCL_ERROR) {
+                  return TCL_ERROR;
+               }
+
+               if (nidx!=6) {
+                  Tcl_AppendResult(Interp,"\n   FSTD_FieldDefine: Invalid number of transform element, must be 6 \"",(char*)NULL);
+                  return TCL_ERROR;
+               }
+               for(j=0;j<6;j++) {
+                  Tcl_GetDouble(Interp,list[j],&tra[j]);
+               }
+               Tcl_Free((char*)list);
+               tm=tra;
+               if (!GDALInvGeoTransform(tra,inv)) {
+                  fprintf(stdout,"(WARNING) FSTD_FieldDefine: Unable to generate the inverse transform matrix\n");
+                  im=NULL;
+               } else {
+                  im=inv;
+               }
+               if (!Field->Ref || !Field->Ref->Transform || memcmp(tm,Field->Ref->Transform,6*sizeof(double))!=0) {
+                  ref=Field->Ref;
+                  if (ref) {
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,0,0,0,0,ref->String,tm,im,NULL);
+                     GeoRef_Destroy(Interp,ref->Name);
+                  } else {
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
+                  }
+                  Data_Clean(Field,1,1,1);
+               }
+            }
+            break;
+
+         case GEOREF:
+            if (Objc==1) {
+               if (Field->Ref) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Name,-1));
+               }
+            } else {
+               ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
+               if (!ref) {
+                  Tcl_AppendResult(Interp,"\n   GRIB_FieldDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
+                  return TCL_ERROR;
+               }
+               if (Field->Ref && ref!=Field->Ref) {
+                  GeoRef_Destroy(Interp,Field->Ref->Name);
+                  Data_Clean(Field,1,1,1);
+               }
+               Field->Ref=ref;
+               GeoRef_Incr(Field->Ref);
+            }
+            break;
+
+         case DATA:
+            if (Objc==1) {
+               Data_ValGetMatrix(Interp,Field,((FSTD_Head*)Field->Head)->DATYP);
+            } else {
+               return Data_ValPutMatrix(Interp,Field,Objv[++i]);
+            }
+            break;
+       }
+   }
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldFree>
  * Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
  *
@@ -198,7 +431,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    double      mtx[6],inv[6],*data;
 
    /*Get the file*/
-   file=GRIB_FileGet(File);
+   file=GRIB_FileGet(Interp,File);
    if (!file) {
       Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Invalid file \"",File,"\"",(char*)NULL);
       return(TCL_ERROR);
@@ -221,7 +454,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    /*Figure out valid time*/
    grib_get_long(head.Handle,"date",&date);
    grib_get_long(head.Handle,"time",&time);
-   head.Valid=System_DateTime2Seconds(date,time*100,1);
+   head.DATEV=System_DateTime2Seconds(date,time*100,1);
 
    /*Get message info*/
    err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
@@ -231,7 +464,6 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
       err=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
    }
    err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
-
    nk=nk==0?1:nk;
 
    /*Verifier si le champs existe et est valide*/
@@ -252,8 +484,6 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
       Def_Set(field->Def,0,i,data[i]);
    }
    free(data);
-
-   GRIB_FieldSet(field);
 
    /*Create grid definition*/
    err=grib_get_long(head.Handle,"gridDefinition",&i);
@@ -282,32 +512,30 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
          err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
      }
 
-      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f\n%f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
-
       GDALInvGeoTransform(mtx,inv);
       field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref);
       GeoRef_Qualify(field->Ref);
+
+#ifdef DEBUG
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",field->Ref->String);
+      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
+#endif
    }
 
-/*
-year=2010
-month=12
-day=20
-hour=0
-minute=0
-second=0
-*/
+   len=GRIB_STRLEN;
+   grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
+   field->Spec->Desc=strdup(head.NOMVAR);
 
-   len = 512;
-   grib_get_string(head.Handle,"shortName",sval,&len);
+   len=GRIB_STRLEN;
+   grib_get_string(head.Handle,"parameterName",sval,&len);
    field->Spec->Desc=strdup(sval);
 
-   len = 512;
-   grib_get_string(head.Handle,"centre",sval,&len);
+   len=GRIB_STRLEN;
+   grib_get_string(head.Handle,"centre",head.CENTER,&len);
 
-   len = 512;
-   grib_get_string(head.Handle,"parameterName",sval,&len);
+   GRIB_FieldSet(field);
+
+   memcpy(field->Head,&head,sizeof(GRIB_Head));
 
 /*
    fprintf(stderr,"\n\n\n-------------------\n");
@@ -351,6 +579,119 @@ second=0
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FSTD_FieldList>
+ * Creation : Octobre 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Liste les champs disponibles dans un fichier standard.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <File>    : Fichier grib
+ *  <Mode>    : Type d'information
+ *  <Var>     : Variable specifique requise
+ *
+ * Retour         :
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
+
+   GRIB_Head      head;
+   grib_handle   *handle;
+   Tcl_Obj       *list,*obj;
+   int            err=0,len;
+   long           offset=0,size=0,date,time,lval,lval2,ni=-1,nj=-1,nk=1;
+   char           buf[1024];
+
+   list=Tcl_NewListObj(0,NULL);
+   obj=Tcl_NewObj();
+
+   /*Loop on the messages*/
+   while(handle=grib_handle_new_from_file(0,File->Handle,&err)) {
+
+      len=GRIB_STRLEN;
+      grib_get_string(handle,"shortName",head.NOMVAR,&len);
+
+      /*Check for var if provided*/
+      if (!Var || strcmp(Var,head.NOMVAR)==0) {
+
+         err=grib_get_long(handle,"GRIBEditionNumber",&lval);
+         head.Version=lval;
+
+         err=grib_get_long(handle,"date",&date);
+         err=grib_get_long(handle,"time",&time);
+         err=grib_get_long(handle,"numberOfPointsAlongAParallel",&ni);
+         err=grib_get_long(handle,"numberOfPointsAlongAMeridian",&nj);
+         if (ni==-1) {
+            err=grib_get_long(handle,"numberOfPointsAlongXAxis",&ni);
+            err=grib_get_long(handle,"numberOfPointsAlongYAxis",&nj);
+         }
+         err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
+         nk=nk==0?1:nk;
+
+         err=grib_get_long(handle,"level",&lval);
+         err=grib_get_long(handle,"typeOfLevel",&lval2);
+      //      err=grib_get_long(handle,"typeOfFirstFixedSurface",&lval2);
+         lval2=lval2==100?LVL_PRES:(lval2==1?LVL_MAGL:(lval2==105?LVL_MAGL:(lval2==105?LVL_MASL:LVL_UNDEF)));
+
+         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
+         head.IP1=FSTD_Level2IP(lval,lval2);
+
+         /*Calculer la date de validitee du champs*/
+         head.DATEV=System_DateTime2Seconds(date,time*100,1);
+
+         switch(Mode) {
+            case FSTD_LISTALL:
+               sprintf(buf,"%s %i {%s} {%s} %i %i %i GRIB%i %09i %09i %i %i %i",
+                  File->Id,offset,head.NOMVAR,"P",head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
+               Tcl_SetStringObj(obj,buf,-1);
+               Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               break;
+
+            case FSTD_LISTVAR:
+               Tcl_SetStringObj(obj,head.NOMVAR,-1);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+
+            case FSTD_LISTDATEV:
+               Tcl_SetLongObj(obj,head.DATEV);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+
+            case FSTD_LISTIP1:
+               Tcl_SetIntObj(obj,head.IP1);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+         }
+      }
+      size+=offset=ftell(File->Handle);
+   }
+   File->Size=size;
+
+   /*Error on handle access*/
+   if (handle) {
+      err=grib_handle_delete(handle);
+
+      if (err!=GRIB_SUCCESS) {
+         Tcl_AppendResult(Interp,"GRIB_FileOpen: Unable to free grib handle ",File->Id,(char*)NULL);
+         return(TCL_ERROR);
+      }
+   }
+
+   Tcl_SetObjResult(Interp,list);
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <GRIB_WKTProjCS>
  * Creation : Novembre 2010 - E. Legault-Ouellet - CMC/CMOE
  *
@@ -377,6 +718,10 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
    char   gridType[64],buf[32];
    double lat,lon,scale,scale2;
    long   gribVer,lval;
+
+   enum gridOpt { REGULAR_LL,REDUCED_LL,ROTATED_LL,STRETCHED_LL,STRETCHED_ROTATED_LL,MERCATOR,POLAR_STEREOGRAPHIC,LAMBERT,ALBERS,REGULAR_GG,REDUCED_GG,ROTATED_GG,STRETCHED_GG,STRETCHED_ROTATED_GG,SH,ROTATED_SH,STRETCHED_SH,STRETCHED_ROTATED_SH,SPACE_VIEW,TRIANGULAR_GRID,EQUATORIAL_AZIMUTHAL_EQUIDISTANT,AZIMUTH_RANGE,IRREGULAR_LATLON,LAMBERT_AZIMUTHAL_EQUAL_AREA,CROSS_SECTION,HOVMOLLER,TIME_SECTION,UNKNOWN,UNKNOWN_PLPRESENT };
+   static CONST char *gridTypes[] = { "regular_ll","reduced_ll","rotated_ll","stretched_ll","stretched_rotated_ll","mercator","polar_stereographic","lambert","albers","regular_gg","reduced_gg","rotated_gg","stretched_gg","stretched_rotated_gg","sh","rotated_sh","stretched_sh","stretched_rotated_sh","space_view","triangular_grid","equatorial_azimuthal_equidistant","azimuth_range","irregular_latlon","lambert_azimuthal_equal_area","cross_section","Hovmoller","time_section","unknown","unknown_PLPresent",NULL };
+
 
    // GRIB version is needed since we do not deal the same way with both file types
    if (grib_get_long(Handle,"GRIBEditionNumber",&gribVer)!=GRIB_SUCCESS) {
@@ -494,12 +839,12 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
    }
 
    // Get semiMajorAxis and inverseFlattening values
-   if (gribVer==1) {
+   if (gribVer==14) {
       if (grib_get_long(Handle,"earthIsOblate",&lval)!=GRIB_SUCCESS) {
          Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get earthIsOblate.",(char*)NULL);
          return(NULL);
       }
-   } else if (gribVer==2) {
+   } else {
       if (grib_get_long(Handle,"shapeOfTheEarth",&lval)!=GRIB_SUCCESS) {
          Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get shapeOfTheEarth",(char*)NULL);
          return(NULL);
@@ -534,10 +879,6 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Unsupported shapeOfTheEarth \"",buf,"\"",(char*)NULL);
             return(NULL);
       }
-   } else {
-      sprintf(buf,"%ld", gribVer);
-      Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Unsupported GRIB version \"",buf,"\"",(char*)NULL);
-      return(NULL);
    }
 
    return(ref);

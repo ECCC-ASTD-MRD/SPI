@@ -23,6 +23,8 @@
 #include "tclData.h"
 #include "tclFSTD.h"
 
+#define GRIB_STRLEN 512
+
 typedef struct GRIB_File {
    char  *Id;
    char  *Path;
@@ -32,21 +34,29 @@ typedef struct GRIB_File {
 } GRIB_File;
 
 typedef struct GRIB_Head {
+   GRIB_File   *FID;
    grib_handle *Handle;
 
-   time_t       Valid;      /*Date de validite*/
+   int  Version;
+   char NOMVAR[GRIB_STRLEN];
+   char CENTER[GRIB_STRLEN];
+   int  KEY;
+   int  IP1;
+   long DATEV;
+   long DATEO;
 } GRIB_Head;
 
 int TclGRIB_Init(Tcl_Interp *Interp);
 
 int        GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name);
 int        GRIB_FileClose(Tcl_Interp *Interp,char *Id);
-GRIB_File* GRIB_FileGet(char *Id);
+GRIB_File* GRIB_FileGet(Tcl_Interp *Interp,char *Id);
 int        GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File);
 
 int     GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key);
 void    GRIB_FieldFree(TData *Data);
 void    GRIB_FieldSet(TData *Data);
+int     GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var);
 void    GRIB_HeadCopy(void *To,void *From);
 Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level);
 

@@ -1540,7 +1540,9 @@ int FSTD_Level2IP(float Level,int Type) {
       } else {
          mode=FSTDIP1MODE;
       }
-      f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
+
+      if (Type!=LVL_UNDEF)
+         f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
 #endif
       return(ip);
    }

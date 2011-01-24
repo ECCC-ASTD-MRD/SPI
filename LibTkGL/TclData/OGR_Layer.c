@@ -2060,7 +2060,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
    int           i,j,n=0,p=0,pt,len=-1,rw;
-   unsigned long f;
+   long          f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
    char          buf[64];
    OGRGeometryH  cell,ring,inter;

@@ -44,9 +44,12 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         n,id,idx,type;
-   static CONST char *sopt[] = { "is","open","close",NULL };
-   enum                opt { IS,OPEN,CLOSE };
+   int        n,id,idx,type;
+   GRIB_File *file=NULL;
+
+   static CONST char *types[] = { "ALL","NOMVAR","DATEV","IP1" };
+   static CONST char *sopt[] = { "is","open","close","filename","info",NULL };
+   enum                opt { IS,OPEN,CLOSE,FILENAME,INFO };
 
    Tcl_ResetResult(Interp);
 
@@ -92,6 +95,32 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          return(TCL_OK);
          break;
+
+      case FILENAME:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            return(TCL_ERROR);
+         }
+         if (!(file=GRIB_FileGet(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Path,-1));
+         return(TCL_OK);
+         break;
+
+      case INFO:
+         if(Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id mode [var]");
+            return(TCL_ERROR);
+         }
+         if (!(file=GRIB_FileGet(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         if (Tcl_GetIndexFromObj(Interp,Objv[3],types,"type",0,&type)!=TCL_OK) {
+            return(TCL_ERROR);
+         }
+         return(GRIB_FieldList(Interp,file,type,Objc==5?Tcl_GetString(Objv[4]):NULL));
+         break;
    }
 
    return(TCL_OK);
@@ -125,8 +154,8 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","NORMALIZED_COUNT","COUNT","NOP",NULL };
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
-   static CONST char *sopt[] = { "read","configure","stats",NULL };
-   enum                opt { READ,CONFIGURE,STATS };
+   static CONST char *sopt[] = { "read","configure","define","stats",NULL };
+   enum                opt { READ,CONFIGURE,DEFINE,STATS };
 
    Tcl_ResetResult(Interp);
 
@@ -188,6 +217,20 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                return(TCL_ERROR);
             }
          }
+         break;
+
+      case DEFINE:
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
+            return(TCL_ERROR);
+         }
+         field0=Data_Get(Tcl_GetString(Objv[2]));
+         if (!field0) {
+            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         return GRIB_FieldDefine(Interp,field0,Objc-3,Objv+3);
          break;
 
       case STATS:
@@ -254,7 +297,7 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
  *
  *----------------------------------------------------------------------------
 */
-GRIB_File* GRIB_FileGet(char *Id){
+GRIB_File* GRIB_FileGet(Tcl_Interp *Interp,char *Id){
 
    Tcl_HashEntry *entry;
 
@@ -306,20 +349,10 @@ int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
 */
 int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
 
-   GRIB_Head  head;
    GRIB_File *file;
-   char       buf[1024];
+   FILE      *fi;
 
-   FILE               *fi;
-   grib_handle        *handle;
-   int                 err=0;
-   long                date,time,ni=-1,nj=-1,offset=0,size=0;
-   time_t              valid;
-   size_t              len;
-   long                lval,lval2,lev;
-   char                sval[512];
-
-  if (GRIB_FileGet(Id)) {
+  if (GRIB_FileGet(Interp,Id)) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return TCL_ERROR;
    }
@@ -329,52 +362,15 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
       return(TCL_ERROR);
    }
 
-   /*Loop on the messages*/
-   while(handle=grib_handle_new_from_file(0,fi,&err)) {
-
-      err=grib_get_long(handle,"date",&date);
-      err=grib_get_long(handle,"time",&time);
-      err=grib_get_long(handle,"numberOfPointsAlongAParallel",&ni);
-      err=grib_get_long(handle,"numberOfPointsAlongAMeridian",&nj);
-      if (ni==-1) {
-         err=grib_get_long(handle,"numberOfPointsAlongXAxis",&ni);
-         err=grib_get_long(handle,"numberOfPointsAlongYAxis",&nj);
-      }
-      err=grib_get_long(handle,"level",&lval);
-      //err=grib_get_long(handle,"typeOfLevel",&lval2);
-      err=grib_get_long(handle,"typeOfFirstFixedSurface",&lval2);
-      lval2=lval2==100?LVL_PRES:(lval2==1?LVL_MAGL:(lval2==105?LVL_MAGL:(lval2==105?LVL_MASL:LVL_UNDEF)));
-
-      lev=FSTD_Level2IP(lval,lval2);
-      valid=System_DateTime2Seconds(date,time*100,1);
-      err=grib_get_long(handle,"GRIBEditionNumber",&lval);
-
-      len=512;
-      grib_get_string(handle,"shortName",sval,&len);
-      sprintf(buf,"%s %i %s TV %ld 0 0 GRIB%i %ld %ld %ld %ld 0",Id,offset,sval,lev,lval,valid,valid,ni,nj);
-
-      Tcl_AppendElement(Interp,buf);
-      size+=offset=ftell(fi);
-   }
-
-   /*Error on handle access*/
-   if (handle) {
-      grib_handle_delete(handle);
-
-      if (err!=GRIB_SUCCESS) {
-         Tcl_AppendResult(Interp,"GRIB_FileOpen: Unable to get grib handle on file ",Name,(char*)NULL);
-         return(TCL_ERROR);
-      }
-   }
-
    file=(GRIB_File*)malloc(sizeof(GRIB_File));
    file->Path=(char*)strdup(Name);
    file->Id=(char*)strdup(Id);
    file->Mode=Mode;
    file->Handle=fi;
-   file->Size=size;
 
    GRIB_FilePut(Interp,file);
+
+   return(GRIB_FieldList(Interp,file,FSTD_LISTALL,NULL));
 
    return(TCL_OK);
 }
