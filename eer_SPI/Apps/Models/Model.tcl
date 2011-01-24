@@ -774,10 +774,6 @@ proc Model::ParamsCPUMeteo { } {
             lappend Param(ListNbCPUsMeteo) $i
          }
       }
-      "IRIX64" {
-         set Param(NbCPUsMeteo)     1
-         set Param(ListNbCPUsMeteo) { 1 }
-      }
       "AIX"    {
          set Param(NbCPUsMeteo)     16
          set Param(ListNbCPUsMeteo) { 1 2 4 8 16 }
@@ -814,14 +810,6 @@ proc Model::ParamsCPUModel { } {
          set Param(ListNbMPItasks)    { 1 }
          set Param(NbOMPthreads)      $Param(NbCPUsMeteo)
          set Param(ListNbOMPthreads)  $Param(ListNbCPUsMeteo)
-         set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
-         set Param(ListOMPthreadFact) { 1 }
-      }
-      "IRIX64" {
-         set Param(NbMPItasks)        1
-         set Param(ListNbMPItasks)    { 1 }
-         set Param(NbOMPthreads)      1
-         set Param(ListNbOMPthreads)  { 1 }
          set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
          set Param(ListOMPthreadFact) { 1 }
       }

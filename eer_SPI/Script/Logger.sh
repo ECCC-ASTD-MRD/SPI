@@ -289,17 +289,9 @@ function Log_Mail {
    fi
 
    if [[ -r ${file} ]] ;then
-      if [[ ${EER_ARCH} = IRIX64 ]] ; then
-         mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${address} < ${file}
-      else
-         mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${address} < ${file}
-      fi
+      mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${address} < ${file}
    else
-      if [[ ${EER_ARCH} = IRIX64 ]] ; then
-         printf "$file" | mailx -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${address}
-      else
-         printf "$file" | mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${address}
-     fi
+      printf "$file" | mail -s "${LOG_MAILTITLE}: ${subject} (${LOG_JOBID})" ${address}
    fi
 }
 

@@ -334,17 +334,9 @@ proc Log::Mail { Subject File { Address { } } } {
 
    if { [llength $address]  } {
       if { ![file exists $File] || ![file readable $File] } {
-         if { $env(EER_ARCH)=="IRIX64" } {
-            set err [catch { eval exec echo -e \$File | mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
-         } else {
-            set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
-         }
+         set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
       } else {
-         if { $env(EER_ARCH)=="IRIX64" } {
-            set err [catch { eval exec mailx -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
-         } else {
-            set err [catch { eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
-         }
+         set err [catch { eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
       }
       if { $err } {
          Log_Print ERROR "Problems while mailing info to $address:\n\n\t"
