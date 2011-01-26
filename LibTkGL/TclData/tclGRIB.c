@@ -150,73 +150,29 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int        idx;
    long       key;
    TData     *field0,*field1;
-   TDataSpec *spec;
 
-   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","NORMALIZED_COUNT","COUNT","NOP",NULL };
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
-   static CONST char *sopt[] = { "read","configure","define","stats",NULL };
-   enum                opt { READ,CONFIGURE,DEFINE,STATS };
+   static CONST char *sopt[] = { "read","define",NULL };
+   enum                opt { READ,DEFINE };
 
    Tcl_ResetResult(Interp);
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(Data_FieldCmd(clientData,Interp,Objc,Objv));
    }
 
    switch ((enum opt)idx) {
       case READ:
          if(Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld file Index");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetLongFromObj(Interp,Objv[4],&key);
          return(GRIB_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),key));
-         break;
-
-      case CONFIGURE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return TCL_ERROR;
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
-         }
-
-         if (!field0->Stat)
-            Data_GetStat(field0);
-
-         if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
-            if (Objc==4) {
-               if (field0->Spec) {
-                  field0->Spec->NRef++;
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(field0->Spec->Name,-1));
-               }
-            } else {
-               if ((spec=DataSpec_Get(Tcl_GetString(Objv[4])))) {
-                  if (field0->Spec) {
-                     DataSpec_FreeHash(Interp,field0->Spec->Name);
-                  }
-                  field0->Spec=spec;
-                  spec->NRef++;
-               } else {
-                  Tcl_AppendResult(Interp,"GRIB_FieldCmd: invalid configuration object",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-            }
-         } else {
-            if (DataSpec_Config(Interp,field0->Spec,Objc-3,Objv+3)==TCL_OK) {
-               return(TCL_OK);
-            } else {
-               return(TCL_ERROR);
-            }
-         }
          break;
 
       case DEFINE:
@@ -230,20 +186,7 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
 
-         return GRIB_FieldDefine(Interp,field0,Objc-3,Objv+3);
-         break;
-
-      case STATS:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return TCL_ERROR;
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
-         }
-         return Data_Stat(Interp,field0,Objc-3,Objv+3);
+         return(GRIB_FieldDefine(Interp,field0,Objc-3,Objv+3));
          break;
    }
 

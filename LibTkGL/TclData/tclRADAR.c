@@ -184,25 +184,25 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    TDataSpec *spec;
 
    int         idx,v,n;
-   static CONST char *sopt[] = { "read","configure","define","stats","copy","free","clean","clear","wipe","is",NULL };
-   enum                opt { READ,CONFIGURE,DEFINE,STATS,COPY,FREE,CLEAN,CLEAR,WIPE,IS };
+   static CONST char *sopt[] = { "read","define",NULL };
+   enum                opt { READ,DEFINE };
 
    Tcl_ResetResult(Interp);
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(Data_FieldCmd(clientData,Interp,Objc,Objv));
    }
 
    switch ((enum opt)idx) {
       case READ:
          if(Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id file scan");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetIntFromObj(Interp,Objv[4],&v);
          return(Radar_Read(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),v));
@@ -212,133 +212,14 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       case DEFINE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          rad=Data_Get(Tcl_GetString(Objv[2]));
          if (!rad) {
             Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return(Radar_ScanDefine(Interp,rad,Objc-3,Objv+3));
-         break;
-
-      case CONFIGURE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id ?option?");
-            return TCL_ERROR;
-         }
-         rad=Data_Get(Tcl_GetString(Objv[2]));
-         if (!rad) {
-            Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
-            return TCL_ERROR;
-         }
-
-         if (!rad->Stat)
-            Data_GetStat(rad);
-
-         if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
-            if (Objc==4) {
-               if (rad->Spec) {
-                  rad->Spec->NRef++;
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(rad->Spec->Name,-1));
-               }
-            } else {
-               if ((spec=DataSpec_Get(Tcl_GetString(Objv[4])))) {
-                  if (rad->Spec) {
-                     DataSpec_FreeHash(Interp,rad->Spec->Name);
-                  }
-                  rad->Spec=spec;
-                  spec->NRef++;
-               } else {
-                  Tcl_AppendResult(Interp,"Radar_ScanCmd: invalid configuration object",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-            }
-         } else {
-            if (DataSpec_Config(Interp,rad->Spec,Objc-3,Objv+3)==TCL_OK) {
-               return(TCL_OK);
-            } else {
-               return(TCL_ERROR);
-            }
-         }
-         break;
-
-      case STATS:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id ?option?");
-            return TCL_ERROR;
-         }
-         rad=Data_Get(Tcl_GetString(Objv[2]));
-         if (!rad) {
-            Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
-            return TCL_ERROR;
-         }
-         return Data_Stat(Interp,rad,Objc-3,Objv+3);
-         break;
-
-      case COPY:
-         if(Objc<4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom");
-            return TCL_ERROR;
-         }
-         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1)) {
-            return(TCL_ERROR);
-         } else {
-            return(TCL_OK);
-         }
-         break;
-
-      case CLEAN:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
-         }
-         rad=Data_Get(Tcl_GetString(Objv[2]));
-         if (!rad) {
-            Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
-            return TCL_ERROR;
-         }
-         Data_Clean(rad,1,1,1);
-         break;
-
-      case CLEAR:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
-         }
-         rad=Data_Get(Tcl_GetString(Objv[2]));
-         if (!rad) {
-            Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
-            return TCL_ERROR;
-         }
-         DataDef_Clear(rad->Def);
-         break;
-
-     case FREE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
-         }
-         for(n=2;n<Objc;n++) {
-            Data_FreeHash(Interp,Tcl_GetString(Objv[n]));
-         }
-         return(TCL_OK);
-         break;
-
-      case IS:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
-         }
-         if (Data_Get(Tcl_GetString(Objv[2]))) {
-            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
-         } else {
-            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
-         }
-         break;
-
-      case WIPE:
-         Data_Wipe();
          break;
    }
    return TCL_OK;

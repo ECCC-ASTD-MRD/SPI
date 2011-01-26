@@ -334,19 +334,19 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
-                                 "timeinterp","configure","define","stats","sort","copy","free","clear","clean","wipe","is",NULL };
-   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,CONFIGURE,
-                     DEFINE,STATS,SORT,COPY,FREE,CLEAR,CLEAN,WIPE,IS };
+                                 "timeinterp","define","sort",NULL };
+   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,
+                     DEFINE,SORT };
 
    Tcl_ResetResult(Interp);
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return(TCL_ERROR);
+      return(Data_FieldCmd(clientData,Interp,Objc,Objv));
    }
 
    switch ((enum opt)idx) {
@@ -820,7 +820,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          if (layer) {
             if (Objc!=5 && Objc!=6) {
                Tcl_WrongNumArgs(Interp,2,Objv,"field layer type [field]");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
                return(TCL_ERROR);
@@ -953,56 +953,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return TCL_ERROR;
          }
          Tcl_GetIntFromObj(Interp,Objv[5],&id);
-         return FSTD_FieldTimeInterpolate(Interp,id,Tcl_GetString(Objv[2]),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4])));
-         break;
-
-      case SORT:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fldlist");
-            return(TCL_ERROR);
-         }
-         return DataDef_Sort(Interp,Objv[2]);
-         break;
-
-      case CONFIGURE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return(TCL_ERROR);
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         if (!field0->Stat)
-            Data_GetStat(field0);
-
-         if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
-            if (Objc==4) {
-               if (field0->Spec) {
-                  field0->Spec->NRef++;
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(field0->Spec->Name,-1));
-               }
-            } else {
-               if ((spec=DataSpec_Get(Tcl_GetString(Objv[4])))) {
-                  if (field0->Spec) {
-                     DataSpec_FreeHash(Interp,field0->Spec->Name);
-                  }
-                  field0->Spec=spec;
-                  spec->NRef++;
-               } else {
-                  Tcl_AppendResult(Interp,"FSTD_FieldCmd: invalid configuration object",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-            }
-         } else {
-            if (DataSpec_Config(Interp,field0->Spec,Objc-3,Objv+3)==TCL_OK) {
-               return(TCL_OK);
-            } else {
-               return(TCL_ERROR);
-            }
-         }
+         return(FSTD_FieldTimeInterpolate(Interp,id,Tcl_GetString(Objv[2]),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4]))));
          break;
 
       case DEFINE:
@@ -1016,86 +967,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          }
 
-         return FSTD_FieldDefine(Interp,field0,Objc-3,Objv+3);
-         break;
-
-      case STATS:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return(TCL_ERROR);
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return(TCL_ERROR);
-         }
-         return Data_Stat(Interp,field0,Objc-3,Objv+3);
-         break;
-
-      case COPY:
-         if(Objc<4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom");
-            return(TCL_ERROR);
-         }
-         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1)) {
-            return(TCL_ERROR);
-         } else {
-            return(TCL_OK);
-         }
-         break;
-
-      case FREE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld");
-            return(TCL_ERROR);
-         }
-         for(n=2;n<Objc;n++) {
-            Data_FreeHash(Interp,Tcl_GetString(Objv[n]));
-         }
-         return(TCL_OK);
-         break;
-
-      case CLEAN:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld");
-            return TCL_ERROR;
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
-         }
-         Data_Clean(field0,1,1,1);
-         break;
-
-      case CLEAR:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld");
-            return TCL_ERROR;
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return TCL_ERROR;
-         }
-
-         DataDef_Clear(field0->Def);
-         break;
-
-      case IS:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld");
-            return TCL_ERROR;
-         }
-         if (Data_Get(Tcl_GetString(Objv[2]))) {
-            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
-         } else {
-            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
-         }
-         break;
-
-      case WIPE:
-         Data_Wipe();
+         return(FSTD_FieldDefine(Interp,field0,Objc-3,Objv+3));
          break;
    }
    return TCL_OK;

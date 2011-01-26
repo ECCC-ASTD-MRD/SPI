@@ -62,12 +62,12 @@ void GRIB_FieldSet(TData *Data){
 }
 
 void GRIB_HeadCopy(void *To,void *From) {
-   memcpy(To,From,sizeof(GRIB_Head));
+   memcpy((GRIB_Head*)To,(GRIB_Head*)From,sizeof(GRIB_Head));
 }
 
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_Grid>
- * Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
+ * Creation : Janvier 2010 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Calculer la position des points de grille (3D) dans la projection.
  *
@@ -396,7 +396,7 @@ void GRIB_FieldFree(TData *Data){
 
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldRead>
- * Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
+ * Creation : Janvier 2010 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Lit et stocke un enregistrement en memoire de meme qu'initialise
  *            les valeurs de configuraiton par defaut.
@@ -521,10 +521,9 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 #endif
    }
-
+   fprintf(stderr,"-------1 %s\n",field->Ref->String);
    len=GRIB_STRLEN;
    grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
-   field->Spec->Desc=strdup(head.NOMVAR);
 
    len=GRIB_STRLEN;
    grib_get_string(head.Handle,"parameterName",sval,&len);
@@ -534,7 +533,6 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    grib_get_string(head.Handle,"centre",head.CENTER,&len);
 
    GRIB_FieldSet(field);
-
    memcpy(field->Head,&head,sizeof(GRIB_Head));
 
 /*
@@ -579,8 +577,8 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_FieldList>
- * Creation : Octobre 2005 - J.P. Gauthier - CMC/CMOE
+ * Nom      : <GRIB_FieldList>
+ * Creation : Janvier 2010 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Liste les champs disponibles dans un fichier standard.
  *
@@ -629,7 +627,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
             err=grib_get_long(handle,"numberOfPointsAlongXAxis",&ni);
             err=grib_get_long(handle,"numberOfPointsAlongYAxis",&nj);
          }
-         err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
+         err=grib_get_long(handle,"numberOfVerticalCoordinateValues",&nk);
          nk=nk==0?1:nk;
 
          err=grib_get_long(handle,"level",&lval);
@@ -693,7 +691,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_WKTProjCS>
- * Creation : Novembre 2010 - E. Legault-Ouellet - CMC/CMOE
+ * Creation : Novembre 2010 - E. Legault-Ouellet - J.P. Gauthier - CMC/CMOE
  *
  * But      : Point d'entree pour generer un string WKT.
  *

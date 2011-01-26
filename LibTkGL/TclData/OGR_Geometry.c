@@ -860,7 +860,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
    for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
       geom=OGR_G_GetGeometryRef(Geom,g);
       if ((nv=OGR_G_GetPointCount(geom))) {
-         gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[pnv][0],*OGR_ArrayNr[pnv][1],*OGR_ArrayNr[pnv][2]);
+//         gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[pnv][0],*OGR_ArrayNr[pnv][1],*OGR_ArrayNr[pnv][2]);
          gluTessBeginContour(GLRender->GLTess);
          glBegin(GL_LINE_STRIP);
          for(n=pnv;n<pnv+nv;n++) {
@@ -890,7 +890,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
          geom=OGR_G_GetGeometryRef(Geom,g);
          if ((nv=OGR_G_GetPointCount(geom))) {
 
-            gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[pnv][0],*OGR_ArrayNr[pnv][1],*OGR_ArrayNr[pnv][2]);
+//            gluTessNormal(GLRender->GLTess,*OGR_ArrayNr[pnv][0],*OGR_ArrayNr[pnv][1],*OGR_ArrayNr[pnv][2]);
             gluTessBeginContour(GLRender->GLTess);
             glBegin(GL_LINE_STRIP);
             for(n=pnv;n<pnv+nv;n++) {

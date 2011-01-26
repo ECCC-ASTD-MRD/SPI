@@ -121,6 +121,8 @@ typedef struct TData {
 
 #include "Vertex.h"
 
+int      Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+
 void     Data_FromString(char *String,TDataDef *Def,int Comp,int Idx);
 Tcl_Obj *Data_Val2Obj(TDataDef *Def,double Val);
 
