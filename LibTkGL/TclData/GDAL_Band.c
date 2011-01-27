@@ -221,6 +221,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
             Tcl_AppendResult(Interp,"GDAL_BandRead: Incompatible dimensions between bands",(char*)NULL);
             return(TCL_ERROR);
          }
+
          band->Spec->Desc=strdup(GDALGetDescription(band->Band[i]));
          if (Full) {
             if (GDALRasterIO(band->Band[i],GF_Read,X0,Y0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,type,0,0)==CE_Failure) {
@@ -1820,9 +1821,12 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Elev));
                   Tcl_SetObjResult(Interp,obj);
                }
+            } else if (Objc==3) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               if (c<band->Def->NC) {
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&band->Stat[c].Max);
+               }
             }
-            break;
-
             break;
 
          case MIN:
@@ -1849,6 +1853,11 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lon));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Elev));
                   Tcl_SetObjResult(Interp,obj);
+               }
+            } else if (Objc==3) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               if (c<band->Def->NC) {
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&band->Stat[c].Min);
                }
             }
             break;
@@ -2444,7 +2453,10 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
       Band->Stat[c].MaxLoc.Lon=0;
       Band->Stat[c].MaxLoc.Elev=0;
 
-      if (Band->Band[c]) {
+      if ((Band->Def->NC==3 || Band->Def->NC==4) && Band->Def->Type==TD_UByte) {
+         Band->Stat[c].Min=0.0;
+         Band->Stat[c].Max=255.0;
+      } else if (Band->Band[c]) {
          GeoTex_Lock();
          GDALComputeRasterMinMax(Band->Band[c],TRUE,minmax);
          GeoTex_UnLock();
