@@ -456,7 +456,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    set id [file tail [file rootname $File]]
    set no 1
    while { [gdalband is $id] } {
-      set id $id[format %02i $no]
+      set id $id$no
       incr no
    }
 
