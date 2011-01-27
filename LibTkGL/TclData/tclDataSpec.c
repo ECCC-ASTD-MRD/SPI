@@ -618,7 +618,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                if (Spec->Font) Tk_FreeFont(Spec->Font);
                Spec->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
-               Tk_GetFontMetrics(Spec->Font,&Spec->TKM);
+               if (Spec->Font)
+                  Tk_GetFontMetrics(Spec->Font,&Spec->TKM);
             }
             break;
 
