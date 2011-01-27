@@ -869,6 +869,9 @@ int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
    } else {
       res=Proj->PixDist*MAX((float)Band->Def->NI/Proj->VP->Width,(float)Band->Def->NJ/Proj->VP->Height);
    }
+   /*Decrease effective resolution (WMS-TMS)*/
+   res*=3;
+
    d=MAX(Band->Def->NI,Band->Def->NJ);
    Band->Tex.ResN=pow(2,ceil(log10(d)/log10(2)))/Band->Spec->TexSize;
    if (d==32 || d==64 || d==128 || d==256 || d==512 || d==1024 || d==2048 || d==4096 || d==8192 || d==16384 || d==32768 || d==65536 || d==131072 || d==262144) {
