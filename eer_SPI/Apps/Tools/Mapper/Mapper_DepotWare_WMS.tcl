@@ -441,4 +441,3 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer } {
 
    return $file
 }
-

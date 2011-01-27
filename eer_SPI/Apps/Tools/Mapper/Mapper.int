@@ -842,7 +842,7 @@ proc Mapper::CurveSelect { Canvas Map Band { MinMax True } } {
 
       set Data(CurveMin) [lindex [gdalband stats $Data(Object) -min $idx] 0]
       set Data(CurveMax) [lindex [gdalband stats $Data(Object) -max $idx] 0]
-
+puts stderr "$Data(CurveMin) $Data(CurveMax)"
       if { $Data(CurveMin)>[colormap configure $Map -min $Band] } {
          colormap configure $Map -min $Band $Data(CurveMin)
          catch { unset Data(Histo$Data(Object)$idx) }

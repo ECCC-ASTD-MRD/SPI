@@ -426,11 +426,11 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
 
    foreach file $Files {
        switch $Mode {
-          ANY  { if { ![Mapper::ReadBand $file "" 2 $Full] && ![Mapper::ReadLayer $file] } {
+          ANY  { if { ![Mapper::ReadBand $file "" 3 $Full] && ![Mapper::ReadLayer $file] } {
                     Dialog::Error . $Msg(BadFile)
                  }
                }
-          GDAL { if { ![Mapper::ReadBand $file "" 2 $Full] } {
+          GDAL { if { ![Mapper::ReadBand $file "" 3 $Full] } {
                     Dialog::Error . $Msg(BadFile)
                  }
                }
@@ -448,7 +448,7 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
    }
 }
 
-proc Mapper::ReadBand { File { Bands "" } { Nb 2 } { Full False } } {
+proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    global GDefs errorInfo
    variable Data
    variable Msg
@@ -467,14 +467,13 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 2 } { Full False } } {
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
 
-puts stderr "---------$bands"
    if { ![llength $Bands] } {
       set Data(Band$File) $bands
 
       #----- Check for band size compatibility
       set x 0
       set y 0
-      for { set b 0 } { $b<=$Nb } { incr b } {
+      for { set b 0 } { $b<$Nb } { incr b } {
          if { $x==0 } {
             set x [lindex [lindex $bands $b] end-1]
             set y [lindex [lindex $bands $b] end]
@@ -525,12 +524,18 @@ puts stderr "---------$bands"
    }
 
    set Data(ColorMap) [gdalband configure $File -colormap]
+
+   #----- Check for RGB(A) image
+   if { [llength $bands]==3  || [llength $bands]==4 } {
+      set Data(Interp) LINEAR
+      gdalband configure $File -interpolation LINEAR
+   }
    foreach min [gdalband stats $File -min] band $Data(Bands$File) {
       colormap configure $Data(ColorMap) -min $band [lindex $min 0]
    }
    foreach max [gdalband stats $File -max] band $Data(Bands$File) {
       colormap configure $Data(ColorMap) -max $band [lindex $max 0]
-   }
+  }
 
    set Data(Job) ""
 

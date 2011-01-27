@@ -18,6 +18,7 @@
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_DIR.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WMS.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WCS.tcl
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_TMS.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_PGS.tcl
 
 namespace eval Mapper::DepotWare {
@@ -44,7 +45,7 @@ namespace eval Mapper::DepotWare {
 
    set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
    set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
-   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" }
+   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" "TMS - Tileb Mapping Service"}
 #   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database"  "WMS - Web Mapping Service" "WCS - Web Coverage Service" "WFS - Web Feature Service" }
    set Lbl(Path)        { "Localisation" "Localisation" }
    set Lbl(Type)        { "Type" "Type" }
@@ -604,6 +605,18 @@ proc Mapper::DepotWare::Create { } {
 
    if { [file exists $env(HOME)/.spi/Mapper] } {
       source $env(HOME)/.spi/Mapper
+   }
+
+   #----- Add standard TMS
+   foreach depot $Mapper::DepotWare::TMS::Param(Depots) {
+      set idx [TREE insert root end]
+      TREE set $idx open False
+      TREE set $idx name [lindex $depot 0]
+      TREE set $idx type [lindex $depot 1]
+
+      #----- Make sure env variables are evaluated
+      eval set path \"[lindex $depot 2]\"
+      TREE set $idx path $path
    }
 
    foreach depot $Data(Depots) {
