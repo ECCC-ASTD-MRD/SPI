@@ -401,7 +401,7 @@ proc Mapper::GetColor { } {
 # Parametres :
 #   <Files>  : Fichiers a lire
 #   <Full>   : Lectur complete ou partielle
-#   <Mode>   : Mode de donnees (ANY,GDAL ou OGR
+#   <Mode>   : Mode de donnees (ANY,GDAL ou OGR)
 #
 # Retour    :
 #
@@ -453,12 +453,19 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    variable Data
    variable Msg
 
-   if  { ![info exists Data(Id$File)] } {
-      set Data(Id$File) GDAL[incr Data(IdNo)]
+   set id [file tail [file rootname $File]]
+   set no 1
+   while { [gdalband is $id] } {
+      set id $id[format %02i $no]
+      incr no
    }
 
-   gdalfile close $Data(Id$File)
-   eval set bad [catch { set bands [gdalfile open $Data(Id$File) read $File] }]
+   if  { ![info exists Data(Id$id)] } {
+      set Data(Id$id) GDAL[incr Data(IdNo)]
+   }
+
+   gdalfile close $Data(Id$id)
+   eval set bad [catch { set bands [gdalfile open $Data(Id$id) read $File] }]
 
    if { $bad } {
       return False
@@ -468,7 +475,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    update idletasks;
 
    if { ![llength $Bands] } {
-      set Data(Band$File) $bands
+      set Data(Band$id) $bands
 
       #----- Check for band size compatibility
       set x 0
@@ -492,90 +499,90 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       }
    }
 
-   set Data(Band0$File) ""
-   set Data(Band1$File) ""
-   set Data(Band2$File) ""
-   set Data(Band3$File) ""
-   set Data(Bands$File) {}
-   set Data(BandX$File) ""
-   set Data(BandY$File) ""
+   set Data(Band0$id) ""
+   set Data(Band1$id) ""
+   set Data(Band2$id) ""
+   set Data(Band3$id) ""
+   set Data(Bands$id) {}
+   set Data(BandX$id) ""
+   set Data(BandY$id) ""
 
    if  { [llength $Bands]>=1 } {
-      set Data(Band0$File) [lindex $Bands 0]
-      lappend Data(Bands$File) red
+      set Data(Band0$id) [lindex $Bands 0]
+      lappend Data(Bands$id) red
    }
    if  { [llength $Bands]>=2 } {
-      set Data(Band1$File) [lindex $Bands 1]
-      lappend Data(Bands$File) green
+      set Data(Band1$id) [lindex $Bands 1]
+      lappend Data(Bands$id) green
    }
    if  { [llength $Bands]>=3 } {
-      set Data(Band2$File) [lindex $Bands 2]
-      lappend Data(Bands$File) blue
+      set Data(Band2$id) [lindex $Bands 2]
+      lappend Data(Bands$id) blue
    }
    if  { [llength $Bands]>=4 } {
-      set Data(Band3$File) [lindex $Bands 3]
-      lappend Data(Bands$File) alpha
+      set Data(Band3$id) [lindex $Bands 3]
+      lappend Data(Bands$id) alpha
    }
 
-   set er [catch { gdalband read $File $Bands $Full } errmsg ]
+   set er [catch { gdalband read $id $Bands $Full } errmsg ]
 
    if { $er } {
       error $errmsg $errorInfo
    }
 
-   set Data(ColorMap) [gdalband configure $File -colormap]
+   set Data(ColorMap) [gdalband configure $id -colormap]
 
    #----- Check for RGB(A) image
    if { [llength $bands]==3  || [llength $bands]==4 } {
       set Data(Interp) LINEAR
-      gdalband configure $File -interpolation LINEAR
+      gdalband configure $id -interpolation LINEAR
    }
-   foreach min [gdalband stats $File -min] band $Data(Bands$File) {
+   foreach min [gdalband stats $id -min] band $Data(Bands$id) {
       colormap configure $Data(ColorMap) -min $band [lindex $min 0]
    }
-   foreach max [gdalband stats $File -max] band $Data(Bands$File) {
+   foreach max [gdalband stats $id -max] band $Data(Bands$id) {
       colormap configure $Data(ColorMap) -max $band [lindex $max 0]
   }
 
    set Data(Job) ""
 
-   if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $File]==-1 } {
-      lappend Viewport::Data(Data$Page::Data(Frame)) $File
+   if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $id]==-1 } {
+      lappend Viewport::Data(Data$Page::Data(Frame)) $id
    }
 
    return True
 }
 
-proc Mapper::ReadPos { File BandX BandY } {
+proc Mapper::ReadPos { Id BandX BandY } {
    global GDefs errorInfo
    variable Data
    variable Msg
 
-   if  { ![info exists Data(Id$File)] } {
+   if  { ![info exists Data(Id$Id)] } {
       return
    }
 
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
 
-   set err [catch { gdalband read BandX$File [list $BandX] } errmsg ]
+   set err [catch { gdalband read BandX$Id [list $BandX] } errmsg ]
    if { $err } {
       error $errmsg $errorInfo
    }
 
-   set err [catch { gdalband read BandY$File [list $BandY] } errmsg ]
+   set err [catch { gdalband read BandY$Id [list $BandY] } errmsg ]
    if { $err } {
       error $errmsg $errorInfo
    }
 
-   gdalband define $File -positional BandX$File BandY$File
+   gdalband define $Id -positional BandX$Id BandY$Id
 
-   set Data(Proj)       [gdalband define $File -projection]
-   set Data(Trans)      [gdalband define $File -transform]
-   set Data(InvTrans)   [gdalband define $File -invtransform]
+   set Data(Proj)       [gdalband define $Id -projection]
+   set Data(Trans)      [gdalband define $Id -transform]
+   set Data(InvTrans)   [gdalband define $Id -invtransform]
 
-   set Data(BandX$File) $BandX
-   set Data(BandY$File) $BandY
+   set Data(BandX$Id) $BandX
+   set Data(BandY$Id) $BandY
    set Data(Job) ""
 }
 
