@@ -138,20 +138,6 @@ proc Mapper::Geo::Widget { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Mapper::Geo::ToUnicode { String } {
-   return [string map "À %C0 Á %C1 Â %C2 Ã %C3 Ä %C4 Å %C5 Æ %C6 Ç %C7 È %C8 É %C9 Ê %CA Ë %CB Ì %CC Í %CD Î %CE Ï %CF Ð %D0 Ñ %D1 \
-     Ò %D2 Ó %D3 Ô %D4 Õ %D5 Ö %D6 × %D7 Ø %D8 Ù %D9 Ú %DA Û %DB Ü %DC Ý %DD Þ %DE ß %DF à %E0 á %E1 â %E2 ã %E3 ä %E4 å %E5 æ %E6 \
-     ç %E7 è %E8 é %E9 ê %EA ë %EB ì %EC í %ED î %EE ï %EF ð %F0 ñ %F1 ò %F2 ó %F3 ô %F4 õ %F5 ö %F6 ÷ %F7 ø %F8 ù %F9 ú %FA û %FB \
-     ü %FC ý %FD þ %FE ÿ %FF" $String]
-}
-
-proc Mapper::Geo::FromUnicode { String } {
-   return [string map "%C0 À %C1 Á %C2 Â %C3 Ã %C4 Ä %C5 Å %C6 Æ %C7 Ç %C8 È %C9 É %CA Ê %CB Ë %CC Ì %CD Í %CE Î %CF Ï %D0 Ð %D1 Ñ \
-     %D2 Ò %D3 Ó %D4 Ô %D5 Õ %D6 Ö %D7 × %D8 Ø %D9 Ù %DA Ú %DB Û %DC Ü %DD Ý %DE Þ %DF ß %E0 à %E1 á %E2 â %E3 ã %E4 ä %E5 å %E6 æ \
-     %E7 ç %E8 è %E9 é %EA ê %EB ë %EC ì %ED í %EE î %EF ï %F0 ð %F1 ñ %F2 ò %F3 ó %F4 ô %F5 õ %F6 ö %F7 ÷ %F8 ø %F9 ù %FA ú %FB û \
-     %FC ü %FD ý %FE þ %FF ÿ" $String]
-}
-
 proc Mapper::Geo::Code { Request { API Geocoder } } {
    global GDefs
    variable Msg
@@ -168,7 +154,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    switch $API {
       "Google" {
          #----- Send request through Google
-         set req [http::geturl "http://maps.googleapis.com/maps/api/geocode/xml?address=[join ${Request} +]&sensor=false"]
+         set req [http::geturl "http://maps.googleapis.com/maps/api/geocode/xml?[http::formatQuery address [join ${Request} +] sensor false]"]
 
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
             Dialog::ErrorListing . $Error(Request) "$msg\n[http::data $req]"
@@ -188,7 +174,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
       }
       "Geocoder" {
          #----- Send request through Geocoder.ca
-         set req [http::geturl "http://geocoder.ca/?locate=[join ${Request} %20]&geoit=XML"]
+         set req [http::geturl "http://geocoder.ca/?[http::formatQuery locate [join ${Request} %20] geoit XML]"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
             Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
