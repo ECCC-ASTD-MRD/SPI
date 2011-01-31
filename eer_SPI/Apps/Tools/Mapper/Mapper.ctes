@@ -20,6 +20,10 @@ namespace eval Mapper { } {
    variable Bubble
    variable Data
    variable Param
+   variable License
+
+   set License(MapQuest)      "Data, imagery and map information provided by MapQuest, Open Street Map"
+   set License(OpenStreetMap) "Tile map provided by OpenStreetMap"
 
    catch {
       image create photo OGRMAPImg  -width 256 -height 15

@@ -12,7 +12,7 @@
 #    Permet d'afficher un selecteur de champs de fichier geotiff.
 #
 # Remarques :
-#
+# #
 #===============================================================================
 
 #----- Lire les sources d'execution
@@ -1205,6 +1205,7 @@ proc Mapper::MoveDone { Frame VP } {
 proc Mapper::UpdateData { Frame args } {
    global GDefs
    variable Data
+   variable License
    variable Msg
 
    if { [llength $args] } {
@@ -1219,8 +1220,15 @@ proc Mapper::UpdateData { Frame args } {
    set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]
    update idletasks
 
+   set license ""
+   foreach data $Viewport::Data(Data$Frame) {
+      if { [info exists Mapper::License($data)] } {
+         append license "$License($data)\n"
+      }
+   }
+
    if { [projection is $Frame ] } {
-      projection configure $Frame -data $Viewport::Data(Data)
+      projection configure $Frame -data $Viewport::Data(Data) -license $license
       Page::Update $Frame
    }
 

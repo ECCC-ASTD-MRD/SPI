@@ -18,7 +18,7 @@
 namespace eval Mapper::DepotWare::TMS {
    variable Param
 
-   set Param(Depots) { { OpenStreetMap TMS OpenStreetMap } { BlueMarble TMS BlueMarble } { MetaCarta TMS MetaCarta } }
+   set Param(Depots) { { OpenStreetMap TMS OpenStreetMap } { MapQuest TMS MapQuest} { BlueMarble TMS BlueMarble } { MetaCarta TMS MetaCarta } }
 }
 
 #-------------------------------------------------------------------------------
@@ -73,7 +73,32 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch Path URL } {
     </Cache>
 </GDAL_WMS>"
 
-set Param(BlueMarble) "<GDAL_WMS>
+   set Param(MapQuest) "<GDAL_WMS>
+    <Service name=\"TMS\">
+        <ServerUrl>http://otile1.mqcdn.com/tiles/1.0.0/osm/\${z}/\${x}/\${y}.png</ServerUrl>
+    </Service>
+    <DataWindow>
+        <UpperLeftX>-20037508.34</UpperLeftX>
+        <UpperLeftY>20037508.34</UpperLeftY>
+        <LowerRightX>20037508.34</LowerRightX>
+        <LowerRightY>-20037508.34</LowerRightY>
+        <TileLevel>19</TileLevel>
+        <TileCountX>1</TileCountX>
+        <TileCountY>1</TileCountY>
+        <YOrigin>top</YOrigin>
+    </DataWindow>
+    <Projection>EPSG:900913</Projection>
+    <BlockSizeX>256</BlockSizeX>
+    <BlockSizeY>256</BlockSizeY>
+    <BandsCount>3</BandsCount>
+    <Cache>
+       <Path>[file rootname $file]</Path>
+       <Depth>2</Depth>
+    </Cache>
+</GDAL_WMS>"
+
+
+   set Param(BlueMarble) "<GDAL_WMS>
     <Service name=\"TileService\">
         <Version>1</Version>
         <ServerUrl>http://s0.tileservice.worldwindcentral.com/getTile?</ServerUrl>
