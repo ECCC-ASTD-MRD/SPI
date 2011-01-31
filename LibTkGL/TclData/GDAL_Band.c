@@ -239,9 +239,6 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    }
 
-   if (GDALGetRasterColorInterpretation(hband)==GCI_PaletteIndex) {
-      band->Tex.Indexed=1;
-   }
    band->Tex.Nx=nx;
    band->Tex.Ny=ny;
 
@@ -250,6 +247,10 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    if ((hTable=GDALGetRasterColorTable(hband))) {
 //      printf( "Color Table (%s with %d entries)\n",GDALGetPaletteInterpretationName(GDALGetPaletteInterpretation(hTable)),GDALGetColorEntryCount(hTable));
+
+      if (GDALGetRasterColorInterpretation(hband)==GCI_PaletteIndex) {
+         band->Tex.Indexed=1;
+      }
 
       band->Spec->Map=CMap_New(NULL,GDALGetColorEntryCount(hTable));
       for (c=0;c<band->Spec->Map->NbPixels;c++) {
@@ -1647,7 +1648,7 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
       band=GDAL_BandGet(Tcl_GetString(obj));
 
       /*Write the colormap if we have one*/
-      if (band->Spec->Map) {
+      if (band->Spec->Map && band->Tex.Indexed) {
          band->Band[0]=GDALGetRasterBand(file->Set,nc+1);
          htable=GDALCreateColorTable(GPI_RGB);
          for (i=0;i<band->Spec->Map->NbPixels;i++) {
@@ -1658,10 +1659,6 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
             GDALSetColorEntry(htable,i,&centry);
          }
          GDALSetRasterColorTable(band->Band[0],htable);
-
-         if (band->Tex.Indexed) {
-           GDALSetRasterColorInterpretation(band->Band[0],GCI_PaletteIndex);
-         }
       }
 
       /*Write every band*/
@@ -1669,6 +1666,12 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
          band->Band[i]=GDALGetRasterBand(file->Set,nc+1);
          if (band->Spec->Desc)
             GDALSetDescription(band->Band[i],band->Spec->Desc);
+
+         if (band->Spec->Map && band->Tex.Indexed) {
+            GDALSetRasterColorInterpretation(band->Band[i],GCI_PaletteIndex);
+         } else {
+            GDALSetRasterColorInterpretation(band->Band[i],GCI_Undefined);
+         }
 
          if (!isnan(band->Def->NoData))
             GDALSetRasterNoDataValue(band->Band[i],band->Def->NoData);
