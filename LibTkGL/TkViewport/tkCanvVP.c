@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "tkCanvVP.h"
+#include "tkglCanvText.h"
 #include "Projection.h"
 #include "tclGDAL.h"
 #include "tclOGR.h"
@@ -46,6 +47,21 @@ extern int   Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Client
 extern int   Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj,GLuint GLMode);
 extern int   Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
 extern int   MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
+
+static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int    ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
+static int    ViewportToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
+static double ViewportToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr);
+static int    ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass);
+static void   ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP);
+static int    ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags);
+static int    ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
+static void   ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp);
+static void   ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Drawt,int X,int Y,int Width,int Height);
+static void   ViewportScale(Tk_Canvas Canvas,Tk_Item *Item, double OriginX,double OriginY,double ScaleX,double ScaleY);
+static void   ViewportTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY);
+static int    ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item);
+static int    ViewportLicense(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 
 static int   VP_CamParseProc  _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
 static char *VP_CamPrintProc  _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
@@ -1243,6 +1259,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    /*Mask inslusions*/
    ViewportIntrusion(NULL,Canvas,Item);
+   ViewportLicense(NULL,vp,proj);
 
    /*Loading data*/
    if (load && !GLRender->TRCon) {
@@ -1262,6 +1279,40 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    vp->Update =0;
    vp->Realloc=0;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <ViewportLicense>
+ * Creation : Novembre 2010
+ *
+ * But      : This procedure is invoked to draw an intrusion into th viewport.
+ *
+ * Parametres :
+ *  <Interp>  : Tcl Interpreter
+ *  <VP>      : Viewport
+ *  <Proj>    : Projection
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int ViewportLicense(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj) {
+
+   Tk_TextLayout text;
+   int           width,height;
+
+   if (Proj->License) {
+      text=Tk_ComputeTextLayout(VP->tkfont,Proj->License,Tcl_NumUtfChars(Proj->License,strlen(Proj->License)),0,TK_JUSTIFY_CENTER,0,&width,&height);
+      glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
+      if (Interp) {
+         glPostscripTextLayout(Interp,VP->canvas,text,VP->FGColor,NULL,0,VP->header.x2/2-width/2,VP->header.y2-height-10,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
+      } else {
+         glDisplayTextLayout(text,0,VP->header.x2/2-width/2,VP->header.y2-height-10,0,-1);
+      }
+      Tk_FreeTextLayout(text);
+   }
 }
 
 /*----------------------------------------------------------------------------

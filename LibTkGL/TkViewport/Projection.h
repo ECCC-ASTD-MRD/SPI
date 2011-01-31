@@ -55,6 +55,7 @@ typedef struct Projection {
    struct ProjectionType *Type;    /*Type de projection*/
    GDB_Data              *Geo;     /*Donnees geographiques*/
    Tcl_Obj               *Data;    /*Liste des donnees associees*/
+   char                  *License; /*Licenses des donnees associees*/
    int                   NbData;   /*Nombre d'image*/
    double                PixDist;  /*Distance en metres entre deux pixels*/
    long                  Date;     /*Date en secondes*/

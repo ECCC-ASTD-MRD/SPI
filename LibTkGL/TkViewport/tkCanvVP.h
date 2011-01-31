@@ -116,20 +116,6 @@ void ViewportRefresh(ClientData clientData,int Delay);
 void ViewportRefresh_Canvas(ClientData clientData);
 int  ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask);
 
-static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-static int    ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
-static int    ViewportToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
-static double ViewportToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr);
-static int    ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass);
-static void   ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP);
-static int    ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags);
-static int    ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
-static void   ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp);
-static void   ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Drawt,int X,int Y,int Width,int Height);
-static void   ViewportScale(Tk_Canvas Canvas,Tk_Item *Item, double OriginX,double OriginY,double ScaleX,double ScaleY);
-static void   ViewportTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY);
-static int    ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item);
-
 int Tkviewport_Init(Tcl_Interp *Interp);
 
 #endif

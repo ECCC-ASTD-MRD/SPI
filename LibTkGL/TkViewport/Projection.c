@@ -605,9 +605,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    double      lat,lon,ni,nj,tmp;
 
    static CONST char *sopt[] = { "-perspective","-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
-                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis","-minsize",NULL };
+                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-license","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis","-minsize",NULL };
    enum                opt { PERSPECTIVE,LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
-                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS,MINSIZE };
+                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,LICENSE,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS,MINSIZE };
 
    proj=Projection_Get(Name);
    if (!proj) {
@@ -965,6 +965,17 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             }
             break;
 
+        case LICENSE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(proj->License,-1));
+            } else {
+               if (proj->License) {
+                  free(proj->License);
+               }
+               proj->License=strdup(Tcl_GetString(Objv[++i]));
+            }
+            break;
+
        case GEOREF:
             if (Objc==1) {
                if (proj->Ref)
@@ -1066,6 +1077,7 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
    proj->PixDist     = 0.0;
    proj->Type        = NULL;
    proj->Data        = NULL;
+   proj->License     = NULL;
    proj->NbData      = 0;
    proj->Date        = 0;
    proj->Sun         = 0;
@@ -1176,6 +1188,9 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
          Tcl_DecrRefCount(proj->Data);
       }
 
+      if (proj->License) {
+         free(proj->License);
+      }
       free(proj);
    }
    return(TCL_OK);
