@@ -226,7 +226,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (layer) {
             if (Objc!=5 && Objc!=6) {
                Tcl_WrongNumArgs(Interp,2,Objv,"band layer type [field]");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
                return(TCL_ERROR);
@@ -379,7 +379,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   free(table);
                return(code);
             } else {
-               return(Data_GridInterpolate(Interp,Tcl_GetString(Objv[4])[0],band->Ref,band->Def,comb->Ref,comb->Def));
+               return(Data_GridInterpolate(Interp,Objv[4]?Tcl_GetString(Objv[4])[0]:'L',band->Ref,band->Def,comb->Ref,comb->Def));
             }
             break;
          }

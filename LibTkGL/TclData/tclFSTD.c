@@ -810,7 +810,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   free(table);
                return(key);
             } else {
-               return(Data_GridInterpolate(Interp,Tcl_GetString(Objv[4])[0],field0->Ref,field0->Def,band->Ref,band->Def));
+               return(Data_GridInterpolate(Interp,Objv[4]?Tcl_GetString(Objv[4])[0]:'L',field0->Ref,field0->Def,band->Ref,band->Def));
             }
             break;
          }
@@ -1413,11 +1413,7 @@ int FSTD_Level2IP(float Level,int Type) {
          mode=FSTDIP1MODE;
       }
 
-      if (Type!=LVL_UNDEF) {
-         f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
-      } else {
-         ip=(int)Level;
-      }
+      f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
 #endif
       return(ip);
    }

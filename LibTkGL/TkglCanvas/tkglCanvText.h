@@ -82,3 +82,4 @@ typedef struct glTextItem  {
    T_glBitmap *disabledStipple;      /* Stipple bitmap for filling item if state is disabled. */
 } glTextItem;
 
+void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstChar,int lastChar);
