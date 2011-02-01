@@ -154,8 +154,9 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    switch $API {
       "Google" {
          #----- Send request through Google
-         set req [http::geturl "http://maps.googleapis.com/maps/api/geocode/xml?[http::formatQuery address [join ${Request} +] sensor false]"]
-
+         set bbox [$Viewport::Data(VP) -bbox]
+         set bbox "[lindex $bbox 0],[lindex $bbox 1],[lindex $bbox 2],[lindex $bbox 3]"
+         set req [http::geturl "http://maps.googleapis.com/maps/api/geocode/xml?[http::formatQuery address [join ${Request} +] sensor false]&bounds=$bbox"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
             Dialog::ErrorListing . $Error(Request) "$msg\n[http::data $req]"
             return
@@ -163,11 +164,14 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
          #----- Extract info from XML
          if { [set root [$doc documentElement]]!="" } {
 
-            set Data(Address) [[[$root getElementsByTagName formatted_address] firstChild] nodeValue]
+            foreach node [$root getElementsByTagName result] {
+               set Data(Address) [[[$node  getElementsByTagName formatted_address] firstChild] nodeValue]
 
-            set node [lindex  [$root getElementsByTagName location] 0]
-            set Data(Lat)    [[[$node getElementsByTagName lat] firstChild] nodeValue]
-            set Data(Lon)    [[[$node getElementsByTagName lng] firstChild] nodeValue]
+               set node [lindex  [$root getElementsByTagName location] 0]
+               set Data(Lat)    [[[$node getElementsByTagName lat] firstChild] nodeValue]
+               set Data(Lon)    [[[$node getElementsByTagName lng] firstChild] nodeValue]
+               break;
+            }
          }
          $doc delete
          http::cleanup $req
