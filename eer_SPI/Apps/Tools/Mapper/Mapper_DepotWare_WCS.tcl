@@ -52,7 +52,6 @@ proc Mapper::DepotWare::WCS::Params { Frame } {
       entry $Frame.path.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::WCS::Data(URL)
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
-      pack $Frame.path.open -side left
    pack $Frame.path -fill x -expand True
 }
 
@@ -80,23 +79,27 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
 
    if { $URL=="URL" }  {
       if { [string first "?" ${Path}]==-1 } {
-         set req [http::geturl "${Path}?&SERVICE=WCS&REQUEST=GetCapabilities"]
+         set req [http::geturl "${Path}?SERVICE=WCS&REQUEST=GetCapabilities"]
       } else {
-         set req [http::geturl "${Path}&SERVICE=WCS&REQUEST=GetCapabilities"]
+         set req [http::geturl "${Path}SERVICE=WCS&REQUEST=GetCapabilities"]
       }
-      if { [catch { set doc [dom::parse [http::data $req]] } ] } {
-         Dialog::ErrorListing . $Msg(Request) [http::data $req]
+      if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
+         Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
          return
       }
+      puts stderr "${Path}?&SERVICE=WCS&REQUEST=GetCapabilities"
+      set root [$doc documentElement]
 
       set WCS(Version) 1.1.0
-      set layer [lindex [set [dom::document getElementsByTagName $doc CoverageSummary]] 0]
-      foreach layer [Mapper::DepotWare::WCS:ParseLayer $Path $layer] {
+      set layer [lindex [$root getElementsByTagName ContentMetadata] 0]
+      foreach layer [Mapper::DepotWare::WCS::ParseLayer $Path $layer] {
          Mapper::DepotWare::WCS::Add $Tree $Branch $layer
       }
-      dom::destroy $doc
+
+      $doc delete
+      http::cleanup $req
    } else {
-      set def [Mapper::DepotWare::WCS::BuildXMLDef $path]
+      set def [Mapper::DepotWare::WCS::BuildXMLDef $Path]
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
          Mapper::ReadBand $def "" 3
       }
@@ -134,6 +137,7 @@ proc Mapper::DepotWare::WMS::Request { } {
 # But      : Ajouter une branche pour une couche WMS.
 #
 # Parametres :
+#  <Tree>    : Arbre
 #  <Branch>  : Branche
 #  <Layer>   : Couche
 #
@@ -143,7 +147,7 @@ proc Mapper::DepotWare::WMS::Request { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::WCS::Add { Branch Layer } {
+proc Mapper::DepotWare::WCS::Add { Tree Branch Layer } {
    variable Data
 
    set branch [$Tree insert $Branch end]
@@ -163,7 +167,7 @@ proc Mapper::DepotWare::WCS::Add { Branch Layer } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WCS:ParseLayer>
+# Nom      : <Mapper::DepotWare::WCS::ParseLayer>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Decoder du XML pour en extraire l'information des couches.
@@ -193,22 +197,24 @@ proc Mapper::DepotWare::WCS::ParseLayer { URL Node { First True } } {
       set Data(SizeY)      0
    }
 
-   foreach node [set [dom::node configure $Node -childNodes]] {
-      switch [dom::node configure $node  -nodeName] {
-         CoverageSummary          { Mapper::DepotWare::WCS::ParseLayer $URL $node False }
-         EX_GeographicBoundingBox { Mapper::DepotWare::WMS::ParseGeographic $node }
-         LatLonBoundingBox        { Mapper::DepotWare::WMS::ParseLatLonBoundingBox $node }
-         BoundingBox              { Mapper::DepotWare::WMS::ParseBoundingBox $node }
-         Identifier               { set Data(Identifier) [dom::node cget [dom::node children $node] -nodeValue] }
-         ows:Title                { set Data(Title) [dom::node cget [dom::node children $node] -nodeValue] }
+   foreach node [$Node childNodes] {
+      switch [$node nodeName] {
+         CoverageOfferingBrief {
+            set Data(Identifier) ""
+            foreach n [$node childNodes] {
+               switch [$n nodeName] {
+                  name            { set Data(Identifier) [[$n firstChild] nodeValue] }
+                  label           { set Data(Title) [[$n firstChild] nodeValue] }
+               }
+            }
+            if { $Data(Identifier)!="" } {
+               set Data($Data(Title)) [list $URL $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format)]
+               lappend Data(Layers) $Data(Title)
+            }
+         }
       }
    }
 
-   if { $Data(Identifier)!="" } {
-      set Data($Data(Title)) [list $URL $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format)]
-      lappend Data(Layers) $Data(Title)
-   }
-   set Data(Identifier) ""
    return $Data(Layers)
 }
 
@@ -234,17 +240,22 @@ proc Mapper::DepotWare::WCS::BuildXMLDef { Layer } {
    set url    [lindex $Data($Layer) 0]
    set layer  [lindex $Data($Layer) 1]
 
+   if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
+      file mkdir $Mapper::DepotWare::Data(CachePath)
+   }
+
    set layer [string map { " " "%20" } $layer]
+   set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $url$layer].xml
    if { [string first "?" ${url}]==-1 } {
       set url ${url}?
    } else {
       set url $url
    }
 
-   set xml "<GDAL_WCS>\n"
+   set xml "<WCS_GDAL>\n"
    append xml "   <ServiceURL>${url}</ServiceURL>\n"
    append xml "   <CoverageName>$layer</CoverageName>"
-   append xml "</GDAL_WCS>"
+   append xml "</WCS_GDAL>"
 
    set f [open $file w]
    puts $f $xml

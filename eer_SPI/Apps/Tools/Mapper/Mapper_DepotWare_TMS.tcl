@@ -22,6 +22,28 @@ namespace eval Mapper::DepotWare::TMS {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::TMS::Params>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fenetre des parametres du type de DB Tiled Mapping Service (WMS).
+#
+# Parametres :
+#  <Frame>   : Fenetre parent
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::TMS::Params { Frame } {
+   global GDefs
+   variable Data
+   variable Lbl
+
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::TMS::Select>
 # Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
 #

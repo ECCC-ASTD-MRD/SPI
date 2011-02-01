@@ -45,8 +45,7 @@ namespace eval Mapper::DepotWare {
 
    set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
    set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
-   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" "TMS - Tileb Mapping Service"}
-#   set Lbl(Types)       {  "DIR - Data directory" "PGS - PostGIS database"  "WMS - Web Mapping Service" "WCS - Web Coverage Service" "WFS - Web Feature Service" }
+   set Lbl(Types)       { "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" "WCS - Web Coverage Service" "TMS - Tileb Mapping Service"}
    set Lbl(Path)        { "Localisation" "Localisation" }
    set Lbl(Type)        { "Type" "Type" }
    set Lbl(Cache)       { "Cache" "Cache" }

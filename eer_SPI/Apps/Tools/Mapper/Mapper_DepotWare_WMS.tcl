@@ -95,9 +95,9 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
 
    if { $URL=="URL" }  {
       if { [string first "?" ${Path}]==-1 } {
-         set req [http::geturl "${Path}?&SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
+         set req [http::geturl "${Path}?SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
       } else {
-         set req [http::geturl "${Path}&SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580 ]
+         set req [http::geturl "${Path}SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580 ]
       }
       if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
          Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
@@ -168,6 +168,7 @@ proc Mapper::DepotWare::WMS::Request { } {
 # But      : Ajouter une branche pour une couche WMS.
 #
 # Parametres :
+#  <Tree>    : Arbre
 #  <Branch>  : Branche
 #  <Layer>   : Couche
 #
