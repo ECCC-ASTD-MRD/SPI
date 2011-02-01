@@ -361,13 +361,13 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    TData        *data;
    Tcl_Obj      *obj;
 
-   int           nco,idx,i,bool,n,np,pick;
+   int           nco,idx,i,bool,n,np,pick,ix,iy;
    Vect3d        pt0,pt1;
-   Coord         loc0,loc1,co[1000];
-   double        x,y,h,d;
+   Coord         loc,loc0,loc1,co[1000];
+   double        x,y,h,d,lat[2],lon[2];
 
-   static CONST char *sopt[] = { "-ungrid","-grid","-unproject","-project","-projectline","-projectcircle","-distxy","-distpix","-distll","-bearing","-circle","-pick",NULL };
-   enum                opt { UNGRID,GRID,UNPROJECT,PROJECT,PROJECTLINE,PROJECTCIRCLE,DISTXY,DISTPIX,DISTLL,BEARING,CIRCLE,PICK };
+   static CONST char *sopt[] = { "-ungrid","-grid","-unproject","-project","-projectline","-projectcircle","-distxy","-distpix","-distll","-bearing","-circle","-pick","-bbox",NULL };
+   enum                opt { UNGRID,GRID,UNPROJECT,PROJECT,PROJECTLINE,PROJECTCIRCLE,DISTXY,DISTPIX,DISTLL,BEARING,CIRCLE,PICK,BBOX };
 
    proj=Projection_Get(vp->Projection);
 
@@ -721,6 +721,72 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_SetObjResult(Interp,obj);
             }
             vp->ForcePick=1;
+            break;
+
+         case BBOX:
+            if (Objc!=2){
+               Tcl_WrongNumArgs(Interp,0,Objv,"");
+               return(TCL_ERROR);
+            }
+            loc0.Lat=90.0;  loc0.Lon=360.0;
+            loc1.Lat=-90.0; loc1.Lon=-360.0;
+            n=0;
+
+            pt0[1]=0;
+            pt1[1]=vp->Height;
+
+            for(ix=0;ix<vp->Width;ix+=5) {
+               pt0[0]=ix;
+               pt1[0]=ix;
+
+               if (proj->Type->UnProject(vp,proj,&loc,pt0)) {
+                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
+                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
+                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
+                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  n++;
+               }
+               if (proj->Type->UnProject(vp,proj,&loc,pt1)) {
+                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
+                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
+                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
+                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  n++;
+               }
+            }
+
+            pt0[0]=0;
+            pt1[0]=vp->Width;
+            for(iy=0;iy<vp->Width;iy+=5) {
+               pt0[1]=iy;
+               pt1[1]=iy;
+
+               if (proj->Type->UnProject(vp,proj,&loc,pt0)) {
+                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
+                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
+                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
+                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  n++;
+               }
+               if (proj->Type->UnProject(vp,proj,&loc,pt1)) {
+                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
+                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
+                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
+                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  n++;
+               }
+            }
+
+            if (!n) {
+               loc0.Lat=-90.0; loc0.Lon=-180.0;
+               loc1.Lat=90.0;  loc1.Lon=180.0;
+            }
+            obj=Tcl_NewListObj(0,NULL);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lon));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lon));
+            Tcl_SetObjResult(Interp,obj);
             break;
          }
    }
