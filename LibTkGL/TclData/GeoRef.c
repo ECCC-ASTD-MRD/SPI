@@ -102,12 +102,13 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
       Scan->X1=X1;
       Scan->Y1=Y1;
 
+/*
       if (Scan->ToRef)  GeoRef_Free(Scan->ToRef);
       Scan->ToRef=GeoRef_Copy(To);
       if (Scan->FromRef)  GeoRef_Free(Scan->FromRef);
       Scan->FromRef=GeoRef_Copy(From);
+*/
 
-/*
       if (Scan->ToRef) {
          Scan->ToRef->Lat=NULL;
          Scan->ToRef->Lon=NULL;
@@ -125,7 +126,6 @@ void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1
       Scan->FromRef=GeoRef_HardCopy(From);
       Scan->FromRef->Lat=From->Lat;
       Scan->FromRef->Lon=From->Lon;
-*/
 
       /*Adjust scan buffer sizes*/
       Scan->DX=X1-X0+1;
@@ -171,8 +171,16 @@ void GeoScan_Clear(TGeoScan *Scan) {
    if (Scan->V) free(Scan->V);
    if (Scan->D) free(Scan->D);
 
-   if (Scan->ToRef)   GeoRef_Free(Scan->ToRef);
-   if (Scan->FromRef) GeoRef_Free(Scan->FromRef);
+   if (Scan->ToRef) {
+      Scan->ToRef->Lat=NULL;
+      Scan->ToRef->Lon=NULL;
+      GeoRef_Free(Scan->ToRef);
+   }
+   if (Scan->FromRef) {
+      Scan->FromRef->Lat=NULL;
+      Scan->FromRef->Lon=NULL;
+      GeoRef_Free(Scan->FromRef);
+   }
 
    Scan->FromRef=Scan->ToRef=NULL;
    Scan->X=Scan->Y=NULL;
@@ -535,6 +543,8 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
          if (Objc==4) {
             GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL);
+            ref0->Grid[0]='W';
+            ref0->Grid[1]=ref0->Grid[2]='\0';
          }
 
          if (!GeoRef_Put(Interp,Tcl_GetString(Objv[2]),ref0)) {
