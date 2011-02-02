@@ -361,6 +361,10 @@ proc Mapper::DepotWare::Add { Name Type } {
    lappend Data(Depots) [list $Name $type $req]
    Mapper::DepotWare::ParamsSave
 
+   #----- Force the newly added branch parent to open
+   TREE set $Type open True
+
+   #----- Add new node
    set idx [TREE insert $Type end]
    TREE set $idx open False
    TREE set $idx name $Name
