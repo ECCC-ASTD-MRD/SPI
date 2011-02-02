@@ -17,6 +17,7 @@
 
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_DIR.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WMS.tcl
+source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WFS.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_WCS.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_TMS.tcl
 source $GDefs(Dir)/Apps/Tools/Mapper/Mapper_DepotWare_PGS.tcl
@@ -45,7 +46,7 @@ namespace eval Mapper::DepotWare {
 
    set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
    set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
-   set Lbl(Types)       { "DIR - Data directory" "PGS - PostGIS database" "WMS - Web Mapping Service" "WCS - Web Coverage Service" "TMS - Tileb Mapping Service"}
+   set Lbl(Types)       { "TMS - Tileb Mapping Service" "PGS - PostGIS database" "WMS - Web Mapping Service"  "WFS - Web Feature Service" "WCS - Web Coverage Service" "DIR - Data directory" }
    set Lbl(Path)        { "Localisation" "Localisation" }
    set Lbl(Type)        { "Type" "Type" }
    set Lbl(Cache)       { "Cache" "Cache" }
@@ -348,22 +349,23 @@ proc Mapper::DepotWare::Add { Name Type } {
 
    set req [Mapper::DepotWare::${Type}::Request]
 
-   if { $Type!="DIR" } {
-      set Type "URL$Type"
+   set type $Type
+   if { $type!="DIR" } {
+      set type "URL$type"
    }
 
    if  { $Name=="" } {
       set Name $req
    }
 
-   lappend Data(Depots) [list $Name $Type $req]
+   lappend Data(Depots) [list $Name $type $req]
    Mapper::DepotWare::ParamsSave
 
-   set idx [TREE insert root end]
+   set idx [TREE insert $Type end]
    TREE set $idx open False
    TREE set $idx name $Name
    TREE set $idx path $req
-   TREE set $idx type $Type
+   TREE set $idx type $type
 
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
 }
@@ -389,7 +391,7 @@ proc Mapper::DepotWare::Del { Branch } {
    variable Msg
    variable Data
 
-   if { $Branch!="" && [TREE depth $Branch]==1 } {
+   if { $Branch!="" && [TREE depth $Branch]==2 } {
       set name [TREE get $Branch name]
       set type [TREE get $Branch type]
       set path [TREE get $Branch path]
@@ -448,10 +450,11 @@ proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
    }
 
    switch [string range $type 0 2] {
-      "URL" { set id "([string range $type 3 end]) [$Tree get $Branch name]" }
-      "WMS" { set id [$Tree get $Branch path] }
-      "WCS" { set id [$Tree get $Branch path] }
-      "PGS" { set id [$Tree get $Branch path] }
+      "ROO"  -
+      "URL"  { set id [$Tree get $Branch name] }
+      "WMS"  -
+      "WCS"  -
+      "PGS"  { set id [$Tree get $Branch path] }
       default { if { [$Tree depth $Branch]>1 } { set id [file tail [$Tree get $Branch path]] } else { set id "($type) [$Tree get $Branch name]" } }
    }
    return $id
@@ -597,6 +600,7 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
 proc Mapper::DepotWare::Create { } {
    global env
    variable Data
+   variable Lbl
 
    if { [llength [TREE children root]] } {
       return
@@ -606,9 +610,21 @@ proc Mapper::DepotWare::Create { } {
       source $env(HOME)/.spi/Mapper
    }
 
+   foreach type $Lbl(Types) {
+      set type [lindex $type 0]
+      TREE insert root end $type
+      if { $type=="TMS" } {
+         TREE set $type open True
+      } else {
+         TREE set $type open False
+      }
+      TREE set $type name $type
+      TREE set $type type ROOT
+   }
+
    #----- Add standard TMS
    foreach depot $Mapper::DepotWare::TMS::Param(Depots) {
-      set idx [TREE insert root end]
+      set idx [TREE insert TMS end]
       TREE set $idx open False
       TREE set $idx name [lindex $depot 0]
       TREE set $idx type [lindex $depot 1]
@@ -619,7 +635,8 @@ proc Mapper::DepotWare::Create { } {
    }
 
    foreach depot $Data(Depots) {
-      set idx [TREE insert root end]
+      set type [string range [lindex $depot 1] end-2 end]
+      set idx [TREE insert $type end]
       TREE set $idx open False
       TREE set $idx name [lindex $depot 0]
       TREE set $idx type [lindex $depot 1]
