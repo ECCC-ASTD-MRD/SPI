@@ -215,7 +215,7 @@ proc Mapper::DepotWare::PGS::ParseLayer { Request } {
    ogrfile close OGRPARSE
 
    if { $bad } {
-      Dialog::Error . [$Msg(Request)
+      Dialog::Error . $Msg(Request)
    }
 
    return $idxs
