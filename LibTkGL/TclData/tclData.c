@@ -1430,6 +1430,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    Vect3d   *vbuf;
    int       n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int       nb,len,nobj;
+   unsigned long npt;
    double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
    float     val,val1,*levels;
    char      buf[32],mode='L';
@@ -1603,6 +1604,12 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
+
+            /*Check for maximum number of elements*/
+            npt=1e9;
+            if (Objc==2)
+               Tcl_GetLongFromObj(Interp,Objv[++i],&npt);
+
             obj=Tcl_NewListObj(0,NULL);
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
@@ -1615,7 +1622,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   } else {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[FIDX2D(Field->Def,ni,nj)]));
                   }
+                  if (!(--npt)) break;
                }
+               if (!npt) break;
             }
             Tcl_SetObjResult(Interp,obj);
             break;
@@ -1625,6 +1634,11 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
+            /*Check for maximum number of elements*/
+            npt=1e9;
+            if (Objc==2)
+               Tcl_GetIntFromObj(Interp,Objv[++i],&npt);
+
             obj=Tcl_NewListObj(0,NULL);
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
@@ -1637,7 +1651,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   } else {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[FIDX2D(Field->Def,ni,nj)]));
                   }
+                  if (!(--npt)) break;
                }
+               if (!npt) break;
             }
             Tcl_SetObjResult(Interp,obj);
             break;
@@ -1762,7 +1778,13 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDVALUE:
-            if (Objc==1) {
+            if (Objc==1 || Objc==2) {
+
+               /*Check for maximum number of elements*/
+               npt=1e9;
+               if (Objc==2)
+                  Tcl_GetIntFromObj(Interp,Objv[++i],&npt);
+
                obj=Tcl_NewListObj(0,NULL);
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
@@ -1791,7 +1813,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      } else {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
                      }
+                     if (!(--npt)) break;
                   }
+                  if (!npt) break;
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
