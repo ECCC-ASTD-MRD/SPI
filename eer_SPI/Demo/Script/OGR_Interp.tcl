@@ -48,14 +48,14 @@ ogrlayer clear LAYER ZONE
 #----- Open a file to save the index for future reuse for faster processing
 #      if the file is empty, it will be filled with the index
 #      otherwise, it will be used as an index
-#set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
-set f [open DataOut/OGR_InterpIdx.txt r]
+set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
+#set f [open DataOut/OGR_InterpIdx.txt r]
 #
 #----- Do the sum in conservative mode splitting the grid cell in 1 segment
 puts "   Interpolating field values into layer"
-#ogrlayer interp LAYER DATAFIELD ZONE CONSERVATIVE 1 True $f
-ogrlayer interp LAYER DATAFIELD ZONE AVERAGE 1 True $f
-ogrlayer interp LAYER DATAFIELD ZONE AVERAGE 1 True $f
+ogrlayer interp LAYER DATAFIELD ZONE CONSERVATIVE 1 True $f
+#ogrlayer interp LAYER DATAFIELD ZONE AVERAGE 1 True $f
+#ogrlayer interp LAYER DATAFIELD ZONE AVERAGE 1 True $f
 
 puts "   Minimum: [ogrlayer stats LAYER -min ZONE]"
 puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"

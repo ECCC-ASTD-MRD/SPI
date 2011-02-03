@@ -34,6 +34,8 @@ puts "Found [llength $fields] field(s) $fields"
 foreach field $fields {
    gribfield read FIELD FILE [lindex $field 1]
 
+   puts "Center       : [gribfield define FIELD -CENTER]"
+   puts "Var          : [gribfield define FIELD -NOMVAR]"
    puts "Desc         : [gribfield configure FIELD -desc]"
    puts "Dim          : [gribfield define FIELD -NI]x[gribfield define FIELD -NJ]x[gribfield define FIELD -NK]"
    puts "No data value: [gribfield stats FIELD -nodata]"
@@ -42,4 +44,6 @@ foreach field $fields {
 
    puts "WKT String   : [gribfield define FIELD -projection]"
 #   puts "Grid         : [gribfield stats FIELD -grid]"
+
+   gribfield free FIELD
 }
