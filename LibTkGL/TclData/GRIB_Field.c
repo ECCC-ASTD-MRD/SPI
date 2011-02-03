@@ -456,6 +456,11 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
    grib_get_long(head.Handle,"time",&time);
    head.DATEV=System_DateTime2Seconds(date,time*100,1);
 
+//         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
+//         head.IP1=FSTD_Level2IP(lval,lval2);
+         head.IP1=lval;
+
+
    /*Get message info*/
    err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
    err=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
@@ -521,7 +526,26 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 #endif
    }
-   fprintf(stderr,"-------1 %s\n",field->Ref->String);
+
+   err=grib_get_long(head.Handle,"level",&lval);
+   field->Ref->Levels[0]=lval;
+   err=grib_get_long(head.Handle,"typeOfLevel",&lval);
+   switch(lval) {
+      case   1:
+      case 103:
+      case 106: field->Ref->LevelType=LVL_MAGL; break;
+      case 100:
+      case 108: field->Ref->LevelType=LVL_PRES; break;
+      case 101:
+      case 102:
+      case 160: field->Ref->LevelType=LVL_MASL; break;
+      case 104: field->Ref->LevelType=LVL_SIGMA; break;
+      case 105: field->Ref->LevelType=LVL_HYBRID; break;
+      case 107: field->Ref->LevelType=LVL_THETA; break;
+      case 111: field->Ref->LevelType=LVL_ETA; break;
+      default: field->Ref->LevelType=LVL_UNDEF;
+   }
+
    len=GRIB_STRLEN;
    grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
 
@@ -601,7 +625,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
    grib_handle   *handle;
    Tcl_Obj       *list,*obj;
    int            err=0,len;
-   long           offset=0,size=0,date,time,lval,lval2,ni=-1,nj=-1,nk=1;
+   long           offset=0,size=0,date,time,lval,lval2,ni=-1,nj=-1,nk=1,type;
    char           buf[1024];
 
    list=Tcl_NewListObj(0,NULL);
@@ -630,21 +654,49 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          err=grib_get_long(handle,"numberOfVerticalCoordinateValues",&nk);
          nk=nk==0?1:nk;
 
+         err=grib_get_long(handle,"typeOfGeneratingProcess",&type);
+         switch(type) {
+            case 0: type='A';
+            case 1: type='I';
+            case 2: type='P';
+            case 3: type='P';
+            case 4: type='P';
+            case 5: type='P';
+            case 6: type='P';
+            case 7: type='E';
+            case 8: type='O';
+            default: type='X';
+         }
+
          err=grib_get_long(handle,"level",&lval);
          err=grib_get_long(handle,"typeOfLevel",&lval2);
-      //      err=grib_get_long(handle,"typeOfFirstFixedSurface",&lval2);
-         lval2=lval2==100?LVL_PRES:(lval2==1?LVL_MAGL:(lval2==105?LVL_MAGL:(lval2==105?LVL_MASL:LVL_UNDEF)));
+         switch(lval2) {
+            case   1:
+            case 103:
+            case 106: lval2=LVL_MAGL; break;
+            case 100:
+            case 108: lval2=LVL_PRES; break;
+            case 101:
+            case 102:
+            case 160: lval2=LVL_MASL; break;
+            case 104: lval2=LVL_SIGMA; break;
+            case 105: lval2=LVL_HYBRID; break;
+            case 107: lval2=LVL_THETA; break;
+            case 111: lval2=LVL_ETA; break;
+            default: lval2=LVL_UNDEF;
+         }
 
-         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
-         head.IP1=FSTD_Level2IP(lval,lval2);
+//         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
+//         head.IP1=FSTD_Level2IP(lval,lval2);
+         head.IP1=lval;
 
          /*Calculer la date de validitee du champs*/
          head.DATEV=System_DateTime2Seconds(date,time*100,1);
 
          switch(Mode) {
             case FSTD_LISTALL:
-               sprintf(buf,"%s %i {%s} {%s} %i %i %i GRIB%i %09i %09i %i %i %i",
-                  File->Id,offset,head.NOMVAR,"P",head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
+               sprintf(buf,"%s %i {%s} {%c} %i %i %i GRIB%i %09i %09i %i %i %i",
+                  File->Id,offset,head.NOMVAR,type,head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;

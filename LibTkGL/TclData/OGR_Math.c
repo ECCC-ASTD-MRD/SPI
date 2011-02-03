@@ -827,6 +827,7 @@ double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
 
 double GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
 
+   OGREnvelope env;
    double area;
 
    *X=0.0;
@@ -839,6 +840,12 @@ double GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
       *Y*=1.0/(6.0*area);
    }
 
+   if (OSRIsGeographic(OGR_G_GetSpatialReference(Geom))) {
+      OGR_G_GetEnvelope(Geom,&env);
+      if (-180.0<=env.MinX && 180.0>=env.MaxX && (env.MaxX-env.MinX)>180.0) {
+         *X-=180.0;
+      }
+   }
    return(area<0?-area:area);
 }
 
