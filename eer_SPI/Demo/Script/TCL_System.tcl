@@ -10,7 +10,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Projet     : Exemple de scripts.
 # Fichier    : TCL_Vector.tcl
 # Creation   : Mars 2005 - J.P. Gauthier - CMC/CMOE
-# Description: Demonstration de l'usage des vecteurs TCL
+# Description: Demonstration de l'usage des appels systeme
 #
 # Parametres :
 #

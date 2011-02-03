@@ -78,6 +78,7 @@ set tests {
    RADAR_EchoTop.tcl
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
+   { TCL_System.tcl /tmp }
 }
 
 catch { file delete DataOut/TCL_TestAll.log }

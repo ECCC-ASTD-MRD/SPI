@@ -53,13 +53,13 @@ puts "      LL->XY : $ll = $xy"
 puts "      Min    : [gdalband stats RASTER -min]"
 puts "      Max    : [gdalband stats RASTER -max]"
 
-#----- Configure the associated map to the limits of the data
-set map [gdalband configure RASTER -colormap]
-colormap configure $map -min red [lindex [lindex [gdalband stats RASTER -min] 0] 0]
-colormap configure $map -max red [lindex [lindex [gdalband stats RASTER -max] 0] 0]
-
-#----- Display (if running in SPI)
+#----- Configure the associated map to the limits of the data (if running in SPI)
 catch {
+   set map [gdalband configure RASTER -colormap]
+   colormap configure $map -min red [lindex [lindex [gdalband stats RASTER -min] 0] 0]
+   colormap configure $map -max red [lindex [lindex [gdalband stats RASTER -max] 0] 0]
+
+   #----- Display
    projection configure $Page::Data(Frame) -data RASTER
    #Mapper::UpdateData $Page::Data(Frame) RASTER
 }

@@ -54,7 +54,7 @@ ogrfile close OGRFILE
 
 #set layers [ogrfile open WFSFILE read WFS:http://demo.opengeo.org/geoserver/wfs?VERSION=1.1.0&SERVICE=WFS]
 #set layers [ogrfile open WFSFILE read WFS:http://goodenough.cmc.ec.gc.ca:9090?VERSION=1.1.0&SERVICE=WFS]
-set layers [ogrfile open WFSFILE read WFS:http://www.weather.gov/forecasts/xml/OGC_services/ndfdOWSserver.php?SERVICE=WFS&VERSION=1.1.0&bbox=43.00,-82.00 33.00,-72.00&resolution=40&time=2011-02-03T23:00:00&TYPENAME=ndfd:Forecast_Gml2AllWx]
+set layers [ogrfile open WFSFILE read WFS:http://www.weather.gov/forecasts/xml/OGC_services/ndfdOWSserver.php?SERVICE=WFS&VERSION=1.0.0&bbox=43.00,-82.00 33.00,-72.00&resolution=40&time=2011-02-02T23:00:00&TYPENAME=Forecast_Gml2Point]
 
 puts "WFS layers available: $layers"
 ogrlayer read WFSLAYER WFSFILE 0

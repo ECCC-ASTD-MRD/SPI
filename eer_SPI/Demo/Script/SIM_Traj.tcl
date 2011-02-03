@@ -8,7 +8,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Dorval, Quebec
 #
 # Projet     : Exemple de scripts.
-# Fichier    : TCL_Model.tcl
+# Fichier    : SIM_Traj.tcl
 # Creation   : Septembre 2008 - J.P. Gauthier - CMC/CMOE
 # Description: Test de lancement de simulation de trajectoire en tcl
 #
