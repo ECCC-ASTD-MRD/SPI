@@ -79,6 +79,7 @@ set tests {
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
    { TCL_System.tcl /tmp }
+   SIM_Traj.tcl
 }
 
 catch { file delete DataOut/TCL_TestAll.log }
