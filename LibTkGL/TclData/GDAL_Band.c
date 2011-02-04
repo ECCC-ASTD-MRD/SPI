@@ -703,6 +703,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       /*Check for included channel or list containing index*/
       if (List) {
          if (chan || (chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
+
             /*Make sure its flushed and reset in case were on the second pass or more (k)*/
             Tcl_Seek(chan,0,SEEK_SET);
             obji=Tcl_NewObj();
@@ -735,6 +736,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       /*Wouou we have the index list*/
       if (p) {
          /*As long as the file or the list is not empty*/
+         n=0;
          while((chan && !Tcl_Eof(chan)) || n<len) {
 
             /*Get the gridpoint*/
@@ -742,6 +744,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                Tcl_ListObjIndex(Interp,List,n++,&obji);
                Tcl_ListObjIndex(Interp,List,n++,&objj);
             }
+
             Tcl_GetIntFromObj(Interp,obji,&i);
             Tcl_GetIntFromObj(Interp,objj,&j);
 
