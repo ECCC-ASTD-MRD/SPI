@@ -105,11 +105,7 @@ proc Macro::Close { } {
 proc Macro::Error { Error { Extra "" } } {
    global GDefs
 
-   #----- Recuperer le nom de la procedure fautive
-   set stacklist [info level -1]
-   set stackproc [lindex $stacklist 0]
-
-   Dialog::Error .macro $Error " (${stackproc})$Extra"
+   uplevel 1 "Dialog::Error .macro [list $Error] \"$Extra\""
 }
 
 #-------------------------------------------------------------------------------
@@ -161,10 +157,7 @@ proc Macro::Doing { Msg } {
 
 proc Macro::Info { Info { Extra "" } } {
 
-   set stacklist [info level -1]
-   set stackproc [lindex $stacklist 0]
-
-   Dialog::Info .macro [list $Info $Info] " (${stackproc})$Extra"
+   uplevel 1 "Dialog::Info .macro [list $Info $Info] \"$Extra\""
 }
 
 #-------------------------------------------------------------------------------

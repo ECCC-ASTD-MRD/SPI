@@ -55,6 +55,7 @@ namespace eval SPI {
    set Param(Exp)            False        ;#Affichage des experiences
    set Param(Layout)         SPI          ;#Layout courant
    set Param(Bubble)         True         ;#Bulles d'aides
+   set Param(IconCircle)     0            ;#Cercle autour des icones
 }
 
 #----- Parametres de la projection
