@@ -278,6 +278,16 @@ proc Mapper::ParamsClose { } {
     destroy .mapperparams
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::Cursor>
+# Creation : Fevrier 2011 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Changer le curseur
+#
+# Parametres :
+#   <Cursor> : curseur a utiliser
+#
+#-------------------------------------------------------------------------------
 proc Mapper::Cursor { { Cursor left_ptr } } {
     variable Data
 
@@ -296,7 +306,8 @@ proc Mapper::Cursor { { Cursor left_ptr } } {
 #
 # But      : Selectionner la fenetre de parametres selon le type de donnees
 #
-# Parametres :
+# Parametres  :
+#   <Display> : Afficher les parametres
 #
 #-------------------------------------------------------------------------------
 
