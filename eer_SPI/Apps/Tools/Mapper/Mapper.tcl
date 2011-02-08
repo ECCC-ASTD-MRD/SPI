@@ -418,11 +418,7 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
       return
    }
 
-   if { [winfo exists .mapper] } {
-      $Data(Canvas) configure -cursor watch
-      .mapper configure -cursor watch
-   }
-   update idletasks;
+   Mapper::Cursor watch
 
    foreach file $Files {
        switch $Mode {
@@ -441,11 +437,7 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
       }
       Mapper::UpdateData $Page::Data(Frame)
    }
-
-   if { [winfo exists .mapper] } {
-      $Data(Canvas) configure -cursor left_ptr
-      .mapper configure -cursor left_ptr
-   }
+   Mapper::Cursor left_ptr
 }
 
 proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
@@ -741,10 +733,7 @@ proc Mapper::ParamsGDALSet { Object } {
       return
    }
 
-   $Data(Canvas) configure -cursor watch
-   .mapperparams configure -cursor watch
-   .mapper configure -cursor watch
-   update idletasks
+   Mapper::Cursor watch
 
    if { $Data(Band0$Object)!=$Data(Red) || $Data(Band1$Object)!=$Data(Green) || $Data(Band2$Object)!=$Data(Blue) || $Data(Band3$Object)!=$Data(Alpha) } {
       Mapper::ReadBand $Object [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)]
@@ -771,9 +760,7 @@ proc Mapper::ParamsGDALSet { Object } {
    Page::Update $Page::Data(Frame)
    Mapper::CurveDefine $Object $Data(Bands$Object)
 
-   $Data(Canvas) configure -cursor left_ptr
-   .mapperparams configure -cursor left_ptr
-   .mapper configure -cursor left_ptr
+   Mapper::Cursor left_ptr
 }
 
 #-------------------------------------------------------------------------------
@@ -845,10 +832,7 @@ proc Mapper::ParamsModelSet { Object } {
    if { $Data(Init) } {
       return
    }
-   $Data(Canvas) configure -cursor watch
-   .mapperparams configure -cursor watch
-   .mapper configure -cursor watch
-   update idletasks
+   Mapper::Cursor watch
 
    set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
    model define $Object -projection $Data(Proj)
@@ -871,9 +855,7 @@ proc Mapper::ParamsModelSet { Object } {
 
    Page::Update $Page::Data(Frame)
 
-   $Data(Canvas) configure -cursor left_ptr
-   .mapperparams configure -cursor left_ptr
-   .mapper configure -cursor left_ptr
+   Mapper::Cursor left_ptr
 }
 
 #-------------------------------------------------------------------------------
@@ -983,10 +965,7 @@ proc Mapper::ParamsOGRSet { Object } {
       return
    }
 
-   $Data(Canvas) configure -cursor watch
-   .mapperparams configure -cursor watch
-   .mapper configure -cursor watch
-   update idletasks
+   Mapper::Cursor watch
 
    #----- Verifier pour un range plutot que des niveaux
 
@@ -1040,10 +1019,7 @@ proc Mapper::ParamsOGRSet { Object } {
    ColorBar::Update $Page::Data(Frame)
 
    Mapper::Progress $Object
-
-   $Data(Canvas) configure -cursor left_ptr
-   .mapperparams configure -cursor left_ptr
-   .mapper configure -cursor left_ptr
+   Mapper::Cursor left_ptr
 }
 
 #-------------------------------------------------------------------------------
