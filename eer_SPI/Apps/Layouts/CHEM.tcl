@@ -72,6 +72,11 @@ proc CHEM::LayoutUpdate { Frame } {
    variable Data
    variable Error
 
+   #----- We don't want to update when animating
+   if { !$Animator::Play(Stop) } {
+      return
+   }
+
    #----- Is there a field displayed
    if { [set field [lindex [Viewport::Assigned $Frame $Data(VP) fstdfield] 0]]=="" } {
       return

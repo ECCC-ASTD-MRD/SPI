@@ -157,7 +157,7 @@ proc Macro::Doing { Msg } {
 
 proc Macro::Info { Info { Extra "" } } {
 
-   uplevel 1 "Dialog::Info .macro [list $Info $Info] \"$Extra\""
+   uplevel 1 "Dialog::Info .macro [list [list $Info $Info]] \"$Extra\""
 }
 
 #-------------------------------------------------------------------------------
