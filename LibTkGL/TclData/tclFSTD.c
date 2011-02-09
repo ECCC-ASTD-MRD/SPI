@@ -36,6 +36,7 @@
 #include "tclObs.h"
 #include "tclOGR.h"
 #include "tclGDAL.h"
+#include "tcl3DModel.h"
 #include <sys/timeb.h>
 
 /*Table contenant la liste des champs en memoire*/
@@ -322,6 +323,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    TMetObs     *metobs;
    OGR_Layer   *layer;
    GDAL_Band   *band,*bandt;
+   T3DModel    *model;
    Tcl_Obj     *obj;
    TData       *field0,*field1,*fieldt;
    TDataSpec   *spec;
@@ -843,6 +845,27 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                itype='P';
             }
             return(Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x));
+         }
+
+         /*Interpolate a model*/
+         model=Model_Get(Tcl_GetString(Objv[3]));
+         if (model) {
+            if (Objc!=5 && Objc!=6) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"field model mode [field]");
+               return(TCL_ERROR);
+            }
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
+               return(TCL_ERROR);
+            }
+            x=1.0;
+
+            if (Objc==6) {
+               if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
+                  field=Tcl_GetString(Objv[5]);
+               }
+            }
+//            imode=modeogr[n][0];
+            return(Model_Grid(Interp,field0,model,NULL));
          }
 
          /*Interpolate an observation*/

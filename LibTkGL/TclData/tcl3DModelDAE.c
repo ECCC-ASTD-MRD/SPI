@@ -446,6 +446,7 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
             if (data->VrSource) {
                if (!data->Object->Vr) {
                   data->Object->Vr=(Vect3f*)malloc(data->VrSource->Nb/data->NVr*sizeof(Vect3f));
+                  data->Object->NVr=data->VrSource->Nb/data->NVr;
                   for(i=0;i<data->VrSource->Nb/data->NVr;i++) {
                      for(v=0;v<data->NVr;v++) {
                         data->Object->Vr[i][v]=data->VrSource->Array[data->NVr*i+v];
@@ -454,7 +455,6 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
                }
             }
             if (data->NrSource) {
-/*
                if (!data->Object->Nr) {
                   data->Object->Nr=(Vect3f*)malloc(data->NrSource->Nb/data->NVr*sizeof(Vect3f));
                   for(i=0;i<data->NrSource->Nb/data->NVr;i++) {
@@ -463,7 +463,7 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
                      }
                   }
                }
-*/            }
+            }
             if (data->TxSource) {
             }
          }

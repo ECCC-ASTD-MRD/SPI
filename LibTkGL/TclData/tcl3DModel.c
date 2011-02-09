@@ -1332,7 +1332,9 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
       for(o=0;o<M->NObj;o++) {
          obj=&M->Obj[o];
-         if (!obj->GLId) {
+
+         /*If this object has vertices and has'nt been processed*/
+         if (obj->Vr && !obj->GLId) {
 
             obj->GLId=glGenLists(1);
             glNewList(obj->GLId,GL_COMPILE);
@@ -1374,20 +1376,18 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                   if (obj->Cl) glColor4fv(obj->Cl[idx]);
 
                   /*Projection to georef*/
-                  if (obj->Vr) {
-                     if (M->Ref) {
-                        M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
-                        M->Co.Elev=obj->Vr[idx][2];
+                  if (M->Ref) {
+                     M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
+                     M->Co.Elev=obj->Vr[idx][2];
 
-                        Proj->Type->Project(Proj,&M->Co,&vr,1);
-                        Vect_Assign(vrf,vr);
-                        glVertex3fv(vrf);
-                     } else {
-                        glVertex3fv(obj->Vr[idx]);
-                     }
-                     Vect_Min(obj->Extent[0],obj->Extent[0],obj->Vr[idx]);
-                     Vect_Max(obj->Extent[1],obj->Extent[1],obj->Vr[idx]);
+                     Proj->Type->Project(Proj,&M->Co,&vr,1);
+                     Vect_Assign(vrf,vr);
+                     glVertex3fv(vrf);
+                  } else {
+                     glVertex3fv(obj->Vr[idx]);
                   }
+                  Vect_Min(obj->Extent[0],obj->Extent[0],obj->Vr[idx]);
+                  Vect_Max(obj->Extent[1],obj->Extent[1],obj->Vr[idx]);
                }
                glEnd();
             }
@@ -1456,7 +1456,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 */
 int Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
 
-   if (Obj && Model_LOD(Proj,VP,M,Obj->Extent)) {
+   if (Obj && Obj->GLId && Model_LOD(Proj,VP,M,Obj->Extent)) {
       if (M->Spec->RenderFace) {
 
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -1520,7 +1520,7 @@ int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Sc
 
    if (GLRender->GLDebug) {
      for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
-     fprintf(stderr,"%s\n",Scene->Name);
+     fprintf(stderr,"(DEBUG) Rendering scene: %s\n",Scene->Name);
    }
 
    /*If a displacement matrix is specified*/
@@ -1546,4 +1546,230 @@ int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Sc
    ModelSceneDepth--;
 }
 
+int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
 
+   int       i;
+   T3DScene *scn;
+
+   scn=Scene?Scene:M->Scn;
+
+   ModelSceneDepth++;
+
+#ifdef DEBUG
+   for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
+   fprintf(stderr,"(DEBUG) Processing scene: %s\n",scn->Name);
+#endif
+
+   /*If a displacement matrix is specified
+   if (Scene->Mtx) {
+      glPushMatrix();
+      glMultTransposeMatrixf(Scene->Mtx);
+   }*/
+
+   /*Display scene objects*/
+   for(i=0;i<scn->NObj;i++) {
+      Model_GridObject(Data,M,scn->Obj[i]);
+   }
+
+   /*Recursive on sub-scenes*/
+   for(i=0;i<scn->NScn;i++) {
+      Model_Grid(Interp,Data,M,&scn->Scn[i]);
+   }
+
+   ModelSceneDepth--;
+
+   return(TCL_OK);
+}
+
+int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
+
+   Vect3d *v,extent[2];
+   Coord  co;
+   int    f,p,idx,n=0;
+
+   if (Obj->Vr) {
+      for (f=0;f<Obj->NFc;f++) {
+
+         /*Project face in data space*/
+         v=GDB_VBufferAlloc(Obj->Fc[f].NIdx);
+         n=0;
+         for (p=0;p<Obj->Fc[f].NIdx;p++) {
+            idx=Obj->Fc[f].Idx[p];
+
+            /*Test for overflow, should not happend but I've seen it on some models*/
+            if (idx>Obj->NVr) {
+               break;
+            }
+            /*Projection to georef*/
+            if (M->Ref) {
+               M->Ref->Project(M->Ref,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
+            } else {
+               co.Lat=M->Pos[0]+RAD2DEG(M2RAD(Obj->Vr[idx][1]));
+               co.Lon=M->Pos[1]+RAD2DEG(M2RAD(Obj->Vr[idx][0]));
+            }
+            co.Elev=Obj->Vr[idx][2];
+
+            Data->Ref->UnProject(Data->Ref,&v[n][0],&v[n][1],co.Lat,co.Lon,1,1);
+
+            Vect_Min(extent[0],extent[0],v[n]);
+            Vect_Max(extent[1],extent[1],v[n]);
+            n++;
+         }
+
+         /*Process the face*/
+         Model_Rasterize(Data->Def,Data->Ref,v,n,extent,1.0);
+      }
+   }
+}
+
+void Model_Rasterize(TDataDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value) {
+
+   int    i,j,ind1,ind2;
+   int    x,y,miny,maxy,minx,maxx;
+   int    ints,n;
+   int   *polyInts;
+   double dx1,dy1,dx2,dy2,t;
+   double intersect,tmpd;
+   int    horizontal_x1,horizontal_x2;
+   int    dnx,dny,x0,x1,y0,y1,fr,sx,sy,dy;
+
+   if (!Vr || !Def)
+      return;
+
+   /*If extent covers only 1 gridpoint, treat as point*/
+   if ((Ex[1][0]-Ex[0][0])<1 && (Ex[1][1]-Ex[0][1])<1)
+      NVr=1;
+
+   switch (NVr) {
+      case 1: /*Point type*/
+         x=ROUND(Vr[0][0]);
+         y=ROUND(Vr[0][1]);
+         if (FIN2D(Def,x,y))
+            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+         break;
+
+      case 2: /*Line type*/
+         x0=ROUND(Vr[0][0]); y0=ROUND(Vr[0][1]);
+         x1=ROUND(Vr[1][0]); y1=ROUND(Vr[1][1]);
+         dny=y1-y0;
+         dnx=x1-x0;
+         if (dny<0) {
+            dny=-dny;
+            sy=-1;
+         } else {
+            sy=1;
+         }
+         if (dnx<0) {
+            dnx=-dnx;
+            sx=-1;
+         } else {
+            sx=1;
+         }
+         dny<<=1;
+         dnx<<=1;
+
+         if (FIN2D(Def,x0,y0))
+            Def_Set(Def,0,FIDX2D(Def,x0,y0),Value);
+         if (dnx>dny) {
+            fr=dny-(dnx>>1);
+            while(x0!=x1) {
+               if (fr>=0) {
+                  y0+=sy;
+                  fr-=dnx;
+               }
+               x0+=sx;
+               fr+=dny;
+               if (FIN2D(Def,x0,y0))
+                  Def_Set(Def,0,FIDX2D(Def,x0,y0),Value);
+            }
+         } else {
+            fr=dnx-(dny>>1);
+            while(y0!=y1) {
+               if (fr>=0) {
+                  x0+=sx;
+                  fr-=dny;
+               }
+               y0+=sy;
+               fr+=dnx;
+               if (FIN2D(Def,x0,y0))
+                  Def_Set(Def,0,FIDX2D(Def,x0,y0),Value);
+            }
+         }
+         break;
+
+      case 3: /*Polygon type*/
+         miny=(int)(Ex[0][1]<0?0:Ex[0][1]);
+         maxy=(int)(Ex[1][1]>=Def->NJ?Def->NJ-1:Ex[1][1]);
+         minx=0;
+         maxx=Def->NI-1;
+
+         polyInts=(int*)malloc(sizeof(int)*n);
+
+         /* Fix in 1.3: count a vertex only once */
+         for (y=miny;y<=maxy;y++) {
+            dy=y; /* center height of line*/
+            ints=0 ;
+
+            /*Initialize polyInts, otherwise it can sometimes causes a seg fault */
+            for (i=0;i<n;i++) {
+               polyInts[i]=-1;
+            }
+
+            for (i=0;i<NVr;i++) {
+               ind2=i;
+               ind1=i==0?NVr-1:i-1;
+
+               dx1=Vr[ind1][0]; dy1=Vr[ind1][1];
+               dx2=Vr[ind2][0]; dy2=Vr[ind2][1];
+
+               if ((dy1<dy && dy2<dy) || (dy1>dy && dy2>dy))
+                  continue;
+
+               if (dy1<dy2) {
+               } else if (dy1>dy2) {
+                  tmpd=dy2;
+                  dy2=dy1;
+                  dy1=tmpd;
+                  tmpd=dx2;
+                  dx2=dx1;
+                  dx1=tmpd;
+               } else { /* if (fabs(dy1-dy2)< 1.e-6) */
+                        /*AE: DO NOT skip bottom horizontal segments
+                        -Fill them separately-
+                        They are not taken into account twice.*/
+                  if (dx1>dx2) {
+                     horizontal_x1=ROUND(dx2);
+                     horizontal_x2=ROUND(dx1);
+                     if ((horizontal_x1>maxx) || (horizontal_x2<minx))
+                        continue;
+
+                     /*fill the horizontal segment (separately from the rest)*/
+                     for(x=horizontal_x1;x<horizontal_x2;x++)
+                        if (FIN2D(Def,x,y))
+                           Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+                     continue;
+                  } else {
+                     /*skip top horizontal segments (they are already filled in the regular loop)*/
+                     continue;
+                  }
+               }
+
+               if ((dy<dy2) && (dy>=dy1)) {
+                  intersect=(dy-dy1)*(dx2-dx1)/(dy2-dy1)+dx1;
+                  polyInts[ints++]=ROUND(intersect);
+               }
+            }
+            qsort(polyInts,ints,sizeof(int),QSort_Int);
+
+            for (i=0;i<ints;i+=2) {
+               if (polyInts[i]<=maxx && polyInts[i+1]>=minx) {
+                  for(x=polyInts[i];x<polyInts[i+1];x++)
+                     if (FIN2D(Def,x,y))
+                        Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+               }
+            }
+         }
+         free(polyInts);
+         break;
+   }
+}
