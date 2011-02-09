@@ -157,14 +157,11 @@ typedef struct TGeoRef {
 } TGeoRef;
 
 typedef struct TGeoScan {
-   TGeoRef *ToRef,*FromRef;                               /*Referentiels de transformations*/
    double *X,*Y;
    float  *D;
    unsigned int *V;                                       /*Coordonnees et valeurs*/
    unsigned int N,S;                                      /*Nombre de coordonnees et dimension*/
-   int X0,Y0,Z0,X1,Y1,Z1;                                 /*Grid limits*/
    int DX,DY;                                             /*Longueur em X et Y*/
-   int Valid;                                             /*Indicateur de validitee*/
 } TGeoScan;
 
 TGeoRef* GeoRef_Get(char *Name);

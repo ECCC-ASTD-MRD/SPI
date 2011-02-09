@@ -986,11 +986,10 @@ int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef 
    for(y=y0;y<=y1;y+=(dy+1)) {
 
       /*Reproject*/
-      if (!GeoScan_Init(&scan,FromRef,ToRef,x0,y,x1,y+dy)) {
-         Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
+      if (!GeoScan_Get(&scan,ToRef,ToDef,FromRef,NULL,x0,y,x1,y+dy,1,NULL)) {
+         Tcl_AppendResult(Interp,"Data_GridInterpolate: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-      GeoScan_Get(&scan,ToDef,NULL,1,NULL);
 
       for(idx=0;idx<scan.N;idx++){
          /*Get the value of the data field at this latlon coordinate*/

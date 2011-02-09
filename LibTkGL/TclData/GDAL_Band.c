@@ -105,17 +105,9 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    }
 
-   band=GDAL_BandGet(Name);
-   if (!band) {
-      if (!(band=GDAL_BandCreate(Interp,Name))) {
-         return(TCL_ERROR);
-      }
-   } else {
-      if (band->Stat)
-         free(band->Stat);
-      band->Stat=NULL;
-
-      GeoTex_Clear(&band->Tex,NULL);
+   GDAL_BandDestroy(Interp,Name);
+   if (!(band=GDAL_BandCreate(Interp,Name))) {
+      return(TCL_ERROR);
    }
 
    /*Get the data units*/
@@ -155,20 +147,13 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       rx=ry=1;
    }
 
-   if (band->Def)
-      DataDef_Free(band->Def);
-
    if (!(band->Def=DataDef_New(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: Could not allocate memory",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   if (band->Ref)
-      GeoRef_Destroy(Interp,band->Ref->Name);
-
    /*Get the projection transform*/
    if ((band->NbGCPs=GDALGetGCPCount(file->Set))) {
-      if (band->GCPs) free(band->GCPs);
       band->GCPs=(GDAL_GCP*)malloc(band->NbGCPs*sizeof(GDAL_GCP));
       memcpy(band->GCPs,GDALGetGCPs(file->Set),band->NbGCPs*sizeof(GDAL_GCP));
    } else {
@@ -1126,16 +1111,18 @@ void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
    Coord        co;
    int          n;
 
-   for(n=0;n<OGR_G_GetGeometryCount(Geom);n++) {
-      geom=OGR_G_GetGeometryRef(Geom,n);
-      Data_OGRProject(geom,FromRef,ToRef);
-   }
+   if (FromRef!=ToRef) {
+      for(n=0;n<OGR_G_GetGeometryCount(Geom);n++) {
+         geom=OGR_G_GetGeometryRef(Geom,n);
+         Data_OGRProject(geom,FromRef,ToRef);
+      }
 
-   for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
-      OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-      FromRef->Project(FromRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
-      ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
-      OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
+      for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
+         OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
+         FromRef->Project(FromRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
+         ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
+         OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
+      }
    }
 }
 
@@ -1206,11 +1193,10 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
       /*if > 2048x2048, loop by lines otherwise, do it in one shot*/
       dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
       for(y=y0;y<=y1;y+=(dy+1)) {
-         if (!GeoScan_Init(&GScan,ToRef,FromRef,x0,y,x1,y+dy)) {
+         if (!(s=GeoScan_Get(&GScan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim,NULL))) {
             Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
             return(TCL_ERROR);
          }
-         s=GeoScan_Get(&GScan,FromDef,NULL,FromDef->CellDim,NULL);
 
          /*Loop over source data*/
          dx=0;
@@ -1534,12 +1520,10 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    for(y=0;y<Band->Def->NJ;y+=dy) {
 
       /*Reproject*/
-      if (!GeoScan_Init(&scan,Field->Ref,Band->Ref,0,y,Band->Def->NI-1,y+(dy-1))) {
-         Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
+      if (!GeoScan_Get(&scan,Field->Ref,Field->Def,Band->Ref,Band->Def,0,y,Band->Def->NI-1,y+(dy-1),1,Field->Spec->InterpDegree)) {
+         Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-
-      GeoScan_Get(&scan,Band->Def,Field->Def,1,Field->Spec->InterpDegree);
 
       for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/

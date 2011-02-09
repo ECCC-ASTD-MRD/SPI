@@ -69,87 +69,6 @@ void GeoRef_Decr(TGeoRef *Ref) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GeoScan_Init>
- * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
- *
- * But          : Initialiser le buffer de reprojection
- *
- * Parametres   :
- *  <Scan>      : Buffer de reprojection
- *  <To>        : Georeference destination
- *  <From>      : Georeference source
- *  <X0>        : Limite inferieure en X
- *  <Y0>        : Limite inferieure en Y
- *  <X1>        : Limite superieure en X
- *  <Y1>        : Limite superieure en Y
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-void* GeoScan_Init(TGeoScan *Scan,TGeoRef *To,TGeoRef *From,int X0,int Y0,int X1,int Y1) {
-
-   int nd,nv;
-
-   /*Check for geoscan validity, so we can use the same as previous*/
-   if (GeoRef_Equal(Scan->ToRef,To,3) && GeoRef_Equal(Scan->FromRef,From,3) && Scan->X0==X0 && Scan->Y0==Y0 && Scan->X1==X1 && Scan->Y1==Y1) {
-      Scan->Valid=1;
-   } else {
-      Scan->X0=X0;
-      Scan->Y0=Y0;
-      Scan->X1=X1;
-      Scan->Y1=Y1;
-
-/*
-      if (Scan->ToRef)  GeoRef_Free(Scan->ToRef);
-      Scan->ToRef=GeoRef_Copy(To);
-      if (Scan->FromRef)  GeoRef_Free(Scan->FromRef);
-      Scan->FromRef=GeoRef_Copy(From);
-*/
-
-      if (Scan->ToRef) {
-         Scan->ToRef->Lat=NULL;
-         Scan->ToRef->Lon=NULL;
-         GeoRef_Free(Scan->ToRef);
-      }
-      Scan->ToRef=GeoRef_HardCopy(To);
-      Scan->ToRef->Lat=To->Lat;
-      Scan->ToRef->Lon=To->Lon;
-
-      if (Scan->FromRef) {
-         Scan->FromRef->Lat=NULL;
-         Scan->FromRef->Lon=NULL;
-         GeoRef_Free(Scan->FromRef);
-      }
-      Scan->FromRef=GeoRef_HardCopy(From);
-      Scan->FromRef->Lat=From->Lat;
-      Scan->FromRef->Lon=From->Lon;
-
-      /*Adjust scan buffer sizes*/
-      Scan->DX=X1-X0+1;
-      Scan->DY=Y1-Y0+1;
-      nd=(Scan->DX+1)*(Scan->DY+1);
-      nv=Scan->DX*Scan->DY;
-      if (Scan->S<nv) {
-         if (!(Scan->X=(void*)realloc(Scan->X,nd*sizeof(double))))
-            return(NULL);
-         if (!(Scan->Y=(void*)realloc(Scan->Y,nd*sizeof(double))))
-            return(NULL);
-         if (!(Scan->V=(unsigned int*)realloc(Scan->V,nv*sizeof(unsigned int))))
-            return(NULL);
-         if (!(Scan->D=(float*)realloc(Scan->D,nv*sizeof(float))))
-            return(NULL);
-         Scan->S=nv;
-      }
-      Scan->N=0;
-      Scan->Valid=0;
-   }
-   return(Scan->V);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoScan_Clear>
  * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE
  *
@@ -171,20 +90,10 @@ void GeoScan_Clear(TGeoScan *Scan) {
    if (Scan->V) free(Scan->V);
    if (Scan->D) free(Scan->D);
 
-   if (Scan->ToRef) {
-      Scan->ToRef->Lat=NULL;
-      Scan->ToRef->Lon=NULL;
-      GeoRef_Free(Scan->ToRef);
-   }
-   if (Scan->FromRef) {
-      Scan->FromRef->Lat=NULL;
-      Scan->FromRef->Lon=NULL;
-      GeoRef_Free(Scan->FromRef);
-   }
-
-   Scan->FromRef=Scan->ToRef=NULL;
    Scan->X=Scan->Y=NULL;
-   Scan->V=Scan->D=NULL;
+   Scan->V=NULL;
+   Scan->D=NULL;
+   Scan->N=Scan->S=Scan->DX=Scan->DY=0;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -195,10 +104,18 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  * Parametres   :
  *  <Scan>      : Buffer de reprojection
- *  <FromDef>   : Data definition source
+ *  <ToRef>     : Georeference destination
  *  <ToDef>     : Data definition destination
+ *  <FromRef>   : Georeference source
+ *  <FromDef>   : Data definition source
+ *  <X0>        : Limite inferieure en X
+ *  <Y0>        : Limite inferieure en Y
+ *  <X1>        : Limite superieure en X
+ *  <Y1>        : Limite superieure en Y
  *  <Dim>       : Dimension dee cellules de grilles (1=point, 2=area)
  *  <Degree>    : Interpolation degree
+ *  <To>        : Georeference destination
+ *  <From>      : Georeference source
  *
  * Retour       : Dimension des resultats
  *
@@ -206,54 +123,71 @@ void GeoScan_Clear(TGeoScan *Scan) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *Degree) {
+
+int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,char *Degree) {
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
    double       x0,y0,x1,y1;
-   double      *transform=NULL;
+
+   if (!Scan || !ToRef || !FromRef) {
+      return(0);
+   }
+
+   /*Adjust scan buffer sizes*/
+   Scan->DX=X1-X0+1;
+   Scan->DY=Y1-Y0+1;
+   dd=(Scan->DX+1)*(Scan->DY+1);
+   sz=Scan->DX*Scan->DY;
+
+   if (Scan->S<sz) {
+      if (!(Scan->X=(void*)realloc(Scan->X,dd*sizeof(double))))
+         return(0);
+      if (!(Scan->Y=(void*)realloc(Scan->Y,dd*sizeof(double))))
+         return(0);
+      if (!(Scan->V=(unsigned int*)realloc(Scan->V,sz*sizeof(unsigned int))))
+         return(0);
+      if (!(Scan->D=(float*)realloc(Scan->D,sz*sizeof(float))))
+         return(0);
+      Scan->S=sz;
+   }
 
    dd=Dim-1;
    Scan->N=0;
 
    /*WKT grid type*/
-   if (Scan->FromRef->Grid[0]=='W') {
-      transform=Scan->FromRef->Transform;
-      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
-         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
-         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
-            if (x<=Scan->X1 && y<=Scan->Y1) {
+   if (FromRef->Grid[0]=='W') {
+      for(y=Y0;y<=Y1+dd;y++) {
+         idx=(y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
+         for(x=X0;x<=X1+dd;x++,idx++,n++) {
+            if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
 
-            if (!Scan->Valid) {
-               x0=dd?x-0.5:x;
-               y0=dd?y-0.5:y;
-               if (transform) {
-                  Scan->X[n]=transform[0]+transform[1]*x0+transform[2]*y0;
-                  Scan->Y[n]=transform[3]+transform[4]*x0+transform[5]*y0;
-               } else {
-                  Scan->X[n]=x0;
-                  Scan->Y[n]=y0;
-               }
+            x0=dd?x-0.5:x;
+            y0=dd?y-0.5:y;
+            if (FromRef->Transform) {
+               Scan->X[n]=FromRef->Transform[0]+FromRef->Transform[1]*x0+FromRef->Transform[2]*y0;
+               Scan->Y[n]=FromRef->Transform[3]+FromRef->Transform[4]*x0+FromRef->Transform[5]*y0;
+            } else {
+               Scan->X[n]=x0;
+               Scan->Y[n]=y0;
             }
          }
       }
-      if (!Scan->Valid && Scan->FromRef->Function) {
-         OCTTransform(Scan->FromRef->Function,n,Scan->X,Scan->Y,NULL);
+      if (FromRef->Function) {
+         OCTTransform(FromRef->Function,n,Scan->X,Scan->Y,NULL);
       }
 
       d=dd?2:1;
       sz=8;
 
    /*Y Grid type*/
-   } else if (Scan->FromRef->Grid[0]=='Y') {
+   } else if (FromRef->Grid[0]=='Y') {
       for(n=0;n<FromDef->NI;n++,idx++) {
          Scan->V[n]=idx;
-         if (!Scan->Valid) {
-            ((float*)Scan->X)[n]=Scan->FromRef->Lon[idx];
-            ((float*)Scan->Y)[n]=Scan->FromRef->Lat[idx];
-         }
+         ((float*)Scan->X)[n]=FromRef->Lon[idx];
+         ((float*)Scan->Y)[n]=FromRef->Lat[idx];
       }
       d=1;
       sz=4;
@@ -261,54 +195,49 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
 
    /*Other RPN grids*/
    } else {
-      for(y=Scan->Y0;y<=Scan->Y1+dd;y++) {
-         idx=(y-Scan->FromRef->Y0)*FromDef->NI+(Scan->X0-Scan->FromRef->X0);
-         for(x=Scan->X0;x<=Scan->X1+dd;x++,idx++,n++) {
-            if (x<=Scan->X1 && y<=Scan->Y1) {
+      for(y=Y0;y<=Y1+dd;y++) {
+         idx=(y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
+         for(x=X0;x<=X1+dd;x++,idx++,n++) {
+            if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
 
-            if (!Scan->Valid) {
-               ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
-               ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
-            }
+            ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
+            ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }
       }
-      if (!Scan->Valid) {
-         EZLock_RPNInt();
-         c_gdllfxy(Scan->FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
-         EZUnLock_RPNInt();
-      }
+      EZLock_RPNInt();
+      c_gdllfxy(FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      EZUnLock_RPNInt();
+
       d=dd?2:1;
       sz=4;
    }
 
    /*Project to destination grid*/
-   if (!Scan->Valid) {
-      if (Scan->ToRef->Grid[0]=='W') {
-         for(x=n-1;x>=0;x--) {
-            if (sz==4) {
-               x0=(double)((float*)Scan->X)[x];
-               y0=(double)((float*)Scan->Y)[x];
+   if (ToRef->Grid[0]=='W') {
+      for(x=n-1;x>=0;x--) {
+         if (sz==4) {
+            x0=(double)((float*)Scan->X)[x];
+            y0=(double)((float*)Scan->Y)[x];
+         } else {
+            x0=Scan->X[x];
+            y0=Scan->Y[x];
+
+         }
+         if (ToRef->UnProject(ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
+
+            if (ToDef) {
+               ToRef->Value(ToRef,ToDef,Degree[0],0,Scan->X[x],Scan->Y[x],0,&Scan->D[x],NULL);
             } else {
-               x0=Scan->X[x];
-               y0=Scan->Y[x];
-
-            }
-            if (Scan->ToRef->UnProject(Scan->ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
-
-               if (ToDef) {
-                  Scan->ToRef->Value(Scan->ToRef,ToDef,Degree[0],0,Scan->X[x],Scan->Y[x],0,&Scan->D[x],NULL);
-               } else {
-                  /*If we're outside, set to nodata*/
-                  if (ToDef)
-                      Scan->D[x]=ToDef->NoData;
-               }
+               /*If we're outside, set to nodata*/
+               if (ToDef)
+                  Scan->D[x]=ToDef->NoData;
             }
          }
+      }
 
 /*
-         transform=Scan->ToRef->InvTransform;
          if (sz==4) {
             for(x=n-1;x>=0;x--) {
                Scan->X[x]=(double)((float*)Scan->X)[x];
@@ -316,48 +245,47 @@ int GeoScan_Get(TGeoScan *Scan,TDataDef *FromDef,TDataDef *ToDef,int Dim,char *D
             }
          }
 
-         if (Scan->ToRef->Function)
-            OCTTransform(Scan->ToRef->InvFunction,n,Scan->X,Scan->Y,NULL);
+         if (ToRef->Function)
+            OCTTransform(ToRef->InvFunction,n,Scan->X,Scan->Y,NULL);
 
-         if (transform) {
+         if (ToRef->InvTransform) {
             for(x=0;x<n;x++) {
-               x0=transform[0]+transform[1]*Scan->X[x]+transform[2]*Scan->Y[x];
-               y0=transform[3]+transform[4]*Scan->X[x]+transform[5]*Scan->Y[x];
+               x0=ToRef->InvTransform[0]+ToRef->InvTransform[1]*Scan->X[x]+ToRef->InvTransform[2]*Scan->Y[x];
+               y0=ToRef->InvTransform[3]+ToRef->InvTransform[4]*Scan->X[x]+ToRef->InvTransform[5]*Scan->Y[x];
                Scan->X[x]=x0;
                Scan->Y[x]=y0;
             }
          }
 */
-      } else {
-         if (sz==8) {
-            for(x=0;x<n;x++) {
-               /*RPN functions go from 0 to 360 instead of -180 to 180*/
-               x0=Scan->X[x]<0?Scan->X[x]+360:Scan->X[x];
-               y0=Scan->Y[x];
-               ((float*)Scan->X)[x]=x0;
-               ((float*)Scan->Y)[x]=y0;
-            }
+   } else {
+      if (sz==8) {
+         for(x=0;x<n;x++) {
+            /*RPN functions go from 0 to 360 instead of -180 to 180*/
+            x0=Scan->X[x]<0?Scan->X[x]+360:Scan->X[x];
+            y0=Scan->Y[x];
+            ((float*)Scan->X)[x]=x0;
+            ((float*)Scan->Y)[x]=y0;
          }
+      }
 
-         EZLock_RPNInt();
-         c_gdxyfll(Scan->ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
-         /*If we have the data of source, get it's values right now*/
-         if (ToDef) {
-            if (Degree)
-               c_ezsetopt("INTERP_DEGREE",Degree);
-            c_gdxysval(Scan->ToRef->Id,Scan->D,ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
-         }
-         EZUnLock_RPNInt();
+      EZLock_RPNInt();
+      c_gdxyfll(ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+      /*If we have the data of source, get it's values right now*/
+      if (ToDef) {
+         if (Degree)
+            c_ezsetopt("INTERP_DEGREE",Degree);
+         c_gdxysval(ToRef->Id,Scan->D,ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
+      }
+      EZUnLock_RPNInt();
 
-         /*Cast back to double*/
-         for(x=n-1;x>=0;x--) {
-            Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
-            Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
+      /*Cast back to double*/
+      for(x=n-1;x>=0;x--) {
+         Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
+         Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
 
-            /*If we're outside, set to nodata*/
-            if (ToDef && !FIN2D(ToDef,Scan->X[x],Scan->Y[x])) {
-               Scan->D[x]=ToDef->NoData;
-            }
+         /*If we're outside, set to nodata*/
+         if (ToDef && !FIN2D(ToDef,Scan->X[x],Scan->Y[x])) {
+            Scan->D[x]=ToDef->NoData;
          }
       }
    }
