@@ -404,7 +404,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
             set st [fstdstamp incr $st $ex]
 
             #----- Prioritize analysis if there are any
-            if { $astmp && $st>$astmp } {
+            if { !$astmp || $st>$astmp } {
                if { [set hour [string trimleft [clock format [fstdstamp toseconds $st] -format %H -gmt True] 0]]=="" } { set hour 0 }
 
                #----- Keep if it is on the right time interval
