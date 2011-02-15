@@ -1058,10 +1058,12 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             set var "<>"
          }
 
-         if { ![dataspec is $var] } {
+         if { ![dataspec is $var] || [fstdfield configure $fld -set] } {
             set spec [fstdfield configure $fld -dataspec]
-            dataspec copy $var $spec
-            dataspec free $spec
+            if {$spec!=$var } {
+               dataspec copy $var $spec
+               dataspec free $spec
+            }
 
             FSTD::ParamInit $fld $var
          }
