@@ -1145,6 +1145,8 @@ proc MLDP::InitNew { Type } {
    set Sim(Mode)    prog                  ;#----- Type of meteorological data.
 
    if { $Sim(Model)=="MLDP0" } {
+      set Sim(MaxNbVerticalLevels)  21                                  ; #----- Maximum number of vertical levels.
+      set Sim(EmMaxNumberParticles) 2000000                             ; #----- Maximum number of particles.
       set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
       set Sim(OutputTimeStepMin)    60                                  ; #----- Output time step [min].
       set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
@@ -1193,6 +1195,8 @@ proc MLDP::InitNew { Type } {
          set Sim(OutputTimeStepMin) 180
       }
    } else {
+      set Sim(MaxNbVerticalLevels)  11                                  ; #----- Maximum number of vertical levels.
+      set Sim(EmMaxNumberParticles) 500000                              ; #----- Maximum number of particles.
       set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
       set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
       set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
@@ -1412,9 +1416,14 @@ proc MLDP::SpeciesFormat { Line } {
 proc MLDP::UpdateListVerticalLevels { } {
    variable Sim
 
+   #----- Update list of vertical levels for MLDP0 only.
+   if { $Sim(Model) == "MLDP1" } {
+      return ; #----- Exit this procedure!
+   }
+   
    #----- Validate reflection level.
    if { ![MLDP::ValidateReflectionLevel] } {
-      return
+      return ; #----- Exit this procedure!
    }
 
    if { $Sim(ReflectionLevel) == $Sim(PrevReflectionLevel) } {
@@ -2045,14 +2054,7 @@ proc MLDP::ValidateVerticalLevels { } {
             set oldlist $Sim(VerticalLevels)
             set firstlevel 0
             set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::Default .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
-         }
-         if { $Sim(Model)=="MLDP0" && $firstlevel!=1.0 } {
-            #----- Replace first level.
-            set oldlist $Sim(VerticalLevels)
-            set firstlevel 1
-            set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::Default .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
+            Dialog::Default .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 $Lbl(OK)
          }
       }
    }

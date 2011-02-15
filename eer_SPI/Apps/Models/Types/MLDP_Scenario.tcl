@@ -1553,7 +1553,7 @@ proc MLDP::ValidateTimeSteps { } {
    #----- Verify if output time step is positive.
    set number [string is integer -strict -failindex idx $MLDP::Sim(OutputTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::Error .modelnew $Error(OutputTimeStepMinOutRange)] " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(OutputTimeStepMinOutRange) " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(OutputTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $MLDP::Sim(OutputTimeStepMin) <= 0) } {
@@ -1602,8 +1602,49 @@ proc MLDP::ValidateTimeSteps { } {
       return 0
    }
 
+   #----- Validate model time step according to grid scale for very small spatial resolution modelling.
+   if { ![MLDP::ValidateModelTimeStepGrid] } {
+      return 0
+   }
+
    #----- Update emission starting time.
    Model::FitAccTime MLDP
+
+   return 1
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDP::ValidateModelTimeStepGrid>
+# Creation   : 14 February 2011 - A. Malo - CMC/CMOE
+#
+# But        : Validate model time step according to grid scale for MLDP1
+#              (very short scale modelling).
+#
+# Parametres :
+#
+# Retour     :
+#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDP::ValidateModelTimeStepGrid { } {
+   global GDefs
+   variable Sim
+   variable Error
+   variable Lbl
+   variable Warning
+
+   if { $Sim(Model)=="MLDP1" } {
+
+      if { $Sim(Scale)=="UFINE" && $Sim(ModelTimeStepMin) > 1 } {
+         set OldModelTimeStep $Sim(ModelTimeStepMin)
+         set Sim(ModelTimeStepMin) 1
+         Dialog::Default .modelnew 500 WARNING $Warning(ModelTimeStep1) "\n\n[lindex $Warning(ModelTimeStep2) $GDefs(Lang)] $OldModelTimeStep $Error(UnitMinutes)\n[lindex $Warning(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" 0 $Lbl(OK)
+      }
+
+   }
 
    return 1
 }

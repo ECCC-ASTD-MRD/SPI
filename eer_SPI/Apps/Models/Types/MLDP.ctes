@@ -34,7 +34,7 @@ namespace eval MLDP {
    set Sim(ListMeteoDelta)      { 1 3 6 }                                    ; #----- List of time interval for meteorological data files [hr].
    set Sim(ListSimDuration)     { 6 12 18 24 48 72 96 120 144 168 }          ; #----- List of simulation durations [hr].
    set Sim(ListOutputTimeStep)  { 5 10 15 20 30 60 120 180 360 }             ; #----- List of output time step [min].
-   set Sim(ListModelTimeStep)   { 2 5 10 15 20 30 60 }                       ; #----- List of internal model time step [min].
+   set Sim(ListModelTimeStep)   { 1 2 5 10 15 20 30 60 }                     ; #----- List of internal model time step [min].
    set Sim(ListEmHeightMode)    { { "Calcul selon une masse d'explosif" } \
                                   { "Calculation based on explosive mass" } } ; #----- List of mode for plume height calculation.
    set Sim(ListEmMassMode)      { { "Formule empirique de Sparks et al. (1997)" "Édition" } \
@@ -77,8 +77,6 @@ namespace eval MLDP {
    set Sim(RunningTimeCPU)       10800                         ; #----- CPU running time for the job to end [s].
 
    set Sim(MaxNbSrc)             20                            ; #----- Maximum number of sources.
-   set Sim(MaxNbVerticalLevels)  11                            ; #----- Maximum number of vertical levels.
-   set Sim(EmMaxNumberParticles) 500000                        ; #----- Maximum number of particles.
    set Sim(EmMaxIso)             5                             ; #----- Maximum number of isotopes.
    set Sim(EmMaxInterval)        10                            ; #----- Maximum number of emission intervals.
    set Sim(EmDir)                "$env(HOME)/.spi/Scenario"    ; #----- Directory containing emission scenario files.

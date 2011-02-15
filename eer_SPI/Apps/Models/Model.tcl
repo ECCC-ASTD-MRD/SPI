@@ -191,7 +191,7 @@ namespace eval Model {
    set Warning(DiskAvailable)     { "\tEspace disque disponible" "\tAvailable disk space" }
    set Warning(DiskUsed)          { "\tEspace disque utilisé   " "\tUsed disk space     " }
 
-   set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogrammes." "Please enter explosive mass in kilogram." }
+   set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogrammes." "Please enter explosive mass in kilograms." }
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
 
