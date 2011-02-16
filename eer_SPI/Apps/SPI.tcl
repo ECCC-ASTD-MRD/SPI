@@ -1837,6 +1837,7 @@ proc SPI::Progress { Percent { Info "" } { Var "" } } {
 #----------------------------------------------------------------------------
 
 proc SPI::Quit { { Code 0 } } {
+   variable Param
    variable Data
 
    #----- Check if any process is running
@@ -1864,7 +1865,7 @@ proc SPI::Quit { { Code 0 } } {
 
       glrender -shutdown
 
-      Log::Print INFO "System: Exiting"
+      Log::Print INFO "Execution time : [expr ([clock clicks -milliseconds]-$Param(Time))/1000.0]s"
       exit $Code
    }
 }

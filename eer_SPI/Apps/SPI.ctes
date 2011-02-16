@@ -29,6 +29,8 @@ namespace eval SPI {
    variable Resources
    variable Param
 
+   set Param(Time)           [clock clicks -milliseconds] ; #Timer
+
    #----- Definitions des variables parametres
 
    set Param(Geom)           1024x768     ;#Geometrie de l'interface
