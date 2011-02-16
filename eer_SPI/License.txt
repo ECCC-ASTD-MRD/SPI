@@ -58,6 +58,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+The ECMWF GRIB API
+------------------
+The ECMWF GRIB API is licensed under the GNU Lesser General Public License which incorporates the terms and conditions of version 3 of the GNU General Public License.
+
+
 MESA OpenGL implementation
 --------------------------
 The MESA OpenGL implementation is copyrighted under the GNU LGPL
@@ -81,6 +86,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Digital Chart of the World (DCW)
 --------------------------------
 The geographical database (DBGeo) is based on DCW, approved for public release
+
+
+OpenStreetMap
+-------------
+OpenStreetMap data can be used freely under the terms of the Creative Commons Attribution-ShareAlike 2.0 license <http://creativecommons.org/licenses/by-sa/2.0>
+
+
+MapQuest
+--------
+Data, imagery and map information provided by MapQuest, Open Street Map <http://www.openstreetmap.org/> and contributors, CC-BY-SA <http://creativecommons.org/licenses/by-sa/2.0/>
 
 
 Hand drawing icons set
