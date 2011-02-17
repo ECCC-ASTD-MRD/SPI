@@ -799,9 +799,8 @@ void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
       if (Pos)
          GeoTex_ClearCoord(&Band->Tex,NULL);
 
-      if (Seg || (Map && !GLRender->ShaderAvailable))
+      if (Seg || (Map && (GLRender && !GLRender->ShaderAvailable)))
          GeoTex_Clear(&Band->Tex,NULL);
-
    }
 }
 
