@@ -919,6 +919,7 @@ proc Mapper::ParamsOGRGet { Object } {
    set Data(Fields)      [ogrlayer define $Object -field]
    set Data(Label)       [ogrlayer define $Object -label]
    set Data(VarMap)      [ogrlayer define $Object -map]
+   set Data(SizeMap)     [ogrlayer define $Object -size]
 
    set Data(Intervals)   [ogrlayer configure $Object -intervals]
    set Data(Min)         [ogrlayer configure $Object -min]
@@ -1007,7 +1008,8 @@ proc Mapper::ParamsOGRSet { Object } {
       ogrlayer configure $Object -fill ""
    }
 
-   ogrlayer define $Object -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) -label $Data(Label) -map $Data(VarMap)
+   ogrlayer define $Object -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) \
+      -label $Data(Label) -map $Data(VarMap) -size $Data(SizeMap)
 
    set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
    ogrlayer define $Object -projection $Data(Proj)

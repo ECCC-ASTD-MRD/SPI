@@ -1156,8 +1156,10 @@ proc Mapper::ParamsOGR { Object Tab } {
                   "zeroth.xbm stri.xbm ssquare.xbm scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm" $Data(Icons) \
                   Mapper::Data(Icon) { Mapper::ParamsOGRSet $Mapper::Data(Object) } $Mapper::Data(Icon) -relief groove -bd 2
                scale $Data(Frame2).shape.icon.sz -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 25 -variable Mapper::Data(Size) -orient horizontal -showvalue False
+               ComboBox::Create $Data(Frame2).shape.icon.fld Mapper::Data(SizeMap) noedit sorted nodouble -1 "" 1 8 ""
                entry $Data(Frame2).shape.icon.val -bd 1 -textvariable Mapper::Data(Size) -bg $GDefs(ColorLight) -width 5
                pack $Data(Frame2).shape.icon.lbl $Data(Frame2).shape.icon.sel $Data(Frame2).shape.icon.val $Data(Frame2).shape.icon.sz -side left -anchor w -padx 5
+               pack $Data(Frame2).shape.icon.fld -side left -fill x -expand True -padx 5
 
             frame $Data(Frame2).shape.out
                label $Data(Frame2).shape.out.lbl -text [lindex $Lbl(Out) $GDefs(Lang)] -width 12 -anchor w
@@ -1325,6 +1327,10 @@ proc Mapper::ParamsOGR { Object Tab } {
    ColorBox::ConfigNoColor $Data(Frame2).shape.fill.val $Data(Fill)
 
    $Data(Frame3).sel.val configure -to [expr [ogrlayer define $Mapper::Data(Object) -nb]-1]
+
+   ComboBox::DelAll $Data(Frame2).shape.icon.fld False
+   ComboBox::Add $Data(Frame2).shape.icon.fld {}
+   ComboBox::AddList $Data(Frame2).shape.icon.fld $Mapper::Data(Fields)
 
    ComboBox::DelAll $Data(Frame2).shape.label.val False
    ComboBox::Add $Data(Frame2).shape.label.val {}
