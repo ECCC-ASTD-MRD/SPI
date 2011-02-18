@@ -67,11 +67,12 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    OGRFieldDefnH  field;
    OGRGeometryH   geom;
    int            i,idx,j,f,t;
-   double         x,y,a;
+   unsigned long  nf;
+   double         x,y,a,min,max,val;
 
-   static CONST char *sopt[] = { "-active","-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-projection","-georef",
+   static CONST char *sopt[] = { "-active","-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-size","-projection","-georef",
                                  "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-featuremask","-label",NULL };
-   enum                opt { ACTIVE,TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,PROJECTION,GEOREF,
+   enum                opt { ACTIVE,TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,SIZE,PROJECTION,GEOREF,
                              MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,FEATUREMASK,LABEL };
 
    layer=OGR_LayerGet(Name);
@@ -451,7 +452,51 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                }
                if (f!=layer->Map) {
                   layer->Map=f;
-                  OGR_LayerLimit(layer);
+
+                  min=1e32;
+                  max=-1e32;
+
+                  for(nf=0;nf<layer->NFeature;nf++) {
+                     val=OGR_F_GetFieldAsDouble(layer->Feature[nf],layer->Map);
+                     min=min<val?min:val;
+                     max=max>val?max:val;
+                  }
+                  layer->Min=layer->Spec->Min=min;
+                  layer->Max=layer->Spec->Max=max;
+
+                  DataSpec_Define(layer->Spec);
+               }
+            }
+            break;
+
+         case SIZE:
+            if (Objc==1) {
+               if (layer->Map==-1) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
+               } else {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Size)),-1));
+               }
+            } else {
+               i++;
+
+               if (strcmp(Tcl_GetString(Objv[i]),"")==0) {
+                  f=-1;
+               } else {
+                  f=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[i]));
+               }
+               if (f!=layer->Size) {
+                  layer->Size=f;
+
+                  min=1e32;
+                  max=-1e32;
+
+                  for(nf=0;nf<layer->NFeature;nf++) {
+                     val=OGR_F_GetFieldAsDouble(layer->Feature[nf],layer->Size);
+                     min=min<val?min:val;
+                     max=max>val?max:val;
+                  }
+                  layer->Spec->SizeMin=min;
+                  layer->Spec->SizeMax=max;
                }
             }
             break;
@@ -2417,7 +2462,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    int     f,idx=-1,x,y,g,id;
    Vect3d  vr;
    char    lbl[256];
-   double  val,sz;
+   double  val,sz,szon=0;
 
    OGRFieldDefnH field;
    TDataSpec     *spec=Layer->Spec;
@@ -2516,38 +2561,6 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             if (idx<0) continue;
          }
 
-         if (spec->Icon) {
-            glDisable(GL_CULL_FACE);
-            glMatrixMode(GL_MODELVIEW);
-            glPushMatrix();
-            Proj->Type->Locate(Proj,Layer->Loc[f].Lat,Layer->Loc[f].Lon,1);
-            glTranslated(0.0,0.0,ZM(Proj,Layer->Loc[f].Elev));
-
-            sz=VP->Ratio*(spec->Size*0.5+spec->Width);
-            glScalef(sz,sz,1.0);
-
-            if (spec->Outline && spec->Width) {
-               glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-               if (idx>=0 && !spec->Fill) {
-                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
-               } else {
-                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
-               }
-               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
-            }
-
-            if (spec->Fill) {
-               glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-               if (idx>=0) {
-                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
-               } else {
-                  glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
-               }
-               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
-            }
-            glPopMatrix();
-         }
-
          if (Layer->Extrude!=-1) {
             if (spec->Outline && spec->Width) {
                glEnable(GL_CULL_FACE);
@@ -2612,6 +2625,43 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                   glPopAttrib();
                }
             }
+         }
+
+         if (spec->Icon) {
+            if (Layer->Size!=-1) {
+               szon=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Size);
+               szon=szon/(spec->SizeMax-spec->SizeMin)*spec->SizeFactor*spec->Size;
+            }
+
+            glDisable(GL_CULL_FACE);
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
+            Proj->Type->Locate(Proj,Layer->Loc[f].Lat,Layer->Loc[f].Lon,1);
+            glTranslated(0.0,0.0,ZM(Proj,Layer->Loc[f].Elev));
+
+            sz=VP->Ratio*(spec->Size+szon+spec->Width);
+            glScalef(sz,sz,1.0);
+
+            if (spec->Outline && spec->Width) {
+               glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+               if (idx>=0 && !spec->Fill) {
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               } else {
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+               }
+               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+            }
+
+            if (spec->Fill) {
+               glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+               if (idx>=0) {
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               } else {
+                  glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
+               }
+               glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+            }
+            glPopMatrix();
          }
       }
    }
