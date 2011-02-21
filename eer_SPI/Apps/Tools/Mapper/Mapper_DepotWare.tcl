@@ -459,7 +459,7 @@ proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
       "WMS"  -
       "WCS"  -
       "PGS"  { set id [$Tree get $Branch path] }
-      default { if { [$Tree depth $Branch]>2 } { set id [file tail [$Tree get $Branch path]] } else { set id "($type) [$Tree get $Branch name]" } }
+      default { if { [$Tree depth $Branch]>2 } { set id [file tail [$Tree get $Branch path]] } else { set id "[$Tree get $Branch name]" } }
    }
    return $id
 }
