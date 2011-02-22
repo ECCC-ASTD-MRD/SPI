@@ -1666,28 +1666,6 @@ void DataSpec_IntervalsLog(TDataSpec *Spec,double Min,double Max) {
    }
 }
 
-void DataSpec_IntervalsRSMC1(TDataSpec *Spec,double Min,double Max) {
-
-   int exp,dexp,expmax,base;
-
-   if (Max<=0.0) {
-      base=1;
-   } else {
-      base=floor(log10(Max));
-   }
-
-   /*Delta entre les contours, 10 ou 100*/
-   dexp=(Max/Min)>1e9?2:1;
-
-   /*Definir l'exposant maximum*/
-   expmax=(4-1)*dexp+1;
-
-   Spec->InterNb=0;
-   for(exp=expmax; exp>=1;exp-=dexp) {
-      Spec->Inter[Spec->InterNb++]=pow(10,(base-exp));
-   }
-}
-
 void DataSpec_IntervalsRSMC(TDataSpec *Spec,double Min,double Max) {
 
    int exp,dexp,base;
@@ -1698,8 +1676,18 @@ void DataSpec_IntervalsRSMC(TDataSpec *Spec,double Min,double Max) {
    dexp=(Max/Min)>1e9?2:1;
 
    Spec->InterNb=0;
-   for(exp=base-3*dexp; exp<=base;exp+=dexp) {
-      Spec->Inter[Spec->InterNb++]=pow(10,exp);
+   for(exp=base; exp>=base-3*dexp ;exp-=dexp) {
+      if (exp<=-20) {
+         Spec->Inter[255-Spec->InterNb++]=pow(10,-20);
+         break;
+      } else {
+         Spec->Inter[255-Spec->InterNb++]=pow(10,exp);
+      }
+   }
+
+   /*Invert list cause we need it increasing*/
+   for(exp=0; exp<Spec->InterNb ; exp++) {
+      Spec->Inter[Spec->InterNb-exp-1]=Spec->Inter[255-exp];
    }
 }
 
