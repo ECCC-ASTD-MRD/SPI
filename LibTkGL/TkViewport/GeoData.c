@@ -1011,6 +1011,9 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    Vect3d dif,min,max;
    double d,lat[2],lon[2];
 
+   if (GLRender->TRCon) {
+      return(GDB_VIS);
+   }
    if (Box.Nb<=0)
       return(GDB_OUT);
 
@@ -1754,17 +1757,13 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             continue;
 
          /*Check for visibility when not doing outputs*/
-         if (GLRender->TRCon || GDB_Loc(tile->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height)!=GDB_OUT) {
+         if (GDB_Loc(tile->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height)!=GDB_OUT) {
 
             /*If resolution has changed en we're not doing outputs, reload data*/
             tile->Res=res;
             if (!GLRender->TRCon && GLRender->Resolution<=2) {
                GDB_TileGetData(tile,GDB,Proj);
             }
-
-//            ilat=(int)((tile->Box.Co[0].Lat+tile->Box.Co[2].Lat)*0.5)+90;
-//            ilon=(int)((tile->Box.Co[0].Lon+tile->Box.Co[2].Lon)*0.5)+180;
-//            glNormal3dv(GDB_NMap[ilat][ilon]);
 
             if (Mode & GDB_MASK) {
                if (GDB->Params.Mask && tile->FCoast && tile->FLake) {
@@ -1781,7 +1780,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             }
 
             if (Mode & GDB_FILL) {
-               if (Proj->VP->ColorFCoast && tile->FCoast) {
+                if (Proj->VP->ColorFCoast && tile->FCoast) {
                   GDB_FillRender(Interp,Proj,tile->FCoast,Proj->VP->ColorFCoast,0xff);
                }
                if (Proj->VP->ColorFLake && tile->FLake) {
@@ -1869,6 +1868,8 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
       }
    }
 
+   glStencilFunc(GL_EQUAL,0x00,0x0f);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    glDisable(GL_DEPTH_TEST);
    return(ras);
 }

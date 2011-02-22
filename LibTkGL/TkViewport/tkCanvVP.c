@@ -2075,6 +2075,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
 
    /*Mask inslusions*/
    ViewportIntrusion(Interp,Canvas,Item);
+   ViewportLicense(Interp,vp,proj);
 
    ViewportUnset(vp);
    glXFreePBuffer(pbuf);

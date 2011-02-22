@@ -285,6 +285,7 @@ void Ortho_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
+      glDisable(GL_STENCIL_TEST);
       glMatrixMode(GL_MODELVIEW);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glLineWidth(1.0);

@@ -1502,13 +1502,13 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    if (Mode==GL_ALL || Mode==GL_VECTOR) {
 
+      /*Initialiser le mask des donnees vectorielles*/
+      glEnable(GL_STENCIL_TEST);
+      glStencilFunc(GL_ALWAYS,0x01,0x01);
+      glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+
       if (Proj->Geographic) {
 //      GDB_StarRender(Interp,Proj);
-
-         /*Initialiser le mask des donnees vectorielles*/
-         glEnable(GL_STENCIL_TEST);
-         glStencilFunc(GL_ALWAYS,0x01,0x01);
-         glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
 
          /*Initialiser l'impression de la geographie*/
          if (Interp) {
@@ -1541,9 +1541,11 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    if (Mode==GL_ALL || Mode==GL_RASTER) {
 
+      /*Display geography filling for raster background*/
       if (Proj->Geographic) {
          if (Interp) {
-//           Proj->Type->DrawGlobe(NULL,Proj->VP,Proj);
+            if (VP->ColorFLake && VP->ColorFCoast)
+               Proj->Type->DrawGlobe(NULL,Proj->VP,Proj);
             GDB_TileRender(NULL,Proj,Proj->Geo,GDB_FILL);
          }
          ras+=GDB_TileRender(NULL,Proj,Proj->Geo,GDB_MASK | GDB_RASTER);
@@ -1570,11 +1572,9 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
          glClear(GL_DEPTH_BUFFER_BIT);
 
       if (Proj->Type->DrawLast) {
-         glDisable(GL_STENCIL_TEST);
          Proj->Type->DrawLast(Interp,VP,Proj);
-         glEnable(GL_STENCIL_TEST);
       }
-  }
+   }
 
    return(ras);
 }
