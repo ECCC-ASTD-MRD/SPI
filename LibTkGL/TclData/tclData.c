@@ -1437,9 +1437,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
-   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
+   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
       GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
@@ -1554,7 +1554,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
-            if (Objc==1) {
+            npt=1e9;
+            nobj=0;
+            if (Objc==2) {
+               if (Tcl_GetLongFromObj(Interp,Objv[++i],&npt)==TCL_ERROR) {
+                  Tcl_ListObjLength(Interp,Objv[++i],&nobj);
+               }
+            }
+
+            if (!nobj) {
                obj=Tcl_NewListObj(0,NULL);
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
@@ -1571,7 +1579,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
                      }
+                     if (!(--npt)) break;
                   }
+                  if (!npt) break;
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
@@ -1595,6 +1605,47 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                }
             }
+            break;
+
+         case GRIDCELL:
+            if (!Field->Ref) {
+               Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            npt=1e9;
+            if (Objc==2)
+               Tcl_GetLongFromObj(Interp,Objv[++i],&npt);
+
+            obj=Tcl_NewListObj(0,NULL);
+            for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
+               for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
+                  if (Field->Ref->Grid[0]!='V') {
+                     Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+                     if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
+                           dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
+
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     }
+                  } else {
+                     Field->Ref->Project(Field->Ref,ni-0.5,nj-0.5,&dlat,&dlon,0,1);
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     Field->Ref->Project(Field->Ref,ni+0.5,nj-0.5,&dlat,&dlon,0,1);
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     Field->Ref->Project(Field->Ref,ni+0.5,nj+0.5,&dlat,&dlon,0,1);
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                     Field->Ref->Project(Field->Ref,ni-0.5,nj+0.5,&dlat,&dlon,0,1);
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+                  }
+                  if (!(--npt)) break;
+               }
+               if (!npt) break;
+            }
+            Tcl_SetObjResult(Interp,obj);
             break;
 
          case GRIDLAT:
