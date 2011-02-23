@@ -413,7 +413,7 @@ void GRIB_FieldFree(TData *Data){
  *
  *----------------------------------------------------------------------------
 */
-int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,int Key) {
+int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 
    TData         *field=NULL;
    GRIB_File     *file=NULL;
@@ -723,7 +723,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
                break;
          }
       }
-      size+=offset=ftell(File->Handle);
+      size=offset=ftell(File->Handle);
    }
    File->Size=size;
 
