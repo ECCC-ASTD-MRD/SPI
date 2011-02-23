@@ -471,7 +471,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case SIZE:
             if (Objc==1) {
-               if (layer->Map==-1) {
+               if (layer->Size==-1) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
                } else {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Size)),-1));
