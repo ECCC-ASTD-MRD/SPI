@@ -74,11 +74,11 @@ static int Model_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -153,7 +153,7 @@ static int Model_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *
       case STATS:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return(Model_Stat(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
@@ -222,7 +222,7 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
    mdl=Model_Get(Name);
    if (!mdl) {
       Tcl_AppendResult(Interp,"\n   Model_Define: Model name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
@@ -272,7 +272,7 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
                if (!ref) {
                   Tcl_AppendResult(Interp,"\n   Model_Define: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                if (ref!=mdl->Ref) {
                   if (mdl->Ref)
@@ -323,7 +323,7 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
       }
    }
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -358,11 +358,11 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
    mdl=Model_Get(Name);
    if (!mdl) {
       Tcl_AppendResult(Interp,"\n   Model_Stat: Model name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"option",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    lst=Tcl_NewListObj(0,NULL);
@@ -397,7 +397,8 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
          break;
    }
    Tcl_SetObjResult(Interp,lst);
-   return TCL_OK;
+
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -432,13 +433,13 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
    mdl=Model_Get(Name);
    if (!mdl) {
       Tcl_AppendResult(Interp,"\n   Model_Matrix: Model name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
@@ -497,7 +498,7 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
       }
    }
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -533,13 +534,17 @@ static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
    mdl=Model_Get(Name);
    if (!mdl) {
       Tcl_AppendResult(Interp,"\n   Model_Matrix: Model name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
+   }
+
+   if (!mdl->Mt) {
+      return(TCL_OK);
    }
 
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
@@ -631,7 +636,7 @@ static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
       }
    }
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
