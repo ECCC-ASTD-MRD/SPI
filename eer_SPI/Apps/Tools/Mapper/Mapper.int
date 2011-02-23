@@ -1759,8 +1759,8 @@ proc Mapper::ParamsModel { Object Tab } {
    $Data(Frame1).proj.val delete 0.0 end
    $Data(Frame1).proj.val insert end $Data(Proj)
 
-   $Data(Frame2).mat.ambi.col configure -fg $Data(Ambi)
-   $Data(Frame2).mat.emis.col configure -fg $Data(Emis)
-   $Data(Frame2).mat.diff.col configure -fg $Data(Diff)
-   $Data(Frame2).mat.spec.col configure -fg $Data(Spec)
+   ColorBox::ConfigNoColor $Data(Frame2).mat.ambi.col $Data(Ambi)
+   ColorBox::ConfigNoColor $Data(Frame2).mat.emis.col $Data(Emis)
+   ColorBox::ConfigNoColor $Data(Frame2).mat.diff.col $Data(Diff)
+   ColorBox::ConfigNoColor $Data(Frame2).mat.spec.col $Data(Spec)
 }

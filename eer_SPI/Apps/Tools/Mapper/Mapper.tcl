@@ -807,8 +807,10 @@ proc Mapper::ParamsModelGet { Object } {
    set Data(Emis) [model material $Object -emissive]
    set Data(Diff) [model material $Object -diffuse]
    set Data(Spec) [model material $Object -specular]
-   set Data(Shin) [model material $Object -shininess]
-   set Data(Tram) [model material $Object -transparency]
+
+   #----- There might be no material and if so, those scale bound variables won't be happy
+   catch { set Data(Shin) [model material $Object -shininess] }
+   catch { set Data(Tram) [model material $Object -transparency] }
 }
 
 #-------------------------------------------------------------------------------
