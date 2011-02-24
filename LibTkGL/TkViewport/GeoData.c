@@ -1050,8 +1050,8 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
 
-   /*Is it visible (in X,Y and Z)???*/
-   if (GLRender->TRCon || (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->ZPos[2])) {
+   /*Is it visible (in X,Y and Z) and when printing there's a fix for a problem with the Z coordinate???*/
+   if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && (GLRender->TRCon || (min[2]<Proj->ZPos[2]))) {
 
       /*Is the box too small*/
       if (Vect_Weight(min,max)<Proj->MinSize) {
