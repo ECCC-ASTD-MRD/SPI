@@ -1011,9 +1011,6 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    Vect3d dif,min,max;
    double d,lat[2],lon[2];
 
-   if (GLRender->TRCon) {
-      return(GDB_VIS);
-   }
    if (Box.Nb<=0)
       return(GDB_OUT);
 
@@ -1054,7 +1051,7 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    Vect_Max(max,max,dif);
 
    /*Is it visible (in X,Y and Z)???*/
-   if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->ZPos[2]) {
+   if (GLRender->TRCon || (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->ZPos[2])) {
 
       /*Is the box too small*/
       if (Vect_Weight(min,max)<Proj->MinSize) {
