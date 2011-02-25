@@ -372,7 +372,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                i++;
                if (strlen(Tcl_GetString(Objv[i]))==0) {
                   Spec->MinMax&=~DATASPEC_MINSET;
-                  Spec->Min=nanf("NaN");
+                  Spec->Min=nan("NaN");
                   cminmax=1;
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&min);
@@ -397,7 +397,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                i++;
                if (strlen(Tcl_GetString(Objv[i]))==0) {
                   Spec->MinMax&=~DATASPEC_MAXSET;
-                  Spec->Max=nanf("NaN");
+                  Spec->Max=nan("NaN");
                   cminmax=1;
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&max);
@@ -1458,8 +1458,8 @@ TDataSpec *DataSpec_New(){
    spec->Sample=4;
    spec->SampleType='P';
    spec->Step=0.25;
-   spec->Min=nanf("NaN");
-   spec->Max=nanf("NaN");
+   spec->Min=nan("NaN");
+   spec->Max=nan("NaN");
    spec->MinMax=DATASPEC_NOTSET;
    spec->ValFactor=1.0;
    spec->ValDelta=0.0;

@@ -127,7 +127,7 @@ typedef struct TDataSpec {
    int             Mark;                /*Marquage*/
    int             Style;               /*Style*/
    double          Size,SizeMin,SizeMax,SizeFactor;/*Dimension*/
-   float           Min,Max;             /*Minimum et Maximum des valeurs*/
+   double          Min,Max;             /*Minimum et Maximum des valeurs*/
    int             MinMax;              /*Indicateur de selection des min max*/
    double          ValFactor;           /*Facteur multiplicatif d'ajustement des valeurs*/
    double          ValDelta;            /*Facteur delta d'ajustement des valeurs*/
