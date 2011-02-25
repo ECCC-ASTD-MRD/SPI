@@ -474,7 +474,6 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             ref0->Grid[0]='W';
             ref0->Grid[1]=ref0->Grid[2]='\0';
          }
-
          if (!GeoRef_Put(Interp,Tcl_GetString(Objv[2]),ref0)) {
             Tcl_AppendResult(Interp,"\n   GeoRef_Cmd: Unable to create georef",(char*)NULL);
             return(TCL_ERROR);
@@ -1231,7 +1230,7 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
    if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#')
       return(0);
 
-   if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)
+  if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)
       return(0);
 
    if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1] || (Dim==3 && Ref0->LevelType!=Ref1->LevelType))
@@ -1246,12 +1245,11 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
    if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.Lat!=Ref1->Loc.Lat || Ref0->Loc.Lon!=Ref1->Loc.Lon || Ref0->Loc.Elev!=Ref1->Loc.Elev)
       return(0);
 
-   if ((Ref0->String && !Ref1->String) || (!Ref0->String && Ref1->String))
+   if ((Ref0->Spatial && !Ref1->Spatial) || (!Ref0->Spatial && Ref1->Spatial))
       return(0);
 
-   if (Ref0->String && Ref1->String)
-      if (strcmp(Ref0->String,Ref1->String)!=0)
-         return(0);
+   if (!OSRIsSame(Ref0->Spatial,Ref1->Spatial))
+      return(0);
 
    if ((Ref0->Transform && !Ref1->Transform) || (!Ref0->Transform && Ref1->Transform))
       return(0);

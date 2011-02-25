@@ -474,7 +474,7 @@ TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    TGeoRef *ref;
 
    ref=GeoRef_New();
-   GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
+   GeoRef_Size(ref,0,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,NK>0?NK-1:0,0);
    GeoRef_WKTSet(ref,String,Transform,InvTransform,Spatial);
 
    ref->Grid[1]=ref->Grid[2]='\0';
