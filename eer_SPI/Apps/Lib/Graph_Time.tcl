@@ -947,7 +947,7 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
          }
          set i 0
          set data(Data$item) {}
-         foreach id  [ObsBox::GetContent $box] {
+         foreach id [ObsBox::GetContent $box] {
             if { [observation configure $item -desc]==[observation configure $id -desc] } {
                lappend data(Data$item) $id
                set data(ObsIds) [concat $data(ObsIds) [observation define $id -ID]]

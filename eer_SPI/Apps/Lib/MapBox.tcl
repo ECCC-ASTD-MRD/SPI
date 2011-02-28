@@ -908,7 +908,7 @@ proc MapBox::Select { Map } {
 proc MapBox::Update { } {
    variable Data
 
-   colormap image $Data(Map) MAPBOXIMG
+   colormap image $Data(Map) MAPBOXIMG True
 
    if { $Data(RealTime) } {
       eval $Data(Command)
