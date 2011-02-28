@@ -69,7 +69,7 @@ int TclCMap_Init(Tcl_Interp *Interp){
    Tcl_CreateObjCommand(Interp,"colormap",CMap_CmdMap,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
    Tcl_CreateObjCommand(Interp,"colorsel",CMap_CmdSel,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -209,14 +209,14 @@ int CMap_Create(Tcl_Interp *Interp,char *Name){
    entry=TclY_CreateHashEntry(&CMapTable,Name,&new);
    if (!new) {
       Tcl_AppendResult(Interp,"\n   CMap_Create: Colormap name already used: \"",Name, "\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    cmap=CMap_New(Name,0);
 
    if (!cmap) {
       Tcl_AppendResult(Interp,"\n  CMap_Create: Could not allocate colormap structure",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    Tcl_SetHashValue(entry,cmap);
@@ -466,7 +466,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
    enum                opt { RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,INVERTX,INVERTY,INTERP };
 
    if (!CMap) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
@@ -522,7 +522,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
                   Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (Objc==2) {
@@ -640,7 +640,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
                   Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (Objc==2) {
@@ -675,7 +675,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
                   Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (Objc==2) {
@@ -709,7 +709,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
                   Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (Objc==2) {
@@ -731,7 +731,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&index);
-            if (index<0 || index>=CMap->NbPixels) {
+            if (index<0 || index>=CR_MAX) {
                Tcl_AppendResult(Interp,"CMap_Config: Index out of range",(char *) NULL);
                return(TCL_ERROR);
             }
@@ -800,24 +800,24 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
    enum                opt { ADD,GET,LIST,DEL,MOVE,UPDATE };
 
    if (!CMap) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       switch ((enum opt)idx) {
          case ADD:
             if (Objc!=6) {
                Tcl_WrongNumArgs(Interp,1,Objv,"index [red green blue alpha]");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&index);
                Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
-               if (index>=0 && index<CMap->NbPixels) {
+               if (index>=0 && index<CR_MAX) {
                   CMap->Control[index][0]=ii;
                   Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                   CMap->Control[index][1]=ii;
@@ -832,7 +832,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
          case GET:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,1,Objv,"index");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&index);
                ii=-1;
@@ -886,7 +886,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
 
          case DEL:
             if (Objc==1) {
-               memset(CMap->Control,0,4*CMap->NbPixels);
+               memset(CMap->Control,0,4*CR_MAX);
             } else if (Objc==2) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&index);
                if (index>=0 && index<CMap->NbPixels)
@@ -909,7 +909,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
             Tcl_GetIntFromObj(Interp,Objv[++i],&index);
             Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
 
-            if (memcmp(CMap->Control[index],cell,4)==0 && index>=0 && index<CMap->NbPixels && ii>=0 && ii<CMap->NbPixels) {
+            if (memcmp(CMap->Control[index],cell,4)==0 && index>=0 && index<CR_MAX && ii>=0 && ii<CMap->NbPixels) {
                memcpy(CMap->Control[index],CMap->Control[ii],4);
                memset(CMap->Control[ii],0,4);
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -959,11 +959,11 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -972,7 +972,7 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             Tcl_GetDoubleFromObj(Interp,Objv[4],&h);
          } else if (Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[h sv a] image value");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return CMap_SelImage(Interp,Tcl_GetString(Objv[2])[1],Tcl_GetString(Objv[3]),h);
          break;
@@ -980,7 +980,7 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
       case RGB2HSV:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"red green blue");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[2],&r);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&g);
@@ -997,7 +997,7 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
       case HSV2RGB:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"hue saturation variation");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[2],&h);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&s);
@@ -1011,7 +1011,7 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          Tcl_SetObjResult(Interp,obj);
          break;
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1039,7 +1039,7 @@ int CMap_ColorList(Tcl_Interp *Interp,CMap_Rec *CMap,int Comp,int Mode) {
    int      i;
 
    if (!CMap) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    obj=Tcl_NewListObj(0,NULL);
@@ -1073,7 +1073,7 @@ int CMap_ColorList(Tcl_Interp *Interp,CMap_Rec *CMap,int Comp,int Mode) {
       }
    }
    Tcl_SetObjResult(Interp,obj);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1100,7 +1100,7 @@ int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
    char buf[8];
 
    if (!CMap) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Index<0 || Index >=CMap->NbPixels) {
@@ -1109,7 +1109,7 @@ int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
       sprintf(buf,"%02x%02x%02x",CMap->Color[Index][0],CMap->Color[Index][1],CMap->Color[Index][2]);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1141,7 +1141,7 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit){
 
    if (!CMap) {
       Tcl_AppendResult(Interp,"CMap_GetImage: Invalid colormap",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Recuperer le handle de l'image specifie*/
@@ -1206,7 +1206,6 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit){
 
    /*Envoyer le data dans l'image Tk*/
    Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-//TK84   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 
    return(TCL_OK);
@@ -1240,12 +1239,12 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    int  idx;
 
    if (!CMap) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Clear control table*/
 
-   for(idx=0;idx<CMap->NbPixels;idx++)
+   for(idx=0;idx<CR_MAX;idx++)
       memset(CMap->Control[idx],0,4);
 
    CMap->NbPixels=0;
@@ -1255,7 +1254,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    fp = fopen(RGBAFile,"r");
    if (fp == NULL) {
       Tcl_AppendResult(Interp,"CMap_Read: cannot open RGBA definition file\"",RGBAFile,(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Read parameters*/
@@ -1275,10 +1274,8 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
          if (idx>=CR_MAX) {
             Tcl_AppendResult(Interp,"CMap_Read: Index range overflow\"",RGBAFile,(char *)NULL);
             fclose(fp);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-
-         CMap->NbPixels=CMap->NbPixels<idx?idx:CMap->NbPixels;
 
          CMap->Control[idx][0] = atoi(buf+4);
          CMap->Control[idx][1] = atoi(buf+8);
@@ -1290,12 +1287,11 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
    fclose(fp);
 
-   CMap->NbPixels++;
    CMap_ControlDefine(CMap);
    CMap_CurveDefine(CMap);
    CMap_RatioDefine(CMap);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1377,6 +1373,14 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
    if (!CMap) {
       return;
    }
+
+   /*Find NbPixels which is the last control point*/
+   for(i0=CR_MAX-1;i0>=0;i0--) {
+      if (memcmp(CMap->Control[i0],cell,4)!=0) {
+         break;
+      }
+   }
+   CMap->NbPixels=i0+1;
 
    /*Find first control point and set all up to it*/
    for(i0=0;i0<CMap->NbPixels;i0++) {
@@ -1647,16 +1651,15 @@ int CMap_SelImage(Tcl_Interp *Interp,char Mode,char *Img,double Val){
          break;
       default:
          Tcl_AppendResult(Interp,"CMap_SelImage: Invalide image type, must be\" -h -sv -a \"",(char *)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
    }
 
    /*Envoyer le data dans l'image Tk*/
 
    Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-//TK84   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
    free(data.pixelPtr);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1803,8 +1806,8 @@ int CMap_PostscriptColor(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
          (float)CMap->Color[Index][1]/255,
          (float)CMap->Color[Index][2]/255);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
-      return TCL_OK;
+      return(TCL_OK);
    } else {
-     return TCL_ERROR;
+     return(TCL_ERROR);
    }
 }
