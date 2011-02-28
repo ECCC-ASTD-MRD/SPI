@@ -1248,7 +1248,7 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
    if ((Ref0->Spatial && !Ref1->Spatial) || (!Ref0->Spatial && Ref1->Spatial))
       return(0);
 
-   if (!OSRIsSame(Ref0->Spatial,Ref1->Spatial))
+   if (Ref0->Spatial && Ref1->Spatial && !OSRIsSame(Ref0->Spatial,Ref1->Spatial))
       return(0);
 
    if ((Ref0->Transform && !Ref1->Transform) || (!Ref0->Transform && Ref1->Transform))
