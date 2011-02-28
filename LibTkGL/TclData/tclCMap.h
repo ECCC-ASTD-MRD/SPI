@@ -57,7 +57,7 @@ CMap_Rec* CMap_Get(char *Name);
 CMap_Rec* CMap_New(char* Name,int Nb);
 int       CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map);
 
-int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img);
+int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit);
 int CMap_Create(Tcl_Interp *Interp,char *Name);
 int CMap_ColorList(Tcl_Interp *Interp,CMap_Rec *CMap,int Comp,int Mode);
 int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index);

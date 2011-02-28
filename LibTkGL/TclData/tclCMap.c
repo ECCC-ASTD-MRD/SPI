@@ -341,11 +341,15 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          break;
 
       case IMAGE:
-         if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"cmap image");
+         if (Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"cmap image [limit]");
             return(TCL_ERROR);
          }
-         return(CMap_GetImage(Interp,CMap_Get(Tcl_GetString(Objv[2])),Tcl_GetString(Objv[3])));
+         c=0;
+         if (Objc==5) {
+            Tcl_GetBooleanFromObj(Interp,Objv[4],&c);
+         }
+         return(CMap_GetImage(Interp,CMap_Get(Tcl_GetString(Objv[2])),Tcl_GetString(Objv[3]),c));
          break;
 
       case CREATE:
@@ -1118,6 +1122,7 @@ int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
  *  <Interp>  : Interpreteur TCL
  *  <CMap>    : Palette
  *  <Img>     : Image Tcl
+ *  <Limit>   : Limit to NbPixels
  *
  * Retour:
  *  <TCL_...> : Code de reussite Tcl
@@ -1126,7 +1131,7 @@ int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index){
  *
  *----------------------------------------------------------------------------
 */
-int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
+int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit){
 
    double incr,cidx=0;
    int idx,x,y;
@@ -1155,26 +1160,47 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img){
 
    /*Creer l'image de la palette*/
    if (data.height>data.width) {
-      incr=(double)(CMap->NbPixels)/data.height;
+      if (Limit) {
+         incr=(double)(CR_MAX)/data.height;
+      } else {
+         incr=(double)(CMap->NbPixels)/data.height;
+      }
 
       for(y=0,idx=0,cidx=0;y<data.height;y++,cidx+=incr) {
-        for(x=0;x<data.width;x++) {
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][0];
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][1];
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][2];
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][3];
-        }
+         for(x=0;x<data.width;x++) {
+            if (cidx>=CMap->NbPixels) {
+               data.pixelPtr[idx++]=0;
+               data.pixelPtr[idx++]=0;
+               data.pixelPtr[idx++]=0;
+               data.pixelPtr[idx++]=0;
+            } else {
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][0];
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][1];
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][2];
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][3];
+            }
+         }
       }
    } else {
-      incr=(double)(CMap->NbPixels)/data.width;
-
+      if (Limit) {
+         incr=(double)(CR_MAX)/data.width;
+      } else {
+         incr=(double)(CMap->NbPixels)/data.width;
+      }
       for(y=0,idx=0;y<data.height;y++,cidx=0) {
-        for(x=0;x<data.width;x++,cidx+=incr) {
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][0];
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][1];
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][2];
-           data.pixelPtr[idx++]=CMap->Color[(int)cidx][3];
-        }
+         for(x=0;x<data.width;x++,cidx+=incr) {
+            if (cidx>=CMap->NbPixels) {
+               data.pixelPtr[idx++]=0;
+               data.pixelPtr[idx++]=0;
+               data.pixelPtr[idx++]=0;
+               data.pixelPtr[idx++]=0;
+            } else {
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][0];
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][1];
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][2];
+               data.pixelPtr[idx++]=CMap->Color[(int)cidx][3];
+            }
+         }
       }
    }
 
