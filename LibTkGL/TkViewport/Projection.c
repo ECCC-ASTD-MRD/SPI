@@ -1507,17 +1507,17 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
       glStencilFunc(GL_ALWAYS,0x01,0x01);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
 
+      /*Initialiser l'impression de la geographie*/
+      if (Interp) {
+         Tcl_AppendResult(Interp,"\n% Postscript de la geographie\n",(char*)NULL);
+      }
+
+      /*Afficher les parties dependantes de la projection*/
+      if (!Interp && Proj->Type->DrawGlobe)
+            Proj->Type->DrawGlobe(Interp,VP,Proj);
+
       if (Proj->Geographic) {
 //      GDB_StarRender(Interp,Proj);
-
-         /*Initialiser l'impression de la geographie*/
-         if (Interp) {
-            Tcl_AppendResult(Interp,"\n% Postscript de la geographie\n",(char*)NULL);
-         }
-
-         /*Afficher les parties dependantes de la projection*/
-         if (!Interp && Proj->Type->DrawGlobe)
-             Proj->Type->DrawGlobe(Interp,VP,Proj);
 
          if (Proj->Type->DrawFirst) {
             glDisable(GL_LIGHTING);
