@@ -1639,7 +1639,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    }
 
    layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
-   OGR_L_GetExtent(layer->Layer,&env,1);
+//   OGR_L_GetExtent(layer->Layer,&env,1);
 //   GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
    return(TCL_OK);
 }
@@ -1757,7 +1757,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       }
    }
 
-   layer->Layer=OGR_DS_ExecuteSQL(file->Data,Statement,geom,"generic");
+   layer->Layer=OGR_DS_ExecuteSQL(file->Data,Statement,geom,NULL);
 
    if (layer->Layer) {
       layer->SQLed=file->Data;
@@ -1769,6 +1769,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       }
 
       layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
+
       if (layer->NFeature) {
          layer->Feature=malloc(layer->NFeature*sizeof(OGRFeatureH));
          layer->Select=malloc(layer->NFeature*sizeof(char));
@@ -1783,8 +1784,8 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       }
 
       layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
-      OGR_L_GetExtent(layer->Layer,&env,1);
-      GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
+//      OGR_L_GetExtent(layer->Layer,&env,1);
+//      GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
    }
    return(TCL_OK);
 }
