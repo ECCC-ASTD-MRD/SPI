@@ -894,7 +894,10 @@ static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
       ViewportClean(vp,0,1);
    }
 
-   vp->Update=1;
+
+   if (!vp->Frame || !vp->Frames[vp->Frame]) {
+      vp->Update=1;
+   }
 
    /*Calculer le ratio*/
    if (vp->Cam) {
@@ -1323,7 +1326,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       glEnd();
    }
 
-   /*Mask inslusions*/
+   /*Mask intrusions*/
    ViewportIntrusion(NULL,Canvas,Item);
    ViewportLicense(NULL,vp,proj);
 
