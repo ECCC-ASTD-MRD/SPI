@@ -59,7 +59,7 @@ int ModelDAE_SourceExpand(DAESource *Source) {
 
       while(tok) {
          if (n>=Source->Nb) {
-            fprintf(stdout,"(ERROR) ModelDAE_SourceExpand: Overflow of float-array\n");
+            fprintf(stderr,"(ERROR) ModelDAE_SourceExpand: Overflow of float-array (>%i)\n",Source->Nb);
             break;
          }
          Source->Array[n++]=atof(tok);
@@ -70,11 +70,12 @@ int ModelDAE_SourceExpand(DAESource *Source) {
          tok=strtok_r(NULL," ",&save);
 
       }
-      fprintf(stdout,"(DEBUG) ModelDAE_SourceExpand: Parsed %i array values out of %i\n",n,Source->Nb);
-
       free(Source->Text);
       Source->Text=NULL;
       Source->TextLen=0;
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) ModelDAE_SourceExpand: Parsed %i array values out of %i\n",n,Source->Nb);
+#endif
    }
 
    return(n);
@@ -123,8 +124,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Unit tag*/
       /*Get the unit reference more "meter", Collada uses meter as reference*/
       if (strcmp(Elem,"unit")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found unit\n");
-
+#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"name")==0) {
             }
@@ -137,7 +139,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Source tag*/
       /*Create a new source with name "id" and add to sources list*/
       if (strcmp(Elem,"source")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found source\n");
+#endif
          if (!(data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource))))) {
             fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not allocate memory for node\n");
          }
@@ -158,7 +162,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Array tag*/
       /*Initialise current source with "count" nb elements*/
       if (strcmp(Elem,"float_array")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found source\n");
+#endif
          src=(DAESource*)data->Sources->Data;
 
          for (i=0;Attr[i];i+=2) {
@@ -171,7 +177,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Accessor tag*/
       /*Initialise current source with "stride" dimension*/
       if (strcmp(Elem,"accessor")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found accessor\n");
+#endif
          src=(DAESource*)data->Sources->Data;
 
          for (i=0;Attr[i];i+=2) {
@@ -184,7 +192,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Vertices tag*/
       /*Create new source which is alias to source "Id" defining positions*/
       if (strcmp(Elem,"vertices")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found vertices\n");
+#endif
          data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
          src=(DAESource*)data->Sources->Data;
          src->Alias=1;
@@ -204,7 +214,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Node library tag*/
       /*Initialize scene node tree and set current scene to this node*/
       if (strcmp(Elem,"library_nodes")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Found node library\n");
+#endif
          data->Nodes=Model_SceneAdd(NULL,NULL,1);
          data->Scene=data->Nodes;
       } else
@@ -212,14 +224,18 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Visual scene library tag*/
       /*Move the current scene to the model scenes*/
       if (strcmp(Elem,"library_visual_scenes")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Found visual scene library\n");
+#endif
          data->Scene=Model_SceneAdd(data->Model,NULL,1);
       } else
 
       /*Node tag*/
       /*Add new node with name "id" to current node and set current to new*/
       if (strcmp(Elem,"node")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding node\n");
+#endif
          data->Scene=Model_SceneAdd(data->Model,data->Scene,1);
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
@@ -231,14 +247,15 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Geometry instanciation tag*/
       /*Add geometry with name "url" to current scene*/
       if (strcmp(Elem,"instance_geometry")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Instanciating geometry in node\n");
+#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"url")==0) {
                if (obj=Model_ObjectFind(data->Model,(char*)(Attr[i+1]+1))) {
                   data->Scene->NObj++;
                   data->Scene->Obj=(T3DObject**)realloc(data->Scene->Obj,data->Scene->NObj*sizeof(T3DObject*));
                   data->Scene->Obj[data->Scene->NObj-1]=obj;
-                  fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding geometry %s to node\n",Attr[i+1]);
                } else {
                   fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Could not find object \"%s\"\n",Attr[i+1]);
                }
@@ -249,13 +266,17 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Node instanciation tag*/
       /*Add node with name "url" to current scene*/
       if (strcmp(Elem,"instance_node")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Instanciating node in node\n");
+#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"url")==0) {
                if (child=Model_SceneFind(data->Nodes,(char*)(Attr[i+1]+1))) {
                   scn=Model_SceneAdd(data->Model,data->Scene,1);
                   memcpy(scn,child,sizeof(T3DScene));
+#ifdef DEBUG
                   fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding node %s to node\n",Attr[i+1]);
+#endif
                } else {
                   fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not find node \"%s\" in node library\n",Attr[i+1]);
                }
@@ -266,7 +287,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Geometry tag*/
       /*Create new geometry object with name "id"*/
       if (strcmp(Elem,"geometry")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding geometry\n");
+#endif
          data->Object=Model_ObjectAdd(data->Model,1);
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
@@ -290,13 +313,15 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          }
 
          if (data->NFc) {
+#ifdef DEBUG
             fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i faces\n",data->NFc);
+#endif
             data->Fc=Model_ObjectFaceAdd(data->Object,data->NFc);
          }
       }  else
 
       /*Lines tag (Faces)*/
-      /*Add "count" triangles to objects faces*/
+      /*Add "count" lines to objects faces*/
       if (strcmp(Elem,"lines")==0) {
          data->NFc=0;
          data->NVr=2;
@@ -310,7 +335,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          }
 
          if (data->NFc) {
+#ifdef DEBUG
             fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i segments\n",data->NFc);
+#endif
             data->Fc=Model_ObjectFaceAdd(data->Object,data->NFc);
          }
       }  else
@@ -318,7 +345,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*p array tag*/
       /*Create source name p which contains current geometry data to be processed*/
       if (strcmp(Elem,"p")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found p\n");
+#endif
          data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
          src=(DAESource*)data->Sources->Data;
          src->Alias=0;
@@ -334,7 +363,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Matrix array tag*/
       /*Create source name matrix which contains current transformation matrix to be processed*/
       if (strcmp(Elem,"matrix")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found matrix\n");
+#endif
          data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
          src=(DAESource*)data->Sources->Data;
          src->Alias=0;
@@ -348,7 +379,9 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Input definition tag*/
       /*Set current object "semantic" input for "source" to be processed with "offset"*/
       if (strcmp(Elem,"input")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Input tag\n");
+#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"semantic")==0) {
                if (strcmp(Attr[i+1],"POSITION")==0) {
@@ -410,7 +443,7 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
 
    DAEData   *data=(DAEData*)Data;
    DAESource *p,*m;
-   int        i,v,f,nb;
+   int        i,v,f,n;
 
    if (Elem) {
       data->Tag[0]='\0';
@@ -437,29 +470,31 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
                   }
                }
             }
-            nb=i/(data->VrDim*data->NVr);
-            fprintf(stderr,"(DEBUG) ModelDAE_EndHandler: Parsed %i vertices\n",nb);
-
+#ifdef DEBUG
+            fprintf(stderr,"(DEBUG) ModelDAE_EndHandler: Parsed %i vertices\n",i/(data->VrDim*data->NVr));
+#endif
             ModelDAE_SourceFree(p);
             data->Sources=TList_Del(data->Sources,p);
 
             if (data->VrSource) {
                if (!data->Object->Vr) {
-                  data->Object->Vr=(Vect3f*)malloc(data->VrSource->Nb/data->NVr*sizeof(Vect3f));
-                  data->Object->NVr=data->VrSource->Nb/data->NVr;
-                  for(i=0;i<data->VrSource->Nb/data->NVr;i++) {
-                     for(v=0;v<data->NVr;v++) {
-                        data->Object->Vr[i][v]=data->VrSource->Array[data->NVr*i+v];
+                  n=data->VrSource->Nb/data->VrSource->Dim;
+                  data->Object->NVr=n;
+                  data->Object->Vr=(Vect3f*)malloc(data->Object->NVr*sizeof(Vect3f));
+                  for(i=0;i<data->Object->NVr;i++) {
+                     for(v=0;v<data->VrSource->Dim;v++) {
+                        data->Object->Vr[i][v]=data->VrSource->Array[data->VrSource->Dim*i+v];
                      }
-                 }
+                  }
                }
             }
             if (data->NrSource) {
                if (!data->Object->Nr) {
-                  data->Object->Nr=(Vect3f*)malloc(data->NrSource->Nb/data->NVr*sizeof(Vect3f));
-                  for(i=0;i<data->NrSource->Nb/data->NVr;i++) {
-                     for(v=0;v<data->NVr;v++) {
-                        data->Object->Nr[i][v]=data->NrSource->Array[data->NVr*i+v];
+                  n=data->NrSource->Nb/data->NrSource->Dim;
+                  data->Object->Nr=(Vect3f*)malloc(n*sizeof(Vect3f));
+                  for(i=0;i<n;i++) {
+                     for(v=0;v<data->VrSource->Dim;v++) {
+                        data->Object->Nr[i][v]=data->NrSource->Array[data->VrSource->Dim*i+v];
                      }
                   }
                }
@@ -485,7 +520,9 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
 
       /*Node tag*/
       if (strcmp(Elem,"node")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: End node\n");
+#endif
          if (data->Scene->Parent) {
             data->Scene=data->Scene->Parent;
          }
@@ -493,7 +530,9 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
 
       /*Geometry tag*/
       if (strcmp(Elem,"geometry")==0) {
+#ifdef DEBUG
          fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: End geometry\n");
+#endif
          data->Object=NULL;
       }
    }
@@ -544,7 +583,7 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
    /*Create expat XML parser*/
    parser=XML_ParserCreate(NULL);
    if (!parser) {
-      fprintf(stderr,"Model_LoadDAE: Couldn't initiate XML parser\n");
+      fprintf(stderr,"(ERROR) Model_LoadDAE: Couldn't initiate XML parser\n");
       return(0);
    }
 
@@ -569,20 +608,20 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
    /*Parse the XML by chunk*/
    for (;;) {
       if (!(buf=XML_GetBuffer(parser,XMLBUFSIZE))) {
-         fprintf(stderr,"Model_LoadDAE: Could not allocate XML IO buffer\n");
+         fprintf(stderr,"(ERROR) Model_LoadDAE: Could not allocate XML IO buffer\n");
          state=0;
          break;
       }
 
       len=fread(buf,1,XMLBUFSIZE,file);
       if (ferror(file)) {
-         fprintf(stderr,"Model_LoadDAE: Read error on %s\n",Path);
+         fprintf(stderr,"(ERROR) Model_LoadDAE: Read error on %s\n",Path);
          state=0;
          break;
       }
 
       if (!XML_ParseBuffer(parser,len,len==0)) {
-         fprintf(stderr,"Model_LoadDAE: XML Parse error at line %d:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
+         fprintf(stderr,"(ERROR) Model_LoadDAE: XML Parse error at line %d:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
          state=0;
          break;
       }

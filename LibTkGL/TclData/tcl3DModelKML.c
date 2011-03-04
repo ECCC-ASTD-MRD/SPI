@@ -110,7 +110,9 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
          strcpy(buf,data->Path);
          if (c=strrchr(buf,'/')) {
             strcpy(c+1,data->Buf);
+#ifdef DEBUG
             fprintf(stderr,"(DEBUG) ModelKML_EndHandler: Found Collada external ref %s\n",buf);
+#endif
          }
          Model_LoadDAE(data->Model,buf);
          free(buf);
@@ -157,7 +159,7 @@ int Model_LoadKML(T3DModel *M,char *Path) {
    /*Create expat XML parser*/
    parser=XML_ParserCreate(NULL);
    if (!parser) {
-      fprintf(stderr,"Model_LoadKML: Couldn't initiate XML parser\n");
+      fprintf(stderr,"(ERROR) Model_LoadKML: Couldn't initiate XML parser\n");
       return(0);
    }
 
@@ -181,20 +183,20 @@ int Model_LoadKML(T3DModel *M,char *Path) {
    /*Parse the XML by chunk*/
    for (;;) {
       if (!(buf=XML_GetBuffer(parser,XMLBUFSIZE))) {
-         fprintf(stderr,"Model_LoadKML: Could not allocate XML IO buffer\n");
+         fprintf(stderr,"(ERROR) Model_LoadKML: Could not allocate XML IO buffer\n");
          state=0;
          break;
       }
 
       len=fread(buf,1,XMLBUFSIZE,file);
       if (ferror(file)) {
-         fprintf(stderr,"Model_LoadKML: Read error on %s\n",Path);
+         fprintf(stderr,"(ERROR) Model_LoadKML: Read error on %s\n",Path);
          state=0;
          break;
       }
 
       if (!XML_ParseBuffer(parser,len,len==0)) {
-         fprintf(stderr,"Model_LoadKML: XML Parse error at line %d:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
+         fprintf(stderr,"(ERROR) Model_LoadKML: XML Parse error at line %d:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
          state=0;
          break;
       }

@@ -1363,7 +1363,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
                switch(obj->Fc[i].NIdx) {
                   case 1:  glBegin(GL_POINTS); break;
-                  case 2:  glBegin(GL_LINES); break;
+                  case 2:  glBegin(GL_LINES);break;
                   case 3:  glBegin(GL_TRIANGLES); break;
                   case 4:  glBegin(GL_QUADS); break;
                   default: glBegin(GL_POLYGON); break;
@@ -1626,6 +1626,12 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
       }
    }
 }
+
+   /*Calculate plane equation*/
+
+   /*Intersect with plane*/
+
+   /*Intersect with face*/
 
 void Model_Rasterize(TDataDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value) {
 
