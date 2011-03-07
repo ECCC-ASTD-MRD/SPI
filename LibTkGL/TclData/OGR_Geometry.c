@@ -340,10 +340,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    int           idx,nseg;
    double        dist;
 
-   static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-boundary","-buffer",
+   static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-length","-boundary","-buffer",
                                  "-convexhull","-intersection","-union,","-difference","-symmetricdifference",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap","-simplify",NULL };
-   enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,
+   enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,
                              UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,OVERLAP,SIMPLIFY };
 
    g0=OGR_GeometryGet(Name);
@@ -419,6 +419,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxX));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxY));
          Tcl_SetObjResult(Interp,lst);
+         break;
+
+      case LENGTH:
+         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(GPC_Length(g0)));
          break;
 
       case BUFFER:
