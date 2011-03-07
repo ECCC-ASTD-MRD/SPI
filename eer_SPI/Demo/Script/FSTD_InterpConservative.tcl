@@ -36,11 +36,12 @@ fstdfield stats TO -nodata 0.0
 set f [open DataOut/FSTD_InterpConservative.idx { RDWR CREAT }]
 
 foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
+   puts "   Processing: $fld"
    fstdfield read IN 1 $fld
    fstdfield clear TO
    fstdfield define TO -IP1 [fstdfield define IN -IP1]
-   fstdfield gridinterp TO IN CONSERVATIVE 1 index
-#   fstdfield gridinterp TO IN CONSERVATIVE 1 $f
+#   fstdfield gridinterp TO IN CONSERVATIVE 1 index
+   fstdfield gridinterp TO IN CONSERVATIVE 1 $f
    fstdfield write TO 3 -32 False
 }
 

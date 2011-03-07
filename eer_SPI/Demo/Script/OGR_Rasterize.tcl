@@ -63,7 +63,7 @@ proc OGRRasterize { File } {
       gdalband gridinterp RASTER LAYER FAST
 
       #----- On sauvegarde le tout
-      gdalband write RASTER FILEOUT { COMPRESS NONE PROFILE GeoTIFF }
+      gdalband write RASTER FILEOUT { COMPRESS=NONE PROFILE=GeoTIFF }
       gdalfile close FILEOUT
       gdalband free RASTER
    }

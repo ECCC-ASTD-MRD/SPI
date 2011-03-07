@@ -38,10 +38,12 @@ puts "   found: $bands"
 #----- Affichage des mete-donnees
 
 puts "   Metadata: [gdalfile metadata GDAL]"
-
 #----- Lecture des bandes
 
 gdalband read RASTER $bands
+
+puts "   Min     : [gdalband stats RASTER -min]"
+puts "   Max     : [gdalband stats RASTER -max]"
 
 #----- converions pixel-latlon et inverse
 
