@@ -46,8 +46,10 @@
 #include "cpl_string.h"
 
 typedef struct GDAL_File {
-   GDALDriverH  Driver;
-   GDALDatasetH Set;
+   GDALDriverH     Driver;
+   GDALDatasetH    Set;
+   GDALColorInterp ColorInterp;
+
    TGeoRef     *Ref;       /*GeoReference*/
    char        *Name;
    char        *Id;

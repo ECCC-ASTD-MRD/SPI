@@ -2049,15 +2049,15 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 */
 int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         i,j,idx,nidx,nlst,order=1;
+   int         i,j,idx,nidx,nlst,order=1,c;
    double      tra[6],inv[6],*tm=NULL,*im=NULL;
    GDAL_Band  *band,*xband,*yband;
    TGeoRef    *ref;
    Tcl_Obj    *obj,*lst;
 
-   static CONST char *sopt[] = { "-active","-mask","-georef","-projection","-transform","-invtransform","-indexed","-gcps","-width",
+   static CONST char *sopt[] = { "-active","-mask","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
                                  "-height","-nb","-type","-positional",NULL };
-   enum        opt {  ACTIVE,MASK,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
+   enum        opt {  ACTIVE,MASK,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2123,6 +2123,29 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(band->Tex.Indexed));
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&band->Tex.Indexed);
+            }
+            break;
+
+         case COLORINTERP:
+            if (Objc==1) {
+               lst=Tcl_NewListObj(0,NULL);
+               for(c=0;c<band->Def->NC;c++) {
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewStringObj(GDALGetColorInterpretationName(GDALGetRasterColorInterpretation(band->Band[c])),-1));
+               }
+               Tcl_SetObjResult(Interp,lst);
+            } else if (Objc==2) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               if (c<band->Def->NC) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(GDALGetColorInterpretationName(GDALGetRasterColorInterpretation(band->Band[c])),-1));
+               }
+            } else if (Objc==3) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               if (c<band->Def->NC) {
+                  GDALSetRasterColorInterpretation(band->Band[c],GDALGetColorInterpretationByName(Tcl_GetString(Objv[++i])));
+               } else {
+                  Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: Invalid band index",(char*)NULL);
+                  return(TCL_ERROR);
+               }
             }
             break;
 
@@ -2254,7 +2277,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case POSITIONAL:
             if (Objc<3) {
-               Tcl_WrongNumArgs(Interp,0,Objv,"Band XBand YBand");
+               Tcl_WrongNumArgs(Interp,0,Objv,"XBand YBand");
                return(TCL_ERROR);
             } else {
                xband=GDAL_BandGet(Tcl_GetString(Objv[++i]));

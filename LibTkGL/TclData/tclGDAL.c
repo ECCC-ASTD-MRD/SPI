@@ -991,8 +991,8 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    double      x,y,lat0,lon0,lat1,lon1;
    int         n,idx,i,in;
    char        buf[256],**meta,*dri=NULL;
-   static CONST char *sopt[] = { "open","close","createcopy","format","driver","width","height","georef","metadata","project","unproject","within","filename","error",NULL };
-   enum                opt { OPEN,CLOSE,CREATECOPY,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,ERROR };
+   static CONST char *sopt[] = { "open","close","createcopy","format","driver","width","height","georef","metadata","project","unproject","within","filename","colorinterp","error",NULL };
+   enum                opt { OPEN,CLOSE,CREATECOPY,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,COLORINTERP,ERROR };
 
    Tcl_ResetResult(Interp);
 
@@ -1202,6 +1202,18 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,-1));
          return(TCL_OK);
          break;
+
+      case COLORINTERP:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            return(TCL_ERROR);
+         }
+         if (!(file=GDAL_FileGet(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(GDALGetColorInterpretationName(file->ColorInterp),-1));
+         return(TCL_OK);
+         break;
    }
    return TCL_OK;
 }
@@ -1322,6 +1334,7 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
 */
 int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char *Desc) {
 
+   GDALColorInterp ci=0;
    GDALDatasetH    set=NULL;
    GDALRasterBandH band=NULL;
    GDALDriverH     driver=NULL;
@@ -1335,7 +1348,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       Tcl_AppendResult(Interp,"GDAL_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return(TCL_ERROR);
    }
-fprintf(stderr,"---------- %s\n",Name);
+
    if (Mode=='w' || Mode=='W') {                 /*Write Mode*/
       if (!Driver) {
          Tcl_AppendResult(Interp," GDAL_FileOpen: Invalid driver ",Driver,(char*)NULL);
@@ -1397,6 +1410,13 @@ fprintf(stderr,"---------- %s\n",Name);
 
       for (i=0;i<GDALGetRasterCount(set);i++) {
          band=GDALGetRasterBand(set,i+1);
+         if (!ci) {
+            ci=GDALGetRasterColorInterpretation(band);
+            ci=ci>=GCI_YCbCr_YBand?GCI_YCbCr_YBand:
+               ci>=GCI_CyanBand?GCI_CyanBand:
+               ci>=GCI_HueBand?GCI_HueBand:
+               ci>=GCI_RedBand?GCI_RedBand:ci;
+         }
          if (Desc) {
             sprintf(buf,"%s %i {%s:%s} %d %d",Id,i+1,Desc,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
          } else {
@@ -1407,6 +1427,7 @@ fprintf(stderr,"---------- %s\n",Name);
    }
 
    file=(GDAL_File*)malloc(sizeof(GDAL_File));
+   file->ColorInterp=ci;
    file->Driver=driver;
    file->Mode=Mode;
    file->Id=strdup(Id);
