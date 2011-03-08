@@ -95,7 +95,6 @@ typedef struct T3DModel {
    TGeoRef      *Ref;                 /*GeoReference*/
    TDataSpec    *Spec;                /*Specification des donnees*/
 
-   int           Active;
    Vect3d        Extent[2];          /*Extent*/
    double        Meter;              /*Meter value (Meter is reference)*/
 

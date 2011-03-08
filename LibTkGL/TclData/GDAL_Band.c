@@ -2055,9 +2055,9 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    TGeoRef    *ref;
    Tcl_Obj    *obj,*lst;
 
-   static CONST char *sopt[] = { "-active","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
+   static CONST char *sopt[] = { "-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
                                  "-height","-nb","-type","-positional",NULL };
-   enum        opt {  ACTIVE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
+   enum        opt {  GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2405,14 +2405,6 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                }
             }
             break;
-
-         case ACTIVE:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(band->Active));
-            } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&band->Active);
-            }
-            break;
       }
    }
    return TCL_OK;
@@ -2526,13 +2518,13 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    GLuint      tx;
    GLhandleARB prog;
 
-   if (!Band) {
+   if (!Band || !Band->Spec) {
       fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid band object\n");
       return(0);
    }
 
-   if (!Band->Active) {
-      return(1);
+   if (!Band->Spec->Active) {
+      return(0);
    }
 
    /*Check for invalid georeference*/

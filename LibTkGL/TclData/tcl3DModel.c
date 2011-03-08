@@ -216,8 +216,8 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
    int       i,idx;
    double    tmpd;
 
-   static CONST char *sopt[] = { "-active","-projection","-georef","-coordinate","-name","-unitmeter",NULL };
-   enum               opt { ACTIVE,PROJECTION,GEOREF,COORDINATE,NAME,UNITMETER };
+   static CONST char *sopt[] = { "-projection","-georef","-coordinate","-name","-unitmeter",NULL };
+   enum               opt { PROJECTION,GEOREF,COORDINATE,NAME,UNITMETER };
 
    mdl=Model_Get(Name);
    if (!mdl) {
@@ -232,13 +232,6 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
       }
 
       switch ((enum opt)idx) {
-         case ACTIVE:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(mdl->Active));
-            } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&mdl->Active);
-            }
-            break;
 
          case NAME:
             if (Objc==1) {
@@ -681,7 +674,6 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
    Vect_Init(mdl->Extent[1],-1e32,-1e32,-1e32);
 
    mdl->Path=NULL;
-   mdl->Active=1;
    mdl->Ref=NULL;
    mdl->Co.Lat=mdl->Co.Lon=-999.0;
    mdl->NObj=0;
@@ -1312,12 +1304,12 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
    extern GLint Texture_Read(char *File);
 
-   if (!M) {
+   if (!M || !M->Spec) {
       fprintf(stderr,"(ERROR) Model_Render: Invalid model object\n");
       return(0);
    }
 
-   if (!M->Active) {
+   if (!M->Spec->Active) {
       return(0);
    }
 

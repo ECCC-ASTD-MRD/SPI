@@ -58,7 +58,6 @@ typedef struct OGR_File {
 
 typedef struct OGR_Layer {
    Tcl_Obj         *Tag;
-   int              Active;
 
    OGRLayerH        Layer;
    OGRFeatureH     *Feature;

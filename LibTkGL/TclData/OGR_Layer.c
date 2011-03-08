@@ -70,9 +70,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    unsigned long  nf;
    double         x,y,a,min,max,val;
 
-   static CONST char *sopt[] = { "-active","-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-size","-projection","-georef",
+   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-size","-projection","-georef",
                                  "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-featuremask","-label",NULL };
-   enum                opt { ACTIVE,TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,SIZE,PROJECTION,GEOREF,
+   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,SIZE,PROJECTION,GEOREF,
                              MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,FEATUREMASK,LABEL };
 
    layer=OGR_LayerGet(Name);
@@ -345,14 +345,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(layer->Mask));
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&layer->Mask);
-            }
-            break;
-
-         case ACTIVE:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(layer->Active));
-            } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&layer->Active);
             }
             break;
 
@@ -2470,13 +2462,13 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    extern TIcon IconList[];
 
-   if (!Layer) {
+   if (!Layer || !spec) {
       fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid layer object\n");
       return(0);
    }
 
-   if (!Layer->Active) {
-      return(1);
+   if (!spec->Active) {
+      return(0);
    }
 
    /*Check for invalid georeference*/

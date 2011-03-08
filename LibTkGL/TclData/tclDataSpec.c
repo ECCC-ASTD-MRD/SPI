@@ -235,13 +235,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    char      buf[64];
    double    tmp,min=0.0,max=0.0;
 
-   static CONST char *sopt[] = { "-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
+   static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype",
                                  "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
                                  "-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizefactor","-mask",NULL };
-   enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
+   enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
@@ -267,6 +267,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Set);
                s=0;
+            }
+            break;
+
+         case ACTIVE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->Active));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->Active);
             }
             break;
 
@@ -1282,6 +1290,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (to->InterpDegree) free(to->InterpDegree);
    if (to->ExtrapDegree) free(to->ExtrapDegree);
 
+   to->Active=from->Active;
    to->OGRMask=from->OGRMask;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
@@ -1425,6 +1434,7 @@ TDataSpec *DataSpec_New(){
 
    spec=(TDataSpec*)malloc(sizeof(TDataSpec));
 
+   spec->Active=1;
    spec->NRef=1;
    spec->Set=0;
    spec->Name=NULL;

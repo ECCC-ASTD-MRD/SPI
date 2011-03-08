@@ -93,7 +93,8 @@ typedef struct TDataSpec {
    int         Set;                 /*Flag de configuration*/
    int         NRef;                /*Compteur de reference*/
 
-   OGRGeometryH   *OGRMask;             /* Masque vectoriel */
+   int             Active;              /*Flag d'activation de l'affichage*/
+   OGRGeometryH   *OGRMask;             /*Masque vectoriel*/
    CMap_Rec       *Map;                 /*Palette Associee*/
    XColor         *Outline,*HighLine;   /*Couleur des segments*/
    XColor         *Fill,*HighFill;      /*Couleur de remplissage*/

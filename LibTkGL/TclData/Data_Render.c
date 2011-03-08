@@ -101,6 +101,10 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    }
    Data_PreInit(Field);
 
+   if (!Field->Spec->Active) {
+      return(0);
+   }
+
    if (!Field->Ref->Pos || !Field->Ref->Pos[Field->Def->Level])
       if (!Field->Grid(Field,Proj,Field->Def->Level))
          return(0);

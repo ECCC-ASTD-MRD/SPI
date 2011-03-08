@@ -743,8 +743,6 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
    }
 
    /* Initialisation de la structure geo */
-   band->Active     =1;
-
    band->Tex.ThreadId =0;
    band->Tex.Proj     =NULL;
    band->Tex.Tile     =NULL;
