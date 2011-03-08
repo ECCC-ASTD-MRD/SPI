@@ -1452,12 +1452,10 @@ void CMap_RatioDefine(CMap_Rec *CMap){
    }
 
    /*Calculer les limites relatives a la palette*/
-
    max=CMap->RatioMax/100.0*CMap->NbPixels;
    min=CMap->RatioMin/100.0*CMap->NbPixels;
 
    /*Determiner l'increment dans la palette selon l'interval*/
-
    if (max-min<=0) {
       incr=CMap->NbPixels;
    } else {
@@ -1465,7 +1463,6 @@ void CMap_RatioDefine(CMap_Rec *CMap){
    }
 
    /*Modification de la palette selon les ratio*/
-
    CMap->Alpha=0;
 
    for (c=0;c<4;c++) {

@@ -1231,7 +1231,7 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
 
    if ((file=(GDAL_File*)TclY_HashDel(&GDAL_FileTable,Id))) {
       for(si=0;si<file->Sub;si++) {
-         snprintf(subid,"%s%04i",1024,Id,si/2);
+         snprintf(subid,1024,"%s%04i",Id,si/2);
          GDAL_FileClose(Interp,subid);
       }
 
@@ -1335,7 +1335,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       Tcl_AppendResult(Interp,"GDAL_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return(TCL_ERROR);
    }
-
+fprintf(stderr,"---------- %s\n",Name);
    if (Mode=='w' || Mode=='W') {                 /*Write Mode*/
       if (!Driver) {
          Tcl_AppendResult(Interp," GDAL_FileOpen: Invalid driver ",Driver,(char*)NULL);
@@ -1371,11 +1371,11 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       sub=GDALGetMetadata(set,"SUBDATASETS");
 
       if (CSLCount(sub)>0) {
-         subid=(char*)malloc(strlen(Id)+4);
+         subid=(char*)malloc(strlen(Id)+8);
 
          /* Loop over bands */
          for (si=0;sub[si]!=NULL;si++) {
-            snprintf(subid,"%s%04i",1024,Id,si/2);
+            snprintf(subid,(strlen(Id)+8),"%s%04i",Id,si>>1);
 
             /*Check for follow up descriptor*/
             desc=NULL;
