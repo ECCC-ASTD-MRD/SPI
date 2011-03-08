@@ -1036,7 +1036,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
          glFeedbackProcess(Interp,GL_2D);
    }
 
-   if (spec->Icon) {
+   if (spec->Icon && spec->Size) {
       glPushName(PICK_TRAJ);
       glDisable(GL_CULL_FACE);
 

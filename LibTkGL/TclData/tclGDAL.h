@@ -61,7 +61,6 @@ typedef struct GDAL_Band {
    Tcl_Obj      *Tag;
    int           Active;
 
-   OGRGeometryH *OGRMask;             /* Masque vectoriel */
    GDALRasterBandH Band[256];
    GDAL_GCP     *GCPs;
    int           NbGCPs;

@@ -2055,9 +2055,9 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    TGeoRef    *ref;
    Tcl_Obj    *obj,*lst;
 
-   static CONST char *sopt[] = { "-active","-mask","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
+   static CONST char *sopt[] = { "-active","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
                                  "-height","-nb","-type","-positional",NULL };
-   enum        opt {  ACTIVE,MASK,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
+   enum        opt {  ACTIVE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2072,19 +2072,6 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
 
       switch ((enum opt)idx) {
-
-         case MASK:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
-            } else {
-               band->OGRMask=OGR_GeometryGet(Tcl_GetString(Objv[++i]));
-               if (band->OGRMask) {
-                  if (OGR_G_TransformTo(band->OGRMask,band->Ref->Spatial)!=OGRERR_NONE) {
-                     fprintf(stdout,"(WARNING) GDAL_BandDefine: Unable to reproject mask geometry to local spatial reference\n");
-                  }
-               }
-            }
-            break;
 
          case WIDTH:
             if (Objc==1) {
@@ -2584,12 +2571,12 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glEnable(GL_LIGHT0);
    }
 
-   if (Band->OGRMask) {
+   if (Band->Spec->OGRMask) {
       glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
       glStencilMask(0x04);
       glStencilFunc(GL_ALWAYS,0x4,0x4);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-      OGR_GeometryRender(Proj,Band->Ref,NULL,Band->OGRMask,0.0,0.0);
+      OGR_GeometryRender(Proj,Band->Ref,NULL,Band->Spec->OGRMask,0.0,0.0);
       glStencilFunc(GL_EQUAL,0x04,0x04);
       glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
       glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);

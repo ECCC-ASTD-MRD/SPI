@@ -18,6 +18,7 @@ TCLTK_BASE= 8.5
 X_INCLUDE   =
 PROTO       =
 DEFINES     = -DLNK_FSTD -DLNK_URP -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
+#DEFINES     = -DLNK_FSTD -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
 
 CDEBUGFLAGS  =
 LDDEBUGFLAGS = --warn-once --no-undefined 
@@ -34,12 +35,8 @@ TCL_PATH = $(LIB_PATH)/TclTk
 TK_SRC   = /cnfs/ops/cmoe/afsr005/Archive/tk$(TCLTK_VER)
 TK_PATH  = $(LIB_PATH)/TclTk
 
-# OpenGL librairies
-#GL_PATH   = $(LIB_PATH)/mesa-6.5/
-
 # global includes
-INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include \
-        -I$(GL_PATH)/include \
+INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include -I$(INC_PATH) \
         -I$(INC_PATH)/gdb -I$(INC_PATH)/gdal -I$(INC_PATH)/urp -I$(INC_PATH)/grib_api -I$(INC_PATH)/libecbufr \
         -I$(INC_PATH)/fltlib -I$(INC_PATH)/rmnlib -I$(INC_PATH)/libeer \
         -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD

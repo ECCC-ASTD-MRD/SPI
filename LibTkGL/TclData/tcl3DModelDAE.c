@@ -56,19 +56,13 @@ int ModelDAE_SourceExpand(DAESource *Source) {
 
       /*Parse all tokens*/
       tok=strtok_r(Source->Text," ",&save);
-
       while(tok) {
-         if (n>=Source->Nb) {
-            fprintf(stderr,"(ERROR) ModelDAE_SourceExpand: Overflow of float-array (>%i)\n",Source->Nb);
-            break;
-         }
          Source->Array[n++]=atof(tok);
 
          /*Check for buffer overrun*/
-         if (save>=(Source->Text+Source->TextLen))
+         if (save>=(Source->Text+Source->TextLen)-1)
                break;
          tok=strtok_r(NULL," ",&save);
-
       }
       free(Source->Text);
       Source->Text=NULL;

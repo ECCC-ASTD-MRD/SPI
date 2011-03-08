@@ -240,12 +240,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype",
                                  "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
-                                 "-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizefactor",NULL };
+                                 "-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizefactor","-mask",NULL };
    enum        opt { RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
-                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZEMIN,SIZEMAX,SIZEFACTOR };
+                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZEMIN,SIZEMAX,SIZEFACTOR,MASK };
 
    if (!Spec) {
       Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
@@ -1072,6 +1072,15 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
             }
             break;
+
+         case MASK:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
+            } else {
+               Spec->OGRMask=OGR_GeometryGet(Tcl_GetString(Objv[++i]));
+            }
+            break;
+
       }
    }
 
@@ -1273,6 +1282,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (to->InterpDegree) free(to->InterpDegree);
    if (to->ExtrapDegree) free(to->ExtrapDegree);
 
+   to->OGRMask=from->OGRMask;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
    to->Set=from->Set;
@@ -1469,6 +1479,7 @@ TDataSpec *DataSpec_New(){
    spec->Cube[3]=10;spec->Cube[4]=1;spec->Cube[5]=1;
    spec->Axis='X';
 
+   spec->OGRMask=NULL;
    spec->ZType=NULL;
    spec->Topo=NULL;
    spec->TopoFactor=1.0;

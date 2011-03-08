@@ -38,6 +38,7 @@
 #include <tk.h>
 #include <tcl.h>
 #include "tclCMap.h"
+#include "ogr_api.h"
 #include "Vector.h"
 #include "eerStruct.h"
 #include "glStuff.h"
@@ -92,6 +93,7 @@ typedef struct TDataSpec {
    int         Set;                 /*Flag de configuration*/
    int         NRef;                /*Compteur de reference*/
 
+   OGRGeometryH   *OGRMask;             /* Masque vectoriel */
    CMap_Rec       *Map;                 /*Palette Associee*/
    XColor         *Outline,*HighLine;   /*Couleur des segments*/
    XColor         *Fill,*HighFill;      /*Couleur de remplissage*/

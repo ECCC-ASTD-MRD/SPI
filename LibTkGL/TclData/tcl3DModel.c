@@ -376,6 +376,11 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
             mdl->Ref->Project(mdl->Ref,x,y,&lat,&lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
+         } else {
+            lat=mdl->Pos[0]+RAD2DEG(M2RAD(y/mdl->Meter));
+            lon=mdl->Pos[1]+RAD2DEG(M2RAD(x/mdl->Meter));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
          }
          break;
 
@@ -1248,6 +1253,7 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
    ex[2][0]=Extent[1][0];ex[2][1]=Extent[0][1];ex[2][2]=Extent[0][2];
    ex[3][0]=Extent[1][0];ex[3][1]=Extent[1][1];ex[3][2]=Extent[1][2];
 
+
    M->Ref->Project(M->Ref,ex[0][0],ex[0][1],&ex[0][1],&ex[0][0],1,0);
    M->Ref->Project(M->Ref,ex[1][0],ex[1][1],&ex[1][1],&ex[1][0],1,0);
    M->Ref->Project(M->Ref,ex[2][0],ex[2][1],&ex[2][1],&ex[2][0],1,0);
@@ -1609,8 +1615,8 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
             if (M->Ref) {
                M->Ref->Project(M->Ref,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
             } else {
-               co.Lat=M->Pos[0]+RAD2DEG(M2RAD(Obj->Vr[idx][1]));
-               co.Lon=M->Pos[1]+RAD2DEG(M2RAD(Obj->Vr[idx][0]));
+               co.Lat=M->Pos[0]+RAD2DEG(M2RAD(Obj->Vr[idx][1]/M->Meter));
+               co.Lon=M->Pos[1]+RAD2DEG(M2RAD(Obj->Vr[idx][0]/M->Meter));
             }
             co.Elev=Obj->Vr[idx][2];
 

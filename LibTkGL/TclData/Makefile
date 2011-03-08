@@ -12,6 +12,7 @@ INCLUDES   = $(INCLUDE)
 CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
 LDFLAGS    = $(LDDEBUGFLAGS)
 LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lmut -ldrp -lurp -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat
+#LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat
 LIBTCLTK   = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE) -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
 LEXFLAGS   =
 YACCFLAGS  =
