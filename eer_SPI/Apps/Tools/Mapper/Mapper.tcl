@@ -349,8 +349,10 @@ proc Mapper::Zoom { { All False } } {
          }
       } elseif { [model is $object] } {
          if { [llength [set coords [model stats $object -extent]]] } {
+         puts stderr .$coords.
             set coords0 [model stats $object -project [lindex $coords 0] [lindex $coords 1]]
             set coords1 [model stats $object -project [lindex $coords 2] [lindex $coords 3]]
+         puts stderr ".$coords0. .$coords1."
          }
       }
 
@@ -445,22 +447,27 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    variable Data
    variable Msg
 
-   set id [file tail [file rootname $File]]
-   set no 1
-   while { [gdalband is $id] } {
-      set id $id$no
-      incr no
-   }
+   #---- If an id is passed, use it
+   if  { [info exists Data(Id$File)] } {
+      set id $File
+   } else {
+      set id [file tail [file rootname $File]]
+      set no 1
+      while { [gdalband is $id] } {
+         set id $id$no
+         incr no
+      }
 
-   if  { ![info exists Data(Id$id)] } {
-      set Data(Id$id) GDAL[incr Data(IdNo)]
-   }
+      if  { ![info exists Data(Id$id)] } {
+         set Data(Id$id) GDAL[incr Data(IdNo)]
+      }
 
-   gdalfile close $Data(Id$id)
-   eval set bad [catch { set bands [gdalfile open $Data(Id$id) read $File] }]
+      gdalfile close $Data(Id$id)
+      eval set bad [catch { set bands [gdalfile open $Data(Id$id) read $File] }]
 
-   if { $bad } {
-      return False
+      if { $bad } {
+         return False
+      }
    }
 
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
@@ -516,7 +523,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       lappend Data(Bands$id) alpha
    }
 
-   set er [catch { gdalband read $id $Bands $Full } errmsg ]
+   set er [catch { gdalband read $id $Bands $Full } errmsg]
 
    if { $er } {
       error $errmsg $errorInfo
@@ -525,7 +532,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    set Data(ColorMap) [gdalband configure $id -colormap]
 
    #----- Check for RGB(A) image
-   if { [llength $bands]==3  || [llength $bands]==4 } {
+   if { [llength $Bands]==3  || [llength $Bands]==4 } {
       set Data(Interp) LINEAR
       gdalband configure $id -interpolation LINEAR
    }
