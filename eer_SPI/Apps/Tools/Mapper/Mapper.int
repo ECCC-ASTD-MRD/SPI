@@ -205,11 +205,11 @@ proc Mapper::PopUp { X Y y } {
    set Data(Object) [$Data(Tab1).select.list get [$Data(Tab1).select.list nearest $y]]
 
    if { [ogrlayer is $Data(Object)] } {
-      set Data(Active) [ogrlayer define $Data(Object) -active]
+      set Data(Active) [ogrlayer configure $Data(Object) -active]
    } elseif { [gdalband is $Data(Object)] } {
-      set Data(Active) [gdalband define $Data(Object) -active]
+      set Data(Active) [gdalband configure $Data(Object) -active]
    } elseif { [model is $Data(Object)] } {
-      set Data(Active) [model define $Data(Object) -active]
+      set Data(Active) [model configure $Data(Object) -active]
    } else {
       set Data(Active) 0
    }
@@ -220,11 +220,11 @@ proc Mapper::Toggle { } {
    variable Data
 
    if { [ogrlayer is $Data(Object)] } {
-      ogrlayer define $Data(Object) -active $Data(Active)
+      ogrlayer configure $Data(Object) -active $Data(Active)
    } elseif { [gdalband is $Data(Object)] } {
-      gdalband define $Data(Object) -active $Data(Active)
+      gdalband configure $Data(Object) -active $Data(Active)
    } elseif { [model is $Data(Object)] } {
-      model define $Data(Object) -active $Data(Active)
+      model configure $Data(Object) -active $Data(Active)
    }
    Mapper::Toggler 0 0 0
    Page::Update $Page::Data(Frame)
@@ -238,11 +238,11 @@ proc Mapper::Toggler { Var1 Var2 Op } {
 
    foreach obj $Viewport::Data(Data) {
       if { [ogrlayer is $obj] } {
-         set active [ogrlayer define $obj -active]
+         set active [ogrlayer configure $obj -active]
       } elseif { [gdalband is $obj] } {
-         set active [gdalband define $obj -active]
+         set active [gdalband configure $obj -active]
       } elseif { [model is $obj] } {
-         set active [model define $obj -active]
+         set active [model configure $obj -active]
       }
 
       if { $active } {

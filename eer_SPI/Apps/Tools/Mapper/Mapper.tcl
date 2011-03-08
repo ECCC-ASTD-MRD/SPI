@@ -682,10 +682,10 @@ proc Mapper::ParamsGDALGet { Object } {
    set Data(Interp)     [gdalband configure $Object -interpolation]
    set Data(Topo)       [gdalband configure $Object -topography]
    set Data(TopoFactor) [gdalband configure $Object -topographyfactor]
+   set Data(Mask)       [gdalband configure $Object -mask]
    set Data(Proj)       [gdalband define $Object -projection]
    set Data(Trans)      [gdalband define $Object -transform]
    set Data(InvTrans)   [gdalband define $Object -invtransform]
-   set Data(Mask)       [gdalband define $Object -mask]
    set Data(NoData)     [gdalband stats $Object -nodata]
 
    if { $Data(Mask)!="" } {
@@ -741,9 +741,9 @@ proc Mapper::ParamsGDALSet { Object } {
    gdalband stats $Object -nodata $Data(NoData)
 
    if { $Data(Cut) } {
-      gdalband define $Object -mask MASK$Object
+      gdalband configure $Object -mask MASK$Object
    } else {
-      gdalband define $Object -mask ""
+      gdalband configure $Object -mask ""
    }
 
    set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
@@ -1111,7 +1111,7 @@ proc Mapper::PickOGR { VP X Y } {
                      set path [file dirname $Data(Id$object)]
                      set file $path/../$file
                      Mapper::ReadBand $file
-                     catch { gdalband define $file -mask [ogrlayer define $object -geometry $Data(Index)] }
+                     catch { gdalband configure $file -mask [ogrlayer define $object -geometry $Data(Index)] }
 
                      set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
                      set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]
