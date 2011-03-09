@@ -687,7 +687,6 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    /*Initialisation de la structure layer*/
    layer->Update       = 0;
    layer->Mask         = 0;
-   layer->FMask        = 0;
    layer->Topo         = -1;
    layer->Extrude      = -1;
    layer->Map          = -1;

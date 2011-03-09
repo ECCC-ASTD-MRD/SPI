@@ -61,12 +61,13 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    OGRGeometryH   geom,subgeom;
    int            i,j,idx,n,t,err;
    char          *buf;
+   unsigned char *bytes;
    Vect3d         pt;
    Tcl_Obj       *obj;
    TGeoRef       *ref;
 
-   static CONST char *sopt[] = { "-wkt","-gml","-kml","-geometry","-addgeometry","-space","-dimension","-type","-nb","-name","-points","-addpoint","-georef",NULL };
-   enum                opt { WKT,GML,KML,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NAME,POINTS,ADDPOINT,GEOREF };
+   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-space","-dimension","-type","-nb","-name","-points","-addpoint","-georef",NULL };
+   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NAME,POINTS,ADDPOINT,GEOREF };
 
    geom=OGR_GeometryGet(Name);
    if (!geom) {
@@ -86,11 +87,31 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
             if (Objc==1) {
                OGR_G_ExportToWkt(geom,&buf);
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+               CPLFree(buf);
             } else {
                OGR_G_Empty(geom);
 
                buf=Tcl_GetString(Objv[++i]);
                err=OGR_G_ImportFromWkt(geom,&buf);
+               if (err!=OGRERR_NONE) {
+                  Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Unsupported geometry type\"",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+            break;
+
+         case WKB:
+            if (Objc==1) {
+               n=OGR_G_WkbSize(geom);
+               bytes=(char*)malloc(n);
+               OGR_G_ExportToWkb(geom,wkbNDR,bytes);
+               Tcl_SetObjResult(Interp,Tcl_NewByteArrayObj(bytes,n));
+               CPLFree(bytes);
+            } else {
+               OGR_G_Empty(geom);
+
+               buf=Tcl_GetString(Objv[++i]);
+               err=OGR_G_ImportFromWkb(geom,&buf,strlen(buf));
                if (err!=OGRERR_NONE) {
                   Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Unsupported geometry type\"",(char*)NULL);
                   return(TCL_ERROR);
@@ -118,6 +139,18 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
          case KML:
             if (Objc==1) {
                buf=OGR_G_ExportToKML(geom,NULL);
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+               CPLFree(buf);
+            } else {
+               Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Operation not supported\"",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            break;
+
+
+         case JSON:
+            if (Objc==1) {
+               buf=OGR_G_ExportToJson(geom);
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
                CPLFree(buf);
             } else {
@@ -342,9 +375,11 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 
    static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-length","-boundary","-buffer",
                                  "-convexhull","-intersection","-union,","-difference","-symmetricdifference",
-                                 "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap","-simplify",NULL };
+                                 "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
+                                 "-simplify","-segmentize","-close","-flatten","-isempty","-isvalid","-issimple","-isring",NULL };
    enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,
-                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,OVERLAP,SIMPLIFY };
+                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
+                             OVERLAP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
    g0=OGR_GeometryGet(Name);
    if (!g0) {
@@ -402,9 +437,14 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
 
       case CENTROID:
-         g1=(OGRGeometryH*)malloc(sizeof(OGRGeometryH));
+         g1=OGR_G_CreateGeometry(wkbPoint);
          OGR_G_Centroid(g0,g1);
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,g1));
+         lst=Tcl_NewListObj(0,NULL);
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(OGR_G_GetX(g1,0)));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(OGR_G_GetY(g1,0)));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(OGR_G_GetZ(g1,0)));
+         Tcl_SetObjResult(Interp,lst);
+         OGR_G_DestroyGeometry(g1);
          break;
 
       case BOUNDARY:
@@ -619,6 +659,15 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          }
          break;
 
+      case SEGMENTIZE:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"length");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
+         OGR_G_Segmentize(g0,dist);
+         break;
+
       case SIMPLIFY:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
@@ -626,6 +675,31 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
          GPC_Simplify(dist,g0);
+//         OGR_G_Simplify(g0,dist);
+         break;
+
+      case CLOSE:
+         OGR_G_CloseRings(g0);
+         break;
+
+      case FLATTEN:
+         OGR_G_FlattenTo2D(g0);
+         break;
+
+      case ISEMPTY:
+         Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(OGR_G_IsEmpty(g0)));
+         break;
+
+      case ISVALID:
+         Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(OGR_G_IsValid(g0)));
+         break;
+
+      case ISSIMPLE:
+         Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(OGR_G_IsSimple(g0)));
+         break;
+
+      case ISRING:
+         Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(OGR_G_IsRing(g0)));
          break;
    }
    return(TCL_OK);

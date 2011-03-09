@@ -71,9 +71,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    double         x,y,a,min,max,val;
 
    static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-size","-projection","-georef",
-                                 "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-featuremask","-label",NULL };
+                                 "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-label",NULL };
    enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,SIZE,PROJECTION,GEOREF,
-                             MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,FEATUREMASK,LABEL };
+                             MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,LABEL };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -348,14 +348,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             }
             break;
 
-         case FEATUREMASK:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(layer->FMask));
-            } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&layer->FMask);
-            }
-            break;
-
          case FEATUREHIGHLIGHT:
             if (Objc==1) {
                lst=Tcl_NewListObj(0,NULL);
@@ -601,8 +593,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj      *lst,*obj;
    char          buf[32];
 
-   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection","-simplify",NULL };
-   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY };
+   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection",
+                                 "-simplify","-segmentize","-close","-flatten",NULL };
+   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -768,7 +761,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
-                     OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                     if (OGR_F_SetGeometryDirectly(layer->Feature[f],new)!=OGRERR_NONE) {
+                        fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
+                      }
                   } else {
                      fprintf(stderr,"OGR_LayerStats: Bad Buffer on feature %i\n",f);
                   }
@@ -803,8 +798,11 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         }
                      }
                   }
-                  if (new)
-                     OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                  if (new) {
+                     if (OGR_F_SetGeometryDirectly(layer->Feature[f],geom)!=OGRERR_NONE) {
+                        fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
+                     }
+                  }
                }
             }
          }
@@ -842,7 +840,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   new=GPC_OnOGR(GPC_INT,geom,uni);
-                  OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                  if (OGR_F_SetGeometryDirectly(layer->Feature[f],new)!=OGRERR_NONE) {
+                     fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
+                  }
                }
             }
          }
@@ -857,8 +857,48 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
-               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   GPC_Simplify(tol,geom);
+                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+               }
+            }
+         }
+         break;
+
+      case SEGMENTIZE:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"length");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&tol);
+
+         for(f=0;f<layer->NFeature;f++) {
+            if (layer->Select[f]) {
+               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
+                  OGR_G_Segmentize(geom,tol);
+                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+               }
+            }
+         }
+         break;
+
+      case CLOSE:
+         for(f=0;f<layer->NFeature;f++) {
+            if (layer->Select[f]) {
+               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
+                  OGR_G_CloseRings(geom);
+                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+               }
+            }
+         }
+         break;
+
+      case FLATTEN:
+         for(f=0;f<layer->NFeature;f++) {
+            if (layer->Select[f]) {
+               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
+                  OGR_G_FlattenTo2D(geom);
+                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
                }
             }
          }
@@ -2502,7 +2542,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       glVertexPointer(2,GL_DOUBLE,0,IconList[spec->Icon].Co);
    }
 
-   if (Layer->Mask || Layer->FMask) {
+   if (Layer->Mask) {
       if (Proj->Geo->Params.Mask==0) {
          glMatrixMode(GL_PROJECTION);
          glPushMatrix();
