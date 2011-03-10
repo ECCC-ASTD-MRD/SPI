@@ -168,11 +168,9 @@ namespace eval MapBox {
 proc MapBox::Config { args } {
    variable Data
 
-   if { !$Data(Init) } {
-      colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
-         -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp) -invertx rgba $Data(Invert)
-      MapBox::Update
-   }
+   colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
+      -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp) -invertx rgba $Data(Invert)
+   MapBox::Update
 }
 
 #-------------------------------------------------------------------------------
@@ -609,13 +607,13 @@ proc MapBox::Create { Parent Apply Map args } {
       pack $fr.interp $fr.curve $fr.min $fr.max $fr.red $fr.green $fr.blue $fr.alpha -fill x -padx 2
    pack .mapbox.fr.params -side top -fill both -padx 5 -pady 5 -ipady 2
 
-      Bubble::Create $fr.min   $Bubble(Min)
-      Bubble::Create $fr.max   $Bubble(Max)
-      Bubble::Create $fr.red   $Bubble(Red)
-      Bubble::Create $fr.green $Bubble(Green)
-      Bubble::Create $fr.blue  $Bubble(Blue)
-      Bubble::Create $fr.alpha $Bubble(Alpha)
-      Bubble::Create $fr.curve $Bubble(Curve)
+   Bubble::Create $fr.min   $Bubble(Min)
+   Bubble::Create $fr.max   $Bubble(Max)
+   Bubble::Create $fr.red   $Bubble(Red)
+   Bubble::Create $fr.green $Bubble(Green)
+   Bubble::Create $fr.blue  $Bubble(Blue)
+   Bubble::Create $fr.alpha $Bubble(Alpha)
+   Bubble::Create $fr.curve $Bubble(Curve)
 
    #----- Edition de palette
 
@@ -657,6 +655,8 @@ proc MapBox::Create { Parent Apply Map args } {
 
    MapBox::Select ""
    TabFrame::Select .mapbox.tab 0
+
+   update
    set Data(Init) False
 }
 
@@ -910,7 +910,7 @@ proc MapBox::Update { } {
 
    colormap image $Data(Map) MAPBOXIMG True
 
-   if { $Data(RealTime) } {
+   if { $Data(RealTime) && !$Data(Init) } {
       eval $Data(Command)
    }
 }
