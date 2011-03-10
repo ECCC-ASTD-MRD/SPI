@@ -1528,7 +1528,7 @@ proc Mapper::FeatureOGR { Object Index { Locate False } } {
       }
 
       ogrlayer define $Object -featurehighlight $Index
-      set coords [ogrlayer define $Object -centroid $Index]
+      set coords [ogrlayer stats $Object -centroid $Index]
 
       if { [llength $coords] } {
          set coords [ogrlayer project $Object [lindex $coords 0] [lindex $coords 1]]

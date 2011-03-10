@@ -287,7 +287,7 @@ proc Mapper::Locate { } {
       if { [gdalband is $object] } {
          set coords [gdalband project $object [expr [gdalband define $object -width]/2.0] [expr [gdalband define $object -height]/2.0]]
       } elseif { [ogrlayer is $object] } {
-         set coords [ogrlayer define $object -centroid 0]
+         set coords [ogrlayer stats $object -centroid 0]
          if { [llength $coords] } {
             set coords [ogrlayer project $object [lindex $coords 0] [lindex $coords 1]]
          }
