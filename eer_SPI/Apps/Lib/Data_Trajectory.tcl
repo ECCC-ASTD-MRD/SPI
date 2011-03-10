@@ -62,9 +62,9 @@ namespace eval Trajectory {
    set Lbl(Traj)       { "Trajectoire" "Trajectory" }
    set Lbl(Width)      { "Largeur" "Width" }
    set Lbl(Color)      { "Couleur" "Color" }
-   set Lbl(Ico)        { "Icone" "Icon" }
+   set Lbl(Icon)       { "Icone" "Icon" }
    set Lbl(Single)     { "Unique" "Single" }
-   set Lbl(Display)    { "Affichage" "Display" }
+   set Lbl(Style)      { "Style 3D" "3D Style" }
    set Lbl(Options)    { "Options" "Options" }
    set Lbl(Height)     "Hauteur/Temps - Height/Time"
 
@@ -299,83 +299,75 @@ proc Trajectory::ParamFrame { Frame Apply } {
    set Data(Frame) [TabFrame::Add $Frame 2 [lindex $Lbl(Traj) $GDefs(Lang)] False ""]
    set Data(ApplyButton) $Apply
 
-   frame $Data(Frame).left
+   labelframe $Data(Frame).id -text "[lindex $Lbl(Traj) $GDefs(Lang)]"
+      menubutton $Data(Frame).id.type -textvariable Trajectory::Param(Mode) -bd 0 -menu $Data(Frame).id.type.lst -width 10 -anchor w
+      ComboBox::Create $Data(Frame).id.lvl Trajectory::Param(Spec) noedit unsorted nodouble -1 "" 8 3 { Trajectory::ParamGet; Trajectory::ParamPut }
+      label $Data(Frame).id.uni -width 10
+      pack $Data(Frame).id.type -side left -fill x
+      pack $Data(Frame).id.lvl -side left -fill x -expand True -padx 2 -pady 2
 
-      labelframe $Data(Frame).left.traj -text "[lindex $Lbl(Traj) $GDefs(Lang)]"
-         menubutton $Data(Frame).left.traj.type -textvariable Trajectory::Param(Mode) \
-            -bd 0 -menu $Data(Frame).left.traj.type.lst -width 10 -anchor w
-         ComboBox::Create $Data(Frame).left.traj.lvl Trajectory::Param(Spec) noedit unsorted nodouble -1 \
-                "" 8 3 { Trajectory::ParamGet; Trajectory::ParamPut }
-         label $Data(Frame).left.traj.uni -width 10
-         pack $Data(Frame).left.traj.type $Data(Frame).left.traj.lvl -side left -fill x
-      pack $Data(Frame).left.traj -side top -pady 5 -fill x
+   menu $Data(Frame).id.type.lst
+      foreach mode $Param(Modes) {
+         $Data(Frame).id.type.lst add command -label $mode \
+            -command "Trajectory::VarMode $mode"
+      }
 
-      menu $Data(Frame).left.traj.type.lst
-         foreach mode $Param(Modes) {
-            $Data(Frame).left.traj.type.lst add command -label $mode \
-               -command "Trajectory::VarMode $mode"
-         }
+   labelframe $Data(Frame).part -text "[lindex $Lbl(Particle) $GDefs(Lang)]"
+      frame $Data(Frame).part.icon
+         label $Data(Frame).part.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -anchor w -width 11
+         IcoMenu::Create $Data(Frame).part.icon.sel $GDefs(Dir)/Resources/Bitmap \
+            { zeroth.xbm stri.xbm ssquare.xbm scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } [concat NONE $Trajectory::Param(Icons)] \
+            Trajectory::Param(Icon) "Trajectory::ParamSet" 0 -relief groove -bd 2
+         pack $Data(Frame).part.icon.lbl $Data(Frame).part.icon.sel -side left
 
-      labelframe $Data(Frame).left.show -text [lindex $Lbl(Options) $GDefs(Lang)]
-         frame $Data(Frame).left.show.size
-            IcoMenu::Create $Data(Frame).left.show.size.sel $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm sizeRene.xbm" "0 1 2 3 4 5 10" \
-                Trajectory::Param(Size) "Trajectory::ParamSet" $Trajectory::Param(Size) -relief groove -bd 2
-            label $Data(Frame).left.show.size.lbl -text " [lindex $Lbl(Size) $GDefs(Lang)]" -anchor w
-         pack  $Data(Frame).left.show.size.sel $Data(Frame).left.show.size.lbl -side left -fill x
+      frame $Data(Frame).part.col
+         label $Data(Frame).part.col.lbl -text [lindex $Lbl(Color) $GDefs(Lang)] -anchor w -width 11
+         ColorBox::CreateSel $Data(Frame).part.col.sel Trajectory::Param(Color) Trajectory::ParamSet
+         pack $Data(Frame).part.col.lbl $Data(Frame).part.col.sel -side left
 
-         frame $Data(Frame).left.show.traj
-            IcoMenu::Create $Data(Frame).left.show.traj.sel $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4 5" \
-                Trajectory::Param(Style) "Trajectory::ParamSet" $Trajectory::Param(Style) -relief groove -bd 2
-            label $Data(Frame).left.show.traj.lbl -text " [lindex $Lbl(Traj) $GDefs(Lang)]" -anchor w
-         pack  $Data(Frame).left.show.traj.sel $Data(Frame).left.show.traj.lbl -side left -fill x
+      frame $Data(Frame).part.size
+         scale $Data(Frame).part.size.sel -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 25 -variable Trajectory::Param(Size) \
+            -orient horizontal -showvalue False -command "Trajectory::ParamSet; catch"
+         label $Data(Frame).part.size.lbl -text [lindex $Lbl(Size) $GDefs(Lang)] -anchor w -width 11
+         pack $Data(Frame).part.size.lbl $Data(Frame).part.size.sel -side left -fill x
 
-         frame $Data(Frame).left.show.mark
-            IcoMenu::Create $Data(Frame).left.show.mark.sel $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
-                Trajectory::Param(Mark) "Trajectory::ParamSet" $Trajectory::Param(Mark) -relief groove -bd 2
-            label $Data(Frame).left.show.mark.lbl -text " [lindex $Lbl(Fill) $GDefs(Lang)]" -anchor w
-         pack  $Data(Frame).left.show.mark.sel $Data(Frame).left.show.mark.lbl -side left -fill x
+      frame $Data(Frame).part.int
+         IcoMenu::Create $Data(Frame).part.int.sel $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
+               Trajectory::Param(Interval) "Trajectory::ParamSet" $Trajectory::Param(Interval) -relief groove -bd 2
+         label $Data(Frame).part.int.lbl -text [lindex $Lbl(Interval) $GDefs(Lang)] -anchor w -width 11
+         pack $Data(Frame).part.int.lbl $Data(Frame).part.int.sel -side left -fill x
 
-         frame $Data(Frame).left.show.width
-            IcoMenu::Create $Data(Frame).left.show.width.sel $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-                Trajectory::Param(Width) "Trajectory::ParamSet" $Trajectory::Param(Width) -relief groove -bd 2
-            label $Data(Frame).left.show.width.lbl -text " [lindex $Lbl(Width) $GDefs(Lang)]" -anchor w
-         pack  $Data(Frame).left.show.width.sel $Data(Frame).left.show.width.lbl -side left -fill x
+      frame $Data(Frame).part.mark
+         IcoMenu::Create $Data(Frame).part.mark.sel $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
+               Trajectory::Param(Mark) "Trajectory::ParamSet" $Trajectory::Param(Mark) -relief groove -bd 2
+         label $Data(Frame).part.mark.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -anchor w -width 11
+      pack $Data(Frame).part.mark.lbl $Data(Frame).part.mark.sel -side left -fill x
 
-         frame $Data(Frame).left.show.int
-            IcoMenu::Create $Data(Frame).left.show.int.sel $GDefs(Dir)/Resources/Bitmap \
-               "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
-                Trajectory::Param(Interval) "Trajectory::ParamSet" $Trajectory::Param(Interval) -relief groove -bd 2
-            label $Data(Frame).left.show.int.lbl -text " [lindex $Lbl(Interval) $GDefs(Lang)]" -anchor w
-            pack  $Data(Frame).left.show.int.sel $Data(Frame).left.show.int.lbl -side left -fill x
+      pack $Data(Frame).part.icon $Data(Frame).part.col $Data(Frame).part.size $Data(Frame).part.int $Data(Frame).part.mark -side top -padx 2 -fill x
 
-         pack $Data(Frame).left.show.size $Data(Frame).left.show.traj $Data(Frame).left.show.mark $Data(Frame).left.show.width \
-            $Data(Frame).left.show.int -side top -padx 2 -fill x
-      pack $Data(Frame).left.traj $Data(Frame).left.show -side top -pady 2 -fill x -anchor n
+   labelframe $Data(Frame).traj -text [lindex $Lbl(Traj) $GDefs(Lang)]
 
-   frame  $Data(Frame).right
+      frame $Data(Frame).traj.style
+         IcoMenu::Create $Data(Frame).traj.style.sel $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4 5" \
+               Trajectory::Param(Style) "Trajectory::ParamSet" $Trajectory::Param(Style) -relief groove -bd 2
+         label $Data(Frame).traj.style.lbl -text [lindex $Lbl(Style) $GDefs(Lang)] -anchor w -width 11
+      pack $Data(Frame).traj.style.lbl $Data(Frame).traj.style.sel -side left -fill x
 
-      labelframe $Data(Frame).right.part -text "[lindex $Lbl(Display) $GDefs(Lang)]"
-         frame $Data(Frame).right.part.ico
-            label $Data(Frame).right.part.ico.lbl -text " [lindex $Lbl(Ico) $GDefs(Lang)]" -width 12 -anchor w
-            IcoMenu::Create $Data(Frame).right.part.ico.sel $GDefs(Dir)/Resources/Bitmap \
-              { zeroth.xbm stri.xbm ssquare.xbm scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } [concat NONE $Trajectory::Param(Icons)] \
-               Trajectory::Param(Icon) "Trajectory::ParamSet" 0 -relief groove -bd 2
-            pack $Data(Frame).right.part.ico.sel $Data(Frame).right.part.ico.lbl -side left
+      frame $Data(Frame).traj.width
+         IcoMenu::Create $Data(Frame).traj.width.sel $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+               Trajectory::Param(Width) "Trajectory::ParamSet" $Trajectory::Param(Width) -relief groove -bd 2
+         label $Data(Frame).traj.width.lbl -text [lindex $Lbl(Width) $GDefs(Lang)] -anchor w -width 11
+         pack $Data(Frame).traj.width.lbl $Data(Frame).traj.width.sel -side left -fill x
 
-         frame $Data(Frame).right.part.col
-            label $Data(Frame).right.part.col.lbl -text " [lindex $Lbl(Color) $GDefs(Lang)]" -width 12 -anchor w
-            ColorBox::CreateSel $Data(Frame).right.part.col.sel Trajectory::Param(Color) Trajectory::ParamSet
-            pack $Data(Frame).right.part.col.sel $Data(Frame).right.part.col.lbl -side left
+      pack $Data(Frame).traj.width $Data(Frame).traj.style  -side top -padx 2 -fill x
 
-         pack $Data(Frame).right.part.ico $Data(Frame).right.part.col -side top -padx 2
-      pack $Data(Frame).right.part -side left -pady 2
-   pack $Data(Frame).left $Data(Frame).right -side left -padx 5 -pady 5 -anchor n -fill x
+   pack $Data(Frame).id $Data(Frame).part $Data(Frame).traj -side top -padx 5 -pady 5 -fill x -anchor n
 
-   IcoMenu::Set $Data(Frame).left.show.int.sel $Trajectory::Param(Interval)
+   IcoMenu::Set $Data(Frame).part.int.sel $Trajectory::Param(Interval)
 }
 
 #-------------------------------------------------------------------------------
@@ -472,14 +464,13 @@ proc Trajectory::ParamPut { } {
    variable Data
    variable Param
 
-   IcoMenu::Set $Data(Frame).right.part.ico.sel $Param(Icon)
-   IcoMenu::Set $Data(Frame).left.show.size.sel $Param(Size)
-   IcoMenu::Set $Data(Frame).left.show.traj.sel $Param(Style)
-   IcoMenu::Set $Data(Frame).left.show.mark.sel $Param(Mark)
-   IcoMenu::Set $Data(Frame).left.show.width.sel $Param(Width)
-   IcoMenu::Set $Data(Frame).left.show.int.sel $Param(Interval)
+   IcoMenu::Set $Data(Frame).part.icon.sel $Param(Icon)
+   IcoMenu::Set $Data(Frame).part.mark.sel $Param(Mark)
+   IcoMenu::Set $Data(Frame).part.int.sel $Param(Interval)
+   IcoMenu::Set $Data(Frame).traj.style.sel $Param(Style)
+   IcoMenu::Set $Data(Frame).traj.width.sel $Param(Width)
 
-   ColorBox::ConfigNoColor $Data(Frame).right.part.col.sel $Param(Color)
+   ColorBox::ConfigNoColor $Data(Frame).part.col.sel $Param(Color)
 }
 
 #-------------------------------------------------------------------------------
@@ -582,7 +573,7 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
 
    #----- Inserer les items dans la liste de configuration
 
-   ComboBox::DelAll $Data(Frame).left.traj.lvl
+   ComboBox::DelAll $Data(Frame).id.lvl
 
    foreach traj $Trajs {
       if { [trajectory is $traj] && [trajectory define $traj -PARCELNB] } {
@@ -606,7 +597,7 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
          }
          trajectory configure $traj -dataspec $var
          trajectory configure $traj -width $Param(Width) -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
-         ComboBox::Add $Data(Frame).left.traj.lvl $var
+         ComboBox::Add $Data(Frame).id.lvl $var
       }
    }
 
