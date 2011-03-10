@@ -383,10 +383,10 @@ proc TRAJ::SATNET { Frame Mode } {
 
    SPI::Progress 40 "Sending $file.gif over SATNET"
 
-   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.gif 100 $GDefs(TransmitUser) dorval-ib } MsgCatch ]
+   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.gif 100 $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
    if { $ErrCatch != 0 } {
-      Log::Print ERROR "Unable to transmit the $file.gif over SATNET.\n\n$MsgCatch"
+      Log::Print ERROR "Unable to transmit the $file.gif over SATNET via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
    }
 
    #----- envoyer sur les sites web.
@@ -396,10 +396,10 @@ proc TRAJ::SATNET { Frame Mode } {
    catch { exec chmod 644 ${file}.png }
 
    set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt true]
-   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_${name}_traj_satnet.png $GDefs(TransmitUser) dorval-ib } MsgCatch ]
+   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_${name}_traj_satnet.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
    if { $ErrCatch != 0 } {
-      Log::Print ERROR "Unable to transfert the $file.png on weatheroffice.\n\n$MsgCatch"
+      Log::Print ERROR "Unable to transfert the $file.png on weatheroffice via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
    }
 
    #----- supprimer les residus
