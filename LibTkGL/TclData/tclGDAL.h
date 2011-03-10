@@ -77,6 +77,7 @@ GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id);
 int        GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File);
 int        GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 int        GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
+TGeoRef*   GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int NbGCPs,int Nx,int Ny);
 void       GDAL_Wipe();
 
 int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char *Desc);

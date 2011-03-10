@@ -113,15 +113,6 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    /*Get the data units*/
 //      band->Spec->Unit=GDALGetRasterUnitType(hband);
 
-   /*Get the projection*/
-   prj=GDALGetProjectionRef(file->Set);
-   if (!prj || !strlen(prj)) {
-      prj=GDALGetGCPProjection(file->Set);
-      if (!prj || !strlen(prj) || GDALGetGCPCount(file->Set)<=1) {
-         prj=NULL;
-      }
-   }
-
    /*If size is not specified, then read the whole thing*/
    if (X0==-1 || Y0==-1 || X1==-1 || Y1==-1) {
       nx=GDALGetRasterBandXSize(hband);
@@ -152,49 +143,19 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       return(TCL_ERROR);
    }
 
-   /*Get the projection transform*/
+   /*Get the control points if any*/
    if ((band->NbGCPs=GDALGetGCPCount(file->Set))) {
       band->GCPs=(GDAL_GCP*)malloc(band->NbGCPs*sizeof(GDAL_GCP));
       memcpy(band->GCPs,GDALGetGCPs(file->Set),band->NbGCPs*sizeof(GDAL_GCP));
-   } else {
-      GDALGetGeoTransform(file->Set,tra);
-      GDALInvGeoTransform(tra,inv);
    }
 
-   if (band->GCPs) {
-      /*Get the transform from GCPs*/
-      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,NULL,NULL,NULL);
-/*
-      if (!GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,tra,TRUE)) {
-          printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
-      }
-*/
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) GDAL_BandRead: Using GCPs to get transform\n");
-#endif
-      if (!(band->Ref->GCPTransform=(void*)GDALCreateGCPTransformer(band->NbGCPs,band->GCPs,3,FALSE))) {
-         printf("(WARNING) GDAL_BandRead: Unable to fit control points\n");
-      }
-
-   } else if ((meta=GDALGetMetadata(file->Set,NULL)) && GDALExtractRPCInfo(meta,&rpcinfo)) {
-      /*Get the transform from RPCInfo*/
-      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,NULL,NULL,NULL);
-
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) GDAL_BandRead: Using RPC Info to get transform\n");
-#endif
-      if (!(band->Ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
-         printf("(WARNING) GDAL_BandRead: Unable to fit RPC\n");
-      }
-   } else {
-      band->Ref=GeoRef_WKTSetup(nx,ny,1,0,NULL,NULL,0,0,0,0,(char*)prj,tra,inv,NULL);
-   }
-
+   band->Ref=GDAL_GeoRef(file->Set,hband,band->GCPs,band->NbGCPs,nx,ny);
    GeoRef_Size(band->Ref,X0+BD,Y0+BD,0,X1-BD,Y1-BD,0,BD);
    GeoRef_Qualify(band->Ref);
 
    /*Get the No Data Value*/
    GDALGetRasterNoDataValue(hband,&i);
+
    if (i)
       band->Def->NoData=GDALGetRasterNoDataValue(hband,&i);
 

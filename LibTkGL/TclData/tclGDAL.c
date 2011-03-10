@@ -1436,16 +1436,132 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
 
    /* Get the georeference */
    if (band && Mode!='w' && Mode!='W') {
-      GDALGetGeoTransform(set,tran);
-      GDALInvGeoTransform(tran,inv);
-      file->Ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,(char*)GDALGetProjectionRef(file->Set),tran,inv,NULL);
-      GeoRef_Size(file->Ref,0,0,0,GDALGetRasterBandXSize(band)-1,GDALGetRasterBandYSize(band)-1,0,0);
+      file->Ref=GDAL_GeoRef(set,band,NULL,0,GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
       GeoRef_Qualify(file->Ref);
    }
 
    GDAL_FilePut(Interp,file);
 
    return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GDAL_GeoRef>
+ * Creation : Mars 2011 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Construire un objet georef pour une bande.
+ *
+ * Parametres :
+ *  <Set>     : Dataset.
+ *  <Band>    : Bande
+ *  <GCPs>    : Liste des points de controle
+ *  <NbGCPs>  : Nombre de points de controle
+ *  <Nx>      : Dimension en X
+ *  <Ny>      : Dimension en Y
+ *
+ * Retour:
+ *  <georef>  : Objet georef
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int NbGCPs,int Nx,int Ny) {
+
+   GDALRPCInfo rpcinfo;
+
+   TGeoRef *ref;
+   char    **meta,*projdef,*gdname;
+   int      gdtype;
+   double   alpha,beta,gamma,xcent,ycent,xcell,ycell,xorig,yorig;
+   double   tran[6],inv[6];
+
+   meta=GDALGetMetadata(Set,NULL);
+
+   /*Is this an IOAPI file*/
+   if (meta && CSLFetchNameValue(meta,"NC_GLOBAL#IOAPI_VERSION")) {
+      fprintf(stderr,"(DEBUG) GDAL_GeoRef: Found IOAPI reference\n");
+
+      projdef=(char*)malloc(1024*sizeof(char));
+
+      /*Extract needed info from metadata*/
+      gdname=(char*)CSLFetchNameValue(meta,"NC_GLOBAL#GDNAM");
+      gdtype=atoi(CSLFetchNameValue(meta,"NC_GLOBAL#GDTYP"));
+      alpha =atof(CSLFetchNameValue(meta,"NC_GLOBAL#P_ALP"));
+      beta  =atof(CSLFetchNameValue(meta,"NC_GLOBAL#P_BET"));
+      gamma =atof(CSLFetchNameValue(meta,"NC_GLOBAL#P_GAM"));
+
+      xcent=atof(CSLFetchNameValue(meta,"NC_GLOBAL#XCENT"));
+      ycent=atof(CSLFetchNameValue(meta,"NC_GLOBAL#YCENT"));
+      xorig=atof(CSLFetchNameValue(meta,"NC_GLOBAL#XORIG"));
+      yorig=atof(CSLFetchNameValue(meta,"NC_GLOBAL#YORIG"));
+      xcell=atof(CSLFetchNameValue(meta,"NC_GLOBAL#XCELL"));
+      ycell=atof(CSLFetchNameValue(meta,"NC_GLOBAL#YCELL"));
+
+      switch (gdtype) {
+         case 2: /*Lambert*/
+            if (abs(beta)==90) {
+               beta+=(beta<0)?(0.000001):(-0.000001);
+            }
+            sprintf(projdef,
+                  "PROJCS[\"(%s) NAD83 / IOAPI Lambert Conformal Conic\",GEOGCS[\"NAD83\",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic_2SP\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",%f],PARAMETER[\"Standard_Parallel_1\",%f],PARAMETER[\"Standard_Parallel_2\",%f],PARAMETER[\"Latitude_Of_Origin\",%f],UNIT[\"Meter\",1.0]]",
+                  gdname,xcent,alpha,beta,ycent);
+            break;
+         case 5: /*UTM*/
+            sprintf(projdef,
+                  "PROJCS[\"(%s) NAD83 / IOAPI UTM zone %.0f \",GEOGCS[\"NAD83\",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",%f],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1]]",
+                  gdname,alpha,(6*alpha+3));
+            break;
+         case 6:  /*Polar Stereograhic*/
+            sprintf(projdef,
+                  "PROJCS[\"(%s) WGS 84 / IOAPI Polar Stereographic\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_true_scale\",%f],PARAMETER[\"latitude_of_origin\",%f],PARAMETER[\"central_meridian\",%f],PARAMETER[\"scale_factor\",0.9341],PARAMETER[\"false_easting\",0.0],PARAMETER[\"false_northing\",0.0],UNIT[\"metre\",1]]",
+                  gdname,beta,ycent,gamma);
+            break;
+      }
+
+      tran[0]=xorig;tran[1]=xcell;tran[2]=0.0;
+      tran[3]=yorig;tran[4]=0.0;tran[5]=ycell;
+      GDALInvGeoTransform(tran,inv);
+      ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
+      free(projdef);
+   } else {
+      projdef=GDALGetProjectionRef(Set);
+
+      /*Get the projection transform*/
+      if (GCPs) {
+         projdef=GDALGetGCPProjection(Set);
+         ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
+
+         /*
+         if (!GDALGCPsToGeoTransform(bGCPs,GCPs,tran,TRUE)) {
+            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points\n");
+         }
+         */
+#ifdef DEBUG
+         fprintf(stdout,"(DEBUG) GGDAL_GeoRef: Using GCPs to get transform\n");
+#endif
+         if (!(ref->GCPTransform=(void*)GDALCreateGCPTransformer(NbGCPs,GCPs,3,FALSE))) {
+            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points\n");
+         }
+      } else if (meta && GDALExtractRPCInfo(meta,&rpcinfo)) {
+         /*Get the transform from RPCInfo*/
+         ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
+
+#ifdef DEBUG
+         fprintf(stdout,"(DEBUG) GDAL_GeoRef: Using RPC Info to get transform\n");
+#endif
+         if (!(ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
+            printf("(WARNING) GDAL_GeoRef: Unable to fit RPC\n");
+         }
+      } else {
+         GDALGetGeoTransform(Set,tran);
+         GDALInvGeoTransform(tran,inv);
+         ref=GeoRef_WKTSetup(Nx,Ny,1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
+      }
+   }
+   GeoRef_Size(ref,0,0,0,Nx-1,Ny-1,0,0);
+
+   return(ref);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
