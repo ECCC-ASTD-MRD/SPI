@@ -829,7 +829,7 @@ double GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
 
    OGREnvelope env;
    OGRSpatialReferenceH srs;
-   double area;
+   double area,d;
 
    *X=0.0;
    *Y=0.0;
@@ -837,8 +837,9 @@ double GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y) {
    area=GPC_Centroid2DProcess(Geom,X,Y);
 
    if (area!=0.0) {
-      *X*=1.0/(6.0*area);
-      *Y*=1.0/(6.0*area);
+      d=1.0/(6.0*area);
+      *X*=d;
+      *Y*=d;
    }
 
    if (!(srs=OGR_G_GetSpatialReference(Geom)) || OSRIsGeographic(srs)) {

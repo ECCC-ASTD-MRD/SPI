@@ -70,15 +70,15 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    unsigned long  nf;
    double         x,y,a,min,max,val;
 
-   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-centroid","-map","-size","-projection","-georef",
+   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-map","-size","-projection","-georef",
                                  "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-label",NULL };
-   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,CENTROID,MAP,SIZE,PROJECTION,GEOREF,
+   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,MAP,SIZE,PROJECTION,GEOREF,
                              MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,LABEL };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
       Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Layer name unknown: \"",Name,"\"",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    for(i=0;i<Objc;i++) {
@@ -245,24 +245,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   return(OGR_SetTypeObj(Interp,Objv[++i],layer->Layer,field,layer->Feature[f],j));
                }
             }
-            break;
-
-         case CENTROID:
-            if (Objc!=2) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"index");
-               return(TCL_ERROR);
-            }
-
-            lst=Tcl_NewListObj(0,NULL);
-            Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-
-            if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-               a=GPC_Centroid2D(geom,&x,&y);
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(a));
-            }
-            Tcl_SetObjResult(Interp,lst);
             break;
 
          case GEOMETRY:
@@ -581,31 +563,32 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 */
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           j,fop,fn,idx,nseg;
-   double        x,y,lat,lon,tol,val,min,max;
-   long         *table,y0,y1;
-   unsigned long f;
-   OGR_Layer    *layer,*layerop;
-   TGeoRef      *ref,*ref0;
-   OGRCoordinateTransformationH tr=NULL;
-   OGREnvelope   env,lim;
-   OGRGeometryH  geom,geomop,new,prev,uni;
-   Tcl_Obj      *lst,*obj;
+   OGRCoordinateTransformationH  tr=NULL;
+   OGREnvelope                   env,lim;
+   OGRGeometryH                  geom,geomop,new,prev,uni;
+   OGRSpatialReferenceH          srs=NULL;
+
+   int           j,idx,nseg;
+   double        x,y,lat,lon,tol,val,min,max,area;
+   long          *table,y0,y1;
+   unsigned long f,fop;
+   OGR_Layer     *layer,*layerop;
+   TGeoRef       *ref,*ref0;
+   Tcl_Obj       *lst,*obj;
    char          buf[32];
 
-   static CONST char *sopt[] = { "-table","-tag","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection",
+   static CONST char *sopt[] = { "-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection",
                                  "-simplify","-segmentize","-close","-flatten",NULL };
-   enum        opt {  TABLE,TAG,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
+   enum        opt {  TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
       Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Layer name unknown: \"",Name,"\"",(char *)NULL);
       return(TCL_ERROR);
    }
-   lst=Tcl_NewListObj(0,NULL);
 
    if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"option",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -623,6 +606,52 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_IncrRefCount(layer->Tag);
          }
          break;
+
+         case CENTROID:
+            if (Objc!=1 && Objc!=2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"[index]");
+               return(TCL_ERROR);
+            }
+
+            x=y=area=0.0;
+            lst=Tcl_NewListObj(0,NULL);
+
+            if (Objc==1) {
+               for(f=0;f<layer->NFeature;f++) {
+                  if (layer->Select[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                     area+=GPC_Centroid2DProcess(geom,&x,&y);
+
+                     if (area!=0.0) {
+                        val=1.0/(6.0*area);
+                        x*=val;
+                        y*=val;
+                     }
+                  }
+               }
+
+               if (!(srs=OGR_L_GetSpatialRef(layer->Layer)) || OSRIsGeographic(srs)) {
+                  OGR_L_GetExtent(layer->Layer,&env,1);
+                  if (-180.0<=env.MinX && 180.0>=env.MaxX && (env.MaxX-env.MinX)>180.0) {
+                     x-=180.0;
+                  }
+               }
+               if (area) {
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area<0?-area:area));
+               }
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[1],&f);
+
+               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  area=GPC_Centroid2D(geom,&x,&y);
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area));
+               }
+            }
+            Tcl_SetObjResult(Interp,lst);
+            break;
 
       case TRANSFORM:
          if (Objc!=2 && Objc!=3) {
@@ -666,6 +695,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
 
       case PROJECT:
+         lst=Tcl_NewListObj(0,NULL);
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&y);
          layer->Ref->Project(layer->Ref,x,y,&lat,&lon,1,1);
@@ -675,6 +705,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
 
       case UNPROJECT:
+         lst=Tcl_NewListObj(0,NULL);
          Tcl_GetDoubleFromObj(Interp,Objv[1],&lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&lon);
          layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,1,1);
@@ -702,6 +733,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             /*Otherwise, use the on defined in the layer*/
             OGR_L_GetExtent(layer->Layer,&env,1);
          }
+         lst=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MinX));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MinY));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxX));
