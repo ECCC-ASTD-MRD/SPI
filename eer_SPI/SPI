@@ -33,14 +33,21 @@ do
       then
          XVFB="/usr/bin/Xvfb"
       else
-         XVFB="Xvfb"
+         XVFB=`which Xvfb`
+      fi
+
+      #----- Check if Xvbf exists
+      if [[ ! (-n $XVFB) ]]
+      then
+         echo "(ERROR) Could not find Xvfb"
+         exit 1
       fi
 
       #----- Start Xvfb
       while [[ (-z $LIVE) ]]
       do
          SERVER=$RANDOM
-         echo "Batch mode: Initializing Xvfb with :$SERVER"
+         echo "(INFO) Trying initializing Xvfb with :$SERVER"
 
          ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} >/dev/null 2>&1 &
          PID_XVFB=$!
@@ -48,7 +55,7 @@ do
          LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
       done
 
-      echo "(INFO) Batch mode: Done initializing Xvfb"
+      echo "(INFO) Done initializing Xvfb"
 
       #----- In case of problem with the whole script, kill Xvfb stuff
       trap "(kill $PID_XVFB; rm -f /tmp/.X11-unix/X${SERVER}) >/dev/null 2>&1" 0 1 2 3 13 15
