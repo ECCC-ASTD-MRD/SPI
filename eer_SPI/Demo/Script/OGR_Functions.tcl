@@ -26,6 +26,7 @@ puts \n[file tail [info script]]
 
 #----- Open the files
 set layers0 [ogrfile open FILE0 read DataIn/Volcano.shp]
+#set layers0 [ogrfile open FILE0 read DataIn/noire_areas.shp]
 
 #----- Create latlon referential
 georef create LLREF
@@ -34,6 +35,7 @@ georef define LLREF -projection {GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID
 #----- Read the layers
 puts  "   Layers              : $layers0"
 ogrlayer read LAYER0 FILE0 [lindex [lindex $layers0 0] 1]
+puts  "   Layer centroid     :  [ogrlayer stats LAYER0 -centroid]"
 
 #----- Get the referential
 set ref0  [ogrlayer define LAYER0 -georef]
@@ -42,14 +44,15 @@ puts "   Reference projection: [georef define $ref0 -projection]"
 puts "   LatLon    projection: [georef define LLREF -projection]"
 puts "   Test reference same : [georef isequal $ref0 LLREF]"
 
+#----- simplify the geometry
+ogrlayer stats LAYER0 -segmentize 1.0
+ogrlayer stats LAYER0 -simplify  3
+
 #----- Make a buffer on the layer
 #ogrlayer stats LAYER0 -buffer 1.0 20
 
 #----- transform a whole layer
 ogrlayer stats LAYER0 -transform LLREF $ref0
-
-#----- simplify the geometry
-ogrlayer stats LAYER0 -simplify  3
 
 #----- Get some geometry
 set geom0 [ogrlayer define LAYER0 -geometry 0]
@@ -60,6 +63,7 @@ puts  "   Copied geom object  : [ogrgeometry copy GEOM2 $geom1]"
 puts  "   WKT output          : [ogrgeometry define $geom1 -wkt]"
 puts  "   GML output          : [ogrgeometry define $geom1 -gml]"
 puts  "   KML output          : [ogrgeometry define $geom1 -kml]"
+puts  "   JSON output         : [ogrgeometry define $geom1 -json]"
 
 set sub [ogrgeometry define $geom0 -geometry]
 puts  "   Geom object         : $geom0"
@@ -73,17 +77,31 @@ puts  "   Sub geom points     : [ogrgeometry define $sub -points]"
 ogrgeometry stats $geom0 -transform LLREF $ref0
 puts  "   Sub geom transformed: [ogrgeometry define $sub -points]"
 
-#----- Try a union
+#----- Try a some operators
+puts  "   Geom empty ?        : [ogrgeometry stats $geom0 -isempty]"
+puts  "   Geom valid ?        : [ogrgeometry stats $geom0 -isvalid]"
+puts  "   Geom simple ?       : [ogrgeometry stats $geom0 -issimple]"
+puts  "   Geom is ring ?      : [ogrgeometry stats $geom0 -isring]"
 puts  "   Geom area           : [ogrgeometry stats $geom0 -area]"
 puts  "   Geom perimeter      : [ogrgeometry stats $geom0 -length]"
 puts  "   Geom centroid       : [ogrgeometry stats $geom0 -centroid]"
+
+ogrgeometry stats $geom0 -segmentize 1.0
+puts  "   Geom segmentized    : [ogrgeometry define $sub -points]"
+
+ogrgeometry stats $geom0 -simplify 10.0
+puts  "   Geom simplified     : [ogrgeometry define $sub -points]"
+
 set union [ogrgeometry stats $geom0 -union $geom1]
 puts  "   Union area          : [ogrgeometry stats $union -area]"
 
 set inter [ogrgeometry stats $geom0 -intersection $geom1]
 puts  "   Intersection area   : [ogrgeometry stats $inter -area]"
 
-#----- Let's create a point
+set hull [ogrgeometry stats $geom0 -convexhull]
+puts  "   Convex hull area    : [ogrgeometry stats $hull -area]"
+
+#----- Let's create a polygon
 ogrgeometry create POLY "Polygon"
 ogrgeometry create RING "Linear Ring"
 ogrgeometry define RING -points { 10 10 11 11 20 11 10 10 }
@@ -91,7 +109,8 @@ ogrgeometry define POLY -geom True RING
 puts  "   Obj area            : [ogrgeometry stats POLY -area]"
 puts  "   Obj points          : [ogrgeometry define [ogrgeometry define POLY -geom] -points]"
 
-set geom [ogrgeometry stats POLY -buffer 1.0 10]
+#----- Make a buffer around it
+set geom [ogrgeometry stats POLY -buffer 1.0 20]
 puts  "   Obj buffered points : [ogrgeometry define [ogrgeometry define $geom -geom] -points]"
 
 #----- Try some sql
@@ -100,12 +119,6 @@ puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
 set reqlayer Volcano
 ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN (\"South America\",\"Tau Ceti\")"
-puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
-
-
-set layers [ogrfile open FILE1 read /cnfs/ops/production/cmoe/geo/CanVec/031/h/031h05/031h05_6_0_BS_2010009_2.shp]
-puts $layers
-ogrlayer sqlselect LAYERRESULT FILE1 "SELECT * FROM 031h05_6_0_BS_2010009_2 WHERE function = 1"
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
 ogrlayer free LAYER0

@@ -74,6 +74,7 @@ set tests {
    OGR_Rasterize.tcl
    OGR_Simplify.tcl
    OGR_TZCheck.tcl
+   { OGR_Export2txt.tcl DataIn/land_bg_p.shp }
    RADAR_Functions.tcl
    RADAR_EchoTop.tcl
    TCL_ProjectionData.tcl

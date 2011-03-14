@@ -28,7 +28,7 @@ puts \n[file tail [info script]]
 #model read DAE /users/dor/afsr/005/Data/model.dae
 set models [glob -tails -directory /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada *]
 #set models TourSunlife
-
+set models AldredBuilding
 foreach model $models {
    puts "   Reading $model"
    model read $model /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/$model/doc.kml
@@ -52,11 +52,11 @@ if { 0 } {
    file copy -force DataIn/Montreal.fstd DataOut/Montreal.fstd
    fstdfile open FILE append DataOut/Montreal.fstd
    fstdfield read FLD FILE -1 "" -1 -1 -1 "" "IBLK"
-   fstdfield clear FLD 0.0
+   fstdfield clear FLD 1.0
 
    foreach model $models {
       puts "   Rasterising $model"
-      fstdfield gridinterp FLD $model FAST
+      fstdfield gridinterp FLD $model FAST 0.0
    }
    fstdfield define FLD -NOMVAR MASK
    fstdfield write FLD FILE 0 True

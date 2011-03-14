@@ -108,7 +108,7 @@ fstdfile open 2 write DataOut/OBS_BURP_Krig.fstd
 
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" ""
 
-#----- Recuperer l'observation a interpoler (kriging)
+#----- Interpoler dans une grille (kriging)
 
 fstdfield gridinterp FLD BURPDATA [clock seconds] 11012 LINEAR 0.0 1.0 10
 fstdfield write FLD 2 -32 False
