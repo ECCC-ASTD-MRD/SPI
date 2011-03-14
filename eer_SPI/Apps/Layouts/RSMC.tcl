@@ -924,15 +924,15 @@ proc RSMC::JoinTransfert { Frame } {
       foreach hour $ip2 {
 
          SPI::Progress +0 "Reading Field $field at $hour"
-         if { [MetData::Find PRINT [FieldBox::GetFID -1] -1 "" -1 $hour -1 ""  $field] } {
+         if { [MetData::Find PRINT [FieldBox::GetFID -1] -1 $Data(ETICKET) -1 $hour -1 ""  $field] } {
 
-            SPI::Progress +5 "Setting up product for $field at $hour"
+            SPI::Progress +5 "Setting up product for $field at $hour ($Data(ETICKET))"
 
             Viewport::UnAssign $Frame $Page(VP)
             Viewport::Assign $Frame $Page(VP) PRINT
             RSMC::LayoutUpdate  $Frame
 
-            SPI::Progress +5 "Printing product for $field at $hour"
+            SPI::Progress +5 "Printing product for $field at $hour ($Data(ETICKET))"
             PrintBox::Image $Frame gif $path/L${id}CA_0$no
             exec convert $path/L${id}CA_0$no.gif -resize 280x280 $path/S${id}CA_0$no.gif
 

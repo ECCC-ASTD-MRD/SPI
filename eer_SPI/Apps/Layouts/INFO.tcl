@@ -64,7 +64,8 @@ namespace eval INFO {
    set Data(Products)   { "Integrated concentration map(s)"
                           "Total deposition map(s)"
                           "Trajectory(ies)" }
-   set Data(Situations) { "--- EXERCISE ONLY !!! ---" "--- THIS IS NOT AN EXERCISE !!! ---" }
+   set Data(Situations) { "--- EXERCISE ONLY !!! ---"
+                          "--- THIS IS NOT AN EXERCISE !!! ---" }
    set Data(BlaBlaHead) "PLEASE FIND ENCLOSED THE SET OF MAPS FOR THIS SCENARIO.
 THE MAPS CAN BE VIEWED ON THE INTERNET AT THE FOLLOWING MIRROR WEB PAGES:"
 
@@ -201,7 +202,7 @@ proc INFO::LayoutInit { Frame } {
 
    menu $Frame.name.list -tearoff 0 -bd 1 -bg $GDefs(ColorHighLight) -activeborderwidth 1
    foreach name $Data(Names) {
-     $Frame.name.list add command -label $name -font XFont20 -command "set INFO::Data(Name) \"$name\"; INFO::PageInit $Frame"
+      $Frame.name.list add command -label $name -font XFont20 -command "set INFO::Data(Name) \"$name\"; INFO::PageInit $Frame"
    }
 
    #----- Liste des produits
@@ -224,7 +225,7 @@ proc INFO::LayoutInit { Frame } {
 
    menu $Frame.situ.list -tearoff 0 -bd 1 -activeborderwidth 1 -bg $GDefs(ColorHighLight)
    foreach situation $Data(Situations) {
-       $Frame.situ.list add command -label $situation -font XFont24 -command "set INFO::Data(Situation) \"$situation\""
+      $Frame.situ.list add command -label "$situation" -font XFont24 -command "set INFO::Data(Situation) \"$situation\"; INFO::Detail $Frame"
    }
 
    #----- Details autres (blabla)
@@ -365,8 +366,8 @@ proc INFO::Detail { Frame } {
       -outline black -tags DETAIL
 
    #---- Fiction ou realite ???
-   $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+290] -text $Data(Situation) \
-         -fill black -tags DETAIL -font XFont24
+   $canvas create text [expr $Page(Width)/2] [expr $Page(Border)+290] -text "$Data(Situation)" \
+      -fill black -tags DETAIL -font XFont24
 
    #---- Options variables
    $canvas create window [expr $Page(Width)/2] [expr $Page(Border)+290] -window $Frame.situ -tags "DETAIL NOPRINT" -anchor c
