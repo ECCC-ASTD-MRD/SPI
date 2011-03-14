@@ -2094,6 +2094,9 @@ proc Shape::UnBindFull { Canvas Tag } {
 #
 #----------------------------------------------------------------------------
 
+proc Shape::DrawNONE { Canvas Pixel Tags Color Size Fill } {
+}
+
 proc Shape::DrawVBAR { Canvas Pixel Tags Color Size Fill } {
 
    if { $Fill } {

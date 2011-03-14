@@ -795,7 +795,11 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          set date  [lindex $parcel 0]
          set elev  [lindex $parcel 5]
          set spd   [lindex $parcel 8]
-         lappend secs $date
+
+         #----- Keep only > hourly date/time for axis
+         if { [expr $date%3600]==0 || $date==$date0 || $date==$date1 } {
+            lappend secs $date
+         }
          set hour [clock format $date -format "%H" -gmt true]
          set min  [clock format $date -format "%M" -gmt true]
          if { $hour=="00" } {
