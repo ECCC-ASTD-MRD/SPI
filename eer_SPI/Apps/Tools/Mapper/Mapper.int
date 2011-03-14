@@ -1454,22 +1454,24 @@ proc Mapper::SelectOGRClear { Object } {
 proc Mapper::FeatureOGRGeom { Geom Depth } {
    variable Data
 
-   set w [expr $Depth*3]
-   eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%s\\n\" \"\" [ogrgeometry define $Geom -type]\]
-   incr w 3
+   if { $Geom!="" } {
+      set w [expr $Depth*3]
+      eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%s\\n\" \"\" [ogrgeometry define $Geom -type]\]
+      incr w 3
 
-   incr Depth
-   foreach geom [ogrgeometry define $Geom -geometry] {
-       Mapper::FeatureOGRGeom $geom $Depth
-   }
-
-   if { [ogrgeometry define $Geom -dimension]==2 } {
-      foreach { cx cy } [ogrgeometry define $Geom -points] {
-         eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f\\n\" \"\" $cx $cy\]
+      incr Depth
+      foreach geom [ogrgeometry define $Geom -geometry] {
+         Mapper::FeatureOGRGeom $geom $Depth
       }
-   } else {
-      foreach { cx cy cz } [ogrgeometry define $Geom -points] {
-         eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f %.4f\\n\" \"\" $cx $cy $cz\]
+
+      if { [ogrgeometry define $Geom -dimension]==2 } {
+         foreach { cx cy } [ogrgeometry define $Geom -points] {
+            eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f\\n\" \"\" $cx $cy\]
+         }
+      } else {
+         foreach { cx cy cz } [ogrgeometry define $Geom -points] {
+            eval $Data(Frame3).geom.text insert end \[format \"%-${w}s%.4f %.4f %.4f\\n\" \"\" $cx $cy $cz\]
+         }
       }
    }
 }
