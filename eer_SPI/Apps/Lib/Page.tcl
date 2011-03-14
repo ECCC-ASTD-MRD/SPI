@@ -95,6 +95,7 @@
 #    Page::UpdateCommand   { Frame }
 #    Page::UpdateItems     { Frame }
 #    Page::SnapGrid        { Frame }
+#    Page::Snap            { Frame X Y }
 #    Page::SnapRef         { Frame X Y }
 #    Page::WidgetBind      { Frame Tag }
 #    Page::WidgetShow      { Frame Tag X Y Visible }
@@ -1748,7 +1749,7 @@ proc Page::SnapGrid { Frame } {
 
    if { $Param(Grid) } {
 
-      if { $Param(Snap) > 1 } {
+      if { $Param(Snap)>1 } {
 
          for { set x 0 } { $x < [winfo width $Frame.page.canvas] } { incr x $Param(Snap) } {
             for { set y 0 } { $y < [winfo height $Frame.page.canvas] } { incr y $Param(Snap) } {
@@ -1758,6 +1759,33 @@ proc Page::SnapGrid { Frame } {
       }
       $Frame.page.canvas lower PAGEGRID
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::Snap>
+# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Appliquer le "snap" a une parire de coordonnee
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#   <X>      : Variable contenant la valeur X
+#   <Y>      : Variable contenant la valeur Y
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Page::Snap { Frame X Y } {
+   variable Param
+
+   upvar $X x
+   upvar $Y y
+
+   set x [$Frame.page.canvas canvasx $x $Param(Snap)]
+   set y [$Frame.page.canvas canvasy $y $Param(Snap)]
 }
 
 #----------------------------------------------------------------------------

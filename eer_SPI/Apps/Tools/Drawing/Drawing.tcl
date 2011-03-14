@@ -2435,8 +2435,7 @@ proc Drawing::VertexAdd { Frame VP X Y args } {
          lset Current(Params) 2 $VP
       }
    } else {
-      set X           [expr $Data(Grid)?[$Frame.page.canvas canvasx $X $Page::Data(Snap)]:$X]
-      set Y           [expr $Data(Grid)?[$Frame.page.canvas canvasy $Y $Page::Data(Snap)]:$Y]
+      Page::Snap $Frame X Y
       set Current(Vertex) "$Current(Vertex) $X $Y"
    }
 
@@ -2575,8 +2574,7 @@ proc Drawing::VertexFollow { Frame VP X Y Scan } {
       set VP          -1
 
       if { !$Scan } {
-         set X        [expr $Data(Grid)?[$Frame.page.canvas canvasx $X $Page::Data(Snap)]:$X]
-         set Y        [expr $Data(Grid)?[$Frame.page.canvas canvasy $Y $Page::Data(Snap)]:$Y]
+         Page::Snap $Frame X Y
       }
       set tmp        "$X $Y"
       set tmplist     $Current(Vertex)
