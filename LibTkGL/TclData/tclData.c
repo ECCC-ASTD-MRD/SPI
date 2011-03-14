@@ -2737,10 +2737,10 @@ Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y) {
 int Data_Within(TData *Field,float Val) {
 
    if (Field->Spec->InterNb) {
-      if (Val>=Field->Spec->Inter[0] && Val<=Field->Spec->Inter[Field->Spec->InterNb-1])
+      if (Val>=Field->Spec->Inter[0])
          return(1);
    } else {
-      if (Val>=Field->Spec->Min && Val<=Field->Spec->Max)
+      if ((Val>=Field->Spec->Min || Field->Spec->MapBellow) && (Val<=Field->Spec->Max || Field->Spec->MapAbove))
          return(1);
    }
    return(0);
@@ -2770,10 +2770,10 @@ int Data_WithinNb(TData *Field) {
    for(n=0;n<FSIZE2D(Field->Def);n++) {
       Def_GetMod(Field->Def,n,val);
       if (Field->Spec->InterNb) {
-         if (val>=Field->Spec->Inter[0] && val<=Field->Spec->Inter[Field->Spec->InterNb-1])
+         if (val>=Field->Spec->Inter[0])
             t++;
       } else {
-         if (val>=Field->Spec->Min && val<=Field->Spec->Max)
+         if ((val>=Field->Spec->Min || Field->Spec->MapBellow) && (val<=Field->Spec->Max || Field->Spec->MapAbove))
             t++;
       }
    }
