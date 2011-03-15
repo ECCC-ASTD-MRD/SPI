@@ -50,6 +50,7 @@ set tests {
    FSTD_Sort.tcl
    FSTD_ThreadDemo.tcl
    GDAL_Basic.tcl
+   GDAL_Functions.tcl
    GDAL_Slope.tcl
    { GDAL_PixelCoord.tcl DataIn/srtm_n045w074_badmedian3x3 }
    OBS_BUFR.tcl

@@ -36,7 +36,6 @@ fstdfield readcube UU
 #----- Calcule le champs de directions
 vexpr WD @UU@
 
-
 #----- Extraire les valeurs aux niveaux
 set listeWD {}
 for { set k 0 } { $k < [fstdfield define UU -NK] } { incr k } {

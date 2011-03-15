@@ -65,5 +65,5 @@ gdalband configure DXX -desc "Second order partial dxy derivative"
 
 catch { file delete DataOut/GDAL_Slope.tif }
 gdalfile open FILEOUT write DataOut/GDAL_Slope.tif "GeoTIFF"
-gdalband write { SLOPE SLOPE100 PCURV TCURV ASPEC DXX } FILEOUT { COMPRESS JPEG PROFILE GeoTIFF TFW YES }
+gdalband write { SLOPE SLOPE100 PCURV TCURV ASPEC DXX } FILEOUT
 gdalfile close FILEOUT
