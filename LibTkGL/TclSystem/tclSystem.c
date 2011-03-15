@@ -33,6 +33,10 @@
 */
 #include "tclSystem.h"
 
+#ifdef LNK_DMV
+#include "dmv.h"
+#endif
+
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -40,6 +44,7 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclSystem_Init>
@@ -192,8 +197,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid;
 
-   static CONST char *sopt[] = { "daemonize","fork","info","limit","usage","process","filesystem",NULL };
-   enum               opt { DAEMONIZE,FORK,INFO,LIMIT,USAGE,PROCESS,FILESYSTEM };
+   static CONST char *sopt[] = { "daemonize","fork","info","limit","usage","process","filesystem","dmv",NULL };
+   enum               opt { DAEMONIZE,FORK,INFO,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
 
    Tcl_ResetResult(Interp);
 
@@ -241,6 +246,9 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          return(System_FileSystem(Interp,Objc-2,Objv+2));
          break;
 
+      case DMV:
+         return(System_DataMover(Interp,Objc-2,Objv+2));
+         break;
    }
    return(TCL_OK);
 }
@@ -879,3 +887,102 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_SetObjResult(Interp,obj);
    return(TCL_OK);
 }
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_DataMover>
+ * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la configuration des parametres de deamonisation.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+
+static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   int   i,idx,fork=0,init=0;
+   char *file;
+   static CONST char *sopt[] = { "-prepare","-step","-copy","-move","-sync","-wait","exec",NULL };
+   enum               opt { PREPARE,STEP,COPY,MOVE,SYNC,WAIT,EXEC };
+
+#ifdef LNK_DMV
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case PREPARE:
+            dmvprepare()
+            break;
+
+         case STEP:
+            if (!init) {
+               dmvinit_c();
+               init=1;
+            }
+            dmvstep(Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
+            i+=2;
+            break;
+
+         case COPY:
+            if (!init) {
+               dmvinit_c();
+               init=1;
+            }
+            dmvcopy_c(Tcl_GetString(Objv[i+3]),Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
+            i+=3;
+            break;
+
+         case MOVE:
+            if (!init) {
+               dmvinit_c();
+               init=1;
+            }
+            dmvcopy_c(Tcl_GetString(Objv[i+3]),Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
+            i+=3;
+            break;
+
+         case SYNC:
+            if (!init) {
+               dmvinit_c();
+               init=1;
+            }
+            dmvsync_c(Tcl_GetString(Objv[i+3]),Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
+            i+=3;
+            break;
+
+         case WAIT:
+            if (!init) {
+               dmvinit_c();
+               init=1;
+            }
+            dmvwait_c();
+            break;
+
+         case EXEC:
+            if (!init) {
+               dmvinit_c();
+               init=1;
+            }
+            dmvexec_c(Tcl_GetString(Objv[++i]));
+            break;
+         }
+   }
+   if (init)
+      dmvlaunch_c();
+#endif
+
+   return(TCL_OK);
+}
+
