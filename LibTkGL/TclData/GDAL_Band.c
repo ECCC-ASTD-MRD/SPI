@@ -486,14 +486,18 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    OGREnvelope   envg,envp;
 
    /* Setup the intersecting area */
-   TRANSFORM(Ref,dx,dy,X0-0.5,Y0-0.5);
+   dx=(double)X0-0.5;
+   dy=(double)Y0-0.5;
    OGR_G_SetPoint(Def->Pick,0,dx,dy,0);
    OGR_G_SetPoint(Def->Pick,4,dx,dy,0);
-   TRANSFORM(Ref,dx,dy,X0-0.5,Y1+0.5);
+   dx=(double)X0-0.5;
+   dy=(double)Y1+0.5;
    OGR_G_SetPoint(Def->Pick,1,dx,dy,0);
-   TRANSFORM(Ref,dx,dy,X1+0.5,Y1+0.5);
+   dx=(double)X1+0.5;
+   dy=(double)Y1+0.5;
    OGR_G_SetPoint(Def->Pick,2,dx,dy,0);
-   TRANSFORM(Ref,dx,dy,X1+0.5,Y0-0.5);
+   dx=(double)X1+0.5;
+   dy=(double)Y0-0.5;
    OGR_G_SetPoint(Def->Pick,3,dx,dy,0);
 
    OGR_G_GetEnvelope(Def->Pick,&envp);
@@ -829,33 +833,35 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
                   /*Use enveloppe limits to initialize the initial lookup range*/
                   OGR_G_GetEnvelope(ring,&env);
-                  env.MaxX+=0.5;env.MaxY+=0.5;
-                  env.MinX=env.MinX<0?0:env.MinX;
-                  env.MinY=env.MinY<0?0:env.MinY;
-                  env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
-                  env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
+                  if (!(env.MaxX<ToRef->X0 || env.MinX>ToRef->X1 || env.MaxY<ToRef->Y0 || env.MinY>ToRef->Y1)) {
+                     env.MaxX+=0.5;env.MaxY+=0.5;
+                     env.MinX=env.MinX<0?0:env.MinX;
+                     env.MinY=env.MinY<0?0:env.MinY;
+                     env.MaxX=env.MaxX>ToRef->X1?ToRef->X1:env.MaxX;
+                     env.MaxY=env.MaxY>ToRef->Y1?ToRef->Y1:env.MaxY;
 
-                  if (List || chan)
-                     item=Tcl_NewListObj(0,NULL);
+                     if (List || chan)
+                        item=Tcl_NewListObj(0,NULL);
 
-                  nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k);
-                  /*Append this gridpoint intersections to the index*/
-                  if (n) {
-                     if (chan) {
-                        sprintf(buf,"%i\n%i\n",i,j);
-                        Tcl_WriteChars(chan,buf,strlen(buf));
-                        Tcl_WriteObj(chan,item);
-                        Tcl_WriteChars(chan,"\n",1);
-                        Tcl_DecrRefCount(item);
-                     } else if (List) {
-                        Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
-                        Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
-                        Tcl_ListObjAppendElement(Interp,List,item);
+                     nt+=n=Data_GridOGRQuad(Interp,item,ToDef,ToRef,cell,Mode,'A',area,val1,env.MinX,env.MinY,env.MaxX,env.MaxY,k);
+                     /*Append this gridpoint intersections to the index*/
+                     if (n) {
+                        if (chan) {
+                           sprintf(buf,"%i\n%i\n",i,j);
+                           Tcl_WriteChars(chan,buf,strlen(buf));
+                           Tcl_WriteObj(chan,item);
+                           Tcl_WriteChars(chan,"\n",1);
+                           Tcl_DecrRefCount(item);
+                        } else if (List) {
+                           Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
+                           Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
+                           Tcl_ListObjAppendElement(Interp,List,item);
+                        }
                      }
-                  }
 #ifdef DEBUG
-                  fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
+                     fprintf(stdout,"(DEBUG) FSTD_FieldGridConservative: %i hits on grid point %i %i (%.0f %.0f x %.0f %.0f)\n",n,i,j,env.MinX,env.MinY,env.MaxX,env.MaxY);
 #endif
+                  }
                }
             }
          }
@@ -912,9 +918,8 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    double   value,area,t,x0,y0,x1,y1;
    int      fld=-1,pr=1;
 
-   OGRCoordinateTransformationH tr=NULL;
-   OGRGeometryH                 geom;
-   OGREnvelope                  env;
+   OGRGeometryH geom;
+   OGREnvelope  env;
 
    if (!Layer->NFeature) {
       return(TCL_OK);
@@ -943,15 +948,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
       }
    }
 
-   /*Creer la transformation*/
-   if (Layer->Ref->Spatial && Ref->Spatial) {
-      if (!(Ref->Type&GRID_SPARSE))
-         tr=OCTNewCoordinateTransformation(Layer->Ref->Spatial,Ref->Spatial);
-   } else {
-      if (Ref->Grid[0]=='W')
-         fprintf(stdout,"(WARNING) Data_GridOGR: Unable to create coordinate transformation, assuming both referential are the same\n");
-   }
-
    if (!Def->Pick)
       Def->Pick=OGR_G_CreateGeometry(wkbLinearRing);
    if (!Def->Poly) {
@@ -964,6 +960,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
       if (Layer->Select[f]) {
 
+         /*Copie de la geometrie pour transformation*/
          if (!(geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f])))) {
              break;
          }
@@ -987,15 +984,8 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
             value=Value;
          }
 
-         /*Copie de la geometrie et transformation dans le bon referentiel*/
-         if (tr) {
-            if (pr==1 && OGR_G_Transform(geom,tr)!=OGRERR_NONE) {
-               fprintf(stdout,"(WARNING) Data_GridOGR: Unable to reproject geometry to local spatial reference\n");
-               pr=0;
-            }
-         } else {
-            Data_OGRProject(geom,Layer->Ref,Ref);
-         }
+         /*Transformation dans le bon referentiel*/
+         Data_OGRProject(geom,Layer->Ref,Ref);
 
          if (Mode=='F') {
              GDAL_Rasterize(Def,Ref,geom,value);
@@ -1015,23 +1005,18 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
                area=0.0;
             }
 
-            /*Utilise les limites de l'enveloppe pour initialiser la selection*/
+            /*Use enveloppe limits to initialize the initial lookup range*/
             OGR_G_GetEnvelope(geom,&env);
-            INVTRANSFORM(Ref,x0,y0,env.MinX,env.MinY);
-            INVTRANSFORM(Ref,x1,y1,env.MaxX,env.MaxY);
-            if (x0>x1) {
-               t=x1;x1=x0;x0=t;
-            }
-            if (y0>y1) {
-               t=y1;y1=y0;y0=t;
-            }
-            x1+=0.5;y1+=0.5;
+            if (!(env.MaxX<Ref->X0 || env.MinX>Ref->X1 || env.MaxY<Ref->Y0 || env.MinY>Ref->Y1)) {
+               env.MaxX+=0.5;env.MaxY+=0.5;
+               env.MinX=env.MinX<0?0:env.MinX;
+               env.MinY=env.MinY<0?0:env.MinY;
+               env.MaxX=env.MaxX>Ref->X1?Ref->X1:env.MaxX;
+               env.MaxY=env.MaxY>Ref->Y1?Ref->Y1:env.MaxY;
 
-            /*Si le feature est dans le raster*/
-            if (!(x1<0 || x0>Def->NI || y0>Def->NJ || y1<0)) {
-               nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,x0<0?0:x0,y0<0?0:y0,x1>=Def->NI?Def->NI-1:x1,y1>=Def->NJ?Def->NJ-1:y1,0);
+               nt+=n=Data_GridOGRQuad(Interp,NULL,Def,Ref,geom,Mode,Type,area,value,env.MinX,env.MinY,env.MaxX,env.MaxY,0);
 #ifdef DEBUG
-               fprintf(stdout,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,x0,y0,x1,y1);
+               fprintf(stdout,"(DEBUG) Data_GridOGR: %i hits on feature %i of %i (%.0f %.0f x %.0f %.0f)\n",n,f,Layer->NFeature,env.MinX,env.MinY,env.MaxX,env.MaxY);
 #endif
             }
          }
@@ -1041,9 +1026,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 #ifdef DEBUG
    fprintf(stdout,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
 #endif
-
-   if (tr)
-      OCTDestroyCoordinateTransformation(tr);
 
    return(TCL_OK);
 }
@@ -1612,8 +1594,6 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
       /*Write every band*/
       for(i=0;i<band->Def->NC;i++) {
          band->Band[i]=GDALGetRasterBand(file->Set,nc+1);
-         if (band->Spec->Desc)
-            GDALSetDescription(band->Band[i],band->Spec->Desc);
 
          if (band->Spec->Map && band->Tex.Indexed) {
             GDALSetRasterColorInterpretation(band->Band[i],GCI_PaletteIndex);
@@ -1623,6 +1603,9 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
 
          if (!isnan(band->Def->NoData))
             GDALSetRasterNoDataValue(band->Band[i],band->Def->NoData);
+
+         if (band->Spec->Desc)
+            GDALSetDescription(band->Band[i],band->Spec->Desc);
 
          GDALRasterIO(band->Band[i],GF_Write,0,0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,TD2GDAL[band->Def->Type],0,0);
          nc++;

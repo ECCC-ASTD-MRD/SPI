@@ -1476,12 +1476,14 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
    double   alpha,beta,gamma,xcent,ycent,xcell,ycell,xorig,yorig;
    double   tran[6],inv[6];
 
+   /*Get the metadata pointer*/
    meta=GDALGetMetadata(Set,NULL);
 
    /*Is this an IOAPI file*/
    if (meta && CSLFetchNameValue(meta,"NC_GLOBAL#IOAPI_VERSION")) {
+#ifdef DEBUG
       fprintf(stderr,"(DEBUG) GDAL_GeoRef: Found IOAPI reference\n");
-
+#endif
       projdef=(char*)malloc(1024*sizeof(char));
 
       /*Extract needed info from metadata*/
@@ -1529,6 +1531,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
 
       /*Get the projection transform*/
       if (GCPs) {
+         /*If there are Ground Control Points*/
          projdef=GDALGetGCPProjection(Set);
          ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
 
