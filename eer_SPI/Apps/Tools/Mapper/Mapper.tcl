@@ -479,7 +479,9 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       set interp [gdalfile colorinterp $Data(Id$id)]
       if { $interp=="Red"  } {
          set Bands [lrange $bands 0 $Nb]
+         set Data(Interp) LINEAR
       } else {
+         set Data(Interp) NEAREST
          set Bands [list [lindex $bands 0]]
       }
    }
@@ -516,12 +518,8 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    }
 
    set Data(ColorMap) [gdalband configure $id -colormap]
+   gdalband configure $id -interpolation $Data(Interp)
 
-   #----- Check for RGB(A) image
-   if { [llength $Bands]==3  || [llength $Bands]==4 } {
-      set Data(Interp) LINEAR
-      gdalband configure $id -interpolation LINEAR
-   }
    foreach min [gdalband stats $id -min] band $Data(Bands$id) {
       colormap configure $Data(ColorMap) -min $band [lindex $min 0]
    }
