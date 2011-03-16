@@ -1963,7 +1963,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
    int      i,j,k,n,idx=0,df,f,nf;
    double   lat,lon;
    float    spd,dir;
-   char     buf[64];
+   char     buf[64],*mask=NULL;
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
    TList    *list;
    T3DArray *array;
@@ -2011,7 +2011,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
    if (field[0]->Spec->RenderContour) {
 
-      OGR_FieldCreate(Layer,"Interval","Real",0);
+      OGR_FieldCreate(Layer,"Interval","Real",32);
 
       Layer->NFeature=field[0]->Spec->InterNb;
       Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
@@ -2043,23 +2043,34 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       for(f=0;f<nf;f++) {
          if (field[f]->Spec->RenderVector) {
             sprintf(buf,"%s (spd)",field[f]->Spec->Desc);
-            OGR_FieldCreate(Layer,buf,"Real",0);
+            OGR_FieldCreate(Layer,buf,"Real",16);
             sprintf(buf,"%s (dir)",field[f]->Spec->Desc);
-            OGR_FieldCreate(Layer,buf,"Real",0);
+            OGR_FieldCreate(Layer,buf,"Real",16);
          } else {
-            OGR_FieldCreate(Layer,field[f]->Spec->Desc,"Real",0);
+            OGR_FieldCreate(Layer,field[f]->Spec->Desc,"Real",32);
          }
       }
 
-      Layer->NFeature=nf>1?FSIZE2D(field[0]->Def):Data_WithinNb(field[0]);
-      Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
+      /*Build a mask of valid cells*/
+      mask=(char*)calloc(FSIZE2D(field[0]->Def),sizeof(char));
+      Layer->NFeature=0;
 
+      for(f=0;f<nf;f++) {
+         for(i=0;i<FSIZE2D(field[f]->Def);i++) {
+            if (!mask[i]) {
+               Def_GetMod(field[f]->Def,i,spd);
+               mask[i]=Data_Within(field[f],spd);
+               if (mask[i]) Layer->NFeature++;
+            }
+         }
+      }
+
+      Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
       n=0;
       for(i=0;i<field[0]->Def->NI;i++) {
          for(j=0;j<field[0]->Def->NJ;j++) {
             idx=j*field[0]->Def->NI+i;
-            Def_GetMod(field[0]->Def,idx,spd);
-            if (nf>1 || Data_Within(field[0],spd)) {
+            if (mask[idx]) {
                Layer->Feature[n]=OGR_F_Create(Layer->Def);
 
                df=0;
@@ -2071,7 +2082,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                      OGR_F_SetFieldDouble(Layer->Feature[n],f+df,dir);
                   } else {
                      Def_GetMod(field[f]->Def,idx,spd);
-
                      OGR_F_SetFieldDouble(Layer->Feature[n],f+df,VAL2SPEC(field[f]->Spec,spd));
                   }
                }
@@ -2106,6 +2116,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       }
    }
 
+   if (mask) free(mask);
    free(field);
    return(TCL_OK);
 }
