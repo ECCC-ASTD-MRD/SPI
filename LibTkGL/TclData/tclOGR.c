@@ -748,6 +748,7 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
 
       if (Ref) {
          Layer->Ref=Ref;
+         GeoRef_Incr(Ref);
       } else {
          Layer->Ref=GeoRef_New();
       }
