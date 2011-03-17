@@ -1110,7 +1110,7 @@ proc Exp::Read { } {
          }
       }
       close $file
-      set Data(List) [lsort -dictionary $Data(List)]
+      set Data(List) [lsort -dictionary -index 1 $Data(List)]
    }
 }
 
