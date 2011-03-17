@@ -31,6 +31,11 @@ namespace eval TOA {
    set Sim(Lat)          0
    set Sim(Lon)          0
    set Sim(Name)         ""
+
+   catch {
+      colormap create TOAMAPDEFAULT
+      colormap read TOAMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.inv.std1.rgba
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -95,7 +100,7 @@ proc TOA::Layout { Frame } {
 
    #----- Initialisations des constantes relatives aux projections
 
-   set Viewport::Resources(FillCoast) ""
+   set Viewport::Resources(FillCoast) #F0F0F0
    set Viewport::Resources(FillLake)  ""
    set Viewport::Resources(Coast)     #000000      ;#Cotes
    set Viewport::Resources(Lake)      #0000ff      ;#Lacs
@@ -116,7 +121,7 @@ proc TOA::Layout { Frame } {
    set Viewport::Map(Topo)        0           ;#Topographie
    set Viewport::Map(Bath)        0           ;#Bathymetrie
    set Viewport::Map(Text)        0           ;#Texture
-   set Viewport::Map(Coord)       0           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Viewport::Map(Coord)       1           ;#Positionnement des latlon (<0=Ocean,>0=Partout)
    set Viewport::Map(CoordDef)    10.0        ;#Intervale entre les latlon en degres
    set Viewport::Map(CoordNum)    2           ;#Numerotation des latlon
 
@@ -148,7 +153,7 @@ proc TOA::Layout { Frame } {
 
    FSTD::Params TOAH REC_Col.std1 -factor [expr 1.0/3600.0] -intervals "0 24 48 72 96 120 144 168 192 216 240 264 288" -rendertexture 1 \
       -interpdegree NEAREST -value INTEGER 0  -font XFont12 -rendercontour 0 -rendervector NONE -rendergrid 0 -renderlabel 0 -rendervalue 0 \
-      -color #000000 -dash "" -desc "Time of Arrival" -unit "Hour"
+      -color #000000 -dash "" -desc "Time of Arrival" -unit "Hour" -mapbellow True
 }
 
 #----------------------------------------------------------------------------
@@ -220,6 +225,7 @@ proc TOA::LayoutToolBar { Frame } {
 #----------------------------------------------------------------------------
 
 proc TOA::Process { Field } {
+   variable Sim
 
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
 
@@ -228,76 +234,98 @@ proc TOA::Process { Field } {
 
    #----- Make a copy of the fields
 
-   set t0     [fstdstamp toseconds [fstdfield define $Field -DATEV]]
+   set t0     $Sim(Seconds)
    set ip1    [fstdfield define $Field -IP1]
    set ip3    [fstdfield define $Field -IP3]
    set etiket [fstdfield define $Field -ETIKET]
    set var    [fstdfield define $Field -NOMVAR]
 
    fstdfield copy TOAFIELD $Field
-   fstdfield stats TOAFIELD -nodata 0
-   fstdfield clear TOAFIELD
+   fstdfield stats TOAFIELD -nodata -1
+   fstdfield clear TOAFIELD -1
    fstdfield define TOAFIELD -NOMVAR TOAH
+   set tend ""
 
-   set fields [FieldBox::GetContent $box]
-   set n 0
-   set nx [llength $fields]
-   foreach field $fields {
-
-      set fid     [lindex $field 0]
-      set idx     [lindex $field 1]
-      set tvar    [lindex $field 2]
-      set tip1    [lindex $field 4]
-      set tip3    [lindex $field 6]
-      set tetiket [string trim [lindex $field 7]]
-
-      SPI::Progress [expr double([incr n])/$nx*100] "Processing fields ($idx)"
-
-      if { $var==$tvar && $ip1==$tip1 && $ip3==$tip3 && $etiket==$tetiket } {
-         fstdfield read TOATMP $fid $idx
-
+   if { $box=="" } {
+      set fid    [fstdfield define $Field -FID]
+      set fields [fstdfield find $fid -1 $etiket $ip1 -1 $ip3 "" $var]
+      foreach field $fields {
+         fstdfield read TOATMP $fid $field
          set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$t0)]
+         vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>0.0,$t,TOAFIELD)
+         set tend [expr $t/3600.0]
+      }
+   } else {
+      set fields [FieldBox::GetContent $box]
+      set n 0
+      set nx [llength $fields]
+      foreach field $fields {
 
-         vexpr TOAFIELD ifelse(TOAFIELD==0.0 && TOATMP>0.0,$t,TOAFIELD)
+         set fid     [lindex $field 0]
+         set idx     [lindex $field 1]
+         set tvar    [lindex $field 2]
+         set tip1    [lindex $field 4]
+         set tip3    [lindex $field 6]
+         set tetiket [string trim [lindex $field 7]]
+
+         SPI::Progress [expr double([incr n])/$nx*100] "Processing fields ($idx)"
+
+         if { $var==$tvar && $ip1==$tip1 && $ip3==$tip3 && $etiket==$tetiket } {
+            fstdfield read TOATMP $fid $idx
+
+            set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$t0+1)]
+            set tend [expr $t/3600.0]
+
+            vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>0.0,$t,TOAFIELD)
+         }
       }
    }
    set dt [vexpr dt smin(TOAFIELD)]
    vexpr TOAFIELD ifelse(TOAFIELD!=0.0,TOAFIELD-$dt,TOAFIELD)
    vexpr (Float32)TOAFIELD ifelse(TOAFIELD==0.0,-1,TOAFIELD)
 
-#   fstdfield configure TOAFIELD -rendertexture 1 -rendercontour 0 -mapall False -value INTEGER 0 \
-#      -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 -intervals "24 48 72 96 120 144 168 192 216 240 264 288" -color black -interpdegree NEAREST
+   set n [expr $tend<12?1:$tend<24?2:$tend<48?3:$tend<72?6:$tend<144?12:$tend<288?12:24]
+   puts "$n $tend"
+   set inter { 0 }
+   for { set i $n } { $i<$tend } { incr i $n } {
+      lappend inter $i
+   }
+      lappend inter $tend
+
+   fstdfield configure TOAFIELD -rendertexture 1 -rendercontour 0 -mapall False -value INTEGER 0 -color #000000 -dash "" \
+      -desc "Time of Arrival" -unit "Hour" -interpdegree NEAREST -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 \
+      -intervals $inter -color black -colormap TOAMAPDEFAULT
 
    SPI::Progress 0 ""
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD
 }
 
-proc TOA::LayoutUpdate { Frame } {
+proc TOA::LayoutUpdate { Frame { Field "" } } {
    global   env
    variable Sim
    variable Data
    variable Error
 
    Viewport::UnAssign $Frame $Data(VP) TOAFIELD
-   set field [lindex [Viewport::Assigned $Frame $Data(VP) fstdfield] 0]
 
-   Log::Print DEBUG $field
-   if { $field=="" } {
+   if { $Field=="" } {
+      set Field [lindex [Viewport::Assigned $Frame $Data(VP) fstdfield] 0]
+   }
+   Log::Print DEBUG $Field
+   if { $Field=="" } {
       return
    }
-
-   TOA::Process $field
 
    set canvas $Frame.page.canvas
 
    #----- Recuperer les informations sur le champs selectionne
 
    set Data(FieldList) [FieldBox::GetContent -1]
-   set Data(NOMVAR)    [string trim [fstdfield define $field -NOMVAR]]
-   set Data(IP2)       [fstdfield define $field -IP2]
-   set Data(IP3)       [fstdfield define $field -IP3]
-   set Data(ETICKET)   [string trim [fstdfield define $field -ETIKET]]
-   set Data(Max)       [fstdfield stats $field -max]
+   set Data(NOMVAR)    [string trim [fstdfield define $Field -NOMVAR]]
+   set Data(IP2)       [fstdfield define $Field -IP2]
+   set Data(IP3)       [fstdfield define $Field -IP3]
+   set Data(ETICKET)   [string trim [fstdfield define $Field -ETIKET]]
+   set Data(Max)       [fstdfield stats $Field -max]
 
    #----- Recuperer la description de l'experience
 
@@ -318,7 +346,7 @@ proc TOA::LayoutUpdate { Frame } {
    set Sim(EmDuration)     0
    set Sim(EmVerticalDist) ""
 
-   if { [set info [Info::Read [fstdfield define $field -FID]]]=="" } {
+   if { [set info [Info::Read [fstdfield define $Field -FID]]]=="" } {
       return
    }
 
@@ -332,7 +360,7 @@ proc TOA::LayoutUpdate { Frame } {
 
    #----- Calculer la date d'accident(release)
 
-   set seconds [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)00" -gmt true]
+   set Sim(Seconds) [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)00" -gmt true]
 
    set unit ""
    if { $Data(ETICKET) == "TRACER1" || $Data(ETICKET) == "TRACER2" || $Data(ETICKET) == "TRACER3" } {
@@ -346,13 +374,14 @@ proc TOA::LayoutUpdate { Frame } {
    set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
    $canvas itemconf TOASOURCE      -text "Source           : $Sim(Name)"
    $canvas itemconf TOALOC         -text "Location         : $coord"
-   $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(IsoName)"
-   $canvas itemconf TOARELEASEQT   -text "Total release    : [lindex $Sim(IsoRelease) [lsearch -exact [string toupper $Sim(IsoName)] $Data(ETICKET)]] $unit"
-   $canvas itemconf TOARELEASEDUR  -text "Release duration : $Sim(EmDuration) Hour(s)"
-   $canvas itemconf TOATITLE       -text "Plume arrival time from initial release\n[DateStuff::StringDateFromSeconds $seconds 1]"
+   $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(EmIsoSymbol)"
+   $canvas itemconf TOARELEASEQT   -text "Total release    : [format "%.2f" [lindex $Sim(EmIsoQuantity) [lsearch -exact [string toupper $Sim(EmIsoSymbol)] $Data(ETICKET)]]] $unit"
+   $canvas itemconf TOARELEASEDUR  -text "Release duration : [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]] Hour(s)"
+   $canvas itemconf TOATITLE       -text "Plume arrival time from initial release\n[DateStuff::StringDateFromSeconds $Sim(Seconds) 1]"
 
    #----- Afficher les informations complementaires
 
+   TOA::Process $Field
    TOA::UpdateItems $Frame
    TOA::DrawScale   $Frame
 }
