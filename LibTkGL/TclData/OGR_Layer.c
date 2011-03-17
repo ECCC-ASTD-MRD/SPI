@@ -1961,7 +1961,7 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
    int      i,j,k,n,idx=0,df,f,nf;
-   double   lat,lon;
+   double   lat,lon,x,y;
    float    spd,dir;
    char     buf[64],*mask=NULL;
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
@@ -2031,7 +2031,8 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
             geom=OGR_G_CreateGeometry(wkbLineString);
             for(k=0;k<array->Size;k++) {
-               OGR_G_AddPoint_2D(geom,CLAMPLON(array->Data[k][1]),array->Data[k][0]);
+               Layer->Ref->UnProject(Layer->Ref,&x,&y,array->Data[k][0],CLAMPLON(array->Data[k][1]),1,1);
+               OGR_G_AddPoint_2D(geom,x,y);
             }
             OGR_G_AddGeometryDirectly(cont,geom);
             list=list->Next;
@@ -2088,25 +2089,32 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
                if (field[0]->Spec->RenderParticle) {
                   geom=OGR_G_CreateGeometry(wkbPoint25D);
-                  OGR_G_AddPoint(geom,field[0]->Ref->Lon[idx],field[0]->Ref->Lat[idx],(field[0]->Ref->Hgt?field[0]->Ref->Hgt[idx]:0.0));
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,field[0]->Ref->Lat[idx],field[0]->Ref->Lon[idx],1,1);
+                  OGR_G_AddPoint(geom,x,y,(field[0]->Ref->Hgt?field[0]->Ref->Hgt[idx]:0.0));
                } else if (field[0]->Spec->RenderTexture) {
                   geom=OGR_G_CreateGeometry(wkbPolygon);
                   poly=OGR_G_CreateGeometry(wkbLinearRing);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
-                  OGR_G_AddPoint_2D(poly,lon,lat);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j+0.5,&lat,&lon,1,1);
-                  OGR_G_AddPoint_2D(poly,lon,lat);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i+0.5,j+0.5,&lat,&lon,1,1);
-                  OGR_G_AddPoint_2D(poly,lon,lat);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i+0.5,j-0.5,&lat,&lon,1,1);
-                  OGR_G_AddPoint_2D(poly,lon,lat);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
-                  OGR_G_AddPoint_2D(poly,lon,lat);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  OGR_G_AddPoint_2D(poly,x,y);
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {
                   field[0]->Ref->Project(field[0]->Ref,i,j,&lat,&lon,1,1);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
                   geom=OGR_G_CreateGeometry(wkbPoint);
-                  OGR_G_AddPoint_2D(geom,lon,lat);
+                  OGR_G_AddPoint_2D(geom,x,y);
                }
                OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
                OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n]);
