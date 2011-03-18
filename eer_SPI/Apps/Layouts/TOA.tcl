@@ -150,10 +150,6 @@ proc TOA::Layout { Frame } {
 #   TOA::LayoutToolBar $Frame
 
    FSTD::VarMode VAR
-
-   FSTD::Params TOAH REC_Col.std1 -factor [expr 1.0/3600.0] -intervals "0 24 48 72 96 120 144 168 192 216 240 264 288" -rendertexture 1 \
-      -interpdegree NEAREST -value INTEGER 0  -font XFont12 -rendercontour 0 -rendervector NONE -rendergrid 0 -renderlabel 0 -rendervalue 0 \
-      -color #000000 -dash "" -desc "Time of Arrival" -unit "Hour" -mapbellow True
 }
 
 #----------------------------------------------------------------------------
@@ -243,7 +239,6 @@ proc TOA::Process { Field } {
    fstdfield copy TOAFIELD $Field
    fstdfield stats TOAFIELD -nodata -1
    fstdfield clear TOAFIELD -1
-   fstdfield define TOAFIELD -NOMVAR TOAH
    set tend ""
 
    if { $box=="" } {
@@ -285,7 +280,6 @@ proc TOA::Process { Field } {
    vexpr (Float32)TOAFIELD ifelse(TOAFIELD==0.0,-1,TOAFIELD)
 
    set n [expr $tend<12?1:$tend<24?2:$tend<48?3:$tend<72?6:$tend<144?12:$tend<288?12:24]
-   puts "$n $tend"
    set inter { 0 }
    for { set i $n } { $i<$tend } { incr i $n } {
       lappend inter $i
@@ -295,6 +289,7 @@ proc TOA::Process { Field } {
    fstdfield configure TOAFIELD -rendertexture 1 -rendercontour 0 -mapall False -value INTEGER 0 -color #000000 -dash "" \
       -desc "Time of Arrival" -unit "Hour" -interpdegree NEAREST -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 \
       -intervals $inter -color black -colormap TOAMAPDEFAULT
+   fstdfield define TOAFIELD -NOMVAR TOA -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
 
    SPI::Progress 0 ""
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD
@@ -313,6 +308,9 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
    }
    Log::Print DEBUG $Field
    if { $Field=="" } {
+      if { [fstdfield is TOAFIELD] } {
+         Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD
+      }
       return
    }
 
