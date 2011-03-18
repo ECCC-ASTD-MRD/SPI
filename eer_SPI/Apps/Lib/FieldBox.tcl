@@ -508,7 +508,7 @@ proc FieldBox::FileOpen { No File } {
       if { [fstdfile is $file] } {
          set bad [catch { set index [fstdfile open $fid read $file] }]
          if { $bad } {
-            fstdfile close
+            fstdfile close $fid
          } else {
             lappend data(TypeList) fstdfield
          }
