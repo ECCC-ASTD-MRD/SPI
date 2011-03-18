@@ -108,6 +108,7 @@ namespace eval Graph {
    set Data(ShowGrid)     False
    set Data(ToolMode)     Data
    set Data(Update)       True
+   set Data(IP3)          False                  ;#Valider les IP3
    set Data(Pos)          ""
    set Data(PosNo)        -1
    set Data(Frame)        ""
@@ -1303,7 +1304,11 @@ proc Graph::ParamsGraph { Parent } {
          checkbutton $Parent.graph.update.sel -indicatoron False -text [lindex $Lbl(Update) $GDefs(Lang)] -bd 1 -onvalue True -variable Graph::Data(Update) \
             -command { Graph::${Graph::Data(Type)}::Graph $Graph::Data(Graph) }
          pack $Parent.graph.update.sel -side left -fill x -expand true
-      pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.grid $Parent.graph.color $Parent.graph.frame $Parent.graph.update -side top  -fill x
+      frame $Parent.graph.ip3 -relief sunken -bd 1
+         checkbutton  $Parent.graph.ip3.sel -text [lindex $Lbl(IP3) $GDefs(Lang)] -indicatoron false \
+            -command "" -bd 1 -variable Graph::Data(IP3) -onvalue True -offvalue False
+         pack $Parent.graph.ip3.sel -side left -fill x -expand true
+      pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.grid $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3 -side top  -fill x
    pack $Parent.graph -side top -fill both -padx 5 -pady 5
 
    Bubble::Create $Parent.graph.info   $Bubble(Info)
@@ -1313,6 +1318,7 @@ proc Graph::ParamsGraph { Parent } {
    Bubble::Create $Parent.graph.color  $Bubble(Back)
    Bubble::Create $Parent.graph.frame  $Bubble(Frame)
    Bubble::Create $Parent.graph.update $Bubble(Update)
+   Bubble::Create $Parent.graph.ip3    $Bubble(IP3)
 }
 
 #----------------------------------------------------------------------------

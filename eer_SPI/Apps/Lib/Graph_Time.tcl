@@ -426,7 +426,6 @@ proc Graph::Time::Init { Frame } {
       variable Graph
 
       set Data(Items)           {}        ;#Liste des items
-      set Data(IP3)             True      ;#Valider les IP3
       set Data(Pos)             {}        ;#Liste des positions
       set Data(Data)            {}        ;#Liste des champs selectionnees
       set Data(ObsIds)          {}        ;#Liste des observations selectionnee
@@ -476,13 +475,10 @@ proc Graph::Time::Params { Parent GR } {
 
    labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
       frame $Parent.scale.type -relief sunken -bd 1
-         checkbutton $Parent.scale.type.ip3 -text [lindex $Graph::Lbl(IP3) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Time::Update $data(FrameData) $GR" -bd 1 \
-            -variable Graph::Time::Time${GR}::Data(IP3) -onvalue True -offvalue False
          checkbutton $Parent.scale.type.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
             -command "Graph::Time::Graph $GR" -bd 1 \
             -variable Graph::Time::Time${GR}::Data(DateF) -onvalue False -offvalue True
-         pack $Parent.scale.type.ip3 $Parent.scale.type.date -side top -fill x
+         pack $Parent.scale.type.date -side top -fill x
       frame $Parent.scale.valy -relief sunken -bd 1
          label $Parent.scale.valy.lbl -text "Y"
          checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
@@ -512,7 +508,6 @@ proc Graph::Time::Params { Parent GR } {
    Graph::ParamsObs $Parent Time $GR
 
    Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
-   Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
    Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
    Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
    Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
@@ -915,7 +910,7 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
             set fids $Files
          }
 
-         if { $data(IP3) } {
+         if { $Graph::Data(IP3) } {
             set ip3 [fstdfield define $item -IP3]
          } else {
             set ip3 -1

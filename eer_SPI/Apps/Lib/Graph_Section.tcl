@@ -800,7 +800,14 @@ proc Graph::Section::Data { GR Data } {
       if { [fstdfield is $field] } {
          set grtyp [fstdfield define $field -GRTYP]
          if { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
-            fstdfield readcube $field
+            if { $Graph::Data(IP3) } {
+               fstdfield readcube $field
+            } else {
+               set ip3 [fstdfield define $field -IP3]
+               fstdfield define $field -IP3 -1
+               fstdfield readcube $field
+               fstdfield define $field -IP3 $ip3
+            }
             if { [fstdfield define $field -NK]>1 } {
                lappend fields $field
             }

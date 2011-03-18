@@ -847,7 +847,14 @@ proc Graph::Profile::Data { GR Data } {
 
    foreach item $Data {
       if { [fstdfield is $item] && [fstdfield define $item -GRTYP]!="V" } {
-         fstdfield readcube $item
+         if { $Graph::Data(IP3) } {
+            fstdfield readcube $item
+         } else {
+            set ip3 [fstdfield define $item -IP3]
+            fstdfield define $item -IP3 -1
+            fstdfield readcube $item
+            fstdfield define $item -IP3 $ip3
+         }
          lappend data(Data) $item
       } elseif { [observation is $item] } {
          if { [set box  [lindex [observation stats $item -tag] end]]=="" } {

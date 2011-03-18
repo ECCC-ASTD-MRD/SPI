@@ -466,7 +466,6 @@ proc Graph::TimeSection::Init { Frame } {
       set Data(Date1)           ""
 
       set Data(DateF)           True
-      set Data(IP3)             True      ;#Valider les IP3
       set Data(Vertical)        {}
 
       #----- Constantes relatives au Graph
@@ -510,13 +509,10 @@ proc Graph::TimeSection::Params { Parent GR } {
 
    labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
       frame $Parent.scale.time -relief sunken -bd 1
-         checkbutton $Parent.scale.time.ip3 -text [lindex $Graph::Lbl(IP3) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::TimeSection::Update $data(FrameData) $GR" -bd 1 \
-            -variable Graph::TimeSection::TimeSection${GR}::Data(IP3) -onvalue True -offvalue False
          checkbutton $Parent.scale.time.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
             -command "Graph::TimeSection::Graph $GR" -bd 1 \
             -variable Graph::TimeSection::TimeSection${GR}::Data(DateF) -onvalue False -offvalue True
-         pack $Parent.scale.time.ip3 $Parent.scale.time.date -side top -fill x
+         pack $Parent.scale.time.date -side top -fill x
       frame $Parent.scale.date0
          entry $Parent.scale.date0.ent -textvariable Graph::TimeSection::TimeSection${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
          label $Parent.scale.date0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)]
@@ -546,7 +542,6 @@ proc Graph::TimeSection::Params { Parent GR } {
    pack $Parent.scale -side top -fill x -padx 5
 
    Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
-   Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
    Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
    Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
    Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
@@ -916,7 +911,7 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
             set fids $Files
          }
 
-         if { $data(IP3) } {
+         if { $Graph::Data(IP3) } {
             set ip3 [fstdfield define $item -IP3]
          } else {
             set ip3 -1
@@ -942,7 +937,14 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
          foreach id $lst {
             set grtyp [fstdfield define $id -GRTYP]
             if { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
-               fstdfield readcube $id
+               if { $Graph::Data(IP3) } {
+                  fstdfield readcube $id
+               } else {
+                  set ip3 [fstdfield define $id -IP3]
+                  fstdfield define $id -IP3 -1
+                  fstdfield readcube $id
+                  fstdfield define $id -IP3 $ip3
+               }
                set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
                lappend data(Data$item) "$sec $id"
             } else {
