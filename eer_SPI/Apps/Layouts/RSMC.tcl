@@ -396,26 +396,6 @@ proc RSMC::LayoutUpdate { Frame } {
          set ListIsoSymbol $Sim(EmIsoSymbol)
          set ListIsoQuant  $Sim(EmIsoQuantity)
       }
-      "CANERM" {
-         set Data(FT1)  "Isotope                :"
-         set Data(FT2)  "Time function          :"
-         set Data(FT3)  "Duration               :"
-         set Data(FT4)  "Horizontal distribution:"
-         set Data(FT5)  "Grid length            :"
-         set Data(FT6)  "Dispersion model       :"
-         set Data(FT8)  "Total release           :"
-         set Data(FT9)  "Height of release       :"
-         set Data(FT10) "Vertical distribution   :"
-         set Data(FT11) "Standard deviation (Hor):"
-         set Data(FT12) "Maximum value at o      :"
-         set ListIsoSymbol   $Sim(IsoName)
-         set ListIsoQuant    $Sim(IsoRelease)
-         set ReleaseDuration $Sim(EmDuration)
-
-         if { $Sim(EmHeight) == 0.0 } {
-            set Sim(EmHeight) 500.0 ; #----- 0 m is equivalent to 500 m in CANERM.
-         }
-      }
 
    }
 
@@ -466,35 +446,6 @@ proc RSMC::LayoutUpdate { Frame } {
 
          #----- Number of particles.
          set NbParticles "[expr int(double($Sim(EmNumberParticles))/1000.0)]K"
-      }
-      "CANERM" {
-
-         switch $Sim(Scale) {
-            "MESO"  { set lgrille "50 km" }
-            "FINE"  { set lgrille "25 km" }
-            "VFINE" { set lgrille "10 km" }
-            "EFINE" { set lgrille "5 km" }
-            default { set lgrille "150 km" }
-         }
-
-         switch $Sim(FnTime) {
-            "GAUSS"       { set fonction "GAUSSIAN"    ; set duree "Standard Deviation     :" }
-            "EXPONENTIAL" { set fonction "EXPONENTIAL" ; set duree "Duration               :" }
-            default       { set fonction "CONSTANT"    ; set duree "Duration               :" }
-         }
-
-         if { $Sim(EmVerticalDist)=="" } {
-            if { $Sim(FnVert) == 0.0 } {
-               set Sim(EmVerticalDist) "UNIFORM"
-            }
-            if  { $Sim(FnVert) < 0.0 } {
-               set Sim(EmVerticalDist) "GAUSSIAN"
-            }
-            if  { $Sim(FnVert) > 0.0 } {
-               set Sim(EmVerticalDist) "EMPIRICAL"
-            }
-         }
-
       }
 
    }
@@ -603,20 +554,6 @@ proc RSMC::LayoutUpdate { Frame } {
          $canvas itemconf FT11 -text "$Data(FT11) $VertDist"
          $canvas itemconf FT12 -text "$Data(FT12) $NbParticles"
          $canvas itemconf FT13 -text "$Data(FT13) [format "%1.2e" [lindex $Data(Max) 0]] $Data(Unit)"
-      }
-      "CANERM" {
-         $canvas itemconf FT1  -text "$Data(FT1) $Isotope"
-         $canvas itemconf FT2  -text "$Data(FT2) ${fonction}"
-         $canvas itemconf FT3  -text "${duree} $ReleaseDuration h"
-         $canvas itemconf FT4  -text "$Data(FT4) GAUSSIAN"
-         $canvas itemconf FT5  -text "$Data(FT5) ${lgrille}"
-         $canvas itemconf FT6  -text "$Data(FT6) $Sim(Model)"
-         $canvas itemconf FT7  -text "$Sim(Event)"
-         $canvas itemconf FT8  -text "$Data(FT8) [format "%.2e" $Quantity] $Data(UnitQuant)"
-         $canvas itemconf FT9  -text "$Data(FT9) $Sim(EmHeight) m"
-         $canvas itemconf FT10 -text "$Data(FT10) $Sim(EmVerticalDist)"
-         $canvas itemconf FT11 -text "$Data(FT11) 1 Grid Length"
-         $canvas itemconf FT12 -text "$Data(FT12) [format "%1.2e" [lindex $Data(Max) 0]] $Data(Unit)"
       }
 
    }

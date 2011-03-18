@@ -681,24 +681,6 @@ proc VAAC::LayoutUpdate { Frame } {
    $canvas itemconf FT4 -text "$Lbl(FT4) FL[expr round($Sim(EmHeight)*0.032808398950131)]"
    $canvas itemconf MDL -text "$Sim(Model)"
 
-   if { $Sim(Model)=="CANERM" } {
-      set ReleaseDuration $Sim(EmDuration)         ; #----- Release duration [h].
-      set mg   [expr int(log10($Sim(IsoRelease)))] ; #----- Total release mass [micrograms/m3].
-      set time [string range $Sim(FnTime) 0 0]     ; #----- Release time function.
-
-      #----- Inital vertical distribution.
-      if { $Sim(FnVert) == 0.0 } {
-         set vert "Co"
-      }
-      if { $Sim(FnVert) < 0.0 } {
-         set vert "Ga"
-      }
-      if { $Sim(FnVert) > 0.0 } {
-         set vert "Em"
-      }
-
-   }
-
    if { $Sim(Model)=="MLDP0" } {
       set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ;#----- Convert total release duration from [s] to [h].
       set mg   [expr $Sim(EmMass)==0?0:int(log10($Sim(EmMass)))]      ;#----- Total release mass [micrograms/m3].

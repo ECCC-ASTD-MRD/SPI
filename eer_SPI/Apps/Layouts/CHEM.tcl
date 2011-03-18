@@ -130,14 +130,6 @@ Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
 NWP Meteorological Model         : $Sim(Meteo)
 NWP Meteorological Data          : "
               }
-      CANERM  { append text "Simulation Duration              : $Sim(Duration) Hr(s)
-Release Duration                 : $Sim(EmDuration) Hr(s)
-Total Release Quantity           : [format "%.3e" $Sim(IsoRelease)] unit
-Initial Max. Plume Height        : $Sim(EmHeight) m
-Initial Horiz. Dispersion Radius : NIL
-NWP Meteorological Model         : $Sim(Meteo)
-NWP Meteorological Data          : $Sim(Mode)"
-             }
       TRAJECT {  append text "Simulation Duration              : $Sim(Duration) Hr(s)
 Release Duration                 : NIL
 Total Release Quantity           : NIL
