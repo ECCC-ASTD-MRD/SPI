@@ -40,10 +40,6 @@ namespace eval Info {
 
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon }
 
-   set Token(CANERM)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
-                        SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
-                        DTIN DTIS FnVert FnTime EmDuration Delai IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
-
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                         Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
