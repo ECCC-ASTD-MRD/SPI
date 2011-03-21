@@ -249,7 +249,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
    int    x,y,miny,maxy,minx,maxx;
    int    ints,n,ns,np;
    int   *polyInts;
-   double dminy,dmaxy,dx1,dy1,dx2,dy2,dy,dx,dtx,dty,t;
+   double dminy,dmaxy,dx1,dy1,dx2,dy2,dy,dx,t;
    double intersect,tmpd;
    int    horizontal_x1,horizontal_x2;
 
@@ -269,9 +269,8 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
       if (EQUAL(OGR_G_GetGeometryName(geom),"LINEARRING")) {
          n+=ns=OGR_G_GetPointCount(geom);
          for (j=0;j<ns;j++) {
-            dtx=OGR_G_GetX(geom,j);
-            dty=OGR_G_GetY(geom,j);
-            INVTRANSFORM(Ref,dx,dy,dtx,dty);
+            dx=OGR_G_GetX(geom,j);
+            dy=OGR_G_GetY(geom,j);
             if (dy<dminy)
                dminy=dy;
             if (dy>dmaxy)
@@ -287,9 +286,8 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
    switch (OGR_G_GetDimension(Geom)) {
       case 0: /*Point type*/
          for (i=0;i<n;i++) {
-            dtx=OGR_G_GetX(Geom,i);
-            dty=OGR_G_GetY(Geom,i);
-            INVTRANSFORM(Ref,dx1,dy1,dtx,dty);
+            dx1=OGR_G_GetX(Geom,i);
+            dy1=OGR_G_GetY(Geom,i);
             x=ROUND(dx1);
             y=ROUND(dy1);
             if (FIN2D(Def,x,y))
@@ -302,13 +300,11 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             ind2=i;
             ind1=i==0?n-1:i-1;
 
-            dtx=OGR_G_GetX(Geom,ind1);
-            dty=OGR_G_GetY(Geom,ind1);
-            INVTRANSFORM(Ref,dx1,dy1,dtx,dty);
+            dx1=OGR_G_GetX(Geom,ind1);
+            dy1=OGR_G_GetY(Geom,ind1);
 
-            dtx=OGR_G_GetX(Geom,ind2);
-            dty=OGR_G_GetY(Geom,ind2);
-            INVTRANSFORM(Ref,dx2,dy2,dtx,dty);
+            dx2=OGR_G_GetX(Geom,ind2);
+            dy2=OGR_G_GetY(Geom,ind2);
 
             x0=ROUND(dx1); y0=ROUND(dy1);
             x1=ROUND(dx2); y1=ROUND(dy2);
@@ -390,13 +386,11 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   ind2=i;
                   ind1=i==0?np-1:i-1;
 
-                  dtx=OGR_G_GetX(geom,ind1);
-                  dty=OGR_G_GetY(geom,ind1);
-                  INVTRANSFORM(Ref,dx1,dy1,dtx,dty);
+                  dx1=OGR_G_GetX(geom,ind1);
+                  dy1=OGR_G_GetY(geom,ind1);
 
-                  dtx=OGR_G_GetX(geom,ind2);
-                  dty=OGR_G_GetY(geom,ind2);
-                  INVTRANSFORM(Ref,dx2,dy2,dtx,dty);
+                  dx2=OGR_G_GetX(geom,ind2);
+                  dy2=OGR_G_GetY(geom,ind2);
 
                   if ((dy1<dy && dy2<dy) || (dy1>dy && dy2>dy))
                      continue;
