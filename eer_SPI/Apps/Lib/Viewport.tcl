@@ -814,8 +814,8 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
       if { [llength $data] && [set tag [lindex $data 2]]!="" && [set obj [lindex $data 1]]!="" } {
          set id ""
          switch [lindex $data 0] {
-            "trajectory"  { set parcel [trajectory define $obj -PARCEL $tag]
-                            set info  "[trajectory define $obj -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
+            "trajectory"  { set info   [Trajectory::ParcelInfo $obj $tag]
+                            set parcel [trajectory define $obj -PARCEL $tag]
                             set coord  [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
                             set id     [trajectory define $obj -ID]
                             set vals   [DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]

@@ -118,6 +118,15 @@ namespace eval Trajectory {
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 }
 
+proc Trajectory::ParcelInfo { Object Tag } {
+   global GDefs
+
+   set parcel [trajectory define $Object -PARCEL $Tag]
+   set info  "[trajectory define $Object -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
+
+   return $info
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Trajectory::Export>
 # Creation : Juin 2002 - J.P. Gauthier - CMC/CMOE
@@ -733,8 +742,8 @@ proc Trajectory::GraphFollow { Frame X Y } {
       set obj  [graphitem configure $item -tag]
       set time [expr int([vector get [graphitem configure $item -xdata] $no])]
 
+      set info  [Trajectory::ParcelInfo $obj $time]
       set parcel [trajectory define $obj -PARCEL $time]
-      set info  "[trajectory define $obj -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
       set Page::Data(Value)   "[trajectory define $obj -ID]:[DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]"
       set Page::Data(Coord)    [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] $Page::Data(CoordUnit) $Page::Data(CoordPrec)]
       set Page::Data(Altitude) [lindex $parcel 5]
