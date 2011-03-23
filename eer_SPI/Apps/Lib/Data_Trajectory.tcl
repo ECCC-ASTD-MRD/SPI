@@ -72,10 +72,12 @@ namespace eval Trajectory {
 
    set Param(Icons)     { TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON LIGHTNING X + }
    set Param(Colors)    { #ff0000 #0000ff #006400 #4C7A5C #FFCC00 #FF00CC #00FFFF #785D0C #ACF003 } ;#Liste des couleurs des niveaux
+   set Param(SizeVars)  { "" ZPRES ZMODEL ZMSL DIST SPEED }
    set Param(Icon)      TRIANGLE
    set Param(Color)     #ff0000                                                     ;#Couleur courante
    set Param(Style)     1                                                           ;#Type d'affichage
    set Param(Size)      3                                                           ;#Grandeur des icones
+   set Param(SizeVar)   ""                                                          ;#Variable de redimenssionement
    set Param(Width)     1                                                           ;#Grandeur des icones
    set Param(Mark)      24                                                          ;#Remplir les icones
    set Param(Interval)  3                                                           ;#Intervale de selection des donnees
@@ -329,7 +331,8 @@ proc Trajectory::ParamFrame { Frame Apply } {
          scale $Data(Frame).part.size.sel -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 25 -variable Trajectory::Param(Size) \
             -orient horizontal -showvalue False -command "Trajectory::ParamSet; catch"
          label $Data(Frame).part.size.lbl -text [lindex $Lbl(Size) $GDefs(Lang)] -anchor w -width 11
-         pack $Data(Frame).part.size.lbl $Data(Frame).part.size.sel -side left -fill x
+         ComboBox::Create $Data(Frame).part.size.var Trajectory::Param(SizeVar) noedit sorted nodouble -1 $Param(SizeVars) 7 8 Trajectory::ParamSet
+         pack $Data(Frame).part.size.lbl $Data(Frame).part.size.sel $Data(Frame).part.size.var -side left -fill x
 
       frame $Data(Frame).part.int
          IcoMenu::Create $Data(Frame).part.int.sel $GDefs(Dir)/Resources/Bitmap \
@@ -400,6 +403,7 @@ proc Trajectory::ParamGet { { Spec "" } } {
 
    set Param(Icon)      [dataspec configure $Spec -icon]
    set Param(Size)      [dataspec configure $Spec -size]
+   set Param(SizeVar)   [dataspec configure $Spec -sizevar]
    set Param(Color)     [dataspec configure $Spec -color]
 
    if { [llength [dataspec configure $Spec -intervals]] } {
@@ -441,7 +445,7 @@ proc Trajectory::ParamSet { { Spec "" } } {
 
    foreach t [trajectory all] {
       trajectory configure $t -width $Param(Width) -style $Param(Style) -fill #FFFFFF \
-            -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
+            -size $Param(Size) -sizevar $Param(SizeVar) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
    }
    catch { $Data(ApplyButton) configure -state normal }
 }
