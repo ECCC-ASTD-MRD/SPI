@@ -649,7 +649,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
       case WIPE:
          TclY_HashWipe(&OGR_LayerTable,(TclY_HashFreeEntryDataFunc*)OGR_LayerFree);
-         TclY_HashWipe(&OGR_GeometryTable,(TclY_HashFreeEntryDataFunc*)OGR_G_DestroyGeometry);
+//         TclY_HashWipe(&OGR_GeometryTable,(TclY_HashFreeEntryDataFunc*)OGR_G_DestroyGeometry);
          break;
    }
    return TCL_OK;
@@ -691,6 +691,8 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Extrude      = -1;
    layer->Loc          = NULL;
    layer->SQLed        = NULL;
+   layer->Min          = 0.0;
+   layer->Max          = 0.0;
 
    layer->GFeature   =0;
    layer->NFeature   =0;
