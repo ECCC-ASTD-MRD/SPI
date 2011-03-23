@@ -109,6 +109,8 @@ typedef struct TDataSpec {
    char           *ZType;               /*Type de coordonnees verticale*/
    char           *Topo;                /*Modulateur 3D*/
    double          TopoFactor;          /*Facteur du modulateur 3D*/
+   char           *Extrude;             /*Modulateur 3D*/
+   double          ExtrudeFactor;       /*Facteur du modulateur 3D*/
    int             Interp;              /*Interpolation GL*/
    float           Inter[DATASPEC_MAX]; /*Intervalles de contours*/
    Tcl_Obj        *InterLabels;         /*Libelle des intervalles*/
@@ -129,8 +131,10 @@ typedef struct TDataSpec {
    int             Icon;                /*Icone*/
    int             Mark;                /*Marquage*/
    int             Style;               /*Style*/
-   char           *SizeVar;
+   char           *LabelVar;            /*Variable pour les libelles*/
+   char           *SizeVar;             /*Variable pour les dimensions*/
    double          Size,SizeMin,SizeMax;/*Dimension*/
+   char           *MapVar;              /*Variable pour appliquer la palette*/
    double          Min,Max;             /*Minimum et Maximum des valeurs*/
    int             MinMax;              /*Indicateur de selection des min max*/
    double          ValFactor;           /*Facteur multiplicatif d'ajustement des valeurs*/

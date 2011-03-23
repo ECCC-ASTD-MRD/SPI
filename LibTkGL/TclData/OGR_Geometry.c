@@ -1069,20 +1069,24 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       /*Project vertices*/
       for(n=0;n<nv;n++) {
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-         /*Check for limits*/
+
+         Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+         co.Elev=vr[2];
+
          if (Layer) {
+            /*Apply topography*/
+            if (Layer->Topo>0) {
+               co.Elev=Elev;
+            } else if (Layer->Topo==0) {
+               gdb_mapget(handle,co.Lat,co.Lon,(void*)&z);
+               co.Elev=z*Layer->Spec->TopoFactor;
+            }
+
+            /*Check for limits*/
             Vect_Min(Layer->Vr[0],Layer->Vr[0],vr);
             Vect_Max(Layer->Vr[1],Layer->Vr[1],vr);
          }
 
-         Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
-         co.Elev=vr[2];
-         if (Layer && Layer->Topo>0) {
-            co.Elev=Elev;
-         }
-         if (Layer && Layer->Topo==0) {
-            gdb_mapget(handle,co.Lat,co.Lon,(void*)&z);co.Elev=z*Layer->TopoFactor;
-         }
          pvr[n][0]=co.Lon;
          pvr[n][1]=co.Lat;
          pvr[n][2]=co.Elev+Extrude;

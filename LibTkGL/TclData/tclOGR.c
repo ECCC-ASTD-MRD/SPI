@@ -689,9 +689,6 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Mask         = 0;
    layer->Topo         = -1;
    layer->Extrude      = -1;
-   layer->Map          = -1;
-   layer->ExtrudeFactor= 1.0;
-   layer->TopoFactor   = 1.0;
    layer->Loc          = NULL;
    layer->SQLed        = NULL;
    layer->Min          = 0.0;
@@ -703,8 +700,6 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->NSFeature  =0;
    layer->SFeature   =NULL;
    layer->Feature    =NULL;
-   layer->Label      =NULL;
-   layer->NLabel     =0;
    layer->Select     =NULL;
 
    layer->Layer      =NULL;
@@ -813,7 +808,6 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Feature)  free(Layer->Feature);
    if (Layer->SFeature) free(Layer->SFeature);
    if (Layer->Select)   free(Layer->Select);
-   if (Layer->Label)    free(Layer->Label);
    if (Layer->Loc)      free(Layer->Loc);
    if (Layer->Ref)      GeoRef_Destroy(NULL,Layer->Ref->Name);
    if (Layer->Tag)      Tcl_DecrRefCount(Layer->Tag);
@@ -823,6 +817,67 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    }
 
    OGR_LayerClean(Layer);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerClean>
+ * Creation     : Juillet 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Supprimer les display list d'OpenGL
+ *
+ * Parametres   :
+ *  <Layer>     : Couche
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void OGR_LayerClean(OGR_Layer *Layer) {
+
+   if (Layer && Layer->LFeature) {
+      glDeleteLists(Layer->LFeature,Layer->NFeature);
+      Layer->LFeature=0;
+      Layer->GFeature=0;
+   }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerCleanAll>
+ * Creation     : Mars 2011 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Supprimer les textures et positions de toutes les couches en memoire
+ *
+ * Parametres   :
+ *   <Band>     : Bande
+ *   <Map>      : Clean de la Texture
+ *   <Pos>      : Clean des Positions
+ *   <Seg>      : Clean des Contours
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
+
+   OGR_Layer      *layer;
+   Tcl_HashSearch  ptr;
+   Tcl_HashEntry  *entry=NULL;
+
+   TclY_LockHash();
+   entry=Tcl_FirstHashEntry(&OGR_LayerTable,&ptr);
+   while (entry) {
+      layer=Tcl_GetHashValue(entry);
+
+      if (layer && layer->Spec && layer->Spec==Spec) {
+         OGR_LayerClean(layer);
+      }
+      entry=Tcl_NextHashEntry(&ptr);
+   }
+   TclY_UnlockHash();
 }
 
 /*--------------------------------------------------------------------------------------------------------------

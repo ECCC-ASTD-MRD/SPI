@@ -70,10 +70,10 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    unsigned long  nf;
    double         x,y,a,min,max,val;
 
-   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-map","-projection","-georef",
-                                 "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-label",NULL };
-   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,MAP,PROJECTION,GEOREF,
-                             MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,LABEL };
+   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
+                                 "-mask","-featurehighlight","-featureselect","-label",NULL };
+   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
+                             MASK,FEATUREHIGHLIGHT,FEATURESELECT,LABEL };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -370,139 +370,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,lst);
             }
             return(t);
-            break;
-
-         case LABEL:
-            if (Objc==1) {
-               lst=Tcl_NewListObj(0,NULL);
-               for(f=0;f<layer->NLabel;f++) {
-                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Label[f])),-1));
-               }
-               Tcl_SetObjResult(Interp,lst);
-            } else {
-               if (layer->Label) {
-                  free(layer->Label);
-                  layer->Label=NULL;
-               }
-               Tcl_ListObjLength(Interp,Objv[++i],&layer->NLabel);
-
-               if (layer->NLabel) {
-                  layer->Label=(int*)malloc(layer->NLabel*sizeof(int));
-                  for(f=0;f<layer->NLabel;f++) {
-                     Tcl_ListObjIndex(Interp,Objv[i],f,&obj);
-                     layer->Label[f]=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(obj));
-                  }
-               }
-            }
-            break;
-
-         case MAP:
-            if (Objc==1) {
-               if (layer->Map==-1) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Map)),-1));
-               }
-            } else {
-               i++;
-
-               if (layer->Spec->Desc) {
-                  free(layer->Spec->Desc);
-                  layer->Spec->Desc=NULL;
-               }
-               if (strcmp(Tcl_GetString(Objv[i]),"")==0) {
-                  f=-1;
-               } else {
-                  f=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[i]));
-                  layer->Spec->Desc=strdup(Tcl_GetString(Objv[i]));
-               }
-               if (f!=layer->Map) {
-                  layer->Map=f;
-
-                  min=1e32;
-                  max=-1e32;
-
-                  for(nf=0;nf<layer->NFeature;nf++) {
-                     val=OGR_F_GetFieldAsDouble(layer->Feature[nf],layer->Map);
-                     min=min<val?min:val;
-                     max=max>val?max:val;
-                  }
-                  layer->Min=layer->Spec->Min=min;
-                  layer->Max=layer->Spec->Max=max;
-
-                  DataSpec_Define(layer->Spec);
-               }
-            }
-            break;
-
-         case EXTRUDE:
-            if (Objc==1) {
-               if (layer->Extrude==-1) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Extrude)),-1));
-               }
-            } else {
-               i++;
-               if (strcmp(Tcl_GetString(Objv[i]),"")==0) {
-                  f=-1;
-               } else {
-                  f=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[i]));
-               }
-               if (f!=layer->Extrude) {
-                  OGR_LayerClean(layer);
-                  layer->Extrude=f;
-               }
-            }
-            break;
-
-         case EXTRUDEFACTOR:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(layer->ExtrudeFactor));
-            } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&a);
-               if (a!=layer->ExtrudeFactor) {
-                  OGR_LayerClean(layer);
-                  layer->ExtrudeFactor=a;
-               }
-            }
-            break;
-
-         case TOPOGRAPHY:
-            if (Objc==1) {
-               if (layer->Topo==-1) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("NONE",-1));
-               } else if (layer->Topo==0) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("INTERNAL",-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Topo-1)),-1));
-               }
-            } else {
-               i++;
-               if (strcmp(Tcl_GetString(Objv[i]),"NONE")==0) {
-                  f=-1;
-               } else if (strcmp(Tcl_GetString(Objv[i]),"INTERNAL")==0) {
-                  f=0;
-               } else {                 ;
-                  f=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[i]))+1;
-               }
-               if (f!=layer->Topo) {
-                  OGR_LayerClean(layer);
-                  layer->Topo=f;
-               }
-            }
-            break;
-
-         case TOPOGRAPHYFACTOR:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(layer->TopoFactor));
-            } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&a);
-               if (a!=layer->TopoFactor) {
-                  OGR_LayerClean(layer);
-                  layer->TopoFactor=a;
-               }
-            }
             break;
       }
    }
@@ -1207,40 +1074,6 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <OGR_LayerLimit>
- * Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Calcul des limites min-max du champs selectionne.
- *
- * Parametres :
- *  <Layer>   : Layer
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void OGR_LayerLimit(OGR_Layer *Layer) {
-
-   unsigned long f;
-   double val,min,max;
-
-   min=1e32;
-   max=-1e32;
-
-   for(f=0;f<Layer->NFeature;f++) {
-      val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
-      min=min<val?min:val;
-      max=max>val?max:val;
-   }
-   Layer->Min=Layer->Spec->Min=min;
-   Layer->Max=Layer->Spec->Max=max;
-
-   DataSpec_Define(Layer->Spec);
-}
-
-/*----------------------------------------------------------------------------
  * Nom      : <OGR_GetTypeObj>
  * Creation : Aout J.P. Gauthier - CMC/CMOE
  *
@@ -1576,30 +1409,6 @@ void OGR_LayerUpdate(OGR_Layer *Layer) {
          OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
       }
       Layer->Update=0;
-   }
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <OGR_LayerClean>
- * Creation     : Juillet 2004 J.P. Gauthier - CMC/CMOE
- *
- * But          : Supprimer les display list d'OpenGL
- *
- * Parametres   :
- *  <Layer>     : Couche
- *
- * Retour       :
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-void OGR_LayerClean(OGR_Layer *Layer) {
-
-   if (Layer && Layer->LFeature) {
-      glDeleteLists(Layer->LFeature,Layer->NFeature);
-      Layer->LFeature=0;
-      Layer->GFeature=0;
    }
 }
 
@@ -2405,7 +2214,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 void OGR_LayerPreInit(OGR_Layer *Layer) {
 
    /*Assigner les limites d'affichage*/
-    if (!(Layer->Spec->MinMax&DATASPEC_MINSET)) Layer->Spec->Min=Layer->Min;
+   if (!(Layer->Spec->MinMax&DATASPEC_MINSET)) Layer->Spec->Min=Layer->Min;
    if (!(Layer->Spec->MinMax&DATASPEC_MAXSET)) Layer->Spec->Max=Layer->Max;
 
    if (Layer->Spec->InterMode) {
@@ -2462,7 +2271,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
          if (Layer->Extrude!=-1)
             extr=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Extrude);
 
-         OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->TopoFactor,extr*Layer->ExtrudeFactor);
+         OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
          OGR_Box(Proj,Layer);
          GPC_Centroid2D(geom,&vr[0],&vr[1]);
          Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].Lat,&Layer->Loc[f].Lon,1,1);
@@ -2511,7 +2320,8 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 */
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer) {
 
-   int     f,idx=-1,x,y,g,id,nf,fid=-1;
+   int     f,idx=-1,x,y,g,id,nf;
+   int     fsize=-1,fmap=-1,flabel=-1;
    Vect3d  vr;
    char    lbl[256];
    double  val,sz,szon=0;
@@ -2544,9 +2354,30 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       }
    }
 
+   /*Check for topography value*/
+   Layer->Topo=-1;
+   if (spec->Topo) {
+      if (strcmp(spec->Topo,"NONE")==0) {
+         Layer->Topo=-1;
+      } else if (strcmp(spec->Topo,"INTERNAL")==0) {
+         Layer->Topo=0;
+      } else {
+         Layer->Topo=OGR_FD_GetFieldIndex(Layer->Def,spec->Topo)+1;
+      }
+   }
+
+   /*Check for extrude value*/
+   Layer->Extrude=-1;
+   if (spec->Extrude) {
+      if (strcmp(spec->Extrude,"NONE")==0) {
+         Layer->Extrude=-1;
+      } else {
+         Layer->Extrude=OGR_FD_GetFieldIndex(Layer->Def,spec->Extrude);
+      }
+   }
+
    /*Read in data in another thread*/
    g=OGR_LayerParse(Layer,Proj,(GLRender->XBatch || GLRender->TRCon)?0:1);
-   OGR_LayerPreInit(Layer);
 
    glDash(&spec->Dash);
    glEnable(GL_STENCIL_TEST);
@@ -2562,19 +2393,44 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
       /*Check for icon size value*/
       if (spec->SizeVar) {
-         spec->SizeMin=1e32;
-         spec->SizeMax=-1e32;
+         if ((fsize=OGR_FD_GetFieldIndex(Layer->Def,spec->SizeVar))>-1) {
+            spec->SizeMin=1e32;
+            spec->SizeMax=-1e32;
 
-         fid=OGR_FD_GetFieldIndex(Layer->Def,spec->SizeVar);
-
-         for(nf=0;nf<Layer->NFeature;nf++) {
-            val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fid);
-            spec->SizeMin=FMIN(spec->SizeMin,val);
-            spec->SizeMax=FMAX(spec->SizeMax,val);
+            for(nf=0;nf<Layer->NFeature;nf++) {
+               val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fsize);
+               spec->SizeMin=FMIN(spec->SizeMin,val);
+               spec->SizeMax=FMAX(spec->SizeMax,val);
+            }
          }
       }
    }
    sz=VP->Ratio*(spec->Size+spec->Width);
+
+   /*Check for color mapping value*/
+   if (spec->MapVar) {
+      if ((fmap=OGR_FD_GetFieldIndex(Layer->Def,spec->MapVar))>-1) {
+         if (spec->Desc) {
+            free(spec->Desc);
+         }
+         spec->Desc=strdup(spec->MapVar);
+         Layer->Min=1e32;
+         Layer->Max=-1e32;
+
+         for(nf=0;nf<Layer->NFeature;nf++) {
+            val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fmap);
+            Layer->Min=FMIN(Layer->Min,val);
+            Layer->Max=FMAX(Layer->Max,val);
+         }
+      }
+   }
+
+   /*Check for label value*/
+   if (spec->LabelVar) {
+      flabel=OGR_FD_GetFieldIndex(Layer->Def,spec->LabelVar);
+   }
+
+   OGR_LayerPreInit(Layer);
 
    if (Layer->Mask) {
       if (Proj->Geo->Params.Mask==0) {
@@ -2622,8 +2478,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    /*Render the features*/
    for(f=g;f<Layer->GFeature;f++) {
       if (Layer->Select[f]) {
-         if (Layer->Map!=-1 && spec->Map) {
-            val=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Map);
+         if (fmap!=-1 && spec->Map) {
+            val=OGR_F_GetFieldAsDouble(Layer->Feature[f],fmap);
             VAL2COL(idx,spec,val);
             if (idx<0) continue;
          }
@@ -2695,8 +2551,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
 
          if (spec->Icon) {
-            if (fid>-1) {
-               szon=OGR_F_GetFieldAsDouble(Layer->Feature[f],fid);
+            if (fsize>-1) {
+               szon=OGR_F_GetFieldAsDouble(Layer->Feature[f],fsize);
                szon=szon/(spec->SizeMax-spec->SizeMin)*spec->Size;
                sz=VP->Ratio*(spec->Size+szon+spec->Width);
             }
@@ -2772,7 +2628,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Render the feature's labels only if they're all projected*/
    if (Layer->NFeature==Layer->GFeature) {
-      if (Layer->Label && GLRender->Resolution<=1) {
+      if (flabel>-1 && GLRender->Resolution<=1) {
          Projection_UnClip(Proj);
 
          glMatrixMode(GL_MODELVIEW);
@@ -2796,12 +2652,12 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
          if (spec->Outline) {
             glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
-            field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
+            field=OGR_FD_GetFieldDefn(Layer->Def,flabel);
 
             for(f=0;f<Layer->GFeature;f++) {
                if (Layer->Select[f]) {
                   if (Projection_Pixel(Proj,VP,Layer->Loc[f],vr)) {
-                     OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[f],Layer->Label[0]);
+                     OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[f],flabel);
                      vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
                      vr[1]+=5;
                      if (Interp) {
@@ -2817,10 +2673,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          /*Render the selected feature's labels*/
          if (Layer->SFeature && spec->HighLine) {
             glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
-            field=OGR_FD_GetFieldDefn(Layer->Def,Layer->Label[0]);
+            field=OGR_FD_GetFieldDefn(Layer->Def,flabel);
             for(f=0;f<Layer->NSFeature;f++) {
                if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
-                  OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[Layer->SFeature[f]],Layer->Label[0]);
+                  OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[Layer->SFeature[f]],flabel);
                   vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
                   vr[1]+=5;
                   if (Interp) {

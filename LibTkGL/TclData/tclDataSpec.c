@@ -236,16 +236,19 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    double    tmp,min=0.0,max=0.0;
 
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
-                                 "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple",
-                                 "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
-                                 "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype",
-                                 "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
-                                 "-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizevar","-mask",NULL };
+                                 "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
+                                 "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-transparency","-color","-fill",
+                                 "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
+                                 "-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
+                                 "-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres",
+                                 "-interpolation","-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
-                     RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
-                     WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
-                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
-                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZEMIN,SIZEMAX,SIZEVAR,MASK };
+                     RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
+                     INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,WIDTH,TRANSPARENCY,COLOR,FILL,
+                     ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
+                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
+                     ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
+                     INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK };
 
    if (!Spec) {
       Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
@@ -379,9 +382,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                i++;
                if (strlen(Tcl_GetString(Objv[i]))==0) {
-                  Spec->MinMax&=~DATASPEC_MINSET;
-                  Spec->Min=nan("NaN");
-                  cminmax=1;
+                  if (Spec->MinMax&DATASPEC_MINSET) {
+                     Spec->MinMax&=~DATASPEC_MINSET;
+                     Spec->Min=nan("NaN");
+                     cminmax=1;
+                  }
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&min);
                   Spec->MinMax|=DATASPEC_MINSET;
@@ -404,9 +409,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                i++;
                if (strlen(Tcl_GetString(Objv[i]))==0) {
-                  Spec->MinMax&=~DATASPEC_MAXSET;
-                  Spec->Max=nan("NaN");
-                  cminmax=1;
+                  if (Spec->MinMax&DATASPEC_MAXSET) {
+                     Spec->MinMax&=~DATASPEC_MAXSET;
+                     Spec->Max=nan("NaN");
+                     cminmax=1;
+                  }
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&max);
                   Spec->MinMax|=DATASPEC_MAXSET;
@@ -456,6 +463,33 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (tmp!=Spec->TopoFactor) {
                   cpos=1;
                   Spec->TopoFactor=tmp;
+               }
+            }
+            break;
+
+         case EXTRUDE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Extrude,-1));
+            } else {
+               ++i;
+               if ((!Spec->Extrude && strlen(Tcl_GetString(Objv[i]))) || (Spec->Extrude && strcmp(Tcl_GetString(Objv[i]),Spec->Extrude)!=0)) {
+                  if (Spec->Extrude) free(Spec->Extrude);
+                  Spec->Extrude=NULL;
+                  if (strlen(Tcl_GetString(Objv[i])) && strcmp("NONE",Tcl_GetString(Objv[i]))!=0)
+                     Spec->Extrude=(char*)strdup(Tcl_GetString(Objv[i]));
+                  cpos=1;
+               }
+            }
+            break;
+
+         case EXTRUDEFACTOR:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ExtrudeFactor));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
+               if (tmp!=Spec->ExtrudeFactor) {
+                  cpos=1;
+                  Spec->ExtrudeFactor=tmp;
                }
             }
             break;
@@ -957,6 +991,20 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case MAPVAR:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->MapVar,-1));
+            } else {
+               if (Spec->MapVar) {
+                  free(Spec->MapVar);
+                  Spec->MapVar=NULL;
+               }
+               ++i;
+               if (strlen(Tcl_GetString(Objv[i])))
+                  Spec->MapVar=strdup(Tcl_GetString(Objv[i]));
+            }
+            break;
+
          case SIZEVAR:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->SizeVar,-1));
@@ -968,6 +1016,20 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                ++i;
                if (strlen(Tcl_GetString(Objv[i])))
                   Spec->SizeVar=strdup(Tcl_GetString(Objv[i]));
+            }
+            break;
+
+         case LABELVAR:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->LabelVar,-1));
+            } else {
+               if (Spec->LabelVar) {
+                  free(Spec->LabelVar);
+                  Spec->LabelVar=NULL;
+               }
+               ++i;
+               if (strlen(Tcl_GetString(Objv[i])))
+                  Spec->LabelVar=strdup(Tcl_GetString(Objv[i]));
             }
             break;
 
@@ -1141,6 +1203,7 @@ void DataSpec_Clean(TDataSpec *Spec,int Map,int Pos,int Seg) {
 
    Data_CleanAll(Spec,Map,Pos,Seg);
    GDAL_BandCleanAll(Spec,Map,Pos,Seg);
+   OGR_LayerCleanAll(Spec,Map,Pos,Seg);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1283,10 +1346,13 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
 
    if (to->ZType)     free(to->ZType);
    if (to->Topo)      free(to->Topo);
+   if (to->Extrude)   free(to->Extrude);
    if (to->Desc)      free(to->Desc);
    if (to->Unit)      free(to->Unit);
    if (to->Sprite)    free(to->Sprite);
-   if (to->SizeVar) free(to->SizeVar);
+   if (to->LabelVar)  free(to->LabelVar);
+   if (to->SizeVar)   free(to->SizeVar);
+   if (to->MapVar)    free(to->SizeVar);
    if (to->Outline)   Tk_FreeColor(to->Outline);
    if (to->Fill)      Tk_FreeColor(to->Fill);
    if (to->HighLine)  Tk_FreeColor(to->HighLine);
@@ -1301,6 +1367,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->OGRMask=from->OGRMask;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
+   to->ExtrudeFactor=from->ExtrudeFactor;
    to->Set=from->Set;
    to->Map=from->Map;
    to->MapFactor=from->MapFactor;
@@ -1373,6 +1440,10 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (from->Topo)
       to->Topo=strdup(from->Topo);
 
+   to->Extrude=NULL;
+   if (from->Extrude)
+      to->Extrude=strdup(from->Extrude);
+
    to->Dash.number=0;
    if (from->Dash.number) {
       DashPrint(buf,&from->Dash);
@@ -1416,9 +1487,17 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (from->Sprite)
       to->Sprite=strdup(from->Sprite);
 
+   to->LabelVar=NULL;
+   if (from->LabelVar)
+      to->LabelVar=strdup(from->LabelVar);
+
    to->SizeVar=NULL;
    if (from->SizeVar)
       to->SizeVar=strdup(from->SizeVar);
+
+   to->MapVar=NULL;
+   if (from->MapVar)
+      to->MapVar=strdup(from->MapVar);
 
    return(TCL_OK);
 }
@@ -1484,7 +1563,9 @@ TDataSpec *DataSpec_New(){
    spec->Width=1;
    spec->Size=10.0;
    spec->SizeMin=spec->SizeMax=0.0;
+   spec->LabelVar=NULL;
    spec->SizeVar=NULL;
+   spec->MapVar=NULL;
    spec->Sample=4;
    spec->SampleType='P';
    spec->Step=0.25;
@@ -1503,6 +1584,8 @@ TDataSpec *DataSpec_New(){
    spec->ZType=NULL;
    spec->Topo=NULL;
    spec->TopoFactor=1.0;
+   spec->Extrude=NULL;
+   spec->ExtrudeFactor=1.0;
    spec->InterpDegree=(char*)strdup("LINEAR");
    spec->ExtrapDegree=(char*)strdup("NEUTRAL");
    spec->Dash.number=0;
@@ -1548,6 +1631,7 @@ int DataSpec_Free(TDataSpec *Spec){
    if (Spec->Name)        free(Spec->Name);
    if (Spec->ZType)       free(Spec->ZType);
    if (Spec->Topo)        free(Spec->Topo);
+   if (Spec->Extrude)     free(Spec->Extrude);
    if (Spec->Desc)        free(Spec->Desc);
    if (Spec->Unit)        free(Spec->Unit);
    if (Spec->Sprite)      free(Spec->Sprite);
