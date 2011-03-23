@@ -690,7 +690,6 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Topo         = -1;
    layer->Extrude      = -1;
    layer->Map          = -1;
-   layer->Size         = -1;
    layer->ExtrudeFactor= 1.0;
    layer->TopoFactor   = 1.0;
    layer->Loc          = NULL;

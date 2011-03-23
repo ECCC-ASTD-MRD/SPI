@@ -240,12 +240,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-width","-transparency","-color","-fill","-activefill","-outline","-activeoutline","-font","-value","-ranges",
                                  "-intervals","-interlabels","-positions","-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype",
                                  "-gridvector","-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres","-interpolation",
-                                 "-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizefactor","-mask",NULL };
+                                 "-light","-sprite","-wmo","-size","-sizemin","-sizemax","-sizevar","-mask",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,
                      WIDTH,TRANSPARENCY,COLOR,FILL,ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,
-                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZEMIN,SIZEMAX,SIZEFACTOR,MASK };
+                     SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZEMIN,SIZEMAX,SIZEVAR,MASK };
 
    if (!Spec) {
       Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
@@ -957,11 +957,17 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
-         case SIZEFACTOR:
+         case SIZEVAR:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->SizeFactor));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->SizeVar,-1));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Spec->SizeFactor);
+               if (Spec->SizeVar) {
+                  free(Spec->SizeVar);
+                  Spec->SizeVar=NULL;
+               }
+               ++i;
+               if (strlen(Tcl_GetString(Objv[i])))
+                  Spec->SizeVar=strdup(Tcl_GetString(Objv[i]));
             }
             break;
 
@@ -1280,6 +1286,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (to->Desc)      free(to->Desc);
    if (to->Unit)      free(to->Unit);
    if (to->Sprite)    free(to->Sprite);
+   if (to->SizeVar) free(to->SizeVar);
    if (to->Outline)   Tk_FreeColor(to->Outline);
    if (to->Fill)      Tk_FreeColor(to->Fill);
    if (to->HighLine)  Tk_FreeColor(to->HighLine);
@@ -1335,7 +1342,6 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Size=from->Size;
    to->SizeMin=from->SizeMin;
    to->SizeMax=from->SizeMax;
-   to->SizeFactor=from->SizeFactor;
    to->Sample=from->Sample;
    to->SampleType=from->SampleType;
    to->Step=from->Step;
@@ -1410,6 +1416,10 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (from->Sprite)
       to->Sprite=strdup(from->Sprite);
 
+   to->SizeVar=NULL;
+   if (from->SizeVar)
+      to->SizeVar=strdup(from->SizeVar);
+
    return(TCL_OK);
 }
 
@@ -1474,7 +1484,7 @@ TDataSpec *DataSpec_New(){
    spec->Width=1;
    spec->Size=10.0;
    spec->SizeMin=spec->SizeMax=0.0;
-   spec->SizeFactor=2.0;
+   spec->SizeVar=NULL;
    spec->Sample=4;
    spec->SampleType='P';
    spec->Step=0.25;

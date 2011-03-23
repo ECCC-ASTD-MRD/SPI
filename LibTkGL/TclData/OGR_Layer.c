@@ -70,9 +70,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    unsigned long  nf;
    double         x,y,a,min,max,val;
 
-   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-map","-size","-projection","-georef",
+   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-map","-projection","-georef",
                                  "-mask","-extrude","-extrudefactor","-topography","-topographyfactor","-featurehighlight","-featureselect","-label",NULL };
-   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,MAP,SIZE,PROJECTION,GEOREF,
+   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,MAP,PROJECTION,GEOREF,
                              MASK,EXTRUDE,EXTRUDEFACTOR,TOPOGRAPHY,TOPOGRAPHYFACTOR,FEATUREHIGHLIGHT,FEATURESELECT,LABEL };
 
    layer=OGR_LayerGet(Name);
@@ -431,38 +431,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   layer->Max=layer->Spec->Max=max;
 
                   DataSpec_Define(layer->Spec);
-               }
-            }
-            break;
-
-         case SIZE:
-            if (Objc==1) {
-               if (layer->Size==-1) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,layer->Size)),-1));
-               }
-            } else {
-               i++;
-
-               if (strcmp(Tcl_GetString(Objv[i]),"")==0) {
-                  f=-1;
-               } else {
-                  f=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[i]));
-               }
-               if (f!=layer->Size) {
-                  layer->Size=f;
-
-                  min=1e32;
-                  max=-1e32;
-
-                  for(nf=0;nf<layer->NFeature;nf++) {
-                     val=OGR_F_GetFieldAsDouble(layer->Feature[nf],layer->Size);
-                     min=min<val?min:val;
-                     max=max>val?max:val;
-                  }
-                  layer->Spec->SizeMin=min;
-                  layer->Spec->SizeMax=max;
                }
             }
             break;
@@ -2543,7 +2511,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 */
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer) {
 
-   int     f,idx=-1,x,y,g,id;
+   int     f,idx=-1,x,y,g,id,nf,fid=-1;
    Vect3d  vr;
    char    lbl[256];
    double  val,sz,szon=0;
@@ -2591,7 +2559,22 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    if (spec->Icon) {
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[spec->Icon].Co);
+
+      /*Check for icon size value*/
+      if (spec->SizeVar) {
+         spec->SizeMin=1e32;
+         spec->SizeMax=-1e32;
+
+         fid=OGR_FD_GetFieldIndex(Layer->Def,spec->SizeVar);
+
+         for(nf=0;nf<Layer->NFeature;nf++) {
+            val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fid);
+            spec->SizeMin=FMIN(spec->SizeMin,val);
+            spec->SizeMax=FMAX(spec->SizeMax,val);
+         }
+      }
    }
+   sz=VP->Ratio*(spec->Size+spec->Width);
 
    if (Layer->Mask) {
       if (Proj->Geo->Params.Mask==0) {
@@ -2712,9 +2695,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
 
          if (spec->Icon) {
-            if (Layer->Size!=-1) {
-               szon=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Size);
-               szon=szon/(spec->SizeMax-spec->SizeMin)*spec->SizeFactor*spec->Size;
+            if (fid>-1) {
+               szon=OGR_F_GetFieldAsDouble(Layer->Feature[f],fid);
+               szon=szon/(spec->SizeMax-spec->SizeMin)*spec->Size;
+               sz=VP->Ratio*(spec->Size+szon+spec->Width);
             }
 
             glDisable(GL_CULL_FACE);
@@ -2722,8 +2706,6 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glPushMatrix();
             Proj->Type->Locate(Proj,Layer->Loc[f].Lat,Layer->Loc[f].Lon,1);
             glTranslated(0.0,0.0,ZM(Proj,Layer->Loc[f].Elev));
-
-            sz=VP->Ratio*(spec->Size+szon+spec->Width);
             glScalef(sz,sz,1.0);
 
             if (spec->Outline && spec->Width) {

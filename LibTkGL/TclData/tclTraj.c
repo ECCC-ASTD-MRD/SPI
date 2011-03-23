@@ -785,6 +785,8 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          traj->Spec=spec;
          for(j=0;j<traj->NPr;j++) {
             fgets(buf,512,Stream);
+            memset(&traj->Pr[j],0x0,sizeof(TParticle));
+
             sscanf(buf,"%Li %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
                &traj->Pr[j].Co.Lat,&traj->Pr[j].Co.Lon,&traj->Pr[j].ZModel,&traj->Pr[j].ZPres,
                &traj->Pr[j].Co.Elev,&traj->Pr[j].ZMSL,&traj->Pr[j].Dist,&traj->Pr[j].Speed);
@@ -968,15 +970,15 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
    TDataSpec *spec;
    Coord      co;
    Vect3d    *vbuf;
-   int        i,n;
+   int        i,n,szi=0;
    char       buf[64];
-   double     sz;
+   double     sz,val;
 
    if (!(spec=Traj->Spec))
       return(TCL_OK);
 
-   sz=VP->Ratio*(spec->Size+spec->Width);
    vbuf=GDB_VBufferAlloc(Traj->NPr*2+1);
+   sz=VP->Ratio*(spec->Size+spec->Width);
 
    glLineWidth(spec->Width);
    glEnable(GL_DEPTH_TEST);
@@ -992,6 +994,24 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
       glColor3us(0x00,0x00,0x00);
 
+      /*Check for icon size value*/
+      if (spec->SizeVar) {
+         spec->SizeMin=1e32;
+         spec->SizeMax=-1e32;
+
+         if (strcmp(spec->SizeVar,"ZPRES")==0) {
+            szi=1;
+         } else if (strcmp(spec->SizeVar,"ZMODEL")==0) {
+            szi=2;
+         } else if (strcmp(spec->SizeVar,"ZMSL")==0) {
+            szi=3;
+         } else if (strcmp(spec->SizeVar,"DIST")==0) {
+            szi=4;
+         } else if (strcmp(spec->SizeVar,"SPEED")==0) {
+            szi=5;
+         }
+      }
+
       for(i=0,n=0;i<Traj->NPr;i++) {
          if (Traj->Pr[i].Date<=Proj->Date || Proj->Date==0) {
             co.Lat=Traj->Pr[i].Co.Lat;
@@ -1000,6 +1020,19 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
             Proj->Type->Project(Proj,&Traj->Pr[i].Co,&vbuf[n*2],1);
             Proj->Type->Project(Proj,&co,&vbuf[n*2+1],1);
             n++;
+         }
+
+         /*Get range of value for icon size*/
+         if (szi) {
+            switch(szi) {
+               case 1: val=Traj->Pr[i].ZPres; break;
+               case 2: val=Traj->Pr[i].ZModel;break;
+               case 3: val=Traj->Pr[i].ZMSL;  break;
+               case 4: val=Traj->Pr[i].Dist;  break;
+               case 5: val=Traj->Pr[i].Speed; break;
+            }
+            spec->SizeMin=FMIN(spec->SizeMin,val);
+            spec->SizeMax=FMAX(spec->SizeMax,val);
          }
       }
 
@@ -1052,6 +1085,18 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                glPushMatrix();
                Proj->Type->Locate(Proj,Traj->Pr[i].Co.Lat,Traj->Pr[i].Co.Lon,1);
                glTranslated(0.0,0.0,ZM(Proj,Traj->Pr[i].Co.Elev));
+
+               if (szi) {
+                  switch(szi) {
+                     case 1: val=Traj->Pr[i].ZPres;  break;
+                     case 2: val=Traj->Pr[i].ZModel; break;
+                     case 3: val=Traj->Pr[i].ZMSL;   break;
+                     case 4: val=Traj->Pr[i].Dist;   break;
+                     case 5: val=Traj->Pr[i].Speed;  break;
+                  }
+                  val=val/(spec->SizeMax-spec->SizeMin)*spec->Size;
+                  sz=VP->Ratio*(spec->Size+val+spec->Width);
+               }
                glScalef(sz,sz,1.0);
 
                if (spec->Fill) {

@@ -80,7 +80,7 @@ typedef struct OGR_Layer {
    int           *Label;
    int            NLabel;
 
-   int            Map,Size;
+   int            Map;
    int            Topo,Extrude;
    double         TopoFactor,ExtrudeFactor;
    double         Min,Max;
