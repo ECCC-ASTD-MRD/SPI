@@ -691,8 +691,6 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Extrude      = -1;
    layer->Loc          = NULL;
    layer->SQLed        = NULL;
-   layer->Min          = 0.0;
-   layer->Max          = 0.0;
 
    layer->GFeature   =0;
    layer->NFeature   =0;
