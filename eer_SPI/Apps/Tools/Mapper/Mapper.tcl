@@ -349,10 +349,8 @@ proc Mapper::Zoom { { All False } } {
          }
       } elseif { [model is $object] } {
          if { [llength [set coords [model stats $object -extent]]] } {
-         puts stderr .$coords.
             set coords0 [model stats $object -project [lindex $coords 0] [lindex $coords 1]]
             set coords1 [model stats $object -project [lindex $coords 2] [lindex $coords 3]]
-         puts stderr ".$coords0. .$coords1."
          }
       }
 
@@ -876,6 +874,13 @@ proc Mapper::ParamsOGRGet { Object } {
    set Data(Dash)        [ogrlayer configure $Object -dash]
    set Data(Icon)        [ogrlayer configure $Object -icon]
    set Data(Size)        [ogrlayer configure $Object -size]
+   set Data(LabelVar)    [ogrlayer configure $Object -labelvar]
+   set Data(SizeVar)     [ogrlayer configure $Object -sizevar]
+   set Data(MapVar)      [ogrlayer configure $Object -mapvar]
+   set Data(Topo)        [ogrlayer configure $Object -topography]
+   set Data(TopoFactor)  [ogrlayer configure $Object -topographyfactor]
+   set Data(Extr)        [ogrlayer configure $Object -extrude]
+   set Data(ExtrFactor)  [ogrlayer configure $Object -extrudefactor]
    set Data(Dash)        [ogrlayer configure $Object -dash]
    set Data(ColorMap)    [ogrlayer configure $Object -colormap]
    set Data(Color)       [ogrlayer configure $Object -outline]
@@ -890,6 +895,7 @@ proc Mapper::ParamsOGRGet { Object } {
    set Data(Tran)        [ogrlayer configure $Object -transparency]
    set Data(Proj)        [ogrlayer define $Object -projection]
    set Data(Mask)        [ogrlayer define $Object -mask]
+   set Data(Fields)      [ogrlayer define $Object -field]
 
    set value             [ogrlayer configure $Object -value]
    set Data(Order)       [lindex $value 0]
@@ -904,15 +910,6 @@ proc Mapper::ParamsOGRGet { Object } {
    } else {
       set Data(FillSel) 0
    }
-
-   set Data(Topo)        [ogrlayer define $Object -topography]
-   set Data(TopoFactor)  [ogrlayer define $Object -topographyfactor]
-   set Data(Extr)        [ogrlayer define $Object -extrude]
-   set Data(ExtrFactor)  [ogrlayer define $Object -extrudefactor]
-   set Data(Fields)      [ogrlayer define $Object -field]
-   set Data(Label)       [ogrlayer define $Object -label]
-   set Data(VarMap)      [ogrlayer define $Object -map]
-   set Data(SizeMap)     [ogrlayer define $Object -size]
 
    set Data(Intervals)   [ogrlayer configure $Object -intervals]
    set Data(Min)         [ogrlayer configure $Object -min]
@@ -992,17 +989,15 @@ proc Mapper::ParamsOGRSet { Object } {
 #   ogrlayer configure $Object -font OGRFONT
 
    ogrlayer configure $Object -dash $Data(Dash) -colormap $Data(ColorMap) -outline $Data(Color) -activeoutline $Data(Highlight) \
-      -icon $Data(Icon) -size $Data(Size) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
-      -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse)
+      -icon $Data(Icon) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
+      -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) \
+      -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) -labelvar $Data(LabelVar)
 
    if { $Data(FillSel) } {
       ogrlayer configure $Object -fill $Data(Fill)
    } else {
       ogrlayer configure $Object -fill ""
    }
-
-   ogrlayer define $Object -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) \
-      -label $Data(Label) -map $Data(VarMap) -size $Data(SizeMap)
 
    set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
    ogrlayer define $Object -projection $Data(Proj)

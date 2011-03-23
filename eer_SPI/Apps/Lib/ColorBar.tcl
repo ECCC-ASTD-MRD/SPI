@@ -496,7 +496,7 @@ proc ColorBar::Update { Frame { State -1 } } {
 
       foreach field [projection configure $Frame -data] {
          if { [ogrlayer is $field] } {
-            if { [ogrlayer configure $field -colormap]!="" && [ogrlayer define $field -map]!="" } {
+            if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -mapvar]!="" } {
                lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
             }
          } elseif { [gdalband is $field] } {
