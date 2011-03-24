@@ -823,10 +823,9 @@ proc Trajectory::GraphPlot { Frame TrajId } {
 
          #----- Pour l'interval choisie, incluant la date de depart et d'arrivee
 
-         if { $inter==0 || $date==$date0 || $date==$date1 || ($min=="00" && [expr $hour%$inter]==0) } {
-            vector append TRAJGRAPH$t.X $date
-            vector append TRAJGRAPH$t.Y $elev
-         }
+         vector append TRAJGRAPH$t.X $date
+         vector append TRAJGRAPH$t.Y $elev
+
          set h  [vector stats TRAJGRAPH$t.Y -min]
          set h0 [expr $h<$h0?$h:$h0]
          set h  [vector stats TRAJGRAPH$t.Y -max]
@@ -859,7 +858,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \
          -icon [trajectory configure $t -icon] -outline [trajectory configure $t -color] -iconoutline [trajectory configure $t -color] \
          -size [trajectory configure $t -size] -width [trajectory configure $t -width] -iconfill [trajectory configure $t -color] \
-         -iconxfillvalue [expr 24*3600] -xdata TRAJGRAPH$t.X -ydata TRAJGRAPH$t.Y -tag $t
+         -iconxshowvalue [expr $inter*3600] -iconxfillvalue [expr 24*3600] -xdata TRAJGRAPH$t.X -ydata TRAJGRAPH$t.Y -tag $t
 
    }
    $Frame.page.canvas itemconfigure TRAJGRAPH -item $items
