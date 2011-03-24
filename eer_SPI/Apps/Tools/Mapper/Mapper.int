@@ -1269,7 +1269,8 @@ proc Mapper::ParamsOGR { Object Tab } {
             pack $Data(Frame3).fields.scroll -side left -fill y
 
          frame $Data(Frame3).geomtype
-            label $Data(Frame3).geomtype.lbl -text "[lindex $Lbl(Shape) $GDefs(Lang)]:" -anchor w
+            checkbutton $Data(Frame3).geomtype.lbl -text "[lindex $Lbl(Shape) $GDefs(Lang)]:" -anchor w -variable Mapper::Data(GeomGet) -onvalue True -offvalue False \
+               -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) }
             menubutton $Data(Frame3).geomtype.type -textvariable Mapper::Data(GeomOut) -menu $Data(Frame3).geomtype.type.menu
             menu $Data(Frame3).geomtype.type.menu
                $Data(Frame3).geomtype.type.menu add radiobutton -variable Mapper::Data(GeomOut) -label TEXT -value TEXT -command { Mapper::FeatureOGR $Mapper::Data(Object) $Mapper::Data(Index) }
@@ -1522,11 +1523,15 @@ proc Mapper::FeatureOGR { Object Index { Locate False } } {
          incr i
       }
 
-      switch $Data(GeomOut) {
-         TEXT { Mapper::FeatureOGRGeom [ogrlayer define $Object -geometry $Index True] 0 }
-         WKT  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -wkt] }
-         KML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -kml] }
-         GML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -gml] }
+      if { $Data(GeomGet) } {
+         switch $Data(GeomOut) {
+            TEXT { Mapper::FeatureOGRGeom [ogrlayer define $Object -geometry $Index True] 0 }
+            WKT  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -wkt] }
+            KML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -kml] }
+            GML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -gml] }
+         }
+      } else {
+         $Data(Frame3).geom.text delete 0.0 end
       }
 
       ogrlayer define $Object -featurehighlight $Index
