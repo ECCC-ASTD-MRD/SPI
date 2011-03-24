@@ -33,7 +33,7 @@ set path [pwd]
 
 foreach datev [fstdfile info FILEIN DATEV] {
 
-   set time [clock format $datev -format "%Y%m%d_%H:%M" -gmt True]
+   set time [clock format $datev -format "%Y%m%d_%H%M" -gmt True]
    puts "   Found date $time"
    set n 0
    set fields {}
@@ -52,17 +52,16 @@ foreach datev [fstdfile info FILEIN DATEV] {
       cd ${out}
       ogrfile open FILE write ${time}.shp "ESRI Shapefile"
 
-      ogrlayer create FILE LAYER ${time}
+      georef create REF { PROJCS["WGS 84 / UPS North",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",90],PARAMETER["central_meridian",0],PARAMETER["scale_factor",0.994],PARAMETER["false_easting",2000000],PARAMETER["false_northing",2000000],UNIT["metre",1]] }
+      ogrlayer create FILE LAYER ${time} REF
       ogrlayer import LAYER $fields
 
       ogrfile close FILE
       ogrlayer free LAYER
       eval fstdfield free $fields
 
-      cd $out
       eval exec zip ${time}.zip ${time}.shp ${time}.shx ${time}.dbf ${time}.prj
       file delete ${time}.shp ${time}.shx ${time}.dbf ${time}.prj
       cd $path
    }
-   break
 }
