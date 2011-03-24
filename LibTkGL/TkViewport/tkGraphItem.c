@@ -198,8 +198,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    int         i,j,idx;
 
 
-   static CONST char *sopt[] = { "-anchor","-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-windpres","-pressure","-drybulb","-wetbulb","-dewpoint","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
-   enum                opt { ANCHOR,COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,WINDPRES,PRESSURE,DRYBULB,WETBULB,DEWPOINT,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
+   static CONST char *sopt[] = { "-anchor","-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-iconxshowvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-windpres","-pressure","-drybulb","-wetbulb","-dewpoint","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
+   enum                opt { ANCHOR,COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,ICONXSHOWVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,WINDPRES,PRESSURE,DRYBULB,WETBULB,DEWPOINT,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
    item=GraphItem_Get(Name);
    if (!item) {
       Tcl_AppendResult(Interp,"\n   GraphItem_Config: unknown object: \"",Name,"\"",(char*)NULL);
@@ -294,6 +294,13 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case ICONXSHOWVALUE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(item->IconXShowValue));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&item->IconXShowValue);
+            }
+            break;
          case FONT:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Tk_NameOfFont(item->Font),-1));
@@ -697,6 +704,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
    item->IconOutline=NULL;
    item->IconFill=NULL;
    item->IconXFillValue=1e32;
+   item->IconXShowValue=1e32;
    item->Dash.number=0;
    item->Colors=NULL;
 
@@ -1644,31 +1652,33 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
       for(i=0;i<vn-hd;i++) {
-         glPushMatrix();
-         if (Item->Orient[0]=='X') {
-            glTranslated(v[i][0]-dh,v[i][1],v[i][2]);
-         } else {
-            glTranslated(v[i][0],v[i][1]-dh,v[i][2]);
-         }
-         glScalef(sz,sz,1.0f);
-         glColor4us(Graph->BGColor->red,Graph->BGColor->green,Graph->BGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
-         if (Item->IconFill) {
-            if (Item->IconXFillValue==1e32 || fmod(vecx->V[i],Item->IconXFillValue)==0.0) {
-               glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
-            }
-         }
          glPushName(i);
-         GraphItem_ColorXYZ(Interp,Graph,Item,i);
-         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-         glDrawArrays(IconList[Item->Icon].Type,0,IconList[Item->Icon].Nb);
-
-         if (Item->IconOutline && Item->Width) {
-            glColor4us(Item->IconOutline->red,Item->IconOutline->green,Item->IconOutline->blue,Item->Alpha*Graph->Alpha*0.01*655);
-            glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+         if (i==0 || i==(vn-hd-1) || Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
+            glPushMatrix();
+            if (Item->Orient[0]=='X') {
+               glTranslated(v[i][0]-dh,v[i][1],v[i][2]);
+            } else {
+               glTranslated(v[i][0],v[i][1]-dh,v[i][2]);
+            }
+            glScalef(sz,sz,1.0f);
+            glColor4us(Graph->BGColor->red,Graph->BGColor->green,Graph->BGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
+            if (Item->IconFill) {
+               if (Item->IconXFillValue==1e32 || fmod(vecx->V[i],Item->IconXFillValue)==0.0) {
+                  glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
+               }
+            }
+            GraphItem_ColorXYZ(Interp,Graph,Item,i);
+            glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
             glDrawArrays(IconList[Item->Icon].Type,0,IconList[Item->Icon].Nb);
+
+            if (Item->IconOutline && Item->Width) {
+               glColor4us(Item->IconOutline->red,Item->IconOutline->green,Item->IconOutline->blue,Item->Alpha*Graph->Alpha*0.01*655);
+               glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+               glDrawArrays(IconList[Item->Icon].Type,0,IconList[Item->Icon].Nb);
+            }
+            glPopMatrix();
          }
          glPopName();
-         glPopMatrix();
       }
       glDisableClientState(GL_VERTEX_ARRAY);
    }
@@ -3480,31 +3490,33 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    /* Display Icons */
    if (Item->Icon && Item->Size) {
       for(i=0;i<vn-hd;i++) {
-         sz=Item->Size+Item->Width;
+         if (i==0 || i==(vn-hd-1) ||Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
+            sz=Item->Size+Item->Width;
 
-         if (Item->Orient[0]=='X') {
-            sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0]-dh,v[i][1],sz,sz);
-         } else {
-            sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0],v[i][1]-dh,sz,sz);
-         }
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-
-         Tk_CanvasPsColor(Interp,Graph->canvas,Graph->BGColor);
-         if (Item->IconFill) {
-            if (Item->IconXFillValue==1e32 || fmod(vecx->V[i],Item->IconXFillValue)==0.0)
-               Tk_CanvasPsColor(Interp,Graph->canvas,Item->IconFill);
-         }
-         GraphItem_ColorXYZ(Interp,Graph,Item,i);
-         Tk_glCanvasPsPath(Interp,Graph->canvas,IconList[Item->Icon].Co,IconList[Item->Icon].Nb);
-         Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
-
-         if (Item->IconOutline && Item->Width) {
-            Tk_CanvasPsColor(Interp,Graph->canvas,Item->IconOutline);
-            Tk_glCanvasPsPath(Interp,Graph->canvas,IconList[Item->Icon].Co,IconList[Item->Icon].Nb);
-            sprintf(buf,"%.15g setlinewidth 1 setlinecap 1 setlinejoin\nclosepath stroke\n",(double)(Item->Width)/Item->Size);
+            if (Item->Orient[0]=='X') {
+               sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0]-dh,v[i][1],sz,sz);
+            } else {
+               sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0],v[i][1]-dh,sz,sz);
+            }
             Tcl_AppendResult(Interp,buf,(char*)NULL);
+
+            Tk_CanvasPsColor(Interp,Graph->canvas,Graph->BGColor);
+            if (Item->IconFill) {
+               if (Item->IconXFillValue==1e32 || fmod(vecx->V[i],Item->IconXFillValue)==0.0)
+                  Tk_CanvasPsColor(Interp,Graph->canvas,Item->IconFill);
+            }
+            GraphItem_ColorXYZ(Interp,Graph,Item,i);
+            Tk_glCanvasPsPath(Interp,Graph->canvas,IconList[Item->Icon].Co,IconList[Item->Icon].Nb);
+            Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
+
+            if (Item->IconOutline && Item->Width) {
+               Tk_CanvasPsColor(Interp,Graph->canvas,Item->IconOutline);
+               Tk_glCanvasPsPath(Interp,Graph->canvas,IconList[Item->Icon].Co,IconList[Item->Icon].Nb);
+               sprintf(buf,"%.15g setlinewidth 1 setlinecap 1 setlinejoin\nclosepath stroke\n",(double)(Item->Width)/Item->Size);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+            }
+            Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
          }
-         Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
       }
    }
 

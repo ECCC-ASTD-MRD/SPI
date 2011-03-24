@@ -51,6 +51,7 @@ typedef struct TGraphItem {
    XColor        *IconFill;                   /*Couleur d'avant plan des icones*/
    XColor        *IconOutline;                /*Couleur d'arriere plan des icones*/
    double         IconXFillValue;             /*Valeur de remplissage dans l'axe X*/
+   double         IconXShowValue;             /*Valeur d'affichage de l'icone dans l'axe X*/
    char          *ImageString;
    T_glBitmap    *Stipple;                    /*Bitmap pour le stipple de mode fill*/
    T_glBitmap    *Bitmap;                     /*Bitmap pour les points*/
