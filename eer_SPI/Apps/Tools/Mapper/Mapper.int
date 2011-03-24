@@ -1120,6 +1120,8 @@ proc Mapper::ParamsOGR { Object Tab } {
       wm geometry  .mapperparams =$pos
       wm protocol  .mapperparams WM_DELETE_WINDOW { destroy .mapperparams }
 
+      set Data(TableObject) ""
+
       TabFrame::Create .mapperparams.tab 1 ""
       pack .mapperparams.tab -side top -fill both -expand true -padx 2 -pady 2
 
