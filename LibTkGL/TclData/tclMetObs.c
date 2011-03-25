@@ -730,7 +730,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
+                           if (!obs->Family || (obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
@@ -761,8 +761,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected state*/
-                           if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
-                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                           if (!obs->Family || (obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
+                             if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
                                        for(v=(obs->NVal<=-1?0:obs->NVal);v<(obs->NVal<=-1?data->Nv:((obs->NVal+1)>data->Nv?data->Nv:(obs->NVal+1)));v++) {
@@ -835,7 +835,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           if (obs->Family==-1 || (((data->Family>>3&0x07)==0x00 && obs->Family&0x04) || (data->Family>>3&0x7)&obs->Family)) {
+                           if (!obs->Family || (obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  /*Link the ElementData to its Obs*/
@@ -1085,10 +1085,10 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Persistance = 0;
    obs->Lag      = 0;
    obs->NVal     = -1;
-   obs->Family   = -1;
    obs->Type     = -1;
    obs->SType    = -1;
    obs->CodeType = 0;
+   obs->Family   = 0x0;
    obs->Marker   = 0x0;
    obs->MarkerOp = 'O';
    obs->Info     = NULL;
@@ -1511,8 +1511,7 @@ void TMetElemData_Free(TMetElemData *Data) {
 
 int TMetElemData_Same(const TMetElemData* restrict Data0,const TMetElemData* restrict Data1) {
 
-   if (Data0->Ne!=Data1->Ne || Data0->Nv!=Data1->Nv || Data0->Nt!=Data1->Nt ||
-       Data0->Family!=Data1->Family) {
+   if (Data0->Ne!=Data1->Ne || Data0->Nv!=Data1->Nv || Data0->Nt!=Data1->Nt || Data0->Family!=Data1->Family) {
       return(0);
    }
 
@@ -2684,9 +2683,19 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   }
 
                   /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
+/*
                   if (Obs->Family!=-1 && !(((data->Family>>3&0x07)==0x00 && Obs->Family&0x04) || (data->Family>>3&0x7)&Obs->Family)) {
                       continue;
                   }
+*/
+                  if (Obs->Family && !(Obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
+                      continue;
+                  }
+/*
+                  if (Obs->Family && (Obs->Family&data->Family)) {
+                      continue;
+                  }
+*/
                   /*Check for data bktyp matching*/
                   if (Obs->Type>-1 && !((data->Type>>6&0x1)==Obs->Type)) {
                      continue;
