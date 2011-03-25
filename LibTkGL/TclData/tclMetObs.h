@@ -112,6 +112,7 @@ typedef struct TMetObs {
    time_t   Persistance;        /*How long before no valid*/
    float    NoData;             /*No data value*/
    long     Lag;                /*Data date selection looseness*/
+   int      NVal;               /*Specific Nv to use*/
    int      Family;             /*Data family descriptor*/
    int      Type,SType;         /*Data family descriptor*/
    int      Marker;             /*Data marker descriptor*/

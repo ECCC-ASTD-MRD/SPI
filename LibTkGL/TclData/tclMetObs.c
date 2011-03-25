@@ -437,7 +437,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
 
    EntryTableB  *eb;
 
-   Tcl_Obj      *obj,*sub,*subsub;
+   Tcl_Obj      *obj,*sub,*subsub,*subsubsub;
    TMetObs      *obs;
    TMetLoc      *loc;
    TMetElem     *elem;
@@ -450,8 +450,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-CODETYPE","-FAMILY","-TYPE","-STYPE","-MARKER","-MARKEROP","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,CODETYPE,FAMILY,TYPE,STYPE,MARKER,MARKEROP,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-CODETYPE","-FAMILY","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,CODETYPE,FAMILY,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -735,14 +735,16 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
-                                       for(v=0;v<data->Nv;v++) {
+                                       for(v=(obs->NVal<=-1?0:obs->NVal);v<(obs->NVal<=-1?data->Nv:((obs->NVal+1)>data->Nv?data->Nv:(obs->NVal+1)));v++) {
+                                          subsubsub=Tcl_NewListObj(0,NULL);
                                           for(t=0;t<data->Nt;t++) {
                                              /*Check for selected marker*/
                                              mk=MetObs_GetMarker(data,e,v,t);
                                              if (!obs->Marker || (obs->MarkerOp=='O' && (mk&obs->Marker)) || (obs->MarkerOp=='A' && (mk==obs->Marker))) {
-                                                Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
+                                                Tcl_ListObjAppendElement(Interp,subsubsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                              }
                                           }
+                                           Tcl_ListObjAppendElement(Interp,subsub,subsubsub);
                                        }
                                     }
                                  }
@@ -763,14 +765,16 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
-                                    for(v=0;v<data->Nv;v++) {
+                                       for(v=(obs->NVal<=-1?0:obs->NVal);v<(obs->NVal<=-1?data->Nv:((obs->NVal+1)>data->Nv?data->Nv:(obs->NVal+1)));v++) {
+                                          subsub=Tcl_NewListObj(0,NULL);
                                           for(t=0;t<data->Nt;t++) {
                                              /*Check for selected marker*/
                                              mk=MetObs_GetMarker(data,e,v,t);
                                              if (!obs->Marker || (obs->MarkerOp=='O' && (mk&obs->Marker)) || (obs->MarkerOp=='A' && (mk==obs->Marker))) {
-                                                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
+                                                Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                              }
                                           }
+                                          Tcl_ListObjAppendElement(Interp,obj,subsub);
                                        }
                                     }
                                  }
@@ -974,6 +978,14 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case NVAL:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->NVal));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&obs->NVal);
+            }
+            break;
+
          case MARKER:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->Marker));
@@ -1072,6 +1084,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Cache    = 0;
    obs->Persistance = 0;
    obs->Lag      = 0;
+   obs->NVal     = -1;
    obs->Family   = -1;
    obs->Type     = -1;
    obs->SType    = -1;
@@ -2504,7 +2517,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    double        z,val,valid,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk,box[4],b;
    double        alpha=1.0;
-   int           clat,clon,nobs,min[2],max[2],skip;
+   int           clat,clon,cdir,nobs,min[2],max[2],skip;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2648,6 +2661,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                if (!(spec=Obs->Model->Items[i].Spec)) {
                   continue;
                }
+
                if (Obs->Persistance || (spec->Map && spec->Map->Alpha)) {
                   glEnable(GL_BLEND);
                } else {
@@ -2658,6 +2672,16 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                /*Loop on the data elements*/
                for(d=0;d<elem->NData;d++) {
                   data=elem->EData[d];
+
+                  cdir=-1;
+                  if (spec->RenderVector) {
+                     for(e=0;e<data->Ne;e++) {
+                        if (data->Code[e]->descriptor==Obs->Model->Items[i].Code[1]) {
+                           cdir=e;
+                           break;
+                        }
+                     }
+                  }
 
                   /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
                   if (Obs->Family!=-1 && !(((data->Family>>3&0x07)==0x00 && Obs->Family&0x04) || (data->Family>>3&0x7)&Obs->Family)) {
@@ -2673,7 +2697,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                      if (data->Code[e]->descriptor==Obs->Model->Items[i].Code[0]) {
                         ne++;
                         id=0;
-                        for(v=0;v<data->Nv;v++) {
+                        for(v=(Obs->NVal<=-1?0:Obs->NVal);v<(Obs->NVal<=-1?data->Nv:((Obs->NVal+1)>data->Nv?data->Nv:(Obs->NVal+1)));v++) {
                            for(t=0;t<data->Nt;t++) {
 
                               /*Check markers*/
@@ -2811,7 +2835,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               if (spec->RenderVector && valid && !(spec->WMO && VAL2SPEC(spec,val)<5.0)) {
-                                 dir=TMetElem_Value(data,Obs->Model->Items[i].Code[1],ne,v,0);
+                                 dir=MetObs_GetData(data,cdir,v,t);
+//                                 dir=TMetElem_Value(data,Obs->Model->Items[i].Code[1],e,v,t);
                                  if (MET_VALID(dir,Obs->NoData)) {
                                     if (spec->Map && spec->MapAll) {
                                        VAL2COL(idx,spec,val);
@@ -3261,7 +3286,7 @@ static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj      *obj,*sub;
+   Tcl_Obj      *obj,*sub,*subsub;
    TMetElemData *data;
    EntryTableB  *eb;
    int           ne,e,v,t,nv,nt,i,j,idx,n,nl,mk;
@@ -3352,13 +3377,15 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                obj=Tcl_NewListObj(0,NULL);
                for(e=0;e<data->Ne;e++) {
                   sub=Tcl_NewListObj(0,NULL);
-                  for(v=0;v<data->Nv;v++) {
+                  for(v=(data->Obs->NVal<=-1?0:data->Obs->NVal);v<(data->Obs->NVal<=-1?data->Nv:((data->Obs->NVal+1)>data->Nv?data->Nv:(data->Obs->NVal+1)));v++) {
+                     subsub=Tcl_NewListObj(0,NULL);
                      for(t=0;t<data->Nt;t++) {
                         mk=MetObs_GetMarker(data,e,v,t);
                         if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
-                           Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                           Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
                         }
                      }
+                     Tcl_ListObjAppendElement(Interp,sub,subsub);
                   }
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                }
@@ -3366,13 +3393,15 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&ne);
                sub=Tcl_NewListObj(0,NULL);
-               for(v=0;v<data->Nv;v++) {
+               for(v=(data->Obs->NVal<=-1?0:data->Obs->NVal);v<(data->Obs->NVal<=-1?data->Nv:((data->Obs->NVal+1)>data->Nv?data->Nv:(data->Obs->NVal+1)));v++) {
+                  subsub=Tcl_NewListObj(0,NULL);
                   for(t=0;t<data->Nt;t++) {
                      mk=MetObs_GetMarker(data,ne,v,t);
                      if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,ne,v,t)));
+                        Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewDoubleObj(MetObs_GetData(data,ne,v,t)));
                      }
                   }
+                  Tcl_ListObjAppendElement(Interp,sub,subsub);
                }
                Tcl_SetObjResult(Interp,sub);
             }
@@ -3396,14 +3425,16 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                         for(e=0;e<data->Ne;e++) {
                            if (data->Code[e]->descriptor==eb->descriptor) {
                               nv=1;
-                              for(v=0;v<data->Nv;v++) {
+                              for(v=(data->Obs->NVal<=-1?0:data->Obs->NVal);v<(data->Obs->NVal<=-1?data->Nv:((data->Obs->NVal+1)>data->Nv?data->Nv:(data->Obs->NVal+1)));v++) {
+                                 sub=Tcl_NewListObj(0,NULL);
                                  for(t=0;t<data->Nt;t++) {
                                     /*Check for selected marker*/
                                     mk=MetObs_GetMarker(data,e,v,t);
                                     if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
-                                       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
+                                       Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(MetObs_GetData(data,e,v,t)));
                                     }
                                  }
+                                 Tcl_ListObjAppendElement(Interp,obj,sub);
                               }
                            }
                         }
