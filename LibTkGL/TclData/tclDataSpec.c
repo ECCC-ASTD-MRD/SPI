@@ -775,7 +775,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],INTERS,"mode",0,&new)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
+               if (i<Objc-1) {
+                  if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp)==TCL_ERROR) {
+                     i--;
+                     tmp=10.0;
+                  }
+               }
 
                if (new!=Spec->InterMode || tmp!=Spec->InterModeParam) {
                   Spec->InterNb=0;
