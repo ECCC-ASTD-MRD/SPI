@@ -58,9 +58,9 @@ namespace eval NowCaster::Obs { } {
       { 21  2097152  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
    set Param(Familys) {
-      { 001  1 1 { "Bulletin corrigé" "Corrected bulletin" } }
-      { 010 -1 2 { "Bulletin répété" "Repeated bulletin" } }
-      { 100  4 4 { "Bulletin nouveau" "New bulletin" } } }
+      { 3 8  { "Bulletin corrigé" "Corrected bulletin" } }
+      { 4 16 { "Bulletin répété" "Repeated bulletin" } }
+      { 5 32 { "Bulletin nouveau" "New bulletin" } } }
 
    set Param(Types) {
       { - -1 { "Toutes les données" "All data" } }
@@ -326,9 +326,10 @@ namespace eval NowCaster::Obs { } {
    set Data(Obs)         { }
    set Data(Topo)        ""
    set Data(CurrentObs)  NONE
+   set Data(NVal)        -1
    set Data(Marker)      0
+   set Data(Family)      0
    set Data(Type)        -1
-   set Data(Family)      5
    set Data(Spacing)     25
    set Data(Crowd)       0
    set Data(Flat)        0
@@ -502,8 +503,8 @@ proc NowCaster::Obs::Window { Frame } {
          menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
          menu $Frame.flags.bfam.sel.menu -tearoff 1
          foreach family $Param(Familys) {
-            set NowCaster::Obs::Data(Family[lindex $family 0]) [lindex $family 1]
-            $Frame.flags.bfam.sel.menu add checkbutton -offvalue -1 -onvalue [lindex $family 2] -label [lindex [lindex $family 3] $GDefs(Lang)] \
+            set NowCaster::Obs::Data(Family[lindex $family 0]) 0
+            $Frame.flags.bfam.sel.menu add checkbutton -offvalue 0 -onvalue [lindex $family 1] -label [lindex [lindex $family 2] $GDefs(Lang)] \
                -variable NowCaster::Obs::Data(Family[lindex $family 0]) -command { NowCaster::Obs::UpdateFlags False }
          }
          pack $Frame.flags.bfam.lbl $Frame.flags.bfam.sel -side left -fill y
@@ -539,11 +540,19 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.flags.mark.lbl $Frame.flags.mark.sel -side left -fill y
          pack $Frame.flags.mark.ent -side left -fill x -expand True
 
-      pack $Frame.flags.bfam $Frame.flags.bktyp $Frame.flags.mark -side top -fill x -padx 2 -pady 2 -expand True
+      frame $Frame.flags.nval
+         label $Frame.flags.nval.lbl -text NVAL -width 13 -anchor w
+         spinbox $Frame.flags.nval.ent -textvariable NowCaster::Obs::Data(NVal) -width 3 -from -1 -to 999 -wrap 1 -bd 1 -bg $GDefs(ColorLight) \
+            -command {  NowCaster::Obs::UpdateFlags True }
+         pack $Frame.flags.nval.lbl -side left -fill y
+         pack $Frame.flags.nval.ent -side left -fill x -expand True
+
+      pack $Frame.flags.bfam $Frame.flags.bktyp $Frame.flags.mark $Frame.flags.nval -side top -fill x -padx 2 -pady 2 -expand True
 
       bind $Frame.flags.bfam.ent <Return>  { NowCaster::Obs::UpdateFlags True }
       bind $Frame.flags.bktyp.ent <Return> { NowCaster::Obs::UpdateFlags True }
       bind $Frame.flags.mark.ent <Return>  { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.nval.ent <Return>  { NowCaster::Obs::UpdateFlags True }
 
    labelframe $Frame.model -text [lindex $Lbl(ModelN) $GDefs(Lang)]
       frame $Frame.model.sel
@@ -932,6 +941,7 @@ proc NowCaster::Obs::Add { Path } {
    set Data(Spacing$obs)   $Data(Spacing)
    set Data(Crowd$obs)     $Data(Crowd)
    set Data(Flat$obs)      $Data(Flat)
+   set Data(NVal$obs)      $Data(NVal)
    set Data(Family$obs)    $Data(Family)
    set Data(Marker$obs)    $Data(Marker)
    set Data(Type$obs)      $Data(Type)
@@ -1046,11 +1056,7 @@ proc NowCaster::Obs::UpdateFlags { Manual { Obs {} } } {
 
       set bit 0x1
       foreach family $Param(Familys) {
-         if { [expr $Data(Family)&$bit] } {
-            set Data(Family[lindex $family 0]) [expr $Data(Family)&$bit]
-         } else {
-            set Data(Family[lindex $family 0]) -1
-         }
+         set Data(Family[lindex $family 0]) [expr $Data(Family)&$bit]
          set bit [expr $bit<<1]
       }
 
@@ -1060,20 +1066,16 @@ proc NowCaster::Obs::UpdateFlags { Manual { Obs {} } } {
          set Data(Marker) [expr $Data(Marker)|$Data(Marker[lindex $marker 0])]
       }
 
-      set Data(Family) -1
+      set Data(Family) 0x00
       foreach family $Param(Familys) {
-         if { $Data(Family[lindex $family 0])!=-1 } {
-            if { $Data(Family)==-1 } {
-               set Data(Family) 0x00
-            }
-            set Data(Family) [expr $Data(Family)|$Data(Family[lindex $family 0])]
-         }
+         set Data(Family) [expr $Data(Family)|$Data(Family[lindex $family 0])]
       }
    }
 
    set Data(Family$Obs) $Data(Family)
    set Data(Type$Obs)   $Data(Type)
    set Data(Marker$Obs) $Data(Marker)
+   set Data(NVal$Obs)   $Data(NVal)
 
    NowCaster::Obs::Update
 }
@@ -1105,7 +1107,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
-         -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs)
+         -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
 
       foreach item $Data(Model$obs) {
          set code [lindex $item 2]
@@ -1152,6 +1154,7 @@ proc NowCaster::Obs::ObsSelect { Obs } {
       set Data(Family)     $Data(Family$Obs)
       set Data(Type)       $Data(Type$Obs)
       set Data(Marker)     $Data(Marker$Obs)
+      set Data(NVal)       $Data(NVal$Obs)
 
       if { [winfo exists .nowcaster] } {
          ComboBox::DelAll  $Data(Frame).elem.var0.sel
@@ -1639,12 +1642,12 @@ proc NowCaster::Obs::InfoBKType { Report } {
    variable Param
    variable Lbl
 
-   set fam   [metreport define $Report -FAMILY]
+   set bfam  [metreport define $Report -FAMILY]
    set type  [metreport define $Report -TYPE]
    set stype [metreport define $Report -STYPE]
 
-   set no  [expr $fam&0x3]
-   set fam [expr $fam>>3&0x07]
+   set no  [expr $bfam&0x7]
+   set fam [expr $bfam>>3&0x07]
    set fam [expr $fam==0?2:$fam==1?0:1]
 
    set fam [lindex $Param(Familys) $fam]
@@ -1652,10 +1655,10 @@ proc NowCaster::Obs::InfoBKType { Report } {
    set bk  [lindex $Param(BKTypes) [expr $type&0x3F]]
    set st  [lindex $Param(BKSTypes[expr ($type>>6)]-[expr $type&0x3F]) $stype]
 
-   return "[lindex $Lbl(Sequence) $GDefs(Lang)]: [lindex [lindex $fam end] $GDefs(Lang)] ($no)
+   return "[lindex $Lbl(Sequence) $GDefs(Lang)]: [lindex [lindex $fam end] $GDefs(Lang)] ($no) (BFAM=$bfam)
 [lindex $Lbl(Level) $GDefs(Lang)]: [lindex [lindex $alt end] $GDefs(Lang)]
-[lindex $Lbl(Type) $GDefs(Lang)]: [lindex [lindex $bk end] $GDefs(Lang)]
-[lindex $Lbl(SType) $GDefs(Lang)]: [lindex [lindex $st end] $GDefs(Lang)]"
+[lindex $Lbl(Type) $GDefs(Lang)]: [lindex [lindex $bk end] $GDefs(Lang)] (BKTP=$type)
+[lindex $Lbl(SType) $GDefs(Lang)]: [lindex [lindex $st end] $GDefs(Lang)] (BKSTP=$stype)"
 }
 
 #-------------------------------------------------------------------------------
@@ -1702,8 +1705,14 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
             .nowcasterinfo.tab.frame0.info.text insert end [NowCaster::Obs::InfoBKType $report]\n\n
             foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT] values [metreport define $report -VALUE] {
                .nowcasterinfo.tab.frame0.info.text insert end [format "%06i %-43s (%-10s): " $code $desc $unit]
+               set l 0
                foreach value $values {
-                  catch { .nowcasterinfo.tab.frame0.info.text insert end [format "%g " $value] }
+                  foreach v $value {
+                     catch { .nowcasterinfo.tab.frame0.info.text insert end [format "%g " $v] }
+                  }
+                  if { [incr l]<[llength $values] } {
+                     .nowcasterinfo.tab.frame0.info.text insert end [format "%-66s" "\n"]
+                  }
                }
                .nowcasterinfo.tab.frame0.info.text insert end "\n"
             }
@@ -1720,11 +1729,20 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
          .nowcasterinfo.tab.frame1.info.text insert end  "[format %06i $elem] [lindex $info 0] ([lindex $info 1])\n"
          .nowcasterinfo.tab.frame1.info.text insert end "---------------------------------------------------------------\n"
          foreach date $dates {
-            foreach value [metobs define $Obs -ELEMENT $Tag $elem $date] {
-               if { $value!="" } {
-                  .nowcasterinfo.tab.frame1.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true] [format "%g " $value]\n"
+            .nowcasterinfo.tab.frame1.info.text insert end "[clock format $date  -format "%Y%m%d %H:%M" -gmt true]"
+            set values [metobs define $Obs -ELEMENT $Tag $elem $date]
+            set l 0
+            foreach value $values {
+               foreach v $value {
+                  if { $v!="" } {
+                     .nowcasterinfo.tab.frame1.info.text insert end " [format "%g " $v]"
+                  }
+               }
+               if { [incr l]<[llength $values] } {
+                  .nowcasterinfo.tab.frame1.info.text insert end [format "%-15s" "\n"]
                }
             }
+            .nowcasterinfo.tab.frame1.info.text insert end  "\n"
          }
          .nowcasterinfo.tab.frame1.info.text insert end  "\n"
       }
