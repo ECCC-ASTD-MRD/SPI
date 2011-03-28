@@ -837,7 +837,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
                             set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
                             set id    [lindex [metobs table -desc [lindex $item 2]] 0]
-                            set vals  [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]]
+                            set vals  [lindex [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]] 0]
 
                             if { [llength $vals] } {
                                append Page::Data(Value) "$id:[format "%g" [lindex $vals 0]] "
