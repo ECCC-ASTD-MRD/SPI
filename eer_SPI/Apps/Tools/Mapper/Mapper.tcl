@@ -461,9 +461,10 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       }
 
       gdalfile close $Data(Id$id)
+      set bands {}
       eval set bad [catch { set bands [gdalfile open $Data(Id$id) read $File] }]
 
-      if { $bad } {
+      if { $bad || ![llength $bands] } {
          return False
       }
    }
@@ -644,7 +645,7 @@ proc Mapper::Progress { Object } {
       if { $ready!=$total } {
          set pc [expr double($ready)/$total*100.0]
          SPI::Progress $pc "[lindex $Lbl(Process) $GDefs(Lang)] $Object [format "%.1f" ${pc}]%"
-         after 100 Mapper::Progress $Object
+         after 100 Mapper::Progress \"$Object\"
          return
       }
    }
