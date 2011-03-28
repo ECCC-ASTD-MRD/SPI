@@ -2683,19 +2683,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   }
 
                   /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
-/*
-                  if (Obs->Family!=-1 && !(((data->Family>>3&0x07)==0x00 && Obs->Family&0x04) || (data->Family>>3&0x7)&Obs->Family)) {
-                      continue;
-                  }
-*/
                   if (Obs->Family && !(Obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
                       continue;
                   }
-/*
-                  if (Obs->Family && (Obs->Family&data->Family)) {
-                      continue;
-                  }
-*/
+
                   /*Check for data bktyp matching*/
                   if (Obs->Type>-1 && !((data->Type>>6&0x1)==Obs->Type)) {
                      continue;
