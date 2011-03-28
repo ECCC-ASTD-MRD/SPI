@@ -435,7 +435,7 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
 
          /*If we this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
-           len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n],Mode,side,3);
+           len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,3);
 
             /*If we found a least 1 segment, keep it*/
             if (len>1) {

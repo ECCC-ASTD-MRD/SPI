@@ -39,6 +39,8 @@
 #include "tclData.h"
 #include "GeoRef.h"
 #include "eerUtils.h"
+#include "Vector.h"
+#include "Matrix.h"
 
 #define F3V     3
 #define F3VN    6
@@ -143,6 +145,10 @@ T3DObject* Model_ObjectAdd(T3DModel *Model,int Nb);
 void       Model_ObjectFree(T3DObject *Obj);
 T3DObject *Model_ObjectFind(T3DModel *Model,char *Name);
 TFace*     Model_ObjectFaceAdd(T3DObject *Obj,int Nb);
+
+void Model_Extent(T3DModel *Model);
+void Model_ExtentObj(T3DModel *Model);
+void Model_ExtentScene(T3DModel *Model,T3DScene *Scene,Matrix4d Matrix);
 
 T3DModel*  Model_Get(char *Name);
 
