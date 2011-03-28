@@ -48,6 +48,11 @@
 #define OGR_G_EnvelopeIntersect(ENV0,ENV1) (!(ENV0.MaxX<ENV1.MinX || ENV0.MinX>ENV1.MaxX || ENV0.MaxY<ENV1.MinY || ENV0.MinY>ENV1.MaxY))
 #define OGR_PointInside(V,V0,V1)          (((V0[1]<=V[1] && V[1]<V1[1]) || (V1[1]<=V[1] && V[1]<V0[1])) && (V[0]<((V1[0]-V0[0])*(V[1]-V0[1])/(V1[1]-V0[1])+V0[0])))
 
+typedef struct OGR_Sort {
+   int           Field,Type,Order;
+   unsigned long Nb,*Table;
+} OGR_Sort;
+
 typedef struct OGR_File {
    OGRDataSourceH  Data;
    OGRSFDriverH    Driver;
@@ -64,6 +69,7 @@ typedef struct OGR_Layer {
    OGRFeatureDefnH  Def;
 
    OGRDataSourceH   SQLed;
+   OGR_Sort         Sort;
    char            *Select;
 
    TGeoRef       *Ref;          /*GeoReference*/

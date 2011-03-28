@@ -708,6 +708,12 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Ref        =NULL;
    layer->Tag        =NULL;
 
+   layer->Sort.Field =-1;
+   layer->Sort.Type  =0;
+   layer->Sort.Order =1;
+   layer->Sort.Nb    =0;
+   layer->Sort.Table =NULL;
+
    Vect_Init(layer->Vr[0],1e32,1e32,1e32);
    Vect_Init(layer->Vr[1],-1e32,-1e32,-1e32);
 
@@ -805,12 +811,13 @@ void OGR_LayerFree(OGR_Layer *Layer) {
 
    Layer->Def=NULL;
 
-   if (Layer->Feature)  free(Layer->Feature);
-   if (Layer->SFeature) free(Layer->SFeature);
-   if (Layer->Select)   free(Layer->Select);
-   if (Layer->Loc)      free(Layer->Loc);
-   if (Layer->Ref)      GeoRef_Destroy(NULL,Layer->Ref->Name);
-   if (Layer->Tag)      Tcl_DecrRefCount(Layer->Tag);
+   if (Layer->Feature)    free(Layer->Feature);
+   if (Layer->SFeature)   free(Layer->SFeature);
+   if (Layer->Select)     free(Layer->Select);
+   if (Layer->Loc)        free(Layer->Loc);
+   if (Layer->Ref)        GeoRef_Destroy(NULL,Layer->Ref->Name);
+   if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
+   if (Layer->Sort.Table) free(Layer->Sort.Table);
 
    if (Layer->SQLed) {
       OGR_DS_ReleaseResultSet(Layer->SQLed,Layer->Layer);

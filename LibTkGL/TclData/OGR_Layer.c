@@ -34,8 +34,6 @@
 #include <sys/types.h>
 #include </usr/include/regex.h>
 
-static int        QSort_OGRField;
-static int        QSort_OGRType;
 static OGR_Layer *QSort_Layer;
 
 int QSort_OGR(const void *A,const void *B);
@@ -71,9 +69,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    double         x,y,a,min,max,val;
 
    static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
-                                 "-mask","-featurehighlight","-featureselect","-label",NULL };
+                                 "-mask","-featurehighlight","-featureselect",NULL };
    enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
-                             MASK,FEATUREHIGHLIGHT,FEATURESELECT,LABEL };
+                             MASK,FEATUREHIGHLIGHT,FEATURESELECT };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -359,6 +357,12 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             t=TCL_OK;
             if (Objc>1) {
                t=OGR_LayerSelect(Interp,layer,Objv[++i]);
+
+               /*If ther is a sort applied, refresh it*/
+               if (layer->Sort.Field>-1) {
+                  QSort_Layer=layer;
+                  qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(long),QSort_OGR);
+               }
             }
             if (t!=TCL_ERROR) {
                lst=Tcl_NewListObj(0,NULL);
@@ -410,11 +414,11 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    OGR_Layer     *layer,*layerop;
    TGeoRef       *ref,*ref0;
    Tcl_Obj       *lst,*obj;
-   char          buf[32];
+   char          buf[32],*str;
 
-   static CONST char *sopt[] = { "-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection",
+   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection",
                                  "-simplify","-segmentize","-close","-flatten",NULL };
-   enum        opt {  TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -771,65 +775,86 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          break;
 
+      case SORT:
+         if (Objc!=2 && Objc!=3 ) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"field [invert]");
+            return(TCL_ERROR);
+         }
+         layer->Sort.Field=-1;
+         layer->Sort.Order=1;
+
+         if (Objc==3) {
+            Tcl_GetBooleanFromObj(Interp,Objv[2],&f);
+            layer->Sort.Order=f?-1:1;
+         }
+
+         if (strlen(Tcl_GetString(Objv[1]))!=0) {
+            str=Tcl_GetString(Objv[1]);
+            f=OGR_FD_GetFieldIndex(layer->Def,str);
+            if (f==-1) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Invalid field",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            layer->Sort.Field=f;
+            layer->Sort.Type=OGR_Fld_GetType(OGR_FD_GetFieldDefn(layer->Def,layer->Sort.Field));
+            layer->Sort.Nb=0;
+
+            if (!layer->Sort.Table) {
+               if (!(layer->Sort.Table=malloc(layer->NFeature*sizeof(long)))) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Unable to allocate temporary sort table",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+            for(f=0,fop=0;f<layer->NFeature;f++) {
+               if (layer->Select[f])
+                  layer->Sort.Table[layer->Sort.Nb++]=f;
+            }
+
+            QSort_Layer=layer;
+            qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(long),QSort_OGR);
+         } else {
+            if (layer->Sort.Table) {
+               free(layer->Sort.Table);
+               layer->Sort.Table=NULL;
+            }
+         }
+         break;
+
       case TABLE:
-         if (Objc!=2 && Objc!=3 && Objc!=4 && Objc!=5) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"var [field] [Y0 Y1]");
+         if (Objc!=1 && Objc!=2 && Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"var [Y0] [Y1]");
             return(TCL_ERROR);
          }
 
          y0=0;y1=0xFFFFFFF;
-         if (Objc==4) {
+         if (Objc==3) {
             Tcl_GetLongFromObj(Interp,Objv[2],&y0);
+         }
+         if (Objc==4) {
             Tcl_GetLongFromObj(Interp,Objv[3],&y1);
          }
-         if (Objc==5) {
-            Tcl_GetLongFromObj(Interp,Objv[3],&y0);
-            Tcl_GetLongFromObj(Interp,Objv[4],&y1);
-         }
 
-         Tcl_UnsetVar2(Interp,Tcl_GetString(Objv[1]),NULL,0x0);
+         str=Tcl_GetString(Objv[1]);
+         Tcl_UnsetVar2(Interp,str,NULL,0x0);
 
-         /*If we need to sort*/
-         QSort_OGRField=-1;
-         if (Objc==3 || Objc==5) {
-            if (strlen(Tcl_GetString(Objv[2]))!=0) {
-               QSort_OGRField=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[2]));
-               if (QSort_OGRField==-1) {
-                  Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Invalid field",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-            }
-         }
+         Tcl_SetVar2Ex(Interp,str,"0,0",Tcl_NewStringObj("",-1),0x0);
 
-         if (QSort_OGRField!=-1) {
-            QSort_OGRType=OGR_Fld_GetType(OGR_FD_GetFieldDefn(layer->Def,QSort_OGRField));
-            QSort_Layer=layer;
-
-            if (!(table=malloc(layer->NFeature*sizeof(long)))) {
-               Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Unable to allocate temporary sort table",(char*)NULL);
-               return(TCL_ERROR);
-            }
-
-            for(f=0,fop=0;f<layer->NFeature;f++) {
-               if (layer->Select[f])
-                  table[fop++]=f;
-            }
+         if (layer->Sort.Field!=-1) {
 
             y0=y0<0?0:y0;
-            y1=y1>fop?fop:y1;
+            y1=y1>layer->Sort.Nb-1?layer->Sort.Nb-1:y1;
 
-            qsort(table,fop,sizeof(long),QSort_OGR);
-            for(f=y0;f<y1;f++) {
+            for(f=y0;f<=y1;f++) {
                sprintf(buf,"%i,0",f+1);
-               Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[1]),buf,Tcl_NewIntObj(table[f]),0x0);
+               Tcl_SetVar2Ex(Interp,str,buf,Tcl_NewIntObj(layer->Sort.Table[f]),0x0);
 
                for(j=0;j<OGR_FD_GetFieldCount(layer->Def);j++) {
                   sprintf(buf,"%i,%i",f+1,j+1);
-                  Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[1]),buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[table[f]],j),0x0);
+                  Tcl_SetVar2Ex(Interp,str,buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[layer->Sort.Table[f]],j),0x0);
                }
                Tcl_DoOneEvent(TCL_ALL_EVENTS);
             }
-            free(table);
 
          } else {
             y0=y0<0?0:y0;
@@ -838,11 +863,11 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             for(f=y0,fop=y0;f<y1;f++) {
                if (layer->Select[f]) {
                   sprintf(buf,"%i,0",fop+1);
-                  Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[1]),buf,Tcl_NewIntObj(f),0x0);
+                  Tcl_SetVar2Ex(Interp,str,buf,Tcl_NewIntObj(f),0x0);
 
                   for(j=0;j<OGR_FD_GetFieldCount(layer->Def);j++) {
                      sprintf(buf,"%i,%i",fop+1,j+1);
-                     Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[1]),buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[f],j),0x0);
+                     Tcl_SetVar2Ex(Interp,str,buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[f],j),0x0);
                   }
                   fop++;
                   Tcl_DoOneEvent(TCL_ALL_EVENTS);
@@ -2819,20 +2844,20 @@ int QSort_OGR(const void *A,const void *B){
    double      fad,fbd;
    const char *fas,*fbs;
 
-   switch (QSort_OGRType) {
+   switch (QSort_Layer->Sort.Type) {
       case OFTInteger:
-         fai=OGR_F_GetFieldAsInteger(QSort_Layer->Feature[*(const int*)A],QSort_OGRField);
-         fbi=OGR_F_GetFieldAsInteger(QSort_Layer->Feature[*(const int*)B],QSort_OGRField);
-         return(fai-fbi);
+         fai=OGR_F_GetFieldAsInteger(QSort_Layer->Feature[*(const int*)A],QSort_Layer->Sort.Field);
+         fbi=OGR_F_GetFieldAsInteger(QSort_Layer->Feature[*(const int*)B],QSort_Layer->Sort.Field);
+         return(QSort_Layer->Sort.Order*(fai-fbi));
          break;
 
       case OFTReal:
-         fad=OGR_F_GetFieldAsDouble(QSort_Layer->Feature[*(const int*)A],QSort_OGRField);
-         fbd=OGR_F_GetFieldAsDouble(QSort_Layer->Feature[*(const int*)B],QSort_OGRField);
+         fad=OGR_F_GetFieldAsDouble(QSort_Layer->Feature[*(const int*)A],QSort_Layer->Sort.Field);
+         fbd=OGR_F_GetFieldAsDouble(QSort_Layer->Feature[*(const int*)B],QSort_Layer->Sort.Field);
          if (fad<fbd) {
-            return(-1);
+            return(QSort_Layer->Sort.Order*-1);
          } else if (fad>fbd) {
-            return(1);
+            return(QSort_Layer->Sort.Order*1);
          } else {
             return(0);
          }
@@ -2842,9 +2867,9 @@ int QSort_OGR(const void *A,const void *B){
       case OFTDate:
       case OFTDateTime:
       case OFTString:
-         fas=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)A],QSort_OGRField);
-         fbs=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)B],QSort_OGRField);
-         return(strcmp(fas,fbs));
+         fas=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)A],QSort_Layer->Sort.Field);
+         fbs=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)B],QSort_Layer->Sort.Field);
+         return(QSort_Layer->Sort.Order*strcmp(fas,fbs));
          break;
 
       case OFTRealList:
