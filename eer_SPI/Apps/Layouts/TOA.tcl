@@ -18,19 +18,29 @@ namespace eval TOA {
    variable Error
    variable Msg
    variable Bubble
-   variable Data
+   variable Param
    variable Ico
    variable Sim
 
    #----- Definition des labels
 
    set Lbl(Warning)     { "Attention" "Warning" }
+   set Lbl(Treshold)    { "Seuil" "Treshold" }
+   set Lbl(Products)    { "Produits" "Products" }
 
    #----- Definitions des textes des bulles d'aides
 
    set Sim(Lat)          0
    set Sim(Lon)          0
    set Sim(Name)         ""
+
+   set Param(Treshold)  0
+   set Param(FieldList) {}
+   set Param(NOMVAR)    ""
+   set Param(IP2)       -1
+   set Param(IP3)       -1
+   set Param(ETICKET)   ""
+   set Param(Max)       0
 
    catch {
       colormap create TOAMAPDEFAULT
@@ -54,7 +64,6 @@ namespace eval TOA {
 #-------------------------------------------------------------------------------
 
 proc TOA::DrawScale { Frame } {
-   variable Data
 
    $Frame.page.canvas delete TOASCALE
 
@@ -96,7 +105,7 @@ proc TOA::DrawScale { Frame } {
 
 proc TOA::Layout { Frame } {
    global GDefs
-   variable Data
+   variable Param
 
    #----- Initialisations des constantes relatives aux projections
 
@@ -127,7 +136,7 @@ proc TOA::Layout { Frame } {
 
    Page::Size $Frame 800 630
 
-   set Data(VP) [Viewport::Create $Frame 5 5 790 500 0 0]
+   set Param(VP) [Viewport::Create $Frame 5 5 790 500 0 0]
 
    SPI::IcoClear
 
@@ -147,7 +156,8 @@ proc TOA::Layout { Frame } {
    $canvas create text 10 615 -font XFont12 -anchor w -text "" -tags TOARELEASEDUR
 
    $canvas create text 360 600 -font XFont16 -anchor w -text "" -justify center -tags TOATITLE
-#   TOA::LayoutToolBar $Frame
+
+   TOA::LayoutToolBar $Frame
 
    FSTD::VarMode VAR
 }
@@ -193,15 +203,15 @@ proc TOA::LayoutClear { Frame } {
 proc TOA::LayoutToolBar { Frame } {
    global   GDefs
    variable Lbl
-   variable Data
 
    frame $Frame.bar -relief raised -bd 1
       label $Frame.bar.id -text " TOA " -relief sunken -bd 1
-      menubutton $Frame.bar.prod -bd 1 -text [lindex $Lbl(Products) $GDefs(Lang)] -menu $Frame.bar.prod.menu
-      menu $Frame.bar.prod.menu -tearoff 0 -bd 1 -activeborderwidth 1
-         $Frame.bar.prod.menu add command -label [lindex $Lbl(Join) $GDefs(Lang)] \
-            -command "TOA::JoinTransfert $Frame"
-      pack $Frame.bar.id $Frame.bar.prod -side left -fill y
+      menubutton $Frame.bar.prod -bd 1 -text [lindex $Lbl(Products) $GDefs(Lang)] -state disabled
+      label $Frame.bar.lbl -text "[lindex $Lbl(Treshold) $GDefs(Lang)]: "
+      entry $Frame.bar.tresh -textvariable TOA::Param(Treshold) -bd 1 -width 8 -bg $GDefs(ColorLight)
+      bind $Frame.bar.tresh <Return> { TOA::LayoutUpdate $Page::Data(Frame) [lindex [Viewport::Assigned $Page::Data(Frame) $TOA::Param(VP) fstdfield] 0] }
+
+      pack $Frame.bar.id $Frame.bar.prod $Frame.bar.lbl $Frame.bar.tresh -side left -fill y
    pack $Frame.bar -side top -fill x -before $Frame.page
 }
 
@@ -222,6 +232,7 @@ proc TOA::LayoutToolBar { Frame } {
 
 proc TOA::Process { Field } {
    variable Sim
+   variable Param
 
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
 
@@ -246,14 +257,16 @@ proc TOA::Process { Field } {
       set fields [fstdfield find $fid -1 $etiket $ip1 -1 $ip3 "" $var]
       foreach field $fields {
          fstdfield read TOATMP $fid $field
-         set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$t0)]
-         vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>0.0,$t,TOAFIELD)
+         set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$t0+1)]
          set tend [expr $t/3600.0]
+
+         vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>$Param(Treshold),$t,TOAFIELD)
       }
    } else {
       set fields [FieldBox::GetContent $box]
       set n 0
       set nx [llength $fields]
+
       foreach field $fields {
 
          set fid     [lindex $field 0]
@@ -271,7 +284,7 @@ proc TOA::Process { Field } {
             set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$t0+1)]
             set tend [expr $t/3600.0]
 
-            vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>0.0,$t,TOAFIELD)
+            vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>$Param(Treshold),$t,TOAFIELD)
          }
       }
    }
@@ -289,7 +302,7 @@ proc TOA::Process { Field } {
    fstdfield configure TOAFIELD -rendertexture 1 -rendercontour 0 -mapall False -value INTEGER 0 -color #000000 -dash "" \
       -desc "Time of Arrival" -unit "Hour" -interpdegree NEAREST -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 \
       -intervals $inter -color black -colormap TOAMAPDEFAULT
-   fstdfield define TOAFIELD -NOMVAR TOA -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
+   fstdfield define TOAFIELD -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
 
    SPI::Progress 0 ""
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD
@@ -298,13 +311,13 @@ proc TOA::Process { Field } {
 proc TOA::LayoutUpdate { Frame { Field "" } } {
    global   env
    variable Sim
-   variable Data
+   variable Param
    variable Error
 
-   Viewport::UnAssign $Frame $Data(VP) TOAFIELD
+   Viewport::UnAssign $Frame $Param(VP) TOAFIELD
 
    if { $Field=="" } {
-      set Field [lindex [Viewport::Assigned $Frame $Data(VP) fstdfield] 0]
+      set Field [lindex [Viewport::Assigned $Frame $Param(VP) fstdfield] 0]
    }
    Log::Print DEBUG $Field
    if { $Field=="" } {
@@ -318,12 +331,12 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
 
    #----- Recuperer les informations sur le champs selectionne
 
-   set Data(FieldList) [FieldBox::GetContent -1]
-   set Data(NOMVAR)    [string trim [fstdfield define $Field -NOMVAR]]
-   set Data(IP2)       [fstdfield define $Field -IP2]
-   set Data(IP3)       [fstdfield define $Field -IP3]
-   set Data(ETICKET)   [string trim [fstdfield define $Field -ETIKET]]
-   set Data(Max)       [fstdfield stats $Field -max]
+   set Param(FieldList) [FieldBox::GetContent -1]
+   set Param(NOMVAR)    [string trim [fstdfield define $Field -NOMVAR]]
+   set Param(IP2)       [fstdfield define $Field -IP2]
+   set Param(IP3)       [fstdfield define $Field -IP3]
+   set Param(ETICKET)   [string trim [fstdfield define $Field -ETIKET]]
+   set Param(Max)       [fstdfield stats $Field -max]
 
    #----- Recuperer la description de l'experience
 
@@ -361,7 +374,7 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
    set Sim(Seconds) [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)00" -gmt true]
 
    set unit ""
-   if { $Data(ETICKET) == "TRACER1" || $Data(ETICKET) == "TRACER2" || $Data(ETICKET) == "TRACER3" } {
+   if { $Param(ETICKET) == "TRACER1" || $Param(ETICKET) == "TRACER2" || $Param(ETICKET) == "TRACER3" } {
       set unit "Units"
    } else {
       set unit "Bq"
@@ -373,7 +386,7 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
    $canvas itemconf TOASOURCE      -text "Source           : $Sim(Name)"
    $canvas itemconf TOALOC         -text "Location         : $coord"
    $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(EmIsoSymbol)"
-   $canvas itemconf TOARELEASEQT   -text "Total release    : [format "%.2f" [lindex $Sim(EmIsoQuantity) [lsearch -exact [string toupper $Sim(EmIsoSymbol)] $Data(ETICKET)]]] $unit"
+   $canvas itemconf TOARELEASEQT   -text "Total release    : [format "%.2f" [lindex $Sim(EmIsoQuantity) [lsearch -exact [string toupper $Sim(EmIsoSymbol)] $Param(ETICKET)]]] $unit"
    $canvas itemconf TOARELEASEDUR  -text "Release duration : [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]] Hour(s)"
    $canvas itemconf TOATITLE       -text "Plume arrival time from initial release\n[DateStuff::StringDateFromSeconds $Sim(Seconds) 1]"
 
@@ -461,9 +474,9 @@ proc TOA::JoinTransfert { Frame } {
 proc TOA::UpdateItems { Frame } {
    variable Ico
    variable Sim
-   variable Data
+   variable Param
 
-   if { [set xy [$Data(VP) -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
+   if { [set xy [$Param(VP) -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
       $Frame.page.canvas coords TOAFIX [lindex $xy 0] [lindex $xy 1]
    } else {
       $Frame.page.canvas coords TOAFIX -100 -100
