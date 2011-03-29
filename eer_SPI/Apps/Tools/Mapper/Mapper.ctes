@@ -80,7 +80,6 @@ namespace eval Mapper { } {
    set Data(TableObject) ""
    set Data(TableSel)    ""
    set Data(TableSort)   ""
-   set Data(TableMax)    10000
    set Data(GeoRef)      ""
    set Data(GeomOut)     "TEXT"
    set Data(GeomGet)     False
