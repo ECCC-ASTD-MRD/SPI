@@ -1103,12 +1103,10 @@ proc Mapper::ParamsOGR { Object Tab } {
 
    if { [winfo exists .mapperparams] && $Data(Mode)!="ogrlayer" } {
       set pos [wm geometry .mapperparams]
-      set force True
       Mapper::ParamsClose
       destroy .mapperparams
    } else {
       set pos 500x425
-      set force False
    }
    set Data(Mode) ogrlayer
 
@@ -1119,8 +1117,6 @@ proc Mapper::ParamsOGR { Object Tab } {
       wm transient .mapperparams .
       wm geometry  .mapperparams =$pos
       wm protocol  .mapperparams WM_DELETE_WINDOW { destroy .mapperparams }
-
-      set Data(TableObject) ""
 
       TabFrame::Create .mapperparams.tab 1 ""
       pack .mapperparams.tab -side top -fill both -expand true -padx 2 -pady 2
@@ -1302,16 +1298,19 @@ proc Mapper::ParamsOGR { Object Tab } {
 
       set Data(Frame5) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(Table) $GDefs(Lang)] False ""]
          frame $Data(Frame5).meta -relief sunken -bd 1
-            scrollbar $Data(Frame5).meta.scrolly -relief sunken -command "$Data(Frame5).meta.table yview" -bd 1 -width 10
+            scrollbar $Data(Frame5).meta.scrolly -relief sunken -command "Mapper::TableOGRYScroll" -bd 1 -width 10
             scrollbar $Data(Frame5).meta.scrollx -relief sunken -command "$Data(Frame5).meta.table xview" -bd 1 -width 10 -orient horizontal
             table $Data(Frame5).meta.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -titlerows 1 -variable Mapper::Table \
             -resizeborders col -anchor e -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -multiline False -drawmode fast \
             -yscrollcommand "$Data(Frame5).meta.scrolly set" -xscrollcommand "$Data(Frame5).meta.scrollx set" -width 1 -height 1 -selectmode extended
-#            -usecommand True -command { Mapper::OGRValue $Mapper::Data(Object) %c %r } -cache True
             pack $Data(Frame5).meta.scrollx -side bottom -fill x
             pack $Data(Frame5).meta.scrolly -side left -fill y
             pack $Data(Frame5).meta.table -side left -fill both -expand true -before $Data(Frame5).meta.scrolly
          pack $Data(Frame5).meta -side top -fill both -expand true -padx 5 -pady 5
+
+      bind $Data(Frame5).meta.table <Configure>     { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <ButtonPress-4> { $Mapper::Data(Frame5).meta.table yview scroll -1 units; Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <ButtonPress-5> { $Mapper::Data(Frame5).meta.table yview scroll 1 units; Mapper::TableOGR $Mapper::Data(Object) }
 
       frame .mapperparams.com
          button .mapperparams.com.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -command { Mapper::ParamsOGRSet $Mapper::Data(Object) }
@@ -1358,7 +1357,14 @@ proc Mapper::ParamsOGR { Object Tab } {
 
    Mapper::SelectOGR $Object
    Mapper::FeatureOGR $Object $Data(Index)
-   Mapper::TableOGR $Object $force
+   Mapper::TableOGR $Object
+}
+
+proc Mapper::TableOGRYScroll { args } {
+   variable Data
+
+   eval $Data(Frame5).meta.table yview $args
+   Mapper::TableOGR $Data(Object)
 }
 
 proc Mapper::SelectOGR { Object } {
@@ -1422,7 +1428,7 @@ proc Mapper::SelectOGRApply { Object } {
       set Select(String$Object) $select
       ogrlayer define $Object -featureselect $select
       ogrlayer define $Object -featurehighlight {}
-      Mapper::TableOGR $Object True
+      Mapper::TableOGR $Object
    }
 }
 
@@ -1435,7 +1441,7 @@ proc Mapper::SelectOGRClear { Object } {
    }
    ogrlayer define $Object -featurehighlight {}
 
-   Mapper::TableOGR $Object True
+   Mapper::TableOGR $Object
    Page::Update $Page::Data(Frame)
 }
 
@@ -1555,71 +1561,130 @@ proc Mapper::FeatureOGR { Object Index { Locate False } } {
    }
 }
 
-proc Mapper::OGRValue { Object X Y } {
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::TableOGR>
+# Creation : Juillet 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fill in the table with the layer's data
+#
+# Parametres :
+#   <Object> : Layer object
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
-#puts stderr "....$X $Y...."
-   ogrlayer stats $Object -table table 0 $X
-#   parray table
-   catch { return $table($Y,$X) }
-}
-
-proc Mapper::TableOGR { Object { Force False } } {
+proc Mapper::TableOGR { Object { Index -1 } } {
    global GDefs
    variable Data
    variable Table
-
-   if { $Object==$Data(TableObject) && !$Force } {
-      return
-   }
-
-   if { [catch { ogrlayer define $Object -feature 0 $Data(TableSort) }] } {
-      set Data(TableSort) ""
-   }
-
-   set rs [lindex [$Data(Frame5).meta.table configure -rows] 4]
-   set cs [lindex [$Data(Frame5).meta.table configure -cols] 4]
-   $Data(Frame5).meta.table configure -cursor watch -rows 1 -cols 1
-   update idletasks
-
-   set Data(TableObject) $Object
-   ogrlayer stats $Object -table Mapper::Table 0 $Data(TableMax)
 
    if { ![winfo exists $Data(Frame5).meta.table] } {
       return
    }
 
+   $Data(Frame5).meta.table configure -cursor watch
+   update idletasks
+
+   #----- Check if sort field is valid for the layer
+   if { [catch { ogrlayer define $Object -feature 0 $Data(TableSort) }] } {
+      set Data(TableSort) ""
+   }
+
+   #----- Scroll to specific index
+   if { $Index>-1 } {
+      $Data(Frame5).meta.table yview [expr $Index-1]
+   }
+
+   #----- Get current view limits
+   set rs [lindex [$Data(Frame5).meta.table configure -rows] 4]
+   set cs [lindex [$Data(Frame5).meta.table configure -cols] 4]
+   set ys [$Data(Frame5).meta.table yview]
+   set y0 [expr int(floor([lindex $ys 0]*$rs))]
+   set y1 [expr int(ceil([lindex $ys 1]*$rs))-1]
+
+   #----- Define table size
    set col [expr [llength [ogrlayer define $Object -field]]+1]
    set row [expr [ogrlayer define $Object -nb]+1]
-   set row [expr $row>$Data(TableMax)?$Data(TableMax):$row]
-
    $Data(Frame5).meta.table configure -rows $row -cols $col
 
-   for { set c 1 } { $c<$col } { incr c } {
+   #----- Get data for the view limits
+   ogrlayer stats $Object -table Mapper::Table $y0 $y1
+
+   #----- Create header buttons (Sorter)
+   for { set c 0 } { $c<$col } { incr c } {
       if {![winfo exists $Data(Frame5).meta.table.c$c] } {
-         radiobutton $Data(Frame5).meta.table.c$c -variable Mapper::Data(TableSort) -indicatoron False -bd 1
+         radiobutton $Data(Frame5).meta.table.c$c -variable Mapper::Data(TableSort) -indicatoron False -bd 1 \
+            -command { Mapper::TableSelectColumn $Mapper::Data(Object) }
       }
-      $Data(Frame5).meta.table.c$c configure -text $Mapper::Table(0,$c) -value $Mapper::Table(0,$c) -command "ogrlayer stats $Object -sort \$Mapper::Data(TableSort); Mapper::TableOGR $Object True"
-      $Data(Frame5).meta.table.c$c configure -command "ogrlayer stats $Object -sort \$Mapper::Data(TableSort); Mapper::TableOGR $Object True"
       $Data(Frame5).meta.table window configure 0,$c -window $Data(Frame5).meta.table.c$c -sticky nsew
+      if { $c==0 } {
+         $Data(Frame5).meta.table.c$c configure -text "" -value ""
+      } else {
+         $Data(Frame5).meta.table.c$c configure -text $Mapper::Table(0,$c) -value $Mapper::Table(0,$c)
+      }
    }
    for { set c $c } { $c<$cs } { incr c } {
       destroy radiobutton $Data(Frame5).meta.table.c$c
    }
 
-   for { set r 1 } { $r<$row } { incr r } {
+   #----- Create side buttons (Selecter)
+   for { set r [expr $y0<1?1:$y0] } { $r<=$y1 } { incr r } {
       if {![winfo exists $Data(Frame5).meta.table.r$r] } {
-         radiobutton $Data(Frame5).meta.table.r$r -variable Mapper::Data(TableSel) -indicatoron False -bd 1
+         radiobutton $Data(Frame5).meta.table.r$r -variable Mapper::Data(TableSel) -indicatoron False -bd 1 \
+            -command "Mapper::TableSelectRow \$Mapper::Data(Object) $r $col"
       }
-      catch {  $Data(Frame5).meta.table.r$r configure -text $Mapper::Table($r,0) -value $Mapper::Table($r,0) \
-         -command "$Data(Frame5).meta.table selection clear all;
-                   $Data(Frame5).meta.table selection set $r,1 $r,$col;
-                   Mapper::FeatureOGR \$Mapper::Data(Object) $Mapper::Table($r,0) True" }
       $Data(Frame5).meta.table window configure $r,0 -window $Data(Frame5).meta.table.r$r -sticky nsew
-   }
-   for { set r $r } { $r<$rs } { incr r } {
-      destroy radiobutton $Data(Frame5).meta.table.r$r
+      catch { $Data(Frame5).meta.table.r$r configure -text $Mapper::Table($r,0) -value $Mapper::Table($r,0) }
    }
    $Data(Frame5).meta.table configure -cursor left_ptr
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::TableSelectColumn>
+# Creation : Juillet 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : User selection of osorting mode in the table
+#
+# Parametres :
+#   <Object> : Layer object
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::TableSelectColumn { Object } {
+   variable Data
+
+   ogrlayer stats $Object -sort $Data(TableSort)
+   Mapper::TableOGR $Object
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::TableSelectRow>
+# Creation : Juillet 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : User selection of one feature in the table
+#
+# Parametres :
+#   <Object> : Layer object
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::TableSelectRow { Object Row Col } {
+   variable Data
+
+   $Data(Frame5).meta.table selection clear all;
+   $Data(Frame5).meta.table selection set $Row,1 $Row,$Col;
+   Mapper::FeatureOGR $Object $Mapper::Table($Row,0) True
 }
 
 #-------------------------------------------------------------------------------

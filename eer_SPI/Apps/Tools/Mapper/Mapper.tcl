@@ -1094,6 +1094,7 @@ proc Mapper::PickOGR { VP X Y } {
             set Data(Object) $object
             Mapper::ParamsOGRGet $Data(Object)
             Mapper::ParamsOGR $Data(Object) 2
+            Mapper::TableOGR  $Data(Object) $idx
 
             #----- Check if this is an index to some other data
             if { ![catch { set files [ogrlayer define $object -feature $Data(Index) IDX_PATH]}] } {
