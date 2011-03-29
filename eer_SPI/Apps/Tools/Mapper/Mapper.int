@@ -1309,6 +1309,20 @@ proc Mapper::ParamsOGR { Object Tab } {
          pack $Data(Frame5).meta -side top -fill both -expand true -padx 5 -pady 5
 
       bind $Data(Frame5).meta.table <Configure>     { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Home>          { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <End>           { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Control-Home>       { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Control-End>        { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Shift-Control-Home> { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Shift-Control-End>  { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Up>            { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Down>          { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Shift-Up>      { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Shift-Down>    { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Shift-Up>      { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <Shift-Down>    { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <B1-Motion>     { Mapper::TableOGR $Mapper::Data(Object) }
+      bind $Data(Frame5).meta.table <B2-Motion>     { Mapper::TableOGR $Mapper::Data(Object) }
       bind $Data(Frame5).meta.table <ButtonPress-4> { $Mapper::Data(Frame5).meta.table yview scroll -1 units; Mapper::TableOGR $Mapper::Data(Object) }
       bind $Data(Frame5).meta.table <ButtonPress-5> { $Mapper::Data(Frame5).meta.table yview scroll 1 units; Mapper::TableOGR $Mapper::Data(Object) }
 
