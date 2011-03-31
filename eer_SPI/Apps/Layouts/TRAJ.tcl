@@ -76,8 +76,6 @@ namespace eval TRAJ {
 proc TRAJ::Layout { Frame } {
    variable Page
 
-   SPI::IcoClear
-
    #----- Initialisations des constantes relatives aux projections
 
    set Viewport::Map(Border)   1

@@ -271,7 +271,6 @@ proc METF::Layout { Frame } {
    set Data(FieldBox) $FieldBox::Data(Current)
    catch { wm withdraw .fieldbox$Data(FieldBox) }
 
-   SPI::IcoClear
    METF::LayoutToolBar $Frame
    METF::LayoutInit    $Frame
    METF::DataInit      $Frame

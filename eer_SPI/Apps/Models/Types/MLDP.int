@@ -399,6 +399,7 @@ proc MLDP::CallProduct { Frame Type Layout } {
    if { $Type !="" } {
       MLDP::Result $Type
    }
+   SPI::IcoClear
    SPI::LayoutLoad $Frame $Layout
 }
 

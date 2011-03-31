@@ -421,7 +421,6 @@ proc VAAC::Layout { Frame } {
    set Data(FieldBox) $FieldBox::Data(Current)
    catch { wm withdraw .fieldbox$Data(FieldBox) }
 
-   SPI::IcoClear
    VAAC::LayoutInit    $Frame
    VAAC::LayoutToolBar $Frame
    VAAC::DataInit      $Frame

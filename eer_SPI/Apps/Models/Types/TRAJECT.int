@@ -180,6 +180,7 @@ proc TRAJECT::CallProduct { Frame Type Layout } {
    if { $Type!="" } {
       TRAJECT::Result
    }
+   SPI::IcoClear
    SPI::LayoutLoad $Frame $Layout
 
    Model::TypeSelect none 1 $Exp::Data(Name)

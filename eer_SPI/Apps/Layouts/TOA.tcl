@@ -30,6 +30,8 @@ namespace eval TOA {
 
    #----- Definitions des textes des bulles d'aides
 
+   set Bubble(Treshold) { "Valeur seuil (-1 = Maximum)" "Treshold value (-1 = Maximum)" }
+
    set Sim(Lat)          0
    set Sim(Lon)          0
    set Sim(Name)         ""
@@ -202,6 +204,7 @@ proc TOA::LayoutClear { Frame } {
 
 proc TOA::LayoutToolBar { Frame } {
    global   GDefs
+   variable Bubble
    variable Lbl
 
    frame $Frame.bar -relief raised -bd 1
@@ -213,6 +216,8 @@ proc TOA::LayoutToolBar { Frame } {
 
       pack $Frame.bar.id $Frame.bar.prod $Frame.bar.lbl $Frame.bar.tresh -side left -fill y
    pack $Frame.bar -side top -fill x -before $Frame.page
+
+   Bubble::Create $Frame.bar.tresh $Bubble(Treshold)
 }
 
 #----------------------------------------------------------------------------
@@ -264,8 +269,9 @@ proc TOA::Process { Field } {
          set tend [expr $t/3600.0]
 
          if { $Param(Treshold)<0 } {
+            fstdfield copy  TOACHG TOAMAX
             vexpr TOAMAX max(TOAMAX,TOATMP)
-            vexpr TOAFIELD ifelse(TOATMP!=0.0 && TOATMP==TOAMAX,$t,TOAFIELD)
+            vexpr TOAFIELD ifelse(TOATMP!=0.0 && TOATMP==TOAMAX && TOACHG!=TOAMAX,$t,TOAFIELD)
          } else {
             vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>$Param(Treshold),$t,TOAFIELD)
          }
@@ -293,8 +299,9 @@ proc TOA::Process { Field } {
             set tend [expr $t/3600.0]
 
             if { $Param(Treshold)<0 } {
+               fstdfield copy  TOACHG TOAMAX
                vexpr TOAMAX max(TOAMAX,TOATMP)
-               vexpr TOAFIELD ifelse(TOATMP!=0.0 && TOATMP==TOAMAX,$t,TOAFIELD)
+               vexpr TOAFIELD ifelse(TOATMP!=0.0 && TOATMP==TOAMAX && TOACHG!=TOAMAX,$t,TOAFIELD)
             } else {
                vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>$Param(Treshold),$t,TOAFIELD)
             }
@@ -316,7 +323,7 @@ proc TOA::Process { Field } {
       -desc "Time of Arrival" -unit "Hour" -interpdegree NEAREST -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 \
       -intervals $inter -color black -colormap TOAMAPDEFAULT
    fstdfield define TOAFIELD -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
-   fstdfield free TOAMAX TOATMP
+   fstdfield free TOAMAX TOATMP TOACHG
 
    SPI::Progress 0 ""
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD

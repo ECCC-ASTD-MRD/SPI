@@ -144,8 +144,6 @@ proc RSMC::Layout { Frame } {
 
    set Page(VP) [Viewport::Create $Frame [expr $Page(Border)+45] [expr $Page(Border)+45] 650 600 0 0]
 
-   SPI::IcoClear
-
    RSMC::LayoutToolBar $Frame
    RSMC::LayoutInit    $Frame
 
@@ -248,7 +246,6 @@ proc RSMC::LayoutInit { Frame } {
    variable Data
    variable Page
    variable Ico
-
 
    set canvas $Frame.page.canvas
 
