@@ -828,11 +828,11 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
 
          y0=0;y1=0xFFFFFFF;
-         if (Objc==3) {
+         if (Objc>=3) {
             Tcl_GetLongFromObj(Interp,Objv[2],&y0);
-         }
-         if (Objc==4) {
-            Tcl_GetLongFromObj(Interp,Objv[3],&y1);
+            if (Objc==4) {
+               Tcl_GetLongFromObj(Interp,Objv[3],&y1);
+            }
          }
 
          str=Tcl_GetString(Objv[1]);
