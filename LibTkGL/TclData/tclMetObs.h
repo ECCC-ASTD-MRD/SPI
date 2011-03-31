@@ -116,7 +116,7 @@ typedef struct TMetObs {
    int      Family;             /*Data family descriptor*/
    int      Type,SType;         /*Data family descriptor*/
    int      Marker;             /*Data marker descriptor*/
-   char     MarkerOp;           /*Data marker operator*/
+   char     FamilyOp,MarkerOp;  /*Data bit operators*/
    char     CodeType;           /*Data type*/
    int      FId;
 

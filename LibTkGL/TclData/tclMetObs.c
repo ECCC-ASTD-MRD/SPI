@@ -445,13 +445,13 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    TMetModel    *mdl;
    TDataSpec    *spec;
    long          time=0;
-   int           e,t,i,j,d,v,idx,nv,mk;
+   int           e,t,i,j,d,v,idx,nv,mk,flag;
    float        *valf;
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-CODETYPE","-FAMILY","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,CODETYPE,FAMILY,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-CODETYPE","-FAMILY","-FAMILYOP","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,CODETYPE,FAMILY,FAMILYOP,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -730,7 +730,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           if (!obs->Family || (obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
+                           flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                           if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
@@ -761,7 +762,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected state*/
-                           if (!obs->Family || (obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
+                           flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                           if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
@@ -835,7 +837,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           if (!obs->Family || (obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
+                           flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                           if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  /*Link the ElementData to its Obs*/
@@ -959,6 +962,23 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->Family));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&obs->Family);
+            }
+            break;
+
+         case FAMILYOP:
+            if (Objc==1) {
+               if (obs->FamilyOp=="A") {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("AND",-1));
+               } else {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("OR",-1));
+               }
+            } else {
+               ++i;
+               if (Tcl_GetString(Objv[i])[0]!='A' && Tcl_GetString(Objv[i])[0]!='O') {
+                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong operator, must be \"AND or OR\"",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               obs->FamilyOp=Tcl_GetString(Objv[i])[0];
             }
             break;
 
@@ -1089,6 +1109,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->SType    = -1;
    obs->CodeType = 0;
    obs->Family   = 0x0;
+   obs->FamilyOp = 'O';
    obs->Marker   = 0x0;
    obs->MarkerOp = 'O';
    obs->Info     = NULL;
@@ -2516,7 +2537,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    double        z,val,valid,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk,box[4],b;
    double        alpha=1.0;
-   int           clat,clon,cdir,nobs,min[2],max[2],skip;
+   int           clat,clon,cdir,nobs,min[2],max[2],skip,flag;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2683,7 +2704,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   }
 
                   /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
-                  if (Obs->Family && !(Obs->Family&(((data->Family&0x7)==0)?data->Family|0x20:data->Family))) {
+                  flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                  if (Obs->Family && ((Obs->FamilyOp=='O' && !(Obs->Family&flag)) || (Obs->FamilyOp=='A' && !(Obs->Family==flag)))) {
                       continue;
                   }
 
