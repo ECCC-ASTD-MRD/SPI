@@ -57,6 +57,7 @@ namespace eval NowCaster::Obs { } {
       { 20  1048576  DERIV { "Erreur de position d'avion décelée par TrackQc" "Plane position error found by TrackQc" } }
       { 21  2097152  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
+   set Param(FamilyOp) OR
    set Param(Familys) {
       { 3 8  { "Bulletin corrigé" "Corrected bulletin" } }
       { 4 16 { "Bulletin répété" "Repeated bulletin" } }
@@ -502,6 +503,11 @@ proc NowCaster::Obs::Window { Frame } {
          entry $Frame.flags.bfam.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Family)
          menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
          menu $Frame.flags.bfam.sel.menu -tearoff 1
+         $Frame.flags.bfam.sel.menu add radiobutton -value AND -label [lindex $Lbl(And) $GDefs(Lang)] \
+            -variable NowCaster::Obs::Param(FamilyOp) -command NowCaster::Obs::Update
+         $Frame.flags.bfam.sel.menu add radiobutton -value OR -label [lindex $Lbl(Or) $GDefs(Lang)] \
+            -variable NowCaster::Obs::Param(FamilyOp) -command NowCaster::Obs::Update
+         $Frame.flags.bfam.sel.menu add separator
          foreach family $Param(Familys) {
             set NowCaster::Obs::Data(Family[lindex $family 0]) 0
             $Frame.flags.bfam.sel.menu add checkbutton -offvalue 0 -onvalue [lindex $family 1] -label [lindex [lindex $family 2] $GDefs(Lang)] \
@@ -1107,7 +1113,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
-         -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
+         -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -FAMILYOP $Param(FamilyOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
 
       foreach item $Data(Model$obs) {
          set code [lindex $item 2]
