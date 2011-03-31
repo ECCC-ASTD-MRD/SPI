@@ -61,6 +61,12 @@ proc Mapper::DepotWare::TMS::Params { Frame } {
 #
 #-------------------------------------------------------------------------------
 
+proc  Mapper::DepotWare::TMS::SelectLayer { Layer } {
+
+   Mapper::DepotWare::TMS::Select "" "" $Layer ""
+   Mapper::UpdateData $Page::Data(Frame)
+}
+
 proc  Mapper::DepotWare::TMS::Select { Tree Branch Path URL } {
    variable Param
 
@@ -175,5 +181,6 @@ set Param(MetaCarta) "<GDAL_WMS>
    puts $f $Param($Layer)
    close $f
 
+puts stderr "$Layer $file "
    Mapper::ReadBand $file "" 3
 }
