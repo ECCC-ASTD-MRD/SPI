@@ -156,7 +156,7 @@ proc Console::AsProject { File } {
    variable Data
    variable Param
 
-   if { [winfo exists .] } {
+   if { [winfo exists .console] } {
       puts $File "#----- Tool: Console\n"
       puts $File "set Console::Param(Dock)   $Param(Dock)"
       puts $File "set Console::Param(Geom)   [winfo geometry .console]"
