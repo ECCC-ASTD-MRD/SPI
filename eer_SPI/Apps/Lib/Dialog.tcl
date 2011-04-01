@@ -177,7 +177,7 @@ proc Dialog::Error { Master Text { Extra "" } } {
    global button
    variable Lbl
 
-   uplevel 1 "Log::Print ERROR \"[lindex $Text $GDefs(Lang)]$Extra\""
+   uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
    if { ![info exists ::tk_version] } {
       return
@@ -239,7 +239,7 @@ proc Dialog::ErrorListing { Master Text List } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print ERROR \"[lindex $Text $GDefs(Lang)]\""
+   uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]\}"
 
    if { ![info exists ::tk_version] } {
       return
@@ -309,7 +309,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print INFO \"[lindex $Text $GDefs(Lang)]$Extra\""
+   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
    if { ![info exists ::tk_version] } {
       return
@@ -367,7 +367,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
 proc Dialog::Wait { Master Text { Extra "" } } {
    global GDefs
 
-   uplevel 1 "Log::Print INFO \"[lindex $Text $GDefs(Lang)]$Extra\""
+   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
    if { ![info exists ::tk_version] } {
       return
@@ -452,7 +452,7 @@ proc Dialog::WaitDestroy { { Ask False } } {
 proc Dialog::Message { Master Text { Extra "" } } {
    global GDefs
 
-   uplevel 1 "Log::Print INFO \"[lindex $Text $GDefs(Lang)]$Extra\""
+   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
    if { ![info exists ::tk_version] } {
       return
