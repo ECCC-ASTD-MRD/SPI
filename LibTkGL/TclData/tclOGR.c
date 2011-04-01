@@ -702,6 +702,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Feature    =NULL;
    layer->Select     =NULL;
 
+   layer->File       =NULL;
    layer->Layer      =NULL;
    layer->Feature    =NULL;
    layer->Def        =NULL;
@@ -1104,7 +1105,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          if (!(file=OGR_FileGet(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,0));
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,-1));
          return(TCL_OK);
          break;
    }

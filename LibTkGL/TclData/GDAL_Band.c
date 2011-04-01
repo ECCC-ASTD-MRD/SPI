@@ -185,6 +185,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    }
 
+   band->File=file;
    band->Tex.Nx=nx;
    band->Tex.Ny=ny;
 
@@ -1605,6 +1606,8 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
          nc++;
       }
    }
+   band->File=file;
+
    return(TCL_OK);
 }
 
@@ -1994,8 +1997,8 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    Tcl_Obj    *obj,*lst;
 
    static CONST char *sopt[] = { "-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
-                                 "-height","-nb","-type","-positional",NULL };
-   enum        opt {  GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL };
+                                 "-height","-nb","-type","-positional","-fid",NULL };
+   enum        opt {  GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2010,6 +2013,12 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
 
       switch ((enum opt)idx) {
+
+         case FID:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(band->File->Id,-1));
+            }
+            break;
 
          case WIDTH:
             if (Objc==1) {

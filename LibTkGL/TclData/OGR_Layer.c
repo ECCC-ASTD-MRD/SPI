@@ -69,9 +69,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    double         x,y,a,min,max,val;
 
    static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
-                                 "-mask","-featurehighlight","-featureselect",NULL };
+                                 "-mask","-featurehighlight","-featureselect","-fid",NULL };
    enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
-                             MASK,FEATUREHIGHLIGHT,FEATURESELECT };
+                             MASK,FEATUREHIGHLIGHT,FEATURESELECT,FID };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -86,6 +86,12 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
 
       switch ((enum opt)idx) {
+
+         case FID:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->File->Id,-1));
+            }
+            break;
 
          case GEOREF:
             if (Objc==1) {
@@ -1503,7 +1509,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
       }
       layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord));
    }
-
+   layer->File=file;
    layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
 //   OGR_L_GetExtent(layer->Layer,&env,1);
 //   GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
@@ -1569,6 +1575,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
       OGR_L_CreateFeature(olayer,feature);
    }
 
+   layer->File=file;
    layer->Update=0;
    return(TCL_OK);
 }

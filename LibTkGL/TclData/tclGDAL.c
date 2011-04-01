@@ -755,6 +755,7 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
    band->NbGCPs     =0;
    band->GCPs       =NULL;
 
+   band->File       =NULL;
    band->Ref        =NULL;
    band->Spec       =NULL;
    band->Def        =NULL;

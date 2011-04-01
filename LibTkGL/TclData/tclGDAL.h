@@ -59,7 +59,7 @@ typedef struct GDAL_File {
 
 typedef struct GDAL_Band {
    Tcl_Obj      *Tag;
-   int           Active;
+   GDAL_File    *File;
 
    GDALRasterBandH Band[256];
    GDAL_GCP     *GCPs;
