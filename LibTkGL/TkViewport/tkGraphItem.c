@@ -242,6 +242,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                if (item->Outline) {
                   Tcl_AppendResult(Interp,Tk_NameOfColor(item->Outline),(char*)NULL);
+               } else {
+                  Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
                if (item->Outline) Tk_FreeColor(item->Outline);
@@ -266,6 +268,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                if (item->IconOutline) {
                   Tcl_AppendResult(Interp,Tk_NameOfColor(item->IconOutline),(char*)NULL);
+               } else {
+                  Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
                if (item->IconOutline) Tk_FreeColor(item->IconOutline);

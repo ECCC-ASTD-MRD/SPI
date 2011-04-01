@@ -612,10 +612,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                if (Spec->Fill) {
                   Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->Fill),(char*)NULL);
+               } else {
+                  Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
                if (Spec->Fill) Tk_FreeColor(Spec->Fill);
-               Spec->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  Spec->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -624,10 +627,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
            if (Objc==1) {
                if (Spec->Outline) {
                   Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->Outline),(char*)NULL);
+               } else {
+                  Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
               if (Spec->Outline) Tk_FreeColor(Spec->Outline);
-              Spec->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+              if (strlen(Tcl_GetString(Objv[++i])))
+                 Spec->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
            }
            break;
 
@@ -635,10 +641,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                if (Spec->HighLine) {
                   Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->HighLine),(char*)NULL);
+               } else {
+                  Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
                if (Spec->HighLine) Tk_FreeColor(Spec->HighLine);
-               Spec->HighLine=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  Spec->HighLine=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -646,10 +655,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                if (Spec->HighFill) {
                   Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->HighFill),(char*)NULL);
+               } else {
+                  Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
                if (Spec->HighFill) Tk_FreeColor(Spec->HighFill);
-               Spec->HighFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  Spec->HighFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 

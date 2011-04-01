@@ -512,8 +512,28 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[2],-1));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[3],-1));
                Tcl_SetObjResult(Interp,obj);
+            } else if (Objc==2) {
+               ++i;
+               if (strcmp(Tcl_GetString(Objv[i]),"red")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[0],-1));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"green")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[1],-1));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"blue")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[2],-1));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[3],-1));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[0],-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[1],-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[2],-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[3],-1));
+                  Tcl_SetObjResult(Interp,obj);
+               } else {
+                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue,alpha or rgba",(char *) NULL);
+                  return(TCL_ERROR);
+               }
             } else {
-               i++;
+               ++i;
                index=-1;
                if (strcmp(Tcl_GetString(Objv[i]),"red")==0)   { index=0; }
                if (strcmp(Tcl_GetString(Objv[i]),"green")==0) { index=1; }
@@ -595,7 +615,27 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[2]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[3]));
                Tcl_SetObjResult(Interp,obj);
-            } else  {
+            } else if (Objc==2) {
+               ++i;
+               if (strcmp(Tcl_GetString(Objv[i]),"red")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[0]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"green")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[1]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"blue")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[2]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[3]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[0]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[1]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[2]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[3]));
+                  Tcl_SetObjResult(Interp,obj);
+               } else {
+                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue,alpha or rgba",(char *) NULL);
+                  return(TCL_ERROR);
+               }
+           } else  {
                i++;
                index=-1;
                if (strcmp(Tcl_GetString(Objv[i]),"red")==0)   { index=0; }
@@ -630,6 +670,26 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[2]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[3]));
                Tcl_SetObjResult(Interp,obj);
+            } else if (Objc==2) {
+               ++i;
+               if (strcmp(Tcl_GetString(Objv[i]),"red")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[0]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"green")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[1]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"blue")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[2]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[3]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[0]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[1]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[2]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[3]));
+                  Tcl_SetObjResult(Interp,obj);
+               } else {
+                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue,alpha or rgba",(char *) NULL);
+                  return(TCL_ERROR);
+               }
             } else {
                i++;
                index=-1;
@@ -665,6 +725,26 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[2]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[3]));
                Tcl_SetObjResult(Interp,obj);
+            } else if (Objc==2) {
+               ++i;
+               if (strcmp(Tcl_GetString(Objv[i]),"red")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Min[0]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"green")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Min[1]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"blue")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Min[2]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Min[3]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[0]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[1]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[2]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[3]));
+                  Tcl_SetObjResult(Interp,obj);
+               } else {
+                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
+                  return(TCL_ERROR);
+               }
             } else {
                i++;
                index=-1;
@@ -674,7 +754,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) { index=3; }
                if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0)  { index=4; }
                if (index==-1) {
-                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue or alpha",(char *) NULL);
+                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue,alpha or rgba",(char *) NULL);
                   return(TCL_ERROR);
                }
 
@@ -699,7 +779,27 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[2]));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[3]));
                Tcl_SetObjResult(Interp,obj);
-            } else {
+            } else if (Objc==2) {
+               ++i;
+               if (strcmp(Tcl_GetString(Objv[i]),"red")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Max[0]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"green")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Max[1]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"blue")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Max[2]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
+                  Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Max[3]));
+               } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[0]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[1]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[2]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[3]));
+                  Tcl_SetObjResult(Interp,obj);
+               } else {
+                  Tcl_AppendResult(Interp,"CMap_Config: invalid color index must be red,green,blue,alpha or rgba",(char *) NULL);
+                  return(TCL_ERROR);
+               }
+           } else {
                i++;
                index=-1;
                if (strcmp(Tcl_GetString(Objv[i]),"red")==0)   { index=0; }
