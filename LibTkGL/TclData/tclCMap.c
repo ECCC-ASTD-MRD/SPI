@@ -122,7 +122,11 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
       cmap->NbPixels=(Nb<=0?CR_MAX:(Nb>CR_MAX?CR_MAX:Nb));
 
       if (!Name) {
+         /*Check for non-existing name*/
          sprintf(buf,"COLORMAP_____%li",CMapNo++);
+         while (TclY_HashGet(&CMapTable,buf)) {
+            sprintf(buf,"COLORMAP_____%li",CMapNo++);
+         }
          Name=buf;
       }
       cmap->Name=strdup(Name);

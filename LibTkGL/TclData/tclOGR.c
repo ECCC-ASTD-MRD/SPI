@@ -558,6 +558,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
             if (Objc==4) {
                if (layer->Spec) {
+                  layer->Spec->NRef++;
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->Spec->Name,-1));
                }
             } else {
