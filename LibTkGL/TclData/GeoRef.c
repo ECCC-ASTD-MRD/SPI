@@ -939,7 +939,11 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref) {
 
    if (Ref) {
       if (!Name) {
+         /*Check for non-existing name*/
          sprintf(buf,"GEOREF_____%li",GeoRefNo++);
+         while (TclY_HashGet(&GeoRef_Table,buf)) {
+            sprintf(buf,"GEOREF_____%li",GeoRefNo++);
+         }
          Name=buf;
       }
       if (TclY_HashSet(Interp,&GeoRef_Table,Name,Ref)==TCL_ERROR) {
