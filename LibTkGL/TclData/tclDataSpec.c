@@ -1248,7 +1248,11 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
 
   if (!Name) {
       Tcl_MutexLock(&MUTEX_DATASPEC);
+      /*Check for non-existing name*/
       sprintf(buf,"DATASPEC_____%li",TDataSpecNo++);
+      while (TclY_HashGet(&TDataSpec_Table,buf)) {
+         sprintf(buf,"DATASPEC_____%li",TDataSpecNo++);
+      }
       Tcl_MutexUnlock(&MUTEX_DATASPEC);
       Name=buf;
    }
