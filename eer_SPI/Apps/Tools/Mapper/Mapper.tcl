@@ -422,15 +422,15 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
 
    foreach file $Files {
        switch $Mode {
-          ANY  { if { ![Mapper::ReadBand $file "" 3 $Full] && ![Mapper::ReadLayer $file] } {
+          ANY  { if { [Mapper::ReadBand $file "" 3 $Full]=="" && [Mapper::ReadLayer $file]=="" } {
                     Dialog::Error . $Msg(BadFile)
                  }
                }
-          GDAL { if { ![Mapper::ReadBand $file "" 3 $Full] } {
+          GDAL { if { [Mapper::ReadBand $file "" 3 $Full]=="" } {
                     Dialog::Error . $Msg(BadFile)
                  }
                }
-          OGR  { if { ![Mapper::ReadLayer $file] } {
+          OGR  { if { [Mapper::ReadLayer $file]=="" } {
                     Dialog::Error . $Msg(BadFile)
                  }
                }
@@ -465,16 +465,15 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       eval set bad [catch { set bands [gdalfile open $Data(Id$id) read $File] }]
 
       if { $bad || ![llength $bands] } {
-         return False
+         return ""
       }
+      set Data(Band$id) $bands
    }
 
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
 
    if { ![llength $Bands] } {
-      set Data(Band$id) $bands
-
       set interp [gdalfile colorinterp $Data(Id$id)]
       if { $interp=="Red"  } {
          set Bands [lrange $bands 0 $Nb]
@@ -482,6 +481,13 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       } else {
          set Data(Interp) NEAREST
          set Bands [list [lindex $bands 0]]
+      }
+   }
+
+   #----- Check for generic naming
+   for { set i 0 } { $i<[llength $Bands] } { incr i } {
+      if { [lindex [lindex $Bands $i] 0]=="" } {
+         lset Bands $i 0 $Data(Id$id)
       }
    }
 
@@ -516,14 +522,14 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       error $errmsg $errorInfo
    }
 
-   set Data(ColorMap) [gdalband configure $id -colormap]
+   set map [gdalband configure $id -colormap]
    gdalband configure $id -interpolation $Data(Interp)
 
    foreach min [gdalband stats $id -min] band $Data(Bands$id) {
-      colormap configure $Data(ColorMap) -min $band [lindex $min 0]
+      colormap configure $map -min $band [lindex $min 0]
    }
    foreach max [gdalband stats $id -max] band $Data(Bands$id) {
-      colormap configure $Data(ColorMap) -max $band [lindex $max 0]
+      colormap configure $map -max $band [lindex $max 0]
   }
 
    set Data(Job) ""
@@ -532,7 +538,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       lappend Viewport::Data(Data$Page::Data(Frame)) $id
    }
 
-   return True
+   return $id
 }
 
 proc Mapper::ReadPos { Id BandX BandY } {
@@ -580,7 +586,7 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
    eval set bad [catch { set idxs [ogrfile open $Data(Id$File) read $File] }]
 
    if { $bad } {
-      return False
+      return ""
    }
 
    set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
@@ -631,7 +637,7 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
    set Data(Job) ""
    Mapper::Progress $layer
 
-   return True
+   return $layer
 }
 
 proc Mapper::Progress { Object } {
@@ -680,6 +686,7 @@ proc Mapper::ParamsGDALGet { Object } {
    set Data(Topo)       [gdalband configure $Object -topography]
    set Data(TopoFactor) [gdalband configure $Object -topographyfactor]
    set Data(Mask)       [gdalband configure $Object -mask]
+   set Data(ColorMap)   [gdalband configure $Object -colormap]
    set Data(Proj)       [gdalband define $Object -projection]
    set Data(Trans)      [gdalband define $Object -transform]
    set Data(InvTrans)   [gdalband define $Object -invtransform]
@@ -716,7 +723,7 @@ proc Mapper::ParamsGDALGet { Object } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::ParamsGDALSet { Object } {
+proc Mapper::ParamsGDALSet { Object { CheckData True } } {
    variable Data
 
    if { $Data(Init) } {
@@ -725,12 +732,14 @@ proc Mapper::ParamsGDALSet { Object } {
 
    Mapper::Cursor watch
 
-   if { $Data(Band0$Object)!=$Data(Red) || $Data(Band1$Object)!=$Data(Green) || $Data(Band2$Object)!=$Data(Blue) || $Data(Band3$Object)!=$Data(Alpha) } {
-      Mapper::ReadBand $Object [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)]
-   }
+   if { $CheckData } {
+      if { $Data(Band0$Object)!=$Data(Red) || $Data(Band1$Object)!=$Data(Green) || $Data(Band2$Object)!=$Data(Blue) || $Data(Band3$Object)!=$Data(Alpha) } {
+         Mapper::ReadBand $Object [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)]
+      }
 
-   if { $Data(BandX$Object)!=$Data(BandX) || $Data(BandY$Object)!=$Data(BandY) } {
-      Mapper::ReadPos $Object $Data(BandX) $Data(BandY)
+      if { $Data(BandX$Object)!=$Data(BandX) || $Data(BandY$Object)!=$Data(BandY) } {
+         Mapper::ReadPos $Object $Data(BandX) $Data(BandY)
+      }
    }
 
    gdalband configure $Object -texsample $Data(Sample) -texres $Data(Resolution) -texsize $Data(Texture) -transparency $Data(Tran) \
@@ -743,12 +752,14 @@ proc Mapper::ParamsGDALSet { Object } {
       gdalband configure $Object -mask ""
    }
 
-   set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
-   gdalband define $Object -projection $Data(Proj) -transform $Data(Trans)
-#   gdalband define $Object -invtransform $Data(InvTrans)
+   if { [winfo exists .mapper] } {
+      set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
+      gdalband define $Object -projection $Data(Proj) -transform $Data(Trans)
+   #   gdalband define $Object -invtransform $Data(InvTrans)
 
-   Page::Update $Page::Data(Frame)
-   Mapper::CurveDefine $Object $Data(Bands$Object)
+      Page::Update $Page::Data(Frame)
+      Mapper::CurveDefine $Object $Data(Bands$Object)
+   }
 
    Mapper::Cursor left_ptr
 }
@@ -882,7 +893,6 @@ proc Mapper::ParamsOGRGet { Object } {
    set Data(TopoFactor)  [ogrlayer configure $Object -topographyfactor]
    set Data(Extr)        [ogrlayer configure $Object -extrude]
    set Data(ExtrFactor)  [ogrlayer configure $Object -extrudefactor]
-   set Data(Dash)        [ogrlayer configure $Object -dash]
    set Data(ColorMap)    [ogrlayer configure $Object -colormap]
    set Data(Color)       [ogrlayer configure $Object -outline]
    set Data(Highlight)   [ogrlayer configure $Object -activeoutline]
@@ -1000,15 +1010,17 @@ proc Mapper::ParamsOGRSet { Object } {
       ogrlayer configure $Object -fill ""
    }
 
-   set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
-   ogrlayer define $Object -projection $Data(Proj)
    ogrlayer define $Object -mask $Data(Mask)
 
-   Mapper::SelectOGRApply $Object
+   if { [winfo exists .mapper] } {
+      set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
+      ogrlayer define $Object -projection $Data(Proj)
+
+      Mapper::SelectOGRApply $Object
+   }
 
    Page::Update     $Page::Data(Frame)
    ColorBar::Update $Page::Data(Frame)
-
    Mapper::Progress $Object
    Mapper::Cursor left_ptr
 }
@@ -1286,11 +1298,48 @@ proc Mapper::AsProject { File } {
    variable Data
    variable Param
 
-   if { [winfo exists .mappper] } {
+   if { [winfo exists .mapper] } {
       puts $File "#----- Tool: Mapper\n"
       puts $File "set Mapper::Param(Dock)   $Param(Dock)"
       puts $File "set Mapper::Param(Geom)   [winfo geometry .mapper]"
-      puts $File "Mapper::Window"
-      puts $File "\n"
+      puts $File "Mapper::Window\n"
+
+      if { [winfo exists .mapperparams] } {
+         puts $File "Mapper::Params True [$Data(Tab1).select.list curselection]"
+         puts $File "wm geometry .mapperparams =[wm geometry .mapperparams]"
+         puts $File "TabFrame::Select .mapperparams.tab [TabFrame::Current .mapperparams.tab]\n"
+      }
+   }
+}
+
+proc Mapper::AsProjectPerPage { File Page { Params True } } {
+   variable Data
+
+   foreach id $Viewport::Data(Data$Page) {
+      if { [gdalband is $id] } {
+         set bands {}
+         foreach band { 0 1 2 3 } {
+            if  { $Data(Band$band$id)!="" } {
+               lappend bands [list "" [lindex $Data(Band$band$id) 1] [lindex $Data(Band$band$id) 2] [lindex $Data(Band$band$id) 3] [lindex $Data(Band$band$id) 4]]
+            } else {
+               break
+            }
+         }
+         puts $File "   set band \[Mapper::ReadBand [gdalfile filename [gdalband define $id -fid]] \{ $bands \}\]"
+
+         if { $Params } {
+            puts $File "   gdalband configure \$band -dataspec [gdalband configure $id -dataspec]"
+         }
+      } elseif { [ogrlayer is $id] } {
+         puts $File "   set layer \[Mapper::ReadLayer [ogrfile filename [ogrlayer define $id -fid]]\]"
+
+         if { $Params } {
+            puts $File "   ogrlayer configure \$layer -dataspec [ogrlayer configure $id -dataspec]"
+         }
+      }
+   }
+
+   if { [llength $Viewport::Data(Data$Page)] } {
+      puts $File "   Mapper::UpdateData $Page"
    }
 }

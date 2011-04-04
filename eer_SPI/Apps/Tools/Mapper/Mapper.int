@@ -311,7 +311,7 @@ proc Mapper::Cursor { { Cursor left_ptr } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::Params { { Display False } } {
+proc Mapper::Params { { Display False } { Object "" } } {
    variable Data
 
    if { ![winfo exists .mapperparams] && !$Display } {
@@ -322,10 +322,16 @@ proc Mapper::Params { { Display False } } {
 
    Mapper::Cursor watch
 
-   if { [set idx [$Data(Tab1).select.list curselection]]!="" } {
-      set obj [$Data(Tab1).select.list get $idx]
-      if { $obj!=$Data(Object) || ![winfo exists .mapperparams] } {
-         set Data(Object) $obj
+   if { $Object!="" || [set idx [$Data(Tab1).select.list curselection]]!="" } {
+      if { $Object=="" } {
+          #----- If no object is specified, use the list selected item
+         set Object [$Data(Tab1).select.list get $idx]
+      } elseif { [string is integer -strict $Object] } {
+         #----- if the object is a number, use the list item at thie index
+         set Object [$Data(Tab1).select.list get $Object]
+      }
+      if { $Object!=$Data(Object) || ![winfo exists .mapperparams] } {
+         set Data(Object) $Object
 
          if { [gdalband is $Data(Object)] } {
             Mapper::ParamsGDALGet $Data(Object)
@@ -398,16 +404,16 @@ proc Mapper::ParamsGDAL { Object Tab } {
                   -command { Mapper::CurveDefine $Mapper::Data(Object) $Mapper::Data(Bands$Mapper::Data(Object)) }
                radiobutton $Data(Frame2).col.sel.red -relief sunken -bd 1 -overrelief raised -offrelief flat -width 2 -bg red \
                   -value red -variable Mapper::Data(Band) -indicatoron False -selectcolor red \
-                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) }
+                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) }
                radiobutton  $Data(Frame2).col.sel.green -relief sunken -bd 1 -overrelief raised -offrelief flat -width 2 -bg green \
                   -value green -variable Mapper::Data(Band) -selectcolor green -indicatoron False \
-                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) }
+                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) }
                radiobutton  $Data(Frame2).col.sel.blue -relief sunken -bd 1 -overrelief raised -offrelief flat -width 2 -bg blue \
                   -value blue -variable Mapper::Data(Band) -selectcolor blue -indicatoron False \
-                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) }
+                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) }
                radiobutton  $Data(Frame2).col.sel.alpha -relief sunken -bd 1 -overrelief raised -offrelief flat -width 2 -bg white \
                   -value alpha -variable Mapper::Data(Band) -selectcolor white -indicatoron False \
-                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) }
+                  -command { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) }
                pack  $Data(Frame2).col.sel.lock -side top -padx 5 -fill x
                pack $Data(Frame2).col.sel.red $Data(Frame2).col.sel.green $Data(Frame2).col.sel.blue \
                   $Data(Frame2).col.sel.alpha -side top -fill y -expand true -padx 5 -pady 5
@@ -415,18 +421,18 @@ proc Mapper::ParamsGDAL { Object Tab } {
             frame $Data(Frame2).col.def
                frame $Data(Frame2).col.def.curve
                   label $Data(Frame2).col.def.curve.lbl -text [lindex $Lbl(Curve) $GDefs(Lang)] -width 14 -anchor w
-                  ComboBox::Create $Data(Frame2).col.def.curve.sel Mapper::Data(Curve) noedit unsorted nodouble -1 $Data(Curves) 1 8 { Mapper::CurveSet $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) }
+                  ComboBox::Create $Data(Frame2).col.def.curve.sel Mapper::Data(Curve) noedit unsorted nodouble -1 $Data(Curves) 1 8 { Mapper::CurveSet $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) }
                   pack $Data(Frame2).col.def.curve.lbl -side left
                   pack $Data(Frame2).col.def.curve.sel -side left -fill x -expand True
                 frame $Data(Frame2).col.def.invert
                   label $Data(Frame2).col.def.invert.lbl -text [lindex $Lbl(Invert) $GDefs(Lang)] -width 14 -anchor w
                   checkbutton $Data(Frame2).col.def.invert.x -text " X " -width 1 -anchor w -indicatoron 0 \
                      -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -variable Mapper::Data(CurveInvertX) \
-                     -onvalue True -offvalue False -command { Mapper::CurveInvert $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) X $Mapper::Data(CurveInvertX) }
+                     -onvalue 1 -offvalue 0 -command { Mapper::CurveInvert $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) X $Mapper::Data(CurveInvertX) }
                      pack $Data(Frame2).col.def.curve.lbl -side left
                   checkbutton $Data(Frame2).col.def.invert.y -text " Y " -width 1 -anchor w -indicatoron 0 \
                      -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -variable Mapper::Data(CurveInvertY) \
-                     -onvalue True -offvalue False -command { Mapper::CurveInvert $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) Y $Mapper::Data(CurveInvertY) }
+                     -onvalue 1 -offvalue 0 -command { Mapper::CurveInvert $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) Y $Mapper::Data(CurveInvertY) }
                   pack $Data(Frame2).col.def.invert.lbl -side left
                   pack $Data(Frame2).col.def.invert.x $Data(Frame2).col.def.invert.y -side left -fill x -expand True
               frame $Data(Frame2).col.def.tran
@@ -457,8 +463,8 @@ proc Mapper::ParamsGDAL { Object Tab } {
                    $Data(Frame2).col.def.interp $Data(Frame2).col.def.nodata -side top -fill x
             frame $Data(Frame2).col.curve
                button $Data(Frame2).col.curve.map -bd 2 -relief groove -image GDALMAPImg \
-                  -command  { MapBox::Create $Mapper::Data(Frame2).col.curve.map "colormap image \$Mapper::Data(ColorMap) GDALMAPImg; Mapper::ParamsGDALSet \$Mapper::Data(Object); if { ![glrender -shaderavailable] } { gdalband clean \$Mapper::Data(Object) }; Page::Update \$Page::Data(Frame)" $Mapper::Data(ColorMap) }
-                canvas $Data(Frame2).col.curve.cv -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 256 -height 128
+                  -command  { MapBox::Create $Mapper::Data(Frame2).col.curve.map "Mapper::MapApply \$Mapper::Data(Object)" $Mapper::Data(ColorMap) }
+               canvas $Data(Frame2).col.curve.cv -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 256 -height 128
                frame $Data(Frame2).col.curve.info
                   entry $Data(Frame2).col.curve.info.min -textvariable Mapper::Data(CurveMinD) -width 8 -bd 1
                   entry $Data(Frame2).col.curve.info.now -textvariable Mapper::Data(CurveValue) -width 1 -relief sunken -bd 1
@@ -729,8 +735,13 @@ proc Mapper::ParamsGDAL { Object Tab } {
    ComboBox::Add $Data(Frame1).pos.y.val ""
    ComboBox::AddList $Data(Frame1).pos.y.val $Data(Band$Object)
 
-   bind $Data(Frame2).col.curve.info.min <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) False } }
-   bind $Data(Frame2).col.curve.info.max <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band) False } }
+   bind $Data(Frame2).col.curve.info.min <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) False } }
+   bind $Data(Frame2).col.curve.info.max <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) False } }
+
+   #----- Setup colormap
+
+   set Data(ColorMap) [gdalband configure $Object -colormap]
+   colormap image $Data(ColorMap) GDALMAPImg
 
    Mapper::CurveDefine $Object $Data(Bands$Object)
 }
@@ -742,6 +753,21 @@ proc Mapper::TabGDALSelect { Frame No } {
       Mapper::GeoLocator::Activate $Data(Object)
    } else {
    }
+}
+
+proc Mapper::MapApply { Object } {
+
+   if { [gdalband is $Object] } {
+      set map [gdalband configure $Object -colormap]
+      colormap image $map GDALMAPImg
+      Mapper::ParamsGDALSet $Object
+      if { ![glrender -shaderavailable] } { gdalband clean $Object }
+   } elseif { [ogrlayer is $Object] } {
+      set map [ogrlayer configure $Object -colormap]
+      colormap image $map OGRMAPImg
+      Mapper::ParamsOGRSet $Object
+   }
+   Page::Update $Page::Data(Frame)
 }
 
 proc Mapper::CurveDefine { Object Bands } {
@@ -758,8 +784,8 @@ proc Mapper::CurveDefine { Object Bands } {
 
    #----- Setup colormap
 
-   set Data(ColorMap) [gdalband configure $Object -colormap]
-   colormap image $Data(ColorMap) GDALMAPImg
+   set map [gdalband configure $Object -colormap]
+   colormap image $map GDALMAPImg
 
    #----- Setup curves
 
@@ -791,23 +817,23 @@ proc Mapper::CurveDefine { Object Bands } {
 
       $canvas bind min <ButtonPress-1>   "set Mapper::Data(MMSet) 1; $canvas configure -cursor hand1"
       $canvas bind max <ButtonPress-1>   "set Mapper::Data(MMSet) 1; $canvas configure -cursor hand1"
-      $canvas bind min <B1-Motion>       "Mapper::CurveRange $canvas \$Mapper::Data(ColorMap) \$Mapper::Data(Band) min %x"
-      $canvas bind max <B1-Motion>       "Mapper::CurveRange $canvas \$Mapper::Data(ColorMap) \$Mapper::Data(Band) max %x"
+      $canvas bind min <B1-Motion>       "Mapper::CurveRange $canvas $Object \$Mapper::Data(Band) min %x"
+      $canvas bind max <B1-Motion>       "Mapper::CurveRange $canvas $Object \$Mapper::Data(Band) max %x"
       $canvas bind min <ButtonRelease-1> "set Mapper::Data(MMSet) 0; $canvas configure -cursor left_ptr"
       $canvas bind max <ButtonRelease-1> "set Mapper::Data(MMSet) 0; $canvas configure -cursor left_ptr"
 
-      bind $canvas <B1-Motion>       "if { !\$Mapper::Data(MMSet) } {  Mapper::CurvePoint $canvas \$Mapper::Data(ColorMap) \$Mapper::Data(Band) %x %y }"
+      bind $canvas <B1-Motion>       "if { !\$Mapper::Data(MMSet) } {  Mapper::CurvePoint $canvas \$Mapper::Data(Object) \$Mapper::Data(Band) %x %y }"
       bind $canvas <ButtonPress-2>   "set Mapper::Data(CurveX) %x; $canvas configure -cursor hand1"
-      bind $canvas <B2-Motion>       "if { !\$Mapper::Data(MMSet) } { Mapper::CurveTranslate $canvas \$Mapper::Data(ColorMap) \$Mapper::Data(Band) %x }"
+      bind $canvas <B2-Motion>       "if { !\$Mapper::Data(MMSet) } { Mapper::CurveTranslate $canvas \$Mapper::Data(Object) \$Mapper::Data(Band) %x }"
       bind $canvas <ButtonRelease-2> "set Mapper::Data(CurveX) %x; $canvas configure -cursor left_ptr"
    }
    bind $canvas <Motion> { Mapper::CurveValue %x }
 
-   Mapper::CurveSelect $canvas $Data(ColorMap) red
-   Mapper::Curve       $canvas $Data(ColorMap) $Bands
+   Mapper::CurveSelect $canvas $Object red
+   Mapper::Curve       $canvas $Object $Bands
 }
 
-proc Mapper::CurveInvert { Canvas Map Band Axis Value } {
+proc Mapper::CurveInvert { Canvas Object Band Axis Value } {
    variable Data
 
    if { [llength $Data(Bands$Data(Object))]==1 || $Data(Lock) } {
@@ -816,13 +842,15 @@ proc Mapper::CurveInvert { Canvas Map Band Axis Value } {
       set band $Band
    }
 
+   set map [gdalband configure $Object -colormap]
+
    if { $Axis=="X" } {
-      colormap configure $Map -invertx $band $Value
+      colormap configure $map -invertx $band $Value
    } else {
-      colormap configure $Map -inverty $band $Value
+      colormap configure $map -inverty $band $Value
    }
-   if { ![glrender -shaderavailable] } { gdalband clean $Data(Object) }
-   Mapper::Curve $Canvas $Mapper::Data(ColorMap) $Mapper::Data(Band)
+   if { ![glrender -shaderavailable] } { gdalband clean $Object }
+   Mapper::Curve $Canvas $Object $Mapper::Data(Band)
 }
 
 proc Mapper::CurveHisto { } {
@@ -836,18 +864,19 @@ proc Mapper::CurveHisto { } {
       }
    }
    set Data(HistoShow) False
-   Mapper::CurveSelect $Data(Frame2).col.curve.cv $Mapper::Data(ColorMap) $Mapper::Data(Band)
+   Mapper::CurveSelect $Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band)
 
    Mapper::Cursor left_ptr
 }
 
-proc Mapper::CurveSelect { Canvas Map Band { MinMax True } } {
+proc Mapper::CurveSelect { Canvas Object Band { MinMax True } } {
    variable Data
 
    if { [set idx [lsearch -exact { red green blue alpha } $Band]]!=-1 } {
 
-      #----- Reconfigure curve display
+      set map [gdalband configure $Object -colormap]
 
+      #----- Reconfigure curve display
       $Canvas itemconfigure curve -width 1
       $Canvas itemconfigure $Band -width 2
       $Canvas raise $Band
@@ -859,12 +888,12 @@ proc Mapper::CurveSelect { Canvas Map Band { MinMax True } } {
       set Data(CurveMin) [lindex [gdalband stats $Data(Object) -min $idx] 0]
       set Data(CurveMax) [lindex [gdalband stats $Data(Object) -max $idx] 0]
 
-      if { $Data(CurveMin)>[colormap configure $Map -min $Band] } {
-         colormap configure $Map -min $Band $Data(CurveMin)
+      if { $Data(CurveMin)>[colormap configure $map -min $Band] } {
+         colormap configure $map -min $Band $Data(CurveMin)
          catch { unset Data(Histo$Data(Object)$idx) }
       }
-      if { $Data(CurveMax)<[colormap configure $Map -max $Band] } {
-         colormap configure $Map -max $Band $Data(CurveMax)
+      if { $Data(CurveMax)<[colormap configure $map -max $Band] } {
+         colormap configure $map -max $Band $Data(CurveMax)
          catch { unset Data(Histo$Data(Object)$idx) }
       }
 
@@ -903,16 +932,15 @@ proc Mapper::CurveSelect { Canvas Map Band { MinMax True } } {
       $Canvas coords histo $coords
 
       #----- Setup curves
-
-      set Data(CurveInvertX) [colormap configure $Map -invertx $Band]
-      set Data(CurveInvertY) [colormap configure $Map -inverty $Band]
+      set Data(CurveInvertX) [colormap configure $map -invertx $Band]
+      set Data(CurveInvertY) [colormap configure $map -inverty $Band]
 
       if { $MinMax } {
-         set Data(CurveMinD) [colormap configure $Map -min $Band]
-         set Data(CurveMaxD) [colormap configure $Map -max $Band]
+         set Data(CurveMinD) [colormap configure $map -min $Band]
+         set Data(CurveMaxD) [colormap configure $map -max $Band]
       } else {
-         colormap configure $Map -min $Band $Data(CurveMinD)
-         colormap configure $Map -max $Band $Data(CurveMaxD)
+         colormap configure $map -min $Band $Data(CurveMinD)
+         colormap configure $map -max $Band $Data(CurveMaxD)
       }
 
       if { $Data(CurveMax)!=$Data(CurveMin) } {
@@ -922,17 +950,19 @@ proc Mapper::CurveSelect { Canvas Map Band { MinMax True } } {
          set Data(CurveMaxX) [expr ($Data(CurveMaxD)-$Data(CurveMin))*$d]
          $Canvas coords max $Data(CurveMaxX) 1 $Data(CurveMaxX) 128 $Data(CurveMaxX) 64 [expr $Data(CurveMaxX)-10] 64
       }
-      set Data(Curve) [colormap configure $Map -curve $Band]
-      if { ![glrender -shaderavailable] } { gdalband clean $Data(Object) }
+      set Data(Curve) [colormap configure $map -curve $Band]
+      if { ![glrender -shaderavailable] } { gdalband clean $Object }
 
       if  { !$MinMax } {
-         Mapper::Curve $Canvas $Map $Band
+         Mapper::Curve $Canvas $Object $Band
       }
    }
 }
 
-proc Mapper::CurveRange { Canvas Map Band Side X } {
+proc Mapper::CurveRange { Canvas Object Band Side X } {
    variable Data
+
+   set map [gdalband configure $Object -colormap]
 
    Mapper::CurveValue $X
 
@@ -944,26 +974,26 @@ proc Mapper::CurveRange { Canvas Map Band Side X } {
 
    if { $X>=0 && $X<=256 } {
       if { $Side=="min" } {
-         if { $Data(CurveValue) < [colormap configure $Map -max $Band] } {
+         if { $Data(CurveValue) < [colormap configure $map -max $Band] } {
             set Data(CurveMinX) $X
             set Data(CurveMinD) $Data(CurveValue)
             $Canvas coords min $X 1 $X 128 $X 64 [expr $X+10] 64
-            colormap configure $Map -min $band $Data(CurveValue)
+            colormap configure $map -min $band $Data(CurveValue)
           }
       } else {
-         if { $Data(CurveValue) > [colormap configure $Map -min $Band] } {
+         if { $Data(CurveValue) > [colormap configure $map -min $Band] } {
             set Data(CurveMaxX) $X
             set Data(CurveMaxD) $Data(CurveValue)
             $Canvas coords max $X 1 $X 128 $X 64 [expr $X-10] 64
-            colormap configure $Map -max $band $Data(CurveValue)
+            colormap configure $map -max $band $Data(CurveValue)
          }
       }
-      if { ![glrender -shaderavailable] } { gdalband clean $Data(Object)}
-      Mapper::Curve $Canvas $Map $band
+      if { ![glrender -shaderavailable] } { gdalband clean $Object}
+      Mapper::Curve $Canvas $Object $band
    }
 }
 
-proc Mapper::CurveTranslate { Canvas Map Band X } {
+proc Mapper::CurveTranslate { Canvas Object Band X } {
    variable Data
 
    Mapper::CurveValue $X
@@ -975,17 +1005,18 @@ proc Mapper::CurveTranslate { Canvas Map Band X } {
    } else {
       set band $Band
    }
+   set map [gdalband configure $Object -colormap]
 
    if { [expr $Data(CurveMinX)+$dx]>=0 && [expr $Data(CurveMaxX)+$dx]<=256 } {
       set Data(CurveMinX) [expr $Data(CurveMinX)+$dx]
       set Data(CurveMaxX) [expr $Data(CurveMaxX)+$dx]
       $Canvas coords min $Data(CurveMinX) 1 $Data(CurveMinX) 128 $Data(CurveMinX) 64 [expr $Data(CurveMinX)+10] 64
-      colormap configure $Map -min $band [set Data(CurveMinD) [Mapper::CurveValue $Data(CurveMinX)]]
+      colormap configure $map -min $band [set Data(CurveMinD) [Mapper::CurveValue $Data(CurveMinX)]]
       $Canvas coords max $Data(CurveMaxX) 1 $Data(CurveMaxX) 128 $Data(CurveMaxX) 64 [expr $Data(CurveMaxX)-10] 64
-      colormap configure $Map -max $band [set Data(CurveMaxD) [Mapper::CurveValue $Data(CurveMaxX)]]
+      colormap configure $map -max $band [set Data(CurveMaxD) [Mapper::CurveValue $Data(CurveMaxX)]]
 
-      if { ![glrender -shaderavailable] } { gdalband clean $Data(Object) }
-      Mapper::Curve $Canvas $Map $band
+      if { ![glrender -shaderavailable] } { gdalband clean $Object }
+      Mapper::Curve $Canvas $Object $band
    }
    set Data(CurveX) $X
 }
@@ -997,20 +1028,21 @@ proc Mapper::CurveValue { X } {
    return [set Data(CurveValue) [expr $Data(CurveMin)+($Data(CurveMax)-$Data(CurveMin))*$X/256.0]]
 }
 
-proc Mapper::CurvePoint { Canvas Map Band X Y } {
+proc Mapper::CurvePoint { Canvas Object Band X Y } {
    variable Data
 
    Mapper::CurveValue $X
 
    set Data(Curve) ""
-   colormap configure $Map -curve $Band ""
+   set map [gdalband configure $Object -colormap]
+   colormap configure $map -curve $Band ""
 
    set d  [expr 256.0/($Data(CurveMaxX)-$Data(CurveMinX))]
    set dx [expr int($d)]
    set X  [expr int(($X-$Data(CurveMinX))*$d)-1]
    set Y  [expr ((128-$Y)*2)-1]
 
-   if { [llength $Data(Bands$Data(Object))]==1 || $Data(Lock) } {
+   if { [llength $Data(Bands$Object)]==1 || $Data(Lock) } {
       set band rgba
    } else {
       set band $Band
@@ -1018,40 +1050,42 @@ proc Mapper::CurvePoint { Canvas Map Band X Y } {
 
    if { [expr $X-$dx]>=0 && [expr $X+$dx]<=255 && $Y>=0 && $Y<=255 } {
       for { set x [expr $X-$dx] } { $x<[expr $X+$dx] } { incr x } {
-         colormap configure $Map -curvepoint $band $x $Y
+         colormap configure $map -curvepoint $band $x $Y
        }
    }
-   if { ![glrender -shaderavailable] } { gdalband clean $Data(Object) }
-   Mapper::Curve $Canvas $Map $band
+   if { ![glrender -shaderavailable] } { gdalband clean $Object }
+   Mapper::Curve $Canvas $Object $band
 }
 
-proc Mapper::CurveSet { Canvas Map } {
+proc Mapper::CurveSet { Canvas Object } {
    variable Data
 
-   colormap control $Map -update
+   set map [gdalband configure $Object -colormap]
+   colormap control $map -update
 
-   if { [llength $Data(Bands$Data(Object))]==1 || $Data(Lock) } {
-      colormap configure $Map -curve rgba $Mapper::Data(Curve)
+   if { [llength $Data(Bands$Object)]==1 || $Data(Lock) } {
+      colormap configure $map -curve rgba $Mapper::Data(Curve)
    } else {
-      colormap configure $Map -curve $Mapper::Data(Band) $Mapper::Data(Curve)
+      colormap configure $map -curve $Mapper::Data(Band) $Mapper::Data(Curve)
    }
 
-   if { ![glrender -shaderavailable] } { gdalband clean $Data(Object) }
-   Mapper::Curve $Canvas $Map $Mapper::Data(Band)
+   if { ![glrender -shaderavailable] } { gdalband clean $Object }
+   Mapper::Curve $Canvas $Object $Mapper::Data(Band)
 }
 
-proc Mapper::Curve { Canvas Map Bands } {
+proc Mapper::Curve { Canvas Object Bands } {
    variable Data
 
    if { $Bands=="rgba" } {
       set Bands { red green blue alpha }
    }
+   set map [gdalband configure $Object -colormap]
 
    foreach band $Bands {
-      set ys  [colormap configure $Map -curvepoint $band]
+      set ys  [colormap configure $map -curvepoint $band]
       set ny  [llength $ys]
-      set min [colormap configure $Map -min $band]
-      set max [colormap configure $Map -max $band]
+      set min [colormap configure $map -min $band]
+      set max [colormap configure $map -max $band]
 
       #----- Calculate offset and scaling on range
 
@@ -1076,7 +1110,7 @@ proc Mapper::Curve { Canvas Map Bands } {
         Page::Update $Page::Data(Frame)
       }
    }
-   colormap image $Map GDALMAPImg
+   colormap image $map GDALMAPImg
 }
 
 #-------------------------------------------------------------------------------
@@ -1214,8 +1248,8 @@ proc Mapper::ParamsOGR { Object Tab } {
 
             frame $Data(Frame2).inter.map
                label $Data(Frame2).inter.map.lbl -text [lindex $Lbl(Map) $GDefs(Lang)] -width 12 -anchor w
-               button $Data(Frame2).inter.map.val -bd 1 -relief flat -image OGRMAPImg -command "MapBox::Create $Data(Frame2).inter.map.val \
-                   \"colormap image \$Mapper::Data(ColorMap) OGRMAPImg ; Mapper::ParamsOGRSet \$Mapper::Data(Object); Page::Update \$Page::Data(Frame)\" \$Mapper::Data(ColorMap)"
+               button $Data(Frame2).inter.map.val -bd 1 -relief flat -image OGRMAPImg -command { MapBox::Create $Mapper::Data(Frame2).inter.map.val \
+                   "Mapper::MapApply \$Mapper::Data(Object)" $Mapper::Data(ColorMap) }
                pack $Data(Frame2).inter.map.lbl $Data(Frame2).inter.map.val -side left -padx 5
 
             frame $Data(Frame2).inter.fld
@@ -1367,7 +1401,8 @@ proc Mapper::ParamsOGR { Object Tab } {
    IcoMenu::Set $Data(Frame2).shape.out.width $Data(Width)
    catch { IcoMenu::Set $Data(Frame2).shape.out.dash  $Data(Dash) }
 
-   catch { colormap image $Mapper::Data(Object) OGRMAPImg }
+   set Data(ColorMap) [ogrlayer configure $Object -colormap]
+   catch { colormap image $Data(ColorMap) OGRMAPImg }
 
    Mapper::SelectOGR $Object
    Mapper::FeatureOGR $Object $Data(Index)

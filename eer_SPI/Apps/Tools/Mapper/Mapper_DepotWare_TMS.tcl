@@ -181,6 +181,5 @@ set Param(MetaCarta) "<GDAL_WMS>
    puts $f $Param($Layer)
    close $f
 
-puts stderr "$Layer $file "
    Mapper::ReadBand $file "" 3
 }

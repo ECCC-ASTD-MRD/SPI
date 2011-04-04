@@ -1938,60 +1938,6 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <SPI::ProjectWindow>
-# Creation : Fevrier 2006 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Interface de sauvegarde de project
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc SPI::ProjectWindow { } {
-   global GDefs
-   variable Lbl
-
-   toplevel .spiproject -class Dialog
-   wm title .spiproject [lindex $Lbl(ProjectSave) $GDefs(Lang)]
-   wm transient .spiproject .
-   wm resizable .spiproject 0 0
-   wm protocol .spiproject WM_DELETE_WINDOW { }
-
-   if { $SPI::Project(File)=="" } {
-      set SPI::Project(File) [pwd]/myproject.spi
-   }
-   frame .spiproject.what -relief raised -bd 1
-      label .spiproject.what.lbl -text [lindex $Lbl(ProjectItems) $GDefs(Lang)] -width 7 -anchor w
-      frame .spiproject.what.s -relief sunken -bd 1 -bg $GDefs(ColorLight)
-         checkbutton .spiproject.what.s.win -text [lindex $Lbl(WindowLayout) $GDefs(Lang)] -bg $GDefs(ColorLight) -bd 1 \
-            -variable SPI::Project(Window) -onvalue True -offvalue False
-         checkbutton .spiproject.what.s.page -text [lindex $Lbl(PageLayout) $GDefs(Lang)] -bg $GDefs(ColorLight) -bd 1 \
-            -variable SPI::Project(Layout) -onvalue True -offvalue False
-         checkbutton .spiproject.what.s.cam -text [lindex $Lbl(Camera) $GDefs(Lang)] -bg $GDefs(ColorLight) -bd 1 \
-            -variable SPI::Project(Camera) -onvalue True -offvalue False
-         checkbutton .spiproject.what.s.data -text [lindex $Lbl(Data) $GDefs(Lang)] -bg $GDefs(ColorLight) -bd 1 \
-            -variable SPI::Project(Data) -onvalue True -offvalue False
-         checkbutton .spiproject.what.s.params -text [lindex $Lbl(Params) $GDefs(Lang)] -bg $GDefs(ColorLight) -bd 1 \
-            -variable SPI::Project(Params) -onvalue True -offvalue False
-         pack .spiproject.what.s.win .spiproject.what.s.page .spiproject.what.s.cam .spiproject.what.s.data .spiproject.what.s.params -side top -anchor w
-      pack .spiproject.what.lbl .spiproject.what.s -fill both -anchor w -expand true
-   pack .spiproject.what -side top -fill x -expand true
-   frame .spiproject.cmd
-      button .spiproject.cmd.ok -text [lindex $Lbl(Save) $GDefs(Lang)] -bd 1 \
-         -command { SPI::ProjectSave [FileBox::Create . "" Save [list $FileBox::Type(SPI)]] $SPI::Project(Window) $SPI::Project(Layout) $SPI::Project(Camera) $SPI::Project(Data) $SPI::Project(Params); destroy .spiproject }
-      button .spiproject.cmd.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1  \
-         -command { destroy .spiproject }
-      pack .spiproject.cmd.ok .spiproject.cmd.cancel -side left -fill x -expand true
-   pack .spiproject.cmd -fill x
-
-   grab .spiproject
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <SPI::ProjectRead>
 # Creation : Fevrier 2006 - J.P. Gauthier - CMC/CMOE -
 #
@@ -2026,11 +1972,6 @@ proc SPI::ProjectRead { File { Force False } } {
    gets $f head
    close $f
 
-   if { ![string equal "set SPI::Param(Project)" [string range $head 0 22]] } {
-      Dialog::Error . $Error(Project) ":\n\n\t$File"
-      return
-   }
-
    if { !$Force } {
       if { [Dialog::Default . 300 WARNING $Msg(ProjectRead) "" 1 $Lbl(Yes) $Lbl(No)] } {
          return
@@ -2046,7 +1987,10 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    #----- Lire le projet
-   source $File
+   set err [catch { source $File } msg]
+   if { $err } {
+      Dialog::Error . $Error(Project) ":\n\n\t$msg"
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -2083,6 +2027,20 @@ proc SPI::ProjectSaveLayout { File Frame Cam Size } {
    puts $File "   Page::ModeSelect \$Page::Data(Mode) \$Frame\n"
 }
 
+proc SPI::ProjectSavePerPage { File Page Params }  {
+
+   foreach tool $SPI::Param(Tools) {
+      eval set active \$${tool}::Data(Active)
+
+      if { $active } {
+         eval set proc \[info procs ::${tool}::AsProjectPerPage\]
+         if { $proc!="" } {
+            eval ${tool}::AsProjectPerPage $File $Page $Params
+         }
+      }
+   }
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <SPI::ProjectSave>
 # Creation : Fevrier 2006 - J.P. Gauthier - CMC/CMOE -
@@ -2104,9 +2062,19 @@ proc SPI::ProjectSaveLayout { File Frame Cam Size } {
 #-------------------------------------------------------------------------------
 
 proc SPI::ProjectSave { File Window Layout Cam Data Params } {
+   global env
+   global GDefs
+   variable Msg
+   variable Lbl
 
    if { $File=="" } {
       return
+   }
+
+   if { [file exists $File] } {
+      if { ![Dialog::Default . 300 WARNING $Msg(Exist) "\n\t$File\n" 0 $Lbl(No) $Lbl(Yes)] } {
+         return ""
+      }
    }
 
    set SPI::Project(File) $File
@@ -2116,8 +2084,76 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       set File ${File}.spi
    }
 
+   set project [file rootname [file tail $File]]
+
    set f [open $File w]
-   puts $f "set SPI::Param(Project) [file rootname [file tail $File]]"
+   puts $f "#===============================================================================
+# Project name : $project
+# Created by   : $env(USER)
+# Creation date: [clock format [clock seconds]]
+# SPI version  : $GDefs(Version)
+#==============================================================================="
+
+   puts $f "\nset SPI::Param(Project) $project"
+
+   #----- Process Params
+   if { $Params } {
+
+      puts $f "\n#----- Data parameters"
+      set fonts {}
+      set cmaps {}
+
+      #----- Force obs parameters to be defined
+      foreach obs [observation all] {
+         Obs::ParamInit $obs [observation configure $obs -dataspec]
+      }
+
+      foreach spec [dataspec all] {
+
+         set cmap [dataspec configure $spec -colormap]
+         if { [colormap is $cmap] && [lsearch -exact $cmaps $cmap]==-1 } {
+            lappend cmaps $cmap
+            puts $f "\ncatch { colormap create $cmap }"
+            puts $f "colormap control $cmap -del"
+            puts $f "colormap control $cmap -list { [colormap control $cmap -list] }"
+            puts $f "colormap configure $cmap  -RGBAratio [colormap configure $cmap -RGBAratio] -MMratio [colormap configure $cmap -MMratio] \
+             -curve red [colormap configure $cmap -curve red] -curve green [colormap configure $cmap -curve green] -curve blue [colormap configure $cmap -curve blue] -curve alpha [colormap configure $cmap -curve alpha] \
+             -invertx red [colormap configure $cmap -invertx red] -invertx green [colormap configure $cmap -invertx green] -invertx blue [colormap configure $cmap -invertx blue] -invertx alpha [colormap configure $cmap -invertx alpha] \
+             -inverty red [colormap configure $cmap -inverty red] -inverty green [colormap configure $cmap -inverty green] -inverty blue [colormap configure $cmap -inverty blue] -inverty alpha [colormap configure $cmap -inverty alpha] \
+             -min red [colormap configure $cmap -min red] -min green [colormap configure $cmap -min green] -min blue [colormap configure $cmap -min blue] -min alpha [colormap configure $cmap -min alpha] \
+             -max red [colormap configure $cmap -max red] -max green [colormap configure $cmap -max green] -max blue [colormap configure $cmap -max blue] -max alpha [colormap configure $cmap -max alpha] \
+             -interp [colormap configure $cmap -interp]"
+         }
+
+         set font [dataspec configure $spec -font]
+         if { $font!="" && [lsearch -exact $fonts $font]==-1 } {
+            lappend fonts $font
+            puts $f "\ncatch { font create $font }"
+            puts $f "font configure $font -family [font configure $font -family] -weight [font configure $font -weight] -size [font configure $font -size]\
+                  -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
+         }
+
+         puts $f "\ndataspec create \"$spec\""
+         puts $f "dataspec configure \"$spec\" -factor [dataspec configure $spec -factor] -value [dataspec configure $spec -value]\
+            -size [dataspec configure $spec -size] -width [dataspec configure $spec -width] -unit \"[dataspec configure $spec -unit]\"\
+            -desc \"[dataspec configure $spec -desc]\" -icon \"[dataspec configure $spec -icon]\" -mark \"[dataspec configure $spec -mark]\"\
+            -color \"[dataspec configure $spec -color]\" -fill \"[dataspec configure $spec -fill]\" -activefill \"[dataspec configure $spec -activefill]\"\
+            -outline \"[dataspec configure $spec -outline]\" -activeoutline \"[dataspec configure $spec -activeoutline]\" \
+            -transparency \"[dataspec configure $spec -transparency]\" -dash \"[dataspec configure $spec -dash]\" \
+            -rendercontour [dataspec configure $spec -rendercontour] -rendervector [dataspec configure $spec -rendervector]\
+            -rendertexture [dataspec configure $spec -rendertexture] -rendervolume [dataspec configure $spec -rendervolume] -renderparticle [dataspec configure $spec -renderparticle]\
+            -rendercoord [dataspec configure $spec -rendercoord] -rendervalue [dataspec configure $spec -rendervalue] -renderlabel [dataspec configure $spec -renderlabel]\
+            -rendergrid [dataspec configure $spec -rendergrid] -min \"[dataspec configure $spec -min]\" -max \"[dataspec configure $spec -max]\"\
+            -intervals \"[dataspec configure $spec -intervals]\" -interlabels \"[dataspec configure $spec -interlabels]\" -intervalmode [dataspec configure $spec -intervalmode] \
+            -interpdegree \"[dataspec configure $spec -interpdegree]\" -extrapdegree \"[dataspec configure $spec -extrapdegree]\" \
+            -sample \"[dataspec configure $spec -sample]\" -stipple \"[dataspec configure $spec -stipple]\" -colormap \"[dataspec configure $spec -colormap]\" -font \"[dataspec configure $spec -font]\" \
+            -texsample \"[dataspec configure $spec -texsample]\" -texsize \"[dataspec configure $spec -texsize]\" -texres \"[dataspec configure $spec -texres]\" \
+            -interpolation \"[dataspec configure $spec -interpolation]\" -topography \"[dataspec configure $spec -topography]\" -topographyfactor \"[dataspec configure $spec -topographyfactor]\" \
+            -mask \"[dataspec configure $spec -mask]\" -light \"[dataspec configure $spec -light]\" -labelvar \"[dataspec configure $spec -labelvar]\" \
+            -sizevar \"[dataspec configure $spec -sizevar]\" -mapvar \"[dataspec configure $spec -mapvar]\" \
+            -extrude \"[dataspec configure $spec -extrude]\" -extrudefactor \"[dataspec configure $spec -extrudefactor]\""
+      }
+   }
 
    if { $Window } {
       #----- Process SPI
@@ -2140,11 +2176,14 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
          puts $f "TabFrame::Select .params.tab [TabFrame::Current .params.tab]"
       }
 
-      if { $Layout } {
-         foreach pane [.pan.side panes] {
+      foreach pane [.pan.side panes] {
+         if { $Layout } {
              puts $f "set Frame $pane"
              SPI::ProjectSaveLayout $f $pane $Cam False
-         }
+          }
+          if { $Data } {
+             SPI::ProjectSavePerPage $f $pane $Params
+          }
       }
 
       puts $f "\n#----- SPI's frame\n"
@@ -2153,22 +2192,26 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
          if { $Layout } {
             SPI::ProjectSaveLayout $f .mdi.frame$tab.frame $Cam True
          }
+         if { $Data } {
+            SPI::ProjectSavePerPage $f .mdi.frame$tab.frame $Params
+         }
       }
       puts $f "TabFrame::Select .mdi [TabFrame::Current .mdi]"
 
       foreach win [winfo children .] {
          if { [string equal ".page" [string range $win 0 4]] } {
-            set tabs [TabFrame::GetTabs $win.mdi]
-            set tab [lindex $tabs 0]
-            puts $f "set Frame \[SPI::PageNew True \"[TabFrame::GetLabel $win.mdi $tab]\" [wm geom $win]\]"
-            if { $Layout } {
-               SPI::ProjectSaveLayout $f $win.mdi.frame$tab.frame $Cam True
-            }
-            set tabs [lrange $tabs 1 end]
-            foreach tab $tabs {
-               puts $f "set Frame \[SPI::PageNew False \"[TabFrame::GetLabel $win.mdi $tab]\"\]"
+            set no -1
+            foreach tab [TabFrame::GetTabs $win.mdi] {
+               if { ![incr no] } {
+                  puts $f "set Frame \[SPI::PageNew True \"[TabFrame::GetLabel $win.mdi $tab]\" [wm geom $win]\]"
+               } else {
+                  puts $f "set Frame \[SPI::PageNew False \"[TabFrame::GetLabel $win.mdi $tab]\"\]"
+               }
                if { $Layout } {
-                  SPI::ProjectSaveLayout $f  $win.mdi.frame$tab.frame $Cam True
+                  SPI::ProjectSaveLayout $f $win.mdi.frame$tab.frame $Cam True
+               }
+               if { $Data } {
+                  SPI::ProjectSavePerPage $f $win.mdi.frame$tab.frame $Params
                }
             }
          }
@@ -2204,53 +2247,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       }
    }
 
-   #----- Process Params
-   if { $Params } {
-
-      puts $f "\n#----- Data parameters"
-      set fonts {}
-      set cmaps {}
-
-      #----- Force obs parameters to be defined
-      foreach obs [observation all] {
-         Obs::ParamInit $obs [observation configure $obs -dataspec]
-      }
-
-      foreach spec [dataspec all] {
-
-         set cmap [dataspec configure $spec -colormap]
-         if { [colormap is $cmap] && [lsearch -exact $cmaps $cmap]==-1 } {
-            lappend cmaps $cmap
-            puts $f "\nif { !\[colormap is $cmap\] } { colormap create $cmap }"
-            puts $f "colormap control $cmap -del"
-            puts $f "colormap control $cmap -list { [colormap control $cmap -list] }"
-         }
-
-         set font [dataspec configure $spec -font]
-         if { $font!="" && [lsearch -exact $fonts $font]==-1 } {
-            lappend fonts $font
-            puts $f "\ncatch { font create $font }"
-            puts $f "font configure $font -family [font configure $font -family] -weight [font configure $font -weight] -size [font configure $font -size]\
-                  -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
-         }
-
-         puts $f "\ndataspec create \"$spec\""
-         puts $f "dataspec configure \"$spec\" -factor [dataspec configure $spec -factor] -value [dataspec configure $spec -value]\
-            -size [dataspec configure $spec -size] -width [dataspec configure $spec -width] -unit \"[dataspec configure $spec -unit]\"\
-            -desc \"[dataspec configure $spec -desc]\" -icon \"[dataspec configure $spec -icon]\" -mark \"[dataspec configure $spec -mark]\"\
-            -color \"[dataspec configure $spec -color]\" -fill \"[dataspec configure $spec -fill]\" -activefill \"[dataspec configure $spec -activefill]\"\
-            -outline \"[dataspec configure $spec -outline]\" -activeoutline \"[dataspec configure $spec -activeoutline]\" \
-            -transparency \"[dataspec configure $spec -transparency]\" -dash \"[dataspec configure $spec -dash]\" \
-            -rendercontour [dataspec configure $spec -rendercontour] -rendervector [dataspec configure $spec -rendervector]\
-            -rendertexture [dataspec configure $spec -rendertexture] -rendervolume [dataspec configure $spec -rendervolume] -renderparticle [dataspec configure $spec -renderparticle]\
-            -rendercoord [dataspec configure $spec -rendercoord] -rendervalue [dataspec configure $spec -rendervalue] -renderlabel [dataspec configure $spec -renderlabel]\
-            -rendergrid [dataspec configure $spec -rendergrid] -min \"[dataspec configure $spec -min]\" -max \"[dataspec configure $spec -max]\"\
-            -intervals \"[dataspec configure $spec -intervals]\" -interlabels \"[dataspec configure $spec -interlabels]\" -intervalmode [dataspec configure $spec -intervalmode] \
-            -interpdegree \"[dataspec configure $spec -interpdegree]\" -extrapdegree \"[dataspec configure $spec -extrapdegree]\" -topography \"[dataspec configure $spec -topography]\"\
-            -sample \"[dataspec configure $spec -sample]\" -stipple \"[dataspec configure $spec -stipple]\" -colormap \"[dataspec configure $spec -colormap]\" -font \"[dataspec configure $spec -font]\""
-      }
-   }
-
    #----- Process Data
    if { $Data } {
 
@@ -2259,7 +2255,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       puts $f "foreach box \[TrajBox::Get\]  { TrajBox::Close \$box }"
       puts $f "foreach box \[ObsBox::Get\]   { ObsBox::Close \$box }"
 
-      puts $f "\n#----- Load Data\n"
       set boxes [FieldBox::Get]
       if { [llength $boxes] } {
          puts $f "\n#----- Load standard files\n"
