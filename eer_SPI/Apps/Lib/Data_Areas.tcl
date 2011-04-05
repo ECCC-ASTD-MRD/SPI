@@ -282,9 +282,9 @@ proc Areas::DisplayId { Types { Display "" } } {
       }
 
       if { $Data(Id$Types) } {
-         ogrlayer define $type -label $Data(Field$type)
+         ogrlayer configure $type -labelvar $Data(Field$type)
       } else {
-         ogrlayer define $type -label {}
+         ogrlayer define $type -labelvar {}
       }
    }
    Page::Update $Page::Data(Frame)
