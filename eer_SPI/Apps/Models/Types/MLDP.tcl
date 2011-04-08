@@ -275,7 +275,7 @@ proc MLDP::ParamsCheck { Tab No } {
 
    #----- Get meteorological data according to met database, time interval between files, release accident date-time.
    if { $Sim(ReNewMeteo)=="" } {
-        Model::ParamsMetDataDir MLDP
+       Model::ParamsMetDataDir MLDP
        if { ![MLDP::GetMetData] } {
          return False
       }
@@ -1420,7 +1420,7 @@ proc MLDP::UpdateListVerticalLevels { } {
    if { $Sim(Model) == "MLDP1" } {
       return ; #----- Exit this procedure!
    }
-   
+
    #----- Validate reflection level.
    if { ![MLDP::ValidateReflectionLevel] } {
       return ; #----- Exit this procedure!

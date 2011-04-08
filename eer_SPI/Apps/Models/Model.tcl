@@ -346,6 +346,8 @@ proc Model::ParamsMetPath { } {
    variable Lbl
 
    set Data(ShowPath) 0
+   set diag $Model::Param(DBaseDiag)
+   set prog $Model::Param(DBaseProg)
 
    toplevel     .metpath
 
@@ -375,6 +377,11 @@ proc Model::ParamsMetPath { } {
    #----- Attendre la selection
    grab .metpath
    tkwait variable Model::Data(ShowPath)
+
+   if { $diag!=$Model::Param(DBaseDiag) || $prog!=$Model::Param(DBaseProg) } {
+      set  Model::Param(DBaseType) user
+   }
+
    destroy .metpath
 }
 
