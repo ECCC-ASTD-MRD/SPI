@@ -87,6 +87,8 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(val));
          }
+         /*Free the DataDef since it won't be passed to the script side*/
+         DataDef_Free(Data);
       }
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) Calc_Update: Result is float\n");
@@ -96,6 +98,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          case T_FLD:
            if (!(field=Data_Get(Name)) || field->Def!=Data) {
                GField=Data_Copy(Interp,GField,Name,0);
+
                if (GField->Stat) {
                   free(GField->Stat);
                   GField->Stat=NULL;
