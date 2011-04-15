@@ -74,7 +74,7 @@ namespace eval MLDP {
    set Sim(ListNbMPItasks)       { 1 }
    set Sim(ListNbOMPthreads)     { 1 }
    set Sim(ListOMPthreadFact)    { 1 }
-   set Sim(RunningTimeCPU)       10800                         ; #----- CPU running time for the job to end [s].
+   set Sim(RunningTimeCPU)       28800                         ; #----- CPU running time for the job to end [s].
 
    set Sim(MaxNbSrc)             20                            ; #----- Maximum number of sources.
    set Sim(EmMaxIso)             5                             ; #----- Maximum number of isotopes.

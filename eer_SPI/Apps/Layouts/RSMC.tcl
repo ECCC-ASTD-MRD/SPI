@@ -307,28 +307,29 @@ proc RSMC::LayoutInit { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc RSMC::LayoutUpdate { Frame } {
+proc RSMC::LayoutUpdate { Frame { Field "" } } {
    global   env
    variable Sim
    variable Data
    variable Page
    variable Error
 
-   set field [lindex [Viewport::Assigned $Frame $Page(VP) fstdfield] 0]
-
-   if { $field=="" } {
-      return
+   if { $Field=="" } {
+      set Field [lindex [Viewport::Assigned $Frame $Page(VP) fstdfield] 0]
    }
 
+   if { $Field=="" } {
+      return
+   }
    set canvas $Frame.page.canvas
 
    #----- Recuperer les informations sur le champs selectionne
    set Data(FieldList) [FieldBox::GetContent -1]
-   set Data(NOMVAR)    [string trim [fstdfield define $field -NOMVAR]]
-   set Data(IP2)       [fstdfield define $field -IP2]
-   set Data(IP3)       [fstdfield define $field -IP3]
-   set Data(ETICKET)   [string trim [fstdfield define $field -ETIKET]]
-   set Data(Max)       [fstdfield stats $field -max]
+   set Data(NOMVAR)    [string trim [fstdfield define $Field -NOMVAR]]
+   set Data(IP2)       [fstdfield define $Field -IP2]
+   set Data(IP3)       [fstdfield define $Field -IP3]
+   set Data(ETICKET)   [string trim [fstdfield define $Field -ETIKET]]
+   set Data(Max)       [fstdfield stats $Field -max]
    set idx             [lsearch -exact $Data(Fields) $Data(NOMVAR)]
    set idxdose         [lsearch -exact $Data(DoseFields) $Data(NOMVAR)]
 
@@ -361,7 +362,7 @@ proc RSMC::LayoutUpdate { Frame } {
    set Sim(EmNumberParticles) 0
    set Sim(Model)             ""
 
-   if { [set info [Info::Read [fstdfield define $field -FID]]]=="" } {
+   if { [set info [Info::Read [fstdfield define $Field -FID]]]=="" } {
       return
    }
 
@@ -480,7 +481,7 @@ proc RSMC::LayoutUpdate { Frame } {
       set Data(Unit) ""
    }
 
-   set datev [fstdstamp todate [fstdfield define $field -DATEV]]
+   set datev [fstdstamp todate [fstdfield define $Field -DATEV]]
    set secv  [clock scan "[lindex $datev 1]/[lindex $datev 2]/[lindex $datev 0] [lindex $datev 3]:[lindex $datev 4]:[lindex $datev 5]" -gmt true]
 
    if { $Data(NOMVAR) == "IT" } {

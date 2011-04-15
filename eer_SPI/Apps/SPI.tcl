@@ -2027,6 +2027,23 @@ proc SPI::ProjectSaveLayout { File Frame Cam Size } {
    puts $File "   Page::ModeSelect \$Page::Data(Mode) \$Frame\n"
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <SPI::ProjectSavePerPage>
+# Creation : Avril 2010 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Sauvegarder les donnees par page pour un fichier de projet
+#
+# Parametres :
+#   <File>   : Path complet du fichier de projet
+#   <Page>   : Identificateur de page a sauvegarder
+#   <Params> : Sauvegarder les parametres des donnees ?
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
 proc SPI::ProjectSavePerPage { File Page Params }  {
 
    foreach tool $SPI::Param(Tools) {
