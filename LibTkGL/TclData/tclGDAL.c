@@ -923,9 +923,11 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
    if ((band=(GDAL_Band*)TclY_HashDel(&GDAL_BandTable,Name))) {
 
-      if (band->Spec && band->Spec->Map) CMap_Free(band->Spec->Map->Name);
+      if (band->Spec) {
+         if (band->Spec->Map) CMap_Free(band->Spec->Map->Name);
 
-      DataSpec_FreeHash(Interp,band->Spec->Name);
+         DataSpec_FreeHash(Interp,band->Spec->Name);
+      }
 
       /* Liberation de la memoire allouee pour les textures*/
       band->Tex.Res=0;
