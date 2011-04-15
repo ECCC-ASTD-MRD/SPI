@@ -1851,6 +1851,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       }
    } else {
       for(f=0;f<nf;f++) {
+         strtrim(field[f]->Spec->Desc,' ');
          if (field[f]->Spec->RenderVector) {
             sprintf(buf,"%s (spd)",field[f]->Spec->Desc);
             OGR_FieldCreate(Layer,buf,"Real",16);
