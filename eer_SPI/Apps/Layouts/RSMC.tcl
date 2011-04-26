@@ -842,7 +842,7 @@ proc RSMC::JoinTransfert { Frame } {
    #----- Recuperer la RUN
 
    set file [exec cat $pathExp/$Sim(Path)/tmp/data_std_eta.in]
-   set run  [string range [lindex [split [lindex $file end] "/"] end] 8 9]
+   set run  [string range [lindex [split [lindex $file end] "/"] end] 0 9]
    exec echo $run > $path/RUN.txt
 
    #----- Recuperer les ip2
