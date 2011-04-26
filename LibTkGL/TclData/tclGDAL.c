@@ -1551,7 +1551,8 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          if (!(ref->GCPTransform=(void*)GDALCreateGCPTransformer(NbGCPs,GCPs,3,FALSE))) {
             fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points\n");
          }
-      } else if (meta && GDALExtractRPCInfo(meta,&rpcinfo)) {
+      } else if (meta && 0) {
+//GDALExtractRPCInfo(meta,&rpcinfo)
          /*Get the transform from RPCInfo*/
          ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
 
@@ -1567,6 +1568,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          ref=GeoRef_WKTSetup(Nx,Ny,1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
       }
    }
+
    GeoRef_Size(ref,0,0,0,Nx-1,Ny-1,0,0);
 
    return(ref);

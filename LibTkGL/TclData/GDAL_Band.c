@@ -112,7 +112,6 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    /*Get the data units*/
 //      band->Spec->Unit=GDALGetRasterUnitType(hband);
-
    /*If size is not specified, then read the whole thing*/
    if (X0==-1 || Y0==-1 || X1==-1 || Y1==-1) {
       nx=GDALGetRasterBandXSize(hband);
@@ -134,9 +133,11 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       /*Check for limit overflow*/
       X0=X0<0?0:X0; X1=X1>=nx?nx-1:X1;
       Y0=Y0<0?0:Y0; Y1=Y1>=ny?ny-1:Y1;
+      nx=X1-X0+1;
+      ny=Y1-Y0+1;
 
       rx=ry=1;
-   }
+  }
 
    if (!(band->Def=DataDef_New(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: Could not allocate memory",(char*)NULL);
