@@ -745,9 +745,6 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
    Proj->L=Proj->LI>Proj->LJ?Proj->LI:Proj->LJ;
    Proj->LI/=Proj->L;
    Proj->LJ/=Proj->L;
-
-   ViewportClean(Proj->VP,1,1);
-   Projection_Clean(Interp,Proj,GDB_FORCE);
 }
 
 /*----------------------------------------------------------------------------

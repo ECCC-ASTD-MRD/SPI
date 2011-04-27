@@ -132,10 +132,9 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          }
          if (strcmp(proj->Type->Name,"grid")==0) {
             Grid_Setup(Interp,proj);
-         } else {
-            ViewportClean(proj->VP,1,1);
-            Projection_Clean(Interp,proj,GDB_FORCE);
          }
+         ViewportClean(proj->VP,1,1);
+         Projection_Clean(Interp,proj,GDB_FORCE);
          break;
 
       case DATA:
@@ -995,6 +994,8 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   if (strcmp(proj->Type->Name,"grid")==0) {
                      Grid_Setup(Interp,proj);
                   }
+                  ViewportClean(proj->VP,1,1);
+                  Projection_Clean(Interp,proj,GDB_FORCE);
                }
             }
             break;
@@ -1007,6 +1008,8 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                if (strcmp(proj->Type->Name,"grid")==0) {
                   Grid_Setup(Interp,proj);
                }
+               ViewportClean(proj->VP,1,1);
+               Projection_Clean(Interp,proj,GDB_FORCE);
             }
             break;
 
@@ -1024,10 +1027,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      proj->L=proj->LI=proj->LJ=1.0;
                      if (strcmp(Tcl_GetString(Objv[i]),"grid")==0) {
                         Grid_Setup(Interp,proj);
-                     } else {
-                        ViewportClean(proj->VP,1,1);
-                        Projection_Clean(Interp,proj,GDB_FORCE);
-                    }
+                     }
+                     ViewportClean(proj->VP,1,1);
+                     Projection_Clean(Interp,proj,GDB_FORCE);
                   }
                }
             }
