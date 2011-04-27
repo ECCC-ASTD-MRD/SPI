@@ -616,7 +616,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (Spec->Fill) Tk_FreeColor(Spec->Fill);
+               if (Spec->Fill) {
+                  Tk_FreeColor(Spec->Fill);
+                  Spec->Fill=NULL;
+               }
                if (strlen(Tcl_GetString(Objv[++i])))
                   Spec->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
@@ -631,7 +634,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-              if (Spec->Outline) Tk_FreeColor(Spec->Outline);
+              if (Spec->Outline) {
+                  Tk_FreeColor(Spec->Outline);
+                  Spec->Outline=NULL;
+               }
               if (strlen(Tcl_GetString(Objv[++i])))
                  Spec->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
            }
@@ -645,7 +651,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (Spec->HighLine) Tk_FreeColor(Spec->HighLine);
+               if (Spec->HighLine) {
+                  Tk_FreeColor(Spec->HighLine);
+                  Spec->HighLine=NULL;
+               }
                if (strlen(Tcl_GetString(Objv[++i])))
                   Spec->HighLine=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
@@ -659,7 +668,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (Spec->HighFill) Tk_FreeColor(Spec->HighFill);
+               if (Spec->HighFill) {
+                  Tk_FreeColor(Spec->HighFill);
+                  Spec->HighFill=NULL;
+               }
                if (strlen(Tcl_GetString(Objv[++i])))
                   Spec->HighFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }

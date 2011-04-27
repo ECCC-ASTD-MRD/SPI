@@ -246,8 +246,12 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (item->Outline) Tk_FreeColor(item->Outline);
-               item->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (item->Outline) {
+                  Tk_FreeColor(item->Outline);
+                  item->Outline=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  item->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -259,8 +263,12 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (item->Fill) Tk_FreeColor(item->Fill);
-               item->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (item->Fill) {
+                  Tk_FreeColor(item->Fill);
+                  item->Fill=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  item->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -272,8 +280,12 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (item->IconOutline) Tk_FreeColor(item->IconOutline);
-               item->IconOutline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (item->IconOutline) {
+                  Tk_FreeColor(item->IconOutline);
+                  item->IconOutline=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  item->IconOutline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -285,8 +297,12 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               if (item->IconFill) Tk_FreeColor(item->IconFill);
-               item->IconFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (item->IconFill) {
+                  Tk_FreeColor(item->IconFill);
+                  item->IconFill=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  item->IconFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 

@@ -197,8 +197,12 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,Tk_NameOfColor(axis->Color),(char*)NULL);
                }
             } else {
-               if (axis->Color) Tk_FreeColor(axis->Color);
-               axis->Color=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (axis->Color) {
+                  Tk_FreeColor(axis->Color);
+                  axis->Color=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  axis->Color=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -208,8 +212,12 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,Tk_NameOfColor(axis->GridColor),(char*)NULL);
                }
             } else {
-               if (axis->GridColor) Tk_FreeColor(axis->GridColor);
-               axis->GridColor=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (axis->GridColor) {
+                  Tk_FreeColor(axis->GridColor);
+                  axis->GridColor=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  axis->GridColor=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 
@@ -279,8 +287,12 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_AppendResult(Interp,Tk_NameOfColor(axis->HighLightColor),(char*)NULL);
                }
             } else {
-               if (axis->HighLightColor) Tk_FreeColor(axis->HighLightColor);
-               axis->HighLightColor=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               if (axis->HighLightColor) {
+                  Tk_FreeColor(axis->HighLightColor);
+                  axis->HighLightColor=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  axis->HighLightColor=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
             }
             break;
 

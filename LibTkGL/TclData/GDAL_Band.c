@@ -112,6 +112,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    /*Get the data units*/
 //      band->Spec->Unit=GDALGetRasterUnitType(hband);
+
    /*If size is not specified, then read the whole thing*/
    if (X0==-1 || Y0==-1 || X1==-1 || Y1==-1) {
       nx=GDALGetRasterBandXSize(hband);
