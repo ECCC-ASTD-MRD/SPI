@@ -504,9 +504,12 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
       if (!spec)
          continue;
 
-      if (spec->Font) {
-         Tk_GetFontMetrics(spec->Font,&cb->tkm);
-         glFontUse(Disp,spec->Font);
+      cb->UColor=spec->Outline?spec->Outline:cb->FGColor;
+      cb->UFont=spec->Font?spec->Font:cb->Font;
+
+      if (cb->UFont) {
+         Tk_GetFontMetrics(cb->UFont,&cb->tkm);
+         glFontUse(Disp,cb->UFont);
       }
 
       /*Check orientation*/
@@ -637,13 +640,13 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
 */
 int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
 
-   char buf[256];
-   int y;
+   char    buf[512];
+   int     y;
 
-   if (CB->Id && Spec->Font && Spec->Outline) {
+   if (CB->Id && CB->UFont && CB->UColor) {
       y=CB->tkm.linespace;
       if (Interp) {
-         glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+         glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
       } else {
          Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,Spec->Desc,Spec);
       }
@@ -654,7 +657,7 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
 
             y+=CB->tkm.linespace+2;
             if (Interp) {
-               glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+               glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
             } else {
                Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
             }
@@ -665,7 +668,7 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
 
             y+=CB->tkm.linespace+2;
             if (Interp) {
-               glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+               glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
             } else {
                Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
             }
@@ -676,7 +679,7 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
          snprintf(buf,256,"(%s)",Spec->Unit);
          y+=CB->tkm.linespace+2;
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,Spec->Outline,-1.0,1.0,1.0);
+            glPostscriptText(Interp,CB->canvas,buf,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
          } else {
             Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,buf,Spec);
          }
@@ -710,7 +713,7 @@ int Colorbar_HRenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X
 
    char buf[512];
 
-   if (CB->Id && Spec->Font && Spec->Outline) {
+   if (CB->Id && CB->UFont && CB->UColor) {
       sprintf(buf,"%s",Spec->Desc);
 
       if (CB->ShowFactor) {
@@ -730,7 +733,7 @@ int Colorbar_HRenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X
       }
 
       if (Interp) {
-         glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,CB->header.y1+CB->tkm.linespace),0,Spec->Outline,0.0,1.0,0.0);
+         glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,CB->header.y1+CB->tkm.linespace),0,CB->UColor,0.0,1.0,0.0);
       } else {
          Colorbar_RenderText(CB,X1+5,CB->header.y1+CB->tkm.linespace,TK_JUSTIFY_LEFT,buf,Spec);
       }
@@ -762,10 +765,10 @@ int Colorbar_HRenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X
 */
 void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text,TDataSpec *Spec) {
 
-   if (Spec->Outline && Text && Spec->Font) {
-      glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,CB->Alpha*655);
+   if (CB->UColor && Text && CB->UFont) {
+      glColor4us(CB->UColor->red,CB->UColor->green,CB->UColor->blue,CB->Alpha*655);
       if (Side==TK_JUSTIFY_RIGHT) {
-         glDrawString(X-Tk_TextWidth(Spec->Font,Text,strlen(Text)),Y,0,Text,strlen(Text),0,1);
+         glDrawString(X-Tk_TextWidth(CB->UFont,Text,strlen(Text)),Y,0,Text,strlen(Text),0,1);
       } else {
          glDrawString(X,Y,0,Text,strlen(Text),0,1);
       }
@@ -895,7 +898,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
          }
 
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,lbl,xt,Tk_CanvasPsY(CB->canvas,y),0,Spec->Outline,jan,1.0,jps);
+            glPostscriptText(Interp,CB->canvas,lbl,xt,Tk_CanvasPsY(CB->canvas,y),0,CB->UColor,jan,1.0,jps);
          } else {
             Colorbar_RenderText(CB,xt,y,CB->BarSide,lbl,Spec);
          }
@@ -964,7 +967,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
       /*Rendu des valeurs l'echelle*/
       DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Min),buf);
       if (Interp) {
-         glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-5),0,Spec->Outline,jan,1.0,jps);
+         glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-5),0,CB->UColor,jan,1.0,jps);
       } else {
          Colorbar_RenderText(CB,xt,Y2-5,CB->BarSide,buf,Spec);
       }
@@ -972,7 +975,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
       if (Spec->Min!=Spec->Max) {
          DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Max),buf);
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y1+10),0,Spec->Outline,jan,1.0,jps);
+            glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y1+10),0,CB->UColor,jan,1.0,jps);
          } else {
             Colorbar_RenderText(CB,xt,Y1+10,CB->BarSide,buf,Spec);
          }
@@ -991,7 +994,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
                DataSpec_Format(Spec,VAL2SPEC(Spec,value),buf);
 
                if (Interp) {
-                  glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-y),0,Spec->Outline,jan,1.0,jps);
+                  glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-y),0,CB->UColor,jan,1.0,jps);
                } else {
                   Colorbar_RenderText(CB,xt,Y2-y,CB->BarSide,buf,Spec);
                }
@@ -1123,7 +1126,7 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
          }
 
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,lbl,x,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+            glPostscriptText(Interp,CB->canvas,lbl,x,Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,jan,1.0,jps);
          } else {
             Colorbar_RenderText(CB,x,xt,TK_JUSTIFY_LEFT,lbl,Spec);
          }
@@ -1197,17 +1200,17 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
       /*Rendu des valeurs l'echelle*/
       DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Min),buf);
       if (Interp) {
-         glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,0.0,1.0,0.0);
+         glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,0.0,1.0,0.0);
       } else {
          Colorbar_RenderText(CB,X1+5,xt,TK_JUSTIFY_LEFT,buf,Spec);
       }
-      txt=Tk_TextWidth(Spec->Font,buf,strlen(buf))+CB->tkm.linespace*2;
+      txt=Tk_TextWidth(CB->UFont,buf,strlen(buf))+CB->tkm.linespace*2;
 
       if (Spec->Min!=Spec->Max) {
          DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Max),buf);
-         txtr=Tk_TextWidth(Spec->Font,buf,strlen(buf));
+         txtr=Tk_TextWidth(CB->UFont,buf,strlen(buf));
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,buf,X2-5,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,-1.0,1.0,1.0);
+            glPostscriptText(Interp,CB->canvas,buf,X2-5,Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,-1.0,1.0,1.0);
          } else {
             Colorbar_RenderText(CB,X2-5-txtr,xt,TK_JUSTIFY_LEFT,buf,Spec);
          }
@@ -1220,13 +1223,13 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
                COL2VAL(idx,Spec,value);
 
                DataSpec_Format(Spec,VAL2SPEC(Spec,value),buf);
-               txt+=Tk_TextWidth(Spec->Font,buf,strlen(buf))+CB->tkm.linespace*2;
+               txt+=Tk_TextWidth(CB->UFont,buf,strlen(buf))+CB->tkm.linespace*2;
                if (txt>=txtr) {
                   break;
                }
 
                if (Interp) {
-                  glPostscriptText(Interp,CB->canvas,buf,X1+x,Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+                  glPostscriptText(Interp,CB->canvas,buf,X1+x,Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,jan,1.0,jps);
                } else {
                   Colorbar_RenderText(CB,X1+x,xt,TK_JUSTIFY_LEFT,buf,Spec);
                }
@@ -1263,7 +1266,7 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
    float      jps,jan;
    Tk_Justify just;
 
-   if (!Spec->RenderVector || Spec->RenderVector>=3 || !Spec->Outline)
+   if (!Spec->RenderVector || Spec->RenderVector>=3 || !CB->UColor)
       return(0);
 
    if (Spec->RenderVector==BARBULE) {
@@ -1353,7 +1356,7 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
    for(i=0;i<5;i++) {
       if (Interp) {
          DataSpec_Format(Spec,inter[i],buf);
-         glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-pix[i]),0,Spec->Outline,jan,1.0,jps);
+         glPostscriptText(Interp,CB->canvas,buf,xt,Tk_CanvasPsY(CB->canvas,Y2-pix[i]),0,CB->UColor,jan,1.0,jps);
       } else {
          DataSpec_Format(Spec,inter[i],buf);
          Colorbar_RenderText(CB,xt,Y2-pix[i],just,buf,Spec);
@@ -1390,7 +1393,7 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    float      jps,jan;
    Tk_Justify just;
 
-   if (!Spec->RenderVector || Spec->RenderVector>=3 || !Spec->Outline)
+   if (!Spec->RenderVector || Spec->RenderVector>=3 || !CB->UColor)
       return(0);
 
    if (Spec->RenderVector==BARBULE) {
@@ -1480,7 +1483,7 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    for(i=0;i<5;i++) {
       if (Interp) {
          DataSpec_Format(Spec,inter[i],buf);
-         glPostscriptText(Interp,CB->canvas,buf,X2-pix[i],Tk_CanvasPsY(CB->canvas,xt),0,Spec->Outline,jan,1.0,jps);
+         glPostscriptText(Interp,CB->canvas,buf,X2-pix[i],Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,jan,1.0,jps);
       } else {
          DataSpec_Format(Spec,inter[i],buf);
          Colorbar_RenderText(CB,X2-pix[i],xt,just,buf,Spec);
@@ -1670,7 +1673,7 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
    double coords[8];
    int    dh=0,dv=0,y1,y2,x1,x2,i,inc;
 
-   if (Tk_CanvasPsFont(Interp,Canvas,cb->Font)!=TCL_OK) {
+   if (cb->Font && Tk_CanvasPsFont(Interp,Canvas,cb->Font)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -1736,8 +1739,11 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
       if (!spec)
          continue;
 
-      if (spec->Font)
+      if (spec->Font) {
          Tk_CanvasPsFont(Interp,Canvas,spec->Font);
+      } else if (cb->Font) {
+         Tk_CanvasPsFont(Interp,Canvas,cb->Font);
+      }
 
       /*Check orientation*/
       if (cb->Width<cb->Height) {

@@ -43,12 +43,12 @@ typedef struct ColorbarItem  {
    Tk_Item        header;          /*Generic stuff that's the same for all types*/
    Tk_Canvas      canvas;          /*Pointeur sur le canvas contenant le viewport*/
    Tk_Anchor      anchor;          /*Where to anchor pixmap relative to (x,y)*/
-   Tk_Font        Font;            /*Font for drawing text*/
+   Tk_Font        Font,UFont;      /*Font for drawing text*/
    Tk_FontMetrics tkm;             /*Font metrics*/
    double         x,y;             /*Coordinates of positioning point for pixmap*/
    int            Width,Height;    /*Dimensions du viewport*/
    XColor        *BGColor;         /*Couleur d'arriere plan*/
-   XColor        *FGColor;         /*Couleur d'avant plan*/
+   XColor        *FGColor,*UColor; /*Couleur d'avant plan*/
    char          **Data;           /*Liste des donnees associees*/
    char          *DataStr;         /*Liste des donnees associees (String)*/
    int            NbData;          /*Nombre de donnees associees*/
