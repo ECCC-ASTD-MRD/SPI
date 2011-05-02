@@ -1181,6 +1181,10 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
             if (di0>=ToDef->NI || dj0>=ToDef->NJ || di1<0 || dj1<0)
                continue;
 
+            /*Test for polar outsidness (Problem we had with yingyang grids)*/
+            if ((di0<0 && di1>ToDef->NI) || (dj0<0 && dj1>ToDef->NI))
+               continue;
+
             /*Clamp the coordinates*/
             if (di0<0) di0=0;
             if (dj0<0) dj0=0;
