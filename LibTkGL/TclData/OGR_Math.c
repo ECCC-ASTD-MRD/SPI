@@ -421,11 +421,18 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
       pt=OGR_G_CreateGeometry(wkbPoint);
       for(n0=1;n0<OGR_G_GetGeometryCount(Geom0);n0++) {
          npt=0;
-         for(n1=0;n1<OGR_G_GetPointCount(Geom1);n1++) {
-            OGR_G_SetPoint(pt,0,OGR_G_GetX(Geom1,n1),OGR_G_GetY(Geom1,n1),0);
+
+         /*Verifier seulement pour le contour exterieur*/
+         if (OGR_G_GetGeometryCount(Geom1)) {
+            geom=OGR_G_GetGeometryRef(Geom1,0);
+         } else {
+            geom=Geom1;
+         }
+         for(n1=0;n1<OGR_G_GetPointCount(geom);n1++) {
+            OGR_G_SetPoint(pt,0,OGR_G_GetX(geom,n1),OGR_G_GetY(geom,n1),0);
             npt+=GPC_PointPolyIntersect(pt,OGR_G_GetGeometryRef(Geom0,n0),0);
          }
-         if (npt==OGR_G_GetPointCount(Geom1)) {
+         if (npt==OGR_G_GetPointCount(geom)) {
             return(0);
          }
       }
