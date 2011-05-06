@@ -181,5 +181,8 @@ set Param(MetaCarta) "<GDAL_WMS>
    puts $f $Param($Layer)
    close $f
 
-   Mapper::ReadBand $file "" 3
+   set band [Mapper::ReadBand $file "" 3]
+
+   #----- Decrease effective resolution (WMS-TMS)
+   gdalband configure $band -texres 3
 }

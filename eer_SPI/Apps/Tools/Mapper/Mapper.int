@@ -445,7 +445,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
               frame $Data(Frame2).col.def.res
                   label $Data(Frame2).col.def.res.lbl -text [lindex $Lbl(Resolution) $GDefs(Lang)] -width 14 -anchor w
                   label $Data(Frame2).col.def.res.txt -textvariable Mapper::Data(Resolution) -width 3 -anchor w -relief sunken -bd 1
-                  scale $Data(Frame2).col.def.res.val -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 32 -variable Mapper::Data(Resolution) -orient horizontal -resolution 1\
+                  scale $Data(Frame2).col.def.res.val -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 8 -variable Mapper::Data(Resolution) -orient horizontal -resolution 1\
                      -showvalue False -command { if { $Mapper::Data(RealTime) } { Mapper::ParamsGDALSet $Mapper::Data(Object) }; catch }
                   pack $Data(Frame2).col.def.res.lbl $Data(Frame2).col.def.res.txt -side left
                   pack $Data(Frame2).col.def.res.val -side left -fill x -expand True

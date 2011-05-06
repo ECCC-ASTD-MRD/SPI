@@ -101,7 +101,10 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
    } else {
       set def [Mapper::DepotWare::WCS::BuildXMLDef $Path]
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
-         Mapper::ReadBand $def "" 3
+         set band [Mapper::ReadBand $def "" 1]
+
+         #----- Decrease effective resolution (WMS-WCS-TMS)
+         gdalband configure $band -texres 3
       }
    }
 }
