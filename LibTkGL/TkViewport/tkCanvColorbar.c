@@ -765,13 +765,20 @@ int Colorbar_HRenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X
 */
 void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text,TDataSpec *Spec) {
 
+   Tcl_DString runString;
+
    if (CB->UColor && Text && CB->UFont) {
       glColor4us(CB->UColor->red,CB->UColor->green,CB->UColor->blue,CB->Alpha*655);
+
+         Tcl_DStringInit(&runString);
+         Tcl_UtfToUniCharDString(Text,-1,&runString);
+
       if (Side==TK_JUSTIFY_RIGHT) {
-         glDrawString(X-Tk_TextWidth(CB->UFont,Text,strlen(Text)),Y,0,Text,strlen(Text),0,1);
+         glDrawString(X-Tk_TextWidth(CB->UFont,Text,strlen(Text)),Y,0,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
       } else {
-         glDrawString(X,Y,0,Text,strlen(Text),0,1);
+         glDrawString(X,Y,0,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
       }
+      Tcl_DStringFree(&runString);
    }
 }
 
