@@ -1063,9 +1063,12 @@ int MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edition) {
       TclY_Get0IntFromObj(Interp,obj,&code[c].descriptor);
 
       // Extract the values
-      Tcl_ListObjIndex(Interp,lst,1,&obj);
-      Tcl_ListObjLength(Interp,obj,&code[c].nbval);
-
+      Tcl_ListObjLength(Interp,Obj,&v);
+      code[c].nbval=0;
+      if (v>1) {
+         Tcl_ListObjIndex(Interp,lst,1,&obj);
+         Tcl_ListObjLength(Interp,obj,&code[c].nbval);
+      }
       if (!code[c].nbval) {
          code[c].values=NULL;
          continue;
