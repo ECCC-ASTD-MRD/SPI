@@ -314,6 +314,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    int              i,idx;
    int              s,c,ns,nc,code;
    int              f,x,y;
+   int              err,skip;
    char             buf[32];
 
    static CONST char *sopt[] = {  "-BUFR_EDITION","-BUFR_MASTER_TABLE","-ORIG_CENTER","-ORIG_SUB_CENTER","-UPDATE_SEQUENCE","-DATA_CATEGORY","-INTERN_SUB_CATEGORY","-LOCAL_SUB_CATEGORY",
@@ -614,7 +615,12 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   MetDataset_Obj2Code(Interp,bcv,lst);
 
                   if (bcv->flags & FLAG_CLASS31) {
-                     bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables);
+                     err=0;
+                     bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err);
+                     if (err) {
+                        fprintf(stdout,"(WARNING) MetDataset_Define: invalid node descriptor (err=%i)\n",err);
+                        set->data_flag |= BUFR_FLAG_INVALID;
+                     }
 
                      /*See if data present bitmap count matched with data code list*/
                      if ((((BufrDescriptor*)(lst_nextnode(node))->data)->descriptor==31031)&&(ddo->dpbm)) {
@@ -703,7 +709,12 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   MetDataset_Obj2Code(Interp,bcv,Objv[i]);
 
                   if (bcv->flags & FLAG_CLASS31) {
-                     bufr_expand_node_descriptor(sset->BSeq->list,lst_prevnode(sset->Node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables);
+                     err=0;
+                     bufr_expand_node_descriptor(sset->BSeq->list,lst_prevnode(sset->Node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err);
+                     if (err) {
+                        fprintf(stdout,"(WARNING) MetDataset_Define: invalid node descriptor (err=%i)\n",err);
+                        set->data_flag |= BUFR_FLAG_INVALID;
+                     }
 
                      /*See if data present bitmap count matched with data code list*/
                      if ((((BufrDescriptor*)(lst_nextnode(sset->Node))->data)->descriptor==31031)&&(sset->BDDO->dpbm)) {
@@ -1030,11 +1041,81 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+int MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edition) {
+
+   BUFR_Template *tmp;
+   BufrDescValue *code;
+   EntryTableB   *e;
+   ValueType     vtype;
+   int           vlen,nc,c,v;
+   Tcl_Obj      *obj,*lst,*val;
+   double        dval;
+   int           ival;
+   long          lval;
+
+   Tcl_ListObjLength(Interp,Obj,&nc);
+   code=(BufrDescValue*)calloc(nc,sizeof(BufrDescValue));
+
+   for(c=0;c<nc;c++) {
+      // Extract the code
+      Tcl_ListObjIndex(Interp,Obj,c,&lst);
+      Tcl_ListObjIndex(Interp,lst,0,&obj);
+      TclY_Get0IntFromObj(Interp,obj,&code[c].descriptor);
+
+      // Extract the values
+      Tcl_ListObjIndex(Interp,lst,1,&obj);
+      Tcl_ListObjLength(Interp,obj,&code[c].nbval);
+
+      if (!code[c].nbval) {
+         code[c].values=NULL;
+         continue;
+      }
+      code[c].values=(BufrValue**)calloc(code[c].nbval,sizeof(BufrValue*));
+      for(v=0;v<code[c].nbval;v++) {
+         Tcl_ListObjIndex(Interp,obj,1,&val);
+
+         vtype=bufr_datatype_to_valtype(bufr_descriptor_to_datatype(MetObs_GetTables(),e,code[c].descriptor,&vlen),32,0);
+
+         switch(vtype) {
+            case VALTYPE_STRING :
+               code[c].values[v]=bufr_create_value(vtype);
+               bufr_value_set_string(code[c].values[v],Tcl_GetString(val),vlen);
+               break;
+            case VALTYPE_INT64 :
+               code[c].values[v]=bufr_create_value(vtype);
+               Tcl_GetLongFromObj(Interp,val,&lval);
+               bufr_value_set_int64(code[c].values[v],lval);
+               break;
+            case VALTYPE_INT32  :
+               code[c].values[v]=bufr_create_value(vtype);
+               Tcl_GetIntFromObj(Interp,val,&ival);
+               bufr_value_set_int32(code[c].values[v],ival);
+               break;
+            case VALTYPE_FLT64  :
+            case VALTYPE_FLT32  :
+               if (strcmp(Tcl_GetString(Obj),"MSNG")!= 0) {
+                  Tcl_GetDoubleFromObj(Interp,val,&dval);
+                  if (!bufr_is_missing_float(dval)) {
+                     code[c].values[v]=bufr_create_value(vtype);
+                     bufr_value_set_float(code[c].values[v],dval);
+                  }
+               }
+               break;
+            default :
+               break;
+         }
+      }
+   }
+
+   tmp=bufr_create_template(code,nc,MetObs_GetTables(),Edition);
+   return(tmp);
+}
+
 static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
    BUFR_Template *tmp,*new;
 
-   int         idx;
+   int         idx,ed;
    static CONST char *sopt[] = { "create","free","read","write","define","is","all",NULL };
    enum               opt { CREATE,FREE,READ,WRITE,DEFINE,IS,ALL };
 
@@ -1051,13 +1132,17 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
    switch ((enum opt)idx) {
       case CREATE:
-         if(Objc!=3 && Objc!=4)  {
-            Tcl_WrongNumArgs(Interp,1,Objv,"template [file]");
+         if(Objc!=5 && Objc!=6)  {
+            Tcl_WrongNumArgs(Interp,1,Objv,"template [file|edition list]");
             return(TCL_ERROR);
          }
 
-         if (Objc==3) {
-            tmp=bufr_create_template(NULL,0,MetObs_GetTables(),0);
+         if (Objc==5) {
+            Tcl_GetIntFromObj(Interp,Objv[3],&ed);
+            if (!(tmp=MetTemplate_CreateFromObj(Interp,Objv[4],ed))) {
+               Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to create template",(char*)NULL);
+               return(TCL_ERROR);
+            }
          } else {
             if ((!(tmp=bufr_load_template(Tcl_GetString(Objv[3]),MetObs_GetTables())))) {
                Tcl_AppendResult(Interp,"\n   MetDataset_Cmd :  Unable to read template file \"",Tcl_GetString(Objv[3]),"\"",(char*)NULL);

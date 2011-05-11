@@ -79,6 +79,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
    }
 
    n=FSIZE3D(Data);
+
    if (n==1) {
       if (Calc_Validate(Interp)) {
          Def_Get(Data,0,0,val);
