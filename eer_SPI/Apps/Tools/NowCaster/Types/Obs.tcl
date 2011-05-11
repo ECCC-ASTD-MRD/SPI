@@ -1781,32 +1781,35 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       }
       vector sort -unique TEPHIWIND PRES
 
-      #----- Display graph data
-      if { ![graphitem is TEPHIITEM] } {
-         graphitem create TEPHIITEM
-      }
-      graphitem configure TEPHIITEM -desc "Station $Id"
-      NowCaster::Obs::Graph
+      if { [vector length TEPHIPROF] } {
+         #----- Display graph data
+         if { ![graphitem is TEPHIITEM] } {
+            graphitem create TEPHIITEM
+         }
+         graphitem configure TEPHIITEM -desc "Station $Id"
+         NowCaster::Obs::Graph
 
-      #----- Display text data
-      .nowcasterinfo.tab.frame2.info.text delete 0.0 end
-      .nowcasterinfo.tab.frame2.info.text insert end "Pres(mb) Dry(°C) Wet(°C) Dew(°C)\n"
-      foreach pres [vector get TEPHIPROF.PRES] dry [vector get TEPHIPROF.DRY] wet [vector get TEPHIPROF.WET] dew [vector get TEPHIPROF.DEW] {
-         .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   " $pres]
-         if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry] } ] } {
-            .nowcasterinfo.tab.frame2.info.text insert end "        "
-         }
-         if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry] }] } {
-            .nowcasterinfo.tab.frame2.info.text insert end "        "
-         }
-         if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f\n" $dew] }] } {
-            .nowcasterinfo.tab.frame2.info.text insert end "\n"
-         }
-      }
+         #----- Display text data
+         .nowcasterinfo.tab.frame2.info.text delete 0.0 end
+         .nowcasterinfo.tab.frame2.info.text insert end "Pres(mb) Dry(°C) Wet(°C) Dew(°C)\n"
 
-      .nowcasterinfo.tab.frame2.info.text insert end "\nPres(mb) Speed(Kt) Dir(Deg)\n"
-      foreach pres [vector get TEPHIWIND.PRES] spd [vector get TEPHIWIND.SPD] dir [vector get TEPHIWIND.DIR] {
-         catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   %5.1f     %5.1f\n" $pres $spd $dir] }
+         foreach pres [vector get TEPHIPROF.PRES] dry [vector get TEPHIPROF.DRY] wet [vector get TEPHIPROF.WET] dew [vector get TEPHIPROF.DEW] {
+            .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   " $pres]
+            if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry] } ] } {
+               .nowcasterinfo.tab.frame2.info.text insert end "        "
+            }
+            if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f   " $dry] }] } {
+               .nowcasterinfo.tab.frame2.info.text insert end "        "
+            }
+            if { [catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%5.1f\n" $dew] }] } {
+               .nowcasterinfo.tab.frame2.info.text insert end "\n"
+            }
+         }
+
+         .nowcasterinfo.tab.frame2.info.text insert end "\nPres(mb) Speed(Kt) Dir(Deg)\n"
+         foreach pres [vector get TEPHIWIND.PRES] spd [vector get TEPHIWIND.SPD] dir [vector get TEPHIWIND.DIR] {
+            catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   %5.1f     %5.1f\n" $pres $spd $dir] }
+         }
       }
    }
 }
