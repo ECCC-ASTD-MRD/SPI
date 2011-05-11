@@ -1135,7 +1135,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
    switch ((enum opt)idx) {
       case CREATE:
-         if(Objc!=5 && Objc!=6)  {
+         if(Objc!=4 && Objc!=5)  {
             Tcl_WrongNumArgs(Interp,1,Objv,"template [file|edition list]");
             return(TCL_ERROR);
          }
