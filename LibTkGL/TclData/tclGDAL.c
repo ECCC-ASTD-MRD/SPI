@@ -891,8 +891,12 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
    }
 
    if (Band->Spec->Map) {
+      char  *mapname;
+
       band->Spec->Map=CMap_New(NULL,Band->Spec->Map->NbPixels);
+      mapname = band->Spec->Map->Name;
       memcpy(band->Spec->Map,Band->Spec->Map,sizeof(CMap_Rec));
+      band->Spec->Map->Name = mapname;
    }
    return(band);
 }
