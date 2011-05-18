@@ -632,9 +632,9 @@ proc Animator::GetPlayListObs { } {
 
             if { [observation configure $obs -desc]==[observation configure $o -desc] } {
                set sec [observation define $o -DATE]
+               set sec [expr $sec<=0?0:$sec]
 
                if { ![info exists Play($vp$sec)] } {
-                  set Play($vp$sec) ""
                   lappend Play(Frames) $sec
                }
                observation stats $o -tag $tags
@@ -833,7 +833,6 @@ proc Animator::Play { } {
       }
 
       #----- Determiner le temps courant
-
       set info [lindex $Play(Frames) $Play(Frame)]
 
       #----- Recuperer l'information
@@ -842,9 +841,13 @@ proc Animator::Play { } {
          if { [info exists Play($vp$info)] } {
 
             #----- Applique la macro de calcul
-
             set Play(Data$vp) $Play($vp$info)
             set Play(Data)    [FieldCalc::Operand $vp $Play($vp$info)]
+
+            #----- Check for persistnent data (time=0)
+            if { $info!=0 && [info exists Play(${vp}0)] } {
+               lappend Play(Data) $Play(${vp}0)
+            }
 
             if { $Play(Cache) && !$Play(File) } {
                $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data)
