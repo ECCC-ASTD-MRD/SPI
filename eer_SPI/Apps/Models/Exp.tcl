@@ -1007,7 +1007,7 @@ proc Exp::ProductRSMCJointData { } {
       exec echo "34" > $path/leadrsmc.txt
       set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt 2>@1 } msg]
    } elseif { $region == "5" } {
-      exec echo "345" > $path/leadrsmc.txt
+      exec echo "5" > $path/leadrsmc.txt
       set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt 2>@1 } msg]
    } else {
       file delete -force $path/leadrsmc.txt
