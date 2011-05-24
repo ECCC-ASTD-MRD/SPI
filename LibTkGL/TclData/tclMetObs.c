@@ -1719,7 +1719,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    int res;
 
-   switch ((f77name(wkoffit)(File))) {
+   switch ((f77name(wkoffit)(File,strlen(File)))) {
       case 6 : res=MetObs_LoadBURP(Interp,File,Obs); break;
 //      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs); break;
       case 31: res=MetObs_LoadASCII(Interp,File,Obs); break;

@@ -1043,7 +1043,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_WrongNumArgs(Interp,2,Objv,"filename");
             return(TCL_ERROR);
          }
-         type=f77name(wkoffit)(Tcl_GetString(Objv[2]));
+         type=f77name(wkoffit)(Tcl_GetString(Objv[2]),strlen(Tcl_GetString(Objv[2])));
          if (type==1 || type==2 || type==3 || type==33 || type==34) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
@@ -1172,12 +1172,8 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    file->CId=strdup(Id);
    file->Id=cs_fstlockid();
    file->Open=file->Id<1?-1:0;
+   file->Name=strdup(Name);
 
-   if (realpath(Name,buf)) {
-      file->Name=strdup(buf);
-   } else {
-      file->Name=strdup(Name);
-   }
    Tcl_SetHashValue(entry,file);
 
    return(FSTD_FieldList(Interp,file,FSTD_LISTALL,NULL));

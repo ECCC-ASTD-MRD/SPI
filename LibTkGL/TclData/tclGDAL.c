@@ -1424,9 +1424,9 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
                ci>=GCI_RedBand?GCI_RedBand:ci;
          }
          if (Desc) {
-            sprintf(buf,"%s %i {%s:%s} %d %d",Id,i+1,Desc,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+            snprintf(buf,1024,"%s %i {%s:%s} %d %d",Id,i+1,Desc,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
          } else {
-            sprintf(buf,"%s %i {%s} %d %d",Id,i+1,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
+            snprintf(buf,1024,"%s %i {%s} %d %d",Id,i+1,GDALGetDescription(band),GDALGetRasterBandXSize(band),GDALGetRasterBandYSize(band));
          }
          Tcl_AppendElement(Interp,buf);
       }
@@ -1437,8 +1437,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    file->Driver=driver;
    file->Mode=Mode;
    file->Id=strdup(Id);
-   realpath(Name,buf);
-   file->Name=strdup(buf);
+   file->Name=strdup(Name);
    file->Sub=si;
    file->Set=set;
    file->Ref=NULL;
