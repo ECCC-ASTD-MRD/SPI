@@ -489,13 +489,11 @@ proc FieldBox::FileOpen { No File } {
       }
 
       #----- Si le fichier est deja ouvert
-
       if { [lsearch -exact $data(FileList) $file]!=-1 } {
          continue
       }
 
       #----- Determiner l'index du fichier a ouvrir
-
       for { set fid 1 } { $fid < 10000 } { incr fid } {
          if { [lsearch -exact $Data(FIDList) $fid]==-1 } {
             break
@@ -503,7 +501,6 @@ proc FieldBox::FileOpen { No File } {
       }
 
       #----- Ouvrir le fichier
-
       set index ""
       if { [fstdfile is $file] } {
          set bad [catch { set index [fstdfile open $fid read $file] }]
@@ -522,7 +519,7 @@ proc FieldBox::FileOpen { No File } {
       }
 
       if { $index=="" } {
-         Dialog::Error .fieldbox$No "[lindex $Error(Empty) $GDefs(Lang)]\n\n$file" $GDefs(Lang)
+         Dialog::Error .fieldbox$No $Error(Empty) "\n\n$file"
       } else {
          lappend data(FileList)  $file
          lappend data(FIDList)   $fid
