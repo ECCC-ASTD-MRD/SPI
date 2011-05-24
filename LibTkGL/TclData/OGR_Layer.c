@@ -935,7 +935,7 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
 
    if (strcmp(Tcl_GetString(Op),"==")==0) {
       if (fls) {
-         if (strcasecmp(fls,vls)==0) return(1);
+         if (Tcl_StringMatch(fls,Tcl_GetString(obj))) return(1);
       } else  {
          if (fld==vld) return(1);
       }
@@ -993,7 +993,7 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
       Tcl_ListObjLength(Interp,Value,&n);
       for(i=0;i<n;i++) {
          Tcl_ListObjIndex(Interp,Value,i,&obj);
-         if (strcasecmp(Tcl_GetString(obj),fls)==0) {
+         if (Tcl_StringMatch(fls,Tcl_GetString(obj))) {
             return(1);
          }
       }
