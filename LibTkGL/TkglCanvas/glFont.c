@@ -95,7 +95,7 @@ void glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip) {
 */
 static void glXFontFill(Display *dpy,Window win,Pixmap pix,GC gc,unsigned int width,unsigned int height,int x0,int y0,unsigned int c,GLubyte *bitmap) {
 
-   XImage       *image;
+   XImage       *image=NULL;
    unsigned int  x,y;
    XChar2b       char2b;
 
@@ -107,8 +107,8 @@ static void glXFontFill(Display *dpy,Window win,Pixmap pix,GC gc,unsigned int wi
    char2b.byte2 = (c & 0xff);
 
    XDrawString16(dpy,pix,gc,x0,y0,&char2b,1);
-
    image = XGetImage(dpy,pix,0,0,width,height,1,XYPixmap);
+
    if (image) {
       /* Fill the bitmap (X11 and OpenGL are upside down wrt each other).  */
       for (y=0;y<height;y++)

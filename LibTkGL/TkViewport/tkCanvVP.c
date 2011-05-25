@@ -1252,7 +1252,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          Projection_Setup(vp,proj,1);
          glCrowdClear();
 
-         /*Allouer les frames de retentions si ce n'est pas deja fait*/
+        /*Allouer les frames de retentions si ce n'est pas deja fait*/
          if (!vp->Frames[vp->Frame]) {
             vp->Frames[vp->Frame]=(GLubyte*)malloc(vp->Width*vp->Height*4);
          }

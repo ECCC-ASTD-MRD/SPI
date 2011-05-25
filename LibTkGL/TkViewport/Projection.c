@@ -1525,6 +1525,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
             glDisable(GL_LIGHTING);
             glDisable(GL_LIGHT0);
             Proj->Type->DrawFirst(Interp,VP,Proj);
+
             if (Proj->Sun) {
                glEnable(GL_LIGHTING);
                glEnable(GL_LIGHT0);

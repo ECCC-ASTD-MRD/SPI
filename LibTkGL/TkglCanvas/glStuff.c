@@ -2180,6 +2180,9 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
          fprintf(stdout,"(INFO) glXCanvasInit: Using nondirect rendering context\n");
          GLRender->ShaderAvailable=0;
       }
+      if (GLRender->Soft) {
+         GLRender->ShaderAvailable=0;
+      }
 
       fprintf(stdout,"(INFO) glXCanvasInit: Creating TrueColor colormap\n");
       GLRender->XColormap=XCreateColormap(GLRender->XDisplay,RootWindowOfScreen(GLRender->XScreen),GLRender->GLVis->visual,AllocNone);

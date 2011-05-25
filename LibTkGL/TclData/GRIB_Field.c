@@ -427,7 +427,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    long        lval,i,ni=-1,nj=-1,nk=1,date,time;
    size_t      len;
    double      dval;
-   char        sval[512];
+   char        sval[GRIB_STRLEN];
    double      mtx[6],inv[6],*data;
 
    /*Get the file*/
@@ -459,7 +459,6 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 //         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
 //         head.IP1=FSTD_Level2IP(lval,lval2);
          head.IP1=lval;
-
 
    /*Get message info*/
    err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
@@ -628,7 +627,8 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
    GRIB_Head      head;
    grib_handle   *handle;
    Tcl_Obj       *list,*obj;
-   int            err=0,len;
+   int            err=0;
+   size_t         len;
    long           offset=0,size=0,date,time,lval,lval2,ni=-1,nj=-1,nk=1,type;
    char           buf[1024];
 
@@ -700,7 +700,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
          switch(Mode) {
             case FSTD_LISTALL:
-               sprintf(buf,"%s %i {%s} {%c} %i %i %i GRIB%i %09i %09i %i %i %i",
+               snprintf(buf,1024,"%s %li {%s} {%li} %i %i %i GRIB%i %09li %09li %li %li %li",
                   File->Id,offset,head.NOMVAR,type,head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
@@ -742,6 +742,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
       }
    }
 
+   Tcl_DecrRefCount(obj);
    Tcl_SetObjResult(Interp,list);
    return(TCL_OK);
 }
@@ -769,7 +770,8 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
 
    OGRSpatialReferenceH ref;
-   int    err,opt,len=64;
+   int    err,opt=0;
+   size_t len=64;
    char   gridType[64],buf[32];
    double lat,lon,scale,scale2;
    long   gribVer,lval;
@@ -789,8 +791,9 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
       Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Could not get gridType",(char*)NULL);
       return(NULL);
    }
-   for (opt=0;gridTypes[opt]!=NULL;++opt) {
-      if (!strcmp(gridType,gridTypes[opt])) {
+
+   for (opt=0;gridTypes[opt]!=NULL;opt++) {
+      if (!strncmp(gridType,gridTypes[opt],64)) {
          break;
       }
    }
@@ -817,7 +820,6 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfFirstGridPointInDegrees",(char*)NULL);
             return(NULL);
          }
-         fprintf(stderr,"latlon %f %f\n",lat,lon);
          //OSRSetEquirectangular2(ref,lat,lon,0.0,0.0,0.0);
          break;
 
