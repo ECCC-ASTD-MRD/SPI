@@ -515,6 +515,9 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
      } else {
          err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
          err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
+
+         /*Patch for a GRIB1 inversion*/
+         if (mtx[3]==90.0) mtx[5]=-mtx[5];
      }
 
       GDALInvGeoTransform(mtx,inv);
@@ -522,6 +525,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
       GeoRef_Qualify(field->Ref);
 
 #ifdef DEBUG
+      fprintf(stderr,"(DEBUG) GRIB_FieldRead: Dim      : %i %i %i\n",ni,nj,nk);
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",field->Ref->String);
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 #endif
@@ -691,6 +695,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          head.IP1=lval;
 
          /*Calculer la date de validitee du champs*/
+         date=date<=1231?date+19800000:date;
          head.DATEV=System_DateTime2Seconds(date,time*100,1);
 
          switch(Mode) {
@@ -812,6 +817,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfFirstGridPointInDegrees",(char*)NULL);
             return(NULL);
          }
+         fprintf(stderr,"latlon %f %f\n",lat,lon);
          //OSRSetEquirectangular2(ref,lat,lon,0.0,0.0,0.0);
          break;
 
