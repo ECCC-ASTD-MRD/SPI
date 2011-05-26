@@ -230,6 +230,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj  *obj,*lst;
+   CMap_Rec *map;
    int       idx,i,ii,n,s=1,nobj,new;
    int       cminmax=0,cmap=0,cpos=0,cseg=0;
    char      buf[64];
@@ -988,9 +989,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Map->Name,-1));
                }
             } else {
-               new=CMap_Get(Tcl_GetString(Objv[++i]));
-               if (new!=Spec->Map) {
-                  Spec->Map=new;
+               map=CMap_Get(Tcl_GetString(Objv[++i]));
+               if (map!=Spec->Map) {
+                  Spec->Map=map;
                   cmap=1;
                }
             }

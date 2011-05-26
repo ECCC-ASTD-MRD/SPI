@@ -953,7 +953,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->CodeType));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&obs->CodeType);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&e);
+               obs->CodeType=e;
             }
             break;
 
@@ -967,7 +968,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
 
          case FAMILYOP:
             if (Objc==1) {
-               if (obs->FamilyOp=="A") {
+               if (obs->FamilyOp=='A') {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj("AND",-1));
                } else {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj("OR",-1));
@@ -1016,7 +1017,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
 
          case MARKEROP:
             if (Objc==1) {
-               if (obs->MarkerOp=="A") {
+               if (obs->MarkerOp=='A') {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj("AND",-1));
                } else {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj("OR",-1));

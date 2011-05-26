@@ -171,8 +171,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          head=((FSTD_Head*)(field->Head));
 #ifdef LNK_FSTD
-         f77name(cigaxg)(field->Ref->Grid,&ig1,&ig2,&ig3,&ig4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
-         f77name(mscale)(field->Def->Data[0],&ig3,&ig1,&ig2,&field->Def->NI,&field->Def->NJ);
+         f77name(cigaxg)(field->Ref->Grid,&xg1,&xg2,&xg3,&xg4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
+         f77name(mscale)((float*)field->Def->Data[0],&xg3,&xg1,&xg2,&field->Def->NI,&field->Def->NJ);
 #endif
          break;
 

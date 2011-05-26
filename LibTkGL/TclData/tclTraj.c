@@ -655,7 +655,9 @@ int Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj) {
    }
 
    /*Read first line to figure out format*/
-   fgets(buf,4,stream);
+   if (!fgets(buf,4,stream)) {
+      return(0);
+   }
    rewind(stream);
 
    if (buf[0]=='\'' || buf[1]=='\'') {
@@ -779,7 +781,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
             fgets(buf,512,Stream);
 
          /*Get starting height*/
-         sscanf(buf,"%i %lf %lf %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
+         sscanf(buf,"%Li %lf %lf %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
 
          /*Loop on parcel positions*/
          traj->Spec=spec;

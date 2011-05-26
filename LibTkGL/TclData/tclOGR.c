@@ -308,7 +308,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    double        x,y,lat,lon;
    int           idx,idxfi,all,n;
-   long          f;
+   unsigned int  f;
    GDAL_Band    *band;
    TData        *field;
    OGR_Layer    *layer;
@@ -461,7 +461,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
          for(n=3;n<Objc;n++) {
-            if (Tcl_GetLongFromObj(Interp,Objv[n],&f)==TCL_ERROR) {
+            if (Tcl_GetIntFromObj(Interp,Objv[n],&f)==TCL_ERROR) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid feature index",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -604,11 +604,11 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
 
-         all=0;f=0;
+         all=0;n=0;
          if (Objc>4) {
             Tcl_GetBooleanFromObj(Interp,Objv[4],&all);
             if (Objc>5) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[5],modepick,"mode",0,&f)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[5],modepick,"mode",0,&n)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -616,7 +616,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          /*Recuperation de la geometrie*/
          geom=OGR_GeometryGet(Tcl_GetString(Objv[3]));
-         return(OGR_Pick(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),geom,Objv[3],all,f));
+         return(OGR_Pick(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),geom,Objv[3],all,n));
          break;
 
       case SQLSELECT:
@@ -907,15 +907,16 @@ void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 */
 OGR_Layer* OGR_LayerGet(char *Name) {
 
-   OGR_Layer *layer;
+   OGR_Layer *layer=NULL;
    char      *name;
 
-   if (!(layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,Name))) {
-      name=strndup(Name,rindex(Name,'.')-Name);
-      layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,name);
-      free(name);
-   };
-
+   if (Name) {
+      if (!(layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,Name))) {
+         name=strndup(Name,rindex(Name,'.')-Name);
+         layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,name);
+         free(name);
+      }
+   }
    return(layer);
 }
 

@@ -1657,7 +1657,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       for(i=0;i<band->Def->NC;i++) {
 
          /*Pass in the memory address of the data*/
-         sprintf(buf,"DATAPOINTER=%li",band->Def->Data[i]);
+         sprintf(buf,"DATAPOINTER=%p",band->Def->Data[i]);
          csl[0]=buf;csl[1]=NULL;
          GDALAddBand(vds,TD2GDAL[band->Def->Type],csl);
 

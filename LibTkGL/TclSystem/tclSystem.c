@@ -131,21 +131,25 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile) {
             return(TCL_ERROR);
          }*/
       } else {
-         read(lfp,buf,32);
-         pid=atoi(buf);
-         if (!kill(pid,0)) {
-            sprintf(buf,"%i",pid);
-            Tcl_AppendResult(Interp,"System_Daemonize: Process already exists with pid ",buf,(char*)NULL);
-            return(TCL_ERROR);
-         } else {
-            if ((lfp=open(LockFile,O_RDWR|O_TRUNC,0640))<0) {
-               Tcl_AppendResult(Interp,"System_Daemonize: Unable to create lock file ",LockFile," (",strerror(errno),")",(char*)NULL);
+         if (read(lfp,buf,32)) {
+            pid=atoi(buf);
+            if (!kill(pid,0)) {
+               sprintf(buf,"%i",pid);
+               Tcl_AppendResult(Interp,"System_Daemonize: Process already exists with pid ",buf,(char*)NULL);
                return(TCL_ERROR);
+            } else {
+               if ((lfp=open(LockFile,O_RDWR|O_TRUNC,0640))<0) {
+                  Tcl_AppendResult(Interp,"System_Daemonize: Unable to create lock file ",LockFile," (",strerror(errno),")",(char*)NULL);
+                  return(TCL_ERROR);
+               }
             }
          }
       }
       sprintf(buf,"%i",getpid());
-      write(lfp,buf,strlen(buf));
+      if (!write(lfp,buf,strlen(buf))) {
+         Tcl_AppendResult(Interp,"System_Daemonize: Could not write pid to lock file",buf,(char*)NULL);
+         return(TCL_ERROR);
+      }
       close(lfp);
    }
 
@@ -167,9 +171,18 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile) {
    }
 
    /*Redirect standard files to /dev/null*/
-   freopen("/dev/null","r",stdin);
-   freopen("/dev/null","w",stdout);
-   freopen("/dev/null","w",stderr);
+   if (!freopen("/dev/null","r",stdin)) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stdin",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (!freopen("/dev/null","w",stdout)) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stdout",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (!freopen("/dev/null","w",stderr)) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stderr",(char*)NULL);
+      return(TCL_ERROR);
+   }
 
    return(TCL_OK);
 }

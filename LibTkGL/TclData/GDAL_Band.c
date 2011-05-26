@@ -2238,7 +2238,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (band->Stat) { free(band->Stat); band->Stat=NULL; }
 
                GeoRef_Qualify(band->Ref);
-               Data_Clean(band,1,1,1);
+               GDAL_BandClean(band,1,1,1);
             }
             break;
 
@@ -2467,9 +2467,10 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
 */
 int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
-   int         n,id;
-   GLuint      tx;
-   GLhandleARB prog;
+   int           n;
+   GLuint        tx;
+   GLhandleARB   prog;
+   Tcl_ThreadId  id;
 
    if (!Band || !Band->Spec) {
       fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid band object\n");

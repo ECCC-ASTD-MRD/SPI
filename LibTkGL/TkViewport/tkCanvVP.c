@@ -297,8 +297,13 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->Ratio       = 0;
    vp->Secondary   = 0;
    vp->MaskWidth   = 10;
-   vp->MaskItem.Array=vp->MaskItem.String=NULL;vp->MaskItem.Nb=0;
-   vp->DataItem.Array=vp->DataItem.String=NULL;vp->DataItem.Nb=0;
+
+   vp->MaskItem.Array=NULL;
+   vp->MaskItem.String=NULL;
+   vp->MaskItem.Nb=0;
+   vp->DataItem.Array=NULL;
+   vp->DataItem.String=NULL;
+   vp->DataItem.Nb=0;
 
    vp->Loading     = 0;
    vp->ThreadId    = Tcl_GetCurrentThread();
@@ -2182,7 +2187,8 @@ static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,
    if (array->Array) {
       free(array->String);
       Tcl_Free((char*)array->Array);
-      array->Array=array->String=NULL;
+      array->Array=NULL;
+      array->String=NULL;
       array->Nb=0;
    }
    array->String=strdup(Value);

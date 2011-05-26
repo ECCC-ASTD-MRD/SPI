@@ -50,7 +50,7 @@
 
 typedef struct OGR_Sort {
    int           Field,Type,Order;
-   unsigned long Nb,*Table;
+   unsigned int  Nb,*Table;
 } OGR_Sort;
 
 typedef struct OGR_File {
@@ -80,10 +80,10 @@ typedef struct OGR_Layer {
    int            Update;
    int            Mask,FMask;   /*Masque*/
    GLuint         LFeature;
-   unsigned long  NFeature;
-   unsigned long  GFeature;
-   unsigned long *SFeature;
-   unsigned long  NSFeature;
+   unsigned int   NFeature;
+   unsigned int   GFeature;
+   unsigned int  *SFeature;
+   unsigned int   NSFeature;
 
    int            Topo,Extrude;
    double         Min,Max;

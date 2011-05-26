@@ -327,7 +327,7 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
       lo0=fld->Ref->AX[0];
       la0=fld->Ref->AY[0];
    } else {
-      f77name(cigaxg)(fld->Ref->Grid[0],&la0,&lo0,&dx,&dy,&((FSTD_Head*)fld->Head)->IG1,&((FSTD_Head*)fld->Head)->IG2,&((FSTD_Head*)fld->Head)->IG3,&((FSTD_Head*)fld->Head)->IG4);
+      f77name(cigaxg)(&fld->Ref->Grid[0],&la0,&lo0,&dx,&dy,&((FSTD_Head*)fld->Head)->IG1,&((FSTD_Head*)fld->Head)->IG2,&((FSTD_Head*)fld->Head)->IG3,&((FSTD_Head*)fld->Head)->IG4);
    }
 
    lo0-=0.5*dx;

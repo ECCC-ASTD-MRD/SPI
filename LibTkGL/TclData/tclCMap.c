@@ -553,12 +553,12 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[index==4?0:index],-1));
                } else {
                   if (index!=4) {
-                     sprintf(CMap->Type[index],Tcl_GetString(Objv[++i]));
+                     strncpy(CMap->Type[index],Tcl_GetString(Objv[++i]),16);
                   } else {
-                     sprintf(CMap->Type[0],Tcl_GetString(Objv[++i]));
-                     sprintf(CMap->Type[1],Tcl_GetString(Objv[i]));
-                     sprintf(CMap->Type[2],Tcl_GetString(Objv[i]));
-                     sprintf(CMap->Type[3],Tcl_GetString(Objv[i]));
+                     strncpy(CMap->Type[0],Tcl_GetString(Objv[++i]),16);
+                     strncpy(CMap->Type[1],Tcl_GetString(Objv[i]),16);
+                     strncpy(CMap->Type[2],Tcl_GetString(Objv[i]),16);
+                     strncpy(CMap->Type[3],Tcl_GetString(Objv[i]),16);
                   }
                }
                CMap_CurveDefine(CMap);
@@ -1364,9 +1364,9 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    /*Read parameters*/
    fgets(buf,256,fp);
    sscanf(buf,"%i %i %i %i %i %i %s %i %i",&CMap->RatioMin,&CMap->RatioMax,&CMap->Ratio[0],&CMap->Ratio[1],&CMap->Ratio[2],&CMap->Ratio[3],CMap->Type[0],&CMap->Interp,&CMap->InvertX[0]);
-   sprintf(CMap->Type[1],CMap->Type[0]);
-   sprintf(CMap->Type[2],CMap->Type[0]);
-   sprintf(CMap->Type[3],CMap->Type[0]);
+   strncpy(CMap->Type[1],CMap->Type[0],16);
+   strncpy(CMap->Type[2],CMap->Type[0],16);
+   strncpy(CMap->Type[3],CMap->Type[0],16);
 
    CMap->InvertX[3]=CMap->InvertX[2]=CMap->InvertX[1]=CMap->InvertX[0];
 

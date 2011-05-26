@@ -3443,7 +3443,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                   SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
-               sprintf(buf,"%.15g %.15g lineto\n",v[i][0],Y0);
+               sprintf(buf,"%.15g %i lineto\n",v[i][0],Y0);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
            }
          } else {
@@ -3454,7 +3454,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                   SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
-               sprintf(buf,"%.15g %.15g lineto\n",X0,v[i][1]);
+               sprintf(buf,"%i %.15g lineto\n",X0,v[i][1]);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
             }
          }
@@ -3463,14 +3463,14 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
             for(i=0;i<vn;i++) {
                SETRECT(rect,v[i][0]-db-dh,y0,v[i][0]+db-dh,v[i][1]);
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
-               sprintf(buf,"%.15g %.15g lineto\n",v[i][0]-db-dh,Y0);
+               sprintf(buf,"%.15g %i lineto\n",v[i][0]-db-dh,Y0);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
            }
          } else {
             for(i=0;i<vn;i++) {
                SETRECT(rect,x0,v[i][1]-db-dh,v[i][0],v[i][1]+db-dh);
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
-               sprintf(buf,"%.15g %.15g lineto\n",X0,v[i][1]-db-dh);
+               sprintf(buf,"%i %.15g lineto\n",X0,v[i][1]-db-dh);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
             }
          }

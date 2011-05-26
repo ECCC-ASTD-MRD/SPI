@@ -111,7 +111,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                OGR_G_Empty(geom);
 
                buf=Tcl_GetString(Objv[++i]);
-               err=OGR_G_ImportFromWkb(geom,&buf,strlen(buf));
+               err=OGR_G_ImportFromWkb(geom,buf,strlen(buf));
                if (err!=OGRERR_NONE) {
                   Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Unsupported geometry type\"",(char*)NULL);
                   return(TCL_ERROR);

@@ -65,7 +65,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    OGRFieldDefnH  field;
    OGRGeometryH   geom;
    int            i,idx,j,f,t;
-   unsigned long  nf;
+   unsigned int   nf;
    double         x,y,a,min,max,val;
 
    static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
@@ -299,7 +299,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case NB:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(layer->NFeature));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(layer->NFeature));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&f);
                if (f>layer->NFeature) {
@@ -309,13 +309,13 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   }
                   layer->NFeature=f;
                }
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(layer->NFeature));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(layer->NFeature));
             }
             break;
 
          case NBREADY:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(layer->GFeature));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(layer->GFeature));
             }
             break;
 
@@ -338,7 +338,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             if (Objc==1) {
                lst=Tcl_NewListObj(0,NULL);
                for(f=0;f<layer->NSFeature;f++) {
-                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewLongObj(layer->SFeature[f]));
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(layer->SFeature[f]));
                }
                Tcl_SetObjResult(Interp,lst);
             } else {
@@ -350,10 +350,10 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   layer->SFeature=NULL;
                }
                if (layer->NSFeature) {
-                  layer->SFeature=(long*)malloc(layer->NSFeature*sizeof(long));
+                  layer->SFeature=(unsigned int*)malloc(layer->NSFeature*sizeof(unsigned int));
                   for(f=0;f<layer->NSFeature;f++) {
                      Tcl_ListObjIndex(Interp,Objv[i],f,&obj);
-                     Tcl_GetLongFromObj(Interp,obj,&layer->SFeature[f]);
+                     Tcl_GetIntFromObj(Interp,obj,&layer->SFeature[f]);
                   }
                }
             }
@@ -367,7 +367,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                /*If ther is a sort applied, refresh it*/
                if (layer->Sort.Field>-1) {
                   QSort_Layer=layer;
-                  qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(long),QSort_OGR);
+                  qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(unsigned int),QSort_OGR);
                }
             }
             if (t!=TCL_ERROR) {
@@ -415,8 +415,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           j,idx,nseg;
    double        x,y,lat,lon,tol,val,min,max,area;
-   long          *table,y0,y1;
-   unsigned long f,fop;
+   unsigned int  y0,y1,f,fop;
    OGR_Layer     *layer,*layerop;
    TGeoRef       *ref,*ref0;
    Tcl_Obj       *lst,*obj;
@@ -807,7 +806,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             layer->Sort.Nb=0;
 
             if (!layer->Sort.Table) {
-               if (!(layer->Sort.Table=malloc(layer->NFeature*sizeof(long)))) {
+               if (!(layer->Sort.Table=malloc(layer->NFeature*sizeof(unsigned int)))) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Unable to allocate temporary sort table",(char*)NULL);
                   return(TCL_ERROR);
                }
@@ -818,7 +817,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
 
             QSort_Layer=layer;
-            qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(long),QSort_OGR);
+            qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(unsigned int),QSort_OGR);
          } else {
             if (layer->Sort.Table) {
                free(layer->Sort.Table);
@@ -835,9 +834,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
          y0=0;y1=0xFFFFFFF;
          if (Objc>=3) {
-            Tcl_GetLongFromObj(Interp,Objv[2],&y0);
+            Tcl_GetIntFromObj(Interp,Objv[2],&y0);
             if (Objc==4) {
-               Tcl_GetLongFromObj(Interp,Objv[3],&y1);
+               Tcl_GetIntFromObj(Interp,Objv[3],&y1);
             }
          }
 
@@ -1023,7 +1022,7 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 
    Tcl_Obj      *st,*it,*op,*val,*fd;
    int           n,i,ns,nf,fld,ni,len,err;
-   unsigned long f;
+   unsigned int f;
    regex_t      *exp=NULL;
    char         *msg;
    OGRFieldDefnH defn=NULL;
@@ -1356,7 +1355,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 
    OGRFieldDefnH  field=NULL;
    char           name[11];
-   unsigned long  f;
+   unsigned int   f;
 
    strncpy(name,Field,10);name[10]='\0';
 
@@ -1433,7 +1432,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 */
 void OGR_LayerUpdate(OGR_Layer *Layer) {
 
-   unsigned long f;
+   unsigned int f;
 
    if (Layer->Update) {
       for(f=0;f<Layer->NFeature;f++) {
@@ -1463,10 +1462,10 @@ void OGR_LayerUpdate(OGR_Layer *Layer) {
 */
 int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 
-   OGR_File   *file=NULL;
-   OGR_Layer  *layer=NULL;
-   OGREnvelope env;
-   unsigned long f;
+   OGR_File    *file=NULL;
+   OGR_Layer   *layer=NULL;
+   OGREnvelope  env;
+   unsigned int f;
 
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
@@ -1538,7 +1537,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 
    char        **opt=NULL;
-   unsigned long f;
+   unsigned int  f;
 
    OGR_File  *file=NULL;
    OGR_Layer *layer=NULL;
@@ -1605,7 +1604,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
    OGRGeometryH  geom;
    OGREnvelope   env;
 
-   unsigned long f;
+   unsigned int  f;
 
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
@@ -1958,7 +1957,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 */
 int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 
-   unsigned long f;
+   unsigned int f;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerClear: Invalid layer",(char*)NULL);
@@ -1999,7 +1998,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
    int           i,j,n=0,p=0,pt,len=-1,rw;
-   long          f;
+   unsigned int  f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
    char          buf[64];
    OGRGeometryH  cell,ring,inter;
@@ -2279,7 +2278,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
    Vect3d        vr;
    int           t;
-   unsigned long f;
+   unsigned int  f;
    double        elev=0.0,extr=0.0;
    OGRGeometryH  geom;
    clock_t       sec;
@@ -2767,7 +2766,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    OGREnvelope   envg,envp;
    double        x,y,lat,lon,d=1e32;
    int           nobj,n=0,nd=0;
-   unsigned long f;
+   unsigned int  f;
    char          buf[32];
 
    if (!Layer) {
@@ -2825,7 +2824,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
             }
             /*Si on a trouve, ajouter a la liste de retour*/
             if (n) {
-               sprintf(buf,"%li",f);
+               sprintf(buf,"%ui",f);
                Tcl_AppendElement(Interp,buf);
                if (!All)
                   break;
@@ -2836,7 +2835,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    /*Dans le cas NEAREST, retourner le plus proche*/
    if (Mode==3) {
-      sprintf(buf,"%li",nd);
+      sprintf(buf,"%ui",nd);
       Tcl_AppendElement(Interp,buf);
    }
 

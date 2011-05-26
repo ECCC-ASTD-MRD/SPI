@@ -1012,7 +1012,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
       if (n>2 && BCV->value->af) {
          Tcl_ListObjIndex(Interp,Obj,2,&obj);
          Tcl_GetLongFromObj(Interp,obj,&BCV->value->af->bits);
-         fprintf(stdout,"---- %i\n",BCV->value->af->bits);
+         fprintf(stdout,"---- %li\n",BCV->value->af->bits);
      }
 
       /*?????*/
@@ -1041,7 +1041,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edition) {
+BUFR_Template* MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edition) {
 
    BUFR_Template *tmp;
    BufrDescValue *code;

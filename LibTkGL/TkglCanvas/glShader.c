@@ -96,7 +96,10 @@ GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name) {
       fprintf(stderr,"(ERROR) GLShader_Load: unable to load vertex shader %s\n",file);
    } else {
       vert=(GLcharARB*)malloc(st.st_size+1);
-      fread(vert,1,st.st_size,f);
+
+      if (!fread(vert,1,st.st_size,f)) {
+         fprintf(stderr,"(ERROR) GLShader_Load: Problem while reading vertex shader %s\n",file);
+      }
       vert[st.st_size]='\0';
       fclose(f);
    }
@@ -111,7 +114,9 @@ GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name) {
       fprintf(stderr,"(ERROR) GLShader_Load: unable to load fragment shader %s\n",file);
    } else {
       frag=(GLcharARB*)malloc(st.st_size+1);
-      fread(frag,1,st.st_size,f);
+      if (!fread(frag,1,st.st_size,f)) {
+         fprintf(stderr,"(ERROR) GLShader_Load: Problem while reading fragment shader %s\n",file);
+      }
       frag[st.st_size]='\0';
       fclose(f);
    }

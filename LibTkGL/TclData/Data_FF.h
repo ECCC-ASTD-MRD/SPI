@@ -73,6 +73,7 @@ typedef struct TKrigging {
 
 float         FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1);
 int           FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim);
+float        *FFStreamMapSetup1D(double Delta);
 
 int           FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter);
 int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth);
@@ -88,6 +89,7 @@ double        FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,dou
 int     LUDecompose(double *Matrix,int N,int *Perm,int *d);
 void    LUBackSub(double *Matrix,int N,int *Perm,double *Vect);
 double *LUInvert(double *Matrix,int N);
+
 
 static float *FFStreamMap;
 static unsigned char FFStreamTex[256][4] = {

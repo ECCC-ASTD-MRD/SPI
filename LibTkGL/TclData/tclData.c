@@ -1686,7 +1686,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             /*Check for maximum number of elements*/
             npt=1e9;
             if (Objc==2)
-               Tcl_GetIntFromObj(Interp,Objv[++i],&npt);
+               Tcl_GetLongFromObj(Interp,Objv[++i],&npt);
 
             obj=Tcl_NewListObj(0,NULL);
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
@@ -1832,7 +1832,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                /*Check for maximum number of elements*/
                npt=1e9;
                if (Objc==2)
-                  Tcl_GetIntFromObj(Interp,Objv[++i],&npt);
+                  Tcl_GetLongFromObj(Interp,Objv[++i],&npt);
 
                obj=Tcl_NewListObj(0,NULL);
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {

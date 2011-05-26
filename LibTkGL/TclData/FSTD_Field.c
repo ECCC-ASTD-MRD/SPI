@@ -297,7 +297,7 @@ int FSTD_FieldReadMesh(TData *Field) {
  *
  *----------------------------------------------------------------------------
 */
-Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
+Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
    Coord      coord;
@@ -307,7 +307,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    if (!FSTD_FieldReadMesh(Field)) {
       fprintf(stderr,"(Warning) FSTD_FieldGetMesh: Could not find grid definition components");
-      return(0);
+      return(NULL);
    }
 
    /*Allocate memory for various levels*/
@@ -324,7 +324,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    if (Field->Spec->Topo && head->FID) {
       if (FSTD_FileSet(NULL,head->FID)<0) {
-         return(0);
+         return(NULL);
       }
       EZLock_RPNField();
       idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
@@ -382,7 +382,7 @@ Vect3d* FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    if (gz)
       free(gz);
 
-   return(1);
+   return(Field->Ref->Pos);
 }
 
 /*----------------------------------------------------------------------------
@@ -701,7 +701,7 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
                   }
                }
                if (j==nj) {
-                  fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %i in lookup table.\n",Ref->Levels[k]);
+                  fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %g in lookup table.\n",Ref->Levels[k]);
                }
             }
          } else {
@@ -1174,8 +1174,6 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
    FSTD_Head *head0=(FSTD_Head*)Field0->Head;
    FSTD_Head *head1=(FSTD_Head*)Field1->Head;
 
-   extern difdatr();
-
 #ifdef LNK_FSTD
 
    if (!Field0) {
@@ -1503,7 +1501,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,tm,im,NULL);
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,0,0,0,0,NULL,NULL,tm,im,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
                   Data_Clean(Field,1,1,1);
                }

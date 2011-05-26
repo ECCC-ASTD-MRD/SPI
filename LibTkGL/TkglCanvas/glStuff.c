@@ -2057,7 +2057,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->GLQuad          = gluNewQuadric();
    GLRender->TRCon           = NULL;
    GLRender->Set             = 1;
-   GLRender->Soft            = NULL;
+   GLRender->Soft            = 0;
    GLRender->Delay           = 2000;
 
    /*Magnifying paameters*/

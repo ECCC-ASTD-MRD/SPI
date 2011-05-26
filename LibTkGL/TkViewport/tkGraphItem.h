@@ -37,6 +37,7 @@
 #include "tkCanvGraph.h"
 #include "tclData.h"
 #include "tclVector.h"
+#include "GeoData.h"
 
 enum GraphType { NONE,LINE,SPLINE,BAR,WIDEBAR,HISTOGRAM,RASTER,BOXPLOT,MINMAX,BARB };
 

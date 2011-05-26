@@ -615,7 +615,7 @@ int Model_LoadDAE(T3DModel *M,char *Path) {
       }
 
       if (!XML_ParseBuffer(parser,len,len==0)) {
-         fprintf(stderr,"(ERROR) Model_LoadDAE: XML Parse error at line %d:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
+         fprintf(stderr,"(ERROR) Model_LoadDAE: XML Parse error at line %li:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
          state=0;
          break;
       }
