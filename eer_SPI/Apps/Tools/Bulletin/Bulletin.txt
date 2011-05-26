@@ -73,6 +73,7 @@ namespace eval Bulletin {
       FL200/FL350       : Blanc sur bleu
       FL350/FL600       : Blanc sur bleu
       VAAC              : Blanc sur vert
+      SUL               : Blanc sur vert
    "
    "Display of the selected bulletins.
    Important word are colored:
@@ -85,6 +86,7 @@ namespace eval Bulletin {
       FL200/FL350       : White over blue
       FL350/FL600       : White over blue
       VAAC              : White over green
+      SUL               : White over green
    "
    }
 
