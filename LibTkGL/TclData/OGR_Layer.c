@@ -934,7 +934,7 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
 
    if (strcmp(Tcl_GetString(Op),"==")==0) {
       if (fls) {
-         if (Tcl_StringMatch(fls,Tcl_GetString(obj))) return(1);
+         if (Tcl_StringMatch(fls,vls)) return(1);
       } else  {
          if (fld==vld) return(1);
       }
