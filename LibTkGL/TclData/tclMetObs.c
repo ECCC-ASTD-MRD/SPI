@@ -2029,7 +2029,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0,mkr=0;;
    int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp;
    char     stnid[10],previd[10];
-   int     *elems=NULL,*tblval=NULL;
+   int     *elems=NULL,*tblval=NULL,*codes=NULL;
    float   *tblvalf=NULL;
    char     multi=0;
 
@@ -2143,6 +2143,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          if (nelem>sz1) {
             sz1=nelem;
             elems=(int*)realloc(elems,sz1*sizeof(int));
+            codes=(int*)realloc(codes,sz1*sizeof(int));
             eb=(EntryTableB**)realloc(eb,sz1*sizeof(EntryTableB*));
          }
 
@@ -2154,7 +2155,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          /*Extract info*/
          err=c_mrbxtr(buf,blkno,elems,tblval);
-         err=c_mrbdcl(elems,(int*)eb,nelem);
+         err=c_mrbdcl(elems,codes,nelem);
 
          /*Test for superobs ..... ta daaaaaaa*/
          if (stnid[0]=='^') {
@@ -2167,7 +2168,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          /*If this is a marker bloc*/
          mkr=0;
-         if (bknat==0x3 || ((int*)eb)[0]>=200000) {
+         if (bknat==0x3 || codes[0]>=200000) {
             mkr=nelem*nval*nt;
          } else {
             err=c_mrbcvt(elems,tblval,tblvalf,nelem,nval,nt,0);
@@ -2177,10 +2178,10 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          c=0;
          for(e=0;e<nelem;e++) {
             if (mkr) {
-               if (((int*)eb)[e]>=200000)
-                  ((int*)eb)[e]-=200000;
+               if (codes[e]>=200000)
+                  codes[e]-=200000;
             }
-            c=((int*)eb)[e];
+            c=codes[e];
 
             if (eb[e]=MetObs_BUFRFindTableCode(c)) {
                Tcl_SetIntObj(obj,eb[e]->descriptor);
@@ -2202,6 +2203,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    Tcl_DecrRefCount(obj);
    if (elems)   free(elems);
+   if (codes)   free(codes);
    if (eb)      free(eb);
    if (tblval)  free(tblval);
    if (tblvalf) free(tblvalf);

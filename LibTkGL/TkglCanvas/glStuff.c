@@ -580,7 +580,7 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
    int             new;
    unsigned int    f0,f1;
    Font            fid;
-   char           *key;
+   const char     *key;
    T_glFont       *glfont=NULL;
    XFontStruct    *def;
 
@@ -676,6 +676,8 @@ int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *V
    T_glBitmap    **pbitmap=(T_glBitmap**)(WidgRec+Offset);
    T_glBitmap     *bitmap=NULL;
    int             len = strlen(Value);
+
+   extern char *TkGetBitmapData();
 
    if (len > 0) {
       entry=Tcl_CreateHashEntry(&glBitmapTable,Value,&new);
@@ -2092,9 +2094,9 @@ void glInit(Tcl_Interp *Interp) {
 */
 int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
-   int  glmin,glmaj,gl,n=0;
-   int  *attrTrue;
-   char *vendor;
+   int         glmin,glmaj,gl,n=0;
+   int        *attrTrue;
+   const char *vendor;
 
    int attrHard[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
               GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,

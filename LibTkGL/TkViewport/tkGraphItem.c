@@ -3567,7 +3567,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          if (Item->Orient[0]=='X') {
             sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",(v[i][0]-dh-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,Item->Bitmap->Width,Item->Bitmap->Height);
          } else {
-            sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",(v[i][0]-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-dh-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,-(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,Item->Bitmap->Width);
+            sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",(v[i][0]-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-dh-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,-(int)(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,Item->Bitmap->Width);
          }
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          glPostscriptBitmap(Interp,Item->Bitmap,Item->Bitmap->Width,Item->Bitmap->Height);
@@ -3728,7 +3728,7 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
 
    if (Item->Bitmap) {
       Tk_CanvasPsColor(Interp,Graph->canvas,Item->Outline);
-      sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",X1+10-Item->Bitmap->Width/2,Tk_CanvasPsY(Graph->canvas,y-Item->Bitmap->Height/2),Item->Bitmap->Width,Item->Bitmap->Height);
+      sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",X1+10-(double)Item->Bitmap->Width/2.0,Tk_CanvasPsY(Graph->canvas,y-Item->Bitmap->Height/2),Item->Bitmap->Width,Item->Bitmap->Height);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
       glPostscriptBitmap(Interp,Item->Bitmap,Item->Bitmap->Width,Item->Bitmap->Height);
    }
@@ -3739,7 +3739,7 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
       handle=Tk_FindPhoto(((TkCanvas*)Graph->canvas)->interp,Item->ImageString);
       Tk_PhotoGetImage(handle,&data);
 
-      sprintf(buf, "%.15g %.15g", X1+10-data.width/2,Tk_CanvasPsY(Graph->canvas,y-data.height/2));
+      sprintf(buf, "%.15g %.15g", X1+10-(double)data.width/2.0,Tk_CanvasPsY(Graph->canvas,y-data.height/2));
       Tcl_AppendResult(Interp,buf," translate\n",(char*)NULL);
       Tk_PostscriptPhoto(Interp,&data,((TkCanvas*)Graph->canvas)->psInfo,data.width,data.height);
    }

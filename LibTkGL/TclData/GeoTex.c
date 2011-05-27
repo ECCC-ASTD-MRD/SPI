@@ -776,10 +776,8 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
                fprintf(stdout,"(DEBUG) GeoTex_Parse: Reading tile (%i) %i - %i\n",Resolution,X0,Y0);
             GeoTex_Get(Band,(*Tile));
          }
-         Tcl_MutexUnlock(&MUTEX_GEOTEX);
 
          /*Calculate coordinate sample mapping*/
-         Tcl_MutexLock(&MUTEX_GEOTEX);
          if (!(*Tile)->Tl) {
             r=1;
             GeoTex_Sample(Band,(*Tile),Proj);
@@ -944,7 +942,7 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
 
          /*Setup 2D Data Texture*/
          if (GLRender->Resolution<=2) {
-            if (!Tile->Tx && Tile->Flag&GEOTEX_DATA)
+            if (!Tile->Tx && Tile->Flag&GEOTEX_DATA && Tile->Flag&GEOTEX_COOR)
                GeoTex_Texture(Band,Tile);
          }
          if (!Tile->Tx || !Tile->Tl)
