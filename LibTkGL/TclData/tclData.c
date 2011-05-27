@@ -1556,9 +1556,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             npt=1e9;
             nobj=0;
-            if (Objc==2) {
+            if (Objc>1) {
                if (Tcl_GetLongFromObj(Interp,Objv[++i],&npt)==TCL_ERROR) {
-                  Tcl_ListObjLength(Interp,Objv[++i],&nobj);
+                  Tcl_ListObjLength(Interp,Objv[i],&nobj);
                }
             }
 
@@ -1569,16 +1569,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      if (Field->Ref->Grid[0]!='V') {
                         Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
-                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
+                           dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
 
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
                         }
                      } else {
-                        index=FIDX2D(Field->Def,ni,nj);
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
-                     }
+                        if (Field->Ref->Lat && Field->Ref->Lon) {
+                           index=FIDX2D(Field->Def,ni,nj);
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
+                         }
+                      }
                      if (!(--npt)) break;
                   }
                   if (!npt) break;
@@ -1586,7 +1588,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Field->Ref->Grid[0]=='V') {
-                  Tcl_ListObjLength(Interp,Objv[++i],&nobj);
                   if ((nobj>>1)!=Field->Def->NI) {
                      Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates",(char*)NULL);
                      return(TCL_ERROR);
