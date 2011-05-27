@@ -53,7 +53,7 @@ void         GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj);
 void         GeoTex_Qualify(GDAL_Band *Band);
 TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0);
 
-void GeoTex_Lock(void) { Tcl_MutexLock(&MUTEX_GEOTEX); }
+void GeoTex_Lock(void)   { Tcl_MutexLock(&MUTEX_GEOTEX); }
 void GeoTex_UnLock(void) { Tcl_MutexUnlock(&MUTEX_GEOTEX); }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
    if (proj) {
       proj->Loading+=5;
 
-      band->Tex.ThreadId=(Tcl_ThreadId)0x1;
+      band->Tex.ThreadId=Tcl_GetCurrentThread();
 
       GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->VP,band->Tex.ResN,0,0,5);
 
@@ -680,7 +680,6 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    }
 
    Tile->Flag=GEOTEX_DATA;
-//   GeoTex_TileNb+=Tile->Nx*Tile->Ny*Band->Def->NC*TData_Size[Band->Def->Type];
 
    return(1);
 }

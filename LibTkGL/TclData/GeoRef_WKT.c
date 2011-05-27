@@ -283,7 +283,9 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       y=Lat;
 
       /*Longitude from 0 to 360*/
-      x=x<0?x+360:x;
+      if (Ref->InvTransform && Ref->InvTransform[0]==0) {
+         x=x<0?x+360:x;
+      }
 
       /* Transform from latlon */
       if (Ref->InvFunction) {

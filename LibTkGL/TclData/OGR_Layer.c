@@ -2824,7 +2824,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
             }
             /*Si on a trouve, ajouter a la liste de retour*/
             if (n) {
-               sprintf(buf,"%ui",f);
+               sprintf(buf,"%u",f);
                Tcl_AppendElement(Interp,buf);
                if (!All)
                   break;
@@ -2835,7 +2835,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    /*Dans le cas NEAREST, retourner le plus proche*/
    if (Mode==3) {
-      sprintf(buf,"%ui",nd);
+      sprintf(buf,"%u",nd);
       Tcl_AppendElement(Interp,buf);
    }
 

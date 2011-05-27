@@ -921,7 +921,7 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
 */
 void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
-   unsigned long g,n,nv=0,pnv;
+   unsigned int  g,n,nv=0,pnv;
    Vect3d        nr,n0,n1;
    OGRGeometryH  geom;
 
@@ -1034,10 +1034,10 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
  *
  *----------------------------------------------------------------------------
 */
-int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned long Size) {
+int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size) {
 
    int           handle=0,z=2;
-   unsigned long n,nv=0,cnv=0;
+   unsigned int  n,nv=0,cnv=0;
    Vect3d        vr,*pvr,*cvr;
    Coord         co;
 
@@ -1129,7 +1129,7 @@ void OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
    OGRGeometryH       subgeom;
    OGRwkbGeometryType type;
    GLenum             mode;
-   unsigned long      n,nv=0;
+   unsigned int       n,nv=0;
 
    if (!Geom)
       return;

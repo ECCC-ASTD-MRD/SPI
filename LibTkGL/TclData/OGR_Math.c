@@ -172,7 +172,7 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
    OGRGeometryH       geom;
    OGRwkbGeometryType type;
    gpc_vertex_list   *gpc;
-   unsigned long      n,nb,g,nc;
+   unsigned int       n,nb,g,nc;
    double             tmpd;
 
    type=wkbFlatten(OGR_G_GetGeometryType(Geom));
@@ -210,7 +210,7 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
 
    OGRGeometryH     geom,ring,poly=NULL,multi=NULL;
    gpc_vertex_list *gpc;
-   unsigned long n,g,nb=0,in;
+   unsigned int     n,g,nb=0,in;
 
    /*Check for multiple polygon (more thant 1 non-hole contour)*/
    for(n=0;n<Poly->num_contours;n++) {
@@ -462,7 +462,6 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
       OGR_G_GetPoint(Geom1,n1-1,&v1[0],&v1[1],&v1[2]);
       if (Vect_Equal(v0,v1)) t1=2;
    }
-
    /*Demarrer les tests selon les type de geometrie*/
    if (n0 && n1) {
       if (t0==0) {
@@ -499,7 +498,7 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
 
 int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   unsigned long n0,n1,g0,g1,t=0;
+   unsigned int n0,n1,g0,g1,t=0;
 
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
@@ -518,8 +517,8 @@ int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
 int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   unsigned long n0,n1,g0,g1,t=0,i;
-   Vect3d        v0,v1[2];
+   unsigned int n0,n1,g0,g1,t=0,i;
+   Vect3d       v0,v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
@@ -544,9 +543,9 @@ int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
 int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
-   unsigned long n0,n1,g0,g1,n11,t=0;
-   int           c=0;
-   Vect3d        v0,v1[2];
+   unsigned int n0,n1,g0,g1,n11,t=0;
+   int          c=0;
+   Vect3d       v0,v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
@@ -577,9 +576,9 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
 int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
-   unsigned long n0,n1,g0,g1,n11;
-   int           c,d,i;
-   Vect3d        v0[2],v1[2];
+   unsigned int n0,n1,g0,g1,n11;
+   int          c,d,i;
+   Vect3d       v0[2],v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
@@ -616,9 +615,9 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
 int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
-   unsigned long n0,n1,g0,g1;
-   int           i;
-   Vect3d        v0[2],v1[2];
+   unsigned int n0,n1,g0,g1;
+   int          i;
+   Vect3d       v0[2],v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
@@ -643,10 +642,10 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
 double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
 
-   register long n=0;
-   int           g=0;
-   Vect3d        v;
-   double        val=0,valg;
+   register unsigned int n=0;
+   int                   g=0;
+   Vect3d                v;
+   double                val=0,valg;
 
    if (Coord>=0 && Coord<=2) {
 
