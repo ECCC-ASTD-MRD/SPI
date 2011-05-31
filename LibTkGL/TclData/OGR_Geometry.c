@@ -1015,7 +1015,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
  * Nom      : <OGR_GeometryProject>
  * Creation : Juillet 2006 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Projecter la geometrie dans le tableau de vertrice.
+ * But      : Projecter la geometrie dans le tableau de vertice.
  *
  * Parametres :
  *  <Proj>    : Projection
@@ -1071,6 +1071,13 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
 
          Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+
+         /*Keep latlon extent since it's not the same than the original extent reprojected to latlon*/
+         Ref->LLExtent.MinX=Ref->LLExtent.MinX>co.Lon?co.Lon:Ref->LLExtent.MinX;
+         Ref->LLExtent.MaxX=Ref->LLExtent.MaxX<co.Lon?co.Lon:Ref->LLExtent.MaxX;
+         Ref->LLExtent.MinY=Ref->LLExtent.MinY>co.Lat?co.Lat:Ref->LLExtent.MinY;
+         Ref->LLExtent.MaxY=Ref->LLExtent.MaxY<co.Lon?co.Lat:Ref->LLExtent.MaxY;
+
          co.Elev=vr[2];
 
          if (Layer) {

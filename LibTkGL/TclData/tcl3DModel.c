@@ -345,8 +345,8 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
    int      idx;
    double   x,y,lat,lon;
 
-   static CONST char *sopt[] = { "-project","-unproject","-extent",NULL };
-   enum               opt { PROJECT,UNPROJECT,EXTENT };
+   static CONST char *sopt[] = { "-project","-unproject","-extent","-llextent",NULL };
+   enum               opt { PROJECT,UNPROJECT,EXTENT,LLEXTENT };
 
    mdl=Model_Get(Name);
    if (!mdl) {
@@ -392,6 +392,18 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Extent[0][1]));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Extent[1][0]));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Extent[1][1]));
+         break;
+
+      case LLEXTENT:
+         /*If not calculated yet, get latlon extent*/
+         if (mdl->Ref->LLExtent.MinY==1e32) {
+            mdl->Ref->Project(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],&mdl->Ref->LLExtent.MinY,&mdl->Ref->LLExtent.MinX,1,1);
+            mdl->Ref->Project(mdl->Ref,mdl->Extent[1][0],mdl->Extent[1][1],&mdl->Ref->LLExtent.MaxY,&mdl->Ref->LLExtent.MaxX,1,1);
+         }
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinY));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinX));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxY));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxX));
          break;
    }
    Tcl_SetObjResult(Interp,lst);

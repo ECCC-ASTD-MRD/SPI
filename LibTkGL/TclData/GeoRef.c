@@ -1467,6 +1467,10 @@ TGeoRef* GeoRef_New() {
    ref->GCPTransform=NULL;
    ref->TPSTransform=NULL;
    ref->RPCTransform=NULL;
+   ref->LLExtent.MinX=1e32;
+   ref->LLExtent.MinY=1e32;
+   ref->LLExtent.MaxX=-1e32;
+   ref->LLExtent.MaxY=-1e32;
 
    ref->Levels=NULL;
    ref->LevelType=LVL_UNDEF;

@@ -141,6 +141,7 @@ typedef struct TGeoRef {
 
    char                          Grid[3];                 /*Type de grille*/
    char                         *String;                  /*OpenGIS WKT String description*/
+   OGREnvelope                   LLExtent;                /*LatLon extent*/
    OGRCoordinateTransformationH  Function,InvFunction;    /*Projection functions*/
    OGRSpatialReferenceH          Spatial;                 /*Spatial reference*/
    double                       *Transform,*InvTransform; /*Transformation functions*/

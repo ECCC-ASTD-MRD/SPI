@@ -421,9 +421,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj       *lst,*obj;
    char          buf[32],*str;
 
-   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-buffer","-difference","-intersection",
+   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
                                  "-simplify","-segmentize","-close","-flatten",NULL };
-   enum        opt {  SORT,TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -582,6 +582,15 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MinY));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxX));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(env.MaxY));
+         Tcl_SetObjResult(Interp,lst);
+         break;
+
+      case LLEXTENT:
+         lst=Tcl_NewListObj(0,NULL);
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MinY));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MinX));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MaxY));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MaxX));
          Tcl_SetObjResult(Interp,lst);
          break;
 

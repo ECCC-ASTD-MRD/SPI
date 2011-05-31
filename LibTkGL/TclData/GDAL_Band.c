@@ -190,6 +190,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    band->File=file;
    band->Tex.Nx=nx;
    band->Tex.Ny=ny;
+   band->Tex.ThreadId=NULL;
 
    if (band->Spec->Map)
       CMap_Free(band->Spec->Map->Name);
@@ -1645,8 +1646,8 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj     *obj,*lst;
 
    static CONST char *sopt[] = { "-tag","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
-      "-gridvalue","-coordvalue","-project","-unproject","-extent","-histogram","-celldim",NULL };
-   enum        opt {  TAG,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,HISTOGRAM,CELLDIM };
+      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim",NULL };
+   enum        opt {  TAG,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -1884,6 +1885,19 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(0));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Def->NI-1));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Def->NJ-1));
+            Tcl_SetObjResult(Interp,obj);
+            break;
+
+         case LLEXTENT:
+            /*If not calculated yet, get latlon extent*/
+            if (band->Ref->LLExtent.MinY==1e32) {
+               GeoRef_Limits(band->Ref,&band->Ref->LLExtent.MinY,&band->Ref->LLExtent.MinX,&band->Ref->LLExtent.MaxY,&band->Ref->LLExtent.MaxX);
+            }
+            obj=Tcl_NewListObj(0,NULL);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MinY));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MinX));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MaxY));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MaxX));
             Tcl_SetObjResult(Interp,obj);
             break;
 

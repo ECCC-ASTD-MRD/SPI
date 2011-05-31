@@ -232,7 +232,7 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
       } else if (Ref->TPSTransform) {
          GDALGCPTransform(Ref->TPSTransform,FALSE,1,&x,&y,&z,&ok);
       } else if (Ref->RPCTransform) {
-         GDALGCPTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
+        GDALGCPTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
       }
    }
 
