@@ -49,6 +49,31 @@ namespace eval Exp {
    set Data(State)     ""                                 ;#Etat de la simulation
    set Data(StoreID)   ""                                 ;#Identificateur d'archive
 
+   #----- RSMC stuff.
+
+   set Lbl(Cancel)      { "Annuler" "Cancel" }
+   set Lbl(Send)        { "Transmettre" "Transmit" }
+   set Lbl(Transmit)    { "Transmission" "Transmission" }
+
+   #----- Definitions des constantes relatives aux RSMC.
+
+   set Data(RSMC_AU) 0
+   set Data(RSMC_CA) 0
+   set Data(RSMC_CN) 0
+   set Data(RSMC_FR) 0
+   set Data(RSMC_JP) 0
+   set Data(RSMC_RU) 0
+   set Data(RSMC_UK) 0
+   set Data(RSMC_US) 0
+
+   set Data(JntStat34) 0
+   set Data(JntStat5)  0
+   set Data(JntStat16) 0
+   set Data(JntStat2)  0
+
+   set Data(RSMCLead)  0
+   set Data(RSMCMeteo) 0        ;#Carte meteo de CMC.
+
    #----- Labels
 
    set Lbl(New)                { "Nouveau" "New" }
@@ -56,6 +81,7 @@ namespace eval Exp {
    set Lbl(RSMCFax)            { "Génération du FAX RSMC" "Generate RSMC FAX" }
    set Lbl(RSMCJointData)      { "Transmission des sorties RSMC vers les pages webs communes" "Transmit RSMC output to common web pages" }
    set Lbl(RSMCJointStatement) { "Transmission du Joint Statement RSMC vers les pages webs communes" "Transmit RSMC joint statement to common web pages" }
+   set Lbl(RSMCBlank)          { "Transmission des produits RSMC vides vers les pages webs communes..." "Transmit RSMC blank products to common web pages..." }
    set Lbl(Store)              { "Archiver" "Store" }
    set Lbl(Suppress)           { "Supprimer" "Delete" }
    set Lbl(Yes)                { "Oui" "Yes" }
@@ -736,35 +762,35 @@ proc Exp::New { } {
 
       Log::Print INFO "Copying RSMC joint data to directory $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin"
       file mkdir $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin
-      file copy $GDefs(Dir)/Resources/Image/System/CVNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.gif
-      file copy $GDefs(Dir)/Resources/Image/System/CVNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LTNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.gif
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LCNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.ps
-      file copy $GDefs(Dir)/Resources/Image/System/LTNOCA.ps  $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.ps
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_01.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_02.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_03.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_04.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_01.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_02.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_03.gif
-      file copy $GDefs(Dir)/Resources/Image/System/SCNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_04.gif
-      file copy $GDefs(Dir)/Resources/Image/System/STNOCA.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STJCA.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.gif
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.ps
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.gif
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.ps
+      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.ps
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_01.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_02.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_03.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_04.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_01.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_02.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_03.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_04.gif
+      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STJCA.gif
 
       exec echo "Unavailable" >> $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/RUN.txt
       exec echo "Unavailable" >> $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/traject.points
@@ -907,6 +933,8 @@ proc Exp::PopUp { X Y } {
          .exppop.product add command -label [lindex $Lbl(RSMCFax) $GDefs(Lang)] -command  { Exp::ProductRSMCFax }
          .exppop.product add command -label [lindex $Lbl(RSMCJointData) $GDefs(Lang)] -command  {Exp::ProductRSMCJointData}
          .exppop.product add command -label [lindex $Lbl(RSMCJointStatement) $GDefs(Lang)] -command { Exp::ProductRSMCJointStatement [FileBox::Create . "" Load ""] }
+         .exppop.product add separator
+         .exppop.product add command -label [lindex $Lbl(RSMCBlank) $GDefs(Lang)] -command { Exp::ProductRSMCBlank }
    }
 
    #----- Dans le cas RSMC, activer la transmision de produits
@@ -918,6 +946,221 @@ proc Exp::PopUp { X Y } {
 
    .exppop entryconfigure 0 -label "$Data(Name)"
    tk_popup .exppop $X $Y 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Exp::BlankTransmit>
+# Creation : Avril 2011 - S. Trudel - CMC/CMOE
+#
+# But      : Transfert les pages vides RSMC.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Exp::BlankTransmit { } {
+   global GDefs env
+   variable Print
+   variable Sim
+   variable Error
+   variable Data
+   variable Param
+
+   $Page::Data(Frame).page.canvas config -cursor watch
+   update idletasks
+
+   #----- On considere les produits de chacun des centres.
+   #         Data(RSMC_CN) (RSMC_UK) Data(RSMC_AU) Data(RSMC_CA) Data(RSMC_RU) Data(RSMC_JP) Data(RSMC_FR) Data(RSMC_US)
+
+   set rsmc_arg ""
+
+   if { $Exp::Data(RSMC_AU)==1 } {
+      set rsmc_arg "${rsmc_arg}AU "
+   }
+
+   if { $Exp::Data(RSMC_CA)==1 } {
+      set rsmc_arg "${rsmc_arg}CA "
+   }
+
+   if { $Exp::Data(RSMC_CN)==1 } {
+      set rsmc_arg "${rsmc_arg}CN "
+   }
+
+   if { $Exp::Data(RSMC_FR)==1 } {
+      set rsmc_arg "${rsmc_arg}FR "
+   }
+
+   if { $Exp::Data(RSMC_JP)==1 } {
+      set rsmc_arg "${rsmc_arg}JP "
+   }
+
+   if { $Exp::Data(RSMC_RU)==1 } {
+      set rsmc_arg "${rsmc_arg}RU "
+   }
+
+   if { $Exp::Data(RSMC_UK)==1 } {
+      set rsmc_arg "${rsmc_arg}UK "
+   }
+
+   if { $Exp::Data(RSMC_US)==1 } {
+      set rsmc_arg "${rsmc_arg}US "
+   }
+
+   #----- On considere les joint statements, le lead ainsi que la meteo CMC.
+   #         Data(JntStat34) Data(JntStat5) Data(JntStat16) Data(JntStat2)
+   #         Data(RSMCLead)
+   #         Data(RSMCMeteo)
+
+   if { $Exp::Data(JntStat34)==1 } {
+      set rsmc_arg "${rsmc_arg}jntreg34.html "
+   }
+
+   if { $Exp::Data(JntStat5)==1 } {
+      set rsmc_arg "${rsmc_arg}jntreg5.html "
+   }
+
+   if { $Exp::Data(JntStat16)==1 } {
+      set rsmc_arg "${rsmc_arg}jntreg16.html "
+   }
+
+   if { $Exp::Data(JntStat2)==1 } {
+      set rsmc_arg "${rsmc_arg}jntreg2.html "
+   }
+
+   if { $Exp::Data(RSMCLead)==1 } {
+      set rsmc_arg "${rsmc_arg}leadrsmc.txt "
+   }
+
+   if { $Exp::Data(RSMCMeteo)==1 } {
+      set rsmc_arg "${rsmc_arg}meteo "
+   }
+
+   puts stderr "set ErrCatch $GDefs(Dir)/Script/RSMCTransferBlank.sh ... ${rsmc_arg}."
+
+   #----- setup le repertoire et le fichier concernant le joint statement.
+   set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
+
+   set tokenarchiversmc [clock format [clock seconds] -format "%Y%m%d.%H%M%S" -gmt true]
+
+   if { $rsmc_arg!="" } {
+
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path}.${tokenarchiversmc} ${rsmc_arg} } MsgCatch ]
+
+      if { $ErrCatch != 0 } {
+         Log::Print ERROR "Problem to copy the blank products for ( $rsmc_arg ) on the RSMC commun web page.\n\n$MsgCatch"
+      }
+
+      #----- effacer les produits du RSMC Montreal sur les sites mirroirs.
+
+      if { $Exp::Data(RSMC_CA)==1 } {
+         set ErrCatch [catch  { exec $GDefs(Dir)/Script/RSMCTransferProducts.sh $path 3 $tokenarchiversmc } MsgCatch ]
+
+         if { $ErrCatch != 0 } {
+            Log::Print ERROR "Problem to delete RSMC Montreal products on the mirror RSMC web pages.\n\n$MsgCatch"
+         }
+      }
+
+      #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
+
+      if { $Exp::Data(JntStat34)==1 } {
+         set ErrCatch [catch  { exec $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc } MsgCatch ]
+
+         if { $ErrCatch != 0 } {
+            Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$MsgCatch"
+         }
+      }
+   }
+
+   $Page::Data(Frame).page.canvas config -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Exp::ProductRSMCBlank>
+# Creation : Avril 2011 - S. Trudel - CMC/CMOE
+#
+# But      : Selection des parametres pour les produits vides RSMC.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Exp::ProductRSMCBlank { } {
+   global GDefs
+   variable Lbl
+   variable Data
+
+   toplevel     .blank
+
+   wm title     .blank [lindex $Lbl(Transmit) $GDefs(Lang)]
+   wm transient .blank .
+   wm resizable .blank 0 0
+   wm geometry  .blank =210x460+[expr [winfo rootx .]+10]+[expr [winfo rooty .]+10]
+   grab .blank
+
+   #----- on selectionne les centres RSMC.
+
+   labelframe .blank.c -text "Centre RSMC"
+
+      frame .blank.c.l -relief sunken -bd 1
+         checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1 
+         checkbutton .blank.c.l.uk -variable Exp::Data(RSMC_UK) -text "Exeter"     -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.au -variable Exp::Data(RSMC_AU) -text "Melbourne"  -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.ru -variable Exp::Data(RSMC_RU) -text "Obninsk"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.jp -variable Exp::Data(RSMC_JP) -text "Tokyo"      -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.fr -variable Exp::Data(RSMC_FR) -text "Toulouse"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.us -variable Exp::Data(RSMC_US) -text "Washington" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         pack .blank.c.l.cn .blank.c.l.uk .blank.c.l.au .blank.c.l.ca .blank.c.l.ru .blank.c.l.jp .blank.c.l.fr .blank.c.l.us \
+            -side top -fill x -ipady 2
+      pack .blank.c.l -side top -fill x -padx 5 -pady 5
+   pack .blank.c -side top -fill x -padx 5 -pady 5
+
+   #----- on selectionne les joint statements.
+
+   labelframe .blank.p -text "Joint Statement"
+      frame .blank.p.l -relief sunken -bd 1
+         checkbutton .blank.p.l.pjnt16 -variable Exp::Data(JntStat16) -text "Region I/VI"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.p.l.pjnt2  -variable Exp::Data(JntStat2)  -text "Region II"     -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.p.l.pjnt5  -variable Exp::Data(JntStat5)  -text "Region V"      -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         pack .blank.p.l.pjnt34 .blank.p.l.pjnt5 .blank.p.l.pjnt16 .blank.p.l.pjnt2 -side top -fill x -ipady 2
+
+      pack .blank.p.l -side top -fill x -padx 5 -pady 5
+   pack .blank.p -side top -padx 5 -fill both -expand true
+
+   #----- on selectionne le lead.
+
+   labelframe .blank.l -text "Lead RSMC"
+      frame .blank.l.l -relief sunken -bd 1
+         checkbutton .blank.l.l.lead -variable Exp::Data(RSMCLead) -text "Lead RSMC" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         pack .blank.l.l.lead -side top -fill x -ipady 2
+
+      pack .blank.l.l -side top -fill x -padx 5 -pady 5
+   pack .blank.l -side top -padx 5 -fill both -expand true
+
+   #----- on selectionne la meteo du CMC.
+
+   labelframe .blank.m -text "Meteo"
+      frame .blank.m.l -relief sunken -bd 1
+         checkbutton .blank.m.l.lead -variable Exp::Data(RSMCMeteo) -text "Montreal" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         pack .blank.m.l.lead -side top -fill x -ipady 2
+
+      pack .blank.m.l -side top -fill x -padx 5 -pady 5
+   pack .blank.m -side top -padx 5 -fill both -expand true
+
+   frame .blank.command
+      button .blank.command.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -bd 1 -command "destroy .blank"
+      button .blank.command.send -text [lindex $Lbl(Send) $GDefs(Lang)] -bd 1 -command "destroy .blank ; Exp::BlankTransmit"
+      pack .blank.command.cancel .blank.command.send -side left -fill x -expand true
+   pack .blank.command -side top -padx 5 -pady 5 -fill x
 }
 
 #----------------------------------------------------------------------------
@@ -1003,12 +1246,14 @@ proc Exp::ProductRSMCJointData { } {
 
    Dialog::Wait . $Msg(SetLead)
 
+   set tokenarchiversmc [clock format [clock seconds] -format "%Y%m%d.%H%M%S" -gmt true]
+
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt 2>@1 } msg]
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
    } elseif { $region == "5" } {
       exec echo "5" > $path/leadrsmc.txt
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path/leadrsmc.txt leadrsmc.txt 2>@1 } msg]
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
    } else {
       file delete -force $path/leadrsmc.txt
    }
@@ -1023,10 +1268,10 @@ proc Exp::ProductRSMCJointData { } {
    }
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
-   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $GDefs(Dir)/Script/RSMCJointTransfer.sh $path $nbip2 2>@1 } msg]
+   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path $nbip2 $tokenarchivers 2>@1 } msg]
    if { !$join } {
       Dialog::Wait . $Msg(SendJoint)
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html 2>@1 } msg]
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
    }
 
    Dialog::WaitDestroy
@@ -1063,15 +1308,17 @@ proc Exp::ProductRSMCJointStatement { File } {
    update idletasks
 
    #----- setup le repertoire et le fichier concernant le joint statement.
-   set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin/joint_statement_b.html"
-   file copy -force $File $path
+   set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
+   file copy -force $File $path/joint_statement_b.html
 
    if { [Dialog::Default . 400 WARNING $Msg(JointStatement) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
+   set tokenarchiversmc [clock format [clock seconds] -format "%Y%m%d.%H%M%S" -gmt true]
+
    Dialog::Wait . $Msg(SendJoint)
-   set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/JNT_SEND.sh $path jntreg34.html 2>@1 } msg]
+   set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $path/joint_statement_b.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
    Dialog::WaitDestroy
 
    if { $err } {
