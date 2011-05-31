@@ -338,28 +338,18 @@ proc Mapper::Zoom { { All False } } {
       set coords0 [set coords1 {}]
 
       if { [gdalband is $object] } {
-         if { [llength [set coords [gdalband stats $object -extent]]] } {
-            set coords0 [gdalband stats $object -gridpoint [lindex $coords 0] [lindex $coords 1]]
-            set coords1 [gdalband stats $object -gridpoint [lindex $coords 2] [lindex $coords 3]]
-         }
+         set coords [gdalband stats $object -llextent]
       } elseif { [ogrlayer is $object] } {
-        if { [llength [set coords [ogrlayer stats $object -extent]]] } {
-            set coords0 [ogrlayer stats $object -project [lindex $coords 0] [lindex $coords 1]]
-            set coords1 [ogrlayer stats $object -project [lindex $coords 2] [lindex $coords 3]]
-         }
+         set coords [ogrlayer stats $object -llextent]
       } elseif { [model is $object] } {
-         if { [llength [set coords [model stats $object -extent]]] } {
-            set coords0 [model stats $object -project [lindex $coords 0] [lindex $coords 1]]
-            set coords1 [model stats $object -project [lindex $coords 2] [lindex $coords 3]]
-         }
+         set coords [model stats $object -llextent]
       }
-
-      if { [llength $coords0] && [llength $coords1] } {
+      if { [llength $coords] } {
          set zoom True
-         set x0 [expr $x0<[lindex $coords0 1]?$x0:[lindex $coords0 1]]
-         set y0 [expr $y0<[lindex $coords0 0]?$y0:[lindex $coords0 0]]
-         set x1 [expr $x1>[lindex $coords1 1]?$x1:[lindex $coords1 1]]
-         set y1 [expr $y1>[lindex $coords1 0]?$y1:[lindex $coords1 0]]
+         set x0 [lindex $coords 1]
+         set y0 [lindex $coords 0]
+         set x1 [lindex $coords 3]
+         set y1 [lindex $coords 2]
       }
    }
 
