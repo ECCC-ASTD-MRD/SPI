@@ -51,6 +51,8 @@ namespace eval Exp {
 
    #----- RSMC stuff.
 
+   set Bubble(Color)    { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal" "Red  : impact all RSMC web sites\nGray : impact only RSMC Montreal web site" }
+
    set Lbl(Cancel)      { "Annuler" "Cancel" }
    set Lbl(Send)        { "Transmettre" "Transmit" }
    set Lbl(Transmit)    { "Transmission" "Transmission" }
@@ -1048,7 +1050,7 @@ proc Exp::BlankTransmit { } {
 
    if { $rsmc_arg!="" } {
 
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path}.${tokenarchiversmc} ${rsmc_arg} } MsgCatch ]
+      set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } MsgCatch ]
 
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Problem to copy the blank products for ( $rsmc_arg ) on the RSMC commun web page.\n\n$MsgCatch"
@@ -1057,7 +1059,7 @@ proc Exp::BlankTransmit { } {
       #----- effacer les produits du RSMC Montreal sur les sites mirroirs.
 
       if { $Exp::Data(RSMC_CA)==1 } {
-         set ErrCatch [catch  { exec $GDefs(Dir)/Script/RSMCTransferProducts.sh $path 3 $tokenarchiversmc } MsgCatch ]
+         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path 3 $tokenarchiversmc 2>@1 } MsgCatch ]
 
          if { $ErrCatch != 0 } {
             Log::Print ERROR "Problem to delete RSMC Montreal products on the mirror RSMC web pages.\n\n$MsgCatch"
@@ -1067,7 +1069,7 @@ proc Exp::BlankTransmit { } {
       #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
 
       if { $Exp::Data(JntStat34)==1 } {
-         set ErrCatch [catch  { exec $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc } MsgCatch ]
+         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } MsgCatch ]
 
          if { $ErrCatch != 0 } {
             Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$MsgCatch"
@@ -1110,10 +1112,10 @@ proc Exp::ProductRSMCBlank { } {
    labelframe .blank.c -text "Centre RSMC"
 
       frame .blank.c.l -relief sunken -bd 1
-         checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1 
+         checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1
          checkbutton .blank.c.l.uk -variable Exp::Data(RSMC_UK) -text "Exeter"     -onvalue 1 -offvalue 0 -indicatoron false -bd 1
          checkbutton .blank.c.l.au -variable Exp::Data(RSMC_AU) -text "Melbourne"  -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1 -background  #FF0000
          checkbutton .blank.c.l.ru -variable Exp::Data(RSMC_RU) -text "Obninsk"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1
          checkbutton .blank.c.l.jp -variable Exp::Data(RSMC_JP) -text "Tokyo"      -onvalue 1 -offvalue 0 -indicatoron false -bd 1
          checkbutton .blank.c.l.fr -variable Exp::Data(RSMC_FR) -text "Toulouse"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
@@ -1129,7 +1131,7 @@ proc Exp::ProductRSMCBlank { } {
       frame .blank.p.l -relief sunken -bd 1
          checkbutton .blank.p.l.pjnt16 -variable Exp::Data(JntStat16) -text "Region I/VI"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
          checkbutton .blank.p.l.pjnt2  -variable Exp::Data(JntStat2)  -text "Region II"     -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron false -bd 1 -background #FF0000
          checkbutton .blank.p.l.pjnt5  -variable Exp::Data(JntStat5)  -text "Region V"      -onvalue 1 -offvalue 0 -indicatoron false -bd 1
          pack .blank.p.l.pjnt34 .blank.p.l.pjnt5 .blank.p.l.pjnt16 .blank.p.l.pjnt2 -side top -fill x -ipady 2
 
@@ -1140,7 +1142,7 @@ proc Exp::ProductRSMCBlank { } {
 
    labelframe .blank.l -text "Lead RSMC"
       frame .blank.l.l -relief sunken -bd 1
-         checkbutton .blank.l.l.lead -variable Exp::Data(RSMCLead) -text "Lead RSMC" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.l.l.lead -variable Exp::Data(RSMCLead) -text "Lead RSMC" -onvalue 1 -offvalue 0 -indicatoron false -bd 1 -background #FF0000
          pack .blank.l.l.lead -side top -fill x -ipady 2
 
       pack .blank.l.l -side top -fill x -padx 5 -pady 5
@@ -1161,6 +1163,10 @@ proc Exp::ProductRSMCBlank { } {
       button .blank.command.send -text [lindex $Lbl(Send) $GDefs(Lang)] -bd 1 -command "destroy .blank ; Exp::BlankTransmit"
       pack .blank.command.cancel .blank.command.send -side left -fill x -expand true
    pack .blank.command -side top -padx 5 -pady 5 -fill x
+
+   Bubble::Create .blank.c.l $Exp::Bubble(Color)
+   Bubble::Create .blank.p.l $Exp::Bubble(Color)
+   Bubble::Create .blank.m.l $Exp::Bubble(Color)
 }
 
 #----------------------------------------------------------------------------
