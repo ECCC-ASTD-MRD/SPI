@@ -5,7 +5,7 @@
 # Dorval, Quebec
 #
 # Projet     : RSMC.
-# Nom        : <JNT_SEND.sh>
+# Nom        : <RSMCTransferJoint.sh>
 # Creation   : Mars 2000 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Permet de transferer un fichier specifique ( joint statement ou
@@ -15,6 +15,8 @@
 # Parametres :
 #   ${1}     : Path/fichier pour le fichier local.
 #   ${2}     : Nom pour le fichier remote.
+#   ${3}     : Nom du token utilise pour l'archivage des transferts de produits.
+#   ${4}     : Path relatif pour l'archivage des transferts de produits.
 #
 # Remarques  :
 #   - ce script permet de copier soit le fichier html du joint statement
@@ -25,7 +27,6 @@
 #
 #     cmc  : un scp sur rsmc_jnt@depot.cmc.ec.gc.ca dans
 #
-#             /home/eer/ftp/rsmc/data/rsmc/JNT_STMT/jntreg34.html
 #             /data/depot/sshusers/rsmc_jnt/incoming/jntreg34.html
 #
 #     noaa : le ftp 'arlftp.arlhq.noaa.gov' avec user ( voir ci-bas ) dans
@@ -49,12 +50,18 @@
 
 LocalFile=${1}
 RemoteName=${2}
+PathRSMC=${3}
+TokenArchiveRSMC=${4}
 
 #----- copie les produits sur le serveur www du CMC.
 
 if [ -e ${LocalFile} ]
 then
    chmod 644 ${LocalFile}
+   
+   mkdir -p ${PathRSMC}.${TokenArchiveRSMC}
+
+   cp -p ${LocalFile} ${PathRSMC}.${TokenArchiveRSMC}/
 
    scp ${LocalFile} rsmc_jnt@depot.cmc.ec.gc.ca:incoming/${RemoteName}
 

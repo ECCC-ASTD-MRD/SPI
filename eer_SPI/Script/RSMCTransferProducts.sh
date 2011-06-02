@@ -5,7 +5,7 @@
 # Dorval, Quebec
 #
 # Projet     : RSMC.
-# Nom        : <RSMCJointTransfer.sh>
+# Nom        : <RSMCTransferProducts.sh>
 # Creation   : Mars 2000 - S. Trudel - CMC/CMOE
 #
 # But        : Permet de transferer les produits standards RSMC
@@ -13,32 +13,13 @@
 #              pour la page commune RSMC.
 #
 # Parametres :
-#   ${1}     : Repertoire temporaire (/users/dor/afse/eer/test_mensuel).
+#   ${1}     : Path pour les fichiers locaux.
 #   ${2}     : Nombres d'heures correspondant aux ip2.
+#   ${3}     : Nom du token utilise pour l'archivage des transferts de produits.
 #
 # Remarques  :
-#   - pour le 'joint statement' ( voir la NOTE IMPORTANTE ci-bas ):
-#
-#     cmc  : un scp sur eer@accessdepot dans
-#
-#             ~/www/mandats/rsmc/usagers/jnt_rsmc/restrict/JNT_STMT/jntreg34.html
-#
-#     noaa : le ftp 'arlftp.arlhq.noaa.gov' avec user ( voir ci-bas ) dans
-#
-#             jnttest.html
-#             ( /jntreg34.html )
-#
-#     autr : le ftp 'ftp.bom.gov.au' avec user ( voir ci-bas ) dans
-#
-#             JNT_STMT/jnttest.html
-#             ( /register2/bom050/JNT_STMT/jntreg34.html )
-#
-#     NOTE IMPORTANTE : lorsque vous copiez ce fichier ( jnttest.html ),
-#                       assurez-vous d'avoir la bonne permission pour
-#                       ce fichier, soit 644.
-#
-#   - pour les formats des images (gif) du trajectoire/CANERM generees
-#     via la toolbox, on "imprime" l'image :
+#   - pour les formats des images (gif) generees via la toolbox,
+#     on sauvegarde l'image :
 #
 #        small (ex. S<nom> ) avec l'option dimension "4x4"
 #        large (ex. L<nom> ) avec l'option dimension "image"
@@ -52,12 +33,13 @@
 
 #----- recupere les parametres.
 
-DirTmp=${1}
+DirData=${1}
 NbIp2=${2}
+TokenArchiveRSMC=${3}
 
 #----- se positionne dans le bon repertoire.
 
-cd ${DirTmp}
+cd ${DirData}
 
 #----- copie les produits sur le serveur www du CMC.
 
@@ -80,11 +62,9 @@ do
    i=`expr $i + 1`
 done
 
-#cat LTJCA.ps CVRCA.ps LICCA_*.ps LTDCA_*.ps > rsmc.ps
 cat LTJCA.ps CVRCA.ps $listeic $listetd > rsmc.ps
 chmod 644 rsmc.ps
 
-#cat CVRCA.ps LTJCA.ps LICCA_*.ps LTDCA_*.ps > rsmc_fax.ps
 cat CVRCA.ps LTJCA.ps $listeic $listetd > rsmc_fax.ps
 chmod 644 rsmc_fax.ps
 
@@ -125,6 +105,16 @@ do
 
    i=`expr $i + 1`
 done
+
+#----- creer le repertoire externe pour les archives RSMC et en fait une copie.
+
+ssh eer@accessdepot mkdir www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/arc/${TokenArchiveRSMC}/
+scp -p eer@accessdepot:www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/* eer@accessdepot:www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/arc/${TokenArchiveRSMC}/
+
+#----- creer le repertoire interne pour les archives RSMC et en fait une copie.
+
+mkdir -p ${DirData}/../RSMCJoin.${TokenArchiveRSMC}/
+cp -p * ${DirData}/../RSMCJoin.${TokenArchiveRSMC}/
 
 #----- creation des directives communes pour les serveurs ftp.
 
