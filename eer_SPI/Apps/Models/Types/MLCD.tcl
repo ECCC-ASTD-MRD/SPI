@@ -1528,8 +1528,9 @@ proc MLCD::ValidateEmissionTab { } {
       focus $Data(EmTopEnt)
       return 0
    }
+   set Sim(EmTopOld) $Sim(EmTop)
 
-   #----- Verify that release column radius is greater or euql to 0.
+   #----- Verify that release column radius is greater or equal to 0.
    set idx ""
    set number [string is double -strict -failindex idx $Sim(EmRadius)]
    if { $number == 0 && $idx == -1 } {
@@ -1836,7 +1837,7 @@ proc MLCD::ValidateModelTab { } {
       Dialog::Error .modelnew $Error(GridDomainRange) " $Sim(GridDomain) $Error(UnitKilometers)"
       focus $Data(ConcDomainEnt)
       return 0
-   } elseif { $number == 0 || ($number == 1 && $Sim(GridDomain) <= 0.1) || ($number == 1 && $Sim(GridDomain) > 200) } {
+   } elseif { $number == 0 || ($number == 1 && $Sim(GridDomain) <= 0.1) || ($number == 1 && $Sim(GridDomain) > 500) } {
       Dialog::Error .modelnew $Error(GridDomain) " $Sim(GridDomain) $Error(UnitKilometers)"
       focus $Data(ConcDomainEnt)
       return 0

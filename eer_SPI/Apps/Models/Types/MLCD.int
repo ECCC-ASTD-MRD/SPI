@@ -233,8 +233,9 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    set Data(EmBottomEnt) $frame.col.bottom.ent
 
    #----- Top of column [m].
+   set Sim(EmTopOld) $Sim(EmTop)
    Option::Create $frame.col.top [lindex $Lbl(EmTop) $GDefs(Lang)] { MLCD::Sim(EmTop) MLDP::Sim(EmHeightMode) } \
-       1 -1 [lindex $MLDP::Sim(ListEmHeightMode) $GDefs(Lang)] "set MLCD::Sim(EmTop) \[Model::ComputeKaboomHeight\]"
+       1 -1 [lindex $MLDP::Sim(ListEmHeightMode) $GDefs(Lang)] "set MLCD::Sim(EmTop) \[Model::ComputeKaboomHeight MLCD\]; set MLCD::Sim(EmTopOld) \$MLCD::Sim(EmTop)"
    pack $frame.col.top -side top -anchor w -padx 2 -fill x
    Bubble::Create $frame.col.top $Bubble(EmColTop)
    set Data(EmTopEnt) $frame.col.top.e

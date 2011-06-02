@@ -478,6 +478,20 @@ proc MLDP::CreateModelInput { } {
 
       } elseif { $sizeIdx == 3 } {
 
+         #----- Size distribution used in NAME (London VAAC, UK Met Office).
+         puts $file "[format "%-25s" 6] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
+         puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
+         puts $file "[format "%-25s" "Second column :"] [format "%-25s" fnp_size(i)] Fraction \[0,1\] of total number of particles for each particle size bin (3-digits precision)."
+         puts $file "0.1"
+         puts $file "0.3       0.001"
+         puts $file "1.0       0.005"
+         puts $file "3.0       0.050"
+         puts $file "10.0      0.200"
+         puts $file "30.0      0.700   Ex.: 70.0% of particles have a size (diameter) in the range 10-30 microns."
+         puts $file "100.0     0.044"
+
+      } elseif { $sizeIdx == 4 } {
+
          #----- Fine size distribution.
          puts $file "[format "%-25s" 4] [format "%-25s" nbbinsSD] Number of bins in particle size distribution."
          puts $file "[format "%-25s" "First column  :"] [format "%-25s" diam_size(i+1)] Particle diameter size boundaries \[microns\]."
@@ -638,8 +652,9 @@ proc MLDP::EmissionRead { } {
 
    set Sim(IsScenarioValid)  0 ; #----- Flag indicating if emission scenario has been validated successfully (1) or not (0).
    set Sim(EmMassMode) 0 ;#----- Total released mass mode
-                          #----- 0: Empirical Formula of Sparks et al. (1997). For this mode, mass cannot be modified manually.
-                          #---- 1: Edition. For this mode, mass can be modified manually for specific purposes.
+                          #----- 0: Empirical formula of Sparks et al. (1997). For this mode, mass cannot be modified manually.
+                          #----- 1: Empirical formula of Mastin et al. (2009). For this mode, mass cannot be modified manually.
+                          #----  2: Edition. For this mode, mass can be modified manually for specific purposes.
 
    #----- Initialize list of emission scenario.
    set Sim(EmList) {}
@@ -1157,7 +1172,7 @@ proc MLDP::InitNew { Type } {
       set Sim(Timescale)            10800                               ; #----- Lagrangian time scale [s].
       set Sim(ReflectionLevel)      0.9999                              ; #----- Reflection level [hyb|eta|sig].
       set Sim(EmNumberParticles)    50000                               ; #----- Number of particles.
-      set Sim(ListScale)           { "HEMI  (50 km, 687x687)" "MESO  (33 km, 229x229)" "FINE  (15 km, 503x503)" "VFINE (10 km, 229x229)" "EFINE (5 km,  457x457)" } ; #----- List of grid resolutions [km].
+      set Sim(ListScale)           { "HEMI  (50 km, 687x687)" "LMESO (33 km, 400x400)" "MESO  (33 km, 229x229)" "FINE  (15 km, 503x503)" "SFINE (15 km, 251x251)" "VFINE (10 km, 229x229)" "EFINE (5 km,  457x457)" "UFINE (2 km,  300x300)"} ; #----- List of grid resolutions [km].
       set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
       set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
       set Sim(DtOverTl)             1.0
@@ -1170,6 +1185,7 @@ proc MLDP::InitNew { Type } {
                                      "1 1000 2000 5000 10000" \
                                      "1 1000 2000 5000 10000 15000" \
                                      "1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000" \
+                                     "1 2000 4000 6000 8000 10000" \
                                      "1 100 200 300 400 500 600 700 800 900 1000" \
                                      "1 100 1000" \
                                      "1 100 500 1000" \
@@ -1207,7 +1223,7 @@ proc MLDP::InitNew { Type } {
       set Sim(Timescale)            2700                                ; #----- Lagrangian time scale [s].
       set Sim(ReflectionLevel)      0.9990                              ; #----- Reflection level [hyb|eta|sig].
       set Sim(EmNumberParticles)    100000                              ; #----- Number of particles.
-      set Sim(ListScale)             { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
+      set Sim(ListScale)             { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "SFINE (2 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
       set Sim(ListMeteoModel)        { glb reg }
       set Sim(ListReflectionLevel)   { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 }
       set Sim(DtOverTl)               0.1
@@ -1220,6 +1236,7 @@ proc MLDP::InitNew { Type } {
                                     "0 1000 2000 5000 10000" \
                                     "0 1000 2000 5000 10000 15000" \
                                     "0 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000" \
+                                    "0 2000 4000 6000 8000 10000" \
                                     "0 100 200 300 400 500 600 700 800 900 1000" \
                                     "0 100 1000" \
                                     "0 100 500 1000" \
@@ -1828,11 +1845,13 @@ proc MLDP::ValidatePlumeHeight { } {
       return 0
    }
 
-   #----- Verify if maximum plume height is lower or equal to 30000 meters.
-   if { $Sim(EmHeight) > 30000.0 } {
+   #----- Verify if maximum plume height is lower or equal to 60000 meters.
+   if { $Sim(EmHeight) > 60000.0 } {
       Dialog::Error .modelnew $Error(Height2) " $Sim(EmHeight) $Error(UnitMeters)"
       return 0
    }
+
+   set Sim(EmHeightOld) $Sim(EmHeight)
 
    return 1
 }
@@ -2073,7 +2092,9 @@ proc MLDP::ValidateVerticalLevels { } {
 #
 # Retour     :
 #
-# Remarques  :
+# Remarques  : 2 June 2011 - A. Malo - CMC/CMOE
+#              Compute total mass according to empirical
+#              formula of Mastin et al. (2009) as well.
 #
 #----------------------------------------------------------------------------
 
@@ -2085,18 +2106,27 @@ proc MLDP::ComputeMass { } {
       return
    }
 
-   set Sim(EmMassOld) $Sim(EmMass)
+   set Sim(EmMassOld)   $Sim(EmMass)
+   set Sim(EmHeightOld) $Sim(EmHeight)
 
-   #----- Verify if mass mode is 0 (Empirical formula of Sparks et al. 1997).
-   if { $Sim(EmMassMode) == 1 } {
+   #----- Verify if mass mode is 0 (Empirical formula of Sparks et al. 1997) or 1 (Empirical formula of Mastin et al. 2009).
+   if { $Sim(EmMassMode) == 2 } {
       #----- Mass can be edited.
       return
    }
 
-   #----- Validate input parameters for the total released mass calculation
-   #----- according to empirical formula of Sparks et al. (1997).
+   #----- Validate input parameters for the total released mass calculation.
    if { [MLDP::ValidateMassInputParams] } {
-      set Sim(EmMass) [format "%.6e" [expr 0.1 * $Sim(EmDensity) * $Sim(EmEffectiveDuration) * pow(double($Sim(EmHeight)/1.670e3),double(1.0/0.259))]]
+
+      if { $Sim(EmMassMode) == 0 } {
+         #----- Compute mass according to empirical formula of Sparks et al. (1997).
+         set Sim(EmMass) [format "%.6e" [expr 0.1 * $Sim(EmDensity) * $Sim(EmEffectiveDuration) * pow(double($Sim(EmHeight)/1.670e+03),double(1.0/0.259))]]
+      } elseif { $Sim(EmMassMode) == 1 } {
+         #----- Compute mass according to empirical formula of Mastin et al. (2009).
+         set Sim(EmMass) [format "%.6e" [expr 0.1 * $Sim(EmDensity) * $Sim(EmEffectiveDuration) * pow(double($Sim(EmHeight)/2.000e+03),double(1.0/0.241))]]
+      }
+
       set Sim(EmMassOld) $Sim(EmMass)
+
    }
 }

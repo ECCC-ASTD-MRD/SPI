@@ -55,8 +55,8 @@ namespace eval MLDP {
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
    set Lbl(EmNumberParticles)   { "Nombre de particules     " "Number of particles      " }
-   set Lbl(EmDensity)           { "Densité           (µg/m³)" "Density           (µg/m³)" }
-   set Lbl(EmHeight)            { "Hauteur maximale      (m)" "Maximum height        (m)" }
+   set Lbl(EmDensity)           { "Densité DRE       (µg/m³)" "Density DRE       (µg/m³)" }
+   set Lbl(EmHeight)            { "Hauteur maximale AGL  (m)" "Maximum height AGL    (m)" }
    set Lbl(EmMass)              { "Masse totale émise   (µg)" "Total mass released  (µg)" }
    set Lbl(EmRadius)            { "Rayon de la colonne   (m)" "Column radius         (m)" }
    set Lbl(EmSizeDist)          { "Distribution de la taille" "Size distribution        " }
@@ -101,7 +101,7 @@ namespace eval MLDP {
    set Bubble(OtherParameters)        { "Autres paramètres." "Other parameters." }
    set Bubble(Event)                  { "Sélection du type d'événement (À titre informatif)." "Select the event type (As information label)." }
    set Bubble(Virus)                  { "Sélection du type de virus." "Select the virus type." }
-   set Bubble(Scale)                  { "Résolution (km) de la grille\npolaire stéréographique." "Resolution (km) of the polar stereographic grid." }
+   set Bubble(Scale)                  { "Maillage spatial (km) et dimension\nde la grille polaire stéréographique." "Spatial mesh (km) and size of\nthe polar stereographic grid." }
    set Bubble(Meteo)                  { "Type de modèle météorologique." "Type of meteorological model." }
    set Bubble(MeteoDelta)             { "Interval de temps entre les fichiers\ndes données météorologiques (hr)." "Time interval between meteorological\ndata files (hr)." }
    set Bubble(MoveGrid1)              { "Permettre de centrer automatiquement la grille\nsur la source sélectionnée sur la sphère terrestre." "Allow to center the the grid over the\nselected source on the earth's sphere." }
@@ -114,11 +114,12 @@ namespace eval MLDP {
 
    set Bubble(Column)                 { "Propriétés de la colonne d'émission." "Emission column properties." }
    set Bubble(EmNumberParticles)      { "Nombre de particules relâchées." "Number of released particles." }
-   set Bubble(EmDensity)              { "Densité d'une particule (µg/m³)." "Particle density (µg/m³)." }
-   set Bubble(EmHeight)               { "Hauteur maximale du panache (m)." "Maximum plume height (m)." }
-   set Bubble(MassMode)               { "Sélectionner le mode pour le calcul de la masse totale relâchée (µg).\n\n - Formule empirique de Sparks et al. (1997): La masse totale relâchée ne peut pas être éditée;\n   elle dépend de la densité d'une particule, de la hauteur du panache et de la durée effective d'émission.\n - Édition: La masse totale relâchée peut être éditée." "Select the mode for total released mass calculation (µg).\n\n - Empirical formula of Sparks et al. (1997): Total mass released cannot be edited;\n   it is a function of particle density, plume height and effective emission duration.\n - Edit: Total mass released can be edited." }
+   set Bubble(EmDensity)              { "Densité d'une particule\n(DRE: Dense Rock Equivalent µg/m³)." "Particle density\n(DRE: Dense Rock Equivalent µg/m³)." }
+   set Bubble(EmHeight)               { "Hauteur maximale du panache au-dessus\ndu niveau du sol (m AGL)." "Maximum plume height above\nground level (m AGL)." }
+   set Bubble(MassMode)               { "Sélectionner le mode pour le calcul de la masse totale relâchée (µg).\n\n - Mode 0: Formule empirique de Sparks et al. (1997) - La masse totale relâchée ne peut pas être éditée.\n - Mode 1: Formule empirique de Mastin et al. (2009) - La masse totale relâchée ne peut pas être éditée.\n   Ces deux formulations estiment la masse totale émise en fonction de la densité d'une particule, de la\n   hauteur du panache et de la durée effective d'émission. On considère une fraction de cette masse\n   (10%) qui sert au transport et à la dispersion atmosphérique.\n - Mode 2: Édition - La masse totale relâchée peut être éditée." \
+                                        "Select the mode for total released mass calculation (µg).\n\n - Mode 0: Empirical formula of Sparks et al. (1997) - Total mass released cannot be edited.\n - Mode 1: Empirical formula of Mastin et al. (2009) - Total mass released cannot be edited.\n   These two formulations estimate the total release mass in function of particle density,\n   plume height and effective emission duration. We consider a fraction of this mass (10%)\n   used for the atmospheric transport and dispersion.\n - Mode 2: Edit - Total mass released can be edited." }
    set Bubble(Radius)                 { "Rayon de la colonne d'émission (m)." "Emission column radius (m)." }
-   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet du dépôt gravitationnel selon la loi de Stokes." "Select the type of particle size distribution\nto model the effect of gravitational settling according to Stokes' law." }
+   set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet du dépôt gravitationnel selon la loi de Stokes." "Select the type of particle size distribution to model the\neffect of gravitational settling according to Stokes' law." }
    set Bubble(EmVerticalDist)         { "Sélectionner le type de distribution verticale\npour modéliser le panache d'émission." "Select the type of vertical distribution\nto model the released plume." }
 
    set Bubble(Scenario)               { "Scénario d'émission." "Release scenario." }

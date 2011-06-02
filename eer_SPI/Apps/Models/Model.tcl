@@ -220,8 +220,8 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
 # Nom        : <Model::ComputeKaboomHeight>
 # Creation   : Octobre 2009 - J.P. gauthier - CMC/CMOE
 #
-# But        : Calculate explosive source term height from
-#              Real's formula.
+# But        : Calculate source term height from explosive mass
+#              according to Real's formula.
 #
 # Parametres :
 #
@@ -231,10 +231,18 @@ source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
 #
 #----------------------------------------------------------------------------
 
-proc Model::ComputeKaboomHeight { } {
+proc Model::ComputeKaboomHeight { Model } {
    variable Lbl
    variable Msg
    variable Error
+
+   upvar ${Model}::Sim sim
+
+   if { $Model == "MLDP" } {
+      set height $sim(EmHeightOld)
+   } elseif { $Model == "MLCD" } {
+      set height $sim(EmTopOld)
+   }
 
    if { [set boom [Dialog::Get . $Lbl(EmHeight) $Msg(EmHeight)]]!="" } {
       if { [string is double -strict $boom] && $boom>0 } {
@@ -243,7 +251,7 @@ proc Model::ComputeKaboomHeight { } {
          Dialog::Error .modelnew $Error(EmHeight)
       }
    }
-   return 1
+   return $height
 }
 
 proc Model::GetMetData { Model } {
@@ -429,7 +437,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
          set sim(GridSize) [string trimright [lindex $sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
          set sim(Scale)    [lindex $sim(Scale) 0]                        ; #----- Grid scale name.
       } else {
-         set idx [lsearch -regexp $sim(ListScale) "$sim(Scale)*"]
+         set idx [lsearch -regexp $sim(ListScale) "^$sim(Scale) *"]
          if { $idx != -1 } {
             set string [lindex $sim(ListScale) $idx]
             set sim(GridRes)  [string trimleft  [lindex $string 1] "("] ; #----- Grid scale resolution [km].
