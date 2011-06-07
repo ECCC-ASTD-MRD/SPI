@@ -107,6 +107,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    float  xg1,xg2,xg3,xg4;
    int    ig1,ig2,ig3,ig4;
 
+   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zgrid","zfilter","pressure",NULL };
    enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER,PRESSURE };
 
@@ -255,22 +256,33 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
 
       case CONVIP:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"IP1");
+         if(Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"IP1 | Level Type");
             return(TCL_ERROR);
          }
-         Tcl_GetIntFromObj(Interp,Objv[2],&ip1);
-         level=FSTD_IP2Level(ip1,&kind);
-         switch(kind) {
-            case LVL_MASL  : sprintf(buf,"%.1f  m (Meter above sea level)",level); break;
-            case LVL_SIGMA : sprintf(buf,"%.4f sg (Sigma)",level); break;
-            case LVL_PRES  : sprintf(buf,"%.1f mb (Pressure)",level); break;
-            case LVL_UNDEF : sprintf(buf,"%.1f  - (Undefined)",level); break;
-            case LVL_MAGL  : sprintf(buf,"%.1f  m (Meter above groud level)",level); break;
-            case LVL_HYBRID: sprintf(buf,"%.6f hy (Hybrid)",level); break;
-            case LVL_THETA : sprintf(buf,"%.4f th (Theta)",level); break;
+         if(Objc==3) {
+            Tcl_GetIntFromObj(Interp,Objv[2],&ip1);
+            level=FSTD_IP2Level(ip1,&kind);
+            switch(kind) {
+               case LVL_MASL  : sprintf(buf,"%.1f  m (Meter above sea level)",level); break;
+               case LVL_SIGMA : sprintf(buf,"%.4f sg (Sigma)",level); break;
+               case LVL_PRES  : sprintf(buf,"%.1f mb (Pressure)",level); break;
+               case LVL_UNDEF : sprintf(buf,"%.1f  - (Undefined)",level); break;
+               case LVL_MAGL  : sprintf(buf,"%.1f  m (Meter above groud level)",level); break;
+               case LVL_HYBRID: sprintf(buf,"%.6f hy (Hybrid)",level); break;
+               case LVL_THETA : sprintf(buf,"%.4f th (Theta)",level); break;
+            }
+            Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+         } else {
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&tmp);
+
+            if (Tcl_GetIndexFromObj(Interp,Objv[3],type,"type",0,&n)!=TCL_OK) {
+               Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            ip1=FSTD_Level2IP(tmp,n);
+            Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip1));
          }
-         Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
          break;
 
       case ZGRID:
@@ -337,8 +349,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp","define","sort",NULL };
-   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,
-                     DEFINE,SORT };
+   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,DEFINE,SORT };
 
    Tcl_ResetResult(Interp);
 
