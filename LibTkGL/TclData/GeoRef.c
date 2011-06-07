@@ -62,12 +62,6 @@ void GeoRef_Incr(TGeoRef *Ref) {
    Tcl_MutexUnlock(&MUTEX_GEOREF);
 }
 
-void GeoRef_Decr(TGeoRef *Ref) {
-   Tcl_MutexLock(&MUTEX_GEOREF);
-   Ref->NRef--;
-   Tcl_MutexUnlock(&MUTEX_GEOREF);
-}
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoScan_Clear>
  * Creation     : Fevrier 2008 J.P. Gauthier - CMC/CMOE

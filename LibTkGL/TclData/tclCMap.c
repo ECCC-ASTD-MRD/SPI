@@ -35,6 +35,8 @@
 #include "tclCMap.h"
 #include "tclData.h"
 
+TCL_DECLARE_MUTEX(MUTEX_CMAP)
+
 static Tcl_HashTable CMapTable;
 static int  CMapInit=0;
 static long CMapNo=0;
@@ -118,6 +120,8 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
    cmap=(CMap_Rec*)malloc(sizeof(CMap_Rec));
 
    if (cmap) {
+      cmap->NRef++;
+
       /*Definir le maximum de couleur disponibles*/
       cmap->NbPixels=(Nb<=0?CR_MAX:(Nb>CR_MAX?CR_MAX:Nb));
 
@@ -394,7 +398,7 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             return(TCL_ERROR);
          }
          for(n=2;n<Objc;n++) {
-            CMap_Free(Tcl_GetString(Objv[n]));
+            CMap_Destroy(Interp,Tcl_GetString(Objv[n]));
          }
          return(TCL_OK);
          break;
@@ -415,7 +419,7 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <CMap_Free>
+ * Nom      : <CMap_Destroy>
  * Creation : Fevreir 2005 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Libere la palette
@@ -430,15 +434,47 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
  *
  *----------------------------------------------------------------------------
 */
-int CMap_Free(char *Name) {
+int CMap_Destroy(Tcl_Interp *Interp,char *Name) {
 
+   Tcl_HashEntry *entry;
    CMap_Rec *map=NULL;
 
-   if ((map=(CMap_Rec*)TclY_HashDel(&CMapTable,Name))) {
-      free(map->Name);
-      free(map);
+   if (Name) {
+      entry=TclY_FindHashEntry(&CMapTable,Name);
+
+      if (entry) {
+         map=(CMap_Rec*)Tcl_GetHashValue(entry);
+         if (CMap_Free(map))
+            TclY_DeleteHashEntry(entry);
+      }
    }
    return(TCL_OK);
+}
+
+int CMap_Free(CMap_Rec *Map) {
+
+   if (!Map)
+      return(0);
+
+   Tcl_MutexLock(&MUTEX_CMAP);
+
+   if (--Map->NRef) {
+      Tcl_MutexUnlock(&MUTEX_CMAP);
+      return(0);
+   } else {
+      free(Map->Name);
+      free(Map);
+   }
+   Tcl_MutexUnlock(&MUTEX_CMAP);
+   return(1);
+}
+
+int CMap_Incr(CMap_Rec *Map) {
+   Tcl_MutexLock(&MUTEX_CMAP);
+   Map->NRef++;
+   Tcl_MutexUnlock(&MUTEX_CMAP);
+
+   return(Map->NRef);
 }
 
 /*----------------------------------------------------------------------------

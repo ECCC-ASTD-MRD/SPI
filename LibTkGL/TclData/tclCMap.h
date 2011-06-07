@@ -41,6 +41,7 @@
 
 typedef struct CMap_Rec {
    char         *Name;
+   int           NRef;                               /*Nombre de reference a la palette*/
    char          Type[4][16];
    int           Interp;
    int           InvertX[4],InvertY[4];
@@ -56,6 +57,7 @@ typedef struct CMap_Rec {
 CMap_Rec* CMap_Get(char *Name);
 CMap_Rec* CMap_New(char* Name,int Nb);
 int       CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map);
+int       CMap_Destroy(Tcl_Interp *Interp,char *Name);
 
 int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit);
 int CMap_Create(Tcl_Interp *Interp,char *Name);
@@ -64,7 +66,8 @@ int CMap_GetColorString(Tcl_Interp *Interp,CMap_Rec *CMap,int Index);
 int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBFile);
 int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBFile);
 int CMap_PostscriptColor(Tcl_Interp *Interp,CMap_Rec *CMap,int Index);
-int CMap_Free(char *Name);
+int CMap_Free(CMap_Rec *Map);
+int CMap_Incr(CMap_Rec *Map);
 
 void CMap_ControlDefine(CMap_Rec *CMap);
 void CMap_RatioDefine(CMap_Rec *CMap);

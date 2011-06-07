@@ -991,6 +991,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                map=CMap_Get(Tcl_GetString(Objv[++i]));
                if (map!=Spec->Map) {
+                  CMap_Free(Spec->Map);
+                  CMap_Incr(map);
                   Spec->Map=map;
                   cmap=1;
                }

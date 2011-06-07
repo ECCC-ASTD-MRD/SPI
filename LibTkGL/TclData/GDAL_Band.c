@@ -193,7 +193,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    band->Tex.ThreadId=NULL;
 
    if (band->Spec->Map)
-      CMap_Free(band->Spec->Map->Name);
+      CMap_Free(band->Spec->Map);
 
    if ((hTable=GDALGetRasterColorTable(hband))) {
 //      printf( "Color Table (%s with %d entries)\n",GDALGetPaletteInterpretationName(GDALGetPaletteInterpretation(hTable)),GDALGetColorEntryCount(hTable));
@@ -1331,7 +1331,8 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
       Data_PreInit(Field);
       if (Band->Def->NC==1) {
          if (Band->Spec->Map)
-            CMap_Free(Band->Spec->Map->Name);
+            CMap_Free(Band->Spec->Map);
+         CMap_Incr(Field->Spec->Map);
          Band->Spec->Map=Field->Spec->Map;
       }
    }
@@ -1453,7 +1454,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       Data_PreInit(Field);
       if (Band->Def->NC==1) {
          if (Band->Spec->Map)
-            CMap_Free(Band->Spec->Map->Name);
+            CMap_Free(Band->Spec->Map);
+         CMap_Incr(Field->Spec->Map);
          Band->Spec->Map=Field->Spec->Map;
       }
    }

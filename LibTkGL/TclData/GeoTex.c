@@ -85,9 +85,10 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
       GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->VP,band->Tex.ResN,0,0,5);
 
       proj->Loading=0;
-      band->Tex.ThreadId=(Tcl_ThreadId)0x0;
-      Tcl_ExitThread(0);
+      band->Tex.ThreadId=(Tcl_ThreadId)NULL;
    }
+
+   Tcl_ExitThread(0);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -663,7 +664,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
       return(0);
    }
 
-  /*Allocate temp buffer if not already done*/
+   /*Allocate tile buffer if not already done*/
    if (!Tile->Data) {
       if (!(Tile->Data=(char*)malloc(Tile->Nx*Tile->Ny*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
