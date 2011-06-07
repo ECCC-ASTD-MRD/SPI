@@ -2377,6 +2377,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       return(0);
    }
 
+   if (!Layer->NFeature) {
+      return(0);
+   }
+
    if (!spec->Active) {
       return(0);
    }
