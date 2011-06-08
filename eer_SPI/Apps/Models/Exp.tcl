@@ -52,10 +52,13 @@ namespace eval Exp {
    #----- RSMC stuff.
 
    set Bubble(Color)    { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal" "Red  : impact all RSMC web sites\nGray : impact only RSMC Montreal web site" }
+   set Bubble(ColorE)   { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal\n\nn.a.  : n'affecte pas le status lead\nnull  : elimine completement le lead\nautre : affecte le lead selon la region" "Red  : impact all RSMC web sites\nGray : impact only RSMC Montreal web site\n\nn.a.  : no impact on the lead\nnull  : getrid the lead\nother : impact lead by region" }
 
    set Lbl(Cancel)      { "Annuler" "Cancel" }
    set Lbl(Send)        { "Transmettre" "Transmit" }
    set Lbl(Transmit)    { "Transmission" "Transmission" }
+
+   set Lbl(RSMCweb)     { "Page web commune RSMC" "RSMC common web page" }
 
    #----- Definitions des constantes relatives aux RSMC.
 
@@ -1033,8 +1036,8 @@ proc Exp::BlankTransmit { } {
       set rsmc_arg "${rsmc_arg}jntreg2.html "
    }
 
-   if { $Exp::Data(RSMCLead)==1 } {
-      set rsmc_arg "${rsmc_arg}leadrsmc.txt "
+   if { $Exp::Data(RSMCLead)!=99 } {
+      set rsmc_arg "${rsmc_arg}leadrsmc$Exp::Data(RSMCLead).txt "
    }
 
    if { $Exp::Data(RSMCMeteo)==1 } {
@@ -1075,6 +1078,16 @@ proc Exp::BlankTransmit { } {
             Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$MsgCatch"
          }
       }
+
+      #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
+
+      if { $Exp::Data(RSMCLead)==34 } {
+         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/leadrsmc34.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } MsgCatch ]
+
+         if { $ErrCatch != 0 } {
+            Log::Print ERROR "Problem to copy the lead as III/IV on the mirror RSMC web pages.\n\n$MsgCatch"
+         }
+      }
    }
 
    $Page::Data(Frame).page.canvas config -cursor left_ptr
@@ -1104,22 +1117,22 @@ proc Exp::ProductRSMCBlank { } {
    wm title     .blank [lindex $Lbl(Transmit) $GDefs(Lang)]
    wm transient .blank .
    wm resizable .blank 0 0
-   wm geometry  .blank =210x460+[expr [winfo rootx .]+10]+[expr [winfo rooty .]+10]
+   wm geometry  .blank =320x460+[expr [winfo rootx .]+10]+[expr [winfo rooty .]+10]
    grab .blank
 
    #----- on selectionne les centres RSMC.
 
-   labelframe .blank.c -text "Centre RSMC"
+   labelframe .blank.c -text [lindex $Lbl(RSMCweb) $GDefs(Lang)]
 
       frame .blank.c.l -relief sunken -bd 1
-         checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.uk -variable Exp::Data(RSMC_UK) -text "Exeter"     -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.au -variable Exp::Data(RSMC_AU) -text "Melbourne"  -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1 -background  #FF0000
-         checkbutton .blank.c.l.ru -variable Exp::Data(RSMC_RU) -text "Obninsk"    -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.jp -variable Exp::Data(RSMC_JP) -text "Tokyo"      -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.fr -variable Exp::Data(RSMC_FR) -text "Toulouse"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.c.l.us -variable Exp::Data(RSMC_US) -text "Washington" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.c.l.uk -variable Exp::Data(RSMC_UK) -text "Exeter"     -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.c.l.au -variable Exp::Data(RSMC_AU) -text "Melbourne"  -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove -background  #FF0000
+         checkbutton .blank.c.l.ru -variable Exp::Data(RSMC_RU) -text "Obninsk"    -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.c.l.jp -variable Exp::Data(RSMC_JP) -text "Tokyo"      -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.c.l.fr -variable Exp::Data(RSMC_FR) -text "Toulouse"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.c.l.us -variable Exp::Data(RSMC_US) -text "Washington" -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          pack .blank.c.l.cn .blank.c.l.uk .blank.c.l.au .blank.c.l.ca .blank.c.l.ru .blank.c.l.jp .blank.c.l.fr .blank.c.l.us \
             -side top -fill x -ipady 2
       pack .blank.c.l -side top -fill x -padx 5 -pady 5
@@ -1129,10 +1142,10 @@ proc Exp::ProductRSMCBlank { } {
 
    labelframe .blank.p -text "Joint Statement"
       frame .blank.p.l -relief sunken -bd 1
-         checkbutton .blank.p.l.pjnt16 -variable Exp::Data(JntStat16) -text "Region I/VI"   -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.p.l.pjnt2  -variable Exp::Data(JntStat2)  -text "Region II"     -onvalue 1 -offvalue 0 -indicatoron false -bd 1
-         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron false -bd 1 -background #FF0000
-         checkbutton .blank.p.l.pjnt5  -variable Exp::Data(JntStat5)  -text "Region V"      -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.p.l.pjnt16 -variable Exp::Data(JntStat16) -text "Region I/VI"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.p.l.pjnt2  -variable Exp::Data(JntStat2)  -text "Region II"     -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
+         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove -background #FF0000
+         checkbutton .blank.p.l.pjnt5  -variable Exp::Data(JntStat5)  -text "Region V"      -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          pack .blank.p.l.pjnt34 .blank.p.l.pjnt5 .blank.p.l.pjnt16 .blank.p.l.pjnt2 -side top -fill x -ipady 2
 
       pack .blank.p.l -side top -fill x -padx 5 -pady 5
@@ -1141,18 +1154,25 @@ proc Exp::ProductRSMCBlank { } {
    #----- on selectionne le lead.
 
    labelframe .blank.l -text "Lead RSMC"
-      frame .blank.l.l -relief sunken -bd 1
-         checkbutton .blank.l.l.lead -variable Exp::Data(RSMCLead) -text "Lead RSMC" -onvalue 1 -offvalue 0 -indicatoron false -bd 1 -background #FF0000
-         pack .blank.l.l.lead -side top -fill x -ipady 2
+      frame .blank.l.r -relief sunken -bd 1
+         radiobutton .blank.l.r.lead99 -variable Exp::Data(RSMCLead) -text "n.a."   -value 99 -indicatoron true -bd 1 -relief raised -overrelief raised
+         radiobutton .blank.l.r.lead16 -variable Exp::Data(RSMCLead) -text "I/VI"   -value 16 -indicatoron true -bd 1 -relief raised -overrelief raised
+         radiobutton .blank.l.r.lead2  -variable Exp::Data(RSMCLead) -text "II"     -value 2  -indicatoron true -bd 1 -relief raised -overrelief raised
+         radiobutton .blank.l.r.lead34 -variable Exp::Data(RSMCLead) -text "III/IV" -value 34 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
+         radiobutton .blank.l.r.lead5  -variable Exp::Data(RSMCLead) -text "V "     -value 5  -indicatoron true -bd 1 -relief raised -overrelief raised
+         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text "null"   -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised
+		 .blank.l.r.lead99 select
 
-      pack .blank.l.l -side top -fill x -padx 5 -pady 5
+         pack .blank.l.r.lead99 .blank.l.r.lead16 .blank.l.r.lead2 .blank.l.r.lead34 .blank.l.r.lead5 .blank.l.r.lead0 -side left -ipady 2
+
+      pack .blank.l.r -side top -fill x -padx 5 -pady 5
    pack .blank.l -side top -padx 5 -fill both -expand true
 
    #----- on selectionne la meteo du CMC.
 
    labelframe .blank.m -text "Meteo"
       frame .blank.m.l -relief sunken -bd 1
-         checkbutton .blank.m.l.lead -variable Exp::Data(RSMCMeteo) -text "Montreal" -onvalue 1 -offvalue 0 -indicatoron false -bd 1
+         checkbutton .blank.m.l.lead -variable Exp::Data(RSMCMeteo) -text "Montreal" -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          pack .blank.m.l.lead -side top -fill x -ipady 2
 
       pack .blank.m.l -side top -fill x -padx 5 -pady 5
@@ -1166,6 +1186,7 @@ proc Exp::ProductRSMCBlank { } {
 
    Bubble::Create .blank.c.l $Exp::Bubble(Color)
    Bubble::Create .blank.p.l $Exp::Bubble(Color)
+   Bubble::Create .blank.l.r $Exp::Bubble(ColorE)
    Bubble::Create .blank.m.l $Exp::Bubble(Color)
 }
 
@@ -1274,7 +1295,7 @@ proc Exp::ProductRSMCJointData { } {
    }
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
-   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path $nbip2 $tokenarchivers 2>@1 } msg]
+   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path $nbip2 $tokenarchiversmc 2>@1 } msg]
    if { !$join } {
       Dialog::Wait . $Msg(SendJoint)
       set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
