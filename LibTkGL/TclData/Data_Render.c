@@ -1179,10 +1179,11 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    if (Proj->Type->Def==PROJCYLIN && Field->Ref->Grid[0]!='V') {
       glEnable(GL_CULL_FACE);
+      glCullFace(GL_FRONT);
    } else {
       glDisable(GL_CULL_FACE);
    }
-
+   
    if (GLRender->GLDebug) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
    } else {
@@ -1304,6 +1305,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
      }
      glEnd();
    }
+   
+   glCullFace(GL_BACK);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
 
