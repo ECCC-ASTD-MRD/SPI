@@ -627,14 +627,14 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       Tcl_AppendResult(Interp,buf,(char*)NULL);
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    }
-
+   
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
    glPointSize(Field->Spec->RenderGrid+0.1);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
    Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),0,NULL,NULL);
-
+  
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
 

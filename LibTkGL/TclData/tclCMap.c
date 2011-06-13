@@ -470,11 +470,16 @@ int CMap_Free(CMap_Rec *Map) {
 }
 
 int CMap_Incr(CMap_Rec *Map) {
-   Tcl_MutexLock(&MUTEX_CMAP);
-   Map->NRef++;
-   Tcl_MutexUnlock(&MUTEX_CMAP);
 
-   return(Map->NRef);
+   if (Map) {
+      Tcl_MutexLock(&MUTEX_CMAP);
+      Map->NRef++;
+      Tcl_MutexUnlock(&MUTEX_CMAP);
+
+      return(Map->NRef);
+   } else {
+      return(0);
+   }
 }
 
 /*----------------------------------------------------------------------------
