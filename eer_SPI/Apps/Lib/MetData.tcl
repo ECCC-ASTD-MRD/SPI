@@ -787,7 +787,7 @@ proc MetData::GridDefinePS { Scale NI NJ Lat Lon { Field "" } } {
       set xg4   [expr ($xg4-floor($xg4))*360.0]
    }
 
-   if { $Scale=="HEMI" } {
+   if { [string match "*HEMI*" $Scale] } {
       set dlon 0.0
       if { $grtyp=="SUD" } {
          set dlat -90.0
