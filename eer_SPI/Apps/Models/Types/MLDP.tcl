@@ -1172,7 +1172,7 @@ proc MLDP::InitNew { Type } {
       set Sim(Timescale)            10800                               ; #----- Lagrangian time scale [s].
       set Sim(ReflectionLevel)      0.9999                              ; #----- Reflection level [hyb|eta|sig].
       set Sim(EmNumberParticles)    50000                               ; #----- Number of particles.
-      set Sim(ListScale)           { "HEMI  (50 km, 687x687)" "LMESO (33 km, 400x400)" "MESO  (33 km, 229x229)" "FINE  (15 km, 503x503)" "SFINE (15 km, 251x251)" "VFINE (10 km, 229x229)" "EFINE (5 km,  457x457)" "UFINE (2 km,  300x300)"} ; #----- List of grid resolutions [km].
+      set Sim(ListScale)           { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
       set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
       set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
       set Sim(DtOverTl)             1.0

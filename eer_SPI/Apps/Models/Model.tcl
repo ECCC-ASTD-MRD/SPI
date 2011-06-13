@@ -431,7 +431,6 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
       set sim(GridLat) [lindex $grid 0]
       set sim(GridLon) [lindex $grid 1]
    } else {
-
       if { [llength $sim(Scale)] > 1 } {
          set sim(GridRes)  [string trimleft  [lindex $sim(Scale) 1] "("] ; #----- Grid scale resolution [km].
          set sim(GridSize) [string trimright [lindex $sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
