@@ -41,8 +41,8 @@
 0104-08-: Dar-Alages                   :Armenia             :39.700000:N: 45.542000:E:  3329
 0201-01=: Teyr, Djebel                 :Red Sea             :15.700000:N: 41.742000:E:   244
 0201-02=: Zubayr, Jebel                :Red Sea             :15.080000:N: 42.170000:E:   191
-0201-03=: Jalua                        :Ethiopia            :15.042000:N: 39.820000:E:   713
-0201-04=: Alid                         :Ethiopia            :14.880000:N: 39.920000:E:   904
+0201-03=: Jalua                        :Eritrea             :15.042000:N: 39.820000:E:   713
+0201-04=: Alid                         :Eritrea             :14.880000:N: 39.920000:E:   904
 0201-041: Dallol                       :Ethiopia            :14.242000:N: 40.300000:E:   -48
 0201-05=: Gada Ale                     :Ethiopia            :13.975000:N: 40.408000:E:   287
 0201-051: Catherine                    :Ethiopia            :13.920000:N: 40.420000:E:   100
@@ -52,8 +52,8 @@
 0201-08=: Erta Ale                     :Ethiopia            :13.600000:N: 40.670000:E:   613
 0201-09=: Ale Bagu                     :Ethiopia            :13.520000:N: 40.630000:E:  1031
 0201-091: Hayli Gubbi                  :Ethiopia            :13.500000:N: 40.720000:E:   521
-0201-10=: Dubbi                        :Ethiopia            :13.580000:N: 41.808000:E:  1625
-0201-101: Nabro                        :Ethiopia            :13.370000:N: 41.700000:E:  2218
+0201-10=: Dubbi                        :Eritrea             :13.580000:N: 41.808000:E:  1625
+0201-101: Nabro                        :Eritrea             :13.370000:N: 41.700000:E:  2218
 0201-102: Mallahle                     :Ethiopia            :13.270000:N: 41.650000:E:  1875
 0201-103: Sorkale                      :Ethiopia            :13.180000:N: 41.725000:E:  1611
 0201-104: Asavyo                       :Ethiopia            :13.070000:N: 41.600000:E:  1200
@@ -70,9 +70,9 @@
 0201-12=: Kurub                        :Ethiopia            :11.880000:N: 41.208000:E:   625
 0201-121: Borawli Complex              :Ethiopia            :11.630000:N: 41.450000:E:   875
 0201-122: Manda-Inakir                 :Ethiopia            :12.380000:N: 42.200000:E:   600
-0201-123: Mousa Alli                   :Ethiopia            :12.470000:N: 42.400000:E:  2028
-0201-124: Gufa                         :Ethiopia            :12.550000:N: 42.530000:E:   600
-0201-125: Assab Volc Field             :Ethiopia            :12.950000:N: 42.430000:E:   987
+0201-123: Mousa Alli                   :Eritrea             :12.470000:N: 42.400000:E:  2028
+0201-124: Gufa                         :Eritrea             :12.550000:N: 42.530000:E:   600
+0201-125: Assab Volc Field             :Eritrea             :12.950000:N: 42.430000:E:   987
 0201-126: Ardoukoba                    :Djibouti            :11.580000:N: 42.470000:E:   298
 0201-141: Dama Ali                     :Ethiopia            :11.280000:N: 41.630000:E:  1068
 0201-142: Asmara                       :Ethiopia            :11.270000:N: 41.520000:E:   500
