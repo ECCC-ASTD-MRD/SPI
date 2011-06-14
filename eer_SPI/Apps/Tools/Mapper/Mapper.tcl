@@ -61,6 +61,7 @@ proc Mapper::Close { } {
             if { [gdalband is $object] && [info exists Mapper::Data(Id$object)] } {
                gdalband free $object
                gdalfile close $Data(Id$object)
+               ogrgeometry free MASK$object  MASKRING$object
             } elseif { [ogrlayer is $object] && [info exists Mapper::Data(Id$object)] } {
                ogrlayer free $object
                ogrfile close $Data(Id$object)
@@ -208,6 +209,7 @@ proc Mapper::Del { } {
       if { [gdalband is $object] } {
          gdalband free $object
          gdalfile close $Data(Id$object)
+         ogrgeometry free MASK$object  MASKRING$object 
       } elseif { [ogrlayer is $object] } {
          ogrlayer free $object
          ogrfile close $Data(Id$object)
@@ -736,7 +738,7 @@ proc Mapper::ParamsGDALSet { Object { CheckData True } } {
       -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12
    gdalband stats $Object -nodata $Data(NoData)
 
-   if { $Data(Cut) } {
+   if { [ogrgeometry is MASK$Object] } {
       gdalband configure $Object -mask MASK$Object
    } else {
       gdalband configure $Object -mask ""
@@ -1100,25 +1102,25 @@ proc Mapper::PickOGR { VP X Y } {
 
             #----- Check if this is an index to some other data
             if { ![catch { set files [ogrlayer define $object -feature $Data(Index) IDX_PATH]}] } {
-
                if { $files!="" } {
+                  if { ![Dialog::Default . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
+                     foreach file $files {
+                        set path [file dirname $Data(Id$object)]
+                        set file $path/../$file
+                        set band [Mapper::ReadBand $file]
+                        ogrgeometry copy MASK$band [ogrlayer define $object -geometry $Data(Index)]
+                        ogrgeometry stats MASK$band -transform [gdalband define $band -georef]
+                        gdalband configure $band -mask MASK$band
 
-               if { ![Dialog::Default . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
-                  foreach file $files {
-                     set path [file dirname $Data(Id$object)]
-                     set file $path/../$file
-                     Mapper::ReadBand $file
-                     catch { gdalband configure $file -mask [ogrlayer define $object -geometry $Data(Index)] }
-
-                     set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
-                     set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]
-                     update idletasks
-                     projection configure $Page::Data(Frame) -data $Viewport::Data(Data$Data(Frame))
-                     Page::Update $Page::Data(Frame)
-                     set Data(Job) ""
+                        set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
+                        set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]
+                        update idletasks
+                        projection configure $Page::Data(Frame) -data $Viewport::Data(Data$Data(Frame))
+                        Page::Update $Page::Data(Frame)
+                        set Data(Job) ""
+                     }
                   }
                }
-            }
             }
             break
          }
@@ -1229,7 +1231,9 @@ proc Mapper::UpdateItems { Frame } {
    }
 
    if { $Frame==$Data(Frame) && $Data(VP)!="" } {
-      $Data(Canvas) delete MAPPERSEARCH MAPPERCUTTER MAPPERGEOLOCATOR
+
+      #----- Canvas might not exist anymore so catch this call
+      catch { $Data(Canvas) delete MAPPERSEARCH MAPPERCUTTER MAPPERGEOLOCATOR }
       if { $Mapper::DepotWare::Data(Coo)!="" } {
          Viewport::DrawRange $Frame $Data(VP) $Mapper::DepotWare::Data(Lat0) $Mapper::DepotWare::Data(Lon0) $Mapper::DepotWare::Data(Lat1) $Mapper::DepotWare::Data(Lon1) MAPPERSEARCH red
       }

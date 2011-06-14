@@ -50,8 +50,13 @@ proc Mapper::Cutter::VertexAdd { Frame VP X Y } {
    set lon [lindex $loc 1]
 
    #----- si le vertex est valide on l'ajoute a la liste
-
    if { $lat!=-999 && $lon!=-999 } {
+
+      #----- If mask exists but comes from somehwere else, free it
+      if { ![ogrgeometry is MASKRING$Mapper::Data(Object)] && [ogrgeometry is MASK$Mapper::Data(Object)] } {
+         ogrgeometry free  MASK$Mapper::Data(Object)
+      }
+
       if { ![ogrgeometry is MASK$Mapper::Data(Object)] } {
          ogrgeometry create MASK$Mapper::Data(Object) "Polygon"
          ogrgeometry create MASKRING$Mapper::Data(Object) "Linear Ring"
