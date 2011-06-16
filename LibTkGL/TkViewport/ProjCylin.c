@@ -451,17 +451,17 @@ void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,ch
    /*On verifie si les donnees depasse d'un cote*/
    if (V0) f0=CYLFLIP(Proj->L,V0[0]);
    if (V1) f1=CYLFLIP(Proj->L,V1[0]);
-
-   if (f0!=0)    glTranslated(f0,0.0,0.0);
+   
+   if (f0)       glTranslated(f0,0.0,0.0);
    if (Data)     { if (Idx) { glDrawElements(Mode,Nb,GL_UNSIGNED_INT,Idx); } else { glDrawArrays(Mode,0,Nb);} }
    if (List)     glCallList(List);
-   if (f0!=0)    glTranslated(-f0,0.0,0.0);
+   if (f0)       glTranslated(-f0,0.0,0.0);
 
    if (f1!=f0) {
-      if (f1!=0)  glTranslated(f1,0.0,0.0);
+      if (f1)     glTranslated(f1,0.0,0.0);
       if (Data)   { if (Idx) { glDrawElements(Mode,Nb,GL_UNSIGNED_INT,Idx); } else { glDrawArrays(Mode,0,Nb);} }
       if (List)   glCallList(List);
-      if (f1!=0)  glTranslated(-f1,0.0,0.0);
+      if (f1)     glTranslated(-f1,0.0,0.0);
    }
 
    if (Data) {

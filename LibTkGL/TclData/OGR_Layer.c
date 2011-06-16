@@ -1253,31 +1253,6 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <OGR_Box>
- * Creation : Fevrier 2005 J.P. Gauthier - CMC/CMOE
- *
- * But      : Calculer la boite enveloppe du layer.
- *
- * Parametres :
- *  <Proj>    : Projection
- *  <Layer>   : layer
- *
- * Retour     :
- *
- * Remarques  :
- *
- *----------------------------------------------------------------------------
-*/
-void OGR_Box(Projection *Proj,OGR_Layer *Layer) {
-
-   Coord co[2];
-
-   Layer->Ref->Project(Layer->Ref,Layer->Vr[0][0],Layer->Vr[0][1],&co[0].Lat,&co[0].Lon,0,1);
-   Layer->Ref->Project(Layer->Ref,Layer->Vr[1][0],Layer->Vr[1][1],&co[1].Lat,&co[1].Lon,0,1);
-   Proj->Type->Project(Proj,co,Layer->Vr,2);
-}
-
-/*----------------------------------------------------------------------------
  * Nom      : <OGR_SingleTypeString>
  * Creation : Aout J.P. Gauthier - CMC/CMOE
  *
@@ -2265,7 +2240,7 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <OGR_LayerParse>
+ * Nom          : <OGR_Layer>
  * Creation     : August 2010 J.P. Gauthier - CMC/CMOE
  *
  * But          : Effecture les reprojections de la geometrie de la couche.
@@ -2285,13 +2260,14 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
 
 int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
+   Coord        co[2];
    Vect3d        vr;
    int           t;
    unsigned int  f;
    double        elev=0.0,extr=0.0;
    OGRGeometryH  geom;
    clock_t       sec;
-
+      
    if (Layer->GFeature==Layer->NFeature) {
       return(0);
    }
@@ -2313,7 +2289,6 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
             extr=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Extrude);
 
          OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
-         OGR_Box(Proj,Layer);
          GPC_Centroid2D(geom,&vr[0],&vr[1]);
          Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].Lat,&Layer->Loc[f].Lon,1,1);
          Layer->Loc[f].Elev=0.0;
@@ -2333,6 +2308,12 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
    /*Make sure we reset the loading flag*/
    if (Layer->GFeature==Layer->NFeature) {
+      co[0].Lat=Layer->Ref->LLExtent.MinY;
+      co[0].Lon=Layer->Ref->LLExtent.MinX;
+      co[1].Lat=Layer->Ref->LLExtent.MaxY;
+      co[1].Lon=Layer->Ref->LLExtent.MaxX;
+      
+      Proj->Type->Project(Proj,co,Layer->Vr,2);
       t=0;
       Proj->Loading=0;
       if (Delay)

@@ -1088,10 +1088,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
                gdb_mapget(handle,co.Lat,co.Lon,(void*)&z);
                co.Elev=z*Layer->Spec->TopoFactor;
             }
-
-            /*Check for limits*/
-            Vect_Min(Layer->Vr[0],Layer->Vr[0],vr);
-            Vect_Max(Layer->Vr[1],Layer->Vr[1],vr);
          }
 
          pvr[n][0]=co.Lon;
@@ -1105,6 +1101,19 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          nv=0;
       }
 
+      /*Flip X coordinates when we cross -180/180 for cylindrical projections*/
+      if (Proj->Type->Def==PROJCYLIN) {
+         z=0;
+         for(n=1;n<nv;n++) {
+            cvr=!z?&pvr[n-1]:cvr;
+            
+            if (fabs(pvr[n][0]-*cvr[0])>1.0) {
+               z=!z?(pvr[n][0]>0.0?-4:4):z;               
+               pvr[n][0]+=z;                              
+            }           
+         }
+      }
+      
       if (handle)
          gdb_mapclose(handle);
    }
