@@ -389,7 +389,6 @@ proc Model::ParamsMetPath { } {
    if { $diag!=$Model::Param(DBaseDiag) || $prog!=$Model::Param(DBaseProg) } {
       set  Model::Param(DBaseType) user
    }
-
    destroy .metpath
 }
 
@@ -459,7 +458,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
 
    Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
-   Viewport::UpdateData $Data(Frame)
+  Viewport::UpdateData $Data(Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -2016,7 +2015,7 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
    switch $No {
       1 {
          foreach exp $Exp::Data(List) {
-            if { $Loc=="" || [lindex $exp 1]==$Loc } {
+            if { $Loc=="" || $Loc=="[lindex $exp 0]_[lindex $exp 1]" } {
                foreach loc [lindex $exp 3] {
                   lappend icos "\"[lindex $loc 0] [lindex $exp 0]:[lindex $exp 1]\"\
                      [lindex $loc 1] [lindex $loc 2] 0 [lindex $Resources(Icos) [lindex $exp 2]]"

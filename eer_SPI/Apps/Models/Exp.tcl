@@ -915,7 +915,7 @@ proc Exp::PopUp { X Y } {
    if { ![winfo exists .exppop] } {
 
       menu .exppop -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .exppop add command -label ""  -command "Model::TypeSelect none 1 \$Exp::Data(Name); Exp::CreateTree; SPI::Locate \$Exp::Data(Lat) \$Exp::Data(Lon)" \
+         .exppop add command -label ""  -command "Model::TypeSelect none 1 \${Exp::Data(No)}_\${Exp::Data(Name)}; Exp::CreateTree; SPI::Locate \$Exp::Data(Lat) \$Exp::Data(Lon)" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
          .exppop add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu .exppop.new
          .exppop add separator
