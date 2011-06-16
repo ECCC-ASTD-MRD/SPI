@@ -2361,7 +2361,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
       FSTD_FileUnset(Interp,head->FID);
       return(0);
    }
-
+   fprintf(stderr,"founnd %i\n",nk);
+   
    uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL);
 
    /*Determiner les niveaux disponibles*/
@@ -2415,6 +2416,11 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
       k0=LevelFrom;
       k1=LevelTo;
    }
+
+   if (nk==0) {
+      return(1);
+   }
+   
    /*Augmenter la dimension du tableau*/
    if (!DataDef_Resize(Field->Def,ni,nj,nk)) {
       fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
