@@ -102,7 +102,7 @@ Vect3d* GDB_VBufferAlloc(unsigned int Size) {
          GDB_VBuffer=buf;
          GDB_VBufferSize=Size;
       } else {
-         fprintf(stderr,"(ERROR) GDB_VBufferAlloc: Could not allocate coordinate buffer GDB_VBuffer\n");
+         fprintf(stderr,"(ERROR) GDB_VBufferAlloc: Could not allocate coordinate buffer GDB_VBuffer (%i)\n",Size);
       }
    }
    return(buf);
@@ -1113,7 +1113,7 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
    }
 
    Tk_GetFontMetrics(VP->tkfont,&tkm);
-   tolerance=200.0/(VP->Height/VP->Cam->Aspect);
+   tolerance=500.0/(VP->Height/VP->Cam->Aspect);
 
    pix[0]=2;
    for(i=0;i<=VP->Height;i++) {
@@ -1149,9 +1149,8 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
       }
    }
 
-   tolerance=400.0/(VP->Width/VP->Cam->Aspect);
+   tolerance=500.0/(VP->Width/VP->Cam->Aspect);
    pix[1]=VP->Height-2;
-
    for(i=0;i<=VP->Width;i++) {
 
       pix[0]=i;
@@ -1181,7 +1180,7 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
                txtw=Tk_TextWidth(VP->tkfont,buf,strlen(buf));
                glPrint(Interp,VP->canvas,buf,i-txtw/2,3,0);
-               i+=txtw;
+               i+=txtw-2;
             }
          }
       }
