@@ -867,7 +867,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   sprintf(buf,"%i,%i",f+1,j+1);
                   Tcl_SetVar2Ex(Interp,str,buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[layer->Sort.Table[f]],j),0x0);
                }
-               Tcl_DoOneEvent(TCL_ALL_EVENTS);
+               Tcl_DoOneEvent(TCL_ALL_EVENTS|TCL_DONT_WAIT);
             }
 
          } else {
@@ -884,7 +884,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_SetVar2Ex(Interp,str,buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[f],j),0x0);
                   }
                   fop++;
-                  Tcl_DoOneEvent(TCL_ALL_EVENTS);
+                  Tcl_DoOneEvent(TCL_ALL_EVENTS|TCL_DONT_WAIT);
                }
             }
          }
