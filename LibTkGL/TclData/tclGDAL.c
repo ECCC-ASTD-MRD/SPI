@@ -691,6 +691,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             band->Def->Mask=NULL;
          }
          break;
+         
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band");

@@ -1070,8 +1070,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
 
       if (FieldTo->Spec->ExtrapDegree[0]=='V') {
-         tmpf=FieldTo->Def->NoData;
-         c_ezsetval("EXTRAP_VALUE",&tmpf);
+         c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
       }
       c_ezsetopt("EXTRAP_DEGREE",FieldTo->Spec->ExtrapDegree);
 
@@ -2361,7 +2360,6 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
       FSTD_FileUnset(Interp,head->FID);
       return(0);
    }
-   fprintf(stderr,"founnd %i\n",nk);
    
    uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL);
 
