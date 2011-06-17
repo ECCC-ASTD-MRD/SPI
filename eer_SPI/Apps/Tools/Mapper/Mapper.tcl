@@ -479,7 +479,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    #----- Check for generic naming
    for { set i 0 } { $i<[llength $Bands] } { incr i } {
       if { [lindex [lindex $Bands $i] 0]=="" } {
-         lset Bands $i 0 $Data(Id$id)
+         lset Bands $i $Data(Id$id)
       }
    }
 
