@@ -37,7 +37,6 @@ foreach field [fstdfield find 1 -1 "" -1 -1 -1 "" "ES"] {
    fstdfield read TT 1 [fstdfield define ES -DATEV] [fstdfield define ES -ETIKET] [fstdfield define ES -IP1] [fstdfield define ES -IP2] [fstdfield define ES -IP3] [fstdfield define ES -TYPVAR] TT
 
    #----- Effectuer les calculs
-
    vexpr TT min(TT,-20.0)
    vexpr ES clamp(ES,0.0,20.0)
    vexpr PV 10^(9.4041-2354.0/(TT+273.0))

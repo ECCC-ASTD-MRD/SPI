@@ -25,6 +25,8 @@ package require TclData
 
 puts \n[file tail [info script]]
 
+file delete DataOut/FSTD_InterpHorizontal.fstd
+
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
 fstdfile open 1 read  DataIn/2005102612_012
@@ -42,5 +44,13 @@ foreach var { TT UU GZ } {
    fstdfield gridinterp GRID FROM
    fstdfield write GRID 2 -16 True
 }
+
+#----- Teste l'extrapolation
+
+fstdfield stats FROM -nodata 10.0
+fstdfield clear FROM
+fstdfield configure FROM -extrapdegree VALUE
+fstdfield gridinterp FROM GRID
+fstdfield write FROM 2 -32 False
 
 fstdfile close 1 2

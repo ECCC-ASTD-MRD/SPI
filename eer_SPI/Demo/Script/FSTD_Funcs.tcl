@@ -32,6 +32,14 @@ puts "   incr 24: [set stamp [fstdstamp incr $stamp 024]]"
 puts "   r.date : [exec r.date $stamp]"
 puts "   date   : [clock format [fstdstamp toseconds $stamp]]"
 
+puts "\nTesting ip conversion :"
+puts "   ip1 12000      : [fstdgrid convip 12000]"
+puts "   1000.0 PRESSURE: [fstdgrid convip 1000.0 PRESSURE]"
+puts "   0.9    ETA     : [fstdgrid convip 0.9 ETA]"
+puts "   2500   MASL    : [fstdgrid convip 2500.0 MASL]"
+puts "   2500   MAGL    : [fstdgrid convip 2500.0 MAGL]"
+
+
 set inter { -20 0 20 }
 puts "\nTesting contour extraction ($inter):"
 fstdfile open 1 read DataIn/2005102612_012

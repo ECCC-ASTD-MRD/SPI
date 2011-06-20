@@ -28,18 +28,12 @@ puts \n[file tail [info script]]
 #model read DAE /users/dor/afsr/005/Data/model.dae
 set models [glob -tails -directory /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada *]
 #set models TourSunlife
-set models AldredBuilding
+#set models AldredBuilding
 foreach model $models {
    puts "   Reading $model"
    model read $model /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/$model/doc.kml
    model configure $model -outline blue -width 1
 }
-#model read KML_TRUST /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/Montreal_Trust/doc.kml
-#model read KML_OLY   /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/olympic/doc.kml
-
-#model configure KML_BOTA  -outline darkgreen -width 1
-#model configure KML_TRUST -outline red -width 1
-#model configure KML_OLY   -outline black -width 1
 
 #model read DAE /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/olympic/models/model.dae
 #model configure DAE -outline black -width 1 -renderface False
@@ -48,7 +42,7 @@ foreach model $models {
 
 eval Mapper::UpdateData $Page::Data(Frame) $models
 
-if { 0 } {
+if { 1 } {
    file copy -force DataIn/Montreal.fstd DataOut/Montreal.fstd
    fstdfile open FILE append DataOut/Montreal.fstd
    fstdfield read FLD FILE -1 "" -1 -1 -1 "" "IBLK"

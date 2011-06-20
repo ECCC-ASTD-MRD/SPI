@@ -95,8 +95,8 @@ metobs define NEWOBS -ELEMENT "Position 1" 24005 0 { 10 40 50 }
 metobs define NEWOBS -ELEMENT "Position 1" 24005 1 20
 metobs define NEWOBS -ELEMENT "Position 1" 5022 3 -95
 
-puts [metobs define NEWOBS -ELEMENT "Position 1" "DIRECTION DU VENT A 10M" ]
-puts [metobs define NEWOBS -ELEMENT "Position 1" 5022 ]
+puts "Wind values :[metobs define NEWOBS -ELEMENT "Position 1" 24005]"
+puts "5022 value  :[metobs define NEWOBS -ELEMENT "Position 1" 5022 ]"
 
 #----- Test the krigging
 

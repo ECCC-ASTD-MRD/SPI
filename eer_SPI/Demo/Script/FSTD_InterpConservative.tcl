@@ -42,6 +42,7 @@ foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
    fstdfield define TO -IP1 [fstdfield define IN -IP1]
 #   fstdfield gridinterp TO IN CONSERVATIVE 1 index
    fstdfield gridinterp TO IN CONSERVATIVE 1 $f
+#   fstdfield gridinterp TO IN AVERAGE_VARIANCE TO 1
    fstdfield write TO 3 -32 False
 }
 
