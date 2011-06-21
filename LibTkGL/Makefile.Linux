@@ -17,17 +17,17 @@ TCLTK_BASE= 8.5
 
 X_INCLUDE   =
 PROTO       =
-DEFINES     = -DLNK_FSTD -DLNK_URP -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
-#DEFINES     = -DLNK_FSTD -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
 
-CDEBUGFLAGS  =
+CDEBUGFLAGS  = 
 LDDEBUGFLAGS = --warn-once --no-undefined 
 LDDEBUGFLAGS =
 
 ifeq ($(PROC),x86_64)
-        CCOPTIONS    = -O2 -funroll-all-loops -finline-functions -fPIC -m64
+   DEFINES      = -DLNK_FSTD -DTCL_THREADS -DLNK_GRIB -DLNK_DMV -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
+   CCOPTIONS    = -O2 -funroll-all-loops -finline-functions -fPIC -m64
 else
-        CCOPTIONS    = -O2 -funroll-all-loops -finline-functions 
+   DEFINES     = -DLNK_FSTD -DLNK_URP -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
+   CCOPTIONS    = -O2 -funroll-all-loops -finline-functions 
 endif
 
 LIB_PATH  = ../../eer_SPI/Lib/$(ARCH)
@@ -43,6 +43,6 @@ TK_PATH  = $(LIB_PATH)/TclTk
 # global includes
 INCLUDE  = -I$(TK_SRC)/generic -I$(TK_SRC)/unix -I$(TCL_SRC)/generic -I$(TK_PATH)/include -I$(INC_PATH) \
         -I$(INC_PATH)/gdb -I$(INC_PATH)/gdal -I$(INC_PATH)/urp -I$(INC_PATH)/grib_api -I$(INC_PATH)/libecbufr \
-        -I$(INC_PATH)/fltlib -I$(INC_PATH)/rmnlib -I$(INC_PATH)/libeer \
+        -I$(INC_PATH)/fltlib -I$(INC_PATH)/rmnlib -I$(INC_PATH)/dmv -I$(INC_PATH)/libeer \
         -I../TkglCanvas -I../TkViewport -I../TclData -I../Utils -I../TclFSTD
 
