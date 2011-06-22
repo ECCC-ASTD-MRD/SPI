@@ -495,13 +495,14 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                   Tcl_Free((char*)axis->Label);
                   axis->Label=NULL;
                }
-               Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&j,&axis->Label);
-
-               if (j!=axis->InterNb && j!=0) {
-                  Tcl_Free((char*)axis->Label);
-                  axis->Label=NULL;
-                  Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis label length, must be the same as intervals",(char*)NULL);
-                  return(TCL_ERROR);
+               Tcl_ListObjLength(Interp,Objv[++i],&j);
+               if (j) {
+                  if (j==axis->InterNb) {
+                     Tcl_SplitList(Interp,Tcl_GetString(Objv[i]),&j,&axis->Label);
+                  } else {
+                     Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis label length, must be the same as intervals",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                }
             }
             break;
@@ -844,7 +845,7 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
 
    *Width=*Height=0;
    Axis->UnitWidth=Axis->UnitHeight=0;
-
+   
    if (!Axis)
       return;
 
@@ -869,9 +870,9 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
          Axis->Text=Tk_ComputeTextLayout(font,Axis->Unit,Tcl_NumUtfChars(Axis->Unit,strlen(Axis->Unit)),0,Axis->Justify,0,&Axis->UnitWidth,&Axis->UnitHeight);
       }
    }
-
+   
    Tk_GetFontMetrics(font,&tkm);
-
+   
    h=sin(DEG2RAD(Axis->Angle));
    w=cos(DEG2RAD(Axis->Angle));
 
@@ -900,7 +901,7 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
       }
       wt*=1.15;
    }
-
+   
    if (Side==VERTICAL) {
       *Width=ABS(h)*wt*(Axis->Angle==0.0?1.0:0.5);
       *Height=ABS(w)*0.5*ht+wt+10;
