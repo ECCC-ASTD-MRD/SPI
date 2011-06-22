@@ -2022,11 +2022,12 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          objj=Tcl_NewObj();
          lst=Tcl_NewObj();
 
-         f=Tcl_GetsObj(chan,obji);
-         f=Tcl_GetsObj(chan,objj);
-         if (f>0) {
+         p=Tcl_GetsObj(chan,obji);
+         p=Tcl_GetsObj(chan,objj);
+         if (p>0) {
             p=1;
          } else {
+            p=0;
             if (!(rw&TCL_WRITABLE)) {
                Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
                return(TCL_ERROR);
@@ -2170,7 +2171,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      }
                   }
                }
-
+               
                /*Append this gridpoint intersections to the index*/
                if (n) {
                   if (chan) {
@@ -2184,7 +2185,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
                      Tcl_ListObjAppendElement(Interp,List,item);
                   }
-               }
+               }                  
             }
          }
       }
