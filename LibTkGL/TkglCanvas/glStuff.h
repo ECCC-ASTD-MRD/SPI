@@ -153,6 +153,7 @@ typedef struct GLParams  {
    GLUquadric    *GLQuad;       /*Quadric object*/
 
    char           Soft;             /*Type de Renderer*/
+   int            UseThreads;       /*Use threads*/
    int            Delay;            /*Delai des frames*/
    GLboolean      Ext[32];          /*Liste des extensions*/
    GLboolean      Set;              /*Liste des extensions*/

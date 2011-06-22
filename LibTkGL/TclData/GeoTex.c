@@ -79,11 +79,10 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
 
    if (proj) {
       proj->Loading+=5;
-
       band->Tex.ThreadId=Tcl_GetCurrentThread();
-
+      
       GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->VP,band->Tex.ResN,0,0,5);
-
+      
       proj->Loading=0;
       band->Tex.ThreadId=(Tcl_ThreadId)NULL;
    }
@@ -118,7 +117,7 @@ void GeoTex_Clear(TGeoTex *Tex,TGeoTexTile *Tile) {
       Tcl_MutexUnlock(&MUTEX_GEOTEX);
    }
 
-   if (Tile>(TGeoTexTile*)1) {
+   if (Tile>(TGeoTexTile*)0x1) {
       GeoTex_ClearTile(Tile);
 
       if (Tile->Sub[0]) GeoTex_Clear(Tex,Tile->Sub[0]);Tile->Sub[0]=NULL;
@@ -160,7 +159,6 @@ void GeoTex_ClearTile(TGeoTexTile *Tile) {
 
       /*Decrement global number of tiles*/
       GeoTex_TileNb--;
-
       Tcl_MutexUnlock(&MUTEX_GEOTEX);
    }
 }
@@ -660,7 +658,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
 
    int    c;
 
-   if (Band->Tex.Res==0 || Tile->Res==0) {
+   if (!Tile || Tile->Res==0 || Band->Tex.Res==0) {
       return(0);
    }
 
@@ -677,6 +675,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
       if ((GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx,Tile->Dy,Tile->Rx,Tile->Ry,Tile->Data+c*TData_Size[Band->Def->Type],
          Tile->Nx,Tile->Ny,TD2GDAL[Band->Def->Type],Band->Def->NC>1?Band->Def->NC*TData_Size[Band->Def->Type]:0,0))==CE_Failure) {
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to read tile data from band %i\n",c);
+         return(0);
       }
    }
 
@@ -720,7 +719,7 @@ TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0) {
 
    /*Increment global tile count*/
    GeoTex_TileNb++;
-
+   
    return(tile);
 }
 
@@ -757,12 +756,15 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
 
    Proj->Loading+=5;
 
+   Tcl_MutexLock(&MUTEX_GEOTEX);
    if (!(*Tile))
-      *Tile=GeoTex_New(Band,Resolution,X0,Y0);
-
+      if (!(*Tile=GeoTex_New(Band,Resolution,X0,Y0)))
+         return(0);
+   
    if (!(*Tile)->Tl)
       GeoTex_Limit(Band,*Tile,Proj);
-
+   Tcl_MutexUnlock(&MUTEX_GEOTEX);
+   
    /*Check for visibility*/
    if (GDB_Loc((*Tile)->Box,Proj,1,VP->Width,1,VP->Height)!=GDB_OUT) {
 
@@ -937,7 +939,7 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
       tl[1]=Tile->Sub[1]==(TGeoTexTile*)0x1?(tl[0]?1:0):GeoTex_Render(Band,Tile->Sub[1],Proj,VP);
       tl[2]=Tile->Sub[2]==(TGeoTexTile*)0x1?(tl[0]?1:0):GeoTex_Render(Band,Tile->Sub[2],Proj,VP);
       tl[3]=Tile->Sub[3]==(TGeoTexTile*)0x1?(tl[0]?1:0):GeoTex_Render(Band,Tile->Sub[3],Proj,VP);
-
+      
       /*Check for sub tile info availability*/
       if (!tl[0] || !tl[1] || !tl[2] || !tl[3]) {
 
@@ -1048,7 +1050,7 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
    /*Parse the tree to find best resolution tile*/
    if ((tile=next=Tex->Tile)) {
 
-      if (!tile->Flag&GEOTEX_DATA || (*X<0 || *X>=Tex->Nx || *Y<0 || *Y>=Tex->Ny)) {
+      if (!tile || !tile->Flag&GEOTEX_DATA || (*X<0 || *X>=Tex->Nx || *Y<0 || *Y>=Tex->Ny)) {
          next=tile=best=NULL;
       }
 

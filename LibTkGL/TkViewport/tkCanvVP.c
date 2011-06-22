@@ -222,7 +222,7 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
 
    /*In batch mode, bypass the geodata thread mechanism and execute in master thread*/
-   if (!GLRender->XBatch) {
+   if (GLRender->UseThreads && !GLRender->XBatch) {
       if (Tcl_CreateThread(&tid,GDB_ThreadProc,NULL,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS)==TCL_ERROR) {
          fprintf(stderr,"(ERROR) Tkviewport_Init: Unable to initiate GDB thread\n");
       }
