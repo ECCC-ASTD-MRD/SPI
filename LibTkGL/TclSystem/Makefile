@@ -10,7 +10,12 @@ include ../Makefile.$(ARCH)
 INCLUDES   = $(INCLUDE)
 CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES) -DVERSION=\"$(VERSION)\"
 LDFLAGS    = $(LDDEBUGFLAGS)
-LIBS       = -L$(LIB_PATH) -lc -ldmv
+ifeq ($(PROC),x86_64)
+	LIBS       = -L$(LIB_PATH) -lc -ldmv
+else
+	LIBS       = -L$(LIB_PATH) -lc
+endif
+
 OBJS       = tclSystem.o
 
 # Start of Makefile
