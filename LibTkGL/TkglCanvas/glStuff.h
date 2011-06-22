@@ -102,7 +102,6 @@ typedef struct GLParams  {
 
    int    Resolution;           /*Qualite de l'affichage*/
    double RenderTime;           /*Temps en seconds pour effectuer le rendue du viewport*/
-   double MemRes;               /*Memoire residente utilisee (Mb)*/
    int    ShaderAvailable;      /*Est-ce que l'implementation est capable de Shader*/
 
    /*Parametres Tk*/
