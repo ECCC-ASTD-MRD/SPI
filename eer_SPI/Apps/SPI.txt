@@ -73,7 +73,7 @@ namespace eval SPI {
    set Lbl(PageNew)        { "Nouvelle page" "New page" }
    set Lbl(PageDel)        { "Supprimer la page" "Delete page" }
    set Lbl(PageOut)        { "Page externe" "External page" }
-   set Lbl(Params)         { "Paramêtres" "Parameters" }
+   set Lbl(Params)         { "Paramètres" "Parameters" }
    set Lbl(Print)          { "Impression ..." "Print ..." }
    set Lbl(Image)          { "Sauvegarde image ..." "Save image ..." }
    set Lbl(ProjectLoad)    { "Ouvrir un projet ..." "Open project ..." }

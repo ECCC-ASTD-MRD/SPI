@@ -50,6 +50,7 @@ namespace eval SPI {
    set Param(Project)        ""           ;#Projet courant
    set Param(Loading)        "Loading"    ;#Load en cours
    set Param(Batch)          False        ;#Mode batch
+   set Param(Threads)        True         ;#Use threads
    set Param(Bubble)         True         ;#Mode batch
    set Param(Icons)          {}           ;#Fichiers icones
    set Param(IconId)         False        ;#Affichage des descriptifs des icones
