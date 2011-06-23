@@ -2060,6 +2060,11 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          Tcl_GetIntFromObj(Interp,obji,&i);
          Tcl_GetIntFromObj(Interp,objj,&j);
 
+         if (!FIN2D(FromDef,i,j)) {
+            Tcl_AppendResult(Interp,"OGR_LayerInterp: Wrong index, index coordinates are greater than field size",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         
          Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
          if (isnan(val1) || val1==FromDef->NoData) {
             continue;

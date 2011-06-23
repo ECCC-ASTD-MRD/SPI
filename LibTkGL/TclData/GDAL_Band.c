@@ -696,6 +696,11 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
             Tcl_GetIntFromObj(Interp,obji,&i);
             Tcl_GetIntFromObj(Interp,objj,&j);
 
+            if (!FIN2D(FromDef,i,j)) {
+               Tcl_AppendResult(Interp,"Data_GridConservative: Wrong index, index coordinates are greater than field size",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
             Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
             if (isnan(val1) || val1==FromDef->NoData) {
                continue;
