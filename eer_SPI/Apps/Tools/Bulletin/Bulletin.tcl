@@ -450,9 +450,6 @@ proc Bulletin::SelectBull { Parent Position Bind } {
    Bulletin::TextSearch .bulletin.mid.t "ASH" search
    .bulletin.mid.t tag configure search -background red -foreground white
 
-   Bulletin::TextSearch .bulletin.mid.t "ASH UUA " search1
-   .bulletin.mid.t tag configure search1 -background red -foreground white
-
    Bulletin::TextSearch .bulletin.mid.t "VOLCANO" search2
    .bulletin.mid.t tag configure search2 -background yellow -foreground black
 
