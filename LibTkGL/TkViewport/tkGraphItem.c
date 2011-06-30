@@ -2768,7 +2768,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       glPushMatrix();
       glTranslated(X1+20,y,0);
       sz=Item->Size+Item->Width;
-      glScalef(sz,sz,1.0f);
+      glScalef(sz,-sz,1.0f);
       if (Item->IconFill) {
          glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
       } else {
