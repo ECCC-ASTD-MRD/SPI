@@ -142,9 +142,9 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Longitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lat=(-90+Proj->Geo->Params.CoordDef);loc.Lat<=(90-Proj->Geo->Params.CoordDef);loc.Lat+=Proj->Geo->Params.CoordDef){
+      for(loc.Lon=-180;loc.Lon<=(180-Proj->Geo->Params.CoordDef);loc.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(loc.Lon=-180;loc.Lon<=180;loc.Lon+=1.0){
+         for(loc.Lat=-90;loc.Lat<=90;loc.Lat+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
             } else {
@@ -154,12 +154,12 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          }
          glEnd();
       }
-
+      
       /*Latitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lon=-180;loc.Lon<=(180-Proj->Geo->Params.CoordDef);loc.Lon+=Proj->Geo->Params.CoordDef){
+      for(loc.Lat=(floor(-90.0/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef)+Proj->Geo->Params.CoordDef;loc.Lat<90;loc.Lat+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(loc.Lat=-90;loc.Lat<=90;loc.Lat+=1.0){
+         for(loc.Lon=-180;loc.Lon<=180;loc.Lon+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
             } else {

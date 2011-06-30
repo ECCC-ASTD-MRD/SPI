@@ -243,7 +243,8 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
-
+      glRotated(10.0,0.0,1.0,0.0);
+      
       /*Trace des latitudes*/
       for(lon=0;lon<180;lon+=Proj->Geo->Params.CoordDef){
          if (Interp) glFeedbackInit(2000,GL_2D);
@@ -257,7 +258,7 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glRotated(90.0,1.0,0.0,0.0);
 
       /*Trace des longitudes*/
-      for(lat=-90+Proj->Geo->Params.CoordDef;lat<90;lat+=Proj->Geo->Params.CoordDef){
+      for(lat=(floor(-90.0/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef)+Proj->Geo->Params.CoordDef;lat<90;lat+=Proj->Geo->Params.CoordDef){
          if (Interp) glFeedbackInit(2000,GL_2D);
          glPushMatrix();
          delt=DEG2RAD(lat);

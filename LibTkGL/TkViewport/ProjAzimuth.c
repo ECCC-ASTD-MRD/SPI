@@ -137,7 +137,7 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Trace des longitudes*/
       if (Interp) glFeedbackInit(4000,GL_2D);
-      for(co.Lat=-90+Proj->Geo->Params.CoordDef;co.Lat<90;co.Lat+=Proj->Geo->Params.CoordDef){
+      for(co.Lat=(floor(-90.0/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef)+Proj->Geo->Params.CoordDef;co.Lat<90;co.Lat+=Proj->Geo->Params.CoordDef){
         glBegin(GL_LINE_STRIP);
         for(co.Lon=-180;co.Lon<=180;co.Lon+=1){
             Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);

@@ -145,7 +145,7 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
             glVertex3d(x,1.0,1.0);
          }
 
-         for(y=-1.0;y<=1.0;y+=incr){
+      for(y=floor(-1.0/incr)*incr+incr;y<=1.0;y+=incr){
             glVertex3d(-2.0+Proj->L,y,1.0);
             glVertex3d(2.0+Proj->L,y,1.0);
 
