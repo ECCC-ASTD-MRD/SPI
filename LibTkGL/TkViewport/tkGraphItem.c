@@ -2758,6 +2758,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       ((glTextItem*)Item->DescItem)->y=Y0;
       glComputeTextBbox(Graph->canvas,Item->DescItem);
    } else {
+      glColor4us(Graph->FGColor->red,Graph->FGColor->green,Graph->FGColor->blue,Graph->Alpha*0.01*655);
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font?Item->Font:Graph->Font);
       glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1);
    }
@@ -3701,8 +3702,10 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
 
    if (Item->DescItem) {
    } else {
-      if (Item->Font)
+      if (Item->Font) {
+         Tk_CanvasPsColor(Interp,Graph->canvas,Graph->FGColor);
          glPostscripTextLayout(Interp,Graph->canvas,Item->Text,Item->Outline,NULL,0,X0,Y0,TK_ANCHOR_NW,TK_JUSTIFY_LEFT);
+      }
    }
 
    if (Item->Icon && Item->Size) {

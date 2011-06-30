@@ -1012,7 +1012,7 @@ proc Graph::ItemConfigure { GR Type Item } {
 
    set item [graphitem configure $Item -desc]
    if { $item!="" } {
-      $data(Canvas) itemconfigure [graphitem configure $Item -desc] -font $Graph::Item(Font) -fill $Graph::Item(Outline)
+      $data(Canvas) itemconfigure [graphitem configure $Item -desc] -font $Graph::Item(Font) -fill $Graph::Color(FG)
    }
    $data(Canvas) itemconfigure $GR -bg $Graph::Color(BG)
 }

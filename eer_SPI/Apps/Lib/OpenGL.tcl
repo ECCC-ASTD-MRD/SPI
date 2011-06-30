@@ -192,5 +192,5 @@ proc OpenGL::Update { } {
 
    set Stat(RenderTime)  [format "%6.4f sec" $sec]
    catch { set Stat(FPS) [format "%5.3f fps" [expr 1.0/$sec]] }
-   set Stat(MemUsage)    [format "%2.3f Mb" [system usage -rss]]
+   set Stat(MemUsage)    [format "%2i Mb" [expr [system usage -rss]/1024]]
 }
