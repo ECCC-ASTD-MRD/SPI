@@ -453,7 +453,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case READCUBE:
          if(Objc<3 || Objc>6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id [invert] [level from] [level to]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"id [invert] [level from] [level to] | [levels]");
             return(TCL_ERROR);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
@@ -462,17 +462,27 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          }
          n=0;
+         c0=c1=0.0;
+         obj=NULL;
          if (Objc>3) {
             Tcl_GetBooleanFromObj(Interp,Objv[3],&n);
          }
          if (Objc>4) {
-            Tcl_GetIntFromObj(Interp,Objv[4],&i0);
+            Tcl_ListObjLength(Interp,Objv[4],&npos);
+            if (npos==1) {
+               Tcl_GetDoubleFromObj(Interp,Objv[4],&c0);
+            } else {
+               obj=Objv[4];
+            }
          }
          if (Objc>5) {
-            Tcl_GetIntFromObj(Interp,Objv[5],&i1);
+            Tcl_GetDoubleFromObj(Interp,Objv[5],&c1);
          }
-         if (field0->ReadCube)
-            field0->ReadCube(Interp,field0,n,i0,i1);
+         if (field0->ReadCube) {
+            if (!field0->ReadCube(Interp,field0,n,c0,c1,obj)) {
+               return(TCL_ERROR);
+            }
+         }
          return(TCL_OK);
          break;
 

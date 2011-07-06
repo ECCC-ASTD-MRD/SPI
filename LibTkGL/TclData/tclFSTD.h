@@ -39,6 +39,7 @@
 #include "EZTile.h"
 #include "EZVrInt.h"
 
+#define FSTD_NKMAX     1024
 #define FSTD_LISTALL   0
 #define FSTD_LISTVAR   1
 #define FSTD_LISTDATEV 2
@@ -96,7 +97,7 @@ int    FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var);
 int    FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char *Eticket,int DIP1,int IP2,int IP3,char *TypVar,char *NomVar);
 int    FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key);
 int    FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid);
-int    FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFrom,int LevelTo);
+int    FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List);
 int    FSTD_FieldReadMesh(TData *Field);
 int    FSTD_FieldStat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 void   FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom);

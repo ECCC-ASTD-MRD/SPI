@@ -434,7 +434,7 @@ static int Traj_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 
    traj=Traj_Get(Name);
    if (!traj) {
-      Tcl_AppendResult(Interp,"\n   Traj_Define: Trajectory id unknown: \"",Name,"\"",(char *)NULL);
+      Tcl_AppendResult(Interp,"\n   Traj_Stat: Trajectory id unknown: \"",Name,"\"",(char *)NULL);
       return TCL_ERROR;
    }
 

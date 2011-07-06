@@ -853,26 +853,24 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
    /*Recuperer tout les niveaux disponibles*/
    if (FieldFrom->ReadCube)
-      FieldFrom->ReadCube(Interp,FieldFrom,0,0,0);
+      FieldFrom->ReadCube(Interp,FieldFrom,0,0.0,0.0,NULL);
 
    if (ZFieldFrom) {
-      if (ZFieldFrom->ReadCube)
-         ZFieldFrom->ReadCube(Interp,ZFieldFrom,0,0,0);
-
       if (ZFieldFrom->Def->NI!=FieldFrom->Def->NI || ZFieldFrom->Def->NJ!=FieldFrom->Def->NJ) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid source Z field dimensions",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
+      if (ZFieldFrom->ReadCube)
+         ZFieldFrom->ReadCube(Interp,ZFieldFrom,0,0.0,0.0,NULL);
    }
 
    if (ZFieldTo) {
-      if (ZFieldTo->ReadCube)
-         ZFieldTo->ReadCube(Interp,ZFieldTo,0,0,0);
-
       if (ZFieldTo->Def->NI!=FieldTo->Def->NI || ZFieldTo->Def->NJ!=FieldTo->Def->NJ) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid destination Z field dimensions",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
+      if (ZFieldTo->ReadCube)
+         ZFieldTo->ReadCube(Interp,ZFieldTo,0,0.0,0.0,NULL);
    }
    /* Definition des grilles */
    /* Définition des algorithmes d'[inter/extra]polation */
@@ -2334,94 +2332,114 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFrom,int LevelTo){
+int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List){
 
    FSTD_Head   *head=(FSTD_Head*)Field->Head;
    TFSTDVector *uvw;
    TGeoRef     *ref;
-   int          idxs[1024],tmp[1024],i,k,k0,k1,k2,idx,ok,idump,ni,nj,nk,type,ip1;
+   Tcl_Obj     *obj;
+   int          idxs[FSTD_NKMAX],tmp[FSTD_NKMAX],i,k,k2,idx,ok,idump,ni,nj,nk,type,ip1;
    char         cdump[16];
    char        *p;
-   float        levels[1024];
+   float        levels[FSTD_NKMAX];
+   double       level;
 
    if (Field->Def->NK>1 || Field->Ref->Grid[0]=='V')
       return(1);
 
 #ifdef LNK_FSTD
    if (FSTD_FileSet(Interp,head->FID)<0)
-      return(TCL_ERROR);
-
-   /*Recuperer les indexes de tout les niveaux*/
-   EZLock_RPNField();
-   c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,idxs,&nk,512);
-
-   if (nk<=1) {
-      EZUnLock_RPNField();
-      FSTD_FileUnset(Interp,head->FID);
       return(0);
+
+   EZLock_RPNField();
+   if (LevelFrom>LevelTo) {
+      level=LevelTo;
+      LevelTo=LevelFrom;
+      LevelFrom=level;
    }
-   
-   uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL);
 
-   /*Determiner les niveaux disponibles*/
-   k2=0;
-   for(k=0;k<nk;k++) {
-      ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
-         &idump,&tmp[k],&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
-         &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
+   if (List) {
+      Tcl_ListObjLength(Interp,List,&nk);
+      for(k=0;k<nk;k++) {
+         Tcl_ListObjIndex(Interp,List,k,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&level);
+         ip1=FSTD_Level2IP(level,Field->Ref->LevelType);
+         c_fstinl(head->FID->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
 
-      /*Verifier que l'on garde le meme type de niveau*/
-      FSTD_IP2Level(tmp[k],&type);
-      type=type==LVL_SIGMA?LVL_ETA:type;
-      if (type==Field->Ref->LevelType) {
-
-        /*Verifier que l'on a pas deja ce niveau (niveau en double)*/
-         for(i=0;i<k2;i++) {
-            if (tmp[k]==tmp[i]) break;
+         if (k2==0) {
+            Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find specific level ",Tcl_GetString(obj),(char*)NULL);
+            EZUnLock_RPNField();
+            FSTD_FileUnset(Interp,head->FID);
+            return(0);
          }
+         tmp[k]=k;
+      }
+   } else {
 
-         /*Garder ce niveau en metre pour le tri*/
-         if (i>=k2) {
-            levels[k2]=FSTD_IP2Meter(tmp[k]);
-            idxs[k2]=idxs[k];
-            k2++;
+      /*Recuperer les indexes de tout les niveaux*/
+      c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,idxs,&nk,FSTD_NKMAX);
+
+      if (nk<=1) {
+         EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,head->FID);
+         return(1);
+      }
+      /*Determiner les niveaux disponibles*/
+      k2=0;
+      for(k=0;k<nk;k++) {
+         ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
+            &idump,&tmp[k2],&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
+            &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
+
+         /*Verifier que l'on garde le meme type de niveau*/
+         level=FSTD_IP2Level(tmp[k2],&type);
+         type=type==LVL_SIGMA?LVL_ETA:type;
+         
+         if (type==Field->Ref->LevelType) {
+
+            /* Check if level is within the specified range if any*/
+            if (LevelFrom==LevelTo || (level>=LevelFrom && level<=LevelTo)) {
+
+               /*Verifier que l'on a pas deja ce niveau (niveau en double)*/
+               for(i=0;i<k2;i++) {
+                  if (tmp[k2]==tmp[i]) break;
+               }
+
+               /*Garder ce niveau en metre pour le tri*/
+               if (i>=k2) {
+                  levels[k2]=FSTD_IP2Meter(tmp[k2]);
+                  idxs[k2]=idxs[k];
+                  k2++;
+               }
+            }
          }
       }
-   }
-   nk=k2;
+      nk=k2;
 
-   /*Trier les niveaux*/
-   for(k=0;k<nk;k++) {
-      tmp[k]=nk-1;
-      for(k2=0;k2<nk;k2++) {
-         if (Invert) {
-            if (levels[k]>levels[k2]) {
-               tmp[k]--;
-            }
-         } else {
-            if (levels[k]<levels[k2]) {
-               tmp[k]--;
+      if (nk==0) {
+         return(1);
+      }
+
+      /*Trier les niveaux*/
+      for(k=0;k<nk;k++) {
+         tmp[k]=nk-1;
+         for(k2=0;k2<nk;k2++) {
+            if (Invert) {
+               if (levels[k]>levels[k2]) {
+                  tmp[k]--;
+               }
+            } else {
+               if (levels[k]<levels[k2]) {
+                  tmp[k]--;
+               }
             }
          }
       }
-   }
-
-   /*Verifier les limites*/
-   k0=0;
-   k1=nk;
-   if (LevelFrom!=LevelTo) {
-      nk=LevelTo-LevelFrom+1;
-      k0=LevelFrom;
-      k1=LevelTo;
-   }
-
-   if (nk==0) {
-      return(1);
    }
    
    /*Augmenter la dimension du tableau*/
    if (!DataDef_Resize(Field->Def,ni,nj,nk)) {
-      fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Not enough memory to allocate levels\n");
+      Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Not enough memory to allocate levels",(char*)NULL);
       EZUnLock_RPNField();
       FSTD_FileUnset(Interp,head->FID);
       return(0);
@@ -2431,49 +2449,49 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,int LevelFro
    fprintf(stdout,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
 #endif
 
+   uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL);
+   
    /*Recuperer le data*/
    for(k=0;k<Field->Def->NK;k++) {
-      if (tmp[k]>=k0 && tmp[k]<=k1) {
-         idx=FSIZE2D(Field->Def)*(tmp[k]-k0);
-         Def_Pointer(Field->Def,0,idx,p);
-         c_fstluk(p,idxs[k],&ni,&nj,&idump);
+      idx=FSIZE2D(Field->Def)*tmp[k];
+      Def_Pointer(Field->Def,0,idx,p);
+      c_fstluk(p,idxs[k],&ni,&nj,&idump);
 
-         /*Recuperer le data seulement*/
-         ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
-            &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
-            &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
+      /*Recuperer le data seulement*/
+      ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
+         &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
+         &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
 
-         /*Champs vectoriel ???*/
-         if (uvw) {
-            if (uvw->VV) {
-               Def_Pointer(Field->Def,1,idx,p);
-               ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
-               c_fstluk(p,ok,&ni,&nj,&idump);
-            }
-            if (uvw->WW) {
-               Def_Pointer(Field->Def,2,idx,p);
-               ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
-               c_fstluk(p,ok,&ni,&nj,&idump);
-               if (uvw->WWFactor!=0.0) {
-                  for(i=0;i<FSIZE2D(Field->Def);i++) {
-                     Field->Def->Data[2][idx+i]*=uvw->WWFactor;
-                  }
+      /*Champs vectoriel ???*/
+      if (uvw) {
+         if (uvw->VV) {
+            Def_Pointer(Field->Def,1,idx,p);
+            ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
+            c_fstluk(p,ok,&ni,&nj,&idump);
+         }
+         if (uvw->WW) {
+            Def_Pointer(Field->Def,2,idx,p);
+            ok=c_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
+            c_fstluk(p,ok,&ni,&nj,&idump);
+            if (uvw->WWFactor!=0.0) {
+               for(i=0;i<FSIZE2D(Field->Def);i++) {
+                  Field->Def->Data[2][idx+i]*=uvw->WWFactor;
                }
             }
          }
+      }
 
-         /*Assigner le niveaux courant*/
-         if (ip1==head->IP1) {
-            Field->Def->Level=tmp[k]-k0;
-         }
-         levels[tmp[k]-k0]=FSTD_IP2Level(ip1,&type);
+      /*Assigner le niveaux courant*/
+      if (ip1==head->IP1) {
+         Field->Def->Level=tmp[k];
+      }
+      levels[tmp[k]]=FSTD_IP2Level(ip1,&type);
 
-         if (ok<0) {
-            fprintf(stderr,"(ERROR) FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed (%i))",ok);
-            EZUnLock_RPNField();
-            FSTD_FileUnset(Interp,head->FID);
-            return(0);
-         }
+      if (ok<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed)",(char*)NULL);
+         EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,head->FID);
+         return(0);
       }
    }
 

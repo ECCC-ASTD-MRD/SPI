@@ -74,7 +74,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
    int k,nk;
 
    if (Field->Ref->LevelNb==1) {
-      if (Field->ReadCube) Field->ReadCube(NULL,Field,0,0,0);
+      if (Field->ReadCube) Field->ReadCube(NULL,Field,0,0.0,0.0,NULL);
       Data_PreInit(Field);
    }
 

@@ -97,7 +97,7 @@ struct TData;
 typedef Vect3d* (TData_Grid)     (struct TData *Field,void *Proj,int Level);
 typedef void    (TData_Free)     (struct TData *Field);
 typedef void    (TData_Copy)     (void *To, void *From);
-typedef int     (TData_ReadCube) (Tcl_Interp *Interp,struct TData *Field,int Invert,int LevelFrom,int LevelTo);
+typedef int     (TData_ReadCube) (Tcl_Interp *Interp,struct TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List);
 typedef void    (TData_Set)      (struct TData *Field);
 
 typedef struct TData {
