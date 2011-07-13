@@ -596,10 +596,12 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
             "ALL"      { set var TRAJ }
          }
 
-         if { ![dataspec is $var] } {
+         if { ![dataspec is $var] || [trajectory configure $traj -set] } {
             set spec [trajectory configure $traj -dataspec]
-            dataspec copy $var $spec
-            dataspec free $spec
+            if { $spec!=$var } {
+               dataspec copy $var $spec
+               dataspec free $spec
+            }
 
             Trajectory::ParamInit $traj $var
          }
