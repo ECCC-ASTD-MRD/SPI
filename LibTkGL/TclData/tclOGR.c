@@ -308,6 +308,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    double        x,y,lat,lon;
    int           idx,idxfi,all,n;
+   char          mode;
    unsigned int  f;
    GDAL_Band    *band;
    TData        *field;
@@ -389,7 +390,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case INTERP:
-         if (Objc>9 || Objc<7) {
+         if (Objc>9 || Objc<6) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer data field Type [Split] [Final] [Index list variable]");
             return(TCL_ERROR);
          }
@@ -414,9 +415,9 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid field",(char*)NULL);
             return(TCL_ERROR);
          }
-
-         if (Tcl_GetString(Objv[5])[0]!='A' && Tcl_GetString(Objv[5])[0]!='C' && Tcl_GetString(Objv[5])[0]!='W' && Tcl_GetString(Objv[5])[0]!='I' && Tcl_GetString(Objv[5])[0]!='N') {
-            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : interpolation type, must be, WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
+         mode=Tcl_GetString(Objv[5])[0];
+         if (mode!='A' && mode!='C' && mode!='W' && mode!='I' && mode!='N' && mode!='L') {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Invalid interpolation type, must be, WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE for polygons or NEAREST or LINEAR for points",(char*)NULL);
             return(TCL_ERROR);
          }
 

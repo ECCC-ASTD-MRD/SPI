@@ -1984,12 +1984,15 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    int           i,j,n=0,p=0,pt,len=-1,rw;
    unsigned int  f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
+   float         val0f,val1f;
    char          buf[64];
-   OGRGeometryH  cell,ring,inter;
+   OGRGeometryH  cell,ring,inter,geom;
    OGREnvelope   env0,*env1=NULL;
    Tcl_Obj      *obji,*objj,*lst,*item=NULL;
    Tcl_Channel   chan=NULL;
-
+   Vect3d        vr;
+   Coord         co;
+   
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid layer",(char*)NULL);
       return(TCL_ERROR);
@@ -2121,7 +2124,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          for(i=0;i<FromDef->NI;i++) {
 
             OGR_GridCell(ring,Layer->Ref,FromRef,i,j,Prec);
-            rt=n=0;
+            rt=n=rw=0;
 
             if ((area=OGR_G_GetArea(cell))>0.0) {
                Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
@@ -2136,31 +2139,53 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
+                  geom=OGR_F_GetGeometryRef(Layer->Feature[f]);
 
-                  /*If layer envelope is not yet calculated*/
-                  if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
-                     OGR_G_GetEnvelope(OGR_F_GetGeometryRef(Layer->Feature[f]),&env1[f]);
-
-                  if (GPC_Intersect(cell,OGR_F_GetGeometryRef(Layer->Feature[f]),&env0,&env1[f])) {
-                     inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
-                     dp=OGR_G_GetArea(inter);
-                     r=dp/area;
-                     rt+=r;
-                     val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-                     switch(Mode) {
-                        case 'N': accum[f]+=r;
-                        case 'C': val0+=val1*r;
-                                    break;
-                        case 'W': if (r>0.999) {
-                                       val0+=val1;
-                                    } else {
-                                       r=0.0;
-                                    }
-                                    break;
-                        case 'A': accum[f]+=1.0;
-                        case 'I': val0+=val1;
-                                    break;
+                  /* If it's a point, do simple interpolation */
+                  if (wkbFlatten(OGR_G_GetGeometryType(geom))==wkbPoint) {
+                     if (Mode!='N' && Mode!='L') {
+                        Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  NEAREST or LINEAR",(char*)NULL);
+                        return(TCL_ERROR);
                      }
+                     
+                     OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
+                     Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+                     FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
+                     FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0f,&val1f);
+                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0f);
+                     r=0.0;
+                     rw++;
+                  } else {
+                  
+                     /*If layer envelope is not yet calculated*/
+                     if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
+                        OGR_G_GetEnvelope(geom,&env1[f]);
+
+                     if (GPC_Intersect(cell,geom,&env0,&env1[f])) {
+                        inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
+                        dp=OGR_G_GetArea(inter);
+                        r=dp/area;
+                        rt+=r;
+                        val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+                        switch(Mode) {
+                           case 'N': accum[f]+=r;
+                           case 'C': val0+=val1*r;
+                                     break;
+                           case 'W': if (r>0.999) {
+                                        val0+=val1;
+                                     } else {
+                                        r=0.0;
+                                     }
+                                     break;
+                           case 'A': accum[f]+=1.0;
+                           case 'I': val0+=val1;
+                                     break;
+                           default:
+                              Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
+                              return(TCL_ERROR);
+                        }
+                     }
+                  
                      OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
                      /*Append intersection info to the list*/
@@ -2192,7 +2217,9 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                   }
                }                  
             }
+            if (rw==Layer->NFeature) break;
          }
+         if (rw==Layer->NFeature) break;
       }
       free(env1);
   }
