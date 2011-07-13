@@ -2758,7 +2758,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       ((glTextItem*)Item->DescItem)->y=Y0;
       glComputeTextBbox(Graph->canvas,Item->DescItem);
    } else {
-      glColor4us(Graph->FGColor->red,Graph->FGColor->green,Graph->FGColor->blue,Graph->Alpha*0.01*655);
+      glColor4us(Graph->FGColor->red,Graph->FGColor->green,Graph->FGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font?Item->Font:Graph->Font);
       glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1);
    }
