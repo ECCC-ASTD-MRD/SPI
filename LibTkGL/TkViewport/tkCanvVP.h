@@ -105,10 +105,10 @@ typedef struct ViewportItem  {
    int Loading;                   /*Indicateur de lecture en arriere plan*/
 } ViewportItem;
 
-typedef struct ThreadEvent {
+typedef struct VPThreadEvent {
     Tcl_Event event;    /* Must be first */
     void *ptr;          /* Data pointer */
-} ThreadEvent;
+} VPThreadEvent;
 
 void ViewportClean(ViewportItem *VP,int Data,int Buff);
 void ViewportClear(ViewportItem *VP,int Page);

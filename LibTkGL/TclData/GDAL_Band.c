@@ -1727,9 +1727,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
                      return(TCL_ERROR);
                   } else {
-                     GeoTex_Lock();
                      GDALGetRasterHistogram(band->Band[c],min,max,h,histo,FALSE,w,GDALDummyProgress,NULL);
-                     GeoTex_UnLock();
                      obj=Tcl_NewListObj(0,NULL);
                      for(c=0;c<h;c++) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(histo[c]));
@@ -2211,7 +2209,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                      }
                      break;
                }
-               GeoTex_ClearCoord(&band->Tex,NULL);
+               GeoTex_ReProject(band);
             }
             break;
 
@@ -2231,7 +2229,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   band->Ref=ref;
                   GeoRef_Incr(band->Ref);
                   GeoRef_Size(ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
-                  GeoTex_ClearCoord(&band->Tex,NULL);
+                  GeoTex_ReProject(band);
                }
             }
             break;
@@ -2281,7 +2279,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
-                  GeoTex_ClearCoord(&band->Tex,NULL);
+                  GeoTex_ReProject(band);
                }
             }
             break;
@@ -2328,7 +2326,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
-                  GeoTex_ClearCoord(&band->Tex,NULL);
+                  GeoTex_ReProject(band);
                }
             }
             break;
@@ -2375,7 +2373,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
-                  GeoTex_ClearCoord(&band->Tex,NULL);
+                  GeoTex_ReProject(band);
                }
             }
             break;
@@ -2423,9 +2421,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
          Band->Stat[c].Min=0.0;
          Band->Stat[c].Max=255.0;
       } else if (Band->Band[c]) {
-         GeoTex_Lock();
          GDALComputeRasterMinMax(Band->Band[c],TRUE,minmax);
-         GeoTex_UnLock();
          Band->Stat[c].Min=minmax[0];
          Band->Stat[c].Max=minmax[1];
       } else {

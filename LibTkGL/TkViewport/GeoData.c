@@ -216,12 +216,12 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
 
 void GDB_ThreadQueueRefresh(ViewportItem *VP) {
 
-   ThreadEvent *event;
+   VPThreadEvent *event;
 
-   event=(ThreadEvent*)ckalloc(sizeof(ThreadEvent));
+   event=(VPThreadEvent*)ckalloc(sizeof(VPThreadEvent));
    event->event.proc=ViewportRefresh_ThreadEventProc;
    event->ptr=(void*)VP;
-
+   
    /*Send redraw event to assigned viewport*/
    Tcl_ThreadQueueEvent(VP->ThreadId,(Tcl_Event*)event,TCL_QUEUE_TAIL);
    Tcl_ThreadAlert(VP->ThreadId);

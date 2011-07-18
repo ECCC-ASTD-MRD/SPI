@@ -147,7 +147,7 @@ EXTCHAR [A-Za-z0-9_.:#~]
       GLayer=GLayer?GLayer:yylval.Layer;
       GMode=GMode==T_VAL?T_LAYER:GMode;
 
-      if ((yylval.Data=OGR_LayerToDef(yylval.Layer,rindex(yytext,'.')+1))) {
+      if (rindex(yytext,'.') && (yylval.Data=OGR_LayerToDef(yylval.Layer,rindex(yytext,'.')+1))) {
          /*Add it to the temp arrays to be freed*/
          GDataN++;
          GData[GDataN]=yylval.Data;

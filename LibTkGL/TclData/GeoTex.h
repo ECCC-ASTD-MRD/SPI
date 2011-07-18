@@ -49,9 +49,9 @@ switch(Dim) {\
 }
 
 #define GEOTEX_NEW   0x0
-#define GEOTEX_PEND  0x1
-#define GEOTEX_DATA  0x2
-#define GEOTEX_TEXT  0x4
+#define GEOTEX_CLRT  0x1
+#define GEOTEX_CLRC  0x2
+#define GEOTEX_DATA  0x4
 #define GEOTEX_COOR  0x8
 
 typedef struct TGeoTexTile {
@@ -85,13 +85,13 @@ typedef struct TGeoTex {
 
 Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData);
 
-void                 GeoTex_Clear(TGeoTex *Tex,TGeoTexTile *Tile);
-void                 GeoTex_ClearCoord(TGeoTex *Tex,TGeoTexTile *Tile);
-void                 GeoTex_ClearTile(TGeoTexTile *Tile);
-void                 GeoTex_ClearRes(TGeoTexTile *Tile,int Res);
-void                 GeoTex_Lock(void);
-void                 GeoTex_UnLock(void);
-Tcl_Obj*             GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y);
-double               GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z);
+void      GeoTex_Clear(TGeoTex *Tex,TGeoTexTile *Tile);
+void      GeoTex_ClearCoord(TGeoTex *Tex,TGeoTexTile *Tile);
+void      GeoTex_ClearTile(TGeoTexTile *Tile);
+void      GeoTex_ClearRes(TGeoTexTile *Tile,int Res);
+void      GeoTex_Lock(void);
+void      GeoTex_UnLock(void);
+Tcl_Obj*  GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y);
+double    GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z);
 
 #endif

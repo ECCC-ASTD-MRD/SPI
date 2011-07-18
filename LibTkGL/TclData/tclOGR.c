@@ -909,13 +909,15 @@ void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 OGR_Layer* OGR_LayerGet(char *Name) {
 
    OGR_Layer *layer=NULL;
-   char      *name;
+   char      *name,*c;
 
    if (Name) {
       if (!(layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,Name))) {
-         name=strndup(Name,rindex(Name,'.')-Name);
-         layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,name);
-         free(name);
+         if ((c=rindex(Name,'.'))) {
+            name=strndup(Name,c-Name);
+            layer=(OGR_Layer*)TclY_HashGet(&OGR_LayerTable,name);
+            free(name);
+         }
       }
    }
    return(layer);
