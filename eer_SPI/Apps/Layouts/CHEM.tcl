@@ -98,25 +98,33 @@ proc CHEM::LayoutUpdate { Frame } {
       set desc "Unknown"
    }
 
+   if { [llength $Sim(Name)]>1 } {
+      set coords ""
+      foreach src $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
+         append coords [format "(%.2f %.2f) " $lat $lon]
+      }
+   } else {
+      set coords [format "%.4f %.4f" $Sim(Lat) $Sim(Lon)]
+   }
+
    set date [clock format [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)" -gmt True] -gmt True]
    set text "$desc\n\nRelease                          :
 Dispersion Model                 : $Sim(Model)
 Source Name                      : $Sim(Name)
-Source Location                  : [format "%.4f %.4f" $Sim(Lat) $Sim(Lon)]
+Source Location                  : $coords
 Release Starting Date-Time       : $date\n"
 
    switch $Sim(Model) {
-      MLDP0   { append text "Simulation Duration              : $Sim(Duration) Hr(s)
+      MLDP0   -
+      MLDP1   {
+        if { [string is double $Sim(EmIsoQuantity)] } {
+           set q [format "%.3e unit" $Sim(EmIsoQuantity)]
+        } else {
+            set q $Sim(EmIsoQuantity)
+        }
+        append text "Simulation Duration              : $Sim(Duration) Hr(s)
 Release Duration                 : $Sim(EmTotalDuration) s
-Total Release Quantity           : [format "%.3e" $Sim(EmIsoQuantity)] unit
-Initial Max. Plume Height        : $Sim(EmHeight) m
-Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
-NWP Meteorological Model         : $Sim(Meteo)
-NWP Meteorological Data          : $Sim(Mode)"
-               }
-      MLDP1   { append text "Simulation Duration              : $Sim(Duration) Hr(s)
-Release Duration                 : $Sim(EmTotalDuration) s
-Total Release Quantity           : [format "%.3e" $Sim(EmIsoQuantity)] unit
+Total Release Quantity           : $q
 Initial Max. Plume Height        : $Sim(EmHeight) m
 Initial Horiz. Dispersion Radius : $Sim(EmRadius) m
 NWP Meteorological Model         : $Sim(Meteo)
