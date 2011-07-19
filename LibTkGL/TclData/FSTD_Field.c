@@ -2394,7 +2394,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          /*Verifier que l'on garde le meme type de niveau*/
          level=FSTD_IP2Level(tmp[k2],&type);
          type=type==LVL_SIGMA?LVL_ETA:type;
-         
+
          if (type==Field->Ref->LevelType) {
 
             /* Check if level is within the specified range if any*/
@@ -2436,7 +2436,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          }
       }
    }
-   
+
    /*Augmenter la dimension du tableau*/
    if (!DataDef_Resize(Field->Def,ni,nj,nk)) {
       Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Not enough memory to allocate levels",(char*)NULL);
@@ -2450,7 +2450,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
 #endif
 
    uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL);
-   
+
    /*Recuperer le data*/
    for(k=0;k<Field->Def->NK;k++) {
       idx=FSIZE2D(Field->Def)*tmp[k];

@@ -120,7 +120,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
    cmap=(CMap_Rec*)malloc(sizeof(CMap_Rec));
 
    if (cmap) {
-      cmap->NRef++;
+      cmap->NRef=1;
 
       /*Definir le maximum de couleur disponibles*/
       cmap->NbPixels=(Nb<=0?CR_MAX:(Nb>CR_MAX?CR_MAX:Nb));
