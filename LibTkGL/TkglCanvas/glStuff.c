@@ -1667,7 +1667,7 @@ void glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Thet
  * Nom      : <glCrowdPush>
  * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Controle de peuplement, Verifie lsi l'espace est disponible et si
+ * But      : Controle de peuplement, Verifie si l'espace est disponible et si
  *            oui, ajoute a la liste de peuplement
  *
  * Parametres :

@@ -547,34 +547,23 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                dny=dx*0.5*sin(th)+dy*0.5*sin(M_PI2-th);
                th=RAD2DEG(th);
 
-               glReadPixels(p1[0],p1[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x30) continue;
+               if (glCrowdPush(p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,5)) {
 
-               glReadPixels(p1[0]+dnx,p1[1]-dny,1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x30) continue;
+                  p1[0]-=dnx; p1[1]-=dny;
 
-               glReadPixels(p1[0]-dnx,p1[1]+dny,1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x30) continue;
+                  /*Draw the bloc in the stencil buffer*/
+                  glStencilMask(0x20);
+                  glStencilMaskQuad(p1[0],p1[1],dx,dy,th,Field->Spec->TKM.linespace/2,1);
 
-               glReadPixels(p1[0]+dnx,p1[1]+dny,1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x30) continue;
+                  if (Interp) {
+                     glPostscriptTextBG(Interp,VP->canvas,p1[0],p1[1],th,dx,dy,Field->Spec->TKM.linespace/2,1,VP->BGColor,1);
+                  }
 
-               p1[0]-=dnx; p1[1]-=dny;
-               glReadPixels(p1[0],p1[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-               if (s&0x30) continue;
-
-               /*Draw the bloc in the stencil buffer*/
-               glStencilMask(0x20);
-               glStencilMaskQuad(p1[0],p1[1],dx,dy,th,Field->Spec->TKM.linespace/2,1);
-
-               if (Interp) {
-                  glPostscriptTextBG(Interp,VP->canvas,p1[0],p1[1],th,dx,dy,4,1,VP->BGColor,1);
+                  /*Draw the text*/
+                  glStencilMask(0x10);
+                  glPrint(Interp,VP->canvas,buf,p1[0],p1[1],(Interp?-th:th));
+                  d=0;
                }
-
-               /*Draw the text*/
-               glStencilMask(0x10);
-               glPrint(Interp,VP->canvas,buf,p1[0],p1[1],(Interp?-th:th));
-               d=0;
             }
 
             if (Field->Spec->RenderLabel<0) {
