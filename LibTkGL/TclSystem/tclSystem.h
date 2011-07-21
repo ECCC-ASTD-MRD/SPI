@@ -53,6 +53,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <pwd.h>
+#include <pthread.h>
 
 #include "tclUtils.h"
 

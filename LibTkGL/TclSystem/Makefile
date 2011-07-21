@@ -11,9 +11,9 @@ INCLUDES   = $(INCLUDE)
 CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES) -DVERSION=\"$(VERSION)\"
 LDFLAGS    = $(LDDEBUGFLAGS)
 ifeq ($(PROC),x86_64)
-	LIBS       = -L$(LIB_PATH) -lc -ldmv
+	LIBS       = -L$(LIB_PATH) -lc -lpthread -ldmv
 else
-	LIBS       = -L$(LIB_PATH) -lc
+	LIBS       = -L$(LIB_PATH) -lc -lpthread
 endif
 
 OBJS       = tclSystem.o

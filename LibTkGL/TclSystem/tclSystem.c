@@ -460,10 +460,13 @@ int System_LimitSet(Tcl_Interp *Interp,int Resource,int Factor,Tcl_Obj *Value) {
 
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
+   pthread_attr_t attr;
+   size_t         size;
    int           i,idx;
    static CONST char *sopt[] = { "-vmem","-core","-cpu","-data","-filesize","-lock","-msgqueue","-nice",
-                                 "-fileno","-nproc","-rmem","-rtprio","-sigpending","-stack",NULL };
-   enum        opt { VMEM,CORE,CPU,DATA,FILESIZE,LOCKS,MSGQUEUE,NICE,FILENO,NPROC,RMEM,RTPRIO,SIGPENDING,STACK };
+                                 "-fileno","-nproc","-rmem","-rtprio","-sigpending","-stack","-threadstack",NULL };
+   enum        opt { VMEM,CORE,CPU,DATA,FILESIZE,LOCKS,MSGQUEUE,NICE,FILENO,NPROC,RMEM,RTPRIO,SIGPENDING,STACK,THREADSTACK };
+
 
    for(i=0;i<Objc;i++) {
 
@@ -544,7 +547,16 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
                System_LimitSet(Interp,RLIMIT_NPROC,1,Objv[++i]);
             }
             break;
-       }
+
+         case THREADSTACK:
+            if (Objc==1) {
+               pthread_attr_init(&attr);
+               pthread_attr_getstacksize (&attr, &size);
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(size));
+            } else {
+            }
+            break;
+      }
    }
    return(TCL_OK);
 }
@@ -1017,7 +1029,7 @@ static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_AppendResult(Interp,"wrong # args: should be -exec \"command\"",(char*)NULL);
                return(TCL_ERROR);
             }
-            
+
             if (!init) {
                dmvinit_c();
                init=1;
