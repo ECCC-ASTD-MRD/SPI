@@ -331,7 +331,7 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 */
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int  c=0;
+   int  c=0,w;
    char buf[256];
    TList *list;
    T3DArray *array;
@@ -361,8 +361,10 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       glStencilFunc(GL_EQUAL,0x00,0xff);
       glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
+      w=Field->Spec->Width?Field->Spec->Width:Field->Spec->RenderContour;
+
       if (Interp) {
-         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->Width-1);
+         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",w-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          if (Field->Spec->Outline)
             Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
@@ -375,7 +377,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       }
 
       glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
-      glLineWidth(Field->Spec->Width);
+      glLineWidth(w);
 
       list=Field->Segments;
 
@@ -563,7 +565,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
                /*Draw the bloc in the stencil buffer*/
                glStencilMask(0x20);
-               glStencilMaskQuad(p1[0],p1[1],dx,dy,th,4,1);
+               glStencilMaskQuad(p1[0],p1[1],dx,dy,th,Field->Spec->TKM.linespace/2,1);
 
                if (Interp) {
                   glPostscriptTextBG(Interp,VP->canvas,p1[0],p1[1],th,dx,dy,4,1,VP->BGColor,1);
@@ -627,14 +629,14 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       Tcl_AppendResult(Interp,buf,(char*)NULL);
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    }
-   
+
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
    glPointSize(Field->Spec->RenderGrid+0.1);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
    Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),0,NULL,NULL);
-  
+
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
 
@@ -1183,7 +1185,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    } else {
       glDisable(GL_CULL_FACE);
    }
-   
+
    if (GLRender->GLDebug) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
    } else {
@@ -1305,7 +1307,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
      }
      glEnd();
    }
-   
+
    glCullFace(GL_BACK);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
@@ -1554,9 +1556,10 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          break;
 
+      case 'Y':
       case 'W':
-         for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
-            for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
+         for(i=0;i<Field->Def->NI;i+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
+            for(j=0;j<Field->Def->NJ;j+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
                idx=j*Field->Def->NI+i;
                Def_GetMod(Field->Def,idx,len);
                Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
@@ -1574,7 +1577,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,len),180+RAD2DEG(atan2(u,v)),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,len),(Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v))),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }

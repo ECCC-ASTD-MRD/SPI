@@ -186,7 +186,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
       case COPY:
          if(Objc<4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1)) {
             return(TCL_ERROR);
@@ -425,8 +425,8 @@ void Data_GetStat(TData *Field){
    if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
 
-   /*Calculate vector module if needed*/
-   if (Field->Def->NC>1) {
+   /*Calculate vector module if needed (On Y grid, components are speed/dir)*/
+   if (Field->Def->NC>1 && Field->Ref->Grid[0]!='Y') {
       if (!Field->Def->Mode || Field->Def->Mode==Field->Def->Data[0]) {
          Field->Def->Mode=(char*)malloc(FSIZE3D(Field->Def)*TData_Size[Field->Def->Type]);
       } else {
