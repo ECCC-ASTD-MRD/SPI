@@ -2209,7 +2209,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                      }
                      break;
                }
-               GeoTex_ReProject(band);
+               GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
             }
             break;
 
@@ -2229,7 +2229,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   band->Ref=ref;
                   GeoRef_Incr(band->Ref);
                   GeoRef_Size(ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
-                  GeoTex_ReProject(band);
+                  GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
             break;
@@ -2279,7 +2279,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
-                  GeoTex_ReProject(band);
+                  GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
             break;
@@ -2326,7 +2326,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
-                  GeoTex_ReProject(band);
+                  GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
             break;
@@ -2373,7 +2373,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
-                  GeoTex_ReProject(band);
+                  GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
             break;
@@ -2485,7 +2485,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
 int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
    int           n;
-   GLuint        tx;
+   GLuint        tx=0;
    GLhandleARB   prog;
    Tcl_ThreadId  id;
 
@@ -2516,10 +2516,11 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
    /*Read in data in another thread*/
    if (!GLRender->UseThreads || GLRender->XBatch || GLRender->TRCon) {
-      GeoTex_Parse(Band,&Band->Tex.Tile,Proj,VP,Band->Tex.ResN,0,0,5);
+      GeoTex_Parse(Band,&Band->Tex.Tile,Proj,VP,Band->Tex.ResN,0,0);
    } else {
       if (!VP->Secondary) {
          if (!Band->Tex.ThreadId) {
+            //Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,SYS_IOTHREAD_STACKSIZE,TCL_THREAD_NOFLAGS);
             Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS);
          }
       }
@@ -2627,9 +2628,9 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glActiveTexture(GL_TEXTURE0);
    }
 
-   GeoTex_Render(Band,Band->Tex.Tile,Proj,VP);
+   GeoTex_Render(Band,Band->Tex.Tile,Proj,VP,1);
 
-   if (Band->Spec->Map)
+   if (tx)
       glDeleteTextures(1,&tx);
 
    if (prog) {

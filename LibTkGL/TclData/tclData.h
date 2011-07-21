@@ -34,11 +34,6 @@
 #ifndef _tclData_h
 #define _tclData_h
 
-#include <math.h>
-#include <malloc.h>
-#include <strings.h>
-#include <stdlib.h>
-
 #include "eerUtils.h"
 #include "tclUtils.h"
 #include "GeoRef.h"

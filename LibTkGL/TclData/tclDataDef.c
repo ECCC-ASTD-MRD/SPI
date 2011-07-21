@@ -282,11 +282,11 @@ void DataDef_Free(TDataDef *Def){
          if (Def->Data[3])            free(Def->Data[3]);
       }
 
-      if (Def->Buffer)     free(Def->Buffer);
-      if (Def->Accum)      free(Def->Accum);
-      if (Def->Mask)       free(Def->Mask);
-      if (Def->Pres>0x1)   free(Def->Pres);
-      if (Def->Poly)       OGR_G_DestroyGeometry(Def->Poly);
+      if (Def->Buffer)           free(Def->Buffer);
+      if (Def->Accum)            free(Def->Accum);
+      if (Def->Mask)             free(Def->Mask);
+      if (Def->Pres>(float*)0x1) free(Def->Pres);
+      if (Def->Poly)             OGR_G_DestroyGeometry(Def->Poly);
 //      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
 
       free(Def);
@@ -428,10 +428,10 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
       }
       Def->Mode=Def->Data[0];
 
-      if (Def->Buffer)     free(Def->Buffer); Def->Buffer=NULL;
-      if (Def->Accum)      free(Def->Accum);  Def->Accum=NULL;
-      if (Def->Mask)       free(Def->Mask);   Def->Mask=NULL;
-      if (Def->Pres>0x1)   free(Def->Pres);   Def->Pres=NULL;
+      if (Def->Buffer)           free(Def->Buffer); Def->Buffer=NULL;
+      if (Def->Accum)            free(Def->Accum);  Def->Accum=NULL;
+      if (Def->Mask)             free(Def->Mask);   Def->Mask=NULL;
+      if (Def->Pres>(float*)0x1) free(Def->Pres);   Def->Pres=NULL;
    }
    return(Def);
 }

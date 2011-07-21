@@ -32,10 +32,11 @@
  */
 
 #include "Data_FF.h"
-#include "glShader.h"
 
 int   Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
+int   Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
+int   Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
 
 static int GL_Type[]={ GL_BITMAP,GL_BITMAP,GL_UNSIGNED_BYTE,GL_BYTE,GL_UNSIGNED_SHORT,GL_SHORT,
                        GL_UNSIGNED_INT,GL_INT,GL_UNSIGNED_INT,GL_INT,GL_FLOAT,GL_FLOAT };

@@ -336,7 +336,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             break;
 
-            
+
          case USETHREADS:
             if (Objc==2) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->UseThreads));
@@ -344,7 +344,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&GLRender->UseThreads);
             }
             break;
-            
+
          case DEBUG:
             if (Objc==2) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->GLDebug));
@@ -1077,7 +1077,7 @@ GLushort glDash(Tk_Dash *Dash) {
       nb = DashConvert(q,p,nb,1.0);
       array=q;
    } else if (Dash->number>=2) {
-      array = (char*)(Dash->number>sizeof(char*))?Dash->pattern.pt:Dash->pattern.array;
+      array = (char*)(Dash->number>sizeof(char*)?Dash->pattern.pt:Dash->pattern.array);
       nb=Dash->number;
    } else {
      return 0;
@@ -1161,7 +1161,7 @@ void glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width) {
       str=(char*)malloc((unsigned int)(1-8*Dash->number));
       lptr=(char*)malloc((unsigned int)(1-2*Dash->number));
    }
-   ptr=(char*)((fabs(Dash->number)>sizeof(char*)))?Dash->pattern.pt:Dash->pattern.array;
+   ptr=(char*)((fabs(Dash->number)>sizeof(char*))?Dash->pattern.pt:Dash->pattern.array);
    if (Dash->number>0) {
       char *ptr0=ptr;
       sprintf(str, "[%d", *ptr++ & 0xff);

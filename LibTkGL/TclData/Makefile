@@ -13,7 +13,7 @@ CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
 LDFLAGS    = $(LDDEBUGFLAGS) 
 
 ifeq ($(PROC),x86_64)
-	LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat
+	LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat -lpthread
 else
 	LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat -lmut -ldrp -lurp
 endif

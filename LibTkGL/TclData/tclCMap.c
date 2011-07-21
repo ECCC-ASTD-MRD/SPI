@@ -1388,9 +1388,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    }
 
    /*Clear control table*/
-
-   for(idx=0;idx<CR_MAX;idx++)
-      memset(CMap->Control[idx],0,4);
+   memset(CMap->Control,0,4*CR_MAX);
 
    CMap->NbPixels=0;
    CMap->Interp=1;

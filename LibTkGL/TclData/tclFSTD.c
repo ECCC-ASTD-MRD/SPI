@@ -323,6 +323,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  *----------------------------------------------------------------------------
 */
+
 static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int    id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,i,k,compress=0;
@@ -372,9 +373,11 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             if (n) {
                Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
                if (!(uvw=FSTD_VectorTableCheck(Tcl_GetString(obj),NULL))) {
-                  uvw=&FSTDVectorTable[FSTDVectorTableSize];
-                  FSTDVectorTableSize++;
+                  uvw=&FSTDVectorTable[FSTDVectorTableSize++];
                }
+               if (uvw->UU) free(uvw->UU);
+               if (uvw->VV) free(uvw->VV);
+               if (uvw->WW) free(uvw->WW);
                uvw->UU=strdup(Tcl_GetString(obj));
                uvw->VV=uvw->WW=NULL;
                uvw->WWFactor=0.0;
@@ -1663,12 +1666,6 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
 
    if (!FSTDInit++) {
       Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
-
-      /*Force UU-VV relashionship*/
-      FSTDVectorTable[0].UU=strdup("UU");
-      FSTDVectorTable[0].VV=strdup("VV");
-      FSTDVectorTable[0].WW=NULL;
-      FSTDVectorTableSize++;
 
       c_fstopc("MSGLVL","WARNIN",0);
       c_fstopc("TOLRNC","SYSTEM",0);

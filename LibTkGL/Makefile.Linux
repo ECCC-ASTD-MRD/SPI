@@ -23,10 +23,10 @@ LDDEBUGFLAGS = --warn-once --no-undefined
 LDDEBUGFLAGS =
 
 ifeq ($(PROC),x86_64)
-   DEFINES      = -DLNK_FSTD -DTCL_THREADS -DLNK_GRIB -DLNK_DMV -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
+   DEFINES      = -D_GNU_SOURCE -DLNK_FSTD -DTCL_THREADS -DLNK_GRIB -DLNK_DMV -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
    CCOPTIONS    = -O2 -funroll-all-loops -finline-functions -fPIC -m64
 else
-   DEFINES     = -DLNK_FSTD -DLNK_URP -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
+   DEFINES     = -D_GNU_SOURC -DLNK_FSTD -DLNK_URP -DTCL_THREADS -DLNK_GRIB -DLIB_VER=\"${LIB_VER}\" -DTCLTK_VER=\"${TCLTK_VER}\"
    CCOPTIONS    = -O2 -funroll-all-loops -finline-functions 
 endif
 

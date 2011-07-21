@@ -796,10 +796,11 @@ void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
 
    if (Band) {
       if (Pos)
-         GeoTex_ClearCoord(&Band->Tex,NULL);
+         GeoTex_Signal(&Band->Tex,GEOTEX_CLRCOO);
 
-      if (Seg || (Map && (GLRender && !GLRender->ShaderAvailable)))
-         GeoTex_Clear(&Band->Tex,NULL);
+      if (Seg || (Map && (Band->Tex.Indexed || (GLRender && !GLRender->ShaderAvailable))))
+         GeoTex_Clear(&Band->Tex,GEOTEX_CLRTEX,0,0);
+         //GeoTex_Signal(&Band->Tex,GEOTEX_CLRTEX);
    }
 }
 
@@ -936,7 +937,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
       /* Liberation de la memoire allouee pour les textures*/
       band->Tex.Res=0;
-      GDAL_BandClean(band,1,1,1);
+      GeoTex_Clear(&band->Tex,GEOTEX_CLRALL,0,0);
 
       if (band->Stat)      free(band->Stat);
       if (band->Tag)       Tcl_DecrRefCount(band->Tag);

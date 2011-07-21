@@ -31,6 +31,7 @@
  */
 
 #include "tclOGR.h"
+#include "Data_FF.h"
 #include <sys/types.h>
 #include </usr/include/regex.h>
 
@@ -759,10 +760,12 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
-               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
-                  OGR_G_Segmentize(geom,tol);
-                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
-               }
+               OGR_G_Segmentize(OGR_F_GetGeometryRef(layer->Feature[f]),tol);
+
+
+//               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
+//                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+//               }
             }
          }
          break;
@@ -1992,7 +1995,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    Tcl_Channel   chan=NULL;
    Vect3d        vr;
    Coord         co;
-   
+
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid layer",(char*)NULL);
       return(TCL_ERROR);
@@ -2067,7 +2070,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             Tcl_AppendResult(Interp,"OGR_LayerInterp: Wrong index, index coordinates are greater than field size",(char*)NULL);
             return(TCL_ERROR);
          }
-         
+
          Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
          if (isnan(val1) || val1==FromDef->NoData) {
             continue;
@@ -2147,7 +2150,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  NEAREST or LINEAR",(char*)NULL);
                         return(TCL_ERROR);
                      }
-                     
+
                      OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
                      Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
                      FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
@@ -2156,7 +2159,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      r=0.0;
                      rw++;
                   } else {
-                  
+
                      /*If layer envelope is not yet calculated*/
                      if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
                         OGR_G_GetEnvelope(geom,&env1[f]);
@@ -2185,7 +2188,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                               return(TCL_ERROR);
                         }
                      }
-                  
+
                      OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
                      /*Append intersection info to the list*/
@@ -2201,7 +2204,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      }
                   }
                }
-               
+
                /*Append this gridpoint intersections to the index*/
                if (n) {
                   if (chan) {
@@ -2215,7 +2218,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
                      Tcl_ListObjAppendElement(Interp,List,item);
                   }
-               }                  
+               }
             }
             if (rw==Layer->NFeature) break;
          }
@@ -2300,7 +2303,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
    double        elev=0.0,extr=0.0;
    OGRGeometryH  geom;
    clock_t       sec;
-      
+
    if (Layer->GFeature==Layer->NFeature) {
       return(0);
    }
@@ -2345,7 +2348,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
       co[0].Lon=Layer->Ref->LLExtent.MinX;
       co[1].Lat=Layer->Ref->LLExtent.MaxY;
       co[1].Lon=Layer->Ref->LLExtent.MaxX;
-      
+
       Proj->Type->Project(Proj,co,Layer->Vr,2);
       t=0;
       Proj->Loading=0;

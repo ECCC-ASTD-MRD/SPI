@@ -42,10 +42,14 @@
 #include <GL/glx.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <stdlib.h>
 #include <math.h>
 #include <malloc.h>
+#include <string.h>
 #include <time.h>
 #include <tr.h>
+#include <sys/stat.h>
+
 
 #ifndef M_PI
 #define M_PI        3.14159265358979323846   /*Pi*/
@@ -229,6 +233,13 @@ GLdouble *glTessTmpGet();
 int  glCrowdPush(int X0,int Y0,int X1,int Y1,int Delta);
 void glCrowdPop();
 void glCrowdClear();
+
+void        GLShader_InfoLog(GLhandleARB Object);
+GLint       GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name);
+GLint       GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name);
+GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name);
+GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc);
+void        GLShader_UnInstall(GLhandleARB Prog);
 
 int      trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR);
 void     trRasterPos2i(int X,int Y);

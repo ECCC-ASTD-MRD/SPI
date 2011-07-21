@@ -543,7 +543,6 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
  *
  *----------------------------------------------------------------------------
  */
-
 void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
 
    int        i;
