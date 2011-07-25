@@ -126,8 +126,8 @@ catch { SPI::Splash "Loading Canvas Package Page 5.0" }
 package require OpenGL
 
 #----- Inclusion de la librairie de projection
-load $GDefs(Dir)/Lib/$GDefs(Arch)/libTkViewport[info sharedlibextension]
-load $GDefs(Dir)/Lib/$GDefs(Arch)/libTclSim[info sharedlibextension] TclSim
+load $GDefs(Dir)/Lib/$env(ARCH)/libTkViewport[info sharedlibextension]
+load $GDefs(Dir)/Lib/$env(ARCH)/libTclSim[info sharedlibextension] TclSim
 
 package require PrintBox
 package require ProjCam

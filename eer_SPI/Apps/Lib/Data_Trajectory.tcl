@@ -611,7 +611,7 @@ proc Trajectory::ParamUpdate { { Trajs { } } } {
              set exist 1
          }
          trajectory configure $traj -dataspec $var
-         trajectory configure $traj -width $Param(Width) -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
+#         trajectory configure $traj -width $Param(Width) -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
          ComboBox::Add $Data(Frame).id.lvl $var
       }
    }

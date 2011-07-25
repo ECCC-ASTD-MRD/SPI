@@ -529,12 +529,12 @@ proc Model::ParamsCheck { Model { Get True } } {
 
    #----- Set host architecture.
    if { $Param(Host)==$GDefs(Host) } {
-      set Param(Arch) $GDefs(Arch)
+      set Param(Arch) $env(ARCH)
    } else {
       if { [catch { set Param(Arch) [exec ssh $Param(Host) exec uname -s] } ] } {
          Dialog::Error . $Error(Host)
          set Param(Host) $GDefs(Host)
-         set Param(Arch) $GDefs(Arch)
+         set Param(Arch) $env(ARCH)
       }
    }
 
@@ -2029,7 +2029,7 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
          foreach proj $Watch::Data(Projects) {
             if { $Group=="" || $proj==$Group } {
                set ico [Watch::GetIcon $proj]
-               foreach watch $Watch::Data(Sources$proj) {
+               foreach watch [join $Watch::Data(Sources$proj)] {
                   if { $Loc=="" || [lindex $watch 0]==$Loc } {
                      lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"
                   }

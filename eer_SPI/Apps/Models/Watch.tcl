@@ -110,9 +110,9 @@ proc Watch::AllOpenItem { Tag Level } {
 
             set Data(BranchProject) [concat $Data(BranchProject) $Tag]
 
-            if { [info exists Data(Sources$Tag)] } {
-               foreach src $Data(Sources$Tag) {
-                  lappend tags $Tag[lindex $src 0]
+            if { [info exists Data(Exps$Tag)] } {
+               foreach exp $Data(Exps$Tag) {
+                  lappend tags $Tag$exp
                }
                set Tag $tags
             }
@@ -299,11 +299,11 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
       $Canvas itemconfigure PPROJECT$Project -bitmap $Model::Resources(Minus)
 
       #----- On verifie qu'il y a quelque chose a afficher
-      if { [info exists Data(Sources$Project)] } {
+      if { [info exists Data(Exps$Project)] } {
 
-         foreach src [lsort $Data(Sources$Project)] {
+         foreach exp [lsort $Data(Exps$Project)] {
             set y1 [incr Y 21]
-            set Y [Watch::CreateBranchWatch $Canvas $Project "$src" [expr $X+20] $Y]
+            set Y [Watch::CreateBranchWatch $Canvas $Project "$exp" [expr $X+20] $Y]
          }
 
          #----- Creation de la ligne verticale de l'arbre
@@ -323,7 +323,7 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
-#     <Watch>     : Une liste contenant les informations de la watch
+#     <Exp>       : Une liste contenant les informations de la watch
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
 #
@@ -333,35 +333,33 @@ proc Watch::CreateBranchProject { Canvas Project X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
+proc Watch::CreateBranchWatch { Canvas Project Exp X Y } {
    global GDefs
    variable Data
 
-   set name [lindex $Watch 0]
-   set lat  [lindex $Watch 1]
-   set lon  [lindex $Watch 2]
-   set type [lindex $Watch 3]
-   set tag  $Project$name
+   foreach src [lindex $Data(Sources$Project) [lsearch -exact $Data(Exps$Project) $Exp]] {
+      lappend coords "[lindex $src 0] ([lindex $src 1],[lindex $src 2])"
+   }
+   set tag $Project$Exp
 
    set y1 [set y0 [expr $Y+10]]
 
    #----- Creation de la ligne descriptive des watch
    $Canvas create bitmap $X $Y -bitmap $Model::Resources(Plus) -tags "SIGN PWATCH$tag"
-   $Canvas create text [expr $X+10] $Y -text "$name" -anchor w -tags "WATCH WATCH$tag" -font $GDefs(Font) -fill black
+   $Canvas create text [expr $X+10] $Y -text "$Exp" -anchor w -tags "WATCH WATCH$tag" -font $GDefs(Font) -fill black
    $Canvas create line [expr $X-20] $Y [expr $X-10] $Y -tags TREE
 
-   CanvasBubble::Create $Canvas WATCH$tag "Coord: ($lat , $lon)"
-   $Canvas bind WATCH$tag  <ButtonPress-3> "Watch::Select \"$Watch\" $Project ; Watch::PopUpWatch %X %Y"
+   CanvasBubble::Create $Canvas WATCH$tag "[join $coords "\n"]"
+   $Canvas bind WATCH$tag  <ButtonPress-3> "Watch::Select \"$Exp\" $Project ; Watch::PopUpWatch %X %Y"
    $Canvas bind PWATCH$tag <ButtonPress-1> "Watch::SelectBranch $tag BranchWatch"
 
    #----- On creer les branches des modeles seulement s'il faut les afficher
    if { [lsearch -exact $Data(BranchWatch) $tag] != -1 } {
       $Canvas itemconfigure PWATCH$tag -bitmap $Model::Resources(Minus)
-
       foreach model [lsort $Data(Models$tag)] {
          if { $model!="NONE" } {
             set y1 [incr Y 21]
-            set Y [Watch::CreateBranchModel $Canvas $Project "$Watch" $model [expr $X+20] $Y]
+            set Y [Watch::CreateBranchModel $Canvas $Project "$Exp" $model [expr $X+20] $Y]
          }
       }
 
@@ -380,7 +378,7 @@ proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
-#     <Watch>     : Une liste contenant les informations de la watch
+#     <Exp>       : Une liste contenant les informations de la watch
 #     <Model>     : Le nom du model
 #     <X>         : La position en X où commencer l'arborescence
 #     <Y>         : La position en Y où commencer l'arborescence
@@ -391,20 +389,19 @@ proc Watch::CreateBranchWatch { Canvas Project Watch X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchModel { Canvas Project Watch Model X Y } {
+proc Watch::CreateBranchModel { Canvas Project Exp Model X Y } {
    global GDefs
    variable Data
 
-   set name [lindex $Watch 0]
    set y1 [set y0 [expr $Y+10]]
-   set tag  $Project$name$Model
+   set tag  $Project$Exp$Model
 
    #----- Creation de la ligne descriptive des modeles
    $Canvas create line [expr $X-20] $Y [expr $X-10] $Y -tags TREE
    $Canvas create text [expr $X+10] $Y -text $Model -font $GDefs(Font) -anchor w -tags "MODEL$tag MODEL"
    $Canvas create bitmap $X $Y -bitmap $Model::Resources(Plus) -tags "SIGN PMODEL$tag"
    $Canvas bind PMODEL$tag <ButtonPress-1> "Watch::SelectBranch $tag BranchModel"
-   $Canvas bind MODEL$tag <ButtonPress-3> "Watch::Select \"$Watch\" $Project ; Watch::PopUpModel %X %Y $Model"
+   $Canvas bind MODEL$tag <ButtonPress-3> "Watch::Select \"$Exp\" $Project ; Watch::PopUpModel %X %Y $Model"
 
    #----- On creer les branches des simulations seulement s'il faut les afficher
    if { [lsearch -exact $Watch::Data(BranchModel) $tag] != -1 } {
@@ -412,7 +409,7 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y } {
 
       foreach sim [lsort -index 0 $Data(Sims$tag)] {
          set y1 [incr Y 21]
-         set Y [Watch::CreateBranchSim $Canvas $Project "$Watch" $Model "$sim" [expr $X+20] $Y]
+         set Y [Watch::CreateBranchSim $Canvas $Project "$Exp" $Model "$sim" [expr $X+20] $Y]
       }
 
       #----- Ligne verticale de la sous-branche
@@ -431,7 +428,7 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y } {
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
-#     <Watch>     : Une liste contenant les informations de la watch
+#     <Exp>       : Une liste contenant les informations de la watch
 #     <Model>     : Le nom du model
 #     <Sim>       : La liste d'une simulation
 #     <X>         : La position en X où commencer l'arborescence
@@ -443,11 +440,10 @@ proc Watch::CreateBranchModel { Canvas Project Watch Model X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
+proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
    global GDefs
    variable Data
 
-   set name  [lindex $Watch 0]
    set info  [lindex $Sim 1]
    set mode  [Info::Strip $info Mode]
    set meteo [Info::Strip $info Meteo]
@@ -466,7 +462,7 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
    } else {
       set txt "$dur $unit $meteo$delta ($no)"
    }
-   set tag "$Project$name$Model$no"
+   set tag "$Project$Exp$Model$no"
 
    set y1 [set y0 [expr $Y+10]]
 
@@ -475,7 +471,7 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
    $Canvas create line [expr $X-20] $Y [expr $X-10] $Y -tags TREE
    $Canvas create bitmap $X $Y -bitmap $Model::Resources(Plus) -tags "SIGN PSIM$tag"
 
-   $Canvas bind SIM$tag <ButtonPress-3> "Watch::SelectSim $Model \"$info\" \"$Watch\" $Project ; Watch::PopUpSim %X %Y"
+   $Canvas bind SIM$tag <ButtonPress-3> "Watch::SelectSim $Model \"$info\" \"$Exp\" $Project ; Watch::PopUpSim %X %Y"
    $Canvas bind PSIM$tag <ButtonPress-1> "Watch::SelectBranch $tag BranchSim"
 
    CanvasBubble::Create $Canvas SIM$tag [Info::Format $info]
@@ -486,7 +482,7 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
 
       foreach result [lsort $Data(Results$tag)] {
          set y1 [incr Y 21]
-         set Y [Watch::CreateBranchResult $Canvas $Project "$Watch" $Model "$Sim" $result $X $Y]
+         set Y [Watch::CreateBranchResult $Canvas $Project "$Exp" $Model "$Sim" $result $X $Y]
       }
 
       #----- Ligne verticale de la sous-branche
@@ -505,7 +501,7 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
 # Parametres :
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
-#     <Watch>     : Une liste contenant les informations de la watch
+#     <Exp>       : Une liste contenant les informations de la watch
 #     <Model>     : Le nom du model
 #     <Sim>       : La liste d'une simulation
 #     <Result>    : Nom complet du fichier resultat (path complet)
@@ -518,11 +514,10 @@ proc Watch::CreateBranchSim { Canvas Project Watch Model Sim X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
+proc Watch::CreateBranchResult { Canvas Project Exp Model Sim Result X Y } {
    global GDefs
    variable Data
 
-   set name   [lindex $Watch 0]
    set info   [lindex $Sim 1]
    set no     [lindex $Sim 0]
    set result [split [file tail $Result] .]
@@ -531,13 +526,13 @@ proc Watch::CreateBranchResult { Canvas Project Watch Model Sim Result X Y } {
    set date [lindex $result 2]
    set time [lindex $result 3]
    set txt "[string range $date 0 3]-[string range $date 4 5]-[string range $date 6 7] [string range $time 0 1]:[string range $time 2 3]"
-   set tag "$Project$name$Model$no[lindex $result 2][lindex $result 3]"
+   set tag "$Project$Exp$Model$no[lindex $result 2][lindex $result 3]"
 
    $Canvas create text [expr $X+13] $Y -text "$txt" -anchor w -tags "RESULT RESULT$tag" -font $GDefs(Font)
    $Canvas create line $X $Y [expr $X+10] $Y -tags TREE
 
-   $Canvas bind RESULT$tag <ButtonPress-3> "Watch::SelectResult RESULT$tag $Model \"$info\" \"$Watch\" $Project $Result ; Watch::PopUpResult \"$Result\" \"$txt\" %X %Y"
-   $Canvas bind RESULT$tag <ButtonPress-1> "Watch::SelectResult RESULT$tag $Model \"$info\" \"$Watch\" $Project $Result"
+   $Canvas bind RESULT$tag <ButtonPress-3> "Watch::SelectResult RESULT$tag $Model \"$info\" \"$Exp\" $Project $Result ; Watch::PopUpResult \"$Result\" \"$txt\" %X %Y"
+   $Canvas bind RESULT$tag <ButtonPress-1> "Watch::SelectResult RESULT$tag $Model \"$info\" \"$Exp\" $Project $Result"
 
    return $Y
 }
@@ -615,11 +610,9 @@ proc Watch::New { } {
    regsub -all "\[-\]\[-\]*" $Data(Name) "_" Data(Name)
 
    #----- On verifie que le nom n'existe pas deja
-   foreach src $Data(Sources$Data(Project)) {
-      if { "[lindex $src 0]"=="$Data(Name)" } {
-         Dialog::Error . $Error(Exist)
-         return 0
-      }
+   if { [lsearch -exact $Data(Exps$Data(Project)) $Data(Name)]!=-1 } {
+      Dialog::Error . $Error(Exist)
+      return 0
    }
 
    #----- On ajoute la source
@@ -864,13 +857,16 @@ proc Watch::PopUpResult { Result Title X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::Select { Source Project } {
+proc Watch::Select { Exp Project } {
    variable Data
 
    set Data(Project) $Project
-   set Data(Name)    [lindex $Source 0]
-   set Data(Lat)     [lindex $Source 1]
-   set Data(Lon)     [lindex $Source 2]
+   set Data(Name)    $Exp
+
+   set src [lindex $Data(Sources$Project) [lsearch -exact $Data(Exps$Project) $Exp]]
+
+   set Data(Lat)     [lindex $src 0 1]
+   set Data(Lon)     [lindex $src 0 2]
    set Data(Type)    [Watch::GetType $Project]
    set Data(Pos)     [list [list $Data(Name) $Data(Lat) $Data(Lon) 0]]
 }
@@ -929,7 +925,7 @@ proc Watch::SelectBranch { Tag Tree { Single False } } {
 #     <Tag>       : Tag associe
 #     <Model>     : Nom du model de la simulation
 #     <Info>      : Ligne descriptive de la simulation (pool)
-#     <Watch>     : Ligne descriptive de la source (watch)
+#     <Exp>     : Ligne descriptive de la source (watch)
 #     <Project>   : Nom du projet
 #
 # Retour:
@@ -938,10 +934,10 @@ proc Watch::SelectBranch { Tag Tree { Single False } } {
 #
 #----------------------------------------------------------------------------
 
-proc Watch::SelectSim { Model Info Watch Project } {
+proc Watch::SelectSim { Model Info Exp Project } {
    variable Data
 
-   Watch::Select "$Watch" $Project
+   Watch::Select "$Exp" $Project
    set Data(Model) $Model
    set Data(Modelbase) [string trimright $Model "01"]
    set Data(Info) "$Info"
@@ -1034,7 +1030,7 @@ proc Watch::SimSuppress { } {
    Info::Delete $path "$Data(Info)"
 
    set model [Info::Strip $Data(Info) Model]
-   set name  [Info::Strip $Data(Info) NameExp]
+   set   [Info::Strip $Data(Info) NameExp]
    set no    [Info::Strip $Data(Info) NoSim]
 
    #----- Supprimer tous les resultats pour la source
@@ -1147,31 +1143,35 @@ proc Watch::ReadProject { Project } {
    update idletask
 
    set Data(Sources$Project) {}
+   set Data(Exps$Project)   {}
 
    #----- Verifie que les fichiers necessaires sont presents
    if { [file exists $Param(Path)/$Project/sim.pool] } {
 
       #----- Trouve les lignes de pool
       foreach info [Info::List $Param(Path)/$Project/sim.pool] {
-         set model   [Info::Strip $info Model]
-         set name    [Info::Strip $info NameExp]
-         set nosim   [Info::Strip $info NoSim]
+         set model [Info::Strip $info Model]
+         set exp   [Info::Strip $info NameExp]
+         set nosim [Info::Strip $info NoSim]
 
+         set srcs    {}
          foreach src [Info::Strip $info Name] lat [Info::Strip $info Lat] lon [Info::Strip $info Lon] {
-            lappend Data(Sources$Project) [list $src $lat $lon]
+            lappend srcs [list $src $lat $lon]
          }
+         lappend Data(Sources$Project) $srcs
+         lappend Data(Exps$Project)    $exp
 
-         if { ![info exists Data(Models$Project$src)] } {
-            set Data(Models$Project$src) ""
+         if { ![info exists Data(Models$Project$exp)] } {
+            set Data(Models$Project$exp) ""
          }
-         if { [lsearch $Data(Models$Project$src) $model]==-1 } {
-            lappend Data(Models$Project$src) $model
-            set Data(Sims$Project$src$model) ""
+         if { [lsearch $Data(Models$Project$exp) $model]==-1 } {
+            lappend Data(Models$Project$exp) $model
+            set Data(Sims$Project$exp$model) ""
          }
-         lappend Data(Sims$Project$src$model) "$nosim \"$info\""
+         lappend Data(Sims$Project$exp$model) "$nosim \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$Project$src$model$nosim) [glob -nocomplain $Param(Path)/$Project/data/*_$src/${model}.${nosim}.*]
+         set Data(Results$Project$exp$model$nosim) [glob -nocomplain $Param(Path)/$Project/data/*_$exp/${model}.${nosim}.*]
       }
       set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
    }

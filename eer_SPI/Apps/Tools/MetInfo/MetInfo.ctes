@@ -14,7 +14,7 @@
 #===============================================================================
 
 namespace eval MetInfo {
-   global GDefs
+   global GDefs env
    variable Data
    variable Param
 
@@ -22,7 +22,7 @@ namespace eval MetInfo {
    set Param(Version) 1.2
    set Param(Geom)    { +[winfo rootx .]+[winfo rooty .] }        ;#Geometry
    set Param(Dock)    False                                       ;#Docking
-   set Param(Bin)     $GDefs(Dir)/Bin/$GDefs(Arch)
+   set Param(Bin)     $GDefs(Dir)/Bin/$env(ARCH)
 
 
    set Data(Active)   0
