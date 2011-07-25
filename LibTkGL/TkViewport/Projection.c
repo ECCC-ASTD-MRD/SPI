@@ -72,7 +72,8 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
 */
 static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int                idx,handle,t;
+   int                idx,t;
+   unsigned long      handle;
    short              zs;
    unsigned char      zc;
    double             lat,lon;

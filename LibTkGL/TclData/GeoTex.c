@@ -40,7 +40,7 @@ extern int TD2GDAL[];
 extern Vect3d GDB_NMap[181][361];
 extern int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1);
 static int GeoTex_TileNb=0;
-static int GeoTex_TileNbMax=10;
+static int GeoTex_TileNbMax=1024;
 
 int          GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile);
 int          GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile);
@@ -132,44 +132,46 @@ void GeoTex_Clear(TGeoTex *Tex,char Flags,int Res,int Nb) {
 */
 TGeoTexTile* GeoTex_ClearTile(TGeoTexTile *Tile,char Flags,int Res,int Nb) {
 
-   /*If the tile is valid and within the limits*/
-   if (Tile>(TGeoTexTile*)0x1 && (!Res || Tile->Res<Res) && GeoTex_TileNb>Nb) {
+    /*Clear subtiles*/
+    if (Tile>(TGeoTexTile*)0x1) {
+       Tile->Sub[0]=GeoTex_ClearTile(Tile->Sub[0],Flags,Res,Nb);
+       Tile->Sub[1]=GeoTex_ClearTile(Tile->Sub[1],Flags,Res,Nb);
+       Tile->Sub[2]=GeoTex_ClearTile(Tile->Sub[2],Flags,Res,Nb);
+       Tile->Sub[3]=GeoTex_ClearTile(Tile->Sub[3],Flags,Res,Nb);
 
-      /*Clear subtiles*/
-      Tile->Sub[0]=GeoTex_ClearTile(Tile->Sub[0],Flags,Res,Nb);
-      Tile->Sub[1]=GeoTex_ClearTile(Tile->Sub[1],Flags,Res,Nb);
-      Tile->Sub[2]=GeoTex_ClearTile(Tile->Sub[2],Flags,Res,Nb);
-      Tile->Sub[3]=GeoTex_ClearTile(Tile->Sub[3],Flags,Res,Nb);
+      /*If the tile is valid and within the limits*/
+      if ((!Res || Tile->Res<Res) && GeoTex_TileNb>Nb) {
 
-      Tcl_MutexLock(&MUTEX_GEOTEX);
+         Tcl_MutexLock(&MUTEX_GEOTEX);
 
-      /*Clear GL textures*/
-      if (Flags&GEOTEX_CLRTEX) {
-         if (Tile->Tx) glDeleteTextures(1,&Tile->Tx); Tile->Tx=0;
+         /*Clear GL textures*/
+         if (Flags&GEOTEX_CLRTEX) {
+            if (Tile->Tx) glDeleteTextures(1,&Tile->Tx); Tile->Tx=0;
+         }
+
+         /*Clear coordinates buffer*/
+         if (Flags&GEOTEX_CLRCOO) {
+            Tile->Flag&=~GEOTEX_COOR;
+            if (Tile->Tl)   free(Tile->Tl); Tile->Tl=NULL;
+            if (Tile->Nr)   free(Tile->Nr); Tile->Nr=NULL;
+         }
+
+         /*Clear band data*/
+         if (Flags&GEOTEX_CLRDTA) {
+            Tile->Flag&=~GEOTEX_DATA;
+            if (Tile->Data) free(Tile->Data); Tile->Data=NULL;
+         }
+
+         /*If everything is cleared, get rid of the tile*/
+         if (Flags&GEOTEX_CLRALL) {
+            free(Tile); Tile=NULL;
+
+            /*Decrement global number of tiles*/
+            GeoTex_TileNb--;
+         }
+
+         Tcl_MutexUnlock(&MUTEX_GEOTEX);
       }
-
-      /*Clear coordinates buffer*/
-      if (Flags&GEOTEX_CLRCOO) {
-         Tile->Flag&=~GEOTEX_COOR;
-         if (Tile->Tl)   free(Tile->Tl); Tile->Tl=NULL;
-         if (Tile->Nr)   free(Tile->Nr); Tile->Nr=NULL;
-      }
-
-      /*Clear band data*/
-      if (Flags&GEOTEX_CLRDTA) {
-         Tile->Flag&=~GEOTEX_DATA;
-         if (Tile->Data) free(Tile->Data); Tile->Data=NULL;
-      }
-
-      /*If everything is cleared, get rid of the tile*/
-      if (Flags&GEOTEX_CLRALL) {
-         free(Tile); Tile=NULL;
-
-         /*Decrement global number of tiles*/
-         GeoTex_TileNb--;
-      }
-
-      Tcl_MutexUnlock(&MUTEX_GEOTEX);
    }
    return(Tile);
 }
@@ -369,13 +371,14 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 */
 void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
-   double       nlx,nly,dx,dy,x0,y0,x,y;
-   int          j=0,handle=0,tlx,tly,t=2,ix,iy,xy;
-   short        z;
-   GDAL_Band   *tband=NULL;
-   TGeoTexTile *ttile=NULL;
-   Vect3d      *tl;
-   Vect3d      nr;
+   double        nlx,nly,dx,dy,x0,y0,x,y;
+   int           j=0,tlx,tly,t=2,ix,iy,xy;
+   unsigned long handle=0;
+   short         z;
+   GDAL_Band    *tband=NULL;
+   TGeoTexTile  *ttile=NULL;
+   Vect3d       *tl;
+   Vect3d        nr;
 
    if (Tile->Res==0) {
       return;
@@ -614,6 +617,9 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    for(c=0;c<Band->Def->NC;c++) {
       if ((GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx,Tile->Dy,Tile->Rx,Tile->Ry,Tile->Data+c*TData_Size[Band->Def->Type],
          Tile->Nx,Tile->Ny,TD2GDAL[Band->Def->Type],Band->Def->NC>1?Band->Def->NC*TData_Size[Band->Def->Type]:0,0))==CE_Failure) {
+
+         free(Tile->Data);
+         Tile->Data=NULL;
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to read tile data from band %i\n",c);
          return(0);
       }
@@ -690,8 +696,9 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
    VPThreadEvent *event;
    int           r,res,d,x1,y1;
 
-   if (Resolution<=0 || !Band->Tex.Res || !Band->Tex.Proj)
+   if (Resolution<=0 || !Band->Tex.Res || !Band->Tex.Proj) {
       return(0);
+   }
 
    if (Band->Tex.Tile && Band->Tex.Tile==*Tile) {
 
@@ -710,12 +717,11 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
       }
    }
 
-   Proj->Loading+=5;
+   if (!(*Tile) && !(*Tile=GeoTex_New(Band,Resolution,X0,Y0))) {
+      return(0);
+   }
 
-   if (!(*Tile))
-      if (!(*Tile=GeoTex_New(Band,Resolution,X0,Y0))) {
-         return(0);
-      }
+   Proj->Loading+=5;
 
    if (!(*Tile)->Rx)
       GeoTex_Limit(Band,*Tile,Proj);
@@ -740,7 +746,7 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
          }
 
          /*Redraw if needed*/
-         if (r) {
+         if (Band->Tex.ThreadId && r) {
             event=(VPThreadEvent*)ckalloc(sizeof(VPThreadEvent));
             event->event.proc=ViewportRefresh_ThreadEventProc;
             event->ptr=(void*)VP;
@@ -750,24 +756,28 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
          }
 
          /*Process subtile*/
-         res=Resolution>>1;
-         d=res*Band->Spec->TexSize;
-         x1=X0+d>=Band->Ref->X1?X0:X0+d;
-         y1=Y0+d>=Band->Ref->Y1?Y0:Y0+d;
+         if ((res=Resolution>>1)) {
+            d=res*Band->Spec->TexSize;
+            x1=X0+d>=Band->Ref->X1?X0:X0+d;
+            y1=Y0+d>=Band->Ref->Y1?Y0:Y0+d;
 
-         if (!GeoTex_Parse(Band,&(*Tile)->Sub[0],Proj,VP,res,X0,Y0)) return(0);
-         if (x1==X0)
-            (*Tile)->Sub[1]=(TGeoTexTile*)0x1;
-         else
-            if (!GeoTex_Parse(Band,&(*Tile)->Sub[1],Proj,VP,res,x1,Y0)) return(0);
-         if (y1==Y0)
-            (*Tile)->Sub[3]=(TGeoTexTile*)0x1;
-         else
-            if (!GeoTex_Parse(Band,&(*Tile)->Sub[3],Proj,VP,res,X0,y1)) return(0);
-         if (x1==X0 && y1==Y0)
-            (*Tile)->Sub[2]=(TGeoTexTile*)0x1;
-         else
-            if (!GeoTex_Parse(Band,&(*Tile)->Sub[2],Proj,VP,res,x1,y1)) return(0);
+            if (!GeoTex_Parse(Band,&(*Tile)->Sub[0],Proj,VP,res,X0,Y0)) return(0);
+            if (x1==X0) {
+               (*Tile)->Sub[1]=(TGeoTexTile*)0x1;
+            } else {
+               if (!GeoTex_Parse(Band,&(*Tile)->Sub[1],Proj,VP,res,x1,Y0)) return(0);
+            }
+            if (y1==Y0) {
+               (*Tile)->Sub[3]=(TGeoTexTile*)0x1;
+            } else {
+               if (!GeoTex_Parse(Band,&(*Tile)->Sub[3],Proj,VP,res,X0,y1)) return(0);
+            }
+            if (x1==X0 && y1==Y0) {
+               (*Tile)->Sub[2]=(TGeoTexTile*)0x1;
+            } else {
+               if (!GeoTex_Parse(Band,&(*Tile)->Sub[2],Proj,VP,res,x1,y1)) return(0);
+            }
+         }
       }
    }
 
@@ -801,8 +811,9 @@ void GeoTex_Signal(TGeoTex *Tex,int Flags) {
 
 int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
 
-   Coord co[2];
+   Coord        co[2];
    unsigned int res,d;
+   double       l;
 
    if (Proj->VP->Secondary) {
       return(0);
@@ -818,13 +829,15 @@ int GeoTex_Resolution(GDAL_Band *Band,Projection *Proj) {
    }
 
    d=MAX(Band->Def->NI,Band->Def->NJ);
-   Band->Tex.ResN=pow(2,ceil(log10(d)/log10(2)))/Band->Spec->TexSize;
-   if (d==32 || d==64 || d==128 || d==256 || d==512 || d==1024 || d==2048 || d==4096 || d==8192 || d==16384 || d==32768 || d==65536 || d==131072 || d==262144) {
-      Band->Tex.ResN=pow(2,floor(log10(d)/log10(2)))/Band->Spec->TexSize;
+   l=LOG2(d);
+
+   /*Check for factor 2 number*/
+   if (System_BitCount(d)==1) {
+      Band->Tex.ResN=pow(2,floor(l))/Band->Spec->TexSize;
    } else {
-      Band->Tex.ResN=pow(2,ceil(log10(d)/log10(2)))/Band->Spec->TexSize;
+      Band->Tex.ResN=pow(2,ceil(l))/Band->Spec->TexSize;
    }
-   res=pow(2,LOG2(res))*Band->Spec->TexRes;
+   res=pow(2,floor(LOG2(res)))*Band->Spec->TexRes;
    res=res<1?1:(res>Band->Tex.ResN?Band->Tex.ResN:res);
 
    /*Set flag for cleanup of higher res than needed*/
