@@ -23,6 +23,7 @@ namespace eval Mapper::DepotWare::WCS {
    set Lbl(URL) { "Addresse URL" "URL Address" }
 
    set Msg(Request) { "Problème dans la requète de capacitées WCS (GetCapabilities)" "Problem requesting capabilities WCS (GetCapabilities)" }
+   set Msg(Version) { "Version non supportée" "Version not supported" }
 
    set Data(URL) ""
 }
@@ -90,8 +91,15 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
       puts stderr "${Path}?&SERVICE=WCS&REQUEST=GetCapabilities"
       set root [$doc documentElement]
 
-      set WCS(Version) 1.1.0
-      set layer [lindex [$root getElementsByTagName ContentMetadata] 0]
+      #----- Check wich version this is
+      set WCS(Version) [$root getAttribute version]
+
+      switch $WCS(Version) {
+         1.1.0 { set layer [lindex [$root getElementsByTagName Contents] 0] }
+         1.0.0 { set layer [lindex [$root getElementsByTagName ContentMetadata] 0] }
+         default { Dialog::ErrorListing . $Msg(Version) "$msg\n[http::data $req]"; return }
+      }
+
       foreach layer [Mapper::DepotWare::WCS::ParseLayer $Path $layer] {
          Mapper::DepotWare::WCS::Add $Tree $Branch $layer
       }
@@ -127,7 +135,7 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::WMS::Request { } {
+proc Mapper::DepotWare::WCS::Request { } {
    variable Data
 
    return $Data(URL)
@@ -201,6 +209,8 @@ proc Mapper::DepotWare::WCS::ParseLayer { URL Node { First True } } {
    }
 
    foreach node [$Node childNodes] {
+
+      #----- 1.0.0.
       switch [$node nodeName] {
          CoverageOfferingBrief {
             set Data(Identifier) ""
@@ -210,6 +220,24 @@ proc Mapper::DepotWare::WCS::ParseLayer { URL Node { First True } } {
                   label           { set Data(Title) [[$n firstChild] nodeValue] }
                }
             }
+            if { $Data(Identifier)!="" } {
+               set Data($Data(Title)) [list $URL $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format)]
+               lappend Data(Layers) $Data(Title)
+            }
+         }
+
+         #----- 1.1.0
+         CoverageSummary {
+            set Data(Identifier) ""
+            foreach n [$node childNodes] {
+               switch [$n nodeName] {
+                  CoverageSummary      { Mapper::DepotWare::WCS::ParseLayer $URL $n False}
+                  Identifier           { set Data(Identifier) [[$n firstChild] nodeValue] }
+                  ows:Title            { set Data(Title) [[$n firstChild] nodeValue] }
+                  ows:WGS84BoundingBox { foreach n1 [$n childNodes] { set Data(BBox) [concat $Data(BBox) [[$n1 firstChild] nodeValue]] } }
+               }
+            }
+
             if { $Data(Identifier)!="" } {
                set Data($Data(Title)) [list $URL $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format)]
                lappend Data(Layers) $Data(Title)
@@ -254,10 +282,12 @@ proc Mapper::DepotWare::WCS::BuildXMLDef { Layer } {
    } else {
       set url $url
    }
-
+puts stderr .$file.
    set xml "<WCS_GDAL>\n"
    append xml "   <ServiceURL>${url}</ServiceURL>\n"
-   append xml "   <CoverageName>$layer</CoverageName>"
+   append xml "   <Version>1.1.0</Version>\n"
+   append xml "   <Timeout>60</Timeout>\n"
+   append xml "   <CoverageName>$layer</CoverageName>\n"
    append xml "</WCS_GDAL>"
 
    set f [open $file w]

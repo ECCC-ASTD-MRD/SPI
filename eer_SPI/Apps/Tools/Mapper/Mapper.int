@@ -761,7 +761,7 @@ proc Mapper::MapApply { Object } {
       set map [gdalband configure $Object -colormap]
       colormap image $map GDALMAPImg
       Mapper::ParamsGDALSet $Object
-      if { ![glrender -shaderavailable] } { gdalband clean $Object }
+      if { ![glrender -shaderavailable] || [gdalband define $Object -indexed] } { gdalband clean $Object }
    } elseif { [ogrlayer is $Object] } {
       set map [ogrlayer configure $Object -colormap]
       colormap image $map OGRMAPImg

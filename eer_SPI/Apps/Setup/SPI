@@ -12,7 +12,6 @@
 
 #----- General definitions
 set GDefs(Lang)   0
-set GDefs(Arch)   $tcl_platform(os)
 set GDefs(Host)   [lindex [split [info hostname] .] 0]
 
 #----- Definitions pour les Frontends/Backends

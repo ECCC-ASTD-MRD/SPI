@@ -305,6 +305,10 @@ proc Mapper::DepotWare::Window { } {
    wm geom          .mapperdepot +[expr [winfo rootx .mapper]+50]+[expr [winfo rooty .mapper]+50]
    wm transient     .mapperdepot .mapper
 
+   set Data(Type) ""
+   set Data(Name) ""
+
+
    labelframe .mapperdepot.type -text [lindex $Lbl(Desc) $GDefs(Lang)]
       frame .mapperdepot.type.name
          label .mapperdepot.type.name.lbl -anchor w -text [lindex $Lbl(Name) $GDefs(Lang)] -width 15
