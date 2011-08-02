@@ -47,7 +47,7 @@ set files [glob $env(CMCGRIDF)/prog/glbeta/[string range $run 0 9]_*]
 #}
 
 #----- Create simulation object
-simulation create TRAJ1 -type trajectory
+simulation create TRAJ1 -type Trajectory
 
 #----- Define simulation parameters
 simulation param TRAJ1 -title Popocatepetl -mode BACKWARD -unit PRESSURE -timestep 3600 -top 0.15 -bottom 0.997 \

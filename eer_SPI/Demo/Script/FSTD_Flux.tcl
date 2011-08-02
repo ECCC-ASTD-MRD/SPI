@@ -24,6 +24,8 @@ package require TclData
 
 puts \n[file tail [info script]]
 
+fstdfield vector { UU VV }
+
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
 fstdfile open 1 read  DataIn/2005102612_012c

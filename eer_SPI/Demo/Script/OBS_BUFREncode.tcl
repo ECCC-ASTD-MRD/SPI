@@ -28,15 +28,17 @@ puts \n[file tail [info script]]
 set Data(Levels)    { 0.9950 0.9850 0.9733 0.9467 0.8780 0.8104 0.7272 0.6646 0.5737 0.4883 0.4091 0.3369 0.2721 0.2522 0.2149 0.1667 }
 set Data(Stations)  { { CYUL 1 45.47 -73.75 36 32 } { CYTZ 2 43.62 -79.38 77 32 } { CYVR 3 49.18 -123.17 5 32 } }
 
-set Data(Path)   /data/gridpt/dbase/prog/glbeta      ;#Model path
+set Data(Path)   $env(CMCGRIDF)/prog/glbeta          ;#Model path
 set Data(Length) 144                                 ;#Forecast period
 set Data(Incr)   -3                                  ;#Time increment
 set Data(Gen)    46                                  ;#Generating application
-set Data(Year)   2008                                ;#Initial model run year
-set Data(Month)  07                                  ;#Initial model run month
-set Data(Day)    08                                  ;#Initial model run day
+set Data(Year)   2011                                ;#Initial model run year
+set Data(Month)  08                                  ;#Initial model run month
+set Data(Day)    01                                  ;#Initial model run day
 set Data(Hour)   00                                  ;#Initial model run hour
 set Data(Minute) 00                                  ;#Initial model run minute
+
+fstdfield vector { UU VV }
 
 #----- Get the data first so we dont have to reload the fields every station while buliding the message
 set t $Data(Length)
@@ -115,6 +117,7 @@ foreach station $Data(Stations) {
       }
       incr t $Data(Incr)
    }
+
    bufrdataset define DATASET -subsetadd $dataset
 }
 

@@ -117,4 +117,4 @@ thread::join $tid2
 thread::join $tid3
 thread::join $tid4
 
-#fstdfile close 1
+fstdfile close 1

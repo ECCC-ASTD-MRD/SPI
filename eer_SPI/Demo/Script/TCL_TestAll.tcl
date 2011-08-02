@@ -44,6 +44,7 @@ set tests {
    FSTD_ETA2METER.tcl
    {FSTD_HYBRID2ETA.tcl DataIn/2006122900_000.hyb}
    {FSTD_ETA2HYBRID.tcl DataIn/2006122900_000.eta}
+   FSTD_Hyb-Thermo+Momentum2MAGL.tcl
    FSTD_PSGrid.tcl
    FSTD_TestTypes.tcl
    {FSTD_TIN2FSTD.tcl DataIn/hudson}

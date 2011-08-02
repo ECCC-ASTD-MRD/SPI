@@ -99,6 +99,9 @@ proc Macro::AutoTraj::Execute { } {
          Macro::Doing "Processing $file"
          set trajs [trajectory load $file]
 
+         foreach traj $trajs col { gray gold blue }  {
+            trajectory configure $traj -outline $col
+         }
          Trajectory::Locate $trajs 0.1
          Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
          Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) $trajs

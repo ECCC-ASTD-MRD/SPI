@@ -101,6 +101,8 @@ proc Macro::Verif_QPF2448_0012::Execute { } {
    Macro::Doing ""
    Macro::Cursor left_ptr
 
+   Mapper::DepotWare::TMS::SelectLayer OpenStreetMap
+
    #----- If in batch mode, print the map and exit
    if { $SPI::Param(Batch) } {
       PrintBox::Image $Page::Data(Frame) png Verif_QPF2448_0012
