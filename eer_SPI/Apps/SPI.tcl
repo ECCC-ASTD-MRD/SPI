@@ -193,7 +193,7 @@ catch { package require Thread }
 
 #----- Source GL and set batch flag early for threading mechanism
 package require OpenGL
-glrender -xbatch $SPI::Param(Batch) -usethreads $SPI::Param(Threads) 
+glrender -xbatch $SPI::Param(Batch) -usethreads $SPI::Param(Threads)
 
 #----- Fonctions en librairie.
 package require Tktable
@@ -704,7 +704,7 @@ proc SPI::LayoutSave { Frame Name } {
    puts $file ""
 
    #----- Dimension du canvas
-   puts $file "   Page::Size \$Frame $Page::Data(Width$Frame) $Page::Data(Height$Frame)"
+   puts $file "   Page::Size \$Frame $Page::Data(Width$Frame) $Page::Data(Height$Frame) $Page::Param(Intrusion)"
    puts $file ""
 
    #----- Parametres de la camera

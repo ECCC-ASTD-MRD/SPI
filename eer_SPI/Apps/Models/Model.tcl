@@ -215,6 +215,7 @@ source $GDefs(Dir)/Apps/Models/Types/TRAJECT.tcl
 source $GDefs(Dir)/Apps/Models/Types/SATDATA.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLCD.tcl
 source $GDefs(Dir)/Apps/Models/Types/MLDP.tcl
+source $GDefs(Dir)/Apps/Models/Types/MLDPn.tcl
 
 #----------------------------------------------------------------------------
 # Nom        : <Model::ComputeKaboomHeight>
@@ -1326,7 +1327,7 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    if { $Param(Arch) == "AIX" } {
       set Param(Remote) True
    } else {
-      set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
+      set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) 2>@1} msg]
    }
 
    if { $Param(Remote) } {

@@ -199,58 +199,57 @@ proc MLDPn::ValidateVerticalLevels { } {
    variable Sim
 
    #----- Number of vertical levels for concentration calculations.
-   set nb [llength $Sim(VerticalLevels)]
+   set nb [llength $Sim(OutCV)]
 
-   #----- Verify if number of concentration vertical levels is greater than 1 and
-   #----- less than (or equal to) maximum number of vertical levels.
-   if { $nb<2 || $nb>$Sim(MaxNbVerticalLevels) } {
-      Dialog::Error .modelnew $Error(VerticalLevels1) "[lindex $Error(VerticalLevels2) $GDefs(Lang)] $nb.\n[lindex $Error(VerticalLevels3) $GDefs(Lang)] $Sim(MaxNbVerticalLevels).\n[lindex $Error(VerticalLevels4) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)"
+   #----- Verify if number of concentration vertical levels is greater than 1
+   if { $nb<2 } {
+      Dialog::Error .modelnew $Error(OutCV1)
       return 0
    }
 
    #----- Verify if all concentration vertical levels are positive and sorted in increasing order.
    for { set i 0 } { $i < $nb } { incr i } {
-      set level [lindex $Sim(VerticalLevels) $i]
+      set level [lindex $Sim(OutCV) $i]
 
       set idx ""
       set number [string is double -strict -failindex idx $level]
       if { $number == 0 && $idx == -1 } {
-         Dialog::Error .modelnew $Error(VerticalLevelsRange) " $level $Error(UnitMeters)"
+         Dialog::Error .modelnew $Error(OutCVRange) " $level $Error(UnitMeters)"
          return 0
       } elseif { $number == 0 || ($number == 1 && $level < 0) } {
-         Dialog::Error .modelnew $Error(VerticalLevels5) " $level $Error(UnitMeters)"
+         Dialog::Error .modelnew $Error(OutCV2) " $level $Error(UnitMeters)"
          return 0
       }
 
       if { $i > 0 } {
-         set prevlevel [lindex $Sim(VerticalLevels) [expr $i - 1]]
+         set prevlevel [lindex $Sim(OutCV) [expr $i - 1]]
          if { $level <= $prevlevel } {
-            Dialog::Error .modelnew $Error(VerticalLevels6) " $Sim(VerticalLevels) $Error(UnitMeters)"
+            Dialog::Error .modelnew $Error(OutCV3) " $Sim(OutCV) $Error(UnitMeters)"
             return 0
          }
       } else {
-         set firstlevel [lindex $Sim(VerticalLevels) 0]
+         set firstlevel [lindex $Sim(OutCV) 0]
 
          if { $Sim(Model)=="MLDP1" && $firstlevel!=0.0 } {
             #----- Replace first level.
-            set oldlist $Sim(VerticalLevels)
+            set oldlist $Sim(OutCV)
             set firstlevel 0
-            set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::Default .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
+            set Sim(OutCV) [lreplace $Sim(OutCV) 0 0 $firstlevel]
+            Dialog::Default .modelnew 800 WARNING $Warning(OutCV1) "\n\n[lindex $Warning(OutCV2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(OutCV3) $GDefs(Lang)] $Sim(OutCV) $Error(UnitMeters)" 0 "OK"
          }
          if { $Sim(Model)=="MLDP0" && $firstlevel!=1.0 } {
             #----- Replace first level.
-            set oldlist $Sim(VerticalLevels)
+            set oldlist $Sim(OutCV)
             set firstlevel 1
-            set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::Default .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
+            set Sim(OutCV) [lreplace $Sim(OutCV) 0 0 $firstlevel]
+            Dialog::Default .modelnew 800 WARNING $Warning(OutCV1) "\n\n[lindex $Warning(OutCV2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(OutCV3) $GDefs(Lang)] $Sim(OutCV) $Error(UnitMeters)" 0 "OK"
          }
          if { $Sim(Model)=="MLDPn" && $firstlevel!=1.0 } {
             #----- Replace first level.
-            set oldlist $Sim(VerticalLevels)
+            set oldlist $Sim(OutCV)
             set firstlevel 1
-            set Sim(VerticalLevels) [lreplace $Sim(VerticalLevels) 0 0 $firstlevel]
-            Dialog::Default .modelnew 800 WARNING $Warning(VerticalLevels1) "\n\n[lindex $Warning(VerticalLevels2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(VerticalLevels3) $GDefs(Lang)] $Sim(VerticalLevels) $Error(UnitMeters)" 0 "OK"
+            set Sim(OutCV) [lreplace $Sim(OutCV) 0 0 $firstlevel]
+            Dialog::Default .modelnew 800 WARNING $Warning(OutCV1) "\n\n[lindex $Warning(OutCV2) $GDefs(Lang)] $oldlist $Error(UnitMeters)\n[lindex $Warning(OutCV3) $GDefs(Lang)] $Sim(OutCV) $Error(UnitMeters)" 0 "OK"
          }
       }
    }
@@ -437,7 +436,7 @@ proc MLDPn::ValidateOtherParams { } {
 
    #----- Validate vertical levels for concentration calculations.
    if { ![MLDPn::ValidateVerticalLevels] } {
-      focus $Sim(VerticalLevelsEnt)
+      focus $Sim(OutCVEnt)
       return 0
    }
 
@@ -1082,11 +1081,6 @@ proc MLDPn::ValidateScenarioDuration { } {
       if { $Sim(EmIsEm.$i) } {
          set effdur [expr $effdur + $Sim(EmInter.$i)]
       }
-   }
-
-   if { $totdur > $simdur } {
-      Dialog::Error .modelnew $Error(Emdur_gt_Simdur) "\n\t[lindex $Error(Emdur) $GDefs(Lang)] $totdur $Error(UnitHours)\n\t[lindex $Error(Simdur) $GDefs(Lang)] $simdur $Error(UnitHours)"
-      return 0
    }
 
    set Sim(EmEffectiveDuration)  [expr $effdur * 3600]

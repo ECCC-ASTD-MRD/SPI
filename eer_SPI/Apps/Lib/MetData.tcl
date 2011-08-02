@@ -55,7 +55,10 @@ namespace eval MetData { } {
       source $GDefs(Dir)/Data/ERPG.tcl
    }
 
-   set Data(ProgMax)  240   ;#Max prog usable
+   set Data(ProgMax)  240   ;# Max prog usable
+   set Data(T0)  -1         ;# First Metdata time available
+   set Data(T1)  -1         ;# Last Metdata time available
+   set Data(TA)  -1         ;# Last Analysys time available
 
    set Const(Deg2Rad)     0.017453292519943295474371680598
    set Const(PIRad)       3.141592653589793238462643383279503
@@ -328,6 +331,10 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
 
    set Mode [string index $Mode 0]
 
+   set Data(T0)  -1
+   set Data(T1)  -1
+   set Data(TA)  -1
+
    #----- Get all Analysis available
    set afile { }
    set astmp 0
@@ -364,8 +371,8 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
 
    #----- Get time range available
    set data [concat $afile $pfile]
-   set Data(T0) [MetData::File2Sec [lindex $data 0]]
-   set Data(T1) [MetData::File2Sec [lindex $data end]]
+   set Data(T0)  [MetData::File2Sec [lindex $data 0]]
+   set Data(T1)  [MetData::File2Sec [lindex $data end]]
 
    #----- Get the last run
    if { [llength $pfile] } {
@@ -379,6 +386,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       set astmp [lindex [split [file tail [lindex $afile end]] _] 0]
       set astmp [fstdstamp fromdate [string range $astmp 0 7] [string range $astmp 8 end]000000]
       Log::Print DEBUG "Last trial: $astmp"
+      set Data(TA) [fstdstamp toseconds $astmp]
    }
 
    Log::Print DEBUG "Found data:\n\tAnalysis:\n\t\t[join $afile "\n\t\t"]\n\tPrognostics:\n\t\t[join $pfile "\n\t\t"]"

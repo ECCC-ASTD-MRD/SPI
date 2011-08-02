@@ -69,19 +69,24 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
       frame $tabframe.integ.opt
 
       #----- Simulation duration [hr].
-      Option::Create $tabframe.integ.opt.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] MLDPn::Sim(Duration) 1 -1 $MLDPn::Sim(ListSimDuration) "MLDPn::CheckFileSize; MLDPn::UpdateListVerticalLevels"
+      Option::Create $tabframe.integ.opt.kernel [lindex $Lbl(DiffKernel) $GDefs(Lang)] MLDPn::Sim(DiffKernel) 1 -1 $MLDPn::Sim(ListDiffKernel) ""
+      pack $tabframe.integ.opt.kernel -side top -fill x
+      Bubble::Create $tabframe.integ.opt.kernel $Bubble(DiffKernel)
+
+      #----- Simulation duration [hr].
+      Option::Create $tabframe.integ.opt.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] MLDPn::Sim(Duration) 1 -1 $MLDPn::Sim(ListSimDuration) "MLDPn::CheckFileSize"
       pack $tabframe.integ.opt.dur -side top -fill x
       Bubble::Create $tabframe.integ.opt.dur $Bubble(SimDuration)
       set MLDPn::Sim(SimDurationEnt) $tabframe.integ.opt.dur.e
 
       #----- Data output time step [min].
-      Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDPn::Sim(OutputTimeStepMin) 1 -1 $MLDPn::Sim(ListOutputTimeStep) "MLDPn::CheckFileSize ; MLDPn::UpdateListVerticalLevels"
+      Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDPn::Sim(OutputTimeStepMin) 1 -1 $MLDPn::Sim(ListOutputTimeStep) "MLDPn::CheckFileSize"
       pack $tabframe.integ.opt.ots -side top -fill x
       Bubble::Create $tabframe.integ.opt.ots $Bubble(OutputTimeStepMin)
       set MLDPn::Sim(OutputTimeStepEnt) $tabframe.integ.opt.ots.e
 
       #----- Model time step [min].
-      Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDPn::Sim(ModelTimeStepMin) 1 -1 $MLDPn::Sim(ListModelTimeStep) "MLDPn::UpdateListVerticalLevels"
+      Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDPn::Sim(ModelTimeStepMin) 1 -1 $MLDPn::Sim(ListModelTimeStep) ""
       pack $tabframe.integ.opt.mts -side top -fill x
       Bubble::Create $tabframe.integ.opt.mts $Bubble(ModelTimeStepMin)
       set MLDPn::Sim(ModelTimeStepEnt) $tabframe.integ.opt.mts.e
@@ -95,29 +100,27 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
       frame $tabframe.others.opt
 
          #----- Event Type.
-         Option::Create $tabframe.others.opt.event [lindex $Lbl(Event) $GDefs(Lang)] MLDPn::Sim(Event) 1 -1 $MLDPn::Sim(ListEvent) "MLDPn::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.event [lindex $Lbl(Event) $GDefs(Lang)] MLDPn::Sim(Event) 1 -1 $MLDPn::Sim(ListEvent) ""
          pack $tabframe.others.opt.event -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.event.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.event.e <Button-1> "MLDPn::UpdateListVerticalLevels"
 
          #----- Virus Source Type.
          if { $Sim(SrcType) == "virus" } {
-            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(EmIsoSymbol) MLDPn::Sim(VirusID) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "set MLDPn::Sim(VirusType) \[lindex \$MLDPn::Sim(ListVirusType) \$MLDPn::Sim(VirusID)\] ; MLDPn::UpdateListVerticalLevels"
+            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(EmIsoSymbol) MLDPn::Sim(VirusID) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "set MLDPn::Sim(VirusType) \[lindex \$MLDPn::Sim(ListVirusType) \$MLDPn::Sim(VirusID)\]"
             pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
             Bubble::Create $tabframe.others.opt.virus $Bubble(Virus)
          }
 
          #----- Grid Resolution.
          frame $tabframe.others.opt.grid
-         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(ListScale) "Model::ParamsGridDefine MLDPn; MLDPn::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(ListScale) "Model::ParamsGridDefine MLDPn"
          Option::Create $tabframe.others.opt.grid.src "" MLDPn::Sim(GridSrc) 0 14 $Sim(Pos) \
             "set MLDPn::Sim(GridLat) \[lindex \$MLDPn::Sim(GridSrc) 1\];
              set MLDPn::Sim(GridLon) \[lindex \$MLDPn::Sim(GridSrc) 2\];
-             Model::ParamsGridDefine MLDPn; MLDPn::UpdateListVerticalLevels"
+             Model::ParamsGridDefine MLDPn"
 
          checkbutton $tabframe.others.opt.grid.sel -variable Page::Data(ToolMode) -onvalue MLDPn -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat \
-            -command { SPI::ToolMode $Page::Data(ToolMode) Data True; MLDPn::UpdateListVerticalLevels } -selectcolor $GDefs(ColorFrame)
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True } -selectcolor $GDefs(ColorFrame)
          pack $tabframe.others.opt.grid.res -side left -ipady 1
          pack $tabframe.others.opt.grid.src -side left -ipady 1
          pack $tabframe.others.opt.grid.sel -side left
@@ -126,35 +129,31 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          #----- Meteorological Model.
          frame $tabframe.others.opt.met
          Option::Create $tabframe.others.opt.met.model [lindex $Lbl(Meteo) $GDefs(Lang)] MLDPn::Sim(Meteo) 0 7 $MLDPn::Sim(ListMeteoModel) "Model::ParamsCheck MLDPn"
-         Option::Create $tabframe.others.opt.met.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] MLDPn::Sim(Delta) 0 6 $MLDPn::Sim(ListMeteoDelta) "MLDPn::CheckFileSize ; MLDPn::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.met.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] MLDPn::Sim(Delta) 0 6 $MLDPn::Sim(ListMeteoDelta) "MLDPn::CheckFileSize"
          button $tabframe.others.opt.met.path -image OPEN -relief flat -bd 0 -overrelief raised \
-                -command "Model::ParamsMetPath; MLDPn::UpdateListVerticalLevels"
+                -command "Model::ParamsMetPath"
          pack $tabframe.others.opt.met.model -side left -ipady 1
          pack $tabframe.others.opt.met.delta -side left -ipady 1
          pack $tabframe.others.opt.met.path  -side left
          pack $tabframe.others.opt.met       -side top -fill x
 
          #----- Vertical levels [m].
-         Option::Create $tabframe.others.opt.levels [lindex $Lbl(VerticalLevels) $GDefs(Lang)] MLDPn::Sim(VerticalLevels) 1 -1 $MLDPn::Sim(ListVerticalLevels) "MLDPn::UpdateListVerticalLevels"
-         set MLDPn::Sim(VerticalLevelsFrm) $tabframe.others.opt.levels
-         set MLDPn::Sim(VerticalLevelsEnt) $tabframe.others.opt.levels.e
+         Option::Create $tabframe.others.opt.levels [lindex $Lbl(OutCV) $GDefs(Lang)] MLDPn::Sim(OutCV) 1 -1 $MLDPn::Sim(ListOutCV) "MLDPn::UpdateListVerticalLevels"
+         set MLDPn::Sim(OutCVFrm) $tabframe.others.opt.levels
+         set MLDPn::Sim(OutCVsEnt) $tabframe.others.opt.levels.e
          pack $tabframe.others.opt.levels -side top -ipady 1 -fill x
          bind $tabframe.others.opt.levels.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
          bind $tabframe.others.opt.levels.e <Button-1> "MLDPn::UpdateListVerticalLevels"
 
          #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-         Option::Create $tabframe.others.opt.varmesoscale [lindex $Lbl(VarMesoscale) $GDefs(Lang)] MLDPn::Sim(VarMesoscale) 1 -1 $MLDPn::Sim(ListVarMesoscale) "MLDPn::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.varmesoscale [lindex $Lbl(VarMesoscale) $GDefs(Lang)] MLDPn::Sim(VarMesoscale) 1 -1 $MLDPn::Sim(ListVarMesoscale) ""
          set MLDPn::Sim(VarMesoscaleEnt) $tabframe.others.opt.varmesoscale.e
          pack $tabframe.others.opt.varmesoscale -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.varmesoscale.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.varmesoscale.e <Button-1> "MLDPn::UpdateListVerticalLevels"
 
          #----- Lagrangian time scale for mesoscale fluctuations [s].
-         Option::Create $tabframe.others.opt.timescale [lindex $Lbl(Timescale) $GDefs(Lang)] MLDPn::Sim(Timescale) 1 -1 $MLDPn::Sim(ListTimescale) "MLDPn::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.timescale [lindex $Lbl(Timescale) $GDefs(Lang)] MLDPn::Sim(Timescale) 1 -1 $MLDPn::Sim(ListTimescale) ""
          set MLDPn::Sim(TimescaleEnt) $tabframe.others.opt.timescale.e
          pack $tabframe.others.opt.timescale -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.timescale.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.timescale.e <Button-1> "MLDPn::UpdateListVerticalLevels"
 
          #----- Reflection level [hyb|eta|sig].
          Option::Create $tabframe.others.opt.reflect [lindex $Lbl(ReflectionLevel) $GDefs(Lang)] MLDPn::Sim(ReflectionLevel) 1 -1 $MLDPn::Sim(ListReflectionLevel) "MLDPn::UpdateListVerticalLevels"
@@ -174,7 +173,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    Bubble::Create $tabframe.others.opt.met.model     $Bubble(Meteo)
    Bubble::Create $tabframe.others.opt.met.delta     $Bubble(MeteoDelta)
    Bubble::Create $tabframe.others.opt.met.path      $Bubble(ModifyPath)
-   Bubble::Create $tabframe.others.opt.levels        $Bubble(VerticalLevels)
+   Bubble::Create $tabframe.others.opt.levels        $Bubble(OutCV)
    Bubble::Create $tabframe.others.opt.varmesoscale  $Bubble(VarMesoscale)
    Bubble::Create $tabframe.others.opt.timescale     $Bubble(Timescale)
    Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
@@ -678,62 +677,28 @@ proc MLDPn::ParamsEmission { Tab { Auto False } } {
 
    #----- Create histogram
 
-   vector    create ES_VECTX
-   vector    create ES_VECTY
-   graphaxis create ES_AXISX
-   graphaxis create ES_AXISY
-   graphitem create ES_GRAPHITEM
+   if { ![graphitem is ES_RST] } {
+      vector    create ES_VECTX
+      vector    create ES_VECTY
+      graphaxis create ES_AXISX
+      graphaxis create ES_AXISY
+      graphitem create ES_GRAPHITEM
 
-   graphitem create ES_RST
-   vector create ES_RSTX
-   vector create ES_RSTY
+      graphitem create ES_RST
+      vector create ES_RSTX
+      vector create ES_RSTY
+   }
 
-   graphitem configure ES_RST \
-      -type    HISTOGRAM \
-      -xaxis   ES_AXISX \
-      -yaxis   ES_AXISY \
-      -xdata   ES_RSTX \
-      -ydata   ES_RSTY \
-      -fill    "#FFFFFF00" \
-      -outline "#FF0000" \
-      -width   1 \
-      -transparency 25
+   graphitem configure ES_RST -type HISTOGRAM -fill "#FFFFFF00" -outline "#FF0000" -width 1 -transparency 25 \
+      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_RSTX -ydata ES_RSTY
+   graphitem configure ES_GRAPHITEM -type HISTOGRAM -outline black -width 1 -font XFONT12 -fill white \
+      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_VECTX -ydata ES_VECTY
 
-   graphaxis configure ES_AXISX \
-      -format     NONE \
-      -width      1 \
-      -highoffset 2 \
-      -gridcolor  "#000000" \
-      -gridwidth  1 \
-      -dash       .
+   graphaxis configure ES_AXISX -format NONE -width 1 -highoffset 2 -gridcolor "#000000" -gridwidth 1 -dash .
+   graphaxis configure ES_AXISY -format INTEGER -width 1 -unit "[lindex $Lbl(AxisY) $GDefs(Lang)]" -highoffset 2
 
-   graphaxis configure ES_AXISY \
-      -format     INTEGER \
-      -width      1 \
-      -unit       "[lindex $Lbl(AxisY) $GDefs(Lang)]" \
-      -format     INTEGER \
-      -highoffset 2
-
-   graphitem configure ES_GRAPHITEM \
-      -type       HISTOGRAM \
-      -xaxis      ES_AXISX \
-      -yaxis      ES_AXISY \
-      -xdata      ES_VECTX \
-      -ydata      ES_VECTY \
-      -outline    black \
-      -width      1 \
-      -font       XFONT12 \
-      -fill       white
-
-   $Sim(ESCanvas) create graph \
-      -x       0 \
-      -y       0 \
-      -anchor  nw \
-      -legend  False \
-      -title   "[lindex $Lbl(Scenario) $GDefs(Lang)]" \
-      -item    {ES_GRAPHITEM ES_RST} \
-      -tags    ES_GRAPH \
-      -command GRAPH_CMD
+   $Sim(ESCanvas) create graph -x 0 -y 0 -anchor nw -legend False -title [lindex $Lbl(Scenario) $GDefs(Lang)] \
+      -item { ES_GRAPHITEM ES_RST } -tags ES_GRAPH -command GRAPH_CMD
 
    set Sim(BubbleId) [OneTimeBubble::Create]
 
@@ -1086,15 +1051,12 @@ proc MLDPn::GraphUpdate { } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ParamsClean { } {
-   if { [graphitem is ES_GRAPHITEM] } { graphitem free ES_GRAPHITEM }
-   if { [graphitem is ES_RST]   } { graphitem free ES_RST }
-   if { [graphaxis is ES_AXISX]     } { graphaxis free ES_AXISX }
-   if { [graphaxis is ES_AXISY]     } { graphaxis free ES_AXISY }
-   if { [vector is ES_VECTX]        } { vector free ES_VECTX }
-   if { [vector is ES_VECTY]        } { vector free ES_VECTY }
-   if { [vector is ES_RSTX]     } { vector free ES_RSTX }
-   if { [vector is ES_RSTY]     } { vector free ES_RSTY }
+
+   graphitem free ES_GRAPHITEM ES_RST
+   graphaxis free ES_AXISX ES_AXISY
+   vector    free ES_VECTX ES_VECTY ES_RSTX ES_RSTY
 
    trace remove variable MLDPn::Sim(EmNbIntervals) write MLDPn::UpdateIntervalPickerList
 }

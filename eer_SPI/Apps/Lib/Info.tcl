@@ -53,6 +53,11 @@ namespace eval Info {
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin
+                        SimYear SimMonth SimDay SimHour Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
+                        Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
+                        EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
+                        EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
                         EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }

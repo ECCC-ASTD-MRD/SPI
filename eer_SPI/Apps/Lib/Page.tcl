@@ -90,7 +90,7 @@
 #    Page::UnRegister      { Frame Type Id }
 #    Page::Scale           { Frame { Incr 0 } }
 #    Page::ScaleSet        { Frame }
-#    Page::Size            { Frame Width Height }
+#    Page::Size            { Frame Width Height { Intrusion -1 } }
 #    Page::Update          { Frame { VP True } }
 #    Page::UpdateCommand   { Frame }
 #    Page::UpdateItems     { Frame }
@@ -1578,9 +1578,10 @@ proc Page::ScaleSet { Frame } {
 # But      : Redimensionner la canvas et tout ce qu'il contient
 #
 # Parametres :
-#  <Frame>   : Identificateur de Page
-#  <Width>   : Largeur de la page
-#  <Height   : Hauteur de la page
+#  <Frame>     : Identificateur de Page
+#  <Width>     : Largeur de la page
+#  <Height     : Hauteur de la page
+#  <Intrusion> : Largeur des intrusions
 #
 # Retour:
 #
@@ -1588,8 +1589,13 @@ proc Page::ScaleSet { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Page::Size { Frame Width Height } {
+proc Page::Size { Frame Width Height { Intrusion -1 } } {
    variable Data
+   variable Param
+
+   if { $Intrusion>=0 } {
+      set Param(Intrusion) $Intrusion
+   }
 
    if { $Data(Width$Frame)!=$Width || $Data(Height$Frame)!=$Height } {
 

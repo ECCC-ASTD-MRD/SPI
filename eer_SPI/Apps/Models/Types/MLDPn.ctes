@@ -26,6 +26,7 @@ namespace eval MLDPn {
    set Sim(DBaseProg)     ""                          ; #----- Directory path of prognostics met files.
    set Sim(Path)          ""                          ; #----- Simulation directory.
 
+   set Sim(ListDiffKernel)      { MODE0 MODE1 VARIABLE } ; #----- List of type of diffusion kernels
    set Sim(ListEvent)           { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" } ; #----- List of type of events.
    set Sim(ListScale)           { "HEMI  (50 km, 687x687)" "MESO  (33 km, 229x229)" "FINE  (15 km, 503x503)" "VFINE (10 km, 229x229)" "EFINE (5 km,  457x457)" } ; #----- List of grid resolutions [km].
    set Sim(ListMeteoModel)      { glb reg glb100 reg24 }                     ; #----- List of meteorological models.
@@ -59,13 +60,12 @@ namespace eval MLDPn {
    #----- List of reflection levels [hyb|eta|sig].
    set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
 
-   set Sim(OutMode)              cmc                           ; #----- Output mode [cmc | argos | all].
-   set Sim(LogLevel)             low                           ; #----- Printing debugging level [low | moderate | high].
+   set Sim(DiffKernel)           MODE0                         ; #----- Diffusion kernel
    set Sim(Seed)                 variable                      ; #----- Initial seed for random number generator [fixed | variable].
    set Sim(DtOverTl)             1.0                           ; #----- Ratio of diffusion time step over Lagrangian time scale [dimensionless].
    set Sim(DtMin)                1.0                           ; #----- Diffusion time step minimum value [s].
-   set Sim(IsIncludeHorizDiff)   ".TRUE."                      ; #----- Flag indicating if including horizontal diffusion in free atmosphere.
-   set Sim(IsIncludeSUV)         ".FALSE."                     ; #----- Flag indicating if including horizontal wind speed variances in diffusion calculations.
+   set Sim(IsIncludeHorizDiff)   TRUE                          ; #----- Flag indicating if including horizontal diffusion in free atmosphere.
+   set Sim(IsIncludeSUV)         FALSE                         ; #----- Flag indicating if including horizontal wind speed variances in diffusion calculations.
    set Sim(NbMPItasks)           1                             ; #----- Number of MPI tasks.
    set Sim(OMPthreadFact)        1                             ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
    set Sim(NbOMPthreads)         1
@@ -83,6 +83,9 @@ namespace eval MLDPn {
    set Sim(EmEpsilon)            1.0e-05                       ; #----- Small value.
 
    set Sim(EmIsAutoNPDefault)    1                             ; #----- Flag indicating if particles are to be automatically distributed
+
+   set Sim(OutCV) {}
+   set Sim(OutAV) {}
 
    set Sim(DistSpurrSept1992) {
       0.5       0.000

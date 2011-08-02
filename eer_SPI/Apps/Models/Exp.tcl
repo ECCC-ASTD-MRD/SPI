@@ -30,7 +30,7 @@ namespace eval Exp {
 
    #----- Variables relatives aux experiences
 
-   set Data(Models)    "SATDATA TRAJECT MLDP0 MLDP1 MLCD"  ;#Liste des modeles disponibles
+   set Data(Models)    "SATDATA TRAJECT MLDP0 MLDP1 MLCD MLDPn"  ;#Liste des modeles disponibles
 
    set Data(ParsingTree) 0
    set Data(Branch)    ""                                 ;#Liste des branches d'experiences ouvertes

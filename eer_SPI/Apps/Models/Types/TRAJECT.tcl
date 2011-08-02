@@ -195,51 +195,36 @@ proc TRAJECT::CreateModelInput { } {
    variable Sim
    variable Tmp
 
-   #----- Get the particles list
-   set Sim(Particles) {}
-   set nb 0
-
-   if { $Sim(MultiLevel) } {
-      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) levels $Sim(Level) {
-         foreach level $levels {
-            lappend Sim(Particles) [list $lon $lat $level $name]
-            incr nb
-         }
-      }
+   if { $Sim(LevelUnit)=="METRES" } {
+      set unit MAGL
    } else {
-      foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
-         foreach level $Sim(Level) {
-            lappend Sim(Particles) [list $lon $lat $level $name]
-            incr nb
-         }
-      }
+      set unit PRESSURE
    }
 
    #----- Creation du fichier de directives
    set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
-      puts $f "'[string toupper $Sim(NameExp)] '"
+   puts $f "\n#----- Model parameters\n"
+   puts $f [format "%-20s= %-12.1f # Internal model time step \[s\]" MDL_DT_INT $Sim(TimeStep)]
+   puts $f [format "%-20s= %-12s # Backward simulation" MDL_RETRO $Sim(Backward)]
+   puts $f [format "%-20s= %-12s # Type of vertical coordinates (PRESSURE or MAGL)" MDL_ZTYPE $unit]
+   puts $f [format "%-20s= %-12s # Emission date-time \[UTC\]: YearMonthDayHourMinutes" MDL_TIME $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)00]
+   puts $f [format "%-20s= %-12.1f # Batch mode sart time increment \[hours\]" MDL_BATCH_INC $Sim(BatchStart)]
+   puts $f [format "%-20s= %-12.1f # Batch mode trajectory duration \[hours\]" MDL_BATCH_LEN $Sim(Duration)]
 
-      if { $Sim(Backward) } {
-         puts $f ".TRUE.   Mode retro-trajectoire ?"
-      } else {
-         puts $f ".FALSE.  Mode retro-trajectoire ?"
-      }
+   puts $f "\n#----- Source parameters\n"
+   foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
+      puts $f [format "%-20s= %-22s # Source name" SRC_NAME $name]
+      puts $f [format "%-20s= %-9.7f %-10.7f # Latitude and longitude coordinate of the sources \[degrees\]" SRC_COORD $lat $lon]
+      puts $f [format "%-20s= %-22s # Levels of starting parcel" SRC_LEVEL $Sim(Level)]
+   }
 
-      if { $Sim(LevelUnit) == "METRES" } {
-         puts $f "'H'      Niveaux en metres"
-      } else {
-         puts $f "'P'      Niveaux en millibars"
-      }
+   puts $f "\n#----- Output parameters\n"
+   puts $f [format "%-20s= %-12s # Output interval (INTERN or EXTERN)" OUT_STEP EXTERN]
+   puts $f [format "%-20s= %-12s # Split into files per trajectory id" OUT_SPLIT TRUE]
 
-      puts $f "[expr int($Sim(TimeStep))].0   Pas interne secondes"
-      puts $f "$nb        Nombre de position de parcelles"
-      foreach part $Sim(Particles) {
-         puts $f "$part"
-      }
-      puts $f "$Sim(AccYear)     Annee de l'accident"
-      puts $f "$Sim(AccMonth)       Mois de l'accident"
-      puts $f "$Sim(AccDay)       Jour de l'accident"
-      puts $f "$Sim(AccHour)       Heure de l'accident"
+   puts $f "\n#----- Meteorological input standard file\n"
+   puts $f [format "%-20s= %s" MET_FILES $Sim(MeteoDataFiles)]
+
    close $f
 }
 
@@ -293,11 +278,7 @@ proc TRAJECT::CreateScriptInput { } {
    puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
    puts $file ""
    puts $file "#----- Model specific parameters"
-   puts $file "TRAJECT_METEO=\"$Sim(MeteoDataFiles)\""
-   puts $file "TRAJECT_INC=$Sim(BatchStart)"
-   puts $file "TRAJECT_LEN=$Sim(Duration)"
    puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
-   puts $file "TRAJECT_SPLIT=1"
    puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
 
    close $file
@@ -359,13 +340,13 @@ proc TRAJECT::Launch { } {
   } else {
       set info [Info::Code ::TRAJECT::Sim]
       set id [Exp::Id $info]
-      simulation create $id -type trajectory
+      simulation create $id -type Trajectory
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) \
          -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration) -split 1
       simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
 
-      #----- Launch simulation within a new thread
+      #----- Launch ulation within a new thread
       eval set tid1 \[thread::create \{ load $GDefs(Dir)/Lib/$env(ARCH)/libTclSim[info sharedlibextension] TclSim\; simulation run $id\}\]
 
       Exp::ThreadUpdate $id $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]

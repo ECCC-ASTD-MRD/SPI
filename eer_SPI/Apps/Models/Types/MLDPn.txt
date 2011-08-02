@@ -44,6 +44,7 @@ namespace eval MLDPn {
    set Lbl(Hour)                { "Heure " "Hour " }
    set Lbl(At)                  { "A " "At " }
    set Lbl(Integration)         { "Intégration" "Integration" }
+   set Lbl(DiffKernel)          { "Noyau de diffusion          " "Diffusion kernel         " }
    set Lbl(SimDuration)         { "Durée de simulation    (h)  " "Simulation duration (h)  " }
    set Lbl(OutputTimeStepMin)   { "Pas de temps de sortie (min)" "Output time step    (min)" }
    set Lbl(ModelTimeStepMin)    { "Pas de temps du modèle (min)" "Model time step     (min)" }
@@ -53,7 +54,7 @@ namespace eval MLDPn {
    set Lbl(Scale)               { "Grille      "     "Grid       " }
    set Lbl(Meteo)               { "Météorologie"     "Meteorology" }
    set Lbl(MeteoDelta)          { " Dt (h)"          " Dt (h)" }
-   set Lbl(VerticalLevels)      { "Niveaux  (m)"     "Levels  (m)" }
+   set Lbl(OutCV)               { "Niveaux  (m)"     "Levels  (m)" }
    set Lbl(VarMesoscale)        { "Variance  (m²/s²)" "Variance (m²/s²)" }
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
@@ -75,7 +76,6 @@ namespace eval MLDPn {
 
    set Lbl(EmIsAutoNP)          { "Distribution automatique des particules" "Automatic particles distribution" }
    set Lbl(EmIsEm)              { "Type d'intervalle        " "Type of interval         " }
-   #set Lbl(EmIsEm)              { "Interval d'émission" "Emission interval" }
 
    set Lbl(GlobalParameters)    { "Paramètres globaux" "Global parameters" }
    set Lbl(IntervalParameters)  { "Paramètres de l'intervalle" "Interval parameters" }
@@ -136,7 +136,7 @@ namespace eval MLDPn {
    set Bubble(MoveGrid1)              { "Permettre de centrer automatiquement la grille\nsur la source sélectionnée sur la sphère terrestre." "Allow to center the the grid over the\nselected source on the earth's sphere." }
    set Bubble(MoveGrid2)              { "Permettre de modifier l'emplacement de\nla grille sur la sphère terrestre." "Allow to modify the location of\nthe grid on the earth's sphere." }
    set Bubble(ModifyPath)             { "Permettre de modifier les répertoires\ndes modèles météorologiques." "Allow to modify the meteorological\nmodels directories." }
-   set Bubble(VerticalLevels)         { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
+   set Bubble(OutCV)                  { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
    set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modelling of mesoscale fluctuations." }
    set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
@@ -177,6 +177,7 @@ namespace eval MLDPn {
    set Bubble(EmissionIntervalAdd)    { "Ajouter un interval d'émission." "Add an emission interval." }
    set Bubble(GraphZoom)              { "Augmenter ou réduire le facteur de zoom de l'axe des X." "Change X axis zoom factor." }
    set Bubble(PickInterval)           { "Sélectionne un interval d'émission à éditer." "Select an emission interval to edit." }
+   set Bubble(DiffKernel)             { "Sélectionne un noyau de diffusion a utiliser." "Select a diffusion kernel to use." }
 
    #----- Definitions des messages
 
@@ -233,13 +234,10 @@ namespace eval MLDPn {
    set Error(OutputTimeStepModelTimeStep2)      { "\tPas de temps de sortie :" "\tOutput time step :" }
    set Error(OutputTimeStepModelTimeStep3)      { "\tPas de temps du modèle :" "\tModel time step  :" }
 
-   set Error(VerticalLevels1)                   { "Le nombre de niveaux verticaux pour le calcul des concentrations à l'intérieur des couches doit être supérieur à 1 et inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n" "The number of vertical levels for concentration calculations inside layers must be greater than 1 and less than (or equal to) maximum limit value declared in the program.\n\n" }
-   set Error(VerticalLevels2)                   { "\tNombre de niveaux verticaux :" "\tNumber of vertical levels :" }
-   set Error(VerticalLevels3)                   { "\tNombre maximum de niveaux   :" "\tMaximum number of levels  :" }
-   set Error(VerticalLevels4)                   { "\tNiveaux verticaux           :" "\tVertical levels           :" }
-   set Error(VerticalLevels5)                   { "Les niveaux verticaux (spécifiés en mètres) doivent être des nombres réels supérieurs ou égal à 0.\n\n\tNiveau vertical :" "The vertical levels (specified in meters) must be float numbers greater or equal to 0.\n\n\tVertical level :" }
-   set Error(VerticalLevels6)                   { "Les niveaux verticaux (spécifiés en mètres) doivent être ordonnés en ordre croissants.\n\n\tNiveaux verticaux :" "The vertical levels (specified in meters) must be sorted in increasing order.\n\n\tVertical levels :" }
-   set Error(VerticalLevelsRange)               { "Une valeur dans la liste des niveaux verticaux déborde la capacité mémoire d'un nombre réel.\n\n\tNiveau vertical :" "A value in the list of vertical levels under/overflows the memory capacity of a float number.\n\n\tVertical Level :" }
+   set Error(OutCV1)                   { "Le nombre de niveaux verticaux pour le calcul des concentrations à l'intérieur des couches doit être supérieur à 1\n\n" "The number of vertical levels for concentration calculations inside layers must be greater than 1.\n\n" }
+   set Error(OutCV2)                   { "Les niveaux verticaux (spécifiés en mètres) doivent être des nombres réels supérieurs ou égal à 0.\n\n\tNiveau vertical :" "The vertical levels (specified in meters) must be float numbers greater or equal to 0.\n\n\tVertical level :" }
+   set Error(OutCV3)                   { "Les niveaux verticaux (spécifiés en mètres) doivent être ordonnés en ordre croissants.\n\n\tNiveaux verticaux :" "The vertical levels (specified in meters) must be sorted in increasing order.\n\n\tVertical levels :" }
+   set Error(OutCVRange)               { "Une valeur dans la liste des niveaux verticaux déborde la capacité mémoire d'un nombre réel.\n\n\tNiveau vertical :" "A value in the list of vertical levels under/overflows the memory capacity of a float number.\n\n\tVertical Level :" }
    set Error(VarMesoscale)                      { "La variance (spécifiée en m²/s²) doit être un nombre réel supérieur ou égal à 0.\n\n\tVariance :" \
                                                   "The variance (specified in m²/s²) must be a float number greater or equal to 0.\n\n\tVariance :" }
    set Error(VarMesoscale2)                     { "La variance (spécifiée en m²/s²) doit être inférieure ou égale à 10.0 m²/s².\n\n\tVariance :" \
@@ -368,8 +366,6 @@ namespace eval MLDPn {
                                     "The emission scenario is invalid because it ends with one or more lull periods. Changes are required for the following intervals : " }
    set Error(NoEmission)          { "Le scénario d'émission est invalide puisqu'il ne contient aucune période d'émission. Veuillez ajouter au moins une période d'émission." \
                                     "The emission scenario is invalid because there's no emission at all. Please add at least one emission to this scenario." }
-   set Error(Emdur_gt_Simdur)     { "La durée totale de l'émission dépasse la durée de la simulation. Veuillez réduire la durée d'émission ou augmenter la durée de simulation." \
-                                    "The emission total duration is greater than the simulation duration. Please reduce the emission duration or increase the simulation duration." }
    set Error(Duration_lt_Zero)    { "Aucune durée ne pourra être acceptée pour cet intervalle puisque la durée combinée des intervalles déjà présents est égale ou supérieure à la durée de la simulation." \
                                     "No duration will be accepted for this interval because the sum of all preceding intervals is either greater or equal to simulation duration." }
    set Error(Emdur)               { "Durée de l'émission    :" "Emission duration   :" }
@@ -386,10 +382,10 @@ namespace eval MLDPn {
                                     "The simulation duration is greater than 72 hrs and the time interval between meteorological data files is lower than 3 hrs. These input parameters will generate many meteorological data files to feed the dispersion model. Thus, this will require large disk space.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration8)      { "\tDurée de simulation     :" "\tSimulation duration :" }
    set Warning(SimDuration9)      { "\tInterval de temps météo :" "\tMeteo time interval :" }
-   set Warning(VerticalLevels1)   { "Le premier niveau vertical dans la liste n'est pas égal à 0 m. Cette liste sera réinitialisée afin de considérer les particules dans la couche de surface non-résolue." \
+   set Warning(OutCV1)   { "Le premier niveau vertical dans la liste n'est pas égal à 0 m. Cette liste sera réinitialisée afin de considérer les particules dans la couche de surface non-résolue." \
                                     "The first vertical level in the list is not equal to 0 m. This list will be re-initialized in order to take into account particles within the unresolved surface layer." }
-   set Warning(VerticalLevels2)   { "\tAnciens niveaux verticaux  :" "\tOld vertical levels :" }
-   set Warning(VerticalLevels3)   { "\tNouveaux niveaux verticaux :" "\tNew vertical levels :" }
+   set Warning(OutCV2)   { "\tAnciens niveaux verticaux  :" "\tOld vertical levels :" }
+   set Warning(OutCV3)   { "\tNouveaux niveaux verticaux :" "\tNew vertical levels :" }
 
    set Warning(NbSrc1)            { "Le nombre de sources associées à cette expérience doit être inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n\tNombre de sources         :" \
                                     "The number of sources associated to this experiment must be less than (or equal to) maximum limit value declared in the program.\n\n\tNumber of sources         :" }
