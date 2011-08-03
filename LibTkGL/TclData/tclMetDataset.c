@@ -569,73 +569,77 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                return(TCL_ERROR);
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nc);
-               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
 
-               bseq=bufr_create_sequence(NULL);
-               pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
-               for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
-                  bufr_add_descriptor_to_sequence(bseq,bufr_dupl_descriptor(pbcd[c]));
-               }
-               ddo=bufr_apply_Tables(NULL,bseq,set->tmplte,NULL,&f);
-               if (!ddo) {
-                  sprintf(buf,"%i",f);
-                  Tcl_AppendResult(Interp,"Error while applying BUFR tables (libECBUFR error code: ",buf,")",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-               node=lst_firstnode(bseq->list);
+               if (nc) {
 
-               for(c=0;c<nc;c++) {
-                  Tcl_ListObjIndex(Interp,Objv[i],c,&lst);
-                  Tcl_ListObjIndex(Interp,lst,0,&obj);
-                  TclY_Get0IntFromObj(Interp,obj,&code);
-                  while (node) {
-                     bcv=(BufrDescriptor*)node->data;
-                     if ((code!=bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
-                        node=lst_nextnode(node);
-                     } else {
-                        break;
-                     }
+                  bseq=bufr_create_sequence(NULL);
+                  pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
+                  for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
+                     bcv=bufr_dupl_descriptor(pbcd[c]);
+                     bufr_add_descriptor_to_sequence(bseq,bcv);
                   }
-                  if (!node) {
-                     Tcl_AppendResult(Interp,"Too many code for template",(char*)NULL);
+                  ddo=bufr_apply_Tables(NULL,bseq,set->tmplte,NULL,&f);
+                  if (!ddo) {
+                     sprintf(buf,"%i",f);
+                     Tcl_AppendResult(Interp,"Error while applying BUFR tables (libECBUFR error code: ",buf,")",(char*)NULL);
                      return(TCL_ERROR);
                   }
-                  if ((code==bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
-                     node=lst_nextnode(node);
-                     continue;
-                  }
-                  if (code!=bcv->descriptor) {
-                     sprintf(buf," %06i",bcv->descriptor);
-                     Tcl_AppendResult(Interp,"Mismatch between data and template, code ",Tcl_GetString(obj)," should have been ",buf,(char*)NULL);
-                     return(TCL_ERROR);
-                  }
-                  bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
-                  ddo->current=node;
+                  node=lst_firstnode(bseq->list);
 
-                  MetDataset_Obj2Code(Interp,bcv,lst);
-
-                  if (bcv->flags & FLAG_CLASS31) {
-                     err=0;
-                     bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err);
-                     if (err) {
-                        fprintf(stdout,"(WARNING) MetDataset_Define: invalid node descriptor (err=%i)\n",err);
-                        set->data_flag |= BUFR_FLAG_INVALID;
-                     }
-
-                     /*See if data present bitmap count matched with data code list*/
-                     if ((((BufrDescriptor*)(lst_nextnode(node))->data)->descriptor==31031)&&(ddo->dpbm)) {
-                        int   nb31;
-
-                        nb31=bufr_descriptor_get_ivalue(bcv);
-                        if (nb31!=ddo->dpbm->nb_codes) {
-                           fprintf(stdout,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,ddo->dpbm->nb_codes);
+                  for(c=0;c<nc;c++) {
+                     Tcl_ListObjIndex(Interp,Objv[i],c,&lst);
+                     Tcl_ListObjIndex(Interp,lst,0,&obj);
+                     TclY_Get0IntFromObj(Interp,obj,&code);
+                     while (node) {
+                        bcv=(BufrDescriptor*)node->data;
+                        if ((code!=bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
+                           node=lst_nextnode(node);
+                        } else {
+                           break;
                         }
                      }
+                     if (!node) {
+                        Tcl_AppendResult(Interp,"Too many code for template",(char*)NULL);
+                        return(TCL_ERROR);
+                     }
+                     if ((code==bcv->descriptor)&&(bcv->flags & FLAG_SKIPPED)) {
+                        node=lst_nextnode(node);
+                        continue;
+                     }
+                     if (code!=bcv->descriptor) {
+                        sprintf(buf," %06i",bcv->descriptor);
+                        Tcl_AppendResult(Interp,"Mismatch between data and template, code ",Tcl_GetString(obj)," should have been ",buf,(char*)NULL);
+                        return(TCL_ERROR);
+                     }
+                     bufr_descriptor_to_fxy(bcv->descriptor,&f,&x,&y);
+                     ddo->current=node;
+
+                     MetDataset_Obj2Code(Interp,bcv,lst);
+
+                     if (bcv->flags & FLAG_CLASS31) {
+                        err=0;
+                        bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err);
+                        if (err) {
+                           fprintf(stdout,"(WARNING) MetDataset_Define: invalid node descriptor (err=%i)\n",err);
+                           set->data_flag |= BUFR_FLAG_INVALID;
+                        }
+
+                        /*See if data present bitmap count matched with data code list*/
+                        if ((((BufrDescriptor*)(lst_nextnode(node))->data)->descriptor==31031)&&(ddo->dpbm)) {
+                           int   nb31;
+
+                           nb31=bufr_descriptor_get_ivalue(bcv);
+                           if (nb31!=ddo->dpbm->nb_codes) {
+                              fprintf(stdout,"(WARNING) MetDataset_Define: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",nb31,ddo->dpbm->nb_codes);
+                           }
+                        }
+                     }
+                     node=lst_nextnode(node);
                   }
-                  node=lst_nextnode(node);
+                  bufr_add_datasubset(set,bseq,ddo);
+// Blow up in 64 bit if we keep this line. Not sure why it works in 32 bit
+//                  bufr_free_BufrDDOp(ddo);
                }
-               bufr_add_datasubset(set,bseq,ddo);
-               bufr_free_BufrDDOp(ddo);
             }
             break;
 
