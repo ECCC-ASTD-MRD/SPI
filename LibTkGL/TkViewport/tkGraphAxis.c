@@ -92,7 +92,7 @@ int TclGraphAxis_Init(Tcl_Interp *Interp) {
 */
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   int         idx;
+   int         idx,n;
    static CONST char *sopt[] = { "create","free","configure","wipe","is",NULL };
    enum               opt { CREATE,FREE,CONFIGURE,WIPE,IS };
 
@@ -117,11 +117,14 @@ static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
 
       case FREE:
-         if(Objc!=3) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"axis");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return GraphAxis_Free(Interp,Tcl_GetString(Objv[2]));
+         for(n=2;n<Objc;n++) {
+            GraphAxis_Free(Interp,Tcl_GetString(Objv[n]));
+         }
+         return(TCL_OK);
          break;
 
       case CONFIGURE:
@@ -845,7 +848,7 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
 
    *Width=*Height=0;
    Axis->UnitWidth=Axis->UnitHeight=0;
-   
+
    if (!Axis)
       return;
 
@@ -870,9 +873,9 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
          Axis->Text=Tk_ComputeTextLayout(font,Axis->Unit,Tcl_NumUtfChars(Axis->Unit,strlen(Axis->Unit)),0,Axis->Justify,0,&Axis->UnitWidth,&Axis->UnitHeight);
       }
    }
-   
+
    Tk_GetFontMetrics(font,&tkm);
-   
+
    h=sin(DEG2RAD(Axis->Angle));
    w=cos(DEG2RAD(Axis->Angle));
 
@@ -901,7 +904,7 @@ void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,i
       }
       wt*=1.15;
    }
-   
+
    if (Side==VERTICAL) {
       *Width=ABS(h)*wt*(Axis->Angle==0.0?1.0:0.5);
       *Height=ABS(w)*0.5*ht+wt+10;

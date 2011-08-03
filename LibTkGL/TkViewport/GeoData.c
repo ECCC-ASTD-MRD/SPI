@@ -221,7 +221,7 @@ void GDB_ThreadQueueRefresh(ViewportItem *VP) {
    event=(VPThreadEvent*)ckalloc(sizeof(VPThreadEvent));
    event->event.proc=ViewportRefresh_ThreadEventProc;
    event->ptr=(void*)VP;
-   
+
    /*Send redraw event to assigned viewport*/
    Tcl_ThreadQueueEvent(VP->ThreadId,(Tcl_Event*)event,TCL_QUEUE_TAIL);
    Tcl_ThreadAlert(VP->ThreadId);
