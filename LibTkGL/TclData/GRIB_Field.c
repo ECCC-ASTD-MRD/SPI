@@ -424,7 +424,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    OGRCoordinateTransformationH func;
 
    int         err=0;
-   long        lval,i,ni=-1,nj=-1,nk=1,date,time;
+   long        lval,i,ni=-1,nj=-1,nk=1,date,time,inci,incj;
    size_t      len;
    double      dval;
    char        sval[GRIB_STRLEN];
@@ -515,8 +515,15 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
          err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
          err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
 
+         /*GRIB1 stored the direction of increment in other parameters and the i-j test are inversed ... so brainless*/
+         inci=incj=0;
+         err=grib_get_long(head.Handle,"iScansNegatively",&inci);
+         err=grib_get_long(head.Handle,"jScansPositively",&incj);
+
+         mtx[1]=inci?-mtx[1]:mtx[1];
+         mtx[5]=incj?mtx[1]:-mtx[1];
          /*Patch for a GRIB1 inversion*/
-         if (mtx[3]==90.0) mtx[5]=-mtx[5];
+//         if (mtx[3]==90.0) mtx[5]=-mtx[5];
      }
 
       GDALInvGeoTransform(mtx,inv);
