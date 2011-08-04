@@ -131,7 +131,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case CREATE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(spec=DataSpec_Create(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);

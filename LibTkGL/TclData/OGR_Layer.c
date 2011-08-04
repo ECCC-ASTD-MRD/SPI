@@ -2072,9 +2072,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          }
 
          Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
-         if (isnan(val1) || val1==FromDef->NoData) {
-            continue;
-         }
 
          /*Get the geometry intersections*/
          if (chan) {
@@ -2092,21 +2089,24 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             Tcl_ListObjIndex(Interp,lst,p+1,&item);
             Tcl_GetDoubleFromObj(Interp,item,&area);
 
-            val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+            /*Check for nodata value*/
+            if (!isnan(val1) && val1!=FromDef->NoData) {
+               val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
 
-            switch(Mode) {
-               case 'N': accum[f]+=area;
-               case 'C': val0+=val1*area;
-                         break;
-               case 'W': if (area>0.999) {
-                           val0+=val1;
-                         }
-                         break;
-               case 'A': accum[f]+=1.0;
-               case 'I': val0+=val1;
-                         break;
+               switch(Mode) {
+                  case 'N': accum[f]+=area;
+                  case 'C': val0+=val1*area;
+                           break;
+                  case 'W': if (area>0.999) {
+                              val0+=val1;
+                           }
+                           break;
+                  case 'A': accum[f]+=1.0;
+                  case 'I': val0+=val1;
+                           break;
+               }
+               OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
             }
-            OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
          }
          if (chan) {
             Tcl_SetObjLength(obji,0);
