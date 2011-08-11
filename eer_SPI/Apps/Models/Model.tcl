@@ -158,7 +158,7 @@ namespace eval Model {
    set Bubble(Type5)   { "Type de source déversement" "Spill source type" }
    set Bubble(Type6)   { "Autres Types de sources" "Other source type" }
 
-   set Error(Host)                { "L'hote sélectionné ne peut être rejoint, utilisation de l'hote local." "Selected host cannot be reached, using local host." }
+   set Error(Host)                { "L'hôte sélectionné ne peut être rejoint. Par conséquent, l'hôte local sera utilisé." "Selected host cannot be reached, using local host." }
    set Error(EMail)               { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
    set Error(MetDBase)            { "Erreur! Les répertoires des bases de données météorologiques diagnostiques et/ou pronostiques ne sont pas définis. Veuillez spécifier les répertoires de ces bases de données." \
                                     "Error! The directories for diagnostic and/or prognostic meteorological databases are undefined. Please specify the path for these databases." }
@@ -169,7 +169,7 @@ namespace eval Model {
    set Error(LastMetDateTime)     { "\tDernier temps disponible :" "\tLast available date-time  :" }
    set Error(DateTimeMetFiles)    { "La date et le temps d'émission de l'accident ne sont pas cohérents avec les données météorologiques disponibles. Veuillez modifier la date et/ou le temps d'émission de l'accident." \
                                     "The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
-   set Error(Path)                { "Le répertoire de simulation n'est pas accessible sur l'hote d'exécution." "Simulation path is not accessible on remote host" }
+   set Error(Path)                { "Le répertoire de simulation n'est pas accessible sur l'hôte d'exécution." "Simulation path is not accessible on remote host." }
    set Error(EmHeight)            { "La masse doit être positive." "Mass must be positive." }
 
    set Warning(SimDuration1)      { "La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
@@ -467,7 +467,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
 # Creation   : Juillet 2009 - J.P. Gauthier - CMC/CMOE
 #
 # But        : Creer l'arborescence d'execution et les fichiers de parametres
-#              de la simulation sur l'hote d'executiojn
+#              de la simulation sur l'hote d'execution
 #
 # Parametres :
 #  <Model>   : Model
@@ -532,7 +532,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    if { $Param(Host)==$GDefs(Host) } {
       set Param(Arch) $env(ARCH)
    } else {
-      if { [catch { set Param(Arch) [exec ssh $Param(Host) exec uname -s] } ] } {
+      if { [catch { set Param(Arch) [exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) uname -s] } ] } {
          Dialog::Error . $Error(Host)
          set Param(Host) $GDefs(Host)
          set Param(Arch) $env(ARCH)
@@ -773,12 +773,13 @@ proc Model::ParamsMetDataDir { Model } {
 #----------------------------------------------------------------------------
 
 proc Model::ParamsCPUMeteo { } {
+   global GDefs
    variable Param
 
    #----- Set number of CPUs for meteorological preprocessing according to architecture.
    switch $Param(Arch) {
       "Linux"  {
-         set ErrorCode [catch { set Param(NbCPUsMeteo) [lindex [exec grep "processor" /proc/cpuinfo | wc -l] 0] } Message]
+         set ErrorCode [catch { set Param(NbCPUsMeteo) [lindex [exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) grep "processor" /proc/cpuinfo | wc -l] 0] } Message]
          if { $ErrorCode != 0 } {
             Log::Print WARNING "Unable to find number of avaible CPUs on $Param(Host).\n\n$Message"
             set Param(NbCPUsMeteo) 1
@@ -1327,7 +1328,7 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    if { $Param(Arch) == "AIX" } {
       set Param(Remote) True
    } else {
-      set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) 2>@1} msg]
+      set Param(Remote) [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) ls $sim(Path) }]
    }
 
    if { $Param(Remote) } {

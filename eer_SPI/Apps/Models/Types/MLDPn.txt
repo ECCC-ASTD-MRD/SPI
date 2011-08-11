@@ -181,7 +181,7 @@ namespace eval MLDPn {
 
    #----- Definitions des messages
 
-   set Msg(MetGet)       { "Vérification de la disponibilité des données météo en cours..." "Checking for meteorological data availability..." }
+   set Msg(MetGet)       { "Vérification de la disponibilité des données météorologiques en cours..." "Checking for meteorological data availability..." }
    set Msg(MetProcess)   { "Interpolation des données météo en cours ..." "Processing meteorological data ..." }
    set Msg(Meteo)        { "Création des données météo en cours ..." "Creating meteorological data ..." }
    set Msg(LaunchDone)   { "Lancement effectué " "Launch done" }
