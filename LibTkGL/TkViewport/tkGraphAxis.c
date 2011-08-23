@@ -415,7 +415,7 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                axis->Type=Tcl_GetString(Objv[++i])[1];
                if (axis->Type!='I' && axis->Type!='O'&& axis->Type!='N') {
                   axis->Type='I';
-                  Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis type must be [LINEAR | LOGARITHMIC]",(char*)NULL);
+                  Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis type must be [LINEAR | LOGARITHMIC | LN]",(char*)NULL);
                   return TCL_ERROR;
                }
             }
@@ -567,6 +567,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Inter=NULL;
    axis->Label=NULL;
    axis->InterNb=0;
+   axis->InterInt=0;
    axis->Angle=0.0;
    axis->Min=0.0;
    axis->Max=0.0;
@@ -689,6 +690,7 @@ void GraphAxis_Clear(TGraphAxis *Axis) {
    Axis->HighLight=NULL;
    Axis->HighLightColor=NULL;
    Axis->InterNb=0;
+   Axis->InterInt=0;
    Axis->Color=NULL;
    Axis->Font=NULL;
    Axis->Unit=NULL;
@@ -751,7 +753,7 @@ void GraphAxis_Wipe() {
 */
 void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
 
-   int    i,o;
+   int    i,o,n=0;
    double d;
 
    if (!Axis)
@@ -796,12 +798,21 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
    }
 
    Axis->Order=RANGE_ORDER(Axis->T1-Axis->T0);
-   for(i=1;i<Axis->InterNb;i++) {
-      o=RANGE_ORDER(Axis->Inter[i]-Axis->Inter[i-1]);
-      Axis->Order=abs(Axis->Order)>abs(o)?Axis->Order:o;
-   }
+   Axis->InterInt=0;
 
-   if (Axis->Mod && !Axis->InterNb && Axis->Incr==0.0) {
+   if (Axis->InterNb) {
+      for(i=0;i<Axis->InterNb;i++) {
+         if (Axis->Inter[i]-lround(Axis->Inter[i])==0.0) {
+            n++;
+         }
+         if (i>0) {
+            o=RANGE_ORDER(Axis->Inter[i]-Axis->Inter[i-1]);
+            Axis->Order=abs(Axis->Order)>abs(o)?Axis->Order:o;
+         }
+      }
+      Axis->InterInt=n==Axis->InterNb;
+
+   } else if (Axis->Mod && Axis->Incr==0.0) {
       d=RANGE_INCR(Axis->Order);
       if (Axis->T0<Axis->T1) {
          Axis->T0=floor(Axis->T0/d)*d;
@@ -1045,7 +1056,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
          case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
          case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
          case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
-         case GRAXINTEGER: Value=ROUND(Value);sprintf(String,"%.0f",Value);break;
+         case GRAXINTEGER: Value=lround(Value);sprintf(String,"%.0f",Value);break;
          case GRAXFIT: DOrder=0; val=Value; while (fmod(val*=10.0,1.0)>0.01) DOrder--; DOrder-=Axis->Order;
          default:
            if (Axis->Type!='I') {
@@ -1055,7 +1066,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
                   snprintf(String,32,"0");
                }
             } else {
-               if (!DOrder && Axis->Incr!=0.0 && (Axis->Incr-ROUND(Axis->Incr))==0.0) {
+               if (Axis->InterInt || (!DOrder && Axis->Incr!=0.0 && (Axis->Incr-lround(Axis->Incr))==0.0)) {
                   snprintf(String,32,"%.0f",Value);
                } else {
                   switch(Axis->Order+DOrder) {
@@ -1292,9 +1303,10 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          i1=Axis->T1;
       }
 
-      incr=Axis->Incr!=0.0?Axis->Incr:RANGE_INCR(Axis->Order);
-      inter=i0-fmod(i0,incr);
-      if (inter<i0) inter+=incr;
+      incr=Axis->Incr;
+      Axis->Incr=Axis->Incr!=0.0?Axis->Incr:RANGE_INCR(Axis->Order);
+      inter=i0-fmod(i0,Axis->Incr);
+      if (inter<i0) inter+=Axis->Incr;
 
       while(Axis->T0!=Axis->T1 && inter<=i1) {
          it=Axis->Type=='O'?pow(10,inter):inter;
@@ -1305,7 +1317,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             x=X0+AXISVALUE(Axis,it); y=Y0;
 
             if (Axis->Spacing && x<xp+w) {
-               inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
+               inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
             }
             xp=x;
@@ -1331,7 +1343,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             y=Y0-AXISVALUE(Axis,it); x=X0;
 
             if (Axis->Spacing && y<yp+w && y>yp-w) {
-               inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
+               inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
             }
             yp=y;
@@ -1358,8 +1370,9 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
          glDisplayTextLayout(text,(int)-Axis->Angle,(int)(x+dx),(int)(y-dy),0,-1);
          Tk_FreeTextLayout(text);
-         inter=(incr!=0.0)?(inter+incr):(inter==i1?i1*2:i1);
+         inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
       }
+      Axis->Incr=incr;
    }
 
    /* Draw Grid */
@@ -1459,7 +1472,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
 void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side) {
 
    int    i,o,dx,dy,th,w=0,width,height;
-   double inter,i0,i1,it,mk,x,y,xp=0,yp=0;
+   double inter,incr,i0,i1,it,mk,x,y,xp=0,yp=0;
    char   buf[128],lbl[128];
    XColor *color;
    Tk_Font font;
@@ -1607,8 +1620,8 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
 
             if (Axis->Spacing && y<yp+w && y>yp-w)
                continue;
-            yp=y;
 
+            yp=y;
             dx=Axis->Pos[1]=='L'?-10:10;
             SETLINE(coords,X0,y,X0+dx,y);
             Tk_CanvasPsPath(Interp,Graph->canvas,coords,2);
@@ -1640,6 +1653,9 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
          i0=Axis->T0;
          i1=Axis->T1;
       }
+
+      incr=Axis->Incr;
+      Axis->Incr=Axis->Incr!=0.0?Axis->Incr:RANGE_INCR(Axis->Order);
       inter=i0-fmod(i0,Axis->Incr);
       if (inter<i0) inter+=Axis->Incr;
 
@@ -1650,8 +1666,11 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,it); y=Y0;
-            if (Axis->Spacing && x<xp+w)
+
+            if (Axis->Spacing && x<xp+w) {
+               inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
+            }
 
             xp=x;
             dy=Axis->Pos[0]=='L'?10:-10;
@@ -1674,6 +1693,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          } else {
             y=Y0-AXISVALUE(Axis,it); x=X0;
+
             if (Axis->Spacing && y<yp+w && y>yp-w) {
                inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
@@ -1704,6 +1724,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
          Tk_FreeTextLayout(text);
          inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
       }
+      Axis->Incr=incr;
    }
 
    /* Draw Grid */
