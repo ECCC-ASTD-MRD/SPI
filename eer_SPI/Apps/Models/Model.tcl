@@ -489,9 +489,9 @@ proc Model::ParamsCopy { Model  } {
    if { $Param(Remote) } {
 
       #----- Create simulation directories .
-      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp } Message]
+      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp 2>@1 } msg]
       if { $ErrorCode != 0 } {
-         Log::Print ERROR "Unable to create simulation directories on $Param(Host).\n\n$Message"
+         Log::Print ERROR "Unable to create simulation directories on $Param(Host).\n\n$msg"
          return False
       }
 
@@ -552,7 +552,6 @@ proc Model::ParamsCheck { Model { Get True } } {
    }
 
    Model::ParamsQueues
-   Model::ParamsCPUMeteo
    Model::ParamsCPUModel
    Model::ParamsMetDataDir $Model
 
@@ -758,48 +757,6 @@ proc Model::ParamsMetDataDir { Model } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <Model::ParamsCPUMeteo>
-# Creation   : 4 October 2007 - A. Malo - CMC/CMOE
-#
-# But        : Set default number of processes (CPUs) for meteorological
-#              preprocessing and list of available number of CPUs.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc Model::ParamsCPUMeteo { } {
-   global GDefs
-   variable Param
-
-   #----- Set number of CPUs for meteorological preprocessing according to architecture.
-   switch $Param(Arch) {
-      "Linux"  {
-         set ErrorCode [catch { set Param(NbCPUsMeteo) [lindex [exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) grep "processor" /proc/cpuinfo | wc -l] 0] } Message]
-         if { $ErrorCode != 0 } {
-            Log::Print WARNING "Unable to find number of avaible CPUs on $Param(Host).\n\n$Message"
-            set Param(NbCPUsMeteo) 1
-         }
-         set Param(ListNbCPUsMeteo) 1
-         for { set i 2 } { $i <= $Param(NbCPUsMeteo) } { incr i } {
-            lappend Param(ListNbCPUsMeteo) $i
-         }
-      }
-      "AIX"    {
-         set Param(NbCPUsMeteo)     16
-         set Param(ListNbCPUsMeteo) { 1 2 4 8 16 }
-      }
-   }
-
-   #----- Update list of available number of CPUs for meteorological preprocessing.
-   catch { Option::Set $Param(Frame).params.metcpu $Param(ListNbCPUsMeteo) }
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <Model::ParamsCPUModel>
 # Creation   : 22 October 2007 - A. Malo - CMC/CMOE
 #
@@ -827,6 +784,8 @@ proc Model::ParamsCPUModel { } {
          set Param(ListNbOMPthreads)  $Param(ListNbCPUsMeteo)
          set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
          set Param(ListOMPthreadFact) { 1 }
+         set Param(NbCPUsMeteo)       1
+         set Param(ListNbCPUsMeteo)   { 1 2 4 }
       }
       "AIX"    {
          set Param(NbMPItasks)        2
@@ -835,6 +794,8 @@ proc Model::ParamsCPUModel { } {
          set Param(ListNbOMPthreads)  { 16 }
          set Param(OMPthreadFact)     2 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
          set Param(ListOMPthreadFact) { 1 2 }
+         set Param(NbCPUsMeteo)       16
+         set Param(ListNbCPUsMeteo)   { 1 2 4 8 16 }
       }
    }
 
@@ -853,9 +814,10 @@ proc Model::ParamsCPUModel { } {
 
    #----- Update list of available MPI tasks, OMP threads and OMP factor for model.
    catch {
-      Option::Set $Param(Launch).params.mpi $Param(ListNbMPItasks)
-      Option::Set $Param(Launch).params.omp $Param(ListNbOMPthreads)
-      Option::Set $Param(Launch).params.smt $Param(ListOMPthreadFact)
+      Option::Set $Param(Frame).params.mpi    $Param(ListNbMPItasks)
+      Option::Set $Param(Frame).params.omp    $Param(ListNbOMPthreads)
+      Option::Set $Param(Frame).params.smt    $Param(ListOMPthreadFact)
+      Option::Set $Param(Frame).params.metcpu $Param(ListNbCPUsMeteo)
    }
 }
 
